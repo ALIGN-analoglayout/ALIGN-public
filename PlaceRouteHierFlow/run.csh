@@ -8,4 +8,5 @@
 ##
 ##gdb pnr_compiler
 ##set args ./testcase_latest2 sc.lef sc_block.v sc.map NO.rul switched_capacitor_filter 1 0
+##set args ./testcase_example switched_capacitor_filter.lef switched_capacitor_filter.v switched_capacitor_filter.map layers.json telescopic_ota 1 0
 

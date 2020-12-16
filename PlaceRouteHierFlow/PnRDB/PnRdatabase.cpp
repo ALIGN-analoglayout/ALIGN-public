@@ -64,6 +64,69 @@ queue<int> PnRdatabase::TraverseHierTree() {
   return Q;
 }
 
+void PnRdatabase::Write_Current_Workload(PnRDB::hierNode &node, double total_current, int current_number, std::string outputfile){
+
+  /*
+  int llx = node.LL.x;
+  int lly = node.LL.y;
+  int urx = node.UR.x;
+  int ury = node.UR.y;
+  */
+
+  int llx = 0;
+  int lly = 0;
+  int urx = node.width;
+  int ury = node.height;
+
+  std::ofstream currentfile;
+  currentfile.open(outputfile);
+
+  srand(time(0));
+
+  vector<double> rand_current;
+
+  for(int i =0;i<current_number;i++){
+     rand_current.push_back(rand() % 5);
+  }
+
+  double sum=0;
+
+  for(int i =0;i<current_number;i++){
+     sum = sum + rand_current[i];
+  }
+  
+  
+  for(int i=0;i<current_number;i++){
+    double x_num = rand() % 10;
+    double y_num = rand() % 10;
+    double x = x_num/10*(urx-llx)+llx;
+    double y = y_num/10*(ury-lly)+lly;
+    double current = rand_current[i]*rand_current[i]/sum*total_current;
+    currentfile<<x<<" "<<y<<" "<<x<<" "<<y<<" "<<current<<std::endl;
+  }
+  currentfile.close();
+
+};
+
+void PnRdatabase::Write_Power_Mesh_Conf(std::string outputfile){
+
+  std::ofstream PMCfile;
+  PMCfile.open(outputfile);
+
+
+  for(int i=0;i<DRC_info.Metal_info.size();i++){
+    PMCfile<<(double) (rand()%10)/10<<" ";
+  }
+  PMCfile<<std::endl;  
+
+  for(int i=0;i<DRC_info.Via_info.size();i++){
+    PMCfile<<1<<" ";
+  }
+  PMCfile<<std::endl;
+
+  PMCfile.close();
+};
+
 void PnRdatabase::TraverseDFS(queue<int>& Q, vector<string>& color, int idx) {
   color[idx]="gray";
   for(vector<PnRDB::blockComplex>::iterator it=hierTree.at(idx).Blocks.begin();it!=hierTree.at(idx).Blocks.end();++it) {

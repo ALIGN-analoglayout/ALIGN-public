@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include "limits.h"
 #include <map>
 #include <utility>
 //#include "../router/Rdatatype.h"
@@ -33,6 +34,8 @@ struct lefMacro;
 struct blockComplex;
 struct CCCap;
 struct R_const;
+struct LinearConst;
+struct Multi_LinearConst;
 struct C_const;
 struct SymmPairBlock;
 struct Metal;
@@ -198,6 +201,7 @@ struct connectNode {
   NType type; // 1: blockPin; 2. Terminal
   int iter; // 1: #blockPin; 2. #Terminal
   int iter2; // 1: #block
+  double alpha = 1;
 }; // structure of connected component of nets
 
 struct globalContact {
@@ -223,6 +227,8 @@ struct net {
   Smark axis_dir=V; // H: horizontal symmetry axis; V: veritcal symmetry axis
   int axis_coor=-1; //y coordinate: horizontal symmetry axis; x coordinate: vertical symmetry axis
   vector<std::vector<int>> connectedTile;
+  double upperBound = INT_MAX;
+  double lowerBound = INT_MIN;
 }; // structure of nets
 
 struct Metal{
@@ -314,6 +320,7 @@ struct PowerGrid{
   std::string name; 
   vector<Metal> metals;
   vector<Via> vias;
+  bool power=1; // 1 is vdd, 0 is gnd
 };
 
 struct layoutAS {
@@ -388,8 +395,10 @@ struct hierNode {
   vector<C_const> C_Constraints;
   vector<PortPos> Port_Location;
   vector<Guardring_Const> Guardring_Consts;
-  int bias_Hgraph=92;
-  int bias_Vgraph=92;
+  vector<LinearConst> L_Constraints;
+  vector<Multi_LinearConst> ML_Constraints;
+  int bias_Hgraph=0;
+  int bias_Vgraph=0;
   vector<Router_report> router_report;
 
 
@@ -401,6 +410,7 @@ struct hierNode {
 struct SymmNet {
   net net1, net2;
   int iter1, iter2; // iterator to the list of real nets
+  Smark axis_dir=PnRDB::V;
 };
 
 //struct SymmBlock {
@@ -412,6 +422,7 @@ struct SymmNet {
 struct SymmPairBlock {
   vector< pair<int,int> > sympair;
   vector< pair<int,Smark> > selfsym;
+  Smark axis_dir=PnRDB::V;
 };
 
 struct Preplace {
@@ -477,6 +488,26 @@ struct R_const {
   std::vector<std::pair<int,int> > start_pin; //pair.first blocks id pair.second pin id 
   std::vector<std::pair<int,int> > end_pin; // if pair.frist blocks id = -1 then it's terminal
   vector<double> R;
+
+};
+
+struct LinearConst {
+
+  string net_name;
+  //vector<string> start_pin;
+  //vector<string> end_pin;
+  std::vector<std::pair<int,int> > pins; //pair.first blocks id pair.second pin id 
+  std::vector<double> alpha;
+  double upperBound;
+  double lowerBound;
+
+};
+
+struct Multi_LinearConst {
+
+  std::vector<LinearConst> Multi_linearConst;
+  double upperBound;
+  double lowerBound;
 
 };
 

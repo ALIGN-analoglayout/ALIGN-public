@@ -61,6 +61,52 @@ PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int L
   
 };
 
+PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, int power_grid, string inputfile){
+  
+  //power_grid 1 create power_grid, 0 power net routing
+
+  if(power_grid == 1){
+     std::cout<<"CheckPoint 1"<<std::endl;
+     CreatePowerGrid_DC(node, drc_info, Lmetal, Hmetal, inputfile);
+     std::cout<<"CheckPoint 2"<<std::endl;
+     Physical_metal_via_power_grid(Vdd_grid);
+
+     Vdd_grid.name = "vdd";
+     for (unsigned int idx = 0; idx < node.PowerNets.size(); ++idx) {
+       if ( node.PowerNets[idx].power == 1) {
+	 Vdd_grid.name = node.PowerNets[idx].name;
+	 break;
+       }
+     }
+
+     std::cout<<"CheckPoint 3"<<std::endl;
+     Physical_metal_via_power_grid(Gnd_grid);
+
+     Gnd_grid.name = "vss";
+     for (unsigned int idx = 0; idx < node.PowerNets.size(); ++idx) {
+       if ( node.PowerNets[idx].power == 0) {
+	 Gnd_grid.name = node.PowerNets[idx].name;
+	 break;
+       }
+     }
+
+     std::cout<<"CheckPoint 4"<<std::endl;
+     ReturnPowerGridData(node);   
+     std::cout<<"CheckPoint 5"<<std::endl;  
+    }else{
+     std::cout<<"CheckPoint 6"<<std::endl;
+     PowerNetRouter(node, drc_info, Lmetal, Hmetal);
+     std::cout<<"CheckPoint 7"<<std::endl;
+     Physical_metal_via(); 
+     std::cout<<"CheckPoint 8"<<std::endl;
+     ExtendMetal();  // need to change this part
+     std::cout<<"CheckPoint 8.5"<<std::endl;
+     ReturnPowerNetData(node);
+     std::cout<<"CheckPoint 9"<<std::endl;
+    }
+  
+};
+
 void PowerRouter::InsertRoutingContact(A_star &a_star, Grid &grid, std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via,
                                              std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &contacts, int net_num){
   //1.Set physical rect
@@ -522,6 +568,78 @@ void PowerRouter::CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_in
 
 };
 
+void PowerRouter::CreatePowerGrid_DC(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, string inputfile){
+
+  std::cout<<"checkpoint1.1"<<std::endl;
+  GetData(node, drc_info, Lmetal, Hmetal);
+  CreatePowerGridDrc_info_DC(inputfile);
+  this->drc_info=this->PowerGrid_Drc_info;
+  std::cout<<"checkpoint1.2"<<std::endl;
+  std::vector<std::vector<RouterDB::point> > plist;
+  plist.resize( this->layerNo );
+  std::cout<<"checkpoint1.2.1"<<std::endl;
+  CreatePlistBlocks(plist, this->Blocks);
+  std::cout<<"checkpoint1.2.2"<<std::endl;
+  CreatePlistNets(plist, this->Nets);
+  std::cout<<"checkpoint1.2.3"<<std::endl;
+  CreatePlistTerminals(plist, this->Terminals);
+  std::cout<<"checkpoint1.2.4"<<std::endl;
+  CreatePlistPowerNets(plist, this->PowerNets);
+  std::cout<<"checkpoint1.2.5"<<std::endl;
+  CreatePlistPowerGrid(plist, this->Vdd_grid);
+  std::cout<<"checkpoint1.2.6"<<std::endl;
+  CreatePlistPowerGrid(plist, this->Gnd_grid);
+  std::cout<<"checkpoint1.2.7"<<std::endl;
+  
+
+  std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_x;
+  InsertPlistToSet_x(Set_x, plist);
+  std::cout<<"checkpoint1.2.8"<<std::endl;
+
+  RouterDB::point tempLL, tempUR;
+
+  //strange operation replace LL to tempLL, why? Yaguang - 12/10/2020
+  double times = 1.1;
+  tempLL.x = this->LL.x*times;
+  tempLL.y = this->LL.y*times;
+  tempUR.x = this->UR.x*times;
+  tempUR.y = this->UR.y*times;
+
+  //how to crate PowerGrid here????
+  //Grid grid(this->PowerGrid_Drc_info, this->LL, this->UR, lowest_metal, highest_metal, this->grid_scale);//1.pg needs other LL, UR 2. here what is the lowest_metal, highest_metal
+  Grid grid(this->PowerGrid_Drc_info, tempLL, tempUR, lowest_metal, highest_metal, this->grid_scale);//1.pg needs other LL, UR 2. here what is the lowest_metal, highest_metal
+  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > netplist = FindsetPlist(Set_x, LL, UR);
+
+  for(int i=0;i<netplist.size();i++){
+     std::cout<<"Power inactive node "<<netplist[i].size()<<std::endl;
+     if(i==5){
+       for(auto it=netplist[i].begin();it!=netplist[i].end();it++){
+         std::cout<<"point "<<it->x<<" "<<it->y<<std::endl;
+       }
+     }
+  }
+
+  grid.InactivePointlist_Power(netplist);
+  //std::vector<std::vector<RouterDB::point> > new_plist = FindPlist(Set_x, this->LL, this->UR);
+  //grid.InactivePointlist(new_plist);
+  //grid.PrepareGraphVertices(LL.x, LL.y, UR.x, UR.y);
+  grid.PrepareGraphVertices(tempLL.x, tempLL.y, tempUR.x, tempUR.y);
+
+  std::cout<<"Power Grid Info "<<grid.vertices_total.size()<<" "<<grid.vertices_graph.size()<<std::endl;
+  //here return a power grid metal information
+  bool power_grid = 1;
+  std::cout<<"checkpoint1.3"<<std::endl;
+  Graph graph(grid, power_grid);
+  std::cout<<"checkpoint1.4"<<std::endl;
+  Vdd_grid = graph.GetVdd_grid();
+  std::cout<<"checkpoint1.5"<<std::endl;
+  Gnd_grid = graph.GetGnd_grid();
+  std::cout<<"checkpoint1.6"<<std::endl;
+  //use this create a vdd_grid & gnd_grid;
+ 
+
+};
+
 void PowerRouter::returnPath(std::vector<std::vector<RouterDB::Metal> > temp_path, RouterDB::PowerNet& temp_net){
 
   for(unsigned int i=0;i<temp_path.size();i++){
@@ -899,6 +1017,40 @@ void PowerRouter::CreatePowerGridDrc_info( int h_skip_factor, int v_skip_factor)
 
 };
 
+void PowerRouter::CreatePowerGridDrc_info_DC(string inputfile){
+
+  int Power_width = 1; 
+  PowerGrid_Drc_info = drc_info;
+
+  int rate = 0.1;
+  for(unsigned int i=0;i<drc_info.Metal_info.size();i++){
+      utilization.push_back(rate); 
+     }
+
+  std::ifstream in(inputfile);
+  std::string line;
+  getline(in, line);
+  std::stringstream ss(line);
+  std::string tmp;
+  std::vector<double> v;
+  while (getline(ss, tmp, ' ')){
+    v.push_back(stod(tmp));//stod: string->double
+  }
+  for(int i = 0; i<=v.size(); i++){
+    utilization[i] = v[i];
+  }
+
+  for(unsigned int i=0;i<PowerGrid_Drc_info.Metal_info.size();i++){
+      
+       PowerGrid_Drc_info.Metal_info[i].grid_unit_x = PowerGrid_Drc_info.Metal_info[i].grid_unit_x/utilization[i];
+       PowerGrid_Drc_info.Metal_info[i].grid_unit_y = PowerGrid_Drc_info.Metal_info[i].grid_unit_y/utilization[i];
+       PowerGrid_Drc_info.Metal_info[i].width = PowerGrid_Drc_info.Metal_info[i].width * Power_width;
+
+     }
+
+};
+
+
 void PowerRouter::GetData(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal){
   std::cout<<"Checkpoint get Data 1"<<std::endl;
   getDRCdata(drc_info);
@@ -915,6 +1067,7 @@ void PowerRouter::GetData(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int 
   std::cout<<"Checkpoint get Data 7"<<std::endl;
 
 };
+
 
 void PowerRouter::getBlockData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
 

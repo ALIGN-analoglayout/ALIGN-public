@@ -25,6 +25,7 @@ struct Node {
   NType type; // 1: blockPin; 2. Terminal
   int iter; // 1: #blockPin; 2. #Terminal
   int iter2; // 1: #block
+  double alpha;
 };
 
 struct net {
@@ -33,6 +34,8 @@ struct net {
   string priority;
   int weight; // weight for reduced design, used in HPWL
   int margin=0; // margin for reduced design, used in constraint graph
+  double upperBound;
+  double lowerBound;
 };
 
 struct bbox {
@@ -45,7 +48,7 @@ struct SymmBlock {
   int dnode;
   int mapIdx=-1;
   int axis_coor;
-  Smark axis_dir;
+  Smark axis_dir=placerDB::V;
 };
 
 struct nodeStructComp {
