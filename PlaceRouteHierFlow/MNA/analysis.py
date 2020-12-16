@@ -32,18 +32,12 @@ def readincurrent(filename):
       lines = [float(i) for i in lines.split()]
       data.append(lines)
       pass
-  data1 = data[0:2]
-  data3 = data1[0]+data1[1]
-  data2 = data[2:]
-  data2 = np.array(data2) 
-  data3 = np.array(data3)
-  return data2,data3
+  data = np.array(data) 
+  return data
 
 def transferdata(data):
   metal = 2
-  #metal2 = 6
   power = 0.8
-  #print(data.shape)
   X = []
   Y = []
   Z = []
@@ -70,7 +64,7 @@ def transferdata(data):
   Xmesh, Ymesh = np.meshgrid(line_x, line_y)
   #print(Xmesh)
   #print(Ymesh)
-  z = np.zeros(Xmesh.shape)
+  z = -np.ones(Xmesh.shape)
 
   for k in(range(X.shape[0])):
     xindex=0
@@ -84,19 +78,14 @@ def transferdata(data):
             yindex=j
             break
     z[yindex][xindex]=Z[k]
-  '''
-  for i in(range(line_x.shape[0])):
-    for j in(range(line_y.shape[0])):
-      for k in(range(X.shape[0])):
-        if X[k]==line_x[i] and Y[k]==line_y[j]:
-          z[j][i]=Z[k]
-  '''
-  for i in(range(line_x.shape[0])):
-    for j in(range(line_y.shape[0])):
-      if z[j][i]<0.5:
-        #print('j= %d i= %d' %(j,i))
-        z[j][i]=0.5*(z[j][i-1]+z[j][i+1])
-    #print('finish print index %d' %(i))
+
+  for i in range(z.shape[0]):
+    non_zero = 0
+    for j in range(z.shape[1]):
+        if z[i][j]==-1:
+            z[i][j] = non_zero
+        else:
+            non_zero=z[i][j]
 
   return Xmesh,Ymesh,z,line_x,line_y
 
@@ -141,23 +130,8 @@ def transfercurrent(data,line_x,line_y):
         yindex=absy.index(min(absy))
         break
     z[yindex][xindex]=Z[k]
-  '''
-  for i in(range(line_x.shape[0])):
-    for j in(range(line_y.shape[0])):
-      for k in(range(X.shape[0])):
-        if X[k]==line_x[i] and Y[k]==line_y[j]:
-          z[j][i]=Z[k]
-  
-  for i in(range(line_x.shape[0])):
-    for j in(range(line_y.shape[0])):
-      if z[j][i]<0.5:
-        print('j= %d i= %d' %(j,i))
-        z[j][i]=0.5*(z[j][i-1]+z[j][i+1])
-    print('finish print index %d' %(i))
-  '''
+
   return Xmesh,Ymesh,z
-
-
 
 def plotresult(Xmesh,Ymesh,z):
   fig = plt.figure()
@@ -166,7 +140,7 @@ def plotresult(Xmesh,Ymesh,z):
   #X, Y, Z = axes3d.get_test_data(0.05)
   #ax1.plot_surface(Xmesh, Ymesh, z, rstride=1, cstride=1)
   ax1.plot_surface(Xmesh, Ymesh, z, rstride=1, cstride=1, cmap=cm.rainbow)
-  cset = ax1.contour(Xmesh, Ymesh, z, zdir='z', offset=0.7, cmap=cm.rainbow)
+  #cset = ax1.contour(Xmesh, Ymesh, z, zdir='z', offset=0.7, cmap=cm.rainbow)
   #cset = ax.contour(X, Y, Z, zdir='x', offset=-40, cmap=cm.coolwarm)
   #cset = ax.contour(X, Y, Z, zdir='y', offset=40, cmap=cm.coolwarm)
   '''
@@ -225,7 +199,6 @@ def resizeresult(z):
       #print(np.mean(z[min(x_d-1,i*x_incre):min((i+1)*x_incre,x_d),min(y_d-1,j*y_incre):min((j+1)*y_incre,y_d)]))             
   return Z
 
-if __name__ == '__main__':
-  data=readin('../IR_drop.txt')
-  Xmesh,Ymesh,z,line_x,line_y=transferdata(data)
-  plotresult(Xmesh,Ymesh,z)
+data=readin('../IR_drop.txt')
+Xmesh,Ymesh,z,line_x,line_y=transferdata(data)
+plotresult(Xmesh,Ymesh,z)
