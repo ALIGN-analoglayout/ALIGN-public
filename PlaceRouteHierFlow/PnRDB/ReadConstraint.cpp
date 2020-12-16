@@ -119,7 +119,8 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
           if(node.Nets.at(i).name.compare(tmpnet.name)==0) {iter1=i;}
           if(node.Nets.at(i).name.compare(tmpnet2.name)==0) {iter2=i;}
         }
-        node.Nets.at(iter1).symCounterpart=iter2;
+        if (tmpnet.connected.size() != tmpnet2.connected.size()) continue;
+        node.Nets.at(iter1).symCounterpart = iter2;
         node.Nets.at(iter1).iter2SNetLsit=node.SNets.size();
         node.Nets.at(iter2).symCounterpart=iter1;
         node.Nets.at(iter2).iter2SNetLsit=node.SNets.size();

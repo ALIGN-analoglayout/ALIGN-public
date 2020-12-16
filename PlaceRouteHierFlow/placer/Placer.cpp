@@ -503,13 +503,13 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
 }
 
 std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRatio_ILP(design& designData, SeqPair& curr_sp, ILP_solver& curr_sol, int mode,
-                                                                                      int nodeSize, int effort) {
+                                                                                      int nodeSize, int effort,PnRDB::Drc_info &drc_info) {
   // Mode 0: graph bias; Mode 1: graph bias + net margin; Others: no bias/margin
   // cout<<"PlacementCore\n";
   std::map<double, std::pair<SeqPair, ILP_solver>> oData;
   curr_sp.PrintSeqPair();
   double curr_cost = 0;
-  while ((curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp)) < 0) curr_sp.PerturbationNew(designData);
+  while ((curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drc_info)) < 0) curr_sp.PerturbationNew(designData);
   oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
   ReshapeSeqPairMap(oData, nodeSize);
   cout << "Placer-Info: initial cost = " << curr_cost << endl;
@@ -602,7 +602,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       trial_sp.PerturbationNew(designData);
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ILP_solver trial_sol(designData);
-      double trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp);
+      double trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drc_info);
       if (trial_cost >= 0) {
         bool Smark = false;
         delta_cost = trial_cost - curr_cost;
@@ -696,7 +696,7 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   SeqPair curr_sp(designData);
   curr_sp.PrintSeqPair();
   ILP_solver curr_sol(designData);
-  std::map<double, std::pair<SeqPair, ILP_solver>> spVec=PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort);
+  std::map<double, std::pair<SeqPair, ILP_solver>> spVec=PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo);
   //curr_sol.updateTerminalCenter(designData, curr_sp);
   //curr_sol.PlotPlacement(designData, curr_sp, opath+nodeVec.back().name+"opt.plt");
   if((int)spVec.size()<nodeSize) {

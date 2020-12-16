@@ -34,7 +34,7 @@ ILP_solver& ILP_solver::operator=(const ILP_solver& solver) {
   return *this;
 }
 
-double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
+double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info &drc_info) {
   // each block has 4 vars, x, y, H_flip, V_flip;
   int N_var = mydesign.Blocks.size() * 4 + mydesign.Nets.size() * 2;
   // i*4+1: x
@@ -343,9 +343,28 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
   double var[N_var];
   get_variables(lp, var);
   delete_lp(lp);
+  auto roundup = [](int& v, int pitch) { v = pitch * ((v + pitch - 1) / pitch); };
+  int v_metal_index = -1;
+  int h_metal_index = -1;
+  for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
+    if (drcInfo.Metal_info[i].direct == 0) {
+      v_metal_index = i;
+      break;
+    }
+  }
+  for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
+    if (drcInfo.Metal_info[i].direct == 1) {
+      h_metal_index = i;
+      break;
+    }
+  }
+  int x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
+  int y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
     Blocks[i].x = var[i * 4];
     Blocks[i].y = var[i * 4 + 1];
+    roundup(Blocks[i].x, x_pitch);
+    roundup(Blocks[i].y, y_pitch);
     Blocks[i].H_flip = var[i * 4 + 2];
     Blocks[i].V_flip = var[i * 4 + 3];
   }
