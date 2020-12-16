@@ -849,7 +849,6 @@ Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, in
   for(int i=0;i<drc_info.Metal_info.size();i++){
     std::cout<<"grid info "<<drc_info.Metal_info.at(i).grid_unit_x<<" "<<drc_info.Metal_info.at(i).grid_unit_y<<std::endl;
   }
-  assert(0);
 
   // Limitation: assume that neighboring layers have different routing diretions
   // 1. Initialize member variables I
