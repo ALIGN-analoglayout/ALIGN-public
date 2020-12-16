@@ -36,7 +36,7 @@ def readincurrent(filename):
   return data
 
 def transferdata(data):
-  metal = 3
+  metal = 2
   power = 0.8
   X = []
   Y = []
