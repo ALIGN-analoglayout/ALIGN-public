@@ -102,7 +102,6 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
         int colno[1] = {id * 4 + 2};
         if (!add_constraintex(lp, 1, sparserow, colno, GE, 0)) printf("error\n");
       }
-      break;
     }
   }
 
@@ -266,7 +265,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
 
   // set_add_rowmode(lp, FALSE);
   {
-    double row[N_var] = {0};
+    double row[N_var + 1] = {0};
     ConstGraph const_graph;
 
     // add HPWL in cost
@@ -288,15 +287,19 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
           URblock_height = mydesign.Blocks[URblock_id][curr_sp.selected[URblock_id]].height;
       int URpin_x = mydesign.Blocks[URblock_id][curr_sp.selected[URblock_id]].blockPins[URpin_id].center.front().x,
           URpin_y = mydesign.Blocks[URblock_id][curr_sp.selected[URblock_id]].blockPins[URpin_id].center.front().y;
-      row[LLblock_id * 4 + 1] -= const_graph.LAMBDA;
-      row[LLblock_id * 4 + 2] -= const_graph.LAMBDA;
-      row[URblock_id * 4 + 1] += const_graph.LAMBDA;
-      row[URblock_id * 4 + 2] += const_graph.LAMBDA;
-      // pin.x if flip==0, width-pin.x if flip==1
-      row[LLblock_id * 4 + 3] -= double(LLblock_width - 2 * LLpin_x) * const_graph.LAMBDA;
-      row[LLblock_id * 4 + 4] -=double(LLblock_height - 2 * LLpin_y) * const_graph.LAMBDA;
-      row[URblock_id * 4 + 3] +=double(URblock_width - 2 * URpin_x) * const_graph.LAMBDA;
-      row[URblock_id * 4 + 4] +=double(URblock_height - 2 * URpin_y) * const_graph.LAMBDA;
+      if ((find(curr_sp.posPair.begin(), curr_sp.posPair.end(), LLblock_id) - curr_sp.posPair.begin()) <
+          (find(curr_sp.posPair.begin(), curr_sp.posPair.end(), URblock_id) - curr_sp.posPair.begin())) {
+        row[LLblock_id * 4 + 1] -= const_graph.LAMBDA;
+        row[URblock_id * 4 + 1] += const_graph.LAMBDA;
+        row[LLblock_id * 4 + 3] -= double(LLblock_width - 2 * LLpin_x) * const_graph.LAMBDA;
+        row[URblock_id * 4 + 3] += double(URblock_width - 2 * URpin_x) * const_graph.LAMBDA;
+      } else {
+        row[LLblock_id * 4 + 2] -= const_graph.LAMBDA;
+        row[URblock_id * 4 + 2] += const_graph.LAMBDA;
+        // pin.x if flip==0, width-pin.x if flip==1
+        row[LLblock_id * 4 + 4] -= double(LLblock_height - 2 * LLpin_y) * const_graph.LAMBDA;
+        row[URblock_id * 4 + 4] += double(URblock_height - 2 * URpin_y) * const_graph.LAMBDA;
+      }
     }
 
     // add area in cost
@@ -315,7 +318,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
         estimated_width += mydesign.Blocks[curr_sp.posPair[i]][curr_sp.selected[curr_sp.posPair[i]]].width;
       }
     }
-    //add estimated area
+    // add estimated area
     row[curr_sp.negPair[URblock_neg_id] * 4 + 2] += estimated_width / 2;
     // estimate height
     for (int i = URblock_pos_id; i < curr_sp.posPair.size(); i++) {
@@ -323,7 +326,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
         estimated_height += mydesign.Blocks[curr_sp.posPair[i]][curr_sp.selected[curr_sp.posPair[i]]].height;
       }
     }
-    //add estimated area
+    // add estimated area
     row[curr_sp.negPair[URblock_neg_id] * 4 + 1] += estimated_height / 2;
 
     set_obj_fn(lp, row);
