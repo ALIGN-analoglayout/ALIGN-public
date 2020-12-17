@@ -60,6 +60,8 @@ double ConstGraph::GAMAR=30;
 double ConstGraph::BETA=100;
 double ConstGraph::SIGMA=1000;
 double ConstGraph::PHI=1500;
+double ConstGraph::PI=1500;
+double ConstGraph::PII=1500;
 
 static void generic_placer_test( const string& topcell)
 {

@@ -22,6 +22,7 @@ using std::endl;
 class SeqPair 
 {
   private:
+    friend class ILP_solver;
     vector<int> posPair;
     vector<int> negPair;
     vector<placerDB::Omark> orient;
