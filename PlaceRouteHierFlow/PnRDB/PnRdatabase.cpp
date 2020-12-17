@@ -103,7 +103,8 @@ void PnRdatabase::Write_Current_Workload(PnRDB::hierNode &node, double total_cur
     if(y_num==10) y_num-=1;   
     double x = x_num/10*(urx-llx)+llx;
     double y = y_num/10*(ury-lly)+lly;
-    double current = rand_current[i]*rand_current[i]/sum*total_current;
+    //double current = 0.0005;//rand_current[i]*rand_current[i]/sum*total_current;
+    double current = 0.0005/(rand() % 10 +1);//rand_current[i]*rand_current[i]/sum*total_current;
     currentfile<<x<<" "<<y<<" "<<x<<" "<<y<<" "<<current<<std::endl;
   }
   currentfile.close();
