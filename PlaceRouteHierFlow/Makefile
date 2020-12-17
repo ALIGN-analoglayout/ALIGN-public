@@ -17,8 +17,7 @@ JSON?=/opt/json
 SuperLu_DIR?=/opt/superlu
 SuperLu=$(SuperLu_DIR)/SuperLU_5.2.1/SRC/
 
-#export CXXFLAGS = $(OPTS) $(WARNS) -w -std=c++14 -m64 -pthread -isystem $(LIB_LP) -isystem $(SOURCE_LP) -I$(BOOST_LP) -I$(JSON)/include $(COVERAGE) -isystem $(GTEST_DIR)/include
-export CXXFLAGS = $(OPTS) $(WARNS) -w -std=c++14 -m64 -pthread -DNDEBUG -DPRNTlevel=0 -DAdd_ -isystem $(LIB_LP) -isystem $(SOURCE_LP) -I$(BOOST_LP) -I$(SuperLu) -I$(JSON)/include $(COVERAGE) -isystem $(GTEST_DIR)/include 
+export CXXFLAGS = $(OPTS) $(WARNS) -w -std=c++14 -m64 -pthread -DNDEBUG -DPRNTlevel=0 -DAdd_ -isystem $(LIB_LP) -isystem $(SOURCE_LP) -I$(SOURCE_LP) -I$(BOOST_LP) -I$(SuperLu) -I$(JSON)/include $(COVERAGE) -isystem $(GTEST_DIR)/include 
 export CXX=g++
 
 export LDFLAGS = -lm -ldl -pthread $(COVERAGE)
@@ -29,13 +28,15 @@ cap_placer_path=cap_placer
 placer_path=placer
 router_path=router
 MNA_path=MNA
+GuardRing_path=guard_ring
 
 SuperLu_path1=$(SuperLu_DIR)/SuperLU_5.2.1/build/SRC
 SuperLu_path2=$(SuperLu_DIR)/SuperLU_5.2.1/build/CBLAS
 
 OBJS=main.o
 SRCS=$(OBJS:.o=.cpp)
-LIBS=$(placer_path)/placer.a $(router_path)/router.a $(cap_placer_path)/cap_placer.a $(PnRDB_path)/PnRDB.a $(MNA_path)/MNA.a $(SuperLu_path1)/libsuperlu.a $(SuperLu_path2)/libblas.a
+LIBS=$(placer_path)/placer.a $(router_path)/router.a $(cap_placer_path)/cap_placer.a $(PnRDB_path)/PnRDB.a $(MNA_path)/MNA.a $(SuperLu_path1)/libsuperlu.a $(SuperLu_path2)/libblas.a $(GuardRing_path)/GuardRing.a
+
 
 all: depend subsystem pnr_compiler unit_tests
 
@@ -50,12 +51,13 @@ subsystem:
 	$(MAKE) -C $(router_path)
 	$(MAKE) -C $(cap_placer_path)
 	$(MAKE) -C $(MNA_path)
+	$(MAKE) -C $(GuardRing_path)
 
 pnr_compiler: subsystem $(OBJS) 
-	$(CXX) -o $@ $(OBJS) $(LIBS) -L$(GTEST_LIB_DIR) -lgtest $(LDFLAGS) 
+	$(CXX) -o $@ $(OBJS) $(LIBS) -L$(GTEST_LIB_DIR) -lgtest -L$(LIB_LP) -llpsolve55 $(LDFLAGS)  
 
 unit_tests: subsystem unit_tests.o
-	$(CXX) -o $@ unit_tests.o $(LIBS) -L$(GTEST_LIB_DIR) -lgtest_main -lgtest $(LDFLAGS) 
+	$(CXX) -o $@ unit_tests.o $(LIBS) -L$(GTEST_LIB_DIR) -lgtest_main -lgtest -L$(LIB_LP) -llpsolve55 $(LDFLAGS) 
 
 clean:
 	rm -rf *.o pnr_compiler *.pl *.plt *gds all_* *.gc{da,no}
@@ -64,3 +66,4 @@ clean:
 	make -C $(router_path) clean
 	make -C $(cap_placer_path) clean
 	$(MAKE) -C $(MNA_path) clean
+	$(MAKE) -C $(GuardRing_path) clean

@@ -239,6 +239,7 @@ void PnRdatabase::TransformNode(PnRDB::hierNode& updatedNode, PnRDB::point trans
   TransformPins(updatedNode.blockPins, translate, width, height, ort, transform_type);
   TransformContacts(updatedNode.interMetals, translate, width, height, ort, transform_type);
   TransformVias(updatedNode.interVias, translate, width, height, ort, transform_type);
+  TransformGuardrings(updatedNode.GuardRings, translate, width, height, ort, transform_type);
 }
 
 void PnRdatabase::TransformTerminal(PnRDB::terminal& terminal, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
@@ -287,6 +288,21 @@ void PnRdatabase::TransformPins(std::vector<PnRDB::pin>& pins, PnRDB::point tran
 void PnRdatabase::TransformPin(PnRDB::pin& pin, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
   TransformContacts(pin.pinContacts, translate, width, height, ort, transform_type);
   TransformVias(pin.pinVias, translate, width, height, ort, transform_type);
+}
+
+void PnRdatabase::TransformGuardrings(std::vector<PnRDB::GuardRing>& guardrings, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  for (std::vector<PnRDB::GuardRing>::iterator git = guardrings.begin(); git != guardrings.end(); ++git) {
+    TransformGuardring(*git, translate, width, height, ort, transform_type);
+  }
+}
+
+void PnRdatabase::TransformGuardring(PnRDB::GuardRing& guardring, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  TransformPoint(guardring.LL, translate, width, height, ort, transform_type);
+  TransformPoint(guardring.UR, translate, width, height, ort, transform_type);
+  TransformPoint(guardring.center, translate, width, height, ort, transform_type);
+  TransformPins(guardring.blockPins, translate, width, height, ort, transform_type);
+  TransformContacts(guardring.interMetals, translate, width, height, ort, transform_type);
+  TransformVias(guardring.interVias, translate, width, height, ort, transform_type);
 }
 
 void PnRdatabase::TransformVias(std::vector<PnRDB::Via>& vias, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
@@ -761,7 +777,8 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
 
   hierTree[nodeID].isCompleted = 1;
   hierTree[nodeID].gdsFile = updatedNode.gdsFile;
-  //update current node information
+  hierTree[nodeID].GuardRings = updatedNode.GuardRings;
+  // update current node information
   for(unsigned int i=0;i<hierTree[nodeID].Blocks.size();i++){
      int sel=updatedNode.Blocks[i].selectedInstance;
      std::cout<<"Block "<<i<<" select "<<sel<<std::endl;
@@ -1777,6 +1794,29 @@ void PnRdatabase::Extract_RemovePowerPins(PnRDB::hierNode &node){
            }
      
      }
+
+//extract power pin inside guard ring
+  PnRDB::pin temp_pin;
+  for(unsigned int i=0;i<node.GuardRings.size();i++){
+     for(unsigned int j=0;j<node.GuardRings[i].blockPins.size();j++){
+        temp_pin.name = node.GuardRings[i].blockPins[j].name;
+        for(unsigned int k=0;k<node.GuardRings[i].blockPins[j].pinContacts.size();k++){
+            temp_pin.pinContacts.push_back(node.GuardRings[i].blockPins[j].pinContacts[k]);
+            break;
+        }
+        break;
+     }
+     break;
+  }
+  if(temp_pin.pinContacts.size()>0){
+    for(unsigned int i=0;i<node.PowerNets.size();i++){
+       if(node.PowerNets[i].power==0){
+         node.PowerNets[i].Pins.push_back(temp_pin);
+         break;
+       }
+    }
+  }
+
 
 //remove power pins in blocks
 

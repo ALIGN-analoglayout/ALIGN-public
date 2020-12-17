@@ -425,6 +425,9 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     if (includeBlock) {
 	for (unsigned int i = 0; i < node.Blocks.size(); i++) 
 	    uniGDSset.insert(node.Blocks[i].instance.at(node.Blocks[i].selectedInstance).gdsFile);
+    for (unsigned int i = 0; i < node.GuardRings.size(); i++) 
+	    uniGDSset.insert(node.GuardRings[i].gdsFile);
+    
 
 	cout<<"start wrting sub-blocks"<<endl;
 	for (std::set<string>::iterator it=uniGDSset.begin();it!=uniGDSset.end();++it) {
@@ -446,7 +449,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     json jsonElements = json::array();
 
     int x[5], y[5];
-    int write_blockPins_name = 1;
+    int write_blockPins_name = 0;
     if (write_blockPins_name and node.isTop ==1){
 	for (unsigned int i = 0; i < node.blockPins.size(); i++) {
 	    int write = 0;
@@ -547,12 +550,25 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
         //       }
         //   }
 
+    for (unsigned int i=0;i<node.GuardRings.size();i++){
+        json sref;
+        sref["type"] = "sref";
+        sref["sname"] = strBlocks_Top[gdsMap2strBlock[node.GuardRings[i].gdsFile]];
+        sref["strans"] = 0;
+        json xy = json::array();
+		xy.push_back (int(unitScale * node.GuardRings[i].LL.x));
+		xy.push_back (int(unitScale * node.GuardRings[i].LL.y));
+	    sref["xy"] = xy;
+        jsonElements.push_back (sref);
+    }
+
 	for (unsigned int i = 0; i < node.Blocks.size(); i++) {
 	    int index=gdsMap2strBlock[node.Blocks[i].instance.at(node.Blocks[i].selectedInstance).gdsFile];
 
 	    json sref;
 	    sref["type"] = "sref";
 	    sref["sname"] = strBlocks_Top[index];
+        sref["angle"] = 0.0;
 
 	    switch (node.Blocks[i].instance.at(node.Blocks[i].selectedInstance).orient) {
 	    case PnRDB::N:   bOrient = 0; break;

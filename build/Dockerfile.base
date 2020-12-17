@@ -57,10 +57,11 @@ ENV LD_LIBRARY_PATH=/usr/local/lib/lpsolve/lp_solve_5.5.2.5_dev_ux64
 
 # SuperLU
 RUN \
-    mkdir -p /opt/superlu && \
-    cd /opt/superlu && \
-    wget http://crd-legacy.lbl.gov/~xiaoye/SuperLU/superlu_5.2.1.tar.gz && \
-    tar -zxvf superlu_5.2.1.tar.gz && \
+    mkdir -p /opt && \
+    cd /opt && \
+    git clone https://www.github.com/ALIGN-analoglayout/superlu.git && \
+    cd superlu && \
+    tar xvfz superlu_5.2.1.tar.gz && \
     cd SuperLU_5.2.1 && \
     mkdir build && \
     cd build && \

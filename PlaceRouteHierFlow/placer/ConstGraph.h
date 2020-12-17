@@ -16,6 +16,7 @@
 #include "design.h"
 #include "SeqPair.h"
 #include "Aplace.h"
+#include "ILP_solver.h"
 #include "../PnRDB/datatype.h"
 
 using std::vector;
@@ -36,6 +37,7 @@ using std::min;
 class ConstGraph
 {
   private:
+    friend class ILP_solver;
     struct Event {
       int node;
       int corr;
