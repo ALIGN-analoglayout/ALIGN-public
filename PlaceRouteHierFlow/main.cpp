@@ -148,7 +148,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
     bool PDN_mode = true;
     //DC Power Grid Simulation
     if(PDN_mode){
-      bool dataset_generation = true;
+      bool dataset_generation = false;
       string current_file = "InputCurrent_initial.txt";
       string power_mesh_conffile = "Power_Grid_Conf.txt";
       if(dataset_generation){
