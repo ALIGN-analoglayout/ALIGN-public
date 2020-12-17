@@ -275,16 +275,16 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
     std::cout<<"volt[" << j << "]=" << volt[j] <<std::endl;
   }*/
   std::cout<<"check point10"<<std::endl;
-  double max = 0.8;
+  double min = 0.8;
   for (int i = 0; i < B.nrow; i++){
-    if (dp[i] > max ){
+    if (dp[i] < min ){
        for(auto it = point_set.begin(); it != point_set.end(); it++){
          //pythonfile<< it->x << " " << it->y << " " << it->metal_layer << " "<< dp[it->index - 1] << " " << it->power <<std::endl;
-         if (it->power != 0 && it->index == i + 1)  max = dp[i];			
+         if (it->power != 0 && it->index == i + 1)  min = dp[i];			
          }		
     }
   }
-  result = max;
+  result = min;
   std::cout<<"result=" << result <<std::endl;
 
   std::cout<<"check point11"<<std::endl;
@@ -742,25 +742,33 @@ void MNASimulation::FindPowerPoints_New(std::set<MDB::metal_point, MDB::Compare_
 	xsize = x_v.size();
 	ysize = y_v.size();
 
-  double range_x = (double)(x_v[xsize-1]-x_v[0])/x_number;
-  double range_y = (double) (y_v[ysize-1]-y_v[0])/y_number;
+  double range_x = (double)(x_v[xsize-1]-x_v[0])/(x_number+1);
+  double range_y = (double) (y_v[ysize-1]-y_v[0])/(y_number+1);
 
   vector<double> candidate_x;
   vector<double> candidate_y;
 
+  std::cout<<"x_number "<<x_number<<" "<<y_number<<std::endl;
+  std::cout<<"power mesh range "<<range_x<<" "<<range_y<<std::endl;
+
   for(int i=1;i<=x_number;i++){
      candidate_x.push_back((double)x_v[0]+i*range_x);
+     std::cout<<"candidate_x "<<(double)x_v[0]+i*range_x<<" ";
   }
+  std::cout<<std::endl;
 
   for(int i=1;i<=y_number;i++){
      candidate_y.push_back((double) y_v[0]+i*range_y);
+     std::cout<<"candidate_y "<<(double) y_v[0]+i*range_y<<" ";
   }
+  std::cout<<std::endl;
 
   for(int i =0;i<candidate_x.size();i++){
     for(int j=0;j<candidate_y.size();j++){
       temp_point.x = find_nearest(candidate_x[i],x_v);
-      temp_point.y = find_nearest(candidate_y[i],y_v);
+      temp_point.y = find_nearest(candidate_y[j],y_v);
       power_points.push_back(temp_point);
+      std::cout<<"power points "<<temp_point.x<<" "<<temp_point.y<<std::endl;
     }
   }
 };
@@ -837,15 +845,15 @@ void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gn
    std::vector<MDB::metal_point> I_points_v;
    std::vector<MDB::metal_point> I_points_g;
 
-   int power_number = 4;
+   int power_number = 9;
    int current_number = 1;
    FindPowerPoints(point_set, VDD, highest_metal, power_number, vdd_points);
    FindPowerPoints(point_set, 0.0, highest_metal, power_number, gnd_points);
    //what if I_points_v!=I_points_g
    //what if I_points_g.size()<4?
    //need revise this part
-   FindPowerPoints(point_set, VDD, lowest_metal, current_number, I_points_v);
-   FindPowerPoints(point_set, 0.0, lowest_metal, current_number, I_points_g);
+   //FindPowerPoints_New(point_set, VDD, lowest_metal, current_number, I_points_v);
+   //FindPowerPoints_New(point_set, 0.0, lowest_metal, current_number, I_points_g);
 
    //here some function to calculate vdd_points, gnd_points, I_points_v and I_points_g;
    //std::cout<< "vdd points "<< vdd_points.size()<<" gnd points "<< gnd_points.size() << " I point v "<< I_points_v.size() << " I point g"<< I_points_g.size()<< std::endl;
