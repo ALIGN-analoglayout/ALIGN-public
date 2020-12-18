@@ -57,8 +57,8 @@ PnRdatabase::PnRdatabase(string path, string topcell, string vname, string lefna
   cout<<"PnRDB-Info: complete reading"<<endl;
 }
 
-queue<int> PnRdatabase::TraverseHierTree() {
-  queue<int> Q;
+deque<int> PnRdatabase::TraverseHierTree() {
+  deque<int> Q;
   vector<string> color(hierTree.size(), "white");
   TraverseDFS(Q, color, topidx);
   return Q;
@@ -127,7 +127,7 @@ void PnRdatabase::Write_Power_Mesh_Conf(std::string outputfile){
   PMCfile.close();
 };
 
-void PnRdatabase::TraverseDFS(queue<int>& Q, vector<string>& color, int idx) {
+void PnRdatabase::TraverseDFS(deque<int>& Q, vector<string>& color, int idx) {
   color[idx]="gray";
   for(vector<PnRDB::blockComplex>::iterator it=hierTree.at(idx).Blocks.begin();it!=hierTree.at(idx).Blocks.end();++it) {
     if( it->child!=-1 && color[it->child].compare("white")==0 ) {
@@ -135,7 +135,7 @@ void PnRdatabase::TraverseDFS(queue<int>& Q, vector<string>& color, int idx) {
     }
   }
   color[idx]="black";
-  Q.push(idx);
+  Q.push_back(idx);
 }
 
 PnRDB::hierNode PnRdatabase::CheckoutHierNode(int nodeID) {

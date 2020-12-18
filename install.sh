@@ -56,6 +56,8 @@ cd googletest/
 
 cmake CMakeLists.txt
 make
+cmake -DBUILD_SHARED_LIBS=ON CMakeLists.txt
+make
 mkdir googletest/mybuild
 cp -r lib googletest/mybuild/.
 
