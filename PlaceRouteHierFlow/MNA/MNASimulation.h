@@ -81,6 +81,8 @@ class MNASimulation {
       void FindPowerPoints(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, double power, int metal_layer, int power_number, std::vector<MDB::metal_point> &power_points);
       void FindPowerPoints_New(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, double power, int metal_layer, int power_number, std::vector<MDB::metal_point> &power_points);
       int find_nearest(double x, vector<int> &x_v);
+      std::string Index_Postion(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, int index);
+      void WriteOut_Spice(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set);
 };
 
 #endif

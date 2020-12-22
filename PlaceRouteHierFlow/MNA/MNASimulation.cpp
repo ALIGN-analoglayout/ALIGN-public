@@ -5,6 +5,79 @@
 #include "slu_ddefs.h"
 #include "assert.h"
 
+std::string MNASimulation::Index_Postion(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, int index){
+
+  std::string position_string;
+  for(auto it=point_set.begin();it!=point_set.end();++it){
+     if(it->index==index and it->metal_layer>=0 and it->power!=0){
+           position_string = std::to_string(it->metal_layer)+"_"+std::to_string(it->x)+"_"+std::to_string(it->y)+"_v";
+           break;
+     }else if(it->index==index and it->metal_layer>=0 and it->power==0){
+           position_string = std::to_string(it->metal_layer)+"_"+std::to_string(it->x)+"_"+std::to_string(it->y)+"_g";
+           break;
+     }else if(it->index==index and it->metal_layer<0 and it->power!=0){
+           position_string = "n_"+std::to_string(abs(it->metal_layer))+"_"+std::to_string(it->x)+"_"+std::to_string(it->y)+"_v";
+           break;
+     }else if(it->index==index and it->metal_layer<0 and it->power==0){
+           position_string = "n_"+std::to_string(abs(it->metal_layer))+"_"+std::to_string(it->x)+"_"+std::to_string(it->y)+"_g";
+           break;
+     }
+  }
+ return position_string;
+};
+
+
+void MNASimulation::WriteOut_Spice(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set){
+  
+  //open file
+  std::string spice_file_name="test.sp";
+  std::ofstream spicefile;
+  spicefile.open(spice_file_name);
+
+  //test seting  
+  std::string setting1=".TEMP 25.0";
+  spicefile<<setting1<<std::endl;
+  std::string setting2=".OPTION INGOLD=2 ARTIST=2 PSF=2 MEASOUT=1 PARHIER=LOCAL PROBE=0 MARCH=2 ACCURACY=1 POST";
+  spicefile<<setting2<<std::endl;
+  std::string setting3=".TRAN 10e-12 30e-9 START=0";
+  spicefile<<setting3<<std::endl;
+
+  //RIV element
+  //node: m2_x_y_power - 1_0_0_v/g
+  //dummy node: n?_x1_y1_power - n1_0_0_v/g or n2_0_0_v/g
+  for(unsigned int i=0;i<Power_Grid_devices.size();i++){
+
+     if(Power_Grid_devices[i].device_type==MDB::R){
+        std::string post_index_start = Index_Postion(point_set,Power_Grid_devices[i].start_point_index);
+        std::string post_index_end =  Index_Postion(point_set,Power_Grid_devices[i].end_point_index);
+        spicefile<<"R_"+std::to_string(Power_Grid_devices[i].start_point_index)+"_"+std::to_string(Power_Grid_devices[i].end_point_index)+" "+post_index_start+" "+post_index_end+" "+std::to_string(Power_Grid_devices[i].value)<<std::endl;
+     }else if(Power_Grid_devices[i].device_type==MDB::I){
+        std::string post_index_start = Index_Postion(point_set,Power_Grid_devices[i].start_point_index);
+        std::string post_index_end =  Index_Postion(point_set,Power_Grid_devices[i].end_point_index);
+        spicefile<<"I_"+std::to_string(Power_Grid_devices[i].start_point_index)+"_"+std::to_string(Power_Grid_devices[i].end_point_index)+" "+post_index_start+" "+post_index_end+" "+std::to_string(Power_Grid_devices[i].value)<<std::endl;
+     }else if(Power_Grid_devices[i].device_type==MDB::V){
+        std::string post_index_start = Index_Postion(point_set,Power_Grid_devices[i].start_point_index);
+        std::string post_index_end =  "0";
+        spicefile<<"V_"+std::to_string(Power_Grid_devices[i].start_point_index)+"_"+std::to_string(Power_Grid_devices[i].end_point_index)+" "+post_index_start+" "+post_index_end+" "+std::to_string(Power_Grid_devices[i].value)<<std::endl;
+     }
+  }
+
+  //print out testresults
+  //node: m2_x1_y1_x2_y2 - 1_0_0_1_1
+  //dummy node: n?_x1_y1_x2_y2 - n1_0_0_1_1 or n2_0_0_1_1
+  //only print m2?
+  spicefile<<".PRINT ";
+  for(auto it=point_set.begin();it!=point_set.end();++it){
+     std::string post_index = Index_Postion(point_set,it->index);
+     spicefile<<"v("+post_index+") "<<std::endl;
+  }  
+
+  spicefile<<std::endl;
+  spicefile<<".END"; 
+  //close file
+  spicefile.close();
+};
+
 MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc_info, std::string inputfile, std::string outputfile, std::string outputem){
 
   boost_matrix out_R, out_I; 
@@ -17,7 +90,9 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
 
   std::set<MDB::metal_point, MDB::Compare_metal_point> point_set;
   ExtractPowerGrid(current_node.Vdd, current_node.Gnd, drc_info, Power_Grid_devices, mark_point, point_set, inputfile);
-  
+
+  WriteOut_Spice(point_set);
+
   std::set<MDB::metal_point, MDB::Compare_metal_point> vdd_point_set;
   std::set<MDB::metal_point, MDB::Compare_metal_point> gnd_point_set;
 
