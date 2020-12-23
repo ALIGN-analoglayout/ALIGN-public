@@ -69,7 +69,7 @@ void MNASimulation::WriteOut_Spice(std::set<MDB::metal_point, MDB::Compare_metal
   spicefile<<".PRINT ";
   for(auto it=point_set.begin();it!=point_set.end();++it){
      std::string post_index = Index_Postion(point_set,it->index);
-     spicefile<<"v("+post_index+") "<<std::endl;
+     spicefile<<"v("+post_index+") ";
   }  
 
   spicefile<<std::endl;
@@ -91,7 +91,9 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
   std::set<MDB::metal_point, MDB::Compare_metal_point> point_set;
   ExtractPowerGrid(current_node.Vdd, current_node.Gnd, drc_info, Power_Grid_devices, mark_point, point_set, inputfile);
 
+  std::cout<<"Start Writing spice file"<<std::endl;
   WriteOut_Spice(point_set);
+  std::cout<<"End Writing spice file"<<std::endl;
 
   std::set<MDB::metal_point, MDB::Compare_metal_point> vdd_point_set;
   std::set<MDB::metal_point, MDB::Compare_metal_point> gnd_point_set;
