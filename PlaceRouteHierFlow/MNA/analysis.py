@@ -205,6 +205,14 @@ def resizeresult(z):
       #print(np.mean(z[min(x_d-1,i*x_incre):min((i+1)*x_incre,x_d),min(y_d-1,j*y_incre):min((j+1)*y_incre,y_d)]))             
   return Z
 
+
 data=readin('../IR_drop.txt')
 Xmesh,Ymesh,z,line_x,line_y=transferdata(data)
-plotresult(Xmesh,Ymesh,z)
+#plotresult(Xmesh,Ymesh,z)
+data_h=readin('../IR_drop_hspice.txt')
+Xmesh_h,Ymesh_h,z_h,line_x_h,line_y_h=transferdata(data_h)
+#plotresult(Xmesh_h,Ymesh_h,z_h)
+z_detal = z -z_h
+plotresult(Xmesh,Ymesh,z_detal)
+
+
