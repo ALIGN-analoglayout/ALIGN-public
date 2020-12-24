@@ -26,6 +26,30 @@ std::string MNASimulation::Index_Postion(std::set<MDB::metal_point, MDB::Compare
  return position_string;
 };
 
+std::string MNASimulation::Index_Postion_New(int index, bool start_end){
+
+  std::string position_string;
+  MDB::metal_point temp_point;
+
+  if(start_end){
+    temp_point = Power_Grid_devices[index].start_point;
+  }else{
+    temp_point = Power_Grid_devices[index].end_point;
+  }
+  
+  if(temp_point.metal_layer>=0 and temp_point.power==0)
+      position_string = std::to_string(temp_point.metal_layer)+"_"+std::to_string(temp_point.x)+"_"+std::to_string(temp_point.y)+"_g";
+  if(temp_point.metal_layer>=0 and temp_point.power!=0)
+      position_string = std::to_string(temp_point.metal_layer)+"_"+std::to_string(temp_point.x)+"_"+std::to_string(temp_point.y)+"_v";
+  if(temp_point.metal_layer<0 and temp_point.power==0)
+      position_string = "n_"+std::to_string(temp_point.metal_layer)+"_"+std::to_string(temp_point.x)+"_"+std::to_string(temp_point.y)+"_g";
+  if(temp_point.metal_layer<0 and temp_point.power!=0)
+      position_string = "n_"+std::to_string(temp_point.metal_layer)+"_"+std::to_string(temp_point.x)+"_"+std::to_string(temp_point.y)+"_v";
+
+  return position_string;
+};
+
+
 
 void MNASimulation::WriteOut_Spice(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set){
   
@@ -48,23 +72,23 @@ void MNASimulation::WriteOut_Spice(std::set<MDB::metal_point, MDB::Compare_metal
   for(unsigned int i=0;i<Power_Grid_devices.size();i++){
 
      if(Power_Grid_devices[i].device_type==MDB::R){
-        std::string post_index_start = Index_Postion(point_set,Power_Grid_devices[i].start_point_index);
-        std::string post_index_end =  Index_Postion(point_set,Power_Grid_devices[i].end_point_index);
+        std::string post_index_start = Index_Postion_New(i,1);
+        std::string post_index_end =  Index_Postion_New(i,0);
         spicefile<<"R_"+std::to_string(Power_Grid_devices[i].start_point_index)+"_"+std::to_string(Power_Grid_devices[i].end_point_index)+" "+post_index_start+" "+post_index_end+" "+std::to_string(Power_Grid_devices[i].value)<<std::endl;
      }else if(Power_Grid_devices[i].device_type==MDB::I){
-        std::string post_index_start = Index_Postion(point_set,Power_Grid_devices[i].start_point_index);
-        std::string post_index_end =  Index_Postion(point_set,Power_Grid_devices[i].end_point_index);
+        std::string post_index_start = Index_Postion_New(i,1);
+        std::string post_index_end =  Index_Postion_New(i,0);
         spicefile<<"I_"+std::to_string(Power_Grid_devices[i].start_point_index)+"_"+std::to_string(Power_Grid_devices[i].end_point_index)+" "+post_index_start+" "+post_index_end+" "+std::to_string(Power_Grid_devices[i].value)<<std::endl;
      }else if(Power_Grid_devices[i].device_type==MDB::V){
-        std::string post_index_start = Index_Postion(point_set,Power_Grid_devices[i].start_point_index);
+        std::string post_index_start = Index_Postion_New(i,1);
         std::string post_index_end =  "0";
-        spicefile<<"V_"+std::to_string(Power_Grid_devices[i].start_point_index)+"_"+std::to_string(Power_Grid_devices[i].end_point_index)+" "+post_index_start+" "+post_index_end+" "+std::to_string(Power_Grid_devices[i].value)<<std::endl;
+        spicefile<<"V_"+std::to_string(Power_Grid_devices[i].start_point_index)+"_"+std::to_string(0)+" "+post_index_start+" "+post_index_end+" "+std::to_string(Power_Grid_devices[i].value)<<std::endl;
      }
   }
 
   //print out testresults
-  //node: m2_x1_y1_x2_y2 - 1_0_0_1_1
-  //dummy node: n?_x1_y1_x2_y2 - n1_0_0_1_1 or n2_0_0_1_1
+  //node: m2_x1_y1_x2_y2 - 1_0_0
+  //dummy node: n?_x1_y1_x2_y2 - n1_0_0 or n2_0_0
   //only print m2?
   spicefile<<".PRINT ";
   for(auto it=point_set.begin();it!=point_set.end();++it){
@@ -346,7 +370,7 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
   }
 
   Print_Result(point_set, dp, outputfile);
-  Print_Grid(point_set,Power_Grid_devices);
+  //Print_Grid(point_set,Power_Grid_devices);
   Print_EM(point_set,Power_Grid_devices,B.nrow,dp, outputem);
   /*	
   for (int j = 0; j < n; j++){
@@ -613,6 +637,10 @@ void MNASimulation::AddingPower(std::vector<MDB::metal_point> &power_points, std
        MDB::device temp_device;
        auto first_point = temp_set.find(power_points[i]);
        int start_index = first_point->index;
+       temp_device.start_point.x = first_point->x;
+       temp_device.start_point.y = first_point->y;
+       temp_device.start_point.metal_layer = first_point->metal_layer;
+       temp_device.start_point.power = first_point->power;
        std::cout<<"First Point (x,y) index metal "<<first_point->x<<" "<<first_point->y<<" "<<start_index<<" "<<first_point->metal_layer<<std::endl;
        //  std::cout<<"Second Point (x,y) index metal "<<temp_point.x<<" "<<temp_point.y<<" "<<end_index<<" "<<temp_point.metal_layer<<std::endl;
        temp_device.device_type = MDB::V;
@@ -660,6 +688,7 @@ void MNASimulation::ExtractPowerGridWireR(PnRDB::PowerGrid &temp_grid, std::set<
           temp_point.y = temp_grid.metals[i].LinePoint[0].y;
           auto frist_point = temp_set.find(temp_point);
           int start_index = frist_point->index;
+          temp_device.start_point = temp_point;
           // std::cout<<"First Point (x,y) index metal "<<temp_point.x<<" "<<temp_point.y<<" "<<start_index<<" "<<temp_point.metal_layer<<std::endl;
           //temp_device.metal_layer1 = temp_point.metal_layer;
           temp_point.metal_layer = temp_grid.metals[i].MetalIdx;
@@ -669,6 +698,7 @@ void MNASimulation::ExtractPowerGridWireR(PnRDB::PowerGrid &temp_grid, std::set<
           temp_point.y = temp_grid.metals[i].LinePoint[1].y;
           auto second_point = temp_set.find(temp_point);
           int end_index = second_point->index;
+          temp_device.end_point = temp_point;
           //std::cout<<"Second Point (x,y) index metal "<<temp_point.x<<" "<<temp_point.y<<" "<<end_index<<" "<<temp_point.metal_layer<<std::endl;
           temp_device.device_type = MDB::R;
           temp_device.start_point_index = start_index;
@@ -704,6 +734,7 @@ void MNASimulation::ExtractPowerGridViaR(PnRDB::PowerGrid &temp_grid, std::set<M
 	     if(temp_set.find(temp_point)==temp_set.end()){continue;}
        auto frist_point = temp_set.find(temp_point);
        int start_index = frist_point->index;
+       temp_device.start_point = temp_point;
 	     //temp_device.metal_layer1 = temp_point.metal_layer;       
        temp_point.metal_layer = drc_info.Via_model[model_index].UpperIdx;
        temp_point.index = -1;
@@ -714,6 +745,7 @@ void MNASimulation::ExtractPowerGridViaR(PnRDB::PowerGrid &temp_grid, std::set<M
 	     if(temp_set.find(temp_point)==temp_set.end()){continue;}
        auto second_point = temp_set.find(temp_point);
        int end_index = second_point->index;
+       temp_device.end_point = temp_point;
        temp_device.device_type = MDB::R;
        temp_device.start_point_index = start_index;
        temp_device.end_point_index = end_index;
@@ -967,7 +999,8 @@ void MNASimulation::Map(std::vector<std::vector<double>> &currentstore, std::set
   // it is adding some current devices 
   for(unsigned int i=0;i<currentstore.size();++i){
 	  double startx,starty,endx,endy,value;
-
+          MDB::metal_point start_metal_point;
+          MDB::metal_point end_metal_point;
           double initial_x, initial_y;
 
           initial_x = currentstore[i][0];
@@ -1004,12 +1037,20 @@ void MNASimulation::Map(std::vector<std::vector<double>> &currentstore, std::set
     for(auto it = point_set.begin(); it != point_set.end(); ++it){
 	    if (it->x >= startx && it->y >= starty && it->metal_layer == metal_layer && it->power != 0){
 		    start_index = it->index;
+                    start_metal_point.x = it->x;
+                    start_metal_point.y = it->y;
+                    start_metal_point.metal_layer = it->metal_layer;
+                    start_metal_point.power = it->power;
 		    break;
 		  }
 	  }
     for(auto it = point_set.begin(); it != point_set.end(); ++it){
 	     if (it->x >= endx && it->y >= endy && it->metal_layer == metal_layer && it->power == 0){
-		     end_index = it->index;
+		    end_index = it->index;
+                    end_metal_point.x = it->x;
+                    end_metal_point.y = it->y;
+                    end_metal_point.metal_layer = it->metal_layer;
+                    end_metal_point.power = it->power;
 		     break;
 	 	    }
 	  }
@@ -1031,7 +1072,13 @@ void MNASimulation::Map(std::vector<std::vector<double>> &currentstore, std::set
     source_temp_point.metal_layer = -1;
     source_temp_point.index = max_index +1;
 
+    if(point_set.find(source_temp_point)!=point_set.end()){
+      continue;
+    }
+
     MDB::device temp_device;
+    temp_device.start_point = start_metal_point;
+    temp_device.end_point = source_temp_point; 
     temp_device.device_type = MDB::R;
     temp_device.start_point_index = start_index;
     temp_device.end_point_index = max_index +1;
@@ -1046,10 +1093,12 @@ void MNASimulation::Map(std::vector<std::vector<double>> &currentstore, std::set
     end_temp_point.power = 0.0;
     end_temp_point.metal_layer = -2;
     end_temp_point.index = max_index +2;
-   
+
     point_set.insert(source_temp_point);
     point_set.insert(end_temp_point);
 
+    temp_device.start_point = end_temp_point;
+    temp_device.end_point = end_metal_point; 
     temp_device.device_type = MDB::R;
     temp_device.start_point_index = max_index +2;
     temp_device.end_point_index = end_index;  
@@ -1058,6 +1107,8 @@ void MNASimulation::Map(std::vector<std::vector<double>> &currentstore, std::set
     Power_Grid_devices.push_back(temp_device);
 
     temp_device.device_type = MDB::I;
+    temp_device.start_point = source_temp_point;
+    temp_device.end_point = end_temp_point;     
     temp_device.start_point_index = max_index +1;
     temp_device.end_point_index = max_index +2;  
     temp_device.value = value;
