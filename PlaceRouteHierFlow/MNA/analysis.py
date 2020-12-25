@@ -56,10 +56,11 @@ def transferdata(data):
          y.append(data[i][1])
   X = np.array(X)
   Y = np.array(Y)
-  Z = np.array(Z)    
-
-  line_x = np.array(x)
-  line_y  = np.array(y)
+  Z = np.array(Z)
+  x1 = np.sort(x)
+  y1 = np.sort(y)
+  line_x = np.array(x1)
+  line_y  = np.array(y1)    
 
   Xmesh, Ymesh = np.meshgrid(line_x, line_y)
   #print(Xmesh)
