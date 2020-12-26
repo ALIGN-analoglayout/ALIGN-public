@@ -1067,7 +1067,7 @@ void MNASimulation::Map(std::vector<std::vector<double>> &currentstore, std::set
     }
 
     //add new nodes
-    int multi_connection = 1;
+    int multi_connection = 3;
     MDB::metal_point source_temp_point;
     source_temp_point.x = initial_x;
     source_temp_point.y = initial_y;
@@ -1087,7 +1087,7 @@ void MNASimulation::Map(std::vector<std::vector<double>> &currentstore, std::set
     temp_device.end_point_index = max_index +1;
     double unit_r = this->Drc_info.Metal_info[metal_layer].unit_R;
     temp_device.value = (abs(initial_x-startx)+abs(initial_y-starty))/multi_connection*unit_r;
-    std::cout<<"power mesh multi-connection "<<initial_x<<" "<<initial_y<<" "<<startx<<" "<<starty<<" "<<temp_device.value<<std::endl;
+    std::cout<<"power mesh multi-connection "<<initial_x<<" "<<initial_y<<" "<<startx<<" "<<starty<<" "<<multi_connection<<" "<<unit_r<<" "<<temp_device.value<<std::endl;
     Power_Grid_devices.push_back(temp_device);
     
     MDB::metal_point end_temp_point;
@@ -1106,7 +1106,7 @@ void MNASimulation::Map(std::vector<std::vector<double>> &currentstore, std::set
     temp_device.start_point_index = max_index +2;
     temp_device.end_point_index = end_index;  
     temp_device.value = (abs(initial_x-endx)+abs(initial_y-endy))/multi_connection*unit_r;
-    std::cout<<"power mesh multi-connection "<<initial_x<<" "<<initial_y<<" "<<endx<<" "<<endy<<" "<<temp_device.value<<std::endl;
+    std::cout<<"power mesh multi-connection "<<initial_x<<" "<<initial_y<<" "<<endx<<" "<<endy<<" "<<multi_connection<<" "<<unit_r<<" "<<temp_device.value<<std::endl;
     Power_Grid_devices.push_back(temp_device);
 
     temp_device.device_type = MDB::I;
@@ -1249,7 +1249,7 @@ void MNASimulation::Map_new(std::vector<std::vector<double>> &currentstore, std:
     }
 
     //add new nodes
-    int multi_connection = 3;
+    int multi_connection = 1;
     MDB::metal_point source_temp_point;
     source_temp_point.x = initial_x;
     source_temp_point.y = initial_y;
@@ -1268,8 +1268,8 @@ void MNASimulation::Map_new(std::vector<std::vector<double>> &currentstore, std:
     temp_device.start_point_index = start_index;
     temp_device.end_point_index = max_index +1;
     double unit_r = this->Drc_info.Metal_info[metal_layer].unit_R;
-    temp_device.value = (abs(initial_x-vdd_maxx)+abs(initial_y-vdd_maxy))/multi_connection*unit_r;
-    std::cout<<"power mesh multi-connection "<<initial_x<<" "<<initial_y<<" "<<vdd_maxx<<" "<<vdd_maxy<<" "<<temp_device.value<<std::endl;
+    temp_device.value = (abs(initial_x-vdd_maxx)+abs(initial_y-vdd_maxy))/multi_connection*unit_r+2*25/multi_connection;
+    std::cout<<"power mesh multi-connection "<<initial_x<<" "<<initial_y<<" "<<vdd_maxx<<" "<<vdd_maxy<<" "<<multi_connection<<" "<<unit_r<<" "<<temp_device.value<<std::endl;
     Power_Grid_devices.push_back(temp_device);
     
     MDB::metal_point end_temp_point;
@@ -1287,8 +1287,8 @@ void MNASimulation::Map_new(std::vector<std::vector<double>> &currentstore, std:
     temp_device.device_type = MDB::R;
     temp_device.start_point_index = max_index +2;
     temp_device.end_point_index = end_index;  
-    temp_device.value = (abs(initial_x-gnd_maxx)+abs(initial_y-gnd_maxy))/multi_connection*unit_r;
-    std::cout<<"power mesh multi-connection "<<initial_x<<" "<<initial_y<<" "<<gnd_maxx<<" "<<gnd_maxy<<" "<<temp_device.value<<std::endl;
+    temp_device.value = (abs(initial_x-gnd_maxx)+abs(initial_y-gnd_maxy))/multi_connection*unit_r+2*25/multi_connection;
+    std::cout<<"power mesh multi-connection "<<initial_x<<" "<<initial_y<<" "<<gnd_maxx<<" "<<gnd_maxy<<" "<<multi_connection<<" "<<unit_r<<" "<<temp_device.value<<std::endl;
     Power_Grid_devices.push_back(temp_device);
 
     temp_device.device_type = MDB::I;

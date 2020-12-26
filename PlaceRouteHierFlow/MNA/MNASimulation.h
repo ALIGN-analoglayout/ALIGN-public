@@ -64,6 +64,7 @@ class MNASimulation {
       void Print_Grid(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, std::vector<MDB::device> &temp_devices);
 	void Print_EM(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, std::vector<MDB::device> &temp_devices, int size, double* dp, std::string outputfile);
       void Map(std::vector<std::vector<double>> &currentstore, std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, std::vector<MDB::device> &Power_Grid_devices, int metal_layer);
+      void Map_new(std::vector<std::vector<double>> &currentstore, std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, std::vector<MDB::device> &Power_Grid_devices, int metal_layer);
       void Map_old(std::vector<std::vector<double>> &currentstore, std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, std::vector<MDB::device> &Power_Grid_devices, int metal_layer);
 	void ReadCurrent(std::vector<std::vector<double>> &currentstore, std::string inputfile);
       //added by yg
