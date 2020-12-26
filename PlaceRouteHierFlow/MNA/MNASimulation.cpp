@@ -116,7 +116,7 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
   ExtractPowerGrid(current_node.Vdd, current_node.Gnd, drc_info, Power_Grid_devices, mark_point, point_set, inputfile);
 
   std::cout<<"Start Writing spice file"<<std::endl;
-  WriteOut_Spice(point_set);
+  //WriteOut_Spice(point_set);
   std::cout<<"End Writing spice file"<<std::endl;
 
   std::set<MDB::metal_point, MDB::Compare_metal_point> vdd_point_set;
@@ -972,7 +972,7 @@ void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gn
    //double current = 0.001;
    std::vector<std::vector<double>> currentstore;
    ReadCurrent(currentstore,inputfile);
-   Map(currentstore,point_set,Power_Grid_devices,lowest_metal);
+   Map_new(currentstore,point_set,Power_Grid_devices,lowest_metal);
 
  };
 
@@ -1013,6 +1013,8 @@ void MNASimulation::Map(std::vector<std::vector<double>> &currentstore, std::set
 	  value = currentstore[i][4];
 	  int start_index,end_index;
 	  double vdd_maxx,vdd_maxy,gnd_maxx,gnd_maxy;
+
+
 	  for(auto it = point_set.end(); it != point_set.begin(); it--){
 	    if (it->metal_layer == metal_layer && it->power != 0){
 		    vdd_maxx = it->x;
@@ -1027,6 +1029,7 @@ void MNASimulation::Map(std::vector<std::vector<double>> &currentstore, std::set
 		    break;
 	   	}
 	  }
+
 	  //maxx = flag->x;
 	  //maxy = flag->y;
 	  if(startx > vdd_maxx) startx = vdd_maxx;
@@ -1064,7 +1067,7 @@ void MNASimulation::Map(std::vector<std::vector<double>> &currentstore, std::set
     }
 
     //add new nodes
-    int multi_connection = 3;
+    int multi_connection = 1;
     MDB::metal_point source_temp_point;
     source_temp_point.x = initial_x;
     source_temp_point.y = initial_y;
@@ -1083,8 +1086,8 @@ void MNASimulation::Map(std::vector<std::vector<double>> &currentstore, std::set
     temp_device.start_point_index = start_index;
     temp_device.end_point_index = max_index +1;
     double unit_r = this->Drc_info.Metal_info[metal_layer].unit_R;
-    temp_device.value = (abs(initial_x-startx)+abs(initial_y-startx))/multi_connection*unit_r;
-    std::cout<<"power mesh multi-connection "<<initial_x<<" "<<initial_y<<" "<<temp_device.value<<std::endl;
+    temp_device.value = (abs(initial_x-startx)+abs(initial_y-starty))/multi_connection*unit_r;
+    std::cout<<"power mesh multi-connection "<<initial_x<<" "<<initial_y<<" "<<startx<<" "<<starty<<" "<<temp_device.value<<std::endl;
     Power_Grid_devices.push_back(temp_device);
     
     MDB::metal_point end_temp_point;
@@ -1102,8 +1105,8 @@ void MNASimulation::Map(std::vector<std::vector<double>> &currentstore, std::set
     temp_device.device_type = MDB::R;
     temp_device.start_point_index = max_index +2;
     temp_device.end_point_index = end_index;  
-    temp_device.value = (abs(initial_x-endx)+abs(initial_y-endx))/multi_connection*unit_r;
-    std::cout<<"power mesh multi-connection "<<initial_x<<" "<<initial_y<<" "<<temp_device.value<<std::endl;
+    temp_device.value = (abs(initial_x-endx)+abs(initial_y-endy))/multi_connection*unit_r;
+    std::cout<<"power mesh multi-connection "<<initial_x<<" "<<initial_y<<" "<<endx<<" "<<endy<<" "<<temp_device.value<<std::endl;
     Power_Grid_devices.push_back(temp_device);
 
     temp_device.device_type = MDB::I;
@@ -1170,3 +1173,131 @@ void MNASimulation::Map_old(std::vector<std::vector<double>> &currentstore, std:
     Power_Grid_devices.push_back(temp_device);
   }
 };
+
+void MNASimulation::Map_new(std::vector<std::vector<double>> &currentstore, std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, std::vector<MDB::device> &Power_Grid_devices, int metal_layer){
+
+  // it is adding some current devices 
+  for(unsigned int i=0;i<currentstore.size();++i){
+	  double startx,starty,endx,endy,value;
+          MDB::metal_point start_metal_point;
+          MDB::metal_point end_metal_point;
+          double initial_x, initial_y;
+
+          initial_x = currentstore[i][0];
+	  initial_y = currentstore[i][1];
+
+	  startx = currentstore[i][0];
+	  starty = currentstore[i][1];
+	  endx = currentstore[i][2];
+	  endy = currentstore[i][3];
+	  value = currentstore[i][4];
+	  int start_index,end_index;
+	  double vdd_maxx,vdd_maxy,gnd_maxx,gnd_maxy;
+
+          int diff = INT_MAX;
+
+	  for(auto it = point_set.end(); it != point_set.begin(); it--){
+	    if (it->metal_layer == metal_layer && it->power != 0){
+                    int temp_diff = abs(it->x-initial_x)+abs(it->y-initial_y);
+                    if(temp_diff<diff){
+		      vdd_maxx = it->x;
+		      vdd_maxy = it->y;
+                      diff = temp_diff;
+                    }
+	    }
+	  }
+
+          diff = INT_MAX;
+	  for(auto it = point_set.end(); it != point_set.begin(); it--){
+	    if (it->metal_layer == metal_layer && it->power == 0){
+                    int temp_diff = abs(it->x-initial_x)+abs(it->y-initial_y);
+                    if(temp_diff<diff){
+		      gnd_maxx = it->x;
+		      gnd_maxy = it->y;
+                      diff = temp_diff;
+                    }
+	    }
+	  }
+	
+    for(auto it = point_set.begin(); it != point_set.end(); ++it){
+	    if (it->x >= vdd_maxx && it->y >= vdd_maxy && it->metal_layer == metal_layer && it->power != 0){
+		    start_index = it->index;
+                    start_metal_point.x = it->x;
+                    start_metal_point.y = it->y;
+                    start_metal_point.metal_layer = it->metal_layer;
+                    start_metal_point.power = it->power;
+		    break;
+		  }
+	  }
+    for(auto it = point_set.begin(); it != point_set.end(); ++it){
+	     if (it->x >= gnd_maxx && it->y >= gnd_maxx && it->metal_layer == metal_layer && it->power == 0){
+		    end_index = it->index;
+                    end_metal_point.x = it->x;
+                    end_metal_point.y = it->y;
+                    end_metal_point.metal_layer = it->metal_layer;
+                    end_metal_point.power = it->power;
+		     break;
+	 	    }
+	  }
+
+    int max_index = 0;
+
+    for(auto it = point_set.begin(); it != point_set.end(); ++it){
+         if (it->index > max_index){
+              max_index = it->index;
+            }
+    }
+
+    //add new nodes
+    int multi_connection = 3;
+    MDB::metal_point source_temp_point;
+    source_temp_point.x = initial_x;
+    source_temp_point.y = initial_y;
+    source_temp_point.power = 0.8;
+    source_temp_point.metal_layer = -1;
+    source_temp_point.index = max_index +1;
+
+    if(point_set.find(source_temp_point)!=point_set.end()){
+      continue;
+    }
+
+    MDB::device temp_device;
+    temp_device.start_point = start_metal_point;
+    temp_device.end_point = source_temp_point; 
+    temp_device.device_type = MDB::R;
+    temp_device.start_point_index = start_index;
+    temp_device.end_point_index = max_index +1;
+    double unit_r = this->Drc_info.Metal_info[metal_layer].unit_R;
+    temp_device.value = (abs(initial_x-vdd_maxx)+abs(initial_y-vdd_maxy))/multi_connection*unit_r;
+    std::cout<<"power mesh multi-connection "<<initial_x<<" "<<initial_y<<" "<<vdd_maxx<<" "<<vdd_maxy<<" "<<temp_device.value<<std::endl;
+    Power_Grid_devices.push_back(temp_device);
+    
+    MDB::metal_point end_temp_point;
+    end_temp_point.x = initial_x;
+    end_temp_point.y = initial_y;
+    end_temp_point.power = 0.0;
+    end_temp_point.metal_layer = -2;
+    end_temp_point.index = max_index +2;
+
+    point_set.insert(source_temp_point);
+    point_set.insert(end_temp_point);
+
+    temp_device.start_point = end_temp_point;
+    temp_device.end_point = end_metal_point; 
+    temp_device.device_type = MDB::R;
+    temp_device.start_point_index = max_index +2;
+    temp_device.end_point_index = end_index;  
+    temp_device.value = (abs(initial_x-gnd_maxx)+abs(initial_y-gnd_maxy))/multi_connection*unit_r;
+    std::cout<<"power mesh multi-connection "<<initial_x<<" "<<initial_y<<" "<<gnd_maxx<<" "<<gnd_maxy<<" "<<temp_device.value<<std::endl;
+    Power_Grid_devices.push_back(temp_device);
+
+    temp_device.device_type = MDB::I;
+    temp_device.start_point = source_temp_point;
+    temp_device.end_point = end_temp_point;     
+    temp_device.start_point_index = max_index +1;
+    temp_device.end_point_index = max_index +2;  
+    temp_device.value = value;
+    Power_Grid_devices.push_back(temp_device);
+  }
+};
+
