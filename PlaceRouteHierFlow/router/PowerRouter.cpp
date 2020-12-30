@@ -536,9 +536,9 @@ void PowerRouter::CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_in
   
   //how to crate PowerGrid here????
   Grid grid(this->PowerGrid_Drc_info, this->LL, this->UR, lowest_metal, highest_metal, this->grid_scale);//1.pg needs other LL, UR 2. here what is the lowest_metal, highest_metal
-
+  std::cout<<"checkpoint1.2.9"<<std::endl;
   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > netplist = FindsetPlist(Set_x, LL, UR);
-
+  std::cout<<"checkpoint1.2.10"<<std::endl;
   for(int i=0;i<netplist.size();i++){
      std::cout<<"Power inactive node "<<netplist[i].size()<<std::endl;
      if(i==5){
@@ -547,12 +547,13 @@ void PowerRouter::CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_in
        }
      }
   }
-
+  std::cout<<"checkpoint1.2.11"<<std::endl;
   grid.InactivePointlist_Power(netplist);
   //std::vector<std::vector<RouterDB::point> > new_plist = FindPlist(Set_x, this->LL, this->UR);
   //grid.InactivePointlist(new_plist);
+  std::cout<<"checkpoint1.2.12"<<std::endl;
   grid.PrepareGraphVertices(LL.x, LL.y, UR.x, UR.y);
-
+  
   std::cout<<"Power Grid Info "<<grid.vertices_total.size()<<" "<<grid.vertices_graph.size()<<std::endl;
   //here return a power grid metal information
   bool power_grid = 1;
@@ -599,15 +600,16 @@ void PowerRouter::CreatePowerGrid_DC(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   RouterDB::point tempLL, tempUR;
 
   //strange operation replace LL to tempLL, why? Yaguang - 12/10/2020
-  double times = 1.1;
-  tempLL.x = this->LL.x*times;
-  tempLL.y = this->LL.y*times;
-  tempUR.x = this->UR.x*times;
-  tempUR.y = this->UR.y*times;
+  //double times = 1.1;
+  //tempLL.x = this->LL.x*times;
+  //tempLL.y = this->LL.y*times;
+  //tempUR.x = this->UR.x*times;
+  //tempUR.y = this->UR.y*times;
 
   //how to crate PowerGrid here????
-  //Grid grid(this->PowerGrid_Drc_info, this->LL, this->UR, lowest_metal, highest_metal, this->grid_scale);//1.pg needs other LL, UR 2. here what is the lowest_metal, highest_metal
-  Grid grid(this->PowerGrid_Drc_info, tempLL, tempUR, lowest_metal, highest_metal, this->grid_scale);//1.pg needs other LL, UR 2. here what is the lowest_metal, highest_metal
+  Grid grid(this->PowerGrid_Drc_info, this->LL, this->UR, lowest_metal, highest_metal, this->grid_scale);//1.pg needs other LL, UR 2. here what is the lowest_metal, highest_metal
+  //Grid grid(this->PowerGrid_Drc_info, tempLL, tempUR, lowest_metal, highest_metal, this->grid_scale);//1.pg needs other LL, UR 2. here what is the lowest_metal, highest_metal
+  std::cout<<"checkpoint1.2.8.5"<<std::endl;
   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > netplist = FindsetPlist(Set_x, LL, UR);
 
   for(int i=0;i<netplist.size();i++){
@@ -622,8 +624,8 @@ void PowerRouter::CreatePowerGrid_DC(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   grid.InactivePointlist_Power(netplist);
   //std::vector<std::vector<RouterDB::point> > new_plist = FindPlist(Set_x, this->LL, this->UR);
   //grid.InactivePointlist(new_plist);
-  //grid.PrepareGraphVertices(LL.x, LL.y, UR.x, UR.y);
-  grid.PrepareGraphVertices(tempLL.x, tempLL.y, tempUR.x, tempUR.y);
+  grid.PrepareGraphVertices(LL.x, LL.y, UR.x, UR.y);
+  //grid.PrepareGraphVertices(tempLL.x, tempLL.y, tempUR.x, tempUR.y);
 
   std::cout<<"Power Grid Info "<<grid.vertices_total.size()<<" "<<grid.vertices_graph.size()<<std::endl;
   //here return a power grid metal information
@@ -1042,11 +1044,20 @@ void PowerRouter::CreatePowerGridDrc_info_DC(string inputfile){
 
   for(unsigned int i=0;i<PowerGrid_Drc_info.Metal_info.size();i++){
       
+       std::cout<<"grid info "<<PowerGrid_Drc_info.Metal_info[i].grid_unit_x<<" "<<PowerGrid_Drc_info.Metal_info[i].grid_unit_y<<std::endl;
+
        PowerGrid_Drc_info.Metal_info[i].grid_unit_x = PowerGrid_Drc_info.Metal_info[i].grid_unit_x/utilization[i];
        PowerGrid_Drc_info.Metal_info[i].grid_unit_y = PowerGrid_Drc_info.Metal_info[i].grid_unit_y/utilization[i];
        PowerGrid_Drc_info.Metal_info[i].width = PowerGrid_Drc_info.Metal_info[i].width * Power_width;
+      
+       std::cout<<utilization[i]<<std::endl;
+
+       std::cout<<"grid info "<<PowerGrid_Drc_info.Metal_info[i].grid_unit_x<<" "<<PowerGrid_Drc_info.Metal_info[i].grid_unit_y<<std::endl;
 
      }
+
+  //assert(0);
+
 
 };
 

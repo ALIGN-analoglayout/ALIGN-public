@@ -86,7 +86,7 @@ void PnRdatabase::Write_Current_Workload(PnRDB::hierNode &node, double total_cur
   vector<double> rand_current;
 
   for(int i =0;i<current_number;i++){
-     rand_current.push_back(rand() % 5);
+     rand_current.push_back(rand() % 3);
   }
 
   double sum=0;
@@ -97,11 +97,14 @@ void PnRdatabase::Write_Current_Workload(PnRDB::hierNode &node, double total_cur
   
   
   for(int i=0;i<current_number;i++){
-    double x_num = rand() % 10;
-    double y_num = rand() % 10;
+    double x_num = rand() % 10 +1;
+    double y_num = rand() % 10 +1;
+    if(x_num==10) x_num-=1;
+    if(y_num==10) y_num-=1;   
     double x = x_num/10*(urx-llx)+llx;
     double y = y_num/10*(ury-lly)+lly;
-    double current = rand_current[i]*rand_current[i]/sum*total_current;
+    //double current = 0.0005;//rand_current[i]*rand_current[i]/sum*total_current;
+    double current = 0.0005/(rand() % 10 +1);//rand_current[i]*rand_current[i]/sum*total_current;
     currentfile<<x<<" "<<y<<" "<<x<<" "<<y<<" "<<current<<std::endl;
   }
   currentfile.close();
@@ -115,7 +118,7 @@ void PnRdatabase::Write_Power_Mesh_Conf(std::string outputfile){
 
 
   for(int i=0;i<DRC_info.Metal_info.size();i++){
-    PMCfile<<(double) (rand()%10)/10<<" ";
+    PMCfile<<(double) (rand()%5+1)/10<<" "; //power density change from 0.1 to 0.5
   }
   PMCfile<<std::endl;  
 
