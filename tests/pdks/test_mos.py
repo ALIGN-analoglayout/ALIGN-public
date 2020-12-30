@@ -39,7 +39,7 @@ def build_test(pdk, prim, *, n, X, Y):
                                 "CMFB_{}",
                                 "SCM_{}",
                                 "CMC_{}",
-                                "CMC_{}_S",
+                                "CMC_S_{}",
                                 "DP_{}"],
                                 ids = lambda x: x.replace('_{}', ''))
 @pytest.mark.parametrize( "pdk", pdks, ids=lambda x: x.name)
