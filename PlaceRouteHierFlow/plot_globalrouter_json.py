@@ -1,7 +1,4 @@
-import numpy as np
 import json
-import platform
-import math
 import matplotlib.pyplot as plt
 
 def read_data():
