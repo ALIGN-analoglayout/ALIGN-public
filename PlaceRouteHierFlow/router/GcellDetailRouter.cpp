@@ -813,8 +813,8 @@ void GcellDetailRouter::create_detailrouter(){
         if (pathMark)
         {
           physical_path = a_star.ConvertPathintoPhysical(grid);
-          lastmile_source_new(physical_path, temp_source);
-          lastmile_dest_new(physical_path, temp_dest);
+          //lastmile_source_new(physical_path, temp_source);
+          //lastmile_dest_new(physical_path, temp_dest);
           returnPath(physical_path, Nets[i]);
 
           //insert via center into Pset

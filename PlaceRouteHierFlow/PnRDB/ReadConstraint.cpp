@@ -103,12 +103,24 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
             }
           }
         }
+        
+        PnRDB::Smark axis_dir=PnRDB::V;
+        if(temp.size()>=8){
+          word=temp[6];
+          //cout<<word<<endl;
+          word=word.substr(1);
+          word=word.substr(0, word.length()-1);  
+          if(word=="H"){axis_dir=PnRDB::H;}
+          else if(word=="V"){axis_dir=PnRDB::V;}        
+        }
+
         int iter1=-1, iter2=-1; // iterator in Nets
         for(int i=0;i<(int)node.Nets.size()&&(iter1==-1||iter2==-1);i++) {
           if(node.Nets.at(i).name.compare(tmpnet.name)==0) {iter1=i;}
           if(node.Nets.at(i).name.compare(tmpnet2.name)==0) {iter2=i;}
         }
-        node.Nets.at(iter1).symCounterpart=iter2;
+        if (tmpnet.connected.size() != tmpnet2.connected.size()) continue;
+        node.Nets.at(iter1).symCounterpart = iter2;
         node.Nets.at(iter1).iter2SNetLsit=node.SNets.size();
         node.Nets.at(iter2).symCounterpart=iter1;
         node.Nets.at(iter2).iter2SNetLsit=node.SNets.size();
@@ -117,6 +129,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         node.SNets.back().net2=tmpnet2;
         node.SNets.back().iter1=iter1;
         node.SNets.back().iter2=iter2;
+        node.SNets.back().axis_dir=axis_dir;
       } else if (temp[0].compare("CritNet")==0) {
         for(int i=0;i<(int)node.Nets.size();i++) {
           if(node.Nets.at(i).name.compare(temp[2])==0) {
@@ -291,8 +304,9 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         }
       } else if (temp[0].compare("SymmBlock")==0) { 
         PnRDB::SymmPairBlock temp_SymmPairBlock;
-        pair<int,int> temp_pair;
+        pair<int,int> temp_pair={-1,-1};
         pair<int,PnRDB::Smark> temp_selfsym;
+        PnRDB::Smark axis_dir=PnRDB::V;
         for(unsigned int i=2;i<temp.size();i=i+2){
           string word=temp[i];
           word=word.substr(1);
@@ -311,18 +325,29 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
             } else if (temp_pair.first==temp_pair.second) {
               std::cerr<<"PnRDB-Error: same block in paired symmetry group"<<std::endl;
             }
-            temp_SymmPairBlock.sympair.push_back(temp_pair);
-          } else { // selfsym
+            if (temp_pair.first >= 0 && temp_pair.second >= 0) temp_SymmPairBlock.sympair.push_back(temp_pair);
+          } else if (word == "H") {
+            axis_dir = PnRDB::H;
+          } else if (word == "V") {
+            axis_dir = PnRDB::V;
+          } else {  // selfsym
             for(int j=0;j<(int)node.Blocks.size();j++) {
               if(node.Blocks.at(j).instance.back().name.compare(word)==0) {
                 temp_selfsym.first =  j;
-                temp_selfsym.second = PnRDB::H;
+                temp_selfsym.second = axis_dir;
+                //temp_selfsym.second = PnRDB::H;
                 temp_SymmPairBlock.selfsym.push_back(temp_selfsym);
                 break;
               }
             }
           }
         }
+        temp_SymmPairBlock.axis_dir = axis_dir;
+        
+        for(unsigned int sym_index=0;sym_index<temp_SymmPairBlock.selfsym.size();sym_index++){
+           temp_SymmPairBlock.selfsym[sym_index].second=axis_dir;
+        }
+
         node.SPBlocks.push_back(temp_SymmPairBlock);
       }else if(temp[0].compare("CC")==0){
         PnRDB::CCCap temp_cccap;
@@ -380,7 +405,23 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         //temp_cccap.size = temp[4]; //size?
         
         node.CC_Caps.push_back(temp_cccap);
-      } else if (temp[0].compare("AlignBlock")==0) {
+      } else if(temp[0].compare("GuardRing")==0) {
+        PnRDB::Guardring_Const temp_Guardring_Const;
+        string word=temp[2];
+        word=word.substr(1);
+        word=word.substr(0, word.length()-1);
+        temp_Guardring_Const.block_name = word;
+        word = temp[4];
+        word=word.substr(1);
+        word=word.substr(0, word.length()-1);
+        temp_Guardring_Const.guard_ring_perimitives = word;
+        word=temp[6];
+        word=word.substr(1);
+        word=word.substr(0, word.length()-1);
+        temp_Guardring_Const.global_pin = word;
+        node.Guardring_Consts.push_back(temp_Guardring_Const);
+
+      }else if (temp[0].compare("AlignBlock")==0) {
         PnRDB::AlignBlock alignment_unit;
         if(temp[2].compare("H")==0) {
           alignment_unit.horizon=1;

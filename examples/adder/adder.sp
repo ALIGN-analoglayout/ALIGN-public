@@ -17,8 +17,8 @@
     xI0 vout vbn1 vgnd vgnd nfet2x p1=nfpf
     xI1 vout vbp1 vps vps pfet2x p1=nfpf 
     R0 vbn1 n1 resistor r=rb
-    C0 vin vbn1 capacitor c=cc
+    C0 vin vbn1 capacitor cap=cc
     R1 vbp1 n2 resistor r=rb
-    C1 vin vbp1 capacitor c=cc
+    C1 vin vbp1 capacitor cap=cc
     R2 vps vout resistor r=rl    
 .ends adder

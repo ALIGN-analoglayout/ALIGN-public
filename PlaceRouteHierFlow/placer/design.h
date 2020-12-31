@@ -29,19 +29,21 @@ class design
     friend class ConstGraph;
     friend class SeqPair;
     friend class Aplace;
-//    enum NType {Block, Terminal};
-//    struct Node {
-//      NType type; // 1: blockPin; 2. Terminal
-//      int iter; // 1: #blockPin; 2. #Terminal
-//      int iter2; // 1: #block
-//    };
-//    struct point {
-//      int x;
-//      int y;
-//    };
-//    struct bbox {
-//      vector<point> polygon;
-//    };
+    friend class Placer;
+    friend class ILP_solver;
+    //    enum NType {Block, Terminal};
+    //    struct Node {
+    //      NType type; // 1: blockPin; 2. Terminal
+    //      int iter; // 1: #blockPin; 2. #Terminal
+    //      int iter2; // 1: #block
+    //    };
+    //    struct point {
+    //      int x;
+    //      int y;
+    //    };
+    //    struct bbox {
+    //      vector<point> polygon;
+    //    };
     struct block {
       string name="";
       placerDB::bbox boundary;
@@ -76,10 +78,12 @@ class design
     struct SymmNet {
       placerDB::net net1, net2;
       int SBidx=-1;
+      placerDB::Smark axis_dir=placerDB::V;
     };
     struct SymmPairBlock {
       vector< pair<int,int> > sympair;
       vector< pair<int,placerDB::Smark> > selfsym;
+      placerDB::Smark axis_dir=placerDB::V;
     };
     struct PortPos {
       int tid;
@@ -164,7 +168,7 @@ class design
     //pair<int,int> checkSympairInSymmBlock(vector< pair<int,int> >& Tsympair);
     //pair<int,int> checkSelfsymInSymmBlock(vector< pair<int,placerDB::Smark> >& Tselfsym);
     placerDB::point GetMultPolyCenterPoint(vector<placerDB::point>& pL);
-    int MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  vector< pair<int,placerDB::Smark> >& tmpselfsym, vector<placerDB::SymmBlock>& SBs, vector<SymmNet>& SNs );
+    int MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  vector< pair<int,placerDB::Smark> >& tmpselfsym, vector<placerDB::SymmBlock>& SBs, vector<SymmNet>& SNs, placerDB::Smark axis_dir);
     int GetSizeAsymBlock4Move(int mode);
     int GetSizeSymGroup4PartMove(int mode);
     int GetSizeSymGroup4FullMove(int mode);

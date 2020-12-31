@@ -59,12 +59,27 @@ make
 mkdir googletest/mybuild
 cp -r lib googletest/mybuild/.
 
+### Install superLU // this now is not correct
+#version 1
+cd $ALIGN_HOME
+git clone https://www.github.com/ALIGN-analoglayout/superlu.git
+cd superlu
+tar xvfz superlu_5.2.1.tar.gz 
+
+cd SuperLU_5.2.1/
+mkdir build
+cd build
+cmake ..
+make
+
+
 ## Set prerequisite paths
 #------------------------
 export LP_DIR=$ALIGN_HOME/lpsolve
 #export BOOST_LP=$ALIGN_HOME/boost
 export JSON=$ALIGN_HOME/json
 export GTEST_DIR=$ALIGN_HOME/googletest/googletest/
+export SuperLu_DIR=$ALIGN_HOME/superlu
 export VENV=$ALIGN_HOME/general
 
 ## Install ALIGN

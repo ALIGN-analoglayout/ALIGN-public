@@ -1,7 +1,7 @@
 
 # Needs CXX and CXXFLAGS to be defined
 
-OBJS = design.o SeqPair.o ConstGraph.o Aplace.o Placer.o 
+OBJS = design.o SeqPair.o ConstGraph.o Aplace.o Placer.o ILP_solver.o
 SRCS=$(OBJS:.o=.cpp)
 
 all: depend unit_tests placer.a
