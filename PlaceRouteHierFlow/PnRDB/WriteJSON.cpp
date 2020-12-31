@@ -470,7 +470,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     }
 
     //write out extend pins
-    int write_extend_pins = 1;
+    int write_extend_pins = 0;
     if(write_extend_pins){
        for(unsigned int i=0;i<node.Blocks.size();i++){
           int selected_block_index = node.Blocks[i].selectedInstance;
