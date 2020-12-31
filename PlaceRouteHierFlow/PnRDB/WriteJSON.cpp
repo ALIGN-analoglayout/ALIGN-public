@@ -472,6 +472,46 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 	}
     }
 
+    //write out extend pins
+    int write_extend_pins = 0;
+    if(write_extend_pins){
+       for(unsigned int i=0;i<node.Blocks.size();i++){
+          int selected_block_index = node.Blocks[i].selectedInstance;
+          for(unsigned int j=0;j<node.Blocks[i].instance[selected_block_index].blockPins.size();j++){
+             for(unsigned int k=0;k<node.Blocks[i].instance[selected_block_index].blockPins[j].pinContacts.size();k++){
+                 PnRDB::contact con = node.Blocks[i].instance[selected_block_index].blockPins[j].pinContacts[k];
+                 //con.placedBox = con.originBox;
+                 addContactBoundaries (jsonElements, con, drc_info, unitScale);
+             }
+          }
+       }
+    }
+
+/*
+    int write_blockPins = 1;
+    if (write_blockPins){
+	for (unsigned int i = 0; i < node.blockPins.size(); i++) {
+	    int write = 1;
+	    for (unsigned int j = 0; j < node.blockPins[i].pinContacts.size(); j++) {
+                PnRDB::contact con = node.blockPins[i].pinContacts[j];
+                con.placedBox = con.originBox;
+                addContactBoundaries (jsonElements, con, drc_info, unitScale);
+		if (write == 0) {
+		    PnRDB::contact con = node.blockPins[i].pinContacts[j];
+                    std::cout<<"contact info "<<con.originBox.LL.x<<" "<<con.originBox.LL.y<<" "<<con.originBox.UR.x<<" "<<con.originBox.UR.y<<std::endl;
+                    con.placedBox = con.originBox;
+                    addContactBoundaries (jsonElements, con, drc_info, unitScale);
+		    assignBoxPoints (x, y, con.originBox, unitScale);
+		    addTextElements (jsonElements, (x[0]+x[2])/2, (y[0]+y[2])/2,
+				     metal2int( drc_info, con.metal), 
+                    drc_info, drc_info.Metalmap.at(con.metal),
+                    node.blockPins[i].name);
+		    write = 0;	// added by yg 
+		}
+	    }
+	}
+    }
+*/
     if (includeNet) {
 	//cout<<"start writing nets"<<endl;
 	for (unsigned int i = 0; i < node.Nets.size(); i++) {

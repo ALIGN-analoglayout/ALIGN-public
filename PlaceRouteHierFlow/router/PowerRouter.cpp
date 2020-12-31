@@ -394,6 +394,21 @@ void PowerRouter::Update_powerrouter_report_info(PnRDB::routing_net& temp_routin
   temp_routing_net.pin_access.push_back(pathMark);
 };
 
+int PowerRouter::FindMulti_Connection_Number(int j, PnRDB::hierNode& node){
+  int multi_number = 1;
+  for(unsigned int i=0;i<node.Multi_connections.size();i++){
+     std::cout<<"node.Multi_connections[i].net_name "<<node.Multi_connections[i].net_name<<" "<<node.Multi_connections[i].multi_number<<std::endl;
+     std::cout<<"PowerNets[i].netName "<<PowerNets[i].netName<<std::endl;
+     if(node.Multi_connections[i].net_name == PowerNets[j].netName){
+       multi_number = node.Multi_connections[i].multi_number;
+       break;
+     }
+  }
+
+  return multi_number;
+
+};
+
 void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal){
   GetData(node, drc_info, Lmetal, Hmetal);
   
@@ -426,6 +441,11 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
   //QQQ Vdd_grid Gnd_grid Terminals PowerNets Nets
 
   for(unsigned int i=0;i<PowerNets.size();i++){
+
+      int multi_number = FindMulti_Connection_Number(i, node);
+      std::cout<<"Power routing multi_number "<<PowerNets[i].netName<<" "<<multi_number<<std::endl;
+
+      for(unsigned int multi_index = 0; multi_index<multi_number;multi_index++){
 
       std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> Pset_current_net_via; //current net via conter and layer info
       std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_current_net_contact; //current Net metal contact set
@@ -472,9 +492,8 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
             AddViaEnclosure(Pset_via, grid, Set_x_contact, Set_net_contact);
             AddViaSpacing(Pset_via, grid);
             A_star a_star(grid, 0); // no sheilding
-            int multi_number = 0;
 
-            bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, multi_number, multi_number);
+            bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, 0, 0);
             std::vector<std::vector<RouterDB::Metal>> physical_path;
             std::cout<<"power routing pathMark "<<pathMark<<std::endl;
             Update_powerrouter_report_info(temp_routing_net, i, j, pathMark);
@@ -500,6 +519,7 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
              InsertContact2Contact(Set_current_net_contact, Set_net_contact);
          }
          temp_report.routed_net.push_back(temp_routing_net);
+        }
      }
 
 };
@@ -995,6 +1015,9 @@ void PowerRouter::CreatePowerGridDrc_info( int h_skip_factor, int v_skip_factor)
   
   int Power_width = 1; 
 
+  vector<int> Factor;
+  
+
   for(unsigned int i=0;i<PowerGrid_Drc_info.Metal_info.size();i++){
       
     auto& mi = PowerGrid_Drc_info.Metal_info[i];
@@ -1008,12 +1031,25 @@ void PowerRouter::CreatePowerGridDrc_info( int h_skip_factor, int v_skip_factor)
     } else {
       assert( 0);
     }
-
+    Factor.push_back(factor);
     // This is weird changing them both, but the code did this before
     // Probably only need to expand the x for vertical wires and the y for horizontal wires
-    mi.grid_unit_x *= factor;
-    mi.grid_unit_y *= factor;
-    mi.width *= Power_width;
+    //mi.grid_unit_x *= factor;
+    //mi.grid_unit_y *= factor;
+    //mi.width *= Power_width;
+
+  }
+
+  //Factor[0] = 1; //means current m1 pitch = 1 * m1 origin pitch
+  //Factor[1] = 2; //for m2
+  //configurate the number here
+
+  for(unsigned int i=0;i<PowerGrid_Drc_info.Metal_info.size();i++){
+     auto& mi = PowerGrid_Drc_info.Metal_info[i];
+     int factor = Factor[i];
+     mi.grid_unit_x *=factor;
+     mi.grid_unit_y *=factor;
+     mi.width *=Power_width;
 
   }
 
