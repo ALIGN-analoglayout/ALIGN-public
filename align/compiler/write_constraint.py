@@ -10,6 +10,7 @@ from itertools import combinations,combinations_with_replacement
 import logging
 from .create_array_hierarchy import create_hierarchy
 from .util import compare_two_nodes
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -26,10 +27,6 @@ def find_unique_matching_branches(G,nbrs1,nbrs2,ports_weight):
         if node1 not in match:
             return False
     return match
-        
-    
-
-
 
 def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weight):
     """
@@ -86,7 +83,7 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
         traversed.append(node2)
         logger.debug(f"skipping high fanout nets due to large computation,  {node2} {nbrs2}")
         return
-    
+
     if node1 == node2:
         if node1 in match_pair.keys() or node1 in match_pair.values():
             logger.debug("avoid existing  pair wise symmetry")
@@ -97,13 +94,13 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
         ## Right now will try to figure out S/D paths
         if len(SD_nbrs) ==0:
             logger.debug(f"No SD paths found to traverse")
-            #match_pair[node1]=node1 
+            #match_pair[node1]=node1
         elif len(SD_nbrs) ==1:
             logger.debug(f"traversing single S/D path ")
-            match_pair[node1]=node1 
+            match_pair[node1]=node1
             traversed.append(node1)
-            compare_nodes(G,all_match_pairs,match_pair,traversed,SD_nbrs[0],SD_nbrs[0],ports_weight)            
-        else:        
+            compare_nodes(G,all_match_pairs,match_pair,traversed,SD_nbrs[0],SD_nbrs[0],ports_weight)
+        else:
             logger.debug(f" multiple nodes diverging {nbrs1} {SD_nbrs}")
             logger.debug(f"nbr weights: {SD_nbrs} {[G.get_edge_data(node1, nbr)['weight'] for nbr in SD_nbrs  ]}")
             match_pair[node1]=node1
@@ -153,7 +150,7 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
                     if new_pair:
                         all_match_pairs[nbr1+'_'+nbr2] = new_pair
                         logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
-        
+
 
     elif compare_two_nodes(G,node1,node2,ports_weight):
         nbrs1 = sorted(set([nbr for nbr in nbrs1 if G.get_edge_data(node1, nbr)['weight'] !=2]))
@@ -186,52 +183,50 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
         else:
             match_pair = {}
             logger.debug(f"end all traversal from binary branch {node1} {node2}")
-        
+
     else:
         match_pair = {}
         logger.debug(f"end of recursion branch, matches {match_pair}")
 
 def recursive_start_points(G,all_match_pairs,traversed,node1,node2, ports_weight):
     logger.debug(f"symmetry start point {node1} {node2}")
-    pair ={}
+    pair = {}
     compare_nodes(G,all_match_pairs, pair, traversed, node1, node2,ports_weight)
     if not pair:
         logger.debug(f"no pair found from {node1} {node2}")
         return
-    all_match_pairs[node1+node2]=pair                        
-    logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
-
+    all_match_pairs[node1+node2]=pair
+    logger.debug(f"updating match pairs (start): {pprint.pformat(all_match_pairs, indent=4)}")
+    #CHECk for array start points
+    hier_start_points = []
     for k,pair in all_match_pairs.items():
         logger.debug(f"all pairs from {k}:{pair}")
         if "start_point" in pair.keys():
-            hier_start_points=pair["start_point"]    
+            hier_start_points.extend(pair["start_point"])
             del pair["start_point"]
             logger.debug(f"New symmetrical start points {pair}")
-    all_match_pairs={k: v for k, v in all_match_pairs.items() if len(v)>0}
     logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
-    try: 
-        for sp in sorted(hier_start_points):
-            logger.debug(f"starting new node from binary branch:{sp} {hier_start_points} traversed {traversed}")
-            if sp not in G.nodes():
-                continue
-            multifanout = create_hierarchy(G,sp,traversed,ports_weight)
-            if  multifanout and isinstance(multifanout[sp], list):
-                logger.debug(f"only one level matched so putting as align block:{multifanout[sp]}")
-                all_match_pairs[node1+node2+'_align']=multifanout[sp]
-            elif multifanout and isinstance(multifanout[sp], dict):
-                logger.debug(f"more than one depth matched so creating new hierarchy :{multifanout[sp]}")
-                traversed+=[node1,node2]
-                all_match_pairs[sp+'_new_hier']=multifanout[sp]
-                
-                logger.debug("new hier list %s %s",sp, multifanout)
-                #for  h_port1, h_port2 in combinations(multifanout[sp]['ports'],2):
-                #     recursive_start_points(multifanout[sp]['graph'],all_match_pairs,traversed.copy(),h_port1, h_port2, multifanout[sp]['ports_weight'])   
-            else:
-                logger.debug(f"no symmetry from {sp}")
-            logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
-    except NameError:
-        logger.debug("")
-        
+    if not 'hier_start_points':
+        return
+    for sp in sorted(hier_start_points):
+        logger.debug(f"starting new node from binary branch:{sp} {hier_start_points} traversed {traversed} existing {pprint.pformat(all_match_pairs, indent=4)}")
+        if sp not in G.nodes():
+            logger.debug(f"{sp} not found in graph {G.nodes()}")
+            continue
+        multifanout = create_hierarchy(G,sp,traversed,ports_weight)
+        if  multifanout and isinstance(multifanout[sp], list):
+            logger.debug(f"only one level matched so putting as align block:{multifanout[sp]}")
+            all_match_pairs[node1+node2+'_align']={'start_point':multifanout[sp]}
+        elif multifanout and isinstance(multifanout[sp], dict):
+            logger.debug(f"more than one depth matched so creating new hierarchy :{multifanout[sp]}")
+            traversed+=[node1,node2]
+            all_match_pairs[sp+'_new_hier']=multifanout[sp].copy()
+            #all_match_pairs['vin1vin2']=multifanout[sp]
+            #for  h_port1, h_port2 in combinations(multifanout[sp]['ports'],2):
+            #     recursive_start_points(multifanout[sp]['graph'],all_match_pairs,traversed.copy(),h_port1, h_port2, multifanout[sp]['ports_weight'])
+        else:
+            logger.debug(f"no symmetry from {sp}")
+    logger.debug(f"updating match pairs end: {pprint.pformat(all_match_pairs, indent=4)}")
 
 def FindSymmetry(graph, ports:list, ports_weight:dict, stop_points:list):
     """
@@ -261,12 +256,15 @@ def FindSymmetry(graph, ports:list, ports_weight:dict, stop_points:list):
         if sorted(ports_weight[port1]) == sorted(ports_weight[port2]) !=[0]:
             traversed+=[port1,port2]
             recursive_start_points(graph,all_match_pairs,traversed,port1,port2, ports_weight)
-            logger.debug(f"all matches found starting from {port1} and {port2} pair: {all_match_pairs}")
+            all_match_pairs = {k:v for k,v in all_match_pairs.items() if len(v)>0}
+            logger.debug(f"all matches found starting from {port1} and {port2} pair: {pprint.pformat(all_match_pairs, indent=4)}")
 
     return all_match_pairs
 
 def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_points=None):
     const_file = (input_dir / (name + '.const'))
+    json_const_file = (input_dir / (name + '.const.json'))
+
     logger.debug("writing constraints: %s",const_file)
     logger.debug(f"ports weight: {ports_weight} stop_points : {stop_points}")
 
@@ -284,8 +282,12 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_poin
                     return
     all_match_pairs=FindSymmetry(graph.copy(), ports, ports_weight, stop_points)
     all_match_pairs={k: v for k, v in all_match_pairs.items() if len(v)>1}
-    logger.debug(f"all symmetry matching pairs {pprint.pformat(all_match_pairs, indent=4)}")            
+    logger.debug(f"all symmetry matching pairs {pprint.pformat(all_match_pairs, indent=4)}")
     written_symmetries = ''
+    json_const = {}
+    json_const["constraints"] = []
+
+
     ## ALIGN block constraints
     const_all=[]
     align_const_keys =[key for key,value in all_match_pairs.items() if isinstance(value,list)]
@@ -304,11 +306,11 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_poin
     new_hier_keys =  [key for key,value in all_match_pairs.items() if "name" in value.keys()]
     for key in new_hier_keys:
         del all_match_pairs[key]
-    
+
     all_pairs=sorted(all_match_pairs.values(), key=lambda k: len ([k1 for k1,v1 in k.items() if k1!=v1]), reverse=True)
-    logger.debug(f"all symmtry matching pairs {pprint.pformat(all_pairs, indent=4)}")            
+    logger.debug(f"all symmtry matching pairs {pprint.pformat(all_pairs, indent=4)}")
     for pairs in all_pairs:
-        symmBlock='\nSymmBlock ('
+        pairsj = []
         pairs=sorted(pairs.items(),key=lambda k: k[0])
         logger.debug(f"all symmblock pairs {pairs} {written_symmetries}")
         for key, value in pairs:
@@ -330,35 +332,46 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_poin
                 continue
             if graph.nodes[key]["inst_type"]=="net" :
                 if key!=value  :
-                    pairs = symmnet_device_pairs(graph,key,value,written_symmetries)
+                    pairs,s1,s2 = symmnet_device_pairs(graph,key,value,written_symmetries)
                     if pairs:
                         symmNet = "\nSymmNet ( {"+key+','+','.join(pairs.keys()) + \
                                 '} , {'+value+','+','.join(pairs.values()) +'} )'
-                        written_symmetries += symmNet
-                        logger.debug(f"adding symmetries: {symmNet}")
+                        written_symmetries+=symmNet
+                        symmNetj = {"const_name":"SymmNet","axis_dir":"V","net1":s1,"net2":s2}
+                        json_const["constraints"].append(symmNetj)
+                        logger.debug(f"adding symmetries: {symmNetj}")
                     else:
                         logger.debug("skipping symmetry between large fanout nets {key} {value}")
                         logger.debug("TBF:Need update in placer to simplify this")
                 else:
                     logger.debug(f"skipping self symmetric nets {key} {value}")
             elif 'Dcap' in graph.nodes[key]["inst_type"]:
-                logger.debug(f"skipping symmetry for dcaps {key} {value}") 
+                logger.debug(f"skipping symmetry for dcaps {key} {value}")
             else:
                 if key !=value:
-                    symmBlock += ' {'+key+ ','+value+'} ,'
+                    sj = {"type":"sympair","block1":key,"block2":value}
+                    pairsj.append(sj)
                 elif "Switch_" in graph.nodes[key]["inst_type"]:
                     logger.debug(f"TBF:skipping self symmetry for single transistor {key} {value}")
                 else:
-                    symmBlock +=' {' + key +'} ,'
-        if ',' in symmBlock[:-1]:
-            symmBlock = symmBlock[:-1]+')'
-            written_symmetries += symmBlock
-            logger.debug(f"one axis of written symmetries: {written_symmetries}")
-    if written_symmetries:
+                    sj = {"type":"selfsym","block":key}
+                    pairsj.append(sj)
+
+        if len(pairsj)> 1 or (len(pairsj)>0 and 'block1' in pairsj[0].keys()):
+            symmBlock = {'const_name': "SymmBlock","axis_dir":"V","pairs":pairsj}
+            written_symmetries += ' '.join([a['block'] for a in pairsj if 'block' in a.keys()])
+            written_symmetries += ' '.join([a['block1'] for a in pairsj if 'block1' in a.keys()])
+            written_symmetries += ' '.join([a['block2'] for a in pairsj if 'block2' in a.keys()])
+            json_const["constraints"].append(symmBlock)
+            logger.debug(f"one axis of written symmetries: {symmBlock}")
+    if json_const:
         const_fp = open(const_file, 'a+')
         const_fp.write("// ALIGN generated automatic constraints")
         const_fp.write(written_symmetries)
         const_fp.close()
+        with open(json_const_file, 'w') as outfile:
+            json.dump(json_const, outfile, indent=4)
+
 
 def symmnet_device_pairs(G, net_A, net_B,existing):
     """
@@ -378,24 +391,37 @@ def symmnet_device_pairs(G, net_A, net_B,existing):
     conn_B = connection(G,net_B)
 
     pairs={}
+    blocksA = []
+    blocksB = []
     for ele_A in conn_A.keys():
         for ele_B in conn_B.keys():
-            if conn_A[ele_A]==conn_B[ele_B] and G.nodes[ele_A.split('/')[0]]["inst_type"]==G.nodes[ele_B.split('/')[0]]["inst_type"]:
+            if '/' in ele_A:
+                blockA,pinA = ele_A.split('/')
+            else:
+                blockA =  ele_A
+                pinA = None
+            if '/' in ele_B:
+                blockB,pinB = ele_B.split('/')
+            else:
+                blockA = ele_B
+                pinB = None
+            if conn_A[ele_A]==conn_B[ele_B] and G.nodes[blockA]["inst_type"]==G.nodes[blockB]["inst_type"]:
                 if ele_B in pairs.values():
                     logger.debug(f"skipping symmetry due to multiple possible matching of net {net_B} nbr {ele_B} to {pairs.values()} ")
-                    pairs = {}
-                    return pairs
-                elif ele_A.split('/')[0] in existing and ele_A.split('/')[0]+','+ele_B.split('/')[0] not in existing:
+                    return [None,None,None]
+                elif ele_A.split('/')[0] in existing and blockA+','+blockB not in existing:
                     continue
-                elif ele_B.split('/')[0] in existing and ele_A.split('/')[0]+','+ele_B.split('/')[0] not in existing:
+                elif ele_B.split('/')[0] in existing and blockA+','+blockB not in existing:
                     continue
                 else:
-                    pairs[ele_A]=ele_B
+                    pairs[ele_A] = ele_B
+                    blocksA.append({"type":"pin" if pinA else "terminal","name":blockA,"pin":pinA})
+                    blocksB.append({"type":"pin" if pinB else "terminal","name":blockB,"pin":pinB})
     if len(pairs.keys())>1:
-        return pairs
+        return pairs,{"name":net_A,"blocks":blocksA},{"name":net_B,"blocks":blocksB}
     else:
         logger.debug(f"skipping symmnet as: symmetry of net is between two devices")
-        
+        return [None,None,None]
 
 def connection(graph,net:str):
     """
@@ -422,7 +448,7 @@ def connection(graph,net:str):
                 logger.debug("ports match:%s %s",net,graph.nodes[nbr]["ports_match"].items())
                 idx=list(graph.nodes[nbr]["ports_match"].values()).index(net)
                 conn[nbr+'/'+list(graph.nodes[nbr]["ports_match"].keys())[idx]]= (graph.get_edge_data(net, nbr)['weight'] & ~2)
-                
+
             elif "connection" in graph.nodes[nbr]:
                 logger.debug("connection:%s%s",net,graph.nodes[nbr]["connection"].items())
                 idx=list(graph.nodes[nbr]["connection"].values()).index(net)
@@ -458,4 +484,3 @@ def CopyConstFile(name, input_dir, working_dir):
         else:
             const_file.write_text(input_const_file.read_text())
     return const_file
-

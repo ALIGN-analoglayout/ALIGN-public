@@ -82,7 +82,7 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
         node.SNets.back().net2 = tmpnet2;
         node.SNets.back().iter1 = iter1;
         node.SNets.back().iter2 = iter2;
-        node.SNets.back().axis_dir = constraint["axis_dir"];
+        node.SNets.back().axis_dir = constraint["axis_dir"]=='H'?PnRDB::H:PnRDB::V;
       } else if (constraint["const_name"] == "CritNet") {
         for (int i = 0; i < (int)node.Nets.size(); i++) {
           if (node.Nets.at(i).name == constraint["net_name"]) {
@@ -245,7 +245,7 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
         }
       } else if (constraint["const_name"] == "SymmBlock") {
         PnRDB::SymmPairBlock temp_SymmPairBlock;
-        temp_SymmPairBlock.axis_dir = constraint["axis_dir"];
+        temp_SymmPairBlock.axis_dir = constraint["axis_dir"]=='H'?PnRDB::H:PnRDB::V;
         pair<int, int> temp_pair;
         pair<int, PnRDB::Smark> temp_selfsym;
         for (auto pair : constraint["pairs"]) {
@@ -271,7 +271,7 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
             for (int j = 0; j < (int)node.Blocks.size(); j++) {
               if (node.Blocks.at(j).instance.back().name.compare(pair["block"]) == 0) {
                 temp_selfsym.first = j;
-                temp_selfsym.second = constraint["axis_dir"];
+                temp_selfsym.second = constraint["axis_dir"]=='H'?PnRDB::H:PnRDB::V;
                 temp_SymmPairBlock.selfsym.push_back(temp_selfsym);
                 break;
               }
@@ -279,7 +279,7 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
           }
         }
         for (unsigned int sym_index = 0; sym_index < temp_SymmPairBlock.selfsym.size(); sym_index++) {
-          temp_SymmPairBlock.selfsym[sym_index].second = constraint["axis_dir"];
+          temp_SymmPairBlock.selfsym[sym_index].second = constraint["axis_dir"]=='H'?PnRDB::H:PnRDB::V;
         }
         node.SPBlocks.push_back(temp_SymmPairBlock);
       } else if (constraint["const_name"] == "CC") {
@@ -539,7 +539,9 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
         node.C_Constraints.push_back(temp_c_const);
       }
     }
+    return true;
   }
+  return false;
 }
 
 bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suffix) {
@@ -641,6 +643,17 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
             }
           }
         }
+        
+        PnRDB::Smark axis_dir=PnRDB::V;
+        if(temp.size()>=8){
+          word=temp[6];
+          //cout<<word<<endl;
+          word=word.substr(1);
+          word=word.substr(0, word.length()-1);  
+          if(word=="H"){axis_dir=PnRDB::H;}
+          else if(word=="V"){axis_dir=PnRDB::V;}        
+        }
+
         int iter1=-1, iter2=-1; // iterator in Nets
         for(int i=0;i<(int)node.Nets.size()&&(iter1==-1||iter2==-1);i++) {
           if(node.Nets.at(i).name.compare(tmpnet.name)==0) {iter1=i;}
@@ -655,6 +668,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         node.SNets.back().net2=tmpnet2;
         node.SNets.back().iter1=iter1;
         node.SNets.back().iter2=iter2;
+        node.SNets.back().axis_dir=axis_dir;
       } else if (temp[0].compare("CritNet")==0) {
         for(int i=0;i<(int)node.Nets.size();i++) {
           if(node.Nets.at(i).name.compare(temp[2])==0) {
@@ -831,6 +845,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         PnRDB::SymmPairBlock temp_SymmPairBlock;
         pair<int,int> temp_pair;
         pair<int,PnRDB::Smark> temp_selfsym;
+        PnRDB::Smark axis_dir=PnRDB::V;
         for(unsigned int i=2;i<temp.size();i=i+2){
           string word=temp[i];
           word=word.substr(1);
@@ -850,17 +865,29 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
               std::cerr<<"PnRDB-Error: same block in paired symmetry group"<<std::endl;
             }
             temp_SymmPairBlock.sympair.push_back(temp_pair);
+          } else if(word=="H"){ 
+             axis_dir = PnRDB::H;
+          } else if(word=="V"){
+             axis_dir = PnRDB::V;
           } else { // selfsym
             for(int j=0;j<(int)node.Blocks.size();j++) {
               if(node.Blocks.at(j).instance.back().name.compare(word)==0) {
                 temp_selfsym.first =  j;
-                temp_selfsym.second = PnRDB::H;
+                temp_selfsym.second = axis_dir;
+                //temp_selfsym.second = PnRDB::H;
                 temp_SymmPairBlock.selfsym.push_back(temp_selfsym);
                 break;
               }
             }
           }
+          
         }
+        temp_SymmPairBlock.axis_dir = axis_dir;
+        
+        for(unsigned int sym_index=0;sym_index<temp_SymmPairBlock.selfsym.size();sym_index++){
+           temp_SymmPairBlock.selfsym[sym_index].second=axis_dir;
+        }
+
         node.SPBlocks.push_back(temp_SymmPairBlock);
       }else if(temp[0].compare("CC")==0){
         PnRDB::CCCap temp_cccap;

@@ -1514,7 +1514,7 @@ void ConstGraph::CalculateLongestPath(int s, vector<Vertex> &graph, bool backwar
     visited[i]=false;
   // Call the recursive helper function to store Topological
   // Sort starting from all vertices one by one
-  for(unsigned int i=0;i<graph.size();++i) 
+  for(unsigned int i=0;i<graph.size();++i)
     if(!visited[i]) 
       topologicalSortUtil(i, visited, Stack, graph, backward);
   // Initialize distances to all vertices as infinite and 
@@ -1542,7 +1542,10 @@ void ConstGraph::CalculateLongestPath(int s, vector<Vertex> &graph, bool backwar
     if(!backward) {
       if(graph[u].position!=NINF) {
         for(vector<Edge>::iterator it=graph[u].Edges.begin(); it!=graph[u].Edges.end(); ++it) {
-          if(!it->isBackward && graph[it->next].position<graph[u].position+it->weight) {
+          std::cout<<"current node and next node "<<u<<" "<<it->next<<std::endl;
+          //if(!it->isBackward && graph[it->next].position<graph[u].position+it->weight) {
+          if(graph[it->next].position<graph[u].position+it->weight) {
+            std::cout<<"next node "<<it->next<<" position "<<graph[it->next].position<<" updated to "<<graph[u].position + it->weight<<std::endl;
             graph[it->next].position=graph[u].position + it->weight;
             graph[it->next].precedent=u;
             //std::cout<<it->next<<" prec "<<u<<" pos "<<graph[it->next].position<<std::endl;
@@ -1552,7 +1555,8 @@ void ConstGraph::CalculateLongestPath(int s, vector<Vertex> &graph, bool backwar
     } else {
       if(graph[u].backpost!=NINF) {
         for(vector<Edge>::iterator it=graph[u].Edges.begin(); it!=graph[u].Edges.end(); ++it) {
-          if( it->isBackward && graph[it->next].backpost<graph[u].backpost+it->weight) {
+          //if( it->isBackward && graph[it->next].backpost<graph[u].backpost+it->weight) {
+          if(graph[it->next].backpost<graph[u].backpost+it->weight) {
             graph[it->next].backpost=graph[u].backpost + it->weight;
             graph[it->next].backprec=u;
             //std::cout<<it->next<<" backprec "<<u<<" pos "<<graph[it->next].backpost<<std::endl;
@@ -2794,6 +2798,13 @@ vector<int> ConstGraph::GenerateSlack(vector<int>& x) {
 void ConstGraph::AlignReorganize(design& caseNL, vector< pair<int,int> >& sympair, placerDB::Smark axis, int i) {
   // Keep all symmetry pairs aligned in vertical(horizontal) graph and reorganize the symmetry pairs
   pair<int,int> tp;
+  /*
+  if(caseNL.SBlocks.at(i).sympair.size()!=0 or caseNL.SBlocks.at(i).selfsym.size()!=0){
+    tp.first=sourceNode; tp.second=sinkNode;
+    sympair.push_back(tp);
+  }
+  */
+
   if(axis==placerDB::V) {
     // Vertical symmetry axis
     CalculateLongestPath(sourceNode, this->HGraph, false);
@@ -3329,6 +3340,8 @@ bool ConstGraph::SymmetryConstraintCore(design& caseNL, placerDB::Smark axis, in
           AddEdgeforVertex(sit->first, dnode, HGraph.at(sit->first).weight/2, HGraph);
         }
       }
+      CalculateLongestPath(sourceNode, this->HGraph, false);
+      CalculateLongestPath(sourceNode, this->HGraph, true);
     } else if (axis==placerDB::H) {
       for(vector< pair<int,placerDB::Smark> >::iterator sit=caseNL.SBlocks.at(i).selfsym.begin(); sit!=caseNL.SBlocks.at(i).selfsym.end(); ++sit) {
         if(sit->first>=(int)caseNL.GetSizeofBlocks()) {continue;}
@@ -3341,6 +3354,8 @@ bool ConstGraph::SymmetryConstraintCore(design& caseNL, placerDB::Smark axis, in
           AddEdgeforVertex(sit->first, dnode, VGraph.at(sit->first).weight/2, VGraph);
         }
       }
+      CalculateLongestPath(sourceNode, this->VGraph, false);
+      CalculateLongestPath(sourceNode, this->VGraph, true);
     }
   return true;
 }
@@ -4562,6 +4577,26 @@ void ConstGraph::UpdateTerminalinHierNode(design& caseNL, PnRDB::hierNode& node)
       temp_pin.name = node.Terminals.at(i).name;
       temp_pin.type = node.Terminals.at(i).type;
       
+      /*
+      //added by yaguang - 10/28/2020
+      //should add the power pin into blockpins here, since the placer is bottom up and router is top down
+      for(unsigned int j=0;j<node.Nets.size();j++){
+         if(node.Nets[j].name==temp_pin.name){
+           for(unsigned int k=0;k<node.Nets[j].connected.size();k++){
+              if(node.Nets[j].connected[k].type==PnRDB::Block){
+                 int iter = node.Nets[j].connected[k].iter;
+                 int iter2 = node.Nets[j].connected[k].iter2;
+                 PnRDB::pin temp_pnr_pin=node.Blocks[iter2].instance.back().blockPins[iter];
+                 for(unsigned int l=0;l<temp_pnr_pin.pinContacts.size();l++)
+                     temp_pin.pinContacts.push_back(temp_pnr_pin.pinContacts[l]);
+              }
+           }
+            
+         }
+         
+      }
+      */
+
       node.blockPins.push_back(temp_pin);
     }
 

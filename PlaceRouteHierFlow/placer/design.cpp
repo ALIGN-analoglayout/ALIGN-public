@@ -178,6 +178,9 @@ design::design(design& other, int mode) {
           SB.sympair.push_back( m1<m2 ? make_pair( m1,m2 ) : make_pair(m2,m1) );
         }
       }
+      //add by Yaguang 10/21/2020
+      SB.axis_dir=sbit->axis_dir;
+      //end add
       // new self-symmetry block
       for(vector< pair<int,placerDB::Smark> >::iterator sfit=sbit->selfsym.begin(); sfit!=sbit->selfsym.end(); ++sfit) {
         if(sfit->first>=(int)other.Blocks.size()) {continue;}
@@ -441,6 +444,10 @@ design::design(PnRDB::hierNode& node) {
       else {cout<<"Placer-Error: incorrect Smark"<<endl; continue;}
       this->SPBlocks.back().selfsym.push_back(make_pair(sit->first, axis));
     }
+    //added by YG: 10/22/2020
+    if(it->axis_dir==PnRDB::H) {this->SPBlocks.back().axis_dir=placerDB::H;}
+    else if(it->axis_dir==PnRDB::V) {this->SPBlocks.back().axis_dir=placerDB::V;}
+    //end add
   }
   // Add symmetry net constraints
   for(vector<PnRDB::SymmNet>::iterator it=node.SNets.begin();it!=node.SNets.end();++it) {
@@ -467,6 +474,9 @@ design::design(PnRDB::hierNode& node) {
     }
     SymmNet tmpsnet;
     tmpsnet.net1=tmpnet1; tmpsnet.net2=tmpnet2;
+    if(it->axis_dir==PnRDB::H) {tmpsnet.axis_dir=placerDB::H;}
+    else if(it->axis_dir==PnRDB::V) {tmpsnet.axis_dir=placerDB::V;}
+
     this->SNets.push_back(tmpsnet);
     //cout<<"# " <<this->SNets.size()<<endl;
   }
@@ -1676,7 +1686,9 @@ void design::constructSymmGroup() {
   vector< pair<int,int> > tmpsympair;
   vector< pair<int,placerDB::Smark> > tmpselfsym;
   vector<placerDB::SymmBlock> SBs;
+  placerDB::Smark axis_dir;
   for(vector<SymmNet>::iterator sni=SNets.begin(); sni!=SNets.end(); ++sni) {
+    axis_dir = sni->axis_dir;
     tmpsympair.clear(); tmpselfsym.clear();
     //cout<<sni->net1.name<<" vs "<<sni->net2.name<<endl;
     for(unsigned int i=0;i<sni->net1.connected.size();++i) {
@@ -1704,7 +1716,7 @@ void design::constructSymmGroup() {
           //placerDB::point p2=GetMultPolyCenterPoint(p2V);
           //placerDB::point p1=Blocks.at(sni->net1.connected.at(i).iter2).blockPins.at(sni->net1.connected.at(i).iter).center;
           //placerDB::point p2=Blocks.at(sni->net2.connected.at(i).iter2).blockPins.at(sni->net2.connected.at(i).iter).center;
-          placerDB::Smark tsmark= placerDB::H;
+          placerDB::Smark tsmark= axis_dir;
           //placerDB::Smark tsmark= ( abs(p1.x-p2.x)<abs(p1.y-p2.y) ) ? placerDB::V : placerDB::H;
           tmpselfsym.push_back(make_pair(tpair.first, tsmark));
         } else {cout<<"Placer-Warning: self-symmetric terminal found! Skip this object..."<<endl;continue;}
@@ -1718,7 +1730,7 @@ void design::constructSymmGroup() {
     for(unsigned int i=0;i<tmpselfsym.size();++i) {
       cout<<"self-symmectric: "<<tmpselfsym.at(i).first<<","<<tmpselfsym.at(i).second<<endl;
     }
-    int sbidx=MergeNewBlockstoSymmetryGroup(tmpsympair, tmpselfsym, SBs, this->SNets);
+    int sbidx=MergeNewBlockstoSymmetryGroup(tmpsympair, tmpselfsym, SBs, this->SNets, axis_dir);
     std::cout<<"Placer-Info: symmetry net "<<sni-SNets.begin()<<" sbidx "<<sbidx<<std::endl;
     sni->SBidx=sbidx;
     //vector<pair<int,int> > matchedPair,matchedSelf;
@@ -1811,7 +1823,7 @@ void design::constructSymmGroup() {
     //} 
   }
   for(vector<SymmPairBlock>::iterator sni=SPBlocks.begin(); sni!=SPBlocks.end(); ++sni) {
-    MergeNewBlockstoSymmetryGroup(sni->sympair, sni->selfsym, SBs, this->SNets);
+    MergeNewBlockstoSymmetryGroup(sni->sympair, sni->selfsym, SBs, this->SNets, sni->axis_dir);
   }
   SBlocks.clear();
   for(vector<placerDB::SymmBlock>::iterator it=SBs.begin();it!=SBs.end();++it) {
@@ -1819,6 +1831,7 @@ void design::constructSymmGroup() {
     SBlocks.resize(SBlocks.size()+1);
     SBlocks.back().sympair=it->sympair;
     SBlocks.back().selfsym=it->selfsym;
+    SBlocks.back().axis_dir=it->axis_dir;
     SBlocks.back().dnode=dnidx++;
   }
   for(unsigned int i=0;i<SBlocks.size(); ++i) {
@@ -1851,7 +1864,7 @@ void design::constructSymmGroup() {
   ////std::cout<<"Leaving constrcution\n";
 }
 
-int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  vector< pair<int,placerDB::Smark> >& tmpselfsym, vector<placerDB::SymmBlock>& SBs, vector<SymmNet>& SNs ) {
+int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  vector< pair<int,placerDB::Smark> >& tmpselfsym, vector<placerDB::SymmBlock>& SBs, vector<SymmNet>& SNs, placerDB::Smark axis_dir ) {
   vector<pair<int,int> > matchedPair,matchedSelf;
   matchedPair=checkSympairInSymmBlock(SBs, tmpsympair);
   matchedSelf=checkSelfsymInSymmBlock(SBs, tmpselfsym);
@@ -1862,6 +1875,7 @@ int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  
       SBs.resize(SBs.size()+1);
       SBs.back().sympair=tmpsympair;
       SBs.back().selfsym=tmpselfsym;
+      SBs.back().axis_dir = axis_dir;
       //SBs.back().dnode=dnidx++;
       sbidx=SBs.size()-1;
     } else { // only matched self-symmetric
@@ -1871,6 +1885,7 @@ int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  
           for(vector<pair<int,int> >::iterator spit=SBs.at(itt->first).sympair.begin();spit!=SBs.at(itt->first).sympair.end();++spit) {SBs.at(gidx).sympair.push_back(*spit);}
           for(vector<pair<int,placerDB::Smark> >::iterator spit=SBs.at(itt->first).selfsym.begin();spit!=SBs.at(itt->first).selfsym.end();++spit) {SBs.at(gidx).selfsym.push_back(*spit);}
           cout<<"Move SB#"<<itt->first<<" to SB#"<<gidx<<endl;
+          SBs.at(gidx).axis_dir=SBs.at(itt->first).axis_dir;
           SBs.at(itt->first).sympair.clear();
           SBs.at(itt->first).selfsym.clear();
           for(vector<SymmNet>::iterator nit=SNs.begin(); nit!=SNs.end(); ++nit) {
@@ -1887,6 +1902,7 @@ int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  
         }
         if(!found) SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) ); 
       }
+      SBs.at(gidx).axis_dir=axis_dir;
       sbidx=gidx;
     }
   } else {
@@ -1897,6 +1913,7 @@ int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  
           for(vector<pair<int,int> >::iterator spit=SBs.at(itt->first).sympair.begin();spit!=SBs.at(itt->first).sympair.end();++spit) {SBs.at(gidx).sympair.push_back(*spit);}
           for(vector<pair<int,placerDB::Smark> >::iterator spit=SBs.at(itt->first).selfsym.begin();spit!=SBs.at(itt->first).selfsym.end();++spit) {SBs.at(gidx).selfsym.push_back(*spit);}
           cout<<"Move SB#"<<itt->first<<" to SB#"<<gidx<<endl;
+          SBs.at(gidx).axis_dir=SBs.at(itt->first).axis_dir;
           SBs.at(itt->first).sympair.clear();
           SBs.at(itt->first).selfsym.clear();
           for(vector<SymmNet>::iterator nit=SNs.begin(); nit!=SNs.end(); ++nit) {
@@ -1921,6 +1938,7 @@ int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  
           for(vector<pair<int,int> >::iterator spit=SBs.at(itt->first).sympair.begin();spit!=SBs.at(itt->first).sympair.end();++spit) {SBs.at(gidx).sympair.push_back(*spit);}
           for(vector<pair<int,placerDB::Smark> >::iterator spit=SBs.at(itt->first).selfsym.begin();spit!=SBs.at(itt->first).selfsym.end();++spit) {SBs.at(gidx).selfsym.push_back(*spit);}
           cout<<"Move SB#"<<itt->first<<" to SB#"<<gidx<<endl;
+          SBs.at(gidx).axis_dir=SBs.at(itt->first).axis_dir;
           SBs.at(itt->first).sympair.clear();
           SBs.at(itt->first).selfsym.clear();
           for(vector<SymmNet>::iterator nit=SNs.begin(); nit!=SNs.end(); ++nit) {
@@ -1933,6 +1951,7 @@ int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  
           for(vector<pair<int,int> >::iterator spit=SBs.at(itt->first).sympair.begin();spit!=SBs.at(itt->first).sympair.end();++spit) {SBs.at(gidx).sympair.push_back(*spit);}
           for(vector<pair<int,placerDB::Smark> >::iterator spit=SBs.at(itt->first).selfsym.begin();spit!=SBs.at(itt->first).selfsym.end();++spit) {SBs.at(gidx).selfsym.push_back(*spit);}
           cout<<"Move SB#"<<itt->first<<" to SB#"<<gidx<<endl;
+          SBs.at(gidx).axis_dir=SBs.at(itt->first).axis_dir;
           SBs.at(itt->first).sympair.clear();
           SBs.at(itt->first).selfsym.clear();
           for(vector<SymmNet>::iterator nit=SNs.begin(); nit!=SNs.end(); ++nit) {
@@ -1954,6 +1973,7 @@ int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  
         }
         if(!found) SBs.at(gidx).sympair.push_back( tmpsympair.at(i) ); 
       }
+      SBs.at(gidx).axis_dir=axis_dir;
       sbidx=gidx;
     }
   } 
