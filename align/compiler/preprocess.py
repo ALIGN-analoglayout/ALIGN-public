@@ -43,9 +43,12 @@ def preprocess_stack_parallel(hier_graph_dict:dict,circuit_name,G):
         add_parallel_transistor(G)
         delta = initial_size - len(G)
         initial_size = len(G)
-        
+    #remove single instance subcircuits 
     attributes = [attr for node, attr in G.nodes(data=True) if 'net' not in attr["inst_type"]]
     if len(attributes)==1:
+        if 'sub_graph' in attributes[0].keys() and attributes[0]['sub_graph'] is not None:
+            logger.debug(f"sub_graph nodes {attributes[0]['sub_graph'].nodes()}")
+            preprocess_stack_parallel(hier_graph_dict,attributes[0]["real_inst_type"],attributes[0]["sub_graph"])
         for ckt in hier_graph_dict.values():
             for node,attr in ckt["graph"].nodes(data=True):
                 if 'net' not in attr["inst_type"] and attr["real_inst_type"]==circuit_name:
@@ -238,7 +241,7 @@ def add_parallel_transistor(G):
         for node in remove_nodes:
             G.remove_node(node)
 def add_stacked_transistor(G):
-    logger.debug("START reducing  stacks in graph: ")
+    logger.debug(f"START reducing  stacks in graph: {G.nodes(data=True)} {G.edges()} ")
     logger.debug(f"initial size of graph: {len(G)}")
     remove_nodes = []
     modified_edges = {}
@@ -247,6 +250,7 @@ def add_stacked_transistor(G):
         if 'mos' in attr["inst_type"] and node not in remove_nodes:
             for net in G.neighbors(node):
                 edge_wt = G.get_edge_data(node, net)['weight']
+                #for source nets with only two connections
                 if edge_wt == 4 and len(list(G.neighbors(net))) == 2:
                     for next_node in G.neighbors(net):
                         logger.debug(f" checking nodes: {node}, {next_node} {net} {modified_nodes} {remove_nodes} ")
@@ -258,14 +262,16 @@ def add_stacked_transistor(G):
                                     "inst_type"] and G.get_edge_data(
                                         next_node, net)['weight'] == 1:
                             common_nets = set(G.neighbors(node)) & set( G.neighbors(next_node))
+                            # source net of neighbor
                             source_net = [snet for snet in G.neighbors(next_node) if  G.get_edge_data( next_node, snet)['weight'] == 4]
                             gate_net =  [gnet for gnet in G.neighbors(next_node) if  G.get_edge_data( next_node, gnet)['weight'] == 2]
-                            if len(gate_net)==len(source_net)==1 and len(common_nets)>1:
+                            if len(gate_net)==len(source_net)==1 and gate_net in G.neighbors(node) \
+                                    and G.get_edge_data( node, gate_net)['weight'] == 2 and len(common_nets)>1:
                                 source_net=source_net[0]
                                 gate_net=gate_net[0]
                             else:
                                 continue
-                            logger.debug(f"stacking two transistors: {node}, {next_node}, {gate_net}, {source_net},{common_nets}")
+                            logger.debug(f"check stack transistors: {node}, {next_node}, {gate_net}, {source_net},{common_nets}")
                             if G.nodes[net]["net_type"]!="external" :
                                 if G.get_edge_data( node, gate_net)['weight'] >= 2 :
                                     logger.debug(f"checking values {G.nodes[next_node]},{G.nodes[next_node]}")
