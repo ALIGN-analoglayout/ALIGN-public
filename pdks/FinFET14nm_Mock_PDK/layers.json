@@ -4,7 +4,7 @@
 "ScaleFactor":1,
 "design_info":
 {
-"vt_type":["HVT","LVT","RVT"],
+"vt_type":["HVT","LVT","RVT", "SLVT"],
 "top_signal_routing_layer": "M12",
 "bottom_signal_routing_layer": "M2",
 "top_clock_routing_layer": "M12",
@@ -610,6 +610,12 @@
 {
 "Layer": "Hvt",
 "GdsLayerNo": 151,
+"GdsDatatype": {"Draw":0}
+},
+
+{
+"Layer": "Slvt",
+"GdsLayerNo": 171,
 "GdsDatatype": {"Draw":0}
 },
 

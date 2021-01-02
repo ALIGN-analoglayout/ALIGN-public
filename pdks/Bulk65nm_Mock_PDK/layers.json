@@ -5,7 +5,7 @@
 
 "design_info":
 {
-"vt_type":["HVT","LVT","RVT"],
+"vt_type":["HVT","LVT","RVT", "SLVT"],
 "top_signal_routing_layer": "M9",
 "bottom_signal_routing_layer": "M2",
 "top_clock_routing_layer": "M9",
@@ -416,6 +416,12 @@
 {
 "Layer": "Hvt",
 "GdsLayerNo": 154,
+"GdsDatatype": {"Draw":0}
+},
+
+{
+"Layer": "Slvt",
+"GdsLayerNo": 155,
 "GdsDatatype": {"Draw":0}
 },
 
