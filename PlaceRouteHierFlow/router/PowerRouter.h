@@ -87,8 +87,10 @@ class PowerRouter : public GcellDetailRouter {
     void Initial_powerrouter_report_info(PnRDB::routing_net &temp_routing_net, int i);
     void Update_powerrouter_report_info(PnRDB::routing_net& temp_routing_net, int i, int j, int pathMark);
     void Max_Min_Contact(PnRDB::contact &temp_contact, int &LLx, int &LLy, int &URx, int &URy);
+    int FindMulti_Connection_Number(int i, PnRDB::hierNode& node);
     void CreatePowerGridDrc_info_DC(string inputfile);
     void CreatePowerGrid_DC(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, string inputfile);
+
 };
 
 #endif
