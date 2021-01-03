@@ -10,7 +10,81 @@ from .merge_nodes import convert_unit
 from .util import get_next_level
 
 import logging
+import networkx as nx
+
 logger = logging.getLogger(__name__)
+def remove_pg_pins(hier_graph_dict:dict,circuit_name, pg_pins):
+    """
+    
+
+    Parameters
+    ----------
+    hier_graph_dict : dict
+        dictionary of all circuit in spice file
+    circuit_name : str
+        name of circuit to be processed.
+    G : networkx graph
+        graph of circuit.
+    pg_pins : list
+        graph of circuit.
+    Returns
+    -------
+    None.
+
+    """
+    G = hier_graph_dict[circuit_name]["graph"]
+    logger.debug(f"no of nodes in {circuit_name}: {len(G)}")
+    remove_nodes = []
+    for node, attr in G.nodes(data=True):
+        if 'sub_graph' not in attr or attr['inst_type'] =='net':
+            continue
+        elif len(set(attr["connection"].values()) & set(pg_pins))>0:
+            pg_conn = {}
+            for k,v in attr["connection"].items():
+                if v in pg_pins and k not in pg_pins:
+                    pg_conn[k]=v
+            if pg_conn:
+                logger.error(f"power pin connected as signal net {pg_conn} in {node}")
+                for k,v in pg_conn.items():
+                    del attr["connection"][k]
+                    attr["ports"].remove(v)
+                #if 'mos_body' not in hier_graph_dict[attr["inst_type"]]:
+                updated_name = modify_pg_conn_subckt(hier_graph_dict,attr["inst_type"], pg_conn)
+                attr["inst_type"] = updated_name
+                remove_pg_pins(hier_graph_dict,attr["inst_type"], pg_pins)
+
+                    #To be automated later in annotation
+def modify_pg_conn_subckt(hier_graph_dict:dict,circuit_name, pg_conn):
+    i=1
+    updated_ckt_name = circuit_name+'pg'+str(i)
+    while updated_ckt_name in hier_graph_dict.keys():
+        i = i+1
+        updated_ckt_name = circuit_name+'pg'+str(i)
+    new = hier_graph_dict[circuit_name].copy()
+    logger.debug(f"modifying subckt {new} {circuit_name} {updated_ckt_name} {pg_conn}")
+    for k,v in pg_conn.items():
+        if k in new["ports"]:
+            new["ports"].remove(k)
+            del new["ports_weight"][k]
+        if k in  new["connection"]:
+            #to handle body pin missing connection
+            del new["connection"][k]
+        new["graph"] = nx.relabel_nodes(new["graph"],{k:v},copy=False)
+        for node,attr in new["graph"].nodes(data=True):
+            if attr["inst_type"]=='net':
+                continue
+            elif k in attr["ports"]:
+                attr["ports"]=[v if x==k else x for x in attr["ports"]]
+                for a,b in attr["connection"].items():
+                    if b==k:
+                        attr["connection"][a]=v
+
+                logger.debug(f"updated attributes of {node}: {attr}")
+                
+
+    hier_graph_dict[ updated_ckt_name] = new   
+    return updated_ckt_name
+
 
 def preprocess_stack_parallel(hier_graph_dict:dict,circuit_name,G):
     """

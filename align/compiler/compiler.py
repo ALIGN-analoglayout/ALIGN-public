@@ -4,7 +4,7 @@ import json
 
 from .util import _write_circuit_graph, max_connectivity
 from .read_netlist import SpiceParser
-from .preprocess import define_SD, preprocess_stack_parallel
+from .preprocess import define_SD, preprocess_stack_parallel, remove_pg_pins
 from .match_graph import read_inputs, read_setup,_mapped_graph_list,check_nodes,reduce_graph
 from .write_verilog_lef import WriteVerilog, print_globals,print_header,generate_lef
 from .common_centroid_cap_constraint import WriteCap, check_common_centroid
@@ -72,6 +72,10 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
             _write_circuit_graph(lib_circuit["name"], lib_circuit["graph"],
                                          "./circuit_graphs/")
     hier_graph_dict=read_inputs(circuit["name"],circuit["graph"])
+
+    #remove pg_pins requirement by pnr
+    pg_pins = design_setup['POWER']+design_setup['GND']
+    remove_pg_pins(hier_graph_dict,design_name, pg_pins)
 
     stacked_subcircuit=[]
     for circuit_name, circuit in hier_graph_dict.items():
@@ -215,7 +219,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             #Dropping floating ports
 
             lef_name = attr['inst_type']
-            #considerign instance of body and without body same in case we have generator for non body pin instances
+            #considering instance of body and without body same in case we have generator for non body pin instances
             if lef_name.split('_')[-1]=='B' and  lef_name[0:-2] in ALL_LEF:
                 if 'inst_copy' in attr:
                     ALL_LEF.append(lef_name + attr['inst_copy'])
