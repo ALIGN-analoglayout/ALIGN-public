@@ -131,7 +131,6 @@ def preprocess_stack_parallel(hier_graph_dict:dict,circuit_name,G):
                     attr["real_inst_type"]=attributes[0]["real_inst_type"]
                     attr["values"]={**attributes[0]["values"],**attr["values"]}
                     attr["sub_graph"] =None
-                    attr["body_pin"] = attr["connection"][attributes[0]["body_pin"]]
                     attr["ports"] =[attr["connection"][port] for port in attributes[0]["ports"]]
                     attr["edge_weight"] = attributes[0]["edge_weight"]
                     attr["connection"]= None

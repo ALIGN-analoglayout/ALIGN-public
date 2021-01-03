@@ -46,7 +46,8 @@ static void generic_router_test( const string& topcell, const string& tag, int m
   int v_skip_factor = 5;
 
   Router curr_route;
-  curr_route.RouteWork( mode0, current_node, const_cast<PnRDB::Drc_info&>(drc_info), mode1, mode2, binary_directory, h_skip_factor, v_skip_factor);
+  string dummyfile;
+  curr_route.RouteWork( mode0, current_node, const_cast<PnRDB::Drc_info&>(drc_info), mode1, mode2, binary_directory, h_skip_factor, v_skip_factor, dummyfile);
 
   PnRDB::hierNode post_current_node;
   DB.ReadDBJSON( post_current_node, "gold/" + topcell + "_0.post_" + tag + ".db.json");
@@ -59,6 +60,8 @@ double ConstGraph::GAMAR=30;
 double ConstGraph::BETA=100;
 double ConstGraph::SIGMA=1000;
 double ConstGraph::PHI=1500;
+double ConstGraph::PI=1500;
+double ConstGraph::PII=1500;
 
 static void generic_placer_test( const string& topcell)
 {

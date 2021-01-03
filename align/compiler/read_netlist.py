@@ -397,8 +397,6 @@ class SpiceParser:
                     "edge_weight": node["edge_weight"]
                 }
                 logger.debug(f'{flat_node}')
-                if 'mos' in node["inst_type"]:
-                    flat_node["body_pin"]=node["body_pin"]
                 flatdesign.append(flat_node)
                 logger.debug(f'Updated Node name: {flat_node["inst"]}, type: {flat_node["inst_type"]}')
 
@@ -454,8 +452,6 @@ class SpiceParser:
                     "values": values,
                     "hier_nodes": self._hier_circuit(node["inst_type"], self.subckts[subckt_name]["ports"], values)
                 }
-                if 'mos' in node["inst_type"] and 'body_pin' in node.keys():
-                    hier_node["body_pin"]=node["body_pin"]
                 hier_design.append(hier_node)
                 logger.debug(f"updated node info: {node}")
             else:
@@ -498,8 +494,6 @@ class SpiceParser:
                                    values=node['values'],
                                    sub_graph=subgraph,
                                    connection=connection)
-            if 'mos' in node["inst_type"] and 'body_pin' in node.keys():
-                circuit_graph.nodes[node["inst"]]["body_pin"]=node["body_pin"]
             ##### ASSIGNING EDGE WEIGHTS ######
             #wt_index = 0
             for wt_index, net in enumerate(node["ports"]):
