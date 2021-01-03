@@ -44,8 +44,8 @@ git clone https://github.com/nlohmann/json.git
 cd $ALIGN_HOME
 git clone https://github.com/google/googletest
 cd googletest/
-#For UMN: cmake -DCMAKE_CXX_COMPILER=/apps/common/gcc/8.2.0/bin/g++ -DCMAKE_C_COMPILER=/apps/common/gcc/8.2.0/bin/gcc CMakeLists.txt
-cmake CMakeLists.txt
+cmake -DCMAKE_CXX_COMPILER=/apps/common/gcc/8.2.0/bin/g++ -DCMAKE_C_COMPILER=/apps/common/gcc/8.2.0/bin/gcc CMakeLists.txt
+#cmake CMakeLists.txt
 make
 mkdir googletest/mybuild
 cp -r lib googletest/mybuild/.
@@ -69,6 +69,7 @@ setenv LP_DIR $ALIGN_HOME/lpsolve
 #setenv BOOST_LP $ALIGN_HOME/boost
 setenv JSON $ALIGN_HOME/json
 setenv GTEST_DIR $ALIGN_HOME/googletest/googletest/
+setenv SuperLu_DIR $ALIGN_HOME/superlu
 setenv VENV $ALIGN_HOME/general
 
 ## install align 
@@ -89,8 +90,8 @@ cd $ALIGN_HOME
 
 ## Run first example
 #---------------------
-#mkdir $ALIGN_WORK_DIR
-#cd $ALIGN_WORK_DIR
-#ln -s $ALIGN_HOME/build/Makefile .
+mkdir $ALIGN_WORK_DIR
+cd $ALIGN_WORK_DIR
+ln -s $ALIGN_HOME/build/Makefile .
 ### for umn: module load gcc/8.2.0
 #make VENV=$VENV
