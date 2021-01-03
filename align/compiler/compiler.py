@@ -64,6 +64,10 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
     logger.info(f"all library elements: {[ele['name'] for ele in library]}")
     if len(design_setup['DONT_USE_CELLS'])>0:
         library=[lib_ele for lib_ele in library if lib_ele['name'] not in design_setup['DONT_USE_CELLS']]
+    #read lef to not write those modules as macros
+    lef_path = pathlib.Path(__file__).resolve().parent.parent / 'config'
+    all_lef = read_lef(lef_path)
+    logger.debug(f"Available library cells: {', '.join(all_lef)}")
 
     if Debug==True:
         _write_circuit_graph(circuit["name"], circuit["graph"],
@@ -101,7 +105,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
         else:
             mapped_graph_list = _mapped_graph_list(G1, library, design_setup['POWER']+design_setup['GND']  ,design_setup['CLOCK'], False )
         # reduce graph converts input hierarhical graph to dictionary
-        updated_circuit, Grest = reduce_graph(G1, mapped_graph_list,library,check_duplicates,design_setup)
+        updated_circuit, Grest = reduce_graph(G1, mapped_graph_list,library,check_duplicates,design_setup,all_lef)
         check_nodes(updated_circuit)
         updated_ckt_list.extend(updated_circuit)
 
@@ -120,8 +124,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
             "ports": circuit["ports"],
             "ports_weight": circuit["ports_weight"],
             "ports_match": circuit["connection"],
-            "size": len(Grest.nodes()),
-            "mos_body":circuit["mos_body"]
+            "size": len(Grest.nodes())
         })
 
         lib_names=[lib_ele['name'] for lib_ele in library]
@@ -185,8 +188,8 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
 
     #read lef to not write those modules as macros
     lef_path = pathlib.Path(__file__).resolve().parent.parent / 'config'
-    ALL_LEF = read_lef(lef_path)
-    logger.debug(f"Available library cells: {', '.join(ALL_LEF)}")
+    all_lef = read_lef(lef_path)
+    logger.debug(f"Available library cells: {', '.join(all_lef)}")
     # local hack for deisgn vco_dtype,
     #there requirement is different size for nmos and pmos
     generated_module=[]
@@ -208,15 +211,8 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             #Dropping floating ports
 
             lef_name = attr['inst_type']
-            #considerign instance of body and without body same in case we have generator for non body pin instances
-            if lef_name.split('_')[-1]=='B' and  lef_name[0:-2] in ALL_LEF:
-                if 'inst_copy' in attr:
-                    ALL_LEF.append(lef_name + attr['inst_copy'])
-                else:
-                    ALL_LEF.append(lef_name)
-                lef_name = lef_name[0:-2]
 
-            if "values" in attr and (lef_name in ALL_LEF):
+            if "values" in attr and (lef_name in all_lef):
                 block_name, block_args = generate_lef(
                     lef_name, attr,
                     primitives, design_config, uniform_height)
@@ -228,7 +224,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
                         if member["name"] == lef_name + attr['inst_copy']:
                             member["name"] = block_name
                     graph.nodes[node]["inst_type"]=block_name
-                    ALL_LEF.append(block_name)
+                    all_lef.append(block_name)
 
 
                 # Only unit caps are generated
@@ -245,7 +241,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
                     primitives[block_name] = block_args
             elif "values" in attr and 'inst_copy' in attr:
                 member["graph"].nodes[node]["inst_type"]= lef_name+attr["inst_copy"]
-                ALL_LEF.append(block_name)
+                all_lef.append(block_name)
 
             else:
                 logger.info(f"No physical information found for: {name}")
@@ -270,15 +266,13 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             if member["ports"]:
                 logger.debug(f'Found module ports: {member["ports"]} {member.keys()}')
                 floating_ports = set(inoutpin) - set(member["ports"]) - set(design_setup['POWER']) -set(design_setup['GND'])
-                if 'mos_body' in member:
-                    floating_ports = floating_ports - set(member["mos_body"])
 
                 if len(list(floating_ports))> 0:
                     logger.error(f"floating ports found: {name} {floating_ports}")
                     raise SystemExit('Please remove floating ports')
         else:
             inoutpin = member["ports"]
-        if name not in  ALL_LEF:
+        if name not in  all_lef:
             logger.debug(f"call verilog writer for block: {name}")
             wv = WriteVerilog(graph, name, inoutpin, updated_ckt_list, POWER_PINS)
             all_array={}

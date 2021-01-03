@@ -153,8 +153,8 @@ class WriteSpice:
                         ports.append(key)
                         nets.append(value)
                     #move body pin to last
-                    ports.append(ports.pop(0))
-                    nets.append(nets.pop(0))
+                    #ports.append(ports.pop(0))
+                    #nets.append(nets.pop(0))
                     # transitor with shorted terminals
                     if 'DCL_NMOS' in attr['inst_type']:
                         nets[1:1]=[nets[0]]

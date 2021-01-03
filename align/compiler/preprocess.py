@@ -54,7 +54,6 @@ def preprocess_stack_parallel(hier_graph_dict:dict,circuit_name,G):
                     attr["real_inst_type"]=attributes[0]["real_inst_type"]
                     attr["values"]={**attributes[0]["values"],**attr["values"]}
                     attr["sub_graph"] =None
-                    attr["body_pin"] = attr["connection"][attributes[0]["body_pin"]]
                     attr["ports"] =[attr["connection"][port] for port in attributes[0]["ports"]]
                     attr["edge_weight"] = attributes[0]["edge_weight"]
                     attr["connection"]= None
@@ -260,7 +259,7 @@ def add_stacked_transistor(G):
                             common_nets = set(G.neighbors(node)) & set( G.neighbors(next_node))
                             source_net = [snet for snet in G.neighbors(next_node) if  G.get_edge_data( next_node, snet)['weight'] == 4]
                             gate_net =  [gnet for gnet in G.neighbors(next_node) if  G.get_edge_data( next_node, gnet)['weight'] == 2]
-                            if len(gate_net)==len(source_net)==1 and len(common_nets)>1:
+                            if len(gate_net)==len(source_net)==1 and len(common_nets)>2:
                                 source_net=source_net[0]
                                 gate_net=gate_net[0]
                             else:
