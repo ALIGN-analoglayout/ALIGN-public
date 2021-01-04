@@ -11,12 +11,16 @@ from .util import get_next_level
 
 import logging
 import networkx as nx
+import copy
 
 logger = logging.getLogger(__name__)
+
 def remove_pg_pins(hier_graph_dict:dict,circuit_name, pg_pins):
     """
-    
-
+    removes power pins to be sent as signal by recursively finding all connections to power pins 
+    and removing them from subcircuit defination and instance calls
+    for each circuit different power connection creates an extra subcircuit
+    Required by PnR as it does not make power connections as ports
     Parameters
     ----------
     hier_graph_dict : dict
@@ -33,10 +37,10 @@ def remove_pg_pins(hier_graph_dict:dict,circuit_name, pg_pins):
 
     """
     G = hier_graph_dict[circuit_name]["graph"]
-    logger.debug(f"no of nodes in {circuit_name}: {len(G)}")
+    logger.debug(f"checking pg ports in {circuit_name} {pg_pins}")
     remove_nodes = []
     for node, attr in G.nodes(data=True):
-        if 'sub_graph' not in attr or attr['inst_type'] =='net':
+        if 'sub_graph' not in attr or attr['inst_type'] =='net' or not attr["connection"]:
             continue
         elif len(set(attr["connection"].values()) & set(pg_pins))>0:
             pg_conn = {}
@@ -44,44 +48,75 @@ def remove_pg_pins(hier_graph_dict:dict,circuit_name, pg_pins):
                 if v in pg_pins and k not in pg_pins:
                     pg_conn[k]=v
             if pg_conn:
-                logger.error(f"power pin connected as signal net {pg_conn} in {node}")
+                logger.info(f"removing power pin connected as signal net {pg_conn} in {node}")
+                #deleting power connections to subcircuits
                 for k,v in pg_conn.items():
                     del attr["connection"][k]
+                    del attr['edge_weight'][attr["ports"].index(v)]
                     attr["ports"].remove(v)
-                #if 'mos_body' not in hier_graph_dict[attr["inst_type"]]:
+                #create a new subcircuit and changes its ports to power ports
+                #power ports are not written during verilog
                 updated_name = modify_pg_conn_subckt(hier_graph_dict,attr["inst_type"], pg_conn)
                 attr["inst_type"] = updated_name
-                remove_pg_pins(hier_graph_dict,attr["inst_type"], pg_pins)
-
-                    #To be automated later in annotation
+                remove_pg_pins(hier_graph_dict,updated_name, pg_pins)
+                
 def modify_pg_conn_subckt(hier_graph_dict:dict,circuit_name, pg_conn):
-    i=1
-    updated_ckt_name = circuit_name+'pg'+str(i)
-    while updated_ckt_name in hier_graph_dict.keys():
-        i = i+1
-        updated_ckt_name = circuit_name+'pg'+str(i)
-    new = hier_graph_dict[circuit_name].copy()
-    logger.debug(f"modifying subckt {new} {circuit_name} {updated_ckt_name} {pg_conn}")
+    """
+    creates a new subcircuit by removing power pins from a subcircuit defination 
+    and change internal connections within the subcircuit
+   
+    Parameters
+    ----------
+    hier_graph_dict : dict
+        dictionary of all circuit in spice file
+    circuit_name : str
+        name of circuit to be processed.
+    pg_conn : dict
+        ports to be modified and corresponding pg pin.
+    Returns
+    -------
+    new subcircuit name
+
+    """
+
+    new = copy.deepcopy(hier_graph_dict[circuit_name])
+    logger.debug(f"modifying subckt {circuit_name} {new} {pg_conn}")
     for k,v in pg_conn.items():
-        if k in new["ports"]:
-            new["ports"].remove(k)
-            del new["ports_weight"][k]
-        if k in  new["connection"]:
-            #to handle body pin missing connection
-            del new["connection"][k]
-        new["graph"] = nx.relabel_nodes(new["graph"],{k:v},copy=False)
+        logger.info(f"fixing port {k} to {v} for all inst in {circuit_name}")
+        new["ports"].remove(k)
+        del new["ports_weight"][k]
+        if v in new["graph"].nodes():
+            old_edge_wt=list(copy.deepcopy(new["graph"].edges(v,data=True)))
+            new["graph"] = nx.relabel_nodes(new["graph"],{k:v},copy=False)
+            for n1,n2,v1 in new["graph"].edges(v,data=True):
+                for n11,n21,v11 in old_edge_wt:
+                    if n1 == n11 and n2 ==n21:
+                        v1["weight"] = v1["weight"] | v11["weight"]
+            logger.debug(f"updated weights {old_edge_wt} {new['graph'].edges(v,data=True)}")
+
+        else:
+            new["graph"] = nx.relabel_nodes(new["graph"],{k:v},copy=False)
+
         for node,attr in new["graph"].nodes(data=True):
             if attr["inst_type"]=='net':
                 continue
-            elif k in attr["ports"]:
-                attr["ports"]=[v if x==k else x for x in attr["ports"]]
+            #if k in attr["ports"]:
+            #logger.debug(f"updating node {node} {attr}")
+            attr["ports"]=[v if x==k else x for x in attr["ports"]]
+            if "connection" in attr and attr["connection"]:
                 for a,b in attr["connection"].items():
                     if b==k:
                         attr["connection"][a]=v
-
-                logger.debug(f"updated attributes of {node}: {attr}")
+                        logger.debug(f"updated attributes of {node}: {attr}")
                 
-
+    i=1
+    updated_ckt_name = circuit_name+'pg'+str(i)
+    while updated_ckt_name in hier_graph_dict.keys():
+        if hier_graph_dict[updated_ckt_name]["ports"]==new["ports"]:
+            break
+        else:
+            i = i+1
+            updated_ckt_name = circuit_name+'pg'+str(i)
     hier_graph_dict[ updated_ckt_name] = new   
     return updated_ckt_name
 
@@ -112,7 +147,7 @@ def preprocess_stack_parallel(hier_graph_dict:dict,circuit_name,G):
     initial_size=len(G)
     delta =1
     while delta > 0:
-        logger.debug(f"CHECKING stacked transistors {G}")
+        logger.debug(f"CHECKING stacked transistors {circuit_name} {G}")
         add_stacked_transistor(G)
         add_parallel_transistor(G)
         delta = initial_size - len(G)
@@ -131,7 +166,7 @@ def preprocess_stack_parallel(hier_graph_dict:dict,circuit_name,G):
                     attr["real_inst_type"]=attributes[0]["real_inst_type"]
                     attr["values"]={**attributes[0]["values"],**attr["values"]}
                     attr["sub_graph"] =None
-                    attr["ports"] =[attr["connection"][port] for port in attributes[0]["ports"]]
+                    attr["ports"] =[attr["connection"][port] for port in attributes[0]["ports"] if port in attr["connection"]]
                     attr["edge_weight"] = attributes[0]["edge_weight"]
                     attr["connection"]= None
                                                                    

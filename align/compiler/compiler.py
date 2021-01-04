@@ -78,12 +78,13 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
     hier_graph_dict=read_inputs(circuit["name"],circuit["graph"])
 
     #remove pg_pins requirement by pnr
+    logger.info(f"Modifying pg pins in design for PnR")
     pg_pins = design_setup['POWER']+design_setup['GND']
     remove_pg_pins(hier_graph_dict,design_name, pg_pins)
-
+    
+    logger.debug(f"START preprocessing")
     stacked_subcircuit=[]
     for circuit_name, circuit in hier_graph_dict.items():
-        logger.debug(f"START preprocessing")
         G1 = circuit["graph"]
         if circuit_name not in design_setup['DIGITAL']:
             define_SD(G1,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
@@ -127,7 +128,6 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
             "graph": Grest,
             "ports": circuit["ports"],
             "ports_weight": circuit["ports_weight"],
-            "ports_match": circuit["connection"],
             "size": len(Grest.nodes())
         })
 
@@ -268,9 +268,8 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             duplicate_modules.append(name)
         logger.debug(f"Found module: {name} {graph.nodes()}")
         inoutpin = []
-        logger.debug(f'found ports match: {member["ports_match"]}')
         floating_ports=[]
-        if member["ports_match"]:
+        if "ports_match" in member and member["ports_match"]:
             for key in member["ports_match"].keys():
                 if key not in POWER_PINS:
                     inoutpin.append(key)

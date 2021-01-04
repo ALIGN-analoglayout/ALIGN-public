@@ -37,8 +37,7 @@ def traverse_hier_in_graph(G, hier_graph_dict):
             hier_graph_dict[attr["inst_type"]] = {
                 "graph": attr["sub_graph"],
                 "ports": sub_ports,
-                "ports_weight": ports_weight,
-                "connection": attr["connection"]
+                "ports_weight": ports_weight
             }
 
             traverse_hier_in_graph(attr["sub_graph"], hier_graph_dict)
@@ -95,7 +94,7 @@ def _mapped_graph_list(G1, liblist,POWER=None,CLOCK=None, DIGITAL=False):
     find all matches of library element in the graph
     """
 
-    logger.debug(f"Matching circuit Graph from library elements {G1.nodes}")
+    logger.debug(f"Matching circuit Graph from library elements {G1.nodes} {G1.edges(data=True)}")
     mapped_graph_list = {}
 
     for lib_ele in liblist:
@@ -107,7 +106,8 @@ def _mapped_graph_list(G1, liblist,POWER=None,CLOCK=None, DIGITAL=False):
             continue
 
         sub_block_name = lib_ele['name']
-        #logger.debug(f"Matching: {sub_block_name} : {' '.join(G2.nodes())}")
+        if len(G2.nodes)<=len(G1.nodes):
+            logger.debug(f"Matching: {sub_block_name} : {G2.nodes} {G2.edges(data=True)}")
         GM = isomorphism.GraphMatcher(
             G1, G2,
             node_match=isomorphism.categorical_node_match(['inst_type'],
