@@ -38,7 +38,7 @@ SRCS=$(OBJS:.o=.cpp)
 LIBS=$(placer_path)/placer.a $(router_path)/router.a $(cap_placer_path)/cap_placer.a $(PnRDB_path)/PnRDB.a $(MNA_path)/MNA.a $(SuperLu_path1)/libsuperlu.a $(SuperLu_path2)/libblas.a $(GuardRing_path)/GuardRing.a
 
 
-all: depend subsystem pnr_compiler unit_tests
+all: depend subsystem pnr_compiler python_object_file unit_tests
 
 depend:
 	@$(CXX) $(CXXFLAGS) -E -MM $(SRCS) unit_tests.cpp > .depend
@@ -54,7 +54,11 @@ subsystem:
 	$(MAKE) -C $(GuardRing_path)
 
 pnr_compiler: subsystem $(OBJS) 
-	$(CXX) -o $@ $(OBJS) $(LIBS) -L$(GTEST_LIB_DIR) -lgtest -L$(LIB_LP) -llpsolve55 $(LDFLAGS)  
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LIBS) -L$(GTEST_LIB_DIR) -lgtest -L$(LIB_LP) -llpsolve55 $(LDFLAGS)  
+
+python_object_file: PnR`python3-config --extension-suffix`
+PnR`python3-config --extension-suffix`: subsystem $(OBJS)
+	$(CXX) $(CXXFLAGS) -shared `python -m pybind11 --includes` PnR-pybind11.cpp -o PnR`python3-config --extension-suffix` toplevel.o cap_placer/cap_placer.a placer/placer.a router/router.a PnRDB/PnRDB.a -L$(GTEST_LIB_DIR) -lgtest
 
 unit_tests: subsystem unit_tests.o
 	$(CXX) -o $@ unit_tests.o $(LIBS) -L$(GTEST_LIB_DIR) -lgtest_main -lgtest -L$(LIB_LP) -llpsolve55 $(LDFLAGS) 

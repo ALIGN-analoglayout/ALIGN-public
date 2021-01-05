@@ -96,7 +96,8 @@ pip install -e .
 deactivate
 
 ## Install ALIGN_PnR
-export LD_LIBRARY_PATH=$ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}$ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/:$GTEST_DIR/mybuild/lib/
+
 cd $ALIGN_HOME/PlaceRouteHierFlow/ && make
 cd $ALIGN_HOME
 
