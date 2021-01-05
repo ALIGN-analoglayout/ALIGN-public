@@ -53,8 +53,75 @@ PnRdatabase::PnRdatabase(string path, string topcell, string vname, string lefna
   this->ReadLEF(path+"/"+lefname);
   this->ReadMap(path, mapname);
   this->ReadVerilog(path, vname, topcell);
+  //this->extend_pin_function();
 
   cout<<"PnRDB-Info: complete reading"<<endl;
+}
+
+void PnRdatabase::extend_pin_function(){
+
+  for(unsigned int i=0;i<hierTree.size();++i){
+
+     for(unsigned int j=0;j<hierTree[i].Blocks.size();j++){
+
+          for(unsigned int k=0;k<hierTree[i].Blocks[j].instance.size();k++){
+
+                extend_pins(hierTree[i].Blocks[j].instance[k]);
+             }
+
+        }
+  }
+
+}
+
+void PnRdatabase::extend_pins(PnRDB::block &temp_block){
+ 
+  //only extend for leafblock
+  if(temp_block.isLeaf){
+
+      for(unsigned int i=0;i<temp_block.blockPins.size();i++){
+         
+         //extend pins 
+         extend_pin(temp_block.blockPins[i],temp_block.width,temp_block.height);
+         //put the extended pins into internal metals
+         for(unsigned int j=0;j<temp_block.blockPins[i].pinContacts.size();j++){
+            temp_block.interMetals.push_back(temp_block.blockPins[i].pinContacts[j]);
+         }
+
+      }
+
+    }
+
+}
+
+
+void PnRdatabase::extend_pin(PnRDB::pin &temp_pin, int width, int height){
+
+  int h_margin = 4;
+  int v_margin = 4;
+
+  //extend pin
+  for(unsigned int i=0;i<temp_pin.pinContacts.size();i++){
+
+      int metal_index = DRC_info.Metalmap[temp_pin.pinContacts[i].metal];
+ 
+      if(DRC_info.Metal_info[metal_index].direct==1){//h
+
+          temp_pin.pinContacts[i].originBox.LL.x = 0+h_margin;
+          temp_pin.pinContacts[i].originBox.UR.x = width-h_margin;
+          temp_pin.pinContacts[i].originCenter.x = width/2;
+          
+        }else{
+
+          temp_pin.pinContacts[i].originBox.LL.y = 0+v_margin;
+          temp_pin.pinContacts[i].originBox.UR.y = height-v_margin;
+          temp_pin.pinContacts[i].originCenter.y = height/2;
+
+        }
+  }
+
+  //might need to add the pin into internal metal
+
 }
 
 deque<int> PnRdatabase::TraverseHierTree() {
@@ -86,7 +153,7 @@ void PnRdatabase::Write_Current_Workload(PnRDB::hierNode &node, double total_cur
   vector<double> rand_current;
 
   for(int i =0;i<current_number;i++){
-     rand_current.push_back(rand() % 5);
+     rand_current.push_back(rand() % 3);
   }
 
   double sum=0;
@@ -97,11 +164,14 @@ void PnRdatabase::Write_Current_Workload(PnRDB::hierNode &node, double total_cur
   
   
   for(int i=0;i<current_number;i++){
-    double x_num = rand() % 10;
-    double y_num = rand() % 10;
+    double x_num = rand() % 10 +1;
+    double y_num = rand() % 10 +1;
+    if(x_num==10) x_num-=1;
+    if(y_num==10) y_num-=1;   
     double x = x_num/10*(urx-llx)+llx;
     double y = y_num/10*(ury-lly)+lly;
-    double current = rand_current[i]*rand_current[i]/sum*total_current;
+    //double current = 0.0005;//rand_current[i]*rand_current[i]/sum*total_current;
+    double current = 0.0005/(rand() % 10 +1);//rand_current[i]*rand_current[i]/sum*total_current;
     currentfile<<x<<" "<<y<<" "<<x<<" "<<y<<" "<<current<<std::endl;
   }
   currentfile.close();
@@ -115,7 +185,7 @@ void PnRdatabase::Write_Power_Mesh_Conf(std::string outputfile){
 
 
   for(int i=0;i<DRC_info.Metal_info.size();i++){
-    PMCfile<<(double) (rand()%10)/10<<" ";
+    PMCfile<<(double) (rand()%5+1)/10<<" "; //power density change from 0.1 to 0.5
   }
   PMCfile<<std::endl;  
 

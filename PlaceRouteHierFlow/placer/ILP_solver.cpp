@@ -1255,7 +1255,7 @@ void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierN
     }
     UpdateBlockinHierNode(mydesign, ort, node, i, curr_sp.GetBlockSelected(i), drcInfo);
   }
-  UpdateTerminalinHierNode(mydesign, node);
+  UpdateTerminalinHierNode(mydesign, node, drcInfo);
   for (unsigned int i = 0; i < mydesign.SNets.size(); ++i) {
     int SBidx = mydesign.SNets.at(i).SBidx;
     placerDB::Smark axis_dir = curr_sp.GetSymmBlockAxis(SBidx);
@@ -1340,7 +1340,7 @@ void ILP_solver::UpdateBlockinHierNode(design& mydesign, placerDB::Omark ort, Pn
   }
 }
 
-void ILP_solver::UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& node) {
+void ILP_solver::UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& node, PnRDB::Drc_info &drcInfo) {
   for (int i = 0; i < (int)mydesign.GetSizeofTerminals(); i++) {
     node.Terminals.at(i).termContacts.clear();
     node.Terminals.at(i).termContacts.resize(node.Terminals.at(i).termContacts.size() + 1);
@@ -1352,6 +1352,8 @@ void ILP_solver::UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& nod
     temp_pin.type = node.Terminals.at(i).type;
     temp_pin.netIter = node.Terminals.at(i).netIter;
     temp_pin.pinContacts = node.Terminals.at(i).termContacts;
+    for (int j=0;j<temp_pin.pinContacts.size();j++)
+      temp_pin.pinContacts[j].metal = drcInfo.Metal_info[0].name;    
     temp_pin.name = node.Terminals.at(i).name;
     temp_pin.type = node.Terminals.at(i).type;
     node.blockPins.push_back(temp_pin);
