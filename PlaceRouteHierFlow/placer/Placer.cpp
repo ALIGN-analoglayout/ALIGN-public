@@ -13,8 +13,8 @@ Placer::Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info&
 }
 
 Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
-  PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo);
-  //PlacementRegularAspectRatio(nodeVec, opath, effort, drcInfo);
+  //PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo);
+  PlacementRegularAspectRatio(nodeVec, opath, effort, drcInfo);
   //PlacementMixSAAspectRatio(nodeVec, opath, effort);
   //PlacementMixAPAspectRatio(nodeVec, opath, effort);
 }
