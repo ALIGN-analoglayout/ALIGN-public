@@ -428,6 +428,11 @@ design::design(PnRDB::hierNode& node) {
   }
 
   this->ML_Constraints = node.ML_Constraints;
+  for (auto order: node.Ordering_Constraints) {
+    for (int i = 0; i < order.first.size() - 1;i++){
+      Ordering_Constraints.push_back(make_pair(make_pair(order.first[i], order.first[i+1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
+    }
+  }
 
   // Add symmetry block constraint, axis direction is determined by user
   for(vector<PnRDB::SymmPairBlock>::iterator it=node.SPBlocks.begin(); it!=node.SPBlocks.end();++it) {
