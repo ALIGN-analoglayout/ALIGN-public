@@ -287,14 +287,14 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
 	}
       } else if(temp[0].compare("bias_graph")==0){
         int distance= atoi(temp[2].c_str());
-        node.bias_Hgraph = distance;
-        node.bias_Vgraph = distance;
+        node.bias_Hgraph = 2*distance;
+        node.bias_Vgraph = 2*distance;
       } else if(temp[0].compare("bias_Hgraph")==0 ) {
         int distance= atoi(temp[2].c_str());
-        node.bias_Hgraph = distance;
+        node.bias_Hgraph = 2*distance;
       } else if(temp[0].compare("bias_Vgraph")==0 ) {
         int distance= atoi(temp[2].c_str());
-        node.bias_Vgraph = distance;
+        node.bias_Vgraph = 2*distance;
       } else if (temp[0].compare("ShieldNet")==0) {
         string shield_net=temp[2];
         for(int i=0;i<(int)node.Nets.size();i++) {
