@@ -259,7 +259,8 @@ void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& cur
   float total_update_number = log(T_MIN/T_INT)/log(ALPHA);
   int updateThrd=100;
   int fail_number = 0;
-  while(T>T_MIN && fail_number < 10) {
+  //while(T>T_MIN && fail_number < 10) {
+  while(T>T_MIN) {
     int i=1;
     int MAX_Iter=1;
     if(effort==0) { MAX_Iter=1;
@@ -382,7 +383,8 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
   int updateThrd=100;
   int fail_number=0;
   float total_update_number = log(T_MIN/T_INT)/log(ALPHA);
-  while(T>T_MIN && fail_number < 10) {
+  //while(T>T_MIN && fail_number < 10) {
+  while(T>T_MIN) {
     int i=1;
     int MAX_Iter=1;
     if(effort==0) { MAX_Iter=1;

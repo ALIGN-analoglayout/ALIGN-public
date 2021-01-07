@@ -460,7 +460,7 @@ void GcellDetailRouter::ReturnInternalMetalContact(std::set<RouterDB::SinkData, 
       }
     }
   }
-
+  /*
   //3. add routing metal into the internal-metal
   for (auto nit = Nets.begin(); nit != Nets.end(); ++nit) {
 
@@ -468,14 +468,14 @@ void GcellDetailRouter::ReturnInternalMetalContact(std::set<RouterDB::SinkData, 
         Set_x_contact.insert(Contact2Sinkdata(pit->MetalRect)); //seems empty?
 
     }
-
+    
     for (auto pit = nit->path_via.begin(); pit != nit->path_via.end(); ++pit) {
         Set_x_contact.insert(Contact2Sinkdata(pit->UpperMetalRect)); //seems empty?
         Set_x_contact.insert(Contact2Sinkdata(pit->LowerMetalRect)); //seems empty?
     }
-
+    
   }
-
+  */
 
   
 
