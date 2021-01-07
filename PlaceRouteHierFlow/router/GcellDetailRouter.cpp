@@ -749,7 +749,6 @@ void GcellDetailRouter::create_detailrouter(){
   //Copy_tile_metals();
   for (unsigned int i = 0; i < Nets.size(); i++)
   {
-
     //int multi_number = R_constraint_based_Parallel_routing_number(i);
     int multi_number = Nets[i].multi_connection;
 
@@ -800,12 +799,12 @@ void GcellDetailRouter::create_detailrouter(){
         A_star a_star(grid, Nets[i].shielding);
         std::cout<<"Net name "<<Nets[i].netName<<std::endl;
         bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, 0, 0);
-        /*
+
         if(pathMark==0){
           grid.CreateGridData();
           assert(0);
          }
-        */
+        
         std::vector<std::vector<RouterDB::Metal>> physical_path;
         Update_rouer_report_info(temp_routing_net, i, j, pathMark);
         std::cout<<"pathMark "<<pathMark<<std::endl;
