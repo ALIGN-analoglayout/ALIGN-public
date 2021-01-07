@@ -24,6 +24,7 @@ $SUDO apt-get update && $SUDO apt-get install -yq \
     python3 \
     python3-pip \
     python3-venv \
+    python3-dev \
     g++\
     cmake \
     libboost-container-dev \
@@ -55,6 +56,8 @@ git clone https://github.com/google/googletest
 cd googletest/
 
 cmake CMakeLists.txt
+make
+cmake -DBUILD_SHARED_LIBS=ON CMakeLists.txt
 make
 mkdir googletest/mybuild
 cp -r lib googletest/mybuild/.
@@ -91,10 +94,10 @@ python3 -m venv $VENV
 source $VENV/bin/activate
 pip install --upgrade pip
 pip install -e .
-deactivate
 
 ## Install ALIGN_PnR
-export LD_LIBRARY_PATH=$ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}$ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/:$GTEST_DIR/mybuild/lib/
+
 cd $ALIGN_HOME/PlaceRouteHierFlow/ && make
 cd $ALIGN_HOME
 
