@@ -23,22 +23,6 @@
 #include "Rdatatype.h"
 #include "../PnRDB/datatype.h"
 
-//extern "C"
-//{
-//#include <stdio.h>
-//#include "lp_lib.h"
-//#define LPSOLVEAPIFROMLIBDEF
-//#include "lp_explicit.h"
-//}
-
-// wbxu: 20190708 the following codes are to enable ILP to choose candidates
-//extern "C"
-//{
-//#include <stdio.h>
-//#include "lp_lib.h"
-//}
-
-
 class GlobalRouter : public RawRouter {
  
   friend class Grid;

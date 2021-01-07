@@ -58,7 +58,7 @@ pnr_compiler: subsystem $(OBJS)
 
 python_object_file: PnR`python3-config --extension-suffix`
 PnR`python3-config --extension-suffix`: subsystem $(OBJS)
-	$(CXX) $(CXXFLAGS) -shared `python -m pybind11 --includes` PnR-pybind11.cpp -o PnR`python3-config --extension-suffix` toplevel.o cap_placer/cap_placer.a placer/placer.a router/router.a PnRDB/PnRDB.a -L$(GTEST_LIB_DIR) -lgtest
+	$(CXX) $(CXXFLAGS) -shared `python -m pybind11 --includes` PnR-pybind11.cpp -o PnR`python3-config --extension-suffix` toplevel.o cap_placer/cap_placer.a placer/placer.a router/router.a PnRDB/PnRDB.a -L$(GTEST_LIB_DIR) -lgtest -L$(LIB_LP) -llpsolve55
 
 unit_tests: subsystem unit_tests.o
 	$(CXX) -o $@ unit_tests.o $(LIBS) -L$(GTEST_LIB_DIR) -lgtest_main -lgtest -L$(LIB_LP) -llpsolve55 $(LDFLAGS) 

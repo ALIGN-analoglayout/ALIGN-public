@@ -27,22 +27,6 @@
 #include <nlohmann/json.hpp>
 #include <iomanip>
 
-/*
-#ifdef _cplusplus
-extern "C" {
-#endif
-
-#include <stdio.h>
-#include "lp_lib.h"
-#define LPSOLVEAPIFROMLIBDEF
-#include "lp_explicit.h"
-
-#ifdef _cplusplus
-}
-#endif
-*/
-
-
 extern "C"
 {
 #include <stdio.h>

@@ -16,7 +16,7 @@ depend:
 -include .depend
 
 unit_tests: unit_tests.o $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $^ -L$(GTEST_LIB_DIR) -lgtest_main -lgtest $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ -L$(GTEST_LIB_DIR) -lgtest_main -lgtest $(LDFLAGS) -L$(LIB_LP) -llpsolve55
 
 router.a: $(OBJS)
 	ar -r -o $@ $^
