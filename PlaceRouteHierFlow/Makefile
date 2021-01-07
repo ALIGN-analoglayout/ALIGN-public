@@ -4,8 +4,7 @@ MAKE=make
 
 # To compile locally, override LP_DIR as follows:  %> LP_DIR=<path_to_lpsolve> make
 LP_DIR?=/usr/local/lib/lpsolve
-LIB_LP = $(LP_DIR)/lp_solve_5.5.2.5_dev_ux64
-SOURCE_LP= $(LP_DIR)/lp_solve_5.5
+export LIB_LP = $(LP_DIR)/lp_solve_5.5.2.5_dev_ux64
 BOOST_LP?=/usr/include
 
 GTEST_DIR?=/opt/googletest/googletest
@@ -17,7 +16,7 @@ JSON?=/opt/json
 SuperLu_DIR?=/opt/superlu
 SuperLu=$(SuperLu_DIR)/SuperLU_5.2.1/SRC/
 
-export CXXFLAGS = $(OPTS) $(WARNS) -w -std=c++14 -m64 -pthread -DNDEBUG -DPRNTlevel=0 -DAdd_ -isystem $(LIB_LP) -isystem $(SOURCE_LP) -I$(SOURCE_LP) -I$(BOOST_LP) -I$(SuperLu) -I$(JSON)/include $(COVERAGE) -isystem $(GTEST_DIR)/include -fPIC
+export CXXFLAGS = $(OPTS) $(WARNS) -w -std=c++14 -m64 -pthread -DNDEBUG -DPRNTlevel=0 -DAdd_ -isystem $(LIB_LP) -I$(BOOST_LP) -I$(SuperLu) -I$(JSON)/include $(COVERAGE) -isystem $(GTEST_DIR)/include -fPIC
 export CXX=g++
 
 export LDFLAGS = -lm -ldl -pthread $(COVERAGE)

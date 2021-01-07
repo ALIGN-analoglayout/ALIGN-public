@@ -1,7 +1,5 @@
 
-# Needs CXX and CXXFLAGS to be defined
-
-LIB_LP = $(LP_DIR)/lp_solve_5.5.2.5_dev_ux64
+# Needs CXX CXXFLAGS LIB_LP to be defined
 
 OBJS = design.o SeqPair.o ConstGraph.o Aplace.o Placer.o ILP_solver.o
 SRCS=$(OBJS:.o=.cpp)

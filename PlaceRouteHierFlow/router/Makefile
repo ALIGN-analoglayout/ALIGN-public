@@ -1,8 +1,4 @@
-# Needs CXX and CXXFLAGS
-
-LP_DIR?=/usr/local/lib/lpsolve
-LIB_LP = $(LP_DIR)/lp_solve_5.5.2.5_dev_ux64
-SOURCE_LP= $(LP_DIR)/lp_solve_5.5
+# Needs CXX CXXFLAGS LIB_LP
 
 OBJS= RawRouter.o Grid.o GlobalGrid.o Graph.o A_star.o GlobalGraph.o GlobalRouter.o GcellGlobalRouter.o DetailRouter.o GcellDetailRouter.o PowerRouter.o Router.o 
 SRCS=$(OBJS:.o=.cpp)
