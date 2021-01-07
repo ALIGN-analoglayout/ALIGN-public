@@ -24,6 +24,7 @@ $SUDO apt-get update && $SUDO apt-get install -yq \
     python3 \
     python3-pip \
     python3-venv \
+    python3-dev \
     g++\
     cmake \
     libboost-container-dev \
