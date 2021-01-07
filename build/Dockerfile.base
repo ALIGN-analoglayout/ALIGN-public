@@ -48,7 +48,8 @@ RUN $pip install -q \
     pytest \
     pytest-cov \
     pytest-timeout \
-    coverage-badge
+    coverage-badge \
+    pybind11
 
 # Lpsolve
 RUN \

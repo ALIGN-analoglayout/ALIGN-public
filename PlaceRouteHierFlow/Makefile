@@ -9,6 +9,7 @@ BOOST_LP?=/usr/include
 
 GTEST_DIR?=/opt/googletest/googletest
 
+NOPYBIND11?=0
 COVERAGE?=
 OPTS?=-g -O3
 WARNS?=-Wall
@@ -55,15 +56,21 @@ subsystem:
 pnr_compiler: subsystem $(OBJS) 
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LIBS) -L$(GTEST_LIB_DIR) -lgtest -L$(LIB_LP) -llpsolve55 $(LDFLAGS)  
 
+
+ifeq ($(NOPYBIND11),0)
 python_object_file: PnR`python3-config --extension-suffix`
 PnR`python3-config --extension-suffix`: subsystem $(OBJS)
 	$(CXX) $(CXXFLAGS) -shared `python -m pybind11 --includes` PnR-pybind11.cpp -o PnR`python3-config --extension-suffix` toplevel.o cap_placer/cap_placer.a placer/placer.a router/router.a PnRDB/PnRDB.a -L$(GTEST_LIB_DIR) -lgtest -L$(LIB_LP) -llpsolve55
+else
+python_object_file:
+	echo "Skipping generation of python object file because NOPYBIND11 is set."
+endif
 
 unit_tests: subsystem unit_tests.o
 	$(CXX) -o $@ unit_tests.o $(LIBS) -L$(GTEST_LIB_DIR) -lgtest_main -lgtest -L$(LIB_LP) -llpsolve55 $(LDFLAGS) 
 
 clean:
-	rm -rf *.o pnr_compiler *.pl *.plt *gds all_* *.gc{da,no}
+	rm -rf *.o *.so pnr_compiler *.pl *.plt *gds all_* *.gc{da,no}
 	make -C $(PnRDB_path) clean
 	make -C $(placer_path) clean
 	make -C $(router_path) clean

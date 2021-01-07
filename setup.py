@@ -35,7 +35,8 @@ setup(name='align',
           'networkx>=2.4',
           'python-gdsii',
           'matplotlib',
-          'pyyaml'
+          'pyyaml',
+          'pybind11'
           ],
       setup_requires=['pytest-runner'],
       python_requires='~=3.6',
