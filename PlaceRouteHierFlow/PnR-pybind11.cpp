@@ -1,0 +1,318 @@
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+namespace py = pybind11;
+using namespace pybind11::literals;
+
+#include "PnRDB/PnRdatabase.h"
+//#include "cap_placer/capplacer.h"
+//#include "placer/Placer.h"
+#include "toplevel.h"
+
+using namespace PnRDB;
+using std::string;
+
+PYBIND11_MODULE(PnR, m) {
+  m.doc() = "pybind11 plugin for PnR";
+
+  py::class_<point>( m, "point")
+    .def( py::init<>())
+    .def( py::init<int, int>())
+    .def_readwrite("x", &point::x)
+    .def_readwrite("y", &point::y);
+  py::class_<bbox>( m, "bbox")
+    .def( py::init<>())
+    .def( py::init<int, int, int, int>())
+    .def( py::init<const bbox&>())
+    .def( py::init<const point&, const point&>())
+    .def_readwrite("LL", &bbox::LL)
+    .def_readwrite("UR", &bbox::UR);
+  py::class_<contact>( m, "contact")
+    .def( py::init<>())
+    .def( py::init<const contact&>())
+    .def_readwrite("metal", &contact::metal)
+    .def_readwrite("originBox", &contact::originBox)
+    .def_readwrite("placedBox", &contact::placedBox)
+    .def_readwrite("originCenter", &contact::originCenter)
+    .def_readwrite("placedCenter", &contact::placedCenter);
+  py::class_<tileEdge>( m, "tileEdge")
+    .def( py::init<>())
+    .def_readwrite("next", &tileEdge::next)
+    .def_readwrite("capacity", &tileEdge::capacity);
+  py::class_<tile>( m, "tile")
+    .def( py::init<>())
+    .def_readwrite("x", &tile::x)
+    .def_readwrite("y", &tile::y)
+    .def_readwrite("width", &tile::width)
+    .def_readwrite("height", &tile::height)
+    .def_readwrite("metal", &tile::metal)
+    .def_readwrite("tileLayer", &tile::tileLayer)
+    .def_readwrite("index", &tile::index)
+    .def_readwrite("Yidx", &tile::Yidx)
+    .def_readwrite("Xidx", &tile::Xidx)
+    .def_readwrite("north", &tile::north)
+    .def_readwrite("south", &tile::south)
+    .def_readwrite("east", &tile::east)
+    .def_readwrite("west", &tile::west)
+    .def_readwrite("down", &tile::down)
+    .def_readwrite("up", &tile::up);
+  py::class_<connectNode>( m, "connetNode")
+    .def( py::init<>())
+    .def_readwrite("type", &connectNode::type)
+    .def_readwrite("iter", &connectNode::iter)
+    .def_readwrite("iter2", &connectNode::iter2);
+  py::class_<globalContact>( m, "globalContact")
+    .def( py::init<>())
+    .def_readwrite("conTact", &globalContact::conTact)
+    .def_readwrite("metalIdx", &globalContact::metalIdx);
+  py::class_<net>( m, "net")
+    .def( py::init<>())
+    .def_readwrite("name", &net::name)
+    .def_readwrite("shielding", &net::shielding)
+    .def_readwrite("sink2Terminal", &net::sink2Terminal)
+    .def_readwrite("degree", &net::degree)
+    .def_readwrite("symCounterpart", &net::symCounterpart)
+    .def_readwrite("iter2SNetLsit", &net::iter2SNetLsit)
+    .def_readwrite("connected", &net::connected)
+    .def_readwrite("priority", &net::priority)
+    .def_readwrite("segments", &net::segments)
+    .def_readwrite("interVias", &net::interVias)
+    .def_readwrite("path_metal", &net::path_metal)
+    .def_readwrite("GcellGlobalRouterPath", &net::GcellGlobalRouterPath)
+    .def_readwrite("axis_dir", &net::axis_dir)
+    .def_readwrite("axis_coor", &net::axis_coor)
+    .def_readwrite("connectedTile", &net::connectedTile);
+  py::class_<Metal>( m, "Metal")
+    .def( py::init<>())
+    .def_readwrite("MetalIdx", &Metal::MetalIdx)
+    .def_readwrite("LinePoint", &Metal::LinePoint)
+    .def_readwrite("width", &Metal::width)
+    .def_readwrite("MetalRect", &Metal::MetalRect);
+  py::class_<pin>( m, "pin")
+    .def( py::init<>())
+    .def_readwrite("name", &pin::name)
+    .def_readwrite("type", &pin::type)
+    .def_readwrite("use", &pin::use)
+    .def_readwrite("netIter", &pin::netIter)
+    .def_readwrite("pinContacts", &pin::pinContacts)
+    .def_readwrite("pinVias", &pin::pinVias);
+  py::class_<Via>( m, "Via")
+    .def( py::init<>())
+    .def_readwrite("model_index", &Via::model_index)
+    .def_readwrite("originpos", &Via::originpos)
+    .def_readwrite("placedpos", &Via::placedpos)
+    .def_readwrite("UpperMetalRect", &Via::UpperMetalRect)
+    .def_readwrite("LowerMetalRect", &Via::LowerMetalRect)
+    .def_readwrite("ViaRect", &Via::ViaRect);
+  py::class_<PowerNet>( m, "PowerNet")
+    .def( py::init<>())
+    .def_readwrite("name", &PowerNet::name)
+    .def_readwrite("power", &PowerNet::power)
+    .def_readwrite("Pins", &PowerNet::Pins)
+    .def_readwrite("connected", &PowerNet::connected)
+    .def_readwrite("dummy_connected", &PowerNet::dummy_connected)
+    .def_readwrite("path_metal", &PowerNet::path_metal)
+    .def_readwrite("path_via", &PowerNet::path_via);
+  py::class_<block>( m, "block")
+    .def( py::init<>())
+    .def_readwrite("name", &block::name)
+    .def_readwrite("master", &block::master)
+    .def_readwrite("lefmaster", &block::lefmaster)
+    .def_readwrite("type", &block::type)
+    .def_readwrite("width", &block::width)
+    .def_readwrite("height", &block::height)
+    .def_readwrite("isLeaf", &block::isLeaf)
+    .def_readwrite("originBox", &block::originBox)
+    .def_readwrite("originCenter", &block::originCenter)
+    .def_readwrite("gdsFile", &block::gdsFile)
+    .def_readwrite("orient", &block::orient)
+    .def_readwrite("placedBox", &block::placedBox)
+    .def_readwrite("placedCenter", &block::placedCenter)
+    .def_readwrite("PowerNets", &block::PowerNets)
+    .def_readwrite("blockPins", &block::blockPins)
+    .def_readwrite("interMetals", &block::interMetals)
+    .def_readwrite("dummy_power_pin", &block::dummy_power_pin);
+  py::class_<terminal>( m, "terminal")
+    .def( py::init<>())
+    .def_readwrite("name", &terminal::name)
+    .def_readwrite("type", &terminal::type)
+    .def_readwrite("netIter", &terminal::netIter)
+    .def_readwrite("termContacts", &terminal::termContacts);
+  py::class_<blockComplex>( m, "blockComplex")
+    .def( py::init<>())
+    .def_readwrite("instance", &blockComplex::instance)
+    .def_readwrite("selectedInstance", &blockComplex::selectedInstance)
+    .def_readwrite("child", &blockComplex::child)
+    .def_readwrite("instNum", &blockComplex::instNum);
+  py::class_<PowerGrid>( m, "PowerGrid")
+    .def( py::init<>())
+    .def_readwrite("name", &PowerGrid::name)
+    .def_readwrite("metals", &PowerGrid::metals)
+    .def_readwrite("vias", &PowerGrid::vias);
+  py::class_<layoutAS>( m, "layoutAS")
+    .def( py::init<>())
+    .def_readwrite("width", &layoutAS::width)
+    .def_readwrite("height", &layoutAS::height)
+    .def_readwrite("gdsFile", &layoutAS::gdsFile)
+    .def_readwrite("Blocks", &layoutAS::Blocks)
+    .def_readwrite("Nets", &layoutAS::Nets)
+    .def_readwrite("Terminals", &layoutAS::Terminals)
+    .def_readwrite("LL", &layoutAS::LL)
+    .def_readwrite("UR", &layoutAS::UR);
+  py::class_<hierNode>( m, "hierNode")
+    .def( py::init<>())
+    .def_readwrite("isCompleted", &hierNode::isCompleted)
+    .def_readwrite("isTop", &hierNode::isTop)
+    .def_readwrite("isIntelGcellGlobalRouter", &hierNode::isIntelGcellGlobalRouter)
+    .def_readwrite("width", &hierNode::width)
+    .def_readwrite("height", &hierNode::height)
+    .def_readwrite("LL", &hierNode::LL)
+    .def_readwrite("UR", &hierNode::UR)
+    .def_readwrite("abs_orient", &hierNode::abs_orient)
+    .def_readwrite("n_copy", &hierNode::n_copy)
+    .def_readwrite("numPlacement", &hierNode::numPlacement)
+    .def_readwrite("name", &hierNode::name)
+    .def_readwrite("gdsFile", &hierNode::gdsFile)
+    .def_readwrite("parent", &hierNode::parent)
+    .def_readwrite("Blocks", &hierNode::Blocks)
+    .def_readwrite("tiles_total", &hierNode::tiles_total)
+    .def_readwrite("Nets", &hierNode::Nets)
+    .def_readwrite("Terminals", &hierNode::Terminals)
+    .def_readwrite("Vdd", &hierNode::Vdd)
+    .def_readwrite("Gnd", &hierNode::Gnd)
+    .def_readwrite("PowerNets", &hierNode::PowerNets)
+    .def_readwrite("blockPins", &hierNode::blockPins)
+    .def_readwrite("interMetals", &hierNode::interMetals)
+    .def_readwrite("interVias", &hierNode::interVias)
+    .def_readwrite("PnRAS", &hierNode::PnRAS)
+    .def_readwrite("SNets", &hierNode::SNets)
+    .def_readwrite("SPBlocks", &hierNode::SPBlocks)
+    .def_readwrite("Preplace_blocks", &hierNode::Preplace_blocks)
+    .def_readwrite("Alignment_blocks", &hierNode::Alignment_blocks)
+    .def_readwrite("Match_blocks", &hierNode::Match_blocks)
+    .def_readwrite("CC_Caps", &hierNode::CC_Caps)
+    .def_readwrite("R_Constraints", &hierNode::R_Constraints)
+    .def_readwrite("C_Constraints", &hierNode::C_Constraints)
+    .def_readwrite("Port_Location", &hierNode::Port_Location)
+    .def_readwrite("bias_Hgraph", &hierNode::bias_Hgraph)
+    .def_readwrite("bias_Vgraph", &hierNode::bias_Vgraph)
+    .def_readwrite("router_report", &hierNode::router_report);
+  py::class_<SymmNet>( m, "SymmNet")
+    .def( py::init<>())
+    .def_readwrite("net1", &SymmNet::net1)
+    .def_readwrite("net2", &SymmNet::net2)
+    .def_readwrite("iter1", &SymmNet::iter1)
+    .def_readwrite("iter2", &SymmNet::iter2);
+  py::class_<SymmPairBlock>( m, "SymmPairBlock")
+    .def( py::init<>())
+    .def_readwrite("sympair", &SymmPairBlock::sympair)
+    .def_readwrite("selfsym", &SymmPairBlock::selfsym);
+  py::class_<Preplace>( m, "Preplace")
+    .def( py::init<>())
+    .def_readwrite("blockid1", &Preplace::blockid1)
+    .def_readwrite("blockid2", &Preplace::blockid2)
+    .def_readwrite("conner", &Preplace::conner)
+    .def_readwrite("distance", &Preplace::distance)
+    .def_readwrite("horizon", &Preplace::horizon);
+  py::class_<Alignment>( m, "Alignment")
+    .def( py::init<>())
+    .def_readwrite("blockid1", &Alignment::blockid1)
+    .def_readwrite("blockid2", &Alignment::blockid2)
+    .def_readwrite("distance", &Alignment::distance)
+    .def_readwrite("horizon", &Alignment::horizon);
+  py::class_<MatchBlock>( m, "MatchBlock")
+    .def( py::init<>())
+    .def_readwrite("blockid1", &MatchBlock::blockid1)
+    .def_readwrite("blockid2", &MatchBlock::blockid2);
+  py::class_<AlignBlock>( m, "AlignBlock")
+    .def( py::init<>())
+    .def_readwrite("blocks", &AlignBlock::blocks)
+    .def_readwrite("horizon", &AlignBlock::horizon);
+  py::class_<PortPos>( m, "PortPos")
+    .def( py::init<>())
+    .def_readwrite("tid", &PortPos::tid)
+    .def_readwrite("pos", &PortPos::pos);
+  py::class_<CCCap>( m, "CCCap")
+    .def( py::init<>())
+    .def_readwrite("size", &CCCap::size)
+    .def_readwrite("CCCap_name", &CCCap::CCCap_name)
+    .def_readwrite("Unit_capacitor", &CCCap::Unit_capacitor)
+    .def_readwrite("cap_ratio", &CCCap::cap_ratio)
+    .def_readwrite("cap_r", &CCCap::cap_r)
+    .def_readwrite("cap_s", &CCCap::cap_s)
+    .def_readwrite("dummy_flag", &CCCap::dummy_flag);
+  py::class_<R_const>( m, "R_const")
+    .def( py::init<>())
+    .def_readwrite("net_name", &R_const::net_name)
+    .def_readwrite("start_pin", &R_const::start_pin)
+    .def_readwrite("end_pin", &R_const::end_pin)
+    .def_readwrite("R", &R_const::R);
+  py::class_<C_const>( m, "C_const")
+    .def( py::init<>())
+    .def_readwrite("net_name", &C_const::net_name)
+    .def_readwrite("start_pin", &C_const::start_pin)
+    .def_readwrite("end_pin", &C_const::end_pin)
+    .def_readwrite("C", &C_const::C);
+
+
+  py::class_<lefMacro>( m, "lefMacro")
+    .def( py::init<>())
+    .def_readwrite("width", &lefMacro::width)
+    .def_readwrite("height", &lefMacro::height)
+    .def_readwrite("name", &lefMacro::name)
+    .def_readwrite("macroPins", &lefMacro::macroPins)
+    .def_readwrite("interMetals", &lefMacro::interMetals)
+    .def_readwrite("interVias", &lefMacro::interVias)
+    .def_readwrite("master", &lefMacro::master);
+
+  py::class_<designRule>( m, "designRule")
+    .def( py::init<>())
+    .def_readwrite("MinWidth", &designRule::MinWidth)
+    .def_readwrite("MaxSpace", &designRule::MaxSpace)
+    .def_readwrite("EnMax", &designRule::EnMax)
+    .def_readwrite("TrkSpacing", &designRule::TrkSpacing)
+    .def_readwrite("grid_unit_x", &designRule::grid_unit_x)
+    .def_readwrite("grid_unit_y", &designRule::grid_unit_y);
+
+  py::class_<ViaModel>( m, "ViaModel")
+    .def( py::init<>())
+    .def_readwrite("name", &ViaModel::name)
+    .def_readwrite("ViaIdx", &ViaModel::ViaIdx)
+    .def_readwrite("LowerIdx", &ViaModel::LowerIdx)
+    .def_readwrite("UpperIdx", &ViaModel::UpperIdx)
+    .def_readwrite("ViaRect", &ViaModel::ViaRect)
+    .def_readwrite("LowerRect", &ViaModel::LowerRect)
+    .def_readwrite("UpperRect", &ViaModel::UpperRect)
+    .def_readwrite("R", &ViaModel::R);
+
+  py::class_<PnRdatabase>( m, "PnRdatabase")
+    .def( py::init<string, string, string, string, string, string>())
+    .def( py::init<>())
+    .def( "TraverseHierTree", &PnRdatabase::TraverseHierTree)
+    .def( "CheckoutHierNode", &PnRdatabase::CheckoutHierNode)
+    .def( "PrintHierNode", &PnRdatabase::PrintHierNode)
+    .def( "PrintHierTree", &PnRdatabase::PrintHierTree)
+    .def( "ReadDBJSON", &PnRdatabase::ReadDBJSON)
+    .def( "WriteDBJSON", &PnRdatabase::WriteDBJSON)
+    .def( "getDrc_info", &PnRdatabase::getDrc_info)
+    .def( "checkoutSingleLEF", &PnRdatabase::checkoutSingleLEF)
+    .def( "AddingPowerPins", &PnRdatabase::AddingPowerPins)
+    .def( "Extract_RemovePowerPins", &PnRdatabase::Extract_RemovePowerPins)
+    .def( "CheckinHierNode", &PnRdatabase::CheckinHierNode)
+  ;
+
+  /*
+  py::class_<cap_placer::Placer_Router_Cap>( m, "Placer_Router_Cap")
+    .def( py::init<string, string, hierNode&, Drc_info&, map<string, lefMacro>&, bool, int>());    
+
+  py::class_<Placer>( m, "Placer")
+    .def( py::init<hierNode&, string, int, Drc_info&>())
+    .def( py::init<std::vector<hierNode>&, string, int, Drc_info&>());
+  */
+
+  //m.def("save_state", &save_state, "helper function to save_state");
+  //m.def("route_single_variant", &route_single_variant, "helper function to route a single variant");
+  //m.def("route_top_down", &route_top_down, "helper function to perform top-down routing");
+  m.def("toplevel", &toplevel, "helper function to perform the whole C++ flow");
+
+};
