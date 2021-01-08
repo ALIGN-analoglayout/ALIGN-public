@@ -32,6 +32,7 @@ $SUDO apt-get update && $SUDO apt-get install -yq \
     gnuplot \
     curl \
     xvfb \
+    gfortran \
 &&  $SUDO apt-get clean
 
 #### Install klayout 
@@ -93,6 +94,7 @@ cd $ALIGN_HOME
 python3 -m venv $VENV
 source $VENV/bin/activate
 pip install --upgrade pip
+pip install pytest pytest-cov pytest-timeout
 pip install -e .
 
 ## Install ALIGN_PnR
