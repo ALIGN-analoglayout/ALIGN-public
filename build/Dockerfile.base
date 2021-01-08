@@ -26,7 +26,6 @@ RUN apt-get -qq update && DEBIAN_FRONTEND=noninterative apt-get -qq install \
     graphviz \
     gnuplot \
     curl \
-    wget \
     gfortran \
     xvfb < /dev/null > /dev/null \
     # libgraphviz-dev \
@@ -91,7 +90,7 @@ RUN cd /opt && \
     git clone https://github.com/nlohmann/json.git
 
 # KLayout
-RUN curl -o /klayout_0.26.6-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-18/klayout_0.26.6-1_amd64.deb
+RUN curl -k -o /klayout_0.26.6-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-18/klayout_0.26.6-1_amd64.deb
 
 RUN DEBIAN_FRONTEND=noninterative apt-get install -qq /klayout_0.26.6-1_amd64.deb < /dev/null > /dev/null
 
