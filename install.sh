@@ -36,7 +36,7 @@ $SUDO apt-get update && $SUDO apt-get install -yq \
 &&  $SUDO apt-get clean
 
 #### Install klayout 
-curl -o ./klayout_0.26.3-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-18/klayout_0.26.3-1_amd64.deb
+curl -k -o ./klayout_0.26.3-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-18/klayout_0.26.3-1_amd64.deb
 $SUDO apt-get install -yq ./klayout_0.26.3-1_amd64.deb
 rm ./klayout_0.26.3-1_amd64.deb
 #** WSL users would need to install Xming for the display to work
