@@ -94,7 +94,7 @@ cd $ALIGN_HOME
 python3 -m venv $VENV
 source $VENV/bin/activate
 pip install --upgrade pip
-pip install pytest pytest-cov pytest-timeout
+pip install pytest pytest-cov pytest-timeout coverage-badge
 pip install -e .
 
 ## Install ALIGN_PnR
