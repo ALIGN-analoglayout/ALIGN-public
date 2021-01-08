@@ -4511,7 +4511,7 @@ void ConstGraph::UpdateBlockinHierNode(design& caseNL, placerDB::Omark ort, PnRD
     }
 }
 
-void ConstGraph::UpdateTerminalinHierNode(design& caseNL, PnRDB::hierNode& node) {
+void ConstGraph::UpdateTerminalinHierNode(design& caseNL, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo) {
   if(1) {
     for(int i=0;i<(int)caseNL.GetSizeofTerminals();i++) {
       //cout<<"Terminal "<<i<<endl;
@@ -4573,6 +4573,8 @@ void ConstGraph::UpdateTerminalinHierNode(design& caseNL, PnRDB::hierNode& node)
 
       temp_pin.netIter = node.Terminals.at(i).netIter;
       temp_pin.pinContacts = node.Terminals.at(i).termContacts;
+      for (int j=0;j<temp_pin.pinContacts.size();j++)
+        temp_pin.pinContacts[j].metal = drcInfo.Metal_info[0].name;
 
       temp_pin.name = node.Terminals.at(i).name;
       temp_pin.type = node.Terminals.at(i).type;
@@ -4620,7 +4622,7 @@ void ConstGraph::UpdateHierNodeAP(design& caseNL, Aplace& caseAP, PnRDB::hierNod
     UpdateBlockinHierNode(caseNL, caseAP.GetBlockOrient(i), node, i, caseAP.GetSelectedInstance(i), drcInfo);
   }
   // [wbxu] Complete programing: to update terminal for top-level
-  UpdateTerminalinHierNode(caseNL, node);
+  UpdateTerminalinHierNode(caseNL, node, drcInfo);
   for(unsigned int i=0;i<caseNL.SNets.size(); ++i) {
     int SBidx=caseNL.SNets.at(i).SBidx;
     placerDB::Smark axis_dir=caseAP.GetSBlockDir(SBidx);
@@ -4664,7 +4666,7 @@ void ConstGraph::UpdateHierNode(design& caseNL, SeqPair& caseSP, PnRDB::hierNode
     UpdateBlockinHierNode(caseNL, caseSP.GetBlockOrient(i), node, i, caseSP.GetBlockSelected(i), drcInfo);
   }
   // [wbxu] Complete programing: to update terminal for top-level
-  UpdateTerminalinHierNode(caseNL, node);
+  UpdateTerminalinHierNode(caseNL, node, drcInfo);
   for(unsigned int i=0;i<caseNL.SNets.size(); ++i) {
     int SBidx=caseNL.SNets.at(i).SBidx;
     placerDB::Smark axis_dir=caseSP.GetSymmBlockAxis(SBidx);
