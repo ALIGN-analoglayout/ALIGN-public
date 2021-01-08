@@ -401,7 +401,8 @@ struct hierNode {
   vector<Guardring_Const> Guardring_Consts;
   vector<LinearConst> L_Constraints;
   vector<Multi_LinearConst> ML_Constraints;
-  int bias_Hgraph=0;
+  vector<pair<vector<int>, Smark>> Ordering_Constraints;
+  int bias_Hgraph = 0;
   int bias_Vgraph=0;
   vector<Router_report> router_report;
   vector<Multi_connection> Multi_connections;

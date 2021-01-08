@@ -9,8 +9,16 @@ FROM ubuntu:18.04 as align_base_using_install
 ENV http_proxy=$http_proxy
 ENV https_proxy=$https_proxy
 
+# Update packages
+RUN apt-get -qq update && DEBIAN_FRONTEND=noninterative apt-get -qq install \
+    git \
+&&    apt-get -qq clean
+
 ENV ALIGN_HOME=/ALIGN-public
 
 COPY . $ALIGN_HOME
 
-RUN /bin/bash -c "cd $ALIGN_HOME && source install.sh"
+WORKDIR $ALIGN_HOME
+ENV USER=root
+
+RUN "./install.sh"
