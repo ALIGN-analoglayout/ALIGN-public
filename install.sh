@@ -74,7 +74,7 @@ cd SuperLU_5.2.1/
 mkdir build
 cd build
 cmake ..
-make
+make -j8
 
 
 ## Set prerequisite paths
@@ -100,7 +100,7 @@ pip install -e .
 ## Install ALIGN_PnR
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}$ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/:$GTEST_DIR/mybuild/lib/
 
-cd $ALIGN_HOME/PlaceRouteHierFlow/ && make
+cd $ALIGN_HOME/PlaceRouteHierFlow/ && make -j8
 cd $ALIGN_HOME
 
 ## Run first example
