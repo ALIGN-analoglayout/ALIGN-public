@@ -373,10 +373,16 @@ def add_stacked_transistor(G):
                             # source net of neighbor
                             source_net = [snet for snet in G.neighbors(next_node) if  G.get_edge_data( next_node, snet)['weight'] == 4]
                             gate_net =  [gnet for gnet in G.neighbors(next_node) if  G.get_edge_data( next_node, gnet)['weight'] == 2]
-                            if len(gate_net)==len(source_net)==1 and gate_net in G.neighbors(node) \
-                                    and G.get_edge_data( node, gate_net)['weight'] == 2 and len(common_nets)>1:
+                            logger.debug(f"neighbor gate: {gate_net},all neighbors: {list(G.edges(node,data=True))} {len(common_nets)}")
+                            if len(gate_net)==len(source_net)==1:
                                 source_net=source_net[0]
                                 gate_net=gate_net[0]
+                                logger.debug(f"source net: {source_net}, gate net: {gate_net}")
+                            else:
+                                continue
+
+                            if gate_net in G.neighbors(node) and G.get_edge_data( node, gate_net[0])['weight'] == 2 and len(common_nets)>2:
+                                logger.debug(f"source net: {source_net}, gate net: {gate_net}")
                             else:
                                 continue
                             logger.debug(f"check stack transistors: {node}, {next_node}, {gate_net}, {source_net},{common_nets}")

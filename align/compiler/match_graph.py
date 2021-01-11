@@ -294,7 +294,7 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist, check_duplicates=Non
                     key for key in Gsub
                     if 'net' not in G1.nodes[key]["inst_type"]]
                 logger.debug(f"Reduce nodes: {', '.join(remove_these_nodes)}")
-                if sub_block_name in all_lef:
+                if all_lef and sub_block_name in all_lef:
                     pg = []
                 else:
                     pg = design_setup["POWER"]+design_setup["GND"]
