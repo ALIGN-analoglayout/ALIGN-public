@@ -34,7 +34,7 @@ $SUDO yum install -yq /klayout-0.26.3-0.x86_64.rpm
 git clone https://www.github.com/ALIGN-analoglayout/lpsolve.git
 ####  Install json
 git clone https://github.com/nlohmann/json.git
-#### Install boost
+#### Install boost (don't need to; already installed using libboost-container-dev above 
 #git clone --recursive https://github.com/boostorg/boost.git
 #cd $ALIGN_HOME/boost
 #./bootstrap.sh -prefix=$ALIGN_HOME/boost
@@ -45,8 +45,10 @@ cd $ALIGN_HOME
 git clone https://github.com/google/googletest
 cd googletest/
 
-#For UMN: cmake -DCMAKE_CXX_COMPILER=/apps/common/gcc/8.2.0/bin/g++ -DCMAKE_C_COMPILER=/apps/common/gcc/8.2.0/bin/gcc CMakeLists.txt
-cmake CMakeLists.txt
+cmake -DCMAKE_CXX_COMPILER=/apps/common/gcc/8.2.0/bin/g++ -DCMAKE_C_COMPILER=/apps/common/gcc/8.2.0/bin/gcc CMakeLists.txt
+#cmake CMakeLists.txt
+make
+cmake -DBUILD_SHARED_LIBS=ON CMakeLists.txt
 make
 mkdir googletest/mybuild
 cp -r lib googletest/mybuild/.
@@ -62,7 +64,7 @@ cd SuperLU_5.2.1/
 mkdir build
 cd build
 cmake ..
-make
+make -j8
 
 ## Set prerequisite paths
 #------------------------
@@ -85,8 +87,8 @@ pip install -e .
 deactivate
 
 ## install align_PnR
-setenv LD_LIBRARY_PATH $ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/
-cd $ALIGN_HOME/PlaceRouteHierFlow/ && make
+setenv LD_LIBRARY_PATH $LD_LIBRARY_PATH\:$ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/:$GTEST_DIR/mybuild/lib/
+cd $ALIGN_HOME/PlaceRouteHierFlow/ && make -j8
 cd $ALIGN_HOME
 
 ## Run first example
