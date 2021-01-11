@@ -477,10 +477,10 @@ def CopyConstFile(name, input_dir, working_dir):
 
     """
     input_const_file = (input_dir / (name + '.const'))
-    const_file = (working_dir / (name + '.const'))
-    if input_const_file.exists() and input_const_file.is_file():
-        if const_file == input_const_file:
-            (input_dir / (name + '.const.old')).write_text(input_const_file.read_text())
-        else:
-            const_file.write_text(input_const_file.read_text())
+    const_file = (working_dir / (name + '.const.json'))
+    # if input_const_file.exists() and input_const_file.is_file():
+    #     if const_file == input_const_file:
+    #         (input_dir / (name + '.const.old')).write_text(input_const_file.read_text())
+    #     else:
+    #         const_file.write_text(input_const_file.read_text())
     return const_file
