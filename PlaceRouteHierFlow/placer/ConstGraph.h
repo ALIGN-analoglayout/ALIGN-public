@@ -136,7 +136,7 @@ class ConstGraph
     void OtherGeometricConstraintCore(design& caseNL);
     void ReverseEdge(int current, int next, vector<Vertex>& graph);
     void UpdateBlockinHierNode(design& caseNL, placerDB::Omark ort, PnRDB::hierNode& node, int i, int sel, PnRDB::Drc_info& drcInfo);
-    void UpdateTerminalinHierNode(design& caseNL, PnRDB::hierNode& node);
+    void UpdateTerminalinHierNode(design& caseNL, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo);
     void RemoveOverlapEdge(design& caseNL, Aplace& caseAP);
     bool RemoveEdgeforVertex(int current, int next, vector<Vertex> &graph, bool isBackward);
   public:

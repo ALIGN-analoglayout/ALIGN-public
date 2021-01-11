@@ -5,8 +5,9 @@ extern "C"
 {
 #include <stdio.h>
 #include "lp_lib.h"
-#define LPSOLVEAPIFROMLIBDEF
-#include "lp_explicit.h"
+  // SMB
+  //#define LPSOLVEAPIFROMLIBDEF
+  //#include "lp_explicit.h"
 }
 
 
@@ -1493,6 +1494,9 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   // start of lp_solve
   int majorversion, minorversion, release, build;
   char buf[1024];
+
+
+  /*
   hlpsolve lpsolve;
   # if defined WIN32
   #   define lpsolvelib "lpsolve55.dll"
@@ -1509,6 +1513,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
     fprintf(stderr, "Unable to initialize lpsolve shared library (%s)\n      ", lpsolvelib);
     //ERROR();
   }
+  */
 
 
   // 1. collect number of STs

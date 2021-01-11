@@ -26,7 +26,7 @@
 using std::map;
 using std::unordered_map;
 using std::vector;
-using std::queue;
+using std::deque;
 using std::string;
 using std::cout;
 using std::endl;
@@ -84,7 +84,7 @@ class PnRdatabase
     PnRDB::designRule drData;
 
     void UpdateHierNodeParent(int nodeID); // update parent node of current node
-    void TraverseDFS(queue<int>& Q, vector<string>& color, int idx); // DFS subfunc to traverse hierarchical tree 
+    void TraverseDFS(deque<int>& Q, vector<string>& color, int idx); // DFS subfunc to traverse hierarchical tree 
 
     void ReadPDKJSON(string drfile);
 
@@ -109,7 +109,7 @@ class PnRdatabase
 
     long int get_number(string str);
 
-    queue<int> TraverseHierTree(); // traverse hierarchical tree in topological order
+    deque<int> TraverseHierTree(); // traverse hierarchical tree in topological order
     PnRDB::hierNode CheckoutHierNode(int nodeID); // check out data of specific hierarchical node
     std::vector<PnRDB::hierNode> CheckoutHierNodeVec(int nodeID);//checkout nodeVec, which consists of different placement
     void CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode); // check out data of specific hierarchical node

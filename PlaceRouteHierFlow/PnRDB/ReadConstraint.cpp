@@ -827,14 +827,14 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
 	}
       } else if(temp[0].compare("bias_graph")==0){
         int distance= atoi(temp[2].c_str());
-        node.bias_Hgraph = distance;
-        node.bias_Vgraph = distance;
+        node.bias_Hgraph = 2*distance;
+        node.bias_Vgraph = 2*distance;
       } else if(temp[0].compare("bias_Hgraph")==0 ) {
         int distance= atoi(temp[2].c_str());
-        node.bias_Hgraph = distance;
+        node.bias_Hgraph = 2*distance;
       } else if(temp[0].compare("bias_Vgraph")==0 ) {
         int distance= atoi(temp[2].c_str());
-        node.bias_Vgraph = distance;
+        node.bias_Vgraph = 2*distance;
       } else if (temp[0].compare("ShieldNet")==0) {
         string shield_net=temp[2];
         for(int i=0;i<(int)node.Nets.size();i++) {
@@ -889,6 +889,25 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         }
 
         node.SPBlocks.push_back(temp_SymmPairBlock);
+      }else if (temp[0].compare("Ordering")==0) {
+        PnRDB::Smark axis_dir = PnRDB::V;
+        pair<vector<int>, PnRDB::Smark> temp_order;
+        for (unsigned int i = 2; i < temp.size(); i = i + 2) {
+          string word = temp[i];
+          if (word == "H")
+            temp_order.second = PnRDB::H;
+          else if (word == "V")
+            temp_order.second = PnRDB::V;
+          else {
+            for (int k = 0; k < (int)node.Blocks.size(); k++) {
+              if (node.Blocks.at(k).instance.back().name.compare(word) == 0) {
+                temp_order.first.push_back(k);
+                break;
+              }
+            }
+          }
+        }
+        node.Ordering_Constraints.push_back(temp_order);
       }else if(temp[0].compare("CC")==0){
         PnRDB::CCCap temp_cccap;
         string word=temp[2];

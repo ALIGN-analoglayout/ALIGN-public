@@ -492,7 +492,8 @@ SeqPair::SeqPair(design& caseNL) {
       orient.at(i)=placerDB::N;
     }
   }
-} 
+  KeepOrdering(caseNL);
+}
 
 SeqPair& SeqPair::operator=(const SeqPair& sp) {
   this->posPair=sp.posPair;
@@ -748,6 +749,68 @@ bool SeqPair::ChangeSelectedBlock(design& caseNL) {
   return true;
 }
 
+void SeqPair::KeepOrdering(design& caseNL) {
+  // ids of blocks which have order constraints
+  set<int> block_id_with_order;
+  for (auto order : caseNL.Ordering_Constraints) {
+    block_id_with_order.insert(order.first.first);
+    block_id_with_order.insert(order.first.second);
+  }
+  // places of block_id_with_order in pair
+  vector<int> pos_idx, neg_idx;
+  for (int i = 0; i < posPair.size(); i++) {
+    if (block_id_with_order.find(posPair[i]) != block_id_with_order.end()) pos_idx.push_back(i);
+    if (block_id_with_order.find(negPair[i]) != block_id_with_order.end()) neg_idx.push_back(i);
+  }
+  vector<int> pos_order(block_id_with_order.size()), neg_order(block_id_with_order.size());
+  for (int i = 0; i < block_id_with_order.size(); i++) {
+    pos_order[i] = posPair[pos_idx[i]];
+    neg_order[i] = negPair[neg_idx[i]];
+  }
+  bool pos_keep_order = true, neg_keep_order = true;
+  // generate a pos order
+  do {
+    pos_keep_order = true;
+    for (auto order : caseNL.Ordering_Constraints) {
+      if (find(pos_order.begin(), pos_order.end(), order.first.first) - find(pos_order.begin(), pos_order.end(), order.first.second) > 0) {
+        pos_keep_order = false;
+        break;
+      }
+    }
+    if (!pos_keep_order) {
+      unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+      std::default_random_engine e(seed);
+      shuffle(pos_order.begin(), pos_order.end(), e);
+    }
+
+  } while (!pos_keep_order);
+  // generate a neg order
+  do {
+    neg_keep_order = true;
+    for (auto order : caseNL.Ordering_Constraints) {
+      if (find(neg_order.begin(), neg_order.end(), order.first.first) - find(neg_order.begin(), neg_order.end(), order.first.second) < 0) {
+        if (order.second == placerDB::V) {
+          neg_keep_order = false;
+          break;
+        }
+      } else if (order.second == placerDB::H) {
+        neg_keep_order = false;
+        break;
+      }
+    }
+    if (!neg_keep_order) {
+      unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+      std::default_random_engine e(seed);
+      shuffle(neg_order.begin(), neg_order.end(), e);
+    }
+  } while (!neg_keep_order);
+  //write order back to pospair and negpair
+  for (int i = 0; i < pos_idx.size(); i++) {
+    posPair[pos_idx[i]] = pos_order[i];
+    negPair[neg_idx[i]] = neg_order[i];
+  }
+}
+
 void SeqPair::PerturbationNew(design& caseNL) {
   /* initialize random seed: */
   //srand(time(NULL));
@@ -789,6 +852,7 @@ void SeqPair::PerturbationNew(design& caseNL) {
     }
     fail++;
   }
+  KeepOrdering(caseNL);
 }
 
 void SeqPair::Perturbation(design& caseNL) {

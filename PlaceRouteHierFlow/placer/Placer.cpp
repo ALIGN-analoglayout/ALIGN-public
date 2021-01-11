@@ -503,13 +503,21 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
 }
 
 std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRatio_ILP(design& designData, SeqPair& curr_sp, ILP_solver& curr_sol, int mode,
-                                                                                      int nodeSize, int effort,PnRDB::Drc_info &drcInfo) {
+                                                                                      int nodeSize, int effort, PnRDB::Drc_info& drcInfo) {
   // Mode 0: graph bias; Mode 1: graph bias + net margin; Others: no bias/margin
   // cout<<"PlacementCore\n";
   std::map<double, std::pair<SeqPair, ILP_solver>> oData;
   curr_sp.PrintSeqPair();
   double curr_cost = 0;
-  while ((curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo)) < 0) curr_sp.PerturbationNew(designData);
+  int trial_count = 0;
+  while ((curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo)) < 0) {
+    curr_sp.PerturbationNew(designData);
+    trial_count++;
+    if (trial_count > 100) {
+      cout << "please check constraint" << endl;
+      break;
+    }
+  }
   oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
   ReshapeSeqPairMap(oData, nodeSize);
   cout << "Placer-Info: initial cost = " << curr_cost << endl;
