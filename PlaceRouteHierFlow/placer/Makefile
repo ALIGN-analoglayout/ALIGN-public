@@ -1,5 +1,5 @@
 
-# Needs CXX and CXXFLAGS to be defined
+# Needs CXX CXXFLAGS LIB_LP to be defined
 
 OBJS = design.o SeqPair.o ConstGraph.o Aplace.o Placer.o ILP_solver.o
 SRCS=$(OBJS:.o=.cpp)
@@ -12,7 +12,7 @@ depend:
 -include .depend
 
 unit_tests: unit_tests.o 
-	$(CXX) $(CXXFLAGS) -o $@ $^ -L$(GTEST_LIB_DIR) -lgtest_main -lgtest $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ -L$(GTEST_LIB_DIR) -lgtest_main -lgtest $(LDFLAGS) -L$(LIB_LP) -llpsolve55
 
 placer.a: $(OBJS)
 	ar -r -o $@ $^

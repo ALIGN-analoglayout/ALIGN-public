@@ -3,6 +3,10 @@
 
 #include <set>
 #include <vector>
+#include <algorithm>
+#include <chrono>
+#include <random>
+#include <functional>
 #include <utility>
 #include <string>
 #include <iostream>
@@ -11,13 +15,14 @@
 #include "Pdatatype.h"
 #include "design.h"
 
-using std::vector;
-using std::pair;
-using std::make_pair;
-using std::string;
-using std::cout;
 using std::cerr;
+using std::cout;
 using std::endl;
+using std::make_pair;
+using std::pair;
+using std::set;
+using std::string;
+using std::vector;
 
 class SeqPair 
 {
@@ -73,6 +78,7 @@ class SeqPair
     void TestSwap();
     int GetBlockSelected(int blockNo);
     bool ChangeSelectedBlock(design& caseNL);
+    void KeepOrdering(design& caseNL);
 };
 
 #endif

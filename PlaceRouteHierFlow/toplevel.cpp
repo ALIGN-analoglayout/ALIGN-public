@@ -337,25 +337,25 @@ int toplevel( const std::vector<std::string>& argv) {
 
 
   if ( !skip_saving_state) {
-    queue<int> Q=DB.TraverseHierTree(); // traverse hierarchical tree in topological order
+    deque<int> Q=DB.TraverseHierTree(); // traverse hierarchical tree in topological order
     json jsonStrAry = json::array();
     std::ofstream jsonStream;
     jsonStream.open( opath + "__hierTree.json");
     while (!Q.empty()) {
       jsonStrAry.push_back( DB.CheckoutHierNode(Q.front()).name);
-      Q.pop();
+      Q.pop_front();
     }
     jsonStream << std::setw(4) << jsonStrAry;
     jsonStream.close();
   }
 
-  queue<int> Q = DB.TraverseHierTree();  // traverse hierarchical tree in topological order
+  deque<int> Q = DB.TraverseHierTree();  // traverse hierarchical tree in topological order
   std::vector<int> TraverseOrder;        // save traverse order, same as Q
   int Q_size = Q.size();
   for (int i = 0; i < Q_size; i++) {  // copy Q to TraverseOrder
     TraverseOrder.push_back(Q.front());
-    Q.pop();
-    Q.push(TraverseOrder.back());
+    Q.pop_front();
+    Q.push_back(TraverseOrder.back());
   }
 
   for (int i = 0; i < Q_size;i++)
