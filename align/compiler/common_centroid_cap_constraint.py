@@ -54,7 +54,7 @@ def check_common_centroid(graph,const_path,ports):
 def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
     const_path = input_dir / (name + '.const')
     new_const_path = input_dir / (name + '.const_temp')
-    logger.debug(f"writing cap constraints: {new_const_path}")
+    logger.debug(f"writing cap constraints: {new_const_path} existing array: {all_array}")
     available_cap_const = []
     if os.path.isfile(const_path):
         logger.debug(f'Reading const file for cap {const_path}')
@@ -67,16 +67,18 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
                 caps_in_line = line[line.find("{")+1:line.find("}")]
                 cap_blocks = caps_in_line.strip().split(',')
                 available_cap_const = available_cap_const+cap_blocks
+                logger.debug(f"updated const {line}")
             elif line.startswith("SymmBlock"):
                 blocks_in_line = [blocks[blocks.find("{")+1:blocks.find("}")] for blocks in line.split(' , ') if ',' in blocks]
-                logger.info("place symmetrical cap as CC:%s",blocks_in_line)
+                logger.info("place pairs in constraints:%s",blocks_in_line)
                 for pair in blocks_in_line:
-                    p1,p2=pair.split(',')
-                    if graph.nodes[p1]['inst_type'].lower().startswith('cap'):
+                    inst = pair.split(',')[0]
+                    if inst in graph and graph.nodes[inst]['inst_type'].lower().startswith('cap'):
+                        p1,p2=sorted(pair.split(','), key=lambda c:graph.nodes[c]['values']["cap"]*1E15)
                         all_array[p1]={p1:[p1,p2]}
                         line=line.replace(pair,p1+'_'+p2).replace('(,','(').replace(',)',')').replace(',,',',')
+                logger.debug(f"updated const {line}")
             new_const_fp.write(line)
-            logger.debug(f"cap const {line}")
             line=const_fp.readline()
         const_fp.close()
     else:
@@ -93,13 +95,12 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
                     ele not in available_cap_const:
                     if 'cap' in graph.nodes[ele]['values'].keys():
                         size = graph.nodes[ele]['values']["cap"]*1E15
-                    elif 'c' in graph.nodes[ele]['values'].keys():
-                        size = graph.nodes[ele]['values']["c"]*1E15
                     else:
                         size = unit_size_cap
                     n_cap.append( str(ceil(size/unit_size_cap)))
                     cc_caps.append(ele)
         if len(n_cap)>0:
+            n_cap, cc_caps =(list(t) for t in  zip(*sorted(zip(n_cap, cc_caps))))
             available_cap_const = available_cap_const+ cc_caps
             unit_block_name = '} , {Cap_' + str(unit_size_cap) + 'f} , {nodummy} )'
             cap_line = "\nCC ( {"+','.join(cc_caps)+"} , {"+','.join(n_cap)+unit_block_name
@@ -111,8 +112,6 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
         if attr['inst_type'].lower().startswith('cap')  and node not in available_cap_const:
             if 'cap' in attr['values'].keys():
                 size = attr['values']["cap"]*1E15
-            elif 'c' in attr['values'].keys():
-                size = attr['values']["c"]*1E15
             else:
                 size = unit_size_cap
             n_cap = ceil(size/unit_size_cap)

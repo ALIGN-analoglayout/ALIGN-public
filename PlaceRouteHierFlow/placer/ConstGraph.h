@@ -16,6 +16,7 @@
 #include "design.h"
 #include "SeqPair.h"
 #include "Aplace.h"
+#include "ILP_solver.h"
 #include "../PnRDB/datatype.h"
 
 using std::vector;
@@ -36,6 +37,7 @@ using std::min;
 class ConstGraph
 {
   private:
+    friend class ILP_solver;
     struct Event {
       int node;
       int corr;
@@ -134,7 +136,7 @@ class ConstGraph
     void OtherGeometricConstraintCore(design& caseNL);
     void ReverseEdge(int current, int next, vector<Vertex>& graph);
     void UpdateBlockinHierNode(design& caseNL, placerDB::Omark ort, PnRDB::hierNode& node, int i, int sel, PnRDB::Drc_info& drcInfo);
-    void UpdateTerminalinHierNode(design& caseNL, PnRDB::hierNode& node);
+    void UpdateTerminalinHierNode(design& caseNL, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo);
     void RemoveOverlapEdge(design& caseNL, Aplace& caseAP);
     bool RemoveEdgeforVertex(int current, int next, vector<Vertex> &graph, bool isBackward);
   public:
@@ -143,6 +145,8 @@ class ConstGraph
     static double BETA;
     static double SIGMA;
     static double PHI;
+    static double PI;
+    static double PII;
     ConstGraph();
     ConstGraph(design& caseNL, SeqPair& caseSP);
     ConstGraph(design& caseNL, SeqPair& caseSP, int mode);
@@ -175,6 +179,10 @@ class ConstGraph
     void AddLargePenalty();
     void UpdateDesignHierNode4AP(design& caseNL, design& reducedNL, SeqPair& reducedSP, PnRDB::hierNode& node);
     void UpdateSymmetryNetInfo(design& caseNL, PnRDB::hierNode& node, int i, int SBidx, placerDB::Smark axis_dir);
+    double LinearConst(design& caseNL, SeqPair& caseSP);
+    double ML_LinearConst(design& caseNL, SeqPair& caseSP);
+    void ExtractLength(design& caseNL, SeqPair& caseSP, std::vector<std::vector<double> > &feature_value, std::vector<std::vector<std::string> > &feature_name);
+    std::vector<double> Calculate_Center_Point_feature(std::vector<std::vector<placerDB::point> > &temp_contact);
 };
 
 #endif

@@ -103,12 +103,24 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
             }
           }
         }
+        
+        PnRDB::Smark axis_dir=PnRDB::V;
+        if(temp.size()>=8){
+          word=temp[6];
+          //cout<<word<<endl;
+          word=word.substr(1);
+          word=word.substr(0, word.length()-1);  
+          if(word=="H"){axis_dir=PnRDB::H;}
+          else if(word=="V"){axis_dir=PnRDB::V;}        
+        }
+
         int iter1=-1, iter2=-1; // iterator in Nets
         for(int i=0;i<(int)node.Nets.size()&&(iter1==-1||iter2==-1);i++) {
           if(node.Nets.at(i).name.compare(tmpnet.name)==0) {iter1=i;}
           if(node.Nets.at(i).name.compare(tmpnet2.name)==0) {iter2=i;}
         }
-        node.Nets.at(iter1).symCounterpart=iter2;
+        if (tmpnet.connected.size() != tmpnet2.connected.size()) continue;
+        node.Nets.at(iter1).symCounterpart = iter2;
         node.Nets.at(iter1).iter2SNetLsit=node.SNets.size();
         node.Nets.at(iter2).symCounterpart=iter1;
         node.Nets.at(iter2).iter2SNetLsit=node.SNets.size();
@@ -117,6 +129,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         node.SNets.back().net2=tmpnet2;
         node.SNets.back().iter1=iter1;
         node.SNets.back().iter2=iter2;
+        node.SNets.back().axis_dir=axis_dir;
       } else if (temp[0].compare("CritNet")==0) {
         for(int i=0;i<(int)node.Nets.size();i++) {
           if(node.Nets.at(i).name.compare(temp[2])==0) {
@@ -274,14 +287,14 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
 	}
       } else if(temp[0].compare("bias_graph")==0){
         int distance= atoi(temp[2].c_str());
-        node.bias_Hgraph = distance;
-        node.bias_Vgraph = distance;
+        node.bias_Hgraph = 2*distance;
+        node.bias_Vgraph = 2*distance;
       } else if(temp[0].compare("bias_Hgraph")==0 ) {
         int distance= atoi(temp[2].c_str());
-        node.bias_Hgraph = distance;
+        node.bias_Hgraph = 2*distance;
       } else if(temp[0].compare("bias_Vgraph")==0 ) {
         int distance= atoi(temp[2].c_str());
-        node.bias_Vgraph = distance;
+        node.bias_Vgraph = 2*distance;
       } else if (temp[0].compare("ShieldNet")==0) {
         string shield_net=temp[2];
         for(int i=0;i<(int)node.Nets.size();i++) {
@@ -291,8 +304,9 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         }
       } else if (temp[0].compare("SymmBlock")==0) { 
         PnRDB::SymmPairBlock temp_SymmPairBlock;
-        pair<int,int> temp_pair;
+        pair<int,int> temp_pair={-1,-1};
         pair<int,PnRDB::Smark> temp_selfsym;
+        PnRDB::Smark axis_dir=PnRDB::V;
         for(unsigned int i=2;i<temp.size();i=i+2){
           string word=temp[i];
           word=word.substr(1);
@@ -311,19 +325,49 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
             } else if (temp_pair.first==temp_pair.second) {
               std::cerr<<"PnRDB-Error: same block in paired symmetry group"<<std::endl;
             }
-            temp_SymmPairBlock.sympair.push_back(temp_pair);
-          } else { // selfsym
+            if (temp_pair.first >= 0 && temp_pair.second >= 0) temp_SymmPairBlock.sympair.push_back(temp_pair);
+          } else if (word == "H") {
+            axis_dir = PnRDB::H;
+          } else if (word == "V") {
+            axis_dir = PnRDB::V;
+          } else {  // selfsym
             for(int j=0;j<(int)node.Blocks.size();j++) {
               if(node.Blocks.at(j).instance.back().name.compare(word)==0) {
                 temp_selfsym.first =  j;
-                temp_selfsym.second = PnRDB::H;
+                temp_selfsym.second = axis_dir;
+                //temp_selfsym.second = PnRDB::H;
                 temp_SymmPairBlock.selfsym.push_back(temp_selfsym);
                 break;
               }
             }
           }
         }
+        temp_SymmPairBlock.axis_dir = axis_dir;
+        
+        for(unsigned int sym_index=0;sym_index<temp_SymmPairBlock.selfsym.size();sym_index++){
+           temp_SymmPairBlock.selfsym[sym_index].second=axis_dir;
+        }
+
         node.SPBlocks.push_back(temp_SymmPairBlock);
+      }else if (temp[0].compare("Ordering")==0) {
+        PnRDB::Smark axis_dir = PnRDB::V;
+        pair<vector<int>, PnRDB::Smark> temp_order;
+        for (unsigned int i = 2; i < temp.size(); i = i + 2) {
+          string word = temp[i];
+          if (word == "H")
+            temp_order.second = PnRDB::H;
+          else if (word == "V")
+            temp_order.second = PnRDB::V;
+          else {
+            for (int k = 0; k < (int)node.Blocks.size(); k++) {
+              if (node.Blocks.at(k).instance.back().name.compare(word) == 0) {
+                temp_order.first.push_back(k);
+                break;
+              }
+            }
+          }
+        }
+        node.Ordering_Constraints.push_back(temp_order);
       }else if(temp[0].compare("CC")==0){
         PnRDB::CCCap temp_cccap;
         string word=temp[2];
@@ -380,7 +424,23 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         //temp_cccap.size = temp[4]; //size?
         
         node.CC_Caps.push_back(temp_cccap);
-      } else if (temp[0].compare("AlignBlock")==0) {
+      } else if(temp[0].compare("GuardRing")==0) {
+        PnRDB::Guardring_Const temp_Guardring_Const;
+        string word=temp[2];
+        word=word.substr(1);
+        word=word.substr(0, word.length()-1);
+        temp_Guardring_Const.block_name = word;
+        word = temp[4];
+        word=word.substr(1);
+        word=word.substr(0, word.length()-1);
+        temp_Guardring_Const.guard_ring_perimitives = word;
+        word=temp[6];
+        word=word.substr(1);
+        word=word.substr(0, word.length()-1);
+        temp_Guardring_Const.global_pin = word;
+        node.Guardring_Consts.push_back(temp_Guardring_Const);
+
+      }else if (temp[0].compare("AlignBlock")==0) {
         PnRDB::AlignBlock alignment_unit;
         if(temp[2].compare("H")==0) {
           alignment_unit.horizon=1;
@@ -532,6 +592,141 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
            temp_r_const.R.push_back(atoi(tempsec[2].c_str()));
         }
         node.R_Constraints.push_back(temp_r_const);
+      }else if(temp[0].compare("LinearConst")==0){
+        PnRDB::LinearConst temp_LinearConst;
+        string word=temp[2];
+        word=word.substr(1);
+        word=word.substr(0, word.length()-1);
+        temp_LinearConst.net_name=word;
+
+        for(unsigned int i=4;i<temp.size()-3;i+=2){
+
+           word=temp[i];
+           word=word.substr(1);
+           word=word.substr(0, word.length()-1);
+           //cout<<word<<endl;
+           tempsec=StringSplitbyChar(word, ',');
+           std::pair<int,int> temp_pin;
+           vector<string> pins;
+
+           pins = StringSplitbyChar(tempsec[0], '/');
+           if(pins.size()>1){
+              for(unsigned int j=0;j<node.Blocks.size();j++){
+                 if(node.Blocks.at(j).instance.back().name.compare(pins[0])==0){
+                    for(unsigned int k=0;k<node.Blocks.at(j).instance.back().blockPins.size();k++){
+                       if(node.Blocks.at(j).instance.back().blockPins[k].name.compare(pins[1])==0){
+                         temp_pin.first = j;
+                         temp_pin.second = k;
+                         temp_LinearConst.pins.push_back(temp_pin);
+                         std::cout<<"Test Linear pin "<<pins[0]<<" "<<pins[1]<<" "<<temp_pin.first<<" "<<temp_pin.second<<std::endl;
+                         break; 
+                       }
+                    }
+                 }
+              }
+           }else if(pins.size()==1){
+              for(unsigned int j=0;j<node.Terminals.size();j++){
+                 if(node.Terminals.at(j).name.compare(pins[0])==0){
+                    temp_pin.first = -1;
+                    temp_pin.second = j;
+                    temp_LinearConst.pins.push_back(temp_pin);
+                    std::cout<<"Test Linear pin "<<pins[0]<<" "<<temp_pin.first<<" "<<temp_pin.second<<std::endl;
+                    break; 
+                 }
+              }
+           }
+           temp_LinearConst.alpha.push_back(atof(tempsec[1].c_str()));
+           std::cout<<"Test Linear pin alpha "<<tempsec[1]<<" "<<atof(tempsec[1].c_str())<<std::endl;
+        }
+        int temp_size = temp.size();
+        temp_LinearConst.upperBound = atof(temp[temp_size-3].c_str())*2000;
+        std::cout<<"Test Linear pin upperBound "<<temp[temp_size-3]<<" "<<atof(temp[temp_size-3].c_str())<<std::endl;
+        node.L_Constraints.push_back(temp_LinearConst);
+/*
+        for(int i=0;i<node.Nets.size();i++){
+           if(node.Nets[i].name == temp_LinearConst.net_name){
+             for(int j=0;j<node.Nets[i].connected.size();j++){
+                for(int k=0;k<temp_LinearConst.pins.size();k++){
+                  if(node.Nets[i].connected[j].type == PnRDB::Block and node.Nets[i].connected[j].iter == temp_LinearConst.pins[k].first and node.Nets[i].connected[j].iter2 == temp_LinearConst.pins[k].second){
+                    node.Nets[i].connected[j].alpha = temp_LinearConst.alpha[k];
+                  }else if(node.Nets[i].connected[j].type == PnRDB::Terminal and temp_LinearConst.pins[k].first==-1 and node.Nets[i].connected[j].iter2 == temp_LinearConst.pins[k].second){
+                    node.Nets[i].connected[j].alpha = temp_LinearConst.alpha[k];
+                  }
+                 }
+             }
+           }
+        }
+*/
+
+      }else if(temp[0].compare("Multi_LinearConst")==0){
+        std::cout<<"Enter ML Linear Const"<<std::endl;
+        PnRDB::Multi_LinearConst temp_Multi_LinearConst;
+        for(int i=2;i<temp.size()-3;i=i+2){
+           PnRDB::LinearConst temp_LinearConst;
+
+           string word=temp[i];
+           word=word.substr(1);
+           word=word.substr(0, word.length()-1);
+           tempsec=StringSplitbyChar(word, ',');
+           
+           for(int p=1;p<tempsec.size();p++){
+              std::pair<int,int> temp_pin;
+              vector<string> pins;
+              pins = StringSplitbyChar(tempsec[p], '/');
+              if(pins.size()>2){
+                 for(unsigned int j=0;j<node.Blocks.size();j++){
+                    if(node.Blocks.at(j).instance.back().name.compare(pins[0])==0){
+                       for(unsigned int k=0;k<node.Blocks.at(j).instance.back().blockPins.size();k++){
+                          if(node.Blocks.at(j).instance.back().blockPins[k].name.compare(pins[1])==0){
+                            temp_pin.first = j;
+                            temp_pin.second = k;
+                            temp_LinearConst.pins.push_back(temp_pin);
+                            temp_LinearConst.alpha.push_back(atof(pins[2].c_str()));
+                            std::cout<<"ML Test Linear pin "<<pins[0]<<" "<<pins[1]<<" "<<temp_pin.first<<" "<<temp_pin.second<<" "<<pins[2]<<std::endl;
+                            break; 
+                         }
+                      }
+                   }
+                }
+             }else if(pins.size()==2){
+                 for(unsigned int j=0;j<node.Terminals.size();j++){
+                    if(node.Terminals.at(j).name.compare(pins[0])==0){
+                       temp_pin.first = -1;
+                       temp_pin.second = j;
+                       temp_LinearConst.pins.push_back(temp_pin);
+                       temp_LinearConst.alpha.push_back(atof(pins[2].c_str()));
+                       std::cout<<"ML Test Linear pin "<<pins[0]<<" "<<temp_pin.first<<" "<<temp_pin.second<<" "<<pins[2]<<std::endl;
+                       break; 
+                   }
+                }
+             }  
+           }
+
+           temp_Multi_LinearConst.Multi_linearConst.push_back(temp_LinearConst);
+        }
+        int temp_size = temp.size();
+        temp_Multi_LinearConst.upperBound = atof(temp[temp_size-3].c_str())*2000;
+        node.ML_Constraints.push_back(temp_Multi_LinearConst);
+        std::cout<<"Left ML Linear Const"<<" "<<temp[temp_size-3]<<std::endl;
+      }else if (temp[0].compare("Multi_Connection")==0){
+        //PnRDB::Multi_Connection temp_multi_connection;
+        PnRDB:: Multi_connection temp_multi_Connection;
+        string word=temp[2];
+        word=word.substr(1);
+        word=word.substr(0, word.length()-1);
+        //temp_multi_connection.net_name=word;
+        string multi_number = temp[4];
+        multi_number=multi_number.substr(1);
+        multi_number=multi_number.substr(0, word.length()-1);
+        //temp_multi_connection.multi_connection = atoi(multi_number.c_str());
+        temp_multi_Connection.net_name=word;
+        temp_multi_Connection.multi_number=atoi(multi_number.c_str());
+        node.Multi_connections.push_back(temp_multi_Connection);
+        for(unsigned int j=0;j<node.Nets.size();j++){
+           if(node.Nets[j].name==word){
+              node.Nets[j].multi_connection = atoi(multi_number.c_str());
+            }
+        }
       }else if (temp[0].compare("C_Const")==0){
         PnRDB::C_const temp_c_const;
         string word=temp[2];

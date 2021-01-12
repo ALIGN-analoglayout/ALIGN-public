@@ -845,6 +845,11 @@ void Grid::CollectPointSet(std::vector< std::set<RouterDB::point, RouterDB::poin
 }
 
 Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, int Lmetal, int Hmetal, int grid_scale):LL(ll),UR(ur),GridLL(ll),GridUR(ur) {
+
+  for(int i=0;i<drc_info.Metal_info.size();i++){
+    std::cout<<"grid info "<<drc_info.Metal_info.at(i).grid_unit_x<<" "<<drc_info.Metal_info.at(i).grid_unit_y<<std::endl;
+  }
+
   // Limitation: assume that neighboring layers have different routing diretions
   // 1. Initialize member variables I
   //this->LL=ll;
@@ -910,6 +915,7 @@ Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, in
         int LLy_2=(LL.y%y_unit.at(i+1)==0) ? (LL.y) : ( (LL.y/y_unit.at(i+1))*y_unit.at(i+1)<LL.y ? (LL.y/y_unit.at(i+1)+1)*y_unit.at(i+1) : (LL.y/y_unit.at(i+1))*y_unit.at(i+1) );
         LLy=(LLy_1<LLy_2)?LLy_1:LLy_2;
       }
+      std::cout<<"Create grid on layer test1"<<i<<std::endl;
       for(int X=LLx; X<=UR.x; X+=curlayer_unit) {
         Power = !Power;
         for(int Y=LLy; Y<=UR.y; Y+=nexlayer_unit) {
@@ -963,6 +969,7 @@ Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, in
         }
       }
     } else if (drc_info.Metal_info.at(i).direct==1) { // if horizontal layer
+      std::cout<<"Create grid on layer test2"<<i<<std::endl;
       int curlayer_unit=y_unit.at(i); // current layer direction: horizontal
       int nexlayer_unit; // neighboring layer direction: vertical
       int LLy=(LL.y%curlayer_unit==0)?(LL.y):( (LL.y/curlayer_unit)*curlayer_unit<LL.y ? (LL.y/curlayer_unit+1)*curlayer_unit : (LL.y/curlayer_unit)*curlayer_unit ); // Y lower boudary
@@ -979,6 +986,8 @@ Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, in
         int LLx_2=(LL.x%x_unit.at(i+1)==0) ? (LL.x) : ( (LL.x/x_unit.at(i+1))*x_unit.at(i+1)<LL.x ? (LL.x/x_unit.at(i+1)+1)*x_unit.at(i+1) : (LL.x/x_unit.at(i+1))*x_unit.at(i+1) );
         LLx=(LLx_1<LLx_2)?LLx_1:LLx_2;
       }
+      std::cout<<"LLx , URx, LLy, URy "<<LLx<<" "<<UR.x<<" "<<LLy<<" "<<UR.y<<std::endl;
+      std::cout<<curlayer_unit<<" "<<nexlayer_unit<<std::endl;
       for(int Y=LLy; Y<=UR.y; Y+=curlayer_unit) {
         Power=!Power;
         for(int X=LLx; X<=UR.x; X+=nexlayer_unit) {
@@ -1035,7 +1044,9 @@ Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, in
       std::cout<<"Router-Error: incorrect routing direction on metal layer "<<i<<std::endl; continue;
     }
     this->End_index_metal_vertices.at(i)=vertices_total.size()-1;
+    std::cout<<"Finished Create grid on layer "<<i<<" "<<this->highest_metal<<std::endl;
   } 
+  
   // 5. Add up/down infom for grid points
   std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator mit; // improve runtime of up/down edges - [wbxu: 20190505]
   for(int k=this->lowest_metal; k<this->highest_metal; k++) {
@@ -1482,17 +1493,21 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
   RouterDB::SinkData source, dest;
 //for source
   for(unsigned int i= 0;i<Vsource.size();i++){
-      std::cout<<"Router-Info: detecting source - "<<i<<std::endl;
+      std::cout<<"Router-Info: detecting source- "<<i<<std::endl;
       source = Vsource[i];
+      std::cout<<"Router-Info: detecting checkpoint1"<<i<<std::endl;
       std::vector<int> temp_Source; 
       if(source.coord.size()>1){
          //for pin
+         std::cout<<"Router-Info: detecting checkpoint2"<<i<<std::endl;
          temp_Source = Mapping_function_pin(source);
+         std::cout<<"Router-Info: detecting checkpoint2.1"<<i<<std::endl;
          for(unsigned int j=0;j<temp_Source.size();j++){
             //std::cout<<"Source "<<temp_Source.size()<<std::endl;
             Source.push_back(temp_Source[j]);
            }
       }else if(source.metalIdx!=-1) {
+         std::cout<<"Router-Info: detecting checkpoint3"<<i<<std::endl;
          //for terminal
          int min_dis = INT_MAX;
          // wbxu: another logic problem in the following [fixed]
@@ -1513,7 +1528,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
             direction = 1;
             min_dis = abs(source.coord[0].y-height);
          }
-
+         
          for(int temp_MetalIdx = lowest_metal;temp_MetalIdx<=highest_metal;temp_MetalIdx++){
              temp_Source = Mapping_function_terminal(source, temp_MetalIdx, direction);
              if(temp_Source.size()>0){
@@ -1547,6 +1562,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
          }
 
         }else{
+        std::cout<<"Router-Info: detecting checkpoint4"<<i<<std::endl;
         //for stiner node
          if(Smap.find(source.coord[0])==Smap.end()){
              for(int temp_metalIdx = lowest_metal;temp_metalIdx<=highest_metal;temp_metalIdx++){
@@ -1704,6 +1720,8 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
   }
   if(Vdest.size()>0 and Dest.empty()) {std::cout<<"Router-Error: fail to find dest vertices on grids"<<std::endl; return Terminal_contact;}
 
+std::cout<<"Router-Info: finished detecting"<<std::endl;
+
 return Terminal_contact;
 
 }
@@ -1718,7 +1736,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest_detail(std::vector<RouterDB::Sin
   RouterDB::SinkData source, dest;
 //for source
   for(unsigned int i= 0;i<Vsource.size();i++){
-      std::cout<<"Router-Info: detecting source - "<<i<<std::endl;
+      std::cout<<"Router-Info: detecting source detailed- "<<i<<std::endl;
       source = Vsource[i];
       std::vector<int> temp_Source; 
       if(source.coord.size()>1){
@@ -1935,6 +1953,11 @@ std::vector<int> Grid::Mapping_function_pin_detail(RouterDB::SinkData& source)
   std::vector<int> map_source;
   // wbxu: incorrect startpoint and endpoint if source.metalIdx==lowest_metal
   // it results in traversal starting from the second node in the subfunction [fixed]
+
+  if(source.metalIdx<0 or source.metalIdx>drc_info.Metal_info.size()){
+    return map_source;
+  }
+
   if(source.metalIdx==0){
 
     if(drc_info.Metal_info[source.metalIdx].direct == 0){
@@ -2024,6 +2047,11 @@ std::vector<int> Grid::Mapping_function_pin(RouterDB::SinkData& source)
   std::vector<int> map_source;
   // wbxu: incorrect startpoint and endpoint if source.metalIdx==lowest_metal
   // it results in traversal starting from the second node in the subfunction [fixed]
+
+  if(source.metalIdx<0 or source.metalIdx>drc_info.Metal_info.size()){
+    return map_source;
+  }
+
   if(source.metalIdx==0){
 
     if(drc_info.Metal_info[source.metalIdx].direct == 0){

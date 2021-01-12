@@ -65,7 +65,8 @@ class Graph {
     bool CheckActive(Grid& grid, int index);
     void power_grid_dsf(Grid& grid, int i, int graph_index, int& connection_graph_number, int power);
     void Connection_Check_Power_Grid(Grid& grid, int power);
-    
+    void collect_nodes(Grid &grid, vector<int> temp_vector, vector<int>& adjacent_nodes, int power);
+    void collect_node(Grid &grid, int temp_vector, vector<int>& adjacent_nodes, int power);
 };
 
 #endif

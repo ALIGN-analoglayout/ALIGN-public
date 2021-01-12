@@ -5,14 +5,218 @@ extern "C"
 {
 #include <stdio.h>
 #include "lp_lib.h"
-#define LPSOLVEAPIFROMLIBDEF
-#include "lp_explicit.h"
+  // SMB
+  //#define LPSOLVEAPIFROMLIBDEF
+  //#include "lp_explicit.h"
 }
 
 
 
 
 GcellGlobalRouter::GcellGlobalRouter(){
+
+};
+
+void GcellGlobalRouter::PlotGlobalRouter(){
+
+    std::cout<<"Global-Router-Info: create gnuplot file"<<std::endl;
+    std::ofstream fout;
+    std::string outfile = "global_router.plt";
+    fout.open(outfile);
+
+    //set title
+    fout<<"#Use this file as a script for gnuplot\n#(See http://www.gnuplot.info/ for details)"<<std::endl;
+    fout<<"\nset title\" global router results"<<" \""<<std::endl;
+    fout<<"\nset nokey"<<std::endl;
+    fout<<"#   Uncomment these two lines starting with \"set\""<<std::endl;
+    fout<<"#   to save an EPS file for inclusion into a latex document"<<std::endl;
+    fout<<"# set terminal postscript eps color solid 20"<<std::endl;
+    fout<<"# set output \"result.eps\""<<std::endl<<std::endl;
+    fout<<"#   Uncomment these two lines starting with \"set\""<<std::endl;
+    fout<<"#   to save a PS file for printing"<<std::endl;
+    fout<<"set term jpeg"<<std::endl;
+    fout<<"set output \"result.jpg\""<<std::endl<<std::endl;
+
+    //set range
+    fout<<"\nset xrange ["<<this->LL.x-5000<<":"<<this->UR.x+5000<<"]"<<std::endl;
+    fout<<"\nset yrange ["<<this->LL.y-5000<<":"<<this->UR.y+5000<<"]"<<std::endl;
+
+    fout<<"\nplot[:][:] \'-\' with lines linestyle 1,";
+
+    for(unsigned int i=0;i<Nets.size();i++){
+	fout<<" \'-\' with lines linestyle "<<i+2<<",";
+    }
+
+    fout<<"\nEOF"<<std::endl;
+
+    // plot connections
+    auto plot_nets = [&] (auto& nets) {
+	for (unsigned int i = 0; i < nets.size(); i++) {
+	    for (unsigned int j = 0; j < nets[i].global_path.size(); j++) {
+		auto first = nets[i].global_path[j].first;
+		auto second = nets[i].global_path[j].second;
+
+                auto sposx = this->Gcell.tiles_total[first].x;
+                auto sposy = this->Gcell.tiles_total[first].y;
+                auto eposx = this->Gcell.tiles_total[second].x;
+                auto eposy = this->Gcell.tiles_total[second].y;
+
+		fout << "\t" << sposx << "\t" << sposy << std::endl;
+		fout << "\t" << eposx << "\t" << eposy << std::endl;
+		fout << "\t" << sposx << "\t" << sposy << std::endl;
+		fout << std::endl;
+	    }
+	    if (nets.size() > 0) fout << "\nEOF" << std::endl;
+	}
+    };
+
+    plot_nets (Nets);
+    fout.close();
+
+};
+
+void GcellGlobalRouter::AddContact(PnRDB::contact &temp_contact, json& temp_json_Contact, int unit){
+
+  json temp_json_contact;
+  temp_json_contact["Physical Layer"] = temp_contact.metal;
+  temp_json_contact["LLx"] = temp_contact.placedBox.LL.x*unit;
+  temp_json_contact["LLy"] = temp_contact.placedBox.LL.y*unit;
+  temp_json_contact["URx"] = temp_contact.placedBox.UR.x*unit;
+  temp_json_contact["URy"] = temp_contact.placedBox.UR.y*unit;
+
+  temp_json_Contact.push_back(temp_json_contact);
+
+}
+
+void GcellGlobalRouter::AddContacts(std::vector<PnRDB::contact> &temp_contact, json& temp_json_Contact, int unit){
+
+  for(unsigned int i=0;i<temp_contact.size();i++){
+    AddContact(temp_contact[i], temp_json_Contact, unit);
+  }
+
+}
+
+void GcellGlobalRouter::PlotGlobalRouter_Json(PnRDB::hierNode& node){
+
+    std::cout << "JSON WRITE Global Router Results "<< std::endl;
+    std::ofstream jsonStream;
+    jsonStream.open ("global_router_plt.json");
+    json jsonTop;
+    jsonTop["Cell Name"] = node.name;
+    jsonTop["Units"] = "0.5nm";
+    jsonTop["Istop"] =node.isTop;
+    int unit = 1;
+
+    json temp_box;
+    temp_box["Physical Layer"]="null";
+    temp_box["LLx"]=0*unit;
+    temp_box["LLy"]=0*unit;
+    temp_box["URx"]=node.width*unit;
+    temp_box["URy"]=node.height*unit;
+    jsonTop["Cell box"] = temp_box;
+
+    //node Blocks
+    json jsonBlocks = json::array();
+    for(unsigned int i=0;i<node.Blocks.size();i++){
+       int index = node.Blocks[i].selectedInstance;
+       json temp_block;
+       temp_block["Name"]=node.Blocks[i].instance.at(index).name;
+       temp_block["Height"]=node.Blocks[i].instance.at(index).height;
+       temp_block["Width"]=node.Blocks[i].instance.at(index).width;
+       json box;
+       box["Physical Layer"]="null";
+       box["LLx"]=node.Blocks[i].instance.at(index).placedBox.LL.x*unit;
+       box["LLy"]=node.Blocks[i].instance.at(index).placedBox.LL.y*unit;
+       box["URx"]=node.Blocks[i].instance.at(index).placedBox.UR.x*unit;
+       box["URy"]=node.Blocks[i].instance.at(index).placedBox.UR.y*unit;
+       temp_block["Box"]=box;
+
+       //pins
+       json block_pins=json::array();
+       for(unsigned j=0;j<node.Blocks[i].instance.at(index).blockPins.size();j++){
+           json temp_pin;
+           temp_pin["Name"]=node.Blocks[i].instance.at(index).blockPins[j].name;
+           json temp_Contacts = json::array();
+           json temp_Vias = json::array();
+           AddContacts(node.Blocks[i].instance.at(index).blockPins[j].pinContacts, temp_Contacts, unit);
+           temp_pin["Internal Metal"]=temp_Contacts;
+           block_pins.push_back(temp_pin);
+       }
+
+       temp_block["Pins"]=block_pins;
+       jsonBlocks.push_back(temp_block);
+    }
+
+    jsonTop["Blocks"] = jsonBlocks;
+
+    //Gcell
+    json jsonGcell=json::array();
+    
+    for(unsigned int i=0;i<this->Gcell.tiles_total.size();i++){
+       json temp_tile;
+       temp_tile["x"]=this->Gcell.tiles_total[i].x;
+       temp_tile["y"]=this->Gcell.tiles_total[i].y;
+       temp_tile["Physical Layer"]=this->Gcell.tiles_total[i].metal[0];
+       jsonGcell.push_back(temp_tile);
+    }
+
+    jsonTop["Gcell"] = jsonGcell;
+
+    //GlobalRouter
+
+    json jsonGlobalRoutes = json::array();
+
+    for(unsigned int i=0;i<this->Nets.size();i++){
+        json json_temp_net;
+        json_temp_net["name"]=this->Nets[i].netName;
+
+        json json_terminals=json::array();
+        for(unsigned int j=0;j<this->Nets[i].terminals.size();j++){
+           json json_temp_terminal;
+           int tile_index = this->Nets[i].terminals[j];
+           json_temp_terminal["x"] = this->Gcell.tiles_total[tile_index].x;
+           json_temp_terminal["y"] = this->Gcell.tiles_total[tile_index].y;
+           json_temp_terminal["Physical Layer"]=this->Gcell.tiles_total[tile_index].metal[0];
+           json_terminals.push_back(json_temp_terminal);
+        }
+        json_temp_net["terminals"]=json_terminals;
+
+        json json_global_path=json::array();
+        for(unsigned int j=0;j<this->Nets[i].global_path.size();j++){
+           json json_temp_path;
+           int start_index = this->Nets[i].global_path[j].first;
+           int end_index = this->Nets[i].global_path[j].second;
+           json_temp_path["llx"] = this->Gcell.tiles_total[start_index].x;
+           json_temp_path["lly"] = this->Gcell.tiles_total[start_index].y;
+           json_temp_path["Physical Layer ll"]=this->Gcell.tiles_total[start_index].metal[0];
+           json_temp_path["urx"] = this->Gcell.tiles_total[end_index].x;
+           json_temp_path["ury"] = this->Gcell.tiles_total[end_index].y;
+           json_temp_path["Physical Layer ur"]=this->Gcell.tiles_total[end_index].metal[0];
+           json_global_path.push_back(json_temp_path);
+        }
+        json_temp_net["global_path"]=json_global_path;
+/*
+        json json_steiner_node=json::array();
+        for(unsigned int j=0;j<this->Nets[i].steiner_node.size();j++){
+           json json_temp_steiner_node;
+           int index = this->Nets[i].steiner_node[j];
+           json_temp_steiner_node["x"] = this->Gcell.tiles_total[index].x;
+           json_temp_steiner_node["y"] = this->Gcell.tiles_total[index].y;
+           json_temp_steiner_node["Physical Layer"]=this->Gcell.tiles_total[index].metal[0];
+           json_steiner_node.push_back(json_temp_steiner_node);
+        }
+        json_temp_net["steiner_node"]=json_steiner_node;
+*/
+        jsonGlobalRoutes.push_back(json_temp_net);
+        
+    }
+
+    jsonTop["Glbaol_Routes"] = jsonGlobalRoutes;
+ 
+    jsonStream << std::setw(4) << jsonTop;
+    jsonStream.close();
+    std::cout << " JSON FINALIZE " <<  node.name << std::endl;
+
 
 };
 
@@ -462,6 +666,9 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   std::cout << "Test 16" << std::endl;
   //5. Return hierNode  Q2. return some to hierNode for detial router
   ReturnHierNode(node);
+  PlotGlobalRouter();
+  PlotGlobalRouter_Json(node);
+
 };
 
 
@@ -929,6 +1136,7 @@ void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
          temp_net.symCounterpart=node.Nets[i].symCounterpart;
          temp_net.iter2SNetLsit=node.Nets[i].iter2SNetLsit;
          temp_net.priority=node.Nets[i].priority;
+         temp_net.multi_connection = node.Nets[i].multi_connection;
 
          if(node.Nets[i].axis_dir == PnRDB::H){
              temp_net.sym_H = 1;
@@ -1286,6 +1494,9 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   // start of lp_solve
   int majorversion, minorversion, release, build;
   char buf[1024];
+
+
+  /*
   hlpsolve lpsolve;
   # if defined WIN32
   #   define lpsolvelib "lpsolve55.dll"
@@ -1302,6 +1513,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
     fprintf(stderr, "Unable to initialize lpsolve shared library (%s)\n      ", lpsolvelib);
     //ERROR();
   }
+  */
 
 
   // 1. collect number of STs

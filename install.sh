@@ -24,6 +24,7 @@ $SUDO apt-get update && $SUDO apt-get install -yq \
     python3 \
     python3-pip \
     python3-venv \
+    python3-dev \
     g++\
     cmake \
     libboost-container-dev \
@@ -31,10 +32,11 @@ $SUDO apt-get update && $SUDO apt-get install -yq \
     gnuplot \
     curl \
     xvfb \
+    gfortran \
 &&  $SUDO apt-get clean
 
 #### Install klayout 
-curl -o ./klayout_0.26.3-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-18/klayout_0.26.3-1_amd64.deb
+curl -k -o ./klayout_0.26.3-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-18/klayout_0.26.3-1_amd64.deb
 $SUDO apt-get install -yq ./klayout_0.26.3-1_amd64.deb
 rm ./klayout_0.26.3-1_amd64.deb
 #** WSL users would need to install Xming for the display to work
@@ -56,8 +58,24 @@ cd googletest/
 
 cmake CMakeLists.txt
 make
+cmake -DBUILD_SHARED_LIBS=ON CMakeLists.txt
+make
 mkdir googletest/mybuild
 cp -r lib googletest/mybuild/.
+
+### Install superLU // this now is not correct
+#version 1
+cd $ALIGN_HOME
+git clone https://www.github.com/ALIGN-analoglayout/superlu.git
+cd superlu
+tar xvfz superlu_5.2.1.tar.gz 
+
+cd SuperLU_5.2.1/
+mkdir build
+cd build
+cmake ..
+make -j8
+
 
 ## Set prerequisite paths
 #------------------------
@@ -65,6 +83,7 @@ export LP_DIR=$ALIGN_HOME/lpsolve
 #export BOOST_LP=$ALIGN_HOME/boost
 export JSON=$ALIGN_HOME/json
 export GTEST_DIR=$ALIGN_HOME/googletest/googletest/
+export SuperLu_DIR=$ALIGN_HOME/superlu
 export VENV=$ALIGN_HOME/general
 
 ## Install ALIGN
@@ -75,12 +94,13 @@ cd $ALIGN_HOME
 python3 -m venv $VENV
 source $VENV/bin/activate
 pip install --upgrade pip
+pip install pytest pytest-cov pytest-timeout coverage-badge
 pip install -e .
-deactivate
 
 ## Install ALIGN_PnR
-export LD_LIBRARY_PATH=$ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/
-cd $ALIGN_HOME/PlaceRouteHierFlow/ && make
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}$ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/:$GTEST_DIR/mybuild/lib/
+
+cd $ALIGN_HOME/PlaceRouteHierFlow/ && make -j8
 cd $ALIGN_HOME
 
 ## Run first example

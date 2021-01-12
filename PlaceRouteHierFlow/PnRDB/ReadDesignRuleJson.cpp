@@ -209,10 +209,31 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
 	    }
           }
         }
+       
+
         for(std::map<int, PnRDB::via_info>::iterator it=viaSet.begin(); it!=viaSet.end(); ++it) {
           DRC_info.Via_info.push_back(it->second);
           DRC_info.Viamap[it->second.name] = DRC_info.Via_info.size()-1;
         }
+
+       // extract information for guard ring
+        for(json::iterator lit = layerAry.begin(); lit != layerAry.end(); ++lit) {
+          json layer = *lit;
+          std::string lname=layer["Layer"];
+          if(lname.compare("GuardRing")==0){//
+             PnRDB::guardring_info temp_guardring_info;
+             //temp_boundary.layerNo = layer["GdsLayerNo"];
+             //temp_guardring_info.gds_datatype.Draw=layer["GdsDatatype"]["Draw"];
+             //temp_boundary.gds_datatype.Pin=layer["GdsDatatype"]["Pin"];
+             //temp_boundary.gds_datatype.Label=layer["GdsDatatype"]["Label"];
+             //temp_boundary.gds_datatype.Blockage=layer["GdsDatatype"]["Blockage"];
+             temp_guardring_info.xspace = layer["XSpace"];
+             temp_guardring_info.yspace = layer["YSpace"];
+             DRC_info.Guardring_info = temp_guardring_info;
+          }          
+
+        }
+
 
         // 3. Add metal weight
         //add

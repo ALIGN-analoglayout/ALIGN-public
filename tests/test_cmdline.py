@@ -5,7 +5,8 @@ import pathlib
 
 examples = ['inverter_v1',
             'buffer',
-            'five_transistor_ota']
+            'five_transistor_ota',
+            'adder']
 
 ALIGN_HOME = pathlib.Path(__file__).resolve().parent.parent
 
