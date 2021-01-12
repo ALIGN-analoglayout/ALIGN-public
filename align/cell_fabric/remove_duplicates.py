@@ -294,15 +294,15 @@ class RemoveDuplicates():
     def generate_rectangles( self):
 
         terminals = []
-#
-# Write out regions
-#
+        #
+        # Write out regions
+        #
         for d in self.canvas.terminals:
             if d['layer'] in self.skip_layers:
                 terminals.append( d)
-#
-# Write out the rectangles stored in the scan line data structure
-#
+        #
+        # Write out the rectangles stored in the scan line data structure
+        #
         for layer, vv in self.store_scan_lines.items():
             for _, v in vv.items():
                 for slr in v.rects:
