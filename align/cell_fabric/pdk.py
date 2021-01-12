@@ -87,23 +87,22 @@ class Pdk(object):
             if isinstance(kwargs[x], list) else kwargs[x] is not None and kwargs[x] % 2 == 0 \
             for x in params[5:6] if kwargs[x] is not None), \
             f"One or more of {params[4:6]} in {kwargs} not a multiple of two"
-        # 1. Width, MinL, MaxL, EndToEnd of type list.
-        # Exclude Pitch: Pitch is a scalar as it refers to the pitch of the repeating metal pattern
-        # Disabling as DRC doesnt support multi-width grids yet 
-        list_params = []
-        ll = set()
-        for param in list_params:
-            if isinstance(kwargs[param], list):
-                if len(kwargs[param]) == 1:
-                    kwargs[param] = kwargs[param][0]
-                else:
-                    ll.add(len(kwargs[param]))
-        assert len(ll) <= 1, f"All lists in {kwargs} must of be same length"
-        if len(ll) == 1:
-            ll = ll.pop()
-            for param in list_params:
-                if not isinstance(kwargs[param], list):
-                    kwargs[param] = [kwargs[param]] * ll
+        # # Disabled the check below as lists might be of different length for non-uniform metal templates
+        # # 1. Pitch, Width, MinL, MaxL, EndToEnd of type list
+        # list_params = ['Pitch', 'Width', 'MinL', 'MaxL', 'EndToEnd', 'UnitC', 'UnitCC', 'UnitR']
+        # ll = set()
+        # for param in list_params:
+        #     if isinstance(kwargs[param], list):
+        #         if len(kwargs[param]) == 1:
+        #             kwargs[param] = kwargs[param][0]
+        #         else:
+        #             ll.add(len(kwargs[param]))
+        # assert len(ll) <= 1, f"All lists in {kwargs} must of be same length"
+        # if len(ll) == 1:
+        #     ll = ll.pop()
+        #     for param in list_params:
+        #         if not isinstance(kwargs[param], list):
+        #             kwargs[param] = [kwargs[param]] * ll
         # 2. Cast direction must be lowercase & ensure it is either v or h
         kwargs['Direction'] = kwargs['Direction'].lower()
         assert kwargs['Direction'] in ('v', 'h'), f"Invalid Direction {kwargs['Direction']} in {kwargs}"
