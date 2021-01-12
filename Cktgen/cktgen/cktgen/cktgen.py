@@ -425,8 +425,9 @@ def encode_GR( tech, obj):
   else:
     raise TypeError(repr(obj) + " is not JSON serializable.")
 
-
-def decolor_layer(layer):
+# SY: Added for coloring
+def extract_layer_color(layer):
+  """ Returns layer and color from colored layer. Example: viaa1 => via1, a"""
   mg = re.match(r'(metal|via)(\D+)(\d+)', layer)
   if mg:
     lyr = mg.group(1) + mg.group(3)
@@ -435,6 +436,44 @@ def decolor_layer(layer):
     lyr = layer
     clr = None
   return lyr, clr
+
+# # SY: Added for coloring
+# def extract_colored_layer(term):
+#   """ Returns colored layer from a terminal. Example: {'layer': 'V1', 'color:'a'} => viaa1"""
+#   if 'color' in term and term['color'] is not None:
+#     mg = re.match(r'(metal|via)(\d+)', term['layer'])
+#     assert mg, "Layer pattern not recognized"
+#     layer = mg.group(1) + term['color'] + mg.group(2)
+#   else:
+#     layer = term['layer']
+#   return layer
+
+# SY: Added for coloring
+def translate_layer(layer):
+  """ Translates metal/via to M/V"""
+  metal_layer_map = { f'metal{i}' : f'M{i}' for i in range(0,7) }
+  via_layer_map = { f'via{i}' : f'V{i}' for i in range(0,6) }
+  layer_map = dict(list(metal_layer_map.items()) + list(via_layer_map.items()))
+  return layer_map.get(layer, layer)
+
+# SY: Syntax converter
+def convert_align_to_adr(term):
+    """ Convert align terminal to adr terminal (M -> colored metal, V -> colored via, netName -> net_name"""
+    assert 'netName' in term, term
+    new_term = dict()
+    new_term['net_name'] = term['netName']
+    new_term['rect'] = term['rect'].copy()
+    prefix = 'metal' if term['layer'][0] == 'M' else 'via'
+    if 'color' in term and term['color'] is not None:
+        color = term['color']
+    else:
+        color = ''
+    new_term['layer'] = prefix + color + term['layer'][1:]
+    if 'width' in term:
+        new_term['width'] = term['width']
+    if 'connected_pins' in term:
+        new_term['connected_pins'] = term['connected_pins'].copy()
+    return new_term
 
 
 class Net:
@@ -497,11 +536,13 @@ class Netlist:
       for term in terminals:
         # print('term::', type(term), term)
         if type(term) is dict:
-          lyr, clr = decolor_layer(term['layer'])
-          term['layer'] = lyr
+          lyr, clr = extract_layer_color(term['layer'])
+          term['layer'] = translate_layer(lyr)
           term['color'] = clr
         else:
-          term.layer, term.color = decolor_layer(term.layer)
+          lyr, clr = extract_layer_color(term.layer)
+          term.layer = translate_layer(lyr)
+          term.color = clr
 
       data = { "bbox" : [self.bbox.llx, self.bbox.lly, self.bbox.urx, self.bbox.ury], "globalRoutes" : grs, "globalRouteGrid" : grGrid, "terminals" : terminals}
 
@@ -603,10 +644,10 @@ Option name=upper_layer                          value={topmetal}
 
 #Option name=disable_optimization value=1
 # #OPT4 
-# Option name=opt_maximize_ties_between_trunks value=1
+# Option name=opt_maximize_ties_between_trunks value=0
 # #OPT5
-# Option name=opt_maximize_ties_between_trunks_and_terminals value=1
-# Option name=opt_minimize_trunk_tracks value=1
+# Option name=opt_maximize_ties_between_trunks_and_terminals value=0
+# Option name=opt_minimize_trunk_tracks value=0
 # Option name=opt_optimize_trunk_positions value=0
 # #OPT 6
 # Option name=opt_minimize_preroute_extensions value=0
@@ -774,7 +815,7 @@ Option name=upper_layer                          value={topmetal}
             for gr_layer, w_layers in tuples:
               if gr.layer == gr_layer:
                 for w in v.wires:
-                  if decolor_layer(w.layer)[0] in w_layers:
+                  if extract_layer_color(w.layer)[0] in w_layers:
                     if touching( gr_r, w.rect):
                       fp.write( "Tie term0=%d gr0=%d\n" % (w.gid, gr.gid))
                       print( "Tie", gr, gr_r, w)
@@ -838,7 +879,7 @@ def parse_lgf( fp):
         net = m.groups()[0]
         gid = m.groups()[2]
         if gid is not None: gid = int(gid)
-        layer = m.groups()[3]        
+        layer = m.groups()[3]
         rect = Rect( int(m.groups()[4]), int(m.groups()[5]), int(m.groups()[6]), int(m.groups()[7]))
 
         # hack to get rid of large global routing visualization grid
@@ -851,7 +892,7 @@ def parse_lgf( fp):
       m = p_wire2.match( line)
       if m:
         net = m.groups()[0]
-        layer = m.groups()[1]        
+        layer = m.groups()[1]
         rect = Rect( int(m.groups()[2]), int(m.groups()[3]), int(m.groups()[4]), int(m.groups()[5]))
         gid = m.groups()[7]
         if gid is not None: gid = int(gid)
@@ -876,7 +917,7 @@ def parse_lgf( fp):
       m = p_wire_in_obj.match( line)
       if m:
         net = m.groups()[0]
-        layer = m.groups()[1]        
+        layer = m.groups()[1]
         rect = Rect( int(m.groups()[2]), int(m.groups()[3]), int(m.groups()[4]), int(m.groups()[5]))
 
         if True or layer in ["via0","via1","via2","via3","via4"]:
