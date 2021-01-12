@@ -17,6 +17,8 @@ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}$ALIGN_HOME/lpsolve/
 
 source $VENV/bin/activate
 
+export PYTHONPATH=${PYTHONPATH:+$PYTHONPATH:}$ALIGN_HOME/PlaceRouteHierFlow/
+
 echo "ALIGN-public environment is now set up."
 echo "To run a first example, issue the following:"
 echo "   mkdir -p \$ALIGN_WORK_DIR/telescopic_ota"
