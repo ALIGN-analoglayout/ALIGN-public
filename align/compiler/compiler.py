@@ -81,7 +81,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
     logger.info(f"Modifying pg pins in design for PnR")
     pg_pins = design_setup['POWER']+design_setup['GND']
     remove_pg_pins(hier_graph_dict,design_name, pg_pins)
-    
+
     logger.debug(f"START preprocessing")
     stacked_subcircuit=[]
     for circuit_name, circuit in hier_graph_dict.items():
@@ -307,6 +307,6 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
     logger.info("Topology identification done !!!")
     logger.info(f"OUTPUT verilog netlist at: {result_dir}/{design_name}.v")
     #logger.info(f"OUTPUT spice netlist at: {result_dir}/{design_name}_blocks.sp")
-    logger.info(f"OUTPUT const file at: {result_dir}/{design_name}.const")
+    logger.info(f"OUTPUT const file at: {result_dir}/{design_name}.const.json")
     print("compilation stage done")
     return primitives
