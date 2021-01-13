@@ -168,7 +168,8 @@ def read_setup(setup_path):
             "GND":[],
             "CLOCK":[],
             "DIGITAL":[],
-            "DONT_USE_CELLS":[]
+            "DONT_USE_CELLS":[],
+            "NO_CONST":[]
             }
     if os.path.isfile(setup_path):
         logger.debug(f'Reading setup file: {setup_path}')
@@ -190,8 +191,11 @@ def read_setup(setup_path):
             elif line.strip().startswith("DONT_USE_CELLS"):
                 DONT_USE_CELLS = line.strip().split('=')[1].split()
                 design_setup['DONT_USE_CELLS']=DONT_USE_CELLS
+            elif line.strip().startswith("NO_CONST"):
+                NO_CONST = line.strip().split('=')[1].split()
+                design_setup['NO_CONST']=NO_CONST
             else:
-                logger.warning(f"Non identified values found {line}")
+                logger.warning(f"Non identified values found in setup file{line}")
             line=fp.readline()
         logger.debug(f"SETUP: {design_setup}")
     else:

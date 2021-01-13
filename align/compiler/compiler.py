@@ -290,11 +290,12 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             const_file = CopyConstFile(name, input_dir, result_dir)
             logger.debug(f"cap constraint gen for block: {name}")
 
-            ##Removinf constraints to fix cascoded cmc
+            ##Removing constraints to fix cascoded cmc
             if name not in design_setup['DIGITAL'] and name not in lib_names:
                 logger.debug(f"call constraint generator writer for block: {name}")
                 stop_points=design_setup['POWER']+design_setup['GND']+design_setup['CLOCK']
-                WriteConst(graph, result_dir, name, inoutpin, member["ports_weight"],all_array, stop_points)
+                if name not in design_setup['NO_CONST']:
+                    WriteConst(graph, result_dir, name, inoutpin, member["ports_weight"],all_array, stop_points)
                 WriteCap(graph, result_dir, name, design_config["unit_size_cap"],all_array)
                 check_common_centroid(graph,const_file,inoutpin)
 
