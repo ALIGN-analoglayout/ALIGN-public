@@ -41,22 +41,22 @@
         {
             "const_name":"MatchBlock",
             "block1":"c2_c5",
-            "block1":"xi0"
+            "block2":"xi0"
         },
         {
             "const_name":"MatchBlock",
             "block1":"c2_c5",
-            "block1":"c8_c9"
+            "block2":"c8_c9"
         },
         {
             "const_name":"MatchBlock",
             "block1":"xi0",
-            "block1":"m6_c0_m4_m3_m5_c1_m7_c3_m0"
+            "block2":"m6_c0_m4_m3_m5_c1_m7_c3_m0"
         },
         {
             "const_name":"MatchBlock",
             "block1":"xi0",
-            "block1":"m12_c4_m8_m11_m9_c7_m10_c6_m14"
+            "block2":"m12_c4_m8_m11_m9_c7_m10_c6_m14"
         },
         {
             "const_name":"SymmNet",
