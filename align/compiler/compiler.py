@@ -85,6 +85,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
     logger.debug("START preprocessing")
     stacked_subcircuit=[]
     for circuit_name, circuit in hier_graph_dict.items():
+        logger.debug(f"preprocessing circuit name: {circuit_name}")
         G1 = circuit["graph"]
         if circuit_name not in design_setup['DIGITAL']:
             define_SD(G1,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])

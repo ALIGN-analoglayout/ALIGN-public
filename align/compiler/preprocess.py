@@ -154,12 +154,13 @@ def preprocess_stack_parallel(hier_graph_dict:dict,circuit_name,G):
     #remove single instance subcircuits 
     attributes = [attr for node, attr in G.nodes(data=True) if 'net' not in attr["inst_type"]]
     if len(attributes)==1:
+        #Check any existing hier
         if 'sub_graph' in attributes[0].keys() and attributes[0]['sub_graph'] is not None:
             logger.debug(f"sub_graph nodes {attributes[0]['sub_graph'].nodes()}")
             preprocess_stack_parallel(hier_graph_dict,attributes[0]["real_inst_type"],attributes[0]["sub_graph"])
         for ckt in hier_graph_dict.values():
             for node,attr in ckt["graph"].nodes(data=True):
-                if 'net' not in attr["inst_type"] and attr["real_inst_type"]==circuit_name:
+                if 'net' not in attr["inst_type"] and attr["inst_type"]==circuit_name:
                     logger.debug(f"updating instance {node} {attr} with stacked device {attributes}")
                     attr["inst_type"]=attributes[0]["inst_type"]
                     attr["real_inst_type"]=attributes[0]["real_inst_type"]
@@ -179,12 +180,20 @@ def preprocess_stack_parallel(hier_graph_dict:dict,circuit_name,G):
 def change_SD(G,node):
     nbr = list(G.neighbors(node))
     #No gate change
-    nbr = [nr for nr in nbr if G.get_edge_data(node, nr)['weight']!=2]
+    nbr = [nr for nr in nbr if G.get_edge_data(node, nr)['weight']!=2 and G.get_edge_data(node, nr)['weight']!=8]
     #Swapping D and S
     w1 = G.get_edge_data(node, nbr[0])['weight']
     w2 = G.get_edge_data(node, nbr[1])['weight']
-    G.get_edge_data(node, nbr[0])['weight'] = w2
-    G.get_edge_data(node, nbr[1])['weight'] = w1
+    logger.debug(f"Swapping D and S {nbr} {w1} {w2}")
+    if w1 & 1:
+        w1 = w1 +3
+        w2 = w2 -3
+    elif w1 & 4:
+        w1 = w1-3
+        w2 = w2 +3 
+
+    G.get_edge_data(node, nbr[0])['weight'] = w1
+    G.get_edge_data(node, nbr[1])['weight'] = w2
 
 def define_SD(G,power,gnd,clk):
     logger.debug("START checking source and drain in graph: ")
@@ -212,13 +221,13 @@ def define_SD(G,power,gnd,clk):
                     #logger.debug("VDD:checking node: %s %s %s ", node, high,traversed)
                     if 'pmos' == G.nodes[node]["inst_type"] and \
                         node not in traversed:
-                        weight =G.get_edge_data(node, nxt)['weight']
+                        weight =G.get_edge_data(node, nxt)['weight'] & ~ 8
                         if weight == 1 or weight==3 :
                             logger.debug("VDD:changing source drain:%s",node)
                             probable_changes_p.append(node)
                     elif 'nmos' == G.nodes[node]["inst_type"] and \
                     node not in traversed:
-                        weight =G.get_edge_data(node, nxt)['weight']
+                        weight =G.get_edge_data(node, nxt)['weight'] & ~ 8
                         if weight == 4 or weight==6 :
                             #logger.debug("VDD:changing source drain:%s",node)
                             probable_changes_p.append(node)
@@ -243,14 +252,14 @@ def define_SD(G,power,gnd,clk):
                     #logger.debug("GND:checking node: %s %s %s ", node, low,traversed)
                     if 'pmos' == G.nodes[node]["inst_type"] and \
                         node not in traversed:
-                        weight =G.get_edge_data(node, nxt)['weight']
+                        weight =G.get_edge_data(node, nxt)['weight'] & ~ 8
                         if weight == 4 or weight==6 :
                             #logger.debug("GND:changing source drain:%s",node)
                             #change_SD(G,node)
                             probable_changes_n.append(node)
                     elif 'nmos' == G.nodes[node]["inst_type"] and \
                     node not in traversed:
-                        weight =G.get_edge_data(node, nxt)['weight']
+                        weight =G.get_edge_data(node, nxt)['weight'] & ~ 8
                         if weight == 1 or weight==3 :
                             logger.debug("GND:changing source drain:%s",node)
                             #change_SD(G,node)
@@ -348,6 +357,18 @@ def add_parallel_transistor(G):
         for node in remove_nodes:
             G.remove_node(node)
 def add_stacked_transistor(G):
+    """
+    Reduce stacked transistors
+    Parameters
+    ----------
+    G : networkx graph
+        input graph
+
+    Returns
+    -------
+    None.
+
+    """
     logger.debug(f"START reducing  stacks in graph: {G.nodes(data=True)} {G.edges()} ")
     logger.debug(f"initial size of graph: {len(G)}")
     remove_nodes = []
@@ -356,13 +377,13 @@ def add_stacked_transistor(G):
     for node, attr in G.nodes(data=True):
         if 'mos' in attr["inst_type"] and node not in remove_nodes:
             for net in G.neighbors(node):
-                edge_wt = G.get_edge_data(node, net)['weight']
+                edge_wt = G.get_edge_data(node, net)['weight'] & ~8
                 #for source nets with only two connections
                 if edge_wt == 4 and len(list(G.neighbors(net))) == 2:
                     for next_node in G.neighbors(net):
                         logger.debug(f" checking nodes: {node}, {next_node} {net} {modified_nodes} {remove_nodes} ")
                         if len( {node,next_node}- (set(modified_nodes.keys()) | set(remove_nodes)) )!=2:
-                            logger.debug(f"skipping {node} {next_node} as they are accessed before")
+                            logger.debug(f"skipping {node} {next_node} as they are same or accessed before")
                             continue
                         elif not next_node == node and G.nodes[next_node][
                                 "inst_type"] == G.nodes[node][
@@ -370,9 +391,9 @@ def add_stacked_transistor(G):
                                         next_node, net)['weight'] == 1:
                             common_nets = set(G.neighbors(node)) & set( G.neighbors(next_node))
                             # source net of neighbor
-                            source_net = [snet for snet in G.neighbors(next_node) if  G.get_edge_data( next_node, snet)['weight'] == 4]
+                            source_net = [snet for snet in G.neighbors(next_node) if  G.get_edge_data( next_node, snet)['weight']& ~8 == 4]
                             gate_net =  [gnet for gnet in G.neighbors(next_node) if  G.get_edge_data( next_node, gnet)['weight'] == 2]
-                            logger.debug(f"neighbor gate: {gate_net},all neighbors: {list(G.edges(node,data=True))} {len(common_nets)}")
+                            logger.debug(f"neighbor gate: {gate_net} source:{source_net},all neighbors: {list(G.edges(node,data=True))} {len(common_nets)}")
                             if len(gate_net)==len(source_net)==1:
                                 source_net=source_net[0]
                                 gate_net=gate_net[0]
