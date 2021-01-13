@@ -401,7 +401,9 @@ def add_stacked_transistor(G):
                             else:
                                 continue
 
-                            if gate_net in G.neighbors(node) and G.get_edge_data( node, gate_net[0])['weight'] == 2 and len(common_nets)>2:
+                            if gate_net in G.neighbors(node) \
+                                and G.get_edge_data( node, gate_net)['weight'] == 2 \
+                                    and len(common_nets)>2:
                                 logger.debug(f"source net: {source_net}, gate net: {gate_net}")
                             else:
                                 continue
