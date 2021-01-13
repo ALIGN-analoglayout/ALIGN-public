@@ -391,7 +391,7 @@ def add_stacked_transistor(G):
                                         next_node, net)['weight'] == 1:
                             common_nets = set(G.neighbors(node)) & set( G.neighbors(next_node))
                             # source net of neighbor
-                            source_net = [snet for snet in G.neighbors(next_node) if  G.get_edge_data( next_node, snet)['weight']& ~8 == 4]
+                            source_net = [snet for snet in G.neighbors(next_node) if  G.get_edge_data( next_node, snet)['weight']&~8 == 4]
                             gate_net =  [gnet for gnet in G.neighbors(next_node) if  G.get_edge_data( next_node, gnet)['weight'] == 2]
                             logger.debug(f"neighbor gate: {gate_net} source:{source_net},all neighbors: {list(G.edges(node,data=True))} {len(common_nets)}")
                             if len(gate_net)==len(source_net)==1:
@@ -421,7 +421,7 @@ def add_stacked_transistor(G):
                                         modified_nodes[node] = stack
                                     remove_nodes.append(net)
                                     if G.has_edge(node,source_net):
-                                        wt= G[next_node][source_net]["weight"]+G[node][source_net]["weight"]
+                                        wt= G[next_node][source_net]["weight"] | G[node][source_net]["weight"]
                                     else:
                                          wt= G[next_node][source_net]["weight"]
                                     modified_edges[node] = [ source_net, wt ]
