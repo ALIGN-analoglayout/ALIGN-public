@@ -77,18 +77,11 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
                         size = unit_size_cap
                     n_cap.append( ceil(size/unit_size_cap))
                     cc_caps.append(ele)
-            cc_cap = '_'.join(cc_caps)
-            logger.debug(f"merging symmetrical caps: {arr} {cc_cap} {cc_caps} {n_cap}")
-            merge_caps(graph,cc_caps)
-            cc_cap_size[cc_cap]=n_cap
-        # logger.debug(f"merging caps {n_cap} {cc_caps}")
-        # if len(n_cap)>0:
-        #     n_cap, cc_caps =(list(t) for t in  zip(*sorted(zip(n_cap, cc_caps))))
-        #     merge_caps(graph,caps)
-        #     available_cap_const = available_cap_const+ cc_caps
-            # unit_block_name = '} , {Cap_' + str(unit_size_cap) + 'f} , {nodummy} )'
-            # cap_line = "\nCC ( {"+','.join(cc_caps)+"} , {"+','.join(n_cap)+unit_block_name
-            # logger.debug("Cap constraint"+cap_line)
+            if cc_caps:
+                cc_cap = '_'.join(cc_caps)
+                logger.debug(f"merging symmetrical caps: {arr} {cc_cap} {cc_caps} {n_cap}")
+                merge_caps(graph,cc_caps)
+                cc_cap_size[cc_cap]=n_cap
 
     logger.debug(f"Writing constraints for remaining caps in the circuit graph")
     for node, attr in graph.nodes(data=True):

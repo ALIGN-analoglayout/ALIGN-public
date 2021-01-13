@@ -63,6 +63,11 @@ M0 (DA G SA B) NMOS w=w l=90n
 M1 (DB G SB B) NMOS w=w l=90n
 .ends CMC_S_NMOS_B
 
+.subckt CMC_S_NMOS DA DB SA SB G
+M0 (DA G SA SB) NMOS w=w l=90n
+M1 (DB G SB SB) NMOS w=w l=90n
+.ends CMC_S_NMOS
+
 .subckt CMC_S_PMOS_B DA DB SA SB G B
 M0 (DA G SA B) PMOS w=w l=90n
 M1 (DB G SB B) PMOS w=w l=90n
@@ -83,10 +88,10 @@ M0 (DA G S B) NMOS w=w l=90n
 M1 (DB G S B) NMOS w=w l=90n
 .ends CMC_NMOS_B
 
-.subckt CMC_S_PMOS_B  DA DB G S B
-M0 (DA G S B) PMOS w=w l=90n
-M1 (DB G S B) PMOS w=w l=90n
-.ends CMC_S_PMOS_B
+.subckt CMC_S_PMOS  DA DB G S
+M0 (DA G SA SA) PMOS w=w l=90n
+M1 (DB G SB SB) PMOS w=w l=90n
+.ends CMC_S_PMOS
 
 .subckt DP_NMOS_B  DA DB GA GB S B
 M0 (DA GA S B) NMOS w=w l=90n
