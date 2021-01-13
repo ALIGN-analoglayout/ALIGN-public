@@ -78,11 +78,11 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
     hier_graph_dict=read_inputs(circuit["name"],circuit["graph"])
 
     #remove pg_pins requirement by pnr
-    logger.info(f"Modifying pg pins in design for PnR")
+    logger.info("Modifying pg pins in design for PnR")
     pg_pins = design_setup['POWER']+design_setup['GND']
     remove_pg_pins(hier_graph_dict,design_name, pg_pins)
 
-    logger.debug(f"START preprocessing")
+    logger.debug("START preprocessing")
     stacked_subcircuit=[]
     for circuit_name, circuit in hier_graph_dict.items():
         G1 = circuit["graph"]

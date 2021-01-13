@@ -83,7 +83,7 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
                 merge_caps(graph,cc_caps)
                 cc_cap_size[cc_cap]=n_cap
 
-    logger.debug(f"Writing constraints for remaining caps in the circuit graph")
+    logger.debug("Writing constraints for remaining caps in the circuit graph")
     for node, attr in graph.nodes(data=True):
         if attr['inst_type'].lower().startswith('cap')  and node not in available_cap_const:
             logger.debug(f"writing cap constraint for node {node} {cc_cap_size}")
@@ -138,7 +138,6 @@ def check_common_centroid(graph,const_path,ports):
     None.
 
     """
-    cc_pair={}
     #new_const_path = const_path.parents[0] / (const_path.stem + '.const_temp')
     if os.path.isfile(const_path):
         logger.debug(f'Reading const file for common centroid {const_path}')
@@ -152,9 +151,9 @@ def check_common_centroid(graph,const_path,ports):
         if  const["const_name"]== "CC" \
             and isinstance(const["cap_name"],list):
             logger.info("Fixing cc constraint for caps:%s",const)
-            caps = const_name["cap_name"]
+            caps = const["cap_name"]
             cc_cap = "_".join(caps)
-            const_name["cap_name"] = cc_cap
+            const["cap_name"] = cc_cap
             merge_caps(graph,caps)
 
     with open(const_path, 'w') as outfile:
