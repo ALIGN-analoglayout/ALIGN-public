@@ -16,22 +16,6 @@ from .trap_stdout import stdout_redirector, stderr_redirector
 
 logger = logging.getLogger(__name__)
 
-class StreamToLogger(object):
-    """
-    Stream object that redirects writes to logger
-    """
-    def __init__(self, logger, level=logging.INFO):
-        self.logger = logger
-        self.level = level
-        self.linebuf = ''
-
-    def write(self, buf):
-        for line in buf.rstrip().splitlines():
-                self.logger.log(self.level, line.rstrip())
-
-    def flush(self):
-        pass
-
 def _generate_json( *, dbfile, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False, input_dir=None, toplevel=True, gds_json=True ):
 
     logger.info( f"_generate_json: {dbfile} {variant} {primitive_dir} {pdk_dir} {output_dir} {check} {extract} {input_dir} {toplevel} {gds_json}")
@@ -166,11 +150,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
     elif True:
         current_working_dir = os.getcwd()
         os.chdir(working_dir)
-        stdout_bak, stderr_bak = sys.stdout, sys.stderr
-        sys.stdout, sys.stderr = StreamToLogger(logger, logging.DEBUG), StreamToLogger(logger, logging.ERROR)
-        with PnR.ostream_redirect(stdout=True, stderr=True):
-            PnR.toplevel(cmd)
-        sys.stdout, sys.stderr = stdout_bak, stderr_bak
+        PnR.toplevel(cmd)
         os.chdir(current_working_dir)
     else:
         try:

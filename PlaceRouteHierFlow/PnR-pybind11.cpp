@@ -314,8 +314,16 @@ PYBIND11_MODULE(PnR, m) {
   //m.def("save_state", &save_state, "helper function to save_state");
   //m.def("route_single_variant", &route_single_variant, "helper function to route a single variant");
   //m.def("route_top_down", &route_top_down, "helper function to perform top-down routing");
-  py::add_ostream_redirect(m, "ostream_redirect");
 
-  m.def("toplevel", &toplevel, "helper function to perform the whole C++ flow");
-
+  m.def("toplevel", [](const std::vector<std::string>& argv) {
+    py::scoped_ostream_redirect coutstream(
+        std::cout,
+        py::module_::import("align").attr("utils").attr("logging").attr("StreamLogger")(std::string("align.pnr.toplevel"), std::string("DEBUG"))
+    );
+    py::scoped_estream_redirect cerrstream(
+        std::cerr,
+        py::module_::import("align").attr("utils").attr("logging").attr("StreamLogger")(std::string("align.pnr.toplevel"), std::string("ERROR"))
+    );
+    toplevel(argv);},
+    "helper function to perform the whole C++ flow");
 };
