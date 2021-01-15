@@ -1483,13 +1483,21 @@ int  GcellGlobalRouter::JudgeSymmetry(std::vector<std::pair<int,int> > &path,std
 
 };
 
+void routerlpsolvelogger(lprec *lp, void *userhandle, char *buf)
+{
+  // Strip leading newline
+  while((unsigned char)*buf == '\n') buf++;
+  // Log non-empty lines
+  if (*buf != '\0') std::cout << "GcellGlobalRouter lpsolve: " << buf << std::endl;
+}
+
 int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std::set<RouterDB::tile, RouterDB::tileComp> &Tile_Set) {
   std::cout<< "Status Log: ILP Solving Starts"<<std::endl;
   # if defined ERROR
   #  undef ERROR
   # endif
-  //# define ERROR() { fprintf(stderr, "Error\n"); return(1); }
-  # define ERROR() { fprintf(stderr, "Error\n"); }
+  //# define ERROR() { std::cout << "Error" << std::endl; return(1); }
+  # define ERROR() { std::cout << "Error" << std::endl; }
   std::cout<<"LP test flag 1"<<std::endl;
   // start of lp_solve
   int majorversion, minorversion, release, build;
@@ -1538,12 +1546,15 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   std::cout<<"TotNumberOfNest "<<NumberOfNets<<" TotNumberOfSTs "<<NumberOfSTs<<std::endl;
   this->NumOfVar=NumberOfSTs;//#Variable initialization
 
-  if ((lp = make_lp(0,NumOfVar+1)) == NULL) {fprintf(stderr, "Error\n");} //ERROR();}
-  lp_solve_version(&majorversion, &minorversion, &release, &build);
-  sprintf(buf, "lp_solve %d.%d.%d.%d demo\n\n", majorversion, minorversion, release, build);//lp_solve 5.5.2.0 
-  print_str(lp, buf);
-  put_logfunc(lp, NULL, 0);
-  set_outputfile(lp, const_cast<char*>("./Debug/lp_solve_result.txt"));
+  if ((lp = make_lp(0,NumOfVar+1)) == NULL) {std::cout << "Error" << std::endl;} //ERROR();}
+  // lp_solve_version(&majorversion, &minorversion, &release, &build);
+  // sprintf(buf, "lp_solve %d.%d.%d.%d demo\n\n", majorversion, minorversion, release, build);//lp_solve 5.5.2.0 
+  // print_str(lp, buf);
+  // put_logfunc(lp, NULL, 0);
+  // set_outputfile(lp, const_cast<char*>("./Debug/lp_solve_result.txt"));
+  set_verbose(lp, IMPORTANT);
+  put_logfunc(lp, &routerlpsolvelogger, NULL);
+  set_outputfile(lp, const_cast<char*>("/dev/null"));
   //set_add_rowmode(lp, TRUE);
   // 2. Initialize matrix without constraints  Q1? A 0 is inserted to the temp_row, so the valInfo maybe not correct
 
@@ -1582,8 +1593,8 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
        double* row = &temp_row[0];
        int* col =&temp_index[0];
        int size_element = temp_row.size();
-       //if (!add_constraint(lp, row, EQ, 1)) {fprintf(stderr, "Error\n");} //ERROR();}
-       if (!add_constraintex(lp,size_element,row,col, EQ, 1)) {fprintf(stderr, "Error\n");} //ERROR();}
+       //if (!add_constraint(lp, row, EQ, 1)) {std::cerr << "Error" << std::endl;} //ERROR();}
+       if (!add_constraintex(lp,size_element,row,col, EQ, 1)) {std::cerr << "Error" << std::endl;} //ERROR();}
      
      }
 
@@ -1629,8 +1640,8 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
                 int* col=&temp_index[0];
                 int size_element = temp_row.size();
                 std::cout<<"Adding SYM constraints"<<std::endl;
-                //if (!add_constraint(lp, row, EQ, 0)) {fprintf(stderr, "Error\n");} //ERROR();}
-                if (!add_constraintex(lp, size_element, row, col, EQ, 0)) {fprintf(stderr, "Error\n");} //ERROR();}
+                //if (!add_constraint(lp, row, EQ, 0)) {std::cout << "Error" << std::endl;} //ERROR();}
+                if (!add_constraintex(lp, size_element, row, col, EQ, 0)) {std::cerr << "Error" << std::endl;} //ERROR();}
        
              }
         
@@ -1734,8 +1745,8 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
        double* row = &temp_row[0];
        int* col = &temp_index[0];
        int size_element=temp_row.size();
-       //if (!add_constraint(lp, row, LE, 0)) {fprintf(stderr, "Error\n");} //ERROR();}
-       if (!add_constraintex(lp, size_element, row, col, LE, 0)) {fprintf(stderr, "Error\n");} //ERROR();}
+       //if (!add_constraint(lp, row, LE, 0)) {std::cerr << "Error" << std::endl;} //ERROR();}
+       if (!add_constraintex(lp, size_element, row, col, LE, 0)) {std::cerr << "Error" << std::endl;} //ERROR();}
      }
 
   //std::cout<<"testcase 4"<<std::endl;
@@ -1748,8 +1759,8 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   
   set_bounds(lp, this->NumOfVar+1, 0.0, 1.0);
 
-  printf("Set the objective function\n");
-  printf("set_obj_fn(lp, {nets[h].seg[i].candis[j].TotMetalWeightByLength})\n");
+  std::cout << "Set the objective function" << std::endl;
+  std::cout << "set_obj_fn(lp, {nets[h].seg[i].candis[j].TotMetalWeightByLength})" << std::endl;
 
   // 5. Set objective function
   vector<double> temp_row;
@@ -1799,8 +1810,8 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
           std::cout <<"Status Log: Refer Function solve in lp_solve(http://lpsolve.sourceforge.net/5.5/)"<<std::endl;
   }
   std::cout<<"LP test flag 12"<<std::endl;
-  printf("#Constraints: lp row:  %d \n", lp->rows);
-  printf("#Variables: lp col:  %d \n", lp->columns);
+  std::cout << "#Constraints: lp row: " << lp->rows << std::endl;
+  std::cout << "#Variables: lp col: " << lp->columns << std::endl;
   std::cout<<"LP test flag 13"<<std::endl;
   // 7. Get results and store back to data structure
   // Q5?
@@ -1829,8 +1840,8 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   # if defined ERROR
   #  undef ERROR
   # endif
-  //# define ERROR() { fprintf(stderr, "Error\n"); return(1); }
-  # define ERROR() { fprintf(stderr, "Error\n"); }
+  //# define ERROR() { std::cerr << "Error" << std::endl; return(1); }
+  # define ERROR() { std::cerr << "Error" << std::endl; }
 
   // start of lp_solve
   int majorversion, minorversion, release, build;
@@ -1875,7 +1886,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   std::cout<<"TotNumberOfNest "<<NumberOfNets<<" TotNumberOfSTs "<<NumberOfSTs<<std::endl;
   this->NumOfVar=NumberOfSTs;//#Variable initialization
 
-  if ((lp = make_lp(0,NumOfVar+1)) == NULL) {fprintf(stderr, "Error\n");} //ERROR();}
+  if ((lp = make_lp(0,NumOfVar+1)) == NULL) {std::cerr << "Error" << std::endl;} //ERROR();}
   lp_solve_version(&majorversion, &minorversion, &release, &build);
   sprintf(buf, "lp_solve %d.%d.%d.%d demo\n\n", majorversion, minorversion, release, build);//lp_solve 5.5.2.0 
   print_str(lp, buf);
@@ -1908,7 +1919,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
 
        temp_row.push_back(0);
        double* row = &temp_row[0];
-       if (!add_constraint(lp, row, EQ, 1)) {fprintf(stderr, "Error\n");} //ERROR();}
+       if (!add_constraint(lp, row, EQ, 1)) {std::cerr << "Error" << std::endl;} //ERROR();}
      
      }
 
@@ -1937,7 +1948,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
 
                 double* row = &temp_row[0];
                 std::cout<<"Adding SYM constraints"<<std::endl;
-                if (!add_constraint(lp, row, EQ, 0)) {fprintf(stderr, "Error\n");} //ERROR();}
+                if (!add_constraint(lp, row, EQ, 0)) {std::cerr << "Error" << std::endl;} //ERROR();}
        
              }
         
@@ -2024,7 +2035,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
        std::cout<<"Constraint Capacity "<<Capacities[i]<<std::endl;
 
        double* row = &temp_row[0];
-       if (!add_constraint(lp, row, LE, 0)) {fprintf(stderr, "Error\n");} //ERROR();}
+       if (!add_constraint(lp, row, LE, 0)) {std::cerr << "Error" << std::endl;} //ERROR();}
      
      }
 

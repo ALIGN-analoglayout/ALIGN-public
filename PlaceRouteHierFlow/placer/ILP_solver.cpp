@@ -34,6 +34,14 @@ ILP_solver& ILP_solver::operator=(const ILP_solver& solver) {
   return *this;
 }
 
+void placerlpsolvelogger(lprec *lp, void *userhandle, char *buf)
+{
+  // Strip leading newline
+  while((unsigned char)*buf == '\n') buf++;
+  // Log non-empty lines
+  if (*buf != '\0') std::cout << "Placer lpsolve: " << buf << std::endl;
+}
+
 double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info &drcInfo) {
   // each block has 4 vars, x, y, H_flip, V_flip;
   int N_var = mydesign.Blocks.size() * 4 + mydesign.Nets.size() * 2;
@@ -42,6 +50,10 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   // i*4+3:H_flip
   // i*4+4:V_flip
   lprec* lp = make_lp(0, N_var);
+  set_verbose(lp, IMPORTANT);
+  put_logfunc(lp, &placerlpsolvelogger, NULL);
+  set_outputfile(lp, const_cast<char*>("/dev/null"));
+
   // set integer constraint, H_flip and V_flip can only be 0 or 1
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
     set_int(lp, i * 4 + 1, TRUE);
@@ -64,24 +76,24 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
           // i is left of j
           double sparserow[2] = {1, -1};
           int colno[2] = {i * 4 + 1, j * 4 + 1};
-          if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[i][curr_sp.selected[i]].width - mydesign.bias_Hgraph)) printf("error\n");
+          if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[i][curr_sp.selected[i]].width - mydesign.bias_Hgraph)) std::cerr << "error" << std::endl;
         } else {
           // i is above j
           double sparserow[2] = {1, -1};
           int colno[2] = {i * 4 + 2, j * 4 + 2};
-          if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].height + mydesign.bias_Vgraph)) printf("error\n");
+          if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].height + mydesign.bias_Vgraph)) std::cerr << "error" << std::endl;
         }
       } else {
         if (i_neg_index < j_neg_index) {
           // i is be low j
           double sparserow[2] = {1, -1};
           int colno[2] = {i * 4 + 2, j * 4 + 2};
-          if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[i][curr_sp.selected[i]].height - mydesign.bias_Vgraph)) printf("error\n");
+          if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[i][curr_sp.selected[i]].height - mydesign.bias_Vgraph)) std::cerr << "error" << std::endl;
         } else {
           // i is right of j
           double sparserow[2] = {1, -1};
           int colno[2] = {i * 4 + 1, j * 4 + 1};
-          if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].width + mydesign.bias_Hgraph)) printf("error\n");
+          if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].width + mydesign.bias_Hgraph)) std::cerr << "error" << std::endl;
         }
       }
     }
@@ -94,13 +106,13 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
       {
         double sparserow[1] = {1};
         int colno[1] = {id * 4 + 1};
-        if (!add_constraintex(lp, 1, sparserow, colno, GE, 0)) printf("error\n");
+        if (!add_constraintex(lp, 1, sparserow, colno, GE, 0)) std::cerr << "error" << std::endl;
       }
       // y>=0
       {
         double sparserow[1] = {1};
         int colno[1] = {id * 4 + 2};
-        if (!add_constraintex(lp, 1, sparserow, colno, GE, 0)) printf("error\n");
+        if (!add_constraintex(lp, 1, sparserow, colno, GE, 0)) std::cerr << "error" << std::endl;
       }
     }
   }
