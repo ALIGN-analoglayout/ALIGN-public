@@ -10,69 +10,199 @@ import networkx as nx
 from networkx.algorithms import isomorphism
 
 from .merge_nodes import merge_nodes, merged_value
-from .util import max_connectivity, get_next_level
+from .util import get_next_level
+from .write_constraint import FindSymmetry
 
+import pprint
 import logging
 logger = logging.getLogger(__name__)
 
-#%%
-def traverse_hier_in_graph(G, hier_graph_dict):
-    """
-    Recusively reads all hierachies in the graph and convert them to dictionary
-    """
-    for node, attr in G.nodes(data=True):
-        if "sub_graph" in attr and attr["sub_graph"]:
-            logger.debug(f'Traversing sub graph: {node} {attr["inst_type"]} {attr["ports"]}')
-            sub_ports = []
-            ports_weight = {}
-            for sub_node, sub_attr in attr["sub_graph"].nodes(data=True):
-                if 'net_type' in sub_attr:
-                    if sub_attr['net_type'] == "external":
-                        sub_ports.append(sub_node)
-                        ports_weight[sub_node] = []
-                        for nbr in list(attr["sub_graph"].neighbors(sub_node)):
-                            ports_weight[sub_node].append(attr["sub_graph"].get_edge_data(sub_node, nbr)['weight'])
-
-            logger.debug(f'external ports: {sub_ports}, {attr["connection"]}, {ports_weight}')
-            hier_graph_dict[attr["inst_type"]] = {
-                "graph": attr["sub_graph"],
-                "ports": sub_ports,
-                "ports_weight": ports_weight
-            }
-
-            traverse_hier_in_graph(attr["sub_graph"], hier_graph_dict)
-
 
 #%%
-def read_inputs(name,hier_graph):
-    """
-    read circuit graphs
-    """
-    hier_graph_dict = {}
-    top_ports = []
-    ports_weight = {}
-    for node, attr in hier_graph.nodes(data=True):
-        if 'source' in attr['inst_type']:
-            for source_nets in hier_graph.neighbors(node):
-                top_ports.append(source_nets)
-        elif 'net_type' in attr:
-            if attr['net_type'] == "external":
-                top_ports.append(node)
-                ports_weight[node]=[]
-                for nbr in list(hier_graph.neighbors(node)):
-                    ports_weight[node].append(hier_graph.get_edge_data(node, nbr)['weight'])
 
-    logger.debug("READING top circuit graph: ")
-    hier_graph_dict[name] = {
-        "graph": hier_graph,
-        "ports": top_ports,
-        "ports_weight": ports_weight,
-        "connection": None
-    }
-    traverse_hier_in_graph(hier_graph, hier_graph_dict)
-    logger.debug(f"read graph {hier_graph_dict}")
-    return hier_graph_dict
-
+class Annotate:
+    def __init__(self,hier_graph_dict,design_setup,library,existing_generator):
+        self.updated_ckt_list = []
+        self.hier_graph_dict = hier_graph_dict
+        self.duplicates={}
+        self.digital=design_setup['DIGITAL']
+        self.pg = design_setup['POWER']+design_setup['GND']
+        self.lib = library
+        self.clk = design_setup['CLOCK']
+        self.all_lef = existing_generator
+        self.stop_points = self.pg+self.clk
+        
+    def annotate(self):   
+        for circuit_name, circuit in self.hier_graph_dict.items():
+            logger.debug(f"START MATCHING in circuit: {circuit_name}")
+            G1 = circuit["graph"]
+            if circuit_name in self.digital:
+                mapped_graph_list = self._mapped_graph_list(G1,  self.pg ,self.clk, True )
+            else:
+                mapped_graph_list = self._mapped_graph_list(G1, self.pg ,self.clk, False )
+            # reduce graph converts input hierarhical graph to dictionary
+            updated_circuit, Grest = self._reduce_graph(G1, mapped_graph_list)
+            check_nodes(updated_circuit)
+            self.updated_ckt_list.extend(updated_circuit)
+    
+            if circuit_name not in self.digital:
+                symmetry_blocks = FindSymmetry(Grest, circuit["ports"], circuit["ports_weight"], self.stop_points)
+                for symm_blocks in symmetry_blocks.values():
+                    logger.info(f"generated constraints: {pprint.pformat(symm_blocks, indent=4)}")
+                    if isinstance(symm_blocks, dict) and "graph" in symm_blocks.keys():
+                        logger.debug(f"added new hierarchy: {symm_blocks['name']} {symm_blocks['graph'].nodes()}")
+                        self.updated_ckt_list.append(symm_blocks)
+    
+            self.updated_ckt_list.append({
+                "name": circuit_name,
+                "graph": Grest,
+                "ports": circuit["ports"],
+                "ports_weight": circuit["ports_weight"],
+                "size": len(Grest.nodes())
+            })
+    
+            self.lib_names=[lib_ele['name'] for lib_ele in self.lib]
+            for lib_name, dupl in self.duplicates.items():
+                if len(dupl)>1:
+                    self.lib_names+=[lib_name+'_type'+str(n) for n in range(len(dupl))]
+        return self.updated_ckt_list, self.lib_names
+    def _reduce_graph(self,circuit_graph, mapped_graph_list):
+        """
+        merge matched graphs
+        """
+        logger.debug("START reducing graph: ")
+        G1 = circuit_graph.copy()
+        updated_circuit = []
+        for lib_ele in self.lib:
+            sub_block_name = lib_ele['name']
+            if sub_block_name in mapped_graph_list:
+                logger.debug(f"Reducing ISOMORPHIC sub_block: {sub_block_name}{mapped_graph_list[sub_block_name]}")
+    
+                for Gsub in sorted(mapped_graph_list[sub_block_name], key= lambda i: '_'.join(sorted(i.keys()))):
+                    G2 = lib_ele['graph'].copy()
+                    logger.debug(f"nodes in library graph {G2.nodes()}")
+    
+                    if already_merged(G1,Gsub):
+                        continue
+                    remove_these_nodes = [
+                        key for key in Gsub
+                        if 'net' not in G1.nodes[key]["inst_type"]]
+                    logger.debug(f"Reduce nodes: {', '.join(remove_these_nodes)}")
+                    if sub_block_name in self.all_lef:
+                        pg = []
+                    else:
+                        pg = self.pg
+                    matched_ports,ports_weight = copy_matched_subcircuit_attributes(G1,G2,Gsub,lib_ele['ports'],len(remove_these_nodes),pg)
+    
+                    if len(remove_these_nodes) == 1:
+                        logger.debug(f"One node element: {sub_block_name}")
+                        G1.nodes[remove_these_nodes[0]]["inst_type"] = sub_block_name
+                        G1.nodes[remove_these_nodes[0]]["ports_match"] = matched_ports
+                        updated_values = merged_value({}, G1.nodes[remove_these_nodes[0]]["values"])
+                        G1.nodes[remove_these_nodes[0]]["values"] = updated_values
+    
+                    else:
+                        logger.debug(f"Multi node element: {sub_block_name} {matched_ports}")
+                        _, subgraph,new_node = merge_nodes(
+                            G1, sub_block_name, remove_these_nodes, matched_ports)
+                        if sub_block_name not in self.all_lef:
+                            logger.debug(f'Calling recursive for block: {sub_block_name}')
+                            mapped_subgraph_list = self._mapped_graph_list(
+                                G2, [
+                                    i for i in self.lib
+                                    if not (i['name'] == sub_block_name)
+                                ])
+                            logger.debug("Recursive calling to find sub_sub_ckt")
+                            updated_subgraph_circuit, Grest = self._reduce_graph(
+                                G2, mapped_subgraph_list)
+    
+                            updated_circuit.extend(updated_subgraph_circuit)
+                        else:
+                            Grest = subgraph
+    
+                        logger.debug(f"adding new sub_ckt: {sub_block_name} {self.duplicates.keys()}")
+                        check_nodes(updated_circuit)
+                        update_name = multiple_instances(G1,new_node,sub_block_name,self.duplicates)
+    
+                        super_node = {
+                                "name": update_name,
+                                "graph": Grest,
+                                "ports": list(matched_ports.keys()),
+                                "ports_match": matched_ports,
+                                "ports_weight": ports_weight,
+                                "size": len(subgraph.nodes())
+                            }
+                        updated_circuit.append(super_node)
+    
+                        check_nodes(updated_circuit)
+        logger.debug(f"Finished one branch: {sub_block_name}")
+        return updated_circuit, G1
+    def _mapped_graph_list(self,G1, POWER=None,CLOCK=None, DIGITAL=False):
+        """
+        find all matches of library element in the graph
+        """
+    
+        logger.debug(f"Matching circuit Graph from library elements {G1.nodes} {G1.edges(data=True)}")
+        mapped_graph_list = {}
+    
+        for lib_ele in self.lib:
+            G2 = lib_ele['graph']
+            # Digital blocks only transistors:
+            nd = [node for node in G2.nodes()
+                    if 'net' not in G2.nodes[node]["inst_type"]]
+            if DIGITAL and len(nd)>1:
+                continue
+    
+            sub_block_name = lib_ele['name']
+            if len(G2.nodes)<=len(G1.nodes):
+                logger.debug(f"Matching: {sub_block_name} : {G2.nodes} {G2.edges(data=True)}")
+            GM = isomorphism.GraphMatcher(
+                G1, G2,
+                node_match=isomorphism.categorical_node_match(['inst_type'],
+                                                              ['nmos']),
+                edge_match=isomorphism.categorical_edge_match(['weight'], [1]))
+    
+            if GM.subgraph_is_isomorphic():
+                logger.debug(f"ISOMORPHIC : {sub_block_name}")
+                map_list = []
+    
+                for Gsub in GM.subgraph_isomorphisms_iter():
+    
+                    all_nd = [key for key in Gsub.keys() if 'net' not in G1.nodes[key]["inst_type"]]
+                    logger.debug(f"matched inst: {all_nd}")
+                    if len(all_nd)>1 and dont_touch_clk(Gsub,CLOCK):
+                        logger.debug("Discarding match due to clock")
+                        continue
+                    if sub_block_name.startswith('DP')  or sub_block_name.startswith('CMC'):
+                        if G1.nodes[all_nd[0]]['values'] == G1.nodes[all_nd[1]]['values'] and \
+                            compare_balanced_tree(G1,get_key(Gsub,'DA'),get_key(Gsub,'DB'),[all_nd[0]],[all_nd[1]]) :
+                            if 'SA' in Gsub.values() and \
+                            compare_balanced_tree(G1,get_key(Gsub,'SA'),get_key(Gsub,'SB'),[all_nd[0]],[all_nd[1]]):
+                                map_list.append(Gsub)
+                                logger.debug(f"Matched Lib: {' '.join(Gsub.values())}")
+                                logger.debug(f"Matched Circuit: {' '.join(Gsub)}")
+                            # remove pseudo diff pair
+                            elif sub_block_name.startswith('DP') and POWER is not None and get_key(Gsub,'S') in POWER:
+                                logger.debug(f"skipping pseudo DP {POWER}: {' '.join(Gsub)}")
+                            else:
+                                map_list.append(Gsub)
+                                logger.debug(f"Matched Lib: {' '.join(Gsub.values())}")
+                                logger.debug(f"Matched Circuit: {' '.join(Gsub)} power:{POWER}")
+                        else:
+                            logger.debug(f"Discarding match {sub_block_name}, {G1.nodes[all_nd[0]]['values']}, {G1.nodes[all_nd[1]]['values']}")
+                    elif sub_block_name.startswith('SCM') and G1.nodes[all_nd[0]]['values'] != G1.nodes[all_nd[1]]['values']:
+                        logger.debug(f"Discarding match {sub_block_name}, {G1.nodes[all_nd[0]]['values']}, {G1.nodes[all_nd[1]]['values']}")
+    
+                    else:
+                        map_list.append(Gsub)
+                        logger.debug(f"Matched Lib: {' '.join(Gsub.values())}")
+                        logger.debug(f"Matched Circuit: {' '.join(Gsub)}")
+                    if len(map_list)>1:
+                        fix_order_for_multimatch(G1,map_list,map_list[-1])
+    
+                mapped_graph_list[sub_block_name] = map_list
+    
+        return mapped_graph_list
 def fix_order_for_multimatch(G1,map_list,Gsub):
     for previous_match in map_list[:-1]:
         if set(Gsub.keys())==set(previous_match.keys()):
@@ -85,76 +215,11 @@ def fix_order_for_multimatch(G1,map_list,Gsub):
                 map_list.remove(previous_match)
                 return
             else:
-                logger.debug(f'removing new match')
+                logger.debug('removing new match')
                 map_list.remove(Gsub)
 
 #%%
-def _mapped_graph_list(G1, liblist,POWER=None,CLOCK=None, DIGITAL=False):
-    """
-    find all matches of library element in the graph
-    """
 
-    logger.debug(f"Matching circuit Graph from library elements {G1.nodes} {G1.edges(data=True)}")
-    mapped_graph_list = {}
-
-    for lib_ele in liblist:
-        G2 = lib_ele['graph']
-        # Digital blocks only transistors:
-        nd = [node for node in G2.nodes()
-                if 'net' not in G2.nodes[node]["inst_type"]]
-        if DIGITAL and len(nd)>1:
-            continue
-
-        sub_block_name = lib_ele['name']
-        if len(G2.nodes)<=len(G1.nodes):
-            logger.debug(f"Matching: {sub_block_name} : {G2.nodes} {G2.edges(data=True)}")
-        GM = isomorphism.GraphMatcher(
-            G1, G2,
-            node_match=isomorphism.categorical_node_match(['inst_type'],
-                                                          ['nmos']),
-            edge_match=isomorphism.categorical_edge_match(['weight'], [1]))
-
-        if GM.subgraph_is_isomorphic():
-            logger.debug(f"ISOMORPHIC : {sub_block_name}")
-            map_list = []
-
-            for Gsub in GM.subgraph_isomorphisms_iter():
-
-                all_nd = [key for key in Gsub.keys() if 'net' not in G1.nodes[key]["inst_type"]]
-                logger.debug(f"matched inst: {all_nd}")
-                if len(all_nd)>1 and dont_touch_clk(Gsub,CLOCK):
-                    logger.debug("Discarding match due to clock")
-                    continue
-                if sub_block_name.startswith('DP')  or sub_block_name.startswith('CMC'):
-                    if G1.nodes[all_nd[0]]['values'] == G1.nodes[all_nd[1]]['values'] and \
-                        compare_balanced_tree(G1,get_key(Gsub,'DA'),get_key(Gsub,'DB'),[all_nd[0]],[all_nd[1]]) :
-                        if 'SA' in Gsub.values() and \
-                        compare_balanced_tree(G1,get_key(Gsub,'SA'),get_key(Gsub,'SB'),[all_nd[0]],[all_nd[1]]):
-                            map_list.append(Gsub)
-                            logger.debug(f"Matched Lib: {' '.join(Gsub.values())}")
-                            logger.debug(f"Matched Circuit: {' '.join(Gsub)}")
-                        # remove pseudo diff pair
-                        elif sub_block_name.startswith('DP') and POWER is not None and get_key(Gsub,'S') in POWER:
-                            logger.debug(f"skipping pseudo DP {POWER}: {' '.join(Gsub)}")
-                        else:
-                            map_list.append(Gsub)
-                            logger.debug(f"Matched Lib: {' '.join(Gsub.values())}")
-                            logger.debug(f"Matched Circuit: {' '.join(Gsub)} power:{POWER}")
-                    else:
-                        logger.debug(f"Discarding match {sub_block_name}, {G1.nodes[all_nd[0]]['values']}, {G1.nodes[all_nd[1]]['values']}")
-                elif sub_block_name.startswith('SCM') and G1.nodes[all_nd[0]]['values'] != G1.nodes[all_nd[1]]['values']:
-                    logger.debug(f"Discarding match {sub_block_name}, {G1.nodes[all_nd[0]]['values']}, {G1.nodes[all_nd[1]]['values']}")
-
-                else:
-                    map_list.append(Gsub)
-                    logger.debug(f"Matched Lib: {' '.join(Gsub.values())}")
-                    logger.debug(f"Matched Circuit: {' '.join(Gsub)}")
-                if len(map_list)>1:
-                    fix_order_for_multimatch(G1,map_list,map_list[-1])
-
-            mapped_graph_list[sub_block_name] = map_list
-
-    return mapped_graph_list
 #%%
 def dont_touch_clk(Gsub,CLOCK):
     if CLOCK and CLOCK is not None:
@@ -274,79 +339,7 @@ def already_merged(G1,Gsub):
             logger.debug(f"Skip merging. Node absent: {g1_node}")
             break
     return am
-def reduce_graph(circuit_graph, mapped_graph_list, liblist, check_duplicates=None, design_setup=None, all_lef=None):
-    """
-    merge matched graphs
-    """
-    logger.debug("START reducing graph: ")
-    G1 =circuit_graph.copy()
-    updated_circuit = []
-    if check_duplicates == None:
-        check_duplicates={}
-    for lib_ele in liblist:
-        sub_block_name = lib_ele['name']
-        if sub_block_name in mapped_graph_list:
-            logger.debug(f"Reducing ISOMORPHIC sub_block: {sub_block_name}{mapped_graph_list[sub_block_name]}")
 
-            for Gsub in sorted(mapped_graph_list[sub_block_name], key= lambda i: '_'.join(sorted(i.keys()))):
-                G2 = lib_ele['graph'].copy()
-                logger.debug(f"nodes in library graph {G2.nodes()}")
-
-                if already_merged(G1,Gsub):
-                    continue
-                remove_these_nodes = [
-                    key for key in Gsub
-                    if 'net' not in G1.nodes[key]["inst_type"]]
-                logger.debug(f"Reduce nodes: {', '.join(remove_these_nodes)}")
-                if all_lef and sub_block_name in all_lef:
-                    pg = []
-                else:
-                    pg = design_setup["POWER"]+design_setup["GND"]
-                matched_ports,ports_weight = copy_matched_subcircuit_attributes(G1,G2,Gsub,lib_ele['ports'],len(remove_these_nodes),pg)
-
-                if len(remove_these_nodes) == 1:
-                    logger.debug(f"One node element: {sub_block_name}")
-                    G1.nodes[remove_these_nodes[0]]["inst_type"] = sub_block_name
-                    G1.nodes[remove_these_nodes[0]]["ports_match"] = matched_ports
-                    updated_values = merged_value({}, G1.nodes[remove_these_nodes[0]]["values"])
-                    G1.nodes[remove_these_nodes[0]]["values"] = updated_values
-
-                else:
-                    logger.debug(f"Multi node element: {sub_block_name} {matched_ports}")
-                    _, subgraph,new_node = merge_nodes(
-                        G1, sub_block_name, remove_these_nodes, matched_ports)
-                    if sub_block_name not in all_lef:
-                        logger.debug(f'Calling recursive for block: {sub_block_name}')
-                        mapped_subgraph_list = _mapped_graph_list(
-                            G2, [
-                                i for i in liblist
-                                if not (i['name'] == sub_block_name)
-                            ])
-                        logger.debug("Recursive calling to find sub_sub_ckt")
-                        updated_subgraph_circuit, Grest = reduce_graph(
-                            G2, mapped_subgraph_list,liblist,check_duplicates,design_setup,all_lef)
-
-                        updated_circuit.extend(updated_subgraph_circuit)
-                    else:
-                        Grest = subgraph
-
-                    logger.debug(f"adding new sub_ckt: {sub_block_name} {check_duplicates.keys()}")
-                    check_nodes(updated_circuit)
-                    update_name = multiple_instances(G1,new_node,sub_block_name,check_duplicates)
-
-                    super_node = {
-                            "name": update_name,
-                            "graph": Grest,
-                            "ports": list(matched_ports.keys()),
-                            "ports_match": matched_ports,
-                            "ports_weight": ports_weight,
-                            "size": len(subgraph.nodes())
-                        }
-                    updated_circuit.append(super_node)
-
-                    check_nodes(updated_circuit)
-    logger.debug(f"Finished one branch: {sub_block_name}")
-    return updated_circuit, G1
 
 def multiple_instances(G1,new_node,sub_block_name,check_duplicates):
     val_n_type=G1.nodes[new_node]["values"].copy()

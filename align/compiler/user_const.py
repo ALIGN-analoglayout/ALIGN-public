@@ -12,280 +12,300 @@ import logging
 
 logger = logging.getLogger(__name__)
 pp = pprint.PrettyPrinter(indent=4)
-valid_const = {
-     "CreateAlias":  {'blocks':list,'name':str},
-     "GroupBlocks":  {'blocks':list,'name':str,'style':[None,'tbd_interdigitated','tbd_common_centroid']},
-     "OrderBlocks": {'blocks':list,'name':str,'direction':['H','V']}, 
-     "MatchBlocks": {'blocks':list}, 
-     "BlockDistance":       {'abs_distance':int},
-     "HorizontalDistance":  {'abs_distance':int},
-     "VerticalDistance":    {'abs_distance':int},
-     "SymmetricBlocks":  {'pairs':list,'direction':['H','V']},
-     "GroupCaps":       {'blocks':list,'name':str,'unit_cap':str,'num_units':str,"dummy":bool},
-     "AlignBlocks":     {'blocks':list,'direction':['H','V']},
-     "NetConst":        {'nets':list,'shield':str,"criticality":int},
-     "PortLocation":    {'ports':list,'location':['BL','BR','BC','TL','TR','TC','RL','RR','RC','LL','LR','LC']},
-     "SymmetricNets":   {'net1':str,'net2':str,'pins1':list,'pins2':list,'direction':['H','V']}
-     }
 
-def read_user_const(input_dir:pathlib.Path,design_name:str):
-    """
-    Reads user defined constraints and create a dictionary for each hierarchy
-
-    Parameters
-    ----------
-    input_dir : pathlib.Path
-        input directory path.
-    design_name : str
-        name of design.
-
-    Returns
-    -------
-    constraint dictionary.
-
-    """
-    fp = input_dir / (design_name+'.const')
-    fp_json = input_dir / (design_name+'.const.json')
-    if fp_json.is_file():
-        block_const = json.load(fp_json)
-    elif fp.is_file():
-        all_const = []
-        f = open(fp, "r")
-        for line in f:
-            if not line.strip():
-                continue
-            a = line.strip().split('-')
-            const = {}
-            const["const_name"] = a[0].strip()
-            for x in a[1:]:
-                arg = x.split()[0]
-                value =  ''.join(x.split()[1:])
-                const[arg]=value
-            const = translate_valid_const(const)
-            if const:
-                all_const.append(const)
-        block_const = {}
-        block_const['constraints'] = all_const
-    #maps from use format to pnr format
-    map_valid_const(block_const)
-    return block_const
-    
-    
-def translate_valid_const(const:dict):
-    """
-    Read line parameters as dictionary element
-
-    Parameters
-    ----------
-    const : dict
-        constraint from line.
-
-    Returns
-    -------
-    const : dict
-        modified dictionary.
-
-    """
-    
-    logger.debug("checking constraint {const}")
-    if const["const_name"] not in valid_const:
-        logger.warning(f"ignoring invalid constraint {const} ")
-        return None
-    if 'blocks' in const:
-        const['blocks'] = const["blocks"].replace(']','').replace('[','').split(',')
-        assert isinstance(const['blocks'], valid_const[const["const_name"]]['blocks'])
-    if 'nets' in const:
-        const['nets'] = const["nets"].replace(']','').replace('[','').split(',')
-        assert isinstance(const['nets'], valid_const[const["const_name"]]['nets'])
-    if 'pins1' in const:
-        const['pins1'] = const["pins1"].replace(']','').replace('[','').split(',')
-        assert isinstance(const['pins1'], valid_const[const["const_name"]]['pins1'])
-    if 'pins2' in const:
-        const['pins2'] = const["pins2"].replace(']','').replace('[','').split(',')
-        assert isinstance(const['pins2'], valid_const[const["const_name"]]['pins2'])
-    if 'ports' in const:
-        const['ports'] = const["ports"].replace(']','').replace('[','').split(',')
-        assert isinstance(const['ports'], valid_const[const["const_name"]]['ports'])
-    if 'pairs' in const:
-        groups=[]
-        for blocks in const["pairs"].split('],'):
-            groups.append(blocks.replace(']','').replace('[','').split(','))
-        const['pairs'] =  groups
-        assert isinstance(const['pairs'], valid_const[const["const_name"]]['pairs'])
-    if 'name' in const:
-        assert isinstance(const['name'], valid_const[const["const_name"]]['name'])
-    if 'net1' in const:
-        assert isinstance(const['net1'], valid_const[const["const_name"]]['net1'])
-    if 'net2' in const:
-        assert isinstance(const['net2'], valid_const[const["const_name"]]['net2'])
-    if 'style' in const:
-        assert const['style'] in valid_const[const["const_name"]]['style']
-    if 'abs_distance' in const:
-        const['abs_distance']=int(const['abs_distance'])
-    if 'criticality' in const:
-        const['abs_distance']=int(const['criticality'])
-    if 'direction' in const:
-        assert const['direction'] in valid_const[const["const_name"]]['direction']
-    if 'location' in const:
-        assert const['location'] in valid_const[const["const_name"]]['location']
-    if 'unit_cap' in const:
-        assert isinstance(const['unit_cap'], valid_const[const["const_name"]]['unit_cap'])
-    if 'shield' in const:
-        assert isinstance(const['shield'], valid_const[const["const_name"]]['shield'])   
-    if 'num_units' in const:
-        assert isinstance(const['num_units'], valid_const[const["const_name"]]['num_units'])   
-    if 'dummy' in const:
-        const['dummy'] = bool(const['dummy'])
-    return const
+class ConstraintParser:
+    def __init__(self,pdk_dir:pathlib.Path,input_dir:pathlib.Path):
+        self.input_dir = input_dir
+        self.known_types = {
+            'int':int,
+            'str':str,
+            'list':list
+            }
+        with open(pdk_dir / 'layers.json',"rt") as fp:
+            pdk_info = json.load(fp)
+            self.valid_const =pdk_info["valid_constraints"]
         
-def resolve_alias(all_const:list):
 
-    #Find alias
-    map_alias ={}
-    for const in all_const:
-        if const["const_name"] == 'CreateAlias':
-            map_alias[const["name"]]=const["blocks"]
-    all_const = [i for i in all_const if not i['const_name']=='CreateAlias']
-    #Replace nested alias
-    for name,blocks in map_alias.items():
-        for i,block in enumerate(blocks):
-            if block in map_alias:
-                blocks[i]=map_alias[block]
-                
-    for const in all_const:
-        if 'blocks' in const: 
-            replace_alias(const["blocks"],map_alias)
-        elif 'nets' in const:
-            replace_alias(const["nets"],map_alias)
-        elif 'pins1' in const:
-            replace_alias(const["pins1"],map_alias)
-        elif 'pins2' in const:  
-            replace_alias(const["pins2"],map_alias)
-        elif 'ports' in const:  
-            replace_alias(const["ports"],map_alias)
-        elif 'pairs' in const:
-            for ele in const['pairs']:
-                replace_alias(ele, map_alias)
-    return all_const
-    
-def replace_alias(blocks:list,map_alias):
-    for i in range(len(blocks)):
-        if blocks[i] in map_alias:
-            name = blocks.pop(i)
-            blocks.extend(map_alias[name])
-    
-def map_valid_const(block_const:dict):
-    all_const=block_const["constraints"]
-    all_const = resolve_alias(all_const)
-    #Start mapping
-    added_const=[]
-    for const in all_const:
-        if const["const_name"] == 'OrderBlocks':
-            const["const_name"] == 'Ordering'
-        elif const["const_name"] == 'MatchBlocks':
-            const["const_name"] == 'MatchBlock'
-            const['block1'] =  const['blocks'][0]
-            const['block2'] =  const['blocks'][1]
-            del const['blocks']
-        elif const["const_name"] == 'BlockDistance':
-            const["const_name"] == 'bias_graph'
-        elif const["const_name"] == 'HorizontalDistance':
-            const["const_name"] == 'bias_Hgraph'
-        elif const["const_name"] == 'VerticallDistance':
-            const["const_name"] == 'bias_Vgraph'
-        elif const["const_name"] == 'SymmetricBlocks':
-            const["const_name"] == 'SymmBlock'
-            const["axis_dir"] = const.pop("direction")
-            pairs = []
-            for blocks in const["pairs"]:
-                if len(blocks)==1:
-                    temp = {
-                        "type": "selfsym",
-                        "block": blocks[0]
-                        }
-                elif len(blocks)==2:
-                    temp = {
-                        "type":"sympair",
-                        "block1":blocks[0],
-                        "block2":blocks[1]
-                        }
-                else:
-                    logger.warning(f"invalid group for symmetry {blocks}")
-                pairs.append(temp)
-            const["pairs"] = pairs
-        elif const["const_name"] == 'GroupCaps':
-            const["const_name"] == 'CC'
-            const["cap_name"] = const.pop("name")
-            const["unit_capacitor"] = const.pop("unit_cap")
-            const["size"] = const.pop("num_units")
-            const["nodummy"] = not const["dummy"]
-            del const["dummy"]
 
-            
-        elif const["const_name"] == 'AlignBlocks':
-            const["const_name"] == 'AlignBlock'
-        elif const["const_name"] == 'SymmetricNets':
-            const["const_name"] == 'SymmNet'
-            const["axis_dir"] = const.pop("direction")
-            const['net1'] = {
-                "name": const['net1'],
-                "blocks": map_pins(const["pins1"])}
-            const['net2'] = {
-                "name": const['net2'],
-                "blocks": map_pins(const["pins2"])}
-            del const["pins1"]
-            del const["pins2"]
-        elif const["const_name"] == 'NetConst':
-            for net in const["nets"]:
-                if 'shield' in const and 'criticality' in const and not const['shield'] =="None":
-                    extra = {
-                        "const_name" : 'ShieldNet',
-                        "net_name" : net,
-                        "shield_net" : const["shield"]
-                        }
-                    added_const.append(extra)
-                    extra = {
-                        "const_name" : 'CritNet',
-                        "net_name" : net,
-                        "priority" : const["criticality"]
-                        }
-                    added_const.append(extra)
-                elif 'shield' in const and not const['shield'] =="None":
-                    extra = {
-                        "const_name" : 'ShieldNet',
-                        "net_name" : net,
-                        "shield_net" : const["shield"]
-                        }
-                    added_const.append(extra)
-
-                elif 'criticality' in const and const['shield'] =="None":
-                    extra = {
-                        "const_name" : 'CritNet',
-                        "net_name" : net,
-                        "priority" : const["criticality"]
-                        }
-                    added_const.append(extra)
-    block_const["constraints"] = [i for i in all_const if not i['const_name']=='NetConst']
-    block_const["constraints"].extend(added_const)
-
-def map_pins(pins:list):
-    blocks=[]
-    for pin in pins:
-        if '/' in pin:
-            temp = {
-                "type":"pin",
-                "name":pin.split('/')[0],
-                "pin":pin.split('/')[1]
-                }
+    def read_user_const(self,design_name:str):
+        """
+        Reads user defined constraints and create a dictionary for each hierarchy
+  
+        """
+        self.block_const = {}
+        fp = self.input_dir / (design_name+'.const')
+        fp_json = self.input_dir / (design_name+'.const.json')
+        if fp_json.is_file():
+            self.block_const = json.load(fp_json)
+        elif fp.is_file():
+            all_const = []
+            f = open(fp, "r")
+            for line in f:
+                if not line.strip():
+                    continue
+                a = line.strip().split('-')
+                const = {}
+                const["const_name"] = a[0].strip()
+                for x in a[1:]:
+                    arg = x.split()[0]
+                    value =  ''.join(x.split()[1:])
+                    const[arg]=value
+                const = self._translate_valid_const(const)
+                if const:
+                    all_const.append(const)
+            self.block_const['constraints'] = all_const
         else:
-            temp = {
-                "type":"terminal",
-                "name":pin, 
-                "pin":None
-                }
-        blocks.append(temp)
-    return blocks
-             
-const_path = pathlib.Path('/scratch/ALIGN_shared/ALIGN-public/examples/user_const/')
-bc= read_user_const(const_path,'user_const')
-print(bc)
+            logger.info(f"no input const file for block {design_name}")
+            return None
+        self._map_valid_const()
+        return self.block_const
+            
+    
+    def _translate_valid_const(self,const:dict):
+        """
+        Read line parameters as dictionary element
+    
+        Parameters
+        ----------
+        const : dict
+            constraint from line.
+    
+        Returns
+        -------
+        const : dict
+            modified dictionary.
+    
+        """
+        
+        logger.debug("checking constraint {const}")
+        if const["const_name"] not in self.valid_const:
+            logger.warning(f"ignoring invalid constraint {const} ")
+            return None
+        valid_arg = self.valid_const[const["const_name"]]
+        if 'blocks' in const:
+            const['blocks'] = const["blocks"].replace(']','').replace('[','').split(',')
+            self._check_type(const['blocks'],valid_arg['blocks'])
+        if 'nets' in const:
+            const['nets'] = const["nets"].replace(']','').replace('[','').split(',')
+            self._check_type(const['nets'],valid_arg['nets'])
+        if 'pins1' in const:
+            const['pins1'] = const["pins1"].replace(']','').replace('[','').split(',')
+            self._check_type(const['pins1'],valid_arg['pins2'])
+        if 'pins2' in const:
+            const['pins2'] = const["pins2"].replace(']','').replace('[','').split(',')
+            self._check_type(const['pins2'],valid_arg['pins2'])
+        if 'ports' in const:
+            const['ports'] = const["ports"].replace(']','').replace('[','').split(',')
+            self._check_type(const['ports'],valid_arg['ports'])
+        if 'pairs' in const:
+            groups=[]
+            for blocks in const["pairs"].split('],'):
+                groups.append(blocks.replace(']','').replace('[','').split(','))
+            const['pairs'] =  groups
+            self._check_type(const['pairs'],valid_arg['pairs'])
+        if 'name' in const:
+            self._check_type(const['name'],valid_arg['name'])
+        if 'net1' in const:
+            self._check_type(const['net1'],valid_arg['net1'])
+        if 'net2' in const:
+            self._check_type(const['net2'],valid_arg['net2'])
+        if 'style' in const:
+            self._check_type(const['style'],valid_arg['style'])
+        if 'abs_distance' in const:
+            const['abs_distance']=int(const['abs_distance'])
+        if 'criticality' in const:
+            const['abs_distance']=int(const['criticality'])
+        if 'direction' in const:
+            self._check_type(const['direction'],valid_arg['direction'])
+        if 'location' in const:
+            self._check_type(const['location'],valid_arg['location'])
+        if 'unit_cap' in const:
+            self._check_type(const['unit_cap'],valid_arg['unit_cap'])
+        if 'shield' in const:
+            self._check_type(const['shield'],valid_arg['shield'])   
+        if 'num_units' in const:
+            self._check_type(const['num_units'],valid_arg['num_units'])  
+        if 'dummy' in const:
+            const['dummy'] = bool(const['dummy'])
+        return const
+    def _check_type(self,data,arg):
+        if isinstance(arg,list):
+            assert data in arg
+        elif arg in self.known_types:
+            data_type = self.known_types[arg]
+            assert isinstance(data, data_type)
+        else:
+            logger.warning(f"wrong data type in constraint: {data}, valid types are: {arg}" )            
+        
+    def _resolve_alias(self,all_const:list):
+    
+        #Find alias
+        map_alias ={}
+        for const in all_const:
+            if const["const_name"] == 'CreateAlias':
+                map_alias[const["name"]]=const["blocks"]
+        all_const = [i for i in all_const if not i['const_name']=='CreateAlias']
+        #Replace nested alias
+        for name,blocks in map_alias.items():
+            for i,block in enumerate(blocks):
+                if block in map_alias:
+                    blocks[i]=map_alias[block]
+                    
+        for const in all_const:
+            if 'blocks' in const: 
+               self._replace_alias(const["blocks"],map_alias)
+            elif 'nets' in const:
+               self._replace_alias(const["nets"],map_alias)
+            elif 'pins1' in const:
+               self._replace_alias(const["pins1"],map_alias)
+            elif 'pins2' in const:  
+               self._replace_alias(const["pins2"],map_alias)
+            elif 'ports' in const:  
+               self._replace_alias(const["ports"],map_alias)
+            elif 'pairs' in const:
+                for ele in const['pairs']:
+                   self._replace_alias(ele, map_alias)
+        return all_const
+        
+    def _replace_alias(self,blocks:list,map_alias):
+        """
+        Replace alias names with the list by concatenating them
+
+        Parameters
+        ----------
+        blocks : list
+            list of names/blocks to be replaced.
+        map_alias : dict
+            alias name to block mapping.
+
+        Returns
+        -------
+        None.
+
+        """
+        for i in range(len(blocks)):
+            if blocks[i] in map_alias:
+                name = blocks.pop(i)
+                blocks.extend(map_alias[name])
+        
+    def _map_valid_const(self):
+        """
+        Maps input format to pnr format
+
+        """
+        all_const = self.block_const["constraints"]
+        all_const = self._resolve_alias(all_const)
+        #Start mapping
+        added_const=[]
+        for const in all_const:
+            if const["const_name"] == 'OrderBlocks':
+                const["const_name"] == 'Ordering'
+            elif const["const_name"] == 'MatchBlocks':
+                const["const_name"] == 'MatchBlock'
+                const['block1'] =  const['blocks'][0]
+                const['block2'] =  const['blocks'][1]
+                del const['blocks']
+            elif const["const_name"] == 'BlockDistance':
+                const["const_name"] == 'bias_graph'
+            elif const["const_name"] == 'HorizontalDistance':
+                const["const_name"] == 'bias_Hgraph'
+            elif const["const_name"] == 'VerticallDistance':
+                const["const_name"] == 'bias_Vgraph'
+            elif const["const_name"] == 'SymmetricBlocks':
+                const["const_name"] == 'SymmBlock'
+                const["axis_dir"] = const.pop("direction")
+                pairs = []
+                for blocks in const["pairs"]:
+                    if len(blocks)==1:
+                        temp = {
+                            "type": "selfsym",
+                            "block": blocks[0]
+                            }
+                    elif len(blocks)==2:
+                        temp = {
+                            "type":"sympair",
+                            "block1":blocks[0],
+                            "block2":blocks[1]
+                            }
+                    else:
+                        logger.warning(f"invalid group for symmetry {blocks}")
+                    pairs.append(temp)
+                const["pairs"] = pairs
+            elif const["const_name"] == 'GroupCaps':
+                const["const_name"] == 'CC'
+                const["cap_name"] = const.pop("name")
+                const["unit_capacitor"] = const.pop("unit_cap")
+                const["size"] = const.pop("num_units")
+                const["nodummy"] = not const["dummy"]
+                del const["dummy"]
+    
+                
+            elif const["const_name"] == 'AlignBlocks':
+                const["const_name"] == 'AlignBlock'
+            elif const["const_name"] == 'SymmetricNets':
+                const["const_name"] == 'SymmNet'
+                const["axis_dir"] = const.pop("direction")
+                const['net1'] = {
+                    "name": const['net1'],
+                    "blocks": self._map_pins(const["pins1"])}
+                const['net2'] = {
+                    "name": const['net2'],
+                    "blocks": self._map_pins(const["pins2"])}
+                del const["pins1"]
+                del const["pins2"]
+            elif const["const_name"] == 'NetConst':
+                for net in const["nets"]:
+                    if 'shield' in const and 'criticality' in const and not const['shield'] =="None":
+                        extra = {
+                            "const_name" : 'ShieldNet',
+                            "net_name" : net,
+                            "shield_net" : const["shield"]
+                            }
+                        added_const.append(extra)
+                        extra = {
+                            "const_name" : 'CritNet',
+                            "net_name" : net,
+                            "priority" : const["criticality"]
+                            }
+                        added_const.append(extra)
+                    elif 'shield' in const and not const['shield'] =="None":
+                        extra = {
+                            "const_name" : 'ShieldNet',
+                            "net_name" : net,
+                            "shield_net" : const["shield"]
+                            }
+                        added_const.append(extra)
+    
+                    elif 'criticality' in const and const['shield'] =="None":
+                        extra = {
+                            "const_name" : 'CritNet',
+                            "net_name" : net,
+                            "priority" : const["criticality"]
+                            }
+                        added_const.append(extra)
+        self.block_const["constraints"] = [i for i in all_const if not i['const_name']=='NetConst']
+        self.block_const["constraints"].extend(added_const)
+    
+    def _map_pins(self,pins:list):
+        blocks=[]
+        for pin in pins:
+            if '/' in pin:
+                temp = {
+                    "type":"pin",
+                    "name":pin.split('/')[0],
+                    "pin":pin.split('/')[1]
+                    }
+            else:
+                temp = {
+                    "type":"terminal",
+                    "name":pin, 
+                    "pin":None
+                    }
+            blocks.append(temp)
+        return blocks
+if __name__ == '__main__':
+    pdk_dir =   pathlib.Path('/scratch/ALIGN_shared/ALIGN-public/pdks/FinFET14nm_Mock_PDK/')   
+    input_dir = pathlib.Path('/scratch/ALIGN_shared/ALIGN-public/examples/user_const/')
+    bc= ConstraintParser(pdk_dir, input_dir)
+    ac=bc.read_user_const('user_const')
+    print(ac)

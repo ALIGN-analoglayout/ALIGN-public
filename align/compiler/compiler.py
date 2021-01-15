@@ -5,20 +5,22 @@ import json
 from .util import _write_circuit_graph, max_connectivity
 from .read_netlist import SpiceParser
 from .preprocess import define_SD, preprocess_stack_parallel, remove_pg_pins
-from .match_graph import read_inputs, read_setup,_mapped_graph_list,check_nodes,reduce_graph
+from .CreateDatabase import CreateDatabase
+from .match_graph import Annotate, read_setup
 from .write_verilog_lef import WriteVerilog, print_globals,print_header,generate_lef
 from .common_centroid_cap_constraint import WriteCap, check_common_centroid
-from .write_constraint import WriteConst, CopyConstFile, FindSymmetry
+from .write_constraint import WriteConst, CopyConstFile
 from .read_lef import read_lef
+from .user_const import ConstraintParser
 
 import logging
 logger = logging.getLogger(__name__)
 
 def generate_hierarchy(netlist, subckt, output_dir, flatten_heirarchy, pdk_dir, uniform_height):
-    updated_ckt_list,library = compiler(netlist, subckt, flatten_heirarchy)
+    updated_ckt_list,library = compiler(netlist, subckt, pdk_dir, flatten_heirarchy)
     return compiler_output(netlist, library, updated_ckt_list, subckt, output_dir, pdk_dir, uniform_height)
 
-def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
+def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path,flat=0,Debug=False):
     """
     Reads input spice file, converts to a graph format and create hierarchies in the graph
 
@@ -75,7 +77,10 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
         for lib_circuit in library:
             _write_circuit_graph(lib_circuit["name"], lib_circuit["graph"],
                                          "./circuit_graphs/")
-    hier_graph_dict=read_inputs(circuit["name"],circuit["graph"])
+    #Converting graph to dict
+    const_parse = ConstraintParser(pdk_dir, input_dir)
+    create_data = CreateDatabase(circuit["graph"],const_parse)
+    hier_graph_dict = create_data.read_inputs(circuit["name"])
 
     #remove pg_pins requirement by pnr
     logger.info("Modifying pg pins in design for PnR")
@@ -101,41 +106,8 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
             if node[1]["inst_type"]!='net':
                 logger.debug(node)
 
-    updated_ckt_list = []
-    check_duplicates={}
-    for circuit_name, circuit in hier_graph_dict.items():
-        logger.debug(f"START MATCHING in circuit: {circuit_name}")
-        G1 = circuit["graph"]
-        if circuit_name in design_setup['DIGITAL']:
-            mapped_graph_list = _mapped_graph_list(G1, library, design_setup['POWER']+design_setup['GND'] ,design_setup['CLOCK'], True )
-        else:
-            mapped_graph_list = _mapped_graph_list(G1, library, design_setup['POWER']+design_setup['GND']  ,design_setup['CLOCK'], False )
-        # reduce graph converts input hierarhical graph to dictionary
-        updated_circuit, Grest = reduce_graph(G1, mapped_graph_list,library,check_duplicates,design_setup,all_lef)
-        check_nodes(updated_circuit)
-        updated_ckt_list.extend(updated_circuit)
-
-        stop_points=design_setup['POWER']+design_setup['GND']+design_setup['CLOCK']
-        if circuit_name not in design_setup['DIGITAL']:
-            symmetry_blocks = FindSymmetry(Grest, circuit["ports"], circuit["ports_weight"], stop_points)
-            for symm_blocks in symmetry_blocks.values():
-                logger.info(f"generated constraints: {pprint.pformat(symm_blocks, indent=4)}")
-                if isinstance(symm_blocks, dict) and "graph" in symm_blocks.keys():
-                    logger.debug(f"added new hierarchy: {symm_blocks['name']} {symm_blocks['graph'].nodes()}")
-                    updated_ckt_list.append(symm_blocks)
-
-        updated_ckt_list.append({
-            "name": circuit_name,
-            "graph": Grest,
-            "ports": circuit["ports"],
-            "ports_weight": circuit["ports_weight"],
-            "size": len(Grest.nodes())
-        })
-
-        lib_names=[lib_ele['name'] for lib_ele in library]
-        for lib_name, dupl in check_duplicates.items():
-            if len(dupl)>1:
-                lib_names+=[lib_name+'_type'+str(n) for n in range(len(dupl))]
+    annotate =Annotate(hier_graph_dict, design_setup,library,all_lef)
+    updated_ckt_list,lib_names =annotate.annotate()
     return updated_ckt_list, lib_names
 
 def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, result_dir:pathlib.Path, pdk_dir:pathlib.Path, uniform_height=False):
