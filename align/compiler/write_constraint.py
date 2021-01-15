@@ -416,7 +416,7 @@ def symmnet_device_pairs(G, net_A, net_B,existing):
     if len(pairs.keys())>1:
         return pairs,{"name":net_A,"blocks":blocksA},{"name":net_B,"blocks":blocksB}
     else:
-        logger.debug(f"skipping symmnet as: symmetry of net is between two devices")
+        logger.debug("skipping symmnet as: symmetry of net is between two devices")
         return [None,None,None]
 
 def connection(graph,net:str):

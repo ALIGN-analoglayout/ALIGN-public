@@ -1,0 +1,13 @@
+CreateAlias -blocks [m4, m5] -name group1
+GroupBlocks -hier xi0 -blocks group1 -name CMFB
+OrderBlocks -blocks [c0,c1] -direction V
+NetConst -nets [D1,G1,S] -shield vss -criticality 200
+AlignBlocks -direction V -blocks [m0,m1]
+GroupCaps -blocks c0 -name c0 -unit_cap cap_12f -num_units 3 -dummy False
+SymmetricBlocks -direction V -pairs group1
+MatchBlocks -blocks [m0,m1]
+BlockDistance -abs_distance 108
+HorizontalDistance -abs_distance 108
+VerticalDistance -abs_distance 108
+PortLocation -location BL -ports D,S
+SymmetricNets -direction V -net1 D -net2 D1 -pins1 xi0/vinn,m0/D -pins2 xi0/vbiasn,m1/D
