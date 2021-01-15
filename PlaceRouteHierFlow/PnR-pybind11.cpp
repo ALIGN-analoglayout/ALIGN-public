@@ -1,5 +1,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/iostream.h>
 
 namespace py = pybind11;
 using namespace pybind11::literals;
@@ -313,6 +314,8 @@ PYBIND11_MODULE(PnR, m) {
   //m.def("save_state", &save_state, "helper function to save_state");
   //m.def("route_single_variant", &route_single_variant, "helper function to route a single variant");
   //m.def("route_top_down", &route_top_down, "helper function to perform top-down routing");
+  py::add_ostream_redirect(m, "ostream_redirect");
+
   m.def("toplevel", &toplevel, "helper function to perform the whole C++ flow");
 
 };
