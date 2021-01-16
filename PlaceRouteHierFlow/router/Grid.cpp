@@ -1201,7 +1201,8 @@ void Grid::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::point> >& pl
         std::cout<<"converter check point 1"<<std::endl;
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
-             std::cout<<"Plist problem"<<std::endl;
+	    //Remove because of runtime issues
+	    //std::cout<<"Plist problem"<<std::endl;
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
           //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
