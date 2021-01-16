@@ -1737,10 +1737,10 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 	    } else {
 		if ( term0["netName"] == "PLUS") {
                      term1["netName"] = Nets_pos[ni].name ;
-                     std::cout<<"Cap Bug test "<<1+ni<<" "<<" "<<term1["netName"]<<std::endl;
+                     spdlog::info("Cap Bug test {0} {1}",1+ni,term1["netName"]);
 		} else if ( term0["netName"] == "MINUS") {
                      term1["netName"] = Nets_neg[ni].name ;
-                     std::cout<<"Cap Bug test "<<1+ni<<" "<<" "<<term1["netName"]<<std::endl;
+                     spdlog::info("Cap Bug test {0} {1}",1+ni,term1["netName"]);
 		} else {
                     continue;
                 }

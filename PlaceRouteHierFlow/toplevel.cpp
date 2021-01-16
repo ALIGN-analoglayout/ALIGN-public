@@ -362,7 +362,11 @@ int toplevel( const std::vector<std::string>& argv) {
   {
     int idx=TraverseOrder[i];
     cout<<"Main-Info: start to work on node "<<idx<<endl;
-    if(disable_io)std::cout.setstate(std::ios_base::failbit);
+    spdlog::set_level(spdlog::level::off);
+    if(disable_io){
+      std::cout.setstate(std::ios_base::failbit);
+      
+    }
     PnRDB::hierNode current_node=DB.CheckoutHierNode(idx);
     DB.PrintHierNode(current_node);
 

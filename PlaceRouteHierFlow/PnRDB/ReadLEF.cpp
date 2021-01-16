@@ -11,8 +11,8 @@ static double parse_and_scale(const std::string& s, double unitScale) {
   double scaled = stod(s) * unitScale;
   double result = round(scaled);
   if (fabs(scaled - result) > 0.001) {
-    std::cout << "ERROR: parse_and_scale " << s << " " << unitScale << " Rounded result differs too much from unrounded result (" << result
-              << "," << scaled << ")" << std::endl;
+    spdlog::error( "ERROR: parse_and_scale {0} {1} Rounded result differs too much from unrounded result ( {2} {3} )" , s , unitScale , result
+              , scaled );
   }
   return result;
 }
@@ -101,7 +101,7 @@ bool PnRdatabase::ReadLEF(string leffile) {
           stage = 0;
         }
       } else if (stage == 4) {  // within OBS
-        std::cout << "stage4.Def: " << def << std::endl;
+         spdlog::info("stage4.Def: {0}", def);
         if ((found = def.find("LAYER")) != string::npos) {
           skip_the_rest_of_stage_4 = false;
           temp = get_true_word(found, def, 0, ';', p);
@@ -210,7 +210,7 @@ bool PnRdatabase::ReadLEF(string leffile) {
         } else if ((found = def.find(portEnd)) != string::npos) {
           // cout<<"Stage "<<stage<<" @ port end "<<portEnd<<endl;
           if (macroPins.back().pinContacts.size() == 0 or macroPins.back().pinContacts.back().metal == "") {
-            std::cout << "Error: LEF Physical Pin information Missing" << std::endl;
+            spdlog::error("Error: LEF Physical Pin information Missing" );
             assert(0);
           }
           stage = 2;

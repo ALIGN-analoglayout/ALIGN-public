@@ -112,8 +112,8 @@ void PnRdatabase::PrintSymmNet(PnRDB::SymmNet& t) {
 }
 
 void PnRdatabase::PrintTerminal(PnRDB::terminal& t) {
-  std::cout<<"@Terminal"<<std::endl;
-  std::cout<<" name: "<<t.name<<" ; type: "<<t.type<<" ; netiter: "<<t.netIter<<std::endl;
+  spdlog::debug("@Terminal");
+  spdlog::debug(" name: {0} ; type {1} ; netiter {2} ",t.name, t.type,t.netIter);
   for(vector<PnRDB::contact>::iterator it=t.termContacts.begin(); it!=t.termContacts.end(); ++it) {
     PrintContact(*it);
   }
@@ -197,11 +197,11 @@ void PnRdatabase::PrintVia(PnRDB::Via& v) {
 }
 
 void PnRdatabase::PrintContact(PnRDB::contact& cont) {
-        std::cout<<"@Contact ";
+        //std::cout<<"@Contact ";
         PnRDB::contact *it3=&cont;
-        std::cout<<" metal: "<<it3->metal<<" ; originCenter: {"<<it3->originCenter.x<<","<<it3->originCenter.y<<"} ; placedCenter: {"<<it3->placedCenter.x<<","<<it3->placedCenter.y<<"}"<<std::endl;
-        std::cout<<"originBox: LL"<<it3->originBox.LL.x<<","<<it3->originBox.LL.y<<" UR"<<it3->originBox.UR.x<<","<<it3->originBox.UR.y<<std::endl;
-        std::cout<<"placedBox: LL"<<it3->placedBox.LL.x<<","<<it3->placedBox.LL.y<<" UR"<<it3->placedBox.UR.x<<","<<it3->placedBox.UR.y<<std::endl;
+        //std::cout<<" metal: "<<it3->metal<<" ; originCenter: {"<<it3->originCenter.x<<","<<it3->originCenter.y<<"} ; placedCenter: {"<<it3->placedCenter.x<<","<<it3->placedCenter.y<<"}"<<std::endl;
+        //std::cout<<"originBox: LL"<<it3->originBox.LL.x<<","<<it3->originBox.LL.y<<" UR"<<it3->originBox.UR.x<<","<<it3->originBox.UR.y<<std::endl;
+        //std::cout<<"placedBox: LL"<<it3->placedBox.LL.x<<","<<it3->placedBox.LL.y<<" UR"<<it3->placedBox.UR.x<<","<<it3->placedBox.UR.y<<std::endl;
 }
 // Local Variables:
 // c-basic-offset: 4

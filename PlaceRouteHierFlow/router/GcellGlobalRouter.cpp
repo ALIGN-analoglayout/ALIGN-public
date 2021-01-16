@@ -20,7 +20,7 @@ GcellGlobalRouter::GcellGlobalRouter(){
 
 void GcellGlobalRouter::PlotGlobalRouter(){
 
-    std::cout<<"Global-Router-Info: create gnuplot file"<<std::endl;
+    spdlog::info("Global-Router-Info: create gnuplot file");
     std::ofstream fout;
     std::string outfile = "global_router.plt";
     fout.open(outfile);
@@ -99,7 +99,7 @@ void GcellGlobalRouter::AddContacts(std::vector<PnRDB::contact> &temp_contact, j
 
 void GcellGlobalRouter::PlotGlobalRouter_Json(PnRDB::hierNode& node){
 
-    std::cout << "JSON WRITE Global Router Results "<< std::endl;
+    spdlog::info( "JSON WRITE Global Router Results ");
     std::ofstream jsonStream;
     jsonStream.open ("global_router_plt.json");
     json jsonTop;
@@ -216,7 +216,7 @@ void GcellGlobalRouter::PlotGlobalRouter_Json(PnRDB::hierNode& node){
  
     jsonStream << std::setw(4) << jsonTop;
     jsonStream.close();
-    std::cout << " JSON FINALIZE " <<  node.name << std::endl;
+    spdlog::info(" JSON FINALIZE {0}" , node.name );
 
 
 };

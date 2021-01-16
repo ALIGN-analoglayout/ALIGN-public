@@ -1130,22 +1130,22 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
 
   std::set<int> src_index;
   
-  std::cout<<"source size "<<source.size()<<std::endl;
-  std::cout<<"dest size "<<dest.size()<<std::endl;
+  spdlog::info("source size {0}",source.size());
+  spdlog::info("dest size {0} ",dest.size());
   
   
-  std::cout<<"A star source info"<<std::endl;
+  spdlog::info("A star source info");
   for(int i=0;i<(int)source.size();i++){
     
       src_index.insert(source[i]);
-      std::cout<<"Source "<<grid.vertices_total[source[i]].metal<<" "<<grid.vertices_total[source[i]].x<<" "<<grid.vertices_total[source[i]].y<<std::endl;
+      spdlog::info("Source {0} {1} {2} ",grid.vertices_total[source[i]].metal,grid.vertices_total[source[i]].x,grid.vertices_total[source[i]].y);
       close_set.insert(source[i]);
 
      }
   
   std::set<int> dest_index;
   for(int i=0;i<(int)dest.size();i++){
-      std::cout<<"Dest "<<grid.vertices_total[dest[i]].metal<<" "<<grid.vertices_total[dest[i]].x<<" "<<grid.vertices_total[dest[i]].y<<std::endl;
+      spdlog::info("Dest {0} {1} {2}",grid.vertices_total[dest[i]].metal,grid.vertices_total[dest[i]].x,grid.vertices_total[dest[i]].y);
       dest_index.insert(dest[i]);
 
      }
@@ -1227,8 +1227,8 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
   if(found==0){
      spdlog::info("A_star fails to find a feasible path");
     }else{
-     std::cout<<"Trace back paths"<<std::endl;
-     std::cout<<"Source "<<grid.vertices_total[current_node].metal<<" "<<grid.vertices_total[current_node].x<<" "<<grid.vertices_total[current_node].y<<std::endl;
+     spdlog::info("Trace back paths");
+     spdlog::info("Source {0}, {1}, {2}",grid.vertices_total[current_node].metal,grid.vertices_total[current_node].x,grid.vertices_total[current_node].y);
      temp_path = Trace_Back_Paths(grid, current_node, left_up, right_down, src_index, dest_index);
     }
    refreshGrid(grid);
@@ -1428,34 +1428,29 @@ std::vector<std::vector<int> > A_star::Trace_Back_Paths(Grid& grid, int current_
     spdlog::error("Trace_Back_Paths bug 1 ");
     assert(0);
   }
-  std::cout<<"trace back flag3"<<std::endl;
+  spdlog::info("trace back flag3");
 
-  std::cout<<"src_index"<<std::endl;
+  spdlog::info("src_index");
 
   for(auto it=src_index.begin();it!=src_index.end();++it){
-      std::cout<<*it<<" ";
+      spdlog::info("{0}",*it);
   }
 
-  std::cout<<std::endl;
-
-  std::cout<<"dest_index"<<std::endl;
+  spdlog::info("dest_index");
 
   for(auto it=dest_index.begin();it!=dest_index.end();++it){
-      std::cout<<*it<<" ";
+      spdlog::info("{0}",*it);
   }
-
-  std::cout<<std::endl;
 
   for(int i=0;i<nodes.size();i++){
 
-     std::cout<<"trace back flag3.1"<<std::endl;
-     std::cout<<"trace back node nodes "<<nodes[i]<<" "<<grid.vertices_total[nodes[i]].x<<" "<<grid.vertices_total[nodes[i]].y<<"metal "<<grid.vertices_total[nodes[i]].metal<<
-" i "<<i<<std::endl;
+     spdlog::info("trace back flag3.1");
+     spdlog::info("trace back node nodes {0} {1} {2} metal {3} i {4} ",nodes[i],grid.vertices_total[nodes[i]].x,grid.vertices_total[nodes[i]].y,grid.vertices_total[nodes[i]].metal,i);
      std::vector<int> temp_path = Trace_Back_Path_trace_back_node(grid, nodes[i], src_index);
      //std::vector<int> temp_path = Trace_Back_Path_parent(grid, nodes[i], src_index);
      if(temp_path.size()<2){
-        std::cout<<"temp_path size "<<temp_path.size()<<std::endl;
-        std::cout<<"Trace_Back_Paths bug 2 "<<std::endl;
+        spdlog::info("temp_path size {0} ",temp_path.size());
+        spdlog::info("Trace_Back_Paths bug 2 ");
         //assert(0);      
      }
      temp_paths.push_back(temp_path);
