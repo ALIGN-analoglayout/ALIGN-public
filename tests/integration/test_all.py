@@ -4,9 +4,9 @@ import os
 import pathlib
 
 run_flat = ['linear_equalizer', 'adder', 'variable_gain_amplifier', 'single_to_differential_converter']
+skip_pdks = ['Bulk65nm_Mock_PDK']
+skip_dirs = ['Sanitized_model3x_MDLL_TOP','Sanitized_Coarse_SAR_Logic','ADC_CORE','GF65_DLL_sanitized','Sanitized_5b_ADC','Sanitized_CDAC_SW_Coarse','Sanitized_DLPF_RCFilter', 'Sanitized_TempSensor','CTDTDSM_V3','single_SAR','Sanitized_civiR_DLDO_TOP','Sanitized_TX_8l12b','Santized_12b_ADC_TOP','Sanitized_LevelCrossingDetector','Sanitized_CK_Divider8']
 skip_dirs = []
-skip_pdks = []
-
 ALIGN_HOME = pathlib.Path(__file__).parent.parent.parent
 
 examples_dir =  ALIGN_HOME / 'examples'
@@ -25,7 +25,7 @@ def test_A( pdk_dir, design_dir):
     run_dir.mkdir(parents=True, exist_ok=True)
     os.chdir(run_dir)
 
-    args = [str(design_dir), '-f', str(design_dir / f"{nm}.sp"), '-s', nm, '-p', str(pdk_dir), '-flat',  str(1 if nm in run_flat else 0), '--check', '--generate']
+    args = [str(design_dir), '-f', str(design_dir / f"{nm}.sp"), '-s', nm, '-p', str(pdk_dir), '-flat',  str(1 if nm in run_flat else 0), '--check', '--generate', '--regression']
     results = align.CmdlineParser().parse_args(args)
 
     assert results is not None, f"{nm} :No results generated"

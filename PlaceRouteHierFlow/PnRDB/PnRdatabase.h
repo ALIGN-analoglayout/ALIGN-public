@@ -26,7 +26,7 @@
 using std::map;
 using std::unordered_map;
 using std::vector;
-using std::queue;
+using std::deque;
 using std::string;
 using std::cout;
 using std::endl;
@@ -84,7 +84,7 @@ class PnRdatabase
     PnRDB::designRule drData;
 
     void UpdateHierNodeParent(int nodeID); // update parent node of current node
-    void TraverseDFS(queue<int>& Q, vector<string>& color, int idx); // DFS subfunc to traverse hierarchical tree 
+    void TraverseDFS(deque<int>& Q, vector<string>& color, int idx); // DFS subfunc to traverse hierarchical tree 
 
     void ReadPDKJSON(string drfile);
 
@@ -109,7 +109,7 @@ class PnRdatabase
 
     long int get_number(string str);
 
-    queue<int> TraverseHierTree(); // traverse hierarchical tree in topological order
+    deque<int> TraverseHierTree(); // traverse hierarchical tree in topological order
     PnRDB::hierNode CheckoutHierNode(int nodeID); // check out data of specific hierarchical node
     std::vector<PnRDB::hierNode> CheckoutHierNodeVec(int nodeID);//checkout nodeVec, which consists of different placement
     void CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode); // check out data of specific hierarchical node
@@ -132,6 +132,8 @@ class PnRdatabase
     void TransformContacts(std::vector<PnRDB::contact> &contacts, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType tranform_type);
     void TransformVia(PnRDB::Via &via, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType tranform_type);
     void TransformVias(std::vector<PnRDB::Via> &vias, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType tranform_type);
+    void TransformGuardring(PnRDB::GuardRing &guardring, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType tranform_type);
+    void TransformGuardrings(std::vector<PnRDB::GuardRing> &guardrings, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType tranform_type);
     void TransformPin(PnRDB::pin &pin, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType tranform_type);
     void TransformPins(std::vector<PnRDB::pin> &pins, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType tranform_type);
     void TransformMetal(PnRDB::Metal &metal, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType tranform_type);
@@ -188,6 +190,11 @@ class PnRdatabase
     void WriteGcellGlobalRoute(const PnRDB::hierNode &node, const string &rofile, const string &opath) const;
     void WriteLef(const PnRDB::hierNode &node, const string &file, const string &opath) const;
     void Write_Router_Report(PnRDB::hierNode &node, const string &opath);
+    void extend_pin_function();
+    void extend_pins(PnRDB::block &temp_block);
+    void extend_pin(PnRDB::pin &temp_pin, int width, int height);
+    void Write_Power_Mesh_Conf(std::string outputfile);
+    void Write_Current_Workload(PnRDB::hierNode &node, double total_current, int current_number, std::string outputfile);
     
 };
 

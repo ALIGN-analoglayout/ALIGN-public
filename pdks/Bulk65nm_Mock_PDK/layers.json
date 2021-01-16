@@ -3,6 +3,29 @@
 
 "ScaleFactor": 1,
 
+"design_info":
+{
+"vt_type":["HVT","LVT","RVT"],
+"top_signal_routing_layer": "M9",
+"bottom_signal_routing_layer": "M2",
+"top_clock_routing_layer": "M9",
+"bottom_clock_routing_layer":"M2",
+"top_power_routing_layer": "M9",
+"bottom_power_routing_layer": "M2",
+"top_port_routing_layer": "M9",
+"bottom_port_routing_layer": "M2",
+"power_rail_frequency":2,
+"Hspace": 45,
+"Vspace": 45,
+"U_width": 60,
+"unit_size_nmos":12,
+"unit_size_pmos":12,
+"unit_size_cap":12,
+"max_nfin_mos":48,
+"Gate_pitch":100,
+"unit_height_res":600
+},
+
 "Abstraction": [
 {
 "Layer": "Poly",
@@ -22,7 +45,7 @@
 
 {
 "Layer": "Fin",
-"LayerNo": 3,
+"GdsLayerNo": 3,
 "GdsDatatype": {"Draw":0},
 "Direction": "H",
 "Pitch": 100,
@@ -380,7 +403,19 @@
 
 {
 "Layer": "Rvt",
-"GdsLayerNo": 11,
+"GdsLayerNo": 152,
+"GdsDatatype": {"Draw":0}
+},
+
+{
+"Layer": "Lvt",
+"GdsLayerNo": 153,
+"GdsDatatype": {"Draw":0}
+},
+
+{
+"Layer": "Hvt",
+"GdsLayerNo": 154,
 "GdsDatatype": {"Draw":0}
 },
 

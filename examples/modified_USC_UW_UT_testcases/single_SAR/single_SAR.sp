@@ -194,15 +194,15 @@ ends SAR_logic
 // View name: schematic
 subckt CDAC S\<0\> S\<1\> S\<2\> S\<3\> S\<4\> S\<5\> S\<6\> S\<7\> TOP \
         ground
-    C10 (TOP ground) capacitor c=3.90625f
-    C7 (TOP S\<7\>) capacitor c=3.90625f
-    C6 (TOP S\<6\>) capacitor c=7.8125f
-    C5 (TOP S\<5\>) capacitor c=15.625f
-    C4 (TOP S\<4\>) capacitor c=31.25f
-    C3 (TOP S\<3\>) capacitor c=62.5f
-    C2 (TOP S\<2\>) capacitor c=125f
-    C1 (TOP S\<1\>) capacitor c=250f
-    C0 (TOP S\<0\>) capacitor c=500.0f
+    C10 (TOP ground) capacitor cap=3.90625f
+    C7 (TOP S\<7\>) capacitor cap=3.90625f
+    C6 (TOP S\<6\>) capacitor cap=7.8125f
+    C5 (TOP S\<5\>) capacitor cap=15.625f
+    C4 (TOP S\<4\>) capacitor cap=31.25f
+    C3 (TOP S\<3\>) capacitor cap=62.5f
+    C2 (TOP S\<2\>) capacitor cap=125f
+    C1 (TOP S\<1\>) capacitor cap=250f
+    C0 (TOP S\<0\>) capacitor cap=500.0f
 ends CDAC
 // End of subcircuit definition.
 
@@ -210,8 +210,8 @@ ends CDAC
 // Cell name: clk_doubler
 // View name: schematic
 subckt clk_doubler VDD VIN VOUT VSS
-    C1 (VOUT net5) capacitor c=2.5p m=3 ic=0
-    C0 (VOUTb VIN) capacitor c=2.5p m=3 ic=0
+    C1 (VOUT net5) capacitor cap=2.5p m=3 ic=0
+    C0 (VOUTb VIN) capacitor cap=2.5p m=3 ic=0
     M0 (VDD VOUTb VOUT VSS) nmos w=600.0n l=45n m=10
     M18 (VDD VOUT VOUTb VSS) nmos w=600.0n l=45n m=10
     I0 (VDD VIN net5 VSS) inverter
@@ -228,7 +228,7 @@ subckt bootstrap OUT VDD VSS clk clkb clkb_high IN
     M4 (OUT net011 IN VSS) nmos w=900.0n l=45n m=10
     M1q (net01 clkb VSS VSS) nmos w=900.0n l=45n m=50
     M0 (VDD clkb_high net8 VSS) nmos w=900.0n l=45n m=1
-    C0 (net8 net01) capacitor c=20p ic=1.1
+    C0 (net8 net01) capacitor cap=20p ic=1.1
     M12 (IN clkb net01 VDD) pmos w=900n l=45n m=20
     M7 (IN clkb net012 VDD) pmos w=900.0n l=45n m=40
     M13 (net012 clk VDD VDD) pmos w=900.0n l=45n m=20

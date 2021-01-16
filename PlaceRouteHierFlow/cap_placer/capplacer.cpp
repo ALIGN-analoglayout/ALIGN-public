@@ -713,7 +713,8 @@ Placer_Router_Cap::initial_net_pair_sequence(vector<int> & ki, vector<pair<strin
 
     for(unsigned int i=0;i<ki.size()+1;i++){
 	if(i<ki.size()){
-	    temp_net.name = cap_pin[i].first;
+	    //temp_net.name = cap_pin[i].first;
+            temp_net.name = cap_pin[i].second;
 	}else{
 	    temp_net.name = "dummy_gnd_PLUS";
 	}
@@ -905,7 +906,8 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
     Nets_neg = Nets_pos;
     for(unsigned int i=0;i<Nets_pos.size();i++){
 	if(i!=Nets_pos.size()-1){
-	    Nets_neg[i].name = cap_pin[i].second;
+	    //Nets_neg[i].name = cap_pin[i].second;
+            Nets_neg[i].name = cap_pin[i].first;
 	}else{
 	    Nets_neg[i].name = "dummy_gnd_MINUS";
 	}
@@ -1684,7 +1686,7 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 	    bool addNetName = true;
 
 	    json term1;
-
+/*
 	    if ( ni == -1) {
 		if ( term0["netName"] == "PLUS") {
 		    term1["netName"] = "dummy_gnd_PLUS";
@@ -1708,18 +1710,41 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 		if ( term0["netName"] == "PLUS") {
 		    ostringstream os;
 		    os << "PLUS" << 1+ni;
+                    std::cout<<"Cap Bug test "<<1+ni<<" "<<os.str()<<" "<<term0["netName"]<<std::endl;
 		    if ( addNetName) {
 			term1["netName"] = os.str();
 		    }
 		} else if ( term0["netName"] == "MINUS") {
 		    ostringstream os;
 		    os << "MINUS" << 1+ni;
+                    std::cout<<"Cap Bug test "<<1+ni<<" "<<os.str()<<" "<<term0["netName"]<<std::endl;
 		    if ( addNetName) {
 			term1["netName"] = os.str();
 		    }
 		} else {
 		    continue;
 		}
+	    }
+*/
+	    if ( ni == -1) {
+		if ( term0["netName"] == "PLUS") {
+		    term1["netName"] = "dummy_gnd_PLUS";
+		} else if ( term0["netName"] == "MINUS") {
+		    term1["netName"] = "dummy_gnd_MINUS";
+		} else {
+		    continue;
+		}
+	    } else {
+		if ( term0["netName"] == "PLUS") {
+                     term1["netName"] = Nets_pos[ni].name ;
+                     std::cout<<"Cap Bug test "<<1+ni<<" "<<" "<<term1["netName"]<<std::endl;
+		} else if ( term0["netName"] == "MINUS") {
+                     term1["netName"] = Nets_neg[ni].name ;
+                     std::cout<<"Cap Bug test "<<1+ni<<" "<<" "<<term1["netName"]<<std::endl;
+		} else {
+                    continue;
+                }
+
 	    }
 
 	    term1["layer"] = term0["layer"];
@@ -1767,16 +1792,46 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
                     spdlog::debug("CC debug flag 2");
 		    ki = current_node.CC_Caps[j].size;
                     bool dummy_flag = current_node.CC_Caps[j].dummy_flag;
+                    //bool dummy_flag = 1;
 		    unit_capacitor = current_node.CC_Caps[j].Unit_capacitor;
 		    final_gds = b.master;
                     spdlog::debug("CC debug flag 3");
 		    assert( b.blockPins.size() % 2 == 0);
+
+                    for(unsigned int pin_index=0; pin_index <b.blockPins.size(); pin_index++){
+                        int position_minus = b.blockPins[pin_index].name.find("MINUS");
+                        if(position_minus!=string::npos){
+                           pins.first = b.blockPins[pin_index].name;
+                           for(unsigned int pin_index_p=0; pin_index_p <b.blockPins.size(); pin_index_p++){
+                              int position_plus = b.blockPins[pin_index_p].name.find("PLUS");
+                              std::string first_name_index (pins.first,5);
+                              //std::cout<<"first_name_index "<<first_name_index<<" pin name" <<b.blockPins[pin_index].name<<std::endl;
+                              if(position_plus!=string::npos){
+                                 std::string second_name_index (b.blockPins[pin_index_p].name,4);
+                                 //std::cout<<"second_name_index "<<second_name_index<<" pin name" <<b.blockPins[pin_index_p].name<<std::endl;
+                                 if(first_name_index==second_name_index){
+                                   pins.second = b.blockPins[pin_index_p].name;
+                                   std::cout<<pins.first<<" "<<pins.second<<std::endl;
+                                   std::cout<<"first_name_index "<<first_name_index<<" second_name_index "<<second_name_index<<" found"<<std::endl;
+                                   //assert(0);
+                                   pin_names.push_back(pins);
+                                   break;
+                                 }
+                                }
+                           }
+                         }
+                    }
+
+                    /*
 		    for(unsigned int pin_index=0; pin_index <b.blockPins.size(); pin_index+=2){
 			pins.first = b.blockPins[pin_index].name;
 			pins.second = b.blockPins[pin_index+1].name;
 			pin_names.push_back(pins);
 		    }
                     spdlog::debug("CC debug flag 4");
+                    */
+
+		    std::cout<<"core dump 2"<<std::endl;
 		    bool cap_ratio = current_node.CC_Caps[j].cap_ratio;
                     spdlog::debug("CC debug flag 5");
 		    vector<int> cap_r;
@@ -1809,6 +1864,9 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 		    //increase other aspect ratio
                     spdlog::debug("CC debug flag 7");
 
+		    std::cout<<"New CC 4 "<<j<<std::endl;
+		    std::cout<<"cap_r size "<<cap_r.size()<<std::endl;
+                    bool insert_dummy_connection = 0;
 		    for(unsigned int q=0;q<cap_r.size();q++){
                         spdlog::debug("CC debug flag 8");
 
@@ -1835,16 +1893,42 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 			va.orient = temp_block.orient;
 			va.interMetals = temp_block.interMetals;
 			va.interVias = temp_block.interVias;
-			for(unsigned int k=0;k<va.blockPins.size();k++){
-			    for(unsigned int l=0;l<temp_block.blockPins.size();l++){
+
+                        for(unsigned int l=0;l<temp_block.blockPins.size();l++){
+                           bool found = 0;
+                           for(unsigned int k=0;k<va.blockPins.size();k++){
+
 				if(va.blockPins[k].name == temp_block.blockPins[l].name){    
+                                    found = 1;
 				    va.blockPins[k].pinContacts.clear();
 				    for(unsigned int p=0;p<temp_block.blockPins[l].pinContacts.size();p++){
 					va.blockPins[k].pinContacts.push_back(temp_block.blockPins[l].pinContacts[p]);
 				    }
+                                  
 				}
-			    }
-			}
+
+                            }
+                            //if not found then insert this pin as a power pin and add a dummy pin in 
+                            if(!found and !temp_block.blockPins[l].name.empty()){
+                            //if(!found){
+                                   //create dummy connection and insert power pin
+                                   PnRDB::connectNode temp_connectNode;
+                                   temp_connectNode.iter2 = i;
+                                   temp_connectNode.iter = va.blockPins.size();
+                                   temp_block.blockPins[l].netIter = -2;
+                                   va.blockPins.push_back(temp_block.blockPins[l]);
+                                   //insert the dummy connection power power net
+                                     //if power net does not exist, then create a power net
+                                   for(unsigned powernet_index = 0;powernet_index<current_node.PowerNets.size();powernet_index++){
+                                         if(current_node.PowerNets[powernet_index].power==0 and !insert_dummy_connection){
+                                            current_node.PowerNets[powernet_index].dummy_connected.push_back(temp_connectNode);
+                                            break;
+                                           }
+                                      }
+                              }
+                        }
+                        insert_dummy_connection = 1;
+
 			WriteLef(va, cc_gds_file+".lef", opath);
                         spdlog::info("CC End feed blocks");
 			continue;

@@ -104,7 +104,7 @@ public:
 
       is_not_first_in_name.add_is_alpha();
       is_not_first_in_name.add_is_digit();
-      is_not_first_in_name.add_extra( "_!|+<>");
+      is_not_first_in_name.add_extra( "_!|+<>[]");
 
       is_single_character_punct.add_extra( ".,;()`");
 

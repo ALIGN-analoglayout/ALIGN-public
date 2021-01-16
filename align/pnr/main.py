@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 def _generate_json( *, dbfile, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False, input_dir=None, toplevel=True, gds_json=True ):
 
+    logger.info( f"_generate_json: {dbfile} {variant} {primitive_dir} {pdk_dir} {output_dir} {check} {extract} {input_dir} {toplevel} {gds_json}")
+
     ret = {}
     with open(dbfile,"rt") as fp:
         hN = hierNode(json.load(fp))
@@ -47,9 +49,9 @@ def _generate_json( *, dbfile, variant, primitive_dir, pdk_dir, output_dir, chec
         with open(ret['errfile'], 'wt') as fp:
             for x in cnv.rd.shorts: fp.write( f'SHORT {x}\n')
             for x in cnv.rd.opens: fp.write( f'OPEN {x}\n')
-            for x in cnv.rd.different_widths: fp.write( f'DIFFERENT WIDTH {x}\n')
+            #for x in cnv.rd.different_widths: fp.write( f'DIFFERENT WIDTH {x}\n')
             for x in cnv.drc.errors: fp.write( f'DRC ERROR {x}\n')
-        ret['errors'] = len(cnv.rd.shorts) + len(cnv.rd.opens) + len(cnv.rd.different_widths) + len(cnv.drc.errors)
+        ret['errors'] = len(cnv.rd.shorts) + len(cnv.rd.opens) + len(cnv.drc.errors)
 
     if extract:
         ret['cir'] = output_dir / f'{variant}.cir'
@@ -115,7 +117,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
             (input_dir / file_.name).write_text(file_.read_text())
 
     # Dump out intermediate states
-    if check or extract:
+    if check or extract or gds_json:
         os.environ['PNRDB_SAVE_STATE'] = ''
 
     # Run pnr_compiler
@@ -151,7 +153,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
         if file_.suffixes == ['.json']:
             (working_dir / file_.name).write_text(file_.read_text())
 
-    if check or extract:
+    if check or extract or gds_json:
         with (results_dir / "__hierTree.json").open("rt") as fp:
             order = json.load(fp)
         logger.debug( f"Topological order: {order}")
@@ -167,7 +169,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
                 _generate_json( dbfile = file_,
                                 variant = variant_name,
                                 pdk_dir = pdk_dir,
-                                primitive_dir = primitive_dir,
+                                primitive_dir = input_dir,
                                 input_dir=working_dir,
                                 output_dir=working_dir,
                                 check=check,
@@ -184,13 +186,13 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
             variants[variant]['gdsjson'] = file_
         elif file_.suffixes == ['.lef']:
             variants[variant]['lef'] = file_
-        elif file_.suffixes == ['.db', '.json'] and (check or extract):
+        elif file_.suffixes == ['.db', '.json'] and (check or extract or gds_json):
             logger.debug( f".db.json: {file_.name}")
             variants[variant].update(
                 _generate_json( dbfile = file_,
                                 variant = variant,
                                 pdk_dir = pdk_dir,
-                                primitive_dir = primitive_dir,
+                                primitive_dir = input_dir,
                                 input_dir=working_dir,
                                 output_dir=working_dir,
                                 check=check,

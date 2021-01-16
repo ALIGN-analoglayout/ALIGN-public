@@ -34,6 +34,7 @@ class PowerRouter : public GcellDetailRouter {
   private:
 
     PnRDB::Drc_info PowerGrid_Drc_info;
+    vector<double> utilization;
     
     //return PowerGrid to PnRDB
     
@@ -45,7 +46,8 @@ class PowerRouter : public GcellDetailRouter {
     //create some dummy net with source and dest in nets
     //call detail router
 
-PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, int power_grid, int h_skip_factor, int v_skip_factor);
+    PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, int power_grid, int h_skip_factor, int v_skip_factor);
+    PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, int power_grid, string inputfile);
     void PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal);
     void CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, int hskip_factor, int v_skip_factor);
     void returnPath(std::vector<std::vector<RouterDB::Metal> > temp_path, RouterDB::PowerNet& temp_net);
@@ -84,6 +86,11 @@ PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hm
     void InsertInternalVia_Net(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, std::vector<RouterDB::Net> &temp_Nets);
     void Initial_powerrouter_report_info(PnRDB::routing_net &temp_routing_net, int i);
     void Update_powerrouter_report_info(PnRDB::routing_net& temp_routing_net, int i, int j, int pathMark);
+    void Max_Min_Contact(PnRDB::contact &temp_contact, int &LLx, int &LLy, int &URx, int &URy);
+    int FindMulti_Connection_Number(int i, PnRDB::hierNode& node);
+    void CreatePowerGridDrc_info_DC(string inputfile);
+    void CreatePowerGrid_DC(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, string inputfile);
+
 };
 
 #endif

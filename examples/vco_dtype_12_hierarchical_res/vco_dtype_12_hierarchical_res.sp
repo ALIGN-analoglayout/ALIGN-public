@@ -8,24 +8,24 @@ parameters nfin=14 rres=2k lastt=60n fin_n_diff2sing=4 fin_p_diff2sing=6 \
 // View name: schematic
 subckt diff2sing_v1 B VDD VSS in1 in2 o
 parameters _ar0 _ar1 _ar2 _ar3
-    P2 (net3 B net1 VDD) lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
-    P5 (net1 B VDD VDD) lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
-    P1 (o in2 net2 VDD) lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
-    P4 (net2 in2 net3 VDD) lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
-    P0 (net8 in1 net4 VDD) lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
-    P3 (net4 in1 net3 VDD) lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
-    N1 (net8 net8 net5 VSS) lvtnfet m=1 l=14n nfin=_ar2 nf=_ar3
-    N3 (net5 net8 VSS VSS) lvtnfet m=1 l=14n nfin=_ar2 nf=_ar3
-    N0 (o net8 net6 VSS) lvtnfet m=1 l=14n nfin=_ar2 nf=_ar3
-    N2 (net6 net8 VSS VSS) lvtnfet m=1 l=14n nfin=_ar2 nf=_ar3
+    MP2 (net3 B net1 VDD) lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
+    MP5 (net1 B VDD VDD) lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
+    MP1 (o in2 net2 VDD) lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
+    MP4 (net2 in2 net3 VDD) lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
+    MP0 (net8 in1 net4 VDD) lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
+    MP3 (net4 in1 net3 VDD) lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
+    MN1 (net8 net8 net5 VSS) lvtnfet m=1 l=14n nfin=_ar2 nf=_ar3
+    MN3 (net5 net8 VSS VSS) lvtnfet m=1 l=14n nfin=_ar2 nf=_ar3
+    MN0 (o net8 net6 VSS) lvtnfet m=1 l=14n nfin=_ar2 nf=_ar3
+    MN2 (net6 net8 VSS VSS) lvtnfet m=1 l=14n nfin=_ar2 nf=_ar3
 ends diff2sing_v1
 
 subckt three_terminal_inv VDD VSS VBIAS VIN VOUT
 parameters _ar0 _ar1 _ar2 _ar3 _ar4 _ar5
-    N34 (VOUT VIN net1 VSS) lvtnfet m=1 l=14n nfin=_ar0 nf=_ar2
-    N33 (net1 VIN VSS VSS) lvtnfet m=1 l=14n nfin=_ar0 nf=_ar2
-    P34 (VOUT VBIAS net2 VDD) lvtpfet m=1 l=14n nfin=_ar3 nf=_ar4
-    P33 (net2 VBIAS VDD VDD) lvtpfet m=1 l=14n nfin=_ar3 nf=_ar4
+    MN34 (VOUT VIN net1 VSS) lvtnfet m=1 l=14n nfin=_ar0 nf=_ar2
+    MN33 (net1 VIN VSS VSS) lvtnfet m=1 l=14n nfin=_ar0 nf=_ar2
+    MP34 (VOUT VBIAS net2 VDD) lvtpfet m=1 l=14n nfin=_ar3 nf=_ar4
+    MP33 (net2 VBIAS VDD VDD) lvtpfet m=1 l=14n nfin=_ar3 nf=_ar4
 ends three_terminal_inv
 // End of subcircuit definition.
 
