@@ -1692,8 +1692,8 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   
   set_bounds(lp, this->NumOfVar+1, 0.0, 1.0);
 
-  printf("Set the objective function\n");
-  printf("set_obj_fn(lp, {nets[h].seg[i].candis[j].TotMetalWeightByLength})\n");
+  //printf("Set the objective function\n");
+  //printf("set_obj_fn(lp, {nets[h].seg[i].candis[j].TotMetalWeightByLength})\n");
 
   // 5. Set objective function
   vector<double> temp_row;
