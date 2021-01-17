@@ -34,15 +34,14 @@ ILP_solver& ILP_solver::operator=(const ILP_solver& solver) {
   return *this;
 }
 
-void placerlpsolvelogger(lprec *lp, void *userhandle, char *buf)
-{
+void placerlpsolvelogger(lprec* lp, void* userhandle, char* buf) {
   // Strip leading newline
-  while((unsigned char)*buf == '\n') buf++;
+  while ((unsigned char)*buf == '\n') buf++;
   // Log non-empty lines
-  if (*buf != '\0') std::cout << "Placer lpsolve: " << buf << std::endl;
+  if (*buf != '\0') spdlog::info("Placer lpsolve: {0}", buf);
 }
 
-double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info &drcInfo) {
+double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
   // each block has 4 vars, x, y, H_flip, V_flip;
   int N_var = mydesign.Blocks.size() * 4 + mydesign.Nets.size() * 2;
   // i*4+1: x
@@ -76,24 +75,24 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
           // i is left of j
           double sparserow[2] = {1, -1};
           int colno[2] = {i * 4 + 1, j * 4 + 1};
-          if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[i][curr_sp.selected[i]].width - mydesign.bias_Hgraph)) std::cerr << "error" << std::endl;
+          if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[i][curr_sp.selected[i]].width - mydesign.bias_Hgraph)) spdlog::error("error");
         } else {
           // i is above j
           double sparserow[2] = {1, -1};
           int colno[2] = {i * 4 + 2, j * 4 + 2};
-          if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].height + mydesign.bias_Vgraph)) std::cerr << "error" << std::endl;
+          if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].height + mydesign.bias_Vgraph)) spdlog::error("error");
         }
       } else {
         if (i_neg_index < j_neg_index) {
           // i is be low j
           double sparserow[2] = {1, -1};
           int colno[2] = {i * 4 + 2, j * 4 + 2};
-          if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[i][curr_sp.selected[i]].height - mydesign.bias_Vgraph)) std::cerr << "error" << std::endl;
+          if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[i][curr_sp.selected[i]].height - mydesign.bias_Vgraph)) spdlog::error("error");
         } else {
           // i is right of j
           double sparserow[2] = {1, -1};
           int colno[2] = {i * 4 + 1, j * 4 + 1};
-          if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].width + mydesign.bias_Hgraph)) std::cerr << "error" << std::endl;
+          if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].width + mydesign.bias_Hgraph)) spdlog::error("error");
         }
       }
     }
@@ -106,13 +105,13 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
       {
         double sparserow[1] = {1};
         int colno[1] = {id * 4 + 1};
-        if (!add_constraintex(lp, 1, sparserow, colno, GE, 0)) std::cerr << "error" << std::endl;
+        if (!add_constraintex(lp, 1, sparserow, colno, GE, 0)) spdlog::error("error");
       }
       // y>=0
       {
         double sparserow[1] = {1};
         int colno[1] = {id * 4 + 2};
-        if (!add_constraintex(lp, 1, sparserow, colno, GE, 0)) std::cerr << "error" << std::endl;
+        if (!add_constraintex(lp, 1, sparserow, colno, GE, 0)) spdlog::error("error");
       }
     }
   }
@@ -504,7 +503,7 @@ double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
 void ILP_solver::WritePlacement(design& mydesign, SeqPair& curr_sp, string outfile) {
   ofstream fout;
   fout.open(outfile.c_str());
-  //cout << "Placer-Info: write placement" << endl;
+  // cout << "Placer-Info: write placement" << endl;
   fout << "# TAMU blocks 1.0" << endl << endl;
   fout << "DIE {" << LL.x << ", " << LL.y << "} {" << UR.x << "," << UR.y << "}" << endl << endl;
   for (int i = 0; i < mydesign.Blocks.size(); ++i) {
@@ -535,7 +534,7 @@ void ILP_solver::WritePlacement(design& mydesign, SeqPair& curr_sp, string outfi
 }
 
 void ILP_solver::PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfile) {
-  //cout << "Placer-Info: create gnuplot file" << endl;
+  // cout << "Placer-Info: create gnuplot file" << endl;
   placerDB::point p, bp;
   ofstream fout;
   vector<placerDB::point> p_pin;
@@ -579,7 +578,7 @@ void ILP_solver::PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfil
   }
 
   // set labels for terminals
-  //cout << "set labels for terminals..." << endl;
+  // cout << "set labels for terminals..." << endl;
   for (auto ni : mydesign.Nets) {
     // for each pin
     for (auto ci : ni.connected) {
@@ -735,7 +734,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign, SeqPair& curr_sp) {
     int sbIdx = mydesign.Terminals.at(i).SBidx;
     int cp = mydesign.Terminals.at(i).counterpart;
     if (netIdx < 0 || netIdx >= mydesign.Nets.size()) {
-      spdlog::error( "Placer-Warning: terminal {0} is dangling; set it on origin" , i );
+      spdlog::error("Placer-Warning: terminal {0} is dangling; set it on origin", i);
       mydesign.Terminals.at(i).center = {0, 0};
       continue;
     }
@@ -801,14 +800,14 @@ void ILP_solver::updateTerminalCenter(design& mydesign, SeqPair& curr_sp) {
           }
           mydesign.Terminals.at(i).center = tp;
         } else {
-          spdlog::error( "Placer-Error: incorrect axis direction");
+          spdlog::error("Placer-Error: incorrect axis direction");
         }
       } else {  // symmetry pair
         if (solved_terminals.find(cp) != solved_terminals.end()) continue;
         solved_terminals.insert(cp);
         int netIdx2 = mydesign.Terminals.at(cp).netIter;
         if (netIdx2 < 0 or netIdx2 >= mydesign.Nets.size()) {
-          spdlog::error( "Placer-Error: terminal {0} is not dangling, but its counterpart {1} is dangling; set them on origin" , i , cp);
+          spdlog::error("Placer-Error: terminal {0} is not dangling, but its counterpart {1} is dangling; set them on origin", i, cp);
           mydesign.Terminals.at(i).center = {0, 0};
           mydesign.Terminals.at(cp).center = {0, 0};
           continue;
@@ -931,7 +930,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign, SeqPair& curr_sp) {
             mydesign.Terminals.at(cp).center = tpL2;
           }
         } else {
-          spdlog::error( "Placer-Error: incorrect axis direction");
+          spdlog::error("Placer-Error: incorrect axis direction");
         }
       }
     } else {  // not in symmetry group
@@ -1206,7 +1205,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign, SeqPair& curr_sp) {
               }
               break;
             default:
-              spdlog::warn( "Placer-Warning: incorrect port position");
+              spdlog::warn("Placer-Warning: incorrect port position");
           }
         }
         if (shot != -1) {
@@ -1352,7 +1351,7 @@ void ILP_solver::UpdateBlockinHierNode(design& mydesign, placerDB::Omark ort, Pn
   }
 }
 
-void ILP_solver::UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& node, PnRDB::Drc_info &drcInfo) {
+void ILP_solver::UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo) {
   for (int i = 0; i < (int)mydesign.GetSizeofTerminals(); i++) {
     node.Terminals.at(i).termContacts.clear();
     node.Terminals.at(i).termContacts.resize(node.Terminals.at(i).termContacts.size() + 1);
@@ -1364,8 +1363,7 @@ void ILP_solver::UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& nod
     temp_pin.type = node.Terminals.at(i).type;
     temp_pin.netIter = node.Terminals.at(i).netIter;
     temp_pin.pinContacts = node.Terminals.at(i).termContacts;
-    for (int j=0;j<temp_pin.pinContacts.size();j++)
-      temp_pin.pinContacts[j].metal = drcInfo.Metal_info[0].name;    
+    for (int j = 0; j < temp_pin.pinContacts.size(); j++) temp_pin.pinContacts[j].metal = drcInfo.Metal_info[0].name;
     temp_pin.name = node.Terminals.at(i).name;
     temp_pin.type = node.Terminals.at(i).type;
     node.blockPins.push_back(temp_pin);
@@ -1397,7 +1395,7 @@ void ILP_solver::UpdateSymmetryNetInfo(design& mydesign, PnRDB::hierNode& node, 
                   mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].second][curr_sp.selected[mydesign.SBlocks[SBidx].sympair[0].second]].height / 4;
     }
   } else {
-    spdlog::error( "Placer-Error: incorrect symmetry axis direction" );
+    spdlog::error("Placer-Error: incorrect symmetry axis direction");
   }
   string net1 = mydesign.SNets.at(i).net1.name;
   string net2 = mydesign.SNets.at(i).net2.name;
