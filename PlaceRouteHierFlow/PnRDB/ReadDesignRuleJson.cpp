@@ -103,7 +103,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
         }
         for(std::map<int, PnRDB::metal_info>::iterator it=metalSet.begin(); it!=metalSet.end(); ++it) {
           DRC_info.Metal_info.push_back(it->second);
-	  cout << "Assign the metalmap[" << it->second.name << "] = " << DRC_info.Metal_info.size()-1 << endl;
+	  //cout << "Assign the metalmap[" << it->second.name << "] = " << DRC_info.Metal_info.size()-1 << endl;
           DRC_info.Metalmap[it->second.name] = DRC_info.Metal_info.size()-1;
         }
         DRC_info.MaxLayer = DRC_info.Metal_info.size()-1;
@@ -193,7 +193,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
 		if(s.is_string()) {
 		  metal_stack_indices[i] = DRC_info.Metalmap[s]; //get via's upper and lower metal name by via's Stack
 		} else {
-		  cout << "Null metal for via " << tmp_via.name << " pos " << i << endl;
+		  //cout << "Null metal for via " << tmp_via.name << " pos " << i << endl;
 		}
 	      }
 
@@ -254,7 +254,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
 	     const string& lm_name = DRC_info.Metal_info.at(temp_viamodel.LowerIdx).name;
 	     const string& um_name = DRC_info.Metal_info.at(temp_viamodel.UpperIdx).name;
 
-	     cout << "Via " << temp_viamodel.name << " ViaIndex " << temp_viamodel.ViaIdx << " LowerIdx " << temp_viamodel.LowerIdx << " (" << lm_name << ") UpperIdx " << temp_viamodel.UpperIdx << " (" << um_name << ")" << endl;
+	     //cout << "Via " << temp_viamodel.name << " ViaIndex " << temp_viamodel.ViaIdx << " LowerIdx " << temp_viamodel.LowerIdx << " (" << lm_name << ") UpperIdx " << temp_viamodel.UpperIdx << " (" << um_name << ")" << endl;
 
              PnRDB::point temp_point;
 	     auto& vi = DRC_info.Via_info[temp_viamodel.ViaIdx];

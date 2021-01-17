@@ -18,7 +18,7 @@ static double parse_and_scale(const std::string& s, double unitScale) {
 }
 
 bool PnRdatabase::ReadLEF(string leffile) {
-  cout << "PnRDB-Info: reading LEF file " << leffile << endl;
+  spdlog::info( "PnRDB-Info: reading LEF file {0}" , leffile);
   ifstream fin;
   string def;
   size_t found;
@@ -45,7 +45,7 @@ bool PnRdatabase::ReadLEF(string leffile) {
       // cout<<def<<endl;
       // [wbxu] This function needs to be updated to support internal metals, currently we're lack of data
       if (stage == 0) {  // idle mode
-        cout << "stage0.def: " << def << std::endl;
+        spdlog::info( "stage0.def: {0}" , def );
         if ((found = def.find("MACRO")) != string::npos) {
           temp = get_true_word(found, def, 0, ';', p);
           macroName = temp[1];

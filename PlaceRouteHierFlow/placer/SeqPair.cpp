@@ -528,7 +528,7 @@ void SeqPair::PrintSeqPair() {
   for(int i=0;i<(int)selected.size();++i) {
     spdlog::debug("{0}",selected.at(i));
   }
-  cout<<endl;
+  //cout<<endl;
 }
 
 int SeqPair::GetBlockSelected(int blockNo) {

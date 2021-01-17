@@ -492,7 +492,7 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
   spdlog::info("Placer-Info: optimal cost = {0}",curr_cost);
   oData[curr_cost]=curr_sp;
   ReshapeSeqPairMap(oData,nodeSize);
-  cout<<endl<<"Placer-Info: optimal cost = "<<curr_cost<<endl;
+  //cout<<endl<<"Placer-Info: optimal cost = "<<curr_cost<<endl;
   //curr_sol.PrintConstGraph();
   curr_sp.PrintSeqPair();
   //curr_sol.updateTerminalCenter(designData, curr_sp);
@@ -511,16 +511,16 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     curr_sp.PerturbationNew(designData);
     trial_count++;
     if (trial_count > 100) {
-      cout << "please check constraint" << endl;
+      spdlog::warn("please check constraint" );
       break;
     }
   }
   oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
   ReshapeSeqPairMap(oData, nodeSize);
-  cout << "Placer-Info: initial cost = " << curr_cost << endl;
+  //cout << "Placer-Info: initial cost = " << curr_cost << endl;
 
-  cout << "Placer-Info: status ";
-  cout.flush();
+  //cout << "Placer-Info: status ";
+  //cout.flush();
   // Aimulate annealing
   double T = T_INT;
   double delta_cost;
@@ -620,12 +620,12 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
           }
         }
         if (Smark) {
-          std::cout << "cost: " << trial_cost << std::endl;
+          //std::cout << "cost: " << trial_cost << std::endl;
           curr_cost = trial_cost;
           curr_sp = trial_sp;
           curr_sol = trial_sol;
           // if(update_index>updateThrd) {
-          std::cout << "Insert\n";
+          //std::cout << "Insert\n";
           oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
           ReshapeSeqPairMap(oData, nodeSize);
           //}
@@ -649,15 +649,15 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     }
     T_index++;
     if (total_update_number * per < T_index) {
-      cout << "....." << per * 100 << "%";
-      cout.flush();
+      spdlog::debug( "..... {0} %" , per * 100);
+      //cout.flush();
       per = per + 0.1;
     }
     T *= ALPHA;
     // cout<<T<<endl;
   }
   // Write out placement results
-  cout << endl << "Placer-Info: optimal cost = " << curr_cost << endl;
+  //cout << endl << "Placer-Info: optimal cost = " << curr_cost << endl;
   // curr_sol.PrintConstGraph();
   curr_sp.PrintSeqPair();
   // curr_sol.updateTerminalCenter(designData, curr_sp);
@@ -684,13 +684,13 @@ void Placer::ReshapeSeqPairMap(std::map<double, std::pair<SeqPair, ILP_solver>>&
 
 void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo){
   int nodeSize=nodeVec.size();
-  cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
+  //cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
   #ifdef RFLAG
   cout<<"Placer-Info: run in random mode..."<<endl;
   srand (time(NULL));
   #endif
   #ifndef RFLAG
-  cout<<"Placer-Info: run in normal mode..."<<endl;
+  //cout<<"Placer-Info: run in normal mode..."<<endl;
   srand(0);
   #endif
   int mode=0;

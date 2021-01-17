@@ -331,6 +331,7 @@ int toplevel( const std::vector<std::string>& argv) {
 
   mkdir(opath.c_str(), 0777);
 
+  spdlog::set_level(spdlog::level::off);
   PnRdatabase DB(fpath, topcell, vfile, lfile, mfile, dfile); // construction of database
   PnRDB::Drc_info drcInfo=DB.getDrc_info();
   map<string, PnRDB::lefMacro> lefData = DB.checkoutSingleLEF();
@@ -361,11 +362,9 @@ int toplevel( const std::vector<std::string>& argv) {
   for (int i = 0; i < Q_size;i++)
   {
     int idx=TraverseOrder[i];
-    cout<<"Main-Info: start to work on node "<<idx<<endl;
-    spdlog::set_level(spdlog::level::off);
+    spdlog::info("Main-Info: start to work on node {0}",idx);
     if(disable_io){
       std::cout.setstate(std::ios_base::failbit);
-      
     }
     PnRDB::hierNode current_node=DB.CheckoutHierNode(idx);
     DB.PrintHierNode(current_node);
@@ -374,14 +373,14 @@ int toplevel( const std::vector<std::string>& argv) {
     DB.AddingPowerPins(current_node);
     Placer_Router_Cap PRC(opath, fpath, current_node, drcInfo, lefData, 1, 6); //dummy, aspect ratio, number of aspect retio
 
-    std::cout<<"Checkpoint : before place"<<std::endl;
+    spdlog::debug("Checkpoint : before place");
     DB.PrintHierNode(current_node);
 
     
     // Placement
     std::vector<PnRDB::hierNode> nodeVec(numLayout, current_node);
     Placer curr_plc(nodeVec, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
-    std::cout<<"Checkpoint: generated "<<nodeVec.size()<<" placements\n";
+    spdlog::debug("Checkpoint: generated {0} palcements",nodeVec.size());
     //insert guard ring
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
       if (nodeVec[lidx].Guardring_Consts.size()>0){
@@ -394,11 +393,11 @@ int toplevel( const std::vector<std::string>& argv) {
 
 
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
-      std::cout<<"Checkpoint: extract power pins work on layout "<<lidx<<std::endl;
+      spdlog::debug("Checkpoint: extract power pins work on layout {0} ",lidx);
       DB.Extract_RemovePowerPins(nodeVec[lidx]);
-      std::cout<<"Checkpoint: checkin node work on layout "<<lidx<<std::endl;
+      spdlog::debug("Checkpoint: checkin node work on layout {0}",lidx);
       DB.CheckinHierNode(idx, nodeVec[lidx]);
-      std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
+      spdlog::debug("Checkpoint: work on layout {0}",lidx);
     }
     DB.hierTree[idx].numPlacement = nodeVec.size();
 
@@ -406,7 +405,7 @@ int toplevel( const std::vector<std::string>& argv) {
     //TreeVec[idx] = nodeVec;
     //Q.pop();
     if(disable_io)std::cout.clear();
-    cout<<"Main-Info: complete node "<<idx<<endl;
+    spdlog::info("Main-Info: complete node {0}",idx);
   }
 
   if(disable_io)std::cout.setstate(std::ios_base::failbit);

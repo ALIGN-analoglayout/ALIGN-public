@@ -7,7 +7,7 @@
 
 bool PnRdatabase::ReadVerilog(const string& fpath, const string& vname, const string& topcell) {
   string verilogfile=fpath+"/"+vname;
-  cout<<"PnRDB-Info: reading Verilog file "<<verilogfile<<endl;
+  spdlog::info("PnRDB-Info: reading Verilog file {0}",verilogfile);
 
   ifstream fin;
   fin.exceptions(ifstream::failbit | ifstream::badbit);

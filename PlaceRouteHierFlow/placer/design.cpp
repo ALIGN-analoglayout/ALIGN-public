@@ -25,7 +25,7 @@ design::design(design& other, int mode) {
     this->bias_Vgraph=other.bias_Vgraph;
     this->bias_Hgraph=other.bias_Hgraph;
     // Add big macros
-    cout<<"Test: add macro"<<endl;
+    //cout<<"Test: add macro"<<endl;
     for(std::vector<std::vector<block> >::iterator oit=other.Blocks.begin(); oit!=other.Blocks.end(); ++oit) {
       spdlog::debug("Block {0}",oit-other.Blocks.begin());
       if(oit->back().bigMacro) { this->Blocks.resize(this->Blocks.size()+1); spdlog::debug("Bigmarco");}
@@ -1305,7 +1305,7 @@ void design::PrintBlocks() {
       for(vector<placerDB::point>::iterator it2=(*it).boundary.polygon.begin(); it2!=(*it).boundary.polygon.end(); ++it2 ) {
         spdlog::debug("{0} {1}",(*it2).x,(*it2).y);
       }
-      cout<<endl;
+      //cout<<endl;
       for(vector<block::pin>::iterator it3=it->blockPins.begin(); it3!=it->blockPins.end(); ++it3) {
         spdlog::debug("Pin {0} net {1} center",it3->name,it3->netIter);
         for(vector<placerDB::point>::iterator it4=it3->center.begin();it4!=it3->center.end();++it4) {
@@ -1727,7 +1727,7 @@ void design::constructSymmGroup() {
       spdlog::debug("self-symmectric: {0} {1}",tmpselfsym.at(i).first,tmpselfsym.at(i).second);
     }
     int sbidx=MergeNewBlockstoSymmetryGroup(tmpsympair, tmpselfsym, SBs, this->SNets, axis_dir);
-    std::cout<<"Placer-Info: symmetry net "<<sni-SNets.begin()<<" sbidx "<<sbidx<<std::endl;
+    //std::cout<<"Placer-Info: symmetry net "<<sni-SNets.begin()<<" sbidx "<<sbidx<<std::endl;
     sni->SBidx=sbidx;
     //vector<pair<int,int> > matchedPair,matchedSelf;
     //matchedPair=checkSympairInSymmBlock(SBs, tmpsympair);

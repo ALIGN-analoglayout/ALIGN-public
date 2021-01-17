@@ -145,18 +145,18 @@ JSONLabelTerminals(PnRDB::hierNode& node, const PnRDB::Drc_info& drc_info, json&
 {
     elmAry = json::array();
   
-    cout<<"Top: "<<node.isTop<<endl;
-    cout<<"#terminals print"<<endl;
-    cout<<"#size: "<<node.Terminals.size()<<endl;
+    //cout<<"Top: "<<node.isTop<<endl;
+    //cout<<"#terminals print"<<endl;
+    //cout<<"#size: "<<node.Terminals.size()<<endl;
     for(unsigned int i=0;i<node.Terminals.size();i++){
-	cout<<"#name: "<<node.Terminals[i].name<<endl; 
-	cout<<"#type: "<<node.Terminals[i].type<<endl; 
-	cout<<"#netIter: "<<node.Terminals[i].netIter<<endl; 
-	cout<<"#termContact size: "<<node.Terminals[i].termContacts.size()<<endl;
+	//cout<<"#name: "<<node.Terminals[i].name<<endl; 
+	//cout<<"#type: "<<node.Terminals[i].type<<endl; 
+	//cout<<"#netIter: "<<node.Terminals[i].netIter<<endl; 
+	//cout<<"#termContact size: "<<node.Terminals[i].termContacts.size()<<endl;
 	for(unsigned int j=0;j<node.Terminals[i].termContacts.size();j++){
-	    cout<<"#contact-metal: "<<node.Terminals[i].termContacts[j].metal<<endl;
-	    cout<<"#contact-placedCenter(x,y): "<<node.Terminals[i].termContacts[j].placedCenter.x<<" "
-		<<node.Terminals[i].termContacts[j].placedCenter.y<<endl;
+	    //cout<<"#contact-metal: "<<node.Terminals[i].termContacts[j].metal<<endl;
+	    //cout<<"#contact-placedCenter(x,y): "<<node.Terminals[i].termContacts[j].placedCenter.x<<" "
+		//<<node.Terminals[i].termContacts[j].placedCenter.y<<endl;
 	}
     }
     int test_font=1,test_vp=1,test_hp=1;
@@ -170,12 +170,12 @@ JSONLabelTerminals(PnRDB::hierNode& node, const PnRDB::Drc_info& drc_info, json&
 	    for (unsigned int j = 0; j < node.Terminals[i].termContacts.size(); j++) {
 		PnRDB::contact con = node.Terminals[i].termContacts[j];
            
-		cout<<"#test metal string: \""<<con.metal<<"\""<<endl;
+		//cout<<"#test metal string: \""<<con.metal<<"\""<<endl;
 		if (! con.metal.empty()) {
 		    if (write == 0) {
 		      center_x[0] = unit * con.placedCenter.x;
 		      center_y[0] = unit * con.placedCenter.y;
-                      spdlog::info("Terminal name {0} center {1} {2}",node.Terminals[i].name,center_x[0],center_y[0]);
+              spdlog::info("Terminal name {0} center {1} {2}",node.Terminals[i].name,center_x[0],center_y[0]);
 		      json elm;
 		      elm["type"] = "text";
 		      elm["layer"] = metal2int( drc_info, con.metal);
@@ -429,7 +429,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 	    uniGDSset.insert(node.GuardRings[i].gdsFile);
     
 
-	cout<<"start wrting sub-blocks"<<endl;
+	//cout<<"start wrting sub-blocks"<<endl;
 	for (std::set<string>::iterator it=uniGDSset.begin();it!=uniGDSset.end();++it) {
 	    json j;
 	    JSONReaderWrite_subcells (*it, rndnum, strBlocks, llx,lly,urx,ury, j);

@@ -166,10 +166,10 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
 
 
 	if ( preplace_const.blockid1 == -1) {
-	  cout << "-E- ReadConstraint: Preplace: couldn't find block1:" << block_first << endl;
+	  spdlog::error("-E- ReadConstraint: Preplace: couldn't find block1: {0}" , block_first);
 	}
 	if ( preplace_const.blockid2 == -1) {
-	  cout << "-E- ReadConstraint: Preplace: couldn't find block2:" << block_second << endl;
+	  spdlog::error("-E- ReadConstraint: Preplace: couldn't find block2: {0}" , block_second);
 	}
 
 	if ( preplace_const.blockid1 != -1 && preplace_const.blockid2!= -1) {
@@ -204,10 +204,10 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         alignment_const.horizon = horizon;
 
 	if ( alignment_const.blockid1 == -1) {
-	  cout << "-E- ReadConstraint: Alignment: couldn't find block1:" << block_first << endl;
+	  spdlog::error("-E- ReadConstraint: Alignment: couldn't find block1: {0}", block_first );
 	}
 	if ( alignment_const.blockid2 == -1) {
-	  cout << "-E- ReadConstraint: Alignment: couldn't find block2:" << block_second << endl;
+	  spdlog::error("-E- ReadConstraint: Alignment: couldn't find block2: {0}" ,block_second);
 	}
 
 	if ( alignment_const.blockid1 != -1 && alignment_const.blockid2!= -1) {
@@ -241,10 +241,10 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         abument_const.horizon = horizon;
 
 	if ( abument_const.blockid1 == -1) {
-	  cout << "-E- ReadConstraint: Abument: couldn't find block1:" << block_first << endl;
+	  spdlog::error( "-E- ReadConstraint: Abument: couldn't find block1: {0}", block_first);
 	}
 	if ( abument_const.blockid2 == -1) {
-	  cout << "-E- ReadConstraint: Abument: couldn't find block2:" << block_second << endl;
+	  spdlog::error( "-E- ReadConstraint: Abument: couldn't find block2: {0}" , block_second);
 	}
 
 	if ( abument_const.blockid1 != -1 && abument_const.blockid2!= -1) {
@@ -274,10 +274,10 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         }
 
 	if ( match_const.blockid1 == -1) {
-	  cout << "-E- ReadConstraint: MatchBlock: couldn't find block1:" << block_first << endl;
+	  spdlog::error( "-E- ReadConstraint: MatchBlock: couldn't find block1: {0} " , block_first );
 	}
 	if ( match_const.blockid2 == -1) {
-	  cout << "-E- ReadConstraint: MatchBlock: couldn't find block2:" << block_second << endl;
+	  spdlog::error( "-E- ReadConstraint: MatchBlock: couldn't find block2: {0} " , block_second);
 	}
 
         //match_const.distance = distance;

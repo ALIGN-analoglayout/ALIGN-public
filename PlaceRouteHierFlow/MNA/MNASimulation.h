@@ -21,6 +21,7 @@
 #include "slu_ddefs.h"
 #include "../PnRDB/datatype.h"
 #include "../router/Rdatatype.h"
+#include "spdlog/spdlog.h"
 
 
 typedef boost::numeric::ublas::matrix<double> boost_matrix;

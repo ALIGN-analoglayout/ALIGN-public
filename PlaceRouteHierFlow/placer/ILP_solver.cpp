@@ -492,7 +492,7 @@ double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
 void ILP_solver::WritePlacement(design& mydesign, SeqPair& curr_sp, string outfile) {
   ofstream fout;
   fout.open(outfile.c_str());
-  cout << "Placer-Info: write placement" << endl;
+  //cout << "Placer-Info: write placement" << endl;
   fout << "# TAMU blocks 1.0" << endl << endl;
   fout << "DIE {" << LL.x << ", " << LL.y << "} {" << UR.x << "," << UR.y << "}" << endl << endl;
   for (int i = 0; i < mydesign.Blocks.size(); ++i) {
@@ -523,7 +523,7 @@ void ILP_solver::WritePlacement(design& mydesign, SeqPair& curr_sp, string outfi
 }
 
 void ILP_solver::PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfile) {
-  cout << "Placer-Info: create gnuplot file" << endl;
+  //cout << "Placer-Info: create gnuplot file" << endl;
   placerDB::point p, bp;
   ofstream fout;
   vector<placerDB::point> p_pin;
@@ -567,7 +567,7 @@ void ILP_solver::PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfil
   }
 
   // set labels for terminals
-  cout << "set labels for terminals..." << endl;
+  //cout << "set labels for terminals..." << endl;
   for (auto ni : mydesign.Nets) {
     // for each pin
     for (auto ci : ni.connected) {
@@ -723,7 +723,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign, SeqPair& curr_sp) {
     int sbIdx = mydesign.Terminals.at(i).SBidx;
     int cp = mydesign.Terminals.at(i).counterpart;
     if (netIdx < 0 || netIdx >= mydesign.Nets.size()) {
-      std::cout << "Placer-Warning: terminal " << i << " is dangling; set it on origin\n";
+      spdlog::error( "Placer-Warning: terminal {0} is dangling; set it on origin" , i );
       mydesign.Terminals.at(i).center = {0, 0};
       continue;
     }
@@ -789,14 +789,14 @@ void ILP_solver::updateTerminalCenter(design& mydesign, SeqPair& curr_sp) {
           }
           mydesign.Terminals.at(i).center = tp;
         } else {
-          std::cout << "Placer-Error: incorrect axis direction\n";
+          spdlog::error( "Placer-Error: incorrect axis direction");
         }
       } else {  // symmetry pair
         if (solved_terminals.find(cp) != solved_terminals.end()) continue;
         solved_terminals.insert(cp);
         int netIdx2 = mydesign.Terminals.at(cp).netIter;
         if (netIdx2 < 0 or netIdx2 >= mydesign.Nets.size()) {
-          std::cout << "Placer-Error: terminal " << i << " is not dangling, but its counterpart " << cp << " is dangling; set them on origin\n";
+          spdlog::error( "Placer-Error: terminal {0} is not dangling, but its counterpart {1} is dangling; set them on origin" , i , cp);
           mydesign.Terminals.at(i).center = {0, 0};
           mydesign.Terminals.at(cp).center = {0, 0};
           continue;
@@ -919,7 +919,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign, SeqPair& curr_sp) {
             mydesign.Terminals.at(cp).center = tpL2;
           }
         } else {
-          std::cout << "Placer-Error: incorrect axis direction\n";
+          spdlog::error( "Placer-Error: incorrect axis direction");
         }
       }
     } else {  // not in symmetry group
@@ -1194,7 +1194,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign, SeqPair& curr_sp) {
               }
               break;
             default:
-              std::cout << "Placer-Warning: incorrect port position\n";
+              spdlog::warn( "Placer-Warning: incorrect port position");
           }
         }
         if (shot != -1) {
@@ -1385,7 +1385,7 @@ void ILP_solver::UpdateSymmetryNetInfo(design& mydesign, PnRDB::hierNode& node, 
                   mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].second][curr_sp.selected[mydesign.SBlocks[SBidx].sympair[0].second]].height / 4;
     }
   } else {
-    std::cout << "Placer-Error: incorrect symmetry axis direction" << std::endl;
+    spdlog::error( "Placer-Error: incorrect symmetry axis direction" );
   }
   string net1 = mydesign.SNets.at(i).net1.name;
   string net2 = mydesign.SNets.at(i).net2.name;

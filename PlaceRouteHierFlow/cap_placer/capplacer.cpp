@@ -1811,8 +1811,8 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
                                  //std::cout<<"second_name_index "<<second_name_index<<" pin name" <<b.blockPins[pin_index_p].name<<std::endl;
                                  if(first_name_index==second_name_index){
                                    pins.second = b.blockPins[pin_index_p].name;
-                                   std::cout<<pins.first<<" "<<pins.second<<std::endl;
-                                   std::cout<<"first_name_index "<<first_name_index<<" second_name_index "<<second_name_index<<" found"<<std::endl;
+                                   //std::cout<<pins.first<<" "<<pins.second<<std::endl;
+                                   //std::cout<<"first_name_index "<<first_name_index<<" second_name_index "<<second_name_index<<" found"<<std::endl;
                                    //assert(0);
                                    pin_names.push_back(pins);
                                    break;
@@ -1831,7 +1831,7 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
                     spdlog::debug("CC debug flag 4");
                     */
 
-		    std::cout<<"core dump 2"<<std::endl;
+		    //std::cout<<"core dump 2"<<std::endl;
 		    bool cap_ratio = current_node.CC_Caps[j].cap_ratio;
                     spdlog::debug("CC debug flag 5");
 		    vector<int> cap_r;
@@ -1864,8 +1864,8 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 		    //increase other aspect ratio
                     spdlog::debug("CC debug flag 7");
 
-		    std::cout<<"New CC 4 "<<j<<std::endl;
-		    std::cout<<"cap_r size "<<cap_r.size()<<std::endl;
+		    //std::cout<<"New CC 4 "<<j<<std::endl;
+		    //std::cout<<"cap_r size "<<cap_r.size()<<std::endl;
                     bool insert_dummy_connection = 0;
 		    for(unsigned int q=0;q<cap_r.size();q++){
                         spdlog::debug("CC debug flag 8");
