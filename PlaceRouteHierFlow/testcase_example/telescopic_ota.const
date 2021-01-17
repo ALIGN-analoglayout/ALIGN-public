@@ -11,7 +11,7 @@
 MatchBlock ( m5_m4 , m3_m0 )
 MatchBlock ( m3_m0 , m9_m8 )
 MatchBlock ( m9_m8 , m6_m7 )
-MatchBlock ( m6_m7, m2_m1 )
+MatchBlock ( m6_m7 , m2_m1 )
 SymmBlock ( {m2_m1} , {m6_m7} , {H} )
 SymmBlock ( {m9_m8} , {m3_m0} , {m5_m4} , {V} )
 R_Const ( {net10} , {m3_m0/S,m5_m4/DB,10} )

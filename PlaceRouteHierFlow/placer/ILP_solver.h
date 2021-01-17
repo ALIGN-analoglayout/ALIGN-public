@@ -22,6 +22,7 @@
 #include "SeqPair.h"
 #include "design.h"
 #include "lp_lib.h"
+#include "spdlog/spdlog.h"
 
 using std::cerr;
 using std::cin;
