@@ -322,12 +322,12 @@ int toplevel( const std::vector<std::string>& argv) {
 
   // Following codes try to get the path of binary codes
   string binary_directory = argv[0];
-  cout <<"argv[0]: "<<binary_directory <<endl;
+  spdlog::info("argv[0]: {0}",binary_directory);
   int beginIdx = binary_directory.rfind('/');//find the last slash
   string str_lastOne = binary_directory.substr(beginIdx+1);
-  cout <<"string after last slash: "<<str_lastOne <<endl;
+  spdlog::info("string after last slash: {0}",str_lastOne);
   binary_directory = binary_directory.erase(beginIdx+1);
-  cout <<"binary_directory: "<< binary_directory <<endl;
+  spdlog::info("binary_directory: {0}", binary_directory);
 
   mkdir(opath.c_str(), 0777);
 
