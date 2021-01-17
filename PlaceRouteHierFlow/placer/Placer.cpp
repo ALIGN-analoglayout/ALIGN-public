@@ -1,4 +1,5 @@
 #include "Placer.h"
+#include "spdlog/spdlog.h"
 #define NUM_THREADS 8
 
 Placer::Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo) {
@@ -94,13 +95,13 @@ void Placer::ThreadFunc(Thread_data* MT) {
 };
 
 void Placer::PlacementRegular(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo) {
-  cout<<"Placer-Info: place "<<node.name<<endl;
+  spdlog::info("Placer-Info: place {0}",node.name);
   #ifdef RFLAG
-  cout<<"Placer-Info: run in random mode..."<<endl;
+  spdlog::info("Placer-Info: run in random mode...");  
   srand (time(NULL));
   #endif
   #ifndef RFLAG
-  cout<<"Placer-Info: run in normal mode..."<<endl;
+  spdlog::info("Placer-Info: run in normal mode..."); 
   srand(0);
   #endif
   int mode=0;
@@ -120,13 +121,13 @@ void Placer::PlacementRegular(PnRDB::hierNode& node, string opath, int effort, P
 
 
 void Placer::PlacementMixSA(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo) {
-  cout<<"Placer-Info: place "<<node.name<<endl;
+  spdlog::info("Placer-Info: place {0}",node.name);
   #ifdef RFLAG
-  cout<<"Placer-Info: run in random mode..."<<endl;
+  spdlog::info("Placer-Info: run in random mode...");
   srand (time(NULL));
   #endif
   #ifndef RFLAG
-  cout<<"Placer-Info: run in normal mode..."<<endl;
+  spdlog::info("Placer-Info: run in normal mode...");
   srand(0);
   #endif
   int mode=0;
@@ -164,17 +165,17 @@ void Placer::PlacementMixSA(PnRDB::hierNode& node, string opath, int effort, PnR
 }
 
 void Placer::PlacementMixAP(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo) {
-  cout<<"Placer-Info: place "<<node.name<<endl;
+  spdlog::info("Placer-Info: place {0}",node.name);
   #ifdef RFLAG
-  cout<<"Placer-Info: run in random mode..."<<endl;
+  spdlog::debug("Placer-Info: run in random mode...");
   srand (time(NULL));
   #endif
   #ifndef RFLAG
-  cout<<"Placer-Info: run in normal mode..."<<endl;
+  spdlog::debug("Placer-Info: run in normal mode...");
   srand(0);
   #endif
   //int mode=1;
-  std::cout<<"Placer-Info: start mixed-size placement - phase I SA\n";
+  spdlog::debug("Placer-Info: start mixed-size placement - phase I SA");
   // Read design netlist and constraints
   //design designData(bfile.c_str(), nfile.c_str(), cfile.c_str());
   design designData_full(node);
@@ -193,27 +194,26 @@ void Placer::PlacementMixAP(PnRDB::hierNode& node, string opath, int effort, PnR
   curr_sol.WritePlacement(designData, curr_sp, opath+node.name+"_reduced.pl");
   curr_sol.PlotPlacement(designData, curr_sp, opath+node.name+"_reduced.plt");
   curr_sol.UpdateDesignHierNode4AP(designData_full, designData, curr_sp, node);
-
-  std::cout<<"Placer-Info: complete mixed-size placement - phase I SA\n";
-  std::cout<<"Placer-Info: start mixed-size placement - phase II AP\n";
+  spdlog::debug("Placer-Info: complete mixed-size placement - phase I SA");
+  spdlog::debug("Placer-Info: start mixed-size placement - phase II AP");
   //if(node.isTop) {return;}
   Aplace AP(node, designData_full, opath);
   ConstGraph new_sol(designData_full, AP, 0, 1);
-  std::cout<<"Initial CG after AP"<<std::endl;
+  spdlog::debug("Initial CG after AP");
   new_sol.PrintConstGraph();
   if(new_sol.ConstraintGraphAP(designData_full, AP)) {
-    std::cout<<"Placer-Info: sucessfully construct constraint graph"<<std::endl;
+    spdlog::debug("Placer-Info: sucessfully construct constraint graph");
   } else {
-    std::cout<<"Placer-Error: fail to construct constraint graph"<<std::endl;
+    spdlog::debug("Placer-Error: fail to construct constraint graph");
   }
   if(!new_sol.FastInitialScan()) {
-    std::cout<<"Placer-Info: no violation in constraint graph"<<std::endl;
+    spdlog::debug("Placer-Info: no violation in constraint graph");
   } else {
-    std::cout<<"Placer-Error: violation found in constraint graph"<<std::endl;
+    spdlog::debug("Placer-Error: violation found in constraint graph");
   }
-  std::cout<<"Updated CG after constraint"<<std::endl;
-  new_sol.PrintConstGraph();
-  std::cout<<"Placer-Info: complete mixed-size placement - phase II AP\n";
+  spdlog::debug("Updated CG after constraint");
+  new_sol.PrintConstGraph(); 
+  spdlog::debug("Placer-Info: complete mixed-size placement - phase II AP");
 
   new_sol.updateTerminalCenterAP(designData_full, AP);
   new_sol.WritePlacementAP(designData_full, AP, opath+node.name+".pl");
@@ -247,9 +247,8 @@ void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& cur
   GenerateValidSolution(designData, curr_sp, curr_sol, mode);
   //curr_sol.PrintConstGraph();
   double curr_cost=curr_sol.CalculateCost(designData, curr_sp);
-  cout<<"Placer-Info: initial cost = "<<curr_cost<<endl;
-
-  cout<<"Placer-Info: status ";cout.flush();
+  spdlog::debug("Placer-Info: initial cost = {0}",curr_cost);
+  spdlog::debug("Placer-Info: status ");
   // Aimulate annealing
   double T=T_INT;
   double delta_cost;
@@ -349,14 +348,14 @@ void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& cur
     }
     T_index ++;
     if(total_update_number*per<T_index){
-      cout<<"....."<<per*100<<"%"; cout.flush();
+      spdlog::debug(".....{0}",per*100);
       per=per+0.1;
     }
     T*=ALPHA;
     //cout<<T<<endl;
   }
   // Write out placement results
-  cout<<endl<<"Placer-Info: optimal cost = "<<curr_cost<<endl;
+  spdlog::debug("Placer-Info: optimal cost = {0}",curr_cost);
   //curr_sol.PrintConstGraph();
   curr_sp.PrintSeqPair();
   curr_sol.updateTerminalCenter(designData, curr_sp);
@@ -370,9 +369,8 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
   GenerateValidSolution(designData, curr_sp, curr_sol, mode);
   //curr_sol.PrintConstGraph();
   double curr_cost=curr_sol.CalculateCost(designData, curr_sp);
-  cout<<"Placer-Info: initial cost = "<<curr_cost<<endl;
-
-  cout<<"Placer-Info: status ";cout.flush();
+  spdlog::debug("Placer-Info: initial cost = ",curr_cost);
+  spdlog::debug("Placer-Info: status ");
   // Aimulate annealing
   double T=T_INT;
   double delta_cost;
@@ -426,7 +424,7 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
           if( r < exp( (-1.0 * delta_cost)/T ) ) {Smark=true;}
         }
         if(Smark) {
-          std::cout<<"cost: "<<trial_cost<<std::endl;
+          spdlog::debug("cost: {0}",trial_cost);
           curr_cost=trial_cost;
           curr_sp=td[good_idx].thread_trial_sp;
           curr_sol=td[good_idx].thread_trial_sol;
@@ -458,12 +456,11 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
           if( r < exp( (-1.0 * delta_cost)/T ) ) {Smark=true;}
         }
         if(Smark) {
-          std::cout<<"cost: "<<trial_cost<<std::endl;
+          spdlog::debug("cost: {0}",trial_cost);
           curr_cost=trial_cost;
           curr_sp=trial_sp;
           curr_sol=trial_sol;
           if(update_index>updateThrd) {
-            std::cout<<"Insert\n";
             oData[curr_cost]=curr_sp;
             ReshapeSeqPairMap(oData, nodeSize);
           }
@@ -479,23 +476,23 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
       if(update_index==updateThrd){
         curr_sol.Update_parameters(designData, curr_sp);
         curr_cost = curr_sol.CalculateCost(designData, curr_sp);
-        std::cout<<"updated cost: "<<curr_cost<<std::endl;
         oData[curr_cost]=curr_sp;
         ReshapeSeqPairMap(oData, nodeSize);
       }
     }
     T_index ++;
     if(total_update_number*per<T_index){
-      cout<<"....."<<per*100<<"%"; cout.flush();
+      spdlog::info("...{0}%",per*100);
       per=per+0.1;
     }
     T*=ALPHA;
     //cout<<T<<endl;
   }
   // Write out placement results
+  spdlog::info("Placer-Info: optimal cost = {0}",curr_cost);
   oData[curr_cost]=curr_sp;
   ReshapeSeqPairMap(oData,nodeSize);
-  cout<<endl<<"Placer-Info: optimal cost = "<<curr_cost<<endl;
+  //cout<<endl<<"Placer-Info: optimal cost = "<<curr_cost<<endl;
   //curr_sol.PrintConstGraph();
   curr_sp.PrintSeqPair();
   //curr_sol.updateTerminalCenter(designData, curr_sp);
@@ -514,16 +511,16 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     curr_sp.PerturbationNew(designData);
     trial_count++;
     if (trial_count > 100) {
-      cout << "please check constraint" << endl;
+      spdlog::warn("please check constraint" );
       break;
     }
   }
   oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
   ReshapeSeqPairMap(oData, nodeSize);
-  cout << "Placer-Info: initial cost = " << curr_cost << endl;
+  //cout << "Placer-Info: initial cost = " << curr_cost << endl;
 
-  cout << "Placer-Info: status ";
-  cout.flush();
+  //cout << "Placer-Info: status ";
+  //cout.flush();
   // Aimulate annealing
   double T = T_INT;
   double delta_cost;
@@ -623,12 +620,12 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
           }
         }
         if (Smark) {
-          std::cout << "cost: " << trial_cost << std::endl;
+          //std::cout << "cost: " << trial_cost << std::endl;
           curr_cost = trial_cost;
           curr_sp = trial_sp;
           curr_sol = trial_sol;
           // if(update_index>updateThrd) {
-          std::cout << "Insert\n";
+          //std::cout << "Insert\n";
           oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
           ReshapeSeqPairMap(oData, nodeSize);
           //}
@@ -652,15 +649,15 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     }
     T_index++;
     if (total_update_number * per < T_index) {
-      cout << "....." << per * 100 << "%";
-      cout.flush();
+      spdlog::debug( "..... {0} %" , per * 100);
+      //cout.flush();
       per = per + 0.1;
     }
     T *= ALPHA;
     // cout<<T<<endl;
   }
   // Write out placement results
-  cout << endl << "Placer-Info: optimal cost = " << curr_cost << endl;
+  //cout << endl << "Placer-Info: optimal cost = " << curr_cost << endl;
   // curr_sol.PrintConstGraph();
   curr_sp.PrintSeqPair();
   // curr_sol.updateTerminalCenter(designData, curr_sp);
@@ -687,13 +684,13 @@ void Placer::ReshapeSeqPairMap(std::map<double, std::pair<SeqPair, ILP_solver>>&
 
 void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo){
   int nodeSize=nodeVec.size();
-  cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
+  //cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
   #ifdef RFLAG
   cout<<"Placer-Info: run in random mode..."<<endl;
   srand (time(NULL));
   #endif
   #ifndef RFLAG
-  cout<<"Placer-Info: run in normal mode..."<<endl;
+  //cout<<"Placer-Info: run in normal mode..."<<endl;
   srand(0);
   #endif
   int mode=0;
@@ -731,13 +728,13 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
 
 void Placer::PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
   int nodeSize=nodeVec.size();
-  cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
+  spdlog::debug("Placer-Info: place {0} in aspect ratio mode",nodeVec.back().name);
   #ifdef RFLAG
-  cout<<"Placer-Info: run in random mode..."<<endl;
+  spdlog::debug("Placer-Info: run in random mode...");
   srand (time(NULL));
   #endif
   #ifndef RFLAG
-  cout<<"Placer-Info: run in normal mode..."<<endl;
+  spdlog::debug("Placer-Info: run in normal mode...");
   srand(0);
   #endif
   int mode=0;
@@ -774,14 +771,14 @@ void Placer::PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, 
 
 void Placer::PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
   int nodeSize=nodeVec.size();
-  cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
-  cout<<"Placer-Info: initial size "<<nodeSize<<std::endl;
+  spdlog::debug("Placer-Info: place {0} in aspect ratio mode",nodeVec.back().name);
+  spdlog::debug("Placer-Info: initial size {0}",nodeSize);
   #ifdef RFLAG
-  cout<<"Placer-Info: run in random mode..."<<endl;
+  spdlog::debug("Placer-Info: run in random mode...");
   srand (time(NULL));
   #endif
   #ifndef RFLAG
-  cout<<"Placer-Info: run in normal mode..."<<endl;
+  spdlog::debug("Placer-Info: run in normal mode...");
   srand(0);
   #endif
   int bias_mode=0;
@@ -792,7 +789,6 @@ void Placer::PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
 
   // Reduced design
   design designData(designData_full, 1);
-  std::cout<<"wbxu-map after reduction\n";
   designData_full.PrintDesign();
   designData.PrintDesign();
 
@@ -809,16 +805,16 @@ void Placer::PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
     nodeSize=spVec.size();
     nodeVec.resize(nodeSize);
   }
-  std::cout<<"Placer-Info: after 1st SA size "<<spVec.size()<<std::endl;
+  spdlog::debug("Placer-Info: after 1st SA size {0}",spVec.size());
   int idx=0;
   for(std::map<double, SeqPair>::iterator it=spVec.begin(); it!=spVec.end() and idx<nodeSize; ++it, ++idx) {
-    std::cout<<"Placer-Info: second round SA "<<idx<<std::endl;
+    spdlog::debug("Placer-Info: second round SA {0}",idx);
     // Full design
     designData_full.PrintDesign();
     designData.PrintDesign();
     it->second.PrintSeqPair();
     SeqPair curr_sp_full( designData_full, designData, it->second  );
-    std::cout<<"Placer-Info: second round SA after sp"<<idx<<std::endl;
+    spdlog::debug("Placer-Info: second round SA after sp {0}",idx);
     //curr_sp_full.PrintSeqPair();
 
     ConstGraph curr_sol_full;
@@ -833,17 +829,17 @@ void Placer::PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
 
 void Placer::PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
   int nodeSize=nodeVec.size();
-  cout<<"Placer-Info: place "<<nodeVec.back().name<<endl;
+  spdlog::info("Placer-Info: place {0}",nodeVec.back().name);
   #ifdef RFLAG
-  cout<<"Placer-Info: run in random mode..."<<endl;
+  spdlog::info("Placer-Info: run in random mode...");
   srand (time(NULL));
   #endif
   #ifndef RFLAG
-  cout<<"Placer-Info: run in normal mode..."<<endl;
+  spdlog::info("Placer-Info: run in normal mode...");
   srand(0);
   #endif
   int bias_mode=1;
-  std::cout<<"Placer-Info: start mixed-size placement - phase I SA\n";
+  spdlog::debug("Placer-Info: start mixed-size placement - phase I SA");
   // Read design netlist and constraints
   //design designData(bfile.c_str(), nfile.c_str(), cfile.c_str());
   design designData_full(nodeVec.back());
@@ -866,8 +862,8 @@ void Placer::PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
     nodeVec.resize(nodeSize);
   }
   //PlacementCore(designData, curr_sp, curr_sol, 1);
-  std::cout<<"Placer-Info: complete mixed-size placement - phase I SA\n";
-  std::cout<<"Placer-Info: start mixed-size placement - phase II AP\n";
+  spdlog::debug("Placer-Info: complete mixed-size placement - phase I SA");
+  spdlog::debug("Placer-Info: start mixed-size placement - phase II AP");
   int idx=0;
   for(std::map<double, SeqPair>::iterator it=spVec.begin(); it!=spVec.end() and idx<nodeSize; ++it, ++idx) {
     ConstGraph vec_sol(designData, it->second, bias_mode);
@@ -881,21 +877,21 @@ void Placer::PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
 
     Aplace AP(nodeVec.at(idx), designData_full, opath);
     ConstGraph new_sol(designData_full, AP, 0, 1);
-    std::cout<<"Initial CG after AP"<<std::endl;
+    spdlog::debug("Initial CG after AP");
     new_sol.PrintConstGraph();
     if(new_sol.ConstraintGraphAP(designData_full, AP)) {
-      std::cout<<"Placer-Info: sucessfully construct constraint graph"<<std::endl;
+      spdlog::debug("Placer-Info: sucessfully construct constraint graph");
     } else {
-      std::cout<<"Placer-Error: fail to construct constraint graph"<<std::endl;
+      spdlog::debug("Placer-Error: fail to construct constraint graph");
     }
     if(!new_sol.FastInitialScan()) {
-      std::cout<<"Placer-Info: no violation in constraint graph"<<std::endl;
+      spdlog::debug("Placer-Info: no violation in constraint graph");
     } else {
-      std::cout<<"Placer-Error: violation found in constraint graph"<<std::endl;
+      spdlog::debug("Placer-Error: violation found in constraint graph");
     }
-    std::cout<<"Updated CG after constraint"<<std::endl;
+    spdlog::debug("Updated CG after constraint");
     new_sol.PrintConstGraph();
-    std::cout<<"Placer-Info: complete mixed-size placement - phase II AP\n";
+    spdlog::debug("Placer-Info: complete mixed-size placement - phase II AP");
 
     new_sol.updateTerminalCenterAP(designData_full, AP);
     new_sol.WritePlacementAP(designData_full, AP, opath+nodeVec.back().name+"_"+std::to_string(idx)+".pl");

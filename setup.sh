@@ -10,6 +10,7 @@ export LP_DIR=$ALIGN_HOME/lpsolve
 #export BOOST_LP=$ALIGN_HOME/boost
 export JSON=$ALIGN_HOME/json
 export GTEST_DIR=$ALIGN_HOME/googletest/googletest/
+export SPDLOG_DIR=$ALIGN_HOME/spdlog
 export SuperLu_DIR=$ALIGN_HOME/superlu
 export VENV=$ALIGN_HOME/general
 

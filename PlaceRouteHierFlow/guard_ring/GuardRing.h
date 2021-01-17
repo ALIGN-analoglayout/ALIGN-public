@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include "Gdatatype.h"
 #include "../PnRDB/datatype.h"
+#include "spdlog/spdlog.h"
 
 class GuardRing {
 

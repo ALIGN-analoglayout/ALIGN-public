@@ -10,7 +10,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
   vector<string> temp, tempsec;
   size_t found;
   string cfile=fpath+"/"+node.name+"."+suffix;
-  std::cout<<"start to read const file "<<cfile<<std::endl;
+  spdlog::info("start to read const file {0}",cfile);
   // constraint format issues(comma): Alignment, Preplace, MatchBlock, Abutment
   fin.exceptions(ifstream::failbit | ifstream::badbit);
   try {
@@ -166,10 +166,10 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
 
 
 	if ( preplace_const.blockid1 == -1) {
-	  cout << "-E- ReadConstraint: Preplace: couldn't find block1:" << block_first << endl;
+	  spdlog::error("-E- ReadConstraint: Preplace: couldn't find block1: {0}" , block_first);
 	}
 	if ( preplace_const.blockid2 == -1) {
-	  cout << "-E- ReadConstraint: Preplace: couldn't find block2:" << block_second << endl;
+	  spdlog::error("-E- ReadConstraint: Preplace: couldn't find block2: {0}" , block_second);
 	}
 
 	if ( preplace_const.blockid1 != -1 && preplace_const.blockid2!= -1) {
@@ -204,10 +204,10 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         alignment_const.horizon = horizon;
 
 	if ( alignment_const.blockid1 == -1) {
-	  cout << "-E- ReadConstraint: Alignment: couldn't find block1:" << block_first << endl;
+	  spdlog::error("-E- ReadConstraint: Alignment: couldn't find block1: {0}", block_first );
 	}
 	if ( alignment_const.blockid2 == -1) {
-	  cout << "-E- ReadConstraint: Alignment: couldn't find block2:" << block_second << endl;
+	  spdlog::error("-E- ReadConstraint: Alignment: couldn't find block2: {0}" ,block_second);
 	}
 
 	if ( alignment_const.blockid1 != -1 && alignment_const.blockid2!= -1) {
@@ -241,10 +241,10 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         abument_const.horizon = horizon;
 
 	if ( abument_const.blockid1 == -1) {
-	  cout << "-E- ReadConstraint: Abument: couldn't find block1:" << block_first << endl;
+	  spdlog::error( "-E- ReadConstraint: Abument: couldn't find block1: {0}", block_first);
 	}
 	if ( abument_const.blockid2 == -1) {
-	  cout << "-E- ReadConstraint: Abument: couldn't find block2:" << block_second << endl;
+	  spdlog::error( "-E- ReadConstraint: Abument: couldn't find block2: {0}" , block_second);
 	}
 
 	if ( abument_const.blockid1 != -1 && abument_const.blockid2!= -1) {
@@ -274,10 +274,10 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         }
 
 	if ( match_const.blockid1 == -1) {
-	  cout << "-E- ReadConstraint: MatchBlock: couldn't find block1:" << block_first << endl;
+	  spdlog::error( "-E- ReadConstraint: MatchBlock: couldn't find block1: {0} " , block_first );
 	}
 	if ( match_const.blockid2 == -1) {
-	  cout << "-E- ReadConstraint: MatchBlock: couldn't find block2:" << block_second << endl;
+	  spdlog::error( "-E- ReadConstraint: MatchBlock: couldn't find block2: {0} " , block_second);
 	}
 
         //match_const.distance = distance;
@@ -512,7 +512,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
             break;
           }
         }
-        std::cout<<"PortLocation "<<tmp_portpos.tid<<" @ "<<tmp_portpos.pos<<std::endl;
+        //std::cout<<"PortLocation "<<tmp_portpos.tid<<" @ "<<tmp_portpos.pos<<std::endl;
         node.Port_Location.push_back(tmp_portpos);
       } else if (temp[0].compare("R_Const")==0){
         PnRDB::R_const temp_r_const;
@@ -528,9 +528,9 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
            word=word.substr(0, word.length()-1);
            //cout<<word<<endl;
            tempsec=StringSplitbyChar(word, ',');
-           std::cout<<"Test R "<<std::endl;
-           for(unsigned int j=0;j<tempsec.size();j++){std::cout<<tempsec[j]<<std::endl;}
-           std::cout<<"End Test R "<<std::endl;
+           //std::cout<<"Test R "<<std::endl;
+           //for(unsigned int j=0;j<tempsec.size();j++){std::cout<<tempsec[j]<<std::endl;}
+           //std::cout<<"End Test R "<<std::endl;
            std::pair<int,int> temp_start_pin;
            std::pair<int,int> temp_end_pin;
            vector<string> pins;
@@ -544,7 +544,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
                          temp_start_pin.first = j;
                          temp_start_pin.second = k;
                          temp_r_const.start_pin.push_back(temp_start_pin);
-                         std::cout<<"Test R start pin "<<temp_start_pin.first<<" "<<temp_start_pin.second<<std::endl;
+                         //std::cout<<"Test R start pin "<<temp_start_pin.first<<" "<<temp_start_pin.second<<std::endl;
                          break; 
                        }
                     }
@@ -556,7 +556,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
                     temp_start_pin.first = -1;
                     temp_start_pin.second = j;
                     temp_r_const.start_pin.push_back(temp_start_pin);
-                    std::cout<<"Test R start pin "<<temp_start_pin.first<<" "<<temp_start_pin.second<<std::endl;
+                    //std::cout<<"Test R start pin "<<temp_start_pin.first<<" "<<temp_start_pin.second<<std::endl;
                     break; 
                  }
               }
@@ -571,7 +571,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
                          temp_end_pin.first = j;
                          temp_end_pin.second = k;
                          temp_r_const.end_pin.push_back(temp_end_pin);
-                         std::cout<<"Test R end pin "<<temp_end_pin.first<<" "<<temp_end_pin.second<<std::endl;
+                         //std::cout<<"Test R end pin "<<temp_end_pin.first<<" "<<temp_end_pin.second<<std::endl;
                          break; 
                        }
                     }
@@ -583,7 +583,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
                     temp_end_pin.first = -1;
                     temp_end_pin.second = j;
                     temp_r_const.end_pin.push_back(temp_end_pin);
-                    std::cout<<"Test R end pin "<<temp_end_pin.first<<" "<<temp_end_pin.second<<std::endl;
+                    //std::cout<<"Test R end pin "<<temp_end_pin.first<<" "<<temp_end_pin.second<<std::endl;
                     break; 
                  }
               }
@@ -618,7 +618,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
                          temp_pin.first = j;
                          temp_pin.second = k;
                          temp_LinearConst.pins.push_back(temp_pin);
-                         std::cout<<"Test Linear pin "<<pins[0]<<" "<<pins[1]<<" "<<temp_pin.first<<" "<<temp_pin.second<<std::endl;
+                         //std::cout<<"Test Linear pin "<<pins[0]<<" "<<pins[1]<<" "<<temp_pin.first<<" "<<temp_pin.second<<std::endl;
                          break; 
                        }
                     }
@@ -630,17 +630,17 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
                     temp_pin.first = -1;
                     temp_pin.second = j;
                     temp_LinearConst.pins.push_back(temp_pin);
-                    std::cout<<"Test Linear pin "<<pins[0]<<" "<<temp_pin.first<<" "<<temp_pin.second<<std::endl;
+                    //std::cout<<"Test Linear pin "<<pins[0]<<" "<<temp_pin.first<<" "<<temp_pin.second<<std::endl;
                     break; 
                  }
               }
            }
            temp_LinearConst.alpha.push_back(atof(tempsec[1].c_str()));
-           std::cout<<"Test Linear pin alpha "<<tempsec[1]<<" "<<atof(tempsec[1].c_str())<<std::endl;
+           //std::cout<<"Test Linear pin alpha "<<tempsec[1]<<" "<<atof(tempsec[1].c_str())<<std::endl;
         }
         int temp_size = temp.size();
         temp_LinearConst.upperBound = atof(temp[temp_size-3].c_str())*2000;
-        std::cout<<"Test Linear pin upperBound "<<temp[temp_size-3]<<" "<<atof(temp[temp_size-3].c_str())<<std::endl;
+        //std::cout<<"Test Linear pin upperBound "<<temp[temp_size-3]<<" "<<atof(temp[temp_size-3].c_str())<<std::endl;
         node.L_Constraints.push_back(temp_LinearConst);
 /*
         for(int i=0;i<node.Nets.size();i++){
@@ -659,7 +659,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
 */
 
       }else if(temp[0].compare("Multi_LinearConst")==0){
-        std::cout<<"Enter ML Linear Const"<<std::endl;
+        //std::cout<<"Enter ML Linear Const"<<std::endl;
         PnRDB::Multi_LinearConst temp_Multi_LinearConst;
         for(int i=2;i<temp.size()-3;i=i+2){
            PnRDB::LinearConst temp_LinearConst;
@@ -682,7 +682,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
                             temp_pin.second = k;
                             temp_LinearConst.pins.push_back(temp_pin);
                             temp_LinearConst.alpha.push_back(atof(pins[2].c_str()));
-                            std::cout<<"ML Test Linear pin "<<pins[0]<<" "<<pins[1]<<" "<<temp_pin.first<<" "<<temp_pin.second<<" "<<pins[2]<<std::endl;
+                            //std::cout<<"ML Test Linear pin "<<pins[0]<<" "<<pins[1]<<" "<<temp_pin.first<<" "<<temp_pin.second<<" "<<pins[2]<<std::endl;
                             break; 
                          }
                       }
@@ -695,7 +695,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
                        temp_pin.second = j;
                        temp_LinearConst.pins.push_back(temp_pin);
                        temp_LinearConst.alpha.push_back(atof(pins[2].c_str()));
-                       std::cout<<"ML Test Linear pin "<<pins[0]<<" "<<temp_pin.first<<" "<<temp_pin.second<<" "<<pins[2]<<std::endl;
+                       //std::cout<<"ML Test Linear pin "<<pins[0]<<" "<<temp_pin.first<<" "<<temp_pin.second<<" "<<pins[2]<<std::endl;
                        break; 
                    }
                 }
@@ -707,7 +707,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         int temp_size = temp.size();
         temp_Multi_LinearConst.upperBound = atof(temp[temp_size-3].c_str())*2000;
         node.ML_Constraints.push_back(temp_Multi_LinearConst);
-        std::cout<<"Left ML Linear Const"<<" "<<temp[temp_size-3]<<std::endl;
+        //std::cout<<"Left ML Linear Const"<<" "<<temp[temp_size-3]<<std::endl;
       }else if (temp[0].compare("Multi_Connection")==0){
         //PnRDB::Multi_Connection temp_multi_connection;
         PnRDB:: Multi_connection temp_multi_Connection;
@@ -754,7 +754,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
                          temp_start_pin.first = j;
                          temp_start_pin.second = k;
                          temp_c_const.start_pin.push_back(temp_start_pin);
-                         std::cout<<"Test C start pin "<<temp_start_pin.first<<" "<<temp_start_pin.second<<std::endl;
+                         //std::cout<<"Test C start pin "<<temp_start_pin.first<<" "<<temp_start_pin.second<<std::endl;
                          break; 
                        }
                     }
@@ -766,7 +766,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
                     temp_start_pin.first = -1;
                     temp_start_pin.second = j;
                     temp_c_const.start_pin.push_back(temp_start_pin);
-                    std::cout<<"Test C start pin "<<temp_start_pin.first<<" "<<temp_start_pin.second<<std::endl;
+                    //std::cout<<"Test C start pin "<<temp_start_pin.first<<" "<<temp_start_pin.second<<std::endl;
                     break; 
                  }
               }
@@ -781,7 +781,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
                          temp_end_pin.first = j;
                          temp_end_pin.second = k;
                          temp_c_const.end_pin.push_back(temp_end_pin);
-                         std::cout<<"Test C end pin "<<temp_end_pin.first<<" "<<temp_end_pin.second<<std::endl;
+                         //std::cout<<"Test C end pin "<<temp_end_pin.first<<" "<<temp_end_pin.second<<std::endl;
                          break; 
                        }
                     }
@@ -793,7 +793,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
                     temp_end_pin.first = -1;
                     temp_end_pin.second = j;
                     temp_c_const.end_pin.push_back(temp_end_pin);
-                    std::cout<<"Test C end pin "<<temp_end_pin.first<<" "<<temp_end_pin.second<<std::endl;
+                    //std::cout<<"Test C end pin "<<temp_end_pin.first<<" "<<temp_end_pin.second<<std::endl;
                     break; 
                  }
               }
