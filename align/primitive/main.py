@@ -5,6 +5,7 @@ import json
 import importlib.util
 
 from ..cell_fabric import gen_lef
+from ..cell_fabric import positive_coord
 from ..cell_fabric import gen_gds_json
 from ..cell_fabric.pdk import Pdk
 
@@ -257,7 +258,8 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
     if 'Cap' in primitive:
         blockM = 1
     else:
-        blockM = 0         
+        blockM = 0
+    positive_coord.json_pos(outputdir / (block_name + '.json'))         
     gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, cell_pin, bodyswitch, blockM, uc.pdk)
     with open( outputdir / (block_name + ".json"), "rt") as fp0, \
          open( outputdir / (block_name + ".gds.json"), 'wt') as fp1:
