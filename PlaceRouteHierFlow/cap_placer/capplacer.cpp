@@ -1924,13 +1924,14 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 			double temp_s = ceil(sum/temp_r);
 			int aspect_num = num_aspect;
 			while(aspect_num > 0 and temp_r > 0){
-                               
-			    cap_r.push_back(temp_r);
-			    cap_s.push_back(ceil(sum/temp_r));
-			    cap_r.push_back(ceil(sum/temp_s));
-			    cap_s.push_back(temp_s);
 
-			    aspect_num = aspect_num - 2;
+                            if(temp_r*ceil(sum/temp_r)!=sum and ceil(sum/temp_s)*temp_s!=sum){   
+			      cap_r.push_back(temp_r);
+			      cap_s.push_back(ceil(sum/temp_r));
+			      cap_r.push_back(ceil(sum/temp_s));
+			      cap_s.push_back(temp_s);
+                              aspect_num = aspect_num - 2;
+                            }
 			    temp_r = temp_r - 1;
 			    temp_s = temp_s + 1;
 
@@ -1978,7 +1979,11 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 			va.orient = temp_block.orient;
 			va.interMetals = temp_block.interMetals;
 			va.interVias = temp_block.interVias;
-
+                        /*
+                        for(unsigned int l=0;l<va.blockPins.size();l++){
+                          va.blockPins[l].pinContacts.clear();
+                        }
+                        */
                         for(unsigned int l=0;l<temp_block.blockPins.size();l++){
                            bool found = 0;
                            for(unsigned int k=0;k<va.blockPins.size();k++){
@@ -2012,6 +2017,7 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
                                       }
                               }
                         }
+
                         insert_dummy_connection = 1;
 
 			WriteLef(va, cc_gds_file+".lef", opath);
