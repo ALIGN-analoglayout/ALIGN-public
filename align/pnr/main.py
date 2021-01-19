@@ -132,7 +132,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
     # Run pnr_compiler
     cmd = [str(x) for x in (compiler_path, input_dir, lef_file, verilog_file, map_file, pdk_file, subckt, nvariants, effort)]
 
-    if True
+    if True:
         current_working_dir = os.getcwd()
         os.chdir(working_dir)
         PnR.toplevel(cmd)
