@@ -70,6 +70,7 @@ setenv LP_DIR $ALIGN_HOME/lpsolve
 setenv JSON $ALIGN_HOME/json
 setenv GTEST_DIR $ALIGN_HOME/googletest/googletest/
 setenv VENV $ALIGN_HOME/general
+setenv SuperLu_DIR $ALIGN_HOME/superlu
 
 ## install align 
 #---------------
