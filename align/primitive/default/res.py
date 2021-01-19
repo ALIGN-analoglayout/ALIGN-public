@@ -99,19 +99,19 @@ class ResGenerator(DefaultCanvas):
         grid_y = (x_number%2)*last_y1_track
 
         pin = 'PLUS'
-        self.addWire( m2n, 'PLUS', pin, 0, (0, -1), (0, 1))
+        self.addWire( m2n, 'PLUS', pin, 0, (-4, -1), (0, 1))
         self.addVia( self.v1res, None, None, 0, 0)
         pin = 'MINUS'
-        self.addWire( self.m2res, 'MINUS', pin, grid_y, (grid_x1+p, -1), (grid_x1+p, 1))
+        self.addWire( self.m2res, 'MINUS', pin, grid_y, (grid_x1+p, -1), (grid_x1+p+4, 1))
         self.addVia( self.v1res, None, None, grid_x1+p, grid_y)
 
         if draw_boundary:
             self.addRegion( self.boundary, 'boundary', None,
-                            -1, -1,
-                            last_x_track  + x * grid_cell_x_pitch + 1 + p,
+                            -4, -1,
+                            last_x_track  + x * grid_cell_x_pitch + 4 + p,
                             last_y1_track + y * grid_cell_y_pitch + 1)
 
             self.addRegion( self.Rboundary, 'Rboundary', None,
                             -1, -1,
-                            last_x_track  + x * grid_cell_x_pitch + 1 + p,
+                            last_x_track  + x * grid_cell_x_pitch + 4 + p,
                             last_y1_track + y * grid_cell_y_pitch + 1)
