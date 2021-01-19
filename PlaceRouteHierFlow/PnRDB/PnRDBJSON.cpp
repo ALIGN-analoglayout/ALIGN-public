@@ -728,7 +728,7 @@ TEST( hierNodeTest, TestA)
   {
     std::ofstream jsonStream( "__json");
     if(jsonStream.fail()) {
-      cout<< "Cannot open file "<< "__json" <<" for writing"<<endl;
+      spdlog::error("Cannot open file __json for writing");
       return;
     }
     jsonStream << std::setw(4) << json_hN;
@@ -756,7 +756,7 @@ void PnRdatabase::WriteDBJSON( const PnRDB::hierNode& hN, const string& filename
 {
   std::ofstream jsonStream( filename);
   if(jsonStream.fail()) {
-    cout<< "Cannot open file " << filename << " for writing" << endl;
+    spdlog::error("Cannot open file {0} for writing",filename);
     return;
   }
   jsonStream << json(hN);
@@ -766,7 +766,7 @@ void PnRdatabase::ReadDBJSON( PnRDB::hierNode& hN, const string& filename) const
 {
   std::ifstream ifs( filename);
   if(ifs.fail()) {
-    cout<< "Cannot open file " << filename << " for reading." << endl;
+    spdlog::error("Cannot open file {0} for writing",filename);
     return;
   }
   json::parse(ifs).get_to( hN);

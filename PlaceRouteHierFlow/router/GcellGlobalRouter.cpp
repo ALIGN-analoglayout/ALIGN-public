@@ -1434,7 +1434,7 @@ void routerlpsolvelogger(lprec *lp, void *userhandle, char *buf)
   // Strip leading newline
   while((unsigned char)*buf == '\n') buf++;
   // Log non-empty lines
-  if (*buf != '\0') std::cout << "GcellGlobalRouter lpsolve: " << buf << std::endl;
+  if (*buf != '\0') spdlog::info("GcellGlobalRouter lpsolve: {0}",buf);
 }
 
 int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std::set<RouterDB::tile, RouterDB::tileComp> &Tile_Set) {
@@ -1491,7 +1491,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   spdlog::debug("TotNumberOfNest {0} {1}",NumberOfNets,NumberOfSTs);
   this->NumOfVar=NumberOfSTs;//#Variable initialization
 
-  if ((lp = make_lp(0,NumOfVar+1)) == NULL) {std::cout << "Error" << std::endl;} //ERROR();}
+  if ((lp = make_lp(0,NumOfVar+1)) == NULL) {spdlog::error("Error");} //ERROR();}
   // lp_solve_version(&majorversion, &minorversion, &release, &build);
   // sprintf(buf, "lp_solve %d.%d.%d.%d demo\n\n", majorversion, minorversion, release, build);//lp_solve 5.5.2.0 
   // print_str(lp, buf);
@@ -1539,8 +1539,9 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
        int* col =&temp_index[0];
        int size_element = temp_row.size();
        //if (!add_constraint(lp, row, EQ, 1)) {std::cerr << "Error" << std::endl;} //ERROR();}
-       if (!add_constraintex(lp,size_element,row,col, EQ, 1)) {std::cerr << "Error" << std::endl;} //ERROR();}
-     
+       if (!add_constraintex(lp,size_element,row,col, EQ, 1)) {
+         spdlog::error("Error");
+       }  // ERROR();}
      }
 
   //symmetry problem
@@ -1584,9 +1585,9 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
                 double* row = &temp_row[0];
                 int* col=&temp_index[0];
                 int size_element = temp_row.size();
-                std::cout<<"Adding SYM constraints"<<std::endl;
+                spdlog::debug("Adding SYM constraints");
                 //if (!add_constraint(lp, row, EQ, 0)) {std::cout << "Error" << std::endl;} //ERROR();}
-                if (!add_constraintex(lp, size_element, row, col, EQ, 0)) {std::cerr << "Error" << std::endl;} //ERROR();}
+                if (!add_constraintex(lp, size_element, row, col, EQ, 0)) {spdlog::error("Error");} //ERROR();}
        
              }
         
@@ -1689,7 +1690,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
        int* col = &temp_index[0];
        int size_element=temp_row.size();
        //if (!add_constraint(lp, row, LE, 0)) {std::cerr << "Error" << std::endl;} //ERROR();}
-       if (!add_constraintex(lp, size_element, row, col, LE, 0)) {std::cerr << "Error" << std::endl;} //ERROR();}
+       if (!add_constraintex(lp, size_element, row, col, LE, 0)) {spdlog::error("Error");} //ERROR();}
      }
 
   //std::cout<<"testcase 4"<<std::endl;

@@ -252,7 +252,7 @@ bool PnRdatabase::ReadMap(string fpath, string mapname) {
     fin.close();
     return true; 
   } catch(ifstream::failure& e) {
-    cerr<<"PnRDB-Error: fail to read map file "<<endl;
+    spdlog::error("PnRDB-Error: fail to read map file ");
   }
   return false;
 }

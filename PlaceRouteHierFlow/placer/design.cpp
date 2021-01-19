@@ -422,7 +422,7 @@ design::design(PnRDB::hierNode& node) {
       placerDB::NType tmptype = placerDB::Block;
       if (nit->type==PnRDB::Block) {tmptype=placerDB::Block;}
       else if (nit->type==PnRDB::Terminal) {tmptype=placerDB::Terminal;}
-      else {cerr<<"Placer-Error: incorrect connected node type"<<endl; assert(0);}
+      else {spdlog::error("Placer-Error: incorrect connected node type"); assert(0);}
       placerDB::Node tmpnode={tmptype, nit->iter, nit->iter2, nit->alpha};
       tmpnet.connected.push_back(tmpnode);
     }

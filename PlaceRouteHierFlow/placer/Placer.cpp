@@ -686,7 +686,7 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   int nodeSize=nodeVec.size();
   //cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
   #ifdef RFLAG
-  cout<<"Placer-Info: run in random mode..."<<endl;
+  //cout<<"Placer-Info: run in random mode..."<<endl;
   srand (time(NULL));
   #endif
   #ifndef RFLAG

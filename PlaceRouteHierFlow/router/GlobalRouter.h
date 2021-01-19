@@ -22,6 +22,7 @@
 #include "RawRouter.h"
 #include "Rdatatype.h"
 #include "../PnRDB/datatype.h"
+#include "spdlog/spdlog.h"
 
 class GlobalRouter : public RawRouter {
  

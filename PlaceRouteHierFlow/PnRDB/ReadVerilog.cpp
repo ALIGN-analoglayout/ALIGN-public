@@ -14,7 +14,7 @@ bool PnRdatabase::ReadVerilog(const string& fpath, const string& vname, const st
   try {
     fin.open(verilogfile.c_str());
   } catch(ifstream::failure& e) {
-      cerr<<"PnRDB-Error: failed to open Verilog file "<<verilogfile<<endl;
+      spdlog::error("PnRDB-Error: failed to open Verilog file {0}",verilogfile);
       return false;
   }
 
@@ -23,14 +23,14 @@ bool PnRdatabase::ReadVerilog(const string& fpath, const string& vname, const st
       rvh( fin, fpath, topcell);
   } catch(ifstream::failure e) {
       fin.close();
-      cerr<<"PnRDB-Error: fail to read Verilog file "<<endl;
+      spdlog::error("PnRDB-Error: fail to read Verilog file ");
       return false;
   }
 
   try {
       fin.close();
   } catch(ifstream::failure e) {
-      cerr<<"PnRDB-Error: fail to close Verilog file "<<endl;
+      spdlog::error("PnRDB-Error: fail to close Verilog file ");
       return false;
   }
 
@@ -58,7 +58,7 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
 		curr_node.bias_Hgraph=db.DRC_info.Metal_info[1].grid_unit_x;
 	    }
 	    //added one nodes to the class
-	    if(!db.ReadConstraint(curr_node, fpath, "const")) {cerr<<"PnRDB-Error: fail to read constraint file of module "<<curr_node.name<<endl;}
+	    if(!db.ReadConstraint(curr_node, fpath, "const")) {spdlog::error("PnRDB-Error: fail to read constraint file of module {0}",curr_node.name);}
 	    else{spdlog::info("Finished reading contraint file");}
 	}
     }
@@ -123,7 +123,7 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
     //mergeLEFandGDS
     for(unsigned int i=0;i<db.hierTree.size();i++){
     //cout<<"db.hierTree node "<<i<<endl;
-    if(!db.MergeLEFMapData(db.hierTree[i])){cerr<<"PnRDB-Error: fail to mergeLEFMapData of module "<<db.hierTree[i].name<<endl;
+    if(!db.MergeLEFMapData(db.hierTree[i])){spdlog::error("PnRDB-Error: fail to mergeLEFMapData of module {0}",db.hierTree[i].name);
       }else{
       spdlog::info("Finished merge lef data");
       }
@@ -456,7 +456,7 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
 	if(master.find("Cap")!=std::string::npos or
 	   master.find("cap")!=std::string::npos) continue;
 	if(node.Blocks[i].instance.back().isLeaf) {
-	    cerr<<"PnRDB-Error: the key does not exist in map:"<<" "<<master<<endl;
+	    spdlog::error("PnRDB-Error: the key does not exist in map: {0}",master);
 	    missing_lef_file = 1;
 	}
 	continue;

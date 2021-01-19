@@ -1554,7 +1554,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
                 Vsource[i].metalIdx = vertices_total[temp_Source[0]].metal;
                 break;
              } else {
-               std::cerr<<"Router-Warning: cannot find grid point for source terminal"<<std::endl;
+               spdlog::error("Router-Warning: cannot find grid point for source terminal");
              }
          }
 
@@ -1577,7 +1577,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
                          Smap.insert(map<RouterDB::point, std::vector<int> >::value_type(source.coord[0],temp_Source));   
                          break;
                      } else {
-                         std::cerr<<"Router-Warning: cannot find grid point for source steiner node"<<std::endl;
+                         spdlog::error("Router-Warning: cannot find grid point for source steiner node");
                      }
                  }
             }else{
@@ -1783,7 +1783,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest_detail(std::vector<RouterDB::Sin
                 Vsource[i].metalIdx = vertices_total[temp_Source[0]].metal;
                 break;
              } else {
-               std::cerr<<"Router-Warning: cannot find grid point for source terminal"<<std::endl;
+               spdlog::error("Router-Warning: cannot find grid point for source terminal");
              }
          }
 

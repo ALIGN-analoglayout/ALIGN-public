@@ -220,7 +220,7 @@ bool PnRdatabase::ReadLEF(string leffile) {
     fin.close();
     return true;
   } catch (ifstream::failure& e) {
-    cerr << "PnRDB-Error: fail to read LEF file " << endl;
+    spdlog::error("PnRDB-Error: fail to read LEF file ");
   }
   return false;
 }

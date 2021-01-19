@@ -319,7 +319,8 @@ int toplevel( const std::vector<std::string>& argv) {
   int effort=std::stoi(argv[8]);
   if(fpath.back()=='/') {fpath.erase(fpath.end()-1);}
   if(opath.back()!='/') {opath+="/";}
-
+  spdlog::set_level(spdlog::level::off);
+  
   // Following codes try to get the path of binary codes
   string binary_directory = argv[0];
   spdlog::info("argv[0]: {0}",binary_directory);
@@ -330,8 +331,6 @@ int toplevel( const std::vector<std::string>& argv) {
   spdlog::info("binary_directory: {0}", binary_directory);
 
   mkdir(opath.c_str(), 0777);
-
-  spdlog::set_level(spdlog::level::off);
   PnRdatabase DB(fpath, topcell, vfile, lfile, mfile, dfile); // construction of database
   PnRDB::Drc_info drcInfo=DB.getDrc_info();
   map<string, PnRDB::lefMacro> lefData = DB.checkoutSingleLEF();

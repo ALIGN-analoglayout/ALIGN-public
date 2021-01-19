@@ -36,7 +36,7 @@ void Router::RouteWork(int mode, PnRDB::hierNode& node, PnRDB::Drc_info& drcData
     node.isIntelGcellGlobalRouter = true;
     this->GGR = new GcellGlobalRouter(node, drcData, Lmetal, Hmetal, binaryDIR);
   } else if(mode==7){ // this is for dc simulation
-    std::cout<<"RouteWork "<<mode<<std::endl;
+    spdlog::info("RouteWork {0}", mode);
     PowerRouter(node, drcData, Lmetal, Hmetal, 1, inputfile);  
   }
  

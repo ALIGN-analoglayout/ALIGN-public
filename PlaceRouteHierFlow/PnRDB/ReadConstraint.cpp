@@ -323,7 +323,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
               temp_pair.second = temp_pair.first;
               temp_pair.first = temp_int;
             } else if (temp_pair.first==temp_pair.second) {
-              std::cerr<<"PnRDB-Error: same block in paired symmetry group"<<std::endl;
+              spdlog::error("PnRDB-Error: same block in paired symmetry group");
             }
             if (temp_pair.first >= 0 && temp_pair.second >= 0) temp_SymmPairBlock.sympair.push_back(temp_pair);
           } else if (word == "H") {
@@ -807,7 +807,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
     //std::cout<<"end read const file "<<cfile<<std::endl;
     return true;
   } catch(ifstream::failure e) {
-    cerr<<"PnRDB-Error: fail to read constraint file "<<endl;
+    spdlog::error("PnRDB-Error: fail to read constraint file ");
   }
   return false;
 }
