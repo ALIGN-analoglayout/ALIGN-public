@@ -75,7 +75,7 @@ setenv LP_DIR $ALIGN_HOME/lpsolve
 #setenv BOOST_LP $ALIGN_HOME/boost
 setenv JSON $ALIGN_HOME/json
 setenv GTEST_DIR $ALIGN_HOME/googletest/googletest/
-export SPDLOG_DIR=$ALIGN_HOME/spdlog
+setenv SPDLOG_DIR $ALIGN_HOME/spdlog
 setenv SuperLu_DIR $ALIGN_HOME/superlu
 setenv VENV $ALIGN_HOME/general
 
