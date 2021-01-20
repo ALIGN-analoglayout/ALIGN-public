@@ -27,7 +27,7 @@
         "SymmetricBlocks": {
         "direction" : "V",
         "blocks": ["mmn2", "diffpair", "ccn", "ccp"],
-        "keep_order": True
+        "keepOrder": True
     }
 ],
 "setup": {
