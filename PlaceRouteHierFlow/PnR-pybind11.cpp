@@ -5,6 +5,11 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/base_sink.h"
+#include <spdlog/details/null_mutex.h>
+#include <mutex>
+
 #include "PnRDB/PnRdatabase.h"
 //#include "cap_placer/capplacer.h"
 //#include "placer/Placer.h"
@@ -13,7 +18,46 @@ using namespace pybind11::literals;
 using namespace PnRDB;
 using std::string;
 
+template<typename Mutex>
+class align_sink : public spdlog::sinks::base_sink <Mutex>
+{
+protected:
+
+    void sink_it_(const spdlog::details::log_msg& msg) override
+    {
+      auto pylogger = py::module_::import("logging").attr("getLogger")(
+        std::string("align.pnr.") + fmt::to_string(msg.logger_name)
+      );
+      spdlog::memory_buf_t formatted;
+      spdlog::sinks::base_sink<Mutex>::formatter_->format(msg, formatted);
+      // HACK: python.logging log-level is currently 10x of sequivalent spdlog level
+      //       May need to be changed if spdlog or python.logging changes
+      pylogger.attr("log")(static_cast<int>(msg.level)*10, fmt::to_string(msg.payload));
+    }
+
+    void flush_() override
+    {
+      std::cout << std::flush;
+    }
+};
+
+using align_sink_mt = align_sink<std::mutex>;
+using align_sink_st = align_sink<spdlog::details::null_mutex>;
+
+void _bind_spdlog_to_python_logger() {
+  // Set up logging defaults before doing anything else
+  int pylevel = py::cast<int>(py::module_::import("logging").attr("getLogger")().attr("level"));
+  spdlog::set_default_logger(std::make_shared<spdlog::logger>("default", std::make_shared<align_sink_mt>()));
+  spdlog::set_level(static_cast<spdlog::level::level_enum>(pylevel/ 10));
+  spdlog::set_error_handler([](const std::string& msg) {
+		std::cerr << msg << std::endl;
+	});
+}
+
 PYBIND11_MODULE(PnR, m) {
+
+  _bind_spdlog_to_python_logger();
+
   m.doc() = "pybind11 plugin for PnR";
 
   py::class_<point>( m, "point")
