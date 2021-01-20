@@ -11,6 +11,7 @@ using namespace nlohmann;
 
 
 void PnRdatabase::ReadPDKJSON(std::string drfile) {
+    auto logger = spdlog::default_logger()->clone("PnRdatabase.ReadPDKJSON");
     int times=2;
     json jsonStrAry;
     ifstream jsonFile (drfile);
@@ -30,7 +31,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             // metal layer
             metal_index = metal_index + 1;
             #ifdef FinFET_MOCK_PDK
-            spdlog::info("Reading Json PDK on {0}",lname);
+            logger->info("Reading Json PDK on {0}",lname);
             spdlog::info("Reading Json PDK on GdsLayerNo");
             int lnum=layer["GdsLayerNo"];
             int Drawnum=layer["GdsDatatype"]["Draw"];
