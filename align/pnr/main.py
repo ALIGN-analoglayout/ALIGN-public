@@ -12,8 +12,6 @@ from .db import hierNode
 from .checkers import gen_viewer_json
 from ..cell_fabric import gen_gds_json
 
-from .trap_stdout import stdout_redirector, stderr_redirector
-
 logger = logging.getLogger(__name__)
 
 def _generate_json( *, dbfile, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False, input_dir=None, toplevel=True, gds_json=True ):
@@ -134,20 +132,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
     # Run pnr_compiler
     cmd = [str(x) for x in (compiler_path, input_dir, lef_file, verilog_file, map_file, pdk_file, subckt, nvariants, effort)]
 
-    if False:
-        current_working_dir = os.getcwd()
-        os.chdir(working_dir)
-
-        with io.StringIO() as pnr_stdout, io.StringIO() as pnr_stderr:
-            with stdout_redirector(pnr_stdout), stderr_redirector(pnr_stderr):
-                PnR.toplevel(cmd)
-
-            txt = pnr_stdout.getvalue()
-            logger.debug(f'Dumping stdout from pnr_compiler\n{txt}')
-            txt = pnr_stderr.getvalue()
-            logger.error(f'Dumping stderr from pnr_compiler\n{txt}')
-        os.chdir(current_working_dir)
-    elif True:
+    if True:
         current_working_dir = os.getcwd()
         os.chdir(working_dir)
         PnR.toplevel(cmd)
