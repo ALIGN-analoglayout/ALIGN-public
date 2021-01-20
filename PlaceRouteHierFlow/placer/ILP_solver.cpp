@@ -34,7 +34,7 @@ ILP_solver& ILP_solver::operator=(const ILP_solver& solver) {
   return *this;
 }
 
-double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info &drcInfo) {
+double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
   // each block has 4 vars, x, y, H_flip, V_flip;
   int N_var = mydesign.Blocks.size() * 4 + mydesign.Nets.size() * 2;
   // i*4+1: x
@@ -272,7 +272,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     for (int i = 0; i < mydesign.Nets.size(); i++) {
       vector<pair<int, int>> blockids;
       for (int j = 0; j < mydesign.Nets[i].connected.size(); j++) {
-        if (mydesign.Nets[i].connected[j].type == placerDB::Block)
+        if (mydesign.Nets[i].connected[j].type == placerDB::Block && (blockids.size() == 0 || mydesign.Nets[i].connected[j].iter2 != curr_sp.negPair[blockids.back().first]))
           blockids.push_back(std::make_pair(find(curr_sp.negPair.begin(), curr_sp.negPair.end(), mydesign.Nets[i].connected[j].iter2) - curr_sp.negPair.begin(),
                                             mydesign.Nets[i].connected[j].iter));
       }
@@ -296,15 +296,27 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
                                -(URblock_width - 2 * URpin_x) * const_graph.LAMBDA, -1};
         int colno[5] = {LLblock_id * 4 + 1, LLblock_id * 4 + 3, URblock_id * 4 + 1, URblock_id * 4 + 3, mydesign.Blocks.size() * 4 + i * 2 + 1};
         add_constraintex(lp, 5, sparserow, colno, LE, -LLpin_x + URpin_x);
-        row[mydesign.Blocks.size() * 4 + i * 2 + 1] = 1;
       }
       {
         double sparserow[5] = {-const_graph.LAMBDA, -(LLblock_width - 2 * LLpin_x) * const_graph.LAMBDA, const_graph.LAMBDA,
                                (URblock_width - 2 * URpin_x) * const_graph.LAMBDA, -1};
-        int colno[5] = {LLblock_id * 4 + 1, LLblock_id * 4 + 3, URblock_id * 4 + 1, URblock_id * 4 + 3, mydesign.Blocks.size() * 4 + i * 2 + 2};
+        int colno[5] = {LLblock_id * 4 + 1, LLblock_id * 4 + 3, URblock_id * 4 + 1, URblock_id * 4 + 3, mydesign.Blocks.size() * 4 + i * 2 + 1};
         add_constraintex(lp, 5, sparserow, colno, LE, LLpin_x - URpin_x);
-        row[mydesign.Blocks.size() * 4 + i * 2 + 2] = 1;
       }
+      row[mydesign.Blocks.size() * 4 + i * 2 + 1] = 1;
+      {
+        double sparserow[5] = {const_graph.LAMBDA, (LLblock_height - 2 * LLpin_y) * const_graph.LAMBDA, -const_graph.LAMBDA,
+                               -(URblock_height - 2 * URpin_y) * const_graph.LAMBDA, -1};
+        int colno[5] = {LLblock_id * 4 + 2, LLblock_id * 4 + 4, URblock_id * 4 + 2, URblock_id * 4 + 4, mydesign.Blocks.size() * 4 + i * 2 + 2};
+        add_constraintex(lp, 5, sparserow, colno, LE, -LLpin_y + URpin_y);
+      }
+      {
+        double sparserow[5] = {-const_graph.LAMBDA, -(LLblock_height - 2 * LLpin_y) * const_graph.LAMBDA, const_graph.LAMBDA,
+                               (URblock_height - 2 * URpin_y) * const_graph.LAMBDA, -1};
+        int colno[5] = {LLblock_id * 4 + 2, LLblock_id * 4 + 4, URblock_id * 4 + 2, URblock_id * 4 + 4, mydesign.Blocks.size() * 4 + i * 2 + 2};
+        add_constraintex(lp, 5, sparserow, colno, LE, LLpin_y - URpin_y);
+      }
+      row[mydesign.Blocks.size() * 4 + i * 2 + 2] = 1;
     }
 
     // add area in cost
@@ -336,6 +348,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
 
     set_obj_fn(lp, row);
     set_minim(lp);
+    set_timeout(lp, 1);
     int ret = solve(lp);
     if (ret != 0 && ret != 1) return -1;
   }
@@ -1340,7 +1353,7 @@ void ILP_solver::UpdateBlockinHierNode(design& mydesign, placerDB::Omark ort, Pn
   }
 }
 
-void ILP_solver::UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& node, PnRDB::Drc_info &drcInfo) {
+void ILP_solver::UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo) {
   for (int i = 0; i < (int)mydesign.GetSizeofTerminals(); i++) {
     node.Terminals.at(i).termContacts.clear();
     node.Terminals.at(i).termContacts.resize(node.Terminals.at(i).termContacts.size() + 1);
@@ -1352,8 +1365,7 @@ void ILP_solver::UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& nod
     temp_pin.type = node.Terminals.at(i).type;
     temp_pin.netIter = node.Terminals.at(i).netIter;
     temp_pin.pinContacts = node.Terminals.at(i).termContacts;
-    for (int j=0;j<temp_pin.pinContacts.size();j++)
-      temp_pin.pinContacts[j].metal = drcInfo.Metal_info[0].name;    
+    for (int j = 0; j < temp_pin.pinContacts.size(); j++) temp_pin.pinContacts[j].metal = drcInfo.Metal_info[0].name;
     temp_pin.name = node.Terminals.at(i).name;
     temp_pin.type = node.Terminals.at(i).type;
     node.blockPins.push_back(temp_pin);
