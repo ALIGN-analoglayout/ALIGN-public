@@ -1,0 +1,38 @@
+{
+"constraints":[
+    {"HorizontalDistance": {"abs_distance":0}},
+    {"VerticalDistance": {"abs_distance":0}},
+    {
+        "GroupBlocks": {
+            "blocks": ["mmn0", "mmn1"],
+            "alias": "diffpair",
+            "style": "cc" 
+        }
+    },
+    {
+        "GroupBlocks": {
+            "blocks": ["mmn4", "mmn3"],
+            "alias": "ccn",
+            "style": "cc" 
+        }
+    },
+    {
+        "GroupBlocks": {
+            "blocks": ["mmp1", "mmp0"],
+            "alias": "ccp",
+            "style": "cc" 
+        }
+    },
+    {
+        "SymmetricBlocks": {
+        "direction" : "V",
+        "blocks": ["mmn2", "diffpair", "ccn", "ccp"],
+        "order": True
+    }
+],
+"setup": {
+    "power": ["vcc"],
+    "ground": ["vss"],
+    "clock": ["clk"]
+}
+}
