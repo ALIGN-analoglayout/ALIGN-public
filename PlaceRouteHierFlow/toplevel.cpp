@@ -32,7 +32,7 @@ double ConstGraph::PII=1500;
 static void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_node, int lidx,
 			const string& opath, const string& tag, const string& ltag, bool skip)
 {
-  auto logger = spdlog::default_logger()->clone("toplevel.save_state");
+  auto logger = spdlog::default_logger()->clone("save_state");
 
   if ( skip) return;
 
@@ -55,7 +55,7 @@ static void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_no
 static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::hierNode& current_node, int lidx, const string& opath, const string& binary_directory, bool skip_saving_state, bool adr_mode)
 {
 
-  auto logger = spdlog::default_logger()->clone("toplevel.route_single_variant");
+  auto logger = spdlog::default_logger()->clone("route_single_variant");
 
   //std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
   //DB.Extract_RemovePowerPins(current_node);
@@ -302,7 +302,7 @@ void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
 
 int toplevel( const std::vector<std::string>& argv) {
 
-  auto logger = spdlog::default_logger()->clone("toplevel.toplevel");
+  auto logger = spdlog::default_logger()->clone("toplevel");
 
   //
   // Enable or disable state saving in json at intermediate points
