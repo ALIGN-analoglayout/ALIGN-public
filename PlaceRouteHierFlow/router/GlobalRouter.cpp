@@ -868,6 +868,8 @@ void GlobalRouter::UpdateCandidate(std::vector<std::vector<RouterDB::Metal> >& p
 
 void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
 
+  auto logger = spdlog::default_logger()->clone("router.GlobalRouter.getData");
+
   //std::cout<<"Router-Info: begin to import data"<<std::endl;
   this->isTop = node.isTop;
   this->topName=node.name;
@@ -1009,7 +1011,7 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
              if(drc_info.Metalmap.find(node.Blocks[i].instance[sel].blockPins[j].pinContacts[k].metal)!=drc_info.Metalmap.end()){
                  temp_contact.metal=drc_info.Metalmap[node.Blocks[i].instance[sel].blockPins[j].pinContacts[k].metal];
                }else{
-                 spdlog::error("Router-Error: the metal pin contact of block is not found");
+                 logger->error("Router-Error: the metal pin contact of block is not found");
                }
              temp_contact.placedLL.x=node.Blocks[i].instance[sel].blockPins[j].pinContacts[k].placedBox.LL.x;
              temp_contact.placedLL.y=node.Blocks[i].instance[sel].blockPins[j].pinContacts[k].placedBox.LL.y;
@@ -1031,7 +1033,7 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
                if(drc_info.Viamap.find(node.Blocks[i].instance[sel].blockPins[j].pinVias[k].ViaRect.metal)!=drc_info.Viamap.end()){
                    temp_via.ViaRect.metal = drc_info.Viamap[node.Blocks[i].instance[sel].blockPins[j].pinVias[k].ViaRect.metal];
                  }else{
-                   spdlog::error("Router-Error: - Viamap Error");
+                   logger->error("Router-Error: - Viamap Error");
                  }
                temp_via.ViaRect.placedLL.x = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].ViaRect.placedBox.LL.x;
                temp_via.ViaRect.placedLL.y = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].ViaRect.placedBox.LL.y;
@@ -1043,7 +1045,7 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
                if(drc_info.Metalmap.find(node.Blocks[i].instance[sel].blockPins[j].pinVias[k].LowerMetalRect.metal)!=drc_info.Metalmap.end()){
                   temp_via.LowerMetalRect.metal = drc_info.Metalmap[node.Blocks[i].instance[sel].blockPins[j].pinVias[k].LowerMetalRect.metal];
                }else{
-                  spdlog::error("Router-Error: Metal map error");
+                  logger->error("Router-Error: Metal map error");
                }
                temp_via.LowerMetalRect.placedLL.x = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].LowerMetalRect.placedBox.LL.x;
                temp_via.LowerMetalRect.placedLL.y = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].LowerMetalRect.placedBox.LL.y;
@@ -1055,7 +1057,7 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
                if(drc_info.Metalmap.find(node.Blocks[i].instance[sel].blockPins[j].pinVias[k].UpperMetalRect.metal)!=drc_info.Metalmap.end()){
                   temp_via.UpperMetalRect.metal = drc_info.Metalmap[node.Blocks[i].instance[sel].blockPins[j].pinVias[k].UpperMetalRect.metal];
                }else{
-                  spdlog::error("Router-Error: Metal map error");
+                  logger->error("Router-Error: Metal map error");
                }
                temp_via.UpperMetalRect.placedLL.x = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].UpperMetalRect.placedBox.LL.x;
                temp_via.UpperMetalRect.placedLL.y = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].UpperMetalRect.placedBox.LL.y;
@@ -1076,7 +1078,7 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
            temp_metal.metal=drc_info.Metalmap[node.Blocks[i].instance[sel].interMetals[j].metal];
            //temp_metal.width=drc_info.Metal_info[temp_metal.MetalIdx].width;
          }else{
-           spdlog::error("Router-Error: interMetal info missing metal");
+           logger->error("Router-Error: interMetal info missing metal");
          }
        RouterDB::point temp_point;
        temp_metal.placedLL.x = node.Blocks[i].instance[sel].interMetals[j].placedBox.LL.x;     
@@ -1098,7 +1100,7 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
        if(drc_info.Viamap.find(node.Blocks[i].instance[sel].interVias[j].ViaRect.metal)!=drc_info.Metalmap.end()){
                    temp_via.ViaRect.metal = drc_info.Viamap[node.Blocks[i].instance[sel].interVias[j].ViaRect.metal];
                  }else{
-                   spdlog::error("Router-Error: - Viamap Error");
+                   logger->error("Router-Error: - Viamap Error");
                  }
                temp_via.ViaRect.placedLL.x = node.Blocks[i].instance[sel].interVias[j].ViaRect.placedBox.LL.x;
                temp_via.ViaRect.placedLL.y = node.Blocks[i].instance[sel].interVias[j].ViaRect.placedBox.LL.y;
@@ -1110,7 +1112,7 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
                if(drc_info.Metalmap.find(node.Blocks[i].instance[sel].interVias[j].LowerMetalRect.metal)!=drc_info.Metalmap.end()){
                   temp_via.LowerMetalRect.metal = drc_info.Metalmap[node.Blocks[i].instance[sel].interVias[j].LowerMetalRect.metal];
                }else{
-                  spdlog::error("Router-Error: Metal map error");
+                  logger->error("Router-Error: Metal map error");
                }
                temp_via.LowerMetalRect.placedLL.x = node.Blocks[i].instance[sel].interVias[j].LowerMetalRect.placedBox.LL.x;
                temp_via.LowerMetalRect.placedLL.y = node.Blocks[i].instance[sel].interVias[j].LowerMetalRect.placedBox.LL.y;
@@ -1122,7 +1124,7 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
                if(drc_info.Metalmap.find(node.Blocks[i].instance[sel].interVias[j].UpperMetalRect.metal)!=drc_info.Metalmap.end()){
                   temp_via.UpperMetalRect.metal = drc_info.Metalmap[node.Blocks[i].instance[sel].interVias[j].UpperMetalRect.metal];
                }else{
-                  spdlog::error("Router-Error: Metal map error");
+                  logger->error("Router-Error: Metal map error");
                }
                temp_via.UpperMetalRect.placedLL.x = node.Blocks[i].instance[sel].interVias[j].UpperMetalRect.placedBox.LL.x;
                temp_via.UpperMetalRect.placedLL.y = node.Blocks[i].instance[sel].interVias[j].UpperMetalRect.placedBox.LL.y;
@@ -1763,13 +1765,16 @@ void GlobalRouter::ConvertToViaPnRDB_Placed_Placed(PnRDB::Via& temp_via, RouterD
 
 
 void GlobalRouter::NetToNodeBlockPins(PnRDB::hierNode& HierNode, RouterDB::Net& net){
+
+  auto logger = spdlog::default_logger()->clone("router.GlobalRouter.NetToNodeBlockPins");
+
   //std::cout<<"Start NetToNodeBlockPins"<<std::endl;
   // wbxu: when update hierNode data, all the coordinates should be stored into
   // origin fields, NOT placed fields. Because the hierNode data will be checkin back to higher nodes [fixed]
   PnRDB::pin temp_pin;
   //PnRDB::point temp_point;
   // wbxu: the name should be the name of terminal, not the net name! [fixed]
-  if(net.terminal_idx==-1) {spdlog::warn("Router-Warning: cannot found terminal conntecting to net"); return;}
+  if(net.terminal_idx==-1) {logger->warn("Router-Warning: cannot found terminal conntecting to net"); return;}
   temp_pin.name = Terminals.at(net.terminal_idx).name;
 
   //blockspin to intermetal
@@ -1922,6 +1927,9 @@ void GlobalRouter::AddConnectedContactToNodeNet(PnRDB::hierNode& HierNode, Route
 }
 
 void GlobalRouter::AddConnectedContactFunc(PnRDB::hierNode& HierNode, RouterDB::Net& net, int net_index, RouterDB::NType stype, int siter, int siter2, int smetal, int sx, int sy, int mIdx) {
+
+  auto logger = spdlog::default_logger()->clone("router.GlobalRouter.AddConnectedContactFunc");
+
     PnRDB::globalContact tmpC;
     tmpC.metalIdx=mIdx;
     if(stype==RouterDB::BLOCK) { // block pin
@@ -2021,7 +2029,7 @@ void GlobalRouter::AddConnectedContactFunc(PnRDB::hierNode& HierNode, RouterDB::
         }
       }
     } else {
-      spdlog::error("Router-Error: incorrect source type");
+      logger->error("Router-Error: incorrect source type");
     }
 }
 

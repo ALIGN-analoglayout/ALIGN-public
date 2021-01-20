@@ -10,7 +10,10 @@ long int PnRdatabase::get_number(string str) {
 }
 
 void PnRdatabase::ReadDesignRule(string drfile) {
-  spdlog::info("PnRDB-Info: reading design rule file {0}",drfile);
+
+  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.ReadDesignRule");
+
+  logger->info("PnRDB-Info: reading design rule file {0}",drfile);
 
   ifstream fin;
   fin.open(drfile.c_str());

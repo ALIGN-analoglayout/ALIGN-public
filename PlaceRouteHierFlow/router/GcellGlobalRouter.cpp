@@ -20,7 +20,9 @@ GcellGlobalRouter::GcellGlobalRouter(){
 
 void GcellGlobalRouter::PlotGlobalRouter(){
 
-    spdlog::info("Global-Router-Info: create gnuplot file");
+    auto logger = spdlog::default_logger()->clone("router.GcellGlobalRouter.PlotGlobalRouter");
+
+    logger->info("Global-Router-Info: create gnuplot file");
     std::ofstream fout;
     std::string outfile = "global_router.plt";
     fout.open(outfile);
@@ -99,7 +101,9 @@ void GcellGlobalRouter::AddContacts(std::vector<PnRDB::contact> &temp_contact, j
 
 void GcellGlobalRouter::PlotGlobalRouter_Json(PnRDB::hierNode& node){
 
-    spdlog::info( "JSON WRITE Global Router Results ");
+    auto logger = spdlog::default_logger()->clone("router.GcellGlobalRouter.PlotGlobalRouter_Json");
+
+    logger->info( "JSON WRITE Global Router Results ");
     std::ofstream jsonStream;
     jsonStream.open ("global_router_plt.json");
     json jsonTop;
@@ -216,34 +220,37 @@ void GcellGlobalRouter::PlotGlobalRouter_Json(PnRDB::hierNode& node){
  
     jsonStream << std::setw(4) << jsonTop;
     jsonStream.close();
-    spdlog::info(" JSON FINALIZE {0}" , node.name );
+    logger->info(" JSON FINALIZE {0}" , node.name );
 
 
 };
 
 void GcellGlobalRouter::AssignMetal(RouterDB::terminal &temp_Terminal, int horizontal_index, int vertical_index, int times){
-  spdlog::debug("start assign metal");
+
+  auto logger = spdlog::default_logger()->clone("router.GcellGlobalRouter.AssignMetal");
+
+  logger->debug("start assign metal");
   RouterDB::point temp_point;
   temp_point.x=temp_Terminal.termContacts[0].placedCenter.x;
   temp_point.y=temp_Terminal.termContacts[0].placedCenter.y;
   if(temp_point.x<0 or temp_point.x> UR.x or temp_point.y<0 or temp_point.y> UR.y){
-    spdlog::error("Error Box {0} {1}",temp_point.x,temp_point.y);
+    logger->error("Error Box {0} {1}",temp_point.x,temp_point.y);
     assert(0);
   }
-  spdlog::debug("terminal center {0} {1}",temp_point.x,temp_point.y);
+  logger->debug("terminal center {0} {1}",temp_point.x,temp_point.y);
 
   int h_pitches = drc_info.Metal_info[horizontal_index].grid_unit_y;
   int h_width = drc_info.Metal_info[horizontal_index].width;
   int h_minL = drc_info.Metal_info[horizontal_index].minL;
   //int h_ee = drc_info.Metal_info[horizontal_index].dist_ee;
   int h_metal = horizontal_index;
-  spdlog::debug("hminL {0}",times*h_minL);
+  logger->debug("hminL {0}",times*h_minL);
   int v_pitches = drc_info.Metal_info[vertical_index].grid_unit_x;
   int v_width = drc_info.Metal_info[vertical_index].width;
   int v_minL = drc_info.Metal_info[vertical_index].minL;
   //int v_ee = drc_info.Metal_info[vertical_index].dist_ee;
   int v_metal = vertical_index;
-  spdlog::debug("vminL {0}",times*v_minL);
+  logger->debug("vminL {0}",times*v_minL);
   if(temp_point.y == LL.y or temp_point.y==UR.y){
     //assgin this terminal to horizontal metal, currently M2
     
@@ -263,8 +270,8 @@ void GcellGlobalRouter::AssignMetal(RouterDB::terminal &temp_Terminal, int horiz
     temp_contact.metal = h_metal;
     temp_Terminal.termContacts.clear();
     temp_Terminal.termContacts.push_back(temp_contact);
-    spdlog::debug("Terminal box {0} {1} {2} {3}",temp_LL.x, temp_LL.y, temp_UR.x, temp_UR.y);
-    spdlog::debug("end assign metal");
+    logger->debug("Terminal box {0} {1} {2} {3}",temp_LL.x, temp_LL.y, temp_UR.x, temp_UR.y);
+    logger->debug("end assign metal");
     return;
   }
 
@@ -287,21 +294,22 @@ void GcellGlobalRouter::AssignMetal(RouterDB::terminal &temp_Terminal, int horiz
     temp_contact.metal = v_metal;
     temp_Terminal.termContacts.clear();
     temp_Terminal.termContacts.push_back(temp_contact);
-    spdlog::debug("Terminal box {0} {1} {2} {3}",temp_LL.x, temp_LL.y, temp_UR.x, temp_UR.y);
-    spdlog::debug("end assign metal");
+    logger->debug("Terminal box {0} {1} {2} {3}",temp_LL.x, temp_LL.y, temp_UR.x, temp_UR.y);
+    logger->debug("end assign metal");
     return;
   }
 
   if(temp_point.x%v_pitches!=0 and temp_point.y%h_pitches!=0){
-    spdlog::error("Terminal off grid, please check the width/height of module");
+    logger->error("Terminal off grid, please check the width/height of module");
     assert(0);
   }
 
 };
 
 void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vertical_index, int times){
+  auto logger = spdlog::default_logger()->clone("router.GcellGlobalRouter.Determine_Terminal_Center");
 
-  spdlog::debug("Start determine a terminal");
+  logger->debug("Start determine a terminal");
 
   int h_pitches = drc_info.Metal_info[horizontal_index].grid_unit_y;
   //int h_width = drc_info.Metal_info[horizontal_index].width;
@@ -404,7 +412,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
      }
 
      if(found_v_L==0 and found_v_U==0 and found_h_L==0 and found_h_U==0){
-       spdlog::debug("Fail to determine a terminal");
+       logger->debug("Fail to determine a terminal");
      }else{
 
        Terminals[i].termContacts[0].placedCenter = new_temp_point;
@@ -418,7 +426,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
      
 
   }
-  spdlog::debug("Finish Determine terminal");
+  logger->debug("Finish Determine terminal");
   return;
 
 };
@@ -461,6 +469,8 @@ void GcellGlobalRouter::PlaceTerminal(){
 };
 
 GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int Lmetal, int Hmetal, const std::string &binaryDIR){
+  auto logger = spdlog::default_logger()->clone("router.GcellGlobalRouter.GcellGlobalRouter");
+
   terminal_routing = 0;
   //1. Initial Drcdata and design data
 
@@ -469,15 +479,15 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
 
   if(terminal_routing==1){
 
-    spdlog::debug("Begin Terminal Placement");
+    logger->debug("Begin Terminal Placement");
     PlaceTerminal();
-    spdlog::debug("End Terminal Placement");
+    logger->debug("End Terminal Placement");
 
   }else if(node.isIntelGcellGlobalRouter == false){
 
-    spdlog::debug("Begin Terminal");
+    logger->debug("Begin Terminal");
     placeTerminals();
-    spdlog::debug("End Terminal");
+    logger->debug("End Terminal");
 
   }
 
@@ -543,16 +553,16 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
      for(int j=0;j<Nets[i].connectedTile.size();j++){
         if(Nets[i].connectedTile[j].size()==0){
            //std::cout<<"Nets[i].connectedTile[j] "<<i<<" "<<j<<" size is 0"<<std::endl;
-           spdlog::error("Format Issue ");
-           spdlog::error("Please check the net {0} in module {1}", Nets[i].netName,node.name);
+           logger->error("Format Issue ");
+           logger->error("Please check the net {0} in module {1}", Nets[i].netName,node.name);
            int iter = Nets[i].connected[j].iter;
            int iter2 = Nets[i].connected[j].iter2;
            if(Nets[i].connected[j].type==RouterDB::BLOCK){
-             spdlog::error("Especial the pin {0} in subblock {1}", Blocks[iter2].pins[iter].pinName,Blocks[iter2].blockName);
+             logger->error("Especial the pin {0} in subblock {1}", Blocks[iter2].pins[iter].pinName,Blocks[iter2].blockName);
            }else{
-             spdlog::error("Especial the terminal", Terminals[iter].name);
-             spdlog::debug("Current Box {0} {1} {2} {3}",LL.x,LL.y,UR.x,UR.y);
-             spdlog::debug("terminal box {0} {1} {2} {3}",Terminals[iter].termContacts[0].placedLL.x,Terminals[iter].termContacts[0].placedLL.y,Terminals[iter].termContacts[0].placedUR.x,Terminals[iter].termContacts[0].placedUR.y);
+             logger->error("Especial the terminal", Terminals[iter].name);
+             logger->debug("Current Box {0} {1} {2} {3}",LL.x,LL.y,UR.x,UR.y);
+             logger->debug("terminal box {0} {1} {2} {3}",Terminals[iter].termContacts[0].placedLL.x,Terminals[iter].termContacts[0].placedLL.y,Terminals[iter].termContacts[0].placedUR.x,Terminals[iter].termContacts[0].placedUR.y);
            }
            assert(0);}
      }
@@ -583,11 +593,11 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
 
   for(unsigned int i=0;i<this->Nets.size();++i){
 
-     spdlog::debug("Before mirror Nets index {0}",i);
+     logger->debug("Before mirror Nets index {0}",i);
      
      for(unsigned int j=0;j<this->Nets.at(i).STs.size();++j){
 
-        spdlog::debug("STs path size {0}",this->Nets.at(i).STs[j].path.size());
+        logger->debug("STs path size {0}",this->Nets.at(i).STs[j].path.size());
 
         }
 
@@ -599,11 +609,11 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
 
   for(unsigned int i=0;i<this->Nets.size();++i){
 
-     spdlog::debug("after mirror Nets index {0}",i);
+     logger->debug("after mirror Nets index {0}",i);
      
      for(unsigned int j=0;j<this->Nets.at(i).STs.size();++j){
 
-        spdlog::debug("STs path size {0}",this->Nets.at(i).STs[j].path.size());
+        logger->debug("STs path size {0}",this->Nets.at(i).STs[j].path.size());
 
         }
 
@@ -611,7 +621,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
 
   for(unsigned int i=0;i<this->Nets.size();++i){
 
-     spdlog::debug("Nets symmetry part {0} Nets global symmetry part {1}",this->Nets.at(i).symCounterpart,this->Nets.at(i).global_sym);
+     logger->debug("Nets symmetry part {0} Nets global symmetry part {1}",this->Nets.at(i).symCounterpart,this->Nets.at(i).global_sym);
 
      }    
 
@@ -1028,7 +1038,9 @@ long int GcellGlobalRouter::get_number(string str)
 
 
 void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
-  spdlog::info("Router-Info: begin to import data");
+  auto logger = spdlog::default_logger()->clone("router.GcellGlobalRouter.getData");
+
+  logger->info("Router-Info: begin to import data");
   //this->isTop = node.isTop;
   this->isTop = node.isTop;
   this->topName=node.name;
@@ -1057,7 +1069,7 @@ void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
       RouterDB::terminal temp_terminal;
       temp_terminal.netIter = node.Terminals[i].netIter;
       if(1) {
-      spdlog::debug("Node Terminal {0} termContacts size {1}",node.Terminals[i].name,node.Terminals[i].termContacts.size());
+      logger->debug("Node Terminal {0} termContacts size {1}",node.Terminals[i].name,node.Terminals[i].termContacts.size());
       for(unsigned int j=0;j<node.Terminals[i].termContacts.size();++j){
           RouterDB::contact temp_contact;
  
@@ -1166,7 +1178,7 @@ void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
              if(drc_info.Metalmap.find(node.Blocks[i].instance[slcNumber].blockPins[j].pinContacts[k].metal)!=drc_info.Metalmap.end()){
                  temp_contact.metal=drc_info.Metalmap[node.Blocks[i].instance[slcNumber].blockPins[j].pinContacts[k].metal];
                }else{
-                 spdlog::debug("Router-Error: the metal pin contact of block is not found");
+                 logger->debug("Router-Error: the metal pin contact of block is not found");
                }
              AssignContact(temp_contact, node.Blocks[i].instance[slcNumber].blockPins[j].pinContacts[k]);
              temp_pin.pinContacts.push_back(temp_contact);
@@ -1183,21 +1195,21 @@ void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
                if(drc_info.Viamap.find(node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].ViaRect.metal)!=drc_info.Viamap.end()){
                    temp_via.ViaRect.metal = drc_info.Viamap[node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].ViaRect.metal];
                  }else{
-                   spdlog::debug("Router-Error: - Viamap Error");
+                   logger->debug("Router-Error: - Viamap Error");
                  }
                AssignContact(temp_via.ViaRect, node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].ViaRect);
                //LowerRect //LowerMetalRect
                if(drc_info.Metalmap.find(node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].LowerMetalRect.metal)!=drc_info.Metalmap.end()){
                   temp_via.LowerMetalRect.metal = drc_info.Metalmap[node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].LowerMetalRect.metal];
                }else{
-                  spdlog::debug("Router-Error: Metal map error");
+                  logger->debug("Router-Error: Metal map error");
                }
                AssignContact(temp_via.LowerMetalRect, node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].LowerMetalRect);
                //UpperRect //UpperMetalRect
                if(drc_info.Metalmap.find(node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].UpperMetalRect.metal)!=drc_info.Metalmap.end()){
                   temp_via.UpperMetalRect.metal = drc_info.Metalmap[node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].UpperMetalRect.metal];
                }else{
-                  spdlog::debug("Router-Error: Metal map error");
+                  logger->debug("Router-Error: Metal map error");
                }
                AssignContact(temp_via.UpperMetalRect, node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].UpperMetalRect);
                temp_pin.pinVias.push_back(temp_via);
@@ -1212,7 +1224,7 @@ void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
            temp_metal.metal=drc_info.Metalmap[node.Blocks[i].instance[slcNumber].interMetals[j].metal];
            //temp_metal.width=drc_info.Metal_info[temp_metal.MetalIdx].width;
          }else{
-           spdlog::debug("Router-Error: interMetal info missing metal");
+           logger->debug("Router-Error: interMetal info missing metal");
          }
        RouterDB::point temp_point;
        temp_metal.placedLL.x = node.Blocks[i].instance[slcNumber].interMetals[j].placedBox.LL.x;     
@@ -1234,21 +1246,21 @@ void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
        if(drc_info.Viamap.find(node.Blocks[i].instance[slcNumber].interVias[j].ViaRect.metal)!=drc_info.Metalmap.end()){
                    temp_via.ViaRect.metal = drc_info.Viamap[node.Blocks[i].instance[slcNumber].interVias[j].ViaRect.metal];
                  }else{
-                   spdlog::debug("Router-Error: - Viamap Error");
+                   logger->debug("Router-Error: - Viamap Error");
                  }
                AssignContact(temp_via.ViaRect, node.Blocks[i].instance[slcNumber].interVias[j].ViaRect);
                //LowerRect //LowerMetalRect
                if(drc_info.Metalmap.find(node.Blocks[i].instance[slcNumber].interVias[j].LowerMetalRect.metal)!=drc_info.Metalmap.end()){
                   temp_via.LowerMetalRect.metal = drc_info.Metalmap[node.Blocks[i].instance[slcNumber].interVias[j].LowerMetalRect.metal];
                }else{
-                  spdlog::debug("Router-Error: Metal map error");
+                  logger->debug("Router-Error: Metal map error");
                }
                AssignContact(temp_via.LowerMetalRect, node.Blocks[i].instance[slcNumber].interVias[j].LowerMetalRect);
                //UpperRect //UpperMetalRect
                if(drc_info.Metalmap.find(node.Blocks[i].instance[slcNumber].interVias[j].UpperMetalRect.metal)!=drc_info.Metalmap.end()){
                   temp_via.UpperMetalRect.metal = drc_info.Metalmap[node.Blocks[i].instance[slcNumber].interVias[j].UpperMetalRect.metal];
                }else{
-                  spdlog::debug("Router-Error: Metal map error");
+                  logger->debug("Router-Error: Metal map error");
                }
                AssignContact(temp_via.UpperMetalRect, node.Blocks[i].instance[slcNumber].interVias[j].UpperMetalRect);
 
@@ -1295,7 +1307,7 @@ void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
     }
     PowerNets.push_back(temp_power_net);
   }
-  spdlog::debug("Router-Info: complete importing data");
+  logger->debug("Router-Info: complete importing data");
 };
 
 void GcellGlobalRouter::CopyMetal(RouterDB::Metal &RouterDB_metal, PnRDB::Metal &PnRDB_metal) { 
@@ -1357,6 +1369,7 @@ int GcellGlobalRouter::CopyPath(std::vector<std::pair<int,int> > &path, std::map
 };
 
 int  GcellGlobalRouter::JudgeSymmetry(std::vector<std::pair<int,int> > &path,std::vector<std::pair<int,int> > &sy_path, std::map<int,int> &sy_map){
+  auto logger = spdlog::default_logger()->clone("router.GcellGlobalRouter.JudgeSymmetry");
  
   //map the path
   std::vector<std::pair<int,int> > map_path;
@@ -1364,13 +1377,13 @@ int  GcellGlobalRouter::JudgeSymmetry(std::vector<std::pair<int,int> > &path,std
   
   for(unsigned int i=0;i<path.size();++i){
       if(sy_map.find(path[i].first)==sy_map.end()){
-       spdlog::debug("SY map Error");
+       logger->debug("SY map Error");
       }else{
        temp_path.first = sy_map[path[i].first];
       }
 
      if(sy_map.find(path[i].second)==sy_map.end()){
-       spdlog::debug("SY map Error");
+       logger->debug("SY map Error");
       }else{
        temp_path.second = sy_map[path[i].second];
       }
@@ -1429,22 +1442,28 @@ int  GcellGlobalRouter::JudgeSymmetry(std::vector<std::pair<int,int> > &path,std
 
 };
 
-void routerlpsolvelogger(lprec *lp, void *userhandle, char *buf)
+void GcellGlobalRouter::lpsolve_logger(lprec *lp, void *userhandle, char *buf)
 {
+
+  auto logger = spdlog::default_logger()->clone("router.GcellGlobalRouter.lpsolve_logger");
+
   // Strip leading newline
   while((unsigned char)*buf == '\n') buf++;
   // Log non-empty lines
-  if (*buf != '\0') spdlog::info("GcellGlobalRouter lpsolve: {0}",buf);
+  if (*buf != '\0') logger->info("GcellGlobalRouter lpsolve: {0}",buf);
 }
 
 int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std::set<RouterDB::tile, RouterDB::tileComp> &Tile_Set) {
-  spdlog::info("Status Log: ILP Solving Starts");
+
+  auto logger = spdlog::default_logger()->clone("router.GcellGlobalRouter.ILPSolveRouting");
+
+  logger->info("Status Log: ILP Solving Starts");
 
   # if defined ERROR
   #  undef ERROR
   # endif
-  # define ERROR() { spdlog::error("Error"); }
-  spdlog::debug("LP test flag 1");
+  # define ERROR() { logger->error("Error"); }
+  logger->debug("LP test flag 1");
   // start of lp_solve
   int majorversion, minorversion, release, build;
   char buf[1024];
@@ -1474,7 +1493,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   int NumberOfSTs = 0;
   int NumberOfNets = 0;
   valInfo vi;
-  spdlog::debug("LP test flag 2");
+  logger->debug("LP test flag 2");
   for(unsigned int h=0;h<this->Nets.size();++h) { //  for each net
     vi.netIter=h;
     for(unsigned int i=0;i<this->Nets[h].STs.size();++i) {// for each segment
@@ -1488,17 +1507,17 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
     }
    NumberOfNets++;
   }
-  spdlog::debug("TotNumberOfNest {0} {1}",NumberOfNets,NumberOfSTs);
+  logger->debug("TotNumberOfNest {0} {1}",NumberOfNets,NumberOfSTs);
   this->NumOfVar=NumberOfSTs;//#Variable initialization
 
-  if ((lp = make_lp(0,NumOfVar+1)) == NULL) {spdlog::error("Error");} //ERROR();}
+  if ((lp = make_lp(0,NumOfVar+1)) == NULL) {logger->error("Error");} //ERROR();}
   // lp_solve_version(&majorversion, &minorversion, &release, &build);
   // sprintf(buf, "lp_solve %d.%d.%d.%d demo\n\n", majorversion, minorversion, release, build);//lp_solve 5.5.2.0 
   // print_str(lp, buf);
   // put_logfunc(lp, NULL, 0);
   // set_outputfile(lp, const_cast<char*>("./Debug/lp_solve_result.txt"));
   set_verbose(lp, IMPORTANT);
-  put_logfunc(lp, &routerlpsolvelogger, NULL);
+  put_logfunc(lp, &GcellGlobalRouter::lpsolve_logger, NULL);
   set_outputfile(lp, const_cast<char*>("/dev/null"));
   //set_add_rowmode(lp, TRUE);
   // 2. Initialize matrix without constraints  Q1? A 0 is inserted to the temp_row, so the valInfo maybe not correct
@@ -1506,7 +1525,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   //std::cout<<"testcase 1"<<std::endl;
 
   //int CurNet = 0;
-  spdlog::debug("LP test flag 3");
+  logger->debug("LP test flag 3");
   for(int i=0;i<NumberOfNets;++i){
 
       int CurNet = i;
@@ -1540,12 +1559,12 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
        int size_element = temp_row.size();
        //if (!add_constraint(lp, row, EQ, 1)) {std::cerr << "Error" << std::endl;} //ERROR();}
        if (!add_constraintex(lp,size_element,row,col, EQ, 1)) {
-         spdlog::error("Error");
+         logger->error("Error");
        }  // ERROR();}
      }
 
   //symmetry problem
-  spdlog::debug("LP test flag 4");
+  logger->debug("LP test flag 4");
   for(unsigned int i=0;i<this->Nets.size();++i){
 
     if(this->Nets.at(i).global_sym!=-1 and this->Nets.at(i).global_sym < (int)this->Nets.size()-1){
@@ -1585,9 +1604,9 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
                 double* row = &temp_row[0];
                 int* col=&temp_index[0];
                 int size_element = temp_row.size();
-                spdlog::debug("Adding SYM constraints");
+                logger->debug("Adding SYM constraints");
                 //if (!add_constraint(lp, row, EQ, 0)) {std::cout << "Error" << std::endl;} //ERROR();}
-                if (!add_constraintex(lp, size_element, row, col, EQ, 0)) {spdlog::error("Error");} //ERROR();}
+                if (!add_constraintex(lp, size_element, row, col, EQ, 0)) {logger->error("Error");} //ERROR();}
        
              }
         
@@ -1609,7 +1628,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   std::vector<std::vector<int> > Edges_To_Var;
 
   NumberOfSTs = 0;
-  spdlog::debug("LP test flag 5");
+  logger->debug("LP test flag 5");
   for(unsigned int i=0;i<this->Nets.size();++i){
       for(unsigned int j=0;j<this->Nets.at(i).STs.size();++j){
           NumberOfSTs++;
@@ -1650,7 +1669,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
      }
 
   //std::cout<<"testcase 3"<<std::endl;
-  spdlog::debug("LP test flag 6");
+  logger->debug("LP test flag 6");
   for(unsigned int i=0;i<Edges_To_Var.size();++i){
 
       //std::vector<double> temp_row;
@@ -1684,13 +1703,13 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
           }
        temp_index.push_back(NumberOfSTs+1);
        temp_row.push_back(-Capacities[i]);
-       spdlog::debug("Constraint Capacity {0}",Capacities[i]);
+       logger->debug("Constraint Capacity {0}",Capacities[i]);
 
        double* row = &temp_row[0];
        int* col = &temp_index[0];
        int size_element=temp_row.size();
        //if (!add_constraint(lp, row, LE, 0)) {std::cerr << "Error" << std::endl;} //ERROR();}
-       if (!add_constraintex(lp, size_element, row, col, LE, 0)) {spdlog::error("Error");} //ERROR();}
+       if (!add_constraintex(lp, size_element, row, col, LE, 0)) {logger->error("Error");} //ERROR();}
      }
 
   //std::cout<<"testcase 4"<<std::endl;
@@ -1719,49 +1738,49 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   temp_index.push_back(NumOfVar+1);
   double *row = &temp_row[0];
   int* col=&temp_index[0];
-  if (!set_obj_fnex(lp, 1,row,col)){spdlog::error("Router-Error: Objective insertion Error");}
+  if (!set_obj_fnex(lp, 1,row,col)){logger->error("Router-Error: Objective insertion Error");}
 
   //std::cout<<"testcase 5"<<std::endl;
-  spdlog::debug("LP test flag 7");
+  logger->debug("LP test flag 7");
   // 6. Solve with lp
   set_minim(lp);
   set_timeout(lp,60);
-  spdlog::debug("LP test flag 8");
+  logger->debug("LP test flag 8");
   //set_solutionlimit(lp, 10);
-  spdlog::debug("LP test flag 9");
+  logger->debug("LP test flag 9");
   set_presolve(lp, PRESOLVE_PROBEFIX | PRESOLVE_ROWDOMINATE, get_presolveloops(lp));
-  spdlog::debug("LP test flag 10");
+  logger->debug("LP test flag 10");
   //print_lp(lp);
   
   int ret = solve(lp);
-  spdlog::debug("LP test flag 11");
+  logger->debug("LP test flag 11");
   if(ret== 0){
-          spdlog::info("Status Log: Optimal Solution Found Success");
+          logger->info("Status Log: Optimal Solution Found Success");
   }
   else if(ret==2){
-          spdlog::info("Status Log: Model is Infeasible");
+          logger->info("Status Log: Model is Infeasible");
   }
   else if(ret==1){
-          spdlog::info("Status Log: Suboptimal Solution Found");
+          logger->info("Status Log: Suboptimal Solution Found");
   }
   else if(ret==-2){
-          spdlog::info("Status Log: Out of memory");
+          logger->info("Status Log: Out of memory");
   }
   else if(ret==7){
-          spdlog::info("Status Log: Timeout(set via set_timeout)");
+          logger->info("Status Log: Timeout(set via set_timeout)");
   }
   else{
-          spdlog::info("SStatus Log: Refer Function solve in lp_solve(http://lpsolve.sourceforge.net/5.5/)");
+          logger->info("SStatus Log: Refer Function solve in lp_solve(http://lpsolve.sourceforge.net/5.5/)");
   }
-  spdlog::debug("LP test flag 12");
-  spdlog::debug("#Constraints: lp row: {0}", lp->rows);
-  spdlog::debug("#Variables: lp col:  {0}", lp->columns);
-  spdlog::debug("LP test flag 13");
+  logger->debug("LP test flag 12");
+  logger->debug("#Constraints: lp row: {0}", lp->rows);
+  logger->debug("#Variables: lp col:  {0}", lp->columns);
+  logger->debug("LP test flag 13");
   // 7. Get results and store back to data structure
   // Q5?
   double Vars[NumOfVar];
   get_variables(lp, Vars);
-  spdlog::debug("LP test flag 14");
+  logger->debug("LP test flag 14");
   //std::cout<<"testcase 6"<<std::endl;
   for(int i=0;i<NumOfVar;++i){
       if(Vars[i]==1){
@@ -1772,9 +1791,9 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   //set_add_rowmode(lp, FALSE);
   //free(row);
   //free(col);
-  spdlog::debug("LP test flag 15");
+  logger->debug("LP test flag 15");
   delete_lp(lp);
-  spdlog::debug("LP test flag 16");
+  logger->debug("LP test flag 16");
   return ret;
 }
 

@@ -66,7 +66,7 @@ TEST(PnRDBTest, Lexer) {
   Lexer l(is);
 
   while ( !l.have( TokenType::EndOfFile)) {
-    //spdlog::debug("{0}",l.current_token );
+    //logger->debug("{0}",l.current_token );
     l.get_token();
   }
 }
@@ -92,7 +92,7 @@ TEST(PnRDBTest, Lexer_leading_number) {
   Lexer l(is);
 
   while ( !l.have( TokenType::EndOfFile)) {
-    //spdlog::debug("{0}",l.current_token);
+    //logger->debug("{0}",l.current_token);
     l.get_token();
   }
 }
@@ -118,7 +118,7 @@ TEST(PnRDBTest, Lexer2) {
   Lexer l(is,1);
 
   while ( !l.have( TokenType::EndOfFile)) {
-    //spdlog::debug("{0}",l.current_token);
+    //logger->debug("{0}",l.current_token);
     EXPECT_NE( l.current_token.tt, TokenType::EndOfLine);
     l.get_token();
   }
@@ -355,9 +355,9 @@ endmodule
   EXPECT_EQ( ht.Nets.size(), 16);
   EXPECT_EQ( ht.Terminals.size(), 11);
 
-  //spdlog::debug("Nets:");
+  //logger->debug("Nets:");
   //for( auto p = ht.Nets.begin(); p != ht.Nets.end(); ++p) {
-    //spdlog::debug(" {0}",p->name);
+    //logger->debug(" {0}",p->name);
   //}
   //cout << endl;
 
@@ -612,9 +612,9 @@ endspecify
   EXPECT_EQ( ht.Nets.size(), 16);
   EXPECT_EQ( ht.Terminals.size(), 11);
 
-  //spdlog::debug("Nets:");
+  //logger->debug("Nets:");
   //for( auto p = ht.Nets.begin(); p != ht.Nets.end(); ++p) {
-    //spdlog::debug(" {0}", p->name);
+    //logger->debug(" {0}", p->name);
   //}
   //cout << endl;
 

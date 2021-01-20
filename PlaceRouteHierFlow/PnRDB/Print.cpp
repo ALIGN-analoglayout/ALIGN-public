@@ -112,8 +112,11 @@ void PnRdatabase::PrintSymmNet(PnRDB::SymmNet& t) {
 }
 
 void PnRdatabase::PrintTerminal(PnRDB::terminal& t) {
-  spdlog::debug("@Terminal");
-  spdlog::debug(" name: {0} ; type {1} ; netiter {2} ",t.name, t.type,t.netIter);
+
+  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.PrintTerminal");
+
+  logger->debug("@Terminal");
+  logger->debug(" name: {0} ; type {1} ; netiter {2} ",t.name, t.type,t.netIter);
   for(vector<PnRDB::contact>::iterator it=t.termContacts.begin(); it!=t.termContacts.end(); ++it) {
     PrintContact(*it);
   }
@@ -121,8 +124,11 @@ void PnRdatabase::PrintTerminal(PnRDB::terminal& t) {
 
 
 void PnRdatabase::PrintNet(PnRDB::net& n) {
-  spdlog::debug("@Net");
-  spdlog::debug("name: {0} ; shielding: {1}; sin2Terminal: {2} ; degree: {3}; symCounterpart: {4}; iter2SNetLsit: {5}; priority: {6} ; symmetry axis direction: {7} ; symmetry axis coor: {8}",n.name,n.shielding,n.sink2Terminal, n.degree,n.symCounterpart,n.iter2SNetLsit,n.priority,n.axis_dir,n.axis_coor);
+
+  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.PrintNet");
+
+  logger->debug("@Net");
+  logger->debug("name: {0} ; shielding: {1}; sin2Terminal: {2} ; degree: {3}; symCounterpart: {4}; iter2SNetLsit: {5}; priority: {6} ; symmetry axis direction: {7} ; symmetry axis coor: {8}",n.name,n.shielding,n.sink2Terminal, n.degree,n.symCounterpart,n.iter2SNetLsit,n.priority,n.axis_dir,n.axis_coor);
   //std::cout<<"connected ";
   for(vector<PnRDB::connectNode>::iterator it=n.connected.begin(); it!=n.connected.end(); ++it) {
     //std::cout<<" {"<<it->type<<","<<it->iter<<","<<it->iter2<<"} ";

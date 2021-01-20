@@ -26,7 +26,7 @@ protected:
     void sink_it_(const spdlog::details::log_msg& msg) override
     {
       auto pylogger = py::module_::import("logging").attr("getLogger")(
-        std::string("align.pnr.") + fmt::to_string(msg.logger_name)
+        std::string("PnR.") + fmt::to_string(msg.logger_name)
       );
       spdlog::memory_buf_t formatted;
       spdlog::sinks::base_sink<Mutex>::formatter_->format(msg, formatted);
@@ -362,11 +362,11 @@ PYBIND11_MODULE(PnR, m) {
   m.def("toplevel", [](const std::vector<std::string>& argv) {
     py::scoped_ostream_redirect coutstream(
         std::cout,
-        py::module_::import("align").attr("utils").attr("logging").attr("StreamLogger")(std::string("align.pnr.toplevel"), std::string("DEBUG"))
+        py::module_::import("align").attr("utils").attr("logging").attr("StreamLogger")(std::string("align.PnR.toplevel"), std::string("DEBUG"))
     );
     py::scoped_estream_redirect cerrstream(
         std::cerr,
-        py::module_::import("align").attr("utils").attr("logging").attr("StreamLogger")(std::string("align.pnr.toplevel"), std::string("ERROR"))
+        py::module_::import("align").attr("utils").attr("logging").attr("StreamLogger")(std::string("align.PnR.toplevel"), std::string("ERROR"))
     );
     toplevel(argv);},
     "helper function to perform the whole C++ flow");

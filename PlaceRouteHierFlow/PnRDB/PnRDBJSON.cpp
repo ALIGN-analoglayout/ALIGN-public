@@ -718,6 +718,9 @@ namespace PnRDB {
 
 TEST( hierNodeTest, TestA)
 {
+
+  auto logger = spdlog::default_logger()->clone("PnRDB.TEST");
+
   PnRDB::hierNode hN;
   hN.name = "hierNodeName";
 
@@ -728,7 +731,7 @@ TEST( hierNodeTest, TestA)
   {
     std::ofstream jsonStream( "__json");
     if(jsonStream.fail()) {
-      spdlog::error("Cannot open file __json for writing");
+      logger->error("Cannot open file __json for writing");
       return;
     }
     jsonStream << std::setw(4) << json_hN;
@@ -754,9 +757,12 @@ TEST( hierNodeTest, TestInOut)
 
 void PnRdatabase::WriteDBJSON( const PnRDB::hierNode& hN, const string& filename) const
 {
+
+  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.WriteDBJSON");
+
   std::ofstream jsonStream( filename);
   if(jsonStream.fail()) {
-    spdlog::error("Cannot open file {0} for writing",filename);
+    logger->error("Cannot open file {0} for writing",filename);
     return;
   }
   jsonStream << json(hN);
@@ -764,9 +770,12 @@ void PnRdatabase::WriteDBJSON( const PnRDB::hierNode& hN, const string& filename
 
 void PnRdatabase::ReadDBJSON( PnRDB::hierNode& hN, const string& filename) const
 {
+
+  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.ReadDBJSON");
+
   std::ifstream ifs( filename);
   if(ifs.fail()) {
-    spdlog::error("Cannot open file {0} for writing",filename);
+    logger->error("Cannot open file {0} for writing",filename);
     return;
   }
   json::parse(ifs).get_to( hN);

@@ -1071,6 +1071,9 @@ void DetailRouter::GetPhsical_Metal(std::vector<std::vector<RouterDB::Metal> > &
 };
 
 void DetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::point> >& plist, int mIdx, int LLx, int LLy, int URx, int URy) {
+
+  auto logger = spdlog::default_logger()->clone("router.DetailRouter.ConvertRect2GridPoints");
+
   RouterDB::point tmpP;
   int obs_l=0;
   int obs_h=this->layerNo-1;
@@ -1094,10 +1097,10 @@ void DetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::poin
         //int boundY=(newLLy%nexlayer_unit==0) ? (newLLy) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ? (newLLy/nexlayer_unit+1)*nexlayer_unit : (newLLy/nexlayer_unit)*nexlayer_unit  );
         int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
         newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
-	spdlog::debug( "converter check point 1");
+	logger->debug( "converter check point 1");
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
-            spdlog::debug( "Plist problem");
+            logger->debug( "Plist problem");
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
           //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
@@ -1115,7 +1118,7 @@ void DetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::poin
         //int boundY=(newLLy%nexlayer_unit==0) ? (newLLy) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ? (newLLy/nexlayer_unit+1)*nexlayer_unit : (newLLy/nexlayer_unit)*nexlayer_unit  );
         int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
         newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
-	spdlog::debug( "converter check point 2");
+	logger->debug( "converter check point 2");
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
@@ -1142,7 +1145,7 @@ void DetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::poin
         //int boundX=(newLLx%nexlayer_unit==0) ? (newLLx) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ? (newLLx/nexlayer_unit+1)*nexlayer_unit : (newLLx/nexlayer_unit)*nexlayer_unit  );
         int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
         newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
-	spdlog::debug( "converter check point 3");
+	logger->debug( "converter check point 3");
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
            if(x>=LLx and x<=URx and y>=LLy and y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
@@ -1162,7 +1165,7 @@ void DetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::poin
         //int boundX=(newLLx%nexlayer_unit==0) ? (newLLx) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ? (newLLx/nexlayer_unit+1)*nexlayer_unit : (newLLx/nexlayer_unit)*nexlayer_unit  );
         int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
         newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
-	spdlog::debug( "converter check point 4");
+	logger->debug( "converter check point 4");
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
@@ -1411,13 +1414,16 @@ ConvertToViaPnRDB_Placed_Origin(temp_via, Blocks[net.connected[i].iter2].pins[ne
 
 
 void DetailRouter::NetToNodeBlockPins(PnRDB::hierNode& HierNode, RouterDB::Net& net){
+
+  auto logger = spdlog::default_logger()->clone("router.DetailRouter.NetToNodeBlockPins");
+
   //std::cout<<"Start NetToNodeBlockPins"<<std::endl;
   // wbxu: when update hierNode data, all the coordinates should be stored into
   // origin fields, NOT placed fields. Because the hierNode data will be checkin back to higher nodes [fixed]
   PnRDB::pin temp_pin;
   //PnRDB::point temp_point;
   // wbxu: the name should be the name of terminal, not the net name! [fixed]
-  if(net.terminal_idx==-1) {spdlog::error("Router-Warning: cannot found terminal conntecting to net"); return;}
+  if(net.terminal_idx==-1) {logger->error("Router-Warning: cannot found terminal conntecting to net"); return;}
   temp_pin.name = Terminals.at(net.terminal_idx).name;
 
   if(this->isTop){
