@@ -30,8 +30,8 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             // metal layer
             metal_index = metal_index + 1;
             #ifdef FinFET_MOCK_PDK
-            std::cout<<"Reading Json PDK on "<<lname<<std::endl;
-            std::cout<<"Reading Json PDK on "<<"GdsLayerNo"<<std::endl;
+            spdlog::info("Reading Json PDK on {0}",lname);
+            spdlog::info("Reading Json PDK on GdsLayerNo");
             int lnum=layer["GdsLayerNo"];
             int Drawnum=layer["GdsDatatype"]["Draw"];
             int Pinnum=layer["GdsDatatype"]["Pin"];
@@ -42,7 +42,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             #endif
             std::string ldir=layer["Direction"];
             int lpitch=-1;
-            std::cout<<"Reading Json PDK on "<<"Pitch"<<std::endl;
+            spdlog::info("Reading Json PDK on Pitch");
             json pdata=layer["Pitch"];
             if(pdata.is_array()) {
               json::iterator pit=pdata.begin();
@@ -51,7 +51,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
               lpitch=pdata;
             }
             int lwidth=-1;
-            std::cout<<"Reading Json PDK on "<<"Width"<<std::endl;
+            spdlog::info("Reading Json PDK on Width");
             json wdata=layer["Width"];
             if(wdata.is_array()) {
               json::iterator wit=wdata.begin();
@@ -59,16 +59,16 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             } else if (wdata.is_number()) {
               lwidth=wdata;
             }
-            std::cout<<"Reading Json PDK on "<<"MinL"<<std::endl;
+            spdlog::info("Reading Json PDK on MinL");
             int lminL=layer["MinL"];
             //int lmaxL=layer["MaxL"];
-            std::cout<<"Reading Json PDK on "<<"EndToEnd"<<std::endl;
+            spdlog::info("Reading Json PDK on EndToEnd");
             int le2e=layer["EndToEnd"];
 
             double unit_C = 0;
             double unit_CC = 0;
             double unit_R = 0;
-            std::cout<<"Reading Json PDK on "<<"Units, C, CC, R"<<std::endl;
+            spdlog::info("Reading Json PDK on Units, C, CC, R");
             #ifdef FinFET_MOCK_PDK
             if(layer["UnitC"]["Mean"].is_number()){unit_C=layer["UnitC"]["Mean"];}
             if(layer["UnitCC"]["Mean"].is_number()){unit_CC=layer["UnitCC"]["Mean"];}
@@ -89,7 +89,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             #endif
             if(ldir.compare("V")==0) { tmp_metal.direct=0; tmp_metal.grid_unit_x=times*lpitch; tmp_metal.grid_unit_y=-1;
             } else if (ldir.compare("H")==0) { tmp_metal.direct=1; tmp_metal.grid_unit_y=times*lpitch; tmp_metal.grid_unit_x=-1;
-            } else {std::cout<<"PnR-Error: incorrect metal direction\n";}
+            } else {spdlog::error("PnR-Error: incorrect metal direction");}
             tmp_metal.width=times*lwidth;
             tmp_metal.dist_ss=times*(lpitch-lwidth);
             tmp_metal.minL=times*lminL;
@@ -103,7 +103,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
         }
         for(std::map<int, PnRDB::metal_info>::iterator it=metalSet.begin(); it!=metalSet.end(); ++it) {
           DRC_info.Metal_info.push_back(it->second);
-	  cout << "Assign the metalmap[" << it->second.name << "] = " << DRC_info.Metal_info.size()-1 << endl;
+	  //cout << "Assign the metalmap[" << it->second.name << "] = " << DRC_info.Metal_info.size()-1 << endl;
           DRC_info.Metalmap[it->second.name] = DRC_info.Metal_info.size()-1;
         }
         DRC_info.MaxLayer = DRC_info.Metal_info.size()-1;
@@ -123,7 +123,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
           }
         }
 
-        std::cout<<"Boundary test "<<DRC_info.top_boundary.name<<" "<<DRC_info.top_boundary.layerNo<<" "<<DRC_info.top_boundary.gds_datatype.Draw<<std::endl;
+        //std::cout<<"Boundary test "<<DRC_info.top_boundary.name<<" "<<DRC_info.top_boundary.layerNo<<" "<<DRC_info.top_boundary.gds_datatype.Draw<<std::endl;
 
         // 2. Extract via info
         int via_index = 0;
@@ -134,31 +134,31 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             via_index = via_index + 1;
             // via layer
             via_index = via_index + 1;
-            std::cout<<"Reading Json PDK on "<<lname<<std::endl;
+            spdlog::info("Reading Json PDK on {0}",lname);
             #ifdef FinFET_MOCK_PDK
-            std::cout<<"Reading Json PDK on "<<"GdsLayerNo"<<std::endl;
+            spdlog::info("Reading Json PDK on GdsLayerNo");
             int lnum=layer["GdsLayerNo"];
             int Drawnum=layer["GdsDatatype"]["Draw"];
             #else
             int lnum=layer["LayerNo"];
             #endif
-            std::cout<<"Reading Json PDK on "<<"Stack"<<std::endl;
+            //std::cout<<"Reading Json PDK on "<<"Stack"<<std::endl;
             json stackAry = layer["Stack"];
-            std::cout<<"Reading Json PDK on "<<"WidthX"<<std::endl;
+            //std::cout<<"Reading Json PDK on "<<"WidthX"<<std::endl;
             int lwidthx= layer["WidthX"];
-            std::cout<<"Reading Json PDK on "<<"WidthY"<<std::endl;
+            //std::cout<<"Reading Json PDK on "<<"WidthY"<<std::endl;
             int lwidthy= layer["WidthY"];
-            std::cout<<"Reading Json PDK on "<<"SpaceX"<<std::endl;
+            //std::cout<<"Reading Json PDK on "<<"SpaceX"<<std::endl;
             int lspacex= layer["SpaceX"];
-            std::cout<<"Reading Json PDK on "<<"SpaceY"<<std::endl;
+            //std::cout<<"Reading Json PDK on "<<"SpaceY"<<std::endl;
             int lspacey= layer["SpaceY"];
-            std::cout<<"Reading Json PDK on "<<"VencA_L"<<std::endl;
+            //std::cout<<"Reading Json PDK on "<<"VencA_L"<<std::endl;
             int lvencal= layer["VencA_L"];
-            std::cout<<"Reading Json PDK on "<<"VencA_H"<<std::endl;
+            //std::cout<<"Reading Json PDK on "<<"VencA_H"<<std::endl;
             int lvencah= layer["VencA_H"];
-            std::cout<<"Reading Json PDK on "<<"VencP_L"<<std::endl;
+            //std::cout<<"Reading Json PDK on "<<"VencP_L"<<std::endl;
             int lvencpl= layer["VencP_L"];
-            std::cout<<"Reading Json PDK on "<<"VencP_H"<<std::endl;
+            //std::cout<<"Reading Json PDK on "<<"VencP_H"<<std::endl;
             int lvencph= layer["VencP_H"];
 
             double R = 0;
@@ -193,7 +193,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
 		if(s.is_string()) {
 		  metal_stack_indices[i] = DRC_info.Metalmap[s]; //get via's upper and lower metal name by via's Stack
 		} else {
-		  cout << "Null metal for via " << tmp_via.name << " pos " << i << endl;
+		  //cout << "Null metal for via " << tmp_via.name << " pos " << i << endl;
 		}
 	      }
 
@@ -209,10 +209,31 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
 	    }
           }
         }
+       
+
         for(std::map<int, PnRDB::via_info>::iterator it=viaSet.begin(); it!=viaSet.end(); ++it) {
           DRC_info.Via_info.push_back(it->second);
           DRC_info.Viamap[it->second.name] = DRC_info.Via_info.size()-1;
         }
+
+       // extract information for guard ring
+        for(json::iterator lit = layerAry.begin(); lit != layerAry.end(); ++lit) {
+          json layer = *lit;
+          std::string lname=layer["Layer"];
+          if(lname.compare("GuardRing")==0){//
+             PnRDB::guardring_info temp_guardring_info;
+             //temp_boundary.layerNo = layer["GdsLayerNo"];
+             //temp_guardring_info.gds_datatype.Draw=layer["GdsDatatype"]["Draw"];
+             //temp_boundary.gds_datatype.Pin=layer["GdsDatatype"]["Pin"];
+             //temp_boundary.gds_datatype.Label=layer["GdsDatatype"]["Label"];
+             //temp_boundary.gds_datatype.Blockage=layer["GdsDatatype"]["Blockage"];
+             temp_guardring_info.xspace = layer["XSpace"];
+             temp_guardring_info.yspace = layer["YSpace"];
+             DRC_info.Guardring_info = temp_guardring_info;
+          }          
+
+        }
+
 
         // 3. Add metal weight
         //add
@@ -233,7 +254,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
 	     const string& lm_name = DRC_info.Metal_info.at(temp_viamodel.LowerIdx).name;
 	     const string& um_name = DRC_info.Metal_info.at(temp_viamodel.UpperIdx).name;
 
-	     cout << "Via " << temp_viamodel.name << " ViaIndex " << temp_viamodel.ViaIdx << " LowerIdx " << temp_viamodel.LowerIdx << " (" << lm_name << ") UpperIdx " << temp_viamodel.UpperIdx << " (" << um_name << ")" << endl;
+	     //cout << "Via " << temp_viamodel.name << " ViaIndex " << temp_viamodel.ViaIdx << " LowerIdx " << temp_viamodel.LowerIdx << " (" << lm_name << ") UpperIdx " << temp_viamodel.UpperIdx << " (" << um_name << ")" << endl;
 
              PnRDB::point temp_point;
 	     auto& vi = DRC_info.Via_info[temp_viamodel.ViaIdx];

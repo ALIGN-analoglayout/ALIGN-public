@@ -8,7 +8,7 @@ from .transformation import Transformation
 
 import json
 from collections import defaultdict
-
+import re
 
 
 def extend( u, rng):
@@ -275,91 +275,14 @@ def main(args, tech):
   with open( gr_fn, "rt") as fp:
     global_router_results = json.load( fp)
 
-#  hack_gr( global_router_results, placer_results['bbox'])
+  #  hack_gr( global_router_results, placer_results['bbox'])
+  #  wires = gr_hints(placer_results)
+  #  global_router_results = { "wires": wires}
 
-#  wires = gr_hints(placer_results)
-#  global_router_results = { "wires": wires}
-
-  metal_layer_map = { f'M{i}' : f'metal{i}' for i in range(1,7) }
-  via_layer_map = { f'V{i}' : f'via{i}' for i in range(1,6) }
+  metal_layer_map = { f'M{i}' : f'metal{i}' for i in range(0,7) }
+  via_layer_map = { f'V{i}' : f'via{i}' for i in range(0,6) }
   layer_map = dict(list(metal_layer_map.items()) + list(via_layer_map.items()))
-
   print("Layer map:", layer_map)
-
-  for leaf in placer_results['leaves']:
-  # Modify leaf terminals to only include terminals in the layer_map
-    terminals = []
-    for term in leaf['terminals']:
-      if term['layer'] in layer_map:
-        term['layer'] = layer_map[term['layer']]
-        terminals.append(term)
-    leaf['terminals'] = terminals
-
-  if False:
-    #
-    # SMB: Generalize this
-    #
-    m1_pitch = 800
-
-    global_xcs2 = set()
-    global_ycs2 = set()
-    for leaf in placer_results['leaves']:
-
-      ycs = set()
-      ycs2 = set()
-      ycs.add( leaf['bbox'][1])
-      ycs.add( leaf['bbox'][3])
-      ycs2.add( leaf['bbox'][1]%840)
-      ycs2.add( leaf['bbox'][3]%840)
-
-      xcs = set()
-      xcs2 = set()
-      xcs.add( leaf['bbox'][0])
-      xcs.add( leaf['bbox'][2])
-      xcs2.add( leaf['bbox'][0]%m1_pitch)
-      xcs2.add( leaf['bbox'][2]%m1_pitch)
-      print( "bbox", leaf['template_name'], ycs, ycs2, xcs, xcs2)
-
-      for term in leaf['terminals']:
-        if term['layer'] in ["metal2"]:
-          if term['net_name'] in ["!kor"]: continue
-          yc = (term['rect'][1]+term['rect'][3])//2
-          ycs.add(yc)
-          cand = yc%840
-          ycs2.add(cand)
-          if cand != 0:
-            print("YYY", leaf['template_name'], term)
-
-          global_ycs2.add(cand)
-
-        if term['layer'] in ["metal1","metal3"]:
-          xc = (term['rect'][0]+term['rect'][2])//2
-          xcs.add(xc)
-          cand = xc%m1_pitch
-          xcs2.add(cand)
-          if cand != 0:
-            print("YYY", leaf['template_name'], term)
-
-          global_xcs2.add(cand)
-
-      print('XXX template_name ycs',leaf['template_name'], ycs, ycs2)    
-      print('XXX template_name xcs',leaf['template_name'], xcs, xcs2)    
-
-    print('XXX global_ycs2', global_ycs2)
-    print('XXX global_xcs2', global_xcs2)
-
-
-    ycs2 = set()
-    xcs2 = set()
-    for inst in placer_results['instances']:
-
-
-      m840 = inst['transformation']['oY']%840
-      m800 = inst['transformation']['oX']%800
-      print(inst['instance_name'], m840, m800, inst['transformation'])
-      ycs2.add(m840)
-      xcs2.add(m800)
-    print('Transform ycs2 xcs2', ycs2, xcs2)
 
   adts = {}
 
@@ -369,7 +292,9 @@ def main(args, tech):
     adts[nm] = adt
 
     for term in leaf['terminals']:
-      if term['net_name'] != '!kor':
+      if term['layer'] in layer_map:
+        # SY: Do not exclude !kor nets to propagate blockages thru hierarchy
+        term = convert_align_to_adr(term)
         adt.newWire( term['net_name'], Rect( *term['rect']), term['layer'])
 
   bbox = placer_results['bbox']
@@ -382,7 +307,7 @@ def main(args, tech):
     iN = inst['instance_name']
     tr = inst['transformation']
 
-#    print( tr)
+    # print( tr)
 
     adnetl.addInstance( ADI( adts[tN], iN, ADITransform( tr['oX'], tr['oY'], tr['sX'], tr['sY'])))
 
@@ -397,18 +322,19 @@ def main(args, tech):
   if 'preroutes' in placer_results:
     preroutes = placer_results['preroutes']
     for preroute in preroutes:
-      adnetl.addPreroute( preroute)
+      adnetl.addPreroute(convert_align_to_adr(preroute))
 
   adnetl.genNetlist( netl)
 
   for wire in global_router_results['wires']:
+    wire = convert_align_to_adr(wire)
     connected_pins = wire.get('connected_pins',None)
-# Enforce the new format
+    # Enforce the new format
     assert connected_pins is not None
 
     netl.newGR( wire['net_name'], Rect( *wire['rect']), wire['layer'], wire['width'], connected_pins=connected_pins)
 
-#  netl.semantic()
+    # netl.semantic()
 
   pathlib.Path("INPUT").mkdir(parents=True, exist_ok=True)
 

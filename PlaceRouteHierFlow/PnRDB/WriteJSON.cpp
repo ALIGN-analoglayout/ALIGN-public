@@ -63,7 +63,7 @@ JSONExtractUit (string GDSData, double& unit)
 		json lib = *lit;
 		json strAry = lib["units"];
                 if(strAry.is_array()) {
-                     std::cout<<"Unit "<<strAry<<std::endl;
+                     spdlog::info("Unit {0} ",strAry);
 		     json::iterator xyI = strAry.begin();
                      double xyU=*xyI;
                      unit=2*0.00025/xyU;
@@ -82,7 +82,7 @@ JSONReaderWrite_subcells (string GDSData, long int& rndnum,
     rndnum++;
 
     std::string jsonFileName = GDSData + ".json";
-    std::cout << "GDS JSON FILE=" << jsonFileName << std::endl;
+    spdlog::info("GDS JSON FILE={0}" , jsonFileName);
 
     int TJ_llx=INT_MAX; int TJ_lly=INT_MAX; int TJ_urx=-1*INT_MAX; int TJ_ury=-1*INT_MAX;
 
@@ -127,9 +127,9 @@ JSONReaderWrite_subcells (string GDSData, long int& rndnum,
 		}
 	    }
 	} else
-	    std::cout << "NOT a VALID JSON FILE: " << jsonFileName << std::endl;
+	    spdlog::info("NOT a VALID JSON FILE: {0}", jsonFileName);
     } else {
-	std::cout << "NO JSON FILE: " << jsonFileName << std::endl;
+	spdlog::info("NO JSON FILE: {0}" , jsonFileName);
 	// DAK: This means we will have a missing subcell!
 	// DAK: Should error here
     }
@@ -145,18 +145,18 @@ JSONLabelTerminals(PnRDB::hierNode& node, const PnRDB::Drc_info& drc_info, json&
 {
     elmAry = json::array();
   
-    cout<<"Top: "<<node.isTop<<endl;
-    cout<<"#terminals print"<<endl;
-    cout<<"#size: "<<node.Terminals.size()<<endl;
+    //cout<<"Top: "<<node.isTop<<endl;
+    //cout<<"#terminals print"<<endl;
+    //cout<<"#size: "<<node.Terminals.size()<<endl;
     for(unsigned int i=0;i<node.Terminals.size();i++){
-	cout<<"#name: "<<node.Terminals[i].name<<endl; 
-	cout<<"#type: "<<node.Terminals[i].type<<endl; 
-	cout<<"#netIter: "<<node.Terminals[i].netIter<<endl; 
-	cout<<"#termContact size: "<<node.Terminals[i].termContacts.size()<<endl;
+	//cout<<"#name: "<<node.Terminals[i].name<<endl; 
+	//cout<<"#type: "<<node.Terminals[i].type<<endl; 
+	//cout<<"#netIter: "<<node.Terminals[i].netIter<<endl; 
+	//cout<<"#termContact size: "<<node.Terminals[i].termContacts.size()<<endl;
 	for(unsigned int j=0;j<node.Terminals[i].termContacts.size();j++){
-	    cout<<"#contact-metal: "<<node.Terminals[i].termContacts[j].metal<<endl;
-	    cout<<"#contact-placedCenter(x,y): "<<node.Terminals[i].termContacts[j].placedCenter.x<<" "
-		<<node.Terminals[i].termContacts[j].placedCenter.y<<endl;
+	    //cout<<"#contact-metal: "<<node.Terminals[i].termContacts[j].metal<<endl;
+	    //cout<<"#contact-placedCenter(x,y): "<<node.Terminals[i].termContacts[j].placedCenter.x<<" "
+		//<<node.Terminals[i].termContacts[j].placedCenter.y<<endl;
 	}
     }
     int test_font=1,test_vp=1,test_hp=1;
@@ -170,12 +170,12 @@ JSONLabelTerminals(PnRDB::hierNode& node, const PnRDB::Drc_info& drc_info, json&
 	    for (unsigned int j = 0; j < node.Terminals[i].termContacts.size(); j++) {
 		PnRDB::contact con = node.Terminals[i].termContacts[j];
            
-		cout<<"#test metal string: \""<<con.metal<<"\""<<endl;
+		//cout<<"#test metal string: \""<<con.metal<<"\""<<endl;
 		if (! con.metal.empty()) {
 		    if (write == 0) {
 		      center_x[0] = unit * con.placedCenter.x;
 		      center_y[0] = unit * con.placedCenter.y;
-                      std::cout<<"Terminal name "<<node.Terminals[i].name<<" center "<<center_x[0]<<" "<<center_y[0]<<std::endl;
+              spdlog::info("Terminal name {0} center {1} {2}",node.Terminals[i].name,center_x[0],center_y[0]);
 		      json elm;
 		      elm["type"] = "text";
 		      elm["layer"] = metal2int( drc_info, con.metal);
@@ -387,7 +387,7 @@ static void addViaBoundaries (json& jsonElements, struct PnRDB::Via& via, const 
 std::string
 PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNet, bool includePowerNet,
 			bool includePowerGrid, const std::string& gdsName, const PnRDB::Drc_info& drc_info, const string& opath) {
-    std::cout << "JSON WRITE CELL " << gdsName << std::endl;
+    spdlog::info("JSON WRITE CELL {0} ", gdsName );
     node.gdsFile = opath+gdsName+".gds";
     string TopCellName = gdsName;
     std::set<string> uniGDSset;
@@ -398,7 +398,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 	for (std::set<string>::iterator it=uniGDSset.begin();it!=uniGDSset.end();++it) {
 	    JSONExtractUit (*it, unitScale);
 	}   
-    std::cout<<"unitScale "<<unitScale<<std::endl;
+    spdlog::info("unitScale {0} ",unitScale);
     uniGDSset.clear();
   
     std::ofstream jsonStream;
@@ -425,8 +425,11 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     if (includeBlock) {
 	for (unsigned int i = 0; i < node.Blocks.size(); i++) 
 	    uniGDSset.insert(node.Blocks[i].instance.at(node.Blocks[i].selectedInstance).gdsFile);
+    for (unsigned int i = 0; i < node.GuardRings.size(); i++) 
+	    uniGDSset.insert(node.GuardRings[i].gdsFile);
+    
 
-	cout<<"start wrting sub-blocks"<<endl;
+	//cout<<"start wrting sub-blocks"<<endl;
 	for (std::set<string>::iterator it=uniGDSset.begin();it!=uniGDSset.end();++it) {
 	    json j;
 	    JSONReaderWrite_subcells (*it, rndnum, strBlocks, llx,lly,urx,ury, j);
@@ -450,12 +453,12 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     if (write_blockPins_name and node.isTop ==1){
 	for (unsigned int i = 0; i < node.blockPins.size(); i++) {
 	    int write = 0;
-            std::cout<<"Write blockPins info "<<node.blockPins[i].name<<std::endl;
-            std::cout<<"blockPins contact size "<<node.blockPins[i].pinContacts.size()<<std::endl;
+            spdlog::info("Write blockPins info {0}",node.blockPins[i].name);
+            spdlog::info("blockPins contact size {0}",node.blockPins[i].pinContacts.size());
 	    for (unsigned int j = 0; j < node.blockPins[i].pinContacts.size(); j++) {
 		if (write == 0) {
 		    PnRDB::contact con = node.blockPins[i].pinContacts[j];
-                    std::cout<<"contact info "<<con.originBox.LL.x<<" "<<con.originBox.LL.y<<" "<<con.originBox.UR.x<<" "<<con.originBox.UR.y<<std::endl;
+                    spdlog::info("contact info {0} {1} {2} {3}",con.originBox.LL.x,con.originBox.LL.y,con.originBox.UR.x,con.originBox.UR.y);
                     con.placedBox = con.originBox;
                     addContactBoundaries (jsonElements, con, drc_info, unitScale);
 		    assignBoxPoints (x, y, con.originBox, unitScale);
@@ -469,6 +472,46 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 	}
     }
 
+    //write out extend pins
+    int write_extend_pins = 0;
+    if(write_extend_pins){
+       for(unsigned int i=0;i<node.Blocks.size();i++){
+          int selected_block_index = node.Blocks[i].selectedInstance;
+          for(unsigned int j=0;j<node.Blocks[i].instance[selected_block_index].blockPins.size();j++){
+             for(unsigned int k=0;k<node.Blocks[i].instance[selected_block_index].blockPins[j].pinContacts.size();k++){
+                 PnRDB::contact con = node.Blocks[i].instance[selected_block_index].blockPins[j].pinContacts[k];
+                 //con.placedBox = con.originBox;
+                 addContactBoundaries (jsonElements, con, drc_info, unitScale);
+             }
+          }
+       }
+    }
+
+/*
+    int write_blockPins = 1;
+    if (write_blockPins){
+	for (unsigned int i = 0; i < node.blockPins.size(); i++) {
+	    int write = 1;
+	    for (unsigned int j = 0; j < node.blockPins[i].pinContacts.size(); j++) {
+                PnRDB::contact con = node.blockPins[i].pinContacts[j];
+                con.placedBox = con.originBox;
+                addContactBoundaries (jsonElements, con, drc_info, unitScale);
+		if (write == 0) {
+		    PnRDB::contact con = node.blockPins[i].pinContacts[j];
+                    std::cout<<"contact info "<<con.originBox.LL.x<<" "<<con.originBox.LL.y<<" "<<con.originBox.UR.x<<" "<<con.originBox.UR.y<<std::endl;
+                    con.placedBox = con.originBox;
+                    addContactBoundaries (jsonElements, con, drc_info, unitScale);
+		    assignBoxPoints (x, y, con.originBox, unitScale);
+		    addTextElements (jsonElements, (x[0]+x[2])/2, (y[0]+y[2])/2,
+				     metal2int( drc_info, con.metal), 
+                    drc_info, drc_info.Metalmap.at(con.metal),
+                    node.blockPins[i].name);
+		    write = 0;	// added by yg 
+		}
+	    }
+	}
+    }
+*/
     if (includeNet) {
 	//cout<<"start writing nets"<<endl;
 	for (unsigned int i = 0; i < node.Nets.size(); i++) {
@@ -547,12 +590,25 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
         //       }
         //   }
 
+    for (unsigned int i=0;i<node.GuardRings.size();i++){
+        json sref;
+        sref["type"] = "sref";
+        sref["sname"] = strBlocks_Top[gdsMap2strBlock[node.GuardRings[i].gdsFile]];
+        sref["strans"] = 0;
+        json xy = json::array();
+		xy.push_back (int(unitScale * node.GuardRings[i].LL.x));
+		xy.push_back (int(unitScale * node.GuardRings[i].LL.y));
+	    sref["xy"] = xy;
+        jsonElements.push_back (sref);
+    }
+
 	for (unsigned int i = 0; i < node.Blocks.size(); i++) {
 	    int index=gdsMap2strBlock[node.Blocks[i].instance.at(node.Blocks[i].selectedInstance).gdsFile];
 
 	    json sref;
 	    sref["type"] = "sref";
 	    sref["sname"] = strBlocks_Top[index];
+        sref["angle"] = 0.0;
 
 	    switch (node.Blocks[i].instance.at(node.Blocks[i].selectedInstance).orient) {
 	    case PnRDB::N:   bOrient = 0; break;
@@ -632,7 +688,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     jsonTop["bgnlib"] = jsonLibAry;
     jsonStream << std::setw(4) << jsonTop;
     jsonStream.close();
-    std::cout << " JSON FINALIZE " <<  gdsName << std::endl;
+    spdlog::info(" JSON FINALIZE {0} ",gdsName );
     return node.gdsFile;
 }
 
@@ -685,7 +741,7 @@ void AddVias(std::vector<PnRDB::Via> &temp_via, json& temp_json_Contact, json& t
 void
 PnRdatabase::WriteJSON_Routability_Analysis (PnRDB::hierNode& node, const string& opath, PnRDB::Drc_info& drc_info) {
 
-    std::cout << "JSON WRITE Routability Analysis " << node.name << std::endl;
+    spdlog::info("JSON WRITE Routability Analysis {0}",node.name );
     std::ofstream jsonStream;
     jsonStream.open (opath+node.name + ".json");
     json jsonTop;
@@ -821,7 +877,7 @@ PnRdatabase::WriteJSON_Routability_Analysis (PnRDB::hierNode& node, const string
  
     jsonStream << std::setw(4) << jsonTop;
     jsonStream.close();
-    std::cout << " JSON FINALIZE " <<  node.name << std::endl;
+    spdlog::info(" JSON FINALIZE {0}" ,  node.name);
 
 }
 

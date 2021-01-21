@@ -1,4 +1,5 @@
 #include "SeqPair.h"
+#include "spdlog/spdlog.h"
 
 SeqPair::SeqPair() {
   this->posPair.clear();
@@ -55,7 +56,7 @@ SeqPair::SeqPair(design& originNL, design& reducedNL, SeqPair& reducedSP) {
     // find the corresponding group in original design
     int reducedsbIdx=it-reducedNL.SBlocks.begin();
     int sbIdx=reducedNL.GetMappedSymmBlockIdx(reducedsbIdx);
-    if(sbIdx==-1) {cout<<"Placer-Error: cannot find similar symmetry group in original design"<<endl;continue;}
+    if(sbIdx==-1) {spdlog::debug("Placer-Error: cannot find similar symmetry group in original design");continue;}
     // modify positive sequence
     commonSBs.insert(sbIdx);
     for(vector<int>::iterator ppit=this->posPair.begin(); ppit!=this->posPair.end(); ++ppit) {
@@ -75,7 +76,7 @@ SeqPair::SeqPair(design& originNL, design& reducedNL, SeqPair& reducedSP) {
     if( *it<reducedNL.GetSizeofBlocks() ) {  
       int newi=reducedNL.GetMappedBlockIdx(*it);
       if(newi!=-1) { this->orient.at(newi)=reducedSP.orient.at(*it); *it=newi; 
-      } else {std::cout<<"Placer-Error: cannot covert block in positive sequence\n";}
+      } else {spdlog::debug("Placer-Error: cannot covert block in positive sequence");}
     }
   }
   for(vector<int>::iterator it=this->negPair.begin(); it!=this->negPair.end(); ++it) {
@@ -83,7 +84,7 @@ SeqPair::SeqPair(design& originNL, design& reducedNL, SeqPair& reducedSP) {
     if( *it<reducedNL.GetSizeofBlocks() ) {  
       int newi=reducedNL.GetMappedBlockIdx(*it);
       if(newi!=-1) {*it=newi;
-      } else {std::cout<<"Placer-Error: cannot covert block in negative sequence\n";}
+      } else {spdlog::debug("Placer-Error: cannot covert block in negative sequence");}
     }
   }
   // 3. third, add other nodes in the original design into sequence pairs
@@ -93,10 +94,10 @@ SeqPair::SeqPair(design& originNL, design& reducedNL, SeqPair& reducedSP) {
       // Potential bug: some blocks might belong to one original symmetry group but not in reduced symmetry group (e.g. a single self-symmetry block)
       // in this case its symmetry group cannot be inserted as new one
       // need fix in future [wbxu]
-      std::cout<<"InsertNewSBlock(originNL, i) "<<i<<std::endl;
+      spdlog::debug("InsertNewSBlock(originNL, {0})",i);
       InsertNewSBlock(originNL, i);
     } else { // common SB
-      std::cout<<"InsertCommonSBlock(originNL, reducedNL, i)  "<<i<<std::endl;
+      spdlog::debug("InsertCommonSBlock(originNL, reducedNL, {0})",i);
       InsertCommonSBlock(originNL, reducedNL, i);
     } 
   }
@@ -228,21 +229,21 @@ void SeqPair::InsertCommonSBlock(design& originNL, design& reducedNL, int origin
   placerDB::SymmBlock comm=tempSB.at(0);
   placerDB::SymmBlock diff=tempSB.at(1);
   std::set<int> existingPairNode;
-  cout<<"InsertCommonSBlock\nComm SB\n";
+  spdlog::debug("InsertCommonSBlock\nComm SB");
   for(vector<pair<int,int> >::iterator it=comm.sympair.begin(); it!=comm.sympair.end(); ++it) {
     existingPairNode.insert(it->first);
     existingPairNode.insert(it->second);
-    cout<<"sympair "<<it->first<<" vs "<<it->second<<endl;
+    spdlog::debug("sympair {0} vs {1}",it->first,it->second);
   }
   for(vector<pair<int,placerDB::Smark> >::iterator it=comm.selfsym.begin(); it!=comm.selfsym.end(); ++it) {
-    cout<<"selfsym "<<it->first<<" @ "<<it->second<<endl;
+    spdlog::debug("selfsym {0} @ {1}",it->first,it->second);
   }
-  cout<<"Diff SB\n";
+  spdlog::debug("Diff SB");
   for(vector<pair<int,int> >::iterator it=diff.sympair.begin(); it!=diff.sympair.end(); ++it) {
-    cout<<"sympair "<<it->first<<" vs "<<it->second<<endl;
+    spdlog::debug("sympair {0} vs {1}",it->first,it->second);
   }
   for(vector<pair<int,placerDB::Smark> >::iterator it=diff.selfsym.begin(); it!=diff.selfsym.end(); ++it) {
-    cout<<"selfsym "<<it->first<<" @ "<<it->second<<endl;
+    spdlog::debug("selfsym {0} @ {1}",it->first,it->second);
   }
   int anode=originNL.SBlocks.at(originIdx).dnode;
   int anode_pos=-1, anode_neg=-1;
@@ -254,7 +255,7 @@ void SeqPair::InsertCommonSBlock(design& originNL, design& reducedNL, int origin
     if(this->negPair.at(i)==anode) {anode_neg=i;break;}
   }
   if(anode_pos==-1 or anode_neg==-1) {
-    cout<<"Placer-Error: cannot find axis node in seq pair\n"; return;
+    spdlog::debug("Placer-Error: cannot find axis node in seq pair");
   }
   for(int i=0;i<anode_pos;++i) {
     if(existingPairNode.find(this->posPair.at(i))!=existingPairNode.end()) {
@@ -276,8 +277,8 @@ void SeqPair::InsertCommonSBlock(design& originNL, design& reducedNL, int origin
       if(i<R_neg) {R_neg=i;break;}
     }
   }
-  cout<<"posPair: axis "<<anode_pos<<" left "<<L_pos<<" right "<<R_pos<<endl; 
-  cout<<"negPair: axis "<<anode_neg<<" left "<<L_neg<<" right "<<R_neg<<endl; 
+  spdlog::debug("posPair: axis {0} left {1} right {2}",anode_pos,L_pos,R_pos);
+  spdlog::debug("negPair: axis {0} left {1} right {2}",anode_neg,L_neg,R_neg);
   vector<int> new_posPair, new_negPair;
   // axis==V: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
   //          negative - a1,...,ap, cs,...,c1, axis, bp,...,b1
@@ -374,7 +375,7 @@ void SeqPair::InsertCommonSBlock(design& originNL, design& reducedNL, int origin
       }
     }
   } else {
-    cout<<"Placer-Error: incorrect axis\n";
+    spdlog::debug("Placer-Error: incorrect axis");
   }
   this->posPair=new_posPair;
   this->negPair=new_negPair;
@@ -492,7 +493,8 @@ SeqPair::SeqPair(design& caseNL) {
       orient.at(i)=placerDB::N;
     }
   }
-} 
+  KeepOrdering(caseNL);
+}
 
 SeqPair& SeqPair::operator=(const SeqPair& sp) {
   this->posPair=sp.posPair;
@@ -504,33 +506,29 @@ SeqPair& SeqPair::operator=(const SeqPair& sp) {
 }
 
 void SeqPair::PrintSeqPair() {
-  cout<<endl<<"=== Sequence Pair ==="<<endl;
-  cout<<"Positive pair: ";
+  spdlog::debug("=== Sequence Pair ===");
+  spdlog::debug("Positive pair: ");
   for(int i=0;i<(int)posPair.size();++i) {
-    cout<<posPair.at(i)<<" ";
+    spdlog::debug("{0} ",posPair.at(i));
   }
-  cout<<endl;
-  cout<<"Negative pair: ";
+  spdlog::debug("Negative pair: ");
   for(int i=0;i<(int)negPair.size();++i) {
-    cout<<negPair.at(i)<<" ";
+    spdlog::debug("{0}",negPair.at(i));
   }
-  cout<<endl;
-  cout<<"Orientation: ";
+  spdlog::debug("Orientation: ");
   for(int i=0;i<(int)orient.size();++i) {
-    cout<<orient.at(i)<<" ";
+    spdlog::debug("{0}",orient.at(i));
   }
-  cout<<endl;
-  cout<<"Symmetry axis: ";
+  spdlog::debug("Symmetry axis: ");
   for(int i=0;i<(int)symAxis.size();++i) {
-    if(symAxis.at(i)==0) {cout<<"H ";
-    } else {cout<<"V ";}
+    if(symAxis.at(i)==0) {spdlog::debug("H ");
+    } else {spdlog::debug("V ");}
   }
-  cout<<endl;
-  cout<<"Selected: ";
+  spdlog::debug("Selected: ");
   for(int i=0;i<(int)selected.size();++i) {
-    cout<<" "<<selected.at(i);
+    spdlog::debug("{0}",selected.at(i));
   }
-  cout<<endl;
+  //cout<<endl;
 }
 
 int SeqPair::GetBlockSelected(int blockNo) {
@@ -748,6 +746,68 @@ bool SeqPair::ChangeSelectedBlock(design& caseNL) {
   return true;
 }
 
+void SeqPair::KeepOrdering(design& caseNL) {
+  // ids of blocks which have order constraints
+  set<int> block_id_with_order;
+  for (auto order : caseNL.Ordering_Constraints) {
+    block_id_with_order.insert(order.first.first);
+    block_id_with_order.insert(order.first.second);
+  }
+  // places of block_id_with_order in pair
+  vector<int> pos_idx, neg_idx;
+  for (int i = 0; i < posPair.size(); i++) {
+    if (block_id_with_order.find(posPair[i]) != block_id_with_order.end()) pos_idx.push_back(i);
+    if (block_id_with_order.find(negPair[i]) != block_id_with_order.end()) neg_idx.push_back(i);
+  }
+  vector<int> pos_order(block_id_with_order.size()), neg_order(block_id_with_order.size());
+  for (int i = 0; i < block_id_with_order.size(); i++) {
+    pos_order[i] = posPair[pos_idx[i]];
+    neg_order[i] = negPair[neg_idx[i]];
+  }
+  bool pos_keep_order = true, neg_keep_order = true;
+  // generate a pos order
+  do {
+    pos_keep_order = true;
+    for (auto order : caseNL.Ordering_Constraints) {
+      if (find(pos_order.begin(), pos_order.end(), order.first.first) - find(pos_order.begin(), pos_order.end(), order.first.second) > 0) {
+        pos_keep_order = false;
+        break;
+      }
+    }
+    if (!pos_keep_order) {
+      unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+      std::default_random_engine e(seed);
+      shuffle(pos_order.begin(), pos_order.end(), e);
+    }
+
+  } while (!pos_keep_order);
+  // generate a neg order
+  do {
+    neg_keep_order = true;
+    for (auto order : caseNL.Ordering_Constraints) {
+      if (find(neg_order.begin(), neg_order.end(), order.first.first) - find(neg_order.begin(), neg_order.end(), order.first.second) < 0) {
+        if (order.second == placerDB::V) {
+          neg_keep_order = false;
+          break;
+        }
+      } else if (order.second == placerDB::H) {
+        neg_keep_order = false;
+        break;
+      }
+    }
+    if (!neg_keep_order) {
+      unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+      std::default_random_engine e(seed);
+      shuffle(neg_order.begin(), neg_order.end(), e);
+    }
+  } while (!neg_keep_order);
+  //write order back to pospair and negpair
+  for (int i = 0; i < pos_idx.size(); i++) {
+    posPair[pos_idx[i]] = pos_order[i];
+    negPair[neg_idx[i]] = neg_order[i];
+  }
+}
+
 void SeqPair::PerturbationNew(design& caseNL) {
   /* initialize random seed: */
   //srand(time(NULL));
@@ -765,7 +825,7 @@ void SeqPair::PerturbationNew(design& caseNL) {
   // 9:RotateSymmetryGroup
   if(caseNL.GetSizeofBlocks()<=1) {return;}
   if(caseNL.noBlock4Move>0) {pool.insert(0);}
-  if(caseNL.noAsymBlock4Move>0) { pool.insert(1); pool.insert(2); pool.insert(3); pool.insert(4);}
+  if(caseNL.noAsymBlock4Move>0) { pool.insert(1); pool.insert(2); pool.insert(3);} // pool.insert(4);}
   if(caseNL.noSymGroup4PartMove>0) {pool.insert(5); pool.insert(7); pool.insert(8);} // pool.insert(9);}
   if(caseNL.noSymGroup4FullMove>1) {pool.insert(6);}
   while(!mark) {
@@ -785,6 +845,7 @@ void SeqPair::PerturbationNew(design& caseNL) {
         default: mark=false;
     }
   }
+  KeepOrdering(caseNL);
 }
 
 void SeqPair::Perturbation(design& caseNL) {
@@ -931,7 +992,7 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
       } else if ( (*ait)>(*bit) ) {
         newApos.push_back(*bit); ++bit;
       } else {
-        cerr<<"Placer-Error: same index for different lists!"<<endl;
+        spdlog::debug("Placer-Error: same index for different lists!");
       }
     }
     while(ait!=Apos.end()) { newApos.push_back(*ait); ++ait; }
@@ -951,7 +1012,7 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
       } else if ( (*ait)>(*bit) ) {
         newBpos.push_back(*bit); ++bit;
       } else {
-        cerr<<"Placer-Error: same index for different lists!"<<endl;
+        spdlog::debug("Placer-Error: same index for different lists!");
       }
     }
     while(ait!=Apos.end()) { newBpos.push_back(*ait); ++ait; }

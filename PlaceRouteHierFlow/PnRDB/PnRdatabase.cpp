@@ -8,6 +8,7 @@
 using namespace nlohmann;
 
 #include <gtest/gtest.h>
+#include "spdlog/spdlog.h"
 
 /*
 static bool EndsWith( const string& str, const string& pat)
@@ -34,37 +35,171 @@ TEST( EndsWithTest, Test1)
 PnRdatabase::PnRdatabase(string path, string topcell, string vname, string lefname, string mapname, string drname) {
   unitScale=2000;
   maxNode=0;
-  cout<<"PnRDB-Info: reading data from path "<<path<<endl;
+
+  spdlog::info( "PnRDB-Info: reading data from path ");
 
   if( drname == "HardDesignRules") {
       this->HardDesignRule();
-      cout<<"PnRDB-Info: default PDK"<<std::endl;
+      spdlog::info( "PnRDB-Info: default PDK");
   } else if( EndsWith( drname, ".rul")) {
       this->ReadDesignRule(path+"/"+drname);
-      std::cout<<"PnRDB-Info: read PDK via "<<drname<<std::endl;
+      spdlog::info( "PnRDB-Info: read PDK via {0}", drname);
   } else if( EndsWith( drname, ".json")) {
       this->ReadPDKJSON(path+"/"+drname);
-      std::cout<<"PnRDB-Info: read PDK via "<<drname<<std::endl;
+      spdlog::info( "PnRDB-Info: read PDK via {0}", drname);
   } else {
-      std::cout<<"PnRDB-Error: unknown name for read PDK (HardDesignRules, *.rul, *.json): "<<drname<<std::endl;
+      spdlog::critical( "PnRDB-Error: unknown name for read PDK (HardDesignRules, *.rul, *.json): {0}", drname);
       assert(0);
   }
 
   this->ReadLEF(path+"/"+lefname);
   this->ReadMap(path, mapname);
   this->ReadVerilog(path, vname, topcell);
+  //this->extend_pin_function();
 
-  cout<<"PnRDB-Info: complete reading"<<endl;
+  spdlog::info( "PnRDB-Info: complete reading");
 }
 
-queue<int> PnRdatabase::TraverseHierTree() {
-  queue<int> Q;
+void PnRdatabase::extend_pin_function(){
+
+  for(unsigned int i=0;i<hierTree.size();++i){
+
+     for(unsigned int j=0;j<hierTree[i].Blocks.size();j++){
+
+          for(unsigned int k=0;k<hierTree[i].Blocks[j].instance.size();k++){
+
+                extend_pins(hierTree[i].Blocks[j].instance[k]);
+             }
+
+        }
+  }
+
+}
+
+void PnRdatabase::extend_pins(PnRDB::block &temp_block){
+ 
+  //only extend for leafblock
+  if(temp_block.isLeaf){
+
+      for(unsigned int i=0;i<temp_block.blockPins.size();i++){
+         
+         //extend pins 
+         extend_pin(temp_block.blockPins[i],temp_block.width,temp_block.height);
+         //put the extended pins into internal metals
+         for(unsigned int j=0;j<temp_block.blockPins[i].pinContacts.size();j++){
+            temp_block.interMetals.push_back(temp_block.blockPins[i].pinContacts[j]);
+         }
+
+      }
+
+    }
+
+}
+
+
+void PnRdatabase::extend_pin(PnRDB::pin &temp_pin, int width, int height){
+
+  int h_margin = 4;
+  int v_margin = 4;
+
+  //extend pin
+  for(unsigned int i=0;i<temp_pin.pinContacts.size();i++){
+
+      int metal_index = DRC_info.Metalmap[temp_pin.pinContacts[i].metal];
+ 
+      if(DRC_info.Metal_info[metal_index].direct==1){//h
+
+          temp_pin.pinContacts[i].originBox.LL.x = 0+h_margin;
+          temp_pin.pinContacts[i].originBox.UR.x = width-h_margin;
+          temp_pin.pinContacts[i].originCenter.x = width/2;
+          
+        }else{
+
+          temp_pin.pinContacts[i].originBox.LL.y = 0+v_margin;
+          temp_pin.pinContacts[i].originBox.UR.y = height-v_margin;
+          temp_pin.pinContacts[i].originCenter.y = height/2;
+
+        }
+  }
+
+  //might need to add the pin into internal metal
+
+}
+
+deque<int> PnRdatabase::TraverseHierTree() {
+  deque<int> Q;
   vector<string> color(hierTree.size(), "white");
   TraverseDFS(Q, color, topidx);
   return Q;
 }
 
-void PnRdatabase::TraverseDFS(queue<int>& Q, vector<string>& color, int idx) {
+void PnRdatabase::Write_Current_Workload(PnRDB::hierNode &node, double total_current, int current_number, std::string outputfile){
+
+  /*
+  int llx = node.LL.x;
+  int lly = node.LL.y;
+  int urx = node.UR.x;
+  int ury = node.UR.y;
+  */
+
+  int llx = 0;
+  int lly = 0;
+  int urx = node.width;
+  int ury = node.height;
+
+  std::ofstream currentfile;
+  currentfile.open(outputfile);
+
+  srand(time(0));
+
+  vector<double> rand_current;
+
+  for(int i =0;i<current_number;i++){
+     rand_current.push_back(rand() % 3);
+  }
+
+  double sum=0;
+
+  for(int i =0;i<current_number;i++){
+     sum = sum + rand_current[i];
+  }
+  
+  
+  for(int i=0;i<current_number;i++){
+    double x_num = rand() % 10 +1;
+    double y_num = rand() % 10 +1;
+    if(x_num==10) x_num-=1;
+    if(y_num==10) y_num-=1;   
+    double x = x_num/10*(urx-llx)+llx;
+    double y = y_num/10*(ury-lly)+lly;
+    //double current = 0.0005;//rand_current[i]*rand_current[i]/sum*total_current;
+    double current = 0.0005/(rand() % 10 +1);//rand_current[i]*rand_current[i]/sum*total_current;
+    currentfile<<x<<" "<<y<<" "<<x<<" "<<y<<" "<<current<<std::endl;
+  }
+  currentfile.close();
+
+};
+
+void PnRdatabase::Write_Power_Mesh_Conf(std::string outputfile){
+
+  std::ofstream PMCfile;
+  PMCfile.open(outputfile);
+
+
+  for(int i=0;i<DRC_info.Metal_info.size();i++){
+    PMCfile<<(double) (rand()%5+1)/10<<" "; //power density change from 0.1 to 0.5
+  }
+  PMCfile<<std::endl;  
+
+  for(int i=0;i<DRC_info.Via_info.size();i++){
+    PMCfile<<1<<" ";
+  }
+  PMCfile<<std::endl;
+
+  PMCfile.close();
+};
+
+void PnRdatabase::TraverseDFS(deque<int>& Q, vector<string>& color, int idx) {
   color[idx]="gray";
   for(vector<PnRDB::blockComplex>::iterator it=hierTree.at(idx).Blocks.begin();it!=hierTree.at(idx).Blocks.end();++it) {
     if( it->child!=-1 && color[it->child].compare("white")==0 ) {
@@ -72,7 +207,7 @@ void PnRdatabase::TraverseDFS(queue<int>& Q, vector<string>& color, int idx) {
     }
   }
   color[idx]="black";
-  Q.push(idx);
+  Q.push_back(idx);
 }
 
 PnRDB::hierNode PnRdatabase::CheckoutHierNode(int nodeID) {
@@ -98,7 +233,7 @@ std::vector<PnRDB::hierNode> PnRdatabase::CheckoutHierNodeVec(int nodeID){
 }
 
 bool PnRdatabase::ReadMap(string fpath, string mapname) {
-  cout<<"PnRDB-Info: reading map file "<<fpath+"/"+mapname<<endl;
+  spdlog::info("PnRDB-Info: reading map file {0}/{1}",fpath,mapname);
   ifstream fin;
   string def;
   string mapfile=fpath+"/"+mapname;
@@ -173,6 +308,7 @@ void PnRdatabase::TransformNode(PnRDB::hierNode& updatedNode, PnRDB::point trans
   TransformPins(updatedNode.blockPins, translate, width, height, ort, transform_type);
   TransformContacts(updatedNode.interMetals, translate, width, height, ort, transform_type);
   TransformVias(updatedNode.interVias, translate, width, height, ort, transform_type);
+  TransformGuardrings(updatedNode.GuardRings, translate, width, height, ort, transform_type);
 }
 
 void PnRdatabase::TransformTerminal(PnRDB::terminal& terminal, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
@@ -221,6 +357,21 @@ void PnRdatabase::TransformPins(std::vector<PnRDB::pin>& pins, PnRDB::point tran
 void PnRdatabase::TransformPin(PnRDB::pin& pin, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
   TransformContacts(pin.pinContacts, translate, width, height, ort, transform_type);
   TransformVias(pin.pinVias, translate, width, height, ort, transform_type);
+}
+
+void PnRdatabase::TransformGuardrings(std::vector<PnRDB::GuardRing>& guardrings, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  for (std::vector<PnRDB::GuardRing>::iterator git = guardrings.begin(); git != guardrings.end(); ++git) {
+    TransformGuardring(*git, translate, width, height, ort, transform_type);
+  }
+}
+
+void PnRdatabase::TransformGuardring(PnRDB::GuardRing& guardring, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  TransformPoint(guardring.LL, translate, width, height, ort, transform_type);
+  TransformPoint(guardring.UR, translate, width, height, ort, transform_type);
+  TransformPoint(guardring.center, translate, width, height, ort, transform_type);
+  TransformPins(guardring.blockPins, translate, width, height, ort, transform_type);
+  TransformContacts(guardring.interMetals, translate, width, height, ort, transform_type);
+  TransformVias(guardring.interVias, translate, width, height, ort, transform_type);
 }
 
 void PnRdatabase::TransformVias(std::vector<PnRDB::Via>& vias, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
@@ -681,7 +832,7 @@ void PnRdatabase::ExtractPinsToPowerPins(PnRDB::hierNode& updatedNode) {
 void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode){
   //In fact, the original node, do not need to be updated. Just update father node is fine.
   //update the original node
-  std::cout<<"CheckinHierNode\n";
+  spdlog::info("CheckinHierNode");
   PnRDB::layoutAS tmpL;
   tmpL.gdsFile=updatedNode.gdsFile;
   tmpL.width=updatedNode.width;
@@ -695,11 +846,12 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
 
   hierTree[nodeID].isCompleted = 1;
   hierTree[nodeID].gdsFile = updatedNode.gdsFile;
-  //update current node information
+  hierTree[nodeID].GuardRings = updatedNode.GuardRings;
+  // update current node information
   for(unsigned int i=0;i<hierTree[nodeID].Blocks.size();i++){
      int sel=updatedNode.Blocks[i].selectedInstance;
-     std::cout<<"Block "<<i<<" select "<<sel<<std::endl;
-     if(sel<0 or sel>=updatedNode.Blocks[i].instNum) {std::cout<<"PnRDB-Error: unselected block "<<i<<std::endl;continue;}
+     spdlog::info("Block {0} select {1} ",i,sel);
+     if(sel<0 or sel>=updatedNode.Blocks[i].instNum) {spdlog::error("PnRDB-Error: unselected block {0}",i);continue;}
      //std::cout<<"dB "<<hierTree[nodeID].Blocks[i].instNum<<std::endl;
      if(hierTree[nodeID].Blocks[i].instNum<updatedNode.Blocks[i].instNum) { // for capacitor, new data in place and route
        hierTree[nodeID].Blocks[i].instance.clear();
@@ -784,10 +936,10 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
      }
     */
 
-  std::cout<<"update power net\n";
+  spdlog::info("update power net");
   //update PowerNet information//////
-  std::cout<<"hierTree power net size "<<hierTree[nodeID].PowerNets.size()<<std::endl;
-  std::cout<<"updatedNode power net size "<<updatedNode.PowerNets.size()<<std::endl;
+  spdlog::info("hierTree power net size {0}",hierTree[nodeID].PowerNets.size());
+  spdlog::info("updatedNode power net size {0}",updatedNode.PowerNets.size());
   for(unsigned int i=0;i<hierTree[nodeID].PowerNets.size();i++){
      for(unsigned int j=0;j<updatedNode.PowerNets.size();j++){
          if(hierTree[nodeID].PowerNets[i].name == updatedNode.PowerNets[j].name){
@@ -800,28 +952,28 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
            }
          }
      }
-   std::cout<<"node ID "<<nodeID<<std::endl;
-   std::cout<<"hierTree power net size "<<hierTree[nodeID].PowerNets.size()<<std::endl;
-   std::cout<<"updatedNode power net size "<<updatedNode.PowerNets.size()<<std::endl;
+   spdlog::info("node ID {0}",nodeID);
+   spdlog::info("hierTree power net size {0}",hierTree[nodeID].PowerNets.size());
+   spdlog::info("updatedNode power net size {0}",updatedNode.PowerNets.size());
 
    hierTree[nodeID].blockPins=updatedNode.blockPins;
    hierTree[nodeID].interMetals=updatedNode.interMetals;
    hierTree[nodeID].interVias=updatedNode.interVias;
 
   //update father imformation//////
-    std::cout<<"Update parent\n";
+    spdlog::info("Update parent");
     for(unsigned int i=0;i<hierTree[nodeID].parent.size();i++){
 
-     std::cout<<"Start update blocks in parent"<<std::endl;
+     spdlog::info("Start update blocks in parent");
      //update father blocks information
      auto& parent_node = hierTree[hierTree[nodeID].parent[i]];
 
      //there will be a bug for multi-aspect ratio Yaguang 1/1/2020
-     std::cout<<"Update router report for parent"<<std::endl;
+     spdlog::info("Update router report for parent");
      for(int j=0;j<updatedNode.router_report.size();j++){
           parent_node.router_report.push_back(updatedNode.router_report[j]);
         }
-     std::cout<<"End Update router report for parent"<<std::endl;
+     spdlog::info("End Update router report for parent");
 
      for(unsigned int j=0;j<parent_node.Blocks.size();j++){
 
@@ -927,7 +1079,7 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
      std::cout<<"End update power pin in parent"<<std::endl;
 */
 
-    std::cout<<"Start Update power pin in parent"<<std::endl;
+    spdlog::info("Start Update power pin in parent");
      //update power pin information
 
     for(unsigned int j=0;j<parent_node.Blocks.size();j++){
@@ -982,7 +1134,7 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
          }
       }
 
-      std::cout<<"Extract dummy power connection into parent"<<std::endl;
+      spdlog::info("Extract dummy power connection into parent");
 
       for(unsigned int k = 0; k<parent_node.PowerNets.size();k++){
          parent_node.PowerNets[k].dummy_connected.clear();
@@ -1012,12 +1164,12 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
          }
       }
 
-      std::cout<<"End update power pin in parent"<<std::endl;
+      spdlog::info("End update power pin in parent");
 
 
      }
 
-  std::cout<<"End update blocks in parent"<<std::endl;
+  spdlog::info("End update blocks in parent");
   
 
 
@@ -1080,11 +1232,11 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
                                             const int first_tile_idx, const int last_tile_idx,
                                             std::vector<int>& tile_idxs, const int MetalDirection, const int net_id) const {
     //do output tiles (first_tile_idx, ..., last_tile_idx)
-    std::cout << "output data " << std::endl;
-    std::cout << "layer " << DRC_info.Metal_info.at(MetalIdx).name;
-    std::cout << " net_name " << net_name;
-    std::cout << " width " << width << std::endl;
-    std::cout << " rect ";
+    spdlog::info( "output data " );
+    spdlog::info( "layer {0}" ,DRC_info.Metal_info.at(MetalIdx).name);
+    spdlog::info( " net_name {0}" ,net_name);
+    spdlog::info( " width {0}" , width );
+    spdlog::info( " rect ");
     json jsonWire;
     jsonWire["layer"] = DRC_info.Metal_info.at(MetalIdx).name;
     jsonWire["net_name"] = net_name;
@@ -1104,7 +1256,7 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
 	        << ", "   << l.y/m2_p << " " << l.y%m2_p << std::endl;
 #endif
 
-      std::cout << " MetalDirection: " << MetalDirection << std::endl;
+      spdlog::info( " MetalDirection: {0}" , MetalDirection );
       json jsonRect =  json::array();
       jsonRect.push_back(f.x);
       jsonRect.push_back(f.y);
@@ -1113,12 +1265,12 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
       jsonWire["rect"] = jsonRect;
     }
 
-    std::cout << "connected pins: " << std::endl;
+    spdlog::info( "connected pins: " );
     PnRDB::net net = node.Nets.at(net_id);
     json jsonConnectedPins = json::array();
-    std::cout << "tile_idx: ";
+    spdlog::info( "tile_idx: ");
     for(vector<int>::const_iterator tile_idx = tile_idxs.begin(); tile_idx!=tile_idxs.end(); ++tile_idx){
-        std::cout << *tile_idx << ", ";
+        spdlog::info("{0}, " ,*tile_idx);
         //search all the tiles in the consecutive tiles
         for(vector<std::vector<int>>::const_iterator i = net.connectedTile.begin(); i!=net.connectedTile.end();++i){
             int pin_id = i - net.connectedTile.begin();
@@ -1127,29 +1279,29 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
                 if(*tile_idx != *j){continue;}
                 //current tile index == pin_terminal
                 json jsonConnectedPin;
-                std::cout << "pin_id " << pin_id << std::endl;
+                spdlog::info("pin_id {0}" , pin_id );
                 if (net.connected.at(pin_id).type==PnRDB::Block) {
                     int selectedInstance = node.Blocks.at(net.connected.at(pin_id).iter2).selectedInstance;
                     vector<PnRDB::contact> pinContacts = node.Blocks.at(net.connected.at(pin_id).iter2).instance.at(selectedInstance).blockPins.at(net.connected.at(pin_id).iter).pinContacts;
                     for(vector<PnRDB::contact>::const_iterator contact_it = pinContacts.begin(); contact_it != pinContacts.end(); ++contact_it){
                         string sink_name = node.Blocks.at(net.connected.at(pin_id).iter2).instance.at(selectedInstance).name + "/" + node.Blocks.at(net.connected.at(pin_id).iter2).instance.at(selectedInstance).blockPins.at(net.connected.at(pin_id).iter).name;
-                        std::cout << "sink_name: " << sink_name;
+                        spdlog::info( "sink_name: {0} " ,sink_name);
                         jsonConnectedPin["sink_name"] = sink_name;
 
                         string layer = "";
                         layer = contact_it->metal;
                         jsonConnectedPin["layer"] = layer;
-                        std::cout << " layer: " << layer << std::endl;
+                        spdlog::info( " layer: {0}" , layer);
 
                         json jsonRect = json::array();
-                        std::cout << "contacts size " << pinContacts.size() << std::endl;
+                        spdlog::info( "contacts size {0}" , pinContacts.size() );
                         PnRDB::bbox rect = contact_it->placedBox;
                         jsonRect.push_back(rect.LL.x);
                         jsonRect.push_back(rect.LL.y);
                         jsonRect.push_back(rect.UR.x);
                         jsonRect.push_back(rect.UR.y);
-                        std::cout << "placedBox:" << rect.LL.x << ", " << rect.LL.y << ", ";
-                        std::cout << rect.UR.x << ", " << rect.UR.y << std::endl;
+                        spdlog::info( "placedBox: {0}, {1}, " , rect.LL.x ,rect.LL.y );
+                        spdlog::info( "{0}, {1} ",rect.UR.x,rect.UR.y );
                         jsonConnectedPin["rect"] = jsonRect;
                         jsonConnectedPins.push_back( jsonConnectedPin);
                     }
@@ -1157,13 +1309,13 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
                     vector<PnRDB::contact> termContacts = node.Terminals.at(net.connected.at(pin_id).iter).termContacts;
                     for(vector<PnRDB::contact>::const_iterator contact_it = termContacts.begin(); contact_it != termContacts.end(); ++contact_it){
                         string sink_name = node.Terminals.at(net.connected.at(pin_id).iter).name;
-                        std::cout << "sink_name: " << sink_name;
+                        spdlog::info( "sink_name: {0}", sink_name);
                         jsonConnectedPin["sink_name"] = sink_name;
 
                         string layer = "";
                         layer = contact_it->metal;
                         jsonConnectedPin["layer"] = layer;
-                        std::cout << " layer: " << layer << std::endl;
+                        spdlog::info( " layer: {0}", layer);
 
                         json jsonRect = json::array();
                         PnRDB::bbox rect = contact_it->placedBox;
@@ -1171,8 +1323,8 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
                         jsonRect.push_back(rect.LL.y);
                         jsonRect.push_back(rect.UR.x);
                         jsonRect.push_back(rect.UR.y);
-                        std::cout << "#termcontact:" << rect.LL.x << ", " << rect.LL.y << ", ";
-                        std::cout << rect.UR.x << ", " << rect.UR.y << std::endl;
+                        spdlog::info( "#termcontact: {0}, {1} " , rect.LL.x , rect.LL.y );
+                        spdlog::info( "{0}, {1} ",rect.UR.x , rect.UR.y);
                         jsonConnectedPin["rect"] = jsonRect;
 
                         jsonConnectedPins.push_back( jsonConnectedPin);
@@ -1192,7 +1344,7 @@ void PnRdatabase::WriteGcellGlobalRoute(const PnRDB::hierNode& node, const strin
     //this function write gcell global router result into json for detail route use
     //combine consecutive tiles into one
     json jsonWiresArray = json::array();
-    std::cout << "#Nets:" << node.Nets.size() << std::endl;
+    spdlog::info("#Nets: {0}" , node.Nets.size() );
     //std::cout << "#Pin_terminals:" << node.Pin_terminals.size() <<std::endl;
     
     for(vector<PnRDB::net>::const_iterator it=node.Nets.begin(); it!=node.Nets.end(); ++it) {
@@ -1219,15 +1371,15 @@ void PnRdatabase::WriteGcellGlobalRoute(const PnRDB::hierNode& node, const strin
             int w2 = tile2.width, h2 = tile2.height; //w/h of second tile
 
             if( tile1.metal.size() != 1 || tile2.metal.size() != 1){
-                std::cout << "ERROR: tile.metal.size != 1 !" << std::endl;
+                spdlog::error( "ERROR: tile.metal.size != 1 !" );
             }else{
                 MetalIdx1 = tile1.metal.front();
                 MetalIdx2 = tile2.metal.front();
             }
-            std::cout << "tile indexs: " << tile_idx1 << " " << tile_idx2 << std::endl;
-            std::cout << "tile layers: " << MetalIdx1 << " " << MetalIdx2 << endl;
-            std::cout << "first tile x/y/width/height: " << x1 << " " << y1 << " " << w1 << " " << h1 << endl;
-            std::cout << "second tile x/y/width/height: " << x2 << " " << y2 << " " << w2 << " " << h2 << endl;
+            spdlog::info("tile indexs: {0} {1} " , tile_idx1 , tile_idx2);
+            spdlog::info("tile layers: {0} {1} " ,MetalIdx1 , MetalIdx2 );
+            spdlog::info("first tile x/y/width/height: {0} {1} {2} {3}" , x1 , y1 , w1 , h1);
+            spdlog::info("second tile x/y/width/height: {0} {1} {2} {3} " , x2, y2 , w2 , h2 );
 
             if(MetalIdx1 == MetalIdx2){
                 MetalDirection = DRC_info.Metal_info.at(MetalIdx1).direct;
@@ -1309,8 +1461,8 @@ void PnRdatabase::WriteGcellGlobalRoute(const PnRDB::hierNode& node, const strin
                 }
             }
 
-            std::cout << "MetalDirection: " <<MetalDirection << std::endl;
-            std::cout << "can append: " << can_append << std::endl;
+            spdlog::info( "MetalDirection: {0}" ,MetalDirection );
+            spdlog::info( "can append: {0}" ,can_append );
 
             if(can_append == false){
                 //do output tiles (first_tile_idx, ..., last_tile_idx)
@@ -1376,16 +1528,16 @@ void PnRdatabase::WriteGcellGlobalRoute(const PnRDB::hierNode& node, const strin
                 }
             }
         }
-        std::cout << std::endl;
+        //std::cout << std::endl;
     }
 
     json jsonTop;
     jsonTop["wires"] = jsonWiresArray;
 
     std::ofstream jsonStream(opath+rofile);
-    if(jsonStream.fail()) {
-	cout<< "PnRData-Error: cannot open file "<<opath+rofile<<" for writing"<<endl;
-	return;
+    if (jsonStream.fail()) {
+      spdlog::info("PnRData-Error: cannot open file {0} for writing", opath + rofile);
+      return;
     }
     jsonStream << std::setw(4) << jsonTop;
     jsonStream.close();
@@ -1447,7 +1599,7 @@ void PnRdatabase::WriteGlobalRoute(const PnRDB::hierNode& node, const string& ro
 
     std::ofstream jsonStream(opath+rofile);
     if(jsonStream.fail()) {
-	cout<< "PnRData-Error: cannot open file "<<opath+rofile<<" for writing"<<endl;
+	spdlog::info("PnRData-Error: cannot open file {0} for writing ",opath+rofile);
 	return;
     }
     jsonStream << std::setw(4) << jsonTop;
@@ -1521,7 +1673,7 @@ void PnRdatabase::WriteGlobalRoute(PnRDB::hierNode& node, string rofile, string 
 void PnRdatabase::WritePlaceRoute(PnRDB::hierNode& node, string pofile, string rofile) {
   std::ofstream OF(pofile);
   if(OF.fail()) {
-    cout<< "PnRData-Error: cannot open the file "<<pofile<<endl;
+    spdlog::info("PnRData-Error: cannot open the file ",pofile);
     return;
   }
   int Xunit=-1,Yunit=-1;
@@ -1531,7 +1683,7 @@ void PnRdatabase::WritePlaceRoute(PnRDB::hierNode& node, string pofile, string r
     case 0: // V -> X axis
             Xunit=DRC_info.Metal_info.at(0).grid_unit_x; break;
     default:
-            cout<<"PnRData-Error: incorrect routing direction"<<endl;
+            spdlog::info("PnRData-Error: incorrect routing direction");
   }
   switch (DRC_info.Metal_info.at(1).direct) {
     case 1: // H -> Y axis
@@ -1539,9 +1691,9 @@ void PnRdatabase::WritePlaceRoute(PnRDB::hierNode& node, string pofile, string r
     case 0: // V -> X axis
             Xunit=DRC_info.Metal_info.at(1).grid_unit_x; break;
     default:
-            cout<<"PnRData-Error: incorrect routing direction"<<endl;
+            spdlog::info("PnRData-Error: incorrect routing direction");
   }
-  cout<<"Xunit "<<Xunit<<" ; Yunit "<<Yunit<<endl;
+  spdlog::info("Xunit {0} ; Yunit {1}",Xunit,Yunit);
   OF<<"{"<<endl;
   // write current node name
   OF<<"  \"nm\": \""<<node.name<<"\","<<endl;
@@ -1564,7 +1716,7 @@ void PnRdatabase::WritePlaceRoute(PnRDB::hierNode& node, string pofile, string r
       if(it->second.at(w).name.compare(lefname)==0) {sel=w;break;}
     }
     if ( sel == -1) {
-      cout<<"PnRData-Error: sel == -1"<<endl;
+      spdlog::info("PnRData-Error: sel == -1");
       continue;
     }
 
@@ -1601,7 +1753,7 @@ void PnRdatabase::WritePlaceRoute(PnRDB::hierNode& node, string pofile, string r
   OF<<"  \"instances\": ["<<endl;
   for(vector<PnRDB::blockComplex>::iterator it=node.Blocks.begin(); it!=node.Blocks.end(); ++it) {
     int sel=it->selectedInstance;
-    if(sel<0 or sel>=it->instNum) {std::cout<<"PnRDB-Error: unselected block\n";}
+    if(sel<0 or sel>=it->instNum) {spdlog::error("PnRDB-Error: unselected block");}
     OF<<"    {"<<endl;
     OF<<"      \"instance_name\": \""<<it->instance.at(sel).name<<"\","<<endl;
     OF<<"      \"template_name\": \""<<it->instance.at(sel).master<<"\","<<endl;
@@ -1615,7 +1767,7 @@ void PnRdatabase::WritePlaceRoute(PnRDB::hierNode& node, string pofile, string r
     } else if (it->instance.at(sel).orient==PnRDB::FS) {
       OF<<"      \"oX\": "<<(it->instance.at(sel).placedCenter.x-(it->instance.at(sel).width/2))/Xunit<<",\n      \"oY\": "<<(it->instance.at(sel).placedCenter.y+(it->instance.at(sel).height/2))/Yunit<<",\n      \"sX\": "<<1<<",\n      \"sY\": "<<-1<<"\n      },"<<endl;
     } else {
-      cout<<"PnRDB-Error: unsupported orientation!"<<endl;
+      spdlog::error("PnRDB-Error: unsupported orientation!");
     }
     OF<<"      \"formal_actual_map\": {"<<endl;
     int maxNo=0;
@@ -1711,6 +1863,29 @@ void PnRdatabase::Extract_RemovePowerPins(PnRDB::hierNode &node){
            }
      
      }
+
+//extract power pin inside guard ring
+  PnRDB::pin temp_pin;
+  for(unsigned int i=0;i<node.GuardRings.size();i++){
+     for(unsigned int j=0;j<node.GuardRings[i].blockPins.size();j++){
+        temp_pin.name = node.GuardRings[i].blockPins[j].name;
+        for(unsigned int k=0;k<node.GuardRings[i].blockPins[j].pinContacts.size();k++){
+            temp_pin.pinContacts.push_back(node.GuardRings[i].blockPins[j].pinContacts[k]);
+            break;
+        }
+        break;
+     }
+     break;
+  }
+  if(temp_pin.pinContacts.size()>0){
+    for(unsigned int i=0;i<node.PowerNets.size();i++){
+       if(node.PowerNets[i].power==0){
+         node.PowerNets[i].Pins.push_back(temp_pin);
+         break;
+       }
+    }
+  }
+
 
 //remove power pins in blocks
 
