@@ -40,6 +40,9 @@ SeqPair::SeqPair(const SeqPair& sp) {
 }
 
 SeqPair::SeqPair(design& originNL, design& reducedNL, SeqPair& reducedSP) {
+
+  auto logger = spdlog::default_logger()->clone("placer.SeqPair.SeqPair");
+
   this->posPair=reducedSP.posPair;
   this->negPair=reducedSP.negPair;
   this->orient.resize( originNL.GetSizeofBlocks(),  placerDB::N  );
@@ -56,7 +59,7 @@ SeqPair::SeqPair(design& originNL, design& reducedNL, SeqPair& reducedSP) {
     // find the corresponding group in original design
     int reducedsbIdx=it-reducedNL.SBlocks.begin();
     int sbIdx=reducedNL.GetMappedSymmBlockIdx(reducedsbIdx);
-    if(sbIdx==-1) {spdlog::debug("Placer-Error: cannot find similar symmetry group in original design");continue;}
+    if(sbIdx==-1) {logger->debug("Placer-Error: cannot find similar symmetry group in original design");continue;}
     // modify positive sequence
     commonSBs.insert(sbIdx);
     for(vector<int>::iterator ppit=this->posPair.begin(); ppit!=this->posPair.end(); ++ppit) {
@@ -76,7 +79,7 @@ SeqPair::SeqPair(design& originNL, design& reducedNL, SeqPair& reducedSP) {
     if( *it<reducedNL.GetSizeofBlocks() ) {  
       int newi=reducedNL.GetMappedBlockIdx(*it);
       if(newi!=-1) { this->orient.at(newi)=reducedSP.orient.at(*it); *it=newi; 
-      } else {spdlog::debug("Placer-Error: cannot covert block in positive sequence");}
+      } else {logger->debug("Placer-Error: cannot covert block in positive sequence");}
     }
   }
   for(vector<int>::iterator it=this->negPair.begin(); it!=this->negPair.end(); ++it) {
@@ -84,7 +87,7 @@ SeqPair::SeqPair(design& originNL, design& reducedNL, SeqPair& reducedSP) {
     if( *it<reducedNL.GetSizeofBlocks() ) {  
       int newi=reducedNL.GetMappedBlockIdx(*it);
       if(newi!=-1) {*it=newi;
-      } else {spdlog::debug("Placer-Error: cannot covert block in negative sequence");}
+      } else {logger->debug("Placer-Error: cannot covert block in negative sequence");}
     }
   }
   // 3. third, add other nodes in the original design into sequence pairs
@@ -94,10 +97,10 @@ SeqPair::SeqPair(design& originNL, design& reducedNL, SeqPair& reducedSP) {
       // Potential bug: some blocks might belong to one original symmetry group but not in reduced symmetry group (e.g. a single self-symmetry block)
       // in this case its symmetry group cannot be inserted as new one
       // need fix in future [wbxu]
-      spdlog::debug("InsertNewSBlock(originNL, {0})",i);
+      logger->debug("InsertNewSBlock(originNL, {0})",i);
       InsertNewSBlock(originNL, i);
     } else { // common SB
-      spdlog::debug("InsertCommonSBlock(originNL, reducedNL, {0})",i);
+      logger->debug("InsertCommonSBlock(originNL, reducedNL, {0})",i);
       InsertCommonSBlock(originNL, reducedNL, i);
     } 
   }
@@ -225,25 +228,28 @@ void SeqPair::InsertNewSBlock(design& originNL, int originIdx) {
 }
 
 void SeqPair::InsertCommonSBlock(design& originNL, design& reducedNL, int originIdx) {
+
+  auto logger = spdlog::default_logger()->clone("placer.SeqPair.InsertCommonSBlock");
+
   std::vector<placerDB::SymmBlock> tempSB=originNL.SplitSymmBlock(reducedNL, originIdx);
   placerDB::SymmBlock comm=tempSB.at(0);
   placerDB::SymmBlock diff=tempSB.at(1);
   std::set<int> existingPairNode;
-  spdlog::debug("InsertCommonSBlock\nComm SB");
+  logger->debug("InsertCommonSBlock\nComm SB");
   for(vector<pair<int,int> >::iterator it=comm.sympair.begin(); it!=comm.sympair.end(); ++it) {
     existingPairNode.insert(it->first);
     existingPairNode.insert(it->second);
-    spdlog::debug("sympair {0} vs {1}",it->first,it->second);
+    logger->debug("sympair {0} vs {1}",it->first,it->second);
   }
   for(vector<pair<int,placerDB::Smark> >::iterator it=comm.selfsym.begin(); it!=comm.selfsym.end(); ++it) {
-    spdlog::debug("selfsym {0} @ {1}",it->first,it->second);
+    logger->debug("selfsym {0} @ {1}",it->first,it->second);
   }
-  spdlog::debug("Diff SB");
+  logger->debug("Diff SB");
   for(vector<pair<int,int> >::iterator it=diff.sympair.begin(); it!=diff.sympair.end(); ++it) {
-    spdlog::debug("sympair {0} vs {1}",it->first,it->second);
+    logger->debug("sympair {0} vs {1}",it->first,it->second);
   }
   for(vector<pair<int,placerDB::Smark> >::iterator it=diff.selfsym.begin(); it!=diff.selfsym.end(); ++it) {
-    spdlog::debug("selfsym {0} @ {1}",it->first,it->second);
+    logger->debug("selfsym {0} @ {1}",it->first,it->second);
   }
   int anode=originNL.SBlocks.at(originIdx).dnode;
   int anode_pos=-1, anode_neg=-1;
@@ -255,7 +261,7 @@ void SeqPair::InsertCommonSBlock(design& originNL, design& reducedNL, int origin
     if(this->negPair.at(i)==anode) {anode_neg=i;break;}
   }
   if(anode_pos==-1 or anode_neg==-1) {
-    spdlog::debug("Placer-Error: cannot find axis node in seq pair");
+    logger->debug("Placer-Error: cannot find axis node in seq pair");
   }
   for(int i=0;i<anode_pos;++i) {
     if(existingPairNode.find(this->posPair.at(i))!=existingPairNode.end()) {
@@ -277,8 +283,8 @@ void SeqPair::InsertCommonSBlock(design& originNL, design& reducedNL, int origin
       if(i<R_neg) {R_neg=i;break;}
     }
   }
-  spdlog::debug("posPair: axis {0} left {1} right {2}",anode_pos,L_pos,R_pos);
-  spdlog::debug("negPair: axis {0} left {1} right {2}",anode_neg,L_neg,R_neg);
+  logger->debug("posPair: axis {0} left {1} right {2}",anode_pos,L_pos,R_pos);
+  logger->debug("negPair: axis {0} left {1} right {2}",anode_neg,L_neg,R_neg);
   vector<int> new_posPair, new_negPair;
   // axis==V: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
   //          negative - a1,...,ap, cs,...,c1, axis, bp,...,b1
@@ -375,7 +381,7 @@ void SeqPair::InsertCommonSBlock(design& originNL, design& reducedNL, int origin
       }
     }
   } else {
-    spdlog::debug("Placer-Error: incorrect axis");
+    logger->debug("Placer-Error: incorrect axis");
   }
   this->posPair=new_posPair;
   this->negPair=new_negPair;
@@ -506,27 +512,30 @@ SeqPair& SeqPair::operator=(const SeqPair& sp) {
 }
 
 void SeqPair::PrintSeqPair() {
-  spdlog::debug("=== Sequence Pair ===");
-  spdlog::debug("Positive pair: ");
+
+  auto logger = spdlog::default_logger()->clone("placer.SeqPair.PrintSeqPair");
+
+  logger->debug("=== Sequence Pair ===");
+  logger->debug("Positive pair: ");
   for(int i=0;i<(int)posPair.size();++i) {
-    spdlog::debug("{0} ",posPair.at(i));
+    logger->debug("{0} ",posPair.at(i));
   }
-  spdlog::debug("Negative pair: ");
+  logger->debug("Negative pair: ");
   for(int i=0;i<(int)negPair.size();++i) {
-    spdlog::debug("{0}",negPair.at(i));
+    logger->debug("{0}",negPair.at(i));
   }
-  spdlog::debug("Orientation: ");
+  logger->debug("Orientation: ");
   for(int i=0;i<(int)orient.size();++i) {
-    spdlog::debug("{0}",orient.at(i));
+    logger->debug("{0}",orient.at(i));
   }
-  spdlog::debug("Symmetry axis: ");
+  logger->debug("Symmetry axis: ");
   for(int i=0;i<(int)symAxis.size();++i) {
-    if(symAxis.at(i)==0) {spdlog::debug("H ");
-    } else {spdlog::debug("V ");}
+    if(symAxis.at(i)==0) {logger->debug("H ");
+    } else {logger->debug("V ");}
   }
-  spdlog::debug("Selected: ");
+  logger->debug("Selected: ");
   for(int i=0;i<(int)selected.size();++i) {
-    spdlog::debug("{0}",selected.at(i));
+    logger->debug("{0}",selected.at(i));
   }
   //cout<<endl;
 }
@@ -957,6 +966,9 @@ vector<int> SeqPair::GetVerticesIndexinSeq(vector<int>& seq, vector<int>& L) {
 }
 
 vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, vector<int>& seq) {
+
+  auto logger = spdlog::default_logger()->clone("placer.SeqPair.SwapTwoListinSeq");
+
   vector<int> newseq=seq;
   vector<int> Apos=GetVerticesIndexinSeq(seq, Alist);
   vector<int> Bpos=GetVerticesIndexinSeq(seq, Blist);
@@ -992,7 +1004,7 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
       } else if ( (*ait)>(*bit) ) {
         newApos.push_back(*bit); ++bit;
       } else {
-        spdlog::debug("Placer-Error: same index for different lists!");
+        logger->debug("Placer-Error: same index for different lists!");
       }
     }
     while(ait!=Apos.end()) { newApos.push_back(*ait); ++ait; }
@@ -1012,7 +1024,7 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
       } else if ( (*ait)>(*bit) ) {
         newBpos.push_back(*bit); ++bit;
       } else {
-        spdlog::debug("Placer-Error: same index for different lists!");
+        logger->debug("Placer-Error: same index for different lists!");
       }
     }
     while(ait!=Apos.end()) { newBpos.push_back(*ait); ++ait; }

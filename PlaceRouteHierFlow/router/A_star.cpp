@@ -20,24 +20,25 @@ A_star::A_star(Grid& grid, bool shielding):drc_info(grid.drc_info){
 
 bool A_star::FindFeasiblePath(Grid& grid, int pathNo, int left_up, int right_down) {
 
-  
+  auto logger = spdlog::default_logger()->clone("router.A_star.FindFeasiblePath");
+
   bool mark=false;
   for(int i =0;i<pathNo;++i){
 
-     spdlog::debug("Path No {0} current path index {1}",pathNo,i);
+     logger->debug("Path No {0} current path index {1}",pathNo,i);
 
      std::vector<std::vector<int> > temp_path;
-     spdlog::debug("start A_star");
+     logger->debug("start A_star");
 
      temp_path = A_star_algorithm(grid, left_up, right_down);// grid.Source grid.dest
-     spdlog::debug("end A_star");
+     logger->debug("end A_star");
 
      if((int)temp_path.size()>0) {
        Path = temp_path;
        mark=true;
      } else {
        mark=(mark or false);
-       spdlog::critical("Router-Warning: feasible path might not be found");
+       logger->warn("Router-Warning: feasible path might not be found");
      }
   }
   return mark;
@@ -46,9 +47,11 @@ bool A_star::FindFeasiblePath(Grid& grid, int pathNo, int left_up, int right_dow
 
 void A_star::print_path(){
 
+  auto logger = spdlog::default_logger()->clone("router.A_star.print_path");
+
   for(int i=0;i<Path.size();i++){
      for(int j =0; j<Path.size();j++){
-        spdlog::info("{0} ",Path[i][j]);
+        logger->debug("{0} ",Path[i][j]);
      }
   }
 
@@ -238,6 +241,8 @@ bool A_star::expand_node(std::vector<int> &direction, std::vector<int> &temp_nod
 
 int A_star::trace_back_node_parent(int current_node, Grid& grid, std::set<int> &source_index){
 
+  auto logger = spdlog::default_logger()->clone("router.A_star.trace_back_node_parent");
+
   int first_node_same_layer = current_node;
 
   std::set<int> last_nodes;
@@ -246,7 +251,7 @@ int A_star::trace_back_node_parent(int current_node, Grid& grid, std::set<int> &
   bool trace_back_flag = true;
 
   int dummy_node = current_node;
-  spdlog::debug("trace back node {0} metal {1}",current_node,grid.vertices_total[dummy_node].metal);
+  logger->debug("trace back node {0} metal {1}",current_node,grid.vertices_total[dummy_node].metal);
 
   while(trace_back_flag){
 
@@ -286,6 +291,8 @@ int A_star::trace_back_node_parent(int current_node, Grid& grid, std::set<int> &
 
 int A_star::trace_back_node(int current_node, Grid& grid, std::set<int> &source_index){
 
+  auto logger = spdlog::default_logger()->clone("router.A_star.trace_back_node");
+
   int first_node_same_layer = current_node;
 
   std::set<int> last_nodes;
@@ -294,7 +301,7 @@ int A_star::trace_back_node(int current_node, Grid& grid, std::set<int> &source_
   bool trace_back_flag = true;
 
   int dummy_node = current_node;
-  spdlog::debug("trace back node {0} metal {1}",current_node,grid.vertices_total[dummy_node].metal);
+  logger->debug("trace back node {0} metal {1}",current_node,grid.vertices_total[dummy_node].metal);
 
   while(trace_back_flag){
 
@@ -409,6 +416,8 @@ bool A_star::CheckExendable_With_Certain_Length(int first_node_same_layer,int cu
 
 int A_star::Calculate_Interval_number(Grid& grid, int node){
 
+  auto logger = spdlog::default_logger()->clone("router.A_star.Calculate_Interval_number");
+
   int interval_number = 1;
   int metal = grid.vertices_total[node].metal;
   int via_space_length = 0;
@@ -419,8 +428,8 @@ int A_star::Calculate_Interval_number(Grid& grid, int node){
     via_space_length = drc_info.Via_info[metal].width + drc_info.Via_info[metal].dist_ss;
     pitches = drc_info.Metal_info[metal].grid_unit_x;
     interval_number = ceil( (double) via_space_length / pitches);
-    spdlog::debug("metal {0} via_space_length {1} pitches {2}", metal,via_space_length,pitches);
-    spdlog::debug("interval_number 1 {0}",interval_number); 
+    logger->debug("metal {0} via_space_length {1} pitches {2}", metal,via_space_length,pitches);
+    logger->debug("interval_number 1 {0}",interval_number); 
     //assert(0);
 
   }else{
@@ -428,8 +437,8 @@ int A_star::Calculate_Interval_number(Grid& grid, int node){
     via_space_length = drc_info.Via_info[metal].width_y + drc_info.Via_info[metal].dist_ss_y;
     pitches = drc_info.Metal_info[metal].grid_unit_y;
     interval_number = ceil( (double) via_space_length / pitches);
-    spdlog::debug("metal {0} via_space_length {1} pitches {2}", metal,via_space_length,pitches);
-    spdlog::debug("interval_number 2 {0}",interval_number);  
+    logger->debug("metal {0} via_space_length {1} pitches {2}", metal,via_space_length,pitches);
+    logger->debug("interval_number 2 {0}",interval_number);  
     //assert(0);
 
   }
@@ -741,6 +750,8 @@ bool A_star::find_succsive_parallel_node(Grid& grid, int current_node, int left,
 
 bool A_star::parallel_routing(Grid& grid, int current_node, int next_node, int left, int right, std::set<int> &src_index, std::set<int> &dest_index, std::vector<std::vector<int> > &node_L_path, int &cost){
 
+  auto logger = spdlog::default_logger()->clone("router.A_star.parallel_routing");
+
   std::vector<int> start_points;
   std::vector<int> end_points;
   bool found_s;
@@ -772,14 +783,14 @@ bool A_star::parallel_routing(Grid& grid, int current_node, int next_node, int l
   if(found_s and found_e){
 
      //assert(0);
-     spdlog::debug("L shape connection 1");
+     logger->debug("L shape connection 1");
      if(grid.vertices_total[current_node].metal!=grid.vertices_total[next_node].metal){
         if(!Extention_check_prime(grid, current_node, next_node, src_index)){
            return false;
          }
      }
      bool found = L_shape_Connection(grid, start_points, end_points, node_L_path);
-     spdlog::debug("L shape connection 2");
+     logger->debug("L shape connection 2");
      return found;
   }else{
     return false;
@@ -806,6 +817,8 @@ bool A_star::L_shape_Connection(Grid& grid, std::vector<int> &start_points, std:
 
 
 bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_points, std::vector<int> &node_set){
+
+  auto logger = spdlog::default_logger()->clone("router.A_star.L_shape_Connection_Check");
 
   std::vector<int> node_set_up;
   std::set<int> unit_node_set_up;
@@ -835,7 +848,7 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
     }else if(next>=0 and next< grid.vertices_total.size() ){
       node_set_up.push_back(next); 
     }else{
-      spdlog::error("L shape connection check bug, next node is out of grid");
+      logger->error("L shape connection check bug, next node is out of grid");
       assert(0);
     }
     
@@ -868,7 +881,7 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
       //grid.vertices_total[next].trace_back_node = current_node;
       node_set_down.push_back(next); 
     }else{
-      spdlog::error("L shape connection check bug, next node is out of grid");
+      logger->error("L shape connection check bug, next node is out of grid");
       assert(0);
     }
     
@@ -943,7 +956,7 @@ bool A_star::Check_activa_via_active(Grid& grid, std::vector<int> &nodes){
      if(parent==-1){
         continue;
      }else if(parent <0 or parent> grid.vertices_total.size() -1){
-        spdlog::error("Check active via active bug, parent out of grid");
+        logger->error("Check active via active bug, parent out of grid");
      }
      int parent_metal = grid.vertices_total[parent].metal;
      int current_metal = grid.vertices_total[nodes[i]].metal;
@@ -1051,6 +1064,8 @@ bool A_star::Extention_check_prime(Grid& grid, int current_node, int next_node, 
 
 bool A_star::Extention_check(Grid& grid, int current_node, std::set<int> &source_index){
 
+  auto logger = spdlog::default_logger()->clone("router.A_star.Extention_check");
+
   int parent = grid.vertices_total[current_node].trace_back_node;
 
   //if(parent==-1 or source_index.find(parent)!=source_index.end()){
@@ -1097,7 +1112,7 @@ bool A_star::Extention_check(Grid& grid, int current_node, std::set<int> &source
     }
  
   }else{
-    spdlog::error("Extention check bug parent node is out of grid");
+    logger->error("Extention check bug parent node is out of grid");
     assert(0);
   }
 
@@ -1122,6 +1137,8 @@ void A_star::erase_candidate_node(std::set<int> &Close_set, std::vector<int> &ca
 
 std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up, int right_down){
 
+  auto logger = spdlog::default_logger()->clone("router.A_star.A_star_algorithm");
+
   int via_expand_effort = 100;
 
   std::set<std::pair<int,int>, RouterDB::pairComp> L_list;
@@ -1130,22 +1147,22 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
 
   std::set<int> src_index;
   
-  spdlog::info("source size {0}",source.size());
-  spdlog::info("dest size {0} ",dest.size());
+  logger->debug("source size {0}",source.size());
+  logger->debug("dest size {0} ",dest.size());
   
   
-  spdlog::info("A star source info");
+  logger->debug("A star source info");
   for(int i=0;i<(int)source.size();i++){
     
       src_index.insert(source[i]);
-      spdlog::info("Source {0} {1} {2} ",grid.vertices_total[source[i]].metal,grid.vertices_total[source[i]].x,grid.vertices_total[source[i]].y);
+      logger->debug("Source {0} {1} {2} ",grid.vertices_total[source[i]].metal,grid.vertices_total[source[i]].x,grid.vertices_total[source[i]].y);
       close_set.insert(source[i]);
 
      }
   
   std::set<int> dest_index;
   for(int i=0;i<(int)dest.size();i++){
-      spdlog::info("Dest {0} {1} {2}",grid.vertices_total[dest[i]].metal,grid.vertices_total[dest[i]].x,grid.vertices_total[dest[i]].y);
+      logger->debug("Dest {0} {1} {2}",grid.vertices_total[dest[i]].metal,grid.vertices_total[dest[i]].x,grid.vertices_total[dest[i]].y);
       dest_index.insert(dest[i]);
 
      }
@@ -1225,10 +1242,10 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
 
   std::vector<std::vector<int> > temp_path; //Q4 return sheilding and parallel path?  sheild and parallel should be recovered in outer loop???
   if(found==0){
-     spdlog::info("A_star fails to find a feasible path");
+     logger->debug("A_star fails to find a feasible path");
     }else{
-     spdlog::info("Trace back paths");
-     spdlog::info("Source {0}, {1}, {2}",grid.vertices_total[current_node].metal,grid.vertices_total[current_node].x,grid.vertices_total[current_node].y);
+     logger->debug("Trace back paths");
+     logger->debug("Source {0}, {1}, {2}",grid.vertices_total[current_node].metal,grid.vertices_total[current_node].x,grid.vertices_total[current_node].y);
      temp_path = Trace_Back_Paths(grid, current_node, left_up, right_down, src_index, dest_index);
     }
    refreshGrid(grid);
@@ -1240,13 +1257,15 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
 
 void A_star::compact_path(std::vector<std::vector<int> > &Node_Path){
 
+  auto logger = spdlog::default_logger()->clone("router.A_star.compact_path");
+
   std::vector<std::vector<int> > temp_Node_Path;
 
   for(int i=0;i<Node_Path.size();i++){
    
     std::vector<int> temp_path;
     if(Node_Path[i].size()==0){
-      spdlog::error("Node path bug");
+      logger->error("Node path bug");
       assert(0);
     }
     temp_path.push_back(Node_Path[i][0]);
@@ -1378,6 +1397,8 @@ bool A_star::Check_Path_Extension(Grid& grid, std::vector<std::vector<int> >& no
 
 bool A_star::Pre_trace_back(Grid& grid, int current_node, int left, int right, std::set<int> &src_index, std::set<int> &dest_index){
 
+  auto logger = spdlog::default_logger()->clone("router.A_star.Pre_trace_back");
+
   std::vector<int> temp_path = Trace_Back_Path_parent(grid, current_node, src_index);
 
   
@@ -1403,20 +1424,22 @@ bool A_star::Pre_trace_back(Grid& grid, int current_node, int left, int right, s
 
     }
   }
-  spdlog::debug("Pre trace 1");
+  logger->debug("Pre trace 1");
   rm_cycle_path(Node_Path);
-  spdlog::debug("Pre trace 1");
+  logger->debug("Pre trace 1");
   lable_father(grid, Node_Path);
-  spdlog::debug("Pre trace 1");
+  logger->debug("Pre trace 1");
   //bool extend = 1;
-  spdlog::debug("Check extention 1");
+  logger->debug("Check extention 1");
   bool extend = Check_Path_Extension(grid, Node_Path, src_index);
-  spdlog::debug("Check extention 2");
+  logger->debug("Check extention 2");
   return extend;
  
 };
 
 std::vector<std::vector<int> > A_star::Trace_Back_Paths(Grid& grid, int current_node, int left, int right, std::set<int> &src_index, std::set<int> &dest_index){
+
+  auto logger = spdlog::default_logger()->clone("router.A_star.Trace_Back_Paths");
 
   std::vector<std::vector<int> > temp_paths;
   int mode = 0;
@@ -1425,32 +1448,32 @@ std::vector<std::vector<int> > A_star::Trace_Back_Paths(Grid& grid, int current_
   int cost = 0;
   bool found = find_succsive_parallel_node(grid, current_node, left, right, mode, nodes, dest_index, cost);
   if(!found){
-    spdlog::error("Trace_Back_Paths bug 1 ");
+    logger->error("Trace_Back_Paths bug 1 ");
     assert(0);
   }
-  spdlog::info("trace back flag3");
+  logger->debug("trace back flag3");
 
-  spdlog::info("src_index");
+  logger->debug("src_index");
 
   for(auto it=src_index.begin();it!=src_index.end();++it){
-      spdlog::info("{0}",*it);
+      logger->debug("{0}",*it);
   }
 
-  spdlog::info("dest_index");
+  logger->debug("dest_index");
 
   for(auto it=dest_index.begin();it!=dest_index.end();++it){
-      spdlog::info("{0}",*it);
+      logger->debug("{0}",*it);
   }
 
   for(int i=0;i<nodes.size();i++){
 
-     spdlog::info("trace back flag3.1");
-     spdlog::info("trace back node nodes {0} {1} {2} metal {3} i {4} ",nodes[i],grid.vertices_total[nodes[i]].x,grid.vertices_total[nodes[i]].y,grid.vertices_total[nodes[i]].metal,i);
+     logger->debug("trace back flag3.1");
+     logger->debug("trace back node nodes {0} {1} {2} metal {3} i {4} ",nodes[i],grid.vertices_total[nodes[i]].x,grid.vertices_total[nodes[i]].y,grid.vertices_total[nodes[i]].metal,i);
      std::vector<int> temp_path = Trace_Back_Path_trace_back_node(grid, nodes[i], src_index);
      //std::vector<int> temp_path = Trace_Back_Path_parent(grid, nodes[i], src_index);
      if(temp_path.size()<2){
-        spdlog::info("temp_path size {0} ",temp_path.size());
-        spdlog::info("Trace_Back_Paths bug 2 ");
+        logger->debug("temp_path size {0} ",temp_path.size());
+        logger->debug("Trace_Back_Paths bug 2 ");
         //assert(0);      
      }
      temp_paths.push_back(temp_path);

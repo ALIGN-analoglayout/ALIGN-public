@@ -3,31 +3,39 @@
 #include "assert.h"
 
 Graph::Graph(Grid& grid):path_number(1) {
-  spdlog::debug("Start Creating adjacent list (graph)");
+
+  auto logger = spdlog::default_logger()->clone("router.Graph.Graph");
+
+  logger->debug("Start Creating adjacent list (graph)");
   CreateAdjacentList(grid); //create adjacentList base gird.LL_graph and gird.UR_graph
-  spdlog::debug("End Creating adjacent list (graph)");
+  logger->debug("End Creating adjacent list (graph)");
 
 };
 
 Graph::Graph(Grid& grid, bool Power_grid):path_number(1) {
 
+  auto logger = spdlog::default_logger()->clone("router.Graph.Graph");
+
   this->source=-1; this->dest=-1;
-  spdlog::debug("Start Creating power grid (graph)");
+  logger->debug("Start Creating power grid (graph)");
   CreatePower_Grid(grid); //create adjacentList base gird.LL_graph and gird.UR_graph
-  spdlog::debug("End creating power grid (graph)");
+  logger->debug("End creating power grid (graph)");
 
 };
 
 bool Graph::FindFeasiblePath(Grid& grid, int pathNo) {
+
+  auto logger = spdlog::default_logger()->clone("router.Graph.FindFeasiblePath");
+
   bool mark=false;
   for(int i =0;i<pathNo;++i){
     
      //find one shortest path
 
      std::vector<int> temp_path;
-     spdlog::debug("start dijkstra");
+     logger->debug("start dijkstra");
      temp_path = dijkstra();// grid.Source grid.dest
-     spdlog::debug("end dijkstra");
+     logger->debug("end dijkstra");
 
      if(temp_path.size()>0) {
      //update weight
@@ -41,7 +49,7 @@ bool Graph::FindFeasiblePath(Grid& grid, int pathNo) {
      mark=true;
      } else {
        mark=(mark or false);
-       spdlog::info("Router-Warning: feasible path might not be found");
+       logger->warn("Router-Warning: feasible path might not be found");
      }
   }
   return mark;
@@ -49,9 +57,12 @@ bool Graph::FindFeasiblePath(Grid& grid, int pathNo) {
 }
 
 Graph::Graph(Grid& grid, int pathNo) {
-  spdlog::debug("Start Creating adjacent list (graph),");
+
+  auto logger = spdlog::default_logger()->clone("router.Graph.Graph");
+
+  logger->debug("Start Creating adjacent list (graph),");
   CreateAdjacentList(grid); //create adjacentList base gird.LL_graph and gird.UR_graph
-  spdlog::debug("End creating adjacent list (graph)");
+  logger->debug("End creating adjacent list (graph)");
 
   this->path_number=pathNo;
   for(int i =0;i<pathNo;++i){
@@ -225,13 +236,15 @@ void Graph::CreatePower_Grid(Grid& grid){ //grid function needs to be changed...
 
 void Graph::collect_nodes(Grid &grid, vector<int> temp_vector, vector<int>& adjacent_nodes, int power){
 
+  auto logger = spdlog::default_logger()->clone("router.Graph.collect_nodes");
+
        for(unsigned int j=0;j<temp_vector.size();++j) 
           {   
              if(grid.total2graph.find(temp_vector[j])!=grid.total2graph.end())
                {
                   int index = grid.total2graph[temp_vector[j]];
-                  spdlog::info("temp {0} index {1} ",temp_vector[j],index);
-                  spdlog::info("index edge {0} graph size {1} temp_vector[j] {2} ", index,grid.vertices_graph.size(),temp_vector[j]);
+                  logger->debug("temp {0} index {1} ",temp_vector[j],index);
+                  logger->debug("index edge {0} graph size {1} temp_vector[j] {2} ", index,grid.vertices_graph.size(),temp_vector[j]);
                   if( index<grid.vertices_graph.size() and index>=0 and grid.vertices_graph[index].active and grid.vertices_graph[index].power == power and grid.vertices_graph[index].graph_index==-1) 
                     {  
                       adjacent_nodes.push_back(index);
@@ -676,6 +689,8 @@ void Graph::CreateAdjacentList(Grid& grid){
 };
 
 void Graph::RemovefromMultMap(std::multimap<double, int>& mmap, double dist, int idx) {
+  auto logger = spdlog::default_logger()->clone("router.Graph.RemovefromMultMap");
+
   std::multimap<double, int>::iterator low=mmap.lower_bound(dist);
   std::multimap<double, int>::iterator high=mmap.upper_bound(dist);
   std::multimap<double, int>::iterator tar;
@@ -686,7 +701,7 @@ void Graph::RemovefromMultMap(std::multimap<double, int>& mmap, double dist, int
     if(tar->second==idx) {mark=true; break;}
   }
   if(mark) {mmap.erase(tar);}
-  else {spdlog::debug("Graph-Info: cannot found element in map");}
+  else {logger->debug("Graph-Info: cannot found element in map");}
   //  std::cout << "RemovefromMultMap: searched through " << count << " multmap nodes." << std::endl;
 }
 

@@ -81,6 +81,8 @@ class GcellGlobalRouter : public RawRouter {
     //vector<PnRDB::Drc_info> drc_info;
     //int lowest_metal, highest_metal; //index of lowest metal & highest metal
     //int grid_scale; //dynamic grid_scal
+    typedef void (lphandlestr_func)(lprec *lp, void *userhandle, char *buf);
+    static void lpsolve_logger(lprec *lp, void *userhandle, char *buf);
 
   public:
     GcellGlobalRouter();

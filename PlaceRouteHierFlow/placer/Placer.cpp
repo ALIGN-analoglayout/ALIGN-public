@@ -95,13 +95,16 @@ void Placer::ThreadFunc(Thread_data* MT) {
 };
 
 void Placer::PlacementRegular(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo) {
-  spdlog::info("Placer-Info: place {0}",node.name);
+
+  auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementRegular");
+
+  logger->debug("Placer-Info: place {0}",node.name);
   #ifdef RFLAG
-  spdlog::info("Placer-Info: run in random mode...");  
+  logger->debug("Placer-Info: run in random mode...");  
   srand (time(NULL));
   #endif
   #ifndef RFLAG
-  spdlog::info("Placer-Info: run in normal mode..."); 
+  logger->debug("Placer-Info: run in normal mode..."); 
   srand(0);
   #endif
   int mode=0;
@@ -121,13 +124,16 @@ void Placer::PlacementRegular(PnRDB::hierNode& node, string opath, int effort, P
 
 
 void Placer::PlacementMixSA(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo) {
-  spdlog::info("Placer-Info: place {0}",node.name);
+
+  auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementMixSA");
+
+  logger->debug("Placer-Info: place {0}",node.name);
   #ifdef RFLAG
-  spdlog::info("Placer-Info: run in random mode...");
+  logger->debug("Placer-Info: run in random mode...");
   srand (time(NULL));
   #endif
   #ifndef RFLAG
-  spdlog::info("Placer-Info: run in normal mode...");
+  logger->debug("Placer-Info: run in normal mode...");
   srand(0);
   #endif
   int mode=0;
@@ -165,17 +171,20 @@ void Placer::PlacementMixSA(PnRDB::hierNode& node, string opath, int effort, PnR
 }
 
 void Placer::PlacementMixAP(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo) {
-  spdlog::info("Placer-Info: place {0}",node.name);
+
+  auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementMixAP");
+
+  logger->debug("Placer-Info: place {0}",node.name);
   #ifdef RFLAG
-  spdlog::debug("Placer-Info: run in random mode...");
+  logger->debug("Placer-Info: run in random mode...");
   srand (time(NULL));
   #endif
   #ifndef RFLAG
-  spdlog::debug("Placer-Info: run in normal mode...");
+  logger->debug("Placer-Info: run in normal mode...");
   srand(0);
   #endif
   //int mode=1;
-  spdlog::debug("Placer-Info: start mixed-size placement - phase I SA");
+  logger->debug("Placer-Info: start mixed-size placement - phase I SA");
   // Read design netlist and constraints
   //design designData(bfile.c_str(), nfile.c_str(), cfile.c_str());
   design designData_full(node);
@@ -194,26 +203,26 @@ void Placer::PlacementMixAP(PnRDB::hierNode& node, string opath, int effort, PnR
   curr_sol.WritePlacement(designData, curr_sp, opath+node.name+"_reduced.pl");
   curr_sol.PlotPlacement(designData, curr_sp, opath+node.name+"_reduced.plt");
   curr_sol.UpdateDesignHierNode4AP(designData_full, designData, curr_sp, node);
-  spdlog::debug("Placer-Info: complete mixed-size placement - phase I SA");
-  spdlog::debug("Placer-Info: start mixed-size placement - phase II AP");
+  logger->debug("Placer-Info: complete mixed-size placement - phase I SA");
+  logger->debug("Placer-Info: start mixed-size placement - phase II AP");
   //if(node.isTop) {return;}
   Aplace AP(node, designData_full, opath);
   ConstGraph new_sol(designData_full, AP, 0, 1);
-  spdlog::debug("Initial CG after AP");
+  logger->debug("Initial CG after AP");
   new_sol.PrintConstGraph();
   if(new_sol.ConstraintGraphAP(designData_full, AP)) {
-    spdlog::debug("Placer-Info: sucessfully construct constraint graph");
+    logger->debug("Placer-Info: sucessfully construct constraint graph");
   } else {
-    spdlog::debug("Placer-Error: fail to construct constraint graph");
+    logger->debug("Placer-Error: fail to construct constraint graph");
   }
   if(!new_sol.FastInitialScan()) {
-    spdlog::debug("Placer-Info: no violation in constraint graph");
+    logger->debug("Placer-Info: no violation in constraint graph");
   } else {
-    spdlog::debug("Placer-Error: violation found in constraint graph");
+    logger->debug("Placer-Error: violation found in constraint graph");
   }
-  spdlog::debug("Updated CG after constraint");
+  logger->debug("Updated CG after constraint");
   new_sol.PrintConstGraph(); 
-  spdlog::debug("Placer-Info: complete mixed-size placement - phase II AP");
+  logger->debug("Placer-Info: complete mixed-size placement - phase II AP");
 
   new_sol.updateTerminalCenterAP(designData_full, AP);
   new_sol.WritePlacementAP(designData_full, AP, opath+node.name+".pl");
@@ -241,14 +250,17 @@ void Placer::PlacementMixAP(PnRDB::hierNode& node, string opath, int effort, PnR
 }
 
 void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& curr_sol, int mode, int effort) {
+
+  auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementCore");
+
 // Mode 0: graph bias; Mode 1: graph bias + net margin; Others: no bias/margin
   //cout<<"PlacementCore\n";
   curr_sp.PrintSeqPair();
   GenerateValidSolution(designData, curr_sp, curr_sol, mode);
   //curr_sol.PrintConstGraph();
   double curr_cost=curr_sol.CalculateCost(designData, curr_sp);
-  spdlog::debug("Placer-Info: initial cost = {0}",curr_cost);
-  spdlog::debug("Placer-Info: status ");
+  logger->debug("Placer-Info: initial cost = {0}",curr_cost);
+  logger->debug("Placer-Info: status ");
   // Aimulate annealing
   double T=T_INT;
   double delta_cost;
@@ -348,20 +360,23 @@ void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& cur
     }
     T_index ++;
     if(total_update_number*per<T_index){
-      spdlog::debug(".....{0}",per*100);
+      logger->debug(".....{0}",per*100);
       per=per+0.1;
     }
     T*=ALPHA;
     //cout<<T<<endl;
   }
   // Write out placement results
-  spdlog::debug("Placer-Info: optimal cost = {0}",curr_cost);
+  logger->debug("Placer-Info: optimal cost = {0}",curr_cost);
   //curr_sol.PrintConstGraph();
   curr_sp.PrintSeqPair();
   curr_sol.updateTerminalCenter(designData, curr_sp);
 }
 
 std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, SeqPair& curr_sp, ConstGraph& curr_sol, int mode, int nodeSize, int effort) {
+
+  auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementCoreAspectRatio");
+
 // Mode 0: graph bias; Mode 1: graph bias + net margin; Others: no bias/margin
   //cout<<"PlacementCore\n";
   std::map<double, SeqPair> oData;
@@ -369,8 +384,8 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
   GenerateValidSolution(designData, curr_sp, curr_sol, mode);
   //curr_sol.PrintConstGraph();
   double curr_cost=curr_sol.CalculateCost(designData, curr_sp);
-  spdlog::debug("Placer-Info: initial cost = ",curr_cost);
-  spdlog::debug("Placer-Info: status ");
+  logger->debug("Placer-Info: initial cost = ",curr_cost);
+  logger->debug("Placer-Info: status ");
   // Aimulate annealing
   double T=T_INT;
   double delta_cost;
@@ -424,7 +439,7 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
           if( r < exp( (-1.0 * delta_cost)/T ) ) {Smark=true;}
         }
         if(Smark) {
-          spdlog::debug("cost: {0}",trial_cost);
+          logger->debug("cost: {0}",trial_cost);
           curr_cost=trial_cost;
           curr_sp=td[good_idx].thread_trial_sp;
           curr_sol=td[good_idx].thread_trial_sol;
@@ -456,7 +471,7 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
           if( r < exp( (-1.0 * delta_cost)/T ) ) {Smark=true;}
         }
         if(Smark) {
-          spdlog::debug("cost: {0}",trial_cost);
+          logger->debug("cost: {0}",trial_cost);
           curr_cost=trial_cost;
           curr_sp=trial_sp;
           curr_sol=trial_sol;
@@ -482,14 +497,14 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
     }
     T_index ++;
     if(total_update_number*per<T_index){
-      spdlog::info("...{0}%",per*100);
+      logger->debug("...{0}%",per*100);
       per=per+0.1;
     }
     T*=ALPHA;
     //cout<<T<<endl;
   }
   // Write out placement results
-  spdlog::info("Placer-Info: optimal cost = {0}",curr_cost);
+  logger->debug("Placer-Info: optimal cost = {0}",curr_cost);
   oData[curr_cost]=curr_sp;
   ReshapeSeqPairMap(oData,nodeSize);
   //cout<<endl<<"Placer-Info: optimal cost = "<<curr_cost<<endl;
@@ -501,6 +516,9 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
 
 std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRatio_ILP(design& designData, SeqPair& curr_sp, ILP_solver& curr_sol, int mode,
                                                                                       int nodeSize, int effort, PnRDB::Drc_info& drcInfo) {
+
+  auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementCoreAspectRatio_ILP");
+
   // Mode 0: graph bias; Mode 1: graph bias + net margin; Others: no bias/margin
   // cout<<"PlacementCore\n";
   std::map<double, std::pair<SeqPair, ILP_solver>> oData;
@@ -511,7 +529,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     curr_sp.PerturbationNew(designData);
     trial_count++;
     if (trial_count > 100) {
-      spdlog::warn("please check constraint" );
+      logger->warn("please check constraint" );
       break;
     }
   }
@@ -649,7 +667,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     }
     T_index++;
     if (total_update_number * per < T_index) {
-      spdlog::debug( "..... {0} %" , per * 100);
+      logger->debug( "..... {0} %" , per * 100);
       //cout.flush();
       per = per + 0.1;
     }
@@ -686,7 +704,7 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   int nodeSize=nodeVec.size();
   //cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
   #ifdef RFLAG
-  cout<<"Placer-Info: run in random mode..."<<endl;
+  //cout<<"Placer-Info: run in random mode..."<<endl;
   srand (time(NULL));
   #endif
   #ifndef RFLAG
@@ -727,14 +745,17 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
 }
 
 void Placer::PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
+
+  auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementRegularAspectRatio");
+
   int nodeSize=nodeVec.size();
-  spdlog::debug("Placer-Info: place {0} in aspect ratio mode",nodeVec.back().name);
+  logger->debug("Placer-Info: place {0} in aspect ratio mode",nodeVec.back().name);
   #ifdef RFLAG
-  spdlog::debug("Placer-Info: run in random mode...");
+  logger->debug("Placer-Info: run in random mode...");
   srand (time(NULL));
   #endif
   #ifndef RFLAG
-  spdlog::debug("Placer-Info: run in normal mode...");
+  logger->debug("Placer-Info: run in normal mode...");
   srand(0);
   #endif
   int mode=0;
@@ -770,15 +791,18 @@ void Placer::PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, 
 }
 
 void Placer::PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
+
+  auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementMixSAAspectRatio");
+
   int nodeSize=nodeVec.size();
-  spdlog::debug("Placer-Info: place {0} in aspect ratio mode",nodeVec.back().name);
-  spdlog::debug("Placer-Info: initial size {0}",nodeSize);
+  logger->debug("Placer-Info: place {0} in aspect ratio mode",nodeVec.back().name);
+  logger->debug("Placer-Info: initial size {0}",nodeSize);
   #ifdef RFLAG
-  spdlog::debug("Placer-Info: run in random mode...");
+  logger->debug("Placer-Info: run in random mode...");
   srand (time(NULL));
   #endif
   #ifndef RFLAG
-  spdlog::debug("Placer-Info: run in normal mode...");
+  logger->debug("Placer-Info: run in normal mode...");
   srand(0);
   #endif
   int bias_mode=0;
@@ -805,16 +829,16 @@ void Placer::PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
     nodeSize=spVec.size();
     nodeVec.resize(nodeSize);
   }
-  spdlog::debug("Placer-Info: after 1st SA size {0}",spVec.size());
+  logger->debug("Placer-Info: after 1st SA size {0}",spVec.size());
   int idx=0;
   for(std::map<double, SeqPair>::iterator it=spVec.begin(); it!=spVec.end() and idx<nodeSize; ++it, ++idx) {
-    spdlog::debug("Placer-Info: second round SA {0}",idx);
+    logger->debug("Placer-Info: second round SA {0}",idx);
     // Full design
     designData_full.PrintDesign();
     designData.PrintDesign();
     it->second.PrintSeqPair();
     SeqPair curr_sp_full( designData_full, designData, it->second  );
-    spdlog::debug("Placer-Info: second round SA after sp {0}",idx);
+    logger->debug("Placer-Info: second round SA after sp {0}",idx);
     //curr_sp_full.PrintSeqPair();
 
     ConstGraph curr_sol_full;
@@ -828,18 +852,21 @@ void Placer::PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
 }
 
 void Placer::PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
+
+  auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementMixAPAspectRatio");
+
   int nodeSize=nodeVec.size();
-  spdlog::info("Placer-Info: place {0}",nodeVec.back().name);
+  logger->debug("Placer-Info: place {0}",nodeVec.back().name);
   #ifdef RFLAG
-  spdlog::info("Placer-Info: run in random mode...");
+  logger->debug("Placer-Info: run in random mode...");
   srand (time(NULL));
   #endif
   #ifndef RFLAG
-  spdlog::info("Placer-Info: run in normal mode...");
+  logger->debug("Placer-Info: run in normal mode...");
   srand(0);
   #endif
   int bias_mode=1;
-  spdlog::debug("Placer-Info: start mixed-size placement - phase I SA");
+  logger->debug("Placer-Info: start mixed-size placement - phase I SA");
   // Read design netlist and constraints
   //design designData(bfile.c_str(), nfile.c_str(), cfile.c_str());
   design designData_full(nodeVec.back());
@@ -862,8 +889,8 @@ void Placer::PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
     nodeVec.resize(nodeSize);
   }
   //PlacementCore(designData, curr_sp, curr_sol, 1);
-  spdlog::debug("Placer-Info: complete mixed-size placement - phase I SA");
-  spdlog::debug("Placer-Info: start mixed-size placement - phase II AP");
+  logger->debug("Placer-Info: complete mixed-size placement - phase I SA");
+  logger->debug("Placer-Info: start mixed-size placement - phase II AP");
   int idx=0;
   for(std::map<double, SeqPair>::iterator it=spVec.begin(); it!=spVec.end() and idx<nodeSize; ++it, ++idx) {
     ConstGraph vec_sol(designData, it->second, bias_mode);
@@ -877,21 +904,21 @@ void Placer::PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
 
     Aplace AP(nodeVec.at(idx), designData_full, opath);
     ConstGraph new_sol(designData_full, AP, 0, 1);
-    spdlog::debug("Initial CG after AP");
+    logger->debug("Initial CG after AP");
     new_sol.PrintConstGraph();
     if(new_sol.ConstraintGraphAP(designData_full, AP)) {
-      spdlog::debug("Placer-Info: sucessfully construct constraint graph");
+      logger->debug("Placer-Info: sucessfully construct constraint graph");
     } else {
-      spdlog::debug("Placer-Error: fail to construct constraint graph");
+      logger->debug("Placer-Error: fail to construct constraint graph");
     }
     if(!new_sol.FastInitialScan()) {
-      spdlog::debug("Placer-Info: no violation in constraint graph");
+      logger->debug("Placer-Info: no violation in constraint graph");
     } else {
-      spdlog::debug("Placer-Error: violation found in constraint graph");
+      logger->debug("Placer-Error: violation found in constraint graph");
     }
-    spdlog::debug("Updated CG after constraint");
+    logger->debug("Updated CG after constraint");
     new_sol.PrintConstGraph();
-    spdlog::debug("Placer-Info: complete mixed-size placement - phase II AP");
+    logger->debug("Placer-Info: complete mixed-size placement - phase II AP");
 
     new_sol.updateTerminalCenterAP(designData_full, AP);
     new_sol.WritePlacementAP(designData_full, AP, opath+nodeVec.back().name+"_"+std::to_string(idx)+".pl");

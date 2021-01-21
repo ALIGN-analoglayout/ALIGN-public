@@ -2,9 +2,12 @@
 #include "spdlog/spdlog.h"
 
 GlobalGraph::GlobalGraph(GlobalGrid& grid):path_number(1) {
-  spdlog::info("Start Creating adjacent list (graph)");
+
+  auto logger = spdlog::default_logger()->clone("router.GlobalGraph.GlobalGraph");
+
+  logger->info("Start Creating adjacent list (graph)");
   CreateAdjacentList(grid); //create adjacentList base gird.LL_graph and gird.UR_graph
-  spdlog::info("End creating adjacent list (graph)");
+  logger->info("End creating adjacent list (graph)");
 
 };
 
@@ -16,6 +19,7 @@ void GlobalGraph::clearPath(){
 
 void GlobalGraph::FindSTs(GlobalGrid& grid, int pathNo, std::vector<int> &stiner_node) {
 
+  auto logger = spdlog::default_logger()->clone("router.GlobalGraph.FindSTs");
 
   this->path_number=pathNo;
 
@@ -33,9 +37,9 @@ void GlobalGraph::FindSTs(GlobalGrid& grid, int pathNo, std::vector<int> &stiner
 
 
      MST(weight, temp_path, grid);
-     spdlog::info("End MTS1");
+     logger->debug("End MTS1");
      UpdateEdgeWeight(temp_path);
-     spdlog::info("End Update weight");
+     logger->debug("End Update weight");
      //return the shortest path
      Path.push_back(temp_path);
 
@@ -219,6 +223,8 @@ void GlobalGraph::InitialSrcDest(std::vector<int> & temp_src, std::vector<int> &
 
 void GlobalGraph::ChangeSrcDest(std::vector<int> &temp_src, std::vector<int> &temp_dest, std::vector<int> temp_single_path, std::vector<int> &pin_access){
 
+  auto logger = spdlog::default_logger()->clone("router.GlobalGraph.ChangeSrcDest");
+
   for(unsigned int i=0;i<temp_single_path.size();i++){
         for(unsigned int j=0;j<Pin_terminals.size();j++){
              for(unsigned int k=0;k<Pin_terminals[j].size();k++){
@@ -228,7 +234,7 @@ void GlobalGraph::ChangeSrcDest(std::vector<int> &temp_src, std::vector<int> &te
                 }
            }
      }
-  spdlog::debug("ChangeSrcDest test1");
+  logger->debug("ChangeSrcDest test1");
   temp_src.clear();
   temp_dest.clear();
 
@@ -247,7 +253,7 @@ void GlobalGraph::ChangeSrcDest(std::vector<int> &temp_src, std::vector<int> &te
             }
         }
      }
-  spdlog::debug("ChangeSrcDest test2");
+  logger->debug("ChangeSrcDest test2");
   for(unsigned int i=0;i<temp_single_path.size();i++){
      src_set.insert(temp_single_path[i]);
      }
@@ -270,19 +276,21 @@ void GlobalGraph::ChangeSrcDest(std::vector<int> &temp_src, std::vector<int> &te
       
       temp_dest.push_back(*xit);
   }
-  spdlog::debug("ChangeSrcDest test3");
+  logger->debug("ChangeSrcDest test3");
   
 };
 
 void GlobalGraph::MST(int & WireLength, std::vector<pair<int,int> > &temp_path, GlobalGrid &grid){
 
+    auto logger = spdlog::default_logger()->clone("router.GlobalGraph.MST");
+
     std::vector<std::vector<int> > MST_path;
     std::vector<int> temp_src;
     std::vector<int> temp_dest;
     std::vector<int> pin_access;
-    spdlog::debug("Starting initialSrcDest");
+    logger->debug("Starting initialSrcDest");
     InitialSrcDest(temp_src, temp_dest, pin_access);
-    spdlog::debug("End initialSrcDest");
+    logger->debug("End initialSrcDest");
     //std::cout<<"temp_dest size "<<temp_dest.size()<<std::endl;
 
 
@@ -476,6 +484,9 @@ void GlobalGraph::RMSrcDest(std::vector<int> temp_src, std::vector<int> temp_des
 
 
 void GlobalGraph::RemovefromMultMap(std::multimap<double, int>& mmap, double dist, int idx) {
+
+  auto logger = spdlog::default_logger()->clone("router.GlobalGraph.RemovefromMultMap");
+
   std::multimap<double, int>::iterator low=mmap.lower_bound(dist);
   std::multimap<double, int>::iterator high=mmap.upper_bound(dist);
   std::multimap<double, int>::iterator tar;
@@ -485,7 +496,7 @@ void GlobalGraph::RemovefromMultMap(std::multimap<double, int>& mmap, double dis
   }
   if(mark) {mmap.erase(tar);}
   else {
-  spdlog::info("Graph-Info: cannot found element in map");
+  logger->warn("Graph-Info: cannot found element in map");
   }
 }
 

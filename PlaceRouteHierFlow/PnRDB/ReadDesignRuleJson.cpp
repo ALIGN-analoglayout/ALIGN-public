@@ -11,6 +11,9 @@ using namespace nlohmann;
 
 
 void PnRdatabase::ReadPDKJSON(std::string drfile) {
+
+    auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.ReadPDKJSON");
+
     int times=2;
     json jsonStrAry;
     ifstream jsonFile (drfile);
@@ -30,8 +33,8 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             // metal layer
             metal_index = metal_index + 1;
             #ifdef FinFET_MOCK_PDK
-            spdlog::info("Reading Json PDK on {0}",lname);
-            spdlog::info("Reading Json PDK on GdsLayerNo");
+            logger->debug("Reading Json PDK on {0}",lname);
+            logger->debug("Reading Json PDK on GdsLayerNo");
             int lnum=layer["GdsLayerNo"];
             int Drawnum=layer["GdsDatatype"]["Draw"];
             int Pinnum=layer["GdsDatatype"]["Pin"];
@@ -42,7 +45,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             #endif
             std::string ldir=layer["Direction"];
             int lpitch=-1;
-            spdlog::info("Reading Json PDK on Pitch");
+            logger->debug("Reading Json PDK on Pitch");
             json pdata=layer["Pitch"];
             if(pdata.is_array()) {
               json::iterator pit=pdata.begin();
@@ -51,7 +54,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
               lpitch=pdata;
             }
             int lwidth=-1;
-            spdlog::info("Reading Json PDK on Width");
+            logger->debug("Reading Json PDK on Width");
             json wdata=layer["Width"];
             if(wdata.is_array()) {
               json::iterator wit=wdata.begin();
@@ -59,16 +62,16 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             } else if (wdata.is_number()) {
               lwidth=wdata;
             }
-            spdlog::info("Reading Json PDK on MinL");
+            logger->debug("Reading Json PDK on MinL");
             int lminL=layer["MinL"];
             //int lmaxL=layer["MaxL"];
-            spdlog::info("Reading Json PDK on EndToEnd");
+            logger->debug("Reading Json PDK on EndToEnd");
             int le2e=layer["EndToEnd"];
 
             double unit_C = 0;
             double unit_CC = 0;
             double unit_R = 0;
-            spdlog::info("Reading Json PDK on Units, C, CC, R");
+            logger->debug("Reading Json PDK on Units, C, CC, R");
             #ifdef FinFET_MOCK_PDK
             if(layer["UnitC"]["Mean"].is_number()){unit_C=layer["UnitC"]["Mean"];}
             if(layer["UnitCC"]["Mean"].is_number()){unit_CC=layer["UnitCC"]["Mean"];}
@@ -89,7 +92,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             #endif
             if(ldir.compare("V")==0) { tmp_metal.direct=0; tmp_metal.grid_unit_x=times*lpitch; tmp_metal.grid_unit_y=-1;
             } else if (ldir.compare("H")==0) { tmp_metal.direct=1; tmp_metal.grid_unit_y=times*lpitch; tmp_metal.grid_unit_x=-1;
-            } else {spdlog::error("PnR-Error: incorrect metal direction");}
+            } else {logger->error("PnR-Error: incorrect metal direction");}
             tmp_metal.width=times*lwidth;
             tmp_metal.dist_ss=times*(lpitch-lwidth);
             tmp_metal.minL=times*lminL;
@@ -134,9 +137,9 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             via_index = via_index + 1;
             // via layer
             via_index = via_index + 1;
-            spdlog::info("Reading Json PDK on {0}",lname);
+            logger->debug("Reading Json PDK on {0}",lname);
             #ifdef FinFET_MOCK_PDK
-            spdlog::info("Reading Json PDK on GdsLayerNo");
+            logger->debug("Reading Json PDK on GdsLayerNo");
             int lnum=layer["GdsLayerNo"];
             int Drawnum=layer["GdsDatatype"]["Draw"];
             #else

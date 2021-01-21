@@ -5,12 +5,14 @@
 #include <iomanip>
 
 bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suffix) {
+  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.ReadConstraint");
+
   ifstream fin;
   string def;
   vector<string> temp, tempsec;
   size_t found;
   string cfile=fpath+"/"+node.name+"."+suffix;
-  spdlog::info("start to read const file {0}",cfile);
+  logger->info("start to read const file {0}",cfile);
   // constraint format issues(comma): Alignment, Preplace, MatchBlock, Abutment
   fin.exceptions(ifstream::failbit | ifstream::badbit);
   try {
@@ -166,10 +168,10 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
 
 
 	if ( preplace_const.blockid1 == -1) {
-	  spdlog::error("-E- ReadConstraint: Preplace: couldn't find block1: {0}" , block_first);
+	  logger->error("-E- ReadConstraint: Preplace: couldn't find block1: {0}" , block_first);
 	}
 	if ( preplace_const.blockid2 == -1) {
-	  spdlog::error("-E- ReadConstraint: Preplace: couldn't find block2: {0}" , block_second);
+	  logger->error("-E- ReadConstraint: Preplace: couldn't find block2: {0}" , block_second);
 	}
 
 	if ( preplace_const.blockid1 != -1 && preplace_const.blockid2!= -1) {
@@ -204,10 +206,10 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         alignment_const.horizon = horizon;
 
 	if ( alignment_const.blockid1 == -1) {
-	  spdlog::error("-E- ReadConstraint: Alignment: couldn't find block1: {0}", block_first );
+	  logger->error("-E- ReadConstraint: Alignment: couldn't find block1: {0}", block_first );
 	}
 	if ( alignment_const.blockid2 == -1) {
-	  spdlog::error("-E- ReadConstraint: Alignment: couldn't find block2: {0}" ,block_second);
+	  logger->error("-E- ReadConstraint: Alignment: couldn't find block2: {0}" ,block_second);
 	}
 
 	if ( alignment_const.blockid1 != -1 && alignment_const.blockid2!= -1) {
@@ -241,10 +243,10 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         abument_const.horizon = horizon;
 
 	if ( abument_const.blockid1 == -1) {
-	  spdlog::error( "-E- ReadConstraint: Abument: couldn't find block1: {0}", block_first);
+	  logger->error( "-E- ReadConstraint: Abument: couldn't find block1: {0}", block_first);
 	}
 	if ( abument_const.blockid2 == -1) {
-	  spdlog::error( "-E- ReadConstraint: Abument: couldn't find block2: {0}" , block_second);
+	  logger->error( "-E- ReadConstraint: Abument: couldn't find block2: {0}" , block_second);
 	}
 
 	if ( abument_const.blockid1 != -1 && abument_const.blockid2!= -1) {
@@ -274,10 +276,10 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         }
 
 	if ( match_const.blockid1 == -1) {
-	  spdlog::error( "-E- ReadConstraint: MatchBlock: couldn't find block1: {0} " , block_first );
+	  logger->error( "-E- ReadConstraint: MatchBlock: couldn't find block1: {0} " , block_first );
 	}
 	if ( match_const.blockid2 == -1) {
-	  spdlog::error( "-E- ReadConstraint: MatchBlock: couldn't find block2: {0} " , block_second);
+	  logger->error( "-E- ReadConstraint: MatchBlock: couldn't find block2: {0} " , block_second);
 	}
 
         //match_const.distance = distance;
@@ -323,7 +325,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
               temp_pair.second = temp_pair.first;
               temp_pair.first = temp_int;
             } else if (temp_pair.first==temp_pair.second) {
-              std::cerr<<"PnRDB-Error: same block in paired symmetry group"<<std::endl;
+              logger->error("PnRDB-Error: same block in paired symmetry group");
             }
             if (temp_pair.first >= 0 && temp_pair.second >= 0) temp_SymmPairBlock.sympair.push_back(temp_pair);
           } else if (word == "H") {
@@ -807,7 +809,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
     //std::cout<<"end read const file "<<cfile<<std::endl;
     return true;
   } catch(ifstream::failure e) {
-    cerr<<"PnRDB-Error: fail to read constraint file "<<endl;
+    logger->warn("PnRDB-Warn: fail to read constraint file ");
   }
   return false;
 }
