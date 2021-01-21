@@ -50,6 +50,12 @@ make
 mkdir googletest/mybuild
 cp -r lib googletest/mybuild/.
 
+#### Install logger
+cd $ALIGN_HOME
+git clone https://github.com/gabime/spdlog.git
+cd spdlog && mkdir build && cd build
+cmake .. && make -j
+
 ### Install superLU
 cd $ALIGN_HOME
 mkdir superlu
@@ -69,6 +75,8 @@ setenv LP_DIR $ALIGN_HOME/lpsolve
 #setenv BOOST_LP $ALIGN_HOME/boost
 setenv JSON $ALIGN_HOME/json
 setenv GTEST_DIR $ALIGN_HOME/googletest/googletest/
+setenv SPDLOG_DIR $ALIGN_HOME/spdlog
+setenv SuperLu_DIR $ALIGN_HOME/superlu
 setenv VENV $ALIGN_HOME/general
 
 ## install align 

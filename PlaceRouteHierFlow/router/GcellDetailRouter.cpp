@@ -6,7 +6,10 @@ GcellDetailRouter::GcellDetailRouter(){
 };
 
 GcellDetailRouter::GcellDetailRouter(PnRDB::hierNode& HierNode, GcellGlobalRouter& GR, int path_number, int grid_scale){
-  spdlog::debug("start detail router");
+
+  auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.GcellDetailRouter");
+
+  logger->debug("start detail router");
   this->Nets = GR.Nets;
   this->Blocks = GR.Blocks;
   this->Terminals = GR.Terminals;
@@ -34,14 +37,14 @@ GcellDetailRouter::GcellDetailRouter(PnRDB::hierNode& HierNode, GcellGlobalRoute
   printNetsInfo(); 
 
   create_detailrouter(); 
-  spdlog::debug("physical metal and via");
+  logger->debug("physical metal and via");
   Physical_metal_via(); //this needs modify
-  spdlog::debug("Start Extend Metal");
+  logger->debug("Start Extend Metal");
   ExtendMetal(); 
-  spdlog::debug("End Extend Metal");
-  spdlog::debug("start return node in detail router");
+  logger->debug("End Extend Metal");
+  logger->debug("start return node in detail router");
   ReturnHierNode(HierNode);
-  spdlog::debug("end return node in detail router");
+  logger->debug("end return node in detail router");
 
 };
 
@@ -78,24 +81,26 @@ void GcellDetailRouter::calculate_extension_length() {
 
 void GcellDetailRouter::printNetsInfo(){
 
+  auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.printNetsInfo");
+
   for(unsigned int i=0;i<Nets.size();i++){
-      spdlog::debug("Net name {0}",Nets[i].netName);
+      logger->debug("Net name {0}",Nets[i].netName);
 
       for(unsigned int j=0;j<Nets[i].connectedTile.size();j++){
 
             for(unsigned int k=0;k<Nets[i].connectedTile[j].size();k++){
-                spdlog::debug("{0} ",Nets[i].connectedTile[j][k]);
+                logger->debug("{0} ",Nets[i].connectedTile[j][k]);
 
                }
 
           }
 
-      spdlog::debug("Global Path");
+      logger->debug("Global Path");
      
       int ST_index = Nets[i].STindex;
 
       for(unsigned int j=0;j<Nets[i].STs[ST_index].path.size();j++){
-           spdlog::debug("{0} {1} ",Nets[i].STs[ST_index].path[j].first,Nets[i].STs[ST_index].path[j].second);
+           logger->debug("{0} {1} ",Nets[i].STs[ST_index].path[j].first,Nets[i].STs[ST_index].path[j].second);
 
           }
           
@@ -332,6 +337,8 @@ void GcellDetailRouter::modify_tile_metals(RouterDB::Net& Net, bool set){
 
 void GcellDetailRouter::Adding_tiles_for_terminal(int tile_index, std::vector<std::pair<int,int> > &global_path ){
 
+  auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.Adding_tiles_for_terminal");
+
   std::pair<int,int> temp_path;
   temp_path.first = tile_index;
   temp_path.second = tile_index;
@@ -339,7 +346,7 @@ void GcellDetailRouter::Adding_tiles_for_terminal(int tile_index, std::vector<st
 
   while(Gcell.tiles_total[tile_index].down.size()>0){
     if(Gcell.tiles_total[tile_index].down.size()>1){
-        spdlog::error("Tile error");
+        logger->error("Tile error");
         assert(0);
       }
     tile_index = Gcell.tiles_total[tile_index].down[0].next;
@@ -350,7 +357,7 @@ void GcellDetailRouter::Adding_tiles_for_terminal(int tile_index, std::vector<st
 
   while(Gcell.tiles_total[tile_index].up.size()>0){
     if(Gcell.tiles_total[tile_index].up.size()>1){
-        spdlog::error("Tile error");
+        logger->error("Tile error");
         assert(0);
       }
     tile_index = Gcell.tiles_total[tile_index].up[0].next;
@@ -533,6 +540,8 @@ void GcellDetailRouter::Grid_Inactive(Grid &grid, std::set<RouterDB::SinkData, R
 
 int GcellDetailRouter::Found_Pins_and_Symmetry_Pins(Grid &grid ,int i, std::vector<std::vector<RouterDB::SinkData> > &temp_pins){
 
+  auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.Found_Pins_and_Symmetry_Pins");
+
   int sym_flag = 0;
   std::vector<std::vector<RouterDB::SinkData> > sym_temp_pins; //symmetry pins 
   std::vector<std::vector<RouterDB::SinkData> > common_pins; //common part for routing pins and symmetry pins
@@ -540,7 +549,7 @@ int GcellDetailRouter::Found_Pins_and_Symmetry_Pins(Grid &grid ,int i, std::vect
   if(Nets[i].symCounterpart!=-1 and Nets[i].symCounterpart < (int)Nets.size()-1){       
      sym_flag = findPins_Sym(grid, Nets[i], Nets[Nets[i].symCounterpart], Nets[i].sym_H, Nets[i].center, temp_pins, sym_temp_pins, common_pins);
      if(sym_flag == 1){
-        spdlog::debug("sym_flag exist");
+        logger->debug("sym_flag exist");
         //SortPins(temp_pins);
         //SortPins(sym_temp_pins);
         //SortPins(common_pins);
@@ -558,6 +567,8 @@ int GcellDetailRouter::Found_Pins_and_Symmetry_Pins(Grid &grid ,int i, std::vect
 
 void GcellDetailRouter::Symmetry_metal_Inactive(int i, int sym_flag, Grid &grid, RouterDB::point sym_gridll, RouterDB::point sym_gridur, RouterDB::point &gridll, RouterDB::point &gridur){
 
+    auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.Symmetry_metal_Inactive");
+
        //modify_tile_metals(Nets[i], 1);
     if(sym_flag==1 and Nets[i].global_sym!=-1 and Nets[i].global_sym <(int)Nets.size()-1){
 
@@ -571,7 +582,7 @@ void GcellDetailRouter::Symmetry_metal_Inactive(int i, int sym_flag, Grid &grid,
     sym_gridur = gridur;
 
     if(sym_flag ==1){
-        spdlog::debug("Starting sym net metal coping");
+        logger->debug("Starting sym net metal coping");
         RouterDB::SinkData sym_aear;
         sym_aear.metalIdx = -1;
         sym_aear.coord.push_back(sym_gridll);
@@ -580,10 +591,10 @@ void GcellDetailRouter::Symmetry_metal_Inactive(int i, int sym_flag, Grid &grid,
         sym_gridll = sym_aear.coord[0];
         sym_gridur = sym_aear.coord[1];
         std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > sym_netplist;
-        spdlog::debug("Starting sym block metal coping flag");
+        logger->debug("Starting sym block metal coping flag");
         CreatePlistSymBlocks(sym_netplist, sym_gridll, sym_gridur, Nets[i].sym_H, Nets[i].center, gridll, gridur);
         grid.InactivePointlist(sym_netplist);
-        spdlog::debug("End sym net metal coping");
+        logger->debug("End sym net metal coping");
       }
 
 };std::vector<RouterDB::SinkData> GcellDetailRouter::Initial_source_pin(std::vector<std::vector<RouterDB::SinkData> > &temp_pins, int &source_lock){
@@ -689,6 +700,8 @@ void GcellDetailRouter::Symmetry_Routing(int sym_flag, int i, std::set<RouterDB:
 };
 void GcellDetailRouter::create_detailrouter(){
 
+  auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.create_detailrouter");
+
   //bug:
   //solved 1. use other SinkDataComp for Set_x_contact and Set_net_contact
   //2. rm the via inactive for inner the pins (this have been corrected by rm the pins from internal block pins)
@@ -760,7 +773,7 @@ void GcellDetailRouter::create_detailrouter(){
         AddViaEnclosure(Pset_via, grid, Set_x_contact, Set_net_contact);
         AddViaSpacing(Pset_via, grid);
         A_star a_star(grid, Nets[i].shielding);
-        spdlog::info("Net name {0}",Nets[i].netName);
+        logger->debug("Net name {0}",Nets[i].netName);
         bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, 0, 0);
         /*
         if(pathMark==0){
@@ -770,7 +783,7 @@ void GcellDetailRouter::create_detailrouter(){
         */
         std::vector<std::vector<RouterDB::Metal>> physical_path;
         Update_rouer_report_info(temp_routing_net, i, j, pathMark);
-        spdlog::info("pathMark {0}",pathMark);
+        logger->debug("pathMark {0}",pathMark);
         //assert(pathMark);
         if (pathMark)
         {
@@ -788,10 +801,10 @@ void GcellDetailRouter::create_detailrouter(){
         }
         else
         {
-           spdlog::warn( "Router-Warning: feasible path might not be found");
+           logger->warn( "Router-Warning: feasible path might not be found");
         }
 
-        spdlog::info( "Detail Router check point 8" );
+        logger->debug( "Detail Router check point 8" );
         //update physical path to
         Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source, temp_dest, physical_path);
         UpdatePlistNets(physical_path, add_plist);
@@ -808,6 +821,8 @@ void GcellDetailRouter::create_detailrouter(){
 };
 
 void GcellDetailRouter::create_detailrouter_old(){
+
+  auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.create_detailrouter_old");
 
   std::vector<std::vector<RouterDB::point>> plist;
   plist.resize(this->layerNo);
@@ -880,7 +895,7 @@ void GcellDetailRouter::create_detailrouter_old(){
       }
       else
       {
-        spdlog::debug("Router-Warning: feasible path might not be found");
+        logger->debug("Router-Warning: feasible path might not be found");
       }
 
 
@@ -1419,7 +1434,9 @@ int GcellDetailRouter::Cover_Contact(RouterDB::SinkData &temp_contact, RouterDB:
 
 void GcellDetailRouter::CheckTile(RouterDB::Net &temp_net, GlobalGrid &Gcell){
 
-  spdlog::debug("Start check terminals");
+  auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.CheckTile");
+
+  logger->debug("Start check terminals");
   std::vector<std::pair<int,int> > tile_index = temp_net.STs[temp_net.STindex].path;
 /*
   std::cout<<"Tile info"<<std::endl;
@@ -1446,13 +1463,15 @@ void GcellDetailRouter::CheckTile(RouterDB::Net &temp_net, GlobalGrid &Gcell){
 
      }
 */
-  spdlog::debug("End check terminals");
+  logger->debug("End check terminals");
 
 
 
 };
 
 void GcellDetailRouter::JudgeTileCoverage(std::vector<std::pair<int,int> > &tile_index, std::vector<std::vector<RouterDB::SinkData> > &temp_pins, GlobalGrid &Gcell){
+
+  auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.JudgeTileCoverage");
 
   std::set<int> unique_set;
   std::set<int>::iterator it,itlow,itup;
@@ -1508,7 +1527,7 @@ void GcellDetailRouter::JudgeTileCoverage(std::vector<std::pair<int,int> > &tile
 
               }
           }
-        if(found_flag==0){spdlog::debug("Error tile do not cover pins");}
+        if(found_flag==0){logger->debug("Error tile do not cover pins");}
       } 
   
   
@@ -1711,6 +1730,7 @@ int GcellDetailRouter::findPins_Sym(Grid& grid, RouterDB::Net &temp_net, RouterD
 
 std::vector<std::vector<RouterDB::SinkData> > GcellDetailRouter::findPins_new_old(Grid& grid, RouterDB::Net &temp_net){
 
+   auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.findPins_new_old");
 
    std::vector<std::vector<RouterDB::SinkData> > temp_Pin;
 
@@ -1790,7 +1810,7 @@ std::vector<std::vector<RouterDB::SinkData> > GcellDetailRouter::findPins_new_ol
                    }
 */                
                 //temp_contacts.push_back(temp_contact);
-                spdlog::debug("Error: terminals fails to map");
+                logger->debug("Error: terminals fails to map");
                 
 
               }   
@@ -1881,18 +1901,20 @@ std::vector<std::vector<RouterDB::SinkData> > GcellDetailRouter::findPins_new(Gr
 
 void GcellDetailRouter::SortPins(std::vector<std::vector<RouterDB::SinkData> > & temp_Pin){
 
-  spdlog::debug("start sort pins");  
+  auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.SortPins");
+
+  logger->debug("start sort pins");  
   std::vector<RouterDB::SinkData> temp_label_point;
   std::vector<int> dis;
 
-  spdlog::debug("start sort pins 1");  
+  logger->debug("start sort pins 1");  
 
   if(temp_Pin.size()==0){return;}
 
 
   temp_label_point = temp_Pin[0];
 
-  spdlog::debug("start sort pins 2");  
+  logger->debug("start sort pins 2");  
   for(unsigned int i=0;i<temp_Pin.size();i++){
       int temp_dis=INT_MAX;
        for(unsigned int j=0;j<temp_Pin[i].size();j++){
@@ -1915,7 +1937,7 @@ void GcellDetailRouter::SortPins(std::vector<std::vector<RouterDB::SinkData> > &
        dis.push_back(temp_dis);
      }
 
-   spdlog::debug("start sort pins 3");   
+   logger->debug("start sort pins 3");   
    vector<int> index;
    for(unsigned int i=0;i<dis.size();i++){
        index.push_back(i);
@@ -1923,7 +1945,7 @@ void GcellDetailRouter::SortPins(std::vector<std::vector<RouterDB::SinkData> > &
 
    int temp_dist;
    int temp_index;
-   spdlog::debug("start sort pins 3");
+   logger->debug("start sort pins 3");
 
    for(unsigned int i=0;i<dis.size();i++){
        for(unsigned int j=i+1;j<dis.size();j++){
@@ -1939,14 +1961,14 @@ void GcellDetailRouter::SortPins(std::vector<std::vector<RouterDB::SinkData> > &
       }
 
 
-   spdlog::debug("start sort pins 4");
+   logger->debug("start sort pins 4");
    std::vector<std::vector<RouterDB::SinkData> > Pin;
    for(unsigned int i=0;i<dis.size();i++){
          Pin.push_back(temp_Pin[index[i]]);
       }
 
   temp_Pin = Pin;
-  spdlog::debug("End sort pins");
+  logger->debug("End sort pins");
 
 };
 
@@ -2039,6 +2061,8 @@ void GcellDetailRouter::splitPath(std::vector<std::vector<RouterDB::Metal> > &te
 
 void GcellDetailRouter::lastmile_source_new(std::vector<std::vector<RouterDB::Metal> > &temp_path, std::vector<RouterDB::SinkData> &temp_source){
 
+   auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.lastmile_source_new");
+
   RouterDB::point temp_point = temp_path[0][0].LinePoint[0];
   int temp_metal_metalidx = temp_path[0][0].MetalIdx;
   //int temp_metal_metalidx = 5;
@@ -2054,7 +2078,7 @@ void GcellDetailRouter::lastmile_source_new(std::vector<std::vector<RouterDB::Me
 
   for(unsigned int i =0;i<temp_source.size();i++){
      
-     if(temp_source[i].coord[0].x<=temp_source[i].coord[1].x and temp_source[i].coord[0].y<=temp_source[i].coord[1].y){}else{spdlog::debug("EError");} 
+     if(temp_source[i].coord[0].x<=temp_source[i].coord[1].x and temp_source[i].coord[0].y<=temp_source[i].coord[1].y){}else{logger->debug("EError");} 
        
      if(temp_point.x>=temp_source[i].coord[0].x and temp_point.y>=temp_source[i].coord[0].y and temp_point.x<=temp_source[i].coord[1].x and temp_point.y<=temp_source[i].coord[1].y and temp_source[i].metalIdx == temp_metal_metalidx){connected = 1;}
 
@@ -2150,6 +2174,8 @@ void GcellDetailRouter::lastmile_source_new(std::vector<std::vector<RouterDB::Me
 
 void GcellDetailRouter::lastmile_dest_new(std::vector<std::vector<RouterDB::Metal> > &temp_path, std::vector<RouterDB::SinkData> &temp_source){
 
+   auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.lastmile_dest_new");
+
   int last_index = temp_path[0].size()-1;
   RouterDB::point temp_point = temp_path[0][last_index].LinePoint[1];
   int temp_metal_metalidx = temp_path[0][last_index].MetalIdx;
@@ -2167,7 +2193,7 @@ void GcellDetailRouter::lastmile_dest_new(std::vector<std::vector<RouterDB::Meta
   for(unsigned int i =0;i<temp_source.size();i++){
      
      if(temp_source[i].coord[0].x<=temp_source[i].coord[1].x and temp_source[i].coord[0].y<=temp_source[i].coord[1].y){}else{
-        spdlog::debug("EEroor");
+        logger->debug("EEroor");
      }  
        
      if(temp_point.x>=temp_source[i].coord[0].x and temp_point.y>=temp_source[i].coord[0].y and temp_point.x<=temp_source[i].coord[1].x and temp_point.y<=temp_source[i].coord[1].y and temp_source[i].metalIdx == temp_metal_metalidx){connected = 1;}
@@ -2554,7 +2580,9 @@ void GcellDetailRouter::ExtendMetal(){
 
 void GcellDetailRouter::GetPhsical_Metal_Via(int i){
 
-  spdlog::info("Nets[i].netName {0}",Nets[i].netName);
+  auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.GetPhsical_Metal_Via");
+
+  logger->debug("Nets[i].netName {0}",Nets[i].netName);
   
   for(unsigned int h=0;h<Nets[i].path_metal.size();h++){
 
@@ -3020,6 +3048,7 @@ void GcellDetailRouter::GetPhsical_Via_contacts(std::vector<std::vector<RouterDB
 
 void GcellDetailRouter::CreatePlistSrc_Dest(std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > &src_dest_plist, std::vector<RouterDB::SinkData > &temp_src, std::vector<RouterDB::SinkData > &temp_dest){
 
+  auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.CreatePlistSrc_Dest");
 
   //RouterDB::point tmpP;
   int LLx, LLy, URx, URy;
@@ -3038,10 +3067,10 @@ void GcellDetailRouter::CreatePlistSrc_Dest(std::vector<std::set<RouterDB::point
 
   ur.x = INT_MIN;
   ur.y = INT_MIN;
-  spdlog::debug("check point new function 1 ");
+  logger->debug("check point new function 1 ");
 
   //change sinkdata to contact
-  spdlog::debug("src contact {0}",temp_src.size());
+  logger->debug("src contact {0}",temp_src.size());
   for(int i=0;i<temp_src.size();i++){
     SinkData_contact(temp_src[i], temp_contact);
     Contacts.push_back(temp_contact);
@@ -3050,8 +3079,8 @@ void GcellDetailRouter::CreatePlistSrc_Dest(std::vector<std::set<RouterDB::point
     if(temp_contact.placedUR.x>ur.x){ur.x=temp_contact.placedUR.x;}
     if(temp_contact.placedUR.y>ur.y){ur.y=temp_contact.placedUR.y;}
   }
-  spdlog::debug("check point new function 2 ");
-  spdlog::debug("dest contact {0}",temp_dest.size());
+  logger->debug("check point new function 2 ");
+  logger->debug("dest contact {0}",temp_dest.size());
   for(int i=0;i<temp_dest.size();i++){
     SinkData_contact(temp_dest[i], temp_contact);
     Contacts.push_back(temp_contact);
@@ -3061,15 +3090,15 @@ void GcellDetailRouter::CreatePlistSrc_Dest(std::vector<std::set<RouterDB::point
     if(temp_contact.placedUR.y>ur.y){ur.y=temp_contact.placedUR.y;}
 
   }  
-  spdlog::debug("check point new function 3");
-  spdlog::debug("Contacts size {0}",Contacts.size());
+  logger->debug("check point new function 3");
+  logger->debug("Contacts size {0}",Contacts.size());
    CreatePlistContact(plist, Contacts);
   //here intervia is not included
-  spdlog::debug("check point new function 4");
+  logger->debug("check point new function 4");
    InsertPlistToSet_x(Set_x, plist);
-  spdlog::debug("check point new function 5 ");
+  logger->debug("check point new function 5 ");
    src_dest_plist = FindsetPlist(Set_x, ll, ur);
-  spdlog::debug("check point new function 6 ");
+  logger->debug("check point new function 6 ");
 };
 
 
@@ -3175,11 +3204,14 @@ void GcellDetailRouter::GetPhsical_Metal(std::vector<std::vector<RouterDB::Metal
 
 
 void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::point> >& plist, int mIdx, int LLx, int LLy, int URx, int URy) {
+
+  auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.ConvertRect2GridPoints");
+
   RouterDB::point tmpP;
   int obs_l=0;
   int obs_h=this->layerNo-1;
-  spdlog::debug("Enter converter");
-  spdlog::debug("rect info {0} {1} {2} {3} {4}", mIdx,LLx,LLy,URx,URy); 
+  logger->debug("Enter converter");
+  logger->debug("rect info {0} {1} {2} {3} {4}", mIdx,LLx,LLy,URx,URy); 
 
   int enclose_length =0;  
 /*
@@ -3234,7 +3266,7 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         //int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
         int boundY=ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
         //newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
-        spdlog::debug( "converter check point 1");
+        logger->debug( "converter check point 1");
         //fix bug for power grid construction YG: 4/30/2020
         if(boundY>newURy){
           newLLy = floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
@@ -3270,7 +3302,7 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
           boundY = newLLy;
         }
 
-        spdlog::debug( "converter check point 2");
+        logger->debug( "converter check point 2");
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
           if(x>=newLLx and x<=newURx and y>=newLLy and y<=newURy){
              //std::cout<<"Plist problem"<<std::endl;
@@ -3308,7 +3340,7 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
           boundX = newLLx;
         }
 
-         spdlog::debug( "converter check point 3");
+         logger->debug( "converter check point 3");
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
           if(x>=newLLx and x<=newURx and y>=newLLy and y<=newURy){
              //std::cout<<"Plist problem"<<std::endl;
@@ -3337,7 +3369,7 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
           boundX = newLLx;
         }
 
-        spdlog::debug( "converter check point 4");
+        logger->debug( "converter check point 4");
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
           if(x>=newLLx and x<=newURx and y>=newLLy and y<=newURy){
              //std::cout<<"Plist problem"<<std::endl;
@@ -3348,16 +3380,19 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
       }
     }
   } else {
-    spdlog::debug("Router-Error: incorrect routing direction");
+    logger->debug("Router-Error: incorrect routing direction");
   }
 
 };
 
 void GcellDetailRouter::ConvertRect2GridPoints_Via(std::vector<std::vector<RouterDB::point> >& plist, int mIdx, int LLx, int LLy, int URx, int URy) {
+
+  auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.ConvertRect2GridPoints_Via");
+
   RouterDB::point tmpP;
   int obs_l=0;
   int obs_h=this->layerNo-1;
-  spdlog::debug("Enter converter");
+  logger->debug("Enter converter");
   //int direction = drc_info.Metal_info[mIdx].direct;
 
   if(drc_info.Metal_info[mIdx].direct==0) { // vertical metal layer
@@ -3379,10 +3414,10 @@ void GcellDetailRouter::ConvertRect2GridPoints_Via(std::vector<std::vector<Route
         //int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
         int boundY=ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
         //newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
-	spdlog::debug( "converter check point 1");
+	logger->debug( "converter check point 1");
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
-	    spdlog::debug( "Plist problem");
+            logger->debug( "Plist problem");
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
           //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
@@ -3401,7 +3436,7 @@ void GcellDetailRouter::ConvertRect2GridPoints_Via(std::vector<std::vector<Route
         //int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
         int boundY=ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
         //newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
-	spdlog::debug( "converter check point 2");
+	logger->debug( "converter check point 2");
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
@@ -3429,7 +3464,7 @@ void GcellDetailRouter::ConvertRect2GridPoints_Via(std::vector<std::vector<Route
         //int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
         int boundX=ceil((double)newLLx/nexlayer_unit)*nexlayer_unit;
         //newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
-	spdlog::debug( "converter check point 3");
+	logger->debug( "converter check point 3");
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
            if(x>=LLx and x<=URx and y>=LLy and y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
@@ -3450,7 +3485,7 @@ void GcellDetailRouter::ConvertRect2GridPoints_Via(std::vector<std::vector<Route
         //int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
         int boundX=ceil((double)newLLx/nexlayer_unit)*nexlayer_unit;
         //newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
-	spdlog::debug( "converter check point 4");
+	logger->debug( "converter check point 4");
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
@@ -3460,7 +3495,7 @@ void GcellDetailRouter::ConvertRect2GridPoints_Via(std::vector<std::vector<Route
       }
     }
   } else {
-    spdlog::debug( "Router-Error: incorrect routing direction");
+    logger->debug( "Router-Error: incorrect routing direction");
   }
 
 };
@@ -3554,13 +3589,16 @@ ConvertToViaPnRDB_Placed_Origin(temp_via, Blocks[net.connected[i].iter2].pins[ne
 
 
 void GcellDetailRouter::NetToNodeBlockPins(PnRDB::hierNode& HierNode, RouterDB::Net& net){
-  spdlog::debug("Start NetToNodeBlockPins");  
+
+  auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.NetToNodeBlockPins");
+
+  logger->debug("Start NetToNodeBlockPins");  
   // wbxu: when update hierNode data, all the coordinates should be stored into
   // origin fields, NOT placed fields. Because the hierNode data will be checkin back to higher nodes [fixed]
   PnRDB::pin temp_pin;
   //PnRDB::point temp_point;
   // wbxu: the name should be the name of terminal, not the net name! [fixed]
-  if(net.terminal_idx==-1) {spdlog::debug("Router-Warning: cannot found terminal conntecting to net"); return;}
+  if(net.terminal_idx==-1) {logger->debug("Router-Warning: cannot found terminal conntecting to net"); return;}
   temp_pin.name = Terminals.at(net.terminal_idx).name;
 
   //if(this->isTop)
@@ -3609,7 +3647,7 @@ ConvertToViaPnRDB_Placed_Origin(temp_via, Blocks[net.connected[i].iter2].pins[ne
   }         
 
   HierNode.blockPins.push_back(temp_pin);  
-  spdlog::debug("END NetToNodeBlockPins");  
+  logger->debug("END NetToNodeBlockPins");  
 };
 
 

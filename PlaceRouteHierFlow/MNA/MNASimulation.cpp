@@ -104,6 +104,8 @@ void MNASimulation::WriteOut_Spice(std::set<MDB::metal_point, MDB::Compare_metal
 
 MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc_info, std::string inputfile, std::string outputfile, std::string outputem){
 
+  auto logger = spdlog::default_logger()->clone("MNA.MNASimulation.MNASimulation");
+
   boost_matrix out_R, out_I; 
   std::vector<std::vector<double> > Istore,Vstore,Rstore;
   std::vector<int> mark_point;
@@ -191,12 +193,12 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
     /* Initialize matrix A. */
 
   int count = 0;
-  spdlog::debug("count= {0}" , count);
+  logger->debug("count= {0}" , count);
   std::vector<double> store;
 
   count = 2 * (Power_Grid_devices.size()-currentdev) + node_num1;
 
-  spdlog::debug("count= {0}",count);
+  logger->debug("count= {0}",count);
   m = n = node_num1 + powerdev;
   nnz = count;
  
@@ -337,7 +339,7 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
 	&mem_usage, &stat, &info);*/
 
   dgssv(&options, &A, perm_c, perm_r, &L, &U, &B, &stat, &info);
-  spdlog::debug("check point6 info == {0}", info);  
+  logger->debug("check point6 info == {0}", info);  
   
   dPrint_CompCol_Matrix("A", &A);
   //dPrint_CompCol_Matrix("U", &U);
@@ -366,7 +368,7 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
     }
   }
   for (k = 0; k < B.nrow; ++k){
-    spdlog::debug("dp[ {0} ]= {1} ", k, dp[k]);
+    logger->debug("dp[ {0} ]= {1} ", k, dp[k]);
   }
 
   Print_Result(point_set, dp, outputfile);
@@ -387,7 +389,7 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
     }
   }
   result = min;
-  spdlog::debug("result= {0}" , result);
+  logger->debug("result= {0}" , result);
 
   //std::cout<<"check point11"<<std::endl;
   /* De-allocate storage */
@@ -448,6 +450,8 @@ void MNASimulation::Print_Grid(std::set<MDB::metal_point, MDB::Compare_metal_poi
 
 void MNASimulation::Print_EM(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, std::vector<MDB::device> &temp_devices, int size, double* dp, std::string outputem){
 
+  auto logger = spdlog::default_logger()->clone("MNA.MNASimulation.Print_EM");
+
   std::ofstream pythonfile;
   pythonfile.open(outputem);
   //int size = dp.size(); 
@@ -491,7 +495,7 @@ void MNASimulation::Print_EM(std::set<MDB::metal_point, MDB::Compare_metal_point
   }
   int target_metal_layer_index = 2;
   int target_power_grid_index = 1;
-  spdlog::debug("finish em");
+  logger->debug("finish em");
   for(auto it = point_set.begin(); it != point_set.end(); it++){
     if(it->metal_layer == target_metal_layer_index && it->power !=0){
       pythonfile<< it->x << " " << it->y << " " << it->metal_layer << " "<< em[it->index - 1] << " " << it->power <<std::endl;
@@ -501,8 +505,11 @@ void MNASimulation::Print_EM(std::set<MDB::metal_point, MDB::Compare_metal_point
 };
 
 void MNASimulation::Print_Devices(std::vector<MDB::device> &temp_devices){
+
+  auto logger = spdlog::default_logger()->clone("MNA.MNASimulation.Print_Devices");
+
   for(int i=0;i<temp_devices.size();i++){
-    spdlog::debug("devices type {0} point1 {1} point2 {2} {3} ",temp_devices[i].device_type,temp_devices[i].start_point_index,temp_devices[i].end_point_index, temp_devices[i].value);
+    logger->debug("devices type {0} point1 {1} point2 {2} {3} ",temp_devices[i].device_type,temp_devices[i].start_point_index,temp_devices[i].end_point_index, temp_devices[i].value);
   }
 };
 
@@ -613,14 +620,16 @@ int MNASimulation::MapPoint(std::set<MDB::metal_point, MDB::Compare_metal_point>
 
 void MNASimulation::AddingI(std::vector<MDB::metal_point> &I_point_v, std::vector<MDB::metal_point> &I_point_g, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, std::vector<MDB::device> &Power_Grid_devices, double current){
 
+   auto logger = spdlog::default_logger()->clone("MNA.MNASimulation.AddingI");
+
    for(unsigned int i=0;i<I_point_v.size();++i){
        MDB::device temp_device;
        auto first_point = temp_set.find(I_point_v[i]);
        int start_index = first_point->index;
-       spdlog::debug("First Point (x,y) index metal {0} {1} {2} {3}",first_point->x,first_point->y,start_index,first_point->metal_layer);
+       logger->debug("First Point (x,y) index metal {0} {1} {2} {3}",first_point->x,first_point->y,start_index,first_point->metal_layer);
        auto second_point = temp_set.find(I_point_g[i]);
        int end_index = second_point->index;
-       spdlog::debug("Second Point (x,y) index metal {0} {1} {2} {3} ",second_point->x,second_point->y,end_index,second_point->metal_layer);
+       logger->debug("Second Point (x,y) index metal {0} {1} {2} {3} ",second_point->x,second_point->y,end_index,second_point->metal_layer);
        temp_device.device_type = MDB::I;
        temp_device.start_point_index = start_index;
        temp_device.end_point_index = end_index;  

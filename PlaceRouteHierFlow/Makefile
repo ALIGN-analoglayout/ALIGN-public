@@ -18,7 +18,7 @@ JSON?=/opt/json
 SuperLu_DIR?=/opt/superlu
 SuperLu=$(SuperLu_DIR)/SuperLU_5.2.1/SRC/
 
-export CXXFLAGS = $(OPTS) $(WARNS) -w -std=c++14 -m64 -pthread -DNDEBUG -DPRNTlevel=0 -DAdd_ -isystem $(LIB_LP) -I$(BOOST_LP) -I$(SuperLu) -I$(JSON)/include $(COVERAGE) -isystem $(GTEST_DIR)/include -isystem $(SPDLOG_DIR)/include -fPIC
+export CXXFLAGS = $(OPTS) $(WARNS) -w -std=c++17 -m64 -pthread -DNDEBUG -DPRNTlevel=0 -DAdd_ -isystem $(LIB_LP) -I$(BOOST_LP) -I$(SuperLu) -I$(JSON)/include $(COVERAGE) -isystem $(GTEST_DIR)/include -isystem $(SPDLOG_DIR)/include -fPIC
 export CXX=g++
 
 export LDFLAGS = -lm -ldl -pthread $(COVERAGE)

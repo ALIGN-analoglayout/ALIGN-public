@@ -1,6 +1,8 @@
 import subprocess
 import pathlib
 import os
+import io
+import sys
 import logging
 import collections
 import json
@@ -73,6 +75,13 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
     compiler_path = pathlib.Path(os.environ['ALIGN_HOME']).resolve() / 'PlaceRouteHierFlow' / 'pnr_compiler'
     assert compiler_path.is_file(), f"{compiler_path} not found. Has it been built?"
 
+    shared_object_path = pathlib.Path(os.environ['ALIGN_HOME']).resolve() / 'PlaceRouteHierFlow' / 'PnR.cpython-36m-x86_64-linux-gnu.so'
+    assert shared_object_path.is_file(), f"{shared_object_path} not found. Has it been built?"
+
+    sys.setdlopenflags(os.RTLD_GLOBAL|os.RTLD_LAZY)
+
+    import PnR
+
     # Create working & input directories
     working_dir = output_dir
     working_dir.mkdir(exist_ok=True)
@@ -122,12 +131,20 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
 
     # Run pnr_compiler
     cmd = [str(x) for x in (compiler_path, input_dir, lef_file, verilog_file, map_file, pdk_file, subckt, nvariants, effort)]
-    try:
-        ret = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8', cwd=working_dir, check=True)
-        logger.debug(f'Dumping output from pnr_compiler\n{ret.stdout}')
-    except subprocess.CalledProcessError as e:
-        logger.error(f"Call to '{' '.join(cmd)}' failed. Dumping output from pnr_compiler below:\n{e.stdout}")
-        return {}
+
+    if True:
+        current_working_dir = os.getcwd()
+        os.chdir(working_dir)
+        PnR.toplevel(cmd)
+        os.chdir(current_working_dir)
+    else:
+        try:
+            ret = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8', cwd=working_dir, check=True)
+            logger.debug(f'Dumping output from pnr_compiler\n{ret.stdout}')
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Call to '{' '.join(cmd)}' failed. Dumping output from pnr_compiler below:\n{e.stdout}")
+            return {}
+
 
     def find_variant_names( nm):
         variant_names = []
