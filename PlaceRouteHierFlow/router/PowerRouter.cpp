@@ -512,7 +512,7 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
                 InsertRoutingContact(a_star, grid, Pset_current_net_via, Set_current_net_contact, i);
 
                }else{
-                 logger->info("Router-Warning: feasible path might not be found. net name {0}",PowerNets[i].netName);
+                 logger->warn("Router-Warning: feasible path might not be found. net name {0}",PowerNets[i].netName);
                }
              UpdatePlistNets(physical_path, add_plist);
              InsertPlistToSet_x(Set_net, add_plist);           
@@ -652,7 +652,7 @@ void PowerRouter::CreatePowerGrid_DC(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   grid.PrepareGraphVertices(LL.x, LL.y, UR.x, UR.y);
   //grid.PrepareGraphVertices(tempLL.x, tempLL.y, tempUR.x, tempUR.y);
 
-  logger->info("Power Grid Info {0} {1}",grid.vertices_total.size(),grid.vertices_graph.size());
+  logger->debug("Power Grid Info {0} {1}",grid.vertices_total.size(),grid.vertices_graph.size());
   //here return a power grid metal information
   bool power_grid = 1;
   logger->debug("Create Power Grid Flag 11");
@@ -1081,15 +1081,15 @@ void PowerRouter::CreatePowerGridDrc_info_DC(string inputfile){
 
   for(unsigned int i=0;i<PowerGrid_Drc_info.Metal_info.size();i++){
       
-       logger->info("grid info {0} {1} ",PowerGrid_Drc_info.Metal_info[i].grid_unit_x,PowerGrid_Drc_info.Metal_info[i].grid_unit_y);
+       logger->debug("grid info {0} {1} ",PowerGrid_Drc_info.Metal_info[i].grid_unit_x,PowerGrid_Drc_info.Metal_info[i].grid_unit_y);
 
        PowerGrid_Drc_info.Metal_info[i].grid_unit_x = PowerGrid_Drc_info.Metal_info[i].grid_unit_x/utilization[i];
        PowerGrid_Drc_info.Metal_info[i].grid_unit_y = PowerGrid_Drc_info.Metal_info[i].grid_unit_y/utilization[i];
        PowerGrid_Drc_info.Metal_info[i].width = PowerGrid_Drc_info.Metal_info[i].width * Power_width;
       
-       logger->info("{0}",utilization[i]);
+       logger->debug("{0}",utilization[i]);
 
-       logger->info("grid info {0} {1}", PowerGrid_Drc_info.Metal_info[i].grid_unit_x, PowerGrid_Drc_info.Metal_info[i].grid_unit_y);
+       logger->debug("grid info {0} {1}", PowerGrid_Drc_info.Metal_info[i].grid_unit_x, PowerGrid_Drc_info.Metal_info[i].grid_unit_y);
 
      }
 
@@ -1114,7 +1114,7 @@ void PowerRouter::getBlockData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
 
   auto logger = spdlog::default_logger()->clone("router.PowerRouter.getBlockData");
 
-  logger->info("Power Router-Info: begin to import data");
+  logger->debug("Power Router-Info: begin to import data");
   this->isTop = node.isTop;
   this->topName=node.name;
   this->width=node.width;
@@ -1175,7 +1175,7 @@ void PowerRouter::getBlockData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
       }
    Blocks.push_back(temp_block);
   }
-  logger->info("Power Router-Info: complete importing data");
+  logger->debug("Power Router-Info: complete importing data");
 };
 
 void PowerRouter::getNetData(PnRDB::hierNode& node){
@@ -1681,7 +1681,7 @@ void PowerRouter::ReturnPowerNetData(PnRDB::hierNode& node){
      }
      node.router_report.push_back(temp_report);
 
-  logger->info("node UR x UR y {0} {1} {2} {3} ",node.LL.x,node.LL.y,node.UR.x,node.UR.y);
+  logger->debug("node UR x UR y {0} {1} {2} {3} ",node.LL.x,node.LL.y,node.UR.x,node.UR.y);
   if(minX<node.LL.x){node.LL.x=minX;}
   if(minY<node.LL.y){node.LL.y=minY;}
   if(maxX>node.UR.x){node.UR.x=maxX;}

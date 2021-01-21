@@ -80,7 +80,7 @@ void Aplace::ConjugateGrident(design& caseNL, string opath) {
     if(count==0) { 
       beta=0;
       f_j=CalculateObjectiveSmooth(caseNL, x_j, lamda_wl, lamda_sym, lamda_bnd, lamda_ovl, alpha_wl, alpha_ola, alpha_olb, alpha_bnd);
-      logger->info("Placer-Info: initial cost {0}",f_j);
+      logger->debug("Placer-Info: initial cost {0}",f_j);
     } else {
       beta=boost::numeric::ublas::inner_prod(boost::numeric::ublas::trans(G_k), G_k-G_j)/boost::numeric::ublas::norm_2(G_j);
     }
@@ -98,14 +98,14 @@ void Aplace::ConjugateGrident(design& caseNL, string opath) {
     //f_k=CalculateObjective(caseNL, x_k, lamda_wl, lamda_sym, lamda_bnd, lamda_ovl);
     f_k=CalculateObjectiveSmooth(caseNL, x_k, lamda_wl, lamda_sym, lamda_bnd, lamda_ovl, alpha_wl, alpha_ola, alpha_olb, alpha_bnd);
     //std::cout<<"@SUM "<<f_k<<std::endl;
-    if( std::abs(f_k - f_j)<eps ) {logger->info("Placer-Info: optimal solution found");break;}
+    if( std::abs(f_k - f_j)<eps ) {logger->debug("Placer-Info: optimal solution found");break;}
     count++;
     f_j=f_k;
     G_j=G_k;
     x_j=x_k;
     D_j=D_k;
   } while(count<=MAX_COUNT);
-  //logger->info("Final x_k {0}",x_k);
+  //logger->debug("Final x_k {0}",x_k);
   PlotPlacement(caseNL, x_k, opath+name+"_AP.plt");
   for(int i=0;i<this->B_len;++i) {
     this->ABlocks.at(i).center.x=x_k(i*2); // x
@@ -124,7 +124,7 @@ void Aplace::PlotPlacement(design& caseNL, boost_vector& x_k, string outfile) {
 
   auto logger = spdlog::default_logger()->clone("placer.Aplace.PlotPlacement");
 
-  logger->info("Placer-Info: create gnuplot file");
+  logger->debug("Placer-Info: create gnuplot file");
   int Xmax=this->width;
   int Ymax=this->height;
   placerDB::point p, bp;

@@ -37,9 +37,9 @@ void GlobalGraph::FindSTs(GlobalGrid& grid, int pathNo, std::vector<int> &stiner
 
 
      MST(weight, temp_path, grid);
-     logger->info("End MTS1");
+     logger->debug("End MTS1");
      UpdateEdgeWeight(temp_path);
-     logger->info("End Update weight");
+     logger->debug("End Update weight");
      //return the shortest path
      Path.push_back(temp_path);
 
@@ -496,7 +496,7 @@ void GlobalGraph::RemovefromMultMap(std::multimap<double, int>& mmap, double dis
   }
   if(mark) {mmap.erase(tar);}
   else {
-  logger->info("Graph-Info: cannot found element in map");
+  logger->warn("Graph-Info: cannot found element in map");
   }
 }
 

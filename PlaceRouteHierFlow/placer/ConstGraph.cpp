@@ -1438,24 +1438,24 @@ void ConstGraph::PrintConstGraph() {
 
   auto logger = spdlog::default_logger()->clone("placer.ConstGraph.PrintConstGraph");
 
-  logger->info("== Constraint Graph ==");
-  logger->info("LAMBDA {0} GARMAR {1}  BETA {2} origNodeSize {3} sourceNode {4} sinkNode {5}",LAMBDA,GAMAR,BETA,origNodeSize,sourceNode,sinkNode);
-  logger->info("Horizontal graph");
+  logger->debug("== Constraint Graph ==");
+  logger->debug("LAMBDA {0} GARMAR {1}  BETA {2} origNodeSize {3} sourceNode {4} sinkNode {5}",LAMBDA,GAMAR,BETA,origNodeSize,sourceNode,sinkNode);
+  logger->debug("Horizontal graph");
   for(int i=0;i<(int)HGraph.size();i++) {
-    logger->info("Node {0} weight {1} isSource",i,HGraph.at(i).weight);
-    logger->info("{0} isSink {1}",HGraph.at(i).isSource,HGraph.at(i).isSink);
-    logger->info("isVirtual- {0} position {1} << {2} backpost {3} << {4}",HGraph.at(i).isVirtual,HGraph.at(i).position,HGraph.at(i).precedent,HGraph.at(i).backpost,HGraph.at(i).backprec);
+    logger->debug("Node {0} weight {1} isSource",i,HGraph.at(i).weight);
+    logger->debug("{0} isSink {1}",HGraph.at(i).isSource,HGraph.at(i).isSink);
+    logger->debug("isVirtual- {0} position {1} << {2} backpost {3} << {4}",HGraph.at(i).isVirtual,HGraph.at(i).position,HGraph.at(i).precedent,HGraph.at(i).backpost,HGraph.at(i).backprec);
     for(int j=0;j<(int)HGraph.at(i).Edges.size();j++) {
-      logger->info("Edge to {0} weight {1} isbackward {2}",HGraph.at(i).Edges.at(j).next,HGraph.at(i).Edges.at(j).weight,HGraph.at(i).Edges.at(j).isBackward);
+      logger->debug("Edge to {0} weight {1} isbackward {2}",HGraph.at(i).Edges.at(j).next,HGraph.at(i).Edges.at(j).weight,HGraph.at(i).Edges.at(j).isBackward);
     }
   }
-  logger->info("Vertical graph");
+  logger->debug("Vertical graph");
   for(int i=0;i<(int)VGraph.size();i++) {
-    logger->info("Node {0} weight {1} isSource",i,VGraph.at(i).weight);
-    logger->info("{0} isSink {1}",VGraph.at(i).isSource,VGraph.at(i).isSink);
-    logger->info("isVirtual- {0} position {1} << {2} backpost {3} << {4}",VGraph.at(i).isVirtual,VGraph.at(i).position,VGraph.at(i).precedent,VGraph.at(i).backpost,VGraph.at(i).backprec);
+    logger->debug("Node {0} weight {1} isSource",i,VGraph.at(i).weight);
+    logger->debug("{0} isSink {1}",VGraph.at(i).isSource,VGraph.at(i).isSink);
+    logger->debug("isVirtual- {0} position {1} << {2} backpost {3} << {4}",VGraph.at(i).isVirtual,VGraph.at(i).position,VGraph.at(i).precedent,VGraph.at(i).backpost,VGraph.at(i).backprec);
     for(int j=0;j<(int)VGraph.at(i).Edges.size();j++) {
-      logger->info("Edge to {0} weight {1} isbackward {2}",VGraph.at(i).Edges.at(j).next,VGraph.at(i).Edges.at(j).weight,VGraph.at(i).Edges.at(j).isBackward);
+      logger->debug("Edge to {0} weight {1} isbackward {2}",VGraph.at(i).Edges.at(j).next,VGraph.at(i).Edges.at(j).weight,VGraph.at(i).Edges.at(j).isBackward);
     }
   }
 }
@@ -1746,7 +1746,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
           }
           sum+=distTerm*alpha;
         } else {
-          logger->info("Placer-Error: incorrect axis direction");
+          logger->error("Placer-Error: incorrect axis direction");
         }
       } else { // symmetry pair
         if(solved_terminals.find(cp)!=solved_terminals.end()) {logger->debug("Placer-Error: terminal {0} and {1} are not solved simultaneously!",i,cp); continue;}
@@ -3203,7 +3203,7 @@ bool ConstGraph::SymmetryConstraintCoreAxisCenter(design& caseNL, placerDB::Smar
         }
       }
     }
-    logger->info("After symmetry check");
+    logger->debug("After symmetry check");
     CalculateLongestPath(sourceNode, this->HGraph, false);
     //std::cout<<"Vgraph\n";
     CalculateLongestPath(sourceNode, this->VGraph, false);
@@ -5361,7 +5361,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
             caseNL.Terminals.at(cp).center.y = tpL2.y;
           }
         } else {
-          logger->info("Placer-Error: incorrect axis direction");
+          logger->error("Placer-Error: incorrect axis direction");
         }
       }
     } else { // not in symmetry group
@@ -5488,7 +5488,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             default :
-                 logger->info("Placer-Warning: incorrect port position");
+                 logger->error("Placer-Warning: incorrect port position");
           }
         }
         if(shot!=-1) {
@@ -5576,7 +5576,7 @@ void ConstGraph::WritePlacementAP(design& caseNL, Aplace& caseAP, string outfile
 
   ofstream fout;
   fout.open(outfile.c_str());
-  logger->info("Placer-Info: write placement");
+  logger->debug("Placer-Info: write placement");
   fout<<"# TAMU blocks 1.0"<<endl<<endl;
   fout<<"DIE {"<<HGraph.at(sourceNode).position<<", "<<VGraph.at(sourceNode).position<<"} {"<<HGraph.at(sinkNode).position<<", "<<VGraph.at(sinkNode).position<<"}"<<endl<<endl;
   for(int i=0;i<(int)caseNL.GetSizeofBlocks();++i) {
@@ -5650,7 +5650,7 @@ void ConstGraph::WritePlacement(design& caseNL, SeqPair& caseSP, string outfile)
 
   ofstream fout;
   fout.open(outfile.c_str());
-  logger->info("Placer-Info: write placement");
+  logger->debug("Placer-Info: write placement");
   fout<<"# TAMU blocks 1.0"<<endl<<endl;
   fout<<"DIE {"<<HGraph.at(sourceNode).position<<", "<<VGraph.at(sourceNode).position<<"} {"<<HGraph.at(sinkNode).position<<", "<<VGraph.at(sinkNode).position<<"}"<<endl<<endl;
   for(int i=0;i<(int)caseNL.GetSizeofBlocks();++i) {
@@ -5722,7 +5722,7 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
 
   auto logger = spdlog::default_logger()->clone("placer.ConstGraph.PlotPlacement");
 
-  logger->info("Placer-Info: create gnuplot file");
+  logger->debug("Placer-Info: create gnuplot file");
   placerDB::point p, bp;
   ofstream fout;
   vector<placerDB::point> p_pin;
@@ -5901,7 +5901,7 @@ void ConstGraph::PlotPlacementAP(design& caseNL, Aplace& caseAP, string outfile)
 
   auto logger = spdlog::default_logger()->clone("placer.ConstGraph.PlotPlacementAP");
 
-  logger->info("Placer-Info: create gnuplot file");
+  logger->debug("Placer-Info: create gnuplot file");
   placerDB::point p, bp;
   ofstream fout;
   vector<placerDB::point> p_pin;

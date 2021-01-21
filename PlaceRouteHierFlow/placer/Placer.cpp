@@ -98,13 +98,13 @@ void Placer::PlacementRegular(PnRDB::hierNode& node, string opath, int effort, P
 
   auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementRegular");
 
-  logger->info("Placer-Info: place {0}",node.name);
+  logger->debug("Placer-Info: place {0}",node.name);
   #ifdef RFLAG
-  logger->info("Placer-Info: run in random mode...");  
+  logger->debug("Placer-Info: run in random mode...");  
   srand (time(NULL));
   #endif
   #ifndef RFLAG
-  logger->info("Placer-Info: run in normal mode..."); 
+  logger->debug("Placer-Info: run in normal mode..."); 
   srand(0);
   #endif
   int mode=0;
@@ -127,13 +127,13 @@ void Placer::PlacementMixSA(PnRDB::hierNode& node, string opath, int effort, PnR
 
   auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementMixSA");
 
-  logger->info("Placer-Info: place {0}",node.name);
+  logger->debug("Placer-Info: place {0}",node.name);
   #ifdef RFLAG
-  logger->info("Placer-Info: run in random mode...");
+  logger->debug("Placer-Info: run in random mode...");
   srand (time(NULL));
   #endif
   #ifndef RFLAG
-  logger->info("Placer-Info: run in normal mode...");
+  logger->debug("Placer-Info: run in normal mode...");
   srand(0);
   #endif
   int mode=0;
@@ -174,7 +174,7 @@ void Placer::PlacementMixAP(PnRDB::hierNode& node, string opath, int effort, PnR
 
   auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementMixAP");
 
-  logger->info("Placer-Info: place {0}",node.name);
+  logger->debug("Placer-Info: place {0}",node.name);
   #ifdef RFLAG
   logger->debug("Placer-Info: run in random mode...");
   srand (time(NULL));
@@ -497,14 +497,14 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
     }
     T_index ++;
     if(total_update_number*per<T_index){
-      logger->info("...{0}%",per*100);
+      logger->debug("...{0}%",per*100);
       per=per+0.1;
     }
     T*=ALPHA;
     //cout<<T<<endl;
   }
   // Write out placement results
-  logger->info("Placer-Info: optimal cost = {0}",curr_cost);
+  logger->debug("Placer-Info: optimal cost = {0}",curr_cost);
   oData[curr_cost]=curr_sp;
   ReshapeSeqPairMap(oData,nodeSize);
   //cout<<endl<<"Placer-Info: optimal cost = "<<curr_cost<<endl;
@@ -856,13 +856,13 @@ void Placer::PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
   auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementMixAPAspectRatio");
 
   int nodeSize=nodeVec.size();
-  logger->info("Placer-Info: place {0}",nodeVec.back().name);
+  logger->debug("Placer-Info: place {0}",nodeVec.back().name);
   #ifdef RFLAG
-  logger->info("Placer-Info: run in random mode...");
+  logger->debug("Placer-Info: run in random mode...");
   srand (time(NULL));
   #endif
   #ifndef RFLAG
-  logger->info("Placer-Info: run in normal mode...");
+  logger->debug("Placer-Info: run in normal mode...");
   srand(0);
   #endif
   int bias_mode=1;
