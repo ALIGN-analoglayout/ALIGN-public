@@ -5,9 +5,9 @@ void GuardRing::Pcell_info(const map<string, PnRDB::lefMacro>& lefData){
 
   auto logger = spdlog::default_logger()->clone("guard_ring.GuardRing.Pcell_info");
 
-  logger->info("step1.0");
+  logger->debug("step1.0");
   if(lefData.find("guard_ring")==lefData.end()){
-    logger->info("Guard_ring primitive cell error, check guard ring primitive cell in lef, gds, and const file");
+    logger->error("Guard_ring primitive cell error, check guard ring primitive cell in lef, gds, and const file");
     assert(0);
     }
   else
@@ -55,14 +55,14 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
   DRC_Read(drc_info); //read minimal space requirement from drc database
 
   //Print wcell & pcell info
-  logger->info( "wcell_ll[x,y] = {0}, {1}" , wcell_ll.x ,wcell_ll.y );
-  logger->info( "wcell_ur[x,y] = {0}, {1}" , wcell_ur.x , wcell_ur.y );
-  logger->info( "wcell_width = {0}" , node.width);
-  logger->info("wcell_height = {0} " , node.height);
-  logger->info( "pcell_metal width = {0} , pcell_metal height = {1}" ,pcell_metal_size.width , pcell_metal_size.height);
-  logger->info( "pcell width = {0}, pcell height = {1}" ,pcell_size.width , pcell_size.height );
-  logger->info( "offset width = {0}, offset height = {1}" , offset.width , offset.height);
-  logger->info( "minimal x = {0}, minimal y = {1}" , minimal.width , minimal.height);
+  logger->debug( "wcell_ll[x,y] = {0}, {1}" , wcell_ll.x ,wcell_ll.y );
+  logger->debug( "wcell_ur[x,y] = {0}, {1}" , wcell_ur.x , wcell_ur.y );
+  logger->debug( "wcell_width = {0}" , node.width);
+  logger->debug("wcell_height = {0} " , node.height);
+  logger->debug( "pcell_metal width = {0} , pcell_metal height = {1}" ,pcell_metal_size.width , pcell_metal_size.height);
+  logger->debug( "pcell width = {0}, pcell height = {1}" ,pcell_size.width , pcell_size.height );
+  logger->debug( "offset width = {0}, offset height = {1}" , offset.width , offset.height);
+  logger->debug( "minimal x = {0}, minimal y = {1}" , minimal.width , minimal.height);
 
   //calculate cell number
   int x_number, y_number;
@@ -160,10 +160,10 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
   }
 
   //Print stored guard ring primitive cells coordinates(lower left & upper right)
-  logger->info( "The stored points are:"); 
+  logger->debug( "The stored points are:"); 
   for (int i_print = 0; i_print < stored_point_ll.size(); i_print++)
   {
-    logger->info("lower left: {0}, {1} upper right: {2}, {3}" , stored_point_ll[i_print].x , stored_point_ll[i_print].y , stored_point_ur[i_print].x , stored_point_ur[i_print].y );
+    logger->debug("lower left: {0}, {1} upper right: {2}, {3}" , stored_point_ll[i_print].x , stored_point_ll[i_print].y , stored_point_ur[i_print].x , stored_point_ur[i_print].y );
   }
 
   //update wrapped cell lower left & upper right information
@@ -416,7 +416,7 @@ void GuardRing::gnuplot(){
   auto logger = spdlog::default_logger()->clone("guard_ring.GuardRing.gnuplot");
 
   //Plot GuardRing Place
-  logger->info("Placer-Router-GuardRing-Info: create gnuplot file");
+  logger->debug("Placer-Router-GuardRing-Info: create gnuplot file");
   std::ofstream fout;
   fout.open("guardringplot");
 

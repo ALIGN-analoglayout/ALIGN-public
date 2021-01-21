@@ -136,7 +136,7 @@ design::design(design& other, int mode) {
               this->Blocks.at(nnode.iter2).at(w).blockPins.at(nnode.iter).netIter=this->Nets.size(); // link block to net
             }
           } else {
-            logger->info("Placer-Warning: unexpected node type");
+            logger->warn("Placer-Warning: unexpected node type");
           }
           newbigs.push_back(nnode);
         }
@@ -145,7 +145,7 @@ design::design(design& other, int mode) {
         std::set<int> sset;
         for(vector<placerDB::Node>::iterator it4=smalls.begin(); it4!=smalls.end(); ++it4) {
           if(it4->type==placerDB::Terminal) {
-            logger->debug("Placer-Warning: unexpected node type");
+            logger->warn("Placer-Warning: unexpected node type");
             continue;
           }
           if( sset.find(it4->iter2)==sset.end() ) {sset.insert(it4->iter2);}
@@ -1275,9 +1275,9 @@ void design::PrintDesign() {
 
   auto logger = spdlog::default_logger()->clone("placer.design.PrintDesign");
 
-  logger->info("== Print Design ");
-  logger->info("bias_Vgraph: {0} mixFlag: {1}",bias_Vgraph,mixFlag);
-  logger->info("bias_Hgraph: {0} mixFlag: {1}",bias_Hgraph,mixFlag);
+  logger->debug("== Print Design ");
+  logger->debug("bias_Vgraph: {0} mixFlag: {1}",bias_Vgraph,mixFlag);
+  logger->debug("bias_Hgraph: {0} mixFlag: {1}",bias_Hgraph,mixFlag);
   PrintBlocks();
   PrintTerminals();
   PrintNets();

@@ -1510,21 +1510,21 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
   RouterDB::SinkData source, dest;
 //for source
   for(unsigned int i= 0;i<Vsource.size();i++){
-      logger->info("Router-Info: detecting source- {0}",i);
+      logger->debug("Router-Info: detecting source- {0}",i);
       source = Vsource[i];
-      logger->info("Router-Info: detecting checkpoint1 {0}",i);
+      logger->debug("Router-Info: detecting checkpoint1 {0}",i);
       std::vector<int> temp_Source; 
       if(source.coord.size()>1){
          //for pin
-         logger->info("Router-Info: detecting checkpoint2",i);
+         logger->debug("Router-Info: detecting checkpoint2",i);
          temp_Source = Mapping_function_pin(source);
-         logger->info("Router-Info: detecting checkpoint2.1 {0}",i);
+         logger->debug("Router-Info: detecting checkpoint2.1 {0}",i);
          for(unsigned int j=0;j<temp_Source.size();j++){
             //std::cout<<"Source "<<temp_Source.size()<<std::endl;
             Source.push_back(temp_Source[j]);
            }
       }else if(source.metalIdx!=-1) {
-         logger->info("Router-Info: detecting checkpoint3 {0}",i);
+         logger->debug("Router-Info: detecting checkpoint3 {0}",i);
          //for terminal
          int min_dis = INT_MAX;
          // wbxu: another logic problem in the following [fixed]
@@ -1579,7 +1579,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
          }
 
         }else{
-        logger->info("Router-Info: detecting checkpoint4 {0}",i);
+        logger->debug("Router-Info: detecting checkpoint4 {0}",i);
         //for stiner node
          if(Smap.find(source.coord[0])==Smap.end()){
              for(int temp_metalIdx = lowest_metal;temp_metalIdx<=highest_metal;temp_metalIdx++){
@@ -1729,7 +1729,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
   }
   if(Vdest.size()>0 and Dest.empty()) {logger->error("Router-Error: fail to find dest vertices on grids"); return Terminal_contact;}
 
-logger->info("Router-Info: finished detecting");
+logger->debug("Router-Info: finished detecting");
 
 return Terminal_contact;
 
@@ -1746,7 +1746,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest_detail(std::vector<RouterDB::Sin
   RouterDB::SinkData source, dest;
 //for source
   for(unsigned int i= 0;i<Vsource.size();i++){
-      logger->info("Router-Info: detecting source detailed- {0}",i);
+      logger->debug("Router-Info: detecting source detailed- {0}",i);
       source = Vsource[i];
       std::vector<int> temp_Source; 
       if(source.coord.size()>1){
