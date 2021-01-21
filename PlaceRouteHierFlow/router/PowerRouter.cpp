@@ -512,7 +512,7 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
                 InsertRoutingContact(a_star, grid, Pset_current_net_via, Set_current_net_contact, i);
 
                }else{
-                 logger->warn("Router-Warning: feasible path might not be found. net name {0}",PowerNets[i].netName);
+                 logger->info("Router-Warning: feasible path might not be found. net name {0}",PowerNets[i].netName);
                }
              UpdatePlistNets(physical_path, add_plist);
              InsertPlistToSet_x(Set_net, add_plist);           

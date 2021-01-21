@@ -1702,7 +1702,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
     int sbIdx=caseNL.Terminals.at(i).SBidx;
     int cp=caseNL.Terminals.at(i).counterpart;
     if(netIdx<0 or netIdx>=caseNL.GetSizeofNets()) {
-      logger->warn("Placer-Warning: terminal {0} is dangling; set it on origin", i);
+      logger->info("Placer-Warning: terminal {0} is dangling; set it on origin", i);
       //caseNL.Terminals.at(i).center.x = 0;
       //caseNL.Terminals.at(i).center.y = 0;
       continue;

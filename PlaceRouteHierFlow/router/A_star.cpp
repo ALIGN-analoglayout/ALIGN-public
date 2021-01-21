@@ -38,7 +38,7 @@ bool A_star::FindFeasiblePath(Grid& grid, int pathNo, int left_up, int right_dow
        mark=true;
      } else {
        mark=(mark or false);
-       logger->critical("Router-Warning: feasible path might not be found");
+       logger->warn("Router-Warning: feasible path might not be found");
      }
   }
   return mark;

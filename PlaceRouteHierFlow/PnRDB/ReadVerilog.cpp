@@ -50,7 +50,7 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
 	auto &curr_node = db.hierTree[i];
 
 	{
-	    if(db.DRC_info.Metal_info.size() < 2) {logger->warn("PnRDB-Error: too few metal layers");}
+	    if(db.DRC_info.Metal_info.size() < 2) {logger->error("PnRDB-Error: too few metal layers");}
 	    if(db.DRC_info.Metal_info[0].direct==1) { //horizontal
 		curr_node.bias_Vgraph=db.DRC_info.Metal_info[0].grid_unit_y;
 	    } else {
@@ -62,7 +62,7 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
 		curr_node.bias_Hgraph=db.DRC_info.Metal_info[1].grid_unit_x;
 	    }
 	    //added one nodes to the class
-	    if(!db.ReadConstraint(curr_node, fpath, "const")) {logger->warn("PnRDB-Warn: fail to read constraint file of module {0}",curr_node.name);}
+	    if(!db.ReadConstraint(curr_node, fpath, "const")) {logger->error("PnRDB-Warn: fail to read constraint file of module {0}",curr_node.name);}
 	    else{logger->info("Finished reading contraint file");}
 	}
     }
