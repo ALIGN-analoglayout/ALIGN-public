@@ -773,7 +773,7 @@ void GcellDetailRouter::create_detailrouter(){
         AddViaEnclosure(Pset_via, grid, Set_x_contact, Set_net_contact);
         AddViaSpacing(Pset_via, grid);
         A_star a_star(grid, Nets[i].shielding);
-        logger->debug("Net name {0}",Nets[i].netName);
+        logger->info("Net name {0}",Nets[i].netName);
         bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, 0, 0);
         /*
         if(pathMark==0){
@@ -783,7 +783,7 @@ void GcellDetailRouter::create_detailrouter(){
         */
         std::vector<std::vector<RouterDB::Metal>> physical_path;
         Update_rouer_report_info(temp_routing_net, i, j, pathMark);
-        logger->debug("pathMark {0}",pathMark);
+        logger->info("pathMark {0}",pathMark);
         //assert(pathMark);
         if (pathMark)
         {
@@ -804,7 +804,7 @@ void GcellDetailRouter::create_detailrouter(){
            logger->warn( "Router-Warning: feasible path might not be found");
         }
 
-        logger->debug( "Detail Router check point 8" );
+        logger->info( "Detail Router check point 8" );
         //update physical path to
         Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source, temp_dest, physical_path);
         UpdatePlistNets(physical_path, add_plist);
@@ -2582,7 +2582,7 @@ void GcellDetailRouter::GetPhsical_Metal_Via(int i){
 
   auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.GetPhsical_Metal_Via");
 
-  logger->debug("Nets[i].netName {0}",Nets[i].netName);
+  logger->info("Nets[i].netName {0}",Nets[i].netName);
   
   for(unsigned int h=0;h<Nets[i].path_metal.size();h++){
 

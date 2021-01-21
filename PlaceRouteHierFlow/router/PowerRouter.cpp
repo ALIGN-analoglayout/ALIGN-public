@@ -652,7 +652,7 @@ void PowerRouter::CreatePowerGrid_DC(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   grid.PrepareGraphVertices(LL.x, LL.y, UR.x, UR.y);
   //grid.PrepareGraphVertices(tempLL.x, tempLL.y, tempUR.x, tempUR.y);
 
-  logger->debug("Power Grid Info {0} {1}",grid.vertices_total.size(),grid.vertices_graph.size());
+  logger->info("Power Grid Info {0} {1}",grid.vertices_total.size(),grid.vertices_graph.size());
   //here return a power grid metal information
   bool power_grid = 1;
   logger->debug("Create Power Grid Flag 11");
@@ -1081,15 +1081,15 @@ void PowerRouter::CreatePowerGridDrc_info_DC(string inputfile){
 
   for(unsigned int i=0;i<PowerGrid_Drc_info.Metal_info.size();i++){
       
-       logger->debug("grid info {0} {1} ",PowerGrid_Drc_info.Metal_info[i].grid_unit_x,PowerGrid_Drc_info.Metal_info[i].grid_unit_y);
+       logger->info("grid info {0} {1} ",PowerGrid_Drc_info.Metal_info[i].grid_unit_x,PowerGrid_Drc_info.Metal_info[i].grid_unit_y);
 
        PowerGrid_Drc_info.Metal_info[i].grid_unit_x = PowerGrid_Drc_info.Metal_info[i].grid_unit_x/utilization[i];
        PowerGrid_Drc_info.Metal_info[i].grid_unit_y = PowerGrid_Drc_info.Metal_info[i].grid_unit_y/utilization[i];
        PowerGrid_Drc_info.Metal_info[i].width = PowerGrid_Drc_info.Metal_info[i].width * Power_width;
       
-       logger->debug("{0}",utilization[i]);
+       logger->info("{0}",utilization[i]);
 
-       logger->debug("grid info {0} {1}", PowerGrid_Drc_info.Metal_info[i].grid_unit_x, PowerGrid_Drc_info.Metal_info[i].grid_unit_y);
+       logger->info("grid info {0} {1}", PowerGrid_Drc_info.Metal_info[i].grid_unit_x, PowerGrid_Drc_info.Metal_info[i].grid_unit_y);
 
      }
 
@@ -1114,7 +1114,7 @@ void PowerRouter::getBlockData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
 
   auto logger = spdlog::default_logger()->clone("router.PowerRouter.getBlockData");
 
-  logger->debug("Power Router-Info: begin to import data");
+  logger->info("Power Router-Info: begin to import data");
   this->isTop = node.isTop;
   this->topName=node.name;
   this->width=node.width;
@@ -1175,7 +1175,7 @@ void PowerRouter::getBlockData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
       }
    Blocks.push_back(temp_block);
   }
-  logger->debug("Power Router-Info: complete importing data");
+  logger->info("Power Router-Info: complete importing data");
 };
 
 void PowerRouter::getNetData(PnRDB::hierNode& node){
@@ -1681,7 +1681,7 @@ void PowerRouter::ReturnPowerNetData(PnRDB::hierNode& node){
      }
      node.router_report.push_back(temp_report);
 
-  logger->debug("node UR x UR y {0} {1} {2} {3} ",node.LL.x,node.LL.y,node.UR.x,node.UR.y);
+  logger->info("node UR x UR y {0} {1} {2} {3} ",node.LL.x,node.LL.y,node.UR.x,node.UR.y);
   if(minX<node.LL.x){node.LL.x=minX;}
   if(minY<node.LL.y){node.LL.y=minY;}
   if(maxX>node.UR.x){node.UR.x=maxX;}

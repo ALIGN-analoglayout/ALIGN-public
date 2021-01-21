@@ -809,7 +809,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
     //std::cout<<"end read const file "<<cfile<<std::endl;
     return true;
   } catch(ifstream::failure e) {
-    logger->warn("PnRDB-Warn: fail to read constraint file ");
+    logger->error("PnRDB-Error: fail to read constraint file ");
   }
   return false;
 }

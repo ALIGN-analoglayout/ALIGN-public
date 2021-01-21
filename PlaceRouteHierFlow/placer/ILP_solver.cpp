@@ -41,7 +41,7 @@ void ILP_solver::lpsolve_logger(lprec* lp, void* userhandle, char* buf) {
   // Strip leading newline
   while ((unsigned char)*buf == '\n') buf++;
   // Log non-empty lines
-  if (*buf != '\0') logger->debug("Placer lpsolve: {0}", buf);
+  if (*buf != '\0') logger->info("Placer lpsolve: {0}", buf);
 }
 
 double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
