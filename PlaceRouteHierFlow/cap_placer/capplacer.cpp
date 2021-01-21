@@ -1975,7 +1975,7 @@ void Placer_Router_Cap::PrintPlacer_Router_Cap(string outfile){
 
 	auto logger = spdlog::default_logger()->clone("cap_placer.Placer_Router_Cap.PrintPlacer_Router_Cap");
 
-    logger->info("Placer-Router-Cap-Info: create gnuplot file");
+    logger->debug("Placer-Router-Cap-Info: create gnuplot file");
     ofstream fout;
     fout.open(outfile.c_str());
 

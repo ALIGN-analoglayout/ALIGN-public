@@ -1457,7 +1457,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
 
   auto logger = spdlog::default_logger()->clone("router.GcellGlobalRouter.ILPSolveRouting");
 
-  logger->info("Status Log: ILP Solving Starts");
+  logger->debug("Status Log: ILP Solving Starts");
 
   # if defined ERROR
   #  undef ERROR
