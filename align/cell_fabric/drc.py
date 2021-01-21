@@ -26,7 +26,7 @@ class DesignRuleCheck():
         self.r_regions = RegionSet()
         for term in self.canvas.terminals:
             if term['layer'] == 'Boundary':
-                logger.error( f"Adding region {term['rect']}")
+                logger.info( f"Adding region {term['rect']} using 'Boundary' object")
                 self.r_regions.add_region( term['rect'])
 
     @property
