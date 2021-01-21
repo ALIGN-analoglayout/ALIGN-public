@@ -22,7 +22,7 @@ void GcellGlobalRouter::PlotGlobalRouter(){
 
     auto logger = spdlog::default_logger()->clone("router.GcellGlobalRouter.PlotGlobalRouter");
 
-    logger->debug("Global-Router-Info: create gnuplot file");
+    logger->info("Global-Router-Info: create gnuplot file");
     std::ofstream fout;
     std::string outfile = "global_router.plt";
     fout.open(outfile);
@@ -103,7 +103,7 @@ void GcellGlobalRouter::PlotGlobalRouter_Json(PnRDB::hierNode& node){
 
     auto logger = spdlog::default_logger()->clone("router.GcellGlobalRouter.PlotGlobalRouter_Json");
 
-    logger->debug( "JSON WRITE Global Router Results ");
+    logger->info( "JSON WRITE Global Router Results ");
     std::ofstream jsonStream;
     jsonStream.open ("global_router_plt.json");
     json jsonTop;
@@ -220,7 +220,7 @@ void GcellGlobalRouter::PlotGlobalRouter_Json(PnRDB::hierNode& node){
  
     jsonStream << std::setw(4) << jsonTop;
     jsonStream.close();
-    logger->debug(" JSON FINALIZE {0}" , node.name );
+    logger->info(" JSON FINALIZE {0}" , node.name );
 
 
 };
@@ -1040,7 +1040,7 @@ long int GcellGlobalRouter::get_number(string str)
 void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
   auto logger = spdlog::default_logger()->clone("router.GcellGlobalRouter.getData");
 
-  logger->debug("Router-Info: begin to import data");
+  logger->info("Router-Info: begin to import data");
   //this->isTop = node.isTop;
   this->isTop = node.isTop;
   this->topName=node.name;
@@ -1450,7 +1450,7 @@ void GcellGlobalRouter::lpsolve_logger(lprec *lp, void *userhandle, char *buf)
   // Strip leading newline
   while((unsigned char)*buf == '\n') buf++;
   // Log non-empty lines
-  if (*buf != '\0') logger->debug("GcellGlobalRouter lpsolve: {0}",buf);
+  if (*buf != '\0') logger->info("GcellGlobalRouter lpsolve: {0}",buf);
 }
 
 int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std::set<RouterDB::tile, RouterDB::tileComp> &Tile_Set) {

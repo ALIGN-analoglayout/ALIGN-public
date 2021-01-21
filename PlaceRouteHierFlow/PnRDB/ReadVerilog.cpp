@@ -123,18 +123,18 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
            }
        }
 
-  logger->debug("Middle");
+  logger->info("Middle");
     //mergeLEFandGDS
     for(unsigned int i=0;i<db.hierTree.size();i++){
     //cout<<"db.hierTree node "<<i<<endl;
     if(!db.MergeLEFMapData(db.hierTree[i])){logger->error("PnRDB-Error: fail to mergeLEFMapData of module {0}",db.hierTree[i].name);
       }else{
-      logger->debug("Finished merge lef data");
+      logger->info("Finished merge lef data");
       }
       }
   // wbxu: following lines need modifications to reflect changes of block instance vector
   //update powernets information
-  logger->debug("Middle");
+  logger->info("Middle");
   for(unsigned int i=0;i<Supply_node.Blocks.size();i++){
       std::string supply_name_full = Supply_node.name+"."+Supply_node.Blocks[i].instance.back().name;
       std::string supply_name = Supply_node.Blocks[i].instance.back().name;
@@ -215,15 +215,15 @@ db.hierTree[i].Terminals[db.hierTree[i].Nets[j].connected[k].iter].netIter = j;
            if(db.hierTree[i].Nets[k].name == temp_LinearConst.net_name){
              db.hierTree[i].Nets[k].upperBound = temp_LinearConst.upperBound;
              for(int h=0;h<db.hierTree[i].Nets[k].connected.size();h++){
-                logger->debug("Connected {0} {1} {2}",db.hierTree[i].Nets[k].connected[h].type,db.hierTree[i].Nets[k].connected[h].iter,db.hierTree[i].Nets[k].connected[h].iter2);
+                logger->info("Connected {0} {1} {2}",db.hierTree[i].Nets[k].connected[h].type,db.hierTree[i].Nets[k].connected[h].iter,db.hierTree[i].Nets[k].connected[h].iter2);
                 for(int l=0;l<temp_LinearConst.pins.size();l++){
-                  logger->debug("LinearConst cont {0} {1} {2}",temp_LinearConst.pins[l].first,temp_LinearConst.pins[l].second,temp_LinearConst.alpha[l]);
+                  logger->info("LinearConst cont {0} {1} {2}",temp_LinearConst.pins[l].first,temp_LinearConst.pins[l].second,temp_LinearConst.alpha[l]);
                   if(db.hierTree[i].Nets[k].connected[h].type == PnRDB::Block and db.hierTree[i].Nets[k].connected[h].iter2 == temp_LinearConst.pins[l].first and db.hierTree[i].Nets[k].connected[h].iter == temp_LinearConst.pins[l].second){
-                    logger->debug("LinearConst alpha {0}",temp_LinearConst.alpha[l]);
+                    logger->info("LinearConst alpha {0}",temp_LinearConst.alpha[l]);
                     db.hierTree[i].Nets[k].connected[h].alpha = temp_LinearConst.alpha[l];
                   }else if(db.hierTree[i].Nets[k].connected[h].type == PnRDB::Terminal and temp_LinearConst.pins[l].first==-1 and db.hierTree[i].Nets[k].connected[h].iter == temp_LinearConst.pins[l].second){
                     db.hierTree[i].Nets[k].connected[h].alpha = temp_LinearConst.alpha[l];
-                    logger->debug("LinearConst alpha {0}",temp_LinearConst.alpha[l]);
+                    logger->info("LinearConst alpha {0}",temp_LinearConst.alpha[l]);
                   }
                  }
              }
@@ -234,14 +234,14 @@ db.hierTree[i].Terminals[db.hierTree[i].Nets[j].connected[k].iter].netIter = j;
       for(unsigned int j=0;j<db.hierTree[i].L_Constraints.size();j++){
 
           for(unsigned int k=0;k<db.hierTree[i].L_Constraints[j].alpha.size();k++){
-              logger->debug("LinearConst info {0} {1} ",db.hierTree[i].L_Constraints[j].net_name,db.hierTree[i].L_Constraints[j].alpha[k]);
+              logger->info("LinearConst info {0} {1} ",db.hierTree[i].L_Constraints[j].net_name,db.hierTree[i].L_Constraints[j].alpha[k]);
            }
 
       }
 
       for(unsigned int j=0;j<db.hierTree[i].Nets.size();j++){
          for(unsigned int k =0;k<db.hierTree[i].Nets[j].connected.size();k++){
-            logger->debug("Assign Linear {0} {1} ",db.hierTree[i].Nets[j].upperBound,db.hierTree[i].Nets[j].connected[k].alpha);
+            logger->info("Assign Linear {0} {1} ",db.hierTree[i].Nets[j].upperBound,db.hierTree[i].Nets[j].connected[k].alpha);
          }
       }
 

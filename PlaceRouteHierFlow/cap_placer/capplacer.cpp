@@ -1089,10 +1089,10 @@ void Placer_Router_Cap::check_grid( const net& n) const
 	if ( s.x == e.x) {
 	    // Vertical wi
 	    int x = s.x;
-            logger->debug(" V {0}",x % 80);
+            logger->info(" V {0}",x % 80);
 	} else {
 	    int y = s.x;
-	    logger->debug(" H {0}",y % 84);
+	    logger->info(" H {0}",y % 84);
 	}
     }
 }
@@ -1484,7 +1484,7 @@ Placer_Router_Cap::WriteGDSJSON (const string& fpath, const string& unit_capacit
     string TopCellName = final_gds;
     double unitScale=2;
     JSONExtractUit (gds_unit_capacitor, unitScale);
-    logger->debug("Cap unitScale {0}",unitScale);
+    logger->info("Cap unitScale {0}",unitScale);
 
     std::ofstream jsonStream;
     jsonStream.open (topGDS_loc + ".json");
@@ -1516,10 +1516,10 @@ Placer_Router_Cap::WriteGDSJSON (const string& fpath, const string& unit_capacit
     vector<string> strBlocks_Top;
     int idx=0;
     //writing unit capacitors??? confirm with jinhyun
-    logger->debug("GDS CAP SUBCELL read of {0}",gds_unit_capacitor);
+    logger->info("GDS CAP SUBCELL read of {0}",gds_unit_capacitor);
     for(unsigned int i=0;i<uniGDS.size();i++) {
 	json js;
-        logger->debug("CAP GDS: Using JSON for subcells for now");
+        logger->info("CAP GDS: Using JSON for subcells for now");
 	JSONReaderWrite_subcells (gds_unit_capacitor, rndnum, strBlocks, llx,lly,urx,ury, js);
 	for (json::iterator str = js.begin(); str != js.end(); ++str) {
 	    jsonStrAry.push_back (*str);
@@ -1616,7 +1616,7 @@ Placer_Router_Cap::WriteGDSJSON (const string& fpath, const string& unit_capacit
     jsonTop["bgnlib"] = jsonLibAry;
     jsonStream << std::setw(4) << jsonTop;
     jsonStream.close();
-    logger->debug("CAP GDS JSON FINALIZE {0}",unit_capacitor);
+    logger->info("CAP GDS JSON FINALIZE {0}",unit_capacitor);
 }
 
 void
@@ -1693,7 +1693,7 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 	jsonStream.open( fpath+"/"+unit_capacitor+".json");
 	// DAKSwap this out for below when we merge with latest
 	string fn = fpath + "/" + unit_capacitor + ".json";
-        logger->debug("Reading JSON for unit capacitor {0}", fn);
+        logger->info("Reading JSON for unit capacitor {0}", fn);
 	jsonStream.open(fn);
 	jsonStream >> jsonUnit;
     jsonStream.close();
@@ -1766,10 +1766,10 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 	    } else {
 		if ( term0["netName"] == "PLUS") {
                      term1["netName"] = Nets_pos[ni].name ;
-                     logger->debug("Cap Bug test {0} {1}",1+ni,term1["netName"]);
+                     logger->info("Cap Bug test {0} {1}",1+ni,term1["netName"]);
 		} else if ( term0["netName"] == "MINUS") {
                      term1["netName"] = Nets_neg[ni].name ;
-                     logger->debug("Cap Bug test {0} {1}",1+ni,term1["netName"]);
+                     logger->info("Cap Bug test {0} {1}",1+ni,term1["netName"]);
 		} else {
                     continue;
                 }
@@ -1793,7 +1793,7 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
     {
 	std::ofstream jsonStream;
 	std::string fn = opath + top_name + ".json";
-        logger->debug("Writing JSON for cap array {0}", fn);
+        logger->info("Writing JSON for cap array {0}", fn);
 	jsonStream.open( fn);
 	jsonStream << std::setw(4) << jsonTop;
 	jsonStream.close();
@@ -1914,7 +1914,7 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 			current_node.Blocks[i].instNum++;
                         //feedback data
 			auto& va = current_node.Blocks[i].instance.at(q);
-                        logger->debug("CC Start feed blocks");
+                        logger->info("CC Start feed blocks");
 			va.width = temp_block.width;
 			va.height = temp_block.height;
 			va.originBox = temp_block.originBox;
@@ -1960,7 +1960,7 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
                         insert_dummy_connection = 1;
 
 			WriteLef(va, cc_gds_file+".lef", opath);
-                        logger->debug("CC End feed blocks");
+                        logger->info("CC End feed blocks");
 			continue;
 		    } 
 		}
@@ -2086,13 +2086,13 @@ void Placer_Router_Cap::WriteLef(const PnRDB::block &temp_block, const string& f
     {
 	int m1_pitch = 80;
 	if ( temp_block.width % m1_pitch != 0) {
-            logger->debug("WriteLef: block boundary off M1 grid (default PDK): {0} {1}",temp_block.width,temp_block.width % m1_pitch);
+            logger->info("WriteLef: block boundary off M1 grid (default PDK): {0} {1}",temp_block.width,temp_block.width % m1_pitch);
 	}
     }
     {
 	int m2_pitch = 84;
 	if ( temp_block.height % m2_pitch != 0) {
-            logger->debug("WriteLef: block boundary off M2 grid (default PDK): {0} {1}",temp_block.height,temp_block.height % m2_pitch);
+            logger->info("WriteLef: block boundary off M2 grid (default PDK): {0} {1}",temp_block.height,temp_block.height % m2_pitch);
 	}
     }
 
@@ -2110,13 +2110,13 @@ void Placer_Router_Cap::WriteLef(const PnRDB::block &temp_block, const string& f
 	    const auto& b = p.originBox;
 	    if ( p.metal == "M1") {
 		int c = b.center().x;
-                logger->debug("M1 LEF PIN {0}",c % 80);
+                logger->info("M1 LEF PIN {0}",c % 80);
 	    }
 	    if ( p.metal == "M2") {
 		int c = b.center().y;
-                logger->debug("M2 LEF PIN {0}",c % 84);
+                logger->info("M2 LEF PIN {0}",c % 84);
 		if ( c % 84 != 0) {
-                    logger->debug("WriteLef: M2 LEF PIN off grid: {0} {1}",c,c % 84);
+                    logger->info("WriteLef: M2 LEF PIN off grid: {0} {1}",c,c % 84);
 		}
 	    }
 	}

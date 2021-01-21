@@ -49,7 +49,7 @@ bool Graph::FindFeasiblePath(Grid& grid, int pathNo) {
      mark=true;
      } else {
        mark=(mark or false);
-       logger->warn("Router-Warning: feasible path might not be found");
+       logger->info("Router-Warning: feasible path might not be found");
      }
   }
   return mark;
@@ -243,8 +243,8 @@ void Graph::collect_nodes(Grid &grid, vector<int> temp_vector, vector<int>& adja
              if(grid.total2graph.find(temp_vector[j])!=grid.total2graph.end())
                {
                   int index = grid.total2graph[temp_vector[j]];
-                  logger->debug("temp {0} index {1} ",temp_vector[j],index);
-                  logger->debug("index edge {0} graph size {1} temp_vector[j] {2} ", index,grid.vertices_graph.size(),temp_vector[j]);
+                  logger->info("temp {0} index {1} ",temp_vector[j],index);
+                  logger->info("index edge {0} graph size {1} temp_vector[j] {2} ", index,grid.vertices_graph.size(),temp_vector[j]);
                   if( index<grid.vertices_graph.size() and index>=0 and grid.vertices_graph[index].active and grid.vertices_graph[index].power == power and grid.vertices_graph[index].graph_index==-1) 
                     {  
                       adjacent_nodes.push_back(index);
