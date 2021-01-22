@@ -6,6 +6,7 @@
 
 using namespace nlohmann;
 bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, string suffix) {
+  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.ReadConstraint_Json");
   ifstream jsonFile(fpath + "/" + node.name + "." + suffix);
   if (jsonFile.is_open()) {
     json jedb = json::parse(jsonFile);
@@ -264,7 +265,7 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
               temp_pair.second = temp_pair.first;
               temp_pair.first = temp_int;
             } else if (temp_pair.first == temp_pair.second) {
-              std::cerr << "PnRDB-Error: same block in paired symmetry group" << std::endl;
+              logger->error("PnRDB-Error: same block in paired symmetry group");
             }
             temp_SymmPairBlock.sympair.push_back(temp_pair);
           } else {  // selfsym

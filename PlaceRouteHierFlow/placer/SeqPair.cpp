@@ -742,13 +742,17 @@ placerDB::Smark SeqPair::GetSymmBlockAxis(int SBidx) {
 }
 
 bool SeqPair::ChangeSelectedBlock(design& caseNL) {
+  auto logger = spdlog::default_logger()->clone("placer.SeqPair.ChangeSelectedBlock");
   int anode=rand() % caseNL.GetSizeofBlocks();
   if(caseNL.mixFlag) {
     while(caseNL.GetMappedBlockIdx(anode)!=-1) {
       anode=rand() % caseNL.GetSizeofBlocks();
     } // randomly choose a block
   }
-  if(caseNL.Blocks.at(anode).size()<=1) {std::cout<<"anode size < 1"<<std::endl;return false;}
+  if(caseNL.Blocks.at(anode).size()<=1) {
+    logger->debug("anode size < 1");
+    return false;
+  }
   int newsel=rand() % caseNL.Blocks.at(anode).size();
   selected.at(anode)=newsel;
   if(caseNL.GetBlockCounterpart(anode)!=-1) { selected.at( caseNL.GetBlockCounterpart(anode) )=newsel;}
