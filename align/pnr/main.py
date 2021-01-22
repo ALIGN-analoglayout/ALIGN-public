@@ -75,9 +75,6 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
     compiler_path = pathlib.Path(os.environ['ALIGN_HOME']).resolve() / 'PlaceRouteHierFlow' / 'pnr_compiler'
     assert compiler_path.is_file(), f"{compiler_path} not found. Has it been built?"
 
-    shared_object_path = pathlib.Path(os.environ['ALIGN_HOME']).resolve() / 'PlaceRouteHierFlow' / 'PnR.cpython-36m-x86_64-linux-gnu.so'
-    assert shared_object_path.is_file(), f"{shared_object_path} not found. Has it been built?"
-
     sys.setdlopenflags(os.RTLD_GLOBAL|os.RTLD_LAZY)
 
     import PnR
