@@ -1,38 +1,42 @@
 #include "Graph.h"
+#include "spdlog/spdlog.h"
 #include "assert.h"
 
 Graph::Graph(Grid& grid):path_number(1) {
 
-  std::cout<<"Start Creating adjacent list (graph), ";
+  auto logger = spdlog::default_logger()->clone("router.Graph.Graph");
+
+  logger->debug("Start Creating adjacent list (graph)");
   CreateAdjacentList(grid); //create adjacentList base gird.LL_graph and gird.UR_graph
-  std::cout<<"End creating adjacent list (graph)"<<std::endl;
+  logger->debug("End Creating adjacent list (graph)");
 
 };
 
 Graph::Graph(Grid& grid, bool Power_grid):path_number(1) {
 
-  std::cout<<"Enter Graph, ";
+  auto logger = spdlog::default_logger()->clone("router.Graph.Graph");
+
   this->source=-1; this->dest=-1;
-  std::cout<<"Start Creating power grid (graph), ";
+  logger->debug("Start Creating power grid (graph)");
   CreatePower_Grid(grid); //create adjacentList base gird.LL_graph and gird.UR_graph
-  std::cout<<"End creating power grid (graph)"<<std::endl;
+  logger->debug("End creating power grid (graph)");
 
 };
 
 bool Graph::FindFeasiblePath(Grid& grid, int pathNo) {
+
+  auto logger = spdlog::default_logger()->clone("router.Graph.FindFeasiblePath");
+
   bool mark=false;
   for(int i =0;i<pathNo;++i){
     
-     std::cout<<"Path No "<<pathNo<<" current path index "<<i<<std::endl;
      //find one shortest path
 
      std::vector<int> temp_path;
-     
-     std::cout<<"start dijkstra, "<<std::endl;
-
+     logger->debug("start dijkstra");
      temp_path = dijkstra();// grid.Source grid.dest
-     
-     std::cout<<"end dijkstra"<<std::endl; 
+     logger->debug("end dijkstra");
+
      if(temp_path.size()>0) {
      //update weight
      UpdateEdgeWeight(temp_path);
@@ -45,7 +49,7 @@ bool Graph::FindFeasiblePath(Grid& grid, int pathNo) {
      mark=true;
      } else {
        mark=(mark or false);
-       std::cout<<"Router-Warning: feasible path might not be found\n";
+       logger->warn("Router-Warning: feasible path might not be found");
      }
   }
   return mark;
@@ -54,23 +58,21 @@ bool Graph::FindFeasiblePath(Grid& grid, int pathNo) {
 
 Graph::Graph(Grid& grid, int pathNo) {
 
-  std::cout<<"Start Creating adjacent list (graph), ";
+  auto logger = spdlog::default_logger()->clone("router.Graph.Graph");
+
+  logger->debug("Start Creating adjacent list (graph),");
   CreateAdjacentList(grid); //create adjacentList base gird.LL_graph and gird.UR_graph
-  std::cout<<"End creating adjacent list (graph)"<<std::endl;
+  logger->debug("End creating adjacent list (graph)");
 
   this->path_number=pathNo;
   for(int i =0;i<pathNo;++i){
     
-     std::cout<<"Path No "<<pathNo<<" current path index "<<i<<std::endl;
      //find one shortest path
 
      std::vector<int> temp_path;
-     
-     std::cout<<"start dijkstra, "<<std::endl;
 
      temp_path = dijkstra();// grid.Source grid.dest
 
-     std::cout<<"end dijkstra"<<std::endl; 
      //update weight
      UpdateEdgeWeight(temp_path);
      
@@ -101,11 +103,11 @@ void Graph::CreatePower_Grid(Grid& grid){ //grid function needs to be changed...
   RouterDB::point LL_point;
   RouterDB::point UR_point;
 
-  std::cout<<"Connection_Check_Power_Grid 1"<<std::endl;
+  //std::cout<<"Connection_Check_Power_Grid 1"<<std::endl;
   Connection_Check_Power_Grid(grid,1); //check vdd
-  std::cout<<"Connection_Check_Power_Grid 2"<<std::endl;
+  //std::cout<<"Connection_Check_Power_Grid 2"<<std::endl;
   Connection_Check_Power_Grid(grid,0); //check gnd
-  std::cout<<"Connection_Check_Power_Grid 3"<<std::endl;
+  //std::cout<<"Connection_Check_Power_Grid 3"<<std::endl;
 
   auto adjust_line = [&](auto& graph_index){
 
@@ -234,13 +236,15 @@ void Graph::CreatePower_Grid(Grid& grid){ //grid function needs to be changed...
 
 void Graph::collect_nodes(Grid &grid, vector<int> temp_vector, vector<int>& adjacent_nodes, int power){
 
+  auto logger = spdlog::default_logger()->clone("router.Graph.collect_nodes");
+
        for(unsigned int j=0;j<temp_vector.size();++j) 
           {   
              if(grid.total2graph.find(temp_vector[j])!=grid.total2graph.end())
                {
                   int index = grid.total2graph[temp_vector[j]];
-                  std::cout<<"temp "<<temp_vector[j]<<"index"<<index<<std::endl;
-                  std::cout<<"index edge "<<index<<" graph size "<<grid.vertices_graph.size()<<" temp_vector[j] "<<temp_vector[j]<<std::endl;
+                  logger->debug("temp {0} index {1} ",temp_vector[j],index);
+                  logger->debug("index edge {0} graph size {1} temp_vector[j] {2} ", index,grid.vertices_graph.size(),temp_vector[j]);
                   if( index<grid.vertices_graph.size() and index>=0 and grid.vertices_graph[index].active and grid.vertices_graph[index].power == power and grid.vertices_graph[index].graph_index==-1) 
                     {  
                       adjacent_nodes.push_back(index);
@@ -269,9 +273,9 @@ void Graph::power_grid_dsf(Grid& grid, int i, int graph_index, int& connection_g
      return;
   }
 
-  std::cout<<"power_grid_dsf checkpoint 1"<<std::endl;
+  //std::cout<<"power_grid_dsf checkpoint 1"<<std::endl;
 
-  std::cout<<"i "<<i<<" "<<grid.vertices_graph.size()<<std::endl;
+  //std::cout<<"i "<<i<<" "<<grid.vertices_graph.size()<<std::endl;
 
   grid.vertices_graph[i].graph_index = graph_index;
 
@@ -315,49 +319,49 @@ void Graph::power_grid_dsf(Grid& grid, int i, int graph_index, int& connection_g
   };
   */
 
-  std::cout<<"power_grid_dsf checkpoint 2"<<std::endl;
-  std::cout<<"north"<<std::endl;
-  std::cout<<"north size "<<grid.vertices_graph[i].north.size()<<std::endl;
+  //std::cout<<"power_grid_dsf checkpoint 2"<<std::endl;
+  //std::cout<<"north"<<std::endl;
+  //std::cout<<"north size "<<grid.vertices_graph[i].north.size()<<std::endl;
   collect_nodes(grid,grid.vertices_graph[i].north,adjacent_nodes,power);
 
-  std::cout<<"power_grid_dsf checkpoint 3"<<std::endl;
-  std::cout<<"south"<<std::endl;
-  std::cout<<"south size "<<grid.vertices_graph[i].south.size()<<std::endl;  
+  //std::cout<<"power_grid_dsf checkpoint 3"<<std::endl;
+  //std::cout<<"south"<<std::endl;
+  //std::cout<<"south size "<<grid.vertices_graph[i].south.size()<<std::endl;  
   collect_nodes(grid,grid.vertices_graph[i].south,adjacent_nodes,power);
 
-  std::cout<<"power_grid_dsf checkpoint 4"<<std::endl;
-  std::cout<<"east"<<std::endl;
-  std::cout<<"east size "<<grid.vertices_graph[i].east.size()<<std::endl;
+  //std::cout<<"power_grid_dsf checkpoint 4"<<std::endl;
+  //std::cout<<"east"<<std::endl;
+  //std::cout<<"east size "<<grid.vertices_graph[i].east.size()<<std::endl;
   collect_nodes(grid,grid.vertices_graph[i].east,adjacent_nodes,power);
 
-  std::cout<<"power_grid_dsf checkpoint 5"<<std::endl;
-  std::cout<<"west"<<std::endl;
-  std::cout<<"west size "<<grid.vertices_graph[i].west.size()<<std::endl;
+  //std::cout<<"power_grid_dsf checkpoint 5"<<std::endl;
+  //std::cout<<"west"<<std::endl;
+  //std::cout<<"west size "<<grid.vertices_graph[i].west.size()<<std::endl;
   collect_nodes(grid,grid.vertices_graph[i].west,adjacent_nodes,power);
 
-  std::cout<<"power_grid_dsf checkpoint 6"<<std::endl;
-  std::cout<<"up"<<std::endl;
-  std::cout<<"up size "<<grid.vertices_graph[i].up<<std::endl;
+  //std::cout<<"power_grid_dsf checkpoint 6"<<std::endl;
+  //std::cout<<"up"<<std::endl;
+  //std::cout<<"up size "<<grid.vertices_graph[i].up<<std::endl;
   collect_node(grid,grid.vertices_graph[i].up,adjacent_nodes,power);
 
-  std::cout<<"power_grid_dsf checkpoint 7"<<std::endl;
-  std::cout<<"down"<<std::endl;
-  std::cout<<"down size "<<grid.vertices_graph[i].down<<std::endl;
+  //std::cout<<"power_grid_dsf checkpoint 7"<<std::endl;
+  //std::cout<<"down"<<std::endl;
+  //std::cout<<"down size "<<grid.vertices_graph[i].down<<std::endl;
   collect_node(grid,grid.vertices_graph[i].down,adjacent_nodes,power);
 
-  std::cout<<"power_grid_dsf checkpoint 8"<<std::endl;
+  //std::cout<<"power_grid_dsf checkpoint 8"<<std::endl;
 
-  std::cout<<"power_grid_dsf checkpoint 8.5"<<std::endl;
+  //std::cout<<"power_grid_dsf checkpoint 8.5"<<std::endl;
 
   for(unsigned int j=0;j<adjacent_nodes.size();++j){
 
-     std::cout<<"power_grid_dsf checkpoint 8.6"<<std::endl;
+     //std::cout<<"power_grid_dsf checkpoint 8.6"<<std::endl;
 
      power_grid_dsf(grid,adjacent_nodes[j],graph_index,connection_graph_number,power);
 
   }
 
- std::cout<<"power_grid_dsf checkpoint 9"<<std::endl;
+ //std::cout<<"power_grid_dsf checkpoint 9"<<std::endl;
   
 };
 
@@ -367,20 +371,20 @@ void Graph::Connection_Check_Power_Grid(Grid& grid, int power){
   std::vector<int> number_connection_graph;
   int graph_index = 0;
 
-  std::cout<<"Connection_Check_Power_Grid checkpoint1"<<std::endl;
+  //std::cout<<"Connection_Check_Power_Grid checkpoint1"<<std::endl;
   for(unsigned int i=0;i<grid.vertices_graph.size();++i){
       
       if(grid.vertices_graph[i].graph_index==-1 and grid.vertices_graph[i].power==power and grid.vertices_graph[i].active){
           int connection_graph_number = 0;
-          std::cout<<"start dsf"<<std::endl;
+          //std::cout<<"start dsf"<<std::endl;
           power_grid_dsf(grid,i,graph_index,connection_graph_number,power);
-          std::cout<<"end dsf"<<std::endl;
+          //std::cout<<"end dsf"<<std::endl;
           graph_index++;
           number_connection_graph.push_back(connection_graph_number);
         }
 
   }
-  std::cout<<"Connection_Check_Power_Grid checkpoint2"<<std::endl;
+  //std::cout<<"Connection_Check_Power_Grid checkpoint2"<<std::endl;
   int max_index = -1;
   int max_number = -1;
 
@@ -392,7 +396,7 @@ void Graph::Connection_Check_Power_Grid(Grid& grid, int power){
        }
 
   }
-  std::cout<<"Connection_Check_Power_Grid checkpoint3"<<std::endl;
+  //std::cout<<"Connection_Check_Power_Grid checkpoint3"<<std::endl;
 
   //std::cout<<"max_index "<<max_index<<" max number "<<number_connection_graph[max_index]<<std::endl;
   //assert(0);
@@ -404,7 +408,7 @@ void Graph::Connection_Check_Power_Grid(Grid& grid, int power){
         }
 
   }
-  std::cout<<"Connection_Check_Power_Grid checkpoint4"<<std::endl;
+  //std::cout<<"Connection_Check_Power_Grid checkpoint4"<<std::endl;
 };
 
 bool Graph::CheckActive(Grid& grid, int index){
@@ -435,9 +439,9 @@ bool Graph::CheckActive(Grid& grid, int index){
   check_one_direction(grid.vertices_graph[index].west);
 
   if(found==false){
-     std::cout<<"Power Via Bug "<<found<<std::endl;
+     //std::cout<<"Power Via Bug "<<found<<std::endl;
     }else{
-     std::cout<<"Power Via Bug "<<found<<std::endl;
+     //std::cout<<"Power Via Bug "<<found<<std::endl;
     }
 
   return found;
@@ -685,6 +689,8 @@ void Graph::CreateAdjacentList(Grid& grid){
 };
 
 void Graph::RemovefromMultMap(std::multimap<double, int>& mmap, double dist, int idx) {
+  auto logger = spdlog::default_logger()->clone("router.Graph.RemovefromMultMap");
+
   std::multimap<double, int>::iterator low=mmap.lower_bound(dist);
   std::multimap<double, int>::iterator high=mmap.upper_bound(dist);
   std::multimap<double, int>::iterator tar;
@@ -695,7 +701,7 @@ void Graph::RemovefromMultMap(std::multimap<double, int>& mmap, double dist, int
     if(tar->second==idx) {mark=true; break;}
   }
   if(mark) {mmap.erase(tar);}
-  else {std::cout<<"Graph-Info: cannot found element in map\n";}
+  else {logger->debug("Graph-Info: cannot found element in map");}
   //  std::cout << "RemovefromMultMap: searched through " << count << " multmap nodes." << std::endl;
 }
 
@@ -722,25 +728,21 @@ std::vector<int>  Graph::dijkstra(){
 
   std::vector<int> temp_path;
 
-  std::cout<<"checkpoint 0"<<std::endl;
  
-  std::cout<<"graph.size() "<<graph.size()<<std::endl;
 
   std::vector<double> dist;
   dist.resize(graph.size());
   //double dist[graph.size()];
 
-  std::cout<<"check point 0.1"<<std::endl;
   std::vector<int> parent;
   parent.resize(graph.size());
   //int parent[graph.size()];
 
-  std::cout<<"check point 0.2"<<std::endl;
+
   std::vector<int> status;
   status.resize(graph.size());
   //int status[graph.size()];
 
-  std::cout<<"check point 0.3"<<std::endl;
 
   std::multimap<double, int> distMap;
     
@@ -751,11 +753,9 @@ std::vector<int>  Graph::dijkstra(){
         status[i] = 0;
      }
 
-  std::cout<<"checkpoint 1"<<std::endl;
   dist[source] = 0;
   status[source] = 1;
   distMap.insert ( std::pair<double,int>(dist[source], source) );
-  std::cout<<"checkpoint 2"<<std::endl;
   int count=0;
   int v;
   //std::cout<<"graph source "<<source<<" vs graph dest "<<dest<<std::endl;
@@ -793,9 +793,7 @@ std::vector<int>  Graph::dijkstra(){
           count++;
        }
 
-  std::cout<<"checkpoint 3"<<std::endl;
   printPath(parent, dest, graph.size(), temp_path);
-  std::cout<<"checkpoint 4"<<std::endl;
   //std::cout<<"temp path"<<std::endl;
   //for(int i=0;i<temp_path.size();i++) {std::cout<<temp_path[i]<<" "<<std::endl;}
   return temp_path;
@@ -806,25 +804,23 @@ std::vector<int>  Graph::dijkstraRetire(Grid& grid){
 
   std::vector<int> temp_path;
 
-  std::cout<<"checkpoint 0"<<std::endl;
  
-  std::cout<<"graph.size() "<<graph.size()<<std::endl;
 
   std::vector<double> dist;
   dist.resize(graph.size());
   //double dist[graph.size()];
 
-  std::cout<<"check point 0.1"<<std::endl;
+
   std::vector<int> parent;
   parent.resize(graph.size());
   //int parent[graph.size()];
 
-  std::cout<<"check point 0.2"<<std::endl;
+
   std::vector<int> status;
   status.resize(graph.size());
   //int status[graph.size()];
 
-  std::cout<<"check point 0.3"<<std::endl;
+
 
   for(unsigned int i = 0; i < graph.size(); ++i)
      {
@@ -833,10 +829,10 @@ std::vector<int>  Graph::dijkstraRetire(Grid& grid){
         status[i] = 0;
      }
 
-  std::cout<<"checkpoint 1"<<std::endl;
+
   dist[source] = 0;
   status[source] = 1;
-  std::cout<<"checkpoint 2"<<std::endl;
+
   int count=0;
   int v;
   //std::cout<<"graph source "<<source<<" vs graph dest "<<dest<<std::endl;
@@ -870,9 +866,9 @@ std::vector<int>  Graph::dijkstraRetire(Grid& grid){
           count++;
        }
 
-  std::cout<<"checkpoint 3"<<std::endl;
+
   printPath(parent, dest, graph.size(), temp_path);
-  std::cout<<"checkpoint 4"<<std::endl;
+
   //std::cout<<"temp path"<<std::endl;
   //for(int i=0;i<temp_path.size();i++) {std::cout<<temp_path[i]<<" "<<std::endl;}
   return temp_path;

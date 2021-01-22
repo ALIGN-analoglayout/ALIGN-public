@@ -2,9 +2,12 @@
 
 //read from lef file and set guard ring primitive cell width and height information
 void GuardRing::Pcell_info(const map<string, PnRDB::lefMacro>& lefData){
-  std::cout<<"step1.0"<<std::endl;
+
+  auto logger = spdlog::default_logger()->clone("guard_ring.GuardRing.Pcell_info");
+
+  logger->debug("step1.0");
   if(lefData.find("guard_ring")==lefData.end()){
-    std::cout<<"Guard_ring primitive cell error, check guard ring primitive cell in lef, gds, and const file"<<std::endl;
+    logger->error("Guard_ring primitive cell error, check guard ring primitive cell in lef, gds, and const file");
     assert(0);
     }
   else
@@ -24,7 +27,7 @@ void GuardRing::Pcell_info(const map<string, PnRDB::lefMacro>& lefData){
 
 //read from hierarchy node and set wrapped cell lower left & upper right coordinate and width & height
 void GuardRing::Wcell_info(PnRDB::hierNode &node){
-  std::cout<<"step2.0"<<std::endl;
+  //std::cout<<"step2.0"<<std::endl;
   wcell_ll.x = 0;
   wcell_ll.y = 0;
   wcell_ur.x = node.width; //store wrapped cell upper right coordinate as (0 + wrapped cell width, 0 + wrapped cell height)
@@ -35,7 +38,7 @@ void GuardRing::Wcell_info(PnRDB::hierNode &node){
 
 //read drc info to obtain minimal space requirement
 void GuardRing::DRC_Read(const PnRDB::Drc_info& drc_info){
-  std::cout<<"step3.0"<<std::endl;
+  //std::cout<<"step3.0"<<std::endl;
   minimal.width = drc_info.Guardring_info.xspace; //this is the minimal space between feol layer of guard ring primitive cell to wrapped cell
   minimal.height = drc_info.Guardring_info.yspace;
   minimal.width = minimal.width + minimal_PC.width; //this is the minimal space between metal layer of guard ring primitive cell to wrapped cell
@@ -44,20 +47,22 @@ void GuardRing::DRC_Read(const PnRDB::Drc_info& drc_info){
 
 //main function
 GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& lefData, const PnRDB::Drc_info& drc_info){
-  
+
+  auto logger = spdlog::default_logger()->clone("guard_ring.GuardRing.GuardRing");
+
   Pcell_info(lefData); //read guard ring primitive cell information from lef file
   Wcell_info(node); //read wrapped cell information from node
   DRC_Read(drc_info); //read minimal space requirement from drc database
 
   //Print wcell & pcell info
-  std::cout << "wcell_ll[x,y] = " << wcell_ll.x << "," << wcell_ll.y << std::endl;
-  std::cout << "wcell_ur[x,y] = " << wcell_ur.x << "," << wcell_ur.y << std::endl;
-  std::cout << "wcell_width = " << node.width << std::endl;
-  std::cout << "wcell_height = " << node.height << std::endl;
-  std::cout << "pcell_metal width = " << pcell_metal_size.width << " pcell_metal height = " << pcell_metal_size.height << std::endl;
-  std::cout << "pcell width = " << pcell_size.width << " pcell height = " << pcell_size.height << std::endl;
-  std::cout << "offset width = " << offset.width << " offset height = " << offset.height << std::endl;
-  std::cout << "minimal x = " << minimal.width << " minimal y = " << minimal.height << std::endl;
+  logger->debug( "wcell_ll[x,y] = {0}, {1}" , wcell_ll.x ,wcell_ll.y );
+  logger->debug( "wcell_ur[x,y] = {0}, {1}" , wcell_ur.x , wcell_ur.y );
+  logger->debug( "wcell_width = {0}" , node.width);
+  logger->debug("wcell_height = {0} " , node.height);
+  logger->debug( "pcell_metal width = {0} , pcell_metal height = {1}" ,pcell_metal_size.width , pcell_metal_size.height);
+  logger->debug( "pcell width = {0}, pcell height = {1}" ,pcell_size.width , pcell_size.height );
+  logger->debug( "offset width = {0}, offset height = {1}" , offset.width , offset.height);
+  logger->debug( "minimal x = {0}, minimal y = {1}" , minimal.width , minimal.height);
 
   //calculate cell number
   int x_number, y_number;
@@ -115,7 +120,7 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
   //if the guard ring primitive cells are not set aligned, error info will be printed
   if(northwest.x != southwest.x)
   {
-    std::cout << "Error: misaligned!!!\n";
+     logger->error( "Error: misaligned!!!");
   }
   
   //calculate shift distance
@@ -155,10 +160,10 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
   }
 
   //Print stored guard ring primitive cells coordinates(lower left & upper right)
-  std::cout << "\nThe stored points are:\n"; 
+  logger->debug( "The stored points are:"); 
   for (int i_print = 0; i_print < stored_point_ll.size(); i_print++)
   {
-    std::cout << "lower left: " << stored_point_ll[i_print].x << "," << stored_point_ll[i_print].y << " " << "upper right: " << stored_point_ur[i_print].x << "," << stored_point_ur[i_print].y <<std::endl;
+    logger->debug("lower left: {0}, {1} upper right: {2}, {3}" , stored_point_ll[i_print].x , stored_point_ll[i_print].y , stored_point_ur[i_print].x , stored_point_ur[i_print].y );
   }
 
   //update wrapped cell lower left & upper right information
@@ -407,8 +412,11 @@ void GuardRing::movevecblockcomplex(std::vector<PnRDB::blockComplex> &vecbc){
 
 
 void GuardRing::gnuplot(){
+
+  auto logger = spdlog::default_logger()->clone("guard_ring.GuardRing.gnuplot");
+
   //Plot GuardRing Place
-  std::cout<<"Placer-Router-GuardRing-Info: create gnuplot file"<<std::endl;
+  logger->debug("Placer-Router-GuardRing-Info: create gnuplot file");
   std::ofstream fout;
   fout.open("guardringplot");
 

@@ -24,6 +24,7 @@ $SUDO apt-get update && $SUDO apt-get install -yq \
     python3 \
     python3-pip \
     python3-venv \
+    python3-dev \
     g++\
     cmake \
     libboost-container-dev \
@@ -31,10 +32,11 @@ $SUDO apt-get update && $SUDO apt-get install -yq \
     gnuplot \
     curl \
     xvfb \
+    gfortran \
 &&  $SUDO apt-get clean
 
 #### Install klayout 
-curl -o ./klayout_0.26.3-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-18/klayout_0.26.3-1_amd64.deb
+curl -k -o ./klayout_0.26.3-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-18/klayout_0.26.3-1_amd64.deb
 $SUDO apt-get install -yq ./klayout_0.26.3-1_amd64.deb
 rm ./klayout_0.26.3-1_amd64.deb
 #** WSL users would need to install Xming for the display to work
@@ -56,9 +58,16 @@ cd googletest/
 
 cmake CMakeLists.txt
 make
+cmake -DBUILD_SHARED_LIBS=ON CMakeLists.txt
+make
 mkdir googletest/mybuild
 cp -r lib googletest/mybuild/.
 
+#### Install logger
+cd $ALIGN_HOME
+git clone https://github.com/gabime/spdlog.git
+cd spdlog && mkdir build && cd build
+cmake .. && make -j
 ### Install superLU // this now is not correct
 #version 1
 cd $ALIGN_HOME
@@ -70,7 +79,7 @@ cd SuperLU_5.2.1/
 mkdir build
 cd build
 cmake ..
-make
+make -j8
 
 
 ## Set prerequisite paths
@@ -79,6 +88,7 @@ export LP_DIR=$ALIGN_HOME/lpsolve
 #export BOOST_LP=$ALIGN_HOME/boost
 export JSON=$ALIGN_HOME/json
 export GTEST_DIR=$ALIGN_HOME/googletest/googletest/
+export SPDLOG_DIR=$ALIGN_HOME/spdlog
 export SuperLu_DIR=$ALIGN_HOME/superlu
 export VENV=$ALIGN_HOME/general
 
@@ -90,12 +100,15 @@ cd $ALIGN_HOME
 python3 -m venv $VENV
 source $VENV/bin/activate
 pip install --upgrade pip
+pip install pytest pytest-cov pytest-timeout coverage-badge
 pip install -e .
-deactivate
 
 ## Install ALIGN_PnR
-export LD_LIBRARY_PATH=$ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/
-cd $ALIGN_HOME/PlaceRouteHierFlow/ && make
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}$ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/:$GTEST_DIR/mybuild/lib/
+
+export PYTHONPATH=${PYTHONPATH:+$PYTHONPATH:}$ALIGN_HOME/PlaceRouteHierFlow/
+
+cd $ALIGN_HOME/PlaceRouteHierFlow/ && make -j8
 cd $ALIGN_HOME
 
 ## Run first example

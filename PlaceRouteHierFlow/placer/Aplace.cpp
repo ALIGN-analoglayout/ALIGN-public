@@ -1,28 +1,38 @@
 #include "Aplace.h"
+#include "spdlog/spdlog.h"
 
 double Aplace::CalculateObjective(design& caseNL, boost_vector& x_k, double lamda_wl, double lamda_sym, double lamda_bnd, double lamda_ovl) {
+
+  auto logger = spdlog::default_logger()->clone("placer.Aplace.CalculateObjective");
+
   double sum=0;
   double wl=CalculateWireLength(caseNL, x_k);
   double sym=CalculateSymmetryViolation(caseNL, x_k);
   double bnd=CalculateBoundaryViolation(caseNL, x_k);
   double ovl=CalculateOverlap(caseNL, x_k);
   sum+=(lamda_wl*wl+lamda_sym*sym+lamda_bnd*bnd+lamda_ovl*ovl);
-  std::cout<<"sum: "<<sum<<" wl: "<<wl<<" sym: "<<sym<<" bnd: "<<bnd<<" ovl: "<<ovl<<std::endl;
+  logger->debug("sum {0} wl {1} sym {2} bnd {3} ovl {4}",sum,wl,sym,bnd,ovl);
   return sum;
 }
 
 double Aplace::CalculateObjectiveSmooth(design& caseNL, boost_vector& x_k,double lamda_wl, double lamda_sym, double lamda_bnd, double lamda_ovl, double alpha_wl, double alpha_ola, double alpha_olb, double alpha_bnd) {
+
+  auto logger = spdlog::default_logger()->clone("placer.Aplace.CalculateObjectiveSmooth");
+
   double sum=0;
   double wl=CalculateWireLengthSmooth(caseNL, x_k, alpha_wl);
   double sym=CalculateSymmetryViolation(caseNL, x_k);
   double bnd=CalculateBoundaryViolationSmooth(caseNL, x_k, alpha_bnd);
   double ovl=CalculateOverlapSmooth(caseNL, x_k, alpha_ola, alpha_olb);
   sum+=(lamda_wl*wl+lamda_sym*sym+lamda_bnd*bnd+lamda_ovl*ovl);
-  std::cout<<"  II sum: "<<sum<<" wl: "<<wl<<" sym: "<<sym<<" bnd: "<<bnd<<" ovl: "<<ovl<<std::endl;
+  logger->debug("II sum {0} wl {1} sym {2} bnd {3} ovl {4}",sum,wl,sym,bnd,ovl);
   return sum;
 }
 
 void Aplace::ConjugateGrident(design& caseNL, string opath) {
+
+  auto logger = spdlog::default_logger()->clone("placer.Aplace.ConjugateGrident");
+
   int vec_len=B_len*2+VSG_len+HSG_len;
   boost_vector G_j(vec_len);
   boost_vector G_k(vec_len);
@@ -51,9 +61,9 @@ void Aplace::ConjugateGrident(design& caseNL, string opath) {
   for(int i=0;i<this->HSG_len;++i) { // horizontal symmetry group
     x_j(2*this->B_len+VSG_len+i)=this->SGroups.at(this->HSG.at(i)).axis_coor;
   }
-  std::cout<<"G_j "<<G_j<<std::endl;
-  std::cout<<"x_j "<<x_j<<std::endl;
-  std::cout<<"D_j "<<D_j<<std::endl;
+  //logger->debug("G_j {0}",G_j);
+  //logger->debug("x_j {0}",x_j);
+  //logger->debug("D_j {0}",D_j);
   PlotPlacement(caseNL, x_j, opath+name+"_AP_init.plt");
 // 2. initialize gk and dk
   do {
@@ -70,7 +80,7 @@ void Aplace::ConjugateGrident(design& caseNL, string opath) {
     if(count==0) { 
       beta=0;
       f_j=CalculateObjectiveSmooth(caseNL, x_j, lamda_wl, lamda_sym, lamda_bnd, lamda_ovl, alpha_wl, alpha_ola, alpha_olb, alpha_bnd);
-      std::cout<<"Placer-Info: initial cost "<<f_j<<std::endl;
+      logger->debug("Placer-Info: initial cost {0}",f_j);
     } else {
       beta=boost::numeric::ublas::inner_prod(boost::numeric::ublas::trans(G_k), G_k-G_j)/boost::numeric::ublas::norm_2(G_j);
     }
@@ -88,15 +98,14 @@ void Aplace::ConjugateGrident(design& caseNL, string opath) {
     //f_k=CalculateObjective(caseNL, x_k, lamda_wl, lamda_sym, lamda_bnd, lamda_ovl);
     f_k=CalculateObjectiveSmooth(caseNL, x_k, lamda_wl, lamda_sym, lamda_bnd, lamda_ovl, alpha_wl, alpha_ola, alpha_olb, alpha_bnd);
     //std::cout<<"@SUM "<<f_k<<std::endl;
-    if( std::abs(f_k - f_j)<eps ) {std::cout<<"Placer-Info: optimal solution found"<<std::endl;break;}
+    if( std::abs(f_k - f_j)<eps ) {logger->debug("Placer-Info: optimal solution found");break;}
     count++;
     f_j=f_k;
     G_j=G_k;
     x_j=x_k;
     D_j=D_k;
   } while(count<=MAX_COUNT);
-
-  std::cout<<"Final x_k "<<x_k<<std::endl;
+  //logger->debug("Final x_k {0}",x_k);
   PlotPlacement(caseNL, x_k, opath+name+"_AP.plt");
   for(int i=0;i<this->B_len;++i) {
     this->ABlocks.at(i).center.x=x_k(i*2); // x
@@ -112,7 +121,10 @@ void Aplace::ConjugateGrident(design& caseNL, string opath) {
 
 
 void Aplace::PlotPlacement(design& caseNL, boost_vector& x_k, string outfile) {
-  cout<<"Placer-Info: create gnuplot file"<<endl;
+
+  auto logger = spdlog::default_logger()->clone("placer.Aplace.PlotPlacement");
+
+  logger->debug("Placer-Info: create gnuplot file");
   int Xmax=this->width;
   int Ymax=this->height;
   placerDB::point p, bp;
@@ -685,14 +697,20 @@ Aplace::Aplace(PnRDB::hierNode& node, design& caseNL, string opath) {
 }
 
 void Aplace::PrintABlocks() {
+
+  auto logger = spdlog::default_logger()->clone("placer.Aplace.PrintABlocks");
+
   for(int i=0;i<(int)this->ABlocks.size();++i) {
-    std::cout<<"Block "<<i<<" C:{"<<this->ABlocks.at(i).center.x<<" , "<<this->ABlocks.at(i).center.y<<" } O: "<<this->ABlocks.at(i).orient<<std::endl;
+    logger->debug("Blcok {0} C {1} O {2}",this->ABlocks.at(i).center.x,this->ABlocks.at(i).center.y,this->ABlocks.at(i).orient);
   }
 }
 
 void Aplace::PrintSGroups() {
+
+  auto logger = spdlog::default_logger()->clone("placer.Aplace.PrintSGroups");
+
   for(int i=0;i<(int)this->SGroups.size();++i) {
-    std::cout<<"SGroup "<<i<<" dir "<<this->SGroups.at(i).axis_dir<<" coor "<<SGroups.at(i).axis_coor<<std::endl;
+    logger->debug("SGroup {0} dir {1} coor {2}",i,this->SGroups.at(i).axis_dir,SGroups.at(i).axis_coor);
   }
 } 
 

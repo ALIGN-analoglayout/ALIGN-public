@@ -14,9 +14,9 @@
     "test": "src/views/__tests__/*.spec.js"
   },
   "dependencies": {
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "bootstrap": "^4.3.1",
-    "gsap": "^2.0.2",
+    "gsap": "^3.6.0",
     "jest-junit": "^6.3.0",
     "vue": "^2.5.17",
     "vue-router": "^3.0.1",

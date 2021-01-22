@@ -13,3 +13,19 @@ def configure_logging():
         for x in logging.getLogger().handlers:
             if isinstance(x, logging.handlers.RotatingFileHandler):
                 x.doRollover()
+
+class StreamLogger(object):
+    """
+    Stream object that redirects writes to logger
+    """
+    def __init__(self, name, level='INFO'):
+        self.logger = logging.getLogger(name)
+        self.level = getattr(logging, level)
+        self.linebuf = ''
+
+    def write(self, buf):
+        for line in buf.rstrip().splitlines():
+                self.logger.log(self.level, line.rstrip())
+
+    def flush(self):
+        pass

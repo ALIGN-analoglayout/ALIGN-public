@@ -8,17 +8,22 @@
 #include "PnRdatabase.h"
 
 static double parse_and_scale(const std::string& s, double unitScale) {
+  auto logger = spdlog::default_logger()->clone("PnRDB.parse_and_scale");
+
   double scaled = stod(s) * unitScale;
   double result = round(scaled);
   if (fabs(scaled - result) > 0.001) {
-    std::cout << "ERROR: parse_and_scale " << s << " " << unitScale << " Rounded result differs too much from unrounded result (" << result
-              << "," << scaled << ")" << std::endl;
+    logger->error( "ERROR: parse_and_scale {0} {1} Rounded result differs too much from unrounded result ( {2} {3} )" , s , unitScale , result
+              , scaled );
   }
   return result;
 }
 
 bool PnRdatabase::ReadLEF(string leffile) {
-  cout << "PnRDB-Info: reading LEF file " << leffile << endl;
+
+  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.ReadLEF");
+
+  logger->info( "PnRDB-Info: reading LEF file {0}" , leffile);
   ifstream fin;
   string def;
   size_t found;
@@ -45,7 +50,7 @@ bool PnRdatabase::ReadLEF(string leffile) {
       // cout<<def<<endl;
       // [wbxu] This function needs to be updated to support internal metals, currently we're lack of data
       if (stage == 0) {  // idle mode
-        cout << "stage0.def: " << def << std::endl;
+        logger->debug( "stage0.def: {0}" , def );
         if ((found = def.find("MACRO")) != string::npos) {
           temp = get_true_word(found, def, 0, ';', p);
           macroName = temp[1];
@@ -101,7 +106,7 @@ bool PnRdatabase::ReadLEF(string leffile) {
           stage = 0;
         }
       } else if (stage == 4) {  // within OBS
-        std::cout << "stage4.Def: " << def << std::endl;
+         logger->debug("stage4.Def: {0}", def);
         if ((found = def.find("LAYER")) != string::npos) {
           skip_the_rest_of_stage_4 = false;
           temp = get_true_word(found, def, 0, ';', p);
@@ -111,7 +116,8 @@ bool PnRdatabase::ReadLEF(string leffile) {
           } else if (temp[1].front() == 'V' && temp[1].back()!='0') {
             interVias.resize(interVias.size() + 1);
             interVias.back().model_index = DRC_info.Viamap[temp[1]];
-          }else {
+            interVias.back().ViaRect.metal = temp[1];
+          } else {
             skip_the_rest_of_stage_4 = true;
           }
         } else if ((found = def.find("RECT")) != string::npos) {
@@ -143,6 +149,7 @@ bool PnRdatabase::ReadLEF(string leffile) {
               interVias.back().ViaRect.originCenter = center;
               interVias.back().ViaRect.originBox.LL = via_model.ViaRect[0] + center;
               interVias.back().ViaRect.originBox.UR = via_model.ViaRect[1] + center;
+              interVias.back().ViaRect.metal = via_model.name;
               interVias.back().LowerMetalRect.originCenter = center;
               interVias.back().LowerMetalRect.originBox.LL = via_model.LowerRect[0] + center;
               interVias.back().LowerMetalRect.originBox.UR = via_model.LowerRect[1] + center;
@@ -210,7 +217,7 @@ bool PnRdatabase::ReadLEF(string leffile) {
         } else if ((found = def.find(portEnd)) != string::npos) {
           // cout<<"Stage "<<stage<<" @ port end "<<portEnd<<endl;
           if (macroPins.back().pinContacts.size() == 0 or macroPins.back().pinContacts.back().metal == "") {
-            std::cout << "Error: LEF Physical Pin information Missing" << std::endl;
+            logger->error("Error: LEF Physical Pin information Missing" );
             assert(0);
           }
           stage = 2;
@@ -220,7 +227,7 @@ bool PnRdatabase::ReadLEF(string leffile) {
     fin.close();
     return true;
   } catch (ifstream::failure& e) {
-    cerr << "PnRDB-Error: fail to read LEF file " << endl;
+    logger->error("PnRDB-Error: fail to read LEF file ");
   }
   return false;
 }
