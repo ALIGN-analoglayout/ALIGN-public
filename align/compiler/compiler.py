@@ -4,7 +4,7 @@ import json
 
 from .util import _write_circuit_graph, max_connectivity
 from .read_netlist import SpiceParser
-from .preprocess import define_SD, preprocess_stack_parallel
+from .preprocess import define_SD, preprocess_stack_parallel, remove_pg_pins
 from .match_graph import read_inputs, read_setup,_mapped_graph_list,check_nodes,reduce_graph
 from .write_verilog_lef import WriteVerilog, print_globals,print_header,generate_lef
 from .common_centroid_cap_constraint import WriteCap, check_common_centroid
@@ -64,6 +64,10 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
     logger.info(f"all library elements: {[ele['name'] for ele in library]}")
     if len(design_setup['DONT_USE_CELLS'])>0:
         library=[lib_ele for lib_ele in library if lib_ele['name'] not in design_setup['DONT_USE_CELLS']]
+    #read lef to not write those modules as macros
+    lef_path = pathlib.Path(__file__).resolve().parent.parent / 'config'
+    all_lef = read_lef(lef_path)
+    logger.debug(f"Available library cells: {', '.join(all_lef)}")
 
     if Debug==True:
         _write_circuit_graph(circuit["name"], circuit["graph"],
@@ -73,9 +77,15 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
                                          "./circuit_graphs/")
     hier_graph_dict=read_inputs(circuit["name"],circuit["graph"])
 
+    #remove pg_pins requirement by pnr
+    logger.info("Modifying pg pins in design for PnR")
+    pg_pins = design_setup['POWER']+design_setup['GND']
+    remove_pg_pins(hier_graph_dict,design_name, pg_pins)
+
+    logger.debug("START preprocessing")
     stacked_subcircuit=[]
     for circuit_name, circuit in hier_graph_dict.items():
-        logger.debug(f"START preprocessing")
+        logger.debug(f"preprocessing circuit name: {circuit_name}")
         G1 = circuit["graph"]
         if circuit_name not in design_setup['DIGITAL']:
             define_SD(G1,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
@@ -101,7 +111,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
         else:
             mapped_graph_list = _mapped_graph_list(G1, library, design_setup['POWER']+design_setup['GND']  ,design_setup['CLOCK'], False )
         # reduce graph converts input hierarhical graph to dictionary
-        updated_circuit, Grest = reduce_graph(G1, mapped_graph_list,library,check_duplicates,design_setup)
+        updated_circuit, Grest = reduce_graph(G1, mapped_graph_list,library,check_duplicates,design_setup,all_lef)
         check_nodes(updated_circuit)
         updated_ckt_list.extend(updated_circuit)
 
@@ -119,9 +129,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
             "graph": Grest,
             "ports": circuit["ports"],
             "ports_weight": circuit["ports_weight"],
-            "ports_match": circuit["connection"],
-            "size": len(Grest.nodes()),
-            "mos_body":circuit["mos_body"]
+            "size": len(Grest.nodes())
         })
 
         lib_names=[lib_ele['name'] for lib_ele in library]
@@ -185,8 +193,8 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
 
     #read lef to not write those modules as macros
     lef_path = pathlib.Path(__file__).resolve().parent.parent / 'config'
-    ALL_LEF = read_lef(lef_path)
-    logger.debug(f"Available library cells: {', '.join(ALL_LEF)}")
+    all_lef = read_lef(lef_path)
+    logger.debug(f"Available library cells: {', '.join(all_lef)}")
     # local hack for deisgn vco_dtype,
     #there requirement is different size for nmos and pmos
     generated_module=[]
@@ -215,15 +223,8 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             #Dropping floating ports
 
             lef_name = attr['inst_type']
-            #considerign instance of body and without body same in case we have generator for non body pin instances
-            if lef_name.split('_')[-1]=='B' and  lef_name[0:-2] in ALL_LEF:
-                if 'inst_copy' in attr:
-                    ALL_LEF.append(lef_name + attr['inst_copy'])
-                else:
-                    ALL_LEF.append(lef_name)
-                lef_name = lef_name[0:-2]
 
-            if "values" in attr and (lef_name in ALL_LEF):
+            if "values" in attr and (lef_name in all_lef):
                 block_name, block_args = generate_lef(
                     lef_name, attr,
                     primitives, design_config, uniform_height)
@@ -235,7 +236,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
                         if member["name"] == lef_name + attr['inst_copy']:
                             member["name"] = block_name
                     graph.nodes[node]["inst_type"]=block_name
-                    ALL_LEF.append(block_name)
+                    all_lef.append(block_name)
 
 
                 # Only unit caps are generated
@@ -252,7 +253,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
                     primitives[block_name] = block_args
             elif "values" in attr and 'inst_copy' in attr:
                 member["graph"].nodes[node]["inst_type"]= lef_name+attr["inst_copy"]
-                ALL_LEF.append(block_name)
+                all_lef.append(block_name)
 
             else:
                 logger.info(f"No physical information found for: {name}")
@@ -268,24 +269,21 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             duplicate_modules.append(name)
         logger.debug(f"Found module: {name} {graph.nodes()}")
         inoutpin = []
-        logger.debug(f'found ports match: {member["ports_match"]}')
         floating_ports=[]
-        if member["ports_match"]:
+        if "ports_match" in member and member["ports_match"]:
             for key in member["ports_match"].keys():
                 if key not in POWER_PINS:
                     inoutpin.append(key)
             if member["ports"]:
                 logger.debug(f'Found module ports: {member["ports"]} {member.keys()}')
                 floating_ports = set(inoutpin) - set(member["ports"]) - set(design_setup['POWER']) -set(design_setup['GND'])
-                if 'mos_body' in member:
-                    floating_ports = floating_ports - set(member["mos_body"])
 
                 if len(list(floating_ports))> 0:
                     logger.error(f"floating ports found: {name} {floating_ports}")
                     raise SystemExit('Please remove floating ports')
         else:
             inoutpin = member["ports"]
-        if name not in  ALL_LEF:
+        if name not in  all_lef:
             logger.debug(f"call verilog writer for block: {name}")
             wv = WriteVerilog(graph, name, inoutpin, updated_ckt_list, POWER_PINS)
             all_array={}
@@ -293,11 +291,12 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             const_file = CopyConstFile(name, input_dir, result_dir)
             logger.debug(f"cap constraint gen for block: {name}")
 
-            ##Removinf constraints to fix cascoded cmc
+            ##Removing constraints to fix cascoded cmc
             if name not in design_setup['DIGITAL'] and name not in lib_names:
                 logger.debug(f"call constraint generator writer for block: {name}")
                 stop_points=design_setup['POWER']+design_setup['GND']+design_setup['CLOCK']
-                WriteConst(graph, result_dir, name, inoutpin, member["ports_weight"],all_array, stop_points)
+                if name not in design_setup['NO_CONST']:
+                    WriteConst(graph, result_dir, name, inoutpin, member["ports_weight"],all_array, stop_points)
                 WriteCap(graph, result_dir, name, design_config["unit_size_cap"],all_array)
                 check_common_centroid(graph,const_file,inoutpin)
 
@@ -310,6 +309,6 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
     logger.info("Topology identification done !!!")
     logger.info(f"OUTPUT verilog netlist at: {result_dir}/{design_name}.v")
     #logger.info(f"OUTPUT spice netlist at: {result_dir}/{design_name}_blocks.sp")
-    logger.info(f"OUTPUT const file at: {result_dir}/{design_name}.const")
+    logger.info(f"OUTPUT const file at: {result_dir}/{design_name}.const.json")
     print("compilation stage done")
     return primitives

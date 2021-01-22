@@ -10,10 +10,10 @@ def test_sizing():
     assert 'intel_circuit' in all_subckt_list
     pdk_path = mydir.parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK' 
     primitives = compiler_output(test_path, library, updated_ckt, 'sizing', pathlib.Path(__file__).parent / 'Results', pdk_path )
-    assert 'Switch_PMOS_nfin6_m4_n12_X2_Y1_ST2_HVT' in primitives.keys()
-    assert primitives['Switch_PMOS_nfin6_m4_n12_X2_Y1_ST2_HVT']['stack']==2
-    assert primitives['Switch_PMOS_nfin6_m4_n12_X2_Y1_ST2_HVT']['vt_type']=='HVT'
-    assert primitives['Switch_PMOS_nfin6_m4_n12_X2_Y1_ST2_HVT']['parameters']['m']==4
+    assert 'Switch_PMOS_B_nfin6_m4_n12_X2_Y1_ST2_HVT' in primitives.keys()
+    assert primitives['Switch_PMOS_B_nfin6_m4_n12_X2_Y1_ST2_HVT']['stack']==2
+    assert primitives['Switch_PMOS_B_nfin6_m4_n12_X2_Y1_ST2_HVT']['vt_type']=='HVT'
+    assert primitives['Switch_PMOS_B_nfin6_m4_n12_X2_Y1_ST2_HVT']['parameters']['m']==4
 
 def test_sizing1():
     mydir = pathlib.Path(__file__).resolve()
@@ -23,8 +23,9 @@ def test_sizing1():
     assert 'intel_circuit1' in all_subckt_list
     pdk_path = mydir.parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK' 
     primitives = compiler_output(test_path, library, updated_ckt, 'sizing', pathlib.Path(__file__).parent / 'Results', pdk_path )
-    assert primitives['DCL_PMOS_nfin6_m4_n12_X2_Y1_ST6_HVT']['stack']==6
-    assert primitives['DCL_PMOS_nfin6_m4_n12_X2_Y1_ST6_HVT']['vt_type']=='HVT'
+    assert 'DCL_PMOS_B_nfin6_m4_n12_X2_Y1_ST6_HVT' in primitives.keys()
+    assert primitives['DCL_PMOS_B_nfin6_m4_n12_X2_Y1_ST6_HVT']['stack']==6
+    assert primitives['DCL_PMOS_B_nfin6_m4_n12_X2_Y1_ST6_HVT']['vt_type']=='HVT'
 
 def test_sizing2():
     mydir = pathlib.Path(__file__).resolve()
@@ -36,9 +37,9 @@ def test_sizing2():
     assert 'intel_circuit2' in all_subckt_list
     pdk_path = mydir.parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK' 
     primitives = compiler_output(test_path, library, updated_ckt, 'sizing', pathlib.Path(__file__).parent / 'Results', pdk_path )
-    assert 'Switch_PMOS_nfin4_nf1_m4_n12_X2_Y1_ST3' in primitives.keys()
-    assert primitives['Switch_PMOS_nfin4_nf1_m4_n12_X2_Y1_ST3']['stack']==3
-    assert primitives['Switch_PMOS_nfin6_nf4_m3_n12_X3_Y2_LVT']['vt_type']=='LVT'
+    assert 'Switch_PMOS_B_nfin4_nf1_m4_n12_X2_Y1_ST3' in primitives.keys()
+    assert primitives['Switch_PMOS_B_nfin4_nf1_m4_n12_X2_Y1_ST3']['stack']==3
+    assert primitives['Switch_PMOS_B_nfin6_nf4_m3_n12_X3_Y2_LVT']['vt_type']=='LVT'
 
 def test_sizing3():
     mydir = pathlib.Path(__file__).resolve()
@@ -49,10 +50,10 @@ def test_sizing3():
     assert 'intel_circuit3' in all_subckt_list
     pdk_path = mydir.parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK' 
     primitives = compiler_output(test_path, library, updated_ckt, 'sizing', pathlib.Path(__file__).parent / 'Results', pdk_path )
-    assert  len(primitives) ==6
-    assert 'Switch_PMOS_nfin4_nf1_m4_n12_X2_Y1_ST3' in primitives.keys()
-    assert primitives['Switch_PMOS_nfin4_nf1_m4_n12_X2_Y1_ST3']['stack']==3
-    assert primitives['Switch_PMOS_nfin6_nf4_m3_n12_X3_Y2_LVT']['vt_type']=='LVT'
+    assert  len(primitives) == 5
+    assert 'Switch_PMOS_B_nfin4_nf1_m4_n12_X2_Y1_ST3' in primitives.keys()
+    assert primitives['Switch_PMOS_B_nfin4_nf1_m4_n12_X2_Y1_ST3']['stack']==3
+    assert primitives['Switch_PMOS_B_nfin6_nf4_m3_n12_X3_Y2_LVT']['vt_type']=='LVT'
 
 def test_sizing4():
     mydir = pathlib.Path(__file__).resolve()
@@ -65,4 +66,4 @@ def test_sizing4():
     assert 'intel_circuit4' in all_subckt_list
     pdk_path = mydir.parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK' 
     primitives = compiler_output(test_path, library, updated_ckt, 'sizing', pathlib.Path(__file__).parent / 'Results', pdk_path )
-    assert  len(primitives) ==9
+    assert  len(primitives) == 7

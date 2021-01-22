@@ -365,10 +365,6 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_poin
             json_const["constraints"].append(symmBlock)
             logger.debug(f"one axis of written symmetries: {symmBlock}")
     if json_const:
-        const_fp = open(const_file, 'a+')
-        const_fp.write("// ALIGN generated automatic constraints")
-        const_fp.write(written_symmetries)
-        const_fp.close()
         with open(json_const_file, 'w') as outfile:
             json.dump(json_const, outfile, indent=4)
 

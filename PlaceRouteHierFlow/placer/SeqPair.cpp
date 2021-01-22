@@ -748,7 +748,7 @@ bool SeqPair::ChangeSelectedBlock(design& caseNL) {
       anode=rand() % caseNL.GetSizeofBlocks();
     } // randomly choose a block
   }
-  if(caseNL.Blocks.at(anode).size()<=1) {return false;}
+  if(caseNL.Blocks.at(anode).size()<=1) {std::cout<<"anode size < 1"<<std::endl;return false;}
   int newsel=rand() % caseNL.Blocks.at(anode).size();
   selected.at(anode)=newsel;
   if(caseNL.GetBlockCounterpart(anode)!=-1) { selected.at( caseNL.GetBlockCounterpart(anode) )=newsel;}
@@ -834,10 +834,13 @@ void SeqPair::PerturbationNew(design& caseNL) {
   // 9:RotateSymmetryGroup
   if(caseNL.GetSizeofBlocks()<=1) {return;}
   if(caseNL.noBlock4Move>0) {pool.insert(0);}
-  if(caseNL.noAsymBlock4Move>0) { pool.insert(1); pool.insert(2); pool.insert(3);} // pool.insert(4);}
-  if(caseNL.noSymGroup4PartMove>0) {pool.insert(5); pool.insert(7); pool.insert(8);} // pool.insert(9);}
+  if(caseNL.noAsymBlock4Move>0) { pool.insert(1); pool.insert(2); pool.insert(3);} //pool.insert(4);}
+  if(caseNL.noSymGroup4PartMove>0) {pool.insert(5); pool.insert(8); } //pool.insert(7);} // pool.insert(9);}
   if(caseNL.noSymGroup4FullMove>1) {pool.insert(6);}
-  while(!mark) {
+  int fail = 0;
+  int count = 20;
+  while(!mark and fail<count) {
+    //std::cout<<int(pool.size())<<std::endl;
     int choice=rand() % int(pool.size());
     std::set<int>::iterator cit=pool.begin(); std::advance(cit, choice);
     switch(*cit) {
@@ -853,6 +856,7 @@ void SeqPair::PerturbationNew(design& caseNL) {
         //case 9: mark=RotateSymmetryGroup(caseNL); break;
         default: mark=false;
     }
+    fail++;
   }
   KeepOrdering(caseNL);
 }
@@ -1047,7 +1051,7 @@ bool SeqPair::SwapTwoBlocksofSameGroup(design& caseNL) {
   //cout<<"sgid "<<sgid<<endl;
   vector<int> blist=caseNL.GetRealBlockListfromSymmGroup(sgid); // all real blocks in symmetry group cosidering mixFlag
   //cout<<"blist size: "<<blist.size()<<endl;
-  if(blist.empty() or (int)blist.size()==1) {return false;}
+  if(blist.empty() or (int)blist.size()==1) {std::cout<<"empty or 1"<<std::endl;return false;}
   if((int)blist.size()==2 and blist.at(0)==caseNL.GetBlockCounterpart(blist.at(1))) {return false;}
   int A=blist.at( rand() % (int)blist.size() );
   //while(A>=(int)caseNL.GetSizeofBlocks()) {
@@ -1088,7 +1092,7 @@ bool SeqPair::SwapMultiBlocksofSameGroup(design& caseNL) {
   //cout<<"sgid "<<sgid<<endl;
   vector<int> blist=caseNL.GetRealBlockListfromSymmGroup(sgid); // all real blocks in symmetry group considering mixFlag
   //cout<<"blist size: "<<blist.size()<<endl;
-  if(blist.empty() or (int)blist.size()==1) {return false;}
+  if(blist.empty() or (int)blist.size()==1) {std::cout<<"empty or 2"<<std::endl;return false;}
   if((int)blist.size()==2 and blist.at(0)==caseNL.GetBlockCounterpart(blist.at(1))) {return false;}
   for(int i=0;i<count;++i) {
     int A=blist.at( rand() % (int)blist.size() );
