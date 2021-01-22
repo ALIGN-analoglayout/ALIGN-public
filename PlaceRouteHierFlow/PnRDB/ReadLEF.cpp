@@ -116,7 +116,8 @@ bool PnRdatabase::ReadLEF(string leffile) {
           } else if (temp[1].front() == 'V' && temp[1].back()!='0') {
             interVias.resize(interVias.size() + 1);
             interVias.back().model_index = DRC_info.Viamap[temp[1]];
-          }else {
+            interVias.back().ViaRect.metal = temp[1];
+          } else {
             skip_the_rest_of_stage_4 = true;
           }
         } else if ((found = def.find("RECT")) != string::npos) {
@@ -148,6 +149,7 @@ bool PnRdatabase::ReadLEF(string leffile) {
               interVias.back().ViaRect.originCenter = center;
               interVias.back().ViaRect.originBox.LL = via_model.ViaRect[0] + center;
               interVias.back().ViaRect.originBox.UR = via_model.ViaRect[1] + center;
+              interVias.back().ViaRect.metal = via_model.name;
               interVias.back().LowerMetalRect.originCenter = center;
               interVias.back().LowerMetalRect.originBox.LL = via_model.LowerRect[0] + center;
               interVias.back().LowerMetalRect.originBox.UR = via_model.LowerRect[1] + center;
