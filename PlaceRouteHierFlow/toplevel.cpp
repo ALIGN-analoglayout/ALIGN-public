@@ -6,10 +6,12 @@
 #include "./PnRDB/datatype.h"
 #include "./PnRDB/PnRdatabase.h"
 #include "./placer/PlacerIfc.h"
-#include "./router/Router.h"
 #include "./cap_placer/CapPlacerIfc.h"
+#include "./guard_ring/GuardRingIfc.h"
+
+// Need to eventuall replace with similar Ifc, but not until we remove the helper functions: route_single_variant and route top_down
 #include "./MNA/MNASimulation.h"
-#include "./guard_ring/GuardRing.h"
+#include "./router/Router.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -21,7 +23,7 @@ using std::string;
 using std::cout;
 using std::endl;
 
-void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_node, int lidx,
+static void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_node, int lidx,
 			const string& opath, const string& tag, const string& ltag, bool skip)
 {
   auto logger = spdlog::default_logger()->clone("save_state");
@@ -44,7 +46,7 @@ void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_node, int
   logger->info("{0}", ltag);
 }
 
-void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::hierNode& current_node, int lidx, const string& opath, const string& binary_directory, bool skip_saving_state, bool adr_mode)
+static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::hierNode& current_node, int lidx, const string& opath, const string& binary_directory, bool skip_saving_state, bool adr_mode)
 {
 
   auto logger = spdlog::default_logger()->clone("route_single_variant");
@@ -225,7 +227,7 @@ void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
 
 }
 
-void route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::bbox bounding_box, PnRDB::Omark current_node_ort,
+static void route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::bbox bounding_box, PnRDB::Omark current_node_ort,
                            int idx, int& new_currentnode_idx, int lidx, const string& opath, const string& binary_directory,
                            bool skip_saving_state, bool adr_mode) {
 
@@ -368,7 +370,7 @@ int toplevel( const std::vector<std::string>& argv) {
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
       if (nodeVec[lidx].Guardring_Consts.size()>0){
       //if (1){
-        GuardRing current_guard_ring(nodeVec[lidx], lefData, drcInfo);
+        GuardRingIfc current_guard_ring(nodeVec[lidx], lefData, drcInfo);
       }
       DB.PrintHierNode(nodeVec[lidx]);
       DB.WriteJSON(nodeVec[lidx], true, false, false, false, nodeVec[lidx].name + "_PL_" + std::to_string(lidx), drcInfo, opath);

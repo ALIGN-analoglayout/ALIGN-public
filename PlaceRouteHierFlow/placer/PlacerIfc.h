@@ -10,7 +10,7 @@ class PlacerIfc {
     PlacerIfc(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo);
     PlacerIfc(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo);
     ~PlacerIfc();
-    Placer* get() { return _ptr;}; 
+    Placer* get() const { return _ptr;}; 
 };
 
 #endif

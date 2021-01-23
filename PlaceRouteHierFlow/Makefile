@@ -13,7 +13,8 @@ GTEST_DIR?=/opt/googletest/googletest
 
 NOPYBIND11?=0
 COVERAGE?=
-OPTS?=-g -O3
+#OPTS?=-g -O3
+OPTS?=-g
 WARNS?=-Wall
 JSON?=/opt/json
 SuperLu_DIR?=/opt/superlu
