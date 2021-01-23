@@ -11,8 +11,8 @@ using namespace pybind11::literals;
 #include <mutex>
 
 #include "PnRDB/PnRdatabase.h"
-//#include "cap_placer/capplacer.h"
-//#include "placer/Placer.h"
+#include "cap_placer/CapPlacerIfc.h"
+#include "placer/PlacerIfc.h"
 #include "toplevel.h"
 
 using namespace PnRDB;
@@ -346,18 +346,17 @@ PYBIND11_MODULE(PnR, m) {
     .def( "CheckinHierNode", &PnRdatabase::CheckinHierNode)
   ;
 
-  /*
-  py::class_<cap_placer::Placer_Router_Cap>( m, "Placer_Router_Cap")
+  py::class_<Placer_Router_Cap_Ifc>( m, "Placer_Router_Cap_Ifc")
     .def( py::init<string, string, hierNode&, Drc_info&, map<string, lefMacro>&, bool, int>());    
 
-  py::class_<Placer>( m, "Placer")
+  py::class_<PlacerIfc>( m, "PlacerIfc")
     .def( py::init<hierNode&, string, int, Drc_info&>())
     .def( py::init<std::vector<hierNode>&, string, int, Drc_info&>());
-  */
 
-  //m.def("save_state", &save_state, "helper function to save_state");
-  //m.def("route_single_variant", &route_single_variant, "helper function to route a single variant");
-  //m.def("route_top_down", &route_top_down, "helper function to perform top-down routing");
+
+  m.def("save_state", &save_state, "helper function to save_state");
+  m.def("route_single_variant", &route_single_variant, "helper function to route a single variant");
+  m.def("route_top_down", &route_top_down, "helper function to perform top-down routing");
 
   m.def("toplevel", [](const std::vector<std::string>& argv) {
     py::scoped_ostream_redirect coutstream(

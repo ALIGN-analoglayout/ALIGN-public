@@ -5,9 +5,9 @@
 #include <iomanip>
 #include "./PnRDB/datatype.h"
 #include "./PnRDB/PnRdatabase.h"
-#include "./placer/Placer.h"
+#include "./placer/PlacerIfc.h"
 #include "./router/Router.h"
-#include "./cap_placer/capplacer.h"
+#include "./cap_placer/CapPlacerIfc.h"
 #include "./MNA/MNASimulation.h"
 #include "./guard_ring/GuardRing.h"
 
@@ -21,15 +21,7 @@ using std::string;
 using std::cout;
 using std::endl;
 
-double ConstGraph::LAMBDA=1000;
-double ConstGraph::GAMAR=30;
-double ConstGraph::BETA=100;
-double ConstGraph::SIGMA=1000;
-double ConstGraph::PHI=1500;
-double ConstGraph::PI=1500;
-double ConstGraph::PII=1500;
-
-static void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_node, int lidx,
+void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_node, int lidx,
 			const string& opath, const string& tag, const string& ltag, bool skip)
 {
   auto logger = spdlog::default_logger()->clone("save_state");
@@ -52,7 +44,7 @@ static void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_no
   logger->info("{0}", ltag);
 }
 
-static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::hierNode& current_node, int lidx, const string& opath, const string& binary_directory, bool skip_saving_state, bool adr_mode)
+void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::hierNode& current_node, int lidx, const string& opath, const string& binary_directory, bool skip_saving_state, bool adr_mode)
 {
 
   auto logger = spdlog::default_logger()->clone("route_single_variant");
@@ -233,7 +225,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
 
 }
 
-void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::bbox bounding_box, PnRDB::Omark current_node_ort,
+void route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::bbox bounding_box, PnRDB::Omark current_node_ort,
                            int idx, int& new_currentnode_idx, int lidx, const string& opath, const string& binary_directory,
                            bool skip_saving_state, bool adr_mode) {
 
@@ -310,9 +302,7 @@ int toplevel( const std::vector<std::string>& argv) {
   // And generates 69MB in files
   bool skip_saving_state = getenv( "PNRDB_SAVE_STATE") == NULL;
   bool adr_mode = getenv( "PNRDB_ADR_MODE") != NULL;
-  bool disable_io = getenv( "PNRDB_disable_io") != NULL;; //turn off window outputs
   bool multi_thread = getenv( "PNRDB_multi_thread") != NULL;;  // run multi layouts in multi threads
-  //bool disable_io = false; //turn off window outputs
   //bool multi_thread = false;  // run multi layouts in multi threads
 
   string opath="./Results/";
@@ -342,41 +332,29 @@ int toplevel( const std::vector<std::string>& argv) {
   map<string, PnRDB::lefMacro> lefData = DB.checkoutSingleLEF();
 
 
+  deque<int> TraverseOrder = DB.TraverseHierTree();  // traverse hierarchical tree in topological order
+
   if ( !skip_saving_state) {
-    deque<int> Q=DB.TraverseHierTree(); // traverse hierarchical tree in topological order
     json jsonStrAry = json::array();
     std::ofstream jsonStream;
     jsonStream.open( opath + "__hierTree.json");
-    while (!Q.empty()) {
-      jsonStrAry.push_back( DB.CheckoutHierNode(Q.front()).name);
-      Q.pop_front();
+    for ( auto ptr = TraverseOrder.begin(); ptr != TraverseOrder.end(); ++ptr) {
+      jsonStrAry.push_back( DB.CheckoutHierNode(*ptr).name);      
     }
     jsonStream << std::setw(4) << jsonStrAry;
     jsonStream.close();
   }
 
-  deque<int> Q = DB.TraverseHierTree();  // traverse hierarchical tree in topological order
-  std::vector<int> TraverseOrder;        // save traverse order, same as Q
-  int Q_size = Q.size();
-  for (int i = 0; i < Q_size; i++) {  // copy Q to TraverseOrder
-    TraverseOrder.push_back(Q.front());
-    Q.pop_front();
-    Q.push_back(TraverseOrder.back());
-  }
-
-  for (int i = 0; i < Q_size;i++)
+  for (unsigned int i = 0; i < TraverseOrder.size(); i++)
   {
     int idx=TraverseOrder[i];
     logger->info("Main-Info: start to work on node {0}",idx);
-    if(disable_io){
-      std::cout.setstate(std::ios_base::failbit);
-    }
     PnRDB::hierNode current_node=DB.CheckoutHierNode(idx);
     DB.PrintHierNode(current_node);
 
     
     DB.AddingPowerPins(current_node);
-    Placer_Router_Cap PRC(opath, fpath, current_node, drcInfo, lefData, 1, 6); //dummy, aspect ratio, number of aspect retio
+    Placer_Router_Cap_Ifc PRC(opath, fpath, current_node, drcInfo, lefData, 1, 6); //dummy, aspect ratio, number of aspect retio
 
     logger->debug("Checkpoint : before place");
     DB.PrintHierNode(current_node);
@@ -384,7 +362,7 @@ int toplevel( const std::vector<std::string>& argv) {
     
     // Placement
     std::vector<PnRDB::hierNode> nodeVec(numLayout, current_node);
-    Placer curr_plc(nodeVec, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
+    PlacerIfc curr_plc(nodeVec, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
     logger->debug("Checkpoint: generated {0} palcements",nodeVec.size());
     //insert guard ring
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
@@ -405,23 +383,18 @@ int toplevel( const std::vector<std::string>& argv) {
       logger->debug("Checkpoint: work on layout {0}",lidx);
     }
     DB.hierTree[idx].numPlacement = nodeVec.size();
-
-
-    //TreeVec[idx] = nodeVec;
-    //Q.pop();
-    if(disable_io)std::cout.clear();
     logger->info("Main-Info: complete node {0}",idx);
   }
 
-  if(disable_io)std::cout.setstate(std::ios_base::failbit);
   int new_topnode_idx = 0;
-  for (unsigned int lidx = 0; lidx < DB.hierTree[Q.back()].numPlacement; lidx++) {
+  auto &ct = DB.hierTree[TraverseOrder.back()];
+  for (unsigned int lidx = 0; lidx < ct.numPlacement; lidx++) {
     route_top_down(
         DB, drcInfo,
-        PnRDB::bbox(PnRDB::point(0, 0), PnRDB::point(DB.hierTree[Q.back()].PnRAS[0].width, DB.hierTree[Q.back()].PnRAS[0].height)),
-        PnRDB::N, Q.back(), new_topnode_idx, lidx, opath, binary_directory, skip_saving_state, adr_mode);
+        PnRDB::bbox(PnRDB::point(0, 0),
+		    PnRDB::point(ct.PnRAS[0].width, ct.PnRAS[0].height)),
+        PnRDB::N, TraverseOrder.back(), new_topnode_idx, lidx, opath, binary_directory, skip_saving_state, adr_mode);
   }
-  if(disable_io)std::cout.clear();
 
   return 0;
 }

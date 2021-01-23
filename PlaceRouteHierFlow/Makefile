@@ -1,6 +1,7 @@
 
 MAKE=make
 
+EXTENSION_SUFFIX?=`python3-config --extension-suffix`
 
 # To compile locally, override LP_DIR as follows:  %> LP_DIR=<path_to_lpsolve> make
 SPDLOG_DIR?=/opt/spdlog
@@ -59,9 +60,9 @@ pnr_compiler: subsystem $(OBJS)
 
 
 ifeq ($(NOPYBIND11),0)
-python_object_file: PnR`python3-config --extension-suffix`
-PnR`python3-config --extension-suffix`: subsystem $(OBJS)
-	$(CXX) $(CXXFLAGS) -shared `python -m pybind11 --includes` PnR-pybind11.cpp -o PnR`python3-config --extension-suffix` toplevel.o cap_placer/cap_placer.a placer/placer.a router/router.a PnRDB/PnRDB.a -L$(GTEST_LIB_DIR) -lgtest -L$(LIB_LP) -llpsolve55
+python_object_file: PnR$(EXTENSION_SUFFIX)
+PnR$(EXTENSION_SUFFIX): subsystem $(OBJS)
+	$(CXX) $(CXXFLAGS) -shared `python -m pybind11 --includes` PnR-pybind11.cpp -o PnR$(EXTENSION_SUFFIX) toplevel.o cap_placer/cap_placer.a placer/placer.a router/router.a PnRDB/PnRDB.a -L$(GTEST_LIB_DIR) -lgtest -L$(LIB_LP) -llpsolve55
 else
 python_object_file:
 	echo "Skipping generation of python object file because NOPYBIND11 is set."
