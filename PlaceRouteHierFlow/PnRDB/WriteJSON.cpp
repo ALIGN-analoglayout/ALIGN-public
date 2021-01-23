@@ -65,7 +65,7 @@ JSONExtractUit (string GDSData, double& unit)
 		json lib = *lit;
 		json strAry = lib["units"];
                 if(strAry.is_array()) {
-                     logger->debug("Unit {0} ",to_string(strAry));
+                     logger->debug("Unit {0} ", to_string(strAry));
 		     json::iterator xyI = strAry.begin();
                      double xyU=*xyI;
                      unit=2*0.00025/xyU;
