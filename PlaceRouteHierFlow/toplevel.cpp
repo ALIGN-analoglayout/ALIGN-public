@@ -23,7 +23,7 @@ using std::string;
 using std::cout;
 using std::endl;
 
-static void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_node, int lidx,
+void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_node, int lidx,
 			const string& opath, const string& tag, const string& ltag, bool skip)
 {
   auto logger = spdlog::default_logger()->clone("save_state");
@@ -46,7 +46,7 @@ static void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_no
   logger->info("{0}", ltag);
 }
 
-static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::hierNode& current_node, int lidx, const string& opath, const string& binary_directory, bool skip_saving_state, bool adr_mode)
+void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::hierNode& current_node, int lidx, const string& opath, const string& binary_directory, bool skip_saving_state, bool adr_mode)
 {
 
   auto logger = spdlog::default_logger()->clone("route_single_variant");

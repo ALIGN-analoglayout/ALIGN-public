@@ -357,9 +357,10 @@ PYBIND11_MODULE(PnR, m) {
   py::class_<GuardRingIfc>( m, "GuardRingIfc")
     .def( py::init<hierNode&, const map<string, lefMacro>&, const Drc_info&>());
 
-  /*
+
   m.def("save_state", &save_state, "helper function to save_state");
   m.def("route_single_variant", &route_single_variant, "helper function to route a single variant");
+  /*
   m.def("route_top_down", &route_top_down, "helper function to perform top-down routing");
   */
 
