@@ -43,13 +43,24 @@ class MOSGenerator(default.MOSGenerator):
             elif self.shared_diff == 1 and x == x_cells-1:
                 self.addWire( self.HVT_diff,  None, None, y, 0, self.gate*x_cells+1)
             else:
-                pass       
+                pass
+
+        def _addSLVT(x, y, x_cells):
+            if self.shared_diff == 0:
+                self.addWire( self.SLVT,  None, None, y,          (x, 1), (x+1, -1))
+            elif self.shared_diff == 1 and x == x_cells-1:
+                self.addWire( self.SLVT_diff,  None, None, y, 0, self.gate*x_cells+1)
+            else:
+                pass  
+     
         if vt_type == 'RVT':
             _addRVT(x, y, x_cells)
         elif vt_type == 'LVT':
             _addLVT(x, y, x_cells)
         elif vt_type == 'HVT':
             _addHVT(x, y, x_cells)
+        elif vt_type == 'SLVT':
+            _addSLVT(x, y, x_cells)
         else:
             print("This VT type not supported")
             exit()    

@@ -26,22 +26,22 @@ def test_parser3():
     test_path=pathlib.Path(__file__).resolve().parent / 'test_circuits'/ 'basic_template.sp'
     lib_sp =  SpiceParser(test_path)
     lib_list = lib_sp.sp_parser()
-    #shutil.rmtree("library_graphs")
-    assert len(lib_list) == 31 ## 18 subckt in basic template
+    assert len(lib_list) == 46 ## 18 subckt in basic template
     return(g["graph"], lib_list)
 
 def test_match_ota():
     g,lib_list =test_parser3()
     design_setup = {'POWER':['vdd'],'GND':['vss']}
+    all_lef = ['Switch_NMOS','Switch_PMOS','CMC_PMOS','CMC_S_NMOS_B','DP_NMOS_B','SCM_NMOS']
     duplicate = {}
-    mapped_graph_list = _mapped_graph_list(g, lib_list,)
+    mapped_graph_list = _mapped_graph_list(g, lib_list,['vdd!','vss'])
     assert 'Switch_NMOS' in mapped_graph_list.keys()
     assert 'Switch_PMOS' in mapped_graph_list.keys()
-    assert 'CMC_PMOS_S' in mapped_graph_list.keys()
-    assert 'CMC_NMOS' in mapped_graph_list.keys()
-    assert 'DP_NMOS' in mapped_graph_list.keys()
-    subckts_created, reduced_graph = reduce_graph(g, mapped_graph_list, lib_list,duplicate,design_setup)
-    assert len(reduced_graph.nodes()) == 23
+    assert 'CMC_PMOS' in mapped_graph_list.keys()
+    assert 'CMC_S_NMOS_B' in mapped_graph_list.keys()
+    assert 'DP_NMOS_B' in mapped_graph_list.keys()
+    subckts_created, reduced_graph = reduce_graph(g, mapped_graph_list, lib_list,duplicate,design_setup,all_lef)
+    assert len(reduced_graph.nodes()) == 19
     subckts_created.append({
             "name": "ota",
             "graph":reduced_graph ,

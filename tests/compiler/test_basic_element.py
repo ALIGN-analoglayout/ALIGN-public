@@ -24,11 +24,11 @@ def test_i_source():
 
 def test_nmos():
     dev = _parse_inst("m0 3 2 1 1 n nfin=1")
-    assert len(dev.items()) == 7
+    assert len(dev.items()) == 6
 
 def test_nmos1():
     dev = _parse_inst("m0 (3 2 1 1) n nfin=1")
-    assert len(dev.items()) == 7
+    assert len(dev.items()) == 6
 
 def test_nmos_err():
     _parse_inst("m0 3 2=4 1 1 n nfin=1")
@@ -36,7 +36,7 @@ def test_nmos_err():
 
 def test_pmos_param():
     dev = _parse_inst("m0 3 2 1 1 p nfin = 1")
-    assert len(dev.items()) == 7
+    assert len(dev.items()) == 6
 
 def test_subckt_param():
     dev = _parse_inst("xdp D G S nmos p=1")
