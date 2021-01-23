@@ -5,8 +5,9 @@ import json
 from .util import _write_circuit_graph, max_connectivity
 from .read_netlist import SpiceParser
 from .preprocess import define_SD, preprocess_stack_parallel, remove_pg_pins
-from .CreateDatabase import CreateDatabase
-from .match_graph import Annotate, read_setup
+from .create_database import CreateDatabase
+from .match_graph import Annotate
+from .read_setup import read_setup
 from .write_verilog_lef import WriteVerilog, print_globals,print_header,generate_lef
 from .common_centroid_cap_constraint import WriteCap, check_common_centroid
 from .write_constraint import WriteConst, CopyConstFile
