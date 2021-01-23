@@ -22,6 +22,7 @@
 #include "readfile.h"
 #include <nlohmann/json.hpp>
 #include "Lexer.h"
+#include "spdlog/spdlog.h"
 
 using std::map;
 using std::unordered_map;

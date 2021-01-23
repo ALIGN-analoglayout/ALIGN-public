@@ -1,4 +1,5 @@
 #include "ConstGraph.h"
+#include "spdlog/spdlog.h"
 
 //added by yg
 //int bias_flag=0;
@@ -22,6 +23,9 @@ bool ConstGraph::RemoveEdgeforVertex(int current, int next, vector<Vertex> &grap
 }
 
 void ConstGraph::RemoveOverlapEdge(design& caseNL, Aplace& caseAP) {
+
+  auto logger = spdlog::default_logger()->clone("placer.ConstGraph.RemoveOverlapEdge");
+
   int ix, iX, jx, jX, iy, iY, jy, jY, xOL, yOL;
   for(int i=0;i<caseNL.GetSizeofBlocks();i++) {
     ix=caseAP.GetBlockCenter(i).x-caseNL.GetBlockWidth( i, caseAP.GetBlockOrient(i), caseAP.GetSelectedInstance(i) )/2;
@@ -36,7 +40,7 @@ void ConstGraph::RemoveOverlapEdge(design& caseNL, Aplace& caseAP) {
       xOL=std::max(std::min(std::min(iX-jx, jX-ix), std::min(iX-ix, jX-jx)), 0);
       yOL=std::max(std::min(std::min(iY-jy, jY-iy), std::min(iY-iy, jY-jy)), 0);
       if(xOL>0 and yOL>0) {
-        std::cout<<i<<" overlap with "<<j<<std::endl;
+        logger->debug(" overlap with {0}",j);
         if(xOL>yOL) {
           RemoveEdgeforVertex(i, j, this->HGraph, false);
           RemoveEdgeforVertex(j, i, this->HGraph, false);
@@ -235,6 +239,9 @@ void ConstGraph::ConstructGraphwithConstraint(design& caseNL, Aplace& caseAP, in
 }
 
 void ConstGraph::PlaneSweepConstraint(design& caseNL, Aplace& caseAP, int mode, int bias_mode, int bias_graph) {
+
+  auto logger = spdlog::default_logger()->clone("placer.ConstGraph.PlaneSweepConstraint");
+
  // mode-0: horizontal graph, sort blocks in x direction, check overlap along y direction
  // mode-1: vertical graph, sort blocks in y direction, check overlap along x direction
   // Create scan tree
@@ -310,7 +317,7 @@ void ConstGraph::PlaneSweepConstraint(design& caseNL, Aplace& caseAP, int mode, 
   setD.insert(tmpDnode);
 
   for(std::set<Event, EventComp>::iterator it=scanT.begin(); it!=scanT.end();++it) {
-    std::cout<<"@Event "<<it->type<<" node "<<it->node<<" corr "<<it->corr<<std::endl;
+    logger->debug("@Event {0} node {1} corr {2}",it->type,it->node,it->corr);
     tmpDnode.node=it->node;
     if(mode==0) {
       if(it->node<caseNL.GetSizeofBlocks()) {
@@ -333,8 +340,8 @@ void ConstGraph::PlaneSweepConstraint(design& caseNL, Aplace& caseAP, int mode, 
         }
       }
     }
-    std::cout<<"work on node "<<tmpDnode.node<<"@"<<tmpDnode.corr<<std::endl;
-    std::cout<<"before delete/insert"<<std::endl;
+    logger->debug("work on node {0} {1}",tmpDnode.node,tmpDnode.corr);
+    logger->debug("before delete/insert");
     if(it->type==0) { // high event
       DeleteSetNodeConstraint(caseNL, caseAP, setD, tmpDnode, cand, mode, bias_mode, bias_graph);
       //DeleteSetNode();
@@ -342,11 +349,14 @@ void ConstGraph::PlaneSweepConstraint(design& caseNL, Aplace& caseAP, int mode, 
       InsetSetNodeConstraint(caseNL, caseAP, setD, tmpDnode, cand, mode);
       //InsetSetNode();
     }
-    std::cout<<"after delete/insert"<<std::endl;
+    logger->debug("after delete/insert");
   }
 }
 
 void ConstGraph::PlaneSweepBasic(design& caseNL, Aplace& caseAP, int mode, int bias_mode, int bias_graph) {
+
+  auto logger = spdlog::default_logger()->clone("placer.ConstGraph.PlaneSweepBasic");
+
  // mode-0: horizontal graph, sort blocks in x direction, check overlap along y direction
  // mode-1: vertical graph, sort blocks in y direction, check overlap along x direction
   // Create scan tree
@@ -387,7 +397,7 @@ void ConstGraph::PlaneSweepBasic(design& caseNL, Aplace& caseAP, int mode, int b
   setD.insert(tmpDnode);
 
   for(std::set<Event, EventComp>::iterator it=scanT.begin(); it!=scanT.end();++it) {
-    std::cout<<"Event "<<it->type<<" node "<<it->node<<" corr "<<it->corr<<std::endl;
+    logger->debug("@Event {0} node {1} corr {2}",it->type,it->node,it->corr);
     tmpDnode.node=it->node;
     if(mode==0) {
       tmpDnode.corr=caseAP.GetBlockCenter(it->node).x;
@@ -405,6 +415,9 @@ void ConstGraph::PlaneSweepBasic(design& caseNL, Aplace& caseAP, int mode, int b
 }
 
 void ConstGraph::DeleteSetNode(design& caseNL, Aplace& caseAP, std::set<dataNode, dataNodeComp>& setD, dataNode& Dnode, std::vector<int>& cand, int mode, int bias_mode, int bias_graph) {
+
+  auto logger = spdlog::default_logger()->clone("placer.ConstGraph.DeleteSetNode");
+
  // mode-0: horizontal graph, sort blocks in x direction, check overlap along y direction
  // mode-1: vertical graph, sort blocks in y direction, check overlap along x direction
   std::set<dataNode, dataNodeComp>::iterator setIt=setD.find(Dnode);
@@ -448,7 +461,7 @@ void ConstGraph::DeleteSetNode(design& caseNL, Aplace& caseAP, std::set<dataNode
     }
     //cand(lit->node)=Dnode.node;
   } else {
-    std::cout<<"Placer-Error: cannot find left neighbor"<<std::endl;
+    logger->debug("Placer-Error: cannot find left neighbor");
   }
 
   mark=false;
@@ -489,12 +502,15 @@ void ConstGraph::DeleteSetNode(design& caseNL, Aplace& caseAP, std::set<dataNode
     }
     //cand.at(Dnode.node)=rit->node;
   } else {
-    std::cout<<"Placer-Error: cannot find right neighbor"<<std::endl;
+    logger->debug("Placer-Error: cannot find right neighbor");
   }
   setD.erase(setIt);
 }
 
 void ConstGraph::DeleteSetNodeConstraint(design& caseNL, Aplace& caseAP, std::set<dataNode, dataNodeComp>& setD, dataNode& Dnode, std::vector<int>& cand, int mode, int bias_mode, int bias_graph) {
+
+  auto logger = spdlog::default_logger()->clone("placer.ConstGraph.DeleteSetNodeConstraint");
+
  // mode-0: horizontal graph, sort blocks in x direction, check overlap along y direction
  // mode-1: vertical graph, sort blocks in y direction, check overlap along x direction
   std::set<dataNode, dataNodeComp>::iterator setIt=setD.find(Dnode);
@@ -612,7 +628,7 @@ void ConstGraph::DeleteSetNodeConstraint(design& caseNL, Aplace& caseAP, std::se
     }
     //cand(lit->node)=Dnode.node;
   } else {
-    std::cout<<"Placer-Error: cannot find left neighbor"<<std::endl;
+    logger->debug("Placer-Error: cannot find left neighbor");
   }
 
   mark=false;
@@ -727,20 +743,22 @@ void ConstGraph::DeleteSetNodeConstraint(design& caseNL, Aplace& caseAP, std::se
     }
     //cand.at(Dnode.node)=rit->node;
   } else {
-    std::cout<<"Placer-Error: cannot find right neighbor"<<std::endl;
+    logger->debug("Placer-Error: cannot find right neighbor");
   }
   setD.erase(setIt);
 }
 
 void ConstGraph::InsetSetNodeConstraint(design& caseNL, Aplace& caseAP, std::set<dataNode, dataNodeComp>& setD, dataNode& Dnode, std::vector<int>& cand, int mode) {
+
+  auto logger = spdlog::default_logger()->clone("placer.ConstGraph.InsetSetNodeConstraint");
+
  // mode-0: horizontal graph, sort blocks in x direction, check overlap along y direction
  // mode-1: vertical graph, sort blocks in y direction, check overlap along x direction
   //std::cout<<"start of InsetSetNodeConstraint mode "<<mode<<std::endl;
   setD.insert(Dnode);
   for(std::set<dataNode, dataNodeComp>::iterator vi=setD.begin(); vi!=setD.end();++vi) {
-    std::cout<<" Nnode "<<vi->node<<"@"<<vi->corr;
+    logger->debug("Nnode {0} @ {1}",vi->node,vi->corr);
   }
-  std::cout<<std::endl;
   std::set<dataNode, dataNodeComp>::iterator setIt=setD.find(Dnode);
   std::set<dataNode, dataNodeComp>::iterator lit, rit;
   bool mark=false;
@@ -750,7 +768,7 @@ void ConstGraph::InsetSetNodeConstraint(design& caseNL, Aplace& caseAP, std::set
     int i=Dnode.node,j=lit->node;
     //std::cout<<"check "<<i<<" vs "<<j<<std::endl;
     if(i<caseNL.GetSizeofBlocks()) {// current node is block
-      std::cout<<"real!"<<std::endl;
+      logger->debug("real!");
       if(mode==1) {
         // mode-1: vertical graph, sort blocks in y direction, check overlap along x direction
         int xi,xj;
@@ -787,7 +805,7 @@ void ConstGraph::InsetSetNodeConstraint(design& caseNL, Aplace& caseAP, std::set
         } else {mark=true; break;}
       }
     } else { // current node is virtual (symmetry axis)
-      std::cout<<"virtual!"<<std::endl;
+      logger->debug("virtual!");
       if(mode==1) {
         // mode-1: vertical graph, sort blocks in y direction, check overlap along x direction
         int xi,xj;
@@ -839,7 +857,7 @@ void ConstGraph::InsetSetNodeConstraint(design& caseNL, Aplace& caseAP, std::set
   if(mark) {
     cand.at(lit->node)=Dnode.node;
   } else {
-    std::cout<<"Placer-Error: cannot find left neighbor"<<std::endl;
+    logger->debug("Placer-Error: cannot find left neighbor");
   }
 
   //std::cout<<"find right"<<std::endl;
@@ -933,11 +951,14 @@ void ConstGraph::InsetSetNodeConstraint(design& caseNL, Aplace& caseAP, std::set
   if(mark) {
     cand.at(Dnode.node)=rit->node;
   } else {
-    std::cout<<"Placer-Error: cannot find right neighbor"<<std::endl;
+    logger->debug("Placer-Error: cannot find right neighbor");
   }
 }
 
 void ConstGraph::InsetSetNode(design& caseNL, Aplace& caseAP, std::set<dataNode, dataNodeComp>& setD, dataNode& Dnode, std::vector<int>& cand, int mode) {
+
+  auto logger = spdlog::default_logger()->clone("placer.ConstGraph.InsetSetNode");
+
  // mode-0: horizontal graph, sort blocks in x direction, check overlap along y direction
  // mode-1: vertical graph, sort blocks in y direction, check overlap along x direction
   setD.insert(Dnode);
@@ -967,7 +988,7 @@ void ConstGraph::InsetSetNode(design& caseNL, Aplace& caseAP, std::set<dataNode,
   if(mark) {
     cand.at(lit->node)=Dnode.node;
   } else {
-    std::cout<<"Placer-Error: cannot find left neighbor"<<std::endl;
+    logger->debug("Placer-Error: cannot find left neighbor");
   }
 
   mark=false;
@@ -993,7 +1014,7 @@ void ConstGraph::InsetSetNode(design& caseNL, Aplace& caseAP, std::set<dataNode,
   if(mark) {
     cand.at(Dnode.node)=rit->node;
   } else {
-    std::cout<<"Placer-Error: cannot find right neighbor"<<std::endl;
+    logger->debug("Placer-Error: cannot find right neighbor");
   }
 }
 
@@ -1414,24 +1435,27 @@ ConstGraph& ConstGraph::operator=(const ConstGraph &cg) {
 }
 
 void ConstGraph::PrintConstGraph() {
-  cout<<endl<<"== Constraint Graph =="<<endl;
-  cout<<"LAMBDA:"<<LAMBDA<<" GARMAR:"<<GAMAR<<" BETA:"<<BETA<<" origNodeSize:"<<origNodeSize<<" sourceNode:"<<sourceNode<<" sinkNode:"<<sinkNode<<endl;
-  cout<<endl<<"Horizontal graph"<<endl;
+
+  auto logger = spdlog::default_logger()->clone("placer.ConstGraph.PrintConstGraph");
+
+  logger->debug("== Constraint Graph ==");
+  logger->debug("LAMBDA {0} GARMAR {1}  BETA {2} origNodeSize {3} sourceNode {4} sinkNode {5}",LAMBDA,GAMAR,BETA,origNodeSize,sourceNode,sinkNode);
+  logger->debug("Horizontal graph");
   for(int i=0;i<(int)HGraph.size();i++) {
-    cout<<"Node "<<i<<": weight-"<<HGraph.at(i).weight<<" isSource-";
-    cout<<HGraph.at(i).isSource<<" isSink-"<<HGraph.at(i).isSink;
-    cout<<" isVirtual-"<<HGraph.at(i).isVirtual<<" position-"<<HGraph.at(i).position<<"<<"<<HGraph.at(i).precedent<<" backpost-"<<HGraph.at(i).backpost<<"<<"<<HGraph.at(i).backprec<<endl;
+    logger->debug("Node {0} weight {1} isSource",i,HGraph.at(i).weight);
+    logger->debug("{0} isSink {1}",HGraph.at(i).isSource,HGraph.at(i).isSink);
+    logger->debug("isVirtual- {0} position {1} << {2} backpost {3} << {4}",HGraph.at(i).isVirtual,HGraph.at(i).position,HGraph.at(i).precedent,HGraph.at(i).backpost,HGraph.at(i).backprec);
     for(int j=0;j<(int)HGraph.at(i).Edges.size();j++) {
-      cout<<"\tEdge to "<<HGraph.at(i).Edges.at(j).next<<" weight "<<HGraph.at(i).Edges.at(j).weight<<" isBackward "<<HGraph.at(i).Edges.at(j).isBackward<<endl;
+      logger->debug("Edge to {0} weight {1} isbackward {2}",HGraph.at(i).Edges.at(j).next,HGraph.at(i).Edges.at(j).weight,HGraph.at(i).Edges.at(j).isBackward);
     }
   }
-  cout<<endl<<"Vertical graph"<<endl;
+  logger->debug("Vertical graph");
   for(int i=0;i<(int)VGraph.size();i++) {
-    cout<<"Node "<<i<<": weight-"<<VGraph.at(i).weight<<" isSource-";
-    cout<<VGraph.at(i).isSource<<" isSink-"<<VGraph.at(i).isSink;
-    cout<<" isVirtual-"<<VGraph.at(i).isVirtual<<" position-"<<VGraph.at(i).position<<"<<"<<VGraph.at(i).precedent<<" backpost-"<<VGraph.at(i).backpost<<"<<"<<VGraph.at(i).backprec<<endl;
+    logger->debug("Node {0} weight {1} isSource",i,VGraph.at(i).weight);
+    logger->debug("{0} isSink {1}",VGraph.at(i).isSource,VGraph.at(i).isSink);
+    logger->debug("isVirtual- {0} position {1} << {2} backpost {3} << {4}",VGraph.at(i).isVirtual,VGraph.at(i).position,VGraph.at(i).precedent,VGraph.at(i).backpost,VGraph.at(i).backprec);
     for(int j=0;j<(int)VGraph.at(i).Edges.size();j++) {
-      cout<<"\tEdge to "<<VGraph.at(i).Edges.at(j).next<<" weight "<<VGraph.at(i).Edges.at(j).weight<<" isBackward "<<VGraph.at(i).Edges.at(j).isBackward<<endl;
+      logger->debug("Edge to {0} weight {1} isbackward {2}",VGraph.at(i).Edges.at(j).next,VGraph.at(i).Edges.at(j).weight,VGraph.at(i).Edges.at(j).isBackward);
     }
   }
 }
@@ -1506,6 +1530,7 @@ void ConstGraph::topologicalSortUtil(int v, bool visited[], stack<int> &Stack, v
 }
 
 void ConstGraph::CalculateLongestPath(int s, vector<Vertex> &graph, bool backward) {
+  auto logger = spdlog::default_logger()->clone("placer.ConstGraph.CalculateLongestPath");
   stack<int> Stack;
   //int dist[(int)graph.size()];
   // Mark all vertices as not visited
@@ -1542,10 +1567,10 @@ void ConstGraph::CalculateLongestPath(int s, vector<Vertex> &graph, bool backwar
     if(!backward) {
       if(graph[u].position!=NINF) {
         for(vector<Edge>::iterator it=graph[u].Edges.begin(); it!=graph[u].Edges.end(); ++it) {
-          std::cout<<"current node and next node "<<u<<" "<<it->next<<std::endl;
+          logger->debug("current node and next node {0} {1}",u,it->next);
           //if(!it->isBackward && graph[it->next].position<graph[u].position+it->weight) {
           if(graph[it->next].position<graph[u].position+it->weight) {
-            std::cout<<"next node "<<it->next<<" position "<<graph[it->next].position<<" updated to "<<graph[u].position + it->weight<<std::endl;
+            logger->debug("next node {0} position {1}  updated to {2}",it->next,graph[it->next].position,graph[u].position + it->weight);
             graph[it->next].position=graph[u].position + it->weight;
             graph[it->next].precedent=u;
             //std::cout<<it->next<<" prec "<<u<<" pos "<<graph[it->next].position<<std::endl;
@@ -1631,6 +1656,9 @@ double ConstGraph::CalculateRatio() {
 }
 
 double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
+
+  auto logger = spdlog::default_logger()->clone("placer.ConstGraph.CalculateWireLengthAP");
+
   double sum=0;
   //CalculateLongestPath(sourceNode, this->HGraph, false);
   //CalculateLongestPath(sourceNode, this->VGraph, false);
@@ -1675,7 +1703,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
     int sbIdx=caseNL.Terminals.at(i).SBidx;
     int cp=caseNL.Terminals.at(i).counterpart;
     if(netIdx<0 or netIdx>=caseNL.GetSizeofNets()) {
-      std::cout<<"Placer-Warning: terminal "<<i<<" is dangling; set it on origin\n"; 
+      logger->info("Placer-Warning: terminal {0} is dangling; set it on origin", i);
       //caseNL.Terminals.at(i).center.x = 0;
       //caseNL.Terminals.at(i).center.y = 0;
       continue;
@@ -1719,14 +1747,14 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
           }
           sum+=distTerm*alpha;
         } else {
-          std::cout<<"Placer-Error: incorrect axis direction\n";
+          logger->error("Placer-Error: incorrect axis direction");
         }
       } else { // symmetry pair
-        if(solved_terminals.find(cp)!=solved_terminals.end()) {std::cout<<"Placer-Error: terminal "<<i<<" and "<<cp<<" are not solved simultaneously!\n"; continue;}
+        if(solved_terminals.find(cp)!=solved_terminals.end()) {logger->debug("Placer-Error: terminal {0} and {1} are not solved simultaneously!",i,cp); continue;}
         solved_terminals.insert(cp);
         int netIdx2=caseNL.Terminals.at(cp).netIter;
         if(netIdx2<0 or netIdx2>=caseNL.GetSizeofNets()) {
-          std::cout<<"Placer-Error: terminal "<<i<<" is not dangling, but its counterpart "<<cp<<" is dangling; set them on origin\n"; 
+          logger->debug("Placer-Error: terminal {0} is not dangling, but its counterpart {1} is dangling; set them on origin",i,cp);
           //caseNL.Terminals.at(i).center.x = 0;
           //caseNL.Terminals.at(i).center.y = 0;
           //caseNL.Terminals.at(cp).center.x = 0;
@@ -1803,7 +1831,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
             sum+=(distTermU*alpha+distTermL2*alpha2);
           }
         } else {
-          std::cout<<"Placer-Error: incorrect axis direction\n";
+          logger->debug("Placer-Error: incorrect axis direction");
         }
       }
     } else { // not in symmetry group
@@ -1929,7 +1957,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
                  }
                  break;
             default :
-                 std::cout<<"Placer-Warning: incorrect port position\n";
+                 logger->debug("Placer-Warning: incorrect port position");
           }
         }
         if(shot!=-1) {sum+=distTerm*alpha;}
@@ -2106,9 +2134,9 @@ double ConstGraph::LinearConst(design& caseNL, SeqPair& caseSP){
   for(int i=0;i< caseNL.Nets.size(); i++){
      double temp_sum = 0;
      for(int j=0;j<caseNL.Nets[i].connected.size();j++){
-        std::cout<<"LinearConst Cost"<<caseNL.Nets[i].connected[j].alpha<<" "<<caseNL.Nets[i].upperBound<<std::endl;
+        //std::cout<<"LinearConst Cost"<<caseNL.Nets[i].connected[j].alpha<<" "<<caseNL.Nets[i].upperBound<<std::endl;
         temp_sum += caseNL.Nets[i].connected[j].alpha*feature_value[i][j];
-        std::cout<<"LinearConst Cost"<<caseNL.Nets[i].connected[j].alpha*feature_value[i][j]<<std::endl;
+        //std::cout<<"LinearConst Cost"<<caseNL.Nets[i].connected[j].alpha*feature_value[i][j]<<std::endl;
      }
      if(temp_sum<=caseNL.Nets[i].upperBound){
         temp_sum = 0;
@@ -2173,7 +2201,7 @@ double ConstGraph::ML_LinearConst(design& caseNL, SeqPair& caseSP){
                }
               }
          //std::cout<< caseNL.Nets[index_i].connected[index_j].iter2 << " "<< caseNL.Nets[index_i].connected[index_j].iter << " " << caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].first << " " << caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].second<<std::endl;
-         std::cout<<"MLLinearConst Cost: alpha "<<caseNL.ML_Constraints[i].Multi_linearConst[j].alpha[k]<<" upperbound "<<caseNL.ML_Constraints[i].upperBound<<" block idex "<<caseNL.Nets[index_i].connected[index_j].iter2<<" pin idx "<<caseNL.Nets[index_i].connected[index_j].iter<<" index_i "<<index_i<<" index_j "<<index_j<<" dist "<<feature_value[index_i][index_j]<<" alpha*dist "<<caseNL.ML_Constraints[i].Multi_linearConst[j].alpha[k]*feature_value[index_i][index_j]<<" pin_name "<<feature_name[index_i][index_j]<<std::endl;
+         //std::cout<<"MLLinearConst Cost: alpha "<<caseNL.ML_Constraints[i].Multi_linearConst[j].alpha[k]<<" upperbound "<<caseNL.ML_Constraints[i].upperBound<<" block idex "<<caseNL.Nets[index_i].connected[index_j].iter2<<" pin idx "<<caseNL.Nets[index_i].connected[index_j].iter<<" index_i "<<index_i<<" index_j "<<index_j<<" dist "<<feature_value[index_i][index_j]<<" alpha*dist "<<caseNL.ML_Constraints[i].Multi_linearConst[j].alpha[k]*feature_value[index_i][index_j]<<" pin_name "<<feature_name[index_i][index_j]<<std::endl;
          temp_sum += caseNL.ML_Constraints[i].Multi_linearConst[j].alpha[k]*feature_value[index_i][index_j];
          
         }
@@ -2216,7 +2244,7 @@ void ConstGraph::ExtractLength(design& caseNL, SeqPair& caseSP, std::vector<std:
         //std::cout<<"Print Pin Contact Info"<<std::endl;
         for(unsigned int i=0;i<pos_pin.size();i++){
           p = pos_pin[i];
-          std::cout<<"Pin Center (x, y)"<<p.x<<" "<<p.y<<std::endl;
+          //std::cout<<"Pin Center (x, y)"<<p.x<<" "<<p.y<<std::endl;
           pos.push_back(p);
 	}
         pin_maps.insert(map<string, std::vector<placerDB::point> >::value_type (pin_name, pos));
@@ -2235,7 +2263,7 @@ void ConstGraph::ExtractLength(design& caseNL, SeqPair& caseSP, std::vector<std:
       if(ci->type==placerDB::Terminal) {
         pin_name = ni->name +"_"+std::to_string(net_terminal_number);
         net_terminal_number = net_terminal_number + 1;
-        std::cout<<"Terminal center (x,y) "<<caseNL.Terminals[ci->iter].center.x<<" "<<caseNL.Terminals[ci->iter].center.y<<std::endl;
+        //std::cout<<"Terminal center (x,y) "<<caseNL.Terminals[ci->iter].center.x<<" "<<caseNL.Terminals[ci->iter].center.y<<std::endl;
         pos.push_back(caseNL.Terminals[ci->iter].center);
         pin_maps.insert(map<string, std::vector<placerDB::point> >::value_type (pin_name, pos));
       }
@@ -2258,14 +2286,14 @@ void ConstGraph::ExtractLength(design& caseNL, SeqPair& caseSP, std::vector<std:
         //pin_name = net_name + "_" + caseNL.Blocks[ci->iter2].back().name;
         net_pin_number = net_pin_number + 1;
         temp_feature_name.push_back(pin_name);
-        std::cout<<"Sorted Pin name "<<pin_name<<" pin contact size "<<pin_maps[pin_name].size()<<std::endl;
+        //std::cout<<"Sorted Pin name "<<pin_name<<" pin contact size "<<pin_maps[pin_name].size()<<std::endl;
         center_points.push_back(pin_maps[pin_name]);
         center_points_all.push_back(pin_maps[pin_name]);
       }else if(ci->type==placerDB::Terminal) {
         pin_name = net_name +"_" + std::to_string(net_terminal_number);
         net_terminal_number = net_terminal_number + 1;
         temp_feature_name.push_back(pin_name);
-        std::cout<<"Sorted terminal name "<<pin_name<<" terminal contact size "<<pin_maps[pin_name].size()<<std::endl;
+        //std::cout<<"Sorted terminal name "<<pin_name<<" terminal contact size "<<pin_maps[pin_name].size()<<std::endl;
         center_points.push_back(pin_maps[pin_name]);
         center_points_all.push_back(pin_maps[pin_name]);
       }
@@ -2333,6 +2361,9 @@ std::vector<double> ConstGraph::Calculate_Center_Point_feature(std::vector<std::
 
 
 double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
+
+  auto logger = spdlog::default_logger()->clone("placer.ConstGraph.CalculateWireLength");
+
   double sum=0;
   //CalculateLongestPath(sourceNode, this->HGraph, false);
   //CalculateLongestPath(sourceNode, this->VGraph, false);
@@ -2377,7 +2408,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
     int sbIdx=caseNL.Terminals.at(i).SBidx;
     int cp=caseNL.Terminals.at(i).counterpart;
     if(netIdx<0 or netIdx>=caseNL.GetSizeofNets()) {
-      std::cout<<"Placer-Warning: terminal "<<i<<" is dangling; set it on origin\n"; 
+      logger->debug("Placer-Warning: terminal {0} is dangling; set it on origin",i);
       //caseNL.Terminals.at(i).center.x = 0;
       //caseNL.Terminals.at(i).center.y = 0;
       continue;
@@ -2421,14 +2452,14 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
           }
           sum+=distTerm*alpha;
         } else {
-          std::cout<<"Placer-Error: incorrect axis direction\n";
+          logger->debug("Placer-Error: incorrect axis direction");
         }
       } else { // symmetry pair
-        if(solved_terminals.find(cp)!=solved_terminals.end()) {std::cout<<"Placer-Error: terminal "<<i<<" and "<<cp<<" are not solved simultaneously!\n"; continue;}
+        if(solved_terminals.find(cp)!=solved_terminals.end()) {logger->debug("Placer-Error: terminal {0} and {1} are not solved simultaneously!",i,cp); continue;}
         solved_terminals.insert(cp);
         int netIdx2=caseNL.Terminals.at(cp).netIter;
         if(netIdx2<0 or netIdx2>=caseNL.GetSizeofNets()) {
-          std::cout<<"Placer-Error: terminal "<<i<<" is not dangling, but its counterpart "<<cp<<" is dangling\n"; 
+          logger->debug("Placer-Error: terminal {0} is not dangling, but its counterpart {1} is dangling",i,cp);
           //caseNL.Terminals.at(i).center.x = 0;
           //caseNL.Terminals.at(i).center.y = 0;
           continue;
@@ -2503,7 +2534,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
             sum+=(distTermU*alpha+distTermL2*alpha2);
           }
         } else {
-          std::cout<<"Placer-Error: incorrect axis direction\n";
+          logger->debug("Placer-Error: incorrect axis direction");
         }
       }
     } else { // not in symmetry group
@@ -2629,7 +2660,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             default :
-                 std::cout<<"Placer-Warning: incorrect port position\n";
+                 logger->debug("Placer-Warning: incorrect port position");
           }
         }
         if(shot!=-1) {sum+=distTerm*alpha;}
@@ -3023,6 +3054,9 @@ void ConstGraph::InitializexL(design& caseNL, vector< pair<int,int> >& sympair, 
 }
 
 bool ConstGraph::SymmetryConstraintCoreAxisCenter(design& caseNL, placerDB::Smark axis, int i) {
+
+  auto logger = spdlog::default_logger()->clone("placer.ConstGraph.SymmetryConstraintCoreAxisCenter");
+
   vector< pair<int,int> > sympair;
   vector<int> xL, slack, Lslack; 
   pair<int,int> tp;
@@ -3170,7 +3204,7 @@ bool ConstGraph::SymmetryConstraintCoreAxisCenter(design& caseNL, placerDB::Smar
         }
       }
     }
-    std::cout<<"After symmetry check"<<std::endl;
+    logger->debug("After symmetry check");
     CalculateLongestPath(sourceNode, this->HGraph, false);
     //std::cout<<"Vgraph\n";
     CalculateLongestPath(sourceNode, this->VGraph, false);
@@ -4185,6 +4219,9 @@ PnRDB::point ConstGraph::ConvertPointData(placerDB::point Pdata) {
 }
 
 void ConstGraph::UpdateDesignHierNode4AP(design& caseNL, design& reducedNL, SeqPair& reducedSP, PnRDB::hierNode& node) {
+
+  auto logger = spdlog::default_logger()->clone("placer.ConstGraph.UpdateDesignHierNode4AP");
+
   //vector<vector<placerDB::point> > boundary;
   //vector<placerDB::point> center;
   vector<placerDB::point> bbox;
@@ -4246,7 +4283,7 @@ void ConstGraph::UpdateDesignHierNode4AP(design& caseNL, design& reducedNL, SeqP
       } else if(axis_dir==placerDB::H) {
         caseNL.SBlocks.at(j).axis_coor=node.height/2;
       } else {
-        std::cout<<"Placer-Error: incorrect symmetry axis direction"<<std::endl;
+        logger->debug("Placer-Error: incorrect symmetry axis direction");
       }
       for(std::vector< pair<int,placerDB::Smark> >::iterator it=caseNL.SBlocks.at(j).selfsym.begin(); it!=caseNL.SBlocks.at(j).selfsym.end(); ++it ) {
         if(it->first>=caseNL.GetSizeofBlocks()) {continue;}
@@ -4272,7 +4309,7 @@ void ConstGraph::UpdateDesignHierNode4AP(design& caseNL, design& reducedNL, SeqP
           node.Blocks.at(it->first).instance.at(sel).placedBox=ConvertBoundaryData(bbox);
           node.Blocks.at(it->first).instance.at(sel).placedCenter=ConvertPointData(bpoint);
         } else {
-          std::cout<<"Placer-Error: incorrect symmetry axis direction"<<std::endl;
+          logger->debug("Placer-Error: incorrect symmetry axis direction");
         }
       }
       for( std::vector< pair<int,int> >::iterator it=caseNL.SBlocks.at(j).sympair.begin(); it!=caseNL.SBlocks.at(j).sympair.end(); ++it) {
@@ -4320,7 +4357,7 @@ void ConstGraph::UpdateDesignHierNode4AP(design& caseNL, design& reducedNL, SeqP
           node.Blocks.at(it->second).instance.at(sel2).placedBox=ConvertBoundaryData(bbox);
           node.Blocks.at(it->second).instance.at(sel2).placedCenter=ConvertPointData(bpoint);
         } else {
-          std::cout<<"Placer-Error: incorrect symmetry axis direction"<<std::endl;
+          logger->debug("Placer-Error: incorrect symmetry axis direction");
         }
       }
     } else {
@@ -4332,7 +4369,7 @@ void ConstGraph::UpdateDesignHierNode4AP(design& caseNL, design& reducedNL, SeqP
       } else if(axis_dir==placerDB::H) {
         caseNL.SBlocks.at(j).axis_coor=VGraph.at(dnode).position;
       } else {
-        std::cout<<"Placer-Error: incorrect symmetry axis direction"<<std::endl;
+        logger->debug("Placer-Error: incorrect symmetry axis direction");
       }
       std::vector<placerDB::SymmBlock> tmpSB=caseNL.SplitSymmBlock(reducedNL, j);
       placerDB::SymmBlock diff=tmpSB.at(1);
@@ -4360,7 +4397,7 @@ void ConstGraph::UpdateDesignHierNode4AP(design& caseNL, design& reducedNL, SeqP
           node.Blocks.at(it->first).instance.at(sel1).placedBox=ConvertBoundaryData(bbox);
           node.Blocks.at(it->first).instance.at(sel1).placedCenter=ConvertPointData(bpoint);
         } else {
-          std::cout<<"Placer-Error: incorrect symmetry axis direction"<<std::endl;
+          logger->debug("Placer-Error: incorrect symmetry axis direction");
         }
       }
       for( std::vector< pair<int,int> >::iterator it=diff.sympair.begin(); it!=diff.sympair.end(); ++it) {
@@ -4408,7 +4445,7 @@ void ConstGraph::UpdateDesignHierNode4AP(design& caseNL, design& reducedNL, SeqP
           node.Blocks.at(it->second).instance.at(sel2).placedBox=ConvertBoundaryData(bbox);
           node.Blocks.at(it->second).instance.at(sel2).placedCenter=ConvertPointData(bpoint);
         } else {
-          std::cout<<"Placer-Error: incorrect symmetry axis direction"<<std::endl;
+          logger->debug("Placer-Error: incorrect symmetry axis direction");
         }
       }
     }
@@ -4631,6 +4668,9 @@ void ConstGraph::UpdateHierNodeAP(design& caseNL, Aplace& caseAP, PnRDB::hierNod
 }
 
 void ConstGraph::UpdateSymmetryNetInfo(design& caseNL, PnRDB::hierNode& node, int i, int SBidx, placerDB::Smark axis_dir) {
+
+  auto logger = spdlog::default_logger()->clone("placer.ConstGraph.UpdateSymmetryNetInfo");
+
   int dnode=caseNL.GetBlockSymmGroupDnode(SBidx);
   int axis_coor=0;
   if(axis_dir==placerDB::V) {
@@ -4638,7 +4678,7 @@ void ConstGraph::UpdateSymmetryNetInfo(design& caseNL, PnRDB::hierNode& node, in
   } else if(axis_dir==placerDB::H) {
     axis_coor=VGraph.at(dnode).position;
   } else {
-    std::cout<<"Placer-Error: incorrect symmetry axis direction"<<std::endl;
+    logger->debug("Placer-Error: incorrect symmetry axis direction");
   }
   string net1=caseNL.SNets.at(i).net1.name;
   string net2=caseNL.SNets.at(i).net2.name;
@@ -4675,6 +4715,9 @@ void ConstGraph::UpdateHierNode(design& caseNL, SeqPair& caseSP, PnRDB::hierNode
 }
 
 void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
+
+  auto logger = spdlog::default_logger()->clone("placer.ConstGraph.updateTerminalCenterAP");
+
   int Xmax=HGraph.at(sinkNode).position;
   int Ymax=VGraph.at(sinkNode).position;
   vector<placerDB::point> pos; placerDB::point p, bp; int alpha;
@@ -4688,7 +4731,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
     int sbIdx=caseNL.Terminals.at(i).SBidx;
     int cp=caseNL.Terminals.at(i).counterpart;
     if(netIdx<0 or netIdx>=caseNL.GetSizeofNets()) {
-      std::cout<<"Placer-Warning: terminal "<<i<<" is dangling; set it on origin\n"; 
+      logger->debug("Placer-Warning: terminal {0} is dangling; set it on origin",i);
       caseNL.Terminals.at(i).center.x = 0;
       caseNL.Terminals.at(i).center.y = 0;
       continue;
@@ -4739,14 +4782,14 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
           caseNL.Terminals.at(i).center.x = tp.x;
           caseNL.Terminals.at(i).center.y = tp.y;
         } else {
-          std::cout<<"Placer-Error: incorrect axis direction\n";
+          logger->debug("Placer-Error: incorrect axis direction");
         }
       } else { // symmetry pair
-        if(solved_terminals.find(cp)!=solved_terminals.end()) {std::cout<<"Placer-Error: terminal "<<i<<" and "<<cp<<" are not solved simultaneously!\n"; continue;}
+        if(solved_terminals.find(cp)!=solved_terminals.end()) {logger->debug("Placer-Error: terminal {0} and {1} are not solved simultaneously!",i,cp);continue;}
         solved_terminals.insert(cp);
         int netIdx2=caseNL.Terminals.at(cp).netIter;
         if(netIdx2<0 or netIdx2>=caseNL.GetSizeofNets()) {
-          std::cout<<"Placer-Error: terminal "<<i<<" is not dangling, but its counterpart "<<cp<<" is dangling; set them on origin\n"; 
+          logger->debug("Placer-Error: terminal {0} is not dangling, but its counterpart {1} is dangling; set them on origin",i,cp);
           caseNL.Terminals.at(i).center.x = 0;
           caseNL.Terminals.at(i).center.y = 0;
           caseNL.Terminals.at(cp).center.x = 0;
@@ -4839,7 +4882,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
             caseNL.Terminals.at(cp).center.y = tpL2.y;
           }
         } else {
-          std::cout<<"Placer-Error: incorrect axis direction\n";
+          logger->debug("Placer-Error: incorrect axis direction");
         }
       }
     } else { // not in symmetry group
@@ -4966,7 +5009,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
                  }
                  break;
             default :
-                 std::cout<<"Placer-Warning: incorrect port position\n";
+                 logger->debug("Placer-Warning: incorrect port position");
           }
         }
         if(shot!=-1) {
@@ -5152,6 +5195,9 @@ void ConstGraph::updateTerminalCenterAPRetire(design& caseNL, Aplace& caseAP) {
 //}
 
 void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
+
+  auto logger = spdlog::default_logger()->clone("placer.ConstGraph.updateTerminalCenter");
+
   int Xmax=HGraph.at(sinkNode).position;
   int Ymax=VGraph.at(sinkNode).position;
   vector<placerDB::point> pos; placerDB::point p, bp; int alpha;
@@ -5165,7 +5211,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
     int sbIdx=caseNL.Terminals.at(i).SBidx;
     int cp=caseNL.Terminals.at(i).counterpart;
     if(netIdx<0 or netIdx>=caseNL.GetSizeofNets()) {
-      std::cout<<"Placer-Warning: terminal "<<i<<" is dangling; set it on origin\n"; 
+      logger->debug("Placer-Warning: terminal {0}  is dangling; set it on origin", i);
       caseNL.Terminals.at(i).center.x = 0;
       caseNL.Terminals.at(i).center.y = 0;
       continue;
@@ -5216,14 +5262,14 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
           caseNL.Terminals.at(i).center.x = tp.x;
           caseNL.Terminals.at(i).center.y = tp.y;
         } else {
-          std::cout<<"Placer-Error: incorrect axis direction\n";
+          logger->debug("Placer-Error: incorrect axis direction");
         }
       } else { // symmetry pair
-        if(solved_terminals.find(cp)!=solved_terminals.end()) {std::cout<<"Placer-Error: terminal "<<i<<" and "<<cp<<" are not solved simultaneously!\n"; continue;}
+        if(solved_terminals.find(cp)!=solved_terminals.end()) {logger->debug("Placer-Error: terminal {0} and {1} are not solved simultaneously",i,cp); continue;}
         solved_terminals.insert(cp);
         int netIdx2=caseNL.Terminals.at(cp).netIter;
         if(netIdx2<0 or netIdx2>=caseNL.GetSizeofNets()) {
-          std::cout<<"Placer-Error: terminal "<<i<<" is not dangling, but its counterpart "<<cp<<" is dangling; set them on origin\n"; 
+          logger->debug("Placer-Error: terminal {0} is not dangling, but its counterpart {1} is dangling; set them on origin",i,cp);
           caseNL.Terminals.at(i).center.x = 0;
           caseNL.Terminals.at(i).center.y = 0;
           caseNL.Terminals.at(cp).center.x = 0;
@@ -5316,7 +5362,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
             caseNL.Terminals.at(cp).center.y = tpL2.y;
           }
         } else {
-          std::cout<<"Placer-Error: incorrect axis direction\n";
+          logger->error("Placer-Error: incorrect axis direction");
         }
       }
     } else { // not in symmetry group
@@ -5443,7 +5489,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             default :
-                 std::cout<<"Placer-Warning: incorrect port position\n";
+                 logger->error("Placer-Warning: incorrect port position");
           }
         }
         if(shot!=-1) {
@@ -5526,9 +5572,12 @@ void ConstGraph::updateTerminalCenterRetire(design& caseNL, SeqPair& caseSP) {
 
 
 void ConstGraph::WritePlacementAP(design& caseNL, Aplace& caseAP, string outfile) {
+
+  auto logger = spdlog::default_logger()->clone("placer.ConstGraph.WritePlacementAP");
+
   ofstream fout;
   fout.open(outfile.c_str());
-  cout<<"Placer-Info: write placement"<<endl;
+  logger->debug("Placer-Info: write placement");
   fout<<"# TAMU blocks 1.0"<<endl<<endl;
   fout<<"DIE {"<<HGraph.at(sourceNode).position<<", "<<VGraph.at(sourceNode).position<<"} {"<<HGraph.at(sinkNode).position<<", "<<VGraph.at(sinkNode).position<<"}"<<endl<<endl;
   for(int i=0;i<(int)caseNL.GetSizeofBlocks();++i) {
@@ -5597,9 +5646,12 @@ void ConstGraph::WritePlacementAP(design& caseNL, Aplace& caseAP, string outfile
 }
 
 void ConstGraph::WritePlacement(design& caseNL, SeqPair& caseSP, string outfile) {
+
+  auto logger = spdlog::default_logger()->clone("placer.ConstGraph.WritePlacement");
+
   ofstream fout;
   fout.open(outfile.c_str());
-  cout<<"Placer-Info: write placement"<<endl;
+  logger->debug("Placer-Info: write placement");
   fout<<"# TAMU blocks 1.0"<<endl<<endl;
   fout<<"DIE {"<<HGraph.at(sourceNode).position<<", "<<VGraph.at(sourceNode).position<<"} {"<<HGraph.at(sinkNode).position<<", "<<VGraph.at(sinkNode).position<<"}"<<endl<<endl;
   for(int i=0;i<(int)caseNL.GetSizeofBlocks();++i) {
@@ -5668,7 +5720,10 @@ void ConstGraph::WritePlacement(design& caseNL, SeqPair& caseSP, string outfile)
 }
 
 void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) {
-  cout<<"Placer-Info: create gnuplot file"<<endl;
+
+  auto logger = spdlog::default_logger()->clone("placer.ConstGraph.PlotPlacement");
+
+  logger->debug("Placer-Info: create gnuplot file");
   placerDB::point p, bp;
   ofstream fout;
   vector<placerDB::point> p_pin;
@@ -5713,7 +5768,7 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
     }
   }
   // set labels for terminals
-  cout<<"set labels for terminals..."<<endl;
+  //cout<<"set labels for terminals..."<<endl;
   for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
     bool hasTerminal=false;
     int tno; placerDB::point tp;
@@ -5738,16 +5793,14 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
     tp.x=HGraph.at(i).position;
     tp.y=VGraph.at(i).position;
     //vector<point> newp=caseNL.GetPlacedBlockAbsBoundary(i, E, tp);
-    std::cout<<"TAMU check block "<<caseNL.GetBlockName(i)<<" select "<<caseSP.GetBlockSelected(i)<<std::endl;
+    logger->debug("TAMU check block {0} select {1}",caseNL.GetBlockName(i),caseSP.GetBlockSelected(i));
     vector<placerDB::point> newp=caseNL.GetPlacedBlockAbsBoundary(i, caseSP.GetBlockOrient(i), tp, caseSP.GetBlockSelected(i));
-    std::cout<<"TAMU after check block "<<caseNL.GetBlockName(i)<<" select "<<caseSP.GetBlockSelected(i)<<" bsize "<<newp.size()<<std::endl;
-	fout<<"# block "<<caseNL.GetBlockName(i)<<" select "<<caseSP.GetBlockSelected(i)<<" bsize "<<newp.size()<<endl;
+    logger->debug("TAMU after check block {0} select {1} bsize {2}",caseNL.GetBlockName(i),caseSP.GetBlockSelected(i),newp.size());
+    fout<<"# block "<<caseNL.GetBlockName(i)<<" select "<<caseSP.GetBlockSelected(i)<<" bsize "<<newp.size()<<endl;
     for(int it=0; it<(int)newp.size(); it++ ) {
       fout<<"\t"<<newp[it].x<<"\t"<<newp[it].y<<endl;
-      cout<<"\t"<<newp[it].x<<"\t"<<newp[it].y<<endl;
     }
     fout<<"\t"<<newp[0].x<<"\t"<<newp[0].y<<endl;
-    cout<<"\t"<<newp[0].x<<"\t"<<newp[0].y<<endl;
     fout<<endl;
   }
   fout<<"\nEOF"<<endl;
@@ -5846,7 +5899,10 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
 
 
 void ConstGraph::PlotPlacementAP(design& caseNL, Aplace& caseAP, string outfile) {
-  cout<<"Placer-Info: create gnuplot file"<<endl;
+
+  auto logger = spdlog::default_logger()->clone("placer.ConstGraph.PlotPlacementAP");
+
+  logger->debug("Placer-Info: create gnuplot file");
   placerDB::point p, bp;
   ofstream fout;
   vector<placerDB::point> p_pin;

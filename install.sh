@@ -63,6 +63,11 @@ make
 mkdir googletest/mybuild
 cp -r lib googletest/mybuild/.
 
+#### Install logger
+cd $ALIGN_HOME
+git clone https://github.com/gabime/spdlog.git
+cd spdlog && mkdir build && cd build
+cmake .. && make -j
 ### Install superLU // this now is not correct
 #version 1
 cd $ALIGN_HOME
@@ -83,6 +88,7 @@ export LP_DIR=$ALIGN_HOME/lpsolve
 #export BOOST_LP=$ALIGN_HOME/boost
 export JSON=$ALIGN_HOME/json
 export GTEST_DIR=$ALIGN_HOME/googletest/googletest/
+export SPDLOG_DIR=$ALIGN_HOME/spdlog
 export SuperLu_DIR=$ALIGN_HOME/superlu
 export VENV=$ALIGN_HOME/general
 
@@ -99,6 +105,8 @@ pip install -e .
 
 ## Install ALIGN_PnR
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}$ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/:$GTEST_DIR/mybuild/lib/
+
+export PYTHONPATH=${PYTHONPATH:+$PYTHONPATH:}$ALIGN_HOME/PlaceRouteHierFlow/
 
 cd $ALIGN_HOME/PlaceRouteHierFlow/ && make -j8
 cd $ALIGN_HOME

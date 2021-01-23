@@ -22,6 +22,7 @@
 #include "SeqPair.h"
 #include "design.h"
 #include "lp_lib.h"
+#include "spdlog/spdlog.h"
 
 using std::cerr;
 using std::cin;
@@ -42,6 +43,8 @@ class ILP_solver {
   vector<Block> Blocks;
   placerDB::point LL, UR;
   double area = 0, HPWL = 0, ratio = 0, dead_area = 0, linear_const = 0, multi_linear_const = 0;
+  typedef void (lphandlestr_func)(lprec *lp, void *userhandle, char *buf);
+  static void lpsolve_logger(lprec *lp, void *userhandle, char *buf);
 
   public:
   ILP_solver();

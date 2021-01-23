@@ -6,15 +6,18 @@
 
 
 bool PnRdatabase::ReadVerilog(const string& fpath, const string& vname, const string& topcell) {
+
+  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.ReadVerilog");
+
   string verilogfile=fpath+"/"+vname;
-  cout<<"PnRDB-Info: reading Verilog file "<<verilogfile<<endl;
+  logger->info("PnRDB-Info: reading Verilog file {0}",verilogfile);
 
   ifstream fin;
   fin.exceptions(ifstream::failbit | ifstream::badbit);
   try {
     fin.open(verilogfile.c_str());
   } catch(ifstream::failure& e) {
-      cerr<<"PnRDB-Error: failed to open Verilog file "<<verilogfile<<endl;
+      logger->error("PnRDB-Error: failed to open Verilog file {0}",verilogfile);
       return false;
   }
 
@@ -23,14 +26,14 @@ bool PnRdatabase::ReadVerilog(const string& fpath, const string& vname, const st
       rvh( fin, fpath, topcell);
   } catch(ifstream::failure e) {
       fin.close();
-      cerr<<"PnRDB-Error: fail to read Verilog file "<<endl;
+      logger->error("PnRDB-Error: fail to read Verilog file ");
       return false;
   }
 
   try {
       fin.close();
   } catch(ifstream::failure e) {
-      cerr<<"PnRDB-Error: fail to close Verilog file "<<endl;
+      logger->error("PnRDB-Error: fail to close Verilog file ");
       return false;
   }
 
@@ -40,13 +43,14 @@ bool PnRdatabase::ReadVerilog(const string& fpath, const string& vname, const st
 
 void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
 {
+  auto logger = spdlog::default_logger()->clone("PnRDB.ReadVerilogHelper.semantic");
 
     for(unsigned int i=0;i<db.hierTree.size();i++){
 
 	auto &curr_node = db.hierTree[i];
 
 	{
-	    if(db.DRC_info.Metal_info.size() < 2) {std::cout<<"PnRDB-Error: too few metal layers\n";}
+	    if(db.DRC_info.Metal_info.size() < 2) {logger->warn("PnRDB-Error: too few metal layers");}
 	    if(db.DRC_info.Metal_info[0].direct==1) { //horizontal
 		curr_node.bias_Vgraph=db.DRC_info.Metal_info[0].grid_unit_y;
 	    } else {
@@ -57,12 +61,15 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
 	    } else {
 		curr_node.bias_Hgraph=db.DRC_info.Metal_info[1].grid_unit_x;
 	    }
-	    //added one nodes to the class
-	    //if(!db.ReadConstraint(curr_node, fpath, "const")) {cerr<<"PnRDB-Error: fail to read constraint file of module "<<curr_node.name<<endl;}
-            db.ReadConstraint_Json(curr_node, fpath, "const.json");
-            // if(!db.ReadConstraint_Json(curr_node, fpath, "const.json")) {cerr<<"PnRDB-Error: fail to read constraint file of module "<<curr_node.name<<endl;}
-            // else{std::cout<<"Finished reading contraint file"<<std::endl;}
+        // added one nodes to the class
+        if (db.ReadConstraint(curr_node, fpath, "const")) {
+            logger->info("Finished reading contraint file");
+        } else if (db.ReadConstraint_Json(curr_node, fpath, "const.json")) {
+            logger->info("Finished reading contraint file");
+        } else {
+            logger->warn("PnRDB-Warn: fail to read constraint file of module {0}", curr_node.name);
         }
+    }
     }
 
 
@@ -121,18 +128,18 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
            }
        }
 
-  std::cout<<"Middle\n";
+  logger->debug("Middle");
     //mergeLEFandGDS
     for(unsigned int i=0;i<db.hierTree.size();i++){
     //cout<<"db.hierTree node "<<i<<endl;
-    if(!db.MergeLEFMapData(db.hierTree[i])){cerr<<"PnRDB-Error: fail to mergeLEFMapData of module "<<db.hierTree[i].name<<endl;
+    if(!db.MergeLEFMapData(db.hierTree[i])){logger->error("PnRDB-Error: fail to mergeLEFMapData of module {0}",db.hierTree[i].name);
       }else{
-      std::cout<<"Finished merge lef data"<<std::endl;
+      logger->debug("Finished merge lef data");
       }
       }
   // wbxu: following lines need modifications to reflect changes of block instance vector
   //update powernets information
-  std::cout<<"Middle\n";
+  logger->debug("Middle");
   for(unsigned int i=0;i<Supply_node.Blocks.size();i++){
       std::string supply_name_full = Supply_node.name+"."+Supply_node.Blocks[i].instance.back().name;
       std::string supply_name = Supply_node.Blocks[i].instance.back().name;
@@ -213,15 +220,15 @@ db.hierTree[i].Terminals[db.hierTree[i].Nets[j].connected[k].iter].netIter = j;
            if(db.hierTree[i].Nets[k].name == temp_LinearConst.net_name){
              db.hierTree[i].Nets[k].upperBound = temp_LinearConst.upperBound;
              for(int h=0;h<db.hierTree[i].Nets[k].connected.size();h++){
-                std::cout<<"Connected "<<db.hierTree[i].Nets[k].connected[h].type<<" "<<db.hierTree[i].Nets[k].connected[h].iter<<" "<<db.hierTree[i].Nets[k].connected[h].iter2<<std::endl;
+                logger->debug("Connected {0} {1} {2}",db.hierTree[i].Nets[k].connected[h].type,db.hierTree[i].Nets[k].connected[h].iter,db.hierTree[i].Nets[k].connected[h].iter2);
                 for(int l=0;l<temp_LinearConst.pins.size();l++){
-                  std::cout<<"LinearConst cont"<<temp_LinearConst.pins[l].first<<" "<<temp_LinearConst.pins[l].second<<" "<<temp_LinearConst.alpha[l]<<std::endl;
+                  logger->debug("LinearConst cont {0} {1} {2}",temp_LinearConst.pins[l].first,temp_LinearConst.pins[l].second,temp_LinearConst.alpha[l]);
                   if(db.hierTree[i].Nets[k].connected[h].type == PnRDB::Block and db.hierTree[i].Nets[k].connected[h].iter2 == temp_LinearConst.pins[l].first and db.hierTree[i].Nets[k].connected[h].iter == temp_LinearConst.pins[l].second){
-                    std::cout<<"LinearConst alpha "<<temp_LinearConst.alpha[l]<<std::endl;
+                    logger->debug("LinearConst alpha {0}",temp_LinearConst.alpha[l]);
                     db.hierTree[i].Nets[k].connected[h].alpha = temp_LinearConst.alpha[l];
                   }else if(db.hierTree[i].Nets[k].connected[h].type == PnRDB::Terminal and temp_LinearConst.pins[l].first==-1 and db.hierTree[i].Nets[k].connected[h].iter == temp_LinearConst.pins[l].second){
                     db.hierTree[i].Nets[k].connected[h].alpha = temp_LinearConst.alpha[l];
-                    std::cout<<"LinearConst alpha "<<temp_LinearConst.alpha[l]<<std::endl;
+                    logger->debug("LinearConst alpha {0}",temp_LinearConst.alpha[l]);
                   }
                  }
              }
@@ -232,14 +239,14 @@ db.hierTree[i].Terminals[db.hierTree[i].Nets[j].connected[k].iter].netIter = j;
       for(unsigned int j=0;j<db.hierTree[i].L_Constraints.size();j++){
 
           for(unsigned int k=0;k<db.hierTree[i].L_Constraints[j].alpha.size();k++){
-              std::cout<<"LinearConst info "<<db.hierTree[i].L_Constraints[j].net_name<<" "<<db.hierTree[i].L_Constraints[j].alpha[k]<<std::endl;
+              logger->debug("LinearConst info {0} {1} ",db.hierTree[i].L_Constraints[j].net_name,db.hierTree[i].L_Constraints[j].alpha[k]);
            }
 
       }
 
       for(unsigned int j=0;j<db.hierTree[i].Nets.size();j++){
          for(unsigned int k =0;k<db.hierTree[i].Nets[j].connected.size();k++){
-            std::cout<<"Assign Linear "<<db.hierTree[i].Nets[j].upperBound<<" "<<db.hierTree[i].Nets[j].connected[k].alpha<<std::endl;
+            logger->debug("Assign Linear {0} {1} ",db.hierTree[i].Nets[j].upperBound,db.hierTree[i].Nets[j].connected[k].alpha);
          }
       }
 
@@ -441,16 +448,22 @@ void ReadVerilogHelper::parse_top( istream& fin)
 
 void ReadVerilogHelper::operator()(istream& fin, const string& fpath, const string& topcell)
 {
+
+    auto logger = spdlog::default_logger()->clone("PnRDB.ReadVerilogHelper.operator()");
+
     // Swap in the new parser
     parse_top( fin);
     semantic( fpath, topcell);
-    std::cout<<"End of reading verilog\n";
+    logger->info("End of reading verilog");
 }
 
 bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
+
+  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.MergeLEFMapData");
+
   bool missing_lef_file = 0;
 
-  std::cout<<"PnRdatabase-Info:: merge LEF/map data\n";
+  logger->info("PnRdatabase-Info:: merge LEF/map data");
   for(unsigned int i=0;i<node.Blocks.size();i++){
     string master=node.Blocks[i].instance.back().master;
     if(lefData.find(master)==lefData.end()) {
@@ -458,7 +471,7 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
 	if(master.find("Cap")!=std::string::npos or
 	   master.find("cap")!=std::string::npos) continue;
 	if(node.Blocks[i].instance.back().isLeaf) {
-	    cerr<<"PnRDB-Error: the key does not exist in map:"<<" "<<master<<endl;
+	    logger->error("PnRDB-Error: the key does not exist in map: {0}",master);
 	    missing_lef_file = 1;
 	}
 	continue;

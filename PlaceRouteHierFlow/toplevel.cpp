@@ -32,6 +32,8 @@ double ConstGraph::PII=1500;
 static void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_node, int lidx,
 			const string& opath, const string& tag, const string& ltag, bool skip)
 {
+  auto logger = spdlog::default_logger()->clone("save_state");
+
   if ( skip) return;
 
   int copy_number = current_node.n_copy;
@@ -47,15 +49,18 @@ static void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_no
     ofn = opath+current_node.name + tag + ".db.json";
   }
   DB.WriteDBJSON(current_node,ofn);
-  std::cout << ltag << std::endl;
+  logger->info("{0}", ltag);
 }
 
 static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::hierNode& current_node, int lidx, const string& opath, const string& binary_directory, bool skip_saving_state, bool adr_mode)
 {
+
+  auto logger = spdlog::default_logger()->clone("route_single_variant");
+
   //std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
   //DB.Extract_RemovePowerPins(current_node);
   string dummy_file;
-  std::cout<<"Checkpoint : before route"<<std::endl;
+  //std::cout<<"Checkpoint : before route"<<std::endl;
   DB.PrintHierNode(current_node);
 
   //DB.WriteJSON (current_node, true, false, false, false, current_node.name+"_PL_"+std::to_string(lidx), drcInfo, opath); //block net powernet powergrid
@@ -78,7 +83,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
     }
     curr_route.RouteWork(global_router_mode, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor,dummy_file);
 
-    std::cout << "***WriteGcellGlobalRoute Debugging***" << std::endl;
+    logger->info( "***WriteGcellGlobalRoute Debugging***");
     if (current_node.isTop) {
       DB.WriteGcellGlobalRoute(current_node, current_node.name + "_GcellGlobalRoute_" + std::to_string(lidx) + ".json", opath);
     } else {
@@ -89,7 +94,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
           current_node_copy.name + "_GcellGlobalRoute_" + std::to_string(current_node_copy.n_copy) + "_" + std::to_string(lidx) + ".json",
           opath);
     }
-    std::cout << "***End WriteGcellGlobalRoute Debugging***" << std::endl;
+    logger->info("***End WriteGcellGlobalRoute Debugging***" );
 
     curr_route.RouteWork(5, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor,dummy_file);
 
@@ -163,13 +168,13 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
       power_grid_metal_l = 2;
       power_grid_metal_u = 11;
       curr_route.RouteWork(7, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), power_grid_metal_l, power_grid_metal_u, binary_directory, h_skip_factor, v_skip_factor, power_mesh_conffile);
-      std::cout<<"Start MNA "<<std::endl;
+      logger->debug("Start MNA ");
       string output_file_IR = "IR_drop.txt";
       string output_file_EM = "EM.txt";
       MNASimulation Test_MNA(current_node, const_cast<PnRDB::Drc_info&>(drcInfo), current_file, output_file_IR, output_file_EM);
       double worst = Test_MNA.Return_Worst_Voltage();
-      std::cout<<"worst voltage is "<< worst << std::endl;
-      std::cout<<"End MNA "<<std::endl;
+      logger->debug("worst voltage is {0} ", worst);
+      logger->debug("End MNA ");
       Test_MNA.Clear_Power_Grid(current_node.Vdd);
       Test_MNA.Clear_Power_Grid(current_node.Gnd);
       return;
@@ -180,7 +185,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
 
     DB.WriteJSON(current_node, true, true, false, true, current_node.name + "_PG_" + std::to_string(lidx), drcInfo, opath);
 
-    std::cout<<"Checkpoint : Starting Power Routing"<<std::endl;
+    logger->debug("Checkpoint : Starting Power Routing");
     curr_route.RouteWork(3, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), power_routing_metal_l, power_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor,dummy_file);
     
     DB.WriteJSON(current_node, true, false, true, true, current_node.name + "_PR_" + std::to_string(lidx), drcInfo, opath);
@@ -297,6 +302,8 @@ void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
 
 int toplevel( const std::vector<std::string>& argv) {
 
+  auto logger = spdlog::default_logger()->clone("toplevel");
+
   //
   // Enable or disable state saving in json at intermediate points
   // Currently adds 4 seconds to a 29 second baseline for the switched_capacitor_filter
@@ -322,15 +329,14 @@ int toplevel( const std::vector<std::string>& argv) {
 
   // Following codes try to get the path of binary codes
   string binary_directory = argv[0];
-  cout <<"argv[0]: "<<binary_directory <<endl;
+  logger->info("argv[0]: {0}",binary_directory);
   int beginIdx = binary_directory.rfind('/');//find the last slash
   string str_lastOne = binary_directory.substr(beginIdx+1);
-  cout <<"string after last slash: "<<str_lastOne <<endl;
+  logger->info("string after last slash: {0}",str_lastOne);
   binary_directory = binary_directory.erase(beginIdx+1);
-  cout <<"binary_directory: "<< binary_directory <<endl;
+  logger->info("binary_directory: {0}", binary_directory);
 
   mkdir(opath.c_str(), 0777);
-
   PnRdatabase DB(fpath, topcell, vfile, lfile, mfile, dfile); // construction of database
   PnRDB::Drc_info drcInfo=DB.getDrc_info();
   map<string, PnRDB::lefMacro> lefData = DB.checkoutSingleLEF();
@@ -361,8 +367,10 @@ int toplevel( const std::vector<std::string>& argv) {
   for (int i = 0; i < Q_size;i++)
   {
     int idx=TraverseOrder[i];
-    cout<<"Main-Info: start to work on node "<<idx<<endl;
-    if(disable_io)std::cout.setstate(std::ios_base::failbit);
+    logger->info("Main-Info: start to work on node {0}",idx);
+    if(disable_io){
+      std::cout.setstate(std::ios_base::failbit);
+    }
     PnRDB::hierNode current_node=DB.CheckoutHierNode(idx);
     DB.PrintHierNode(current_node);
 
@@ -370,14 +378,14 @@ int toplevel( const std::vector<std::string>& argv) {
     DB.AddingPowerPins(current_node);
     Placer_Router_Cap PRC(opath, fpath, current_node, drcInfo, lefData, 1, 6); //dummy, aspect ratio, number of aspect retio
 
-    std::cout<<"Checkpoint : before place"<<std::endl;
+    logger->debug("Checkpoint : before place");
     DB.PrintHierNode(current_node);
 
     
     // Placement
     std::vector<PnRDB::hierNode> nodeVec(numLayout, current_node);
     Placer curr_plc(nodeVec, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
-    std::cout<<"Checkpoint: generated "<<nodeVec.size()<<" placements\n";
+    logger->debug("Checkpoint: generated {0} palcements",nodeVec.size());
     //insert guard ring
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
       if (nodeVec[lidx].Guardring_Consts.size()>0){
@@ -390,11 +398,11 @@ int toplevel( const std::vector<std::string>& argv) {
 
 
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
-      std::cout<<"Checkpoint: extract power pins work on layout "<<lidx<<std::endl;
+      logger->debug("Checkpoint: extract power pins work on layout {0} ",lidx);
       DB.Extract_RemovePowerPins(nodeVec[lidx]);
-      std::cout<<"Checkpoint: checkin node work on layout "<<lidx<<std::endl;
+      logger->debug("Checkpoint: checkin node work on layout {0}",lidx);
       DB.CheckinHierNode(idx, nodeVec[lidx]);
-      std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
+      logger->debug("Checkpoint: work on layout {0}",lidx);
     }
     DB.hierTree[idx].numPlacement = nodeVec.size();
 
@@ -402,7 +410,7 @@ int toplevel( const std::vector<std::string>& argv) {
     //TreeVec[idx] = nodeVec;
     //Q.pop();
     if(disable_io)std::cout.clear();
-    cout<<"Main-Info: complete node "<<idx<<endl;
+    logger->info("Main-Info: complete node {0}",idx);
   }
 
   if(disable_io)std::cout.setstate(std::ios_base::failbit);

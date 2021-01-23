@@ -114,6 +114,7 @@ services:
       - TOP=/ALIGN-public
       - ALIGN_HOME=/ALIGN-public
       - ALIGN_WORK_DIR
+      - PYTHONPATH
     image: align_image
     build:
       <<: *default-build

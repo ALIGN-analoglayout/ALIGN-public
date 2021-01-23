@@ -104,6 +104,8 @@ void MNASimulation::WriteOut_Spice(std::set<MDB::metal_point, MDB::Compare_metal
 
 MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc_info, std::string inputfile, std::string outputfile, std::string outputem){
 
+  auto logger = spdlog::default_logger()->clone("MNA.MNASimulation.MNASimulation");
+
   boost_matrix out_R, out_I; 
   std::vector<std::vector<double> > Istore,Vstore,Rstore;
   std::vector<int> mark_point;
@@ -115,14 +117,14 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
   std::set<MDB::metal_point, MDB::Compare_metal_point> point_set;
   ExtractPowerGrid(current_node.Vdd, current_node.Gnd, drc_info, Power_Grid_devices, mark_point, point_set, inputfile);
 
-  std::cout<<"Start Writing spice file"<<std::endl;
+  //std::cout<<"Start Writing spice file"<<std::endl;
   //WriteOut_Spice(point_set);
-  std::cout<<"End Writing spice file"<<std::endl;
+  //std::cout<<"End Writing spice file"<<std::endl;
 
   std::set<MDB::metal_point, MDB::Compare_metal_point> vdd_point_set;
   std::set<MDB::metal_point, MDB::Compare_metal_point> gnd_point_set;
 
-  std::cout<<"Vdd Devices"<<std::endl;
+  //std::cout<<"Vdd Devices"<<std::endl;
   Print_Devices(Power_Grid_devices);
 
   SuperMatrix A, L, U, B, X;
@@ -141,7 +143,7 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
   int layer = 6;
   maxx = MaxX(gnd_point_set,layer);
   maxy = MaxY(gnd_point_set,layer);
-  std::cout << "maxx = "<< maxx <<" maxy= " << maxy << std::endl;
+  //std::cout << "maxx = "<< maxx <<" maxy= " << maxy << std::endl;
 
   int powerdev = 0;
   int currentdev = 0;
@@ -154,7 +156,7 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
 	    currentdev++;
 	  }
   }
-  std::cout<<"power dev = " << powerdev << std::endl;
+  //std::cout<<"power dev = " << powerdev << std::endl;
 	nrhs = 1;
   m = node_num1 + powerdev;
 
@@ -191,17 +193,17 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
     /* Initialize matrix A. */
 
   int count = 0;
-  std::cout<<"count=" << count <<std::endl;
+  logger->debug("count= {0}" , count);
   std::vector<double> store;
 
   count = 2 * (Power_Grid_devices.size()-currentdev) + node_num1;
 
-  std::cout<<"count=" << count <<std::endl;
+  logger->debug("count= {0}",count);
   m = n = node_num1 + powerdev;
   nnz = count;
  
   if ( !(a = doubleMalloc(nnz)) ) ABORT("Malloc fails for a[].");
-  std::cout<<"checkcheck"<<std::endl;
+  //std::cout<<"checkcheck"<<std::endl;
   if ( !(asub = intMalloc(nnz)) ) ABORT("Malloc fails for asub[].");
   if ( !(xa = intMalloc(n+1)) ) ABORT("Malloc fails for xa[].");
   xa[n] = count;
@@ -281,10 +283,10 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
     }
 }
 
-  std::cout<<"check point1"<<std::endl;
+  //std::cout<<"check point1"<<std::endl;
   /* Create matrix A in the format expected by SuperLU. */
   dCreate_CompCol_Matrix(&A, m, n, nnz, a, asub, xa, SLU_NC, SLU_D, SLU_GE);
-  std::cout<<"check point2"<<std::endl;
+  //std::cout<<"check point2"<<std::endl;
   dPrint_CompCol_Matrix("A", &A);
   char equed[1] = {'B'};
   int *etree;
@@ -318,7 +320,7 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
   //dPrint_CompCol_Matrix("A",&A);
   // ilu_set_default_options(&options);  
   set_default_options(&options);
-  std::cout<<"check point3"<<std::endl;
+  //std::cout<<"check point3"<<std::endl;
   //options.PivotGrowth = YES;/* Compute reciprocal pivot growth */
   //options.ConditionNumber = YES;
   //options.ILU_DropTol= 0.00000001;
@@ -326,10 +328,10 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
   options.ColPerm = COLAMD;
   //options.IterRefine = SLU_DOUBLE;
   //options.DiagPivotThresh = 0.000001;
-  std::cout<<"check point4"<<std::endl;
+  //std::cout<<"check point4"<<std::endl;
   /* Initialize the statistics variables. */
   StatInit(&stat);
-  std::cout<<"check point5"<<std::endl;
+  //std::cout<<"check point5"<<std::endl;
   /* Solve the linear system. */
   /*
   dgsisx(&options, &A, perm_c, perm_r, etree, equed, R, C,
@@ -337,15 +339,15 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
 	&mem_usage, &stat, &info);*/
 
   dgssv(&options, &A, perm_c, perm_r, &L, &U, &B, &stat, &info);
-  std::cout<<"check point6 info == "<< info <<std::endl;  
+  logger->debug("check point6 info == {0}", info);  
   
   dPrint_CompCol_Matrix("A", &A);
   //dPrint_CompCol_Matrix("U", &U);
   //dPrint_SuperNode_Matrix("L", &L);
   //print_int_vec("\nperm_r", m, perm_r);
-  std::cout<<"check point7"<<std::endl;  
+  //std::cout<<"check point7"<<std::endl;  
   dPrint_Dense_Matrix("B",&B);
-  std::cout<<"check point8"<<std::endl;
+  //std::cout<<"check point8"<<std::endl;
   /*Detect the result*/
   DNformat* Bstore = (DNformat*) B.Store;
   register int k, j, lda = Bstore->lda;
@@ -355,7 +357,7 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
 
   int vol_count = 0;
   if (!(volt = doubleMalloc(n)))    ABORT("Malloc fails for volt[].")
-    std::cout<<"check point9"<<std::endl;  
+    //std::cout<<"check point9"<<std::endl;  
   //int num_nodes         = m_Gmat->GetNumNodes();
   for (i = 0; i < n; ++i) {
     for (j = 0; j < B.ncol; ++j) {
@@ -366,7 +368,7 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
     }
   }
   for (k = 0; k < B.nrow; ++k){
-    std::cout<<"dp[" << k << "]=" << dp[k] <<std::endl;
+    logger->debug("dp[ {0} ]= {1} ", k, dp[k]);
   }
 
   Print_Result(point_set, dp, outputfile);
@@ -376,7 +378,7 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
   for (int j = 0; j < n; j++){
     std::cout<<"volt[" << j << "]=" << volt[j] <<std::endl;
   }*/
-  std::cout<<"check point10"<<std::endl;
+  //std::cout<<"check point10"<<std::endl;
   double min = 0.8;
   for (int i = 0; i < B.nrow; i++){
     if (dp[i] < min ){
@@ -387,9 +389,9 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
     }
   }
   result = min;
-  std::cout<<"result=" << result <<std::endl;
+  logger->debug("result= {0}" , result);
 
-  std::cout<<"check point11"<<std::endl;
+  //std::cout<<"check point11"<<std::endl;
   /* De-allocate storage */
   SUPERLU_FREE (rhs);
   SUPERLU_FREE (perm_r);
@@ -448,6 +450,8 @@ void MNASimulation::Print_Grid(std::set<MDB::metal_point, MDB::Compare_metal_poi
 
 void MNASimulation::Print_EM(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, std::vector<MDB::device> &temp_devices, int size, double* dp, std::string outputem){
 
+  auto logger = spdlog::default_logger()->clone("MNA.MNASimulation.Print_EM");
+
   std::ofstream pythonfile;
   pythonfile.open(outputem);
   //int size = dp.size(); 
@@ -491,7 +495,7 @@ void MNASimulation::Print_EM(std::set<MDB::metal_point, MDB::Compare_metal_point
   }
   int target_metal_layer_index = 2;
   int target_power_grid_index = 1;
-  std::cout<<"finish em"<<std::endl;
+  logger->debug("finish em");
   for(auto it = point_set.begin(); it != point_set.end(); it++){
     if(it->metal_layer == target_metal_layer_index && it->power !=0){
       pythonfile<< it->x << " " << it->y << " " << it->metal_layer << " "<< em[it->index - 1] << " " << it->power <<std::endl;
@@ -501,8 +505,11 @@ void MNASimulation::Print_EM(std::set<MDB::metal_point, MDB::Compare_metal_point
 };
 
 void MNASimulation::Print_Devices(std::vector<MDB::device> &temp_devices){
+
+  auto logger = spdlog::default_logger()->clone("MNA.MNASimulation.Print_Devices");
+
   for(int i=0;i<temp_devices.size();i++){
-    std::cout<<"devices type "<<temp_devices[i].device_type<<" point 1 "<<temp_devices[i].start_point_index<<" point 2 "<<temp_devices[i].end_point_index<<" value "<< temp_devices[i].value <<std::endl;
+    logger->debug("devices type {0} point1 {1} point2 {2} {3} ",temp_devices[i].device_type,temp_devices[i].start_point_index,temp_devices[i].end_point_index, temp_devices[i].value);
   }
 };
 
@@ -613,14 +620,16 @@ int MNASimulation::MapPoint(std::set<MDB::metal_point, MDB::Compare_metal_point>
 
 void MNASimulation::AddingI(std::vector<MDB::metal_point> &I_point_v, std::vector<MDB::metal_point> &I_point_g, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, std::vector<MDB::device> &Power_Grid_devices, double current){
 
+   auto logger = spdlog::default_logger()->clone("MNA.MNASimulation.AddingI");
+
    for(unsigned int i=0;i<I_point_v.size();++i){
        MDB::device temp_device;
        auto first_point = temp_set.find(I_point_v[i]);
        int start_index = first_point->index;
-       std::cout<<"First Point (x,y) index metal "<<first_point->x<<" "<<first_point->y<<" "<<start_index<<" "<<first_point->metal_layer<<std::endl;
+       logger->debug("First Point (x,y) index metal {0} {1} {2} {3}",first_point->x,first_point->y,start_index,first_point->metal_layer);
        auto second_point = temp_set.find(I_point_g[i]);
        int end_index = second_point->index;
-       std::cout<<"Second Point (x,y) index metal "<<second_point->x<<" "<<second_point->y<<" "<<end_index<<" "<<second_point->metal_layer<<std::endl;
+       logger->debug("Second Point (x,y) index metal {0} {1} {2} {3} ",second_point->x,second_point->y,end_index,second_point->metal_layer);
        temp_device.device_type = MDB::I;
        temp_device.start_point_index = start_index;
        temp_device.end_point_index = end_index;  
@@ -641,7 +650,7 @@ void MNASimulation::AddingPower(std::vector<MDB::metal_point> &power_points, std
        temp_device.start_point.y = first_point->y;
        temp_device.start_point.metal_layer = first_point->metal_layer;
        temp_device.start_point.power = first_point->power;
-       std::cout<<"First Point (x,y) index metal "<<first_point->x<<" "<<first_point->y<<" "<<start_index<<" "<<first_point->metal_layer<<std::endl;
+       //std::cout<<"First Point (x,y) index metal "<<first_point->x<<" "<<first_point->y<<" "<<start_index<<" "<<first_point->metal_layer<<std::endl;
        //  std::cout<<"Second Point (x,y) index metal "<<temp_point.x<<" "<<temp_point.y<<" "<<end_index<<" "<<temp_point.metal_layer<<std::endl;
        temp_device.device_type = MDB::V;
        temp_device.start_point_index = start_index;
@@ -779,16 +788,16 @@ void MNASimulation::FindPowerPoints(std::set<MDB::metal_point, MDB::Compare_meta
          y_set.insert(it->y);
        }
   }
-  std::cout <<"size of x_set= " << x_set.size()<<std::endl;
-  std::cout <<"size of y_set= " << y_set.size()<<std::endl;
+  //std::cout <<"size of x_set= " << x_set.size()<<std::endl;
+  //std::cout <<"size of y_set= " << y_set.size()<<std::endl;
   for(auto it = x_set.begin(); it != x_set.end(); ++it){
      x_v.push_back(*it);
   }
-  std::cout <<"size of x_v= " << x_v.size()<<std::endl;
+  //std::cout <<"size of x_v= " << x_v.size()<<std::endl;
   for(auto it = y_set.begin(); it != y_set.end(); ++it){
      y_v.push_back(*it);
   }
-  std::cout <<"size of y_v= " << y_v.size()<<std::endl;
+  //std::cout <<"size of y_v= " << y_v.size()<<std::endl;
   //need revise
   int x_number = sqrt(power_number);
   int y_number = sqrt(power_number);
@@ -808,10 +817,10 @@ void MNASimulation::FindPowerPoints(std::set<MDB::metal_point, MDB::Compare_meta
         temp_point.x = x_v[i];
         temp_point.y = y_v[j];
         power_points.push_back(temp_point);
-	      std::cout<<"i="<<i<<"j="<<j<<std::endl;
+	      //std::cout<<"i="<<i<<"j="<<j<<std::endl;
       }
   }
-  std::cout<<"in find power point size = " << power_points.size()<<std::endl;
+  //std::cout<<"in find power point size = " << power_points.size()<<std::endl;
 };
 
 void MNASimulation::FindPowerPoints_New(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, double power, int metal_layer, int power_number, std::vector<MDB::metal_point> &power_points){
@@ -834,16 +843,16 @@ void MNASimulation::FindPowerPoints_New(std::set<MDB::metal_point, MDB::Compare_
          y_set.insert(it->y);
        }
   }
-  std::cout <<"size of x_set= " << x_set.size()<<std::endl;
-  std::cout <<"size of y_set= " << y_set.size()<<std::endl;
+  //std::cout <<"size of x_set= " << x_set.size()<<std::endl;
+  //std::cout <<"size of y_set= " << y_set.size()<<std::endl;
   for(auto it = x_set.begin(); it != x_set.end(); ++it){
      x_v.push_back(*it);
   }
-  std::cout <<"size of x_v= " << x_v.size()<<std::endl;
+  //std::cout <<"size of x_v= " << x_v.size()<<std::endl;
   for(auto it = y_set.begin(); it != y_set.end(); ++it){
      y_v.push_back(*it);
   }
-  std::cout <<"size of y_v= " << y_v.size()<<std::endl;
+  //std::cout <<"size of y_v= " << y_v.size()<<std::endl;
   //need revise
   int x_number = sqrt(power_number);
   int y_number = power_number/x_number;
@@ -858,27 +867,27 @@ void MNASimulation::FindPowerPoints_New(std::set<MDB::metal_point, MDB::Compare_
   vector<double> candidate_x;
   vector<double> candidate_y;
 
-  std::cout<<"x_number "<<x_number<<" "<<y_number<<std::endl;
-  std::cout<<"power mesh range "<<range_x<<" "<<range_y<<std::endl;
+  //std::cout<<"x_number "<<x_number<<" "<<y_number<<std::endl;
+  //std::cout<<"power mesh range "<<range_x<<" "<<range_y<<std::endl;
 
   for(int i=1;i<=x_number;i++){
      candidate_x.push_back((double)x_v[0]+i*range_x);
-     std::cout<<"candidate_x "<<(double)x_v[0]+i*range_x<<" ";
+     //std::cout<<"candidate_x "<<(double)x_v[0]+i*range_x<<" ";
   }
-  std::cout<<std::endl;
+  //std::cout<<std::endl;
 
   for(int i=1;i<=y_number;i++){
      candidate_y.push_back((double) y_v[0]+i*range_y);
-     std::cout<<"candidate_y "<<(double) y_v[0]+i*range_y<<" ";
+     //std::cout<<"candidate_y "<<(double) y_v[0]+i*range_y<<" ";
   }
-  std::cout<<std::endl;
+  //std::cout<<std::endl;
 
   for(int i =0;i<candidate_x.size();i++){
     for(int j=0;j<candidate_y.size();j++){
       temp_point.x = find_nearest(candidate_x[i],x_v);
       temp_point.y = find_nearest(candidate_y[j],y_v);
       power_points.push_back(temp_point);
-      std::cout<<"power points "<<temp_point.x<<" "<<temp_point.y<<std::endl;
+      //std::cout<<"power points "<<temp_point.x<<" "<<temp_point.y<<std::endl;
     }
   }
 };
@@ -917,7 +926,7 @@ void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gn
    while (getline(ss, tmp, ' ')){
 	   v.push_back(stod(tmp));//stod: string->double
    }
-   std::cout<<"v number "<<v.size()<<" vianumber size "<<vianumber.size()<<std::endl;
+   //std::cout<<"v number "<<v.size()<<" vianumber size "<<vianumber.size()<<std::endl;
    //assert(0);
    for(int i=0;i<v.size();i++){
      vianumber[i]=v[i];
@@ -931,14 +940,14 @@ void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gn
    ExtractPowerGridPoint(gnd, point_set, highest_metal, lowest_metal, 0.0);
 
    int refresh_index = 1;
-   std::cout<<"Gnd Point Set"<<std::endl;
+   //std::cout<<"Gnd Point Set"<<std::endl;
    for(auto it = point_set.begin(); it != point_set.end(); ++it){
        it->index = refresh_index;
 	     if(it->metal_layer == lowest_metal || it->metal_layer == lowest_metal + 1){
 	       mark_point.push_back(refresh_index);
 	    }
    //std::cout<<"(x,y) index metal "<<it->x<<" "<<it->y<<" "<<it->index<<" "<<it->metal_layer<<std::endl;
-      std::cout<<it->x<<"\t"<<it->y<<"\t"<<it->index<<"\t"<<it->metal_layer<<std::endl;
+      //std::cout<<it->x<<"\t"<<it->y<<"\t"<<it->index<<"\t"<<it->metal_layer<<std::endl;
       refresh_index = refresh_index + 1;
     }
 
@@ -1087,7 +1096,7 @@ void MNASimulation::Map(std::vector<std::vector<double>> &currentstore, std::set
     temp_device.end_point_index = max_index +1;
     double unit_r = this->Drc_info.Metal_info[metal_layer].unit_R;
     temp_device.value = (abs(initial_x-startx)+abs(initial_y-starty))/multi_connection*unit_r;
-    std::cout<<"power mesh multi-connection "<<initial_x<<" "<<initial_y<<" "<<startx<<" "<<starty<<" "<<multi_connection<<" "<<unit_r<<" "<<temp_device.value<<std::endl;
+    //std::cout<<"power mesh multi-connection "<<initial_x<<" "<<initial_y<<" "<<startx<<" "<<starty<<" "<<multi_connection<<" "<<unit_r<<" "<<temp_device.value<<std::endl;
     Power_Grid_devices.push_back(temp_device);
     
     MDB::metal_point end_temp_point;
@@ -1106,7 +1115,7 @@ void MNASimulation::Map(std::vector<std::vector<double>> &currentstore, std::set
     temp_device.start_point_index = max_index +2;
     temp_device.end_point_index = end_index;  
     temp_device.value = (abs(initial_x-endx)+abs(initial_y-endy))/multi_connection*unit_r;
-    std::cout<<"power mesh multi-connection "<<initial_x<<" "<<initial_y<<" "<<endx<<" "<<endy<<" "<<multi_connection<<" "<<unit_r<<" "<<temp_device.value<<std::endl;
+    //std::cout<<"power mesh multi-connection "<<initial_x<<" "<<initial_y<<" "<<endx<<" "<<endy<<" "<<multi_connection<<" "<<unit_r<<" "<<temp_device.value<<std::endl;
     Power_Grid_devices.push_back(temp_device);
 
     temp_device.device_type = MDB::I;
@@ -1269,7 +1278,7 @@ void MNASimulation::Map_new(std::vector<std::vector<double>> &currentstore, std:
     temp_device.end_point_index = max_index +1;
     double unit_r = this->Drc_info.Metal_info[metal_layer].unit_R;
     temp_device.value = (abs(initial_x-vdd_maxx)+abs(initial_y-vdd_maxy))/multi_connection*unit_r+2*25/multi_connection;
-    std::cout<<"power mesh multi-connection "<<initial_x<<" "<<initial_y<<" "<<vdd_maxx<<" "<<vdd_maxy<<" "<<multi_connection<<" "<<unit_r<<" "<<temp_device.value<<std::endl;
+    //std::cout<<"power mesh multi-connection "<<initial_x<<" "<<initial_y<<" "<<vdd_maxx<<" "<<vdd_maxy<<" "<<multi_connection<<" "<<unit_r<<" "<<temp_device.value<<std::endl;
     Power_Grid_devices.push_back(temp_device);
     
     MDB::metal_point end_temp_point;
@@ -1288,7 +1297,7 @@ void MNASimulation::Map_new(std::vector<std::vector<double>> &currentstore, std:
     temp_device.start_point_index = max_index +2;
     temp_device.end_point_index = end_index;  
     temp_device.value = (abs(initial_x-gnd_maxx)+abs(initial_y-gnd_maxy))/multi_connection*unit_r+2*25/multi_connection;
-    std::cout<<"power mesh multi-connection "<<initial_x<<" "<<initial_y<<" "<<gnd_maxx<<" "<<gnd_maxy<<" "<<multi_connection<<" "<<unit_r<<" "<<temp_device.value<<std::endl;
+    //std::cout<<"power mesh multi-connection "<<initial_x<<" "<<initial_y<<" "<<gnd_maxx<<" "<<gnd_maxy<<" "<<multi_connection<<" "<<unit_r<<" "<<temp_device.value<<std::endl;
     Power_Grid_devices.push_back(temp_device);
 
     temp_device.device_type = MDB::I;
