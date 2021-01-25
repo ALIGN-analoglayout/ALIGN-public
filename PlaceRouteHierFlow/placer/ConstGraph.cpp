@@ -1566,10 +1566,10 @@ void ConstGraph::CalculateLongestPath(int s, vector<Vertex> &graph, bool backwar
     if(!backward) {
       if(graph[u].position!=NINF) {
         for(vector<Edge>::iterator it=graph[u].Edges.begin(); it!=graph[u].Edges.end(); ++it) {
-          std::cout<<"current node and next node "<<u<<" "<<it->next<<std::endl;
+          //std::cout<<"current node and next node "<<u<<" "<<it->next<<std::endl;
           //if(!it->isBackward && graph[it->next].position<graph[u].position+it->weight) {
           if(graph[it->next].position<graph[u].position+it->weight) {
-            std::cout<<"next node "<<it->next<<" position "<<graph[it->next].position<<" updated to "<<graph[u].position + it->weight<<std::endl;
+            //std::cout<<"next node "<<it->next<<" position "<<graph[it->next].position<<" updated to "<<graph[u].position + it->weight<<std::endl;
             graph[it->next].position=graph[u].position + it->weight;
             graph[it->next].precedent=u;
             //std::cout<<it->next<<" prec "<<u<<" pos "<<graph[it->next].position<<std::endl;
