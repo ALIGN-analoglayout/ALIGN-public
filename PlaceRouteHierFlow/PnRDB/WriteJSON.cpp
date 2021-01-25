@@ -65,7 +65,7 @@ JSONExtractUit (string GDSData, double& unit)
 		json lib = *lit;
 		json strAry = lib["units"];
                 if(strAry.is_array()) {
-                     logger->debug("Unit {0} ",strAry);
+                     logger->debug("Unit {0} ", to_string(strAry));
 		     json::iterator xyI = strAry.begin();
                      double xyU=*xyI;
                      unit=2*0.00025/xyU;
@@ -458,7 +458,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     json jsonElements = json::array();
 
     int x[5], y[5];
-    int write_blockPins_name = 1;
+    int write_blockPins_name = 0;
     if (write_blockPins_name and node.isTop ==1){
 	for (unsigned int i = 0; i < node.blockPins.size(); i++) {
 	    int write = 0;

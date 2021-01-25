@@ -154,8 +154,8 @@ class BasicElement:
 
     def transistor(self):
         """transistor: m5 net5 phi2 0 0 nmos_rvt w=81e-9 l=20e-9 nfin=3
-             The assumption is 3 port network
-             pins = [drain, gate, source]
+             The assumption is 4 port network
+             pins = [drain, gate, source, body]
         """
         logger.debug(f"Querying transistor {self.line}")
         self.get_elements(4)
@@ -175,9 +175,8 @@ class BasicElement:
             "inst": self.inst,
             "inst_type": inst_type,
             "real_inst_type": self.real_inst_type,
-            "body_pin":self.pins[3],
-            "ports": self.pins[0:3],
-            "edge_weight": self.pin_weight[0:3],
+            "ports": self.pins[0:4],
+            "edge_weight": self.pin_weight[0:4],
             "values": parse_value(self.value)
         }
 

@@ -41,7 +41,7 @@ M4 (DE DA SE B) NMOS w=w l=90n
 M5 (DF DA SF B) NMOS w=w l=90n
 M6 (DG DA SG B) NMOS w=w l=90n
 M7 (DH DA SH B) NMOS w=w l=90n
-.ends LSB_NMOS_2
+.ends LSB_NMOS_7
 
 .subckt LSB_PMOS_2 DA DB DC SA SB SC
 **UT austin  array VCM5
@@ -120,8 +120,8 @@ M1 zn i SP PB PMOS_VTL w=w1 l=l0
 
 .subckt stage2_inv G1 G2 SN SP
 MM0 G1 D SN SN NMOS l=60n w=1u m=1
-MM1 D G2 SN SN NMOS l=60n w=1u m=1
-MM2 G1 D SP SP PMOS l=60n w=1u m=1
+MM1 G1 D SP SP PMOS l=60n w=1u m=1
+MM2 D G2 SN SN NMOS l=60n w=1u m=1
 MM3 D G2 SP SP PMOS l=60n w=1u m=1
 .ends stage2_inv
 

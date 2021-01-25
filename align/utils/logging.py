@@ -14,6 +14,27 @@ def configure_logging():
             if isinstance(x, logging.handlers.RotatingFileHandler):
                 x.doRollover()
 
+def reconfigure_loglevels(file_level=None, console_level=None):
+    if file_level and console_level:
+        logging.getLogger().setLevel(min(logging.getLevelName(file_level), logging.getLevelName(console_level)))
+    elif file_level:
+        logging.getLogger().setLevel(logging.getLevelName(file_level))
+    elif console_level:
+        logging.getLogger().setLevel(logging.getLevelName(console_level))
+
+    if file_level:
+        handler = next(x for x in logging.getLogger().handlers if isinstance(x, logging.handlers.RotatingFileHandler))
+        handler.setLevel(logging.getLevelName(file_level))
+
+    if console_level:
+        handler = next(x for x in logging.getLogger().handlers if isinstance(x, logging.StreamHandler))
+        handler.setLevel(logging.getLevelName(console_level))
+
+def get_loglevels():
+    filehandler = next(x for x in logging.getLogger().handlers if isinstance(x, logging.handlers.RotatingFileHandler))
+    consolehandler = next(x for x in logging.getLogger().handlers if isinstance(x, logging.StreamHandler))
+    return logging.getLevelName(filehandler.level), logging.getLevelName(consolehandler.level)
+
 class StreamLogger(object):
     """
     Stream object that redirects writes to logger

@@ -13,10 +13,10 @@ def test_verilog_writer():
     result_dir = pathlib.Path(__file__).parent /'Results'
     VERILOG_FP = open(result_dir / 'ota.v', 'w')
     SP_FP = open(result_dir / 'ota_blocks.sp', 'w')
-    available_cell_generator = ['Switch_PMOS', 'CMC_NMOS', 'CMC_PMOS', 'DP_NMOS', 'CMC_PMOS_S', 'DCL_NMOS', 'SCM_NMOS']
+    available_cell_generator = ['Switch_PMOS', 'CMC_NMOS', 'CMC_PMOS', 'DP_NMOS_B', 'CMC_S_NMOS_B', 'DCL_NMOS', 'SCM_NMOS']
     config_path=pathlib.Path(__file__).resolve().parent / 'design_config.json'
     design_config={
-            "vt_type":["HVT","LVT","RVT"],
+            "vt_type":["SLVT","HVT","LVT","RVT"],
             "unit_size_nmos":12,
             "unit_size_pmos":12,
             "unit_size_cap":12,
