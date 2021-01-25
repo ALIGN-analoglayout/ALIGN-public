@@ -155,6 +155,7 @@ class PnRdatabase
     void PrintLEFData();          // print LEF data for debugging
     map<string, vector<PnRDB::lefMacro>> checkoutlef() { return lefData; };
     bool ReadConstraint(PnRDB::hierNode &node, string fpath, string suffix);
+    bool ReadConstraint_Json(PnRDB::hierNode &node, string fpath, string suffix);
     bool MergeLEFMapData(PnRDB::hierNode &node);
     void PrintHierTree();
     bool ReadMap(string fpath, string mapname); // read gds data from map file

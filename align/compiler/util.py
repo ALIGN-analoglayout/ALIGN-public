@@ -95,15 +95,16 @@ def compare_two_nodes(G,node1:str,node2:str ,ports_weight):
 def max_connectivity(G):
     conn_value =0
     #internal_nets =[x for x,y in G.nodes(data=True) if y['inst_type']=='net' and len(G.edges(x)) > 1]
+    #Drain and source weights are equal
     for (u, v, wt) in G.edges.data('weight'):
-        if G.nodes[u]['inst_type']=='net' and len(G.edges(u)) >1:
+        if G.nodes[u]['inst_type']=='net' and len(G.edges(u)) >1 and wt<8:
             if 'mos' in G.nodes[v]['inst_type'] and wt >3:
-                conn_value-=2
+                conn_value-=3
             conn_value +=wt
             #print (u,conn_value)
-        elif G.nodes[v]['inst_type']=='net' and len(G.edges(v)) >1:
+        elif G.nodes[v]['inst_type']=='net' and len(G.edges(v)) >1 and wt<8:
             if 'mos' in G.nodes[u]['inst_type'] and wt >3:
-                conn_value-=2
+                conn_value-=3
             conn_value +=wt
             #print (v,conn_value)
     return conn_value
