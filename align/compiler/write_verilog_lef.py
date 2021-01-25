@@ -152,19 +152,10 @@ class WriteSpice:
                     for key, value in attr["ports_match"].items():
                         ports.append(key)
                         nets.append(value)
-                    #move body pin to last
-                    #ports.append(ports.pop(0))
-                    #nets.append(nets.pop(0))
-                    # transitor with shorted terminals
                     if 'DCL_NMOS' in attr['inst_type']:
                         nets[1:1]=[nets[0]]
                     elif 'DCL_PMOS' in attr['inst_type']:
                         nets[1:1]=[nets[1]]
-                    # add body ports to transistor
-                    #if 'PMOS' in attr['inst_type']:
-                    #    nets.append('vdd')
-                    #elif 'NMOS' in attr['inst_type']:
-                    #    nets.append('vss')
                 elif "connection" in attr:
                     try:
                         logger.debug(f'connection to ports: {attr["connection"]}')
@@ -243,8 +234,6 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
                 'primitive': block_name,
                 'value': design_config["unit_size_cap"]
             }
-
-
     elif name.lower().startswith('res'):
         if 'res' in values.keys():
             size = '%g'%(round(values["res"],2))
@@ -253,7 +242,6 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
             size = '_'.join(param+str(values[param]) for param in values)
         block_name = name + '_' + size.replace('.','p')
         try:
-            #size = float(size)
             height = ceil(sqrt(float(size) / design_config["unit_height_res"]))
             if block_name in available_block_lef:
                 return block_name, available_block_lef[block_name]
@@ -267,25 +255,20 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
                 'primitive': name,
                 'value': (1, design_config["unit_height_res"])
             }
-
     else:
         if 'nmos' in name.lower():
             unit_size_mos = design_config["unit_size_nmos"]
         else:
             unit_size_mos = design_config["unit_size_pmos"]
-
         if "nfin" in values.keys():
             #FinFET design
             size = int(values["nfin"])
             name_arg ='nfin'+str(size)
-
         elif "w" in values.keys():
             #Bulk design
             size = int(values["w"]*1E+9/design_config["Gate_pitch"])
             values["nfin"]=size
             name_arg ='nfin'+str(size)
-
-
         else:
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)

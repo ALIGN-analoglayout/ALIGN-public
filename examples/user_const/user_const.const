@@ -1,4 +1,4 @@
-CreateAlias -blocks [m4, m5] -name group1
+CreateAlias -blocks [m0, m1] -name group1
 GroupBlocks -hier xi0 -blocks group1 -name CMFB
 OrderBlocks -blocks [c0,c1] -direction V
 NetConst -nets [D1,G1,S] -shield vss -criticality 200

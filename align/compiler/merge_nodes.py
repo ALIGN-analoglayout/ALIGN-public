@@ -9,7 +9,7 @@ import networkx as nx
 import logging
 logger = logging.getLogger(__name__)
 
-def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: list, matched_ports: dict):
+def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: list, matched_ports: dict,new_inst_name=None):
 
     """
     Merges the  given nodes in list_of_nodes and returns a
@@ -88,6 +88,8 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
     if len(real_inst_types)==1:
         real_inst_types=real_inst_types[0]
     new_node='_'.join(new_node)
+    if new_inst_name:
+        new_node=new_inst_name
     G.add_node(new_node,
                inst_type=new_inst_type,
                real_inst_type=real_inst_types,
@@ -108,7 +110,7 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
 
     check_nodes(subgraph)
 
-    return G, subgraph, new_node
+    return subgraph, new_node
 
 #%%
 def convert_unit(value:str):

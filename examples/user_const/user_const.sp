@@ -25,7 +25,7 @@ m1 net06 vbiasp1 vdd vdd pmos_rvt w=270e-9 l=20e-9 nfin=12
 ** End of subcircuit definition.
 
 ** Library name: ALIGN_circuits_ASAP7nm
-.subckt user_const D G S D1 G1 
+.subckt user_const D G S D1 G1 vdd vss
 xi0 S vdd D G vss D1 G1 vbiasp voutn voutp telescopic_ota
 m0 D G S vss nmos_rvt w=270e-9 l=20e-9 nfin=12
 m1 D1 G1 S vss nmos_rvt w=270e-9 l=20e-9 nfin=12
