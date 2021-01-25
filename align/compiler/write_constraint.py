@@ -261,31 +261,22 @@ def FindSymmetry(graph, ports:list, ports_weight:dict, stop_points:list):
 
     return all_match_pairs
 
-def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_points=None):
-    const_file = (input_dir / (name + '.const'))
-    json_const_file = (input_dir / (name + '.const.json'))
-
-    logger.debug("writing constraints: %s",const_file)
+def WriteConst(graph, input_dir, name, ports, ports_weight, all_array,input_const, stop_points=None):
+    json_const_file = input_dir / (name + '.const.json')
+    logger.debug("writing constraints: %s",json_const_file)
     logger.debug(f"ports weight: {ports_weight} stop_points : {stop_points}")
 
     # Read contents of input constraint file
-    # Check if there are any other constraints except cap constraints
-    # No constraints are written in case constraints are provided
-    logger.info("input const file: %s", const_file)
-    if const_file.exists() and const_file.is_file():
-        return
-        ## Designer want file based check
-        with open(const_file) as f:
-            for content in f:
-                logger.info("line %s",content)
-                if 'SymmBlock' in content or 'SymmNet' in content:
-                    return
+
     all_match_pairs=FindSymmetry(graph.copy(), ports, ports_weight, stop_points)
     all_match_pairs={k: v for k, v in all_match_pairs.items() if len(v)>1}
     logger.debug(f"all symmetry matching pairs {pprint.pformat(all_match_pairs, indent=4)}")
     written_symmetries = ''
-    json_const = {}
-    json_const["constraints"] = []
+    if input_const:
+        json_const=input_const
+    else:
+        json_const = {}
+        json_const["constraints"] = []
 
 
     ## ALIGN block constraints

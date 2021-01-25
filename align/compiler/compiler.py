@@ -211,11 +211,10 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
                     graph.nodes[node]["inst_type"]=block_name
                     all_lef.append(block_name)
 
-
                 # Only unit caps are generated
                 if  block_name.lower().startswith('cap'):
                     graph.nodes[node]['inst_type'] = block_args['primitive']
-                    block_args['primitive']=block_name
+                    block_args['primitive'] = block_name
                 else:
                     graph.nodes[node]['inst_type'] = block_name
 
@@ -225,7 +224,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
                 else:
                     primitives[block_name] = block_args
             elif "values" in attr and 'inst_copy' in attr:
-                member["graph"].nodes[node]["inst_type"]= lef_name+attr["inst_copy"]
+                member["graph"].nodes[node]["inst_type"]= lef_name + attr["inst_copy"]
                 all_lef.append(block_name)
 
             else:
@@ -236,6 +235,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
     for member in updated_ckt_list:
         name = member["name"]
         graph = member["graph"]
+        const = member["const"]
         if name in duplicate_modules:
             continue
         else:
@@ -269,10 +269,9 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
                 logger.debug(f"call constraint generator writer for block: {name}")
                 stop_points=design_setup['POWER']+design_setup['GND']+design_setup['CLOCK']
                 if name not in design_setup['NO_CONST']:
-                    WriteConst(graph, result_dir, name, inoutpin, member["ports_weight"],all_array, stop_points)
+                    WriteConst(graph, result_dir, name, inoutpin, member["ports_weight"],all_array, const,stop_points)
                 WriteCap(graph, result_dir, name, design_config["unit_size_cap"],all_array)
                 check_common_centroid(graph,const_file,inoutpin)
-
             wv.print_module(VERILOG_FP)
             generated_module.append(name)
     if len(POWER_PINS)>0:
@@ -284,4 +283,5 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
     #logger.info(f"OUTPUT spice netlist at: {result_dir}/{design_name}_blocks.sp")
     logger.info(f"OUTPUT const file at: {result_dir}/{design_name}.const.json")
     print("compilation stage done")
+    exit()
     return primitives

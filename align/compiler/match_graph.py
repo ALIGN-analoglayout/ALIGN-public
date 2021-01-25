@@ -60,7 +60,7 @@ class Annotate:
         for circuit_name, circuit in self.hier_graph_dict.items():
             logger.debug(f"START MATCHING in circuit: {circuit_name}")
             G1 = circuit["graph"]
-            
+            print(self.hier_graph_dict[circuit_name]["const"])
             # map and reduce graph to dictionary
             mapped_graph_list = self._mapped_graph_list(G1, circuit_name, self.pg )
             updated_circuit, Grest = self._reduce_graph(G1, circuit_name, mapped_graph_list)
@@ -81,6 +81,7 @@ class Annotate:
                 "graph": Grest,
                 "ports": circuit["ports"],
                 "ports_weight": circuit["ports_weight"],
+                "const": self.hier_graph_dict[circuit_name]["const"],
                 "size": len(Grest.nodes())
             })
     
@@ -134,11 +135,12 @@ class Annotate:
                 G2.nodes[g2_n]['real_inst_type'] = G1.nodes[g1_n]['real_inst_type']
         return matched_ports,ports_weight,G2
     def _group_block(self,G1,name):
-
         if self._if_const(name):
             const_list = self.hier_graph_dict[name]["const"]["constraints"]
             gb_const = [const for const in const_list if const['const_name']=="GroupBlocks"]
+            
             const_list = [const for const in const_list if const['const_name'] !="GroupBlocks"]
+            self.hier_graph_dict[name]['const']['constraints']=const_list
             for const in gb_const:
                 if not set(const['blocks']).issubset(set(G1.nodes)):
                     logger.error(f"Constraint blocks: {const['blocks']} not in subcircuit {list(G1.nodes)}")
@@ -161,8 +163,7 @@ class Annotate:
                     "ports_weight": ports_weight,
                     "const": {"constraints":[const]}
                     }
-
-    def _update_const(self,name,G1,remove_nodes, matched_ports):
+    def _update_blocks_const(self,name,G1,remove_nodes, matched_ports):
         """
         Update instance names in the constraint in case they are reduced
 
@@ -173,16 +174,14 @@ class Annotate:
             matched_ports (dict): matching ports
         """
         if self._if_const(name):
-            print(self.hier_graph_dict[name]["const"])
             const_list = self.hier_graph_dict[name]["const"]["constraints"]
             for const in const_list:
                 if 'blocks' in const:
-                    print(const)
                     if set(const['blocks']).issubset(set(remove_nodes)):
                         for block in const["blocks"]:
                             if block in remove_nodes:
+                                
                                 print(block,const["const_name"])
-            print(const_list)
 
     def _if_const(self,name):
         """
@@ -228,7 +227,7 @@ class Annotate:
                         updated_values = merged_value({}, G1.nodes[remove_nodes[0]]["values"])
                         G1.nodes[remove_nodes[0]]["values"] = updated_values
                     else:
-                        self._update_const(name,G1,remove_nodes, matched_ports)
+                        self._update_blocks_const(name,G1,remove_nodes, matched_ports)
                         logger.debug(f"Multi node element: {lib_name} {matched_ports}")
                         subgraph,new_node = merge_nodes(
                             G1, lib_name, remove_nodes, matched_ports)
@@ -254,6 +253,7 @@ class Annotate:
                                 "ports": list(matched_ports.keys()),
                                 "ports_match": matched_ports,
                                 "ports_weight": ports_weight,
+                                "const":self.hier_graph_dict[name]['const'],
                                 "size": len(subgraph.nodes())
                             }
                         updated_circuit.append(super_node)
