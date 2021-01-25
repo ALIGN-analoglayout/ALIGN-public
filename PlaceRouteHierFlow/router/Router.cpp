@@ -23,16 +23,16 @@ void Router::RouteWork(int mode, PnRDB::hierNode& node, PnRDB::Drc_info& drcData
     logger->info("RouteWork {0}", mode);
     DetailRouter(node, *(this->GR), 1, 1);
   } else if(mode==2){
-    logger->info("RouteWork {0}", mode);
+    logger->info("Create power grid: {0}", node.name);
     PowerRouter(node, drcData, Lmetal, Hmetal, 1, h_skip_factor, v_skip_factor);  
   } else if(mode==3){
-    logger->info("RouteWork {0}", mode);
+    logger->info("Power routing {0}", node.name);
     PowerRouter(node, drcData, Lmetal, Hmetal, 0, h_skip_factor, v_skip_factor);
   } else if(mode==4){
-    logger->info("RouteWork {0}", mode);
+    logger->info("GcellGlobalRouter: {0}", node.name);
     this->GGR = new GcellGlobalRouter(node, drcData, Lmetal, Hmetal, binaryDIR);
   } else if(mode==5){
-    logger->info("RouteWork {0}", mode);
+    logger->info("GcellDetailRouter: {0}", node.name);
     GcellDetailRouter(node, *(this->GGR), 1, 1);
   } else if(mode==6){
     logger->info("RouteWork {0}", mode);
