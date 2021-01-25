@@ -11,14 +11,6 @@ double ConstGraph::PHI=1500;
 double ConstGraph::PI=1500;
 double ConstGraph::PII=1500;
 
-PlacerIfc::PlacerIfc(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo) {
-  _ptr = new Placer(node,opath,effort,drcInfo);
-}
-
-PlacerIfc::PlacerIfc(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
-  _ptr = new Placer(nodeVec,opath,effort,drcInfo);
-}
-
-PlacerIfc::~PlacerIfc() {
-  delete _ptr;
+PlacerIfc::PlacerIfc(PnRDB::hierNode& currentNode, int numLayout, string opath, int effort, PnRDB::Drc_info& drcInfo) : _nodeVec( numLayout, currentNode) {
+  Placer curr_plc(_nodeVec,opath,effort,drcInfo);
 }

@@ -361,10 +361,10 @@ int toplevel( const std::vector<std::string>& argv) {
     logger->debug("Checkpoint : before place");
     DB.PrintHierNode(current_node);
 
-    
     // Placement
-    std::vector<PnRDB::hierNode> nodeVec(numLayout, current_node);
-    PlacerIfc curr_plc(nodeVec, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
+    PlacerIfc curr_plc(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
+    std::vector<PnRDB::hierNode>& nodeVec(curr_plc.get());
+
     logger->debug("Checkpoint: generated {0} palcements",nodeVec.size());
     //insert guard ring
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
@@ -375,7 +375,6 @@ int toplevel( const std::vector<std::string>& argv) {
       DB.PrintHierNode(nodeVec[lidx]);
       DB.WriteJSON(nodeVec[lidx], true, false, false, false, nodeVec[lidx].name + "_PL_" + std::to_string(lidx), drcInfo, opath);
     }
-
 
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
       logger->debug("Checkpoint: extract power pins work on layout {0} ",lidx);

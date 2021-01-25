@@ -5,12 +5,11 @@ class Placer;
 
 class PlacerIfc {
   private:
-    Placer* _ptr;
+    std::vector<PnRDB::hierNode> _nodeVec;
   public:
-    PlacerIfc(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo);
-    PlacerIfc(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo);
-    ~PlacerIfc();
-    Placer* get() const { return _ptr;}; 
+    PlacerIfc(PnRDB::hierNode& currentNode, int numLayout, string opath, int effort, PnRDB::Drc_info& drcInfo);
+    std::vector<PnRDB::hierNode>& get() { return _nodeVec; }
+    PnRDB::hierNode& getNode( int idx) { return _nodeVec.at(idx); }
 };
 
 #endif

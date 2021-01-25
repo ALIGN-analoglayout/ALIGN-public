@@ -1,5 +1,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/stl_bind.h>
 #include <pybind11/iostream.h>
 
 namespace py = pybind11;
@@ -207,6 +208,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("UR", &layoutAS::UR);
   py::class_<hierNode>( m, "hierNode")
     .def( py::init<>())
+    .def( py::init<hierNode>())
     .def_readwrite("isCompleted", &hierNode::isCompleted)
     .def_readwrite("isTop", &hierNode::isTop)
     .def_readwrite("isIntelGcellGlobalRouter", &hierNode::isIntelGcellGlobalRouter)
@@ -331,6 +333,21 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("UpperRect", &ViaModel::UpperRect)
     .def_readwrite("R", &ViaModel::R);
 
+  py::class_<Drc_info>( m, "Drc_info")
+    .def( py::init<>())
+    .def_readwrite("MaxLayer", &Drc_info::MaxLayer)
+    .def_readwrite("Metalmap", &Drc_info::Metalmap)
+    .def_readwrite("Viamap", &Drc_info::Viamap)
+    .def_readwrite("Metal_info", &Drc_info::Metal_info)
+    .def_readwrite("Via_info", &Drc_info::Via_info)
+    .def_readwrite("metal_weight", &Drc_info::metal_weight)
+    .def_readwrite("Via_model", &Drc_info::Via_model)
+    .def_readwrite("MaskID_Metal", &Drc_info::MaskID_Metal)
+    .def_readwrite("MaskID_Via", &Drc_info::MaskID_Via)
+    .def_readwrite("top_boundary", &Drc_info::top_boundary)
+    .def_readwrite("Guardring_info", &Drc_info::Guardring_info)
+  ;
+
   py::class_<PnRdatabase>( m, "PnRdatabase")
     .def( py::init<string, string, string, string, string, string>())
     .def( py::init<>())
@@ -351,8 +368,9 @@ PYBIND11_MODULE(PnR, m) {
     .def( py::init<string, string, hierNode&, Drc_info&, map<string, lefMacro>&, bool, int>());    
 
   py::class_<PlacerIfc>( m, "PlacerIfc")
-    .def( py::init<hierNode&, string, int, Drc_info&>())
-    .def( py::init<std::vector<hierNode>&, string, int, Drc_info&>());
+    .def( py::init<hierNode&, int, string, int, Drc_info&>())
+    .def( "get", &PlacerIfc::get)
+    .def( "getNode", &PlacerIfc::getNode);
 
   py::class_<GuardRingIfc>( m, "GuardRingIfc")
     .def( py::init<hierNode&, const map<string, lefMacro>&, const Drc_info&>());
