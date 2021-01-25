@@ -48,7 +48,8 @@ void _bind_spdlog_to_python_logger() {
   // Set up logging defaults before doing anything else
   int pylevel = py::cast<int>(py::module_::import("logging").attr("getLogger")().attr("level"));
   spdlog::set_default_logger(std::make_shared<spdlog::logger>("default", std::make_shared<align_sink_mt>()));
-  spdlog::set_level(static_cast<spdlog::level::level_enum>(pylevel/ 10));
+  spdlog::set_level(spdlog::level::debug);//static_cast<spdlog::level::level_enum>(pylevel/ 10));
+  //temporarily set to debug to see what is going in docker timeout, although the flow is well locally
   spdlog::set_error_handler([](const std::string& msg) {
 		std::cerr << msg << std::endl;
 	});
