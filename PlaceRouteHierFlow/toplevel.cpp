@@ -301,7 +301,7 @@ void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
 }
 
 int toplevel( const std::vector<std::string>& argv) {
-
+  spdlog::set_level(spdlog::level::debug);
   auto logger = spdlog::default_logger()->clone("toplevel");
 
   //
