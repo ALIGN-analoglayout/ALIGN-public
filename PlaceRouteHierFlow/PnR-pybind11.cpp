@@ -242,9 +242,17 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("R_Constraints", &hierNode::R_Constraints)
     .def_readwrite("C_Constraints", &hierNode::C_Constraints)
     .def_readwrite("Port_Location", &hierNode::Port_Location)
+    .def_readwrite("Guardring_Consts", &hierNode::Guardring_Consts)
     .def_readwrite("bias_Hgraph", &hierNode::bias_Hgraph)
     .def_readwrite("bias_Vgraph", &hierNode::bias_Vgraph)
-    .def_readwrite("router_report", &hierNode::router_report);
+    .def_readwrite("router_report", &hierNode::router_report)
+    ;
+  py::class_<Guardring_Const>( m, "Guardring_Const")
+    .def( py::init<>())
+    .def_readwrite("block_name", &Guardring_Const::block_name)
+    .def_readwrite("guard_ring_perimitives", &Guardring_Const::guard_ring_perimitives)
+    .def_readwrite("global_pin", &Guardring_Const::global_pin)
+    ;
   py::class_<SymmNet>( m, "SymmNet")
     .def( py::init<>())
     .def_readwrite("net1", &SymmNet::net1)
@@ -348,6 +356,47 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("Guardring_info", &Drc_info::Guardring_info)
   ;
 
+  py::enum_<NType>(m,"NType")
+    .value("Block",Block)
+    .value("Terminal",Terminal)
+    .export_values();
+
+  py::enum_<Omark>(m,"Omark")
+    .value("N",N)
+    .value("S",S)
+    .value("W",W)
+    .value("E",E)
+    .value("FN",FN)
+    .value("FS",FS)
+    .value("FW",FW)
+    .value("FE",FE)
+    .export_values();
+
+  py::enum_<Smark>(m,"Smark")
+    .value("H",H)
+    .value("V",V)
+    .export_values();
+
+  py::enum_<Bmark>(m,"Bmark")
+    .value("TL",TL)
+    .value("TC",TC)
+    .value("TR",TR)
+    .value("RT",RT)
+    .value("RC",RC)
+    .value("RB",RB)
+    .value("BR",BR)
+    .value("BC",BC)
+    .value("BL",BL)
+    .value("LB",LB)
+    .value("LC",LC)
+    .value("LT",LT)
+    .export_values();
+
+  py::enum_<TransformType>(m,"TransformType")
+    .value("Forward",Forward)
+    .value("Backward",Backward)
+    .export_values();
+
   py::class_<PnRdatabase>( m, "PnRdatabase")
     .def( py::init<string, string, string, string, string, string>())
     .def( py::init<>())
@@ -362,6 +411,7 @@ PYBIND11_MODULE(PnR, m) {
     .def( "AddingPowerPins", &PnRdatabase::AddingPowerPins)
     .def( "Extract_RemovePowerPins", &PnRdatabase::Extract_RemovePowerPins)
     .def( "CheckinHierNode", &PnRdatabase::CheckinHierNode)
+    .def_readwrite("hierTree", &PnRdatabase::hierTree)
   ;
 
   py::class_<Placer_Router_Cap_Ifc>( m, "Placer_Router_Cap_Ifc")
@@ -369,7 +419,7 @@ PYBIND11_MODULE(PnR, m) {
 
   py::class_<PlacerIfc>( m, "PlacerIfc")
     .def( py::init<hierNode&, int, string, int, Drc_info&>())
-    .def( "get", &PlacerIfc::get)
+    .def( "getNodeVecSize", &PlacerIfc::getNodeVecSize)
     .def( "getNode", &PlacerIfc::getNode);
 
   py::class_<GuardRingIfc>( m, "GuardRingIfc")

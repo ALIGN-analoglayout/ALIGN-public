@@ -8,22 +8,25 @@ import logging
 import colorlog
 
 root = logging.getLogger()
-root.setLevel(logging.DEBUG)
+root.setLevel(logging.INFO)
 
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.DEBUG)
+handler.setLevel(logging.INFO)
 #formatter = logging.Formatter('[%(asctime)s] %(levelname)s [%(filename)s.%(funcName)s:%(lineno)d] %(message)s', datefmt='%a, %d %b %Y %H:%M:%S')
 #handler.setFormatter(formatter)
 handler.setFormatter(colorlog.ColoredFormatter('%(log_color)s [%(asctime)s] %(levelname)s [%(filename)s.%(funcName)s:%(lineno)d] %(message)s', datefmt='%a, %d %b %Y %H:%M:%S'))
 root.addHandler(handler)
-logger.addHandler(handler)
 
 import PnR
 
 def toplevel(args):
 
     assert len(args) == 9
+
+    skip_saving_state = False
+    adr_mode = False
+    multi_thread = False
 
     opath = './Results/'
     fpath,lfile,vfile,mfile,dfile,topcell = args[1:7]
@@ -47,18 +50,36 @@ def toplevel(args):
 
         current_node = DB.CheckoutHierNode(idx)
 
-        PnR.save_state(DB,current_node, 0, opath, "FOO", "BAR", False)
-
         DB.AddingPowerPins(current_node)
 
-        PnR.save_state(DB,current_node, 0, opath, "FOO", "BAR_PP", False)
-
         curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, drcInfo)
-        nodeVec = curr_plc.get()
+
+        actualNumLayout = curr_plc.getNodeVecSize()
         
-        for placed_node in nodeVec:
-            print(placed_node)
+        if actualNumLayout != numLayout:
+            logger.warning( f'Placer did not provide numLayout ({numLayout} > {actualNumLayout}) layouts')
+
+        for lidx in range(actualNumLayout):
+            node = curr_plc.getNode(lidx)
+            if node.Guardring_Consts:
+                PnR.GuardRingIfc( node, lefData, drcInfo)
         
+        for lidx in range(actualNumLayout):
+            node = curr_plc.getNode(lidx)
+            DB.Extract_RemovePowerPins(node)
+            DB.CheckinHierNode(idx, node)
+
+        DB.hierTree[idx].numPlacement = actualNumLayout
+
+
+    new_topnode_idx = 0
+    last = TraverseOrder[-1]
+    for lidx in range(DB.hierTree[last].numPlacement):
+        PnR.route_top_down( DB, drcInfo, PnR.bbox( PnR.point(0,0),
+                                               PnR.point(DB.hierTree[last].PnRAS[0].width,
+                                                         DB.hierTree[last].PnRAS[0].height)),
+                            PnR.Omark.N, last, new_topnode_idx, lidx,
+                            opath, binary_directory, skip_saving_state, adr_mode)
 
 
 if __name__ == "__main__":
