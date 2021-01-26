@@ -47,7 +47,7 @@ def remove_pg_pins(hier_graph_dict:dict,circuit_name, pg_pins):
                 if v in pg_pins and k not in pg_pins:
                     pg_conn[k]=v
             if pg_conn:
-                logger.info(f"removing power pin connected as signal net {pg_conn} in {node}")
+                logger.debug(f"removing power pin connected as signal net {pg_conn} in {node}")
                 #deleting power connections to subcircuits
                 for k,v in pg_conn.items():
                     del attr["connection"][k]
@@ -81,7 +81,7 @@ def modify_pg_conn_subckt(hier_graph_dict:dict,circuit_name, pg_conn):
     new = copy.deepcopy(hier_graph_dict[circuit_name])
     logger.debug(f"modifying subckt {circuit_name} {new} {pg_conn}")
     for k,v in pg_conn.items():
-        logger.info(f"fixing port {k} to {v} for all inst in {circuit_name}")
+        logger.debug(f"fixing port {k} to {v} for all inst in {circuit_name}")
         new["ports"].remove(k)
         del new["ports_weight"][k]
         if v in new["graph"].nodes():
