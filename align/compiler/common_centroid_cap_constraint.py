@@ -52,7 +52,7 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
                 if pair["type"]=="sympair":
                     inst=pair["block1"]
                     if inst in graph and graph.nodes[inst]['inst_type'].lower().startswith('cap'):
-                        logger.info("merging cap cc constraints:%s",b)
+                        logger.debug("merging cap cc constraints:%s",b)
                         p1,p2=sorted([pair["block1"],pair["block2"]], key=lambda c:graph.nodes[c]['values']["cap"]*1E15)
                         all_array[p1]={p1:[p1,p2]}
                         pair["type"]="selfsym"
@@ -115,11 +115,11 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
 
     if len(all_const["constraints"]) ==0:
         os.remove(const_path)
-        logger.info("no cap const found: %s",const_path)
+        logger.debug("no cap const found: %s",const_path)
     else:
         with open(const_path, 'w') as outfile:
             json.dump(all_const, outfile, indent=4)
-        logger.info("added cap const: %s",const_path)
+        logger.debug("added cap const: %s",const_path)
 
 def check_common_centroid(graph,const_path,ports):
     """
@@ -150,7 +150,7 @@ def check_common_centroid(graph,const_path,ports):
         logger.debug(f"{const}")
         if  const["const_name"]== "CC" \
             and isinstance(const["cap_name"],list):
-            logger.info("Fixing cc constraint for caps:%s",const)
+            logger.debug("Fixing cc constraint for caps:%s",const)
             caps = const["cap_name"]
             cc_cap = "_".join(caps)
             const["cap_name"] = cc_cap
