@@ -2,6 +2,8 @@ import argparse
 from .main import schematic2layout
 from . import __version__
 
+from .utils.logging import get_loglevels
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -79,11 +81,17 @@ class CmdlineParser():
         parser.add_argument( "-g", "--generate",
                             action='store_true',
                             help="Set the true to generate png")
+        log_level, verbosity = get_loglevels()
         parser.add_argument( "-l", "--log",
                             dest="log_level",
                             choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'],
-                            default='DEBUG',
-                            help="Set the logging level (default: %(default)s)")
+                            default=log_level,
+                            help="Logfile logging level (default: %(default)s)")
+        parser.add_argument( "-v", "--verbosity",
+                            dest="verbosity",
+                            choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'],
+                            default=verbosity,
+                            help="Console logging level (default: %(default)s)")
         parser.add_argument("-r",
                             "--regression",
                             action='store_true',
