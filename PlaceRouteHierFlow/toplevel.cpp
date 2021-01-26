@@ -388,8 +388,8 @@ int toplevel( const std::vector<std::string>& argv) {
   }
 
   int new_topnode_idx = 0;
-  auto &ct = DB.hierTree[TraverseOrder.back()];
-  for (unsigned int lidx = 0; lidx < ct.numPlacement; lidx++) {
+  for (unsigned int lidx = 0; lidx < DB.hierTree[TraverseOrder.back()].numPlacement; lidx++) {
+    auto &ct = DB.hierTree[TraverseOrder.back()];
     route_top_down(
         DB, drcInfo,
         PnRDB::bbox(PnRDB::point(0, 0),
