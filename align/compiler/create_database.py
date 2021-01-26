@@ -72,3 +72,4 @@ class CreateDatabase:
                 }
     
                 self._traverse_hier_in_graph(attr["sub_graph"])
+                
