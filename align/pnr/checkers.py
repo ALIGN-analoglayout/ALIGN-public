@@ -116,7 +116,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
         if json_dir is not None:
             pth = pathlib.Path( json_dir + "/" + blk.master + ".json")
             if not pth.is_file():
-                logger.info( f"{pth} is not available; not importing subblock rectangles")
+                logger.debug( f"{pth} is not available; not importing subblock rectangles")
             else:
                 found = True
 
@@ -130,7 +130,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                 if not pth.is_file():
                     logger.error( f"{pth} not found in input_dir")
                 else:
-                    logger.info( f"{pth} found in input_dir")
+                    logger.debug( f"{pth} found in input_dir")
                     found = True
             else:
                 logger.error( f"{blk.gdsFile} does not end in .gds")
@@ -148,7 +148,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
 
             tr3 = tr.preMult(tr2)
 
-            logger.info( f"TRANS {blk.master} {blk.orient} {tr} {tr2} {tr3}")
+            logger.debug( f"TRANS {blk.master} {blk.orient} {tr} {tr2} {tr3}")
             for term in d['terminals']:
                 term['rect'] = tr3.hitRect( transformation.Rect( *term['rect'])).canonical().toList()
 
@@ -258,7 +258,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                     if ly != "":
                         d0 = {"netName": k+"_tm", "layer": ly, "rect": r}
                         d1 = {"netName": conn['sink_name'], "layer": ly, "rect": r}
-                        logger.info( f"Add two terminals: {d0} {d1}")
+                        logger.debug( f"Add two terminals: {d0} {d1}")
                         terminals.append( d0)
                         terminals.append( d1)
 
@@ -276,7 +276,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                 if r[0] == r[2] and r[1] == r[3]:
                     logger.error( f"0-dimensional global route {v} {r}")
 
-                logger.info( f"Global route: {k} {ly} {r}")
+                logger.debug( f"Global route: {k} {ly} {r}")
 
                 for q in [0,1]:
                     if r[q] == r[q+2]:

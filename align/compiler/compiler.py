@@ -63,8 +63,8 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path,flat=
     library += user_lib.sp_parser()
     library=sorted(library, key=lambda k: max_connectivity(k["graph"]), reverse=True)
 
-    logger.info(f"dont use cells: {design_setup['DONT_USE_CELLS']}")
-    logger.info(f"all library elements: {[ele['name'] for ele in library]}")
+    logger.debug(f"dont use cells: {design_setup['DONT_USE_CELLS']}")
+    logger.debug(f"all library elements: {[ele['name'] for ele in library]}")
     if len(design_setup['DONT_USE_CELLS'])>0:
         library=[lib_ele for lib_ele in library if lib_ele['name'] not in design_setup['DONT_USE_CELLS']]
     #read lef to not write those modules as macros
@@ -84,7 +84,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path,flat=
     hier_graph_dict = create_data.read_inputs(circuit["name"])
 
     #remove pg_pins requirement by pnr
-    logger.info("Modifying pg pins in design for PnR")
+    logger.debug("Modifying pg pins in design for PnR")
     pg_pins = design_setup['POWER']+design_setup['GND']
     remove_pg_pins(hier_graph_dict,design_name, pg_pins)
 
@@ -109,6 +109,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path,flat=
 
     annotate =Annotate(hier_graph_dict, design_setup,library,all_lef)
     updated_ckt_list,lib_names =annotate.annotate()
+
     return updated_ckt_list, lib_names
 
 def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, result_dir:pathlib.Path, pdk_dir:pathlib.Path, uniform_height=False):
@@ -228,7 +229,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
                 all_lef.append(block_name)
 
             else:
-                logger.info(f"No physical information found for: {name}")
+                logger.debug(f"No physical information found for: {name}")
         logger.debug(f"generated data for {name} : {pprint.pformat(primitives, indent=4)}")
 
     duplicate_modules =[]
@@ -282,6 +283,4 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
     logger.info(f"OUTPUT verilog netlist at: {result_dir}/{design_name}.v")
     #logger.info(f"OUTPUT spice netlist at: {result_dir}/{design_name}_blocks.sp")
     logger.info(f"OUTPUT const file at: {result_dir}/{design_name}.const.json")
-    print("compilation stage done")
-    exit()
     return primitives

@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 def _generate_json( *, dbfile, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False, input_dir=None, toplevel=True, gds_json=True ):
 
-    logger.info( f"_generate_json: {dbfile} {variant} {primitive_dir} {pdk_dir} {output_dir} {check} {extract} {input_dir} {toplevel} {gds_json}")
+    logger.debug( f"_generate_json: {dbfile} {variant} {primitive_dir} {pdk_dir} {output_dir} {check} {extract} {input_dir} {toplevel} {gds_json}")
 
     ret = {}
     with open(dbfile,"rt") as fp:
@@ -45,6 +45,7 @@ def _generate_json( *, dbfile, variant, primitive_dir, pdk_dir, output_dir, chec
     ret['json'] = output_dir / f'{variant}.json'
     with open( ret['json'], 'wt') as fp:
         json.dump( d, fp=fp, indent=2)
+    logger.info(f"OUTPUT json at {ret['json']}")
 
     if check:
         ret['errfile'] = output_dir / f'{variant}.errors'
@@ -54,21 +55,29 @@ def _generate_json( *, dbfile, variant, primitive_dir, pdk_dir, output_dir, chec
             #for x in cnv.rd.different_widths: fp.write( f'DIFFERENT WIDTH {x}\n')
             for x in cnv.drc.errors: fp.write( f'DRC ERROR {x}\n')
         ret['errors'] = len(cnv.rd.shorts) + len(cnv.rd.opens) + len(cnv.drc.errors)
+        if ret['errors'] > 0:
+            logger.error(f"{ret['errors']} LVS / DRC errors found !!!")
+            logger.info(f"OUTPUT error file at {ret['errors']}")
 
     if extract:
         ret['cir'] = output_dir / f'{variant}.cir'
         with open(ret['cir'], 'wt') as fp:
             cnv.pex.writePex(fp)
+        logger.info(f"OUTPUT extracted netlist at {ret['cir']}")
+
 
     if gds_json:
         ret['python_gds_json'] = output_dir / f'{variant}.python.gds.json'
         with open( ret['json'], 'rt') as ifp:
             with open( ret['python_gds_json'], 'wt') as ofp:
                 gen_gds_json.translate( hN.name, '', 0, ifp, ofp, timestamp=None, p=cnv.pdk)
+        logger.info(f"OUTPUT gds.json {ret['python_gds_json']}")
 
     return ret
 
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvariants=1, effort=0, check=False, extract=False, gds_json=False):
+
+    logger.info(f"Running Place & Route for {subckt}")
 
     # Check to make sure pnr_compiler is available to begin with
     assert 'ALIGN_HOME' in os.environ, "ALIGN_HOME not in environment"

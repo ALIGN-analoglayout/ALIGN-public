@@ -98,7 +98,7 @@ class RemoveDuplicates():
                     tbl[id(slr.root())].append( (slr,root.netName,layer))
 
         for (i,s) in tbl.items():
-            logger.info( pprint.pformat(["Equivalence classes:", i, s]))
+            logger.debug( pprint.pformat(["Equivalence classes:", i, s]))
 
     def check_opens(self):
 
@@ -330,7 +330,7 @@ class RemoveDuplicates():
         for dif in self.different_widths:
             logger.warning( "DIFFERENT WIDTH" + pprint.pformat(dif))
         for subinst in self.subinsts:
-            logger.info("SUBINST" + pprint.pformat(subinst))
+            logger.debug("SUBINST" + pprint.pformat(subinst))
 
         return self.generate_rectangles()
 

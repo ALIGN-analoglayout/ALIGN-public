@@ -157,7 +157,7 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
         nbrs2 = sorted(set([nbr for nbr in nbrs2 if G.get_edge_data(node2, nbr)['weight'] !=2]))
         match_pair[node1]=node2
         traversed+=[node1,node2]
-        logger.info(f"Traversing parallel branches from {node1},{node2} {nbrs1}, {nbrs2}")
+        logger.debug(f"Traversing parallel branches from {node1},{node2} {nbrs1}, {nbrs2}")
         nbrs1_wt = [G.get_edge_data(node1, nbr)['weight'] for nbr in nbrs1]
         nbrs2_wt = [G.get_edge_data(node2, nbr)['weight'] for nbr in nbrs2]
         unique_match=find_unique_matching_branches(G,nbrs1,nbrs2,ports_weight)

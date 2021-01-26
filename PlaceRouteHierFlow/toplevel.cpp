@@ -83,7 +83,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
     }
     curr_route.RouteWork(global_router_mode, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor,dummy_file);
 
-    logger->info( "***WriteGcellGlobalRoute Debugging***");
+    logger->debug( "***WriteGcellGlobalRoute Debugging***");
     if (current_node.isTop) {
       DB.WriteGcellGlobalRoute(current_node, current_node.name + "_GcellGlobalRoute_" + std::to_string(lidx) + ".json", opath);
     } else {
@@ -94,7 +94,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
           current_node_copy.name + "_GcellGlobalRoute_" + std::to_string(current_node_copy.n_copy) + "_" + std::to_string(lidx) + ".json",
           opath);
     }
-    logger->info("***End WriteGcellGlobalRoute Debugging***" );
+    logger->debug("***End WriteGcellGlobalRoute Debugging***" );
 
     curr_route.RouteWork(5, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor,dummy_file);
 
@@ -301,7 +301,7 @@ void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
 }
 
 int toplevel( const std::vector<std::string>& argv) {
-
+  
   auto logger = spdlog::default_logger()->clone("toplevel");
 
   //
@@ -367,13 +367,13 @@ int toplevel( const std::vector<std::string>& argv) {
   for (int i = 0; i < Q_size;i++)
   {
     int idx=TraverseOrder[i];
-    logger->info("Main-Info: start to work on node {0}",idx);
     if(disable_io){
       std::cout.setstate(std::ios_base::failbit);
     }
     PnRDB::hierNode current_node=DB.CheckoutHierNode(idx);
     DB.PrintHierNode(current_node);
-
+    logger->info("Start placement: {0}",current_node.name);
+    
     
     DB.AddingPowerPins(current_node);
     Placer_Router_Cap PRC(opath, fpath, current_node, drcInfo, lefData, 1, 6); //dummy, aspect ratio, number of aspect retio
@@ -410,7 +410,7 @@ int toplevel( const std::vector<std::string>& argv) {
     //TreeVec[idx] = nodeVec;
     //Q.pop();
     if(disable_io)std::cout.clear();
-    logger->info("Main-Info: complete node {0}",idx);
+    logger->info("Complete placement: {0}",current_node.name);
   }
 
   if(disable_io)std::cout.setstate(std::ios_base::failbit);

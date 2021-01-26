@@ -105,7 +105,7 @@ class WriteVerilog:
                 return sorted(mapped_pins)
 
         else:
-            logger.info("unmatched ports found")
+            logger.debug("unmatched ports found")
             return 0
 
 class WriteSpice:
@@ -333,5 +333,5 @@ def check_ports_match(subckt_list,port,subckt):
         if members["name"]==subckt and port in members["ports"]:
             return 1
         else:
-            logger.info("ports match: %s %s",subckt,port)
+            logger.debug("ports match: %s %s",subckt,port)
             return 1
