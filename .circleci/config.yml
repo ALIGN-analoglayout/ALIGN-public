@@ -276,9 +276,9 @@ jobs:
           docker build -t align_image -f ./build/Dockerfile.using-install.sh .
 
       - run-nightly:
-        filter: "not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTDSM_CORE_NEW"
-        xml: "junit2.xml"
-        timeout: "1700"
+          filter: "not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTDSM_CORE_NEW"
+          xml: "junit2.xml"
+          timeout: "1700"
 
       - persist_to_workspace:
           root: /work/workspace
