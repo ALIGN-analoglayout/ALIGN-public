@@ -10,7 +10,7 @@ commands:
       timeout:
         description: "Integer representing pytest --timeout argument"
         type: string
-        default: 1800
+        default: "1800"
       xml:
         description: "Rename junit.xml to this string"
         type: string
@@ -242,22 +242,22 @@ jobs:
       - run-nightly:
           filter: "BUFFER and not BUFFER_VCM"
           xml: "junit1_1.xml"
-          timeout: 300
+          timeout: "300"
 
       - run-nightly:
           filter: "Sanitized_Coarse_Comp_CK or Sanitized_EdgeComparator or BTSW or Sanitized_ResTune_Configure and not Sanitized_ResTune_Configure"
           xml: "junit1_2.xml"
-          timeout: 2500
+          timeout: "2500"
 
       - run-nightly:
           filter: "ota and not OTA_FF_2s_v3e"
           xml: "junit1_3.xml"
-          timeout: 250
+          timeout: "250"
 
       - run-nightly:
           filter: "single_SAR and not tb_single_SAR"
           xml: "junit1_4.xml"
-          timeout: 1700
+          timeout: "1700"
 
       - persist_to_workspace:
           root: /work/workspace
@@ -278,7 +278,7 @@ jobs:
       - run-nightly:
         filter: "not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTDSM_CORE_NEW"
         xml: "junit2.xml"
-        timeout: 1700
+        timeout: "1700"
 
       - persist_to_workspace:
           root: /work/workspace
