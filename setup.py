@@ -36,7 +36,8 @@ setup(name='align',
           'python-gdsii',
           'matplotlib',
           'pyyaml',
-          'pybind11'
+          'pybind11',
+          'colorlog'
           ],
       setup_requires=['pytest-runner'],
       python_requires='~=3.6',
