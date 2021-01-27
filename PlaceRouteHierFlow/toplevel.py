@@ -81,17 +81,14 @@ def toplevel(args):
         DB.hierTree[idx].numPlacement = actualNumLayout
 
 
-    new_topnode_idx = 0
     last = TraverseOrder[-1]
+    new_topnode_idx = 0
     for lidx in range(DB.hierTree[last].numPlacement):
-        logger.info( f'lidx: {lidx} new_topnode_idx: {new_topnode_idx} last: {last}')
-        PnR.route_top_down( DB, drcInfo, PnR.bbox( PnR.point(0,0),
+        new_topnode_idx = PnR.route_top_down( DB, drcInfo, PnR.bbox( PnR.point(0,0),
                                                PnR.point(DB.hierTree[last].PnRAS[0].width,
                                                          DB.hierTree[last].PnRAS[0].height)),
-                            PnR.Omark.N, last, new_topnode_idx, lidx,
+                            PnR.Omark.N, last, lidx,
                             opath, binary_directory, skip_saving_state, adr_mode)
-
-    logger.info( f'Done: new_topnode_idx: {new_topnode_idx} last: {last}')
 
 if __name__ == "__main__":
     toplevel( sys.argv)

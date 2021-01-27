@@ -122,26 +122,6 @@ void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
 
   if(current_node.isTop){
 
-/*  DC Power Grid Simulation
- *
- * SMB: this code is broken because rate has been replaced by h_skip_factor and v_skip_factor (1 over the rate and different for h and v wires
-
-    while(Power_mesh_optimize and worst < th and rate<1){
-
-      curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 5, 6, binary_directory, rate);
-    
-      std::cout<<"Start MNA "<<std::endl;
-      MNASimulation Test_MNA(current_node, const_cast<PnRDB::Drc_info&>(drcInfo));
-   
-      worst = Test_MNA.Return_Worst_Voltage();
-      std::cout<<"worst voltage is "<< worst << std::endl;
-      std::cout<<"End MNA "<<std::endl;
-      Test_MNA.Clear_Power_Grid(current_node.Vdd);
-      Test_MNA.Clear_Power_Grid(current_node.Gnd);      
-      rate = rate + 0.1;
-       
-    }
-*/
     int power_grid_metal_l = 5;
     int power_grid_metal_u = 6;
     int power_routing_metal_l = 0;
@@ -228,7 +208,7 @@ void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
 }
 
 int route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::bbox bounding_box, PnRDB::Omark current_node_ort,
-                           int idx, int new_currentnode_idx, int lidx, const string& opath, const string& binary_directory,
+                           int idx, int lidx, const string& opath, const string& binary_directory,
                            bool skip_saving_state, bool adr_mode) {
 
   /*
@@ -236,8 +216,9 @@ int route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::bbox 
   Inputs:
     current_node_ort: absolute orientation of current_node
     idx: index of current_node type
-    new_currentnode_idx: index of current_node copy in hiertree, after routing
     lidx: number of layouts, now is one.
+  Outputs: 
+    new_currentnode_idx: index of current_node copy in hiertree, after routing
   */
   //Q: current top down flow works when lidx = 1. Yaguang -- 3/17/2020
   //Q: Conflict here when lidx != 1. childnode only stores last update in bottom-up (maybe 2), while the selected block might be 1. When doing top-down, mismatch happens. Yaguang -- 3/17/2020
@@ -266,7 +247,7 @@ int route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::bbox 
     // 4.complete all children of current_node recursively
     int new_childnode_idx = 0;
     for (unsigned int lidx = 0; lidx < DB.hierTree[child_idx].numPlacement; lidx++) {
-      new_childnode_idx = route_top_down(DB, drcInfo, childnode_box, childnode_orient, child_idx, new_childnode_idx, lidx, opath, binary_directory,
+      new_childnode_idx = route_top_down(DB, drcInfo, childnode_box, childnode_orient, child_idx, lidx, opath, binary_directory,
                      skip_saving_state, adr_mode);
     }
     // 6.update current_node.blocks[i].intermetal/via/blockpin, absolute position and rect
@@ -285,7 +266,7 @@ int route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::bbox 
   // 9.pushback current_node into hiertree, update current_node copy's index
   // update hiertree[blocks.*.child].parent = new_currentnode_idx
   DB.hierTree.push_back(current_node);
-  new_currentnode_idx = DB.hierTree.size() - 1;
+  int new_currentnode_idx = DB.hierTree.size() - 1;
   for (unsigned int bit = 0; bit < current_node.Blocks.size(); bit++) {
     auto& blk = current_node.Blocks[bit];
     if (blk.child == -1) continue;
@@ -394,7 +375,7 @@ int toplevel( const std::vector<std::string>& argv) {
         DB, drcInfo,
         PnRDB::bbox(PnRDB::point(0, 0),
 		    PnRDB::point(ct.PnRAS[0].width, ct.PnRAS[0].height)),
-        PnRDB::N, TraverseOrder.back(), new_topnode_idx, lidx, opath, binary_directory, skip_saving_state, adr_mode);
+        PnRDB::N, TraverseOrder.back(), lidx, opath, binary_directory, skip_saving_state, adr_mode);
   }
 
   return 0;
