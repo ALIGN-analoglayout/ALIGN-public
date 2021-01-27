@@ -216,7 +216,7 @@ jobs:
           at: /work/workspace
 
       - run: |
-        docker build -t align_image -f ./build/Dockerfile.using-install.sh .
+          docker build -t align_image -f ./build/Dockerfile.using-install.sh .
 
       - run: |
           docker run --name align_container align_image bash -c "source setup.sh && pytest -vv --runnightly --tb=line --timeout=300 -k 'BUFFER and not BUFFER_VCM' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1.xml"
