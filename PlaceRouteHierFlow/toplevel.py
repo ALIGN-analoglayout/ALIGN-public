@@ -7,18 +7,29 @@ sys.setdlopenflags(os.RTLD_GLOBAL|os.RTLD_LAZY)
 import logging
 import colorlog
 
-root = logging.getLogger()
-root.setLevel(logging.INFO)
+#level = logging.DEBUG
+level = logging.INFO
 
-logger = logging.getLogger(__name__)
+root = logging.getLogger()
+root.setLevel(level)
+
 handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.INFO)
-#formatter = logging.Formatter('[%(asctime)s] %(levelname)s [%(filename)s.%(funcName)s:%(lineno)d] %(message)s', datefmt='%a, %d %b %Y %H:%M:%S')
-#handler.setFormatter(formatter)
-handler.setFormatter(colorlog.ColoredFormatter('%(log_color)s [%(asctime)s] %(levelname)s [%(filename)s.%(funcName)s:%(lineno)d] %(message)s', datefmt='%a, %d %b %Y %H:%M:%S'))
+handler.setLevel(level)
+
+fmt = '[%(asctime)s] %(levelname)s [%(filename)s.%(funcName)s:%(lineno)d] %(message)s'
+datefmt = '%a, %d %b %Y %H:%M:%S' 
+if False:
+    formatter = logging.Formatter(fmt, datefmt=datefmt)
+else:
+    formatter = colorlog.ColoredFormatter('%(log_color)s ' + fmt, datefmt=datefmt)
+handler.setFormatter(formatter)
 root.addHandler(handler)
 
 import PnR
+
+logger = logging.getLogger(__name__)
+
+import pathlib
 
 def toplevel(args):
 
@@ -35,11 +46,10 @@ def toplevel(args):
     if fpath[-1] == '/': fpath = fpath[:-1]
     if opath[-1] != '/': opath += '/'
 
-    # find directory that args[0] sits in; hack for now as current directory
-    binary_directory = "."
+    # find directory that args[0] sits in
+    binary_directory = str(pathlib.Path(args[0]).parent)
 
     DB = PnR.PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile)
-
     drcInfo = DB.getDrc_info()
     lefData = DB.checkoutSingleLEF()
 
@@ -52,6 +62,8 @@ def toplevel(args):
 
         DB.AddingPowerPins(current_node)
 
+        PRC = PnR.Placer_Router_Cap_Ifc(opath,fpath,current_node,drcInfo,lefData,1,6)
+
         curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, drcInfo)
 
         actualNumLayout = curr_plc.getNodeVecSize()
@@ -63,9 +75,6 @@ def toplevel(args):
             node = curr_plc.getNode(lidx)
             if node.Guardring_Consts:
                 PnR.GuardRingIfc( node, lefData, drcInfo)
-        
-        for lidx in range(actualNumLayout):
-            node = curr_plc.getNode(lidx)
             DB.Extract_RemovePowerPins(node)
             DB.CheckinHierNode(idx, node)
 
@@ -75,12 +84,14 @@ def toplevel(args):
     new_topnode_idx = 0
     last = TraverseOrder[-1]
     for lidx in range(DB.hierTree[last].numPlacement):
+        logger.info( f'lidx: {lidx} new_topnode_idx: {new_topnode_idx} last: {last}')
         PnR.route_top_down( DB, drcInfo, PnR.bbox( PnR.point(0,0),
                                                PnR.point(DB.hierTree[last].PnRAS[0].width,
                                                          DB.hierTree[last].PnRAS[0].height)),
                             PnR.Omark.N, last, new_topnode_idx, lidx,
                             opath, binary_directory, skip_saving_state, adr_mode)
 
+    logger.info( f'Done: new_topnode_idx: {new_topnode_idx} last: {last}')
 
 if __name__ == "__main__":
     toplevel( sys.argv)
