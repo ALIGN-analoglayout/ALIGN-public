@@ -40,25 +40,17 @@ class MetalTemplate:
 
         last_c = None
 
-        print( "spg", m.spg.grid, m.spg.legalIndices)
-
         tuples = [ (idx,pair) for (idx,pair) in enumerate(m.spg.grid) if idx in m.spg.legalIndices]
-        print( m.spg.grid, tuples)
         if tuples[-1][0] < m.spg.n:
             idx = tuples[0][0]
             attrs = tuples[0][1][1]
             new_tuple = ( idx + m.spg.n, (m.spg.value( (1,idx), attrs)))
-            print( "new tuple", new_tuple)
             tuples.append( new_tuple)
-
-        print( "new tuples:", tuples)
 
         for (idx,(c,attrs)) in tuples:
 
             if self.stop_offset is None:
                 self.stop_offset = c
-
-            print( idx, attrs, c, last_c)
 
             if last_c is not None:
                 if c != last_c:
@@ -89,18 +81,11 @@ def gen( c, dirname):
     dirpath = pathlib.Path(dirname)
     dirpath.mkdir( parents=True, exist_ok=True)
     
-    print( c.layer_stack)
-
-    for ( v, (m_l, m_u)) in c.layer_stack:
-        print( f"Via {v} Metal below {m_l} Metal above {m_u}")
-
     metal_templates = dict({ (k, v) for (k,v) in c.generators.items() if k.startswith('m') })
     with dirpath.joinpath('metal_templates.txt').open('wt') as fp:
         for (k,v) in metal_templates.items():
             write_metal_templates( c, v, fp)
 
-    for (k,v) in c.generators.items():
-        print( k, v)
 
     return True
 

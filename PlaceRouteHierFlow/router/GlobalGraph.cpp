@@ -5,9 +5,9 @@ GlobalGraph::GlobalGraph(GlobalGrid& grid):path_number(1) {
 
   auto logger = spdlog::default_logger()->clone("router.GlobalGraph.GlobalGraph");
 
-  logger->info("Start Creating adjacent list (graph)");
+  logger->debug("Start Creating adjacent list (graph)");
   CreateAdjacentList(grid); //create adjacentList base gird.LL_graph and gird.UR_graph
-  logger->info("End creating adjacent list (graph)");
+  logger->debug("End creating adjacent list (graph)");
 
 };
 

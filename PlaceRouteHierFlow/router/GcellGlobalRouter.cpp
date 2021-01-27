@@ -1755,22 +1755,22 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   int ret = solve(lp);
   logger->debug("LP test flag 11");
   if(ret== 0){
-          logger->info("Status Log: Optimal Solution Found Success");
+          logger->debug("Status Log: Optimal Solution Found Success");
   }
   else if(ret==2){
-          logger->info("Status Log: Model is Infeasible");
+          logger->debug("Status Log: Model is Infeasible");
   }
   else if(ret==1){
-          logger->info("Status Log: Suboptimal Solution Found");
+          logger->debug("Status Log: Suboptimal Solution Found");
   }
   else if(ret==-2){
-          logger->info("Status Log: Out of memory");
+          logger->debug("Status Log: Out of memory");
   }
   else if(ret==7){
-          logger->info("Status Log: Timeout(set via set_timeout)");
+          logger->debug("Status Log: Timeout(set via set_timeout)");
   }
   else{
-          logger->info("SStatus Log: Refer Function solve in lp_solve(http://lpsolve.sourceforge.net/5.5/)");
+          logger->debug("Status Log: Refer Function solve in lp_solve(http://lpsolve.sourceforge.net/5.5/)");
   }
   logger->debug("LP test flag 12");
   logger->debug("#Constraints: lp row: {0}", lp->rows);

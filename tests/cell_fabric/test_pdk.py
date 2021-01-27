@@ -34,7 +34,7 @@ def test_A():
     assert rM3[3]-rM3[1] == p.pdk['V2']['WidthY'] + 2*p.pdk['V2']['VencA_H']
     assert rM2[2]-rM2[0] == p.pdk['V2']['WidthX'] + 2*p.pdk['V2']['VencA_L']
 
-    print(rM2,rM3,rV2)
+    #print(rM2,rM3,rV2)
 
 def test_B():
     p = pdk.Pdk()
@@ -70,7 +70,7 @@ def test_B():
     assert rM3[3]-rM3[1] == p.pdk['V2']['WidthY'] + 2*p.pdk['V2']['VencA_H']
     assert rM2[2]-rM2[0] == p.pdk['V2']['WidthX'] + 2*p.pdk['V2']['VencA_L']
 
-    print(rM2,rM3,rV2)
+    #print(rM2,rM3,rV2)
 
 def test_check_all_params():
     parameters = ['A','B','C']

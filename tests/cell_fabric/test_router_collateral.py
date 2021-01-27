@@ -20,8 +20,8 @@ def test_m3():
     m = c.generators['m3'] 
     mt = MetalTemplate(m)
 
-    print( "m3 clg grid", m.clg.grid, "m3 clg legal indices", m.clg.legalIndices)
-    print( "m3 spg grid", m.spg.grid, "m3 spg legal indices", m.spg.legalIndices)
+    #print( "m3 clg grid", m.clg.grid, "m3 clg legal indices", m.clg.legalIndices)
+    #print( "m3 spg grid", m.spg.grid, "m3 spg legal indices", m.spg.legalIndices)
 
     assert 1 in m.spg.legalIndices
     assert 3 in m.spg.legalIndices
