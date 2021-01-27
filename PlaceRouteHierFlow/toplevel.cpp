@@ -227,8 +227,8 @@ void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
 
 }
 
-void route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::bbox bounding_box, PnRDB::Omark current_node_ort,
-                           int idx, int& new_currentnode_idx, int lidx, const string& opath, const string& binary_directory,
+int route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::bbox bounding_box, PnRDB::Omark current_node_ort,
+                           int idx, int new_currentnode_idx, int lidx, const string& opath, const string& binary_directory,
                            bool skip_saving_state, bool adr_mode) {
 
   /*
@@ -266,7 +266,7 @@ void route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::bbox
     // 4.complete all children of current_node recursively
     int new_childnode_idx = 0;
     for (unsigned int lidx = 0; lidx < DB.hierTree[child_idx].numPlacement; lidx++) {
-      route_top_down(DB, drcInfo, childnode_box, childnode_orient, child_idx, new_childnode_idx, lidx, opath, binary_directory,
+      new_childnode_idx = route_top_down(DB, drcInfo, childnode_box, childnode_orient, child_idx, new_childnode_idx, lidx, opath, binary_directory,
                      skip_saving_state, adr_mode);
     }
     // 6.update current_node.blocks[i].intermetal/via/blockpin, absolute position and rect
@@ -291,7 +291,7 @@ void route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::bbox
     if (blk.child == -1) continue;
     DB.hierTree[blk.child].parent[0] = new_currentnode_idx;
   }
-  return;
+  return new_currentnode_idx;
 }
 
 int toplevel( const std::vector<std::string>& argv) {
@@ -390,7 +390,7 @@ int toplevel( const std::vector<std::string>& argv) {
   int new_topnode_idx = 0;
   for (unsigned int lidx = 0; lidx < DB.hierTree[TraverseOrder.back()].numPlacement; lidx++) {
     auto &ct = DB.hierTree[TraverseOrder.back()];
-    route_top_down(
+    new_topnode_idx = route_top_down(
         DB, drcInfo,
         PnRDB::bbox(PnRDB::point(0, 0),
 		    PnRDB::point(ct.PnRAS[0].width, ct.PnRAS[0].height)),
