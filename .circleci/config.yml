@@ -1,5 +1,26 @@
 version: 2.1
 
+commands:
+  run-nightly:
+    description: "Run pytest tests/integration with appropriate flags & filters (Used in nightly regressions)"
+    parameters:
+      filter:
+        description: "String representing pytest -k argument"
+        type: string
+      timeout:
+        description: "Integer representing pytest --timeout argument"
+        type: integer
+        default: 1800
+      xml:
+        description: "Rename junit.xml to this string"
+        type: string
+        default: "junit.xml"
+    steps:
+      - run: |
+          docker run --name align_container align_image bash -c "source setup.sh && pytest -vv --runnightly --tb=line --timeout=<<parameters.timeout>> -k '<<parameters.filter>>' -- tests/integration; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/<<parameters.xml>>"
+          docker cp align_container:test-reports .
+          docker rm align_container
+
 executors:
   docker-executor:
     docker:
@@ -218,32 +239,27 @@ jobs:
       - run: |
           docker build -t align_image -f ./build/Dockerfile.using-install.sh .
 
-      - run:
-          command: |
-            docker run --name align_container align_image bash -c "source setup.sh && pytest -vv --runnightly --tb=line --timeout=300 -k 'BUFFER and not BUFFER_VCM' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1.xml"
-            docker cp align_container:test-reports .
-            docker rm align_container
+      - run-nightly:
+          filter: "BUFFER and not BUFFER_VCM"
+          xml: "junit1_1.xml"
+          timeout: 300
 
-      - run:
-          command: |
-            docker run --name align_container align_image bash -c "source setup.sh && pytest -vv --runnightly --tb=line --timeout=2500 -k 'Sanitized_Coarse_Comp_CK or Sanitized_EdgeComparator or BTSW or Sanitized_ResTune_Configure and not Sanitized_ResTune_Configure' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_2.xml"
-            docker cp align_container:test-reports .
-            docker rm align_container
+      - run-nightly:
+          filter: "Sanitized_Coarse_Comp_CK or Sanitized_EdgeComparator or BTSW or Sanitized_ResTune_Configure and not Sanitized_ResTune_Configure"
+          xml: "junit1_2.xml"
+          timeout: 2500
 
-      - run:
-          command: |
-            docker run --name align_container align_image bash -c "source setup.sh && pytest -vv --runnightly --tb=line --timeout=250 -k 'ota and not OTA_FF_2s_v3e' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_3.xml"
-            docker cp align_container:test-reports .
-            docker rm align_container
+      - run-nightly:
+          filter: "ota and not OTA_FF_2s_v3e"
+          xml: "junit1_3.xml"
+          timeout: 250
 
-      - run:
-          command: |
-            docker run --name align_container align_image bash -c "source setup.sh && pytest -vv --runnightly --tb=line --timeout=1700 -k 'single_SAR and not tb_single_SAR' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_4.xml"
-            docker cp align_container:test-reports .
-            docker rm align_container
-          no_output_timeout: 30m
+      - run-nightly:
+          filter: "single_SAR and not tb_single_SAR"
+          xml: "junit1_4.xml"
+          timeout: 1700
 
-          - persist_to_workspace:
+      - persist_to_workspace:
           root: /work/workspace
           paths:
             - test-reports/align-nightly
@@ -259,9 +275,10 @@ jobs:
       - run: |
           docker build -t align_image -f ./build/Dockerfile.using-install.sh .
 
-      - run:
-          command: |
-            docker run --name align_container align_image bash -c "source setup.sh && pytest -vv --runnightly --tb=line --timeout=1700 -k 'not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTDSM_CORE_NEW' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2.xml"          no_output_timeout: 30m
+      - run-nightly:
+        filter: "not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTDSM_CORE_NEW"
+        xml: "junit2.xml"
+        timeout: 1700
 
       - persist_to_workspace:
           root: /work/workspace
