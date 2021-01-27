@@ -20,3 +20,8 @@ junit.xml
 __json
 *-A.json
 *-B.json
+Results/*.plt
+Results/*.pl
+Results/*.txt
+*.so
+*.log

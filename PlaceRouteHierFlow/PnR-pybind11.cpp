@@ -1,5 +1,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/stl_bind.h>
 #include <pybind11/iostream.h>
 
 namespace py = pybind11;
@@ -11,8 +12,9 @@ using namespace pybind11::literals;
 #include <mutex>
 
 #include "PnRDB/PnRdatabase.h"
-//#include "cap_placer/capplacer.h"
-//#include "placer/Placer.h"
+#include "cap_placer/CapPlacerIfc.h"
+#include "placer/PlacerIfc.h"
+#include "guard_ring/GuardRingIfc.h"
 #include "toplevel.h"
 
 using namespace PnRDB;
@@ -206,6 +208,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("UR", &layoutAS::UR);
   py::class_<hierNode>( m, "hierNode")
     .def( py::init<>())
+    .def( py::init<hierNode>())
     .def_readwrite("isCompleted", &hierNode::isCompleted)
     .def_readwrite("isTop", &hierNode::isTop)
     .def_readwrite("isIntelGcellGlobalRouter", &hierNode::isIntelGcellGlobalRouter)
@@ -239,9 +242,17 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("R_Constraints", &hierNode::R_Constraints)
     .def_readwrite("C_Constraints", &hierNode::C_Constraints)
     .def_readwrite("Port_Location", &hierNode::Port_Location)
+    .def_readwrite("Guardring_Consts", &hierNode::Guardring_Consts)
     .def_readwrite("bias_Hgraph", &hierNode::bias_Hgraph)
     .def_readwrite("bias_Vgraph", &hierNode::bias_Vgraph)
-    .def_readwrite("router_report", &hierNode::router_report);
+    .def_readwrite("router_report", &hierNode::router_report)
+    ;
+  py::class_<Guardring_Const>( m, "Guardring_Const")
+    .def( py::init<>())
+    .def_readwrite("block_name", &Guardring_Const::block_name)
+    .def_readwrite("guard_ring_perimitives", &Guardring_Const::guard_ring_perimitives)
+    .def_readwrite("global_pin", &Guardring_Const::global_pin)
+    ;
   py::class_<SymmNet>( m, "SymmNet")
     .def( py::init<>())
     .def_readwrite("net1", &SymmNet::net1)
@@ -330,6 +341,62 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("UpperRect", &ViaModel::UpperRect)
     .def_readwrite("R", &ViaModel::R);
 
+  py::class_<Drc_info>( m, "Drc_info")
+    .def( py::init<>())
+    .def_readwrite("MaxLayer", &Drc_info::MaxLayer)
+    .def_readwrite("Metalmap", &Drc_info::Metalmap)
+    .def_readwrite("Viamap", &Drc_info::Viamap)
+    .def_readwrite("Metal_info", &Drc_info::Metal_info)
+    .def_readwrite("Via_info", &Drc_info::Via_info)
+    .def_readwrite("metal_weight", &Drc_info::metal_weight)
+    .def_readwrite("Via_model", &Drc_info::Via_model)
+    .def_readwrite("MaskID_Metal", &Drc_info::MaskID_Metal)
+    .def_readwrite("MaskID_Via", &Drc_info::MaskID_Via)
+    .def_readwrite("top_boundary", &Drc_info::top_boundary)
+    .def_readwrite("Guardring_info", &Drc_info::Guardring_info)
+  ;
+
+  py::enum_<NType>(m,"NType")
+    .value("Block",Block)
+    .value("Terminal",Terminal)
+    .export_values();
+
+  py::enum_<Omark>(m,"Omark")
+    .value("N",N)
+    .value("S",S)
+    .value("W",W)
+    .value("E",E)
+    .value("FN",FN)
+    .value("FS",FS)
+    .value("FW",FW)
+    .value("FE",FE)
+    .export_values();
+
+  py::enum_<Smark>(m,"Smark")
+    .value("H",H)
+    .value("V",V)
+    .export_values();
+
+  py::enum_<Bmark>(m,"Bmark")
+    .value("TL",TL)
+    .value("TC",TC)
+    .value("TR",TR)
+    .value("RT",RT)
+    .value("RC",RC)
+    .value("RB",RB)
+    .value("BR",BR)
+    .value("BC",BC)
+    .value("BL",BL)
+    .value("LB",LB)
+    .value("LC",LC)
+    .value("LT",LT)
+    .export_values();
+
+  py::enum_<TransformType>(m,"TransformType")
+    .value("Forward",Forward)
+    .value("Backward",Backward)
+    .export_values();
+
   py::class_<PnRdatabase>( m, "PnRdatabase")
     .def( py::init<string, string, string, string, string, string>())
     .def( py::init<>())
@@ -344,20 +411,25 @@ PYBIND11_MODULE(PnR, m) {
     .def( "AddingPowerPins", &PnRdatabase::AddingPowerPins)
     .def( "Extract_RemovePowerPins", &PnRdatabase::Extract_RemovePowerPins)
     .def( "CheckinHierNode", &PnRdatabase::CheckinHierNode)
+    .def_readwrite("hierTree", &PnRdatabase::hierTree)
   ;
 
-  /*
-  py::class_<cap_placer::Placer_Router_Cap>( m, "Placer_Router_Cap")
+  py::class_<Placer_Router_Cap_Ifc>( m, "Placer_Router_Cap_Ifc")
     .def( py::init<string, string, hierNode&, Drc_info&, map<string, lefMacro>&, bool, int>());    
 
-  py::class_<Placer>( m, "Placer")
-    .def( py::init<hierNode&, string, int, Drc_info&>())
-    .def( py::init<std::vector<hierNode>&, string, int, Drc_info&>());
-  */
+  py::class_<PlacerIfc>( m, "PlacerIfc")
+    .def( py::init<hierNode&, int, string, int, Drc_info&>())
+    .def( "getNodeVecSize", &PlacerIfc::getNodeVecSize)
+    .def( "getNode", &PlacerIfc::getNode);
 
-  //m.def("save_state", &save_state, "helper function to save_state");
-  //m.def("route_single_variant", &route_single_variant, "helper function to route a single variant");
-  //m.def("route_top_down", &route_top_down, "helper function to perform top-down routing");
+  py::class_<GuardRingIfc>( m, "GuardRingIfc")
+    .def( py::init<hierNode&, const map<string, lefMacro>&, const Drc_info&>());
+
+
+
+  m.def("save_state", &save_state, "helper function to save_state");
+  m.def("route_single_variant", &route_single_variant, "helper function to route a single variant");
+  m.def("route_top_down", &route_top_down, "helper function to perform top-down routing");
 
   m.def("toplevel", [](const std::vector<std::string>& argv) {
     py::scoped_ostream_redirect coutstream(
