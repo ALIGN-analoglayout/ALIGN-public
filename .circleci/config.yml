@@ -9,7 +9,7 @@ commands:
         type: string
       timeout:
         description: "Integer representing pytest --timeout argument"
-        type: integer
+        type: string
         default: 1800
       xml:
         description: "Rename junit.xml to this string"
