@@ -7,14 +7,13 @@ commands:
       filter:
         description: "String representing pytest -k argument"
         type: string
+      xml:
+        description: "Rename junit.xml to this string"
+        type: string
       timeout:
         description: "Integer representing pytest --timeout argument"
         type: string
         default: "1800"
-      xml:
-        description: "Rename junit.xml to this string"
-        type: string
-        default: "junit.xml"
     steps:
       - run: |
           docker run --name align_container align_image bash -c "source setup.sh && pytest -vv --runnightly --tb=line --timeout=<<parameters.timeout>> -k '<<parameters.filter>>' -- tests/integration; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/<<parameters.xml>>"
