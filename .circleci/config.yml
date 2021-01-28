@@ -28,7 +28,7 @@ commands:
           command: |
             docker run --name align_container align_image bash -c "source setup.sh && pytest -vv --runnightly --tb=line --timeout=<<parameters.timeout>> -k '<<parameters.filter>>' -- tests/integration; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/<<parameters.xml>>"
             docker cp align_container:test-reports .
-            docker cp align_container:./LOG .
+            docker cp align_container:/work/workspace/LOG .
             docker rm align_container
 
 executors:
