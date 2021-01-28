@@ -1,6 +1,13 @@
 version: 2.1
 
 commands:
+  run-build-align:
+    description: "Build align image (contains pip installed align module + PlaceRouteHierFlow)"
+    steps:
+      - run:
+          name: "Build align_image"
+          command: |
+            docker build -t align_image -f ./build/Dockerfile.using-install.sh .
   run-nightly:
     description: "Run pytest tests/integration with appropriate flags & filters (Used in nightly regressions)"
     parameters:
@@ -16,7 +23,7 @@ commands:
         default: "1800"
     steps:
       - run:
-          name: "Nightly integration test -k <<parameters.filter>>"
+          name: "Nightly: <<parameters.filter>> (<<parameters.xml>>)"
           no_output_timeout: "<<parameters.timeout>>s"
           command: |
             docker run --name align_container align_image bash -c "source setup.sh && pytest -vv --runnightly --tb=line --timeout=<<parameters.timeout>> -k '<<parameters.filter>>' -- tests/integration; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/<<parameters.xml>>"
@@ -177,8 +184,7 @@ jobs:
       - attach_workspace:
           at: /work/workspace
 
-      - run: |
-          docker build -t align_image -f ./build/Dockerfile.using-install.sh .
+      - run-build-align
 
       - run: |
           docker run --name align_container align_image bash -c "source setup.sh && unset ALIGN_WORK_DIR && coverage run --source=align,tests setup.py pytest && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/align && cp junit.xml /test-reports/align && mkdir -p /coverage-reports/align && cp -r coverage.xml htmlcov /coverage-reports/align"
@@ -238,8 +244,7 @@ jobs:
       - attach_workspace:
           at: /work/workspace
 
-      - run: |
-          docker build -t align_image -f ./build/Dockerfile.using-install.sh .
+      - run-build-align
 
       - run-nightly:
           filter: "BUFFER and not BUFFER_VCM"
@@ -274,8 +279,7 @@ jobs:
       - attach_workspace:
           at: /work/workspace
 
-      - run: |
-          docker build -t align_image -f ./build/Dockerfile.using-install.sh .
+      - run-build-align
 
       - run-nightly:
           filter: "not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTDSM_CORE_NEW"
