@@ -26,9 +26,8 @@ commands:
           name: "Nightly: <<parameters.filter>> (<<parameters.xml>>)"
           no_output_timeout: "<<parameters.timeout>>s"
           command: |
-            docker run --name align_container align_image bash -c "source setup.sh && pytest -vv --runnightly --tb=line --timeout=<<parameters.timeout>> -k '<<parameters.filter>>' -- tests/integration; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/<<parameters.xml>>"
+            docker run --name align_container align_image bash -c "source setup.sh && pytest -vv --runnightly --tb=line --timeout=<<parameters.timeout>> -k '<<parameters.filter>>' -- tests/integration; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/<<parameters.xml>> && cp -r LOG /test-reports/align-nightly/"
             docker cp align_container:test-reports .
-            docker cp align_container:/work/workspace/LOG .
             docker rm align_container
 
 executors:
@@ -273,10 +272,10 @@ jobs:
             - test-reports/align-nightly
 
       - store_artifacts:
-          path: ./LOG
+          path: test-reports/align-nightly
 
       - store_test_results:
-          path: .
+          path: test-reports/align-nightly
 
   build-nightly2:
     executor: docker-executor
