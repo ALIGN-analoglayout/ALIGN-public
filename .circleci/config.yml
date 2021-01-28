@@ -11,11 +11,12 @@ commands:
   run-nightly:
     description: "Run pytest tests/integration with appropriate flags & filters (Used in nightly regressions)"
     parameters:
+      id:
+        description: "Nightly test identifier (junit<id>.xml)"
+        type: string
+        default: ""
       filter:
         description: "String representing pytest -k argument"
-        type: string
-      xml:
-        description: "Rename junit.xml to this string"
         type: string
       timeout:
         description: "Integer representing pytest --timeout argument"
@@ -23,12 +24,16 @@ commands:
         default: "1800"
     steps:
       - run:
-          name: "Nightly: <<parameters.filter>> (<<parameters.xml>>)"
+          name: "Nightly<<parameters.id>>: <<parameters.filter>>"
           no_output_timeout: "<<parameters.timeout>>s"
           command: |
-            docker run --name align_container align_image bash -c "source setup.sh && pytest -vv --runnightly --tb=line --timeout=<<parameters.timeout>> -k '<<parameters.filter>>' -- tests/integration; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/<<parameters.xml>> && cp -r LOG /test-reports/align-nightly/"
+            docker run --name align_container align_image bash -c "source setup.sh && pytest -vv --runnightly --tb=line --timeout=<<parameters.timeout>> -k '<<parameters.filter>>' -- tests/integration; mkdir -p /test-reports/align-nightly<<parameters.id>> && cp junit.xml /test-reports/align-nightly<<parameters.id>>/ && cp -r LOG /test-reports/align-nightly<<parameters.id>>/"
             docker cp align_container:test-reports .
             docker rm align_container
+      - store_artifacts:
+          path: test-reports/align-nightly<<parameters.id>>
+      - store_test_results:
+          path: test-reports/align-nightly<<parameters.id>>
 
 executors:
   docker-executor:
@@ -247,35 +252,24 @@ jobs:
       - run-build-align
 
       - run-nightly:
+          id: "1_1"
           filter: "BUFFER and not BUFFER_VCM"
-          xml: "junit1_1.xml"
           timeout: "300"
 
       - run-nightly:
+          id: "1_2"
           filter: "Sanitized_Coarse_Comp_CK or Sanitized_EdgeComparator or BTSW or Sanitized_ResTune_Configure and not Sanitized_ResTune_Configure"
-          xml: "junit1_2.xml"
           timeout: "2500"
 
       - run-nightly:
+          id: "1_3"
           filter: "ota and not OTA_FF_2s_v3e"
-          xml: "junit1_3.xml"
           timeout: "250"
 
       - run-nightly:
+          id: "1_4"
           filter: "single_SAR and not tb_single_SAR"
-          xml: "junit1_4.xml"
           timeout: "1700"
-
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/align-nightly
-
-      - store_artifacts:
-          path: test-reports/align-nightly
-
-      - store_test_results:
-          path: test-reports/align-nightly
 
   build-nightly2:
     executor: docker-executor
@@ -288,20 +282,9 @@ jobs:
       - run-build-align
 
       - run-nightly:
+          id: "2"
           filter: "not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTDSM_CORE_NEW"
-          xml: "junit2.xml"
           timeout: "1700"
-
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/align-nightly
-
-      - store_artifacts:
-          path: ./LOG
-
-      - store_test_results:
-          path: .
 
   finish:
     executor: git-executor
