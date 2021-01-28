@@ -266,10 +266,10 @@ jobs:
           filter: "ota and not OTA_FF_2s_v3e"
           timeout: "250"
 
-      - run-nightly:
-          id: "1_4"
-          filter: "single_SAR and not tb_single_SAR"
-          timeout: "1700"
+      # - run-nightly:
+      #     id: "1_4"
+      #     filter: "single_SAR and not tb_single_SAR"
+      #     timeout: "1700"
 
   build-nightly2:
     executor: docker-executor
@@ -317,13 +317,6 @@ jobs:
 
 workflows:
   version: 2.1
-
-  make:
-    jobs:
-      - start
-      - build-make-docker:
-          requires:
-            - start
 
   nightly:
     # triggers:
@@ -373,21 +366,24 @@ workflows:
             - build-PlaceRouteHierFlow
 
 
-  full:
-    jobs:
-      - start
-      - build-PlaceRouteHierFlow:
-          requires:
-            - start
-      - build-cktgen:
-          requires:
-            - start
-      - build-align:
-          requires:
-            - start
-      - finish:
-          requires:
-            - build-align
-            - build-cktgen
-            - build-PlaceRouteHierFlow
+  # full:
+  #   jobs:
+  #     - start
+  #     - build-PlaceRouteHierFlow:
+  #         requires:
+  #           - start
+  #     - build-cktgen:
+  #         requires:
+  #           - start
+  #     - build-align:
+  #         requires:
+  #           - start
+  #     - build-make-docker:
+  #         requires:
+  #           - start
+  #     - finish:
+  #         requires:
+  #           - build-align
+  #           - build-cktgen
+  #           - build-PlaceRouteHierFlow
 
