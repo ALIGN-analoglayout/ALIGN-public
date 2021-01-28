@@ -1,0 +1,4 @@
+bounds,bwout,maxgain,pm,gm,gainbwprod,xn0_dv,xn1_dv,xp0_dv,xp1_dv,xn0_ov,xn1_ov,xp0_ov,xp1_ov,SR,CMGain,CMRR,min_ocmr,max_ocmr,PSGain,PSRR
+max,1e99,1e99,180,1e99,1e99,0,0,0,0,0,0,0,0,1e99,1e99,1e99,1e99,1.06,1e99,1e99
+min,2.8e+08,20,60,-1e99,2.8e9,0,0,0,0,0,0,0,0,1.2e9,40,40,0.5,-1e99,19.65,19.65
+unit,Bandwidth(Hz),Gain(dB),Phase Margin(degree),GBP(Hz),Status,Status,Status,Status,Status,Status,Status,Status,V/s,dB,dB,V,V,dB,dB

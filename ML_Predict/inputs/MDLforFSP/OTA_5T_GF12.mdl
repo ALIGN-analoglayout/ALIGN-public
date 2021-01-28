@@ -1,0 +1,19 @@
+
+
+alias measurement get_ac{
+
+// Maintain alphebatical order here.
+	run ac
+	export real bwout = bw(mag(V(n3)),response='low)
+	export real gainbwprod = gainBwProd(mag(V(n3)))
+//	export real gm = gainmargin(V(n3))
+	export real maxgain = db(max(yval(mag(V(n3)))))
+	export real pm = phasemargin(V(n3))
+
+
+}
+
+
+foreach rpnet0239 from swp(start=1, stop=30, step=1){
+				run get_ac
+}
