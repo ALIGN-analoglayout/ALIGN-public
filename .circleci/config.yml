@@ -27,7 +27,11 @@ commands:
           name: "Nightly<<parameters.id>>: <<parameters.filter>>"
           no_output_timeout: "<<parameters.timeout>>s"
           command: |
-            docker run --name align_container align_image bash -c "source setup.sh && pytest -vv --runnightly --tb=line --timeout=<<parameters.timeout>> -k '<<parameters.filter>>' -- tests/integration; mkdir -p /test-reports/align-nightly<<parameters.id>> && cp junit.xml /test-reports/align-nightly<<parameters.id>>/ && cp -r LOG /test-reports/align-nightly<<parameters.id>>/"
+            docker run --name align_container align_image bash -c "\
+              source setup.sh && \
+              pytest -vv --runnightly --tb=line --timeout=<<parameters.timeout>> -k '<<parameters.filter>>' -- tests/integration && \
+              mkdir -p /test-reports/align-nightly<<parameters.id>> && cp -r junit.xml LOG /test-reports/align-nightly<<parameters.id>>/ \
+            "
             docker cp align_container:test-reports .
             docker rm align_container
       - store_artifacts:
@@ -59,7 +63,6 @@ executors:
   docker-executor:
     docker:
       - image: cimg/base:2021.01
-
 
 jobs:
   start:
@@ -118,17 +121,25 @@ jobs:
       - attach_workspace:
           at: .
 
-      - run: |
-          cd Cktgen
-          docker build -t cktgen_image .
+      - run:
+          name: "Build & run Cktgen tests"
+          command: |
+            cd Cktgen
+            docker build -t cktgen_image .
 
-          docker run --name cktgen_container cktgen_image bash -c "source general/bin/activate && cd cktgen && coverage run --source=cktgen,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/cktgen && cp /cktgen/junit.xml /test-reports/cktgen && mkdir -p /coverage-reports/cktgen && cp -r /cktgen/coverage.xml /cktgen/htmlcov /coverage-reports/cktgen"
-          cd -
+            docker run --name cktgen_container cktgen_image bash -c "\
+              source general/bin/activate && \
+              cd cktgen && \
+              coverage run --source=cktgen,tests setup.py test && \
+              coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && \
+              mkdir -p /test-reports/cktgen && cp junit.xml /test-reports/cktgen && \
+              mkdir -p /coverage-reports/cktgen && cp -r coverage.xml htmlcov /coverage-reports/cktgen\
+            "
+            cd -
 
-          docker cp cktgen_container:coverage-reports .
-          docker cp cktgen_container:test-reports .
-          docker rm cktgen_container
-
+            docker cp cktgen_container:coverage-reports .
+            docker cp cktgen_container:test-reports .
+            docker rm cktgen_container
 
       - store_test_results:
           path: test-reports/cktgen
@@ -146,11 +157,20 @@ jobs:
 
       - run-build-align
 
-      - run: |
-          docker run --name align_container align_image bash -c "source setup.sh && unset ALIGN_WORK_DIR && coverage run --source=align,tests setup.py pytest && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/align && cp junit.xml /test-reports/align && mkdir -p /coverage-reports/align && cp -r coverage.xml htmlcov /coverage-reports/align"
-          docker cp align_container:coverage-reports .
-          docker cp align_container:test-reports .
-          docker rm align_container
+      - run:
+          name: "Run pytest on align"
+          command: |
+            docker run --name align_container align_image bash -c "\
+              source setup.sh && \
+              unset ALIGN_WORK_DIR && \
+              coverage run --source=align,tests setup.py pytest && \
+              coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && \
+              mkdir -p /test-reports/align && cp junit.xml /test-reports/align && \
+              mkdir -p /coverage-reports/align && cp -r coverage.xml htmlcov /coverage-reports/align \
+            "
+            docker cp align_container:coverage-reports .
+            docker cp align_container:test-reports .
+            docker rm align_container
 
       - store_test_results:
           path: test-reports/align
@@ -166,26 +186,27 @@ jobs:
       - attach_workspace:
           at: .
 
-      - run: |
-          cd PlaceRouteHierFlow
-          docker build -t placeroute_coverage_image -f Dockerfile-coverage .
-          docker volume create placerInputVol
-          docker volume create placerOutputVol
+      - run:
+          name: "Build PlaceRouteHierFlow image"
+          command: |
+            cd PlaceRouteHierFlow
+            docker build -t placeroute_coverage_image -f Dockerfile-coverage .
+            docker volume create placerInputVol
+            docker volume create placerOutputVol
 
-      - run: |
-          (cd PlaceRouteHierFlow && ./run_small_in_docker.sh)
-          mkdir -p coverage-reports
-          docker cp PnR:/PlaceRouteHierFlow/coverage.out coverage-reports/PlaceRouteHierFlow
-          mkdir -p test-reports/PlaceRouteHierFlow/{PnRDB,placer,router,cap_placer}
-          docker cp PnR:/PlaceRouteHierFlow/PnRDB/junit.xml test-reports/PlaceRouteHierFlow/PnRDB
-          docker cp PnR:/PlaceRouteHierFlow/placer/junit.xml test-reports/PlaceRouteHierFlow/placer
-          docker cp PnR:/PlaceRouteHierFlow/router/junit.xml test-reports/PlaceRouteHierFlow/router
-          docker cp PnR:/PlaceRouteHierFlow/cap_placer/junit.xml test-reports/PlaceRouteHierFlow/cap_placer
+      - run:
+          name: "Run PlaceRouteHierFlow tests"
+          command: |
+            (cd PlaceRouteHierFlow && ./run_small_in_docker.sh)
+            mkdir -p coverage-reports
+            docker cp PnR:/PlaceRouteHierFlow/coverage.out coverage-reports/PlaceRouteHierFlow
+            mkdir -p test-reports/PlaceRouteHierFlow/{PnRDB,placer,router,cap_placer}
+            docker cp PnR:/PlaceRouteHierFlow/PnRDB/junit.xml test-reports/PlaceRouteHierFlow/PnRDB
+            docker cp PnR:/PlaceRouteHierFlow/placer/junit.xml test-reports/PlaceRouteHierFlow/placer
+            docker cp PnR:/PlaceRouteHierFlow/router/junit.xml test-reports/PlaceRouteHierFlow/router
+            docker cp PnR:/PlaceRouteHierFlow/cap_placer/junit.xml test-reports/PlaceRouteHierFlow/cap_placer
 
       - store_test_results:
-          path: test-reports/PlaceRouteHierFlow
-
-      - store_artifacts:
           path: test-reports/PlaceRouteHierFlow
 
       - store_artifacts:
@@ -197,7 +218,7 @@ jobs:
       - setup_remote_docker
 
       - attach_workspace:
-          at: /work/workspace
+          at: .
 
       - run-build-align
 
@@ -227,7 +248,7 @@ jobs:
       - setup_remote_docker
 
       - attach_workspace:
-          at: /work/workspace
+          at: .
 
       - run-build-align
 
@@ -241,12 +262,9 @@ jobs:
 
     steps:
       - attach_workspace:
-          at: /work/workspace
+          at: .
 
       - store_test_results:
-          path: test-reports
-
-      - store_artifacts:
           path: test-reports
 
       - store_artifacts:
@@ -257,7 +275,7 @@ jobs:
 
     steps:
       - attach_workspace:
-          at: /work/workspace
+          at: .
 
       - store_test_results:
           path: test-reports
