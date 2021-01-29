@@ -4,7 +4,7 @@ htmlcov/
 .eggs/
 *.egg-info/
 junit.xml
-testcase_latest/
+coverage.xml
 __pycache__/
 *.gds.json
 *.json
@@ -15,9 +15,14 @@ __pycache__/
 *.swp
 tmp/
 LOG/
+*.log
 pycharm/
 .idea/
 general/
 json/
 googletest/
 lpsolve/
+work/
+*.o
+*.a
+*.so
