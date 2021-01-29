@@ -34,127 +34,81 @@ commands:
           path: test-reports/align-nightly<<parameters.id>>
       - store_test_results:
           path: test-reports/align-nightly<<parameters.id>>
+  run-make-docker:
+    description: "Exercise the monolithic make docker flow"
+    parameters:
+      design:
+        description: "Name of design (must exist within examples dir)"
+        type: string
+      flat:
+        description: "Enter '1' if you want design to be flattened"
+        type: string
+        default: "0"
+    steps:
+      - run:
+          name: "make docker DESIGN=<<parameters.design>>"
+          command: |
+            export ALIGN_HOME=`pwd`
+            export ALIGN_WORK_DIR=compose_dataVolume
+            cd build
+            make docker DESIGN=<<parameters.design>> FLAT=<<parameters.flat>>
+      - store_artifacts:
+          path: build/<<parameters.design>>
 
 executors:
   docker-executor:
     docker:
-      - image: docker:18.06.3-ce-git
-    working_directory: /work/workspace
+      - image: cimg/base:2021.01
 
-  git-executor:
-    docker:
-      - image: alpine/git
-    working_directory: /work/workspace
 
 jobs:
   start:
-    executor: git-executor
+    executor: docker-executor
     steps:
-      - attach_workspace:
-          at: /work/workspace
       - checkout
       - persist_to_workspace:
-          root: /work/workspace
-          paths: .
+          root: .
+          paths:
+            - .
 
   build-make-docker:
     executor: docker-executor
     steps:
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          apk update
-          apk add py3-pip bash make
-
-      - run: |
-          apk add python3-dev libffi-dev openssl-dev gcc libc-dev make
-          pip3 install docker-compose
-
       - setup_remote_docker
 
-      - run:
-          shell: /bin/bash
-          command: |
-            echo 'export ALIGN_HOME=/work/workspace' >> $BASH_ENV
-            echo 'export ALIGN_WORK_DIR=compose_dataVolume' >> $BASH_ENV
+      - attach_workspace:
+          at: .
 
       - run:
-          shell: /bin/bash
+          name: "Make align-service"
           command: |
+            export ALIGN_HOME=`pwd`
+            export ALIGN_WORK_DIR=compose_dataVolume
             docker volume create --name=$ALIGN_WORK_DIR
+            cd build
+            make align-service
 
-      - run:
-          shell: /bin/bash
-          command: |
-            cd build/
-            make docker DESIGN=telescopic_ota && \
-            docker cp align_cont:/dataVolume/telescopic_ota ..
+      - run-make-docker:
+          design: "telescopic_ota"
 
-      - store_artifacts:
-          path: telescopic_ota/telescopic_ota_0.png
+      - run-make-docker:
+          design: "test_vga"
 
-      - run:
-          shell: /bin/bash
-          command: |
-            cd build/
-            make docker DESIGN=test_vga && \
-            docker cp align_cont:/dataVolume/test_vga ..
+      - run-make-docker:
+          design: "switched_capacitor_filter"
 
-      - store_artifacts:
-          path: test_vga/test_vga_0.png
+      - run-make-docker:
+          design: "current_mirror_ota"
 
-      - run:
-          shell: /bin/bash
-          command: |
-            cd build/
-            make docker DESIGN=switched_capacitor_filter && \
-            docker cp align_cont:/dataVolume/switched_capacitor_filter ..
+      - run-make-docker:
+          design: "cascode_current_mirror_ota"
 
-      - store_artifacts:
-          path: switched_capacitor_filter/switched_capacitor_filter_0.png
+      - run-make-docker:
+          design: "five_transistor_ota"
 
-      - run:
-          shell: /bin/bash
-          command: |
-            cd build/
-            make docker DESIGN=current_mirror_ota && \
-            docker cp align_cont:/dataVolume/current_mirror_ota ..
-
-      - store_artifacts:
-          path: current_mirror_ota/current_mirror_ota_0.png
-
-      - run:
-          shell: /bin/bash
-          command: |
-            cd build/
-            make docker DESIGN=cascode_current_mirror_ota && \
-            docker cp align_cont:/dataVolume/cascode_current_mirror_ota ..
-
-      - store_artifacts:
-          path: cascode_current_mirror_ota/cascode_current_mirror_ota_0.png
-
-      - run:
-          shell: /bin/bash
-          command: |
-            cd build/
-            make docker DESIGN=five_transistor_ota && \
-            docker cp align_cont:/dataVolume/five_transistor_ota ..
-
-      - store_artifacts:
-          path: five_transistor_ota/five_transistor_ota_0.png
-
-
-      - run:
-          shell: /bin/bash
-          command: |
-            cd build/
-            make docker DESIGN=adder FLAT=1 && \
-            docker cp align_cont:/dataVolume/adder ..
-
-      - store_artifacts:
-          path: adder/adder_0.png
+      - run-make-docker:
+          design: "adder"
+          flat: "1"
 
   build-cktgen:
     executor: docker-executor
@@ -162,7 +116,7 @@ jobs:
       - setup_remote_docker
 
       - attach_workspace:
-          at: /work/workspace
+          at: .
 
       - run: |
           cd Cktgen
@@ -175,11 +129,12 @@ jobs:
           docker cp cktgen_container:test-reports .
           docker rm cktgen_container
 
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/cktgen
-            - coverage-reports/cktgen
+
+      - store_test_results:
+          path: test-reports/cktgen
+
+      - store_artifacts:
+          path: coverage-reports/cktgen
 
   build-align:
     executor: docker-executor
@@ -187,7 +142,7 @@ jobs:
       - setup_remote_docker
 
       - attach_workspace:
-          at: /work/workspace
+          at: .
 
       - run-build-align
 
@@ -197,11 +152,11 @@ jobs:
           docker cp align_container:test-reports .
           docker rm align_container
 
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/align
-            - coverage-reports/align
+      - store_test_results:
+          path: test-reports/align
+
+      - store_artifacts:
+          path: coverage-reports/align
 
   build-PlaceRouteHierFlow:
     executor: docker-executor
@@ -209,7 +164,7 @@ jobs:
       - setup_remote_docker
 
       - attach_workspace:
-          at: /work/workspace
+          at: .
 
       - run: |
           cd PlaceRouteHierFlow
@@ -218,7 +173,6 @@ jobs:
           docker volume create placerOutputVol
 
       - run: |
-          apk add bash
           (cd PlaceRouteHierFlow && ./run_small_in_docker.sh)
           mkdir -p coverage-reports
           docker cp PnR:/PlaceRouteHierFlow/coverage.out coverage-reports/PlaceRouteHierFlow
@@ -228,18 +182,14 @@ jobs:
           docker cp PnR:/PlaceRouteHierFlow/router/junit.xml test-reports/PlaceRouteHierFlow/router
           docker cp PnR:/PlaceRouteHierFlow/cap_placer/junit.xml test-reports/PlaceRouteHierFlow/cap_placer
 
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/PlaceRouteHierFlow
-            - coverage-reports/PlaceRouteHierFlow
+      - store_test_results:
+          path: test-reports/PlaceRouteHierFlow
 
       - store_artifacts:
-          path: test-reports
+          path: test-reports/PlaceRouteHierFlow
 
       - store_artifacts:
-          path: coverage-reports
-
+          path: coverage-reports/PlaceRouteHierFlow
 
   build-nightly:
     executor: docker-executor
@@ -287,7 +237,7 @@ jobs:
           timeout: "1700"
 
   finish:
-    executor: git-executor
+    executor: docker-executor
 
     steps:
       - attach_workspace:
@@ -303,7 +253,7 @@ jobs:
           path: coverage-reports
 
   finish-nightly:
-    executor: git-executor
+    executor: docker-executor
 
     steps:
       - attach_workspace:
@@ -384,6 +334,7 @@ workflows:
       - finish:
           requires:
             - build-align
+            - build-make-docker
             - build-cktgen
             - build-PlaceRouteHierFlow
 
