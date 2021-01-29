@@ -10,6 +10,19 @@ source setup.sh
 NB_CORES=$(grep -c '^processor' /proc/cpuinfo)
 export MAKEFLAGS="-j$((NB_CORES+1)) -l${NB_CORES}"
 
+### Helper function to git clone only when needed ###
+function git_clone () {
+    local url="$1"
+    local dir="$(basename $url .git)"
+    if [ ! -d $dir ] ; then
+        git clone $url
+    else
+        cd $dir
+        git pull
+        cd -
+    fi
+}
+
 #
 # Use sudo if not root; for compatibility with docker
 #
@@ -46,9 +59,10 @@ rm ./klayout_0.26.3-1_amd64.deb
 #** WSL users would need to install Xming for the display to work
 
 #### Install lpsolve
-git clone https://www.github.com/ALIGN-analoglayout/lpsolve.git
+git_clone https://www.github.com/ALIGN-analoglayout/lpsolve.git
+
 ####  Install json
-git clone https://github.com/nlohmann/json.git
+git_clone https://github.com/nlohmann/json.git
 #### Install boost (don't need to; already installed using libboost-container-dev above 
 #git clone --recursive https://github.com/boostorg/boost.git
 #cd $ALIGN_HOME/boost
@@ -57,30 +71,30 @@ git clone https://github.com/nlohmann/json.git
 
 #### Install googletest
 cd $ALIGN_HOME
-git clone https://github.com/google/googletest
+git_clone https://github.com/google/googletest
 cd googletest/
 
 cmake CMakeLists.txt
 make
 cmake -DBUILD_SHARED_LIBS=ON CMakeLists.txt
 make
-mkdir googletest/mybuild
+mkdir -p googletest/mybuild
 cp -r lib googletest/mybuild/.
 
 #### Install logger
 cd $ALIGN_HOME
-git clone https://github.com/gabime/spdlog.git
-cd spdlog && mkdir build && cd build
+git_clone https://github.com/gabime/spdlog.git
+cd spdlog && mkdir -p build && cd build
 cmake .. && make
 ### Install superLU // this now is not correct
 #version 1
 cd $ALIGN_HOME
-git clone https://www.github.com/ALIGN-analoglayout/superlu.git
+git_clone https://www.github.com/ALIGN-analoglayout/superlu.git
 cd superlu
-tar xvfz superlu_5.2.1.tar.gz 
+tar xvfz superlu_5.2.1.tar.gz
 
 cd SuperLU_5.2.1/
-mkdir build
+mkdir -p build
 cd build
 cmake ..
 make
