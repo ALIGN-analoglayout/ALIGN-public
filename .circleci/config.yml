@@ -257,32 +257,6 @@ jobs:
           filter: "not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTDSM_CORE_NEW"
           timeout: "1700"
 
-  finish:
-    executor: docker-executor
-
-    steps:
-      - attach_workspace:
-          at: .
-
-      - store_test_results:
-          path: test-reports
-
-      - store_artifacts:
-          path: coverage-reports
-
-  finish-nightly:
-    executor: docker-executor
-
-    steps:
-      - attach_workspace:
-          at: .
-
-      - store_test_results:
-          path: test-reports
-
-      - store_artifacts:
-          path: test-reports
-
 workflows:
   version: 2.1
 
@@ -303,21 +277,6 @@ workflows:
       - build-nightly2:
           requires:
             - start
-      - finish-nightly:
-          requires:
-            - build-nightly
-            - build-nightly2
-
-  full_after_nightly:
-    triggers:
-      - schedule:
-          cron: "0 11 * * *"
-          filters:
-            branches:
-              only:
-                - master
-    jobs:
-      - start
       - build-PlaceRouteHierFlow:
           requires:
             - start
@@ -327,14 +286,11 @@ workflows:
       - build-align:
           requires:
             - start
-      - finish:
+      - build-make-docker:
           requires:
-            - build-align
-            - build-cktgen
-            - build-PlaceRouteHierFlow
+            - start
 
-
-  full:
+  commit:
     jobs:
       - start
       - build-PlaceRouteHierFlow:
@@ -349,10 +305,4 @@ workflows:
       - build-make-docker:
           requires:
             - start
-      - finish:
-          requires:
-            - build-align
-            - build-make-docker
-            - build-cktgen
-            - build-PlaceRouteHierFlow
 
