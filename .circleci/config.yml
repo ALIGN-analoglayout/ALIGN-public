@@ -97,6 +97,8 @@ jobs:
       - attach_workspace:
           at: .
 
+      - run-load-align
+
       - run:
           name: "Make align-service"
           command: |

@@ -69,9 +69,9 @@ docker-core.yml:	${ALIGN_HOME}/build/docker-core.yml
 
 docker:	volume align-service ${DESIGN}
 	docker-compose exec align-service bash -c "make -f /ALIGN-public/build/Makefile DESIGN=${DESIGN} FLAT=${FLAT}"
-	docker cp align_cont:/dataVolume/${OUTPUT_DIR}/${DESIGN}_0.png ./${DESIGN}/
-	docker cp align_cont:/dataVolume/${OUTPUT_DIR}/${DESIGN}_0.gds ./${DESIGN}/
-	docker cp align_cont:/dataVolume/${OUTPUT_DIR}/LOG ./${DESIGN}/
+	docker cp align_container:/dataVolume/${OUTPUT_DIR}/${DESIGN}_0.png ./${DESIGN}/
+	docker cp align_container:/dataVolume/${OUTPUT_DIR}/${DESIGN}_0.gds ./${DESIGN}/
+	docker cp align_container:/dataVolume/${OUTPUT_DIR}/LOG ./${DESIGN}/
 
 services:	transfer-service align-service \
 		klayoutconvert-service
