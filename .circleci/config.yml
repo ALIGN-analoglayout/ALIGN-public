@@ -133,10 +133,9 @@ jobs:
   build-cktgen:
     executor: docker-executor
     steps:
-      - setup_remote_docker
+      - checkout
 
-      - attach_workspace:
-          at: .
+      - setup_remote_docker
 
       - run:
           name: "Build & run Cktgen tests"
@@ -288,6 +287,7 @@ workflows:
 
     jobs:
       - build-align
+      - build-cktgen
       - build-nightly:
           requires:
             - build-align
@@ -295,9 +295,6 @@ workflows:
           requires:
             - build-align
       - build-PlaceRouteHierFlow:
-          requires:
-            - build-align
-      - build-cktgen:
           requires:
             - build-align
       - test-align:
@@ -310,10 +307,8 @@ workflows:
   commit:
     jobs:
       - build-align
+      - build-cktgen
       - build-PlaceRouteHierFlow:
-          requires:
-            - build-align
-      - build-cktgen:
           requires:
             - build-align
       - test-align:
