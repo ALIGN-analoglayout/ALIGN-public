@@ -1,10 +1,10 @@
 #!/bin/bash
 ## Run this script starting in the ALIGN-public directory
 
-## Set ALIGN_HOME and ALIGN_WORK_DIR directory ( You can use any path for work directory)
+## Load all environment variables
+## (You may wish to override ALIGN_WORK_DIR)
 
-export ALIGN_HOME=$PWD
-export ALIGN_WORK_DIR=$ALIGN_HOME/work
+source setup.sh
 
 #
 # Use sudo if not root; for compatibility with docker
@@ -82,15 +82,6 @@ cmake ..
 make -j8
 
 
-## Set prerequisite paths
-#------------------------
-export LP_DIR=$ALIGN_HOME/lpsolve
-#export BOOST_LP=$ALIGN_HOME/boost
-export JSON=$ALIGN_HOME/json
-export GTEST_DIR=$ALIGN_HOME/googletest/googletest/
-export SPDLOG_DIR=$ALIGN_HOME/spdlog
-export SuperLu_DIR=$ALIGN_HOME/superlu
-export VENV=$ALIGN_HOME/general
 
 ## Install ALIGN
 #---------------
@@ -104,17 +95,9 @@ pip install pytest pytest-cov pytest-timeout coverage-badge
 pip install -e .
 
 ## Install ALIGN_PnR
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}$ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/:$GTEST_DIR/mybuild/lib/
-
-export PYTHONPATH=${PYTHONPATH:+$PYTHONPATH:}$ALIGN_HOME/PlaceRouteHierFlow/
 
 cd $ALIGN_HOME/PlaceRouteHierFlow/ && make -j8
 cd $ALIGN_HOME
 
-## Run first example
-#---------------------
-#mkdir $ALIGN_WORK_DIR
-#cd $ALIGN_WORK_DIR
-#ln -s $ALIGN_HOME/build/Makefile .
-### for umn: module load gcc/8.2.0
-#make VENV=$VENV
+
+
