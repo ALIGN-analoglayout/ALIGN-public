@@ -6,6 +6,10 @@
 
 source setup.sh
 
+# Attempt to speed up Make
+NB_CORES=$(grep -c '^processor' /proc/cpuinfo)
+export MAKEFLAGS="-j$((NB_CORES+1)) -l${NB_CORES}"
+
 #
 # Use sudo if not root; for compatibility with docker
 #
@@ -67,7 +71,7 @@ cp -r lib googletest/mybuild/.
 cd $ALIGN_HOME
 git clone https://github.com/gabime/spdlog.git
 cd spdlog && mkdir build && cd build
-cmake .. && make -j
+cmake .. && make
 ### Install superLU // this now is not correct
 #version 1
 cd $ALIGN_HOME
@@ -79,7 +83,7 @@ cd SuperLU_5.2.1/
 mkdir build
 cd build
 cmake ..
-make -j8
+make
 
 
 
@@ -96,7 +100,7 @@ pip install -e .
 
 ## Install ALIGN_PnR
 
-cd $ALIGN_HOME/PlaceRouteHierFlow/ && make -j8
+cd $ALIGN_HOME/PlaceRouteHierFlow/ && make
 cd $ALIGN_HOME
 
 
