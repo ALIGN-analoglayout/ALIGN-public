@@ -1,13 +1,13 @@
 version: 2.1
 
 commands:
-  run-build-align:
-    description: "Build align image (contains pip installed align module + PlaceRouteHierFlow)"
+  run-load-align:
+    description: "Load align image (contains pip installed align module + PlaceRouteHierFlow)"
     steps:
       - run:
-          name: "Build align_image"
+          name: "Load align_image"
           command: |
-            docker build -t align_image -f ./build/Dockerfile.using-install.sh .
+            docker load --input align_image.tar
   run-nightly:
     description: "Run pytest tests/integration with appropriate flags & filters (Used in nightly regressions)"
     parameters:
@@ -69,6 +69,19 @@ jobs:
     executor: docker-executor
     steps:
       - checkout
+
+      - run:
+          name: "Build align_image"
+          command: |
+            docker build -t align_image -f ./build/Dockerfile.using-install.sh .
+
+      - run:
+          name: "Save align_image"
+          command: |
+            git clean -xdf
+            docker save --output align_image.tar align_image
+            du -h align_image.tar
+
       - persist_to_workspace:
           root: .
           paths:
@@ -155,7 +168,7 @@ jobs:
       - attach_workspace:
           at: .
 
-      - run-build-align
+      - run-load-align
 
       - run:
           name: "Run pytest on align"
@@ -220,7 +233,7 @@ jobs:
       - attach_workspace:
           at: .
 
-      - run-build-align
+      - run-load-align
 
       - run-nightly:
           id: "1_1"
@@ -250,7 +263,7 @@ jobs:
       - attach_workspace:
           at: .
 
-      - run-build-align
+      - run-load-align
 
       - run-nightly:
           id: "2"
