@@ -65,10 +65,12 @@ executors:
       - image: cimg/base:2021.01
 
 jobs:
-  start:
+  build-align:
     executor: docker-executor
     steps:
       - checkout
+
+      - setup_remote_docker
 
       - run:
           name: "Build align_image"
@@ -160,7 +162,7 @@ jobs:
       - store_artifacts:
           path: coverage-reports/cktgen
 
-  build-align:
+  test-align:
     executor: docker-executor
     steps:
       - setup_remote_docker
@@ -283,39 +285,39 @@ workflows:
                 - master
 
     jobs:
-      - start
+      - build-align
       - build-nightly:
           requires:
-            - start
+            - build-align
       - build-nightly2:
           requires:
-            - start
+            - build-align
       - build-PlaceRouteHierFlow:
           requires:
-            - start
+            - build-align
       - build-cktgen:
           requires:
-            - start
-      - build-align:
+            - build-align
+      - test-align:
           requires:
-            - start
+            - build-align
       - build-make-docker:
           requires:
-            - start
+            - build-align
 
   commit:
     jobs:
-      - start
+      - build-align
       - build-PlaceRouteHierFlow:
           requires:
-            - start
+            - build-align
       - build-cktgen:
           requires:
-            - start
-      - build-align:
+            - build-align
+      - test-align:
           requires:
-            - start
+            - build-align
       - build-make-docker:
           requires:
-            - start
+            - build-align
 
