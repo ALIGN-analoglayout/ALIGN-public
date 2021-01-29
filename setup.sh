@@ -3,8 +3,8 @@
 # See install.sh to install the ALIGN environment
 #
 
-export ALIGN_HOME=$PWD
-export ALIGN_WORK_DIR=$ALIGN_HOME/work
+export ALIGN_HOME=${ALIGN_HOME:-$PWD}
+export ALIGN_WORK_DIR=${ALIGN_WORK_DIR:-$ALIGN_HOME/work}
 
 export LP_DIR=$ALIGN_HOME/lpsolve
 #export BOOST_LP=$ALIGN_HOME/boost
