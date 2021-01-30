@@ -283,6 +283,23 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
           temp_SymmPairBlock.selfsym[sym_index].second = constraint["axis_dir"]=='H'?PnRDB::H:PnRDB::V;
         }
         node.SPBlocks.push_back(temp_SymmPairBlock);
+      } else if (constraint["const_name"] == "Ordering") {
+        PnRDB::Smark axis_dir = PnRDB::V;
+        pair<vector<int>, PnRDB::Smark> temp_order;
+        if (constraint["direction"] == "H") {
+          temp_order.second = PnRDB::H;
+        } else {
+          temp_order.second = PnRDB::V;
+        }
+        for (auto block : constraint["blocks"]) {
+          for (int k = 0; k < (int)node.Blocks.size(); k++) {
+            if (node.Blocks.at(k).instance.back().name.compare(block) == 0) {
+              temp_order.first.push_back(k);
+              break;
+            }
+          }
+        }
+        node.Ordering_Constraints.push_back(temp_order);
       } else if (constraint["const_name"] == "CC") {
         PnRDB::CCCap temp_cccap;
         temp_cccap.CCCap_name = constraint["cap_name"];
