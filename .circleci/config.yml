@@ -202,25 +202,21 @@ jobs:
       - attach_workspace:
           at: .
 
-      - run:
-          name: "Build PlaceRouteHierFlow image"
-          command: |
-            cd PlaceRouteHierFlow
-            docker build -t placeroute_coverage_image -f Dockerfile-coverage .
-            docker volume create placerInputVol
-            docker volume create placerOutputVol
+      - run-load-align
 
       - run:
           name: "Run PlaceRouteHierFlow tests"
           command: |
-            (cd PlaceRouteHierFlow && ./run_small_in_docker.sh)
-            mkdir -p coverage-reports
-            docker cp PnR:/PlaceRouteHierFlow/coverage.out coverage-reports/PlaceRouteHierFlow
-            mkdir -p test-reports/PlaceRouteHierFlow/{PnRDB,placer,router,cap_placer}
-            docker cp PnR:/PlaceRouteHierFlow/PnRDB/junit.xml test-reports/PlaceRouteHierFlow/PnRDB
-            docker cp PnR:/PlaceRouteHierFlow/placer/junit.xml test-reports/PlaceRouteHierFlow/placer
-            docker cp PnR:/PlaceRouteHierFlow/router/junit.xml test-reports/PlaceRouteHierFlow/router
-            docker cp PnR:/PlaceRouteHierFlow/cap_placer/junit.xml test-reports/PlaceRouteHierFlow/cap_placer
+            docker run --name align_container align_image bash -c "\
+              source setup.sh && \
+              cd PlaceRouteHierFlow && \
+              ./test_all.sh && \
+              mkdir -p /test-reports/PlaceRouteHierFlow && find . -name junit.xml -exec cp --parents \{\} /test-reports/PlaceRouteHierFlow \; && cp PnR.log /test-reports/PlaceRouteHierFlow && \
+              mkdir -p /coverage-reports/PlaceRouteHierFlow && cp -r coverage.info htmlcov /coverage-reports/PlaceRouteHierFlow \
+            "
+            docker cp align_container:test-reports .
+            docker cp align_container:coverage-reports .
+            docker rm align_container
 
       - store_test_results:
           path: test-reports/PlaceRouteHierFlow

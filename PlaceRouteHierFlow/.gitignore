@@ -4,7 +4,6 @@ router/FastSteinerUM/steiner
 unit_tests
 coverage-reports/
 coverage.info
-coverage.out
 .depend
 __json
 *-A.json
