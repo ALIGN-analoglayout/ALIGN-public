@@ -130,7 +130,7 @@ jobs:
           design: "adder"
           flat: "1"
 
-  build-cktgen:
+  build-test-cktgen:
     executor: docker-executor
     steps:
       - checkout
@@ -194,7 +194,7 @@ jobs:
       - store_artifacts:
           path: coverage-reports/align
 
-  build-PlaceRouteHierFlow:
+  build-test-PlaceRouteHierFlow:
     executor: docker-executor
     steps:
       - setup_remote_docker
@@ -228,7 +228,7 @@ jobs:
       - store_artifacts:
           path: coverage-reports/PlaceRouteHierFlow
 
-  build-nightly:
+  test-nightly:
     executor: docker-executor
     steps:
       - setup_remote_docker
@@ -258,7 +258,7 @@ jobs:
           filter: "single_SAR and not tb_single_SAR"
           timeout: "1700"
 
-  build-nightly2:
+  test-nightly2:
     executor: docker-executor
     steps:
       - setup_remote_docker
@@ -287,14 +287,14 @@ workflows:
 
     jobs:
       - build-align
-      - build-cktgen
-      - build-nightly:
+      - build-test-cktgen
+      - test-nightly:
           requires:
             - build-align
-      - build-nightly2:
+      - test-nightly2:
           requires:
             - build-align
-      - build-PlaceRouteHierFlow:
+      - build-test-PlaceRouteHierFlow:
           requires:
             - build-align
       - test-align:
@@ -307,8 +307,8 @@ workflows:
   commit:
     jobs:
       - build-align
-      - build-cktgen
-      - build-PlaceRouteHierFlow:
+      - build-test-cktgen
+      - build-test-PlaceRouteHierFlow:
           requires:
             - build-align
       - test-align:
