@@ -225,6 +225,44 @@ jobs:
       - store_artifacts:
           path: coverage-reports/PlaceRouteHierFlow
 
+  test-integration:
+    executor: docker-executor
+
+    parameters:
+      filter:
+        description: "String representing pytest -k argument"
+        type: string
+      timeout:
+        description: "Integer representing pytest --timeout argument"
+        type: string
+        default: "1800"
+
+    steps:
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: .
+
+      - run-load-align
+
+      - run:
+          name: "<<parameters.name>>: <<parameters.filter>>"
+          no_output_timeout: "<<parameters.timeout>>s"
+          command: |
+            docker run --name align_container align_image bash -c "\
+              source setup.sh && \
+              pytest -vv --runnightly --tb=line --timeout=<<parameters.timeout>> -k '<<parameters.filter>>' -- tests/integration && \
+              mkdir -p /test-reports/<<parameters.name>> && cp -r junit.xml LOG /test-reports/<<parameters.name>>/ \
+            "
+            docker cp align_container:test-reports .
+            docker rm align_container
+
+      - store_test_results:
+          path: test-reports/<<parameters.name>>
+
+      - store_artifacts:
+          path: test-reports/<<parameters.name>>
+
   test-nightly:
     executor: docker-executor
     steps:
@@ -314,4 +352,12 @@ workflows:
       - build-make-docker:
           requires:
             - build-align
+      - test-integration-short:
+          requires:
+            - build-align
+          parameters:
+            timeout: "300"
+          matrix:
+            parameters:
+              filter: ["BUFFER and not BUFFER_VCM", "ota and not OTA_FF_2s_v3e"]
 
