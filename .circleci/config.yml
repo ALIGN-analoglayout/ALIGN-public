@@ -352,7 +352,7 @@ workflows:
       - build-make-docker:
           requires:
             - build-align
-      - test-integration-short:
+      - test-integration:
           requires:
             - build-align
           parameters:
