@@ -206,6 +206,7 @@ jobs:
 
       - run:
           name: "Run PlaceRouteHierFlow tests"
+          no_output_timeout: "30m"
           command: |
             docker run --name align_container align_image bash -c "\
               source setup.sh && \
