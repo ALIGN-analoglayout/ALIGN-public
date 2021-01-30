@@ -194,7 +194,7 @@ jobs:
       - store_artifacts:
           path: coverage-reports/align
 
-  build-test-PlaceRouteHierFlow:
+  test-PlaceRouteHierFlow:
     executor: docker-executor
     steps:
       - setup_remote_docker
@@ -291,7 +291,7 @@ workflows:
       - test-nightly2:
           requires:
             - build-align
-      - build-test-PlaceRouteHierFlow:
+      - test-PlaceRouteHierFlow:
           requires:
             - build-align
       - test-align:
@@ -305,7 +305,7 @@ workflows:
     jobs:
       - build-align
       - build-test-cktgen
-      - build-test-PlaceRouteHierFlow:
+      - test-PlaceRouteHierFlow:
           requires:
             - build-align
       - test-align:
