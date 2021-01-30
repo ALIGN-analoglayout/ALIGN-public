@@ -229,7 +229,7 @@ jobs:
     executor: docker-executor
 
     parameters:
-      filter:
+      design:
         description: "String representing pytest -k argument"
         type: string
       timeout:
@@ -246,12 +246,15 @@ jobs:
       - run-load-align
 
       - run:
-          name: "test-integration-<<parameters.timeout>>: <<parameters.filter>>"
+          name: "test-integration-<<parameters.pdk>>-<<parameters.design>>-<<parameters.timeout>>"
           no_output_timeout: "<<parameters.timeout>>s"
           command: |
             docker run --name align_container align_image bash -c "\
               source setup.sh && \
-              pytest -vv --runnightly --tb=line --timeout=<<parameters.timeout>> -k '<<parameters.filter>>' -- tests/integration && \
+              filter=$(sed ':a; N; $!ba; s/\n/ and not /g' examples/.circleci.disable) && \
+              filter="<<parameters.design>>${filter:+and not $filter}"" && \
+              filter="<<parameters.pdk>>${filter:+and $filter}" && \
+              pytest -vv --runnightly --tb=line --timeout=<<parameters.timeout>> -k "$filter" -- tests/integration && \
               mkdir -p /test-reports/${CIRCLE_JOB} && cp -r junit.xml LOG /test-reports/${CIRCLE_JOB}/ \
             "
             docker cp align_container:test-reports .
@@ -353,11 +356,15 @@ workflows:
           requires:
             - build-align
       - test-integration:
+          name: "test-integration-small-<<matrix.pdk>>-<<matrix.design>>"
           requires:
             - build-align
           matrix:
             parameters:
-              filter:
+              pdk:
+                - "Finfet"
+                - "Bulk"
+              design:
                 - "BUFFER and not BUFFER_VCM"
                 - "ota and not OTA_FF_2s_v3e"
               timeout: ["300"]
