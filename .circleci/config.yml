@@ -111,11 +111,11 @@ jobs:
       - run-make-docker:
           design: "telescopic_ota"
 
-      - run-make-docker:
-          design: "test_vga"
+      # - run-make-docker:
+      #     design: "test_vga"
 
-      - run-make-docker:
-          design: "switched_capacitor_filter"
+      # - run-make-docker:
+      #     design: "switched_capacitor_filter"
 
       - run-make-docker:
           design: "current_mirror_ota"
