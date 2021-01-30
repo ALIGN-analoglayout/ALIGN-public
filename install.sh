@@ -50,6 +50,7 @@ $SUDO apt-get update && $SUDO apt-get install -yq \
     curl \
     xvfb \
     gfortran \
+    lcov \
 &&  $SUDO apt-get clean
 
 #### Install klayout 
@@ -63,6 +64,7 @@ git_clone https://www.github.com/ALIGN-analoglayout/lpsolve.git
 
 ####  Install json
 git_clone https://github.com/nlohmann/json.git
+
 #### Install boost (don't need to; already installed using libboost-container-dev above 
 #git clone --recursive https://github.com/boostorg/boost.git
 #cd $ALIGN_HOME/boost
@@ -73,7 +75,6 @@ git_clone https://github.com/nlohmann/json.git
 cd $ALIGN_HOME
 git_clone https://github.com/google/googletest
 cd googletest/
-
 cmake CMakeLists.txt
 make
 cmake -DBUILD_SHARED_LIBS=ON CMakeLists.txt
@@ -86,20 +87,18 @@ cd $ALIGN_HOME
 git_clone https://github.com/gabime/spdlog.git
 cd spdlog && mkdir -p build && cd build
 cmake .. && make
+
 ### Install superLU // this now is not correct
 #version 1
 cd $ALIGN_HOME
 git_clone https://www.github.com/ALIGN-analoglayout/superlu.git
 cd superlu
 tar xvfz superlu_5.2.1.tar.gz
-
 cd SuperLU_5.2.1/
 mkdir -p build
 cd build
 cmake ..
 make
-
-
 
 ## Install ALIGN
 #---------------
@@ -113,7 +112,6 @@ pip install pytest pytest-cov pytest-timeout coverage-badge
 pip install -e .
 
 ## Install ALIGN_PnR
-
 cd $ALIGN_HOME/PlaceRouteHierFlow/ && make
 cd $ALIGN_HOME
 

@@ -11,8 +11,12 @@ BOOST_LP?=/usr/include
 GTEST_DIR?=/opt/googletest/googletest
 
 NOPYBIND11?=0
-COVERAGE?=
-OPTS?=-g -O3
+COVERAGE?=--coverage
+ifeq ($(COVERAGE),)
+  OPTS?=-O3
+else
+  OPTS?=-g
+endif
 WARNS?=-Wall
 JSON?=/opt/json
 SuperLu_DIR?=/opt/superlu
