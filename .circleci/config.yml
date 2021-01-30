@@ -246,22 +246,22 @@ jobs:
       - run-load-align
 
       - run:
-          name: "<<parameters.name>>: <<parameters.filter>>"
+          name: "test-integration-<<parameters.timeout>>: <<parameters.filter>>"
           no_output_timeout: "<<parameters.timeout>>s"
           command: |
             docker run --name align_container align_image bash -c "\
               source setup.sh && \
               pytest -vv --runnightly --tb=line --timeout=<<parameters.timeout>> -k '<<parameters.filter>>' -- tests/integration && \
-              mkdir -p /test-reports/<<parameters.name>> && cp -r junit.xml LOG /test-reports/<<parameters.name>>/ \
+              mkdir -p /test-reports/${CIRCLE_JOB} && cp -r junit.xml LOG /test-reports/${CIRCLE_JOB}/ \
             "
             docker cp align_container:test-reports .
             docker rm align_container
 
       - store_test_results:
-          path: test-reports/<<parameters.name>>
+          path: test-reports
 
       - store_artifacts:
-          path: test-reports/<<parameters.name>>
+          path: test-reports
 
   test-nightly:
     executor: docker-executor
