@@ -18,7 +18,7 @@ def check_shorts( cmdlist):
 
 def build_test(pdk, b, *, n):
     sys.path.insert(0, str(pdk))
-    print(str(pdk))
+    #print(str(pdk))
     check_shorts(['-b', b, '-n', f"{n}"])
     sys.path.pop(0)
 

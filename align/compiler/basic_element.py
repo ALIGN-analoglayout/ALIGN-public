@@ -283,7 +283,7 @@ def _parse_inst(line):
             device["inst_type"] = "align_"+device["inst_type"]
 
     elif line.startswith('*'):
-        logger.info(f"comment: {line}")
+        logger.debug(f"comment: {line}")
     else:
         logger.warning(f"Extraction error: {line} (unidentified line)")
 

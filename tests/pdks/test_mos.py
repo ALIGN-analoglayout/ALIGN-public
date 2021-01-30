@@ -24,7 +24,7 @@ def check_shorts( cmdlist):
 def build_test(pdk, prim, *, n, X, Y):
     sys.path.insert(0, str(pdk))
     b = f"{prim}_n{n}_X{X}_Y{Y}"
-    print(f'Testing {b} ...')
+    #print(f'Testing {b} ...')
     check_shorts( ['-p', prim, '-b', b, '-n', f"{n}", '-X', f"{X}", '-Y', f"{Y}"])
     sys.path.pop(0)
 
