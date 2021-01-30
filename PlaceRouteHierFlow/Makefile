@@ -15,7 +15,7 @@ COVERAGE?=--coverage
 ifeq ($(COVERAGE),)
   OPTS?=-O3
 else
-  OPTS?=-g
+  OPTS?=-g -O3
 endif
 WARNS?=-Wall
 JSON?=/opt/json
