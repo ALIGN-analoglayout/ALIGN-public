@@ -229,8 +229,11 @@ jobs:
     executor: docker-executor
 
     parameters:
+      pdk:
+        description: "Choose PDK (Can be substring as it gets fed to pytest -k argument)"
+        type: string
       design:
-        description: "String representing pytest -k argument"
+        description: "Choose Design (Can be substring as it gets fed to pytest -k argument)"
         type: string
       timeout:
         description: "Integer representing pytest --timeout argument"
@@ -365,7 +368,6 @@ workflows:
                 - "Finfet"
                 - "Bulk"
               design:
-                - "BUFFER and not BUFFER_VCM"
-                - "ota and not OTA_FF_2s_v3e"
-              timeout: ["300"]
+                - "BUFFER"
+                - "OTA"
 
