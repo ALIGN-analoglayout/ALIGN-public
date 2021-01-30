@@ -355,9 +355,10 @@ workflows:
       - test-integration:
           requires:
             - build-align
-          parameters:
-            timeout: "300"
           matrix:
             parameters:
-              filter: ["BUFFER and not BUFFER_VCM", "ota and not OTA_FF_2s_v3e"]
+              filter:
+                - "BUFFER and not BUFFER_VCM"
+                - "ota and not OTA_FF_2s_v3e"
+              timeout: ["300"]
 
