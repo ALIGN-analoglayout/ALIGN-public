@@ -27,11 +27,11 @@ commands:
           name: "Nightly<<parameters.id>>: <<parameters.filter>>"
           no_output_timeout: "<<parameters.timeout>>s"
           command: |
-            docker run --name align_container align_image bash -c "\
+            docker run --name align_container align_image bash -c '\
               source setup.sh && \
-              pytest -vv --runnightly --tb=line --timeout=<<parameters.timeout>> -k '<<parameters.filter>>' -- tests/integration && \
+              pytest -vv --runnightly --tb=line --timeout=<<parameters.timeout>> -k "<<parameters.filter>>" -- tests/integration && \
               mkdir -p /test-reports/align-nightly<<parameters.id>> && cp -r junit.xml LOG /test-reports/align-nightly<<parameters.id>>/ \
-            "
+            '
             docker cp align_container:test-reports .
             docker rm align_container
       - store_artifacts:
@@ -143,14 +143,14 @@ jobs:
             cd Cktgen
             docker build -t cktgen_image .
 
-            docker run --name cktgen_container cktgen_image bash -c "\
+            docker run --name cktgen_container cktgen_image bash -c '\
               source general/bin/activate && \
               cd cktgen && \
               coverage run --source=cktgen,tests setup.py test && \
               coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && \
               mkdir -p /test-reports/cktgen && cp junit.xml /test-reports/cktgen && \
               mkdir -p /coverage-reports/cktgen && cp -r coverage.xml htmlcov /coverage-reports/cktgen\
-            "
+            '
             cd -
 
             docker cp cktgen_container:coverage-reports .
@@ -176,14 +176,14 @@ jobs:
       - run:
           name: "Run pytest on align"
           command: |
-            docker run --name align_container align_image bash -c "\
+            docker run --name align_container align_image bash -c '\
               source setup.sh && \
               unset ALIGN_WORK_DIR && \
               coverage run --source=align,tests setup.py pytest && \
               coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && \
               mkdir -p /test-reports/align && cp junit.xml /test-reports/align && \
               mkdir -p /coverage-reports/align && cp -r coverage.xml htmlcov /coverage-reports/align \
-            "
+            '
             docker cp align_container:coverage-reports .
             docker cp align_container:test-reports .
             docker rm align_container
@@ -208,13 +208,13 @@ jobs:
           name: "Run PlaceRouteHierFlow tests"
           no_output_timeout: "30m"
           command: |
-            docker run --name align_container align_image bash -c "\
+            docker run --name align_container align_image bash -c '\
               source setup.sh && \
               cd PlaceRouteHierFlow && \
               ./test_all.sh && \
               mkdir -p /test-reports/PlaceRouteHierFlow && find . -name junit.xml -exec cp --parents \{\} /test-reports/PlaceRouteHierFlow \; && cp PnR.log /test-reports/PlaceRouteHierFlow && \
               mkdir -p /coverage-reports/PlaceRouteHierFlow && cp -r coverage.info htmlcov /coverage-reports/PlaceRouteHierFlow \
-            "
+            '
             docker cp align_container:test-reports .
             docker cp align_container:coverage-reports .
             docker rm align_container
@@ -252,14 +252,14 @@ jobs:
           name: "test-integration-<<parameters.pdk>>-<<parameters.design>>-<<parameters.timeout>>"
           no_output_timeout: "<<parameters.timeout>>s"
           command: |
-            docker run --name align_container align_image bash -c "\
+            docker run --name align_container align_image bash -c '\
               source setup.sh && \
-              filter=$(sed ':a; N; $!ba; s/\n/ and not /g' examples/.circleci.disable) && \
-              filter="<<parameters.design>>${filter:+and not $filter}" && \
-              filter="<<parameters.pdk>>${filter:+and $filter}" && \
+              filter=$(sed ":a; N; $!ba; s/\n/ and not /g" examples/.circleci.disable) && \
+              filter="<<parameters.design>>${filter:+ and not $filter}" && \
+              filter="<<parameters.pdk>>${filter:+ and $filter}" && \
               pytest -vv --runnightly --tb=line --timeout=<<parameters.timeout>> -k "$filter" -- tests/integration && \
               mkdir -p /test-reports/${CIRCLE_JOB} && cp -r junit.xml LOG /test-reports/${CIRCLE_JOB}/ \
-            "
+            '
             docker cp align_container:test-reports .
             docker rm align_container
 
@@ -366,8 +366,6 @@ workflows:
             parameters:
               pdk:
                 - "Finfet"
-                - "Bulk"
               design:
-                - "BUFFER"
                 - "OTA"
 
