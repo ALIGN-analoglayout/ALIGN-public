@@ -254,7 +254,7 @@ jobs:
           command: |
             docker run --name align_container align_image bash -c '\
               source setup.sh && \
-              filter=$(sed ":a; N; $!ba; s/\n/ and not /g" examples/.circleci.disable) && \
+              filter=$(sed ":a; N; $!ba; s/\\n/ and not /g" examples/.circleci.disable) && \
               filter="<<parameters.design>>${filter:+ and not $filter}" && \
               filter="<<parameters.pdk>>${filter:+ and $filter}" && \
               pytest -vv --runnightly --tb=line --timeout=<<parameters.timeout>> -k "$filter" -- tests/integration && \
