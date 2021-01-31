@@ -228,7 +228,7 @@ jobs:
               filter="<<parameters.pdk>>${filter:+ and $filter}" && \
               pytest -vv --runnightly --tb=line --timeout=<<parameters.timeout>> -k "$filter" -- tests/integration && \
               mkdir -p /test-reports && cp -r junit.xml LOG /test-reports && \
-              find $ALIGN_WORK_DIR -name *.png -exec cp --parents \{\} /test-reports \; \
+              cd $ALIGN_WORK_DIR && find . -name *.png -exec cp --parents \{\} /test-reports \; \
             '
             docker cp align_container:test-reports .
             docker rm align_container
