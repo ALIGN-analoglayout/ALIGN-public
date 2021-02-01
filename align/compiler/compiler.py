@@ -236,7 +236,10 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
     for member in updated_ckt_list:
         name = member["name"]
         graph = member["graph"]
-        const = member["const"]
+        if 'const' in member:
+            const = member["const"]
+        else:
+            member["const"]=None
         if name in duplicate_modules:
             continue
         else:
