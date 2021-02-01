@@ -497,6 +497,17 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
         }
         temp_Multi_LinearConst.upperBound = constraint["upperBound"];
         node.ML_Constraints.push_back(temp_Multi_LinearConst);
+      } else if (constraint["const_name"] == "Multi_Connection") {
+        PnRDB::Multi_connection temp_multi_Connection;
+        temp_multi_Connection.net_name = constraint["net_name"];
+        temp_multi_Connection.multi_number = constraint["multi_number"];
+        node.Multi_connections.push_back(temp_multi_Connection);
+        for (unsigned int j = 0; j < node.Nets.size(); j++) {
+          if (node.Nets[j].name == constraint["net_name"]) {
+            node.Nets[j].multi_connection = constraint["multi_number"];
+            break;
+          }
+        }
       } else if (constraint["const_name"] == "C_Const") {
         PnRDB::C_const temp_c_const;
         temp_c_const.net_name = constraint["net_name"];
