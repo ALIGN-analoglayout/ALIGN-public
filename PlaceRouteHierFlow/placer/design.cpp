@@ -2074,19 +2074,27 @@ placerDB::point design::GetTerminalCenter(int teridx) {
 }
 
 bool design::checkSymmetricBlockExist() {
+  auto logger = spdlog::default_logger()->clone("placer.design.checkSymmetricBlockExist");
   bool mark=false;
   for(unsigned int i=0;i<Blocks.size();++i) {
-    if (Blocks.at(i).back().SBidx!=-1) {mark=true; break;}
+    if (Blocks.at(i).size() == 0) {
+      logger->error("Block {0} has size 0.",i);
+    } else {
+      if (Blocks.at(i).back().SBidx!=-1) {mark=true; break;}
+    }
   }
   return mark;
 }
 
 bool design::checkAsymmetricBlockExist() {
+  auto logger = spdlog::default_logger()->clone("placer.design.checkASymmetricBlockExist");
   bool mark=false;
-  //std::cout<<"check asym\n";
   for(unsigned int i=0;i<Blocks.size();++i) {
-    //std::cout<<Blocks.at(i).back().SBidx<<std::endl;
-    if (Blocks.at(i).back().SBidx==-1) {mark=true; break;}
+    if (Blocks.at(i).size() == 0) {
+      logger->error("Block {0} has size 0.",i);
+    } else {
+      if (Blocks.at(i).back().SBidx==-1) {mark=true; break;}
+    }
   }
   return mark;
 }

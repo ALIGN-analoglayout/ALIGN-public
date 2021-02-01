@@ -1,4 +1,4 @@
-OBJS= GuardRing.o
+OBJS= GuardRing.o GuardRingIfc.o
 SRCS=$(OBJS:.o=.cpp)
 
 all: depend GuardRing.a
