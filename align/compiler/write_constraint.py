@@ -221,7 +221,6 @@ def recursive_start_points(G,all_match_pairs,traversed,node1,node2, ports_weight
             logger.debug(f"more than one depth matched so creating new hierarchy :{multifanout[sp]}")
             traversed+=[node1,node2]
             all_match_pairs[sp+'_new_hier']=multifanout[sp].copy()
-            #all_match_pairs['vin1vin2']=multifanout[sp]
             #for  h_port1, h_port2 in combinations(multifanout[sp]['ports'],2):
             #     recursive_start_points(multifanout[sp]['graph'],all_match_pairs,traversed.copy(),h_port1, h_port2, multifanout[sp]['ports_weight'])
         else:
@@ -270,6 +269,8 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array,input_cons
     # Read contents of input constraint file
     if stop_points==None:
         stop_points=[]
+    if 'array_hier' in name:
+        return
     all_match_pairs=FindSymmetry(graph.copy(), ports, ports_weight, stop_points)
     all_match_pairs={k: v for k, v in all_match_pairs.items() if len(v)>1}
     logger.debug(f"all symmetry matching pairs {pprint.pformat(all_match_pairs, indent=4)}")
@@ -391,7 +392,7 @@ def symmnet_device_pairs(G, net_A, net_B,existing):
             if '/' in ele_B:
                 blockB,pinB = ele_B.split('/')
             else:
-                blockA = ele_B
+                blockB = ele_B
                 pinB = None
             if conn_A[ele_A]==conn_B[ele_B] and G.nodes[blockA]["inst_type"]==G.nodes[blockB]["inst_type"]:
                 if ele_B in pairs.values():

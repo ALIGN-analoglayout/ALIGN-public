@@ -58,7 +58,6 @@ def matching_groups(G,level1,ports_weight):
 
 
 def trace_template(graph, similar_node_groups,visited,template,array):
-    
     next_match={}
     traversed=visited.copy()
 
@@ -107,7 +106,6 @@ def match_branches(graph,nodes_dict):
     return True
 
 
-
 def check_convergence(match:dict):
     vals=[]
     for val in match.values():
@@ -140,10 +138,10 @@ def create_hierarchy(graph,node:str,traversed:list,ports_weight:dict):
     """
 
     hier_of_node ={}
-    level1=list(set(graph.neighbors(node))-set(traversed))
+    level1 = list(set(graph.neighbors(node))-set(traversed))
     
     hier_of_node[node]=matching_groups(graph,level1,None)
-    logger.debug(f"new hierarchy points {hier_of_node}")
+    logger.debug(f"new hierarchy points {hier_of_node} from node {node}")
 
     if len(hier_of_node[node]) > 0:
         for group in sorted(hier_of_node[node] , key=lambda group: len(group)):
@@ -153,10 +151,10 @@ def create_hierarchy(graph,node:str,traversed:list,ports_weight:dict):
                 for el in sorted(group):
                     similar_node_groups[el]=[el]
                 templates[node] = [el]
-                visited = group+[node]
+                visited = group
                 array = similar_node_groups.copy()
                 trace_template(graph,similar_node_groups,visited,templates[node],array)
-                logger.debug(f"similar groups final from net {node}:{array}")
+                logger.debug(f"similar groups final from {node}:{array}")
         
         #check number of levels in detected array
         #single hierarchy arrays can be handled using simple approaches
@@ -182,8 +180,8 @@ def create_hierarchy(graph,node:str,traversed:list,ports_weight:dict):
             for inst in  all_inst:
                 for node_hier in list(set(graph.neighbors(inst))):
                     if graph.nodes[node_hier]['inst_type']== 'net':
-                        if (set(graph.neighbors(node_hier))- set(all_inst)):
-                            matched_ports[node_hier]=node_hier
+                        if (set(graph.neighbors(node_hier))- set(all_inst)) or graph.nodes[node_hier]["net_type"]=='external':
+                            matched_ports[node_hier] = node_hier
                             h_ports_weight[node_hier] = []
                             for nbr in list(graph.neighbors(node_hier)):
                                 h_ports_weight[node_hier].append(graph.get_edge_data(node_hier, nbr)['weight'])

@@ -33,7 +33,7 @@ endif
 
 # Convert schematic to gds & PNG
 ${OUTPUT_DIR}/${DESIGN}_0.png:	${EXAMPLES}/${DESIGN}/${DESIGN}.sp  ${DESIGN}
-	$(call execute,align-service, /bin/bash -c "source ${VENV}/bin/activate && export PYTHONPATH=${ALIGN_HOME}/PlaceRouteHierFlow/ && cd ${DESIGN} && python ${VENV}/bin/schematic2layout.py ${EXAMPLES}/${DESIGN} -f ${EXAMPLES}/${DESIGN}/${DESIGN}.sp -s ${DESIGN} -p ${ALIGN_HOME}/${PDK_DIR} -flat ${FLAT} -c -g -l WARNING)
+	$(call execute,align-service, /bin/bash -c "source ${VENV}/bin/activate && export PYTHONPATH=${ALIGN_HOME}/PlaceRouteHierFlow/ && cd ${DESIGN} && python ${VENV}/bin/schematic2layout.py ${EXAMPLES}/${DESIGN} -f ${EXAMPLES}/${DESIGN}/${DESIGN}.sp -s ${DESIGN} -p ${ALIGN_HOME}/${PDK_DIR} -flat ${FLAT} -c -g -l INFO -v INFO")
 
 ${DESIGN}:
 	mkdir ${DESIGN}
