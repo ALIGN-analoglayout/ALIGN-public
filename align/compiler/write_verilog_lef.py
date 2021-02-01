@@ -208,10 +208,12 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
     if name.lower().startswith('cap'):
         #print("all val",values)
         if 'cap' in values.keys():
-            size = float('%g'%(round(values["cap"]*1E15,4)))
+            if values["cap"]=="unit_size":
+                size = design_config["unit_size_cap"]
+            else:
+                size = float('%g'%(round(values["cap"]*1E15,4)))
             num_of_unit = float(size)/design_config["unit_size_cap"]
             block_name = name + '_' + str(int(size)) + 'f'
-
         else:
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
@@ -236,7 +238,10 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
             }
     elif name.lower().startswith('res'):
         if 'res' in values.keys():
-            size = '%g'%(round(values["res"],2))
+            if values["res"]=="unit_size":
+                size = design_config["unit_height_res"]
+            else:
+                size = '%g'%(round(values["res"],2))
         else :
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
@@ -262,25 +267,33 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
             unit_size_mos = design_config["unit_size_pmos"]
         if "nfin" in values.keys():
             #FinFET design
-            size = int(values["nfin"])
+            if values["w"]=="unit_size":
+                size = unit_size_mos
+            else:
+                size = int(values["nfin"])
             name_arg ='nfin'+str(size)
         elif "w" in values.keys():
             #Bulk design
-            size = int(values["w"]*1E+9/design_config["Gate_pitch"])
-            if size < unit_size_mos:
+            if values["w"]=="unit_size":
                 size = unit_size_mos
+            else:
+                size = int(values["w"]*1E+9/design_config["Gate_pitch"])                
             values["nfin"]=size
             name_arg ='nfin'+str(size)
         else:
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
         if 'nf' in values.keys():
-                size=size*int(values["nf"])
-                name_arg =name_arg+'_nf'+str(int(values["nf"]))
+            if values['nf'] == 'unit_size':
+                values['nf'] =size
+            size=size*int(values["nf"])
+            name_arg =name_arg+'_nf'+str(int(values["nf"]))
 
         if 'm' in values.keys():
-                size=size*int(values["m"])
-                name_arg =name_arg+'_m'+str(int(values["m"]))
+            if values['m'] == 'unit_size':
+                values['m'] = 1
+            size=size*int(values["m"])
+            name_arg =name_arg+'_m'+str(int(values["m"]))
 
         no_units = ceil(size / unit_size_mos)
 

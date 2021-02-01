@@ -459,5 +459,5 @@ def check_nodes(graph_list):
             if  not attr["inst_type"] == "net":
                 for param,value in attr["values"].items():
                     if param == 'model': continue
-                    assert (isinstance(value, int) or isinstance(value, float)), \
+                    assert (isinstance(value, int) or isinstance(value, float)) or value=="unit_size", \
                         "ERROR: Parameter value %r not defined" %(str(value)+' of '+ node)

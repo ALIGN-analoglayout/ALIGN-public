@@ -166,14 +166,14 @@ def convert_unit(value:str):
         try:
             value = float(value)
         except ValueError:
-            logger.error(f"Parameter {value} not defined. Using value=10n. Please fix netlist")
-            value = 1e-8
+            logger.error(f"Parameter {value} not defined. Using value=unit_size. Please fix netlist")
+            value = "unit_size"
     return mult*value
 
 def check_values(values):
     for value in values.values():
         #print("param,value:%s,%s", param,value)
-        assert(type(value)==int or type(value)==float)
+        assert(type(value)==int or type(value)==float) or value=="unit_size"
 
 def check_nodes(graph):
     """ Checking node paramters to be dict type"""
