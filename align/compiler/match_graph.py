@@ -52,7 +52,10 @@ class Annotate:
         Returns:
             list: all updated circuit list
         """
+        logger.debug(f"found ckt:{self.hier_graph_dict}")
+
         names = list(self.hier_graph_dict)
+
         for name in names:
             circuit_name= name
             G1 = self.hier_graph_dict[name]["graph"]
@@ -241,10 +244,8 @@ class Annotate:
                         if lib_name not in self.all_lef:
                             logger.debug(f'Calling recursive for block: {lib_name}')
                             mapped_subgraph_list = self._mapped_graph_list(G2, lib_name)
-                            logger.debug("Recursive calling to find sub_sub_ckt")
                             updated_subgraph_circuit, Grest = self._reduce_graph(
                                 G2, lib_name,mapped_subgraph_list)
-    
                             updated_circuit.extend(updated_subgraph_circuit)
                         else:
                             Grest = subgraph
@@ -252,14 +253,17 @@ class Annotate:
                         logger.debug(f"adding new sub_ckt: {lib_name} {self.duplicates.keys()}")
                         check_nodes(updated_circuit)
                         update_name = multiple_instances(G1,new_node,lib_name,self.duplicates)
-    
+                        if name in self.hier_graph_dict and 'const' in self.hier_graph_dict[name]:
+                            const = self.hier_graph_dict[name]['const']
+                        else:
+                            const = None
                         super_node = {
                                 "name": update_name,
                                 "graph": Grest,
                                 "ports": list(matched_ports.keys()),
                                 "ports_match": matched_ports,
                                 "ports_weight": ports_weight,
-                                "const":self.hier_graph_dict[name]['const'],
+                                "const": const,
                                 "size": len(subgraph.nodes())
                             }
                         updated_circuit.append(super_node)

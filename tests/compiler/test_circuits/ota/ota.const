@@ -1,4 +1,0 @@
-// ALIGN generated automatic constraints
-SymmNet ( {net012,m9_m8/DB,m7_m6/SB} , {net06,m9_m8/DA,m7_m6/SA} )
-SymmNet ( {net014,m1_m0/DB,m2_m10/SA} , {net8,m1_m0/DA,m2_m10/SB} )
-SymmBlock ( {m1_m0} , {m2_m10} , {m7_m6} )

@@ -277,10 +277,8 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             generated_module.append(name)
     if len(POWER_PINS)>0:
         print_globals(VERILOG_FP,POWER_PINS)
-    #SP_FP.close()
 
     logger.info("Topology identification done !!!")
     logger.info(f"OUTPUT verilog netlist at: {result_dir}/{design_name}.v")
-    #logger.info(f"OUTPUT spice netlist at: {result_dir}/{design_name}_blocks.sp")
     logger.info(f"OUTPUT const file at: {result_dir}/{design_name}.const.json")
     return primitives

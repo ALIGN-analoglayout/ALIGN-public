@@ -25,8 +25,6 @@ class ConstraintParser:
             pdk_info = json.load(fp)
             self.valid_const =pdk_info["valid_constraints"]
         
-
-
     def read_user_const(self,design_name:str):
         """
         Reads user defined constraints and create a dictionary for each hierarchy
@@ -310,9 +308,5 @@ class ConstraintParser:
                     }
             blocks.append(temp)
         return blocks
-if __name__ == '__main__':
-    pdk_dir =   pathlib.Path('/scratch/ALIGN_shared/ALIGN-public/pdks/FinFET14nm_Mock_PDK/')   
-    input_dir = pathlib.Path('/scratch/ALIGN_shared/ALIGN-public/examples/user_const/')
-    bc= ConstraintParser(pdk_dir, input_dir)
-    ac=bc.read_user_const('user_const')
-    print(ac)
+
+

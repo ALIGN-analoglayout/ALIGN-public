@@ -59,7 +59,7 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
         if 'ports_match' in G.nodes[node].keys():
             subgraph.nodes[node]["ports_match"]= G.nodes[node]['ports_match']
             
-        logger.debug(f"removing node {G.nodes[node]}")
+        logger.debug(f"removing node: {node}: attr: {G.nodes[node]}")
         max_value = merged_value(max_value, G.nodes[node]['values'])
 
         nbr = G.neighbors(node)
@@ -74,8 +74,6 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
                                   inst_type=G.nodes[ele]["inst_type"],
                                   net_type=G.nodes[ele]["net_type"])                    
                 
-
-            #print("adding edge b/w:",node,ele,G[node][ele]["weight"])
             subgraph.add_edge(node, ele, weight=G[node][ele]["weight"])
 
             if ele in ports:
@@ -97,7 +95,7 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
                edge_weight=list(ports.values()),
                ports_match=matched_ports,
                values=max_value)
-    logger.debug(f"creating a super node of combination of nodes: {new_inst_type} {real_inst_types}")
+    logger.debug(f"creating a super node of: {new_inst_type} type: {real_inst_types}")
     for pins in list(ports):
         if set(G.neighbors(pins)) <= set(list_of_nodes) and G.nodes[pins]["net_type"]=='internal':
             del ports[pins]
@@ -173,7 +171,7 @@ def convert_unit(value:str):
     return mult*value
 
 def check_values(values):
-    for param,value in values.items():
+    for value in values.values():
         #print("param,value:%s,%s", param,value)
         assert(type(value)==int or type(value)==float)
 

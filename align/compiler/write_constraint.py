@@ -249,6 +249,7 @@ def FindSymmetry(graph, ports:list, ports_weight:dict, stop_points:list):
 
     """
     all_match_pairs={}
+
     non_power_ports=sorted(set(sorted(ports))-set(stop_points))
     logger.debug(f"sorted ports: {non_power_ports}")
     for port1,port2 in combinations_with_replacement(non_power_ports,2):
@@ -267,33 +268,34 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array,input_cons
     logger.debug(f"ports weight: {ports_weight} stop_points : {stop_points}")
 
     # Read contents of input constraint file
-
+    if stop_points==None:
+        stop_points=[]
     all_match_pairs=FindSymmetry(graph.copy(), ports, ports_weight, stop_points)
     all_match_pairs={k: v for k, v in all_match_pairs.items() if len(v)>1}
     logger.debug(f"all symmetry matching pairs {pprint.pformat(all_match_pairs, indent=4)}")
     written_symmetries = ''
     if input_const:
-        json_const=input_const
+        logger.debug(f"input const {input_const}")
+        all_const = input_const["constraints"]
     else:
-        json_const = {}
-        json_const["constraints"] = []
-
+        all_const = []
 
     ## ALIGN block constraints
-    const_all=[]
     align_const_keys =[key for key,value in all_match_pairs.items() if isinstance(value,list)]
+    logger.debug(f"AlignBlock const gen{align_const_keys}")
     check_duplicate=[]
     for key in align_const_keys:
-        array=all_match_pairs[key]
+        array = all_match_pairs[key]
         logger.debug(f"group1: {array}")
         h_blocks=[ele for ele in array if ele in graph and ele not in check_duplicate]
         if len(h_blocks)>0:
             check_duplicate+=h_blocks
-            h_align = "\nAlignBlock ( H , "+' , '.join(h_blocks)+' )'
-            logger.debug("align constraint"+h_align)
-            const_all.write(h_align)
+            const = {"const_name":"AlignBlock",
+            "direction":"H",
+            "blocks":h_blocks}
+            all_const.append(const)
         del all_match_pairs[key]
-
+    logger.debug(f"AlignBlock const update {all_const}")
     new_hier_keys =  [key for key,value in all_match_pairs.items() if "name" in value.keys()]
     for key in new_hier_keys:
         del all_match_pairs[key]
@@ -329,7 +331,7 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array,input_cons
                                 '} , {'+value+','+','.join(pairs.values()) +'} )'
                         written_symmetries+=symmNet
                         symmNetj = {"const_name":"SymmNet","axis_dir":"V","net1":s1,"net2":s2}
-                        json_const["constraints"].append(symmNetj)
+                        all_const.append(symmNetj)
                         logger.debug(f"adding symmetries: {symmNetj}")
                     else:
                         logger.debug("skipping symmetry between large fanout nets {key} {value}")
@@ -337,25 +339,24 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array,input_cons
                 else:
                     logger.debug(f"skipping self symmetric nets {key} {value}")
             elif 'Dcap' in graph.nodes[key]["inst_type"]:
+                logger.debug(f"cd")
                 logger.debug(f"skipping symmetry for dcaps {key} {value}")
             else:
                 if key !=value:
-                    sj = {"type":"sympair","block1":key,"block2":value}
-                    pairsj.append(sj)
+                    pairsj.append({"type":"sympair","block1":key,"block2":value})
                 elif "Switch_" in graph.nodes[key]["inst_type"]:
                     logger.debug(f"TBF:skipping self symmetry for single transistor {key} {value}")
                 else:
-                    sj = {"type":"selfsym","block":key}
-                    pairsj.append(sj)
-
+                    pairsj.append({"type":"selfsym","block":key})
         if len(pairsj)> 1 or (len(pairsj)>0 and 'block1' in pairsj[0].keys()):
             symmBlock = {'const_name': "SymmBlock","axis_dir":"V","pairs":pairsj}
             written_symmetries += ' '.join([a['block'] for a in pairsj if 'block' in a.keys()])
             written_symmetries += ' '.join([a['block1'] for a in pairsj if 'block1' in a.keys()])
             written_symmetries += ' '.join([a['block2'] for a in pairsj if 'block2' in a.keys()])
-            json_const["constraints"].append(symmBlock)
+            all_const.append(symmBlock)
             logger.debug(f"one axis of written symmetries: {symmBlock}")
-    if json_const:
+    if all_const:
+        json_const = {'constraints':all_const}
         with open(json_const_file, 'w') as outfile:
             json.dump(json_const, outfile, indent=4)
 
@@ -429,10 +430,11 @@ def connection(graph,net:str):
 
     """
     conn = {}
+    logger.debug(f"checking connections of net: {net}, {list(graph.neighbors(net))}")
     for nbr in list(graph.neighbors(net)):
         try:
             if "ports_match" in graph.nodes[nbr]:
-                logger.debug("ports match:%s %s",net,graph.nodes[nbr]["ports_match"].items())
+                logger.debug(f"ports match:%s %s",net,graph.nodes[nbr]["ports_match"].items())
                 idx=list(graph.nodes[nbr]["ports_match"].values()).index(net)
                 conn[nbr+'/'+list(graph.nodes[nbr]["ports_match"].keys())[idx]]= (graph.get_edge_data(net, nbr)['weight'] & ~2)
 
@@ -444,6 +446,7 @@ def connection(graph,net:str):
             logger.debug("internal net")
     if graph.nodes[net]["net_type"]=="external":
         conn[net]=sum(conn.values())
+
     return conn
 
 def CopyConstFile(name, input_dir, working_dir):
