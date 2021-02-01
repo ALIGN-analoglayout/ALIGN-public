@@ -224,21 +224,21 @@ jobs:
           at: /work/workspace
 
       - run: |
-          docker build -t align_image -f ./build/Dockerfile.base .
+          docker build -t align_image -f ./build/Dockerfile.using-install.sh .
 
       - run: |
-          docker run --name align_container align_image bash -c "cd /ALIGN-public && source setup.sh && deactivate && source /opt/venv/bin/activate && pytest -vv --runnightly --tb=line --timeout=300 -k 'BUFFER and not BUFFER_VCM' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1.xml"
+          docker run --name align_container align_image bash -c "source setup.sh && unset ALIGN_WORK_DIR &&  pytest -vv --runnightly --tb=line --timeout=300 -k 'BUFFER and not BUFFER_VCM' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1.xml"
           docker cp align_container:test-reports .
           docker rm align_container
       - run: |
           command: |
-            docker run --name align_container align_image bash -c "cd /ALIGN-public && source setup.sh && deactivate && source /opt/venv/bin/activate && pytest -vv --runnightly --tb=line --timeout=2500 -k 'Sanitized_Coarse_Comp_CK or Sanitized_EdgeComparator or BTSW or Sanitized_ResTune_Configure and not Sanitized_ResTune_Configure' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_2.xml" 
+            docker run --name align_container align_image bash -c "cd /ALIGN-public && source setup.sh && source /opt/venv/bin/activate && pytest -vv --runnightly --tb=line --timeout=2500 -k 'Sanitized_Coarse_Comp_CK or Sanitized_EdgeComparator or BTSW or Sanitized_ResTune_Configure and not Sanitized_ResTune_Configure' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_2.xml" 
             docker cp align_container:test-reports .
             docker rm align_container
     
       - run:
           command: |
-            docker run --name align_container align_image bash -c "cd /ALIGN-public && source setup.sh && deactivate && source /opt/venv/bin/activate && pytest -vv --runnightly --tb=line --timeout=250 -k 'ota and not OTA_FF_2s_v3e' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_3.xml"  
+            docker run --name align_container align_image bash -c "cd /ALIGN-public && source setup.sh && source /opt/venv/bin/activate && pytest -vv --runnightly --tb=line --timeout=250 -k 'ota and not OTA_FF_2s_v3e' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_3.xml"  
             docker cp align_container:test-reports .
             docker rm align_container
       
