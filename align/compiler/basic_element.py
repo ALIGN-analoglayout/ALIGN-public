@@ -72,13 +72,17 @@ class BasicElement:
              The assumption is 2 port network
         """
         self.get_elements(2)
+        value = parse_value(self.value, "cap")
+        if 'c' in value.keys():
+            value['cap'] = value['c']
+            del value['c']
         return {
             "inst": self.inst,
             "inst_type": "cap",
             "real_inst_type": self.real_inst_type,
             "ports": self.pins,
             "edge_weight": [1]*(self.num_pins),
-            "values": parse_value(self.value, "cap")
+            "values": value
         }
 
     def resistor(self):
@@ -86,13 +90,17 @@ class BasicElement:
              The assumption is 2 port network
         """
         self.get_elements(2)
+        value = parse_value(self.value, "cap")
+        if 'r' in value.keys():
+            value['res'] = value['r']
+            del value['r']
         return {
             "inst": self.inst,
             "inst_type": "res",
             "real_inst_type": self.real_inst_type,
             "ports": self.pins,
             "edge_weight": [1]*(self.num_pins),
-            "values": parse_value(self.value, "res")
+            "values": value
         }
 
     def inductor(self):
