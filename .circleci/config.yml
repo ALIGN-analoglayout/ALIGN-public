@@ -42,10 +42,22 @@ jobs:
 
       - setup_remote_docker
 
+      - restore_cache:
+          keys:
+            - v1-{{ .Branch }}
+          paths:
+            - align_image.tar
+
+      - run:
+          name: Load Docker image layer cache
+          command: |
+            set +o pipefail
+            docker load -i align_image.tar | true
+
       - run:
           name: "Build align_image"
           command: |
-            docker build -t align_image -f ./build/Dockerfile.using-install.sh .
+            docker build --cache-from=align_image -t align_image -f ./build/Dockerfile.using-install.sh .
 
       - run:
           name: "Save align_image"
@@ -53,6 +65,11 @@ jobs:
             git clean -xdf
             docker save --output align_image.tar align_image
             du -h align_image.tar
+
+      - save_cache:
+          key: v1-{{ .Branch }}
+          paths:
+            - align_image.tar
 
       - persist_to_workspace:
           root: .
