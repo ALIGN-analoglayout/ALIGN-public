@@ -77,7 +77,7 @@ class ConstraintParser:
     
         """
         
-        logger.debug("checking constraint {const}")
+        logger.debug(f"checking constraint {const}")
         if const["const_name"] not in self.valid_const:
             logger.warning(f"ignoring invalid constraint {const} ")
             return None
@@ -199,20 +199,20 @@ class ConstraintParser:
         added_const=[]
         for const in all_const:
             if const["const_name"] == 'OrderBlocks':
-                const["const_name"] == 'Ordering'
+                const["const_name"] = 'Ordering'
             elif const["const_name"] == 'MatchBlocks':
-                const["const_name"] == 'MatchBlock'
+                const["const_name"] = 'MatchBlock'
                 const['block1'] =  const['blocks'][0]
                 const['block2'] =  const['blocks'][1]
                 del const['blocks']
             elif const["const_name"] == 'BlockDistance':
-                const["const_name"] == 'bias_graph'
+                const["const_name"] = 'bias_graph'
             elif const["const_name"] == 'HorizontalDistance':
-                const["const_name"] == 'bias_Hgraph'
+                const["const_name"] = 'bias_Hgraph'
             elif const["const_name"] == 'VerticallDistance':
-                const["const_name"] == 'bias_Vgraph'
+                const["const_name"] = 'bias_Vgraph'
             elif const["const_name"] == 'SymmetricBlocks':
-                const["const_name"] == 'SymmBlock'
+                const["const_name"] = 'SymmBlock'
                 const["axis_dir"] = const.pop("direction")
                 pairs = []
                 for blocks in const["pairs"]:
@@ -232,18 +232,16 @@ class ConstraintParser:
                     pairs.append(temp)
                 const["pairs"] = pairs
             elif const["const_name"] == 'GroupCaps':
-                const["const_name"] == 'CC'
+                const["const_name"] = 'CC'
                 const["cap_name"] = const.pop("name")
                 const["unit_capacitor"] = const.pop("unit_cap")
                 const["size"] = const.pop("num_units")
                 const["nodummy"] = not const["dummy"]
                 del const["dummy"]
-    
-                
             elif const["const_name"] == 'AlignBlocks':
-                const["const_name"] == 'AlignBlock'
+                const["const_name"] = 'AlignBlock'
             elif const["const_name"] == 'SymmetricNets':
-                const["const_name"] == 'SymmNet'
+                const["const_name"] = 'SymmNet'
                 const["axis_dir"] = const.pop("direction")
                 const['net1'] = {
                     "name": const['net1'],
@@ -253,6 +251,14 @@ class ConstraintParser:
                     "blocks": self._map_pins(const["pins2"])}
                 del const["pins1"]
                 del const["pins2"]
+            elif const["const_name"] == 'PortLocation':
+                for port in const["ports"]:
+                    extra = {
+                        "const_name" : 'PortLocation',
+                        "location" : const["location"],
+                        "terminal_name" : port
+                    }
+                    added_const.append(extra)
             elif const["const_name"] == 'NetConst':
                 for net in const["nets"]:
                     if 'shield' in const and 'criticality' in const and not const['shield'] =="None":
@@ -283,8 +289,9 @@ class ConstraintParser:
                             "priority" : const["criticality"]
                             }
                         added_const.append(extra)
-        self.block_const["constraints"] = [i for i in all_const if not i['const_name']=='NetConst']
+        self.block_const["constraints"] = [i for i in all_const if not i['const_name']=='NetConst' and not i['const_name']=='PortLocation']
         self.block_const["constraints"].extend(added_const)
+        logger.debug(f"Const mapped to PnR const format {self.block_const['constraints']}")
     
     def _map_pins(self,pins:list):
         blocks=[]

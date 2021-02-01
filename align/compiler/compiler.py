@@ -102,7 +102,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path,flat=
             del hier_graph_dict[circuit_name]
 
     logger.debug( "\n################### FINAL CIRCUIT AFTER preprocessing #################### \n")
-    for name,circuit in hier_graph_dict.items():
+    for circuit in hier_graph_dict.values():
         for node in circuit["graph"].nodes(data=True):
             if node[1]["inst_type"]!='net':
                 logger.debug(node)

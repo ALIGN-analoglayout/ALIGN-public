@@ -56,22 +56,22 @@ class Annotate:
         for name in names:
             circuit_name= name
             G1 = self.hier_graph_dict[name]["graph"]
-            self._group_block(G1,circuit_name)
+            self._group_block_const(G1,circuit_name)
+
         for circuit_name, circuit in self.hier_graph_dict.items():
             logger.debug(f"START MATCHING in circuit: {circuit_name}")
             G1 = circuit["graph"]
-            print(self.hier_graph_dict[circuit_name]["const"])
+            #print(self.hier_graph_dict[circuit_name]["const"])
             # map and reduce graph to dictionary
             mapped_graph_list = self._mapped_graph_list(G1, circuit_name, self.pg )
             updated_circuit, Grest = self._reduce_graph(G1, circuit_name, mapped_graph_list)
-            
             check_nodes(updated_circuit)
             self.updated_ckt_list.extend(updated_circuit)
     
             if circuit_name not in self.no_array:
                 symmetry_blocks = FindSymmetry(Grest, circuit["ports"], circuit["ports_weight"], self.stop_points)
                 for symm_blocks in symmetry_blocks.values():
-                    logger.info(f"generated constraints: {pprint.pformat(symm_blocks, indent=4)}")
+                    logger.debug(f"generated constraints: {pprint.pformat(symm_blocks, indent=4)}")
                     if isinstance(symm_blocks, dict) and "graph" in symm_blocks.keys():
                         logger.debug(f"added new hierarchy: {symm_blocks['name']} {symm_blocks['graph'].nodes()}")
                         self.updated_ckt_list.append(symm_blocks)
@@ -134,7 +134,8 @@ class Annotate:
                 G2.nodes[g2_n]['values'] = G1.nodes[g1_n]['values']
                 G2.nodes[g2_n]['real_inst_type'] = G1.nodes[g1_n]['real_inst_type']
         return matched_ports,ports_weight,G2
-    def _group_block(self,G1,name):
+
+    def _group_block_const(self,G1,name):
         if self._if_const(name):
             const_list = self.hier_graph_dict[name]["const"]["constraints"]
             gb_const = [const for const in const_list if const['const_name']=="GroupBlocks"]
@@ -156,14 +157,16 @@ class Annotate:
                             if not nbr in ports_weight:
                                 ports_weight[nbr] = []
                                 ports_weight[nbr].append(G1.get_edge_data(block, nbr)['weight'])
-                subgraph,new_node = merge_nodes(G1,const['name'],const['blocks'],matched_ports,'x'+const['name'])
+                subgraph,_ = merge_nodes(G1,const['name'],const['blocks'],matched_ports,'x'+const['name'])
                 self.hier_graph_dict[const['name']] = {
                     "graph": subgraph,
                     "ports": list(matched_ports.keys()),
                     "ports_weight": ports_weight,
                     "const": {"constraints":[const]}
                     }
-    def _update_blocks_const(self,name,G1,remove_nodes, matched_ports):
+                self._update_sym_const(name,G1,const['blocks'], matched_ports,'x'+const['name'])
+
+    def _update_sym_const(self,name,G1,remove_nodes, matched_ports,new_inst):
         """
         Update instance names in the constraint in case they are reduced
 
@@ -176,12 +179,15 @@ class Annotate:
         if self._if_const(name):
             const_list = self.hier_graph_dict[name]["const"]["constraints"]
             for const in const_list:
-                if 'blocks' in const:
-                    if set(const['blocks']).issubset(set(remove_nodes)):
-                        for block in const["blocks"]:
-                            if block in remove_nodes:
-                                
-                                print(block,const["const_name"])
+                if 'pairs' in const:
+                    for pair in const['pairs']:
+                        if pair['type']=='sympair':
+                            if pair['block1'] in remove_nodes and pair['block2'] in remove_nodes:
+                                pair['type']='selfsym'
+                                pair['block'] = new_inst
+                                del pair['block1']
+                                del pair['block2']
+                                logger.debug(f"updated symmetric pair constraint to self symmetry:{const}")
 
     def _if_const(self,name):
         """
@@ -227,11 +233,11 @@ class Annotate:
                         updated_values = merged_value({}, G1.nodes[remove_nodes[0]]["values"])
                         G1.nodes[remove_nodes[0]]["values"] = updated_values
                     else:
-                        self._update_blocks_const(name,G1,remove_nodes, matched_ports)
+                        
                         logger.debug(f"Multi node element: {lib_name} {matched_ports}")
                         subgraph,new_node = merge_nodes(
                             G1, lib_name, remove_nodes, matched_ports)
-
+                        self._update_sym_const(name,G1,remove_nodes, matched_ports,new_node)
                         if lib_name not in self.all_lef:
                             logger.debug(f'Calling recursive for block: {lib_name}')
                             mapped_subgraph_list = self._mapped_graph_list(G2, lib_name)

@@ -157,7 +157,10 @@ def preprocess_stack_parallel(hier_graph_dict:dict,circuit_name,G):
         #Check any existing hier
         if 'sub_graph' in attributes[0].keys() and attributes[0]['sub_graph'] is not None:
             logger.debug(f"sub_graph nodes {attributes[0]['sub_graph'].nodes()}")
-            preprocess_stack_parallel(hier_graph_dict,attributes[0]["real_inst_type"],attributes[0]["sub_graph"])
+            stacked_ckt = preprocess_stack_parallel(hier_graph_dict,attributes[0]["real_inst_type"],attributes[0]["sub_graph"])
+            if stacked_ckt ==None:
+                return None
+
         for ckt in hier_graph_dict.values():
             for node,attr in ckt["graph"].nodes(data=True):
                 if 'net' not in attr["inst_type"] and attr["inst_type"]==circuit_name:

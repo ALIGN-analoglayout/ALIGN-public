@@ -181,5 +181,4 @@ def merge_caps(graph, caps):
         matched_ports['MINUS'+str(idx)] = conn[0]
         matched_ports['PLUS'+str(idx)]= conn[1]
     #line = line.replace(caps_in_line,updated_cap)
-    graph, _,_= merge_nodes(
-            graph, 'Cap_cc',caps , matched_ports)
+    merge_nodes(graph, 'Cap_cc',caps , matched_ports)
