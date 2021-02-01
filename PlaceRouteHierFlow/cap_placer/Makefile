@@ -1,6 +1,6 @@
 # Need CXX and CXXFLAGS
 
-OBJS=capplacer.o
+OBJS=capplacer.o CapPlacerIfc.o
 SRCS=$(OBJS:.o=.cpp)
 
 all: depend unit_tests cap_placer.a
