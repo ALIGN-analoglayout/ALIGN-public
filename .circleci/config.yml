@@ -227,12 +227,12 @@ jobs:
           docker build -t align_image -f ./build/Dockerfile.base .
 
       - run: |
-          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=300 -k 'BUFFER and not BUFFER_VCM' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1.xml"
+          docker run --name align_container align_image bash -c "cd /ALIGN-public && source setup.sh && pytest -vv --runnightly --tb=line --timeout=300 -k 'BUFFER and not BUFFER_VCM' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1.xml"
           docker cp align_container:test-reports .
           docker rm align_container
       - run: |
           command: |
-            docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=2500 -k 'Sanitized_Coarse_Comp_CK or Sanitized_EdgeComparator or BTSW or Sanitized_ResTune_Configure and not Sanitized_ResTune_Configure' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_2.xml" 
+            docker run --name align_container align_image bash -c "cd /ALIGN-public && source setup.sh && pytest -vv --runnightly --tb=line --timeout=2500 -k 'Sanitized_Coarse_Comp_CK or Sanitized_EdgeComparator or BTSW or Sanitized_ResTune_Configure and not Sanitized_ResTune_Configure' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_2.xml" 
             docker cp align_container:test-reports .
             docker rm align_container
     
