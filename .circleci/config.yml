@@ -314,13 +314,13 @@ workflows:
             - start
 
   nightly:
-    triggers:
-      - schedule:
-          cron: "0 8 * * *"
-          filters:
-            branches:
-              only:
-                - master
+    # triggers:
+    #   - schedule:
+    #       cron: "0 8 * * *"
+    #       filters:
+    #         branches:
+    #           only:
+    #             - master
 
     jobs:
       - start
@@ -336,13 +336,13 @@ workflows:
             - build-nightly2
 
   full_after_nightly:
-    # triggers:
-    #   - schedule:
-    #       cron: "0 11 * * *"
-    #       filters:
-    #         branches:
-    #           only:
-    #             - master
+    triggers:
+      - schedule:
+          cron: "0 11 * * *"
+          filters:
+            branches:
+              only:
+                - master
     jobs:
       - start
       - build-PlaceRouteHierFlow:
