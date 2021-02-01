@@ -267,6 +267,8 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
         elif "w" in values.keys():
             #Bulk design
             size = int(values["w"]*1E+9/design_config["Gate_pitch"])
+            if size < unit_size_mos:
+                size = unit_size_mos
             values["nfin"]=size
             name_arg ='nfin'+str(size)
         else:

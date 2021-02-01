@@ -262,7 +262,7 @@ jobs:
           at: /work/workspace
 
       - run: |
-          docker build -t align_image -f ./build/Dockerfile.base .
+          docker build -t align_image -f ./build/Dockerfile.using-install.sh .
 
       - run:
           command: |
