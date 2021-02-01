@@ -104,12 +104,20 @@ jobs:
           shell: /bin/bash
           command: |
             cd build/
+            make docker DESIGN=test_vga && \
+            docker cp align_cont:/dataVolume/test_vga ..
+
+      - store_artifacts:
+          path: test_vga/test_vga.png
+      - run:
+          shell: /bin/bash
+          command: |
+            cd build/
             make docker DESIGN=five_transistor_ota && \
             docker cp align_cont:/dataVolume/five_transistor_ota ..
 
       - store_artifacts:
           path: five_transistor_ota/five_transistor_ota_0.png
-
 
       - run:
           shell: /bin/bash
@@ -328,13 +336,13 @@ workflows:
             - build-nightly2
 
   full_after_nightly:
-    triggers:
-      - schedule:
-          cron: "0 11 * * *"
-          filters:
-            branches:
-              only:
-                - master
+    # triggers:
+    #   - schedule:
+    #       cron: "0 11 * * *"
+    #       filters:
+    #         branches:
+    #           only:
+    #             - master
     jobs:
       - start
       - build-PlaceRouteHierFlow:

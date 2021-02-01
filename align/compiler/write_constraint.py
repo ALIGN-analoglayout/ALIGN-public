@@ -335,7 +335,7 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array,input_cons
                         all_const.append(symmNetj)
                         logger.debug(f"adding symmetries: {symmNetj}")
                     else:
-                        logger.debug("skipping symmetry between large fanout nets {key} {value}")
+                        logger.debug(f"skipping symmetry between large fanout nets {key} {value}")
                         logger.debug("TBF:Need update in placer to simplify this")
                 else:
                     logger.debug(f"skipping self symmetric nets {key} {value}")

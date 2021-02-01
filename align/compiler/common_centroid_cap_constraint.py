@@ -47,7 +47,6 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
     for const in all_const["constraints"]:
         if const["const_name"]== "SymmBlock":
             b = [[p["block1"],p["block2"]] for p in const["pairs"] if p["type"]=="sympair"]
-
             for pair in const["pairs"]:
                 if pair["type"]=="sympair":
                     inst=pair["block1"]
@@ -59,6 +58,9 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
                         pair["block"]= "_".join([p1,p2])
                         del pair["block1"]
                         del pair["block2"]
+        if const["const_name"]== "SymmNet":
+            logger.debug("TBD update symmnet cap const")
+            
     with open(const_path, 'w') as outfile:
         json.dump(all_const, outfile, indent=4)
 
