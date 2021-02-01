@@ -267,7 +267,7 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
             unit_size_mos = design_config["unit_size_pmos"]
         if "nfin" in values.keys():
             #FinFET design
-            if values["w"]=="unit_size":
+            if values["nfin"]=="unit_size":
                 size = unit_size_mos
             else:
                 size = int(values["nfin"])
