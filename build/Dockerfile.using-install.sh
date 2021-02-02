@@ -19,7 +19,7 @@ WORKDIR $ALIGN_HOME
 ENV USER=root
 
 # Install dependencies only (to aid with layer caching)
-COPY source.sh .
+COPY setup.sh .
 COPY install.sh .
 RUN ./install.sh --deps-only
 
