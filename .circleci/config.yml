@@ -231,19 +231,16 @@ jobs:
           docker cp align_container:test-reports .
           docker rm align_container
       - run: |
-          command: |
             docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=2500 -k 'BUFFER_VREFP' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_2.xml" 
             docker cp align_container:test-reports .
             docker rm align_container
     
-      - run:
-          command: |
+      - run: |
             docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=250 -k 'BUFFER_VREFP1' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_3.xml"  
             docker cp align_container:test-reports .
             docker rm align_container
       
-      - run:
-          command: |
+      - run: |
             docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=1700 -k 'telescopic_ota' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_4.xml"  
             docker cp align_container:test-reports .
             docker rm align_container
@@ -268,6 +265,8 @@ jobs:
       - run:
           command: |
             docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=1700 -k 'not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTDSM' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2.xml"   
+            docker cp align_container:test-reports .
+            docker rm align_container
           no_output_timeout: 30m
       
       - persist_to_workspace:
