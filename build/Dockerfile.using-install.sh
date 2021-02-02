@@ -15,10 +15,22 @@ RUN apt-get -qq update && DEBIAN_FRONTEND=noninterative apt-get -qq install \
 &&    apt-get -qq clean
 
 ENV ALIGN_HOME=/ALIGN-public
-
-COPY . $ALIGN_HOME
-
 WORKDIR $ALIGN_HOME
 ENV USER=root
 
-RUN "./install.sh"
+# Install ALIGN dependencies
+# Note: - We copy (or create placeholders for) only those files
+#         that are needed by install.sh --deps-only to enable
+#         docker layer caching of this stage
+COPY setup.sh .
+COPY install.sh .
+COPY setup.py .
+RUN touch README.md && \
+    mkdir -p align && \
+    touch align/__init__.py && \
+    ./install.sh --deps-only
+
+# Copy source and install align
+# Note: Dependencies already installed in previous layer
+COPY . .
+RUN ./install.sh --no-deps

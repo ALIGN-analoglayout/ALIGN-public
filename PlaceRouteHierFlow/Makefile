@@ -12,9 +12,13 @@ BOOST_LP?=/usr/include
 GTEST_DIR?=/opt/googletest/googletest
 
 NOPYBIND11?=0
-COVERAGE?=
-OPTS?=-g -O3
-#OPTS?=-g
+COVERAGE?=--coverage
+ifeq ($(COVERAGE),)
+  OPTS?=-O3
+else
+  # HACK: `OPTS?=-g` would be a safer choice here
+  OPTS?=-g -O3
+endif
 WARNS?=-Wall
 JSON?=/opt/json
 SuperLu_DIR?=/opt/superlu
