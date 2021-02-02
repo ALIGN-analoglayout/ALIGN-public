@@ -53,6 +53,12 @@ class WriteVerilog:
                     for key, value in attr["ports_match"].items():
                         ports.append(key)
                         nets.append(value)
+                    if 'Switch_NMOS_G' in attr['inst_type']:
+                        ports.append('B')
+                        nets.append(nets[1])
+                    elif 'Switch_PMOS_G' in attr['inst_type']:
+                        ports.append('B')
+                        nets.append(nets[1])
                 elif "connection" in attr:
                     try:
                         logger.debug(f'connection to ports: {attr["connection"]}')
@@ -156,6 +162,7 @@ class WriteSpice:
                         nets[1:1]=[nets[0]]
                     elif 'DCL_PMOS' in attr['inst_type']:
                         nets[1:1]=[nets[1]]
+
                 elif "connection" in attr:
                     try:
                         logger.debug(f'connection to ports: {attr["connection"]}')
@@ -312,6 +319,10 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
 
             if block_name in available_block_lef:
                 return block_name, available_block_lef[block_name]
+            if name == 'Switch_NMOS_G':
+                #TBD in celll generator
+                name = 'Switch_NMOS_B'
+
             logger.debug("Generating parametric lef of: %s", block_name)
             values["real_inst_type"]=attr["real_inst_type"]
             cell_gen_parameters= {

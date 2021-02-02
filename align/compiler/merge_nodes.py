@@ -162,6 +162,8 @@ def convert_unit(value:str):
     elif 'f' in value and is_val:
         value = float(value.replace('f', ""))
         value = value * 1e-15
+    elif value == "unit_size":
+        value = value
     else:
         try:
             value = float(value)
