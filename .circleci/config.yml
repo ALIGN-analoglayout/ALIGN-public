@@ -227,24 +227,24 @@ jobs:
           docker build -t align_image -f ./build/Dockerfile.using-install.sh .
 
       - run: |
-          docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=300 -k 'BUFFER_VREFP2' -- tests/integration ; && mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1.xml"
+          docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=300 -k 'BUFFER_VREFP2' -- tests/integration && mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1.xml"
           docker cp align_container:test-reports .
           docker rm align_container
       - run: |
           command: |
-            docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=2500 -k 'BUFFER_VREFP3' -- tests/integration ; && mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_2.xml" 
+            docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=2500 -k 'BUFFER_VREFP3' -- tests/integration && mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_2.xml" 
             docker cp align_container:test-reports .
             docker rm align_container
     
       - run:
           command: |
-            docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=250 -k 'BUFFER_VREFP1' -- tests/integration ; && mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_3.xml"  
+            docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=250 -k 'BUFFER_VREFP1' -- tests/integration && mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_3.xml"  
             docker cp align_container:test-reports .
             docker rm align_container
       
       - run:
           command: |
-            docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=1700 -k 'telescopic_ota' -- tests/integration ; && mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_4.xml"  
+            docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=1700 -k 'telescopic_ota' -- tests/integration && mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_4.xml"  
             docker cp align_container:test-reports .
             docker rm align_container
           no_output_timeout: 30m  
@@ -267,7 +267,7 @@ jobs:
 
       - run:
           command: |
-            docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=1700 -k 'not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTDSM_CORE_NEW' -- tests/integration && mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2.xml"   
+            docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=1700 -k 'not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTDSM_CORE_NEW' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2.xml"   
           no_output_timeout: 30m
       
       - persist_to_workspace:
