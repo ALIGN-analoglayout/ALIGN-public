@@ -498,7 +498,6 @@ m35 vdd_d vss_d vdd_d vdd_d lvtpfet w=w5 l=l0
 m38 net025 net017 vss_d vss_d lvtnfet w=w33 l=l0
 m30 clk clkb vss_d vss_d lvtnfet w=w8 l=l0
 m17 do clk net37 vss_d lvtnfet w=w33 l=l0
-m32 vdd_d vss_d vdd_d vss_d lvtnfet w=w33 l=l0
 m27 clkn clk vss_d vss_d lvtnfet w=w8 l=l0
 m13 dob clk net38 vss_d lvtnfet w=w33 l=l0
 m36 net017 d vss_d vss_d lvtnfet w=w33 l=l0
