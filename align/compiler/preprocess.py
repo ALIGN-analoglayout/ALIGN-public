@@ -209,7 +209,7 @@ def define_SD(circuit,power,gnd,clk):
     else:
         logger.warning("no power and gnd defination")
         return False
-    if not high and not low:
+    if not high or not low:
         logger.info('no power and gnd in this circuit')
         return 
     probable_changes_p=[]
