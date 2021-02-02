@@ -4,7 +4,7 @@
 ## Load all environment variables
 ## (You may wish to override ALIGN_WORK_DIR)
 
-cwd = $PWD
+cwd=$PWD
 
 source setup.sh
 
