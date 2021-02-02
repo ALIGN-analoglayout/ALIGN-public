@@ -4,6 +4,8 @@
 ## Load all environment variables
 ## (You may wish to override ALIGN_WORK_DIR)
 
+cwd = $PWD
+
 source setup.sh
 
 # Attempt to speed up Make
@@ -109,6 +111,12 @@ then
     source $VENV/bin/activate
     python -m pip install --upgrade pip
     python -m pip install pytest pytest-cov pytest-timeout coverage-badge
+    python setup.py egg_info
+    pip install -r *.egg-info/requires.txt
+    rm -fr *.egg-info
+
+    # Reset working directory
+    cd $cwd
 fi
 
 ## Install ALIGN
@@ -117,13 +125,18 @@ fi
 if [ $1 != --deps-only ]
 then
 
-    # Install ALIGN python packages
+    # Activate environment
     cd $ALIGN_HOME
     source $VENV/bin/activate
+
+    # Install ALIGN python packages
+
     python -m pip install -e .
 
     ## Install ALIGN_PnR
     cd $ALIGN_HOME/PlaceRouteHierFlow/ && make
-    cd $ALIGN_HOME
+
+    # Reset working directory
+    cd $cwd
 
 fi
