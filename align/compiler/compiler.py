@@ -255,7 +255,6 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
         if name not in  all_lef:
             logger.debug(f"call verilog writer for block: {name}")
             wv = WriteVerilog(graph, name, inoutpin, updated_ckt_list, POWER_PINS)
-            all_array={}
             logger.debug(f"Copy const file for: {name}")
             const_file = CopyConstFile(name, input_dir, result_dir)
             logger.debug(f"cap constraint gen for block: {name}")
@@ -265,8 +264,8 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
                 logger.debug(f"call constraint generator writer for block: {name}")
                 stop_points=design_setup['POWER']+design_setup['GND']+design_setup['CLOCK']
                 if name not in design_setup['NO_CONST']:
-                    WriteConst(graph, result_dir, name, inoutpin, member["ports_weight"],all_array, const,stop_points)
-                WriteCap(graph, result_dir, name, design_config["unit_size_cap"],all_array)
+                    WriteConst(graph, result_dir, name, inoutpin, member["ports_weight"], const,stop_points)
+                WriteCap(graph, result_dir, name, design_config["unit_size_cap"])
                 check_common_centroid(graph,const_file,inoutpin)
             wv.print_module(VERILOG_FP)
             generated_module.append(name)
