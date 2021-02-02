@@ -240,7 +240,8 @@ jobs:
             docker cp align_container:test-reports .
             docker rm align_container
       
-      - run: |
+      - run:
+          command: |
             docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=1700 -k 'telescopic_ota' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_4.xml"  
             docker cp align_container:test-reports .
             docker rm align_container
