@@ -202,7 +202,7 @@ def recursive_start_points(G,all_match_pairs,traversed,node1,node2, ports_weight
     for k,pair in all_match_pairs.items():
         logger.debug(f"all pairs from {k}:{pair}")
         if "start_point" in pair.keys():
-            if isinstance(pair["start_point"][0],str):
+            if pair["start_point"] and isinstance(pair["start_point"][0],str):
                 #Check later for CTDTDSM
                 hier_start_points.extend(pair["start_point"])
             del pair["start_point"]
@@ -212,7 +212,7 @@ def recursive_start_points(G,all_match_pairs,traversed,node1,node2, ports_weight
         return
     
     logger.debug(f"Creating new node from binary branch: {hier_start_points}")
-    for sp in sorted(hier_start_points):
+    for sp in sorted(set(hier_start_points)):
         logger.debug(f"starting new node from binary branch:{sp} {hier_start_points} traversed {traversed} existing {pprint.pformat(all_match_pairs, indent=4)}")
         if sp not in G.nodes():
             logger.debug(f"{sp} not found in graph {G.nodes()}")
