@@ -15,10 +15,14 @@ RUN apt-get -qq update && DEBIAN_FRONTEND=noninterative apt-get -qq install \
 &&    apt-get -qq clean
 
 ENV ALIGN_HOME=/ALIGN-public
-
-COPY . $ALIGN_HOME
-
 WORKDIR $ALIGN_HOME
 ENV USER=root
 
-RUN "./install.sh"
+# Install dependencies only (to aid with layer caching)
+COPY source.sh .
+COPY install.sh .
+RUN ./install.sh --deps-only
+
+# Copy source and install
+COPY . .
+RUN ./install.sh --no-deps
