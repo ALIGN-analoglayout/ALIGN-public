@@ -214,6 +214,54 @@ jobs:
       - store_artifacts:
           path: coverage-reports
 
+  build-integration1:
+    executor: docker-executor
+    steps:
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: /work/workspace
+
+      - run: |
+          docker build -t align_image -f ./build/Dockerfile.using-install.sh .
+
+      - run: |
+          docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=300 -k 'BUFFER or ota' -- tests/integration ; mkdir -p /test-reports/align-integration && cp junit.xml /test-reports/align-integration/junit1.xml"
+          docker cp align_container:test-reports .
+          docker rm align_container
+
+      - run: |
+            docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=2500 -k 'San or BTSW ' -- tests/integration ; mkdir -p /test-reports/align-integration && cp junit.xml /test-reports/align-integration/junit2.xml" 
+            docker cp align_container:test-reports .
+            docker rm align_container
+
+      - persist_to_workspace:
+          root: /work/workspace
+          paths:
+            - test-reports/align-integration
+
+  build-integration2:
+    executor: docker-executor
+    steps:
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: /work/workspace
+
+      - run: |
+          docker build -t align_image -f ./build/Dockerfile.using-install.sh .
+
+      - run:
+          command: |
+            docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=1700 -k 'not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD' -- tests/integration ; mkdir -p /test-reports/align-integration && cp junit.xml /test-reports/align-integration/junit3.xml"   
+            docker cp align_container:test-reports .
+            docker rm align_container
+          no_output_timeout: 30m
+      
+      - persist_to_workspace:
+          root: /work/workspace
+          paths:
+            - test-reports/align-integration
 
   build-nightly:
     executor: docker-executor
@@ -225,21 +273,7 @@ jobs:
 
       - run: |
           docker build -t align_image -f ./build/Dockerfile.using-install.sh .
-
-      - run: |
-          docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=300 -k 'BUFFER and not BUFFER_VCM' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1.xml"
-          docker cp align_container:test-reports .
-          docker rm align_container
-      - run: |
-            docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=2500 -k 'Sanitized_Coarse_Comp_CK or Sanitized_EdgeComparator or BTSW or Sanitized_ResTune_Configure and not Sanitized_ResTune_Configure' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_2.xml" 
-            docker cp align_container:test-reports .
-            docker rm align_container
-    
-      - run: |
-            docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=250 -k 'ota and not OTA_FF_2s_v3e' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_3.xml"  
-            docker cp align_container:test-reports .
-            docker rm align_container
-      
+     
       - run:
           command: |
             docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=1700 -k 'single_SAR and not tb_single_SAR' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_4.xml"  
@@ -247,29 +281,6 @@ jobs:
             docker rm align_container
           no_output_timeout: 30m  
 
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/align-nightly
-
-  build-nightly2:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          docker build -t align_image -f ./build/Dockerfile.using-install.sh .
-
-      - run:
-          command: |
-            docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=1700 -k 'not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2.xml"   
-            docker cp align_container:test-reports .
-            docker rm align_container
-          no_output_timeout: 30m
-      
       - persist_to_workspace:
           root: /work/workspace
           paths:
@@ -315,13 +326,13 @@ workflows:
             - start
 
   nightly:
-    # triggers:
-    #   - schedule:
-    #       cron: "0 8 * * *"
-    #       filters:
-    #         branches:
-    #           only:
-    #             - master
+    triggers:
+      - schedule:
+          cron: "0 8 * * *"
+          filters:
+            branches:
+              only:
+                - master
 
     jobs:
       - start
@@ -334,7 +345,6 @@ workflows:
       - finish-nightly:
           requires:
             - build-nightly
-            - build-nightly2
 
   full_after_nightly:
     triggers:
@@ -362,21 +372,23 @@ workflows:
             - build-PlaceRouteHierFlow
 
 
-  # full:
-  #   jobs:
-  #     - start
-  #     - build-PlaceRouteHierFlow:
-  #         requires:
-  #           - start
-  #     - build-cktgen:
-  #         requires:
-  #           - start
-  #     - build-align:
-  #         requires:
-  #           - start
-  #     - finish:
-  #         requires:
-  #           - build-align
-  #           - build-cktgen
-  #           - build-PlaceRouteHierFlow
+  full:
+    jobs:
+      - start
+      - build-PlaceRouteHierFlow:
+          requires:
+            - start
+      - build-cktgen:
+          requires:
+            - start
+      - build-align:
+          requires:
+            - start
+      - finish:
+          requires:
+            - build-align
+            - build-cktgen
+            - build-PlaceRouteHierFlow
+            - build-integration1
+            - build-integration2
 
