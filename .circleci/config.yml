@@ -44,11 +44,12 @@ jobs:
 
       - restore_cache:
           keys:
-            # Use cache from current branch if one exists
-            - v1-{{ .Branch }}
+            # Use checksums for critical files as cache key to promote layer reuse
+            # Please increment v1 to v2 if you wish to invalidate all existing caches
+            # (Must be replicated in save_cache as well)
+            - align-v1-{{ checksum "install.sh" }}-{{ checksum "setup.sh" }}-{{ checksum "setup.py" }}
             # Fall back to most recent cache from any branch
-            # Usually gets used for first commit
-            - v1
+            - align-v1
             paths:
             - align_image.tar
 
@@ -71,7 +72,7 @@ jobs:
             du -h align_image.tar
 
       - save_cache:
-          key: v1-{{ .Branch }}
+          key: align-v1-{{ checksum "install.sh" }}-{{ checksum "setup.sh" }}-{{ checksum "setup.py" }}
           paths:
             - align_image.tar
 
