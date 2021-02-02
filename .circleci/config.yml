@@ -50,7 +50,7 @@ jobs:
             - align-v1-{{ checksum "install.sh" }}-{{ checksum "setup.sh" }}-{{ checksum "setup.py" }}
             # Fall back to most recent cache from any branch
             - align-v1
-            paths:
+          paths:
             - align_image.tar
 
       - run:
