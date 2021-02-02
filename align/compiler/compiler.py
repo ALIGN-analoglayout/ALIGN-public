@@ -83,23 +83,22 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path,flat=
     create_data = CreateDatabase(circuit["graph"],const_parse)
     hier_graph_dict = create_data.read_inputs(circuit["name"])
 
-    #remove pg_pins requirement by pnr
-    logger.debug("Modifying pg pins in design for PnR")
-    pg_pins = design_setup['POWER']+design_setup['GND']
-    remove_pg_pins(hier_graph_dict,design_name, pg_pins)
-
     logger.debug("START preprocessing")
     stacked_subcircuit=[]
     for circuit_name, circuit in hier_graph_dict.items():
         logger.debug(f"preprocessing circuit name: {circuit_name}")
         G1 = circuit["graph"]
         if circuit_name not in design_setup['DIGITAL']:
-            define_SD(G1,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
+            define_SD(circuit,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
             stacked_subcircuit.append(preprocess_stack_parallel(hier_graph_dict,circuit_name,G1))
     for circuit_name in stacked_subcircuit:
         if circuit_name in hier_graph_dict.keys() and circuit_name is not design_name:
             logger.debug(f"removing stacked subcircuit {circuit_name}")
             del hier_graph_dict[circuit_name]
+    #remove pg_pins requirement by pnr
+    logger.debug("Modifying pg pins in design for PnR")
+    pg_pins = design_setup['POWER']+design_setup['GND']
+    remove_pg_pins(hier_graph_dict,design_name, pg_pins)
 
     logger.debug( "\n################### FINAL CIRCUIT AFTER preprocessing #################### \n")
     for circuit in hier_graph_dict.values():
