@@ -339,9 +339,6 @@ workflows:
       - build-nightly:
           requires:
             - start
-      - build-nightly2:
-          requires:
-            - start
       - finish-nightly:
           requires:
             - build-nightly
@@ -382,6 +379,12 @@ workflows:
           requires:
             - start
       - build-align:
+          requires:
+            - start
+      - build-integration1:
+          requires:
+            - start
+      - build-integration2:
           requires:
             - start
       - finish:
