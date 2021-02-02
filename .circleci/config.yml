@@ -44,8 +44,12 @@ jobs:
 
       - restore_cache:
           keys:
+            # Use cache from current branch if one exists
             - v1-{{ .Branch }}
-          paths:
+            # Fall back to most recent cache from any branch
+            # Usually gets used for first commit
+            - v1
+            paths:
             - align_image.tar
 
       - run:
@@ -74,7 +78,7 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - .
+            - align_image.tar
 
   build-make-docker:
     executor: docker-executor
