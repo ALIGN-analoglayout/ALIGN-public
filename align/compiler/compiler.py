@@ -229,10 +229,9 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
     for member in updated_ckt_list:
         name = member["name"]
         graph = member["graph"]
-        if 'const' in member:
-            const = member["const"]
-        else:
+        if not 'const' in member:
             member["const"]=None
+        const = member["const"]
         if name in duplicate_modules:
             continue
         else:
@@ -277,4 +276,5 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
     logger.info("Topology identification done !!!")
     logger.info(f"OUTPUT verilog netlist at: {result_dir}/{design_name}.v")
     logger.info(f"OUTPUT const file at: {result_dir}/{design_name}.const.json")
+    exit(0)
     return primitives
