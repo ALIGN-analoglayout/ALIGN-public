@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 
-def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
+def WriteCap(graph,input_dir,name,unit_size_cap):
     """
     Reads input graph and generates constraints for capacitors
     The constraints are defined such that caps are designed using a unit cap.
@@ -40,8 +40,7 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
             all_const=json.load(const_fp)
     else:
         return
-    logger.debug(f"Existing common centroid caps: {all_array}")
-
+    cap_array={}
     #Change covert symmBlock const between caps to common centroid caps
     available_cap_const = []
     for const in all_const["constraints"]:
@@ -53,7 +52,7 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
                     if inst in graph and graph.nodes[inst]['inst_type'].lower().startswith('cap'):
                         logger.debug("merging cap cc constraints:%s",b)
                         p1,p2=sorted([pair["block1"],pair["block2"]], key=lambda c:graph.nodes[c]['values']["cap"]*1E15)
-                        all_array[p1]={p1:[p1,p2]}
+                        cap_array[p1]={p1:[p1,p2]}
                         pair["type"]="selfsym"
                         pair["block"]= "_".join([p1,p2])
                         del pair["block1"]
@@ -64,9 +63,9 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
     with open(const_path, 'w') as outfile:
         json.dump(all_const, outfile, indent=4)
 
-    logger.debug(f"Updating circuit graph by merging caps: {all_array}")
+    logger.debug(f"Updating circuit graph by merging caps: {cap_array}")
     cc_cap_size={}
-    for array in all_array.values():
+    for array in cap_array.values():
         n_cap=[]
         cc_caps=[]
         for arr in array.values():

@@ -58,7 +58,10 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
 
         if 'ports_match' in G.nodes[node].keys():
             subgraph.nodes[node]["ports_match"]= G.nodes[node]['ports_match']
-            
+        elif 'connection' in G.nodes[node].keys():
+            subgraph.nodes[node]["connection"]= G.nodes[node]['connection']
+        elif 'sub_graph' in G.nodes[node].keys():
+            subgraph.nodes[node]["sub_graph"]= G.nodes[node]['sub_graph']            
         logger.debug(f"removing node: {node}: attr: {G.nodes[node]}")
         max_value = merged_value(max_value, G.nodes[node]['values'])
 

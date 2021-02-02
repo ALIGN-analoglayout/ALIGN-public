@@ -202,12 +202,16 @@ def recursive_start_points(G,all_match_pairs,traversed,node1,node2, ports_weight
     for k,pair in all_match_pairs.items():
         logger.debug(f"all pairs from {k}:{pair}")
         if "start_point" in pair.keys():
-            hier_start_points.extend(pair["start_point"])
+            if isinstance(pair["start_point"][0],str):
+                #Check later for CTDTDSM
+                hier_start_points.extend(pair["start_point"])
             del pair["start_point"]
             logger.debug(f"New symmetrical start points {pair}")
     logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
     if not 'hier_start_points':
         return
+    
+    logger.debug(f"Creating new node from binary branch: {hier_start_points}")
     for sp in sorted(hier_start_points):
         logger.debug(f"starting new node from binary branch:{sp} {hier_start_points} traversed {traversed} existing {pprint.pformat(all_match_pairs, indent=4)}")
         if sp not in G.nodes():
@@ -261,7 +265,7 @@ def FindSymmetry(graph, ports:list, ports_weight:dict, stop_points:list):
 
     return all_match_pairs
 
-def WriteConst(graph, input_dir, name, ports, ports_weight, all_array,input_const, stop_points=None):
+def WriteConst(graph, input_dir, name, ports, ports_weight, input_const, stop_points=None):
     json_const_file = input_dir / (name + '.const.json')
     logger.debug("writing constraints: %s",json_const_file)
     logger.debug(f"ports weight: {ports_weight} stop_points : {stop_points}")

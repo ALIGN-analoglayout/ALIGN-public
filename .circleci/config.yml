@@ -227,27 +227,28 @@ jobs:
           docker build -t align_image -f ./build/Dockerfile.using-install.sh .
 
       - run: |
-          docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=300 -k 'BUFFER and not BUFFER_VCM' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1.xml"
+          docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=300 -k 'BUFFER and not BUFFER_VCM' -- tests/integration && mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1.xml"
           docker cp align_container:test-reports .
           docker rm align_container
       - run: |
           command: |
-            docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=2500 -k 'Sanitized_Coarse_Comp_CK or Sanitized_EdgeComparator or BTSW or Sanitized_ResTune_Configure and not Sanitized_ResTune_Configure' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_2.xml" 
+            docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=2500 -k 'Sanitized_Coarse_Comp_CK or Sanitized_EdgeComparator or BTSW or Sanitized_ResTune_Configure and not Sanitized_ResTune_Configure' -- tests/integration && mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_2.xml" 
             docker cp align_container:test-reports .
             docker rm align_container
     
       - run:
           command: |
-            docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=250 -k 'ota and not OTA_FF_2s_v3e' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_3.xml"  
+            docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=250 -k 'ota and not OTA_FF_2s_v3e' -- tests/integration && mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_3.xml"  
             docker cp align_container:test-reports .
             docker rm align_container
       
       - run:
           command: |
-            docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=1700 -k 'single_SAR and not tb_single_SAR' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_4.xml"  
+            docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=1700 -k 'single_SAR and not tb_single_SAR' -- tests/integration && mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_4.xml"  
             docker cp align_container:test-reports .
             docker rm align_container
           no_output_timeout: 30m  
+
       - persist_to_workspace:
           root: /work/workspace
           paths:
@@ -266,7 +267,7 @@ jobs:
 
       - run:
           command: |
-            docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=1700 -k 'not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTDSM_CORE_NEW' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2.xml"   
+            docker run --name align_container align_image bash -c "source setup.sh && mkdir ALIGN_WORK_DIR && pytest -vv --runnightly --tb=line --timeout=1700 -k 'not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTDSM_CORE_NEW' -- tests/integration && mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2.xml"   
           no_output_timeout: 30m
       
       - persist_to_workspace:
