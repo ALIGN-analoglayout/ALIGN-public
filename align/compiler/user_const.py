@@ -35,7 +35,9 @@ class ConstraintParser:
         fp_json = self.input_dir / (design_name+'.const.json')
         if fp_json.is_file():
             self.block_const = json.load(fp_json)
+            logger.info(f"JSON input const file for block {design_name}")
         elif fp.is_file():
+            logger.info(f"CMD-line input const file for block {design_name}")
             all_const = []
             f = open(fp, "r")
             for line in f:
@@ -53,7 +55,6 @@ class ConstraintParser:
                     all_const.append(const)
             self.block_const['constraints'] = all_const
         else:
-            logger.info(f"no input const file for block {design_name}")
             return None
         self._map_valid_const()
         return self.block_const
