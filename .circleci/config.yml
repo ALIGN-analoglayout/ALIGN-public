@@ -171,10 +171,13 @@ jobs:
             docker run --name align_container align_image bash -c '\
               source setup.sh && \
               unset ALIGN_WORK_DIR && \
+              (cd PlaceRouteHierFlow && make coverage-init) && \
               coverage run --source=align,tests setup.py pytest && \
               coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && \
               mkdir -p /test-reports/align && cp junit.xml /test-reports/align && \
-              mkdir -p /coverage-reports/align && cp -r coverage.xml htmlcov /coverage-reports/align \
+              mkdir -p /coverage-reports && cp -r htmlcov /coverage-reports/align && \
+              (cd PlaceRouteHierFlow && make coverage-report) && \
+              cp -r PlaceRouteHierFlow/htmlcov /coverage-reports/PnR \
             '
             docker cp align_container:coverage-reports .
             docker cp align_container:test-reports .
@@ -205,7 +208,7 @@ jobs:
               cd PlaceRouteHierFlow && \
               ./test_all.sh && \
               mkdir -p /test-reports/PlaceRouteHierFlow && find . -name junit.xml -exec cp --parents \{\} /test-reports/PlaceRouteHierFlow \; && cp PnR.log /test-reports/PlaceRouteHierFlow && \
-              mkdir -p /coverage-reports/PlaceRouteHierFlow && cp -r coverage.info htmlcov /coverage-reports/PlaceRouteHierFlow \
+              mkdir -p /coverage-reports && cp -r htmlcov /coverage-reports/PnR \
             '
             docker cp align_container:test-reports .
             docker cp align_container:coverage-reports .
