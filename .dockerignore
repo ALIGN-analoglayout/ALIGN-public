@@ -1,0 +1,41 @@
+# Stuff that won't get used by ALIGN
+CircuitsDatabase
+dev
+docs
+# Stuff that gets rebuilt in docker
+spdlog
+superlu
+lpsolve
+json
+googletest
+# Adding everything in .gitignore
+# Not needed if starting from fresh clone (recommended)
+*~
+.coverage
+htmlcov/
+.eggs/
+*.egg-info/
+junit.xml
+coverage.xml
+__pycache__/
+*.gds.json
+*.json
+*.lef
+*.gds
+*_cand
+*.pyc
+*.swp
+tmp/
+LOG/
+*.log
+pycharm/
+.idea/
+general/
+json/
+googletest/
+lpsolve/
+work/
+*.o
+*.a
+*.so
+
