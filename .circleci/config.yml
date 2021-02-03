@@ -47,7 +47,7 @@ jobs:
             # Use checksums for critical files as cache key to promote layer reuse
             # Please increment v1 to v2 if you wish to invalidate all existing caches
             # (Must be replicated in save_cache as well)
-            - key: align-v1-{{ checksum "build/Dockerfile.using-install.sh" }}-{{ checksum "install.sh" }}-{{ checksum "setup.sh" }}-{{ checksum "setup.py" }}
+            - align-v1-{{ checksum "build/Dockerfile.using-install.sh" }}-{{ checksum "install.sh" }}-{{ checksum "setup.sh" }}-{{ checksum "setup.py" }}
             # Fall back to most recent cache from any branch
             - align-v1
           paths:
