@@ -1,13 +1,16 @@
-# Stuff that won't get used by ALIGN
+# Stuff that won't get used by ALIGN in docker
+.circleci
 CircuitsDatabase
+Cktgen
 dev
 docs
+DetailedRouter
 # Stuff that gets rebuilt in docker
+googletest
+json
+lpsolve
 spdlog
 superlu
-lpsolve
-json
-googletest
 # Adding everything in .gitignore
 # Not needed if starting from fresh clone (recommended)
 *~
