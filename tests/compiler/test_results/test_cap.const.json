@@ -8,8 +8,8 @@
                 "blocks": [
                     {
                         "type": "pin",
-                        "name": "c2",
-                        "pin": "MINUS"
+                        "name": "c2_c1",
+                        "pin": "PLUS0"
                     },
                     {
                         "type": "terminal",
@@ -23,8 +23,8 @@
                 "blocks": [
                     {
                         "type": "pin",
-                        "name": "c1",
-                        "pin": "PLUS"
+                        "name": "c2_c1",
+                        "pin": "PLUS1"
                     },
                     {
                         "type": "terminal",

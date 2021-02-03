@@ -14,8 +14,6 @@ import logging
 import json
 logger = logging.getLogger(__name__)
 
-
-
 def WriteCap(graph,input_dir,name,unit_size_cap):
     """
     Reads input graph and generates constraints for capacitors

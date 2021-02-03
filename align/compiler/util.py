@@ -17,7 +17,7 @@ def get_next_level(G, tree_l1):
     for node in list(tree_l1):
         if node not in G.nodes:
             continue
-        #logger.debug(f"neighbors of {node}: {list(G.neighbors(node))}")
+        # logger.debug(f"neighbors of {node}: {list(G.neighbors(node))}")
         if 'mos' in G.nodes[node]["inst_type"]:
             for nbr in list(G.neighbors(node)):
                 if G.get_edge_data(node, nbr)['weight']!=2:
@@ -31,6 +31,7 @@ def get_next_level(G, tree_l1):
                     tree_next.append(nbr)               
         else:
             tree_next.extend(list(G.neighbors(node)))
+    # logger.debug(f"next nodes {tree_next} ")
     return tree_next
 def compare_two_nodes(G,node1:str,node2:str ,ports_weight):
     """

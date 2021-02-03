@@ -436,17 +436,16 @@ def connection(graph,net:str):
     conn = {}
     logger.debug(f"checking connections of net: {net}, {list(graph.neighbors(net))}")
     for nbr in list(graph.neighbors(net)):
-        try:
-            if "ports_match" in graph.nodes[nbr]:
-                logger.debug(f"ports match:%s %s",net,graph.nodes[nbr]["ports_match"].items())
-                idx=list(graph.nodes[nbr]["ports_match"].values()).index(net)
-                conn[nbr+'/'+list(graph.nodes[nbr]["ports_match"].keys())[idx]]= (graph.get_edge_data(net, nbr)['weight'] & ~2)
+        if "ports_match" in graph.nodes[nbr] and graph.nodes[nbr]["ports_match"]:
+            logger.debug(f"ports match:%s %s",nbr,graph.nodes[nbr]["ports_match"].items())
+            idx=list(graph.nodes[nbr]["ports_match"].values()).index(net)
+            conn[nbr+'/'+list(graph.nodes[nbr]["ports_match"].keys())[idx]]= (graph.get_edge_data(net, nbr)['weight'] & ~2)
 
-            elif "connection" in graph.nodes[nbr]:
-                logger.debug("connection:%s%s",net,graph.nodes[nbr]["connection"].items())
-                idx=list(graph.nodes[nbr]["connection"].values()).index(net)
-                conn[nbr+'/'+list(graph.nodes[nbr]["connection"].keys())[idx]]= (graph.get_edge_data(net, nbr)['weight'] & ~2)
-        except ValueError:
+        elif "connection" in graph.nodes[nbr] and graph.nodes[nbr]["connection"]:
+            logger.debug("connection:%s%s",nbr,graph.nodes[nbr]["connection"])
+            idx=list(graph.nodes[nbr]["connection"].values()).index(net)
+            conn[nbr+'/'+list(graph.nodes[nbr]["connection"].keys())[idx]]= (graph.get_edge_data(net, nbr)['weight'] & ~2)
+        else:
             logger.debug("internal net")
     if graph.nodes[net]["net_type"]=="external":
         conn[net]=sum(conn.values())

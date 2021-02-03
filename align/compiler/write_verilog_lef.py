@@ -67,7 +67,7 @@ class WriteVerilog:
                                 ports.append(key)
                                 nets.append(value)
                     except:
-                        logger.error(f"ERROR: Subckt {attr['inst_type']} defination not found")
+                        logger.error(f"critical ERROR: Subckt {attr['inst_type']} defination not found")
 
                 else:
                     logger.error(f"No connectivity info found : {', '.join(attr['ports'])}")
