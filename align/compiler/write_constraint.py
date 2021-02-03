@@ -332,8 +332,8 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, input_const, stop_po
                 if key!=value  :
                     pairs,s1,s2 = symmnet_device_pairs(graph,key,value,written_symmetries)
                     if pairs:
-                        symmNet = "\nSymmNet ( {"+key+','+','.join(pairs.keys()) + \
-                                '} , {'+value+','+','.join(pairs.values()) +'} )'
+                        symmNet = key+','+','.join(pairs.keys()) + \
+                                ','+value+','+','.join(pairs.values())
                         written_symmetries+=symmNet
                         symmNetj = {"const_name":"SymmNet","axis_dir":"V","net1":s1,"net2":s2}
                         all_const.append(symmNetj)
@@ -374,7 +374,6 @@ def symmnet_device_pairs(G, net_A, net_B,existing):
         subckt graphs.
     net_A/B : two nets A/B
         DESCRIPTION.
-
     Returns
     -------
     pairs : dict
@@ -413,7 +412,7 @@ def symmnet_device_pairs(G, net_A, net_B,existing):
     if len(pairs.keys())>1:
         return pairs,{"name":net_A,"blocks":blocksA},{"name":net_B,"blocks":blocksB}
     else:
-        logger.debug("skipping symmnet as: symmetry of net is between two devices")
+        logger.debug("skipping symmnet as: symmetry of net is between two non identical devices")
         return [None,None,None]
 
 def connection(graph,net:str):
