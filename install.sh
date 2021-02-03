@@ -38,7 +38,7 @@ fi
 ## Install Prerequisite
 #-----------------------
 
-if [ $1 != --no-deps ]
+if [[ "$*" != *"--no-deps"* ]]
 then
 
     #### Install Packages
@@ -122,7 +122,7 @@ fi
 ## Install ALIGN
 #---------------
 
-if [ $1 != --deps-only ]
+if [[ "$*" != *"--deps-only"* ]]
 then
 
     # Activate environment
