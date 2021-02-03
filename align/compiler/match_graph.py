@@ -314,15 +314,14 @@ class Annotate:
                 continue
             if not self._is_small(G1, G2):
                 continue
-            
+
             if len(G2.nodes)<=len(G1.nodes):
                 logger.debug(f"Matching: {block_name} : {G2.nodes} {G2.edges(data=True)}")
             GM = isomorphism.GraphMatcher(
                 G1, G2,
-                node_match=isomorphism.categorical_node_match(['inst_type'],
+                node_match = isomorphism.categorical_node_match(['inst_type'],
                                                               ['nmos']),
-                edge_match=isomorphism.categorical_edge_match(['weight'], [1]))
-    
+                edge_match = isomorphism.categorical_edge_match(['weight'], [1]))
             if GM.subgraph_is_isomorphic():
                 logger.debug(f"ISOMORPHIC : {block_name}")
                 map_list = []
