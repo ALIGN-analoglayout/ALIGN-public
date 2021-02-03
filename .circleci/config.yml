@@ -138,7 +138,7 @@ jobs:
             docker run --name cktgen_container cktgen_image bash -c '\
               source general/bin/activate && \
               cd cktgen && \
-              coverage run --source=cktgen,tests setup.py test && \
+              coverage run --source=cktgen,tests -m pytest && \
               coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && \
               mkdir -p /test-reports/cktgen && cp junit.xml /test-reports/cktgen && \
               mkdir -p /coverage-reports/cktgen && cp -r coverage.xml htmlcov /coverage-reports/cktgen\
@@ -172,7 +172,7 @@ jobs:
               source setup.sh && \
               unset ALIGN_WORK_DIR && \
               (cd PlaceRouteHierFlow && make coverage-init) && \
-              coverage run --source=align,tests setup.py pytest && \
+              coverage run --source=align,tests -m pytest && \
               coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && \
               mkdir -p /test-reports/align && cp junit.xml /test-reports/align && \
               mkdir -p /coverage-reports && cp -r htmlcov /coverage-reports/align && \
