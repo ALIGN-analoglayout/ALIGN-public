@@ -79,12 +79,13 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - build # Used by build-make-docker
-            - align_image.tar # Used by everything else
+            - align_image.tar
 
   build-make-docker:
     executor: docker-executor
     steps:
+      - checkout
+
       - setup_remote_docker
 
       - attach_workspace:
