@@ -11,6 +11,7 @@ json
 lpsolve
 spdlog
 superlu
+align_image.tar
 # Adding everything in .gitignore
 # Not needed if starting from fresh clone (recommended)
 *~
