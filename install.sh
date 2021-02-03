@@ -17,7 +17,7 @@ function git_clone () {
     local url="$1"
     local dir="$(basename $url .git)"
     if [ ! -d $dir ] ; then
-        git clone $url
+        git clone --depth 1 $url
     else
         cd $dir
         git pull
