@@ -150,10 +150,10 @@ jobs:
             docker rm cktgen_container
 
       - store_test_results:
-          path: test-reports/cktgen
+          path: test-reports
 
       - store_artifacts:
-          path: coverage-reports/cktgen
+          path: coverage-reports
 
   test-align:
     executor: docker-executor
@@ -184,10 +184,10 @@ jobs:
             docker rm align_container
 
       - store_test_results:
-          path: test-reports/align
+          path: test-reports
 
       - store_artifacts:
-          path: coverage-reports/align
+          path: coverage-reports
 
   test-PlaceRouteHierFlow:
     executor: docker-executor
@@ -215,10 +215,10 @@ jobs:
             docker rm align_container
 
       - store_test_results:
-          path: test-reports/PlaceRouteHierFlow
+          path: test-reports
 
       - store_artifacts:
-          path: coverage-reports/PlaceRouteHierFlow
+          path: coverage-reports
 
   test-integration:
     executor: docker-executor
