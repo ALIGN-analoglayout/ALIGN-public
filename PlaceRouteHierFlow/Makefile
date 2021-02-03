@@ -114,4 +114,4 @@ coverage-report:
 
 # Declare all phony targets
 .PHONY: depend subsystem python_object_file
-.PHONY: clean coverage-zero coverage-report
+.PHONY: clean coverage-init coverage-report
