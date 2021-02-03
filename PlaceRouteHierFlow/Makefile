@@ -44,7 +44,6 @@ OBJS=main.o toplevel.o
 SRCS=$(OBJS:.o=.cpp)
 LIBS=$(placer_path)/placer.a $(router_path)/router.a $(cap_placer_path)/cap_placer.a $(PnRDB_path)/PnRDB.a $(MNA_path)/MNA.a $(SuperLu_path1)/libsuperlu.a $(SuperLu_path2)/libblas.a $(GuardRing_path)/GuardRing.a
 
-
 all: depend subsystem pnr_compiler python_object_file unit_tests
 
 depend:
@@ -78,10 +77,41 @@ unit_tests: subsystem unit_tests.o
 	$(CXX) -o $@ unit_tests.o $(LIBS) -L$(GTEST_LIB_DIR) -lgtest_main -lgtest -L$(LIB_LP) -llpsolve55 $(LDFLAGS) 
 
 clean:
-	rm -rf *.o *.so pnr_compiler *.pl *.plt *gds all_* *.gc{da,no}
-	make -C $(PnRDB_path) clean
-	make -C $(placer_path) clean
-	make -C $(router_path) clean
-	make -C $(cap_placer_path) clean
+	rm -rf *.o *.so pnr_compiler unit_tests \
+		*.pl *.plt *gds all_* \
+		*.gc{da,no} $(COVERAGE_HTML) $(COVERAGE_INFO)
+	$(MAKE) -C $(PnRDB_path) clean
+	$(MAKE) -C $(placer_path) clean
+	$(MAKE) -C $(router_path) clean
+	$(MAKE) -C $(cap_placer_path) clean
 	$(MAKE) -C $(MNA_path) clean
 	$(MAKE) -C $(GuardRing_path) clean
+
+COVERAGE_INFO=coverage.info
+COVERAGE_HTML=htmlcov
+COVERAGE_REPORT_OPTIONS=--no-branch-coverage --title "CPython lcov report"
+
+coverage-init:
+	lcov --directory . --zerocounters
+
+coverage-report:
+	@echo "Creating Coverage report..."
+	@rm -f $(COVERAGE_INFO)
+	@rm -rf $(COVERAGE_HTML)
+	@lcov --capture --directory . \
+	    --output-file $(COVERAGE_INFO)
+	@lcov --remove $(COVERAGE_INFO) \
+		'/usr/include/*' \
+		'*/include/pybind11/*' \
+		'*/include/spdlog/*' \
+		'*/include/nlohmann/*' \
+		'*/include/gtest/*' \
+		--output-file $(COVERAGE_INFO)
+	@genhtml $(COVERAGE_INFO) \
+		--output-directory $(COVERAGE_HTML) \
+		$(COVERAGE_REPORT_OPTIONS)
+	@echo "View report at $(COVERAGE_HTML)/index.html"
+
+# Declare all phony targets
+.PHONY: depend subsystem python_object_file
+.PHONY: clean coverage-zero coverage-report
