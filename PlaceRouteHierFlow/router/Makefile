@@ -4,7 +4,8 @@ OBJS= RawRouter.o Grid.o GlobalGrid.o Graph.o A_star.o GlobalGraph.o GlobalRoute
 SRCS=$(OBJS:.o=.cpp)
 
 all: depend unit_tests router.a
-	$(MAKE) -C FastSteinerUM
+# Seriously doubt this is needed
+#	$(MAKE) -C FastSteinerUM
 
 depend:
 	@$(CXX) $(CXXFLAGS) -E -MM $(SRCS) > .depend
