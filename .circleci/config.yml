@@ -47,7 +47,7 @@ jobs:
             # Use checksums for critical files as cache key to promote layer reuse
             # Please increment v1 to v2 if you wish to invalidate all existing caches
             # (Must be replicated in save_cache as well)
-            - align-v1-{{ checksum "install.sh" }}-{{ checksum "setup.sh" }}-{{ checksum "setup.py" }}
+            - align-v1-{{ checksum "build/Dockerfile.using-install.sh" }}-{{ checksum "install.sh" }}-{{ checksum "setup.sh" }}-{{ checksum "setup.py" }}
             # Fall back to most recent cache from any branch
             - align-v1
           paths:
@@ -72,18 +72,20 @@ jobs:
             du -h align_image.tar
 
       - save_cache:
-          key: align-v1-{{ checksum "install.sh" }}-{{ checksum "setup.sh" }}-{{ checksum "setup.py" }}
+          key: align-v1-{{ checksum "build/Dockerfile.using-install.sh" }}-{{ checksum "install.sh" }}-{{ checksum "setup.sh" }}-{{ checksum "setup.py" }}
           paths:
             - align_image.tar
 
       - persist_to_workspace:
           root: .
           paths:
-            - .
+            - align_image.tar
 
   build-make-docker:
     executor: docker-executor
     steps:
+      - checkout
+
       - setup_remote_docker
 
       - attach_workspace:
@@ -138,7 +140,7 @@ jobs:
             docker run --name cktgen_container cktgen_image bash -c '\
               source general/bin/activate && \
               cd cktgen && \
-              coverage run --source=cktgen,tests setup.py test && \
+              coverage run --source=cktgen,tests -m pytest && \
               coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && \
               mkdir -p /test-reports/cktgen && cp junit.xml /test-reports/cktgen && \
               mkdir -p /coverage-reports/cktgen && cp -r coverage.xml htmlcov /coverage-reports/cktgen\
@@ -150,10 +152,10 @@ jobs:
             docker rm cktgen_container
 
       - store_test_results:
-          path: test-reports/cktgen
+          path: test-reports
 
       - store_artifacts:
-          path: coverage-reports/cktgen
+          path: coverage-reports
 
   test-align:
     executor: docker-executor
@@ -171,20 +173,23 @@ jobs:
             docker run --name align_container align_image bash -c '\
               source setup.sh && \
               unset ALIGN_WORK_DIR && \
-              coverage run --source=align,tests setup.py pytest && \
+              (cd PlaceRouteHierFlow && make coverage-init) && \
+              coverage run --source=align,tests -m pytest && \
               coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && \
               mkdir -p /test-reports/align && cp junit.xml /test-reports/align && \
-              mkdir -p /coverage-reports/align && cp -r coverage.xml htmlcov /coverage-reports/align \
+              mkdir -p /coverage-reports && cp -r htmlcov /coverage-reports/align && \
+              (cd PlaceRouteHierFlow && make coverage-report) && \
+              cp -r PlaceRouteHierFlow/htmlcov /coverage-reports/PnR \
             '
             docker cp align_container:coverage-reports .
             docker cp align_container:test-reports .
             docker rm align_container
 
       - store_test_results:
-          path: test-reports/align
+          path: test-reports
 
       - store_artifacts:
-          path: coverage-reports/align
+          path: coverage-reports
 
   test-PlaceRouteHierFlow:
     executor: docker-executor
@@ -205,17 +210,17 @@ jobs:
               cd PlaceRouteHierFlow && \
               ./test_all.sh && \
               mkdir -p /test-reports/PlaceRouteHierFlow && find . -name junit.xml -exec cp --parents \{\} /test-reports/PlaceRouteHierFlow \; && cp PnR.log /test-reports/PlaceRouteHierFlow && \
-              mkdir -p /coverage-reports/PlaceRouteHierFlow && cp -r coverage.info htmlcov /coverage-reports/PlaceRouteHierFlow \
+              mkdir -p /coverage-reports && cp -r htmlcov /coverage-reports/PnR \
             '
             docker cp align_container:test-reports .
             docker cp align_container:coverage-reports .
             docker rm align_container
 
       - store_test_results:
-          path: test-reports/PlaceRouteHierFlow
+          path: test-reports
 
       - store_artifacts:
-          path: coverage-reports/PlaceRouteHierFlow
+          path: coverage-reports
 
   test-integration:
     executor: docker-executor
