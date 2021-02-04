@@ -1,4 +1,6 @@
 #!/bin/bash
+set -ex
+
 ## Run this script starting in the ALIGN-public directory
 
 ## Load all environment variables
@@ -15,7 +17,7 @@ export MAKEFLAGS="-j$((NB_CORES+1)) -l${NB_CORES}"
 ### Helper function to git clone only when needed ###
 function git_clone () {
     local url="$1"
-    local dir="$(basename $url .git)"
+    local dir="${2:-$(basename $url .git)}"
     if [ ! -d $dir ] ; then
         git clone --depth 1 $url
     else
@@ -43,6 +45,8 @@ then
 
     #### Install Packages
     $SUDO apt-get update && $SUDO apt-get install -yq \
+        git \
+        curl \
         python3 \
         python3-pip \
         python3-venv \
@@ -52,7 +56,6 @@ then
         libboost-container-dev \
         graphviz \
         gnuplot \
-        curl \
         xvfb \
         gfortran \
         lcov \
