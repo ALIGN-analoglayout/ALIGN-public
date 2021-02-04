@@ -9,8 +9,4 @@ __json
 *-A.json
 *-B.json
 Results/
-*.pl
-*.plt
-*.log
-*.gcno
-*.gcda
+

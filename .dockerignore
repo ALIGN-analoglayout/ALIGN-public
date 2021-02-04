@@ -30,6 +30,10 @@ DetailedRouter
 **/tmp/
 **/LOG/
 **/*.log
+**/*.pl
+**/*.plt
+**/*.gcno
+**/*.gcda
 pycharm/
 .idea/
 general/
