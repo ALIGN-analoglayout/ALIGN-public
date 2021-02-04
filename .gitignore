@@ -1,4 +1,4 @@
-# Not needed if starting from fresh clone (recommended)
+**/*.tar
 **/*~
 .coverage
 **/htmlcov/

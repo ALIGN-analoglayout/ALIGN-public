@@ -6,7 +6,7 @@ dev
 docs
 DetailedRouter
 # Stuff that gets built in CI and MUST BE IGNORED
-align_image.tar
+**/*.tar
 # Adding everything in .gitignore
 # Not needed if starting from fresh clone (recommended)
 **/*~
