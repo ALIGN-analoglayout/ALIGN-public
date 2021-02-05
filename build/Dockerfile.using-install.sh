@@ -1,31 +1,88 @@
+####################################
 #
-# Base container starts here
+# align_base starts here
 #
-FROM ubuntu:18.04 as align_base_using_install
+####################################
+FROM ubuntu:18.04 as align_base
 
 #
-# Set required environment variables
+# Set shared environment variables
 #
 ENV http_proxy=$http_proxy
 ENV https_proxy=$https_proxy
 
+#
+# We are relying on setup.sh to propagate these
+#
 ENV ALIGN_HOME=/ALIGN-public
-WORKDIR $ALIGN_HOME
+
 ENV USER=root
+WORKDIR $ALIGN_HOME
+SHELL ["/bin/bash", "-c"]
+
+####################################
+#
+# align_builder starts here
+#
+# (Build align using install.sh)
+#
+# Note: We optimize cache reuse
+#       instead of image size here
+#       + Impossible to optimize
+#       anyway using install.sh
+#
+####################################
+
+FROM align_base as align_builder
 
 # Install ALIGN dependencies
 # Note: - We copy (or create placeholders for) only those files
 #         that are needed by install.sh --deps-only to enable
 #         docker layer caching of this stage
-COPY setup.sh .
-COPY install.sh .
-COPY setup.py .
+COPY setup.sh install.sh setup.py ./
 RUN touch README.md && \
     mkdir -p align && \
     touch align/__init__.py && \
-    ./install.sh --deps-only
+    source ./install.sh --deps-only
 
-# Copy source and install align
-# Note: Dependencies already installed in previous layer
+# Real work gets done here
+COPY PlaceRouteHierFlow PlaceRouteHierFlow
+RUN source setup.sh && \
+        cd PlaceRouteHierFlow && \
+        make
+
+# Note: We never install the python component here
+#       as installation is instantaeneous
+#       as it is most likely to change
+
+####################################
+#
+# align_image starts here
+# (Copy deps from align_builder)
+#
+# Note: We (somewhat) optimize image
+#       size here
+#
+####################################
+FROM align_base as align_image
+
+RUN apt-get -qq update && apt-get -qq --no-install-recommends install \
+        python3 \
+        python3-pip \
+        make \
+        lcov \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY . .
-RUN ./install.sh --no-deps
+RUN --mount=type=bind,src=/ALIGN-public,dst=/ALIGN-src,from=align_builder \
+        set -ex && \
+        source setup.sh && \
+        cd /ALIGN-src && \
+        cp -r --parents .${GTEST_DIR#$ALIGN_HOME}/mybuild/lib $ALIGN_HOME/ && \
+        cp -r --parents .${LP_DIR#$ALIGN_HOME}/lp_solve_5.5.2.5_dev_ux64 $ALIGN_HOME/ && \
+        cp -r --parents .${VENV#$ALIGN_HOME} $ALIGN_HOME/ && \
+        find ./PlaceRouteHierFlow -regex '\(.*\.\(a\|o\|so\)\|.*/unit_tests\|.*/pnr_compiler\)' \
+            -exec cp --parents {} $ALIGN_HOME/ \; && \
+        cd $ALIGN_HOME && \
+        source setup.sh && \
+        pip install -e .
