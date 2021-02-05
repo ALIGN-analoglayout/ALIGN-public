@@ -4,6 +4,11 @@ commands:
   run-load-align:
     description: "Load align image (contains pip installed align module + PlaceRouteHierFlow)"
     steps:
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: .
+
       - run:
           name: "Load align_image"
           command: |
@@ -86,11 +91,6 @@ jobs:
     steps:
       - checkout
 
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: .
-
       - run-load-align
 
       - run:
@@ -163,10 +163,6 @@ jobs:
   test-align:
     executor: docker-executor
     steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: .
 
       - run-load-align
 
@@ -201,10 +197,6 @@ jobs:
   test-PlaceRouteHierFlow:
     executor: docker-executor
     steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: .
 
       - run-load-align
 
@@ -250,10 +242,6 @@ jobs:
         default: "1800"
 
     steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: .
 
       - run-load-align
 
