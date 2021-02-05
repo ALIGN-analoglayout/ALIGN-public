@@ -1,12 +1,7 @@
-# Stuff that won't get used by ALIGN in docker
-.circleci
-CircuitsDatabase
-Cktgen
-dev
-docs
-DetailedRouter
 #
 # COPY OF ALIGN specific .gitignore file
+#
+# Additional excludes at bottom of file
 #
 # WARNING: Please make sure both files
 #   are always contoured
@@ -55,6 +50,8 @@ pycharm/
 **/work/
 **/Results/
 **/LOG/
+**/coverage-reports/
+**/test-reports/
 PlaceRouteHierFlow/**/.depend
 PlaceRouteHierFlow/**/unit_tests
 PlaceRouteHierFlow/**/pnr_compiler
@@ -85,3 +82,14 @@ tests/cell_fabric/Foo*.cir
 !Viewer/INPUT/mydesign_dr_globalrouting.json
 !Viewer/larger_example/mydesign_dr_globalrouting.json
 
+# Stuff that won't get used by ALIGN in docker
+.circleci
+build
+CircuitsDatabase
+Cktgen
+dev
+docs
+DetailedRouter
+**/*.pdf
+**/*.ppt
+install_tcsh.sh

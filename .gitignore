@@ -54,6 +54,8 @@ pycharm/
 **/work/
 **/Results/
 **/LOG/
+**/coverage-reports/
+**/test-reports/
 PlaceRouteHierFlow/**/.depend
 PlaceRouteHierFlow/**/unit_tests
 PlaceRouteHierFlow/**/pnr_compiler
