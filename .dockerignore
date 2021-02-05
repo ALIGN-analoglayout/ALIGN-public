@@ -1,14 +1,15 @@
+# Stuff that won't get used by ALIGN in docker
+.circleci
+CircuitsDatabase
+Cktgen
+dev
+docs
+DetailedRouter
 #
-# ALIGN specific .gitignore file
+# COPY OF ALIGN specific .gitignore file
 #
-# WARNING: Please copy over modifications to
-#   .dockerignore as well
-#
-# To see files not excluded by .gitignore
-#   `git status`
-#
-# To see tracked files that meet exclusion rules
-#   `git ls-files -ci --exclude-standard`
+# WARNING: Please make sure both files
+#   are always contoured
 #
 
 # Exclude files built by Dockerfile or install.sh
@@ -83,3 +84,4 @@ tests/cell_fabric/Foo*.cir
 !tests/gdsconv/only_paths.*
 !Viewer/INPUT/mydesign_dr_globalrouting.json
 !Viewer/larger_example/mydesign_dr_globalrouting.json
+
