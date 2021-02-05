@@ -138,12 +138,15 @@ jobs:
             docker build -t cktgen_image .
 
             docker run --name cktgen_container cktgen_image bash -c '\
-              source general/bin/activate && \
-              cd cktgen && \
-              coverage run --source=cktgen,tests -m pytest && \
+              e = 0; \
+              source general/bin/activate \
+              && cd cktgen \
+              && coverage run --source=cktgen,tests -m pytest \
+              || e=$?; \
               coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && \
               mkdir -p /test-reports/cktgen && cp junit.xml /test-reports/cktgen && \
-              mkdir -p /coverage-reports/cktgen && cp -r coverage.xml htmlcov /coverage-reports/cktgen\
+              mkdir -p /coverage-reports/cktgen && cp -r coverage.xml htmlcov /coverage-reports/cktgen && \
+              exit $e \
             '
             cd -
 
@@ -171,15 +174,18 @@ jobs:
           name: "Run pytest on align"
           command: |
             docker run --name align_container align_image bash -c '\
+              e = 0; \
               source setup.sh && \
               unset ALIGN_WORK_DIR && \
               (cd PlaceRouteHierFlow && make coverage-init) && \
-              coverage run --source=align,tests -m pytest && \
+              coverage run --source=align,tests -m pytest \
+              || e=$?; \
               coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && \
               mkdir -p /test-reports/align && cp junit.xml /test-reports/align && \
               mkdir -p /coverage-reports && cp -r htmlcov /coverage-reports/align && \
               (cd PlaceRouteHierFlow && make coverage-report) && \
-              cp -r PlaceRouteHierFlow/htmlcov /coverage-reports/PnR \
+              cp -r PlaceRouteHierFlow/htmlcov /coverage-reports/PnR && \
+              exit $e \
             '
             docker cp align_container:coverage-reports .
             docker cp align_container:test-reports .
@@ -250,12 +256,15 @@ jobs:
           no_output_timeout: "<<parameters.timeout>>s"
           command: |
             docker run --name align_container align_image bash -c '\
+              e = 0; \
               source setup.sh && \
               filter="<<parameters.design>>" && \
               filter="<<parameters.pdk>>${filter:+ and $filter}" && \
-              pytest -vv --runnightly --tb=line --timeout=<<parameters.timeout>> -k "$filter" -- tests/integration && \
+              pytest -vv --runnightly --tb=line --timeout=<<parameters.timeout>> -k "$filter" -- tests/integration \
+              || e=$?; \
               mkdir -p /test-reports && cp -r junit.xml LOG /test-reports && \
-              cd $ALIGN_WORK_DIR && find . -name *.png -exec cp --parents \{\} /test-reports \; \
+              cd $ALIGN_WORK_DIR && find . -name *.png -exec cp --parents \{\} /test-reports \; && \
+              exit $e \
             '
             docker cp align_container:test-reports .
             docker rm align_container
