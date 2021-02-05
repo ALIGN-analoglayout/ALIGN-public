@@ -84,7 +84,6 @@ tests/cell_fabric/Foo*.cir
 
 # Stuff that won't get used by ALIGN in docker
 .circleci
-build
 CircuitsDatabase
 Cktgen
 dev
