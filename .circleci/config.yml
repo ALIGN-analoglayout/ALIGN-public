@@ -4,7 +4,8 @@ commands:
   run-load-align:
     description: "Load align image (contains pip installed align module + PlaceRouteHierFlow)"
     steps:
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 19.03.13
 
       - attach_workspace:
           at: .
@@ -45,7 +46,8 @@ jobs:
     steps:
       - checkout
 
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 19.03.13
 
       - restore_cache:
           keys:
@@ -129,7 +131,8 @@ jobs:
     steps:
       - checkout
 
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 19.03.13
 
       - run:
           name: "Build & run Cktgen tests"
