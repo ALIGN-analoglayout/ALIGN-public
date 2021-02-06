@@ -102,17 +102,8 @@ jobs:
             cd build
             make align-service
 
-      # - run-make-docker:
-      #     design: "telescopic_ota"
-
       - run-make-docker:
           design: "test_vga"
-
-      # - run-make-docker:
-      #     design: "current_mirror_ota"
-
-      # - run-make-docker:
-      #     design: "cascode_current_mirror_ota"
 
       - run-make-docker:
           design: "five_transistor_ota"
@@ -288,10 +279,6 @@ workflows:
                 - "Finfet"
                 - "Bulk"
               design:
-                # - "ota and not OTA_FF_2s_v3e"
-                # - "BUFFER and not BUFFER_VCM"
-                # - "single_SAR and not tb_single_SAR"
-                # - "Sanitized_Coarse_Comp_CK or Sanitized_EdgeComparator or BTSW or Sanitized_ResTune_Configure and not Sanitized_ResTune_Configure"
                 - "BUFFER or ota"
                 - "San or BTSW"
                 - "not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD"
@@ -331,5 +318,3 @@ workflows:
                 - "BUFFER or ota"
                 - "San or BTSW"
                 - "not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD"
-                # - "ota and not OTA_FF_2s_v3e"
-
