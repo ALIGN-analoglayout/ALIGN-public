@@ -15,6 +15,10 @@ ENV https_proxy=$https_proxy
 # We are relying on setup.sh to propagate these
 #
 ENV ALIGN_HOME=/ALIGN-public
+# Begin Note PM: Suboptimal Implementation
+ENV GTEST_DIR=$ALIGN_HOME/googletest/googletest
+ENV LP_DIR=$ALIGN_HOME/lpsolve
+# End Note PM: Suboptimal Implementation
 
 ENV USER=root
 WORKDIR $ALIGN_HOME
@@ -73,16 +77,38 @@ RUN apt-get -qq update && apt-get -qq --no-install-recommends install \
         lcov \
     && rm -rf /var/lib/apt/lists/*
 
+# Begin Note PM: Suboptimal Implementation
+COPY --from align_builder $GTEST_DIR/mybuild/lib $GTEST_DIR/mybuild/lib
+COPY --from align_builder $LP_DIR/lp_solve_5.5.2.5_dev_ux64 $LP_DIR/lp_solve_5.5.2.5_dev_ux64
+COPY --from align_builder $ALIGN_HOME/general $ALIGN_HOME/general
+COPY --from align_builder $ALIGN_HOME/PlaceRouteHierFlow $ALIGN_HOME/PlaceRouteHierFlow
+
 COPY . .
-RUN --mount=type=bind,src=/ALIGN-public,dst=/ALIGN-src,from=align_builder \
-        set -ex && \
-        source setup.sh && \
-        cd /ALIGN-src && \
-        cp -r --parents .${GTEST_DIR#$ALIGN_HOME}/mybuild/lib $ALIGN_HOME/ && \
-        cp -r --parents .${LP_DIR#$ALIGN_HOME}/lp_solve_5.5.2.5_dev_ux64 $ALIGN_HOME/ && \
-        cp -r --parents .${VENV#$ALIGN_HOME} $ALIGN_HOME/ && \
-        find ./PlaceRouteHierFlow -regex '\(.*\.\(a\|o\|so\)\|.*/unit_tests\|.*/pnr_compiler\)' \
-            -exec cp --parents {} $ALIGN_HOME/ \; && \
-        cd $ALIGN_HOME && \
-        source setup.sh && \
-        pip install -e .
+RUN set -ex && \
+    source setup.sh && \
+    pip install -e .
+
+# End Note PM: Suboptimal Implementation
+
+#
+# Note PM: A better implementation (Not supported by docker 19.03.13)
+#
+# Once docker version gets updated you can remove a lot of redundant steps and do
+#   everything in one step (Tested on Docker 20.10.2)
+# (Look for comments saying `Note PM: Suboptimal Implementation')
+#
+# COPY . .
+# RUN --mount=type=bind,src=/ALIGN-public,dst=/ALIGN-src,from=align_builder \
+#         set -ex && \
+#         source setup.sh && \
+#         cd /ALIGN-src && \
+#         cp -r --parents .${GTEST_DIR#$ALIGN_HOME}/mybuild/lib $ALIGN_HOME/ && \
+#         cp -r --parents .${LP_DIR#$ALIGN_HOME}/lp_solve_5.5.2.5_dev_ux64 $ALIGN_HOME/ && \
+#         cp -r --parents .${VENV#$ALIGN_HOME} $ALIGN_HOME/ && \
+#         find ./PlaceRouteHierFlow -regex '\(.*\.\(a\|o\|so\)\|.*/unit_tests\|.*/pnr_compiler\)' \
+#             -exec cp --parents {} $ALIGN_HOME/ \; && \
+#         cd $ALIGN_HOME && \
+#         source setup.sh && \
+#         pip install -e .
+#
+# Begin Part 4 of Hack for older docker version
