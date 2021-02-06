@@ -19,7 +19,7 @@ pdks= [pdk for pdk in (ALIGN_HOME / 'pdks').iterdir() \
 @pytest.mark.nightly
 @pytest.mark.parametrize( "design_dir", examples, ids=lambda x: x.name)
 @pytest.mark.parametrize( "pdk_dir", pdks, ids=lambda x: x.name)
-def test_A( pdk_dir, design_dir):
+def test_A( pdk_dir, design_dir, maxerrors):
     nm = design_dir.name
     run_dir = pathlib.Path( os.environ['ALIGN_WORK_DIR']).resolve() / pdk_dir.name / nm
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -33,5 +33,5 @@ def test_A( pdk_dir, design_dir):
         _, variants = result
         for (k,v) in variants.items():
             assert 'errors' in v, f"No Layouts were generated for {nm} ({k})"
-            assert v['errors'] == 0, f"{nm} ({k}):Number of DRC errorrs: {str(v['errors'])}"
+            assert v['errors'] <= maxerrors, f"{nm} ({k}):Number of DRC errorrs: {str(v['errors'])}"
 
