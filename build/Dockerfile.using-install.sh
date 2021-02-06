@@ -78,10 +78,11 @@ RUN apt-get -qq update && apt-get -qq --no-install-recommends install \
     && rm -rf /var/lib/apt/lists/*
 
 # Begin Note PM: Suboptimal Implementation
-COPY --from align_builder $GTEST_DIR/mybuild/lib $GTEST_DIR/mybuild/lib
-COPY --from align_builder $LP_DIR/lp_solve_5.5.2.5_dev_ux64 $LP_DIR/lp_solve_5.5.2.5_dev_ux64
-COPY --from align_builder $ALIGN_HOME/general $ALIGN_HOME/general
-COPY --from align_builder $ALIGN_HOME/PlaceRouteHierFlow $ALIGN_HOME/PlaceRouteHierFlow
+# (Creating too many layers)
+COPY --from=align_builder $GTEST_DIR/mybuild/lib $GTEST_DIR/mybuild/lib
+COPY --from=align_builder $LP_DIR/lp_solve_5.5.2.5_dev_ux64 $LP_DIR/lp_solve_5.5.2.5_dev_ux64
+COPY --from=align_builder $ALIGN_HOME/general $ALIGN_HOME/general
+COPY --from=align_builder $ALIGN_HOME/PlaceRouteHierFlow $ALIGN_HOME/PlaceRouteHierFlow
 
 COPY . .
 RUN set -ex && \
@@ -95,7 +96,7 @@ RUN set -ex && \
 #
 # Once docker version gets updated you can remove a lot of redundant steps and do
 #   everything in one step (Tested on Docker 20.10.2)
-# (Look for comments saying `Note PM: Suboptimal Implementation')
+# (Look for comments saying `Note PM: Suboptimal Implementation' on what to remove)
 #
 # COPY . .
 # RUN --mount=type=bind,src=/ALIGN-public,dst=/ALIGN-src,from=align_builder \
@@ -111,4 +112,4 @@ RUN set -ex && \
 #         source setup.sh && \
 #         pip install -e .
 #
-# Begin Part 4 of Hack for older docker version
+# End Note PM: A better implementation (Not supported by docker 19.03.13)
