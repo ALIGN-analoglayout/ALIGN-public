@@ -1,28 +1,13 @@
-####################################
+###################################
 #
-# align_base starts here
+# Shared build arguments
 #
-####################################
-FROM ubuntu:18.04 as align_base
-
-#
-# Set shared environment variables
-#
-ENV http_proxy=$http_proxy
-ENV https_proxy=$https_proxy
-
-#
-# We are relying on setup.sh to propagate these
-#
-ENV ALIGN_HOME=/ALIGN-public
-# Begin Note PM: Suboptimal Implementation
-ENV GTEST_DIR=$ALIGN_HOME/googletest/googletest
-ENV LP_DIR=$ALIGN_HOME/lpsolve
-# End Note PM: Suboptimal Implementation
-
-ENV USER=root
-WORKDIR $ALIGN_HOME
-SHELL ["/bin/bash", "-c"]
+###################################
+ARG http_proxy=$http_proxy
+ARG https_proxy=$https_proxy
+ARG ALIGN_USER=root
+ARG ALIGN_BUILD_DIR=/ALIGN-builder
+ARG ALIGN_DEPLOY_DIR=/ALIGN-public
 
 ####################################
 #
@@ -30,34 +15,62 @@ SHELL ["/bin/bash", "-c"]
 #
 # (Build align using install.sh)
 #
-# Note: We optimize cache reuse
-#       instead of image size here
-#       + Impossible to optimize
-#       anyway using install.sh
-#
 ####################################
 
-FROM align_base as align_builder
+FROM ubuntu:18.04 as align_builder
+
+# import global args
+ARG http_proxy
+ARG https_proxy
+ARG ALIGN_USER
+ARG ALIGN_BUILD_DIR
+ARG ALIGN_DEPLOY_DIR
+
+# Set environment variables
+SHELL ["/bin/bash", "-c"]
+ENV http_proxy=$http_proxy
+ENV https_proxy=$https_proxy
+ENV ALIGN_HOME=$ALIGN_BUILD_DIR
+ENV USER=$ALIGN_USER
+WORKDIR $ALIGN_HOME
 
 # Install ALIGN dependencies
-# Note: - We copy (or create placeholders for) only those files
-#         that are needed by install.sh --deps-only to enable
-#         docker layer caching of this stage
+# Note: 1. To promote layer caching, we only copy files needed by
+#          `install.sh --deps-only` at this stage
+#       2. Only dynamically linked library paths (*.so files)
+#          are copied over to $ALIGN_DEPLOY_DIR
+#       3. VENV is directly installed ALIGN_DEPLOY_DIR instead
+#          of copying by sourcing setup.sh & modifying $VENV
 COPY setup.sh install.sh setup.py ./
-RUN touch README.md && \
-    mkdir -p align && \
-    touch align/__init__.py && \
-    source ./install.sh --deps-only
+RUN \
+    # Create placeholder files to satisfy pip dependencies
+    touch README.md \
+    && mkdir -p align \
+    && touch align/__init__.py \
+    # Avoid copying virtualenv by hacking VENV path
+    && source ./setup.sh \
+    && export VENV=$ALIGN_DEPLOY_DIR/${VENV#$ALIGN_HOME} \
+    # Actual dependency installation happens here
+    && source ./install.sh --deps-only \
+    # Copy dynamically linked library paths
+    && cd $ALIGN_HOME \
+    && cp -r --parents .${GTEST_DIR#$ALIGN_HOME}/mybuild/lib $ALIGN_DEPLOY_DIR/ \
+    && cp -r --parents .${LP_DIR#$ALIGN_HOME}/lp_solve_5.5.2.5_dev_ux64 $ALIGN_DEPLOY_DIR/
 
-# Real work gets done here
+# Install PnR
 COPY PlaceRouteHierFlow PlaceRouteHierFlow
-RUN source setup.sh && \
-        cd PlaceRouteHierFlow && \
-        make
-
-# Note: We never install the python component here
-#       as installation is instantaeneous
-#       as it is most likely to change
+RUN \
+    # Build PnR
+    source setup.sh \
+    && export VENV=$ALIGN_DEPLOY_DIR/${VENV#$ALIGN_HOME} \
+    && source setup.sh \
+    && cd PlaceRouteHierFlow \
+    && make \
+    # Copy library files & executables
+    && cd $ALIGN_HOME \
+    && find ./PlaceRouteHierFlow \
+        -regex '\(.*\.\(a\|o\|so\)\|.*/unit_tests\|.*/pnr_compiler\)' \
+        -exec cp --parents {} $ALIGN_DEPLOY_DIR/ \;
 
 ####################################
 #
@@ -68,48 +81,34 @@ RUN source setup.sh && \
 #       size here
 #
 ####################################
-FROM align_base as align_image
+FROM ubuntu:18.04 as align_image
+
+# import global args
+ARG http_proxy
+ARG https_proxy
+ARG ALIGN_USER
+ARG ALIGN_BUILD_DIR
+ARG ALIGN_DEPLOY_DIR
+
+# Set environment variables
+SHELL ["/bin/bash", "-c"]
+ENV http_proxy=$http_proxy
+ENV https_proxy=$https_proxy
+ENV ALIGN_HOME=$ALIGN_DEPLOY_DIR
+ENV USER=$ALIGN_USER
+WORKDIR $ALIGN_HOME
 
 RUN apt-get -qq update && apt-get -qq --no-install-recommends install \
         python3 \
         python3-pip \
         make \
+        xvfb \
         lcov \
     && rm -rf /var/lib/apt/lists/*
 
-# Begin Note PM: Suboptimal Implementation
-# (Creating too many layers)
-COPY --from=align_builder $GTEST_DIR/mybuild/lib $GTEST_DIR/mybuild/lib
-COPY --from=align_builder $LP_DIR/lp_solve_5.5.2.5_dev_ux64 $LP_DIR/lp_solve_5.5.2.5_dev_ux64
-COPY --from=align_builder $ALIGN_HOME/general $ALIGN_HOME/general
-COPY --from=align_builder $ALIGN_HOME/PlaceRouteHierFlow $ALIGN_HOME/PlaceRouteHierFlow
+COPY --from=align_builder $ALIGN_HOME .
 
 COPY . .
-RUN set -ex && \
-    source setup.sh && \
-    pip install -e .
 
-# End Note PM: Suboptimal Implementation
-
-#
-# Note PM: A better implementation (Not supported by docker 19.03.13)
-#
-# Once docker version gets updated you can remove a lot of redundant steps and do
-#   everything in one step (Tested on Docker 20.10.2)
-# (Look for comments saying `Note PM: Suboptimal Implementation' on what to remove)
-#
-# COPY . .
-# RUN --mount=type=bind,src=/ALIGN-public,dst=/ALIGN-src,from=align_builder \
-#         set -ex && \
-#         source setup.sh && \
-#         cd /ALIGN-src && \
-#         cp -r --parents .${GTEST_DIR#$ALIGN_HOME}/mybuild/lib $ALIGN_HOME/ && \
-#         cp -r --parents .${LP_DIR#$ALIGN_HOME}/lp_solve_5.5.2.5_dev_ux64 $ALIGN_HOME/ && \
-#         cp -r --parents .${VENV#$ALIGN_HOME} $ALIGN_HOME/ && \
-#         find ./PlaceRouteHierFlow -regex '\(.*\.\(a\|o\|so\)\|.*/unit_tests\|.*/pnr_compiler\)' \
-#             -exec cp --parents {} $ALIGN_HOME/ \; && \
-#         cd $ALIGN_HOME && \
-#         source setup.sh && \
-#         pip install -e .
-#
-# End Note PM: A better implementation (Not supported by docker 19.03.13)
+RUN source setup.sh \
+    && pip install -e .
