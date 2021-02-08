@@ -438,13 +438,14 @@ def connection(graph,net:str):
     for nbr in list(graph.neighbors(net)):
         if "ports_match" in graph.nodes[nbr] and graph.nodes[nbr]["ports_match"]:
             logger.debug(f"ports match:%s %s",nbr,graph.nodes[nbr]["ports_match"].items())
-            idx=list(graph.nodes[nbr]["ports_match"].values()).index(net)
-            conn[nbr+'/'+list(graph.nodes[nbr]["ports_match"].keys())[idx]]= (graph.get_edge_data(net, nbr)['weight'] & ~2)
-
+            if net in graph.nodes[nbr]["ports_match"].values():
+                idx = list(graph.nodes[nbr]["ports_match"].values()).index(net)
+                conn[nbr+'/'+list(graph.nodes[nbr]["ports_match"].keys())[idx]] = (graph.get_edge_data(net, nbr)['weight'] & ~2)
         elif "connection" in graph.nodes[nbr] and graph.nodes[nbr]["connection"]:
             logger.debug("connection:%s%s",nbr,graph.nodes[nbr]["connection"])
-            idx=list(graph.nodes[nbr]["connection"].values()).index(net)
-            conn[nbr+'/'+list(graph.nodes[nbr]["connection"].keys())[idx]]= (graph.get_edge_data(net, nbr)['weight'] & ~2)
+            if net in graph.nodes[nbr]["connection"].values():
+                idx=list(graph.nodes[nbr]["connection"].values()).index(net)
+                conn[nbr+'/'+list(graph.nodes[nbr]["connection"].keys())[idx]]= (graph.get_edge_data(net, nbr)['weight'] & ~2)
         else:
             logger.debug("internal net")
     if graph.nodes[net]["net_type"]=="external":
