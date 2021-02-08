@@ -42,6 +42,7 @@ def remove_pg_pins(hier_graph_dict:dict,circuit_name, pg_pins):
         if 'sub_graph' not in attr or attr['inst_type'] =='net' or not attr["connection"]:
             continue
         elif len(set(attr["connection"].values()) & set(pg_pins))>0:
+            logger.debug(f"node: {node} connections {attr['connection']} {attr['ports']}")
             pg_conn = {}
             for k,v in attr["connection"].items():
                 if v in pg_pins and k not in pg_pins:
