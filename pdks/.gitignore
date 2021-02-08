@@ -1,8 +1,0 @@
-*~
-.pytest_cache/
-*.json
-!layers.json
-*.lef
-*.gds.json
-*_lef.sh
-*.pyc
