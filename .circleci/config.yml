@@ -64,7 +64,7 @@ jobs:
           name: Load Docker image layer cache
           command: |
             set +o pipefail
-            docker load -i align_image.tar | true
+            docker load -i align_cache.tar | true
 
       - run:
           name: "Build align_image"
