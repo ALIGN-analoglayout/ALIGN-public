@@ -74,7 +74,6 @@ RUN apt-get -qq update && apt-get -qq --no-install-recommends install \
         python3 \
         python3-pip \
         make \
-        xvfb \
         lcov \
     && rm -rf /var/lib/apt/lists/*
 
