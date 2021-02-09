@@ -107,15 +107,17 @@ RUN \
         make \
         xvfb \
         lcov \
-    # install KLayout
+    # Get Klayout using curl
     && savedAptMark="$(apt-mark showmanual)" \
     && apt-get install -y --no-install-recommends curl \
     && curl -k -o ./klayout_0.26.3-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-18/klayout_0.26.3-1_amd64.deb \
-    && apt-get install -yq ./klayout_0.26.3-1_amd64.deb \
     && apt-mark auto '.*' > /dev/null \
     && [ -z "$savedAptMark" ] || apt-mark manual $savedAptMark \
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+    # Install Klayout
+    && apt-get install -yq ./klayout_0.26.3-1_amd64.deb \
     # Clean up
+    && rm ./klayout_0.26.3-1_amd64.deb \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=align_builder $ALIGN_HOME .
