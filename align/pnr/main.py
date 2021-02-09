@@ -7,6 +7,7 @@ import logging
 import collections
 import json
 import re
+import itertools
 
 from .db import hierNode
 from .checkers import gen_viewer_json
@@ -14,13 +15,19 @@ from ..cell_fabric import gen_gds_json
 
 logger = logging.getLogger(__name__)
 
-def _generate_json( *, dbfile, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False, input_dir=None, toplevel=True, gds_json=True ):
+def _generate_json_from_json( *, dbfile, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False, input_dir=None, toplevel=True, gds_json=True ):
 
-    logger.debug( f"_generate_json: {dbfile} {variant} {primitive_dir} {pdk_dir} {output_dir} {check} {extract} {input_dir} {toplevel} {gds_json}")
-
-    ret = {}
     with open(dbfile,"rt") as fp:
         hN = hierNode(json.load(fp))
+
+    return _generate_json_from_hN( hN=hN, variant=variant, primitive_dir=primitive_dir, pdk_dir=pdk_dir, output_dir=output_dir, check=check, extract=extract, input_dir=input_dir, toplevel=toplevel, gds_json=gds_json)
+    
+
+def _generate_json_from_hN( *, hN, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False, input_dir=None, toplevel=True, gds_json=True ):
+
+    logger.debug( f"_generate_json_from_hN: {hN} {variant} {primitive_dir} {pdk_dir} {output_dir} {check} {extract} {input_dir} {toplevel} {gds_json}")
+
+    ret = {}
 
     if not toplevel:
         # Check name matches n_copy number (top down flow)
@@ -28,7 +35,8 @@ def _generate_json( *, dbfile, variant, primitive_dir, pdk_dir, output_dir, chec
         m = p2.match(variant)
         assert m
         ncpy = int(m.groups()[1])
-        assert ncpy == hN.n_copy, f"n_copy {hN.n_copy} should be same as in the variant name {variant} {ncpy}"
+        #SMB Maybe too restrictive
+        #assert ncpy == hN.n_copy, f"n_copy {hN.n_copy} should be same as in the variant name {variant} {ncpy}"
 
     res = gen_viewer_json( hN, pdkdir=pdk_dir, draw_grid=True, json_dir=str(primitive_dir), checkOnly=(check or extract or gds_json), extract=extract, input_dir=input_dir, toplevel=toplevel)
 
@@ -84,9 +92,9 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
     compiler_path = pathlib.Path(os.environ['ALIGN_HOME']).resolve() / 'PlaceRouteHierFlow' / 'pnr_compiler'
     assert compiler_path.is_file(), f"{compiler_path} not found. Has it been built?"
 
-    sys.setdlopenflags(os.RTLD_GLOBAL|os.RTLD_LAZY)
-
-    import PnR
+    #sys.setdlopenflags(os.RTLD_GLOBAL|os.RTLD_LAZY)
+    #import PnR
+    from .toplevel import toplevel
 
     # Create working & input directories
     working_dir = output_dir
@@ -141,7 +149,8 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
     if True:
         current_working_dir = os.getcwd()
         os.chdir(working_dir)
-        PnR.toplevel(cmd)
+        #PnR.toplevel(cmd)
+        DB = toplevel(cmd)
         os.chdir(current_working_dir)
     else:
         try:
@@ -176,51 +185,117 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
         if file_.suffixes == ['.json']:
             (working_dir / file_.name).write_text(file_.read_text())
 
-    if check or extract or gds_json:
-        with (results_dir / "__hierTree.json").open("rt") as fp:
-            order = json.load(fp)
-        logger.debug( f"Topological order: {order}")
 
-        assert order[-1] == subckt, f"Last in topological order should be the subckt {subckt} {order}"
+    if True:
+        if check or extract or gds_json:
+            order = [(i,DB.CheckoutHierNode(i).name) for i in DB.TraverseHierTree()]
+            assert order[-1][1] == subckt, f"Last in topological order should be the subckt {subckt} {order}"
 
-        # Process subblocks as well
-        for nm in order[:-1]:
-            for variant_name in find_variant_names(nm):
-                logger.debug(f"variant_name: {variant_name}")
-                file_ = results_dir / ( variant_name + ".db.json")
-                logger.debug(f"subblock: {file_.name}")
-                _generate_json( dbfile = file_,
-                                variant = variant_name,
-                                pdk_dir = pdk_dir,
-                                primitive_dir = input_dir,
-                                input_dir=working_dir,
-                                output_dir=working_dir,
-                                check=check,
-                                extract=extract,
-                                gds_json=gds_json,
-                                toplevel=False)
+            for idx,nm in order[:-1]:
 
-    variants = collections.defaultdict(collections.defaultdict)
-    for file_ in results_dir.iterdir():
-        variant = file_.name.split('.')[0]
-        if not variant.replace(f'{subckt}_', '').isdigit():
-            continue
-        if file_.suffixes == ['.gds', '.json']:
-            variants[variant]['gdsjson'] = file_
-        elif file_.suffixes == ['.lef']:
-            variants[variant]['lef'] = file_
-        elif file_.suffixes == ['.db', '.json'] and (check or extract or gds_json):
-            logger.debug( f".db.json: {file_.name}")
-            variants[variant].update(
-                _generate_json( dbfile = file_,
-                                variant = variant,
-                                pdk_dir = pdk_dir,
-                                primitive_dir = input_dir,
-                                input_dir=working_dir,
-                                output_dir=working_dir,
-                                check=check,
-                                extract=extract,
-                                gds_json=gds_json,
-                                toplevel=True))
+                nodeVec = DB.CheckoutHierNodeVec(idx)
+
+                variant_names = find_variant_names(nm)
+                logger.info(f'SMB: {variant_names}')
+                logger.info(f'SMB: {idx} {nm} {DB.hierTree[idx].n_copy} {DB.hierTree[idx].numPlacement}')
+
+                alt_variant_names = [ f'{nm}_{i_copy}_{i_placement}' for i_copy in range(DB.hierTree[idx].n_copy) for i_placement in range(DB.hierTree[idx].numPlacement)]
+
+                assert set(variant_names) == set(alt_variant_names)
+
+                for i_copy,i_placement in itertools.product(range(DB.hierTree[idx].n_copy),range(DB.hierTree[idx].numPlacement)):
+                    hN = nodeVec[i_copy]
+                    variant_name = f'{nm}_{i_copy}_{i_placement}'
+                    DB.WriteDBJSON( hN, f"__SMB_{variant_name}")
+
+                    continue
+
+                    assert i_placement == 0, "Don't know what do if there is more than one placement"
+                    _generate_json_from_hN( hN = hN,
+                                    variant = variant_name,
+                                    pdk_dir = pdk_dir,
+                                    primitive_dir = input_dir,
+                                    input_dir=working_dir,
+                                    output_dir=working_dir,
+                                    check=check,
+                                    extract=extract,
+                                    gds_json=gds_json,
+                                    toplevel=False)
+
+    if False:
+        variants = collections.defaultdict(collections.defaultdict)
+        for file_ in results_dir.iterdir():
+            variant = file_.name.split('.')[0]
+            if not variant.replace(f'{subckt}_', '').isdigit():
+                continue
+            if file_.suffixes == ['.gds', '.json']:
+                variants[variant]['gdsjson'] = file_
+            elif file_.suffixes == ['.lef']:
+                variants[variant]['lef'] = file_
+            elif file_.suffixes == ['.db', '.json'] and (check or extract or gds_json):
+                logger.debug( f".db.json: {file_.name}")
+                variants[variant].update(
+                    _generate_json_from_json( dbfile = file_,
+                                    variant = variant,
+                                    pdk_dir = pdk_dir,
+                                    primitive_dir = input_dir,
+                                    input_dir=working_dir,
+                                    output_dir=working_dir,
+                                    check=check,
+                                    extract=extract,
+                                    gds_json=gds_json,
+                                    toplevel=True))
+
+
+
+    if True:
+        if check or extract or gds_json:
+            with (results_dir / "__hierTree.json").open("rt") as fp:
+                order = json.load(fp)
+
+            logger.debug( f"Topological order: {order}")
+
+            assert order[-1] == subckt, f"Last in topological order should be the subckt {subckt} {order}"
+
+            # Process subblocks as well
+            for nm in order[:-1]:
+                for variant_name in find_variant_names(nm):
+                    logger.debug(f"variant_name: {variant_name}")
+                    file_ = results_dir / ( variant_name + ".db.json")
+                    logger.debug(f"subblock: {file_.name}")
+                    _generate_json_from_json( dbfile = file_,
+                                    variant = variant_name,
+                                    pdk_dir = pdk_dir,
+                                    primitive_dir = input_dir,
+                                    input_dir=working_dir,
+                                    output_dir=working_dir,
+                                    check=check,
+                                    extract=extract,
+                                    gds_json=gds_json,
+                                    toplevel=False)
+
+        variants = collections.defaultdict(collections.defaultdict)
+        for file_ in results_dir.iterdir():
+            variant = file_.name.split('.')[0]
+            if not variant.replace(f'{subckt}_', '').isdigit():
+                continue
+            if file_.suffixes == ['.gds', '.json']:
+                variants[variant]['gdsjson'] = file_
+            elif file_.suffixes == ['.lef']:
+                variants[variant]['lef'] = file_
+            elif file_.suffixes == ['.db', '.json'] and (check or extract or gds_json):
+                logger.debug( f".db.json: {file_.name}")
+                variants[variant].update(
+                    _generate_json_from_json( dbfile = file_,
+                                    variant = variant,
+                                    pdk_dir = pdk_dir,
+                                    primitive_dir = input_dir,
+                                    input_dir=working_dir,
+                                    output_dir=working_dir,
+                                    check=check,
+                                    extract=extract,
+                                    gds_json=gds_json,
+                                    toplevel=True))
+
 
     return variants

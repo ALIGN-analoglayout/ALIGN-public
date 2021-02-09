@@ -2,6 +2,7 @@
 
 import logging
 import pathlib
+import json
 
 # Needed for Pybind11 dynamic executables
 import sys, os
@@ -17,7 +18,6 @@ def toplevel(args):
 
     skip_saving_state = False
     adr_mode = False
-    multi_thread = False
 
     opath = './Results/'
     fpath,lfile,vfile,mfile,dfile,topcell = args[1:7]
@@ -29,11 +29,17 @@ def toplevel(args):
     # find directory that args[0] sits in
     binary_directory = str(pathlib.Path(args[0]).parent)
 
+    pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
+
     DB = PnR.PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile)
     drcInfo = DB.getDrc_info()
     lefData = DB.checkoutSingleLEF()
 
     TraverseOrder = DB.TraverseHierTree()
+
+    if not skip_saving_state:
+        with open( opath + "__hierTree.json", "wt") as fp:
+            json.dump( [DB.CheckoutHierNode(i).name for i in TraverseOrder], indent=2, fp=fp)
 
     for idx in TraverseOrder:
         logger.info(f'Topo order: {idx}')
@@ -71,4 +77,4 @@ def toplevel(args):
                             opath, binary_directory, skip_saving_state, adr_mode)
 
 
-    return DB, drcInfo, lefData 
+    return DB

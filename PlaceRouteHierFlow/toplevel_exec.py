@@ -22,6 +22,7 @@ else:
 handler.setFormatter(formatter)
 root.addHandler(handler)
 
+#from align.pnr.toplevel import toplevel
 from toplevel import toplevel
 
-toplevel( sys.argv)
+DB = toplevel( sys.argv)
