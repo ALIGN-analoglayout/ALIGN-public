@@ -58,13 +58,13 @@ jobs:
             # Fall back to most recent cache from any branch
             - align-v2
           paths:
-            - align_cache.tar
+            - align_cache.tar.gz
 
       - run:
           name: Load Docker image layer cache
           command: |
             set +o pipefail
-            docker load -i align_cache.tar | true
+            docker load -i align_cache.tar.gz | true
 
       - run:
           name: "Build align_image"
@@ -78,15 +78,15 @@ jobs:
           name: "Save align_image"
           command: |
             git clean -xdf
-            docker save --output align_cache.tar align_builder align_image
+            docker save align_builder align_image | gzip > align_cache.tar.gz
             docker save --output align_image.tar align_image
-            du -h align_cache.tar
+            du -h align_cache.tar.gz
             du -h align_image.tar
 
       - save_cache:
           key: align-v2-{{ checksum "build/Dockerfile.using-install.sh" }}-{{ checksum "install.sh" }}-{{ checksum "setup.sh" }}-{{ checksum "setup.py" }}
           paths:
-            - align_cache.tar
+            - align_cache.tar.gz
 
       - persist_to_workspace:
           root: .
