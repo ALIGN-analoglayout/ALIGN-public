@@ -93,8 +93,9 @@ then
     #### Install logger
     cd $ALIGN_HOME
     git_clone https://github.com/gabime/spdlog.git
-    cd spdlog && mkdir -p build && cd build
-    cmake .. && make
+    # No need to make for header-only mode
+    # cd spdlog && mkdir -p build && cd build
+    # cmake .. && make
 
     ### Install superLU // this now is not correct
     #version 1
