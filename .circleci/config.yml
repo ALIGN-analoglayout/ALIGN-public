@@ -13,7 +13,7 @@ commands:
       - run:
           name: "Load align_image"
           command: |
-            docker load --input align_image.tar
+            docker load --input align_image.tar.gz
   run-make-docker:
     description: "Exercise the monolithic make docker flow"
     parameters:
@@ -58,13 +58,15 @@ jobs:
             # Fall back to most recent cache from any branch
             - align-v2
           paths:
-            - align_cache.tar.gz
+            - align_builder.tar.gz
+            - align_image.tar.gz
 
       - run:
           name: Load Docker image layer cache
           command: |
             set +o pipefail
-            docker load -i align_cache.tar.gz | true
+            docker load -i align_builder.tar.gz | true
+            docker load -i align_image.tar.gz | true
 
       - run:
           name: "Build align_image"
@@ -78,20 +80,28 @@ jobs:
           name: "Save align_image"
           command: |
             git clean -xdf
-            docker save align_builder align_image | gzip > align_cache.tar.gz
-            docker save --output align_image.tar align_image
-            du -h align_cache.tar.gz
-            du -h align_image.tar
+            echo "Docker images"
+            docker images
+            echo "align_builder layers"
+            docker history align_builder
+            echo "align_image layers"
+            docker history align_image
+            echo "saving images"
+            docker save align_builder | gzip > align_builder.tar.gz
+            docker save align_image   | gzip > align_image.tar.gz
+            du -h align_builder.tar.gz
+            du -h align_image.tar.gz
 
       - save_cache:
           key: align-v2-{{ checksum "build/Dockerfile.using-install.sh" }}-{{ checksum "install.sh" }}-{{ checksum "setup.sh" }}-{{ checksum "setup.py" }}
           paths:
-            - align_cache.tar.gz
+            - align_builder.tar.gz
+            - align_image.tar.gz
 
       - persist_to_workspace:
           root: .
           paths:
-            - align_image.tar
+            - align_image.tar.gz
 
   build-make-docker:
     executor: docker-executor
