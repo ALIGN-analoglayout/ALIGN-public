@@ -69,7 +69,7 @@ RUN \
     # Copy library files & executables
     && cd $ALIGN_HOME \
     && find ./PlaceRouteHierFlow \
-        -regex '\(.*\.\(a\|o\|so\)\|.*/unit_tests\|.*/pnr_compiler\)' \
+        -regex '\(.*\.\(so\|gcno\)\|.*/unit_tests\|.*/pnr_compiler\)' \
         -exec cp --parents {} $ALIGN_DEPLOY_DIR/ \;
 
 ####################################
