@@ -98,12 +98,24 @@ ENV ALIGN_HOME=$ALIGN_DEPLOY_DIR
 ENV USER=$ALIGN_USER
 WORKDIR $ALIGN_HOME
 
-RUN apt-get -qq update && apt-get -qq --no-install-recommends install \
+RUN \
+    # Install basic dependencies
+    apt-get -qq update \
+    && apt-get -qq --no-install-recommends install \
         python3 \
         python3-pip \
         make \
         xvfb \
         lcov \
+    # install KLayout
+    && savedAptMark="$(apt-mark showmanual)" \
+    && apt-get install -y --no-install-recommends curl \
+    && curl -k -o ./klayout_0.26.3-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-18/klayout_0.26.3-1_amd64.deb \
+    && apt-get install -yq ./klayout_0.26.3-1_amd64.deb \
+    && apt-mark auto '.*' > /dev/null \
+    && [ -z "$savedAptMark" ] || apt-mark manual $savedAptMark \
+    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+    # Clean up
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=align_builder $ALIGN_HOME .
