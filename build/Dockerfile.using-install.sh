@@ -6,7 +6,6 @@
 ARG http_proxy=$http_proxy
 ARG https_proxy=$https_proxy
 ARG ALIGN_USER=root
-ARG ALIGN_BUILD_DIR=/ALIGN-builder
 ARG ALIGN_DEPLOY_DIR=/ALIGN-public
 
 ####################################
@@ -23,49 +22,48 @@ FROM ubuntu:18.04 as align_builder
 ARG http_proxy
 ARG https_proxy
 ARG ALIGN_USER
-ARG ALIGN_BUILD_DIR
 ARG ALIGN_DEPLOY_DIR
 
 # Set environment variables
 SHELL ["/bin/bash", "-c"]
 ENV http_proxy=$http_proxy
 ENV https_proxy=$https_proxy
-ENV ALIGN_HOME=$ALIGN_BUILD_DIR
+ENV ALIGN_HOME=$ALIGN_DEPLOY_DIR
 ENV USER=$ALIGN_USER
 WORKDIR $ALIGN_HOME
 
 # Install ALIGN dependencies
-# Note: 1. To promote layer caching, we only copy files needed by
-#          `install.sh --deps-only` at this stage
-#       2. Only dynamically linked library paths (*.so files)
-#          are copied over to $ALIGN_DEPLOY_DIR
-#       3. VENV is directly installed ALIGN_DEPLOY_DIR instead
-#          of copying by sourcing setup.sh & modifying $VENV
+# Note: To promote layer caching, we only copy files needed by
+#           `install.sh --deps-only` at this stage
+#       To reduce image size, we remove all files not needed by
+#           PnR and then cleanup PnR itself
 COPY setup.sh install.sh setup.py ./
 RUN \
     # Create placeholder files to satisfy pip dependencies
     touch README.md \
     && mkdir -p align \
     && touch align/__init__.py \
-    # Avoid copying virtualenv by hacking VENV path
-    && source ./setup.sh \
-    && export VENV=$ALIGN_DEPLOY_DIR/${VENV#$ALIGN_HOME} \
     # Actual dependency installation happens here
     && source ./install.sh --deps-only \
-    # Copy dynamically linked library paths
-    && cd $ALIGN_HOME \
-    && cp -r --parents .${GTEST_DIR#$ALIGN_HOME}/mybuild/lib $ALIGN_DEPLOY_DIR/ \
-    && cp -r --parents .${LP_DIR#$ALIGN_HOME}/lp_solve_5.5.2.5_dev_ux64 $ALIGN_DEPLOY_DIR/
+    # Remove everything that's not needed by PnR
+    && cp -r --parents $LP_DIR/lp_solve_5.5.2.5_dev_ux64 /tmp \
+    && cp -r --parents $JSON/include /tmp \
+    && cp -r --parents $GTEST_DIR/mybuild/lib /tmp \
+    && cp -r --parents $GTEST_DIR/include /tmp \
+    && cp -r --parents $SPDLOG_DIR/include /tmp \
+    && cp -r --parents $SuperLu_DIR/SuperLU_5.2.1/build /tmp \
+    && cp -r --parents $SuperLu_DIR/SuperLU_5.2.1/SRC /tmp \
+    && cp -r --parents $SuperLu_DIR/SuperLU_5.2.1/CBLAS /tmp \
+    && rm -fr $LP_DIR $JSON $SPDLOG_DIR $SuperLu_DIR \
+            $ALIGN_HOME/googletest \
+            $ALIGN_HOME/align $ALIGN_HOME/README.md $ALIGN_HOME/setup.py \
+    && mv /tmp$ALIGN_HOME/* $ALIGN_HOME/
 
 # Install PnR
-COPY PlaceRouteHierFlow $ALIGN_DEPLOY_DIR/PlaceRouteHierFlow
+COPY PlaceRouteHierFlow PlaceRouteHierFlow
 RUN \
     # Source environment vars
     source setup.sh \
-    # Modify environment vars
-    && export ALIGN_HOME=$ALIGN_DEPLOY_DIR \
-    && unset VENV \
-    && source setup.sh \
     # Build PlaceRouteHierFlow
     && cd $ALIGN_HOME/PlaceRouteHierFlow \
     && make -j4 \
@@ -73,7 +71,10 @@ RUN \
     && find . \
         -not \
         -regex '\(.*\.\(so\|gcno\)\|.*/unit_tests\|.*/pnr_compiler\)' \
-        -exec rm -f {} \;
+        -exec rm -f {} \; \
+    && rm -fr $LP_DIR/include $GTEST_DIR/include \
+            $JSON $SPDLOG_DIR $SuperLu_DIR \
+            $ALIGN_HOME/*.sh
 
 ####################################
 #
@@ -90,7 +91,6 @@ FROM ubuntu:18.04 as align_image
 ARG http_proxy
 ARG https_proxy
 ARG ALIGN_USER
-ARG ALIGN_BUILD_DIR
 ARG ALIGN_DEPLOY_DIR
 
 # Set environment variables
