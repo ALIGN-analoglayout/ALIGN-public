@@ -58,19 +58,22 @@ RUN \
     && cp -r --parents .${LP_DIR#$ALIGN_HOME}/lp_solve_5.5.2.5_dev_ux64 $ALIGN_DEPLOY_DIR/
 
 # Install PnR
-COPY PlaceRouteHierFlow PlaceRouteHierFlow
+COPY PlaceRouteHierFlow $ALIGN_DEPLOY_DIR/PlaceRouteHierFlow
 RUN \
-    # Build PnR
+    # Source environment vars
     source setup.sh \
-    && export VENV=$ALIGN_DEPLOY_DIR/${VENV#$ALIGN_HOME} \
+    # Modify environment vars
+    && export ALIGN_HOME=$ALIGN_DEPLOY_DIR \
+    && unset VENV \
     && source setup.sh \
-    && cd PlaceRouteHierFlow \
-    && make \
-    # Copy library files & executables
-    && cd $ALIGN_HOME \
-    && find ./PlaceRouteHierFlow \
+    # Build PlaceRouteHierFlow
+    && cd $ALIGN_HOME/PlaceRouteHierFlow \
+    && make -j4 \
+    # Clean up anything we no longer need
+    && find . \
+        -not \
         -regex '\(.*\.\(so\|gcno\)\|.*/unit_tests\|.*/pnr_compiler\)' \
-        -exec cp --parents {} $ALIGN_DEPLOY_DIR/ \;
+        -exec rm -f {} \;
 
 ####################################
 #
