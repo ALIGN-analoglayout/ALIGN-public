@@ -8,7 +8,6 @@
 #
 
 # Exclude files built by Dockerfile or install.sh
-**/*.tar
 general/
 json/
 googletest/
@@ -16,6 +15,8 @@ lpsolve/
 spdlog/
 superlu/
 # Exclude common user / machine generated files
+**/*.tar
+**/*.tar.gz
 pycharm/
 .idea/
 .vscode/
