@@ -54,9 +54,11 @@ jobs:
             # Use checksums for critical files as cache key to promote layer reuse
             # Please increment v1 to v2 if you wish to invalidate all existing caches
             # (Must be replicated in save_cache as well)
-            - align-v2-{{ checksum "build/Dockerfile.using-install.sh" }}-{{ checksum "install.sh" }}-{{ checksum "setup.sh" }}-{{ checksum "setup.py" }}
-            # Fall back to most recent cache from any branch
-            - align-v2
+            - align-v1-{{ checksum "install.sh" }}-{{ checksum "setup.sh" }}-{{ checksum "setup.py" }}-{{ checksum "build/Dockerfile.using-install.sh" }}
+            # No match found. Fall back to most recent cache from any branch matching patterns below
+            - align-v1-{{ checksum "install.sh" }}-{{ checksum "setup.sh" }}-{{ checksum "setup.py" }}
+            - align-v1-{{ checksum "install.sh" }}-{{ checksum "setup.sh" }}
+            - align-v1
           paths:
             - align_builder.tar.gz
             - align_image.tar.gz
@@ -80,20 +82,15 @@ jobs:
           name: "Save align_image"
           command: |
             git clean -xdf
-            echo "Docker images"
-            docker images
-            echo "align_builder layers"
-            docker history align_builder
-            echo "align_image layers"
-            docker history align_image
+            echo "Docker images" && docker images
+            echo "align_builder layers" && docker history align_builder
+            echo "align_image layers" && docker history align_image
             echo "saving images"
-            docker save align_builder | gzip > align_builder.tar.gz
-            docker save align_image   | gzip > align_image.tar.gz
-            du -h align_builder.tar.gz
-            du -h align_image.tar.gz
+            docker save align_builder | gzip > align_builder.tar.gz && du -h align_builder.tar.gz
+            docker save align_image   | gzip > align_image.tar.gz && du -h align_image.tar.gz
 
       - save_cache:
-          key: align-v2-{{ checksum "build/Dockerfile.using-install.sh" }}-{{ checksum "install.sh" }}-{{ checksum "setup.sh" }}-{{ checksum "setup.py" }}
+          key: align-v1-{{ checksum "install.sh" }}-{{ checksum "setup.sh" }}-{{ checksum "setup.py" }}-{{ checksum "build/Dockerfile.using-install.sh" }}
           paths:
             - align_builder.tar.gz
             - align_image.tar.gz
