@@ -50,9 +50,8 @@ RUN \
     \( \
         \( -type d -a \( \
             -name test -o -name tests -o -name idle_test \
-            -o -name doc -o -name 'python-wheels' \
-            -o -name '*.dist-info' -o -name '*.egg-info' \
-            -o -name __pycache__ \
+            -o -name doc  -o -name __pycache__ \
+            -o -name 'python-wheels' -o -name '*.dist-info' \
         \) \) \
         -o \
         \( -type f -a \( \
