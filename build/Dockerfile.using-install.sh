@@ -45,7 +45,22 @@ RUN \
     && touch align/__init__.py \
     # Actual dependency installation happens here
     && source ./install.sh --deps-only \
-    # Remove everything that's not needed by PnR
+    # Trim down VENV to the essentials
+    && find $VENV -depth \
+    \( \
+        \( -type d -a \( \
+            -name test -o -name tests -o -name idle_test \
+            -o -name doc -o -name 'python-wheels' \
+            -o -name '*.dist-info' -o -name '*.egg-info' \
+            -o -name __pycache__ \
+        \) \) \
+        -o \
+        \( -type f -a \( \
+            -name '*.pyc' -o -name '*.pyo' \
+            -name '*.whl' -o -name '*.a' \
+        \) \) \
+    \) -exec rm -rf '{}' + \
+    # Remove all build dirs not needed by PnR
     && cp -r --parents $LP_DIR/lp_solve_5.5.2.5_dev_ux64 /tmp \
     && cp -r --parents $JSON/include /tmp \
     && cp -r --parents $GTEST_DIR/mybuild/lib /tmp \
