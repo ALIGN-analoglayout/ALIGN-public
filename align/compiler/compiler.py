@@ -191,9 +191,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             lef_name = attr['inst_type']
 
             if "values" in attr and (lef_name in all_lef):
-                block_name, block_args = generate_lef(
-                    lef_name, attr,
-                    primitives, design_config, uniform_height)
+                block_name, block_args = generate_lef(lef_name, attr, primitives, design_config, uniform_height)
                 #block_name_ext = block_name.replace(lef_name,'')
                 logger.debug(f"Created new lef for: {block_name} {lef_name}")
                 #Multiple instances of same module
@@ -266,6 +264,10 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
                     WriteConst(graph, result_dir, name, inoutpin, member["ports_weight"], const,stop_points)
                 WriteCap(graph, result_dir, name, design_config["unit_size_cap"])
                 check_common_centroid(graph,const_file,inoutpin)
+            elif const:
+                json_const_file = result_dir / (name + '.const.json')
+                with open(json_const_file, 'w') as outfile:
+                    json.dump(const, outfile, indent=4)
             wv.print_module(VERILOG_FP)
             generated_module.append(name)
     if len(POWER_PINS)>0:

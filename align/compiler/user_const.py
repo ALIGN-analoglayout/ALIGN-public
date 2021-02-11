@@ -34,8 +34,9 @@ class ConstraintParser:
         fp = self.input_dir / (design_name+'.const')
         fp_json = self.input_dir / (design_name+'.const.json')
         if fp_json.is_file():
-            self.block_const = json.load(fp_json)
-            logger.info(f"JSON input const file for block {design_name}")
+            logger.info(f"JSON input const file for block {design_name} {fp_json}")
+            f = open(fp_json, "r")
+            self.block_const = json.load(f)
         elif fp.is_file():
             logger.info(f"CMD-line input const file for block {design_name}")
             all_const = []
@@ -145,11 +146,13 @@ class ConstraintParser:
                 map_alias[const["name"]]=const["blocks"]
         all_const = [i for i in all_const if not i['const_name']=='CreateAlias']
         #Replace nested alias
+        if not map_alias:
+            return all_const
         for name,blocks in map_alias.items():
             for i,block in enumerate(blocks):
                 if block in map_alias:
                     blocks[i]=map_alias[block]
-                    
+        
         for const in all_const:
             if 'blocks' in const: 
                self._replace_alias(const["blocks"],map_alias)
@@ -163,7 +166,8 @@ class ConstraintParser:
                self._replace_alias(const["ports"],map_alias)
             elif 'pairs' in const:
                 for ele in const['pairs']:
-                   self._replace_alias(ele, map_alias)
+                    if isinstance(ele, str):
+                        self._replace_alias(ele, map_alias)
         return all_const
         
     def _replace_alias(self,blocks:list,map_alias):

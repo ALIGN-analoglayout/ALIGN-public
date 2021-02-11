@@ -9,10 +9,12 @@ import os
 from math import ceil
 
 from .merge_nodes import merge_nodes
-from .write_constraint import symmnet_device_pairs
+
 import logging
 import json
 logger = logging.getLogger(__name__)
+
+
 
 def WriteCap(graph,input_dir,name,unit_size_cap):
     """
@@ -40,6 +42,7 @@ def WriteCap(graph,input_dir,name,unit_size_cap):
         return
     cap_array={}
     #Change covert symmBlock const between caps to common centroid caps
+    available_cap_const = []
     for const in all_const["constraints"]:
         if const["const_name"]== "SymmBlock":
             b = [[p["block1"],p["block2"]] for p in const["pairs"] if p["type"]=="sympair"]
@@ -54,14 +57,14 @@ def WriteCap(graph,input_dir,name,unit_size_cap):
                         pair["block"]= "_".join([p1,p2])
                         del pair["block1"]
                         del pair["block2"]
-
+        if const["const_name"]== "SymmNet":
+            logger.debug("TBD update symmnet cap const")
             
-    # with open(const_path, 'w') as outfile:
-    #     json.dump(all_const, outfile, indent=4)
+    with open(const_path, 'w') as outfile:
+        json.dump(all_const, outfile, indent=4)
 
     logger.debug(f"Updating circuit graph by merging caps: {cap_array}")
     cc_cap_size={}
-    available_cap_const = []
     for array in cap_array.values():
         n_cap=[]
         cc_caps=[]
@@ -80,24 +83,10 @@ def WriteCap(graph,input_dir,name,unit_size_cap):
                 logger.debug(f"merging symmetrical caps: {arr} {cc_cap} {cc_caps} {n_cap}")
                 merge_caps(graph,cc_caps)
                 cc_cap_size[cc_cap]=n_cap
-    # updating any symmnet constraint 
-    for id,const in enumerate(all_const["constraints"]):
-        if const["const_name"]== "SymmNet":
-            net1 = const['net1']["name"]
-            net2 = const['net2']["name"]
-            existing = ""
-            removed_blocks = [block for block in const['net1']["blocks"] if net1 in graph.nodes() and block['name'] not in graph.nodes()]
-            if removed_blocks:
-                pairs,s1,s2 = symmnet_device_pairs(graph,net1,net2,existing)
-                if pairs:
-                    symmNetj = {"const_name":"SymmNet","axis_dir":"V","net1":s1,"net2":s2}
-                    all_const["constraints"][id] =symmNetj
-                else:
-                    logger.debug("skipped symmnet on net1 {net1} and net2 {}")
 
-    logger.debug("Writing constraints for remaining caps in the circuit graph")
+    logger.debug(f"Writing constraints for remaining caps in the circuit graph {name}")
     for node, attr in graph.nodes(data=True):
-        if attr['inst_type'].lower().startswith('cap')  and node not in available_cap_const:
+        if attr['inst_type'] =='cap'  and node not in available_cap_const:
             logger.debug(f"writing cap constraint for node {node} {cc_cap_size}")
             if 'cap' in attr['values'].keys():
                 size = attr['values']["cap"]*1E15

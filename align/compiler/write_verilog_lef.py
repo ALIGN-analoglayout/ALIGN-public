@@ -67,7 +67,7 @@ class WriteVerilog:
                                 ports.append(key)
                                 nets.append(value)
                     except:
-                        logger.error(f"critical ERROR: Subckt {attr['inst_type']} defination not found")
+                        logger.error(f"ERROR: Subckt {attr['inst_type']} defination not found")
 
                 else:
                     logger.error(f"No connectivity info found : {', '.join(attr['ports'])}")
@@ -322,8 +322,10 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
             if name == 'Switch_NMOS_G':
                 #TBD in celll generator
                 name = 'Switch_NMOS_B'
+            elif name == 'Switch_PMOS_G':
+                name = 'Switch_PMOS_B'
 
-            logger.debug("Generating parametric lef of: %s", block_name)
+            logger.debug(f"Generating parametric lef of:  {block_name} {name}")
             values["real_inst_type"]=attr["real_inst_type"]
             cell_gen_parameters= {
                 'primitive': name,
