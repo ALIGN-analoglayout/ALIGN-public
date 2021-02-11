@@ -262,6 +262,11 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
                 stop_points=design_setup['POWER']+design_setup['GND']+design_setup['CLOCK']
                 if name not in design_setup['NO_CONST']:
                     WriteConst(graph, result_dir, name, inoutpin, member["ports_weight"], const,stop_points)
+                elif const:
+                    json_const_file = result_dir / (name + '.const.json')
+                    with open(json_const_file, 'w') as outfile:
+                        json.dump(const, outfile, indent=4)
+
                 WriteCap(graph, result_dir, name, design_config["unit_size_cap"])
                 check_common_centroid(graph,const_file,inoutpin)
             elif const:
