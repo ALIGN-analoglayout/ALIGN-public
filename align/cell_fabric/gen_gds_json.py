@@ -100,9 +100,9 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
                         "datatype" : j[k]['GdsDatatype']['Pin'],
                         "xy" : flat_rect_to_boundary( list(map(scale,obj['rect'])))})
       if ('pin' in obj) and add_text_for_pins:
-          test_font, test_vp, test_hp, test_texttype, test_mag = 1, 1, 1, 251, 0.03
+          test_font, test_vp, test_hp, test_mag = 1, 1, 1, 0.03
           strct["elements"].append ({"type": "text", "layer" : j[k]['GdsLayerNo'],
-                        "texttype": test_texttype,
+                        "texttype": j[k]['GdsDatatype']['Pin'],
                         "presentation": JSON_Presentation( test_font, test_vp, test_hp),
                         "strans": 0,
                         "mag": test_mag,

@@ -44,10 +44,13 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
               "M4": "m4", "M5": "m5", "M6": "m6",
               "M7": "m7", "M8": "m8"}
 
-    def add_terminal( netName, layer, b, tag=None):
+    def add_terminal( netName, layer, b, tag=None, *, add_pin=False):
 
         r = [ b.LL.x, b.LL.y, b.UR.x, b.UR.y]
         terminals.append( { "netName": netName, "layer": layer, "rect": r})
+        if add_pin:
+            logger.info( f'Adding pin {netName} {layer} {r}')
+            terminals[-1]["pin"] = netName
 
         def f( gen, value, tag=None):
             # value is in 2x units
@@ -160,6 +163,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                     if nm in ["dummy_gnd_MINUS", "dummy_gnd_PLUS"]:
                         default_name = hN.Gnd.name
                     term['netName'] = fa_map.get( formal_name, default_name)
+                # Do we want to do this?
                 if 'pin' in term:
                     del term['pin']
                 if 'terminal' in term:
@@ -185,12 +189,12 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     for n in itertools.chain( hN.Nets, hN.PowerNets):
         logger.debug( f"Net: {n.name}")
 
-        def addt( obj, con, tag=None):
+        def addt( obj, con, tag=None, *, add_pin=False):
             b = con.placedBox
             if obj == n:
-                add_terminal( obj.name, con.metal, b, tag=tag)
+                add_terminal( obj.name, con.metal, b, tag=tag, add_pin=add_pin)
             else:
-                add_terminal( obj, con.metal, b, tag=tag)
+                add_terminal( obj, con.metal, b, tag=tag, add_pin=add_pin)
 
         for c in n.connected:
             if c.type == 'Block':
@@ -216,9 +220,14 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                     pass
 #                    addt( n, con)
 
+        # SMB: Add first path metal as a pin
+        #    Fix: The C++ code doesn't add terminals if they have zero area
+        #    Fix: pin duplicates are happening because of coloring flows
+        first = True
         for metal in n.path_metal:
             con = metal.MetalRect
-            add_terminal( n.name, con.metal, con.placedBox, "path_metal")
+            add_terminal( n.name, con.metal, con.placedBox, "path_metal", add_pin=first)
+            first = False
 
         for via in n.path_via:
             for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:

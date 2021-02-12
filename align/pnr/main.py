@@ -70,7 +70,7 @@ def _generate_json( *, dbfile, variant, primitive_dir, pdk_dir, output_dir, chec
         ret['python_gds_json'] = output_dir / f'{variant}.python.gds.json'
         with open( ret['json'], 'rt') as ifp:
             with open( ret['python_gds_json'], 'wt') as ofp:
-                gen_gds_json.translate( hN.name, '', 0, ifp, ofp, timestamp=None, p=cnv.pdk)
+                gen_gds_json.translate( hN.name, '', 0, ifp, ofp, timestamp=None, p=cnv.pdk, add_text_for_pins=True)
         logger.info(f"OUTPUT gds.json {ret['python_gds_json']}")
 
     return ret
@@ -210,7 +210,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
         elif file_.suffixes == ['.lef']:
             variants[variant]['lef'] = file_
         elif file_.suffixes == ['.db', '.json'] and (check or extract or gds_json):
-            logger.debug( f".db.json: {file_.name}")
+            logger.warning( f".db.json: {file_.name}")
             variants[variant].update(
                 _generate_json( dbfile = file_,
                                 variant = variant,

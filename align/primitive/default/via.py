@@ -36,6 +36,9 @@ def ColorClosure( *, info):
             color = colors[q % len(colors)]
             colored_term = deepcopy(term)
             colored_term['color'] = color
+            # Don't want duplicate pins
+            if 'pin' in colored_term:
+                del colored_term['pin']
             logger.debug( f"Adding {color}...{term}...{colored_term}") 
             return [term,colored_term]
         else:
