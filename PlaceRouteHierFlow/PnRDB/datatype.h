@@ -404,6 +404,7 @@ struct hierNode {
   vector<pair<vector<int>, Smark>> Ordering_Constraints;
   int bias_Hgraph = 0;
   int bias_Vgraph=0;
+  double Aspect_Ratio_weight = 1000;
   vector<Router_report> router_report;
   vector<Multi_connection> Multi_connections;
 
