@@ -6,7 +6,7 @@ from . import pdk
 import logging
 logger = logging.getLogger(__name__)
 
-def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_gen_tbl, timestamp=None):
+def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_gen_tbl, timestamp=None, *, add_text_for_pins=False):
   j = pdk.Pdk().load(pdkfile)
   with open(pdkfile, "rt") as fp1:
     j1 = json.load(fp1)
@@ -104,5 +104,5 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
 
   return top
 
-def translate( macro_name, exclude_pattern, pinSwitch, fp, ofile, timestamp=None, p=None):
-  json.dump(translate_data( macro_name, exclude_pattern, p.layerfile, pinSwitch, json.load(fp), {}, timestamp), ofile, indent=4)
+def translate( macro_name, exclude_pattern, pinSwitch, fp, ofile, timestamp=None, p=None, *, add_text_for_pins=False):
+  json.dump(translate_data( macro_name, exclude_pattern, p.layerfile, pinSwitch, json.load(fp), {}, timestamp, add_text_for_pins), ofile, indent=4)
