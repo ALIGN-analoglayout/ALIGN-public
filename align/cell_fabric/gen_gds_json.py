@@ -105,4 +105,4 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
   return top
 
 def translate( macro_name, exclude_pattern, pinSwitch, fp, ofile, timestamp=None, p=None, *, add_text_for_pins=False):
-  json.dump(translate_data( macro_name, exclude_pattern, p.layerfile, pinSwitch, json.load(fp), {}, timestamp, add_text_for_pins), ofile, indent=4)
+  json.dump(translate_data( macro_name, exclude_pattern, p.layerfile, pinSwitch, json.load(fp), {}, timestamp, add_text_for_pins=add_text_for_pins), ofile, indent=4)
