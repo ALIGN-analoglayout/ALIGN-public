@@ -14,6 +14,13 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
     ordering = [ (0,1), (0,3), (2,3), (2,1), (0,1)]
     return [ r[p[i]] for p in ordering for i in range(0,2)]
 
+  # from PlaceRouteHierFlow/PnRDB/WriteJSON.cpp
+  def JSON_Presentation( font, vp, hp):
+    if font < 0 or font > 3: font = 0
+    if vp < 0 or vp > 2: vp = 0
+    if hp < 0 or hp > 2: hp = 0
+    return  (font << 4) | (vp << 2) | hp
+
   # Top JSON GDS structure
   libraries = []
   top = {"header" : 600, "bgnlib" : libraries}
@@ -69,7 +76,13 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
   def exclude_based_on_name( nm):
     return pat and nm is not None and pat.match( nm)
 
+  def center_point_of_rect( r):
+      xc = (r[0]+r[2])//2
+      yc = (r[1]+r[3])//2
+      return [xc, yc]
+
   # non-vias
+
   for obj in data['terminals']:
       k = obj['layer']
       if k in via_gen_tbl: continue
@@ -86,6 +99,15 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
           strct["elements"].append ({"type": "boundary", "layer" : j[k]['GdsLayerNo'],
                         "datatype" : j[k]['GdsDatatype']['Pin'],
                         "xy" : flat_rect_to_boundary( list(map(scale,obj['rect'])))})
+      if ('pin' in obj) and add_text_for_pins:
+          test_font, test_vp, test_hp, test_texttype, test_mag = 1, 1, 1, 251, 0.03
+          strct["elements"].append ({"type": "text", "layer" : j[k]['GdsLayerNo'],
+                        "texttype": test_texttype,
+                        "presentation": JSON_Presentation( test_font, test_vp, test_hp),
+                        "strans": 0,
+                        "mag": test_mag,
+                        "string" : obj['pin'],
+                        "xy" : center_point_of_rect( list(map(scale,obj['rect'])))})
 
   # vias
   for obj in data['terminals']:
