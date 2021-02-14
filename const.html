@@ -1,0 +1,267 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How to add your own constraints: &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Upcoming documentation" href="upcoming.html" />
+    <link rel="prev" title="How to debug installation failures" href="debug.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="upcoming.html" title="Upcoming documentation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="debug.html" title="How to debug installation failures"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ALIGN 0.9 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">How to add your own constraints:</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="how-to-add-your-own-constraints">
+<h1>How to add your own constraints:<a class="headerlink" href="#how-to-add-your-own-constraints" title="Permalink to this headline">¶</a></h1>
+<p>The ALIGN flow generates symmetry constraints automatically but users can add their own constraint for better control.
+Here, are the list of constraints used in align. These constraints are applied on the blocks (instances of NMOS/PMOS/Resistor/Capacitor/Subcircuit) or on nets.
+These constraints need to be defined seperately for each of the hierachies, defined in the schematic.</p>
+<ul>
+<li><dl class="simple">
+<dt>CreateAlias:</dt><dd><p>Defines an alias for group of blocks. These aliases can be later used in the const file in place of list of blocks or nets.</p>
+<ul class="simple">
+<li><p>Example: <code class="docutils literal notranslate"><span class="pre">CreateAlias</span> <span class="pre">-blocks</span> <span class="pre">[B1,B2,B3]</span> <span class="pre">-name</span> <span class="pre">alias1</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>GroupBlocks:</dt><dd><p>We can create extra hierarchies in the design by grouping blocks. This helps in bringing the blocks closer.
+We are planning to implement placement type, such as common-centroid, interdigitated for these hierarchies.</p>
+<ul class="simple">
+<li><p>Format: <code class="docutils literal notranslate"><span class="pre">GroupBlocks</span> <span class="pre">-blocks</span> <span class="pre">&lt;list</span> <span class="pre">of</span> <span class="pre">blocks&gt;</span> <span class="pre">-name</span> <span class="pre">&lt;name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">group&gt;</span></code></p></li>
+<li><p>Example1: <code class="docutils literal notranslate"><span class="pre">GroupBlocks</span> <span class="pre">-blocks</span> <span class="pre">[B1,B2,B3]</span> <span class="pre">-name</span> <span class="pre">group1</span></code></p></li>
+<li><p>Example2: <code class="docutils literal notranslate"><span class="pre">GroupBlocks</span> <span class="pre">-blocks</span> <span class="pre">alias1</span> <span class="pre">-name</span> <span class="pre">group1</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>OrderBlocks:</dt><dd><p>Pleaces the blocks in the specified order.</p>
+<ul class="simple">
+<li><p>Format: <code class="docutils literal notranslate"><span class="pre">OrderBlocks</span> <span class="pre">-blocks</span> <span class="pre">&lt;list</span> <span class="pre">of</span> <span class="pre">blocks&gt;</span> <span class="pre">-direction</span> <span class="pre">H/V</span></code></p></li>
+<li><p>Example: <code class="docutils literal notranslate"><span class="pre">OrderBlocks</span> <span class="pre">-blocks</span> <span class="pre">alias1</span> <span class="pre">-direction</span> <span class="pre">H</span></code></p></li>
+</ul>
+<img alt="_images/OrderBlocks.PNG" src="_images/OrderBlocks.PNG" />
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>MatchBlocks:</dt><dd><p>Assigns two blocks as close as possible.</p>
+<ul class="simple">
+<li><p>Format: <code class="docutils literal notranslate"><span class="pre">MatchBlocks</span> <span class="pre">-blocks</span> <span class="pre">&lt;list</span> <span class="pre">of</span> <span class="pre">two</span> <span class="pre">blocks&gt;</span></code></p></li>
+<li><p>Example: <code class="docutils literal notranslate"><span class="pre">MatchBlocks</span> <span class="pre">-blocks</span> <span class="pre">[B1,B2]</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>HorizontalDistance:</dt><dd><p>Set the minimum horizontal distance between all blocks in the hierarchy.</p>
+<ul class="simple">
+<li><p>Format: <code class="docutils literal notranslate"><span class="pre">HorizontalDistance</span> <span class="pre">-abs_distance</span> <span class="pre">&lt;in</span> <span class="pre">nanometers&gt;</span></code></p></li>
+<li><p>Example: <code class="docutils literal notranslate"><span class="pre">HorizontalDistance</span> <span class="pre">-abs_distance</span> <span class="pre">108</span></code></p></li>
+</ul>
+<img alt="_images/HorizontalDistance.PNG" src="_images/HorizontalDistance.PNG" />
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>VerticalDistance:</dt><dd><p>Set the minimum vertical distance between all blocks in the hierarchy.</p>
+<ul class="simple">
+<li><p>Format: <code class="docutils literal notranslate"><span class="pre">VerticalDistance</span> <span class="pre">-abs_distance</span> <span class="pre">&lt;in</span> <span class="pre">nanometers&gt;</span></code></p></li>
+<li><p>Example: <code class="docutils literal notranslate"><span class="pre">VerticalDistance</span> <span class="pre">-abs_distance</span> <span class="pre">108</span></code></p></li>
+</ul>
+<img alt="_images/VerticalDistance.PNG" src="_images/VerticalDistance.PNG" />
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>BlockDistance:</dt><dd><p>Set the minimum vertical and horizontal distance between all blocks in the hierarchy.</p>
+<ul class="simple">
+<li><p>Format: <code class="docutils literal notranslate"><span class="pre">BlockDistance</span> <span class="pre">-abs_distance</span> <span class="pre">&lt;in</span> <span class="pre">nanometers&gt;</span></code></p></li>
+<li><p>Example: <code class="docutils literal notranslate"><span class="pre">BlockDistance</span> <span class="pre">-abs_distance</span> <span class="pre">108</span></code></p></li>
+</ul>
+<img alt="_images/VerticalDistance.PNG" src="_images/VerticalDistance.PNG" />
+<img alt="_images/HorizontalDistance.PNG" src="_images/HorizontalDistance.PNG" />
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>AspectRatio:</dt><dd><p>Sets the aspect ratio of hierarchy</p>
+<ul class="simple">
+<li><p>Format: <code class="docutils literal notranslate"><span class="pre">AspectRatio</span> <span class="pre">-weight</span> <span class="pre">&lt;value&gt;</span></code></p></li>
+<li><p>Example: <code class="docutils literal notranslate"><span class="pre">AspectRatio</span> <span class="pre">-weight</span> <span class="pre">500</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>SymmetricBlocks:</dt><dd><p>Placed pairs of modules symmetrically along a vertical or horizontal symmetry axis.
+In case of one block in the pair, the block gets placed self-symmetrically.</p>
+<ul class="simple">
+<li><p>Format: <code class="docutils literal notranslate"><span class="pre">SymmetricBlocks</span> <span class="pre">-pairs</span> <span class="pre">&lt;list</span> <span class="pre">of</span> <span class="pre">pairs&gt;</span> <span class="pre">-direction</span> <span class="pre">H/V</span></code></p></li>
+<li><p>Example: <code class="docutils literal notranslate"><span class="pre">SymmetricBlocks</span> <span class="pre">-pairs</span> <span class="pre">[alias1,[B3],[B4,B5]]</span> <span class="pre">-direction</span> <span class="pre">V</span></code></p></li>
+</ul>
+<img alt="_images/SymmetricBlocks.PNG" src="_images/SymmetricBlocks.PNG" />
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>AlignBlocks:</dt><dd><p>Aligns blocks horizontally or vertically</p>
+<ul class="simple">
+<li><p>Format: <code class="docutils literal notranslate"><span class="pre">AlignBlocks</span> <span class="pre">-blocks</span> <span class="pre">&lt;list</span> <span class="pre">of</span> <span class="pre">blocks&gt;</span> <span class="pre">-direction</span> <span class="pre">H/V</span></code></p></li>
+<li><p>Example: <code class="docutils literal notranslate"><span class="pre">AlignBlocks</span> <span class="pre">-blocks</span> <span class="pre">-alias1</span> <span class="pre">-direction</span> <span class="pre">V</span></code></p></li>
+</ul>
+<img alt="_images/AlignBlocks.PNG" src="_images/AlignBlocks.PNG" />
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>GroupCaps:</dt><dd><p>Common centroid capacitor placement and routing. Adds an extra level of hierarchy for the group of capacitors.</p>
+<ul class="simple">
+<li><p>Format: <code class="docutils literal notranslate"><span class="pre">GroupCaps</span> <span class="pre">-blocks</span> <span class="pre">&lt;list</span> <span class="pre">of</span> <span class="pre">blocks&gt;</span> <span class="pre">-name</span> <span class="pre">(optional)</span> <span class="pre">&lt;name</span> <span class="pre">of</span> <span class="pre">cap</span> <span class="pre">hierarchy&gt;</span> <span class="pre">-unit_cap</span> <span class="pre">&lt;unit</span> <span class="pre">capacitor</span> <span class="pre">name&quot;</span> <span class="pre">-num_units</span> <span class="pre">&lt;list</span> <span class="pre">of</span> <span class="pre">units</span> <span class="pre">of</span> <span class="pre">each</span> <span class="pre">capacitor&gt;</span> <span class="pre">-dummy</span> <span class="pre">True/False</span></code></p></li>
+<li><p>Example: <code class="docutils literal notranslate"><span class="pre">GroupCaps</span> <span class="pre">-blocks</span> <span class="pre">[c1,c2,c3]</span> <span class="pre">-name</span> <span class="pre">c1_c2_c3</span> <span class="pre">-unit_cap</span> <span class="pre">Cap_12f</span> <span class="pre">-num_units</span> <span class="pre">[1,2,4]</span> <span class="pre">-dummy</span> <span class="pre">False</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>NetConst:</dt><dd><p>Adds constraints on each of the nets in the list.</p>
+<ul class="simple">
+<li><p>Format: <code class="docutils literal notranslate"><span class="pre">NetConst</span> <span class="pre">-nets</span> <span class="pre">&lt;list</span> <span class="pre">of</span> <span class="pre">nets&gt;</span> <span class="pre">-shield</span> <span class="pre">(optional)</span> <span class="pre">None/vss</span> <span class="pre">-criticality</span> <span class="pre">(optional)</span> <span class="pre">&lt;value&gt;</span></code></p></li>
+<li><p>Example: <code class="docutils literal notranslate"><span class="pre">NetConst</span> <span class="pre">-nets</span> <span class="pre">[n1,n2,n3]</span> <span class="pre">-shield</span> <span class="pre">vss</span> <span class="pre">-criticality</span> <span class="pre">200</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>PortLocation:</dt><dd><p>Set the terminal location. This constraint only works in top level. Currently, there are 9 locations:  TL, TC, TR; RT, RC, RB; BL, BC, BR; LB, LC, LT.
+T (top), L (left), C (center), R (right), B (bottom).</p>
+<ul class="simple">
+<li><p>Format: <code class="docutils literal notranslate"><span class="pre">PortLocation</span> <span class="pre">-ports</span> <span class="pre">&lt;list</span> <span class="pre">of</span> <span class="pre">ports&gt;</span> <span class="pre">-location</span> <span class="pre">&lt;TL/TC/...&gt;</span></code></p></li>
+<li><p>Example: <code class="docutils literal notranslate"><span class="pre">PortLocation</span> <span class="pre">-ports</span> <span class="pre">[P1,P2,P3]</span> <span class="pre">-location</span> <span class="pre">TL</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>SymmetricNets:</dt><dd><p>Routes two nets in mirror symmetric fashion.</p>
+<ul class="simple">
+<li><p>Format: <code class="docutils literal notranslate"><span class="pre">SymmetricNets</span> <span class="pre">-net1</span> <span class="pre">&lt;</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">net1&gt;</span> <span class="pre">-net2</span> <span class="pre">&lt;name</span> <span class="pre">of</span> <span class="pre">net2&gt;</span> <span class="pre">-pins1</span> <span class="pre">&lt;list</span> <span class="pre">of</span> <span class="pre">pins</span> <span class="pre">of</span> <span class="pre">net1&gt;</span> <span class="pre">-pins2</span> <span class="pre">&lt;list</span> <span class="pre">of</span> <span class="pre">nets</span> <span class="pre">in</span> <span class="pre">same</span> <span class="pre">order</span> <span class="pre">as</span> <span class="pre">pins1&gt;</span> <span class="pre">-direction</span> <span class="pre">H/V</span></code></p></li>
+<li><p>Example: <code class="docutils literal notranslate"><span class="pre">SymmetricNets</span> <span class="pre">-net1</span> <span class="pre">neta</span> <span class="pre">-net2</span> <span class="pre">netb</span> <span class="pre">-pins1</span> <span class="pre">[B1/a,B2/a]</span> <span class="pre">-pins2</span> <span class="pre">[B1/b,B2/b]</span> <span class="pre">-direction</span> <span class="pre">V</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>MultiConnection:</dt><dd><p>Uses multiple parallel wires to route these nets.</p>
+<ul class="simple">
+<li><p>Format: <code class="docutils literal notranslate"><span class="pre">MultiConnection</span> <span class="pre">-nets</span> <span class="pre">&lt;list</span> <span class="pre">of</span> <span class="pre">nets&gt;</span> <span class="pre">-multiplier</span> <span class="pre">&lt;value&gt;</span></code></p></li>
+<li><p>Example: <code class="docutils literal notranslate"><span class="pre">MultiConnection</span> <span class="pre">-nets</span> <span class="pre">[n1,n2]</span> <span class="pre">-multiplier</span> <span class="pre">5</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="simple">
+<dt>Using JSON format as input:</dt><dd><p>ALIGN can also take JSON format input of the constraints. There is direct translation from cmdline format to JSON format.</p>
+<ul class="simple">
+<li><p>Format (cmd): <code class="docutils literal notranslate"><span class="pre">CreateAlias</span> <span class="pre">-blocks</span> <span class="pre">[B1,B2,B3]</span> <span class="pre">-name</span> <span class="pre">alias1</span></code></p></li>
+<li><p>Format (JSON): <code class="docutils literal notranslate"><span class="pre">&quot;CreateAlias&quot;:</span> <span class="pre">{</span> <span class="pre">&quot;blocks&quot;:</span> <span class="pre">[&quot;B1&quot;,&quot;B2&quot;,&quot;B3&quot;],</span> <span class="pre">&quot;name&quot;</span>&#160; <span class="pre">:</span> <span class="pre">&quot;alias1&quot;}</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="debug.html"
+                        title="previous chapter">How to debug installation failures</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="upcoming.html"
+                        title="next chapter">Upcoming documentation</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/const.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="upcoming.html" title="Upcoming documentation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="debug.html" title="How to debug installation failures"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ALIGN 0.9 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">How to add your own constraints:</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, ALIGN team.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+    </div>
+  </body>
+</html>

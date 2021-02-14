@@ -1,0 +1,127 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>align.primitive.default.via &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/classic.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">align.primitive.default.via</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for align.primitive.default.via</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ViaArrayGenerator"><a class="viewcode-back" href="../../../../align.primitive.default.html#align.primitive.default.via.ViaArrayGenerator">[docs]</a><span class="k">def</span> <span class="nf">ViaArrayGenerator</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">WidthX</span><span class="p">,</span> <span class="n">WidthY</span><span class="p">,</span> <span class="n">SpaceX</span><span class="p">,</span> <span class="n">SpaceY</span><span class="p">,</span> <span class="n">NumX</span><span class="p">,</span> <span class="n">NumY</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;ViaArrayGenerator: </span><span class="si">{</span><span class="n">term</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">rect</span> <span class="o">=</span> <span class="n">term</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">]</span>
+    <span class="n">xstart</span> <span class="o">=</span> <span class="p">(</span> <span class="n">rect</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">rect</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="p">)</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="n">WidthX</span> <span class="o">*</span> <span class="n">NumX</span> <span class="o">+</span> <span class="n">SpaceX</span> <span class="o">*</span> <span class="p">(</span><span class="n">NumX</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">ystart</span> <span class="o">=</span> <span class="p">(</span> <span class="n">rect</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">rect</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="p">)</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="n">WidthY</span> <span class="o">*</span> <span class="n">NumY</span> <span class="o">+</span> <span class="n">SpaceY</span> <span class="o">*</span> <span class="p">(</span><span class="n">NumY</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">NumX</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span>  <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">NumY</span><span class="p">):</span>
+            <span class="n">new_term</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">term</span><span class="p">)</span>
+            <span class="n">new_rect</span> <span class="o">=</span> <span class="p">[</span><span class="n">xstart</span> <span class="o">+</span> <span class="n">i</span><span class="o">*</span><span class="p">(</span><span class="n">WidthX</span> <span class="o">+</span> <span class="n">SpaceX</span><span class="p">),</span>
+                        <span class="n">ystart</span> <span class="o">+</span> <span class="n">j</span><span class="o">*</span><span class="p">(</span><span class="n">WidthY</span> <span class="o">+</span> <span class="n">SpaceY</span><span class="p">),</span>
+                        <span class="n">xstart</span> <span class="o">+</span> <span class="n">i</span><span class="o">*</span><span class="p">(</span><span class="n">WidthX</span> <span class="o">+</span> <span class="n">SpaceX</span><span class="p">)</span> <span class="o">+</span> <span class="n">WidthX</span><span class="p">,</span>
+                        <span class="n">ystart</span> <span class="o">+</span> <span class="n">j</span><span class="o">*</span><span class="p">(</span><span class="n">WidthY</span> <span class="o">+</span> <span class="n">SpaceY</span><span class="p">)</span> <span class="o">+</span> <span class="n">WidthY</span><span class="p">]</span>
+            <span class="n">new_term</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_rect</span>
+            <span class="k">yield</span> <span class="n">new_term</span></div>
+
+<div class="viewcode-block" id="ColorClosure"><a class="viewcode-back" href="../../../../align.primitive.default.html#align.primitive.default.via.ColorClosure">[docs]</a><span class="k">def</span> <span class="nf">ColorClosure</span><span class="p">(</span> <span class="o">*</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">func</span><span class="p">(</span> <span class="n">term</span><span class="p">):</span>
+        <span class="n">colors</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;Color&#39;</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">colors</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;Direction&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;H&#39;</span><span class="p">:</span>
+            <span class="n">c2</span> <span class="o">=</span> <span class="p">(</span><span class="n">term</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">term</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">][</span><span class="mi">3</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;Direction&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;V&#39;</span><span class="p">:</span>
+            <span class="n">c2</span> <span class="o">=</span> <span class="p">(</span><span class="n">term</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">term</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;Direction&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Convert 2x to grid</span>
+        <span class="p">(</span><span class="n">q</span><span class="p">,</span><span class="n">r</span><span class="p">)</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span> <span class="n">c2</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;Pitch&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">r</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="n">q</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">colors</span><span class="p">)]</span>
+            <span class="n">colored_term</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">term</span><span class="p">)</span>
+            <span class="n">colored_term</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">color</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Adding </span><span class="si">{</span><span class="n">color</span><span class="si">}</span><span class="s2">...</span><span class="si">{</span><span class="n">term</span><span class="si">}</span><span class="s2">...</span><span class="si">{</span><span class="n">colored_term</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> 
+            <span class="k">return</span> <span class="p">[</span><span class="n">term</span><span class="p">,</span><span class="n">colored_term</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Wire to color is offgrid: </span><span class="si">{</span><span class="n">term</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">c2</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">q</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">r</span><span class="si">}</span><span class="s2"> pitch </span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">term</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">func</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">align.primitive.default.via</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, ALIGN team.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+    </div>
+  </body>
+</html>

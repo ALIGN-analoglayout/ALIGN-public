@@ -1,18 +1,18 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>align.cell_fabric.canvas &#8212; ALIGN 0.9 documentation</title>
-    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
@@ -27,7 +27,8 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">align.cell_fabric.canvas</a></li> 
       </ul>
     </div>  
 
@@ -159,7 +160,7 @@
                 <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39; &#39;</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">started</span><span class="p">:</span>
                         <span class="c1"># close off wire</span>
-<span class="c1">#                        assert nm is not None</span>
+                        <span class="c1"># assert nm is not None</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">addWireAndMultiViaSet</span><span class="p">(</span> <span class="n">nm</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">m2</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">[</span> <span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">via1s</span><span class="p">),</span> <span class="p">(</span><span class="n">v2</span><span class="p">,</span> <span class="n">via2s</span><span class="p">)])</span>
                         <span class="n">started</span> <span class="o">=</span> <span class="kc">False</span>
                         <span class="n">nm</span> <span class="o">=</span> <span class="kc">None</span>
@@ -195,7 +196,7 @@
                 <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39; &#39;</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">started</span><span class="p">:</span>
                         <span class="c1"># close off wire</span>
-<span class="c1">#                        assert nm is not None</span>
+                        <span class="c1"># assert nm is not None</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">addWireAndMultiViaSet</span><span class="p">(</span> <span class="n">nm</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">m3</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="p">[</span> <span class="p">(</span><span class="n">v2</span><span class="p">,</span> <span class="n">via2s</span><span class="p">)])</span>
                         <span class="n">started</span> <span class="o">=</span> <span class="kc">False</span>
                         <span class="n">nm</span> <span class="o">=</span> <span class="kc">None</span>
@@ -250,23 +251,21 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">trStack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">trStack</span> <span class="o">!=</span> <span class="p">[]</span></div>
 
-<div class="viewcode-block" id="Canvas.removeDuplicates"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.removeDuplicates">[docs]</a>    <span class="k">def</span> <span class="nf">removeDuplicates</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rd</span> <span class="o">=</span> <span class="n">RemoveDuplicates</span><span class="p">(</span> <span class="bp">self</span><span class="p">)</span>
+<div class="viewcode-block" id="Canvas.removeDuplicates"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.removeDuplicates">[docs]</a>    <span class="k">def</span> <span class="nf">removeDuplicates</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">nets_allowed_to_be_open</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rd</span> <span class="o">=</span> <span class="n">RemoveDuplicates</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">nets_allowed_to_be_open</span><span class="o">=</span><span class="n">nets_allowed_to_be_open</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">remove_duplicates</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="Canvas.gen_data"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.gen_data">[docs]</a>    <span class="k">def</span> <span class="nf">gen_data</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">draw_grid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">run_drc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">run_pex</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Canvas.gen_data"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.gen_data">[docs]</a>    <span class="k">def</span> <span class="nf">gen_data</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">draw_grid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">run_drc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">run_pex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nets_allowed_to_be_open</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">postprocess</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">computeBbox</span><span class="p">()</span>
 
         <span class="n">data</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;bbox&#39;</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span><span class="o">.</span><span class="n">toList</span><span class="p">(),</span>
                  <span class="s1">&#39;globalRoutes&#39;</span> <span class="p">:</span> <span class="p">[],</span>
                  <span class="s1">&#39;globalRouteGrid&#39;</span> <span class="p">:</span> <span class="p">[],</span>
-                 <span class="s1">&#39;terminals&#39;</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">removeDuplicates</span><span class="p">()}</span>
+                 <span class="s1">&#39;terminals&#39;</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">removeDuplicates</span><span class="p">(</span><span class="n">nets_allowed_to_be_open</span><span class="o">=</span><span class="n">nets_allowed_to_be_open</span><span class="p">)}</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subinsts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">data</span><span class="p">[</span><span class="s1">&#39;subinsts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">inst</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">parameters</span> <span class="k">for</span> <span class="n">inst</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subinsts</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-
-        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;terminals&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">postprocessor</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;terminals&#39;</span><span class="p">])</span>
-
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">draw_grid</span><span class="p">:</span>
@@ -279,10 +278,13 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">pex</span> <span class="o">=</span> <span class="n">ParasiticExtraction</span><span class="p">(</span> <span class="bp">self</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">pex</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 
+        <span class="k">if</span> <span class="n">postprocess</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;terminals&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">postprocessor</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;terminals&#39;</span><span class="p">])</span>
+
         <span class="k">return</span> <span class="n">data</span></div>
 
-<div class="viewcode-block" id="Canvas.writeJSON"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.writeJSON">[docs]</a>    <span class="k">def</span> <span class="nf">writeJSON</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">draw_grid</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gen_data</span><span class="p">(</span> <span class="n">draw_grid</span><span class="o">=</span><span class="n">draw_grid</span><span class="p">)</span>
+<div class="viewcode-block" id="Canvas.writeJSON"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.writeJSON">[docs]</a>    <span class="k">def</span> <span class="nf">writeJSON</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">draw_grid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">run_drc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">run_pex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">postprocess</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gen_data</span><span class="p">(</span> <span class="n">draw_grid</span><span class="o">=</span><span class="n">draw_grid</span><span class="p">,</span> <span class="n">run_drc</span><span class="o">=</span><span class="n">run_drc</span><span class="p">,</span> <span class="n">run_pex</span><span class="o">=</span><span class="n">run_pex</span><span class="p">,</span> <span class="n">postprocess</span><span class="o">=</span><span class="n">postprocess</span><span class="p">)</span>
         <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span> <span class="n">data</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">data</span></div>
 
@@ -340,7 +342,7 @@
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;loadPDK() must be run before checkDesignRules()&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">rd</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;removeDuplicates() must be run before checkDesignRules()&quot;</span>
         <span class="n">errors</span> <span class="o">=</span> <span class="n">DesignRuleCheck</span><span class="p">(</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
-        <span class="k">assert</span> <span class="n">errors</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{errors}</span><span class="s2"> DRC Errors! Exiting&quot;</span></div>
+        <span class="k">assert</span> <span class="n">errors</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="n">errors</span><span class="si">}</span><span class="s2"> DRC Errors! Exiting&quot;</span></div>
 
 <div class="viewcode-block" id="Canvas.extractParasitics"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.extractParasitics">[docs]</a>    <span class="k">def</span> <span class="nf">extractParasitics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;loadPDK() must be run before extractParasitics()&quot;</span>
@@ -352,6 +354,7 @@
         <span class="k">return</span> <span class="n">routing_collateral</span><span class="o">.</span><span class="n">gen</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">dirname</span><span class="p">)</span></div></div>
 </pre></div>
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -366,7 +369,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -381,12 +384,13 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">align.cell_fabric.canvas</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, ALIGN team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
     </div>
   </body>
 </html>

@@ -1,18 +1,18 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>align.cell_fabric.pdk &#8212; ALIGN 0.9 documentation</title>
-    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
@@ -27,7 +27,8 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">align.cell_fabric.pdk</a></li> 
       </ul>
     </div>  
 
@@ -48,7 +49,7 @@
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">ret</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">ret</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{key}</span><span class="s2">: </span><span class="si">{value}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">ret</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
         <span class="k">return</span> <span class="n">ret</span>
 
     <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
@@ -77,8 +78,8 @@
             <span class="n">j</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
         <span class="k">assert</span> <span class="s1">&#39;Abstraction&#39;</span> <span class="ow">in</span> <span class="n">j</span>
         <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">j</span><span class="p">[</span><span class="s1">&#39;Abstraction&#39;</span><span class="p">]:</span>
-            <span class="k">assert</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;Layer&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Cannot have multiple </span><span class="si">{layer[&#39;Layer&#39;]}</span><span class="s2"> layers with same name&quot;</span>
-            <span class="k">assert</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;Layer&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isupper</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;Layer name </span><span class="si">{layer[&#39;Layer&#39;]}</span><span class="s2"> must start with capitalized letter&quot;</span>
+            <span class="k">assert</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;Layer&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Cannot have multiple </span><span class="si">{</span><span class="n">layer</span><span class="p">[</span><span class="s1">&#39;Layer&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> layers with same name&quot;</span>
+            <span class="k">assert</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;Layer&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isupper</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;Layer name </span><span class="si">{</span><span class="n">layer</span><span class="p">[</span><span class="s1">&#39;Layer&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> must start with capitalized letter&quot;</span>
             <span class="k">if</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;Layer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">addMetal</span><span class="p">(</span><span class="o">**</span><span class="n">layer</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;Layer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;V&#39;</span><span class="p">):</span>
@@ -88,16 +89,19 @@
         <span class="k">return</span> <span class="bp">self</span></div>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_check</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Entry </span><span class="si">{kwargs}</span><span class="s2"> missing one or more of </span><span class="si">{parameters}</span><span class="s2">&quot;</span>
-        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">parameters</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="sa">f</span><span class="s2">&quot;Entry </span><span class="si">{kwargs}</span><span class="s2"> has one or more spurious entries (Needs only </span><span class="si">{parameters}</span><span class="s2">)&quot;</span>
+    <span class="k">def</span> <span class="nf">_check</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">optional_parameters</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Entry </span><span class="si">{</span><span class="n">kwargs</span><span class="si">}</span><span class="s2"> missing one or more of </span><span class="si">{</span><span class="n">parameters</span><span class="si">}</span><span class="s2">&quot;</span>
+        
 
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span> <span class="p">(</span><span class="n">x</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">x</span> <span class="ow">in</span> <span class="n">optional_parameters</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="sa">f</span><span class="s2">&quot;Entry </span><span class="si">{</span><span class="n">kwargs</span><span class="si">}</span><span class="s2"> has one or more spurious entries (Needs only </span><span class="si">{</span><span class="n">parameters</span><span class="si">}</span><span class="s2">)&quot;</span>
+        
     <span class="k">def</span> <span class="nf">_add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="c1"># Guarantee one is to one mapping between parameters &amp; kwargs</span>
         <span class="n">layername</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;Layer&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">layername</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s1">&#39;NA&#39;</span> <span class="k">else</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 
 <div class="viewcode-block" id="Pdk.addMetal"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.pdk.Pdk.addMetal">[docs]</a>    <span class="k">def</span> <span class="nf">addMetal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">optional_params</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;AdjacentAttacker&#39;</span><span class="p">,</span><span class="s1">&#39;Space&#39;</span><span class="p">,</span><span class="s1">&#39;Stop_point&#39;</span><span class="p">,</span><span class="s1">&#39;Stop_pitch&#39;</span><span class="p">,</span><span class="s1">&#39;Stop_offset&#39;</span><span class="p">]</span>
         <span class="n">params</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Layer&#39;</span><span class="p">,</span>
                   <span class="s1">&#39;GdsLayerNo&#39;</span><span class="p">,</span>
                   <span class="s1">&#39;GdsDatatype&#39;</span><span class="p">,</span>
@@ -112,38 +116,40 @@
                   <span class="s1">&#39;UnitC&#39;</span><span class="p">,</span>
                   <span class="s1">&#39;UnitCC&#39;</span><span class="p">,</span>
                   <span class="s1">&#39;UnitR&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_check</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">optional_params</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="c1"># Attributes that need additional processing</span>
         <span class="c1"># 0. Dimensions must be integers or None. Pitch &amp; Width must be even.</span>
         <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">if</span> <span class="n">y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> \
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="nb">int</span><span class="p">)</span> \
             <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">params</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span> <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">),</span> \
-            <span class="sa">f</span><span class="s2">&quot;One or more of </span><span class="si">{params[5:10]}</span><span class="s2"> not an integer in </span><span class="si">{kwargs}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;One or more of </span><span class="si">{</span><span class="n">params</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span><span class="si">}</span><span class="s2"> not an integer in </span><span class="si">{</span><span class="n">kwargs</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">all</span><span class="p">(</span><span class="n">y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">y</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">])</span> \
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> \
             <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">params</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span> <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">),</span> \
-            <span class="sa">f</span><span class="s2">&quot;One or more of </span><span class="si">{params[4:6]}</span><span class="s2"> in </span><span class="si">{kwargs}</span><span class="s2"> not a multiple of two&quot;</span>
-        <span class="c1"># 1. Pitch, Width, MinL, MaxL, EndToEnd of type list</span>
-        <span class="n">list_params</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">5</span><span class="p">:]</span>
-        <span class="n">ll</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">list_params</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">param</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">param</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="n">kwargs</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">param</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">ll</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">param</span><span class="p">]))</span>
-        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">ll</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;All lists in </span><span class="si">{kwargs}</span><span class="s2"> must of be same length&quot;</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ll</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">ll</span> <span class="o">=</span> <span class="n">ll</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-            <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">list_params</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">param</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
-                    <span class="n">kwargs</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">kwargs</span><span class="p">[</span><span class="n">param</span><span class="p">]]</span> <span class="o">*</span> <span class="n">ll</span>
+            <span class="sa">f</span><span class="s2">&quot;One or more of </span><span class="si">{</span><span class="n">params</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">kwargs</span><span class="si">}</span><span class="s2"> not a multiple of two&quot;</span>
+        <span class="c1"># # Disabled the check below as lists might be of different length for non-uniform metal templates</span>
+        <span class="c1"># # 1. Pitch, Width, MinL, MaxL, EndToEnd of type list</span>
+        <span class="c1"># list_params = [&#39;Pitch&#39;, &#39;Width&#39;, &#39;MinL&#39;, &#39;MaxL&#39;, &#39;EndToEnd&#39;, &#39;UnitC&#39;, &#39;UnitCC&#39;, &#39;UnitR&#39;]</span>
+        <span class="c1"># ll = set()</span>
+        <span class="c1"># for param in list_params:</span>
+        <span class="c1">#     if isinstance(kwargs[param], list):</span>
+        <span class="c1">#         if len(kwargs[param]) == 1:</span>
+        <span class="c1">#             kwargs[param] = kwargs[param][0]</span>
+        <span class="c1">#         else:</span>
+        <span class="c1">#             ll.add(len(kwargs[param]))</span>
+        <span class="c1"># assert len(ll) &lt;= 1, f&quot;All lists in {kwargs} must of be same length&quot;</span>
+        <span class="c1"># if len(ll) == 1:</span>
+        <span class="c1">#     ll = ll.pop()</span>
+        <span class="c1">#     for param in list_params:</span>
+        <span class="c1">#         if not isinstance(kwargs[param], list):</span>
+        <span class="c1">#             kwargs[param] = [kwargs[param]] * ll</span>
         <span class="c1"># 2. Cast direction must be lowercase &amp; ensure it is either v or h</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;Direction&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;Direction&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-        <span class="k">assert</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;Direction&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Invalid Direction </span><span class="si">{kwargs[&#39;Direction&#39;]}</span><span class="s2"> in </span><span class="si">{kwargs}</span><span class="s2">&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_add</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="k">assert</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;Direction&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Invalid Direction </span><span class="si">{</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;Direction&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">kwargs</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add</span><span class="p">(</span><span class="n">params</span> <span class="o">+</span> <span class="n">optional_params</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Pdk.addVia"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.pdk.Pdk.addVia">[docs]</a>    <span class="k">def</span> <span class="nf">addVia</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">optional_params</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ViaCut&#39;</span><span class="p">]</span>
         <span class="n">params</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Layer&#39;</span><span class="p">,</span>
                   <span class="s1">&#39;GdsLayerNo&#39;</span><span class="p">,</span>
                   <span class="s1">&#39;GdsDatatype&#39;</span><span class="p">,</span>
@@ -156,17 +162,15 @@
                   <span class="s1">&#39;VencA_H&#39;</span><span class="p">,</span>
                   <span class="s1">&#39;VencP_L&#39;</span><span class="p">,</span>
                   <span class="s1">&#39;VencP_H&#39;</span><span class="p">,</span>
-                  <span class="s1">&#39;MinNo&#39;</span><span class="p">,</span>
-                  <span class="c1">#&#39;DesignRules&#39;,</span>
                   <span class="s1">&#39;R&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_check</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">optional_params</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="c1"># Attributes that need additional processing</span>
         <span class="c1"># 0. Dimensions</span>
-        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="nb">int</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">params</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">7</span><span class="p">]),</span> <span class="sa">f</span><span class="s2">&quot;One or more of </span><span class="si">{params[3:7]}</span><span class="s2"> not an integer in </span><span class="si">{kwargs}</span><span class="s2">&quot;</span>
-        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">params</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">7</span><span class="p">]),</span> <span class="sa">f</span><span class="s2">&quot;One or more of </span><span class="si">{params[4:7]}</span><span class="s2"> in </span><span class="si">{kwargs}</span><span class="s2"> not a multiple of two&quot;</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="nb">int</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">params</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">7</span><span class="p">]),</span> <span class="sa">f</span><span class="s2">&quot;One or more of </span><span class="si">{</span><span class="n">params</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span><span class="si">}</span><span class="s2"> not an integer in </span><span class="si">{</span><span class="n">kwargs</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">params</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">7</span><span class="p">]),</span> <span class="sa">f</span><span class="s2">&quot;One or more of </span><span class="si">{</span><span class="n">params</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">kwargs</span><span class="si">}</span><span class="s2"> not a multiple of two&quot;</span>
         <span class="c1"># 1. Metal Stack</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;Stack&#39;</span><span class="p">],</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;Stack&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Parameter &#39;Stack&#39;: </span><span class="si">{kwargs[&#39;Stack&#39;]}</span><span class="s2"> must be a list of size 2&quot;</span>
-        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;Stack&#39;</span><span class="p">]),</span> <span class="sa">f</span><span class="s2">&quot;One or more of metals </span><span class="si">{kwargs[&#39;Stack&#39;]}</span><span class="s2"> not yet defined.&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;Stack&#39;</span><span class="p">],</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;Stack&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Parameter &#39;Stack&#39;: </span><span class="si">{</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;Stack&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> must be a list of size 2&quot;</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;Stack&#39;</span><span class="p">]),</span> <span class="sa">f</span><span class="s2">&quot;One or more of metals </span><span class="si">{</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;Stack&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> not yet defined.&quot;</span>
         <span class="c1"># 2. DesignRules</span>
         <span class="c1"># TODO: Figure out if we should be specifying positives or negatives</span>
         <span class="c1"># if isinstance(kwargs[&#39;DesignRules&#39;], list):</span>
@@ -186,7 +190,7 @@
         <span class="k">return</span> <span class="n">layer_stack</span></div>
 
 <div class="viewcode-block" id="Pdk.get_lef_exclude"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.pdk.Pdk.get_lef_exclude">[docs]</a>    <span class="k">def</span> <span class="nf">get_lef_exclude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">{</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">}</span></div>
+        <span class="k">return</span> <span class="p">{</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;V&#39;</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">}</span></div>
 
 <div class="viewcode-block" id="Pdk.get_gds_map"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.pdk.Pdk.get_gds_map">[docs]</a>    <span class="k">def</span> <span class="nf">get_gds_map</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="s1">&#39;LayerNo&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="s1">&#39;LayerNo&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">x</span><span class="p">]}</span></div>
@@ -219,6 +223,7 @@
 
 </pre></div>
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -233,7 +238,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -248,12 +253,13 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">align.cell_fabric.pdk</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, ALIGN team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
     </div>
   </body>
 </html>

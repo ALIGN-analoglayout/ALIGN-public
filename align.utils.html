@@ -1,18 +1,18 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>align.utils package &#8212; ALIGN 0.9 documentation</title>
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -32,7 +32,8 @@
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">ALIGN 0.9 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="modules.html" >align</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="align.html" accesskey="U">align package</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="align.html" accesskey="U">align package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">align.utils package</a></li> 
       </ul>
     </div>  
 
@@ -48,17 +49,44 @@
 </div>
 <div class="section" id="module-align.utils.gds2png">
 <span id="align-utils-gds2png-module"></span><h2>align.utils.gds2png module<a class="headerlink" href="#module-align.utils.gds2png" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="align.utils.gds2png.generate_png">
-<code class="sig-prename descclassname">align.utils.gds2png.</code><code class="sig-name descname">generate_png</code><span class="sig-paren">(</span><em class="sig-param">working_dir</em>, <em class="sig-param">variant</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/utils/gds2png.html#generate_png"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.utils.gds2png.generate_png" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">align.utils.gds2png.</code><code class="sig-name descname">generate_png</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">working_dir</span></em>, <em class="sig-param"><span class="n">variant</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/utils/gds2png.html#generate_png"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.utils.gds2png.generate_png" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
 <div class="section" id="module-align.utils.logging">
 <span id="align-utils-logging-module"></span><h2>align.utils.logging module<a class="headerlink" href="#module-align.utils.logging" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py class">
+<dt id="align.utils.logging.StreamLogger">
+<em class="property">class </em><code class="sig-prename descclassname">align.utils.logging.</code><code class="sig-name descname">StreamLogger</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">level</span><span class="o">=</span><span class="default_value">'INFO'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/utils/logging.html#StreamLogger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.utils.logging.StreamLogger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Stream object that redirects writes to logger</p>
+<dl class="py method">
+<dt id="align.utils.logging.StreamLogger.flush">
+<code class="sig-name descname">flush</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/utils/logging.html#StreamLogger.flush"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.utils.logging.StreamLogger.flush" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.utils.logging.StreamLogger.write">
+<code class="sig-name descname">write</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">buf</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/utils/logging.html#StreamLogger.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.utils.logging.StreamLogger.write" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
 <dt id="align.utils.logging.configure_logging">
 <code class="sig-prename descclassname">align.utils.logging.</code><code class="sig-name descname">configure_logging</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/utils/logging.html#configure_logging"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.utils.logging.configure_logging" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.utils.logging.get_loglevels">
+<code class="sig-prename descclassname">align.utils.logging.</code><code class="sig-name descname">get_loglevels</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/utils/logging.html#get_loglevels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.utils.logging.get_loglevels" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.utils.logging.reconfigure_loglevels">
+<code class="sig-prename descclassname">align.utils.logging.</code><code class="sig-name descname">reconfigure_loglevels</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_level</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">console_level</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/utils/logging.html#reconfigure_loglevels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.utils.logging.reconfigure_loglevels" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -68,6 +96,7 @@
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -103,7 +132,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -122,12 +151,13 @@
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">ALIGN 0.9 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="modules.html" >align</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="align.html" >align package</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="align.html" >align package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">align.utils package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, ALIGN team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
     </div>
   </body>
 </html>

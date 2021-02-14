@@ -1,18 +1,18 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>align.cell_fabric.gen_lef &#8212; ALIGN 0.9 documentation</title>
-    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
@@ -27,7 +27,8 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">align.cell_fabric.gen_lef</a></li> 
       </ul>
     </div>  
 
@@ -42,7 +43,7 @@
 <span class="kn">import</span> <span class="nn">collections</span>
 
 
-<div class="viewcode-block" id="gen_lef_data"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.gen_lef.gen_lef_data">[docs]</a><span class="k">def</span> <span class="nf">gen_lef_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">macro_name</span><span class="p">,</span> <span class="n">cell_pin</span><span class="p">):</span>
+<div class="viewcode-block" id="gen_lef_data"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.gen_lef.gen_lef_data">[docs]</a><span class="k">def</span> <span class="nf">gen_lef_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">macro_name</span><span class="p">,</span> <span class="n">cell_pin</span><span class="p">,</span> <span class="n">bodyswitch</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">s</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%.4f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="mf">10000.0</span><span class="p">)</span>
 
@@ -58,6 +59,7 @@
 <span class="c1"># O(npins * nsegments) algorithm. Could be O(npins + nsegments) FIX!</span>
 
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">cell_pin</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="s1">&#39;B&#39;</span> <span class="ow">and</span> <span class="n">bodyswitch</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span><span class="k">continue</span>
         <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;  PIN </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">i</span><span class="p">)</span>
         <span class="c1">#fp.write( &quot;    DIRECTION %s ;\n&quot; % obj[&#39;ported&#39;])</span>
         <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;    DIRECTION INOUT ;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -83,16 +85,16 @@
     <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;END </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">macro_name</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="gen_lef_json_fp"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.gen_lef.gen_lef_json_fp">[docs]</a><span class="k">def</span> <span class="nf">gen_lef_json_fp</span><span class="p">(</span><span class="n">json_fp</span><span class="p">,</span> <span class="n">lef_fp</span><span class="p">,</span> <span class="n">macro_name</span><span class="p">,</span> <span class="n">cell_pin</span><span class="p">):</span>
-    <span class="n">gen_lef_data</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">json_fp</span><span class="p">),</span> <span class="n">lef_fp</span><span class="p">,</span> <span class="n">macro_name</span><span class="p">,</span> <span class="n">cell_pin</span><span class="p">)</span></div>
+<div class="viewcode-block" id="gen_lef_json_fp"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.gen_lef.gen_lef_json_fp">[docs]</a><span class="k">def</span> <span class="nf">gen_lef_json_fp</span><span class="p">(</span><span class="n">json_fp</span><span class="p">,</span> <span class="n">lef_fp</span><span class="p">,</span> <span class="n">macro_name</span><span class="p">,</span> <span class="n">cell_pin</span><span class="p">,</span> <span class="n">bodyswitch</span><span class="p">):</span>
+    <span class="n">gen_lef_data</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">json_fp</span><span class="p">),</span> <span class="n">lef_fp</span><span class="p">,</span> <span class="n">macro_name</span><span class="p">,</span> <span class="n">cell_pin</span><span class="p">,</span> <span class="n">bodyswitch</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="gen_lef_json"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.gen_lef.gen_lef_json">[docs]</a><span class="k">def</span> <span class="nf">gen_lef_json</span><span class="p">(</span><span class="n">json_fn</span><span class="p">,</span> <span class="n">lef_fn</span><span class="p">,</span> <span class="n">macro_name</span><span class="p">,</span> <span class="n">cell_pin</span><span class="p">):</span>
+<div class="viewcode-block" id="gen_lef_json"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.gen_lef.gen_lef_json">[docs]</a><span class="k">def</span> <span class="nf">gen_lef_json</span><span class="p">(</span><span class="n">json_fn</span><span class="p">,</span> <span class="n">lef_fn</span><span class="p">,</span> <span class="n">macro_name</span><span class="p">,</span> <span class="n">cell_pin</span><span class="p">,</span> <span class="n">bodyswitch</span><span class="p">):</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">json_fn</span><span class="p">,</span> <span class="s2">&quot;rt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_fp</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">lef_fn</span><span class="p">,</span> <span class="s2">&quot;wt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">lef_fp</span><span class="p">:</span>
         <span class="n">gen_lef_json_fp</span><span class="p">(</span><span class="n">json_fp</span><span class="p">,</span> <span class="n">lef_fp</span><span class="p">,</span> <span class="n">macro_name</span><span class="p">,</span> <span class="n">cell_pin</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="json_lef"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.gen_lef.json_lef">[docs]</a><span class="k">def</span> <span class="nf">json_lef</span><span class="p">(</span><span class="n">input_json</span><span class="p">,</span> <span class="n">out_lef</span><span class="p">,</span> <span class="n">cell_pin</span><span class="p">,</span> <span class="n">blockM</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+<div class="viewcode-block" id="json_lef"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.gen_lef.json_lef">[docs]</a><span class="k">def</span> <span class="nf">json_lef</span><span class="p">(</span><span class="n">input_json</span><span class="p">,</span> <span class="n">out_lef</span><span class="p">,</span> <span class="n">cell_pin</span><span class="p">,</span> <span class="n">bodyswitch</span><span class="p">,</span> <span class="n">blockM</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
 
     <span class="n">exclude_layers</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">get_lef_exclude</span><span class="p">()</span>
 
@@ -108,9 +110,9 @@
             <span class="n">j</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">*=</span> <span class="mi">10</span>
 
         <span class="k">assert</span> <span class="p">(</span><span class="n">j</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span><span class="o">-</span><span class="n">j</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
-                <span class="p">)</span> <span class="o">%</span> <span class="n">p</span><span class="p">[</span><span class="s1">&#39;M2&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Cell height not a multiple of the grid </span><span class="si">{j[&#39;bbox&#39;]}</span><span class="s2">&quot;</span>
+                <span class="p">)</span> <span class="o">%</span> <span class="n">p</span><span class="p">[</span><span class="s1">&#39;M2&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Cell height not a multiple of the grid </span><span class="si">{</span><span class="n">j</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="k">assert</span> <span class="p">(</span><span class="n">j</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">-</span><span class="n">j</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-                <span class="p">)</span> <span class="o">%</span> <span class="n">p</span><span class="p">[</span><span class="s1">&#39;M1&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Cell width not a multiple of the grid </span><span class="si">{j[&#39;bbox&#39;]}</span><span class="s2">&quot;</span>
+                <span class="p">)</span> <span class="o">%</span> <span class="n">p</span><span class="p">[</span><span class="s1">&#39;M1&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Cell width not a multiple of the grid </span><span class="si">{</span><span class="n">j</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
 
         <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">j</span><span class="p">[</span><span class="s1">&#39;terminals&#39;</span><span class="p">]:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
@@ -132,13 +134,9 @@
 
         <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;  SIZE </span><span class="si">%s</span><span class="s2"> BY </span><span class="si">%s</span><span class="s2"> ;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">s</span><span class="p">(</span><span class="n">j</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">][</span><span class="mi">2</span><span class="p">]),</span> <span class="n">s</span><span class="p">(</span><span class="n">j</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">][</span><span class="mi">3</span><span class="p">])))</span>
         <span class="n">cell_pin</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cell_pin</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">cell_pin</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;PLUS&quot;</span><span class="p">:</span>
-            <span class="c1"># add body contact to the pin list of transistors</span>
-            <span class="n">cell_pin</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">pass</span>
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">cell_pin</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="s1">&#39;B&#39;</span> <span class="ow">and</span> <span class="n">bodyswitch</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span><span class="k">continue</span>
             <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;  PIN </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">i</span><span class="p">)</span>
             <span class="c1">#fp.write( &quot;    DIRECTION %s ;\n&quot; % obj[&#39;ported&#39;])</span>
             <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;    DIRECTION INOUT ;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -153,11 +151,11 @@
                     <span class="k">if</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;M2&#39;</span><span class="p">:</span>
                         <span class="n">cy</span> <span class="o">=</span> <span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">][</span><span class="mi">3</span><span class="p">])</span><span class="o">//</span><span class="mi">2</span>
                         <span class="k">assert</span> <span class="n">cy</span> <span class="o">%</span> <span class="n">p</span><span class="p">[</span><span class="s1">&#39;M2&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span>
-                            <span class="sa">f</span><span class="s2">&quot;M2 pin is not on grid </span><span class="si">{cy}</span><span class="s2"> {cy%84}&quot;</span><span class="p">)</span>
+                            <span class="sa">f</span><span class="s2">&quot;M2 pin is not on grid </span><span class="si">{</span><span class="n">cy</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">cy</span><span class="o">%</span><span class="mi">84</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;M1&#39;</span> <span class="ow">or</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;M3&#39;</span><span class="p">:</span>
                         <span class="n">cx</span> <span class="o">=</span> <span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span><span class="o">//</span><span class="mi">2</span>
                         <span class="k">assert</span> <span class="n">cx</span> <span class="o">%</span> <span class="n">p</span><span class="p">[</span><span class="s1">&#39;M1&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span>
-                            <span class="sa">f</span><span class="s2">&quot;M1 pin is not on grid </span><span class="si">{cx}</span><span class="s2"> {cx%80}&quot;</span><span class="p">)</span>
+                            <span class="sa">f</span><span class="s2">&quot;M1 pin is not on grid </span><span class="si">{</span><span class="n">cx</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">cx</span><span class="o">%</span><span class="mi">80</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;    END</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;  END </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">i</span><span class="p">)</span>
@@ -181,6 +179,7 @@
         <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;END </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">out_lef</span><span class="p">)</span></div>
 </pre></div>
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -195,7 +194,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -210,12 +209,13 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">align.cell_fabric.gen_lef</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, ALIGN team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
     </div>
   </body>
 </html>

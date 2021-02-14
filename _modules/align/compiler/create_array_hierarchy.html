@@ -1,0 +1,282 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>align.compiler.create_array_hierarchy &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">align.compiler.create_array_hierarchy</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for align.compiler.create_array_hierarchy</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Wed July 08 13:12:15 2020</span>
+
+<span class="sd">@author: kunal</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">combinations</span>
+<span class="kn">from</span> <span class="nn">.merge_nodes</span> <span class="kn">import</span> <span class="n">merge_nodes</span>
+<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">compare_two_nodes</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="matching_groups"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.create_array_hierarchy.matching_groups">[docs]</a><span class="k">def</span> <span class="nf">matching_groups</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">level1</span><span class="p">,</span><span class="n">ports_weight</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a a 2D list from 1D list of level1, grouping similar elements in separate group</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    G : TYPE</span>
+<span class="sd">        DESCRIPTION.</span>
+<span class="sd">    level1 : TYPE</span>
+<span class="sd">        DESCRIPTION.</span>
+<span class="sd">    ports_weight : TYPE</span>
+<span class="sd">        DESCRIPTION.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    similar_groups : TYPE</span>
+<span class="sd">        DESCRIPTION.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">similar_groups</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;creating groups for all neighbors: </span><span class="si">{</span><span class="n">level1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1">#modify this best case complexity from n*(n-1) to n complexity</span>
+    <span class="k">for</span> <span class="n">l1_node1</span><span class="p">,</span><span class="n">l1_node2</span> <span class="ow">in</span> <span class="n">combinations</span><span class="p">(</span><span class="n">level1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">compare_two_nodes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">l1_node1</span><span class="p">,</span><span class="n">l1_node2</span><span class="p">,</span><span class="n">ports_weight</span><span class="p">):</span>
+            <span class="n">found_flag</span><span class="o">=</span><span class="mi">0</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;similar_group </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">similar_groups</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">similar_groups</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">l1_node1</span> <span class="ow">in</span> <span class="n">sublist</span> <span class="ow">and</span> <span class="n">l1_node2</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">:</span>
+                    <span class="n">found_flag</span><span class="o">=</span><span class="mi">1</span>
+                    <span class="k">break</span>
+                <span class="k">if</span> <span class="n">l1_node1</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">:</span>
+                    <span class="n">similar_groups</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">l1_node2</span><span class="p">)</span>
+                    <span class="n">found_flag</span><span class="o">=</span><span class="mi">1</span>
+                    <span class="k">break</span>
+                <span class="k">elif</span> <span class="n">l1_node2</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">:</span>
+                    <span class="n">similar_groups</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">l1_node1</span><span class="p">)</span>
+                    <span class="n">found_flag</span><span class="o">=</span><span class="mi">1</span>
+                    <span class="k">break</span>
+            <span class="k">if</span> <span class="n">found_flag</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+                <span class="n">similar_groups</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">l1_node1</span><span class="p">,</span><span class="n">l1_node2</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">similar_groups</span></div>
+
+
+
+<div class="viewcode-block" id="trace_template"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.create_array_hierarchy.trace_template">[docs]</a><span class="k">def</span> <span class="nf">trace_template</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">similar_node_groups</span><span class="p">,</span><span class="n">visited</span><span class="p">,</span><span class="n">template</span><span class="p">,</span><span class="n">array</span><span class="p">):</span>
+    <span class="n">next_match</span><span class="o">=</span><span class="p">{}</span>
+    <span class="n">traversed</span><span class="o">=</span><span class="n">visited</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">source</span><span class="p">,</span><span class="n">groups</span> <span class="ow">in</span> <span class="n">similar_node_groups</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">next_match</span><span class="p">[</span><span class="n">source</span><span class="p">]</span><span class="o">=</span><span class="p">[]</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">:</span>
+            <span class="n">level1</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node</span><span class="p">))</span><span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">traversed</span><span class="p">))</span>
+            <span class="n">next_match</span><span class="p">[</span><span class="n">source</span><span class="p">]</span> <span class="o">+=</span><span class="n">level1</span>
+            <span class="n">visited</span> <span class="o">+=</span><span class="n">level1</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">next_match</span><span class="p">[</span><span class="n">source</span><span class="p">])</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">next_match</span><span class="p">[</span><span class="n">source</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">next_match</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">match_branches</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span><span class="n">next_match</span><span class="p">)</span> <span class="p">:</span>
+        <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">array</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">next_match</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">array</span><span class="p">[</span><span class="n">source</span><span class="p">]</span><span class="o">+=</span><span class="n">next_match</span><span class="p">[</span><span class="n">source</span><span class="p">]</span>
+         
+        <span class="n">template</span> <span class="o">+=</span><span class="n">next_match</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">next_match</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;found matching level: </span><span class="si">%s</span><span class="s2">,</span><span class="si">%s</span><span class="s2">,</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">template</span><span class="p">,</span><span class="n">similar_node_groups</span><span class="p">,</span><span class="n">visited</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">check_convergence</span><span class="p">(</span><span class="n">next_match</span><span class="p">):</span>
+            <span class="n">trace_template</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">next_match</span><span class="p">,</span><span class="n">visited</span><span class="p">,</span><span class="n">template</span><span class="p">,</span><span class="n">array</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="match_branches"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.create_array_hierarchy.match_branches">[docs]</a><span class="k">def</span> <span class="nf">match_branches</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span><span class="n">nodes_dict</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;matching next level branches </span><span class="si">{</span><span class="n">nodes_dict</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">nbr_values</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">nbrs</span> <span class="ow">in</span> <span class="n">nodes_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="c1">#super_dict={}</span>
+        <span class="n">super_list</span><span class="o">=</span><span class="p">[]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">nbrs</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">nbrs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">nbr</span><span class="p">][</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]</span><span class="o">==</span> <span class="s1">&#39;net&#39;</span><span class="p">:</span>
+                <span class="n">super_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;net&#39;</span><span class="p">)</span>
+                <span class="n">super_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">nbr</span><span class="p">][</span><span class="s1">&#39;net_type&#39;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">super_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">nbr</span><span class="p">][</span><span class="s1">&#39;inst_type&#39;</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">nbr</span><span class="p">][</span><span class="s1">&#39;values&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="n">super_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="n">nbr_values</span><span class="p">[</span><span class="n">node</span><span class="p">]</span><span class="o">=</span><span class="n">Counter</span><span class="p">(</span><span class="n">super_list</span><span class="p">)</span>
+    <span class="n">_</span><span class="p">,</span><span class="n">main</span><span class="o">=</span><span class="n">nbr_values</span><span class="o">.</span><span class="n">popitem</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">nbr_values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="n">main</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="check_convergence"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.create_array_hierarchy.check_convergence">[docs]</a><span class="k">def</span> <span class="nf">check_convergence</span><span class="p">(</span><span class="n">match</span><span class="p">:</span><span class="nb">dict</span><span class="p">):</span>
+    <span class="n">vals</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">match</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">val</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">vals</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">vals</span><span class="o">+=</span><span class="n">val</span></div>
+
+
+<div class="viewcode-block" id="create_hierarchy"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.create_array_hierarchy.create_hierarchy">[docs]</a><span class="k">def</span> <span class="nf">create_hierarchy</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span><span class="n">node</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span><span class="n">traversed</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span><span class="n">ports_weight</span><span class="p">:</span><span class="nb">dict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates array hierarchies starting from input node</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    graph : TYPE</span>
+<span class="sd">        DESCRIPTION.</span>
+<span class="sd">    node : str</span>
+<span class="sd">        DESCRIPTION.</span>
+<span class="sd">    traversed : list</span>
+<span class="sd">        DESCRIPTION.</span>
+<span class="sd">    ports_weight : dict</span>
+<span class="sd">        DESCRIPTION.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    hier_of_node : TYPE</span>
+<span class="sd">        DESCRIPTION.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">hier_of_node</span> <span class="o">=</span><span class="p">{}</span>
+    <span class="n">level1</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node</span><span class="p">))</span><span class="o">-</span><span class="nb">set</span><span class="p">(</span><span class="n">traversed</span><span class="p">))</span>
+    
+    <span class="n">hier_of_node</span><span class="p">[</span><span class="n">node</span><span class="p">]</span><span class="o">=</span><span class="n">matching_groups</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span><span class="n">level1</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;new hierarchy points </span><span class="si">{</span><span class="n">hier_of_node</span><span class="si">}</span><span class="s2"> from node </span><span class="si">{</span><span class="n">node</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hier_of_node</span><span class="p">[</span><span class="n">node</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">hier_of_node</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">group</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">group</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">group</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+                <span class="n">templates</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">similar_node_groups</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">group</span><span class="p">):</span>
+                    <span class="n">similar_node_groups</span><span class="p">[</span><span class="n">el</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="n">el</span><span class="p">]</span>
+                <span class="n">templates</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">el</span><span class="p">]</span>
+                <span class="n">visited</span> <span class="o">=</span> <span class="n">group</span>
+                <span class="n">array</span> <span class="o">=</span> <span class="n">similar_node_groups</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="n">trace_template</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span><span class="n">similar_node_groups</span><span class="p">,</span><span class="n">visited</span><span class="p">,</span><span class="n">templates</span><span class="p">[</span><span class="n">node</span><span class="p">],</span><span class="n">array</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;similar groups final from </span><span class="si">{</span><span class="n">node</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">array</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="c1">#check number of levels in detected array</span>
+        <span class="c1">#single hierarchy arrays can be handled using simple approaches</span>
+        <span class="n">all_inst</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">array</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="o">&gt;</span><span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">])</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
+            <span class="c1">#Multiple hierarchy identified in array</span>
+            <span class="n">matched_ports</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">branch</span> <span class="ow">in</span>  <span class="n">array</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">node_hier</span> <span class="ow">in</span> <span class="n">branch</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node_hier</span><span class="p">][</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;net&#39;</span> \
+                        <span class="ow">and</span> <span class="n">node_hier</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">all_inst</span> \
+                        <span class="ow">and</span> <span class="ow">not</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node_hier</span><span class="p">][</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;cap&#39;</span><span class="p">):</span>  
+                        <span class="n">all_inst</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node_hier</span><span class="p">)</span>
+                
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">hier_of_node</span><span class="p">[</span><span class="n">node</span><span class="p">]</span><span class="o">=</span><span class="p">[]</span>
+            <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="n">array</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">inst</span><span class="p">][</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]</span><span class="o">!=</span><span class="s1">&#39;net&#39;</span><span class="p">:</span>
+                    <span class="n">hier_of_node</span><span class="p">[</span><span class="n">node</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inst</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_inst</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">all_inst</span><span class="o">=</span><span class="nb">sorted</span><span class="p">(</span><span class="n">all_inst</span><span class="p">)</span>
+            <span class="n">h_ports_weight</span><span class="o">=</span><span class="p">{}</span>
+            <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span>  <span class="n">all_inst</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">node_hier</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">inst</span><span class="p">))):</span>
+                    <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node_hier</span><span class="p">][</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]</span><span class="o">==</span> <span class="s1">&#39;net&#39;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node_hier</span><span class="p">))</span><span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">all_inst</span><span class="p">))</span> <span class="ow">or</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node_hier</span><span class="p">][</span><span class="s2">&quot;net_type&quot;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;external&#39;</span><span class="p">:</span>
+                            <span class="n">matched_ports</span><span class="p">[</span><span class="n">node_hier</span><span class="p">]</span> <span class="o">=</span> <span class="n">node_hier</span>
+                            <span class="n">h_ports_weight</span><span class="p">[</span><span class="n">node_hier</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                            <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node_hier</span><span class="p">)):</span>
+                                <span class="n">h_ports_weight</span><span class="p">[</span><span class="n">node_hier</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node_hier</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)[</span><span class="s1">&#39;weight&#39;</span><span class="p">])</span>
+                       
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;creating a new hierarchy for </span><span class="si">{</span><span class="n">node</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">all_inst</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">matched_ports</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">subgraph</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">merge_nodes</span><span class="p">(</span>
+                    <span class="n">graph</span><span class="p">,</span> <span class="s1">&#39;array_hier_&#39;</span><span class="o">+</span><span class="n">node</span><span class="p">,</span><span class="n">all_inst</span> <span class="p">,</span> <span class="n">matched_ports</span><span class="p">)</span>
+            <span class="n">hier_of_node</span><span class="p">[</span><span class="n">node</span><span class="p">]</span><span class="o">=</span><span class="p">{</span>
+                        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s1">&#39;array_hier_&#39;</span><span class="o">+</span><span class="n">node</span><span class="p">,</span>
+                        <span class="s2">&quot;graph&quot;</span><span class="p">:</span> <span class="n">subgraph</span><span class="p">,</span>
+                        <span class="s2">&quot;ports&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">matched_ports</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+                        <span class="s2">&quot;ports_match&quot;</span><span class="p">:</span> <span class="n">matched_ports</span><span class="p">,</span>
+                        <span class="s2">&quot;ports_weight&quot;</span><span class="p">:</span> <span class="n">h_ports_weight</span><span class="p">,</span>
+                        <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">subgraph</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span>
+                    <span class="p">}</span>
+        <span class="k">return</span> <span class="n">hier_of_node</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">align.compiler.create_array_hierarchy</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, ALIGN team.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+    </div>
+  </body>
+</html>

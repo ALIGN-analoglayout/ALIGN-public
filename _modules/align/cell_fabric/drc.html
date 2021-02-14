@@ -1,18 +1,18 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>align.cell_fabric.drc &#8212; ALIGN 0.9 documentation</title>
-    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
@@ -27,7 +27,8 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">align.cell_fabric.drc</a></li> 
       </ul>
     </div>  
 
@@ -41,10 +42,32 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
+<div class="viewcode-block" id="RegionSet"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.drc.RegionSet">[docs]</a><span class="k">class</span> <span class="nc">RegionSet</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rects</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="RegionSet.add_region"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.drc.RegionSet.add_region">[docs]</a>    <span class="k">def</span> <span class="nf">add_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rect</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">rect</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RegionSet.contained_in"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.drc.RegionSet.contained_in">[docs]</a>    <span class="k">def</span> <span class="nf">contained_in</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">rect</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rects</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">rect</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">rect</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> \
+               <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">rect</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">and</span> <span class="n">rect</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">r</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>
+                <span class="c1">#logger.debug( f&quot;Filtering rect {rect} inside {r}&quot;)</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="c1">#logger.debug( f&quot;Did not filter rect {rect}: {self.rects}&quot;)</span>
+        <span class="k">return</span> <span class="kc">False</span></div></div>
+        
 <div class="viewcode-block" id="DesignRuleCheck"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.drc.DesignRuleCheck">[docs]</a><span class="k">class</span> <span class="nc">DesignRuleCheck</span><span class="p">():</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canvas</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span> <span class="o">=</span> <span class="n">canvas</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">errors</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">r_regions</span> <span class="o">=</span> <span class="n">RegionSet</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">terminals</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">term</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Boundary&#39;</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Adding region </span><span class="si">{</span><span class="n">term</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> using &#39;Boundary&#39; object&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">r_regions</span><span class="o">.</span><span class="n">add_region</span><span class="p">(</span> <span class="n">term</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">])</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">num_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -58,21 +81,126 @@
 <span class="sd">              (aka removeDuplicates has been run)</span>
 <span class="sd">        &#39;&#39;&#39;</span>
 
+        
         <span class="k">for</span> <span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">vv</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">store_scan_lines</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;V&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">layer</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="p">))</span> <span class="ow">or</span> <span class="n">layer</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">layer</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;*&#39;</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_check_via_rules</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">vv</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_check_via_enclosure_rules</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">vv</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_check_metal_rules</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">vv</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_check_adjacent_metals</span><span class="p">(</span> <span class="n">layer</span><span class="p">,</span> <span class="n">vv</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">error</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">errors</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">error</span><span class="p">))</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_errors</span></div>
 
     <span class="k">def</span> <span class="nf">_check_via_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">vv</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;TODO : Add via pattern checking rules &#39;&#39;&#39;</span>
-        <span class="n">space</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">layer</span><span class="p">][</span><span class="s1">&#39;SpaceX&#39;</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">space</span>
+        <span class="sd">&#39;&#39;&#39;Simple rules related to vertical and horizontal spacing; need more work for diagonals&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="s1">&#39;SpaceY&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">layer</span><span class="p">]:</span>
+            <span class="c1"># need a walrus operator</span>
+            <span class="n">space_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">layer</span><span class="p">][</span><span class="s1">&#39;SpaceY&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">space_y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> 
+                <span class="c1"># Since vias are stored as vertical wires in the scan lines, this is the easy case </span>
+                <span class="c1"># find closest via with same X centerline with higher Y value</span>
+                <span class="k">for</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">sl0</span><span class="p">)</span> <span class="ow">in</span> <span class="n">vv</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">for</span> <span class="n">slr0</span> <span class="ow">in</span> <span class="n">sl0</span><span class="o">.</span><span class="n">rects</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">slr1</span> <span class="ow">in</span> <span class="n">sl0</span><span class="o">.</span><span class="n">rects</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">slr0</span> <span class="o">==</span> <span class="n">slr1</span><span class="p">:</span> <span class="k">continue</span>
+                            <span class="k">if</span> <span class="n">slr0</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">slr1</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                                <span class="k">if</span> <span class="n">slr0</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="n">space_y</span> <span class="o">&gt;</span> <span class="n">slr1</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Vertical space violation on </span><span class="si">{</span><span class="n">layer</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">slr0</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">slr1</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">space_y</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;SpaceX&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">layer</span><span class="p">]:</span>
+            <span class="n">space_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">layer</span><span class="p">][</span><span class="s1">&#39;SpaceX&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">space_x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> 
+                <span class="c1"># This is harder</span>
+                <span class="c1"># find closest via with same Y coords and with a higher X value</span>
+                <span class="k">for</span> <span class="p">(</span><span class="n">cx0</span><span class="p">,</span> <span class="n">sl0</span><span class="p">)</span> <span class="ow">in</span> <span class="n">vv</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">for</span> <span class="p">(</span><span class="n">cx1</span><span class="p">,</span> <span class="n">sl1</span><span class="p">)</span> <span class="ow">in</span> <span class="n">vv</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="k">if</span> <span class="n">cx0</span> <span class="o">&gt;=</span> <span class="n">cx1</span><span class="p">:</span> <span class="k">continue</span>
+                        <span class="k">for</span> <span class="n">slr0</span> <span class="ow">in</span> <span class="n">sl0</span><span class="o">.</span><span class="n">rects</span><span class="p">:</span>
+                            <span class="k">for</span> <span class="n">slr1</span> <span class="ow">in</span> <span class="n">sl1</span><span class="o">.</span><span class="n">rects</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="n">slr0</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">slr1</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">and</span> <span class="n">slr0</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="n">slr1</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>
+                                    <span class="k">if</span> <span class="n">slr0</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">slr1</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                                        <span class="k">if</span> <span class="n">slr0</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">space_x</span> <span class="o">&gt;</span> <span class="n">slr1</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Horizontal space violation on </span><span class="si">{</span><span class="n">layer</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">slr0</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">slr1</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">space_x</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+
+    <span class="k">def</span> <span class="nf">_check_via_enclosure_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">vv</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Check via enclosures.&#39;&#39;&#39;</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">layer</span><span class="p">]</span>
+        <span class="p">[</span><span class="n">ly_l</span><span class="p">,</span><span class="n">ly_u</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;Stack&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">ly_l</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ml_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">ly_l</span><span class="p">][</span><span class="s1">&#39;Direction&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+            <span class="k">assert</span> <span class="n">ml_dir</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;V&#39;</span><span class="p">,</span><span class="s1">&#39;H&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">ly_u</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mu_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">ly_u</span><span class="p">][</span><span class="s1">&#39;Direction&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+            <span class="k">assert</span> <span class="n">mu_dir</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;V&#39;</span><span class="p">,</span><span class="s1">&#39;H&#39;</span><span class="p">]</span>
+
+        <span class="k">def</span> <span class="nf">check_single_metal</span><span class="p">(</span> <span class="n">r</span><span class="p">,</span> <span class="n">ly</span><span class="p">,</span> <span class="n">metal_dir</span><span class="p">,</span> <span class="n">enclosure_value</span><span class="p">):</span>
+            <span class="n">o</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">metal_dir</span> <span class="o">==</span> <span class="s1">&#39;V&#39;</span> <span class="k">else</span> <span class="mi">0</span>
+            <span class="n">metal_r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_rect_covering_via</span><span class="p">(</span> <span class="n">r</span><span class="p">,</span> <span class="n">ly</span><span class="p">,</span> <span class="n">metal_dir</span><span class="p">)</span>
+            <span class="n">net_name</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">netName</span>
+            <span class="k">if</span> <span class="n">net_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">net_name</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+            <span class="k">if</span> <span class="n">metal_r</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Enclosure violation on </span><span class="si">{</span><span class="n">ly</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">layer</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">net_name</span><span class="si">}</span><span class="s2">: No metal found surrounding </span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">rect</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">enclosure_value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">metal_r</span><span class="p">[</span><span class="n">o</span><span class="o">+</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">r</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="n">o</span><span class="o">+</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">enclosure_value</span> <span class="ow">or</span> <span class="n">metal_r</span><span class="p">[</span><span class="n">o</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">r</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="n">o</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">enclosure_value</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Enclosure violation on </span><span class="si">{</span><span class="n">ly</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">layer</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">net_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">metal_r</span><span class="si">}</span><span class="s2"> does not sufficiently surround </span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">rect</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">enclosure_value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">sl</span> <span class="ow">in</span> <span class="n">vv</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">sl</span><span class="o">.</span><span class="n">rects</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">ly_l</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">check_single_metal</span><span class="p">(</span> <span class="n">r</span><span class="p">,</span> <span class="n">ly_l</span><span class="p">,</span> <span class="n">ml_dir</span><span class="p">,</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;VencA_L&#39;</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">ly_u</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">check_single_metal</span><span class="p">(</span> <span class="n">r</span><span class="p">,</span> <span class="n">ly_u</span><span class="p">,</span> <span class="n">mu_dir</span><span class="p">,</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;VencA_H&#39;</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_check_adjacent_metals</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">vv</span><span class="p">):</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">layer</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;AdjacentAttacker&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">m</span><span class="p">:</span> <span class="k">return</span>
+        
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;AdjacentAttacker&#39;</span><span class="p">]</span>
+
+        <span class="n">dr</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;Direction&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">dr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;V&#39;</span><span class="p">,</span><span class="s1">&#39;H&#39;</span><span class="p">]</span>
+
+        <span class="n">o</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">dr</span> <span class="o">==</span> <span class="s1">&#39;H&#39;</span> <span class="k">else</span> <span class="mi">1</span>
+
+        <span class="k">for</span> <span class="n">cx0</span><span class="p">,</span><span class="n">v0</span> <span class="ow">in</span> <span class="n">vv</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">cx1</span> <span class="ow">in</span> <span class="p">[</span><span class="n">cx0</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;Pitch&#39;</span><span class="p">],</span> <span class="n">cx0</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]]:</span>
+                <span class="k">if</span> <span class="n">cx1</span> <span class="ow">in</span> <span class="n">vv</span><span class="p">:</span>
+                    <span class="n">v1</span> <span class="o">=</span> <span class="n">vv</span><span class="p">[</span><span class="n">cx1</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">slr0</span> <span class="ow">in</span> <span class="n">v0</span><span class="o">.</span><span class="n">rects</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">slr1</span> <span class="ow">in</span> <span class="n">v1</span><span class="o">.</span><span class="n">rects</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">slr1</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="n">o</span><span class="o">+</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">slr0</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="n">o</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">dist</span><span class="p">:</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Adjacent metal attacker </span><span class="si">{</span><span class="n">layer</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">slr0</span><span class="o">.</span><span class="n">rect</span><span class="si">}</span><span class="s2"> too close to </span><span class="si">{</span><span class="n">slr1</span><span class="o">.</span><span class="n">rect</span><span class="si">}</span><span class="s2"> dist: </span><span class="si">{</span><span class="n">dist</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_find_rect_covering_via</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">ly</span><span class="p">,</span> <span class="n">metal_dir</span><span class="p">):</span>
+        <span class="n">cx2</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">r</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">cy2</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">r</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+        <span class="n">c2a</span><span class="p">,</span><span class="n">c2p</span><span class="p">,</span><span class="n">o</span> <span class="o">=</span> <span class="p">(</span><span class="n">cx2</span><span class="p">,</span><span class="n">cy2</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">metal_dir</span> <span class="o">==</span> <span class="s1">&#39;H&#39;</span> <span class="k">else</span> <span class="p">(</span><span class="n">cy2</span><span class="p">,</span><span class="n">cx2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">sl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">store_scan_lines</span><span class="p">[</span><span class="n">ly</span><span class="p">][</span><span class="n">c2p</span><span class="p">]</span>
+
+        <span class="k">def</span> <span class="nf">binary_search</span><span class="p">(</span> <span class="n">l</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="n">u</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">elif</span> <span class="n">l</span><span class="o">+</span><span class="mi">1</span> <span class="o">==</span> <span class="n">u</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">sl</span><span class="o">.</span><span class="n">rects</span><span class="p">[</span><span class="n">l</span><span class="p">]</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="n">o</span><span class="o">+</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">v</span> <span class="o">&lt;=</span> <span class="n">sl</span><span class="o">.</span><span class="n">rects</span><span class="p">[</span><span class="n">l</span><span class="p">]</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="n">o</span><span class="o">+</span><span class="mi">2</span><span class="p">]:</span>
+                    <span class="k">return</span> <span class="n">sl</span><span class="o">.</span><span class="n">rects</span><span class="p">[</span><span class="n">l</span><span class="p">]</span><span class="o">.</span><span class="n">rect</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="p">(</span><span class="n">l</span><span class="o">+</span><span class="n">u</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span>
+                <span class="k">if</span> <span class="n">sl</span><span class="o">.</span><span class="n">rects</span><span class="p">[</span><span class="n">m</span><span class="p">]</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="n">o</span><span class="o">+</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">v</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">binary_search</span><span class="p">(</span> <span class="n">m</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">binary_search</span><span class="p">(</span> <span class="n">l</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">binary_search</span><span class="p">(</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">sl</span><span class="o">.</span><span class="n">rects</span><span class="p">),</span> <span class="n">c2a</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1">#assert False, f&quot;No rectangle on {ly} covering via at {r.rect}&quot;</span>
+            <span class="k">return</span> <span class="n">result</span>
 
     <span class="k">def</span> <span class="nf">_check_metal_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">vv</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Check metal min-length / min-spacing rules&#39;&#39;&#39;</span>
@@ -89,21 +217,29 @@
             <span class="n">rect</span> <span class="o">=</span> <span class="n">slr</span><span class="o">.</span><span class="n">rect</span>
             <span class="k">if</span> <span class="n">rect</span><span class="p">[</span><span class="n">end</span><span class="p">]</span> <span class="o">-</span> <span class="n">rect</span><span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">min_length</span><span class="p">:</span>
                 <span class="n">root</span> <span class="o">=</span> <span class="n">slr</span><span class="o">.</span><span class="n">root</span><span class="p">()</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;MinLength violation on </span><span class="si">{layer}</span><span class="s2">: </span><span class="si">{root.netName}{rect}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_regions</span><span class="o">.</span><span class="n">contained_in</span><span class="p">(</span> <span class="n">rect</span><span class="p">):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Skipping: MinLength violation on </span><span class="si">{</span><span class="n">layer</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">root</span><span class="o">.</span><span class="n">netName</span><span class="si">}{</span><span class="n">rect</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;MinLength violation on </span><span class="si">{</span><span class="n">layer</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">root</span><span class="o">.</span><span class="n">netName</span><span class="si">}{</span><span class="n">rect</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_check_min_spacing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">slrects</span><span class="p">,</span> <span class="n">dIndex</span><span class="p">):</span>
         <span class="n">min_space</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">layer</span><span class="p">][</span><span class="s1">&#39;EndToEnd&#39;</span><span class="p">]</span>
         <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">dIndex</span><span class="p">,</span> <span class="n">dIndex</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
         <span class="n">prev_slr</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">for</span> <span class="n">slr</span> <span class="ow">in</span> <span class="n">slrects</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">prev_slr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">slr</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">-</span> <span class="n">prev_slr</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="n">end</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">min_space</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;MinSpace violation on </span><span class="si">{layer}</span><span class="s2">: {prev_slr.root().netName}</span><span class="si">{prev_slr.rect}</span><span class="s2"> x {slr.root().netName}</span><span class="si">{slr.rect}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">prev_slr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> \
+               <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">slr</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">-</span> <span class="n">prev_slr</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="n">end</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">min_space</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_regions</span><span class="o">.</span><span class="n">contained_in</span><span class="p">(</span> <span class="n">slr</span><span class="o">.</span><span class="n">rect</span><span class="p">):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Skipping: MinSpace violation on </span><span class="si">{</span><span class="n">layer</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">prev_slr</span><span class="o">.</span><span class="n">root</span><span class="p">()</span><span class="o">.</span><span class="n">netName</span><span class="si">}{</span><span class="n">prev_slr</span><span class="o">.</span><span class="n">rect</span><span class="si">}</span><span class="s2"> x </span><span class="si">{</span><span class="n">slr</span><span class="o">.</span><span class="n">root</span><span class="p">()</span><span class="o">.</span><span class="n">netName</span><span class="si">}{</span><span class="n">slr</span><span class="o">.</span><span class="n">rect</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;MinSpace violation on </span><span class="si">{</span><span class="n">layer</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">prev_slr</span><span class="o">.</span><span class="n">root</span><span class="p">()</span><span class="o">.</span><span class="n">netName</span><span class="si">}{</span><span class="n">prev_slr</span><span class="o">.</span><span class="n">rect</span><span class="si">}</span><span class="s2"> x </span><span class="si">{</span><span class="n">slr</span><span class="o">.</span><span class="n">root</span><span class="p">()</span><span class="o">.</span><span class="n">netName</span><span class="si">}{</span><span class="n">slr</span><span class="o">.</span><span class="n">rect</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">prev_slr</span> <span class="o">=</span> <span class="n">slr</span>
         <span class="k">return</span></div>
 </pre></div>
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -118,7 +254,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -133,12 +269,13 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">align.cell_fabric.drc</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, ALIGN team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
     </div>
   </body>
 </html>

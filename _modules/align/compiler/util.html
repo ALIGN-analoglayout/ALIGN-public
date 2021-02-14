@@ -1,18 +1,18 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>align.compiler.util &#8212; ALIGN 0.9 documentation</title>
-    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
@@ -27,7 +27,8 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">align.compiler.util</a></li> 
       </ul>
     </div>  
 
@@ -44,7 +45,6 @@
 <span class="sd">@author: kunal</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">pathlib</span>
 <span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">networkx.algorithms</span> <span class="kn">import</span> <span class="n">bipartite</span>
@@ -52,19 +52,100 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
-<span class="c1">#library_graphs = glob.glob(&quot;L1*.yaml&quot;)</span>
+<div class="viewcode-block" id="get_next_level"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.util.get_next_level">[docs]</a><span class="k">def</span> <span class="nf">get_next_level</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">tree_l1</span><span class="p">):</span>
+    <span class="n">tree_next</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">tree_l1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="c1"># logger.debug(f&quot;neighbors of {node}: {list(G.neighbors(node))}&quot;)</span>
+        <span class="k">if</span> <span class="s1">&#39;mos&#39;</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span><span class="o">!=</span><span class="mi">2</span><span class="p">:</span>
+                    <span class="n">tree_next</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nbr</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s1">&#39;net&#39;</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="s1">&#39;mos&#39;</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">nbr</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="ow">and</span> \
+                <span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span><span class="o">!=</span><span class="mi">2</span><span class="p">:</span>
+                    <span class="n">tree_next</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nbr</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="s1">&#39;mos&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">nbr</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]:</span>
+                    <span class="n">tree_next</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nbr</span><span class="p">)</span>               
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tree_next</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node</span><span class="p">)))</span>
+    <span class="c1"># logger.debug(f&quot;next nodes {tree_next} &quot;)</span>
+    <span class="k">return</span> <span class="n">tree_next</span></div>
+<div class="viewcode-block" id="compare_two_nodes"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.util.compare_two_nodes">[docs]</a><span class="k">def</span> <span class="nf">compare_two_nodes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">node1</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span><span class="n">node2</span><span class="p">:</span><span class="nb">str</span> <span class="p">,</span><span class="n">ports_weight</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    compare two node properties. It uses 1st level of neighbourhood for comparison of nets</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    G : TYPE, networkx graph</span>
+<span class="sd">        DESCRIPTION. it consist of all subckt properties</span>
+<span class="sd">    node1, node2 : TYPE  string</span>
+<span class="sd">        DESCRIPTION. node name</span>
+<span class="sd">    ports_weight : TYPE list</span>
+<span class="sd">        DESCRIPTION. port weights </span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        DESCRIPTION. True for matching node</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nbrs1</span><span class="o">=</span> <span class="p">[</span><span class="n">nbr</span> <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node1</span><span class="p">)</span> <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node1</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span> <span class="o">!=</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">nbrs2</span><span class="o">=</span> <span class="p">[</span><span class="n">nbr</span> <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node2</span><span class="p">)</span> <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node2</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span> <span class="o">!=</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">nbrs1</span><span class="o">=</span> <span class="p">[</span><span class="n">nbr</span> <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">nbrs1</span> <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node1</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span> <span class="o">!=</span><span class="mi">7</span><span class="p">]</span>
+    <span class="n">nbrs2</span><span class="o">=</span> <span class="p">[</span><span class="n">nbr</span> <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">nbrs2</span> <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node2</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span> <span class="o">!=</span><span class="mi">7</span><span class="p">]</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;comparing_nodes: </span><span class="si">{</span><span class="n">node1</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">node2</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">nbrs1</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">nbrs2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Add some heuristic here in future</span>
+    
+    <span class="n">nbrs1_type</span><span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">nbr</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">nbrs1</span><span class="p">])</span> <span class="o">+</span> <span class="p">[</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node1</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]]</span>
+    <span class="n">nbrs2_type</span><span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">nbr</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">nbrs2</span><span class="p">])</span> <span class="o">+</span> <span class="p">[</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node2</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]]</span>
+    <span class="k">if</span> <span class="n">nbrs1_type</span> <span class="o">!=</span> <span class="n">nbrs2_type</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;type mismatch </span><span class="si">{</span><span class="n">nbrs1</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">nbrs1_type</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">nbrs2</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">nbrs2_type</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node1</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span><span class="o">==</span><span class="s2">&quot;net&quot;</span><span class="p">:</span> 
+        <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node1</span><span class="p">][</span><span class="s2">&quot;net_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node2</span><span class="p">][</span><span class="s2">&quot;net_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;external&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">ports_weight</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">elif</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">ports_weight</span><span class="p">[</span><span class="n">node1</span><span class="p">])</span> <span class="o">==</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">ports_weight</span><span class="p">[</span><span class="n">node2</span><span class="p">]):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;True&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;external port weight mismatch </span><span class="si">{</span><span class="n">ports_weight</span><span class="p">[</span><span class="n">node1</span><span class="p">]</span><span class="si">}</span><span class="s1">,</span><span class="si">{</span><span class="n">ports_weight</span><span class="p">[</span><span class="n">node2</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node1</span><span class="p">][</span><span class="s2">&quot;net_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;internal&#39;</span><span class="p">:</span>
+            <span class="n">weight1</span><span class="o">=</span><span class="p">[(</span><span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node1</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="o">~</span><span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">nbrs1</span><span class="p">]</span>
+            <span class="n">weight2</span><span class="o">=</span><span class="p">[(</span><span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node2</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="o">~</span><span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">nbrs2</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">weight2</span><span class="o">==</span><span class="n">weight1</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;True&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;internal port weight mismatch </span><span class="si">{</span><span class="n">weight1</span><span class="si">}</span><span class="s1">,</span><span class="si">{</span><span class="n">weight2</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">else</span><span class="p">:</span> 
+        <span class="k">if</span> <span class="s1">&#39;values&#39;</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node1</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> \
+        <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node1</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">]</span><span class="o">==</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node2</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">]:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot; True&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot; False, value mismatch&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>  </div>
+  
 <div class="viewcode-block" id="max_connectivity"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.util.max_connectivity">[docs]</a><span class="k">def</span> <span class="nf">max_connectivity</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
     <span class="n">conn_value</span> <span class="o">=</span><span class="mi">0</span>
     <span class="c1">#internal_nets =[x for x,y in G.nodes(data=True) if y[&#39;inst_type&#39;]==&#39;net&#39; and len(G.edges(x)) &gt; 1]</span>
+    <span class="c1">#Drain and source weights are equal</span>
     <span class="k">for</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">wt</span><span class="p">)</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="s1">&#39;weight&#39;</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">u</span><span class="p">][</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;net&#39;</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">u</span><span class="p">))</span> <span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">u</span><span class="p">][</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;net&#39;</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">u</span><span class="p">))</span> <span class="o">&gt;</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">wt</span><span class="o">&lt;</span><span class="mi">8</span><span class="p">:</span>
             <span class="k">if</span> <span class="s1">&#39;mos&#39;</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">v</span><span class="p">][</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">wt</span> <span class="o">&gt;</span><span class="mi">3</span><span class="p">:</span>
-                <span class="n">conn_value</span><span class="o">-=</span><span class="mi">2</span>
+                <span class="n">conn_value</span><span class="o">-=</span><span class="mi">3</span>
             <span class="n">conn_value</span> <span class="o">+=</span><span class="n">wt</span>
             <span class="c1">#print (u,conn_value)</span>
-        <span class="k">elif</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">v</span><span class="p">][</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;net&#39;</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">v</span><span class="p">][</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;net&#39;</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="o">&gt;</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">wt</span><span class="o">&lt;</span><span class="mi">8</span><span class="p">:</span>
             <span class="k">if</span> <span class="s1">&#39;mos&#39;</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">u</span><span class="p">][</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">wt</span> <span class="o">&gt;</span><span class="mi">3</span><span class="p">:</span>
-                <span class="n">conn_value</span><span class="o">-=</span><span class="mi">2</span>
+                <span class="n">conn_value</span><span class="o">-=</span><span class="mi">3</span>
             <span class="n">conn_value</span> <span class="o">+=</span><span class="n">wt</span>
             <span class="c1">#print (v,conn_value)</span>
     <span class="k">return</span> <span class="n">conn_value</span></div>
@@ -178,10 +259,13 @@
             <span class="n">values</span><span class="p">[</span><span class="n">param</span><span class="p">]</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">param</span><span class="p">]</span><span class="o">*</span><span class="mf">1E9</span><span class="p">))</span><span class="o">+</span><span class="s1">&#39;n&#39;</span>
         <span class="k">elif</span> <span class="n">values</span><span class="p">[</span><span class="n">param</span><span class="p">]</span><span class="o">*</span><span class="mf">1E12</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
             <span class="n">values</span><span class="p">[</span><span class="n">param</span><span class="p">]</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">param</span><span class="p">]</span><span class="o">*</span><span class="mf">1E12</span><span class="p">))</span><span class="o">+</span><span class="s1">&#39;p&#39;</span>
+        <span class="k">elif</span> <span class="n">values</span><span class="p">[</span><span class="n">param</span><span class="p">]</span><span class="o">*</span><span class="mf">1E15</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">values</span><span class="p">[</span><span class="n">param</span><span class="p">]</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">param</span><span class="p">]</span><span class="o">*</span><span class="mf">1E15</span><span class="p">))</span><span class="o">+</span><span class="s1">&#39;f&#39;</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;WRONG value, </span><span class="si">{values}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;WRONG value, </span><span class="si">{</span><span class="n">values</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 </pre></div>
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -196,7 +280,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -211,12 +295,13 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">align.compiler.util</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, ALIGN team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
     </div>
   </body>
 </html>

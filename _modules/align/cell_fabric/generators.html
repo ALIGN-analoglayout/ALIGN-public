@@ -1,18 +1,18 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>align.cell_fabric.generators &#8212; ALIGN 0.9 documentation</title>
-    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
@@ -27,7 +27,8 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">align.cell_fabric.generators</a></li> 
       </ul>
     </div>  
 
@@ -96,23 +97,37 @@
         <span class="k">return</span> <span class="n">data</span></div></div>
 
 <div class="viewcode-block" id="Via"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.generators.Via">[docs]</a><span class="k">class</span> <span class="nc">Via</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">nm</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">h_clg</span><span class="p">,</span> <span class="n">v_clg</span><span class="p">,</span> <span class="n">h_ext</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">v_ext</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">nm</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">h_clg</span><span class="p">,</span> <span class="n">v_clg</span><span class="p">,</span> <span class="n">WidthX</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">WidthY</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">h_ext</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">v_ext</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nm</span> <span class="o">=</span> <span class="n">nm</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">layer</span> <span class="o">=</span> <span class="n">layer</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">h_clg</span> <span class="o">=</span> <span class="n">h_clg</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">v_clg</span> <span class="o">=</span> <span class="n">v_clg</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">h_ext</span> <span class="o">=</span> <span class="n">h_ext</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">v_ext</span> <span class="o">=</span> <span class="n">v_ext</span>
+        <span class="k">if</span> <span class="n">WidthX</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">WidthX</span> <span class="o">=</span> <span class="n">WidthX</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_clg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">WidthX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_clg</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">WidthX</span> <span class="o">=</span> <span class="mi">2</span>
+
+        <span class="k">if</span> <span class="n">WidthY</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">WidthY</span> <span class="o">=</span> <span class="n">WidthY</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">h_clg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">WidthY</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">h_clg</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">WidthY</span> <span class="o">=</span> <span class="mi">2</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">h_ext</span> <span class="o">=</span> <span class="n">h_ext</span> <span class="k">if</span> <span class="n">h_ext</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">WidthX</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_ext</span> <span class="o">=</span> <span class="n">v_ext</span> <span class="k">if</span> <span class="n">v_ext</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">WidthY</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Via.physical_xs"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.generators.Via.physical_xs">[docs]</a>    <span class="k">def</span> <span class="nf">physical_xs</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-        <span class="p">(</span><span class="n">c</span><span class="p">,(</span><span class="n">w</span><span class="p">,</span><span class="n">_</span><span class="p">))</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_clg</span><span class="o">.</span><span class="n">value</span><span class="p">(</span> <span class="n">p</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">c</span><span class="o">-</span><span class="n">w</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span><span class="n">c</span><span class="o">+</span><span class="n">w</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span></div>
+        <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_clg</span><span class="o">.</span><span class="n">value</span><span class="p">(</span> <span class="n">p</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">c</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">WidthX</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span><span class="n">c</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">WidthX</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Via.physical_ys"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.generators.Via.physical_ys">[docs]</a>    <span class="k">def</span> <span class="nf">physical_ys</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-        <span class="p">(</span><span class="n">c</span><span class="p">,(</span><span class="n">w</span><span class="p">,</span><span class="n">_</span><span class="p">))</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">h_clg</span><span class="o">.</span><span class="n">value</span><span class="p">(</span> <span class="n">p</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">c</span><span class="o">-</span><span class="n">w</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span><span class="n">c</span><span class="o">+</span><span class="n">w</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span></div>
+        <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">h_clg</span><span class="o">.</span><span class="n">value</span><span class="p">(</span> <span class="n">p</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">c</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">WidthY</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span><span class="n">c</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">WidthY</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Via.segment"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.generators.Via.segment">[docs]</a>    <span class="k">def</span> <span class="nf">segment</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">netName</span><span class="p">,</span> <span class="n">pinName</span><span class="p">,</span> <span class="n">grid_cx</span><span class="p">,</span> <span class="n">grid_cy</span><span class="p">):</span>
         <span class="p">(</span><span class="n">x0</span><span class="p">,</span><span class="n">x1</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">physical_xs</span><span class="p">(</span> <span class="n">grid_cx</span><span class="p">)</span>
@@ -128,9 +143,10 @@
 
 <div class="viewcode-block" id="Via.center_to_metal_edge"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.generators.Via.center_to_metal_edge">[docs]</a>    <span class="k">def</span> <span class="nf">center_to_metal_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">direction</span><span class="p">):</span>
         <span class="k">assert</span> <span class="n">direction</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{direction}</span><span class="s1">_ext&#39;</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s1">_ext&#39;</span><span class="p">)</span></div></div>
 </pre></div>
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -145,7 +161,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -160,12 +176,13 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">align.cell_fabric.generators</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, ALIGN team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
     </div>
   </body>
 </html>

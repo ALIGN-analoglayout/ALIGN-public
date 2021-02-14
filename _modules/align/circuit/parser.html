@@ -1,18 +1,18 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>align.circuit.parser &#8212; ALIGN 0.9 documentation</title>
-    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
@@ -27,7 +27,8 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">align.circuit.parser</a></li> 
       </ul>
     </div>  
 
@@ -63,25 +64,25 @@
 
 <span class="c1"># Token specification</span>
 <span class="n">modifiers</span> <span class="o">=</span> <span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">unit_multipliers</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-<span class="n">numericval</span> <span class="o">=</span> <span class="sa">fr</span><span class="s1">&#39;[+-]?(?:0|[1-9]\d*)(?:[.]\d+)?(?:E[+\-]?\d+)?(?:</span><span class="si">{modifiers}</span><span class="s1">)?&#39;</span>
+<span class="n">numericval</span> <span class="o">=</span> <span class="sa">fr</span><span class="s1">&#39;[+-]?(?:0|[1-9]\d*)(?:[.]\d+)?(?:E[+\-]?\d+)?(?:</span><span class="si">{</span><span class="n">modifiers</span><span class="si">}</span><span class="s1">)?&#39;</span>
 <span class="n">identifier</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;[^\s</span><span class="si">{}</span><span class="s1">()=;*]+&#39;</span>
 <span class="n">operator</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;\s*[*+-/%]\s*&#39;</span>
-<span class="n">exprcontent</span> <span class="o">=</span> <span class="sa">fr</span><span class="s1">&#39;(?:</span><span class="si">{numericval}</span><span class="s1">|</span><span class="si">{identifier}</span><span class="s1">)(?:</span><span class="si">{operator}</span><span class="s1">(?:</span><span class="si">{numericval}</span><span class="s1">|</span><span class="si">{identifier}</span><span class="s1">))*&#39;</span>
+<span class="n">exprcontent</span> <span class="o">=</span> <span class="sa">fr</span><span class="s1">&#39;(?:</span><span class="si">{</span><span class="n">numericval</span><span class="si">}</span><span class="s1">|</span><span class="si">{</span><span class="n">identifier</span><span class="si">}</span><span class="s1">)(?:</span><span class="si">{</span><span class="n">operator</span><span class="si">}</span><span class="s1">(?:</span><span class="si">{</span><span class="n">numericval</span><span class="si">}</span><span class="s1">|</span><span class="si">{</span><span class="n">identifier</span><span class="si">}</span><span class="s1">))*&#39;</span>
 <span class="n">commentchars</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;(?:[;$]|//)&#39;</span>
 
 <span class="n">token_re_map</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;NLCOMMENT&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;(^|[\n\r])+\*[^\n\r]*&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;COMMENT&#39;</span><span class="p">:</span> <span class="sa">fr</span><span class="s1">&#39;(^|\s)*</span><span class="si">{commentchars}</span><span class="s1">[^\n\r]*&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;COMMENT&#39;</span><span class="p">:</span> <span class="sa">fr</span><span class="s1">&#39;(^|\s)*</span><span class="si">{</span><span class="n">commentchars</span><span class="si">}</span><span class="s1">[^\n\r]*&#39;</span><span class="p">,</span>
     <span class="s1">&#39;CONTINUE&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;(^|[\n\r])+\+&#39;</span><span class="p">,</span>
     <span class="s1">&#39;NEWL&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;[\n\r]+&#39;</span><span class="p">,</span>
     <span class="s1">&#39;EQUALS&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;\s*=\s*&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;EXPR&#39;</span><span class="p">:</span> <span class="sa">fr</span><span class="s2">&quot;&quot;&quot;(?P&lt;quote&gt;[&#39;&quot;])</span><span class="si">{exprcontent}</span><span class="s2">(?P=quote)|({{)</span><span class="si">{exprcontent}</span><span class="s2">(}})&quot;&quot;&quot;</span><span class="p">,</span>
-    <span class="s1">&#39;NUMBER&#39;</span><span class="p">:</span> <span class="n">numericval</span> <span class="o">+</span> <span class="sa">fr</span><span class="s1">&#39;(?=\s|\Z|</span><span class="si">{commentchars}</span><span class="s1">)&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;DECL&#39;</span><span class="p">:</span> <span class="sa">fr</span><span class="s1">&#39;\.</span><span class="si">{identifier}</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;EXPR&#39;</span><span class="p">:</span> <span class="sa">fr</span><span class="s2">&quot;&quot;&quot;(?P&lt;quote&gt;[&#39;&quot;])</span><span class="si">{</span><span class="n">exprcontent</span><span class="si">}</span><span class="s2">(?P=quote)|(</span><span class="si">{</span><span class="p">{){</span><span class="n">exprcontent</span><span class="p">}(}</span><span class="si">}</span><span class="s2">)&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;NUMBER&#39;</span><span class="p">:</span> <span class="n">numericval</span> <span class="o">+</span> <span class="sa">fr</span><span class="s1">&#39;(?=\s|\Z|</span><span class="si">{</span><span class="n">commentchars</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;DECL&#39;</span><span class="p">:</span> <span class="sa">fr</span><span class="s1">&#39;\.</span><span class="si">{</span><span class="n">identifier</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
     <span class="s1">&#39;NAME&#39;</span><span class="p">:</span> <span class="n">identifier</span><span class="p">,</span>
     <span class="s1">&#39;WS&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;\s+&#39;</span><span class="p">}</span>
 <span class="c1"># re.IGNORECASE is not required since everything is capitalized prior to tokenization</span>
-<span class="n">spice_pat</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">fr</span><span class="s1">&#39;(?P&lt;</span><span class="si">{x}</span><span class="s1">&gt;</span><span class="si">{y}</span><span class="s1">)&#39;</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">token_re_map</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+<span class="n">spice_pat</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">fr</span><span class="s1">&#39;(?P&lt;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s1">&gt;</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s1">)&#39;</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">token_re_map</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
 
 <span class="c1"># Tokenizer</span>
 <span class="n">Token</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Token&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">,</span><span class="s1">&#39;value&#39;</span><span class="p">])</span>
@@ -168,7 +169,7 @@
     <span class="k">def</span> <span class="nf">_process_declaration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">decl</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">decl</span> <span class="o">==</span> <span class="s1">&#39;.SUBCKT&#39;</span><span class="p">:</span>
             <span class="n">name</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-            <span class="k">assert</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">library</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;User is attempting to redeclare </span><span class="si">{name}</span><span class="s2">&quot;</span>
+            <span class="k">assert</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">library</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;User is attempting to redeclare </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="n">subckt</span> <span class="o">=</span> <span class="n">SubCircuit</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">library</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">library</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_scope</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subckt</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">decl</span> <span class="o">==</span> <span class="s1">&#39;.ENDS&#39;</span><span class="p">:</span>
@@ -179,11 +180,12 @@
         <span class="k">elif</span> <span class="n">decl</span> <span class="o">==</span> <span class="s1">&#39;.MODEL&#39;</span><span class="p">:</span>
             <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="n">args</span>
             <span class="n">name</span><span class="p">,</span> <span class="n">type_</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-            <span class="k">assert</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">library</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;User is attempting to redeclare </span><span class="si">{name}</span><span class="s2">&quot;</span>
+            <span class="k">assert</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">library</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;User is attempting to redeclare </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="k">assert</span> <span class="n">type_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">library</span><span class="p">,</span> <span class="n">type_</span>
             <span class="n">Model</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">library</span><span class="p">[</span><span class="n">type_</span><span class="p">],</span> <span class="n">library</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">library</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 </pre></div>
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -198,7 +200,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -213,12 +215,13 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">align.circuit.parser</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, ALIGN team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
     </div>
   </body>
 </html>

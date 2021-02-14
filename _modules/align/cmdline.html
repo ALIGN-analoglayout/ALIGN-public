@@ -1,18 +1,18 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>align.cmdline &#8212; ALIGN 0.9 documentation</title>
-    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -27,7 +27,8 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">align.cmdline</a></li> 
       </ul>
     </div>  
 
@@ -41,12 +42,18 @@
 <span class="kn">from</span> <span class="nn">.main</span> <span class="kn">import</span> <span class="n">schematic2layout</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">__version__</span>
 
+<span class="kn">from</span> <span class="nn">.utils.logging</span> <span class="kn">import</span> <span class="n">get_loglevels</span>
+
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
 
 <div class="viewcode-block" id="CmdlineParser"><a class="viewcode-back" href="../../align.html#align.cmdline.CmdlineParser">[docs]</a><span class="k">class</span> <span class="nc">CmdlineParser</span><span class="p">():</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">align_home</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span> <span class="s1">&#39;ALIGN_HOME&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
         <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
             <span class="n">description</span><span class="o">=</span><span class="s2">&quot;directory path for input circuits&quot;</span><span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;netlist_dir&quot;</span><span class="p">,</span>
@@ -55,7 +62,8 @@
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-p&quot;</span><span class="p">,</span>
                             <span class="s2">&quot;--pdk_dir&quot;</span><span class="p">,</span>
                             <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-                            <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                            <span class="n">required</span><span class="o">=</span><span class="n">align_home</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span>
+                            <span class="n">default</span><span class="o">=</span><span class="kc">None</span> <span class="k">if</span> <span class="n">align_home</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">align_home</span> <span class="o">+</span> <span class="s1">&#39;/pdks/FinFET14nm_Mock_PDK&#39;</span><span class="p">,</span>
                             <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Path to PDK directory&#39;</span><span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-w&quot;</span><span class="p">,</span>
                             <span class="s2">&quot;--working_dir&quot;</span><span class="p">,</span>
@@ -72,7 +80,7 @@
                             <span class="s2">&quot;--subckt&quot;</span><span class="p">,</span>
                             <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
                             <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Top subckt defination in file.</span><span class="se">\</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Top subckt definition in file.</span><span class="se">\</span>
 <span class="s1">                            </span><span class="se">\n</span><span class="s1">If no name given it takes file name as subckt name. </span><span class="se">\</span>
 <span class="s1">                            </span><span class="se">\n</span><span class="s1">If there are instances at top level,</span><span class="se">\</span>
 <span class="s1">                            a new subckt is created of name filename&#39;</span><span class="p">)</span>
@@ -113,14 +121,31 @@
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span> <span class="s2">&quot;-g&quot;</span><span class="p">,</span> <span class="s2">&quot;--generate&quot;</span><span class="p">,</span>
                             <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
                             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Set the true to generate png&quot;</span><span class="p">)</span>
+        <span class="n">log_level</span><span class="p">,</span> <span class="n">verbosity</span> <span class="o">=</span> <span class="n">get_loglevels</span><span class="p">()</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span> <span class="s2">&quot;-l&quot;</span><span class="p">,</span> <span class="s2">&quot;--log&quot;</span><span class="p">,</span>
                             <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;log_level&quot;</span><span class="p">,</span>
                             <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;DEBUG&#39;</span><span class="p">,</span><span class="s1">&#39;INFO&#39;</span><span class="p">,</span><span class="s1">&#39;WARNING&#39;</span><span class="p">,</span><span class="s1">&#39;ERROR&#39;</span><span class="p">,</span><span class="s1">&#39;CRITICAL&#39;</span><span class="p">],</span>
-                            <span class="n">default</span><span class="o">=</span><span class="s1">&#39;WARNING&#39;</span><span class="p">,</span>
-                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Set the logging level (default: </span><span class="si">%(default)s</span><span class="s2">)&quot;</span><span class="p">)</span>
+                            <span class="n">default</span><span class="o">=</span><span class="n">log_level</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Logfile logging level (default: </span><span class="si">%(default)s</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span> <span class="s2">&quot;-v&quot;</span><span class="p">,</span> <span class="s2">&quot;--verbosity&quot;</span><span class="p">,</span>
+                            <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;verbosity&quot;</span><span class="p">,</span>
+                            <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;DEBUG&#39;</span><span class="p">,</span><span class="s1">&#39;INFO&#39;</span><span class="p">,</span><span class="s1">&#39;WARNING&#39;</span><span class="p">,</span><span class="s1">&#39;ERROR&#39;</span><span class="p">,</span><span class="s1">&#39;CRITICAL&#39;</span><span class="p">],</span>
+                            <span class="n">default</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Console logging level (default: </span><span class="si">%(default)s</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-r&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;--regression&quot;</span><span class="p">,</span>
+                            <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Set to true to copy &lt;dsign&gt;.gds.json to top level (Default False)&#39;</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-u&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;--uniform_height&quot;</span><span class="p">,</span>
+                            <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Set to true to use cells of uniform height (Default False)&#39;</span><span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--version&#39;</span><span class="p">,</span>
                             <span class="n">action</span><span class="o">=</span><span class="s1">&#39;version&#39;</span><span class="p">,</span>
                             <span class="n">version</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(prog)s</span><span class="s1"> &#39;</span> <span class="o">+</span> <span class="n">__version__</span><span class="p">)</span>
+<span class="c1">#        parser.add_argument(&#39;--python_gds_json&#39;,</span>
+<span class="c1">#                            action=&#39;store_true&#39;,</span>
+<span class="c1">#                            help=&quot;Write out GDS after python postprocessing&quot;)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="n">parser</span>
 
@@ -133,6 +158,7 @@
             <span class="k">return</span> <span class="kc">None</span></div></div>
 </pre></div>
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -147,7 +173,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -162,12 +188,13 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">align.cmdline</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, ALIGN team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
     </div>
   </body>
 </html>
