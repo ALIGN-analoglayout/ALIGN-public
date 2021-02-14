@@ -52,7 +52,6 @@ align.gdsconv.txt2prettyjson module
    :undoc-members:
    :show-inheritance:
 
-
 Module contents
 ---------------
 

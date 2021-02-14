@@ -36,6 +36,13 @@ align.primitive.default.res module
    :undoc-members:
    :show-inheritance:
 
+align.primitive.default.via module
+----------------------------------
+
+.. automodule:: align.primitive.default.via
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------

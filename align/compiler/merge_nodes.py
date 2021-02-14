@@ -3,6 +3,7 @@
 Created on Thu Nov 29 22:19:39 2018
 
 @author: kunal
+
 """
 import networkx as nx
 
@@ -181,7 +182,10 @@ def check_values(values):
         assert(type(value)==int or type(value)==float) or value=="unit_size"
 
 def check_nodes(graph):
-    """ Checking node paramters to be dict type"""
+    """ 
+    Checking node paramters to be dict type
+
+    """
     for node, attr in graph.nodes(data=True):
         logger.debug(f"checking node {node} {attr}")
         if  not attr["inst_type"] == "net":
@@ -190,7 +194,7 @@ def check_nodes(graph):
 def merged_value(values1, values2):
     """
     combines values of different devices:
-        right now since primitive generator takes only one value we use max value
+    (right now since primitive generator takes only one value we use max value)
     try:
     #val1={'res': '13.6962k', 'l': '8u', 'w': '500n', 'm': '1'}
     #val2 = {'res': '13.6962k', 'l': '8u', 'w': '500n', 'm': '1'}
