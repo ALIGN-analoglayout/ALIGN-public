@@ -335,8 +335,8 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
                 'parameters':values
             }
             if 'stack' in values.keys():
-                cell_gen_parameters['stack']=values["stack"]
-                block_name = block_name+'_ST'+str(values["stack"])
+                cell_gen_parameters['stack']=int(values["stack"])
+                block_name = block_name+'_ST'+str(int(values["stack"]))
             #cell generator takes only one VT so doing a string search
             #To be fixed:
             if isinstance(attr["real_inst_type"],list):
