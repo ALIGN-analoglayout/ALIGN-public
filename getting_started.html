@@ -54,6 +54,12 @@ of all the components in the current environment
 (assuming that all software prerequisites have been installed).</p>
 <p>Two environment variables must be set to run the Makefile in any environment.
 The first is the ALIGN_HOME variable, which should point the top directory of the ALIGN analog system.</p>
+<div class="section" id="clone-github-repository">
+<h2>Clone GitHub Repository<a class="headerlink" href="#clone-github-repository" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/ALIGN-analoglayout/ALIGN-public
+</pre></div>
+</div>
+</div>
 <div class="section" id="native-linux-environment-flow">
 <h2>Native Linux Environment Flow<a class="headerlink" href="#native-linux-environment-flow" title="Permalink to this headline">¶</a></h2>
 <p>You can use <a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/blob/native_single_command_flow/install.sh">install.sh</a>  to install the requirements and the native flow. Please go through <a class="reference external" href="https://align-public.github.io/debug.html">how to debug installation failures in our documentation</a> for detailed explanation and common errors during installation.</p>
@@ -70,7 +76,8 @@ The first is the ALIGN_HOME variable, which should point the top directory of th
 <p class="admonition-title">Note</p>
 <p>Installation</p>
 </div>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> bash : <span class="nb">source</span> install.sh
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> ALIGN-public
+<span class="k">for</span> bash : <span class="nb">source</span> install.sh
 <span class="k">for</span> tcsh : <span class="nb">source</span> install_tcsh.sh
 </pre></div>
 </div>
@@ -99,6 +106,7 @@ The first is the ALIGN_HOME variable, which should point the top directory of th
   <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Getting started</a><ul>
+<li><a class="reference internal" href="#clone-github-repository">Clone GitHub Repository</a></li>
 <li><a class="reference internal" href="#native-linux-environment-flow">Native Linux Environment Flow</a></li>
 <li><a class="reference internal" href="#docker-flow">Docker flow</a></li>
 </ul>

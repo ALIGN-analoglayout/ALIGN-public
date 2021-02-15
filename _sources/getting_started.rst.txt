@@ -11,6 +11,12 @@ of all the components in the current environment
 Two environment variables must be set to run the Makefile in any environment. 
 The first is the ALIGN_HOME variable, which should point the top directory of the ALIGN analog system.
 
+Clone GitHub Repository
+-------------------------
+
+.. code-block:: bash 
+
+    git clone https://github.com/ALIGN-analoglayout/ALIGN-public
 
 Native Linux Environment Flow
 -------------------------------
@@ -29,6 +35,7 @@ You can use `install.sh <https://github.com/ALIGN-analoglayout/ALIGN-public/blob
 
 .. code-block:: bash 
     
+    cd ALIGN-public
     for bash : source install.sh
     for tcsh : source install_tcsh.sh
 
