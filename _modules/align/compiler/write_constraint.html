@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>align.compiler.write_constraint &#8212; ALIGN 1.0 documentation</title>
+    <title>align.compiler.write_constraint &#8212; ALIGN</title>
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     
@@ -26,7 +26,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">align.compiler.write_constraint</a></li> 
       </ul>
@@ -134,14 +134,14 @@
         <span class="c1">## Right now will try to figure out S/D paths</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">SD_nbrs</span><span class="p">)</span> <span class="o">==</span><span class="mi">0</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No SD paths found to traverse&quot;</span><span class="p">)</span>
-            <span class="c1">#match_pair[node1]=node1</span>
+            <span class="n">match_pair</span><span class="p">[</span><span class="n">node1</span><span class="p">]</span><span class="o">=</span><span class="n">node1</span>
         <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">SD_nbrs</span><span class="p">)</span> <span class="o">==</span><span class="mi">1</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;traversing single S/D path &quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;traversing single S/D path </span><span class="si">{</span><span class="n">SD_nbrs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">match_pair</span><span class="p">[</span><span class="n">node1</span><span class="p">]</span><span class="o">=</span><span class="n">node1</span>
             <span class="n">traversed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node1</span><span class="p">)</span>
             <span class="n">compare_nodes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">all_match_pairs</span><span class="p">,</span><span class="n">match_pair</span><span class="p">,</span><span class="n">traversed</span><span class="p">,</span><span class="n">SD_nbrs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">SD_nbrs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">ports_weight</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; multiple nodes diverging </span><span class="si">{</span><span class="n">nbrs1</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">SD_nbrs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; multiple nodes diverging </span><span class="si">{</span><span class="n">SD_nbrs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;nbr weights: </span><span class="si">{</span><span class="n">SD_nbrs</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="p">[</span><span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node1</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">SD_nbrs</span>  <span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">match_pair</span><span class="p">[</span><span class="n">node1</span><span class="p">]</span><span class="o">=</span><span class="n">node1</span>
             <span class="n">traversed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node1</span><span class="p">)</span>
@@ -526,6 +526,9 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/LOGO.PNG" alt="Logo"/>
+            </a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
@@ -549,7 +552,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">align.compiler.write_constraint</a></li> 
       </ul>
