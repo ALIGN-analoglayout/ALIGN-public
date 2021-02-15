@@ -1,4 +1,4 @@
-Adding your own constraints:
+How to add your own constraints
 ===========================================================
 
 The ALIGN flow generates symmetry constraints automatically but users can add their own constraint for better control.
