@@ -94,14 +94,14 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
         ## Right now will try to figure out S/D paths
         if len(SD_nbrs) ==0:
             logger.debug(f"No SD paths found to traverse")
-            #match_pair[node1]=node1
+            match_pair[node1]=node1
         elif len(SD_nbrs) ==1:
-            logger.debug(f"traversing single S/D path ")
+            logger.debug(f"traversing single S/D path {SD_nbrs}")
             match_pair[node1]=node1
             traversed.append(node1)
             compare_nodes(G,all_match_pairs,match_pair,traversed,SD_nbrs[0],SD_nbrs[0],ports_weight)
         else:
-            logger.debug(f" multiple nodes diverging {nbrs1} {SD_nbrs}")
+            logger.debug(f" multiple nodes diverging {SD_nbrs}")
             logger.debug(f"nbr weights: {SD_nbrs} {[G.get_edge_data(node1, nbr)['weight'] for nbr in SD_nbrs  ]}")
             match_pair[node1]=node1
             traversed.append(node1)

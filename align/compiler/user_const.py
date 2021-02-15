@@ -148,7 +148,7 @@ class ConstraintParser:
         #Replace nested alias
         if not map_alias:
             return all_const
-        for name,blocks in map_alias.items():
+        for blocks in map_alias.values():
             for i,block in enumerate(blocks):
                 if block in map_alias:
                     blocks[i]=map_alias[block]
@@ -170,7 +170,7 @@ class ConstraintParser:
                         self._replace_alias(ele, map_alias)
         return all_const
         
-    def _replace_alias(self,blocks:list,map_alias):
+    def _replace_alias(self,blocks:list,map_alias:dict):
         """
         Replace alias names with the list by concatenating them
 
@@ -214,6 +214,8 @@ class ConstraintParser:
                 const["const_name"] = 'bias_Hgraph'
             elif const["const_name"] == 'VerticallDistance':
                 const["const_name"] = 'bias_Vgraph'
+            elif const["const_name"] == 'AspectRatio':
+                const["const_name"] = 'Aspect_Ratio'
             elif const["const_name"] == 'SymmetricBlocks':
                 const["const_name"] = 'SymmBlock'
                 const["axis_dir"] = const.pop("direction")
@@ -260,6 +262,14 @@ class ConstraintParser:
                         "const_name" : 'PortLocation',
                         "location" : const["location"],
                         "terminal_name" : port
+                    }
+                    added_const.append(extra)
+            elif const["const_name"] == 'MultiConnection':
+                for net in const["nets"]:
+                    extra = {
+                        "const_name" : 'Multi_Connection',
+                        "multi_number" : const["multiplier"],
+                        "net_name" : net
                     }
                     added_const.append(extra)
             elif const["const_name"] == 'NetConst':

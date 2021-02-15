@@ -22,7 +22,7 @@ copyright = '2020, ALIGN team' # pylint: disable=redefined-builtin
 author = 'ALIGN team'
 
 # The full version, including alpha/beta/rc tags
-release = '0.9'
+release = '1.0'
 
 
 # -- General configuration ---------------------------------------------------
