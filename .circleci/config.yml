@@ -313,7 +313,7 @@ workflows:
           matrix:
             parameters:
               pdk:
-                - "Bulk"
+                - "Finfet"
               design:
                 - "BUFFER or ota"
                 - "San or BTSW"
