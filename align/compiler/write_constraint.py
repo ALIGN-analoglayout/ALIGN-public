@@ -94,14 +94,14 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
         ## Right now will try to figure out S/D paths
         if len(SD_nbrs) ==0:
             logger.debug(f"No SD paths found to traverse")
-            #match_pair[node1]=node1
+            match_pair[node1]=node1
         elif len(SD_nbrs) ==1:
-            logger.debug(f"traversing single S/D path ")
+            logger.debug(f"traversing single S/D path {SD_nbrs}")
             match_pair[node1]=node1
             traversed.append(node1)
             compare_nodes(G,all_match_pairs,match_pair,traversed,SD_nbrs[0],SD_nbrs[0],ports_weight)
         else:
-            logger.debug(f" multiple nodes diverging {nbrs1} {SD_nbrs}")
+            logger.debug(f" multiple nodes diverging {SD_nbrs}")
             logger.debug(f"nbr weights: {SD_nbrs} {[G.get_edge_data(node1, nbr)['weight'] for nbr in SD_nbrs  ]}")
             match_pair[node1]=node1
             traversed.append(node1)
@@ -332,8 +332,8 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, input_const, stop_po
                 if key!=value  :
                     pairs,s1,s2 = symmnet_device_pairs(graph,key,value,written_symmetries)
                     if pairs:
-                        symmNet = "\nSymmNet ( {"+key+','+','.join(pairs.keys()) + \
-                                '} , {'+value+','+','.join(pairs.values()) +'} )'
+                        symmNet = key+','+','.join(pairs.keys()) + \
+                                ','+value+','+','.join(pairs.values())
                         written_symmetries+=symmNet
                         symmNetj = {"const_name":"SymmNet","axis_dir":"V","net1":s1,"net2":s2}
                         all_const.append(symmNetj)
@@ -374,7 +374,6 @@ def symmnet_device_pairs(G, net_A, net_B,existing):
         subckt graphs.
     net_A/B : two nets A/B
         DESCRIPTION.
-
     Returns
     -------
     pairs : dict
@@ -413,7 +412,7 @@ def symmnet_device_pairs(G, net_A, net_B,existing):
     if len(pairs.keys())>1:
         return pairs,{"name":net_A,"blocks":blocksA},{"name":net_B,"blocks":blocksB}
     else:
-        logger.debug("skipping symmnet as: symmetry of net is between two devices")
+        logger.debug("skipping symmnet as: symmetry of net is between two non identical devices")
         return [None,None,None]
 
 def connection(graph,net:str):
@@ -437,17 +436,17 @@ def connection(graph,net:str):
     conn = {}
     logger.debug(f"checking connections of net: {net}, {list(graph.neighbors(net))}")
     for nbr in list(graph.neighbors(net)):
-        try:
-            if "ports_match" in graph.nodes[nbr]:
-                logger.debug(f"ports match:%s %s",net,graph.nodes[nbr]["ports_match"].items())
-                idx=list(graph.nodes[nbr]["ports_match"].values()).index(net)
-                conn[nbr+'/'+list(graph.nodes[nbr]["ports_match"].keys())[idx]]= (graph.get_edge_data(net, nbr)['weight'] & ~2)
-
-            elif "connection" in graph.nodes[nbr]:
-                logger.debug("connection:%s%s",net,graph.nodes[nbr]["connection"].items())
+        if "ports_match" in graph.nodes[nbr] and graph.nodes[nbr]["ports_match"]:
+            logger.debug(f"ports match:%s %s",nbr,graph.nodes[nbr]["ports_match"].items())
+            if net in graph.nodes[nbr]["ports_match"].values():
+                idx = list(graph.nodes[nbr]["ports_match"].values()).index(net)
+                conn[nbr+'/'+list(graph.nodes[nbr]["ports_match"].keys())[idx]] = (graph.get_edge_data(net, nbr)['weight'] & ~2)
+        elif "connection" in graph.nodes[nbr] and graph.nodes[nbr]["connection"]:
+            logger.debug("connection:%s%s",nbr,graph.nodes[nbr]["connection"])
+            if net in graph.nodes[nbr]["connection"].values():
                 idx=list(graph.nodes[nbr]["connection"].values()).index(net)
                 conn[nbr+'/'+list(graph.nodes[nbr]["connection"].keys())[idx]]= (graph.get_edge_data(net, nbr)['weight'] & ~2)
-        except ValueError:
+        else:
             logger.debug("internal net")
     if graph.nodes[net]["net_type"]=="external":
         conn[net]=sum(conn.values())

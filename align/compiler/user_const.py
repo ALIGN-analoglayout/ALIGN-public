@@ -34,8 +34,9 @@ class ConstraintParser:
         fp = self.input_dir / (design_name+'.const')
         fp_json = self.input_dir / (design_name+'.const.json')
         if fp_json.is_file():
-            self.block_const = json.load(fp_json)
-            logger.info(f"JSON input const file for block {design_name}")
+            logger.info(f"JSON input const file for block {design_name} {fp_json}")
+            f = open(fp_json, "r")
+            self.block_const = json.load(f)
         elif fp.is_file():
             logger.info(f"CMD-line input const file for block {design_name}")
             all_const = []
@@ -123,6 +124,7 @@ class ConstraintParser:
         if 'shield' in const:
             self._check_type(const['shield'],valid_arg['shield'])   
         if 'num_units' in const:
+            const['num_units'] = [int(x) for x in const["num_units"].replace(']','').replace('[','').split(',')]
             self._check_type(const['num_units'],valid_arg['num_units'])  
         if 'dummy' in const:
             const['dummy'] = bool(const['dummy'])
@@ -132,7 +134,7 @@ class ConstraintParser:
             assert data in arg
         elif arg in self.known_types:
             data_type = self.known_types[arg]
-            assert isinstance(data, data_type)
+            assert isinstance(data, data_type), f"{type(data)},{data_type}"
         else:
             logger.warning(f"wrong data type in constraint: {data}, valid types are: {arg}" )            
         
@@ -145,11 +147,13 @@ class ConstraintParser:
                 map_alias[const["name"]]=const["blocks"]
         all_const = [i for i in all_const if not i['const_name']=='CreateAlias']
         #Replace nested alias
-        for name,blocks in map_alias.items():
+        if not map_alias:
+            return all_const
+        for blocks in map_alias.values():
             for i,block in enumerate(blocks):
                 if block in map_alias:
                     blocks[i]=map_alias[block]
-                    
+        
         for const in all_const:
             if 'blocks' in const: 
                self._replace_alias(const["blocks"],map_alias)
@@ -163,10 +167,11 @@ class ConstraintParser:
                self._replace_alias(const["ports"],map_alias)
             elif 'pairs' in const:
                 for ele in const['pairs']:
-                   self._replace_alias(ele, map_alias)
+                    if isinstance(ele, str):
+                        self._replace_alias(ele, map_alias)
         return all_const
         
-    def _replace_alias(self,blocks:list,map_alias):
+    def _replace_alias(self,blocks:list,map_alias:dict):
         """
         Replace alias names with the list by concatenating them
 
@@ -210,6 +215,8 @@ class ConstraintParser:
                 const["const_name"] = 'bias_Hgraph'
             elif const["const_name"] == 'VerticallDistance':
                 const["const_name"] = 'bias_Vgraph'
+            elif const["const_name"] == 'AspectRatio':
+                const["const_name"] = 'Aspect_Ratio'
             elif const["const_name"] == 'SymmetricBlocks':
                 const["const_name"] = 'SymmBlock'
                 const["axis_dir"] = const.pop("direction")
@@ -256,6 +263,14 @@ class ConstraintParser:
                         "const_name" : 'PortLocation',
                         "location" : const["location"],
                         "terminal_name" : port
+                    }
+                    added_const.append(extra)
+            elif const["const_name"] == 'MultiConnection':
+                for net in const["nets"]:
+                    extra = {
+                        "const_name" : 'Multi_Connection',
+                        "multi_number" : const["multiplier"],
+                        "net_name" : net
                     }
                     added_const.append(extra)
             elif const["const_name"] == 'NetConst':

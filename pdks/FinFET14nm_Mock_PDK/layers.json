@@ -33,7 +33,7 @@
 "HorizontalDistance":  {"abs_distance":"int"},
 "VerticalDistance":    {"abs_distance":"int"},
 "SymmetricBlocks":  {"pairs":"list","direction":["H","V"]},
-"GroupCaps":       {"blocks":"list","name":"str","unit_cap":"str","num_units":"str","dummy":"bool"},
+"GroupCaps":       {"blocks":"list","name":"str","unit_cap":"str","num_units":"list","dummy":"bool"},
 "AlignBlocks":     {"blocks":"list","direction":["H","V"]},
 "NetConst":        {"nets":"list","shield":"str","criticality":"int"},
 "PortLocation":    {"ports":"list","location":["BL","BR","BC","TL","TR","TC","RL","RR","RC","LL","LR","LC"]},

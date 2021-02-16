@@ -60,6 +60,7 @@ class Annotate:
             circuit_name= name
             G1 = self.hier_graph_dict[name]["graph"]
             self._group_block_const(G1,circuit_name)
+            self._group_cap_const(G1,circuit_name)
 
         for circuit_name, circuit in self.hier_graph_dict.items():
             logger.debug(f"START MATCHING in circuit: {circuit_name}")
@@ -149,6 +150,8 @@ class Annotate:
                 if not set(const['blocks']).issubset(set(G1.nodes)):
                     logger.error(f"Constraint blocks: {const['blocks']} not in subcircuit {list(G1.nodes)}")
                     exit()
+                logger.debug(f"Grouping blocks {const['blocks']}")
+                inst_name = '_'.join(const['blocks'])
                 matched_ports = {}
                 ports_weight = {}
                 for block in const['blocks']:
@@ -160,15 +163,48 @@ class Annotate:
                             if not nbr in ports_weight:
                                 ports_weight[nbr] = []
                                 ports_weight[nbr].append(G1.get_edge_data(block, nbr)['weight'])
-                subgraph,_ = merge_nodes(G1,const['name'],const['blocks'],matched_ports,'x'+const['name'])
+                subgraph,_ = merge_nodes(G1,const['name'],const['blocks'],matched_ports,inst_name)
                 self.hier_graph_dict[const['name']] = {
                     "graph": subgraph,
                     "ports": list(matched_ports.keys()),
                     "ports_weight": ports_weight,
                     "const": {"constraints":[const]}
                     }
-                self._update_sym_const(name,G1,const['blocks'], matched_ports,'x'+const['name'])
+                self._update_sym_const(name,G1,const['blocks'], matched_ports,inst_name)
 
+    def _group_cap_const(self,G1,name):
+        if self._if_const(name):
+            const_list = self.hier_graph_dict[name]["const"]["constraints"]
+            gb_const = [const for const in const_list if const['const_name']=="CC"]
+            
+            # const_list = [const for const in const_list if const['const_name'] !="GroupCaps"]
+            self.hier_graph_dict[name]['const']['constraints']=const_list
+            for const in gb_const:
+                if not set(const['blocks']).issubset(set(G1.nodes)) or len(set(const['blocks']))==1:
+                    logger.error(f"Constraint blocks: {const['blocks']} not in subcircuit {list(G1.nodes)}")
+                    exit()
+                logger.debug(f"Grouping blocks {const['blocks']} {const['cap_name']}")
+                inst_name = '_'.join(const['blocks'])
+                matched_ports = {}
+                ports_weight = {}
+                for block in const['blocks']:
+                    for nbr in G1.neighbors(block):
+                        if set(G1.neighbors(nbr)).issubset(set(const['blocks'])):
+                            continue
+                        else:
+                            matched_ports[nbr]=nbr
+                            if not nbr in ports_weight:
+                                ports_weight[nbr] = []
+                                ports_weight[nbr].append(G1.get_edge_data(block, nbr)['weight'])
+                subgraph,_ = merge_nodes(G1,const['cap_name'],const['blocks'],matched_ports,inst_name)
+                self.hier_graph_dict[const['cap_name']] = {
+                    "graph": subgraph,
+                    "ports": list(matched_ports.keys()),
+                    "ports_weight": ports_weight,
+                    "const": {"constraints":[const]}
+                    }
+                self._update_sym_const(name, G1, const['blocks'], matched_ports, inst_name)
+                
     def _update_sym_const(self,name,G1,remove_nodes, matched_ports,new_inst):
         """
         Update instance names in the constraint in case they are reduced
@@ -314,15 +350,14 @@ class Annotate:
                 continue
             if not self._is_small(G1, G2):
                 continue
-            
+
             if len(G2.nodes)<=len(G1.nodes):
                 logger.debug(f"Matching: {block_name} : {G2.nodes} {G2.edges(data=True)}")
             GM = isomorphism.GraphMatcher(
                 G1, G2,
-                node_match=isomorphism.categorical_node_match(['inst_type'],
+                node_match = isomorphism.categorical_node_match(['inst_type'],
                                                               ['nmos']),
-                edge_match=isomorphism.categorical_edge_match(['weight'], [1]))
-    
+                edge_match = isomorphism.categorical_edge_match(['weight'], [1]))
             if GM.subgraph_is_isomorphic():
                 logger.debug(f"ISOMORPHIC : {block_name}")
                 map_list = []
