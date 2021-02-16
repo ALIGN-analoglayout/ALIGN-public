@@ -124,6 +124,7 @@ class ConstraintParser:
         if 'shield' in const:
             self._check_type(const['shield'],valid_arg['shield'])   
         if 'num_units' in const:
+            const['num_units'] = [int(x) for x in const["num_units"].replace(']','').replace('[','').split(',')]
             self._check_type(const['num_units'],valid_arg['num_units'])  
         if 'dummy' in const:
             const['dummy'] = bool(const['dummy'])
@@ -133,7 +134,7 @@ class ConstraintParser:
             assert data in arg
         elif arg in self.known_types:
             data_type = self.known_types[arg]
-            assert isinstance(data, data_type)
+            assert isinstance(data, data_type), f"{type(data)},{data_type}"
         else:
             logger.warning(f"wrong data type in constraint: {data}, valid types are: {arg}" )            
         

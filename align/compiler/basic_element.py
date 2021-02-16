@@ -90,7 +90,7 @@ class BasicElement:
              The assumption is 2 port network
         """
         self.get_elements(2)
-        value = parse_value(self.value, "cap")
+        value = parse_value(self.value, "res")
         if 'r' in value.keys():
             value['res'] = value['r']
             del value['r']
