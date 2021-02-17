@@ -56,7 +56,7 @@ RUN \
         -o \
         \( -type f -a \( \
             -name '*.pyc' -o -name '*.pyo' \
-            -name '*.whl' -o -name '*.a' \
+            -o -name '*.whl' -o -name '*.a' \
         \) \) \
     \) -exec rm -rf '{}' + \
     # Remove all build dirs not needed by PnR
