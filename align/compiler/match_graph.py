@@ -11,7 +11,7 @@ from networkx.algorithms import isomorphism
 from .merge_nodes import merge_nodes, merged_value
 from .util import get_next_level
 from .write_constraint import FindSymmetry
-
+from .common_centroid_cap_constraint import merge_caps
 import pprint
 import logging
 logger = logging.getLogger(__name__)
@@ -172,38 +172,46 @@ class Annotate:
                     }
                 self._update_sym_const(name,G1,const['blocks'], matched_ports,inst_name)
 
-    def _group_cap_const(self,G1,name):
+    def _group_cap_const(self, G1, name):
+        """
+        Reads common centroid const in input constraints
+        Merges cc caps as single cap in const-file and netlist
+        Parameters
+        ----------
+        graph : networkx graph
+            Input graph to be modified
+        const_path: pathlib.path
+            Input const file path
+        ports : list
+            Used to check nets which should not be deleted/renamed.
+        Returns
+        -------
+        None.
+
+        """
         if self._if_const(name):
             const_list = self.hier_graph_dict[name]["const"]["constraints"]
-            gb_const = [const for const in const_list if const['const_name']=="CC"]
-            
-            # const_list = [const for const in const_list if const['const_name'] !="GroupCaps"]
             self.hier_graph_dict[name]['const']['constraints']=const_list
-            for const in gb_const:
-                if not set(const['blocks']).issubset(set(G1.nodes)) or len(set(const['blocks']))==1:
-                    logger.error(f"Constraint blocks: {const['blocks']} not in subcircuit {list(G1.nodes)}")
-                    exit()
-                logger.debug(f"Grouping blocks {const['blocks']} {const['cap_name']}")
-                inst_name = '_'.join(const['blocks'])
-                matched_ports = {}
-                ports_weight = {}
-                for block in const['blocks']:
-                    for nbr in G1.neighbors(block):
-                        if set(G1.neighbors(nbr)).issubset(set(const['blocks'])):
-                            continue
-                        else:
-                            matched_ports[nbr]=nbr
-                            if not nbr in ports_weight:
-                                ports_weight[nbr] = []
-                                ports_weight[nbr].append(G1.get_edge_data(block, nbr)['weight'])
-                subgraph,_ = merge_nodes(G1,const['cap_name'],const['blocks'],matched_ports,inst_name)
-                self.hier_graph_dict[const['cap_name']] = {
-                    "graph": subgraph,
-                    "ports": list(matched_ports.keys()),
-                    "ports_weight": ports_weight,
-                    "const": {"constraints":[const]}
-                    }
-                self._update_sym_const(name, G1, const['blocks'], matched_ports, inst_name)
+            for const in const_list:
+                #Check1: atleast one block in defined constraint
+                # Check2:  Check block in design
+                if const['const_name'] == "CC" \
+                    and 'blocks' in const.keys() and isinstance(const["blocks"],list) \
+                    and set(const['blocks']).issubset(set(G1.nodes)): 
+                    logger.debug(f"Grouping CC caps {const}")
+                    ctype = 'Cap_cc_' + "_".join([str(x) for x in const["size"]])
+                    if len (set(const['blocks']))>1:
+                        merge_caps(G1,ctype,const["blocks"],const["cap_name"])
+                    del const['blocks']
+                    const['cap_r'] = -1
+                    const['cap_s'] = -1
+                # self.hier_graph_dict[const['cap_name']] = {
+                #     "graph": subgraph,
+                #     "ports": list(matched_ports.keys()),
+                #     "ports_weight": ports_weight,
+                #     "const": {"constraints":[const]}
+                #     }
+                #self._update_sym_const(name, G1, const['blocks'], matched_ports, inst_name)
                 
     def _update_sym_const(self,name,G1,remove_nodes, matched_ports,new_inst):
         """
