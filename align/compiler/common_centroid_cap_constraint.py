@@ -48,7 +48,8 @@ def WriteCap(graph,name,unit_size_cap,input_const):
                 available_cap_const.append(const["cap_name"])
     else:
         input_const = {}
-        all_const =[]
+        all_const = []
+    logger.debug(f"Searching cap constraints for block {name}, input const: {all_const}")
     for const in all_const:
         if const["const_name"]== "SymmBlock":
             b = [[p["block1"],p["block2"]] for p in const["pairs"] if p["type"]=="sympair"]
@@ -83,8 +84,8 @@ def WriteCap(graph,name,unit_size_cap,input_const):
             if cc_caps:
                 cc_cap = '_'.join(cc_caps)
                 logger.debug(f"merging symmetrical caps: {arr} {cc_cap} {cc_caps} {n_cap}")
-                name = 'Cap_cc_'+"_".join([str(x) for x in n_cap])
-                merge_caps(graph,name,cc_caps,cc_cap)
+                ctype = 'Cap_cc_'+"_".join([str(x) for x in n_cap])
+                merge_caps(graph,ctype,cc_caps,cc_cap)
                 cc_cap_size[cc_cap]=n_cap
     # updating any symmnet constraint 	
     for id, const in enumerate(all_const):
@@ -131,6 +132,9 @@ def WriteCap(graph,name,unit_size_cap,input_const):
             all_const.append(cap_const)
             available_cap_const.append(node)
     input_const["constraints"] = all_const
+    logger.debug(f"Identified cap constraints of {name} are {input_const}")
+
+    return input_const
     # if len(all_const["constraints"]) ==0:
     #     os.remove(const_path)
     #     logger.debug("no cap const found: %s",const_path)

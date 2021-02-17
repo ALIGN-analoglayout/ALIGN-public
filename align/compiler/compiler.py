@@ -227,7 +227,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
         name = member["name"]
         graph = member["graph"]
         if not 'const' in member:
-            member["const"]=None
+            member["const"] = None
         const = member["const"]
         if name in duplicate_modules:
             continue
@@ -261,8 +261,8 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
                 logger.debug(f"call constraint generator writer for block: {name}")
                 stop_points=design_setup['POWER']+design_setup['GND']+design_setup['CLOCK']
                 if name not in design_setup['NO_CONST']:
-                    WriteConst(graph, name, inoutpin, member["ports_weight"], const,stop_points)
-                WriteCap(graph, name, design_config["unit_size_cap"], const)
+                    const = WriteConst(graph, name, inoutpin, member["ports_weight"], const,stop_points)
+                const = WriteCap(graph, name, design_config["unit_size_cap"], const)
             if const and 'constraints' in const and len(const["constraints"]) > 0:
                 json_const_file = result_dir / (name + '.const.json')
                 with open(json_const_file, 'w') as outfile:

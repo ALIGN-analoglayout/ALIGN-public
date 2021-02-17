@@ -363,7 +363,8 @@ def WriteConst(graph, name, ports, ports_weight, input_const, stop_points=None):
             logger.debug(f"one axis of written symmetries: {symmBlock}")
 
     input_const["constraints"] = all_const
-
+    logger.debug(f"Identified constraints of {name} are {input_const}")
+    return input_const
 
 def symmnet_device_pairs(G, net_A, net_B,existing):
     """
