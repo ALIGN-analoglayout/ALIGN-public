@@ -3,7 +3,7 @@ How to add your own constraints
 
 The ALIGN flow generates symmetry constraints automatically but users can add their own constraint for better control.
 Here, are the list of constraints used in align. These constraints are applied on the blocks (instances of NMOS/PMOS/Resistor/Capacitor/Subcircuit) or on nets.
-These constraints need to be defined seperately for each of the hierachies, defined in the schematic.
+These constraints need to be defined seperately for each of the hierachies with name ``<hier name>.const``, defined in the schematic.
 
 * CreateAlias:
 	Defines an alias for group of blocks. These aliases can be later used in the const file in place of list of blocks or nets.
@@ -73,7 +73,7 @@ These constraints need to be defined seperately for each of the hierachies, defi
 	.. image:: images/SymmetricBlocks.PNG
 
 * AlignBlocks:
-	Aligns blocks horizontally or vertically
+	Aligns blocks horizontally or vertically.
 
 	* Format: ``AlignBlocks -blocks <list of blocks> -direction H/V``
 	* Example: ``AlignBlocks -blocks -alias1 -direction V``
@@ -113,7 +113,7 @@ These constraints need to be defined seperately for each of the hierachies, defi
 
 
 Using JSON format as input:
-	ALIGN can also take JSON format input of the constraints. There is direct translation from cmdline format to JSON format.
+	ALIGN can also take JSON format input of the constraints. There is direct translation from cmdline format to JSON format. The file names for these JSON constraints should be ``<hier name>.const.json``.
 
 	* Format (cmd): ``CreateAlias -blocks [B1,B2,B3] -name alias1``
 	* Format (JSON): ``"CreateAlias": { "blocks": ["B1","B2","B3"], "name"  : "alias1"}``

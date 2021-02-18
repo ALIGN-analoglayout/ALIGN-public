@@ -21,6 +21,7 @@ The goal of ALIGN is to automatically translate an unannotated (or partially ann
    viewer
    debug
    const
+   setup
    upcoming
    modules
 
