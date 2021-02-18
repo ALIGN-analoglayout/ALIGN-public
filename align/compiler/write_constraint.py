@@ -265,9 +265,9 @@ def FindSymmetry(graph, ports:list, ports_weight:dict, stop_points:list):
 
     return all_match_pairs
 
-def WriteConst(graph, input_dir, name, ports, ports_weight, input_const, stop_points=None):
-    json_const_file = input_dir / (name + '.const.json')
-    logger.debug("writing constraints: %s",json_const_file)
+def WriteConst(graph, name, ports, ports_weight, input_const, stop_points=None):
+    # json_const_file = input_dir / (name + '.const.json')
+    logger.debug(f"Searching constraints for block {name}")
     logger.debug(f"ports weight: {ports_weight} stop_points : {stop_points}")
 
     # Read contents of input constraint file
@@ -283,6 +283,7 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, input_const, stop_po
         logger.debug(f"input const {input_const}")
         all_const = input_const["constraints"]
     else:
+        input_const = {}
         all_const = []
 
     ## ALIGN block constraints
@@ -360,11 +361,10 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, input_const, stop_po
             written_symmetries += ' '.join([a['block2'] for a in pairsj if 'block2' in a.keys()])
             all_const.append(symmBlock)
             logger.debug(f"one axis of written symmetries: {symmBlock}")
-    if all_const:
-        json_const = {'constraints':all_const}
-        with open(json_const_file, 'w') as outfile:
-            json.dump(json_const, outfile, indent=4)
 
+    input_const["constraints"] = all_const
+    logger.debug(f"Identified constraints of {name} are {input_const}")
+    return input_const
 
 def symmnet_device_pairs(G, net_A, net_B,existing):
     """
@@ -453,28 +453,28 @@ def connection(graph,net:str):
 
     return conn
 
-def CopyConstFile(name, input_dir, working_dir):
-    """
-    Copy const file to working directory if needed
+# def CopyConstFile(name, input_dir, working_dir):
+#     """
+#     Copy const file to working directory if needed
 
-    Parameters
-    ----------
-    name : str
-        constraint filename.
-    input_dir : path
-    working_dir : path
+#     Parameters
+#     ----------
+#     name : str
+#         constraint filename.
+#     input_dir : path
+#     working_dir : path
 
-    Returns
-    -------
-    const_file : path
-        copied constraint file path.
+#     Returns
+#     -------
+#     const_file : path
+#         copied constraint file path.
 
-    """
-    input_const_file = (input_dir / (name + '.const'))
-    const_file = (working_dir / (name + '.const.json'))
-    # if input_const_file.exists() and input_const_file.is_file():
-    #     if const_file == input_const_file:
-    #         (input_dir / (name + '.const.old')).write_text(input_const_file.read_text())
-    #     else:
-    #         const_file.write_text(input_const_file.read_text())
-    return const_file
+#     """
+#     input_const_file = (input_dir / (name + '.const'))
+#     const_file = (working_dir / (name + '.const.json'))
+#     # if input_const_file.exists() and input_const_file.is_file():
+#     #     if const_file == input_const_file:
+#     #         (input_dir / (name + '.const.old')).write_text(input_const_file.read_text())
+#     #     else:
+#     #         const_file.write_text(input_const_file.read_text())
+#     return const_file

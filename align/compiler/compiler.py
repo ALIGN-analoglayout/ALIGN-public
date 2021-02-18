@@ -9,8 +9,8 @@ from .create_database import CreateDatabase
 from .match_graph import Annotate
 from .read_setup import read_setup
 from .write_verilog_lef import WriteVerilog, print_globals,print_header,generate_lef
-from .common_centroid_cap_constraint import WriteCap, check_common_centroid
-from .write_constraint import WriteConst, CopyConstFile
+from .common_centroid_cap_constraint import WriteCap
+from .write_constraint import WriteConst
 from .read_lef import read_lef
 from .user_const import ConstraintParser
 
@@ -151,8 +151,6 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
     logger.debug(f"Writing results in dir: {result_dir} {updated_ckt_list}")
     input_dir=input_ckt.parents[0]
     VERILOG_FP = open(result_dir / f'{design_name}.v', 'w')
-    #printed_mos = []
-    #logger.debug("writing spice file for cell generator")
 
     ## File pointer for spice generator
     #SP_FP = open(result_dir / (design_name + '_blocks.sp'), 'w')
@@ -170,7 +168,6 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
     logger.debug(f"Available library cells: {', '.join(all_lef)}")
     # local hack for deisgn vco_dtype,
     #there requirement is different size for nmos and pmos
-    generated_module=[]
     primitives = {}
     duplicate_modules =[]
     for member in updated_ckt_list:
@@ -227,7 +224,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
         name = member["name"]
         graph = member["graph"]
         if not 'const' in member:
-            member["const"]=None
+            member["const"] = None
         const = member["const"]
         if name in duplicate_modules:
             continue
@@ -253,7 +250,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             logger.debug(f"call verilog writer for block: {name}")
             wv = WriteVerilog(graph, name, inoutpin, updated_ckt_list, POWER_PINS)
             logger.debug(f"Copy const file for: {name}")
-            const_file = CopyConstFile(name, input_dir, result_dir)
+            # const_file = CopyConstFile(name, input_dir, result_dir)
             logger.debug(f"cap constraint gen for block: {name}")
 
             ##Removing constraints to fix cascoded cmc
@@ -261,20 +258,13 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
                 logger.debug(f"call constraint generator writer for block: {name}")
                 stop_points=design_setup['POWER']+design_setup['GND']+design_setup['CLOCK']
                 if name not in design_setup['NO_CONST']:
-                    WriteConst(graph, result_dir, name, inoutpin, member["ports_weight"], const,stop_points)
-                elif const:
-                    json_const_file = result_dir / (name + '.const.json')
-                    with open(json_const_file, 'w') as outfile:
-                        json.dump(const, outfile, indent=4)
-
-                WriteCap(graph, result_dir, name, design_config["unit_size_cap"])
-                check_common_centroid(graph,const_file,inoutpin)
-            elif const:
+                    const = WriteConst(graph, name, inoutpin, member["ports_weight"], const, stop_points)
+                const = WriteCap(graph, name, design_config["unit_size_cap"], const, design_setup['MERGE_SYMM_CAPS'])
+            if const and 'constraints' in const and len(const["constraints"]) > 0:
                 json_const_file = result_dir / (name + '.const.json')
                 with open(json_const_file, 'w') as outfile:
                     json.dump(const, outfile, indent=4)
             wv.print_module(VERILOG_FP)
-            generated_module.append(name)
     if len(POWER_PINS)>0:
         print_globals(VERILOG_FP,POWER_PINS)
 

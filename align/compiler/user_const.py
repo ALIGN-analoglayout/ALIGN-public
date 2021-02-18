@@ -57,6 +57,7 @@ class ConstraintParser:
             self.block_const['constraints'] = all_const
         else:
             return None
+        logger.debug(f"user constraints: {all_const} ")
         self._map_valid_const()
         return self.block_const
             
@@ -127,7 +128,7 @@ class ConstraintParser:
             const['num_units'] = [int(x) for x in const["num_units"].replace(']','').replace('[','').split(',')]
             self._check_type(const['num_units'],valid_arg['num_units'])  
         if 'dummy' in const:
-            const['dummy'] = bool(const['dummy'])
+            const['dummy'] = (const['dummy']==True)
         return const
     def _check_type(self,data,arg):
         if isinstance(arg,list):

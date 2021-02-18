@@ -30,8 +30,8 @@ def test_verilog_writer():
             ws = WriteSpice(subckt["graph"],subckt["name"]+block_name_ext  , subckt["ports"], subckts,available_cell_generator)
             ws.print_subckt(SP_FP)
         else:
-            WriteConst(subckt["graph"], result_dir, subckt["name"], subckt['ports'],subckt['ports_weight'],None,['vdd!'])
-            WriteCap(subckt["graph"], result_dir, subckt["name"],  design_config["unit_size_cap"])
+            const=WriteConst(subckt["graph"],  subckt["name"], subckt['ports'],subckt['ports_weight'],None,['vdd!'])
+            WriteCap(subckt["graph"],  subckt["name"],  design_config["unit_size_cap"],const,True)
     VERILOG_FP.close()
     SP_FP.close()
 

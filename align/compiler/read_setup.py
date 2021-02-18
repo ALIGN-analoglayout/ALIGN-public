@@ -17,7 +17,8 @@ def read_setup(setup_path):
             "DIGITAL":[],
             "DONT_USE_CELLS":[],
             "NO_CONST":[],
-            "NO_ARRAY":[]
+            "NO_ARRAY": [],
+            "MERGE_SYMM_CAPS":True
             }
     if setup_path.is_file():
         logger.debug(f'Reading setup file: {setup_path}')
@@ -45,6 +46,9 @@ def read_setup(setup_path):
             elif line.strip().startswith("NO_ARRAY"):
                 NO_CONST = line.strip().split('=')[1].split()
                 design_setup['NO_ARRAY'] = NO_CONST
+            elif line.strip().startswith("MERGE_SYMM_CAPS"):
+                MERGE_SYMM_CAPS = (line.strip().split('=')[1].split()=='True')
+                design_setup['MERGE_SYMM_CAPS'] = MERGE_SYMM_CAPS
             else:
                 logger.warning(f"Non identified values found in setup file{line}")
             line=fp.readline()
