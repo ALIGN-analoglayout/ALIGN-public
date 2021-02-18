@@ -12,6 +12,7 @@
 // Need to eventuall replace with similar Ifc, but not until we remove the helper functions: route_single_variant and route top_down
 #include "./MNA/MNASimulation.h"
 #include "./router/Router.h"
+#include "./EA_placer/placement.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -278,6 +279,7 @@ int route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::bbox 
 int toplevel( const std::vector<std::string>& argv) {
   
   auto logger = spdlog::default_logger()->clone("toplevel");
+  spdlog::set_level(spdlog::level::debug);
 
   //
   // Enable or disable state saving in json at intermediate points
@@ -342,7 +344,11 @@ int toplevel( const std::vector<std::string>& argv) {
 
     logger->debug("Checkpoint : before place");
     DB.PrintHierNode(current_node);
-
+    //EA placer
+    Placement EA_placer;
+    EA_placer.generate_testing_data();
+    EA_placer.E_Placer();
+    return 0;
     // Placement
     PlacerIfc curr_plc(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
     std::vector<PnRDB::hierNode>& nodeVec(curr_plc.get());

@@ -50,13 +50,14 @@ placer_path=placer
 router_path=router
 MNA_path=MNA
 GuardRing_path=guard_ring
+EA_placer_path=EA_placer
 
 SuperLu_path1=$(SuperLu_DIR)/SuperLU_5.2.1/build/SRC
 SuperLu_path2=$(SuperLu_DIR)/SuperLU_5.2.1/build/CBLAS
 
 OBJS=main.o toplevel.o
 SRCS=$(OBJS:.o=.cpp)
-LIBS=$(placer_path)/placer.a $(router_path)/router.a $(cap_placer_path)/cap_placer.a $(PnRDB_path)/PnRDB.a $(MNA_path)/MNA.a $(SuperLu_path1)/libsuperlu.a $(SuperLu_path2)/libblas.a $(GuardRing_path)/GuardRing.a
+LIBS=$(placer_path)/placer.a $(router_path)/router.a $(cap_placer_path)/cap_placer.a $(PnRDB_path)/PnRDB.a $(MNA_path)/MNA.a $(SuperLu_path1)/libsuperlu.a $(SuperLu_path2)/libblas.a $(GuardRing_path)/GuardRing.a $(EA_placer_path)/EA_placer.a
 
 depend:
 	@$(CXX) $(CXXFLAGS) -E -MM $(SRCS) unit_tests.cpp > .depend
@@ -70,6 +71,7 @@ subsystem:
 	$(MAKE) -C $(cap_placer_path)
 	$(MAKE) -C $(MNA_path)
 	$(MAKE) -C $(GuardRing_path)
+	$(MAKE) -C $(EA_placer_path)     
 
 pnr_compiler: subsystem $(OBJS) 
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LIBS) -L$(GTEST_LIB_DIR) -lgtest -L$(LIB_LP) -llpsolve55 $(LDFLAGS)  
@@ -83,7 +85,7 @@ PYBIND_SUFFIX = $(shell python3-config --extension-suffix)
 python_object_file: PnR$(EXTENSION_SUFFIX)
 
 PnR$(EXTENSION_SUFFIX): subsystem $(OBJS)
-	$(CXX) $(CXXFLAGS) -shared $(PYBIND_INCLUDES) PnR-pybind11.cpp -o PnR$(PYBIND_SUFFIX) toplevel.o cap_placer/cap_placer.a placer/placer.a router/router.a PnRDB/PnRDB.a -L$(GTEST_LIB_DIR) -lgtest -L$(LIB_LP) -llpsolve55
+	$(CXX) $(CXXFLAGS) -shared $(PYBIND_INCLUDES) PnR-pybind11.cpp -o PnR$(PYBIND_SUFFIX) toplevel.o cap_placer/cap_placer.a placer/placer.a router/router.a PnRDB/PnRDB.a EA_placer/EA_placer.a -L$(GTEST_LIB_DIR) -lgtest -L$(LIB_LP) -llpsolve55
 else
 python_object_file:
 	echo "Skipping generation of python object file because NOPYBIND11 is set."
@@ -102,6 +104,7 @@ clean:
 	$(MAKE) -C $(cap_placer_path) clean
 	$(MAKE) -C $(MNA_path) clean
 	$(MAKE) -C $(GuardRing_path) clean
+	$(MAKE) -C $(EA_placer_path) clean
 
 COVERAGE_INFO=coverage.info
 COVERAGE_HTML=htmlcov
