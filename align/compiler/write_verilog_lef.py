@@ -158,16 +158,11 @@ class WriteSpice:
                     elif 'DCL_PMOS' in attr['inst_type']:
                         nets[1:1]=[nets[1]]
 
-                elif "connection" in attr:
-                    try:
-                        logger.debug(f'connection to ports: {attr["connection"]}')
-                        for key, value in attr["connection"].items():
-                            if check_ports_match(self.subckt_dict,key,attr['inst_type']):
-                                ports.append(key)
-                                nets.append(value)
-                    except:
-                        logger.error(f"ERROR: Subckt {attr['inst_type']} defination not found")
-
+                elif "connection" in attr and attr["connection"]:
+                    for key, value in attr["connection"].items():
+                        if attr['inst_type'] in self.subckt_dict and key in self.subckt_dict[attr['inst_type']]['ports']:
+                            ports.append(key)
+                            nets.append(value)
                 else:
                     logger.error(f"No connectivity info found : {', '.join(attr['ports'])}")
                     ports = attr["ports"]
@@ -349,13 +344,3 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
             block_name = name+"_"+size
 
     raise NotImplementedError(f"Could not generate LEF for {name}")
-
-
-def check_ports_match(subckt_dict, port, subckt_name):
-    
-    for name,member in subckt_dict:
-        if name ==subckt and port in member["ports"]:
-            return 1
-        else:
-            logger.debug("ports match: %s %s",subckt,port)
-            return 1
