@@ -18,8 +18,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 def generate_hierarchy(netlist, subckt, output_dir, flatten_heirarchy, pdk_dir, uniform_height):
-    updated_ckt_list,library = compiler(netlist, subckt, pdk_dir, flatten_heirarchy)
-    return compiler_output(netlist, library, updated_ckt_list, subckt, output_dir, pdk_dir, uniform_height)
+    hier_graph_dict,library = compiler(netlist, subckt, pdk_dir, flatten_heirarchy)
+    return compiler_output(netlist, library, hier_graph_dict, subckt, output_dir, pdk_dir, uniform_height)
 
 def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path,flat=0,Debug=False):
     """
@@ -107,11 +107,11 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path,flat=
                 logger.debug(node)
 
     annotate =Annotate(hier_graph_dict, design_setup,library,all_lef)
-    updated_ckt_list,lib_names =annotate.annotate()
+    lib_names =annotate.annotate()
 
-    return updated_ckt_list, lib_names
+    return hier_graph_dict, lib_names
 
-def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, result_dir:pathlib.Path, pdk_dir:pathlib.Path, uniform_height=False):
+def compiler_output(input_ckt, lib_names , hier_graph_dict, design_name:str, result_dir:pathlib.Path, pdk_dir:pathlib.Path, uniform_height=False):
     """
     search for constraints and write output in verilog format
     Parameters
@@ -120,7 +120,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
         DESCRIPTION.Used to take designer provided constraints
     library : TYPE. list of library graphs used
         DESCRIPTION.
-    updated_ckt_list : TYPE. list of reduced circuit graph
+    hier_graph_dict : TYPE. dict of reduced circuit graph
         DESCRIPTION. this list is used to generate constraints
     design_name : TYPE. name of top level design
         DESCRIPTION.
@@ -148,7 +148,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
 
     if not result_dir.exists():
         result_dir.mkdir()
-    logger.debug(f"Writing results in dir: {result_dir} {updated_ckt_list}")
+    logger.debug(f"Writing results in dir: {result_dir} {hier_graph_dict}")
     input_dir=input_ckt.parents[0]
     VERILOG_FP = open(result_dir / f'{design_name}.v', 'w')
 
@@ -166,25 +166,17 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
     lef_path = pathlib.Path(__file__).resolve().parent.parent / 'config'
     all_lef = read_lef(lef_path)
     logger.debug(f"Available library cells: {', '.join(all_lef)}")
-    # local hack for deisgn vco_dtype,
-    #there requirement is different size for nmos and pmos
+
     primitives = {}
-    duplicate_modules =[]
-    for member in updated_ckt_list:
-        name = member["name"]
-        if name in duplicate_modules:
-            continue
-        else:
-            duplicate_modules.append(name)
+    for name,member in hier_graph_dict.items():
+
         logger.debug(f"Found module: {name} {member['graph'].nodes()}")
 
         graph = member["graph"]
         logger.debug(f"Reading nodes from graph: {name}")
         for node, attr in graph.nodes(data=True):
-            #lef_name = '_'.join(attr['inst_type'].split('_')[0:-1])
             if 'net' in attr['inst_type']: continue
             #Dropping floating ports
-
             lef_name = attr['inst_type']
 
             if "values" in attr and (lef_name in all_lef):
@@ -193,9 +185,9 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
                 logger.debug(f"Created new lef for: {block_name} {lef_name}")
                 #Multiple instances of same module
                 if 'inst_copy' in attr:
-                    for member in updated_ckt_list:
-                        if member["name"] == lef_name + attr['inst_copy']:
-                            member["name"] = block_name
+                    for nm in hier_graph_dict.keys():
+                        if nm == lef_name + attr['inst_copy']:
+                            hier_graph_dict[block_name] = hier_graph_dict.pop(nm)
                     graph.nodes[node]["inst_type"]=block_name
                     all_lef.append(block_name)
 
@@ -219,17 +211,11 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
                 logger.debug(f"No physical information found for: {name}")
         logger.debug(f"generated data for {name} : {pprint.pformat(primitives, indent=4)}")
 
-    duplicate_modules =[]
-    for member in updated_ckt_list:
-        name = member["name"]
+    for name,member in hier_graph_dict.items():
         graph = member["graph"]
         if not 'const' in member:
             member["const"] = None
         const = member["const"]
-        if name in duplicate_modules:
-            continue
-        else:
-            duplicate_modules.append(name)
         logger.debug(f"Found module: {name} {graph.nodes()}")
         inoutpin = []
         floating_ports=[]
@@ -240,7 +226,6 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             if member["ports"]:
                 logger.debug(f'Found module ports: {member["ports"]} {member.keys()}')
                 floating_ports = set(inoutpin) - set(member["ports"]) - set(design_setup['POWER']) -set(design_setup['GND'])
-
                 if len(list(floating_ports))> 0:
                     logger.error(f"floating ports found: {name} {floating_ports}")
                     raise SystemExit('Please remove floating ports')
@@ -248,7 +233,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             inoutpin = member["ports"]
         if name not in  all_lef:
             logger.debug(f"call verilog writer for block: {name}")
-            wv = WriteVerilog(graph, name, inoutpin, updated_ckt_list, POWER_PINS)
+            wv = WriteVerilog(graph, name, inoutpin, hier_graph_dict, POWER_PINS)
             logger.debug(f"Copy const file for: {name}")
             # const_file = CopyConstFile(name, input_dir, result_dir)
             logger.debug(f"cap constraint gen for block: {name}")

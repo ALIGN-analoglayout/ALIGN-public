@@ -57,7 +57,6 @@ class ConstraintParser:
             self.block_const['constraints'] = all_const
         else:
             return None
-        logger.debug(f"user constraints: {all_const} ")
         self._map_valid_const()
         return self.block_const
             

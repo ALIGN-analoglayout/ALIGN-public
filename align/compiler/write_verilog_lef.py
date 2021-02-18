@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class WriteVerilog:
     """ write hierarchical verilog file """
 
-    def __init__(self, circuit_graph, circuit_name, inout_pin_names,subckt_list, power_pins):
+    def __init__(self, circuit_graph, circuit_name, inout_pin_names,subckt_dict, power_pins):
         self.circuit_graph = circuit_graph
         self.circuit_name = circuit_name
         self.inout_pins = inout_pin_names
@@ -25,7 +25,7 @@ class WriteVerilog:
             if port not in power_pins:
                 self.pins.append(port)
         self.power_pins=power_pins
-        self.subckt_list = subckt_list
+        self.subckt_dict = subckt_dict
 
     def print_module(self, fp):
         logger.debug(f"Writing module : {self.circuit_name}")
@@ -59,16 +59,11 @@ class WriteVerilog:
                     elif 'Switch_PMOS_G' in attr['inst_type']:
                         ports.append('B')
                         nets.append(nets[1])
-                elif "connection" in attr:
-                    try:
-                        logger.debug(f'connection to ports: {attr["connection"]}')
-                        for key, value in attr["connection"].items():
-                            if check_ports_match(self.subckt_list,key,attr['inst_type']):
-                                ports.append(key)
-                                nets.append(value)
-                    except:
-                        logger.error(f"ERROR: Subckt {attr['inst_type']} defination not found")
-
+                elif "connection" in attr and attr["connection"]:
+                    for key, value in attr["connection"].items():
+                        if attr['inst_type'] in self.subckt_dict and key in self.subckt_dict[attr['inst_type']]['ports']:
+                            ports.append(key)
+                            nets.append(value)
                 else:
                     logger.error(f"No connectivity info found : {', '.join(attr['ports'])}")
                     ports = attr["ports"]
@@ -117,12 +112,12 @@ class WriteVerilog:
 class WriteSpice:
     """ write hierarchical verilog file """
 
-    def __init__(self, circuit_graph, circuit_name, inout_pin_names,subckt_list, lib_names):
+    def __init__(self, circuit_graph, circuit_name, inout_pin_names,subckt_dict, lib_names):
         self.circuit_graph = circuit_graph
         self.circuit_name = circuit_name
         self.inout_pins = inout_pin_names
         self.pins = inout_pin_names
-        self.subckt_list = subckt_list
+        self.subckt_dict = subckt_dict
         self.lib_names = lib_names
         self.all_mos = []
     def print_mos_subckt(self,fp,printed_mos):
@@ -167,7 +162,7 @@ class WriteSpice:
                     try:
                         logger.debug(f'connection to ports: {attr["connection"]}')
                         for key, value in attr["connection"].items():
-                            if check_ports_match(self.subckt_list,key,attr['inst_type']):
+                            if check_ports_match(self.subckt_dict,key,attr['inst_type']):
                                 ports.append(key)
                                 nets.append(value)
                     except:
@@ -356,9 +351,10 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
     raise NotImplementedError(f"Could not generate LEF for {name}")
 
 
-def check_ports_match(subckt_list,port,subckt):
-    for members in subckt_list:
-        if members["name"]==subckt and port in members["ports"]:
+def check_ports_match(subckt_dict, port, subckt_name):
+    
+    for name,member in subckt_dict:
+        if name ==subckt and port in member["ports"]:
             return 1
         else:
             logger.debug("ports match: %s %s",subckt,port)

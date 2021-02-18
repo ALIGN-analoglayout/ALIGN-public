@@ -48,18 +48,9 @@ def test_match_ota():
     assert 'CMC_S_NMOS_B' in mapped_graph_list.keys()
     assert 'DP_NMOS_B' in mapped_graph_list.keys()
 
-    subckts_created, reduced_graph = annotate._reduce_graph(g, "ota", mapped_graph_list)
-    assert len(reduced_graph.nodes()) == 19
-    subckts_created.append({
-            "name": "ota",
-            "graph":reduced_graph ,
-            "ports":find_ports(reduced_graph),
-            "ports_weight":find_ports_weight(reduced_graph),
-            "size": len(reduced_graph.nodes())
-        })
-    print(reduced_graph.nodes())
-    print(subckts_created)
-    return subckts_created
+    hier_graph_dict['ota']['graph'] = annotate._reduce_graph(g, "ota", mapped_graph_list)
+    assert len( hier_graph_dict['ota']['graph'].nodes()) == 19
+    return hier_graph_dict
 
 def find_ports(graph):
     ports = []
