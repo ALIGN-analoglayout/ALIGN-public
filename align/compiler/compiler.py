@@ -256,4 +256,5 @@ def compiler_output(input_ckt, lib_names , hier_graph_dict, design_name:str, res
     logger.info("Topology identification done !!!")
     logger.info(f"OUTPUT verilog netlist at: {result_dir}/{design_name}.v")
     logger.info(f"OUTPUT const file at: {result_dir}/{design_name}.const.json")
+    exit()
     return primitives

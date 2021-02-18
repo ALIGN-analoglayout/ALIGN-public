@@ -47,7 +47,7 @@ def read_setup(setup_path):
                 NO_CONST = line.strip().split('=')[1].split()
                 design_setup['NO_ARRAY'] = NO_CONST
             elif line.strip().startswith("MERGE_SYMM_CAPS"):
-                MERGE_SYMM_CAPS = (line.strip().split('=')[1].split()=='True')
+                MERGE_SYMM_CAPS = (line.strip().split('=')[1].strip() == "True")
                 design_setup['MERGE_SYMM_CAPS'] = MERGE_SYMM_CAPS
             else:
                 logger.warning(f"Non identified values found in setup file{line}")
