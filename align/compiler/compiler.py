@@ -151,8 +151,6 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
     logger.debug(f"Writing results in dir: {result_dir} {updated_ckt_list}")
     input_dir=input_ckt.parents[0]
     VERILOG_FP = open(result_dir / f'{design_name}.v', 'w')
-    #printed_mos = []
-    #logger.debug("writing spice file for cell generator")
 
     ## File pointer for spice generator
     #SP_FP = open(result_dir / (design_name + '_blocks.sp'), 'w')
@@ -170,7 +168,6 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
     logger.debug(f"Available library cells: {', '.join(all_lef)}")
     # local hack for deisgn vco_dtype,
     #there requirement is different size for nmos and pmos
-    generated_module=[]
     primitives = {}
     duplicate_modules =[]
     for member in updated_ckt_list:
@@ -268,7 +265,6 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
                 with open(json_const_file, 'w') as outfile:
                     json.dump(const, outfile, indent=4)
             wv.print_module(VERILOG_FP)
-            generated_module.append(name)
     if len(POWER_PINS)>0:
         print_globals(VERILOG_FP,POWER_PINS)
 

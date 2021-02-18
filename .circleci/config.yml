@@ -241,7 +241,7 @@ jobs:
               source setup.sh && \
               filter="<<parameters.design>>" && \
               filter="<<parameters.pdk>>${filter:+ and $filter}" && \
-              pytest -vv --runnightly --maxerrors 0 --tb=line --timeout=<<parameters.timeout>> -k "$filter" -- tests/integration && \
+              pytest -vv --runnightly --maxerrors 10 --tb=line --timeout=<<parameters.timeout>> -k "$filter" -- tests/integration && \
               mkdir -p /test-reports && cp -r junit.xml LOG /test-reports && \
               cd $ALIGN_WORK_DIR && find . -name *.png -exec cp --parents \{\} /test-reports \; \
             '
