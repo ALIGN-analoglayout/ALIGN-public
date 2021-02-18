@@ -119,8 +119,10 @@ services:
     build:
       <<: *default-build
       context: ${ALIGN_HOME}/
-      dockerfile: build/Dockerfile.base
-    container_name: align_cont
+      dockerfile: build/Dockerfile.using-install.sh
+      cache_from:
+        - align_container
+    container_name: align_container
 
   placeroute-service:
     <<: *default-service

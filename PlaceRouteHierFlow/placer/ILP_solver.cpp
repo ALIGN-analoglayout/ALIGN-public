@@ -8,6 +8,7 @@ ILP_solver::ILP_solver(design& mydesign) {
   UR.x = INT_MIN;
   UR.x = INT_MIN;
   Blocks.resize(mydesign.Blocks.size());
+  Aspect_Ratio_weight = mydesign.Aspect_Ratio_weight;
 }
 
 ILP_solver::ILP_solver(const ILP_solver& solver) {
@@ -20,6 +21,7 @@ ILP_solver::ILP_solver(const ILP_solver& solver) {
   dead_area = solver.dead_area;
   linear_const = solver.linear_const;
   multi_linear_const = solver.multi_linear_const;
+  Aspect_Ratio_weight = solver.Aspect_Ratio_weight;
 }
 
 ILP_solver& ILP_solver::operator=(const ILP_solver& solver) {
@@ -31,11 +33,11 @@ ILP_solver& ILP_solver::operator=(const ILP_solver& solver) {
   ratio = solver.ratio;
   dead_area = solver.dead_area;
   multi_linear_const = solver.multi_linear_const;
+  Aspect_Ratio_weight = solver.Aspect_Ratio_weight;
   return *this;
 }
 
 void ILP_solver::lpsolve_logger(lprec* lp, void* userhandle, char* buf) {
-
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.lpsolve_logger");
 
   // Strip leading newline
@@ -45,7 +47,6 @@ void ILP_solver::lpsolve_logger(lprec* lp, void* userhandle, char* buf) {
 }
 
 double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
-  
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
 
   // each block has 4 vars, x, y, H_flip, V_flip;
@@ -289,7 +290,8 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     for (int i = 0; i < mydesign.Nets.size(); i++) {
       vector<pair<int, int>> blockids;
       for (int j = 0; j < mydesign.Nets[i].connected.size(); j++) {
-        if (mydesign.Nets[i].connected[j].type == placerDB::Block && (blockids.size() == 0 || mydesign.Nets[i].connected[j].iter2 != curr_sp.negPair[blockids.back().first]))
+        if (mydesign.Nets[i].connected[j].type == placerDB::Block &&
+            (blockids.size() == 0 || mydesign.Nets[i].connected[j].iter2 != curr_sp.negPair[blockids.back().first]))
           blockids.push_back(std::make_pair(find(curr_sp.negPair.begin(), curr_sp.negPair.end(), mydesign.Nets[i].connected[j].iter2) - curr_sp.negPair.begin(),
                                             mydesign.Nets[i].connected[j].iter));
       }
@@ -312,28 +314,28 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
         double sparserow[5] = {const_graph.LAMBDA, (LLblock_width - 2 * LLpin_x) * const_graph.LAMBDA, -const_graph.LAMBDA,
                                -(URblock_width - 2 * URpin_x) * const_graph.LAMBDA, -1};
         int colno[5] = {LLblock_id * 4 + 1, LLblock_id * 4 + 3, URblock_id * 4 + 1, URblock_id * 4 + 3, mydesign.Blocks.size() * 4 + i * 2 + 1};
-        //add_constraintex(lp, 5, sparserow, colno, LE, -LLpin_x + URpin_x);
+        // add_constraintex(lp, 5, sparserow, colno, LE, -LLpin_x + URpin_x);
       }
       {
         double sparserow[5] = {-const_graph.LAMBDA, -(LLblock_width - 2 * LLpin_x) * const_graph.LAMBDA, const_graph.LAMBDA,
                                (URblock_width - 2 * URpin_x) * const_graph.LAMBDA, -1};
         int colno[5] = {LLblock_id * 4 + 1, LLblock_id * 4 + 3, URblock_id * 4 + 1, URblock_id * 4 + 3, mydesign.Blocks.size() * 4 + i * 2 + 1};
-        //add_constraintex(lp, 5, sparserow, colno, LE, LLpin_x - URpin_x);
+        // add_constraintex(lp, 5, sparserow, colno, LE, LLpin_x - URpin_x);
       }
-      //row[mydesign.Blocks.size() * 4 + i * 2 + 1] = 1;
+      // row[mydesign.Blocks.size() * 4 + i * 2 + 1] = 1;
       {
         double sparserow[5] = {const_graph.LAMBDA, (LLblock_height - 2 * LLpin_y) * const_graph.LAMBDA, -const_graph.LAMBDA,
                                -(URblock_height - 2 * URpin_y) * const_graph.LAMBDA, -1};
         int colno[5] = {LLblock_id * 4 + 2, LLblock_id * 4 + 4, URblock_id * 4 + 2, URblock_id * 4 + 4, mydesign.Blocks.size() * 4 + i * 2 + 2};
-        //add_constraintex(lp, 5, sparserow, colno, LE, -LLpin_y + URpin_y);
+        // add_constraintex(lp, 5, sparserow, colno, LE, -LLpin_y + URpin_y);
       }
       {
         double sparserow[5] = {-const_graph.LAMBDA, -(LLblock_height - 2 * LLpin_y) * const_graph.LAMBDA, const_graph.LAMBDA,
                                (URblock_height - 2 * URpin_y) * const_graph.LAMBDA, -1};
         int colno[5] = {LLblock_id * 4 + 2, LLblock_id * 4 + 4, URblock_id * 4 + 2, URblock_id * 4 + 4, mydesign.Blocks.size() * 4 + i * 2 + 2};
-        //add_constraintex(lp, 5, sparserow, colno, LE, LLpin_y - URpin_y);
+        // add_constraintex(lp, 5, sparserow, colno, LE, LLpin_y - URpin_y);
       }
-      //row[mydesign.Blocks.size() * 4 + i * 2 + 2] = 1;
+      // row[mydesign.Blocks.size() * 4 + i * 2 + 2] = 1;
     }
 
     // add area in cost
@@ -512,7 +514,7 @@ double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
                       mydesign.Blocks[mbi.blockid2][curr_sp.selected[mbi.blockid2]].height / 2);
   }
   cost += match_cost * const_graph.BETA;
-  cost += ratio * const_graph.SIGMA;
+  cost += ratio * Aspect_Ratio_weight;
   cost += dead_area / area * const_graph.PHI;
   cost += linear_const * const_graph.PI;
   cost += multi_linear_const * const_graph.PII;
@@ -738,7 +740,6 @@ std::vector<double> ILP_solver::Calculate_Center_Point_feature(std::vector<std::
 }
 
 void ILP_solver::updateTerminalCenter(design& mydesign, SeqPair& curr_sp) {
-
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.updateTerminalCenter");
 
   int Xmax = UR.x;
@@ -1393,7 +1394,6 @@ void ILP_solver::UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& nod
 }
 
 void ILP_solver::UpdateSymmetryNetInfo(design& mydesign, PnRDB::hierNode& node, int i, int SBidx, placerDB::Smark axis_dir, SeqPair& curr_sp) {
-
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.UpdateSymmetryNetInfo");
 
   int axis_coor = 0;
