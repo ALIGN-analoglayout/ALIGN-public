@@ -16,7 +16,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Upcoming documentation" href="upcoming.html" />
+    <link rel="next" title="Writing your setup file" href="setup.html" />
     <link rel="prev" title="How to debug installation failures" href="debug.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -29,7 +29,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="upcoming.html" title="Upcoming documentation"
+          <a href="setup.html" title="Writing your setup file"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="debug.html" title="How to debug installation failures"
@@ -48,7 +48,7 @@
 <h1>How to add your own constraints<a class="headerlink" href="#how-to-add-your-own-constraints" title="Permalink to this headline">¶</a></h1>
 <p>The ALIGN flow generates symmetry constraints automatically but users can add their own constraint for better control.
 Here, are the list of constraints used in align. These constraints are applied on the blocks (instances of NMOS/PMOS/Resistor/Capacitor/Subcircuit) or on nets.
-These constraints need to be defined seperately for each of the hierachies, defined in the schematic.</p>
+These constraints need to be defined seperately for each of the hierachies with name <code class="docutils literal notranslate"><span class="pre">&lt;hier</span> <span class="pre">name&gt;.const</span></code>, defined in the schematic.</p>
 <ul>
 <li><dl class="simple">
 <dt>CreateAlias:</dt><dd><p>Defines an alias for group of blocks. These aliases can be later used in the const file in place of list of blocks or nets.</p>
@@ -140,7 +140,7 @@ In case of one block in the pair, the block gets placed self-symmetrically.</p>
 </dl>
 </li>
 <li><dl>
-<dt>AlignBlocks:</dt><dd><p>Aligns blocks horizontally or vertically</p>
+<dt>AlignBlocks:</dt><dd><p>Aligns blocks horizontally or vertically.</p>
 <ul class="simple">
 <li><p>Format: <code class="docutils literal notranslate"><span class="pre">AlignBlocks</span> <span class="pre">-blocks</span> <span class="pre">&lt;list</span> <span class="pre">of</span> <span class="pre">blocks&gt;</span> <span class="pre">-direction</span> <span class="pre">H/V</span></code></p></li>
 <li><p>Example: <code class="docutils literal notranslate"><span class="pre">AlignBlocks</span> <span class="pre">-blocks</span> <span class="pre">-alias1</span> <span class="pre">-direction</span> <span class="pre">V</span></code></p></li>
@@ -197,7 +197,7 @@ T (top), L (left), C (center), R (right), B (bottom).</p>
 </li>
 </ul>
 <dl class="simple">
-<dt>Using JSON format as input:</dt><dd><p>ALIGN can also take JSON format input of the constraints. There is direct translation from cmdline format to JSON format.</p>
+<dt>Using JSON format as input:</dt><dd><p>ALIGN can also take JSON format input of the constraints. There is direct translation from cmdline format to JSON format. The file names for these JSON constraints should be <code class="docutils literal notranslate"><span class="pre">&lt;hier</span> <span class="pre">name&gt;.const.json</span></code>.</p>
 <ul class="simple">
 <li><p>Format (cmd): <code class="docutils literal notranslate"><span class="pre">CreateAlias</span> <span class="pre">-blocks</span> <span class="pre">[B1,B2,B3]</span> <span class="pre">-name</span> <span class="pre">alias1</span></code></p></li>
 <li><p>Format (JSON): <code class="docutils literal notranslate"><span class="pre">&quot;CreateAlias&quot;:</span> <span class="pre">{</span> <span class="pre">&quot;blocks&quot;:</span> <span class="pre">[&quot;B1&quot;,&quot;B2&quot;,&quot;B3&quot;],</span> <span class="pre">&quot;name&quot;</span>&#160; <span class="pre">:</span> <span class="pre">&quot;alias1&quot;}</span></code></p></li>
@@ -220,8 +220,8 @@ T (top), L (left), C (center), R (right), B (bottom).</p>
   <p class="topless"><a href="debug.html"
                         title="previous chapter">How to debug installation failures</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="upcoming.html"
-                        title="next chapter">Upcoming documentation</a></p>
+  <p class="topless"><a href="setup.html"
+                        title="next chapter">Writing your setup file</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -253,7 +253,7 @@ T (top), L (left), C (center), R (right), B (bottom).</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="upcoming.html" title="Upcoming documentation"
+          <a href="setup.html" title="Writing your setup file"
              >next</a> |</li>
         <li class="right" >
           <a href="debug.html" title="How to debug installation failures"

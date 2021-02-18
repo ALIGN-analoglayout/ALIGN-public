@@ -51,7 +51,7 @@
 <span class="kn">from</span> <span class="nn">.merge_nodes</span> <span class="kn">import</span> <span class="n">merge_nodes</span><span class="p">,</span> <span class="n">merged_value</span>
 <span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">get_next_level</span>
 <span class="kn">from</span> <span class="nn">.write_constraint</span> <span class="kn">import</span> <span class="n">FindSymmetry</span>
-
+<span class="kn">from</span> <span class="nn">.common_centroid_cap_constraint</span> <span class="kn">import</span> <span class="n">merge_caps</span>
 <span class="kn">import</span> <span class="nn">pprint</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -100,6 +100,7 @@
             <span class="n">circuit_name</span><span class="o">=</span> <span class="n">name</span>
             <span class="n">G1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;graph&quot;</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_group_block_const</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span><span class="n">circuit_name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_group_cap_const</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span><span class="n">circuit_name</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">circuit_name</span><span class="p">,</span> <span class="n">circuit</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;START MATCHING in circuit: </span><span class="si">{</span><span class="n">circuit_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -189,6 +190,8 @@
                 <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">)):</span>
                     <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Constraint blocks: </span><span class="si">{</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> not in subcircuit </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                     <span class="n">exit</span><span class="p">()</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Grouping blocks </span><span class="si">{</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">inst_name</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">])</span>
                 <span class="n">matched_ports</span> <span class="o">=</span> <span class="p">{}</span>
                 <span class="n">ports_weight</span> <span class="o">=</span> <span class="p">{}</span>
                 <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">const</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">]:</span>
@@ -200,15 +203,56 @@
                             <span class="k">if</span> <span class="ow">not</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">ports_weight</span><span class="p">:</span>
                                 <span class="n">ports_weight</span><span class="p">[</span><span class="n">nbr</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
                                 <span class="n">ports_weight</span><span class="p">[</span><span class="n">nbr</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">G1</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)[</span><span class="s1">&#39;weight&#39;</span><span class="p">])</span>
-                <span class="n">subgraph</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">merge_nodes</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">],</span><span class="n">matched_ports</span><span class="p">,</span><span class="s1">&#39;x&#39;</span><span class="o">+</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+                <span class="n">subgraph</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">merge_nodes</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">],</span><span class="n">matched_ports</span><span class="p">,</span><span class="n">inst_name</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
                     <span class="s2">&quot;graph&quot;</span><span class="p">:</span> <span class="n">subgraph</span><span class="p">,</span>
                     <span class="s2">&quot;ports&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">matched_ports</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
                     <span class="s2">&quot;ports_weight&quot;</span><span class="p">:</span> <span class="n">ports_weight</span><span class="p">,</span>
                     <span class="s2">&quot;const&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;constraints&quot;</span><span class="p">:[</span><span class="n">const</span><span class="p">]}</span>
                     <span class="p">}</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_update_sym_const</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">G1</span><span class="p">,</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">],</span> <span class="n">matched_ports</span><span class="p">,</span><span class="s1">&#39;x&#39;</span><span class="o">+</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_update_sym_const</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">G1</span><span class="p">,</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">],</span> <span class="n">matched_ports</span><span class="p">,</span><span class="n">inst_name</span><span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">_group_cap_const</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">G1</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reads common centroid const in input constraints</span>
+<span class="sd">        Merges cc caps as single cap in const-file and netlist</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        graph : networkx graph</span>
+<span class="sd">            Input graph to be modified</span>
+<span class="sd">        const_path: pathlib.path</span>
+<span class="sd">            Input const file path</span>
+<span class="sd">        ports : list</span>
+<span class="sd">            Used to check nets which should not be deleted/renamed.</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_if_const</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">const_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;const&quot;</span><span class="p">][</span><span class="s2">&quot;constraints&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s1">&#39;const&#39;</span><span class="p">][</span><span class="s1">&#39;constraints&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">const_list</span>
+            <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="n">const_list</span><span class="p">:</span>
+                <span class="c1">#Check1: atleast one block in defined constraint</span>
+                <span class="c1"># Check2:  Check block in design</span>
+                <span class="k">if</span> <span class="n">const</span><span class="p">[</span><span class="s1">&#39;const_name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;CC&quot;</span> \
+                    <span class="ow">and</span> <span class="s1">&#39;blocks&#39;</span> <span class="ow">in</span> <span class="n">const</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">const</span><span class="p">[</span><span class="s2">&quot;blocks&quot;</span><span class="p">],</span><span class="nb">list</span><span class="p">)</span> \
+                    <span class="ow">and</span> <span class="nb">set</span><span class="p">(</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">)):</span> 
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Grouping CC caps </span><span class="si">{</span><span class="n">const</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">ctype</span> <span class="o">=</span> <span class="s1">&#39;Cap_cc_&#39;</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">const</span><span class="p">[</span><span class="s2">&quot;size&quot;</span><span class="p">]])</span>
+                    <span class="k">if</span> <span class="nb">len</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">]))</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
+                        <span class="n">merge_caps</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span><span class="n">ctype</span><span class="p">,</span><span class="n">const</span><span class="p">[</span><span class="s2">&quot;blocks&quot;</span><span class="p">],</span><span class="n">const</span><span class="p">[</span><span class="s2">&quot;cap_name&quot;</span><span class="p">])</span>
+                    <span class="k">del</span> <span class="n">const</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">]</span>
+                    <span class="n">const</span><span class="p">[</span><span class="s1">&#39;cap_r&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+                    <span class="n">const</span><span class="p">[</span><span class="s1">&#39;cap_s&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+                <span class="c1"># self.hier_graph_dict[const[&#39;cap_name&#39;]] = {</span>
+                <span class="c1">#     &quot;graph&quot;: subgraph,</span>
+                <span class="c1">#     &quot;ports&quot;: list(matched_ports.keys()),</span>
+                <span class="c1">#     &quot;ports_weight&quot;: ports_weight,</span>
+                <span class="c1">#     &quot;const&quot;: {&quot;constraints&quot;:[const]}</span>
+                <span class="c1">#     }</span>
+                <span class="c1">#self._update_sym_const(name, G1, const[&#39;blocks&#39;], matched_ports, inst_name)</span>
+                
     <span class="k">def</span> <span class="nf">_update_sym_const</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">G1</span><span class="p">,</span><span class="n">remove_nodes</span><span class="p">,</span> <span class="n">matched_ports</span><span class="p">,</span><span class="n">new_inst</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update instance names in the constraint in case they are reduced</span>

@@ -133,7 +133,7 @@ The assumption is 4 port network</p>
 <p>&#64;author: kunal001</p>
 <dl class="py function">
 <dt id="align.compiler.common_centroid_cap_constraint.WriteCap">
-<code class="sig-prename descclassname">align.compiler.common_centroid_cap_constraint.</code><code class="sig-name descname">WriteCap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">graph</span></em>, <em class="sig-param"><span class="n">input_dir</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">unit_size_cap</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/common_centroid_cap_constraint.html#WriteCap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.common_centroid_cap_constraint.WriteCap" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">align.compiler.common_centroid_cap_constraint.</code><code class="sig-name descname">WriteCap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">graph</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">unit_size_cap</span></em>, <em class="sig-param"><span class="n">input_const</span></em>, <em class="sig-param"><span class="n">merge_caps</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/common_centroid_cap_constraint.html#WriteCap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.common_centroid_cap_constraint.WriteCap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads input graph and generates constraints for capacitors
 The constraints are defined such that caps are designed using a unit cap.
 :param graph: Input graph to be modified
@@ -153,29 +153,8 @@ The constraints are defined such that caps are designed using a unit cap.
 </dd></dl>
 
 <dl class="py function">
-<dt id="align.compiler.common_centroid_cap_constraint.check_common_centroid">
-<code class="sig-prename descclassname">align.compiler.common_centroid_cap_constraint.</code><code class="sig-name descname">check_common_centroid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">graph</span></em>, <em class="sig-param"><span class="n">const_path</span></em>, <em class="sig-param"><span class="n">ports</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/common_centroid_cap_constraint.html#check_common_centroid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.common_centroid_cap_constraint.check_common_centroid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reads common centroid const in generated constraints
-Merges cc caps as single cap in const-file and netlist
-:param graph: Input graph to be modified
-:type graph: networkx graph
-:param const_path: Input const file path
-:type const_path: pathlib.path
-:param ports: Used to check nets which should not be deleted/renamed.
-:type ports: list</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p></p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
 <dt id="align.compiler.common_centroid_cap_constraint.merge_caps">
-<code class="sig-prename descclassname">align.compiler.common_centroid_cap_constraint.</code><code class="sig-name descname">merge_caps</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">graph</span></em>, <em class="sig-param"><span class="n">caps</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/common_centroid_cap_constraint.html#merge_caps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.common_centroid_cap_constraint.merge_caps" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">align.compiler.common_centroid_cap_constraint.</code><code class="sig-name descname">merge_caps</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">graph</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">caps</span></em>, <em class="sig-param"><span class="n">inst</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/common_centroid_cap_constraint.html#merge_caps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.common_centroid_cap_constraint.merge_caps" title="Permalink to this definition">¶</a></dt>
 <dd><p>Merges caps in graph as single cap
 :param graph: Input graph to be modified
 :type graph: networkx graph
@@ -187,6 +166,29 @@ Merges cc caps as single cap in const-file and netlist
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="align.compiler.common_centroid_cap_constraint.merge_symmetric_caps">
+<code class="sig-prename descclassname">align.compiler.common_centroid_cap_constraint.</code><code class="sig-name descname">merge_symmetric_caps</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">all_const</span></em>, <em class="sig-param"><span class="n">graph</span></em>, <em class="sig-param"><span class="n">unit_size_cap</span></em>, <em class="sig-param"><span class="n">available_cap_const</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/common_centroid_cap_constraint.html#merge_symmetric_caps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.common_centroid_cap_constraint.merge_symmetric_caps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts symmetry constraints between caps as common-centroid constraint.
+It merges the caps and returns merged size for writing constraints
+:param all_const: all constraints of a hierarchy
+:type all_const: [dict]
+:param graph: sub-circuit graph
+:type graph: [nx.graph]
+:param unit_size_cap: name of unit size cap
+:type unit_size_cap: [string]
+:param available_cap_const: existing constraints
+:type available_cap_const: [dict]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>name:size of caps for which constraints are modified from symmetry to common cetroid</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>[dict]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -711,27 +713,6 @@ The final graph is stored in a yaml file in circuit_graphs folder.</p>
 <p>Created on Wed Feb 21 13:12:15 2020</p>
 <p>&#64;author: kunal</p>
 <dl class="py function">
-<dt id="align.compiler.write_constraint.CopyConstFile">
-<code class="sig-prename descclassname">align.compiler.write_constraint.</code><code class="sig-name descname">CopyConstFile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">input_dir</span></em>, <em class="sig-param"><span class="n">working_dir</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_constraint.html#CopyConstFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_constraint.CopyConstFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Copy const file to working directory if needed</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – constraint filename.</p></li>
-<li><p><strong>input_dir</strong> (<em>path</em>) – </p></li>
-<li><p><strong>working_dir</strong> (<em>path</em>) – </p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>const_file</strong> – copied constraint file path.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>path</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
 <dt id="align.compiler.write_constraint.FindSymmetry">
 <code class="sig-prename descclassname">align.compiler.write_constraint.</code><code class="sig-name descname">FindSymmetry</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">graph</span></em>, <em class="sig-param"><span class="n">ports</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">ports_weight</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">stop_points</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_constraint.html#FindSymmetry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_constraint.FindSymmetry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find matching constraint starting from all port pairs.
@@ -756,7 +737,7 @@ check: recursive_start_points
 
 <dl class="py function">
 <dt id="align.compiler.write_constraint.WriteConst">
-<code class="sig-prename descclassname">align.compiler.write_constraint.</code><code class="sig-name descname">WriteConst</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">graph</span></em>, <em class="sig-param"><span class="n">input_dir</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">ports</span></em>, <em class="sig-param"><span class="n">ports_weight</span></em>, <em class="sig-param"><span class="n">input_const</span></em>, <em class="sig-param"><span class="n">stop_points</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_constraint.html#WriteConst"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_constraint.WriteConst" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">align.compiler.write_constraint.</code><code class="sig-name descname">WriteConst</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">graph</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">ports</span></em>, <em class="sig-param"><span class="n">ports_weight</span></em>, <em class="sig-param"><span class="n">input_const</span></em>, <em class="sig-param"><span class="n">stop_points</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_constraint.html#WriteConst"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_constraint.WriteConst" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
