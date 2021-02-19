@@ -2,6 +2,7 @@
 #define PLACEMENT_H
 #include "Pdatatype.h"
 #include "FFT/fft.h"
+#include "../PnRDB/datatype.h"
 #include <iostream>
 #include <cmath>
 #include <random>
@@ -86,6 +87,8 @@ public:
     void WriteOut_Bins(int iteration);
     bool Stop_Condition(float density, float &max_density);
     void Pull_back();
+
+    Placement(PnRDB::hierNode &current_node);
 
 };
 #endif

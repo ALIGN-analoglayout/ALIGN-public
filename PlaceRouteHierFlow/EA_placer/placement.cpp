@@ -1,6 +1,22 @@
 #include "placement.h"
 //#define DEBUG
 Placement::Placement() {
+
+}
+
+Placement::Placement(PnRDB::hierNode &current_node) {
+  //step 1: transfroming info. of current_node to Blocks and Nets
+    //create a small function for this
+
+  //step 2: Given a initial position for each block
+    //create a small function for this
+      // need to estimate a area to do placement
+      // scale into 1x1
+      // initial position for each block
+
+  //step 3: call E_placer
+  
+
 }
 
 
