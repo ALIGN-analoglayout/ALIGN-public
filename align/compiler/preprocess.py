@@ -123,7 +123,7 @@ def modify_pg_conn_subckt(hier_graph_dict:dict,circuit_name, pg_conn):
 
 def preprocess_stack_parallel(hier_graph_dict:dict,circuit_name,G):
     """
-    
+    Preprocess the input graph by reducing parallel caps, series resistance, identify stacking, adding parallel transistors.
 
     Parameters
     ----------
@@ -177,8 +177,6 @@ def preprocess_stack_parallel(hier_graph_dict:dict,circuit_name,G):
         return circuit_name
     else:
         return None
-        #print(circuit_name,circuit,attributes)
-        #print(hier_graph_dict)
         
    
 def change_SD(G,node):

@@ -159,7 +159,7 @@ class Annotate:
                     "graph": subgraph,
                     "ports": list(matched_ports.keys()),
                     "ports_weight": ports_weight,
-                    "const": {"constraints":[const]}
+                    "const": None # In future we can add constraints provided
                     }
                 self._update_sym_const(name,G1,const['blocks'], matched_ports,inst_name)
 
@@ -196,13 +196,6 @@ class Annotate:
                     del const['blocks']
                     const['cap_r'] = -1
                     const['cap_s'] = -1
-                # self.hier_graph_dict[const['cap_name']] = {
-                #     "graph": subgraph,
-                #     "ports": list(matched_ports.keys()),
-                #     "ports_weight": ports_weight,
-                #     "const": {"constraints":[const]}
-                #     }
-                #self._update_sym_const(name, G1, const['blocks'], matched_ports, inst_name)
                 
     def _update_sym_const(self,name,G1,remove_nodes, matched_ports,new_inst):
         """
@@ -282,12 +275,13 @@ class Annotate:
                         else:
                             Grest = subgraph
     
-                        logger.debug(f"adding new sub_ckt: {lib_name}")
                         check_nodes(self.hier_graph_dict)
-                        if name in self.hier_graph_dict and 'const' in self.hier_graph_dict[name]:
-                            const = self.hier_graph_dict[name]['const']
+                        if lib_name in self.hier_graph_dict and 'const' in self.hier_graph_dict[lib_name]:
+                            const = self.hier_graph_dict[lib_name]['const']
                         else:
                             const = None
+                        logger.debug(f"adding new sub_ckt: {lib_name} {const}")
+
                         subckt = {
                                 "graph": Grest,
                                 "ports": list(matched_ports.keys()),
@@ -296,7 +290,7 @@ class Annotate:
                                 "const": const,
                                 "size": len(subgraph.nodes())
                                 }
-                        update_name = self.multiple_instances(G1,new_node,lib_name,subckt)
+                        self.multiple_instances(G1,new_node,lib_name,subckt)
 
                         check_nodes(self.hier_graph_dict)
         logger.debug(f"Finished one branch: {lib_name}")
@@ -389,9 +383,8 @@ class Annotate:
                         logger.debug(f"Matched Circuit: {' '.join(Gsub)}")
                     if len(map_list)>1:
                         fix_order_for_multimatch(G1,map_list,map_list[-1])
-    
                 mapped_graph_list[block_name] = map_list
-    
+
         return mapped_graph_list
 
     def multiple_instances(self,G1,new_node,block_name,subckt):
@@ -421,7 +414,6 @@ class Annotate:
             self.hier_graph_dict[update_name]=subckt
             self.hier_graph_dict[block_name]['id']+=[val_n_type]
         logger.debug(f"list all copies {block_name} {self.hier_graph_dict[block_name]['id']}")
-        return update_name
     
 #%%
 def fix_order_for_multimatch(G1,map_list,Gsub):
@@ -482,8 +474,6 @@ def already_merged(G1,Gsub):
             logger.debug(f"Skip merging. Node absent: {g1_node}")
             break
     return am
-
-
 
 
 def check_nodes(graph_dict):

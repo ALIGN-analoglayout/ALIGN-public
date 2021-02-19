@@ -5,6 +5,9 @@ The ALIGN flow generates symmetry constraints automatically but users can add th
 Here, are the list of constraints used in align. These constraints are applied on the blocks (instances of NMOS/PMOS/Resistor/Capacitor/Subcircuit) or on nets.
 These constraints need to be defined seperately for each of the hierachies with name ``<hier name>.const``, defined in the schematic.
 
+Constraint options
+--------------------
+
 * CreateAlias:
 	Defines an alias for group of blocks. These aliases can be later used in the const file in place of list of blocks or nets.
 
@@ -114,6 +117,56 @@ These constraints need to be defined seperately for each of the hierachies with 
 
 Using JSON format as input:
 	ALIGN can also take JSON format input of the constraints. There is direct translation from cmdline format to JSON format. The file names for these JSON constraints should be ``<hier name>.const.json``.
+	If both formats are provided as input, only JSON format will be read for that hierarchy
 
 	* Format (cmd): ``CreateAlias -blocks [B1,B2,B3] -name alias1``
-	* Format (JSON): ``"CreateAlias": { "blocks": ["B1","B2","B3"], "name"  : "alias1"}``
+	* Format (JSON): ``{"const_name":"CreateAlias", "blocks": ["B1","B2","B3"], "name"  : "alias1"}``
+
+Example constraints (command-line interface)
+---------------------------------------------
+.. code-block:: python3
+
+	#filename: high_speed_comparator.const
+	HorizontalDistance -abs_distance 0
+	VerticalDistance -abs_distance 0
+	GroupBlocks -blocks [mmn0,mmn1] -name diffpair
+	GroupBlocks -blocks [mmn4,mmn3] -name ccn
+	GroupBlocks -blocks [mmp1,mmp0] -name ccp
+	SymmetricBlocks -pairs [[mmn2], [diffpair] , [ccn] , [ccp]] -direction V
+	OrderBlocks -blocks [mmn2, diffpair, ccn, ccp] -direction V
+
+Example constraints (JSON format)
+-----------------------------------
+.. code-block:: python3
+
+	#filename: high_speed_comparator.const.json
+	{
+	"constraints":[
+		{   "const_name":"HorizontalDistance",
+			"abs_distance":0
+		},
+		{   "const_name":"VerticalDistance",
+			"abs_distance":0
+		},
+		{   "const_name": "GroupBlocks",
+			"blocks": ["mmn0", "mmn1"],
+			"name": "diffpair"
+		},
+		{   "const_name":"GroupBlocks",
+			"blocks": ["mmn4", "mmn3"],
+			"name": "ccn"
+		},
+		{   "const_name": "GroupBlocks",
+			"blocks": ["mmp1", "mmp0"],
+			"name": "ccp"
+		},
+		{   "const_name": "SymmetricBlocks",
+			"direction" : "V",
+			"pairs": [["mmn2"], ["diffpair"], ["ccn"], ["ccp"]]
+		},
+		{   "const_name": "OrderBlocks",
+			"blocks": ["mmn2", "diffpair", "ccn", "ccp"],
+			"direction": "V"
+		}
+		]
+	}
