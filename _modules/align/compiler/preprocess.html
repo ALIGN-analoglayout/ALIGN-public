@@ -163,7 +163,7 @@
 
 <div class="viewcode-block" id="preprocess_stack_parallel"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.preprocess.preprocess_stack_parallel">[docs]</a><span class="k">def</span> <span class="nf">preprocess_stack_parallel</span><span class="p">(</span><span class="n">hier_graph_dict</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span><span class="n">circuit_name</span><span class="p">,</span><span class="n">G</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    </span>
+<span class="sd">    Preprocess the input graph by reducing parallel caps, series resistance, identify stacking, adding parallel transistors.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -217,8 +217,6 @@
         <span class="k">return</span> <span class="n">circuit_name</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span></div>
-        <span class="c1">#print(circuit_name,circuit,attributes)</span>
-        <span class="c1">#print(hier_graph_dict)</span>
         
    
 <div class="viewcode-block" id="change_SD"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.preprocess.change_SD">[docs]</a><span class="k">def</span> <span class="nf">change_SD</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">node</span><span class="p">):</span>

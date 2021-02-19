@@ -49,6 +49,8 @@
 <p>The ALIGN flow generates symmetry constraints automatically but users can add their own constraint for better control.
 Here, are the list of constraints used in align. These constraints are applied on the blocks (instances of NMOS/PMOS/Resistor/Capacitor/Subcircuit) or on nets.
 These constraints need to be defined seperately for each of the hierachies with name <code class="docutils literal notranslate"><span class="pre">&lt;hier</span> <span class="pre">name&gt;.const</span></code>, defined in the schematic.</p>
+<div class="section" id="constraint-options">
+<h2>Constraint options<a class="headerlink" href="#constraint-options" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><dl class="simple">
 <dt>CreateAlias:</dt><dd><p>Defines an alias for group of blocks. These aliases can be later used in the const file in place of list of blocks or nets.</p>
@@ -197,13 +199,64 @@ T (top), L (left), C (center), R (right), B (bottom).</p>
 </li>
 </ul>
 <dl class="simple">
-<dt>Using JSON format as input:</dt><dd><p>ALIGN can also take JSON format input of the constraints. There is direct translation from cmdline format to JSON format. The file names for these JSON constraints should be <code class="docutils literal notranslate"><span class="pre">&lt;hier</span> <span class="pre">name&gt;.const.json</span></code>.</p>
+<dt>Using JSON format as input:</dt><dd><p>ALIGN can also take JSON format input of the constraints. There is direct translation from cmdline format to JSON format. The file names for these JSON constraints should be <code class="docutils literal notranslate"><span class="pre">&lt;hier</span> <span class="pre">name&gt;.const.json</span></code>.
+If both formats are provided as input, only JSON format will be read for that hierarchy</p>
 <ul class="simple">
 <li><p>Format (cmd): <code class="docutils literal notranslate"><span class="pre">CreateAlias</span> <span class="pre">-blocks</span> <span class="pre">[B1,B2,B3]</span> <span class="pre">-name</span> <span class="pre">alias1</span></code></p></li>
-<li><p>Format (JSON): <code class="docutils literal notranslate"><span class="pre">&quot;CreateAlias&quot;:</span> <span class="pre">{</span> <span class="pre">&quot;blocks&quot;:</span> <span class="pre">[&quot;B1&quot;,&quot;B2&quot;,&quot;B3&quot;],</span> <span class="pre">&quot;name&quot;</span>&#160; <span class="pre">:</span> <span class="pre">&quot;alias1&quot;}</span></code></p></li>
+<li><p>Format (JSON): <code class="docutils literal notranslate"><span class="pre">{&quot;const_name&quot;:&quot;CreateAlias&quot;,</span> <span class="pre">&quot;blocks&quot;:</span> <span class="pre">[&quot;B1&quot;,&quot;B2&quot;,&quot;B3&quot;],</span> <span class="pre">&quot;name&quot;</span>&#160; <span class="pre">:</span> <span class="pre">&quot;alias1&quot;}</span></code></p></li>
 </ul>
 </dd>
 </dl>
+</div>
+<div class="section" id="example-constraints-command-line-interface">
+<h2>Example constraints (command-line interface)<a class="headerlink" href="#example-constraints-command-line-interface" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#filename: high_speed_comparator.const</span>
+<span class="n">HorizontalDistance</span> <span class="o">-</span><span class="n">abs_distance</span> <span class="mi">0</span>
+<span class="n">VerticalDistance</span> <span class="o">-</span><span class="n">abs_distance</span> <span class="mi">0</span>
+<span class="n">GroupBlocks</span> <span class="o">-</span><span class="n">blocks</span> <span class="p">[</span><span class="n">mmn0</span><span class="p">,</span><span class="n">mmn1</span><span class="p">]</span> <span class="o">-</span><span class="n">name</span> <span class="n">diffpair</span>
+<span class="n">GroupBlocks</span> <span class="o">-</span><span class="n">blocks</span> <span class="p">[</span><span class="n">mmn4</span><span class="p">,</span><span class="n">mmn3</span><span class="p">]</span> <span class="o">-</span><span class="n">name</span> <span class="n">ccn</span>
+<span class="n">GroupBlocks</span> <span class="o">-</span><span class="n">blocks</span> <span class="p">[</span><span class="n">mmp1</span><span class="p">,</span><span class="n">mmp0</span><span class="p">]</span> <span class="o">-</span><span class="n">name</span> <span class="n">ccp</span>
+<span class="n">SymmetricBlocks</span> <span class="o">-</span><span class="n">pairs</span> <span class="p">[[</span><span class="n">mmn2</span><span class="p">],</span> <span class="p">[</span><span class="n">diffpair</span><span class="p">]</span> <span class="p">,</span> <span class="p">[</span><span class="n">ccn</span><span class="p">]</span> <span class="p">,</span> <span class="p">[</span><span class="n">ccp</span><span class="p">]]</span> <span class="o">-</span><span class="n">direction</span> <span class="n">V</span>
+<span class="n">OrderBlocks</span> <span class="o">-</span><span class="n">blocks</span> <span class="p">[</span><span class="n">mmn2</span><span class="p">,</span> <span class="n">diffpair</span><span class="p">,</span> <span class="n">ccn</span><span class="p">,</span> <span class="n">ccp</span><span class="p">]</span> <span class="o">-</span><span class="n">direction</span> <span class="n">V</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="example-constraints-json-format">
+<h2>Example constraints (JSON format)<a class="headerlink" href="#example-constraints-json-format" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#filename: high_speed_comparator.const.json</span>
+<span class="p">{</span>
+<span class="s2">&quot;constraints&quot;</span><span class="p">:[</span>
+        <span class="p">{</span>   <span class="s2">&quot;const_name&quot;</span><span class="p">:</span><span class="s2">&quot;HorizontalDistance&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;abs_distance&quot;</span><span class="p">:</span><span class="mi">0</span>
+        <span class="p">},</span>
+        <span class="p">{</span>   <span class="s2">&quot;const_name&quot;</span><span class="p">:</span><span class="s2">&quot;VerticalDistance&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;abs_distance&quot;</span><span class="p">:</span><span class="mi">0</span>
+        <span class="p">},</span>
+        <span class="p">{</span>   <span class="s2">&quot;const_name&quot;</span><span class="p">:</span> <span class="s2">&quot;GroupBlocks&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;blocks&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;mmn0&quot;</span><span class="p">,</span> <span class="s2">&quot;mmn1&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;diffpair&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>   <span class="s2">&quot;const_name&quot;</span><span class="p">:</span><span class="s2">&quot;GroupBlocks&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;blocks&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;mmn4&quot;</span><span class="p">,</span> <span class="s2">&quot;mmn3&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;ccn&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>   <span class="s2">&quot;const_name&quot;</span><span class="p">:</span> <span class="s2">&quot;GroupBlocks&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;blocks&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;mmp1&quot;</span><span class="p">,</span> <span class="s2">&quot;mmp0&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;ccp&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>   <span class="s2">&quot;const_name&quot;</span><span class="p">:</span> <span class="s2">&quot;SymmetricBlocks&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;direction&quot;</span> <span class="p">:</span> <span class="s2">&quot;V&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;pairs&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="s2">&quot;mmn2&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;diffpair&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;ccn&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;ccp&quot;</span><span class="p">]]</span>
+        <span class="p">},</span>
+        <span class="p">{</span>   <span class="s2">&quot;const_name&quot;</span><span class="p">:</span> <span class="s2">&quot;OrderBlocks&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;blocks&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;mmn2&quot;</span><span class="p">,</span> <span class="s2">&quot;diffpair&quot;</span><span class="p">,</span> <span class="s2">&quot;ccn&quot;</span><span class="p">,</span> <span class="s2">&quot;ccp&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;V&quot;</span>
+        <span class="p">}</span>
+        <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
 </div>
 
 
@@ -216,6 +269,16 @@ T (top), L (left), C (center), R (right), B (bottom).</p>
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/LOGO.PNG" alt="Logo"/>
             </a></p>
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">How to add your own constraints</a><ul>
+<li><a class="reference internal" href="#constraint-options">Constraint options</a></li>
+<li><a class="reference internal" href="#example-constraints-command-line-interface">Example constraints (command-line interface)</a></li>
+<li><a class="reference internal" href="#example-constraints-json-format">Example constraints (JSON format)</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="debug.html"
                         title="previous chapter">How to debug installation failures</a></p>

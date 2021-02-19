@@ -377,7 +377,7 @@
                                 <span class="s1">&#39;,&#39;</span><span class="o">+</span><span class="n">value</span><span class="o">+</span><span class="s1">&#39;,&#39;</span><span class="o">+</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pairs</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
                         <span class="n">written_symmetries</span><span class="o">+=</span><span class="n">symmNet</span>
                         <span class="n">symmNetj</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;const_name&quot;</span><span class="p">:</span><span class="s2">&quot;SymmNet&quot;</span><span class="p">,</span><span class="s2">&quot;axis_dir&quot;</span><span class="p">:</span><span class="s2">&quot;V&quot;</span><span class="p">,</span><span class="s2">&quot;net1&quot;</span><span class="p">:</span><span class="n">s1</span><span class="p">,</span><span class="s2">&quot;net2&quot;</span><span class="p">:</span><span class="n">s2</span><span class="p">}</span>
-                        <span class="n">all_const</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">symmNetj</span><span class="p">)</span>
+                        <span class="c1"># all_const.append(symmNetj)</span>
                         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;adding symmetries: </span><span class="si">{</span><span class="n">symmNetj</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;skipping symmetry between large fanout nets </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -492,32 +492,6 @@
         <span class="n">conn</span><span class="p">[</span><span class="n">net</span><span class="p">]</span><span class="o">=</span><span class="nb">sum</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
 
     <span class="k">return</span> <span class="n">conn</span></div>
-
-<span class="c1"># def CopyConstFile(name, input_dir, working_dir):</span>
-<span class="c1">#     &quot;&quot;&quot;</span>
-<span class="c1">#     Copy const file to working directory if needed</span>
-
-<span class="c1">#     Parameters</span>
-<span class="c1">#     ----------</span>
-<span class="c1">#     name : str</span>
-<span class="c1">#         constraint filename.</span>
-<span class="c1">#     input_dir : path</span>
-<span class="c1">#     working_dir : path</span>
-
-<span class="c1">#     Returns</span>
-<span class="c1">#     -------</span>
-<span class="c1">#     const_file : path</span>
-<span class="c1">#         copied constraint file path.</span>
-
-<span class="c1">#     &quot;&quot;&quot;</span>
-<span class="c1">#     input_const_file = (input_dir / (name + &#39;.const&#39;))</span>
-<span class="c1">#     const_file = (working_dir / (name + &#39;.const.json&#39;))</span>
-<span class="c1">#     # if input_const_file.exists() and input_const_file.is_file():</span>
-<span class="c1">#     #     if const_file == input_const_file:</span>
-<span class="c1">#     #         (input_dir / (name + &#39;.const.old&#39;)).write_text(input_const_file.read_text())</span>
-<span class="c1">#     #     else:</span>
-<span class="c1">#     #         const_file.write_text(input_const_file.read_text())</span>
-<span class="c1">#     return const_file</span>
 </pre></div>
 
             <div class="clearer"></div>

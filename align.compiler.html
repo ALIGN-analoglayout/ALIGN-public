@@ -221,14 +221,14 @@ It merges the caps and returns merged size for writing constraints
 
 <dl class="py function">
 <dt id="align.compiler.compiler.compiler_output">
-<code class="sig-prename descclassname">align.compiler.compiler.</code><code class="sig-name descname">compiler_output</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_ckt</span></em>, <em class="sig-param"><span class="n">lib_names</span></em>, <em class="sig-param"><span class="n">updated_ckt_list</span></em>, <em class="sig-param"><span class="n">design_name</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">result_dir</span><span class="p">:</span> <span class="n">pathlib.Path</span></em>, <em class="sig-param"><span class="n">pdk_dir</span><span class="p">:</span> <span class="n">pathlib.Path</span></em>, <em class="sig-param"><span class="n">uniform_height</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/compiler.html#compiler_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.compiler.compiler_output" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">align.compiler.compiler.</code><code class="sig-name descname">compiler_output</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_ckt</span></em>, <em class="sig-param"><span class="n">lib_names</span></em>, <em class="sig-param"><span class="n">hier_graph_dict</span></em>, <em class="sig-param"><span class="n">design_name</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">result_dir</span><span class="p">:</span> <span class="n">pathlib.Path</span></em>, <em class="sig-param"><span class="n">pdk_dir</span><span class="p">:</span> <span class="n">pathlib.Path</span></em>, <em class="sig-param"><span class="n">uniform_height</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/compiler.html#compiler_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.compiler.compiler_output" title="Permalink to this definition">¶</a></dt>
 <dd><p>search for constraints and write output in verilog format
 :param input_ckt: DESCRIPTION.Used to take designer provided constraints
 :type input_ckt: TYPE. input circuit path
 :param library: DESCRIPTION.
 :type library: TYPE. list of library graphs used
-:param updated_ckt_list: DESCRIPTION. this list is used to generate constraints
-:type updated_ckt_list: TYPE. list of reduced circuit graph
+:param hier_graph_dict: DESCRIPTION. this list is used to generate constraints
+:type hier_graph_dict: TYPE. dict of reduced circuit graph
 :param design_name: DESCRIPTION.
 :type design_name: TYPE. name of top level design
 :param result_dir: DESCRIPTION. writes out a verilog netlist, spice file and constraints
@@ -356,6 +356,11 @@ Reduce graph to a list of nodes
 :rtype: list</p>
 </dd></dl>
 
+<dl class="py method">
+<dt id="align.compiler.match_graph.Annotate.multiple_instances">
+<code class="sig-name descname">multiple_instances</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">G1</span></em>, <em class="sig-param"><span class="n">new_node</span></em>, <em class="sig-param"><span class="n">block_name</span></em>, <em class="sig-param"><span class="n">subckt</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/match_graph.html#Annotate.multiple_instances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.match_graph.Annotate.multiple_instances" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="py function">
@@ -365,7 +370,7 @@ Reduce graph to a list of nodes
 
 <dl class="py function">
 <dt id="align.compiler.match_graph.check_nodes">
-<code class="sig-prename descclassname">align.compiler.match_graph.</code><code class="sig-name descname">check_nodes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">graph_list</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/match_graph.html#check_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.match_graph.check_nodes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">align.compiler.match_graph.</code><code class="sig-name descname">check_nodes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">graph_dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/match_graph.html#check_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.match_graph.check_nodes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -382,11 +387,6 @@ Reduce graph to a list of nodes
 <dl class="py function">
 <dt id="align.compiler.match_graph.get_key">
 <code class="sig-prename descclassname">align.compiler.match_graph.</code><code class="sig-name descname">get_key</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">Gsub</span></em>, <em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/match_graph.html#get_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.match_graph.get_key" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.compiler.match_graph.multiple_instances">
-<code class="sig-prename descclassname">align.compiler.match_graph.</code><code class="sig-name descname">multiple_instances</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">G1</span></em>, <em class="sig-param"><span class="n">new_node</span></em>, <em class="sig-param"><span class="n">block_name</span></em>, <em class="sig-param"><span class="n">check_duplicates</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/match_graph.html#multiple_instances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.match_graph.multiple_instances" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -543,7 +543,8 @@ and change internal connections within the subcircuit</p>
 <dl class="py function">
 <dt id="align.compiler.preprocess.preprocess_stack_parallel">
 <code class="sig-prename descclassname">align.compiler.preprocess.</code><code class="sig-name descname">preprocess_stack_parallel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">hier_graph_dict</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">circuit_name</span></em>, <em class="sig-param"><span class="n">G</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/preprocess.html#preprocess_stack_parallel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.preprocess.preprocess_stack_parallel" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+<dd><p>Preprocess the input graph by reducing parallel caps, series resistance, identify stacking, adding parallel transistors.</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>hier_graph_dict</strong> (<em>dict</em>) – dictionary of all circuit in spice file</p></li>
@@ -825,7 +826,7 @@ condition 4: Diverging branch with more than 2 fanout, check all pairs</p>
 <p>&#64;author: kunal</p>
 <dl class="py class">
 <dt id="align.compiler.write_verilog_lef.WriteSpice">
-<em class="property">class </em><code class="sig-prename descclassname">align.compiler.write_verilog_lef.</code><code class="sig-name descname">WriteSpice</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">circuit_graph</span></em>, <em class="sig-param"><span class="n">circuit_name</span></em>, <em class="sig-param"><span class="n">inout_pin_names</span></em>, <em class="sig-param"><span class="n">subckt_list</span></em>, <em class="sig-param"><span class="n">lib_names</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#WriteSpice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.WriteSpice" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.compiler.write_verilog_lef.</code><code class="sig-name descname">WriteSpice</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">circuit_graph</span></em>, <em class="sig-param"><span class="n">circuit_name</span></em>, <em class="sig-param"><span class="n">inout_pin_names</span></em>, <em class="sig-param"><span class="n">subckt_dict</span></em>, <em class="sig-param"><span class="n">lib_names</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#WriteSpice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.WriteSpice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>write hierarchical verilog file</p>
 <dl class="py method">
@@ -842,7 +843,7 @@ condition 4: Diverging branch with more than 2 fanout, check all pairs</p>
 
 <dl class="py class">
 <dt id="align.compiler.write_verilog_lef.WriteVerilog">
-<em class="property">class </em><code class="sig-prename descclassname">align.compiler.write_verilog_lef.</code><code class="sig-name descname">WriteVerilog</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">circuit_graph</span></em>, <em class="sig-param"><span class="n">circuit_name</span></em>, <em class="sig-param"><span class="n">inout_pin_names</span></em>, <em class="sig-param"><span class="n">subckt_list</span></em>, <em class="sig-param"><span class="n">power_pins</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#WriteVerilog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.WriteVerilog" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.compiler.write_verilog_lef.</code><code class="sig-name descname">WriteVerilog</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">circuit_graph</span></em>, <em class="sig-param"><span class="n">circuit_name</span></em>, <em class="sig-param"><span class="n">inout_pin_names</span></em>, <em class="sig-param"><span class="n">subckt_dict</span></em>, <em class="sig-param"><span class="n">power_pins</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#WriteVerilog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.WriteVerilog" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>write hierarchical verilog file</p>
 <dl class="py method">
@@ -856,11 +857,6 @@ condition 4: Diverging branch with more than 2 fanout, check all pairs</p>
 <dd></dd></dl>
 
 </dd></dl>
-
-<dl class="py function">
-<dt id="align.compiler.write_verilog_lef.check_ports_match">
-<code class="sig-prename descclassname">align.compiler.write_verilog_lef.</code><code class="sig-name descname">check_ports_match</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">subckt_list</span></em>, <em class="sig-param"><span class="n">port</span></em>, <em class="sig-param"><span class="n">subckt</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#check_ports_match"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.check_ports_match" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="py function">
 <dt id="align.compiler.write_verilog_lef.concat_values">

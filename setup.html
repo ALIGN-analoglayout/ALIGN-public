@@ -57,6 +57,8 @@ This file is defined only for top hierarchy with the name <code class="docutils 
 </ul>
 </div></blockquote>
 <p>Here are the list of controls available to designers.</p>
+<div class="section" id="setup-options">
+<h2>Setup options<a class="headerlink" href="#setup-options" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><dl class="simple">
 <dt>DONT_USE_CELLS:</dt><dd><p>Defines the list of library cells which should not be used during annotation.</p>
@@ -131,6 +133,17 @@ During constraint generation POWER,GND,and CLOCK nets will be used as stop-point
 </li>
 </ul>
 </div>
+<div class="section" id="example-setup-file">
+<h2>Example setup file<a class="headerlink" href="#example-setup-file" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>#filename: high_speed_comparator.setup
+POWER = vcc
+GND = vss
+CLOCK = clk
+DIGITAL =
+</pre></div>
+</div>
+</div>
+</div>
 
 
             <div class="clearer"></div>
@@ -142,6 +155,15 @@ During constraint generation POWER,GND,and CLOCK nets will be used as stop-point
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/LOGO.PNG" alt="Logo"/>
             </a></p>
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Writing your setup file</a><ul>
+<li><a class="reference internal" href="#setup-options">Setup options</a></li>
+<li><a class="reference internal" href="#example-setup-file">Example setup file</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="const.html"
                         title="previous chapter">How to add your own constraints</a></p>

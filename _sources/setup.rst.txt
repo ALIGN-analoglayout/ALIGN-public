@@ -11,6 +11,9 @@ This file is defined only for top hierarchy with the name ``<top>.setup`` . Form
 
 Here are the list of controls available to designers.
 
+Setup options
+---------------
+
 * DONT_USE_CELLS:
 	Defines the list of library cells which should not be used during annotation.
 
@@ -54,3 +57,12 @@ Here are the list of controls available to designers.
 
 	* Example: ``MERGE_SYMM_CAPS = True``
 
+Example setup file
+---------------------
+.. code-block:: none
+
+	#filename: high_speed_comparator.setup
+	POWER = vcc
+	GND = vss
+	CLOCK = clk
+	DIGITAL =

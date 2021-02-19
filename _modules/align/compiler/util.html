@@ -150,16 +150,9 @@
             <span class="c1">#print (v,conn_value)</span>
     <span class="k">return</span> <span class="n">conn_value</span></div>
 <div class="viewcode-block" id="plt_graph"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.util.plt_graph">[docs]</a><span class="k">def</span> <span class="nf">plt_graph</span><span class="p">(</span><span class="n">subgraph</span><span class="p">,</span><span class="n">sub_block_name</span><span class="p">):</span>
-    <span class="c1">#print(sub_block_name,subgraph.nodes())</span>
-    <span class="c1">#for x,y in subgraph.nodes(data=True):</span>
-    <span class="c1">#    print(x,y)</span>
     <span class="n">copy_graph</span><span class="o">=</span><span class="n">subgraph</span>
     <span class="k">for</span> <span class="n">node</span><span class="p">,</span><span class="n">attr</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">copy_graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">)):</span>
-        <span class="c1">#print(node)</span>
-        <span class="c1">#print(copy_graph.nodes[node])</span>
         <span class="k">if</span> <span class="s1">&#39;source&#39;</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">[</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]:</span>
-            <span class="c1">#print(&quot;deleting source node&quot;,node)</span>
-            <span class="c1">#   copy_graph.nodes(node)[&#39;inst_type&#39;]:</span>
             <span class="n">copy_graph</span><span class="o">.</span><span class="n">remove_node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
 
     <span class="n">no_of_transistor</span> <span class="o">=</span><span class="nb">len</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span> <span class="ow">in</span> <span class="n">subgraph</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">if</span> <span class="s1">&#39;net&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">y</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]]</span> <span class="p">)</span>
@@ -170,12 +163,6 @@
         <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
     <span class="n">nx</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">copy_graph</span><span class="p">,</span><span class="n">with_labels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">copy_graph</span><span class="p">))</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">Title</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span></div>
-    <span class="c1">#fig.savefig(Title+&#39;.png&#39;, dpi=fig.dpi)</span>
-
-    <span class="c1">#plt.show()</span>
-    <span class="c1">#plt.show(block=False)</span>
-    <span class="c1">#plt.pause(0.3) # pause how many seconds</span>
-    <span class="c1">#plt.close()</span>
 
 <span class="k">def</span> <span class="nf">_show_circuit_graph</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">dir_path</span><span class="p">):</span>
     <span class="c1">#print(graph)</span>
@@ -186,7 +173,7 @@
         <span class="n">color_map</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
-        <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">subgraph</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">subgraph</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
             <span class="k">if</span> <span class="s2">&quot;inst_type&quot;</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">attr</span><span class="p">[</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;pmos&#39;</span><span class="p">:</span>
                     <span class="n">color_map</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
@@ -198,7 +185,6 @@
                     <span class="n">color_map</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;pink&#39;</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">color_map</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;green&#39;</span><span class="p">)</span>
-        <span class="c1">#%matplotlib inline</span>
         <span class="n">nx</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">subgraph</span><span class="p">,</span> <span class="n">node_color</span><span class="o">=</span><span class="n">color_map</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dir_path</span><span class="p">):</span>

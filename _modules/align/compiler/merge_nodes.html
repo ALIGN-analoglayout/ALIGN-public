@@ -148,7 +148,6 @@
         <span class="n">G</span><span class="o">.</span><span class="n">remove_node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">pins</span> <span class="ow">in</span> <span class="n">ports</span><span class="p">:</span>
         <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">new_node</span><span class="p">,</span> <span class="n">pins</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">ports</span><span class="p">[</span><span class="n">pins</span><span class="p">])</span>
-        <span class="c1">#logger.debug(f&quot;new ports: {pins},{ports[pins]}&quot;)</span>
 
     <span class="n">check_nodes</span><span class="p">(</span><span class="n">subgraph</span><span class="p">)</span>
 
@@ -218,7 +217,6 @@
 
 <div class="viewcode-block" id="check_values"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.merge_nodes.check_values">[docs]</a><span class="k">def</span> <span class="nf">check_values</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-        <span class="c1">#print(&quot;param,value:%s,%s&quot;, param,value)</span>
         <span class="k">assert</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">==</span><span class="nb">int</span> <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">==</span><span class="nb">float</span><span class="p">)</span> <span class="ow">or</span> <span class="n">value</span><span class="o">==</span><span class="s2">&quot;unit_size&quot;</span></div>
 
 <div class="viewcode-block" id="check_nodes"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.merge_nodes.check_nodes">[docs]</a><span class="k">def</span> <span class="nf">check_nodes</span><span class="p">(</span><span class="n">graph</span><span class="p">):</span>
