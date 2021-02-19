@@ -337,7 +337,7 @@ def WriteConst(graph, name, ports, ports_weight, input_const, stop_points=None):
                                 ','+value+','+','.join(pairs.values())
                         written_symmetries+=symmNet
                         symmNetj = {"const_name":"SymmNet","axis_dir":"V","net1":s1,"net2":s2}
-                        # all_const.append(symmNetj)
+                        all_const.append(symmNetj)
                         logger.debug(f"adding symmetries: {symmNetj}")
                     else:
                         logger.debug(f"skipping symmetry between large fanout nets {key} {value}")
