@@ -499,6 +499,9 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
         node.ML_Constraints.push_back(temp_Multi_LinearConst);
       } else if (constraint["const_name"] == "Aspect_Ratio") {
         node.Aspect_Ratio_weight = constraint["weight"];
+        if(constraint.contains("ratio")){
+          node.Aspect_Ratio = constraint["ratio"];
+        }
       } else if (constraint["const_name"] == "Multi_Connection") {
         PnRDB::Multi_connection temp_multi_Connection;
         temp_multi_Connection.net_name = constraint["net_name"];
