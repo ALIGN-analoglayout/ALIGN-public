@@ -18,7 +18,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
     json jsonStrAry;
     ifstream jsonFile (drfile);
     if (jsonFile.is_open()) {
-	json jedb = json::parse (jsonFile);
+	      json jedb = json::parse (jsonFile);
         json layerAry = jedb["Abstraction"];
         std::map<int, PnRDB::metal_info> metalSet;
         std::map<int, PnRDB::via_info> viaSet;
@@ -371,6 +371,27 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
         }
         for(unsigned int i=0;i<DRC_info.Via_info.size();++i) {
           DRC_info.MaskID_Via.push_back(std::to_string( DRC_info.Via_info.at(i).layerNo ));
+        }
+
+        // 7. read design info
+        // first init hspace and vspace
+        if (DRC_info.Metal_info[0].direct == 1) {  // horizontal
+          DRC_info.Design_info.Vspace = DRC_info.Metal_info[0].grid_unit_y;
+        } else {
+          DRC_info.Design_info.Hspace = DRC_info.Metal_info[0].grid_unit_x;
+        }
+        if (DRC_info.Metal_info[1].direct == 1) {  // horizontal
+          DRC_info.Design_info.Vspace = DRC_info.Metal_info[1].grid_unit_y;
+        } else {
+          DRC_info.Design_info.Hspace = DRC_info.Metal_info[1].grid_unit_x;
+        }
+        // then read them
+        if (jedb.contains("design_info")) {
+          json design_info = jedb["design_info"];
+          DRC_info.Design_info.Hspace = design_info["Hspace"];
+          DRC_info.Design_info.Vspace = design_info["Vspace"];
+          DRC_info.Design_info.Hspace *= times;
+          DRC_info.Design_info.Vspace *= times;
         }
     }
 }

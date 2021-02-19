@@ -338,6 +338,7 @@ design::design(PnRDB::hierNode& node) {
   bias_Vgraph=node.bias_Vgraph; // from node
   bias_Hgraph=node.bias_Hgraph; // from node
   Aspect_Ratio_weight = node.Aspect_Ratio_weight;
+  Aspect_Ratio = node.Aspect_Ratio;
   mixFlag = false;
   double averageWL=0;
   double macroThreshold=0.5; // threshold to filter out small blocks
