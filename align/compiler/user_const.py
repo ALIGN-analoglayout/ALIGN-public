@@ -214,13 +214,13 @@ class ConstraintParser:
                 del const['blocks']
             elif const["const_name"] == 'BlockDistance':
                 const["const_name"] = 'bias_graph'
-                const["distance"] = const['abs_distance']
+                const["distance"] = const.pop('abs_distance')               
             elif const["const_name"] == 'HorizontalDistance':
                 const["const_name"] = 'bias_Hgraph'
-                const["distance"] = const['abs_distance']
-            elif const["const_name"] == 'VerticallDistance':
+                const["distance"] = const.pop('abs_distance')
+            elif const["const_name"] == 'VerticalDistance':
                 const["const_name"] = 'bias_Vgraph'
-                const["distance"] = const['abs_distance']
+                const["distance"] = const.pop('abs_distance')
             elif const["const_name"] == 'AspectRatio':
                 const["const_name"] = 'Aspect_Ratio'
             elif const["const_name"] == 'SymmetricBlocks':
