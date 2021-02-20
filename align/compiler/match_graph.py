@@ -147,7 +147,8 @@ class Annotate:
                 ports_weight = {}
                 for block in const['blocks']:
                     for nbr in G1.neighbors(block):
-                        if set(G1.neighbors(nbr)).issubset(set(const['blocks'])):
+                        if set(G1.neighbors(nbr)).issubset(set(const['blocks'])) and \
+                            nbr not in self.hier_graph_dict[name]['ports']:
                             continue
                         else:
                             matched_ports[nbr]=nbr
