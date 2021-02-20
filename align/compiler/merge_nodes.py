@@ -108,7 +108,6 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
         G.remove_node(node)
     for pins in ports:
         G.add_edge(new_node, pins, weight=ports[pins])
-        #logger.debug(f"new ports: {pins},{ports[pins]}")
 
     check_nodes(subgraph)
 
@@ -178,7 +177,6 @@ def convert_unit(value:str):
 
 def check_values(values):
     for value in values.values():
-        #print("param,value:%s,%s", param,value)
         assert(type(value)==int or type(value)==float) or value=="unit_size"
 
 def check_nodes(graph):

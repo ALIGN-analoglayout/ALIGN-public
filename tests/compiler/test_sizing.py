@@ -8,8 +8,7 @@ def primitives(cn):
     pdk_path = mydir.parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK' 
     test_path = mydir.parent / 'test_circuits' / (cn+'.sp')
     updated_ckt,library = compiler(test_path, cn,pdk_path )
-    all_subckt_list = [ele["name"] for ele in updated_ckt]
-    assert cn in all_subckt_list
+    assert cn in updated_ckt
     return compiler_output(test_path, library, updated_ckt, 'sizing', pathlib.Path(__file__).parent / 'Results', pdk_path )
 
 @pytest.fixture
@@ -52,10 +51,9 @@ def test_sizing3(primitives):
 def test_sizing4(path):
     test_path, pdk_path = path
     updated_ckt,library = compiler(test_path, 'intel_circuit4',pdk_path )
-    all_subckt_list = [ele["name"] for ele in updated_ckt]
-    assert 'SCM_PMOS' in all_subckt_list
-    assert 'CMB_PMOS_2' in all_subckt_list
-    assert 'INV_B' in all_subckt_list
-    assert 'intel_circuit4' in all_subckt_list
+    assert 'SCM_PMOS' in updated_ckt
+    assert 'CMB_PMOS_2' in updated_ckt
+    assert 'INV_B' in updated_ckt
+    assert 'intel_circuit4' in updated_ckt
     primitives = compiler_output(test_path, library, updated_ckt, 'sizing', pathlib.Path(__file__).parent / 'Results', pdk_path )
     assert  len(primitives) == 7

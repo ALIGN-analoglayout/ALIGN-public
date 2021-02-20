@@ -39,7 +39,9 @@
 "AlignBlocks":     {"blocks":"list","direction":["H","V"]},
 "NetConst":        {"nets":"list","shield":"str","criticality":"int"},
 "PortLocation":    {"ports":"list","location":["BL","BR","BC","TL","TR","TC","RL","RR","RC","LL","LR","LC"]},
-"SymmetricNets":   {"net1":"str","net2":"str","pins1":"list","pins2":"list","direction":["H","V"]}
+"SymmetricNets":   {"net1":"str","net2":"str","pins1":"list","pins2":"list","direction":["H","V"]},
+"AspectRatio": {"weight":"int"},
+"MultiConnection": {"nets":"list", "multiplier":"int"}
 },
 
 "Abstraction": [

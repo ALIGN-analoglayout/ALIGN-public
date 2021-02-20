@@ -33,9 +33,7 @@ class Annotate:
             library (list): list of library elements in dict format
             existing_generator (list): list of names of existing generators
         """
-        self.updated_ckt_list = []
         self.hier_graph_dict = hier_graph_dict
-        self.duplicates={}
         self.digital = design_setup['DIGITAL']
         self.pg = design_setup['POWER']+design_setup['GND']
         self.lib = library
@@ -62,38 +60,31 @@ class Annotate:
             self._group_block_const(G1,circuit_name)
             self._group_cap_const(G1,circuit_name)
 
-        for circuit_name, circuit in self.hier_graph_dict.items():
+        for circuit_name in list(self.hier_graph_dict.keys()):           
             logger.debug(f"START MATCHING in circuit: {circuit_name}")
+            circuit = self.hier_graph_dict[circuit_name]
             G1 = circuit["graph"]
             #print(self.hier_graph_dict[circuit_name]["const"])
             # map and reduce graph to dictionary
             mapped_graph_list = self._mapped_graph_list(G1, circuit_name, self.pg )
-            updated_circuit, Grest = self._reduce_graph(G1, circuit_name, mapped_graph_list)
-            check_nodes(updated_circuit)
-            self.updated_ckt_list.extend(updated_circuit)
-    
+            circuit["graph"] = self._reduce_graph(G1, circuit_name, mapped_graph_list)
+            check_nodes(self.hier_graph_dict)
+            logger.debug(f"Grest ckt is {circuit['graph'].nodes(data=True)}")  
             if circuit_name not in self.no_array:
-                symmetry_blocks = FindSymmetry(Grest, circuit["ports"], circuit["ports_weight"], self.stop_points)
+                symmetry_blocks = FindSymmetry(circuit["graph"], circuit["ports"], circuit["ports_weight"], self.stop_points)
                 for symm_blocks in symmetry_blocks.values():
                     logger.debug(f"generated constraints: {pprint.pformat(symm_blocks, indent=4)}")
                     if isinstance(symm_blocks, dict) and "graph" in symm_blocks.keys():
                         logger.debug(f"added new hierarchy: {symm_blocks['name']} {symm_blocks['graph'].nodes()}")
-                        self.updated_ckt_list.append(symm_blocks)
+                        self.hier_graph_dict[symm_blocks['name']] = symm_blocks
+                        del self.hier_graph_dict[symm_blocks['name']]['name']
     
-            self.updated_ckt_list.append({
-                "name": circuit_name,
-                "graph": Grest,
-                "ports": circuit["ports"],
-                "ports_weight": circuit["ports_weight"],
-                "const": self.hier_graph_dict[circuit_name]["const"],
-                "size": len(Grest.nodes())
-            })
-    
-            self.lib_names=[lib_ele['name'] for lib_ele in self.lib]
-            for lib_name, dupl in self.duplicates.items():
-                if len(dupl)>1:
-                    self.lib_names+=[lib_name+'_type'+str(n) for n in range(len(dupl))]
-        return self.updated_ckt_list, self.lib_names
+            self.lib_names = [lib_ele['name'] for lib_ele in self.lib]
+            for ckt_name, circuit in self.hier_graph_dict.items():
+                if 'id' in self.hier_graph_dict[ckt_name] and len(self.hier_graph_dict[ckt_name]['id']) > 1:
+                    copies = len(self.hier_graph_dict[ckt_name]['id'])
+                    self.lib_names += [ckt_name + '_type' + str(n) for n in range(copies)]
+        return self.lib_names
     
     def _update_attributes(self,circuit_graph,name,lib_name,lib_graph, Gsub):
         """
@@ -168,7 +159,7 @@ class Annotate:
                     "graph": subgraph,
                     "ports": list(matched_ports.keys()),
                     "ports_weight": ports_weight,
-                    "const": {"constraints":[const]}
+                    "const": None # In future we can add constraints provided
                     }
                 self._update_sym_const(name,G1,const['blocks'], matched_ports,inst_name)
 
@@ -205,13 +196,6 @@ class Annotate:
                     del const['blocks']
                     const['cap_r'] = -1
                     const['cap_s'] = -1
-                # self.hier_graph_dict[const['cap_name']] = {
-                #     "graph": subgraph,
-                #     "ports": list(matched_ports.keys()),
-                #     "ports_weight": ports_weight,
-                #     "const": {"constraints":[const]}
-                #     }
-                #self._update_sym_const(name, G1, const['blocks'], matched_ports, inst_name)
                 
     def _update_sym_const(self,name,G1,remove_nodes, matched_ports,new_inst):
         """
@@ -255,9 +239,7 @@ class Annotate:
         merge matched graphs
         """
         logger.debug("START reducing graph: ")
-        G1 = circuit_graph.copy()
-            
-        updated_circuit = []
+        G1 = circuit_graph.copy()           
         for lib_ele in self.lib:
             lib_name = lib_ele['name']
             if lib_name in mapped_graph_list:
@@ -288,33 +270,31 @@ class Annotate:
                         if lib_name not in self.all_lef:
                             logger.debug(f'Calling recursive for block: {lib_name}')
                             mapped_subgraph_list = self._mapped_graph_list(G2, lib_name)
-                            updated_subgraph_circuit, Grest = self._reduce_graph(
+                            Grest = self._reduce_graph(
                                 G2, lib_name,mapped_subgraph_list)
-                            updated_circuit.extend(updated_subgraph_circuit)
                         else:
                             Grest = subgraph
     
-                        logger.debug(f"adding new sub_ckt: {lib_name} {self.duplicates.keys()}")
-                        check_nodes(updated_circuit)
-                        update_name = multiple_instances(G1,new_node,lib_name,self.duplicates)
-                        if name in self.hier_graph_dict and 'const' in self.hier_graph_dict[name]:
-                            const = self.hier_graph_dict[name]['const']
+                        check_nodes(self.hier_graph_dict)
+                        if lib_name in self.hier_graph_dict and 'const' in self.hier_graph_dict[lib_name]:
+                            const = self.hier_graph_dict[lib_name]['const']
                         else:
                             const = None
-                        super_node = {
-                                "name": update_name,
+                        logger.debug(f"adding new sub_ckt: {lib_name} {const}")
+
+                        subckt = {
                                 "graph": Grest,
                                 "ports": list(matched_ports.keys()),
                                 "ports_match": matched_ports,
                                 "ports_weight": ports_weight,
                                 "const": const,
                                 "size": len(subgraph.nodes())
-                            }
-                        updated_circuit.append(super_node)
-    
-                        check_nodes(updated_circuit)
+                                }
+                        self.multiple_instances(G1,new_node,lib_name,subckt)
+
+                        check_nodes(self.hier_graph_dict)
         logger.debug(f"Finished one branch: {lib_name}")
-        return updated_circuit, G1
+        return G1
     
     def _is_small(self,g1,g2):
         nd2 = [g2.nodes[node]["inst_type"] for node in g2.nodes()]
@@ -403,10 +383,37 @@ class Annotate:
                         logger.debug(f"Matched Circuit: {' '.join(Gsub)}")
                     if len(map_list)>1:
                         fix_order_for_multimatch(G1,map_list,map_list[-1])
-    
                 mapped_graph_list[block_name] = map_list
-    
+
         return mapped_graph_list
+
+    def multiple_instances(self,G1,new_node,block_name,subckt):
+        val_n_type = G1.nodes[new_node]["values"].copy()
+        val_n_type["real_inst_type"]=G1.nodes[new_node]["real_inst_type"]
+        val_n_type["ports"]=G1.nodes[new_node]["ports"]
+        update_name = block_name
+        if block_name not in self.hier_graph_dict.keys():
+            logger.debug(f"adding sub_ckt: {update_name} {val_n_type} ")
+            self.hier_graph_dict[block_name]=subckt
+            self.hier_graph_dict[block_name]['id']=[val_n_type]
+
+        elif val_n_type in self.hier_graph_dict[block_name]['id']:
+            inst_copy = '<'+ str(self.hier_graph_dict[block_name]['id'].index(val_n_type))+'>'
+            if inst_copy != '<0>':
+                update_name = block_name + inst_copy
+                G1.nodes[new_node]["inst_type"] = block_name
+                G1.nodes[new_node]["inst_copy"] = inst_copy
+                logger.debug(f"adding modified sub_ckt: {update_name} {self.hier_graph_dict.keys()}")
+                self.hier_graph_dict[update_name]=subckt
+        else:
+            inst_copy = '<'+ str(len(self.hier_graph_dict[block_name]['id'])) + '>'
+            update_name = block_name + inst_copy
+            G1.nodes[new_node]["inst_type"] = block_name
+            G1.nodes[new_node]["inst_copy"] = inst_copy
+            logger.debug(f"different size inst {self.hier_graph_dict[block_name]['id']} {val_n_type} {inst_copy}")
+            self.hier_graph_dict[update_name]=subckt
+            self.hier_graph_dict[block_name]['id']+=[val_n_type]
+        logger.debug(f"list all copies {block_name} {self.hier_graph_dict[block_name]['id']}")
     
 #%%
 def fix_order_for_multimatch(G1,map_list,Gsub):
@@ -469,35 +476,10 @@ def already_merged(G1,Gsub):
     return am
 
 
-def multiple_instances(G1,new_node,block_name,check_duplicates):
-    val_n_type = G1.nodes[new_node]["values"].copy()
-    val_n_type["real_inst_type"]=G1.nodes[new_node]["real_inst_type"]
-    val_n_type["ports"]=G1.nodes[new_node]["ports"]
-    update_name = block_name
-    if block_name not in check_duplicates.keys():
-        logger.debug(f"adding sub_ckt: {update_name} {val_n_type} {check_duplicates} ")
-        check_duplicates[block_name]=[val_n_type]
-
-    elif val_n_type in check_duplicates[block_name]:
-        inst_copy = '<'+ str(check_duplicates[block_name].index(val_n_type))+'>'
-        if inst_copy != '<0>':
-            update_name = block_name + inst_copy
-            G1.nodes[new_node]["inst_type"] = block_name
-            G1.nodes[new_node]["inst_copy"] = inst_copy
-            logger.debug(f"adding modified sub_ckt: {update_name} {check_duplicates.keys()}")
-    else:
-        inst_copy = '<'+ str(len(check_duplicates[block_name])) + '>'
-        update_name = block_name + inst_copy
-        G1.nodes[new_node]["inst_type"] = block_name
-        G1.nodes[new_node]["inst_copy"] = inst_copy
-        logger.debug(f"different size inst {check_duplicates[block_name]} {val_n_type} {inst_copy}")
-
-        check_duplicates[block_name]+=[val_n_type]
-    logger.debug(f"list all copies {block_name} {check_duplicates[block_name]}")
-    return update_name
-
-def check_nodes(graph_list):
-    for local_subckt in graph_list:
+def check_nodes(graph_dict):
+    for local_subckt in graph_dict.values():
+        if not 'ports_match' in local_subckt:
+            continue
         for node, attr in local_subckt["graph"].nodes(data=True):
             if  not attr["inst_type"] == "net":
                 for param,value in attr["values"].items():

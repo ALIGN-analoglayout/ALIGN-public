@@ -57,7 +57,6 @@ class ConstraintParser:
             self.block_const['constraints'] = all_const
         else:
             return None
-        logger.debug(f"user constraints: {all_const} ")
         self._map_valid_const()
         return self.block_const
             
@@ -115,7 +114,9 @@ class ConstraintParser:
         if 'abs_distance' in const:
             const['abs_distance']=int(const['abs_distance'])
         if 'criticality' in const:
-            const['abs_distance']=int(const['criticality'])
+            const['abs_distance'] = int(const['criticality'])
+        if 'weight' in const:
+            const['weight'] = int(const['weight'])
         if 'direction' in const:
             self._check_type(const['direction'],valid_arg['direction'])
         if 'location' in const:
@@ -200,6 +201,7 @@ class ConstraintParser:
         """
         all_const = self.block_const["constraints"]
         all_const = self._resolve_alias(all_const)
+        logger.info(f"input constraints {all_const}")
         #Start mapping
         added_const=[]
         for const in all_const:
@@ -212,10 +214,13 @@ class ConstraintParser:
                 del const['blocks']
             elif const["const_name"] == 'BlockDistance':
                 const["const_name"] = 'bias_graph'
+                const["distance"] = const['abs_distance']
             elif const["const_name"] == 'HorizontalDistance':
                 const["const_name"] = 'bias_Hgraph'
+                const["distance"] = const['abs_distance']
             elif const["const_name"] == 'VerticallDistance':
                 const["const_name"] = 'bias_Vgraph'
+                const["distance"] = const['abs_distance']
             elif const["const_name"] == 'AspectRatio':
                 const["const_name"] = 'Aspect_Ratio'
             elif const["const_name"] == 'SymmetricBlocks':
@@ -306,7 +311,7 @@ class ConstraintParser:
                         added_const.append(extra)
         self.block_const["constraints"] = [i for i in all_const if not i['const_name']=='NetConst' and not i['const_name']=='PortLocation']
         self.block_const["constraints"].extend(added_const)
-        logger.debug(f"Const mapped to PnR const format {self.block_const['constraints']}")
+        logger.info(f"Const mapped to PnR const format {self.block_const['constraints']}")
     
     def _map_pins(self,pins:list):
         blocks=[]
