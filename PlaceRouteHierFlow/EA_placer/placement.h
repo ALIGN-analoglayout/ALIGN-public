@@ -98,6 +98,7 @@ public:
     float readInputNode(PnRDB::hierNode &current_node);//return the total area of all blocks
     void Init_Placement(bool randomFlag);//random flag 0: scale the coordinate value into -1 to 1
     void Unify_blocks(float area, float scale_factor);
+    void print_blocks_nets();
     //donghao end
 
 };

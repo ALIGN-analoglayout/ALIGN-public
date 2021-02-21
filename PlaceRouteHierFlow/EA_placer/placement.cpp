@@ -1,5 +1,5 @@
 #include "placement.h"
-//#define DEBUG
+#define DEBUG
 Placement::Placement() {
 
 }
@@ -22,27 +22,49 @@ Placement::Placement(PnRDB::hierNode &current_node) {
     y_dimension_bin = 16; //number of bin, number of pe
   
   
-    Chip_D.x = (float) x_dimension * unit_x;
-    Chip_D.y = (float) y_dimension * unit_y;
+    
 
     Bin_D.x = unit_x_bin;
     Bin_D.y = unit_y_bin;
     std::cout<<"start reading node file"<<std::endl;
     area = readInputNode(current_node);
     // for blocks
-    unit_x = (float)1/64;
-    unit_y = (float)1/64;
+    unit_x = (float)1/Blocks.size();
+    unit_y = (float)1/Blocks.size();
     x_dimension = Blocks.size(); //number of pe
     y_dimension = x_dimension; //S number of pe
+    Chip_D.x = (float) 1;
+    Chip_D.y = (float) 1;
+
+
+    for(unsigned int i=0;i<x_dimension_bin;++i){
+     vector<bin> temp_bins;
+     for(unsigned int j=0;j<y_dimension_bin;++j){
+        bin temp_bin;
+        temp_bin.Dpoint.x=unit_x_bin;
+        temp_bin.Dpoint.y=unit_y_bin;
+        temp_bin.Cpoint.x=i*unit_x_bin+unit_x_bin/2;
+        temp_bin.Cpoint.y=j*unit_y_bin+unit_y_bin/2;
+        temp_bin.Index.x = i;
+        temp_bin.Index.y = j;
+        temp_bins.push_back(temp_bin);
+     }
+     Bins.push_back(temp_bins);
+  } 
+
+
+
   //step 2: Given a initial position for each block
     //create a small function for this
       // need to estimate a area to do placement
       // scale into 1x1
       // initial position for each block
     std::cout<<"Unify the block coordinate"<<std::endl;
-    scale_factor = 3.0;
+    scale_factor = 20.0;
     Unify_blocks(area, scale_factor);
     Initilize_Placement();
+
+    print_blocks_nets();  
   //step 3: call E_placer
   std::cout<<"start ePlacement"<<std::endl;
     E_Placer();
@@ -568,33 +590,36 @@ void Placement::Cal_Density_Eforce(){
     #ifdef DEBUG
     cout<<"start test fft functions"<<endl;
     #endif
-
+    std::cout<<"Cal_Density_Eforce debug 0"<<std::endl;
     int binCntX=x_dimension_bin; 
     int binCntY=y_dimension_bin;
     float binSizeX= unit_x_bin;
     float binSizeY= unit_y_bin;
-    
+    std::cout<<"Cal_Density_Eforce debug 1"<<std::endl;
     replace::FFT fft(binCntX, binCntY, binSizeX, binSizeY);
     #ifdef DEBUG
     cout<<"test flag 1"<<endl;
     #endif
-
+    std::cout<<"Cal_Density_Eforce debug 2"<<std::endl;
     for(unsigned int i=0;i<binCntX;++i){
        for(unsigned int j=0;j<binCntY;j++){
+          std::cout<<"Bin: ("<<i<<", "<<j<<")"<<std::endl;
+          std::cout<<"density:"<<Bins[i][j].density<<std::endl;
           fft.updateDensity(i, j, Bins[i][j].density); 
        }
     }
-
+    std::cout<<"Cal_Density_Eforce debug 3"<<std::endl;
     #ifdef DEBUG
     cout<<"test flag 2"<<endl;
     #endif
     fft.doFFT();
-
+    std::cout<<"Cal_Density_Eforce debug 4"<<std::endl;
     #ifdef DEBUG
     cout<<"end test fft functions"<<endl;
     #endif
-
+    std::cout<<"Cal_Density_Eforce debug 5"<<std::endl;
     for(unsigned int i=0;i<binCntX;++i) {
+      std::cout<<"Cal_Density_Eforce debug 6"<<std::endl;
       for(unsigned int j=0;j<binCntY;++j){
         auto eForcePair = fft.getElectroForce(i, j);
         Bins[i][j].Eforce.x = eForcePair.first;
@@ -607,11 +632,11 @@ void Placement::Cal_Density_Eforce(){
       }
         //sumPhi_ += electroPhi*static_cast<float>(bin->nonPlaceArea()+bin->instPlacedArea()+bin->fillerArea());
     }
-
+    std::cout<<"Cal_Density_Eforce debug 7"<<std::endl;
     for(unsigned int i=0;i<Blocks.size();++i){
       Cal_Eforce_Block(i);
     }
-
+    std::cout<<"Cal_Density_Eforce debug 8"<<std::endl;
 }
 
 void Placement::Cal_Net_force(){
@@ -650,8 +675,10 @@ bool Placement::Stop_Condition(float density, float &max_density){
 
   std::cout<<"max_density "<<max_density<<std::endl;
   if(max_density<density){
+    std::cout<<"stop condition debug flag: false"<<std::endl;
     return false;
   }else{
+    std::cout<<"stop condition debug flag: true"<<std::endl;
     return true;
   }
 
@@ -660,47 +687,64 @@ bool Placement::Stop_Condition(float density, float &max_density){
 void Placement::E_Placer(){
 
   int i=0;
-
+  std::cout<<"E_placer debug flage: 0"<<std::endl;
   Update_Bin_Density();
+  std::cout<<"E_placer debug flage: 1"<<std::endl;
   //gradient cal
   //Cal_WA_Net_Force();
   Cal_LSE_Net_Force();
+  std::cout<<"E_placer debug flage: 2"<<std::endl;
   Cal_Density_Eforce();
+  std::cout<<"E_placer debug flage: 3"<<std::endl;
   Cal_force();
+  std::cout<<"E_placer debug flage: 4"<<std::endl;
 
   float ac_x=1.0f;
   vector<float> pre_vc_x, pre_vl_x;
   pre_conditioner(pre_vl_x,1); //1 x direction
+  std::cout<<"E_placer debug flage: 5"<<std::endl;
   vector<float> uc_x,vc_x,vl_x;
   Extract_Placement_Vectors(uc_x, 1);
+  std::cout<<"E_placer debug flage: 6"<<std::endl;
   Extract_Placement_Vectors(vc_x, 1);
+  std::cout<<"E_placer debug flage: 7"<<std::endl;
   Extract_Placement_Vectors(vl_x, 1);
+  std::cout<<"E_placer debug flage: 8"<<std::endl;
 
   float ac_y=1.0f;
   vector<float> pre_vc_y, pre_vl_y;
   pre_conditioner(pre_vl_y,0); //1 x direction
+  std::cout<<"E_placer debug flage: 9"<<std::endl;
   vector<float> uc_y,vc_y,vl_y;
   Extract_Placement_Vectors(uc_y, 0);
+  std::cout<<"E_placer debug flage: 10"<<std::endl;
   Extract_Placement_Vectors(vc_y, 0);
+  std::cout<<"E_placer debug flage: 11"<<std::endl;
   Extract_Placement_Vectors(vl_y, 0);
+  std::cout<<"E_placer debug flage: 12"<<std::endl;
   bool start_flag = 1;
   Update_Bin_Density();
+  std::cout<<"E_placer debug flage: 13"<<std::endl;
 
   float stop_density = 0.01;
   float max_density = 1.0;
-  float current_max_density=1.0;
+  float current_max_density=10.0;
   int count_number = 0;
   int upper_count_number = 20;
   vector<float> Density;
-
-  while(Stop_Condition(stop_density,current_max_density) and count_number<upper_count_number){//Q: stop condition
-  //while(i<200){//Q: stop condition
+  std::cout<<"E_placer debug flage: 14"<<std::endl;
+  // while(Stop_Condition(stop_density,current_max_density) and count_number<upper_count_number){//Q: stop condition
+  while(i<20){//Q: stop condition
+      Density.push_back(current_max_density);
      if(current_max_density<max_density){
         max_density = current_max_density;
+        std::cout<<"E_placer debug flage: 16"<<std::endl;
       }else if(current_max_density==Density.back()){
+        std::cout<<"E_placer debug flage: 17"<<std::endl;
         count_number++;
       }
-     Density.push_back(current_max_density);
+      std::cout<<"E_placer debug flage: 15"<<std::endl;
+    //  Density.push_back(current_max_density);
      std::cout<<"Iteration "<<i<<std::endl;
      //if(lambda<100)
      lambda = lambda *1.20;
@@ -1092,7 +1136,7 @@ float Placement::readInputNode(PnRDB::hierNode &current_node)
     {
       int iter2 = it->connected[i].iter2;
       std::cout<<"connected block id: "<<iter2<<std::endl;
-      if(iter2 > 0)
+      if(iter2 >= 0)
       {
         tempNet.connected_block.push_back(iter2);
         Blocks[iter2].connected_net.push_back(netIndex);
@@ -1116,6 +1160,7 @@ float Placement::readInputNode(PnRDB::hierNode &current_node)
   }
 
   //return the total area
+  
   return totalArea;
 }
 
@@ -1135,4 +1180,20 @@ void Placement::Unify_blocks(float area, float scale_factor)
 }
 //donghao end
 
+void Placement::print_blocks_nets()
+{
+  std::cout<<"print information about blocks"<<std::endl;
+  for(int i = 0;i <  Blocks.size();++i)
+  {
+    std::cout<<"block id"<<Blocks[i].index;
+    std::cout<<"block position: ("<<Blocks[i].Cpoint.x<<", "<<Blocks[i].Cpoint.y<<")"<<"d:("<<Blocks[i].Dpoint.x<<", "<<Blocks[i].Dpoint.y<<")"<<std::endl;
 
+
+    std::cout<<"connect net:";
+    for(int j = 0;j < Blocks[i].connected_net.size();++j)
+    {
+      std::cout<<Blocks[i].connected_net[j]<<" "; 
+    }
+    std::cout<<std::endl;
+  }
+}
