@@ -84,6 +84,14 @@ align.cell\_fabric.pex module
    :undoc-members:
    :show-inheritance:
 
+align.cell\_fabric.positive\_coord module
+-----------------------------------------
+
+.. automodule:: align.cell_fabric.positive_coord
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 align.cell\_fabric.postprocess module
 -------------------------------------
 
@@ -115,7 +123,6 @@ align.cell\_fabric.transformation module
    :members:
    :undoc-members:
    :show-inheritance:
-
 
 Module contents
 ---------------

@@ -20,7 +20,6 @@ align.utils.logging module
    :undoc-members:
    :show-inheritance:
 
-
 Module contents
 ---------------
 
