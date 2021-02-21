@@ -34,7 +34,12 @@ private:
     float unit_x_bin;
     float unit_y_bin;
     int x_dimension_bin; //number of bin, number of pe
-    int y_dimension_bin; //number of bin, number of pe    
+    int y_dimension_bin; //number of bin, number of pe  
+
+    //donghao start
+    //estimated required height y and width x, generally x = y
+    Ppoint_F est_Size;
+    //donghao end  
 
 public:
     Placement();
@@ -87,8 +92,13 @@ public:
     void WriteOut_Bins(int iteration);
     bool Stop_Condition(float density, float &max_density);
     void Pull_back();
-
+    //donghao start
     Placement(PnRDB::hierNode &current_node);
+
+    float readInputNode(PnRDB::hierNode &current_node);//return the total area of all blocks
+    void Init_Placement(bool randomFlag);//random flag 0: scale the coordinate value into -1 to 1
+    void Unify_blocks(float area, float scale_factor);
+    //donghao end
 
 };
 #endif

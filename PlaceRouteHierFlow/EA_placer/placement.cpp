@@ -7,15 +7,45 @@ Placement::Placement() {
 Placement::Placement(PnRDB::hierNode &current_node) {
   //step 1: transfroming info. of current_node to Blocks and Nets
     //create a small function for this
+    float area, scale_factor;
+    int max_block_number = 1000;
+    int max_net_number = 100;
+    int max_conection_number = 100;
 
+  
+    
+  
+    // for bins
+    unit_x_bin =(float) 1/16;
+    unit_y_bin =(float) 1/16;
+    x_dimension_bin = 16; //number of bin, number of pe
+    y_dimension_bin = 16; //number of bin, number of pe
+  
+  
+    Chip_D.x = (float) x_dimension * unit_x;
+    Chip_D.y = (float) y_dimension * unit_y;
+
+    Bin_D.x = unit_x_bin;
+    Bin_D.y = unit_y_bin;
+    std::cout<<"start reading node file"<<std::endl;
+    area = readInputNode(current_node);
+    // for blocks
+    unit_x = (float)1/64;
+    unit_y = (float)1/64;
+    x_dimension = Blocks.size(); //number of pe
+    y_dimension = x_dimension; //S number of pe
   //step 2: Given a initial position for each block
     //create a small function for this
       // need to estimate a area to do placement
       // scale into 1x1
       // initial position for each block
-
+    std::cout<<"Unify the block coordinate"<<std::endl;
+    scale_factor = 3.0;
+    Unify_blocks(area, scale_factor);
+    Initilize_Placement();
   //step 3: call E_placer
-  
+  std::cout<<"start ePlacement"<<std::endl;
+    E_Placer();
 
 }
 
@@ -998,6 +1028,111 @@ void Placement::WriteOut_Bins(int iteration){
 }
 
 
+//donghao start
+//return the total area of all blocks
+float Placement::readInputNode(PnRDB::hierNode &current_node)
+{
+  int blockIndex = 0;
+  float totalArea = 0;
+  Blocks.clear();
+  Nets.clear();
+  std::cout<<"start reading blocks file"<<std::endl;
+  for(vector<PnRDB::blockComplex>::iterator it=current_node.Blocks.begin(); it!=current_node.Blocks.end(); ++it)
+  {
+    for(int i = 0;i < it->instNum;++i)
+    {
+      block tempblock;
+      //update block name
+      tempblock.blockname = it->instance[i].name;
+      Ppoint_F tempPoint1,tempPoint2;
+      //update center point
+      tempPoint1.x = (float)it->instance[i].originCenter.x;
+      tempPoint1.y = (float)it->instance[i].originCenter.y;
+      tempblock.Cpoint = tempPoint1;
 
+      //update height and width
+      tempPoint2.x = (float)it->instance[i].height;
+      tempPoint2.y = (float)it->instance[i].width;
+      totalArea += tempPoint2.x * tempPoint2.y;
+      tempblock.Dpoint = tempPoint2;
+
+      //set the init force as zero
+      tempblock.Force.x = 0;
+      tempblock.Force.y = 0;
+      tempblock.Netforce.x = 0;
+      tempblock.Netforce.y = 0;
+      tempblock.Eforce.x = 0;
+      tempblock.Eforce.y = 0;
+      //set the init NET_BLOCK_FORCE_P/N = 1
+      tempblock.Net_block_force_N.x = 1;
+      tempblock.Net_block_force_N.y = 1;
+      tempblock.Net_block_force_P.x = 1;
+      tempblock.Net_block_force_P.y = 1;
+      tempblock.index = blockIndex;
+      ++blockIndex;
+      //connected net will be update later
+      Blocks.push_back(tempblock);
+    }
+  }
+
+  //update net information
+  int netIndex = 0;
+  std::cout<<"total block number: "<<blockIndex<<std::endl;
+  std::cout<<"start reading net file"<<std::endl;
+  for(vector<PnRDB::net>::iterator it=current_node.Nets.begin();it!=current_node.Nets.end();++it)
+  {
+    net tempNet;
+    std::cout<<"current net id: "<<netIndex<<std::endl;
+    //update name of net
+    tempNet.netname = it->name;
+    //based on my understanding, iter2 is the block id
+    //I do not care about iter, which means block pin/terminal
+    tempNet.connected_block.clear();
+    for(int i = 0;i != it->connected.size();++i)
+    {
+      int iter2 = it->connected[i].iter2;
+      std::cout<<"connected block id: "<<iter2<<std::endl;
+      if(iter2 > 0)
+      {
+        tempNet.connected_block.push_back(iter2);
+        Blocks[iter2].connected_net.push_back(netIndex);
+      }
+      
+    }
+    //update net index
+    tempNet.index = netIndex;
+    ++netIndex;
+
+    tempNet.NSumNetforce.x = 0;
+    tempNet.NSumNetforce.y = 0;
+    tempNet.NSumNetforce_WA.x=0;
+    tempNet.NSumNetforce_WA.y=0;
+
+    tempNet.PSumNetforce.x = 0;
+    tempNet.PSumNetforce.y = 0;
+    tempNet.PSumNetforce_WA.x = 0;
+    tempNet.PSumNetforce_WA.y = 0;
+    Nets.push_back(tempNet);
+  }
+
+  //return the total area
+  return totalArea;
+}
+
+void Placement::Unify_blocks(float area, float scale_factor)
+{
+  float height = sqrt(scale_factor * area);
+  this->est_Size.x = height;
+  this->est_Size.y = height;
+
+  for(int i = 0;i < Blocks.size();i++)
+  {
+    Blocks[i].Cpoint.x /= height;
+    Blocks[i].Cpoint.y /= height;
+    Blocks[i].Dpoint.x /= height;
+    Blocks[i].Dpoint.y /= height;
+  }
+}
+//donghao end
 
 
