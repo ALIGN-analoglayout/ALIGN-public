@@ -45,6 +45,33 @@ bool A_star::FindFeasiblePath(Grid& grid, int pathNo, int left_up, int right_dow
 
 }
 
+bool A_star::FindFeasiblePath_sym(Grid& grid, int pathNo, int left_up, int right_down, std::vector<RouterDB::Metal> &sym_path) {
+
+  auto logger = spdlog::default_logger()->clone("router.A_star.FindFeasiblePath");
+
+  bool mark=false;
+  for(int i =0;i<pathNo;++i){
+
+     logger->debug("Path No {0} current path index {1}",pathNo,i);
+
+     std::vector<std::vector<int> > temp_path;
+     logger->debug("start A_star");
+
+     temp_path = A_star_algorithm_Sym(grid, left_up, right_down, sym_path);// grid.Source grid.dest
+     logger->debug("end A_star");
+
+     if((int)temp_path.size()>0) {
+       Path = temp_path;
+       mark=true;
+     } else {
+       mark=(mark or false);
+       logger->warn("Router-Warning: feasible path might not be found");
+     }
+  }
+  return mark;
+
+}
+
 void A_star::print_path(){
 
   auto logger = spdlog::default_logger()->clone("router.A_star.print_path");

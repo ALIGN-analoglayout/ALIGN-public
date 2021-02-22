@@ -512,6 +512,9 @@ void GcellDetailRouter::Global_Path_Operation_For_Symmetry_Pins(int i, std::vect
 
 Grid GcellDetailRouter::Generate_Grid_Net(int i){
 
+  //construct grid based on 2D i-th global routing and 3D terminals
+  //grid includes all the 2D symmetry path of i-th net and all terminals
+
   RouterDB::point chip_LL;
   RouterDB::point chip_UR;
   chip_LL.x = LL.x;
@@ -707,6 +710,23 @@ void GcellDetailRouter::Symmetry_Routing(int sym_flag, int i, std::set<RouterDB:
     }
 
 };
+
+void GcellDetailRouter::Mirror_Topology(std::vector<RouterDB::Metal> &sym_path,int HV_sym,int center){
+
+  if(HV_sym==1){//H
+    for(unsigned int i=0;i<sym_path.size();++i){
+      sym_path[i].LinePoint[0].y = 2*center - sym_path[i].LinePoint[0].y;
+      sym_path[i].LinePoint[1].y = 2*center - sym_path[i].LinePoint[1].y;
+    }
+  }else{//V
+    for(unsigned int i=0;i<sym_path.size();++i){
+      sym_path[i].LinePoint[0].x = 2*center - sym_path[i].LinePoint[0].x;
+      sym_path[i].LinePoint[1].x = 2*center - sym_path[i].LinePoint[1].x;
+    }
+  }
+
+};
+
 void GcellDetailRouter::create_detailrouter(){
 
   auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.create_detailrouter");
@@ -736,6 +756,15 @@ void GcellDetailRouter::create_detailrouter(){
 
     //int multi_number = R_constraint_based_Parallel_routing_number(i);
     int multi_number = Nets[i].multi_connection;
+    std::cout<<"sym net index "<<i<<" sym part"<<Nets[i].symCounterpart<<" sym axis "<<Nets[i].sym_H<<" sym center "<<Nets[i].center<<std::endl;
+    std::vector<RouterDB::Metal> symmetry_path;
+    if(Nets[i].symCounterpart!=-1 and Nets[i].symCounterpart<Nets.size()){
+      symmetry_path = Nets[Nets[i].symCounterpart].path_metal;
+      Topology_extraction(symmetry_path);
+      std::cout<<"sym net index "<<i<<" sym axis "<<Nets[i].sym_H<<" sym center "<<Nets[i].center<<std::endl;
+      //Q: HV_symmetry, center?
+      Mirror_Topology(symmetry_path,Nets[i].sym_H,Nets[i].center);
+    }
 
     for(unsigned int multi_index=0;multi_index<multi_number;multi_index++){
 
@@ -818,7 +847,7 @@ void GcellDetailRouter::create_detailrouter(){
         Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source, temp_dest, physical_path);
         UpdatePlistNets(physical_path, add_plist);
       }
-    Symmetry_Routing(sym_flag, i, Set_net);
+    //Symmetry_Routing(sym_flag, i, Set_net);
     InsertPlistToSet_x(Set_net, add_plist);
     InsertContact2Contact(Set_current_net_contact, Set_net_contact);
 
@@ -869,7 +898,7 @@ void GcellDetailRouter::create_detailrouter_old(){
     RouterDB::point sym_gridur;
     Grid grid = Generate_Grid_Net(i);                    //create grid for this net
     Grid_Inactive(grid, Set_x, Set_net, gridll, gridur); //inactive grid on internal metals
-    int sym_flag = Found_Pins_and_Symmetry_Pins(grid, i, temp_pins);
+    int sym_flag = Found_Pins_and_Symmetry_Pins(grid, i, temp_pins); //need temp_pins but sym_flag is no longer needed
     Symmetry_metal_Inactive(i, sym_flag, grid, sym_gridll, sym_gridur, gridll, gridur);
 
     int source_lock = 0;
@@ -912,7 +941,7 @@ void GcellDetailRouter::create_detailrouter_old(){
       Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source, temp_dest, physical_path);
       UpdatePlistNets(physical_path, add_plist);
     }
-    Symmetry_Routing(sym_flag, i, Set_net);
+    //Symmetry_Routing(sym_flag, i, Set_net);
 
     InsertPlistToSet_x(Set_net, add_plist);
 

@@ -70,6 +70,7 @@ class A_star {
     int Find_Symmetry_cost(Grid& grid, int current_node, RouterDB::Metal &temp_path);
     int Find_Symmetry_Cost(Grid& grid, int current_node, vector<RouterDB::Metal> &sym_path);
     std::vector<std::vector<int> > A_star_algorithm_Sym(Grid& grid, int left_up, int right_down, vector<RouterDB::Metal> &sym_path);
+    bool FindFeasiblePath_sym(Grid& grid, int pathNo, int left_up, int right_down, std::vector<RouterDB::Metal> &sym_path);
 };
 
 #endif
