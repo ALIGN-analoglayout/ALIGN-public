@@ -368,6 +368,7 @@ int toplevel( const std::vector<std::string>& argv) {
     DB.hierTree[idx].numPlacement = nodeVec.size();
     logger->info("Main-Info: complete node {0}",idx);
   }
+  DB.WritePlacement(opath + DB.hierTree[TraverseOrder.back()].name + ".placement");
 
   int new_topnode_idx = 0;
   for (unsigned int lidx = 0; lidx < DB.hierTree[TraverseOrder.back()].numPlacement; lidx++) {
