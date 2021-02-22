@@ -929,7 +929,8 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
 	    auto& net2 = updatedNode.Nets[cit->second];
 	    net.path_metal = net2.path_metal;
 	    net.path_via = net2.path_via;
-	}
+      net.axis_coor = net2.axis_coor;
+  }
     }
 
     /*
