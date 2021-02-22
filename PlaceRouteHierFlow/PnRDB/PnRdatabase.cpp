@@ -1965,4 +1965,33 @@ void PnRdatabase::Write_Router_Report(PnRDB::hierNode &node, const string& opath
 
 };
 
-
+void PnRdatabase::WritePlacement(string outfile) {
+  std::ofstream fout;
+  fout.open(outfile.c_str());
+  for (auto n : hierTree) {
+    fout << "module " << n.name << endl;
+    for (int i = 0; i < n.Blocks.size(); ++i) {
+      auto block = n.Blocks[i].instance[n.Blocks[i].selectedInstance];
+      string ort;
+      switch (block.orient) {
+        case PnRDB::N:
+          ort = "N";
+          break;
+        case PnRDB::FN:
+          ort = "FN";
+          break;
+        case PnRDB::FS:
+          ort = "FS";
+          break;
+        case PnRDB::S:
+          ort = "S";
+          break;
+        default:
+          break;
+      };
+      fout << block.name << " " << block.master << " " << block.placedBox.LL.x << " " << block.placedBox.LL.y << " " << ort << endl;
+    }
+    fout << "endmodule" << endl << endl;
+  }
+  fout.close();
+}
