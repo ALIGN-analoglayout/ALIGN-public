@@ -5,6 +5,15 @@ GcellDetailRouter::GcellDetailRouter(){
 
 };
 
+void GcellDetailRouter::Topology_extraction(vector<RouterDB::Metal> &temp_path){
+
+  //Q: for each 2 pin segment?
+  //Q: merge small segment?
+
+  //return temp_path;
+
+};
+
 GcellDetailRouter::GcellDetailRouter(PnRDB::hierNode& HierNode, GcellGlobalRouter& GR, int path_number, int grid_scale){
 
   auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.GcellDetailRouter");
