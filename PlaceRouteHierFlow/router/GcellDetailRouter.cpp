@@ -527,7 +527,7 @@ Grid GcellDetailRouter::Generate_Grid_Net(int i){
   std::pair<int,int> temp_global_path;
 
   Global_Path_Operation_For_Pins(i, global_path);
-  //Global_Path_Operation_For_Symmetry_Pins(i, global_path); //do not need this part
+  Global_Path_Operation_For_Symmetry_Pins(i, global_path); //do not need this part
   Grid grid(Gcell, global_path, drc_info, chip_LL, chip_UR, lowest_metal, highest_metal, grid_scale);
   grid.Full_Connected_Vertex();
 
@@ -806,7 +806,8 @@ void GcellDetailRouter::create_detailrouter(){
         AddViaSpacing(Pset_via, grid);
         A_star a_star(grid, Nets[i].shielding);
         logger->debug("Net name {0}",Nets[i].netName);
-        bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, 0, 0);
+        //bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, 0, 0);
+        bool pathMark = a_star.FindFeasiblePath_sym(grid, this->path_number, 0, 0, symmetry_path);
         /*
         if(pathMark==0){
           grid.CreateGridData();
