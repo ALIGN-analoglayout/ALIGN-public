@@ -527,7 +527,7 @@ Grid GcellDetailRouter::Generate_Grid_Net(int i){
   std::pair<int,int> temp_global_path;
 
   Global_Path_Operation_For_Pins(i, global_path);
-  Global_Path_Operation_For_Symmetry_Pins(i, global_path);
+  //Global_Path_Operation_For_Symmetry_Pins(i, global_path); //do not need this part
   Grid grid(Gcell, global_path, drc_info, chip_LL, chip_UR, lowest_metal, highest_metal, grid_scale);
   grid.Full_Connected_Vertex();
 
@@ -558,7 +558,8 @@ int GcellDetailRouter::Found_Pins_and_Symmetry_Pins(Grid &grid ,int i, std::vect
   std::vector<std::vector<RouterDB::SinkData> > sym_temp_pins; //symmetry pins 
   std::vector<std::vector<RouterDB::SinkData> > common_pins; //common part for routing pins and symmetry pins
 
-  if(Nets[i].symCounterpart!=-1 and Nets[i].symCounterpart < (int)Nets.size()-1){       
+  if(Nets[i].symCounterpart!=-1 and Nets[i].symCounterpart < (int)Nets.size()-1){ 
+     /*
      sym_flag = findPins_Sym(grid, Nets[i], Nets[Nets[i].symCounterpart], Nets[i].sym_H, Nets[i].center, temp_pins, sym_temp_pins, common_pins);
      if(sym_flag == 1){
         logger->debug("sym_flag exist");
@@ -567,6 +568,8 @@ int GcellDetailRouter::Found_Pins_and_Symmetry_Pins(Grid &grid ,int i, std::vect
         //SortPins(common_pins);
         temp_pins = common_pins;
        }
+       */
+     temp_pins = findPins_new(grid, Nets[i]);      
     }else{
      temp_pins = findPins_new(grid, Nets[i]);
      //SortPins(temp_pins);
@@ -581,19 +584,10 @@ void GcellDetailRouter::Symmetry_metal_Inactive(int i, int sym_flag, Grid &grid,
 
     auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.Symmetry_metal_Inactive");
 
-       //modify_tile_metals(Nets[i], 1);
-    if(sym_flag==1 and Nets[i].global_sym!=-1 and Nets[i].global_sym <(int)Nets.size()-1){
-
-       RouterDB::point global_sym_gridll;
-       RouterDB::point global_sym_gridur;
-       //FindBoundryofGlobalSymNet(gridll,gridur,global_sym_gridll,global_sym_gridur,Nets[i].sym_H,Nets[i].center, Nets[i].global_sym);
-      }
-
-    // void InactivePointlist(std::vector< std::set<RouterDB::point, RouterDB::pointXYComp> > &plist);
     sym_gridll = gridll;
     sym_gridur = gridur;
 
-    if(sym_flag ==1){
+    if(Nets[i].symCounterpart!=-1 and Nets[i].symCounterpart<Nets.size()){
         logger->debug("Starting sym net metal coping");
         RouterDB::SinkData sym_aear;
         sym_aear.metalIdx = -1;
@@ -661,7 +655,7 @@ void GcellDetailRouter::Detailed_router_set_src_dest(Grid &grid, std::vector<Rou
    //std::cout<<"Detail Router check point 2"<<std::endl;
    std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > sym_net_plist;
 
-   if(sym_flag == 1){
+   if(Nets[i].symCounterpart != -1 and Nets[i].symCounterpart<Nets.size() ){
      //inactivate the point in the sym part, then recover those node in the end
      CreatePlistSymNets(sym_net_plist, sym_gridll, sym_gridur, Nets[i].sym_H, Nets[i].center, gridll, gridur);
      grid.InactivePointlist(sym_net_plist);
@@ -756,12 +750,12 @@ void GcellDetailRouter::create_detailrouter(){
 
     //int multi_number = R_constraint_based_Parallel_routing_number(i);
     int multi_number = Nets[i].multi_connection;
-    std::cout<<"sym net index "<<i<<" sym part"<<Nets[i].symCounterpart<<" sym axis "<<Nets[i].sym_H<<" sym center "<<Nets[i].center<<std::endl;
+    //std::cout<<"sym net index "<<i<<" sym part"<<Nets[i].symCounterpart<<" sym axis "<<Nets[i].sym_H<<" sym center "<<Nets[i].center<<std::endl;
     std::vector<RouterDB::Metal> symmetry_path;
     if(Nets[i].symCounterpart!=-1 and Nets[i].symCounterpart<Nets.size()){
       symmetry_path = Nets[Nets[i].symCounterpart].path_metal;
       Topology_extraction(symmetry_path);
-      std::cout<<"sym net index "<<i<<" sym axis "<<Nets[i].sym_H<<" sym center "<<Nets[i].center<<std::endl;
+      std::cout<<"sym net index "<<i<<" sym part"<<Nets[i].symCounterpart<<" sym axis "<<Nets[i].sym_H<<" sym center "<<Nets[i].center<<std::endl;
       //Q: HV_symmetry, center?
       Mirror_Topology(symmetry_path,Nets[i].sym_H,Nets[i].center);
     }
@@ -1760,7 +1754,6 @@ int GcellDetailRouter::findPins_Sym(Grid& grid, RouterDB::Net &temp_net, RouterD
     }
 
     return 1;
-
 
 
 };
