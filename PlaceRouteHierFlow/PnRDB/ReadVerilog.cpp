@@ -51,16 +51,18 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
 
 	{
 	    if(db.DRC_info.Metal_info.size() < 2) {logger->warn("PnRDB-Error: too few metal layers");}
-	    if(db.DRC_info.Metal_info[0].direct==1) { //horizontal
-		curr_node.bias_Vgraph=db.DRC_info.Metal_info[0].grid_unit_y;
-	    } else {
-		curr_node.bias_Hgraph=db.DRC_info.Metal_info[0].grid_unit_x;
-	    }
-	    if(db.DRC_info.Metal_info[1].direct==1) { //horizontal
-		curr_node.bias_Vgraph=db.DRC_info.Metal_info[1].grid_unit_y;
-	    } else {
-		curr_node.bias_Hgraph=db.DRC_info.Metal_info[1].grid_unit_x;
-	    }
+        /**if(db.DRC_info.Metal_info[0].direct==1) { //horizontal
+            curr_node.bias_Vgraph=db.DRC_info.Metal_info[0].grid_unit_y;
+        } else {
+            curr_node.bias_Hgraph=db.DRC_info.Metal_info[0].grid_unit_x;
+        }
+        if(db.DRC_info.Metal_info[1].direct==1) { //horizontal
+            curr_node.bias_Vgraph=db.DRC_info.Metal_info[1].grid_unit_y;
+        } else {
+            curr_node.bias_Hgraph=db.DRC_info.Metal_info[1].grid_unit_x;
+        }**/
+        curr_node.bias_Vgraph = db.DRC_info.Design_info.Vspace;
+        curr_node.bias_Hgraph = db.DRC_info.Design_info.Hspace;
         // added one nodes to the class
         if (db.ReadConstraint_Json(curr_node, fpath, "const.json")) {
             logger->info("Finished reading contraint json file");

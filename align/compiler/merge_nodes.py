@@ -3,13 +3,14 @@
 Created on Thu Nov 29 22:19:39 2018
 
 @author: kunal
+
 """
 import networkx as nx
 
 import logging
 logger = logging.getLogger(__name__)
 
-def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: list, matched_ports: dict):
+def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: list, matched_ports: dict,new_inst_name=None):
 
     """
     Merges the  given nodes in list_of_nodes and returns a
@@ -58,8 +59,11 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
 
         if 'ports_match' in G.nodes[node].keys():
             subgraph.nodes[node]["ports_match"]= G.nodes[node]['ports_match']
-            
-        logger.debug(f"removing node {G.nodes[node]}")
+        elif 'connection' in G.nodes[node].keys():
+            subgraph.nodes[node]["connection"]= G.nodes[node]['connection']
+        elif 'sub_graph' in G.nodes[node].keys():
+            subgraph.nodes[node]["sub_graph"]= G.nodes[node]['sub_graph']            
+        logger.debug(f"removing node: {node}: attr: {G.nodes[node]}")
         max_value = merged_value(max_value, G.nodes[node]['values'])
 
         nbr = G.neighbors(node)
@@ -74,8 +78,6 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
                                   inst_type=G.nodes[ele]["inst_type"],
                                   net_type=G.nodes[ele]["net_type"])                    
                 
-
-            #print("adding edge b/w:",node,ele,G[node][ele]["weight"])
             subgraph.add_edge(node, ele, weight=G[node][ele]["weight"])
 
             if ele in ports:
@@ -88,6 +90,8 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
     if len(real_inst_types)==1:
         real_inst_types=real_inst_types[0]
     new_node='_'.join(new_node)
+    if new_inst_name:
+        new_node=new_inst_name
     G.add_node(new_node,
                inst_type=new_inst_type,
                real_inst_type=real_inst_types,
@@ -95,7 +99,7 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
                edge_weight=list(ports.values()),
                ports_match=matched_ports,
                values=max_value)
-    logger.debug(f"creating a super node of combination of nodes: {new_inst_type} {real_inst_types}")
+    logger.debug(f"creating a super node of: {new_inst_type} type: {real_inst_types}")
     for pins in list(ports):
         if set(G.neighbors(pins)) <= set(list_of_nodes) and G.nodes[pins]["net_type"]=='internal':
             del ports[pins]
@@ -104,11 +108,10 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
         G.remove_node(node)
     for pins in ports:
         G.add_edge(new_node, pins, weight=ports[pins])
-        #logger.debug(f"new ports: {pins},{ports[pins]}")
 
     check_nodes(subgraph)
 
-    return G, subgraph, new_node
+    return subgraph, new_node
 
 #%%
 def convert_unit(value:str):
@@ -162,21 +165,25 @@ def convert_unit(value:str):
     elif 'f' in value and is_val:
         value = float(value.replace('f', ""))
         value = value * 1e-15
+    elif value == "unit_size":
+        value = value
     else:
         try:
             value = float(value)
         except ValueError:
-            logger.error(f"Parameter {value} not defined. Using value=10n. Please fix netlist")
-            value = 1e-8
+            logger.error(f"Parameter {value} not defined. Using value=unit_size. Please fix netlist")
+            value = "unit_size"
     return mult*value
 
 def check_values(values):
-    for param,value in values.items():
-        #print("param,value:%s,%s", param,value)
-        assert(type(value)==int or type(value)==float)
+    for value in values.values():
+        assert(type(value)==int or type(value)==float) or value=="unit_size"
 
 def check_nodes(graph):
-    """ Checking node paramters to be dict type"""
+    """ 
+    Checking node paramters to be dict type
+
+    """
     for node, attr in graph.nodes(data=True):
         logger.debug(f"checking node {node} {attr}")
         if  not attr["inst_type"] == "net":
@@ -185,7 +192,7 @@ def check_nodes(graph):
 def merged_value(values1, values2):
     """
     combines values of different devices:
-        right now since primitive generator takes only one value we use max value
+    (right now since primitive generator takes only one value we use max value)
     try:
     #val1={'res': '13.6962k', 'l': '8u', 'w': '500n', 'm': '1'}
     #val2 = {'res': '13.6962k', 'l': '8u', 'w': '500n', 'm': '1'}
