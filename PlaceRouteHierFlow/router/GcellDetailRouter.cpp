@@ -2725,6 +2725,7 @@ void GcellDetailRouter::CreatePlistSymBlocks(std::vector<std::set<RouterDB::poin
   std::vector<RouterDB::contact> Contacts;
   std::vector<RouterDB::contact> Sym_Contacts;
   std::vector<std::vector<RouterDB::point> > plist;
+  plist.resize( this->layerNo );
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_x;
   //std::vector<RouterDB::point>
   int LLx, LLy, URx, URy;
@@ -2753,6 +2754,7 @@ void GcellDetailRouter::CreatePlistSymBlocks(std::vector<std::set<RouterDB::poin
          push_contact(cit->LowerMetalRect);
       }
     }
+
     // 2. collect internal metals on grids
     for(std::vector<RouterDB::contact>::iterator pit=bit->InternalMetal.begin(); pit!=bit->InternalMetal.end(); ++pit) {
         //std::cout<<"check point createplistBlocks 4.0 "<<std::endl;
@@ -3143,6 +3145,7 @@ void GcellDetailRouter::CreatePlistSymNets(std::vector<std::set<RouterDB::point,
   std::vector<RouterDB::contact> Sym_Contacts; 
   //RouterDB::point tmpP;
   std::vector<std::vector<RouterDB::point> > plist;
+  plist.resize(this->layerNo);
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_x; 
 
   auto push_contact = [&](auto & temp_contact){
@@ -3308,6 +3311,7 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
           if(x>=newLLx and x<=newURx and y>=newLLy and y<=newURy){
              //std::cout<<"Plist problem"<<std::endl;
+             //std::cout<<x<<" "<<y<<" "<<mIdx<<" "<<plist.size()<<std::endl;
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
          //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
