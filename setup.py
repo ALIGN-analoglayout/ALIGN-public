@@ -36,7 +36,10 @@ setup(name='align',
           'python-gdsii',
           'matplotlib',
           'pyyaml',
-          'pybind11'
+          'pybind11',
+          'pydantic',
+          'typing-extensions',
+          'z3-solver'
           ],
       setup_requires=['pytest-runner'],
       python_requires='~=3.6',
