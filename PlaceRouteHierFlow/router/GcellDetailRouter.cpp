@@ -599,7 +599,7 @@ void GcellDetailRouter::Symmetry_metal_Inactive(int i, int sym_flag, Grid &grid,
         std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > sym_netplist;
         logger->debug("Starting sym block metal coping flag");
         CreatePlistSymBlocks(sym_netplist, sym_gridll, sym_gridur, Nets[i].sym_H, Nets[i].center, gridll, gridur);
-        grid.InactivePointlist(sym_netplist);
+        //grid.InactivePointlist(sym_netplist);
         logger->debug("End sym net metal coping");
       }
 
@@ -658,7 +658,7 @@ void GcellDetailRouter::Detailed_router_set_src_dest(Grid &grid, std::vector<Rou
    if(Nets[i].symCounterpart != -1 and Nets[i].symCounterpart<Nets.size() ){
      //inactivate the point in the sym part, then recover those node in the end
      CreatePlistSymNets(sym_net_plist, sym_gridll, sym_gridur, Nets[i].sym_H, Nets[i].center, gridll, gridur);
-     grid.InactivePointlist(sym_net_plist);
+     //grid.InactivePointlist(sym_net_plist);
     }
 
    grid.setSrcDest_detail( temp_source, temp_dest, this->width, this->height, Smap);
