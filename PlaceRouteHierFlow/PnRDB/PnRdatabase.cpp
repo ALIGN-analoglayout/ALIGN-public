@@ -1581,6 +1581,23 @@ void PnRdatabase::WriteGcellDetailRoute(const PnRDB::hierNode& node, const strin
 
       }
       jsonNet["path"] = jsonpath;
+
+      json connections = json::array();
+
+      for(unsigned int j=0;j<node.Nets[i].connected.size();++j){
+
+         json connection =  json::array();
+         if(node.Nets[i].connected[j].iter2>=0){
+           connection.push_back(node.Nets[i].connected[j].iter2);
+           connection.push_back(node.Nets[i].connected[j].iter);
+           connections.push_back(connection);
+         }
+
+      }
+      jsonNet["path"] = jsonpath;
+      jsonNet["connection"] = connections;
+
+      
       jsonWiresArray.push_back(jsonNet);
 
     }
@@ -1596,6 +1613,23 @@ void PnRdatabase::WriteGcellDetailRoute(const PnRDB::hierNode& node, const strin
       blockposition.push_back(node.Blocks[i].instance[selected_index].placedBox.UR.x);
       blockposition.push_back(node.Blocks[i].instance[selected_index].placedBox.UR.y);
       jsonblock["position"] = blockposition;
+      json blockpins = json::array();
+      for(unsigned int j=0;j<node.Blocks[i].instance[selected_index].blockPins.size();++j){
+        json blockpin;
+        blockpin["name"] = node.Blocks[i].instance[selected_index].blockPins[j].name;
+        json blockpincontacts = json::array();
+        for(unsigned int k=0;k<node.Blocks[i].instance[selected_index].blockPins[j].pinContacts.size();++k){
+           json blockpincontact = json::array();
+           blockpincontact.push_back(node.Blocks[i].instance[selected_index].blockPins[j].pinContacts[k].placedBox.LL.x);
+           blockpincontact.push_back(node.Blocks[i].instance[selected_index].blockPins[j].pinContacts[k].placedBox.LL.y);
+           blockpincontact.push_back(node.Blocks[i].instance[selected_index].blockPins[j].pinContacts[k].placedBox.UR.x);
+           blockpincontact.push_back(node.Blocks[i].instance[selected_index].blockPins[j].pinContacts[k].placedBox.UR.y);
+           blockpincontacts.push_back(blockpincontact);
+        }
+        blockpin["contact"] = blockpincontacts;
+        blockpins.push_back(blockpin);
+      }
+      jsonblock["pin"] = blockpins;
       jsonBlocks.push_back(jsonblock);
     }
     
