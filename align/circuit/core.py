@@ -1,5 +1,6 @@
 import networkx
 from collections.abc import Iterable
+from . import constraint
 
 class NTerminalDevice():
 
@@ -193,13 +194,19 @@ class _SubCircuitMetaClass(type):
     def __new__(cls, clsname, bases, attributedict):
         if 'circuit' not in attributedict: attributedict.update({'circuit': Circuit()})
         if '_parameters' not in attributedict: attributedict.update({'_parameters': {}})
+        if '_constraint' not in attributedict: attributedict.update({'_constraint': constraint.ConstraintDB()})
         return super(_SubCircuitMetaClass, cls).__new__(cls, clsname, bases, attributedict)
 
     def __getattr__(self, name):
+        if name in 'constraint':
+            return self._constraint
         return getattr(self.circuit, name)
 
     def __str__(self):
         ret = []
+        print(self._constraint)
+        for constraint in self._constraint.constraints:
+            ret.append(f'* @: {constraint}')
         ret.append(f'.SUBCKT {self.__name__} ' + ' '.join(f'{x}' for x in self._pins))
         ret.extend([f'.PARAM {x}=' + (f'{{{y}}}' if isinstance(y, str) else f'{y}') for x, y in self._parameters.items()])
         ret.append(str(self.circuit))
@@ -210,8 +217,8 @@ class _SubCircuit(NTerminalDevice, metaclass=_SubCircuitMetaClass):
     _prefix = 'X'
 
     def __getattr__(self, name):
-        if name == 'add_element':
-            raise AssertionError("Add elements directly to subcircuit definition (not to instance)")
+        if name in ('add_element', 'add_constraint'):
+            raise AssertionError("Add elements / constraints directly to subcircuit definition (not to instance)")
         elif name == '__str__':
             return NTerminalDevice.__str__(self)
         return getattr(self.circuit, name)
