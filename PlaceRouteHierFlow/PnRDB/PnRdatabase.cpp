@@ -1560,6 +1560,60 @@ void PnRdatabase::WriteGcellGlobalRoute(const PnRDB::hierNode& node, const strin
     
 }
 
+void PnRdatabase::WriteGcellDetailRoute(const PnRDB::hierNode& node, const string& rofile, const string& opath) const {
+
+    auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.WriteGcellDetailRoute");
+
+    json jsonWiresArray = json::array();
+    for(unsigned int i=0;i<node.Nets.size();++i){
+
+      json jsonNet;
+      jsonNet["name"] = node.Nets[i].name;
+      json jsonpath = json::array();
+      for(unsigned int j=0;j<node.Nets[i].path_metal.size();++j){
+
+         json jsonRect =  json::array();
+         jsonRect.push_back(node.Nets[i].path_metal[j].LinePoint[0].x);
+         jsonRect.push_back(node.Nets[i].path_metal[j].LinePoint[0].y);
+         jsonRect.push_back(node.Nets[i].path_metal[j].LinePoint[1].x);
+         jsonRect.push_back(node.Nets[i].path_metal[j].LinePoint[1].y);
+         jsonpath.push_back(jsonRect);
+
+      }
+      jsonNet["path"] = jsonpath;
+      jsonWiresArray.push_back(jsonNet);
+
+    }
+
+    json jsonBlocks = json::array();
+    for(unsigned int i=0;i<node.Blocks.size();++i){
+      int selected_index = node.Blocks[i].selectedInstance;
+      json jsonblock;
+      jsonblock["name"] = node.Blocks[i].instance[selected_index].name;
+      json blockposition = json::array();
+      blockposition.push_back(node.Blocks[i].instance[selected_index].placedBox.LL.x);
+      blockposition.push_back(node.Blocks[i].instance[selected_index].placedBox.LL.y);
+      blockposition.push_back(node.Blocks[i].instance[selected_index].placedBox.UR.x);
+      blockposition.push_back(node.Blocks[i].instance[selected_index].placedBox.UR.y);
+      jsonblock["position"] = blockposition;
+      jsonBlocks.push_back(jsonblock);
+    }
+    
+
+    json jsonTop;
+    jsonTop["wires"] = jsonWiresArray;
+    jsonTop["blocks"] = jsonBlocks;
+
+    std::ofstream jsonStream(opath+rofile);
+    if (jsonStream.fail()) {
+      logger->error("PnRData-Error: cannot open file {0} for writing", opath + rofile);
+      return;
+    }
+    jsonStream << std::setw(4) << jsonTop;
+    jsonStream.close();
+    
+}
+
 
 void PnRdatabase::WriteGlobalRoute(const PnRDB::hierNode& node, const string& rofile, const string& opath) const {
 
