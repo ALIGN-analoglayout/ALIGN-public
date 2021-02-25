@@ -65,7 +65,7 @@ class ConstraintDB(pydantic.BaseModel):
     constraints: List[ConstraintType] \
             = pydantic.Field(default_factory=list)
 
-    _solver = pydantic.PrivateAttr(default_factory=z3.Solver)
+    _solver : z3.Solver = pydantic.PrivateAttr(default_factory=z3.Solver)
 
     @pydantic.validate_arguments
     def append(self, constraint: ConstraintType):
