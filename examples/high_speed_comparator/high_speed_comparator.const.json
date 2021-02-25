@@ -21,11 +21,6 @@
     {   "const_name": "SymmetricBlocks",
         "direction" : "V",
         "pairs": [["mmn2"], ["diffpair"], ["ccn"], ["ccp"]]
-    },
-    {   "const_name": "OrderBlocks",
-        "blocks": ["mmn2", "diffpair", "ccn", "ccp"],
-        "direction": "V"
     }
     ]
 }
-
