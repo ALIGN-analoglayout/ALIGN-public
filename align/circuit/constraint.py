@@ -61,11 +61,13 @@ class AlignVertical(ConstraintBase):
 ConstraintType=Union[ \
         AlignHorizontal, AlignVertical]
 
-class ConstraintDB(pydantic.BaseModel):
-    constraints: List[ConstraintType] \
-            = pydantic.Field(default_factory=list)
+class ConstraintDB():
+    constraints: List[ConstraintType]
+    _solver : z3.Solver
 
-    _solver : z3.Solver = pydantic.PrivateAttr(default_factory=z3.Solver)
+    def __init__(self):
+        self.constraints = []
+        self._solver = z3.Solver()
 
     @pydantic.validate_arguments
     def append(self, constraint: ConstraintType):
