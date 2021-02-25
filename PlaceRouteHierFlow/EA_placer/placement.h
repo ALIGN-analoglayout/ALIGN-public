@@ -22,7 +22,9 @@ private:
     vector<net> Nets; //nets
     vector<vector<bin> > Bins; //bins inside the chip
     float gammar = 1.0f; //Q: need to ajust
-    float lambda= 1.0f; //Q: need to ajust
+    float lambda= 0.5f; //Q: need to ajust
+    float beta = 1.0f;
+
 
     // for blocks
     float unit_x;

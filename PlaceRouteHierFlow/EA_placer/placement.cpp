@@ -60,7 +60,7 @@ Placement::Placement(PnRDB::hierNode &current_node) {
       // scale into 1x1
       // initial position for each block
     std::cout<<"Unify the block coordinate"<<std::endl;
-    scale_factor = 20.0;
+    scale_factor = 40.0;
     Unify_blocks(area, scale_factor);
     Initilize_Placement();
 
@@ -338,7 +338,7 @@ void Placement::PlotPlacement(int index){
     fout<<"set output \""<<to_string(index)+".jpg"<<"\""<<endl<<endl;
 
     //set range
-    float bias=1;
+    float bias=0;
     fout<<"\nset xrange ["<<0.0-bias<<":"<<Chip_D.x+bias<<"]"<<endl;
     fout<<"\nset yrange ["<<0.0-bias<<":"<<Chip_D.y+bias<<"]"<<endl;
 
@@ -654,8 +654,8 @@ void Placement::Cal_Net_force(){
 void Placement::Cal_force(){
 
   for(unsigned int i=0;i<Blocks.size();++i){
-     Blocks[i].Force.x = lambda*Blocks[i].Eforce.x - Blocks[i].Netforce.x;
-     Blocks[i].Force.y = lambda*Blocks[i].Eforce.y - Blocks[i].Netforce.y;
+     Blocks[i].Force.x = lambda*Blocks[i].Eforce.x - beta*Blocks[i].Netforce.x;
+     Blocks[i].Force.y = lambda*Blocks[i].Eforce.y - beta*Blocks[i].Netforce.y;
   }
 
 }
@@ -733,8 +733,8 @@ void Placement::E_Placer(){
   int upper_count_number = 20;
   vector<float> Density;
   std::cout<<"E_placer debug flage: 14"<<std::endl;
-  // while(Stop_Condition(stop_density,current_max_density) and count_number<upper_count_number){//Q: stop condition
-  while(i<20){//Q: stop condition
+  while(Stop_Condition(stop_density,current_max_density) and count_number<upper_count_number){//Q: stop condition
+  //while(i<20){//Q: stop condition
       Density.push_back(current_max_density);
      if(current_max_density<max_density){
         max_density = current_max_density;
@@ -747,7 +747,8 @@ void Placement::E_Placer(){
     //  Density.push_back(current_max_density);
      std::cout<<"Iteration "<<i<<std::endl;
      //if(lambda<100)
-     lambda = lambda *1.20;
+     //lambda = lambda *1.20;
+     beta = beta*0.95;
      PlotPlacement(i);
 
      Update_Bin_Density();
