@@ -19,6 +19,7 @@ class ConstraintBase(pydantic.BaseModel, abc.ABC):
     class Config:
         validate_assignment = True
         extra = 'forbid'
+        allow_mutation = False
 
     @abc.abstractmethod
     def check(self, solver):
