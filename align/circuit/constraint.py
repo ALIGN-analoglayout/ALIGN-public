@@ -9,12 +9,6 @@ import more_itertools as itertools
 from typing import List, Union, NamedTuple, Optional
 from typing_extensions import Literal
 
-class BBoxVars(NamedTuple):
-    llx: z3.Int
-    lly: z3.Int
-    urx: z3.Int
-    ury: z3.Int
-
 class ConstraintBase(pydantic.BaseModel, abc.ABC):
 
     class Config:
@@ -34,14 +28,14 @@ class ConstraintBase(pydantic.BaseModel, abc.ABC):
         '''
         assert len(self.blocks) >= 1
         constraints = []
-        bvars = self._get_z3_bbox_vars(self.blocks)
+        bvars = self._get_bbox_vars(self.blocks)
         for b in bvars:
             constraints.append(b.llx < b.urx)
             constraints.append(b.lly < b.ury)
         return constraints
 
     @staticmethod
-    def _get_z3_bbox_vars(*blocks):
+    def _get_bbox_vars(*blocks):
         '''
         This function can be used in two ways:
         1) Get all bboxes for a list set of blocks:
@@ -53,7 +47,12 @@ class ConstraintBase(pydantic.BaseModel, abc.ABC):
         '''
         if len(blocks) == 1 and isinstance(blocks[0], list):
             blocks = blocks[0]
-        return [BBoxVars(*z3.Ints(f'{block}_llx {block}_lly {block}_urx {block}_ury')) \
+        return [ConstraintDB.GenerateVar(
+                    'Bbox',
+                    llx = f'{block}_llx',
+                    lly = f'{block}_lly',
+                    urx = f'{block}_urx',
+                    ury = f'{block}_ury') \
                 for block in blocks]
 
 class AlignHorizontal(ConstraintBase):
@@ -68,7 +67,7 @@ class AlignHorizontal(ConstraintBase):
     def check(self):
         constraints = super().check()
         assert len(self.blocks) >= 2
-        bvars = self._get_z3_bbox_vars(self.blocks)
+        bvars = self._get_bbox_vars(self.blocks)
         for b1, b2 in itertools.pairwise(bvars):
             constraints.append(b1.urx <= b2.llx)
         return constraints
@@ -121,3 +120,13 @@ class ConstraintDB():
             assert name in self._commits
             self._revert()
             self.revert(name)
+
+    @classmethod
+    def GenerateVar(cls, name, **fields):
+        if fields:
+            return collections.namedtuple(
+                name,
+                fields.keys(),
+            )(*z3.Ints(' '.join(fields.values())))
+        else:
+            return z3.Int(name)
