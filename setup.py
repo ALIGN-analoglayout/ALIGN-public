@@ -39,7 +39,8 @@ setup(name='align',
           'pybind11',
           'pydantic',
           'typing-extensions',
-          'z3-solver'
+          'z3-solver',
+          'more-itertools'
           ],
       setup_requires=['pytest-runner'],
       python_requires='~=3.6',
