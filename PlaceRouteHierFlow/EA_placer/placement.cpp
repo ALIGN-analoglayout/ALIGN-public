@@ -1,5 +1,5 @@
 #include "placement.h"
-#define DEBUG
+// #define DEBUG
 Placement::Placement() {
 
 }
@@ -60,7 +60,7 @@ Placement::Placement(PnRDB::hierNode &current_node) {
       // scale into 1x1
       // initial position for each block
     std::cout<<"Unify the block coordinate"<<std::endl;
-    scale_factor = 20.0;
+    scale_factor = 40.0;
     Unify_blocks(area, scale_factor);
     Initilize_Placement();
 
@@ -338,7 +338,7 @@ void Placement::PlotPlacement(int index){
     fout<<"set output \""<<to_string(index)+".jpg"<<"\""<<endl<<endl;
 
     //set range
-    float bias=1;
+    float bias=0;
     fout<<"\nset xrange ["<<0.0-bias<<":"<<Chip_D.x+bias<<"]"<<endl;
     fout<<"\nset yrange ["<<0.0-bias<<":"<<Chip_D.y+bias<<"]"<<endl;
 
@@ -654,8 +654,12 @@ void Placement::Cal_Net_force(){
 void Placement::Cal_force(){
 
   for(unsigned int i=0;i<Blocks.size();++i){
-     Blocks[i].Force.x = lambda*Blocks[i].Eforce.x - Blocks[i].Netforce.x;
-     Blocks[i].Force.y = lambda*Blocks[i].Eforce.y - Blocks[i].Netforce.y;
+    //  Blocks[i].Force.x = lambda*Blocks[i].Eforce.x - beta*Blocks[i].Netforce.x;
+    //  Blocks[i].Force.y = lambda*Blocks[i].Eforce.y - beta*Blocks[i].Netforce.y;
+     
+     Blocks[i].Force.x = lambda*Blocks[i].Eforce.x - beta*Blocks[i].Netforce.x - sym_beta*Blocks[i].Symmetricforce.x;
+     Blocks[i].Force.y = lambda*Blocks[i].Eforce.y - beta*Blocks[i].Netforce.y - sym_beta*Blocks[i].Symmetricforce.y;
+     std::cout<<"symmetricforce/all"<<sym_beta*Blocks[i].Symmetricforce.x/Blocks[i].Force.x<<", "<<sym_beta*Blocks[i].Symmetricforce.y/Blocks[i].Force.y<<std::endl;
   }
 
 }
@@ -730,11 +734,11 @@ void Placement::E_Placer(){
   float max_density = 1.0;
   float current_max_density=10.0;
   int count_number = 0;
-  int upper_count_number = 20;
+  int upper_count_number = 200;
   vector<float> Density;
   std::cout<<"E_placer debug flage: 14"<<std::endl;
-  // while(Stop_Condition(stop_density,current_max_density) and count_number<upper_count_number){//Q: stop condition
-  while(i<20){//Q: stop condition
+  while(!Stop_Condition(stop_density,current_max_density) and count_number<upper_count_number){//Q: stop condition
+  // while(i<20){//Q: stop condition
       Density.push_back(current_max_density);
      if(current_max_density<max_density){
         max_density = current_max_density;
@@ -747,7 +751,9 @@ void Placement::E_Placer(){
     //  Density.push_back(current_max_density);
      std::cout<<"Iteration "<<i<<std::endl;
      //if(lambda<100)
-     lambda = lambda *1.20;
+     //lambda = lambda *1.20;
+     beta = beta*0.95;
+     sym_beta = sym_beta*1.01;
      PlotPlacement(i);
 
      Update_Bin_Density();
@@ -755,6 +761,8 @@ void Placement::E_Placer(){
      Cal_WA_Net_Force();
      //Cal_LSE_Net_Force();
      Cal_Density_Eforce();
+     std::cout<<"E_placer debug flag: 18"<<std::endl;
+     Cal_sym_Force();
      Cal_force();
 
      WriteOut_Blocks(i);
@@ -798,6 +806,7 @@ void Placement::E_Placer(){
      start_flag=0;
      i++;
   }
+  std::cout<<"iter num when stop:="<<count_number<<std::endl;
 
 }
 
@@ -896,15 +905,12 @@ void Placement::BkTrk(float &ac, float &an, vector<float> &uc,vector<float> &vc,
    #endif
    /*
    vector<float> pre_hat_vn; //Q this is not correct
-
    //this part could actually be ignored
-
    while(hat_ac>0.01*vector_fraction(hat_vn, vc, pre_hat_vn, pre_vc)){ //Q: what is stop condition Q://where is pre_hat_vn
      
      hat_ac = vector_fraction(hat_vn, vc, pre_hat_vn, pre_vc);
      cal_hat_un(hat_ac, hat_un, vc, pre_vc);
      cal_hat_vn(ac, an, hat_vn, hat_un, uc);
-
    }
    */
 
@@ -1081,6 +1087,19 @@ float Placement::readInputNode(PnRDB::hierNode &current_node)
   Blocks.clear();
   Nets.clear();
   std::cout<<"start reading blocks file"<<std::endl;
+  int blockCNT = current_node.Blocks.size();
+  //initialize sysmmtric matrix
+  symmetric_force_matrix = vector<vector<Ppoint_F>>(blockCNT);
+  for(int i = 0;i <  blockCNT;++i)
+  {
+    symmetric_force_matrix[i] = vector<Ppoint_F>(blockCNT);
+    for(int j = 0;j < blockCNT;++j)
+    {
+      symmetric_force_matrix[i][j].x = 0;
+      symmetric_force_matrix[i][j].y = 0;
+    }
+  }
+
   for(vector<PnRDB::blockComplex>::iterator it=current_node.Blocks.begin(); it!=current_node.Blocks.end(); ++it)
   {
     for(int i = 0;i < it->instNum;++i)
@@ -1159,6 +1178,247 @@ float Placement::readInputNode(PnRDB::hierNode &current_node)
     Nets.push_back(tempNet);
   }
 
+
+  //read the symmtirc 
+  // #ifdef DEBUG
+      std::cout<<"number of sym constrain = "<<current_node.SPBlocks.size()<<endl;
+    // #endif;
+  for(vector<PnRDB::SymmPairBlock>::iterator it=current_node.SPBlocks.begin();it!= current_node.SPBlocks.end();++it)
+  {
+    // #ifdef DEBUG
+      std::cout<<"sym group start"<<endl;
+      std::cout<<"self size = "<<it->selfsym.size()<<", pair size = "<<it->sympair.size()<<endl;
+    // #endif;
+    if(it->axis_dir ==PnRDB::V)
+    {
+      //cond 1: only one sym pair
+      if(it->sympair.size()== 1 && it->selfsym.size() == 0)
+      {
+        int id0 = it->sympair[0].first;
+        int id1 = it->sympair[0].second;
+        // #ifdef DEBUG
+        std::cout<<"V: cond1, id0 = "<<id0<<", id1 = "<<id1<<endl;
+        // #endif;
+        symmetric_force_matrix[id0][id0].y+=2;
+        symmetric_force_matrix[id0][id1].y-=2;
+        symmetric_force_matrix[id1][id0].y-=2;
+        symmetric_force_matrix[id1][id1].y+=2;
+      }
+      else if(it->selfsym.size()>0)//exist self sym, consider the first self sym block center as axis = x0
+      {
+        int base = it->selfsym[0].first;
+        // #ifdef DEBUG
+        std::cout<<"V: cond2, base = "<<base<<endl;
+        // #endif;
+        //for self sym (xi - x0)^2
+        for(int i = 1;i < it->selfsym.size();++i)
+        {
+          int id = it->selfsym[i].first;
+          std::cout<<"V: cond2, id = "<<id<<endl;
+          symmetric_force_matrix[id][id].x += 2;
+          symmetric_force_matrix[id][base].x -= 2;
+          symmetric_force_matrix[base][id].x -= 2;
+          symmetric_force_matrix[base][base].x += 2;
+        }
+        //for pair sym (xi + xj - 2*x0)^2
+        for(int i = 0;i < it->sympair.size();++i)
+        {
+          int id0 = it->sympair[i].first;
+          int id1 = it->sympair[i].second;
+          std::cout<<"V: cond2, id0 = "<<id0<<", id1"<<id1<<endl;
+          //(yi - yj)^2
+          symmetric_force_matrix[id0][id0].y+=2;
+          symmetric_force_matrix[id0][id1].y-=2;
+          symmetric_force_matrix[id1][id0].y-=2;
+          symmetric_force_matrix[id1][id1].y+=2;
+
+          //(xi + xj - 2*x0)^2
+          symmetric_force_matrix[id0][id0].x+=2;
+          symmetric_force_matrix[id0][id1].x+=2;
+          symmetric_force_matrix[id0][base].x-=4;
+
+          symmetric_force_matrix[id1][id0].x+=2;
+          symmetric_force_matrix[id1][id1].x+=2;
+          symmetric_force_matrix[id1][base].x-=4;
+
+          symmetric_force_matrix[base][id0].x-=2;
+          symmetric_force_matrix[base][id1].x-=2;
+          symmetric_force_matrix[base][base].x+=4;
+        }
+
+      }
+      else if(it->sympair.size()>1) //no self sym, consider the center of first sym pair of blocks as axis = 1/2*(x0.first + x0.second)
+      {
+        int idbase0 = it->sympair[0].first;
+        int idbase1 = it->sympair[0].second;
+        // #ifdef DEBUG
+        std::cout<<"V: cond3, idbase0 = "<<idbase0<<", idbase1 = "<<idbase1<<endl;
+        // #endif;
+        symmetric_force_matrix[idbase0][idbase0].y+=2;
+        symmetric_force_matrix[idbase0][idbase1].y-=2;
+        symmetric_force_matrix[idbase1][idbase0].y-=2;
+        symmetric_force_matrix[idbase1][idbase1].y+=2;
+        for(int i = 1;i < it->sympair.size();++i)
+        {
+          int id0 = it->sympair[i].first;
+          int id1 = it->sympair[i].second;
+          // #ifdef DEBUG
+          std::cout<<"V: cond3, id0 = "<<id0<<", id1 = "<<id1<<endl;
+          // #endif;
+          //(yi - yj)^2
+          symmetric_force_matrix[id0][id0].y+=2;
+          symmetric_force_matrix[id0][id1].y-=2;
+          symmetric_force_matrix[id1][id0].y-=2;
+          symmetric_force_matrix[id1][id1].y+=2;
+          //(xi + xj - x0 - x1)^2
+          symmetric_force_matrix[id0][id0].x+=2;
+          symmetric_force_matrix[id0][id1].x+=2;
+          symmetric_force_matrix[id0][idbase0].x-=2;
+          symmetric_force_matrix[id0][idbase1].x-=2;
+
+          symmetric_force_matrix[id1][id0].x+=2;
+          symmetric_force_matrix[id1][id1].x+=2;
+          symmetric_force_matrix[id1][idbase0].x-=2;
+          symmetric_force_matrix[id1][idbase1].x-=2;
+
+          symmetric_force_matrix[idbase0][id0].x-=2;
+          symmetric_force_matrix[idbase0][id1].x-=2;
+          symmetric_force_matrix[idbase0][idbase0].x+=2;
+          symmetric_force_matrix[idbase0][idbase1].x+=2;
+
+          symmetric_force_matrix[idbase1][id0].x-=2;
+          symmetric_force_matrix[idbase1][id1].x-=2;
+          symmetric_force_matrix[idbase1][idbase0].x+=2;
+          symmetric_force_matrix[idbase1][idbase1].x+=2;
+        }
+      }
+      else{
+        continue;
+      }
+    }
+    else //axis : H
+    {
+      //cond 1: only one sym pair
+      if(it->sympair.size()== 1 && it->selfsym.size() == 0)
+      {
+        int id0 = it->sympair[0].first;
+        int id1 = it->sympair[1].second;
+        // #ifdef DEBUG
+        std::cout<<"H: cond1, id0 = "<<id0<<", idb1 = "<<id1<<endl;
+        // #endif;
+        symmetric_force_matrix[id0][id0].x+=2;
+        symmetric_force_matrix[id0][id1].x-=2;
+        symmetric_force_matrix[id1][id0].x-=2;
+        symmetric_force_matrix[id1][id1].x+=2;
+      }
+      else if(it->selfsym.size()>0)//exist self sym, consider the first self sym block center as axis = x0
+      {
+        int base = it->selfsym[0].first;
+        //for self sym (yi - y0)^2
+        // #ifdef DEBUG
+        std::cout<<"H: cond2, base = "<<base<<endl;
+        // #endif;
+        for(int i = 1;i < it->selfsym.size();++i)
+        {
+          int id = it->selfsym[i].first;
+          // #ifdef DEBUG
+          std::cout<<"H: cond2, id = "<<id<<endl;
+          // std::cout<<"matrix size:"<<symmetric_force_matrix.size()<<", "<<symmetric_force_matrix[0].size()<<endl;
+          // #endif;
+          symmetric_force_matrix[id][id].y += 2;
+          symmetric_force_matrix[id][base].y -= 2;
+          symmetric_force_matrix[base][id].y -= 2;
+          symmetric_force_matrix[base][base].y += 2;
+        }
+        //for pair sym (xi + xj - 2*x0)^2
+        for(int i = 0;i < it->sympair.size();++i)
+        {
+          int id0 = it->sympair[i].first;
+          int id1 = it->sympair[i].second;
+          // #ifdef DEBUG
+          std::cout<<"V: cond2, id0 = "<<id0<<", id1 = "<<id1<<endl;
+          // #endif;
+          //(xi - xj)^2
+          symmetric_force_matrix[id0][id0].x+=2;
+          symmetric_force_matrix[id0][id1].x-=2;
+          symmetric_force_matrix[id1][id0].x-=2;
+          symmetric_force_matrix[id1][id1].x+=2;
+
+          //(yi + yj - 2*y0)^2
+          symmetric_force_matrix[id0][id0].y+=2;
+          symmetric_force_matrix[id0][id1].y+=2;
+          symmetric_force_matrix[id0][base].y-=4;
+
+          symmetric_force_matrix[id1][id0].y+=2;
+          symmetric_force_matrix[id1][id1].y+=2;
+          symmetric_force_matrix[id1][base].y-=4;
+
+          symmetric_force_matrix[base][id0].y-=2;
+          symmetric_force_matrix[base][id1].y-=2;
+          symmetric_force_matrix[base][base].y+=4;
+        }
+      }
+      else if(it->sympair.size()>1) //no self sym, consider the center of first sym pair of blocks as axis = 1/2*(x0.first + x0.second)
+      {
+        int idbase0 = it->sympair[0].first;
+        int idbase1 = it->sympair[0].second;
+        // #ifdef DEBUG
+        std::cout<<"H: cond3, idbase0 = "<<idbase0<<", idbase1 = "<<idbase1<<endl;
+        // #endif;
+        symmetric_force_matrix[idbase0][idbase0].x+=2;
+        symmetric_force_matrix[idbase0][idbase1].x-=2;
+        symmetric_force_matrix[idbase1][idbase0].x-=2;
+        symmetric_force_matrix[idbase1][idbase1].x+=2;
+        for(int i = 1;i < it->sympair.size();++i)
+        {
+          int id0 = it->sympair[i].first;
+          int id1 = it->sympair[i].second;
+          // #ifdef DEBUG
+          std::cout<<"H: cond3, id0 = "<<id0<<", id1 = "<<id1<<endl;
+          // #endif;
+          //(xi - xj)^2
+          symmetric_force_matrix[id0][id0].x+=2;
+          symmetric_force_matrix[id0][id1].x-=2;
+          symmetric_force_matrix[id1][id0].x-=2;
+          symmetric_force_matrix[id1][id1].x+=2;
+          //(yi + yj - y0 - y1)^2
+          symmetric_force_matrix[id0][id0].y+=2;
+          symmetric_force_matrix[id0][id1].y+=2;
+          symmetric_force_matrix[id0][idbase0].y-=2;
+          symmetric_force_matrix[id0][idbase1].y-=2;
+
+          symmetric_force_matrix[id1][id0].y+=2;
+          symmetric_force_matrix[id1][id1].y+=2;
+          symmetric_force_matrix[id1][idbase0].y-=2;
+          symmetric_force_matrix[id1][idbase1].y-=2;
+
+          symmetric_force_matrix[idbase0][id0].y-=2;
+          symmetric_force_matrix[idbase0][id1].y-=2;
+          symmetric_force_matrix[idbase0][idbase0].y+=2;
+          symmetric_force_matrix[idbase0][idbase1].y+=2;
+
+          symmetric_force_matrix[idbase1][id0].y-=2;
+          symmetric_force_matrix[idbase1][id1].y-=2;
+          symmetric_force_matrix[idbase1][idbase0].y+=2;
+          symmetric_force_matrix[idbase1][idbase1].y+=2;
+        }
+      }
+      else{
+        continue;
+      }
+    }
+    
+  }
+  //PRINT symmetric _force matrix
+  std::cout<<"symmetric_force matrix"<<std::endl;
+  for(int i = 0;i < blockCNT;++i)
+  {
+    for(int j = 0;j< blockCNT;++j)
+    {
+      std::cout<<"("<<symmetric_force_matrix[i][j].x<<", "<<symmetric_force_matrix[i][j].y<<")";
+    }
+    std::cout<<std::endl;
+  }
   //return the total area
   
   return totalArea;
@@ -1196,4 +1456,25 @@ void Placement::print_blocks_nets()
     }
     std::cout<<std::endl;
   }
+}
+
+void Placement::Cal_sym_Force()
+{
+  std::cout<<"Cal_sym_Force debug flag: 1"<<std::endl;
+  for(int i = 0;i < symmetric_force_matrix.size();++i)
+  {
+    Blocks[i].Symmetricforce.x = 0;
+    Blocks[i].Symmetricforce.y = 0;
+    for(int j = 0;j < symmetric_force_matrix[i].size();++j)
+    {
+      std::cout<<"Cal_sym_Force debug flag: 3"<<std::endl;
+      std::cout<<"force x="<<symmetric_force_matrix[i][j].x<<", force y="<<symmetric_force_matrix[i][j].y;
+      std::cout<<"center x="<<Blocks[j].Cpoint.x<<", center y="<<Blocks[j].Cpoint.y<<std::endl;
+      Blocks[i].Symmetricforce.x += symmetric_force_matrix[i][j].x * Blocks[j].Cpoint.x;
+      Blocks[i].Symmetricforce.y += symmetric_force_matrix[i][j].y * Blocks[j].Cpoint.y;
+      
+      std::cout<<"Cal_sym_Force debug flag: 4"<<std::endl;
+    }
+  }
+  std::cout<<"Cal_sym_Force debug flag: 2"<<std::endl;
 }
