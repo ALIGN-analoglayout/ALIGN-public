@@ -87,14 +87,12 @@ class ConstraintDB():
     def checkpoint(self):
         self._solver.push()
         self._commits[self._gen_commit_id()] = len(self._constraints)
-        assert len(self._commits) == self._solver.num_scopes()
         return next(reversed(self._commits))
 
     def _revert(self):
         self._solver.pop()
         _, length = self._commits.popitem()
-        assert len(self._commits) == self._solver.num_scopes()
-        self._constraints = self._constraints[0:length-1]
+        self._constraints = self._constraints[0:length]
 
     def revert(self, name=None):
         assert len(self._commits) > 0, 'Top of scope. Nothing to revert'
