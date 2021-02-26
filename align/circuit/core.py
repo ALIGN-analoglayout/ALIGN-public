@@ -1,36 +1,10 @@
 import networkx
 from collections.abc import Iterable
-from . import constraint
+from .constraint import ConstraintDB
+from .device import Device
 
-class NTerminalDevice():
-
-    _prefix = ''
-    _pins = ()
-    _parameters = {} # name : defaultval
-
-    name = ''
-    pins = {} # name: net
-    parameters = {} # name : val
-
-    @classmethod
-    def add_parameters(self, parameters):
-        self._parameters.update(parameters)
-
-    def __init__(self, name, *pins, **parameters):
-        self.name = name
-        assert self.name.startswith(self._prefix), f'Prefix is {self._prefix}' + \
-            '. Did you try overwriting an inbuilt element with subckt?' if self._prefix == 'X' else ''
-        assert len(pins) == len(self._pins), f"One or more positional arguments has not been specified. Need name and pins {self._pins}"
-        self.pins = {pin: net for pin, net in zip(self._pins, pins)}
-        self.parameters = self._parameters.copy()
-        assert all(x in self._parameters for x in parameters.keys())
-        self.parameters.update(parameters)
-
-    def __str__(self):
-        return f'{self.name} ' + \
-            ' '.join(self.pins.values()) + \
-            f' {self.__class__.__name__} ' + \
-            ' '.join(f'{x}='+ (f'{{{y}}}' if isinstance(y, str) else f'{y}') for x, y in self.parameters.items())
+def NTerminalDevice(name, *pins, prefix=None, **parameters):
+    return type(name, (Device,), {'_prefix': prefix, '_pins': pins, '_parameters': parameters})
 
 class Circuit(networkx.Graph):
 
@@ -51,7 +25,7 @@ class Circuit(networkx.Graph):
         return [x for x, v in self.nodes.items() if not self._is_element(v)]
 
     def add_element(self, element):
-        assert isinstance(element, NTerminalDevice)
+        assert isinstance(element, Device)
         for pin, net in element.pins.items():
             if self.has_edge(element.name, net):
                 self[element.name][net]['pin'].add(pin)
@@ -173,8 +147,8 @@ class Circuit(networkx.Graph):
         if any((hasattr(x, 'circuit') for x in self.elements)) and depth > 0:
             self.flatten(depth)
         for element in self.elements:
-            if not element.name.startswith(element._prefix):
-                element.name = f'{element._prefix}_{element.name}'
+            if element._prefix and not element.name.startswith(element._prefix):
+                    element.name = f'{element._prefix}_{element.name}'
 
     def _replace_subckt_with_components(self, subcktinst):
         # Remove element from graph
@@ -194,7 +168,7 @@ class _SubCircuitMetaClass(type):
     def __new__(cls, clsname, bases, attributedict):
         if 'circuit' not in attributedict: attributedict.update({'circuit': Circuit()})
         if '_parameters' not in attributedict: attributedict.update({'_parameters': {}})
-        if '_constraint' not in attributedict: attributedict.update({'_constraint': constraint.ConstraintDB()})
+        if '_constraint' not in attributedict: attributedict.update({'_constraint': ConstraintDB()})
         return super(_SubCircuitMetaClass, cls).__new__(cls, clsname, bases, attributedict)
 
     def __getattr__(self, name):
@@ -213,14 +187,14 @@ class _SubCircuitMetaClass(type):
         ret.append(f'.ENDS {self.__name__}')
         return '\n'.join(ret)
 
-class _SubCircuit(NTerminalDevice, metaclass=_SubCircuitMetaClass):
+class _SubCircuit(Device, metaclass=_SubCircuitMetaClass):
     _prefix = 'X'
 
     def __getattr__(self, name):
         if name in ('add_element', 'add_constraint'):
             raise AssertionError("Add elements / constraints directly to subcircuit definition (not to instance)")
         elif name == '__str__':
-            return NTerminalDevice.__str__(self)
+            return Device.__str__(self)
         return getattr(self.circuit, name)
 
 def SubCircuit(name, *pins, library=None, **parameters):
@@ -234,7 +208,7 @@ def SubCircuit(name, *pins, library=None, **parameters):
     return subckt
 
 def Model(name, base, library=None, **parameters):
-    assert issubclass(base, NTerminalDevice), base
+    assert issubclass(base, Device), base
     model = type(name, (base, ), {'_parameters': base._parameters.copy()})
     model.add_parameters(parameters)
     # Automatically register model into library for later reuse

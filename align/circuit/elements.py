@@ -1,33 +1,42 @@
 import sys, inspect
 
-from .core import NTerminalDevice
+from .core import NTerminalDevice, Device
 
 # WARNING: All pin & parameter names must be capitalized
 #          to support case-insensitive parsing
 
-class _MosFET(NTerminalDevice):
-    _prefix = 'M'
-    _pins = ('D', 'G', 'S', 'B')
-    _parameters = {'W' : 0, 'L' : 0, 'NFIN' : 1}
+NMOS = NTerminalDevice(
+    'NMOS',
+    'D', 'G', 'S', 'B',
+    W = 0, L = 0, NFIN = 1,
+    prefix = 'M')
 
-class NMOS(_MosFET):
-    pass
+PMOS = NTerminalDevice(
+    'PMOS',
+    'D', 'G', 'S', 'B',
+    W = 0, L = 0, NFIN = 1,
+    prefix = 'M')
 
-class PMOS(_MosFET):
-    pass
+CAP = NTerminalDevice(
+    'CAP',
+    '+', '-',
+    VALUE = 0,
+    prefix = 'C'
+    )
 
-class _TwoTerminalDevice(NTerminalDevice):
-    _pins = ('+', '-')
-    _parameters = {'VALUE': 0}
+RES = NTerminalDevice(
+    'RES',
+    '+', '-',
+    VALUE = 0,
+    prefix = 'R'
+    )
 
-class CAP(_TwoTerminalDevice):
-    _prefix = 'C'
-
-class RES(_TwoTerminalDevice):
-    _prefix = 'R'
-
-class IND(_TwoTerminalDevice):
-    _prefix = 'L'
+IND = NTerminalDevice(
+    'IND',
+    '+', '-',
+    VALUE = 0,
+    prefix = 'L'
+    )
 
 class Library(dict):
 
@@ -35,6 +44,6 @@ class Library(dict):
         if default is None:
             default = { x[0]: x[1] for x in
             inspect.getmembers(sys.modules[__name__], lambda x: inspect.isclass(x) and
-                                                                issubclass(x, NTerminalDevice) and
+                                                                issubclass(x, Device) and
                                                                 not x.__name__.startswith('_')) }
         self.update(default)

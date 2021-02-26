@@ -3,18 +3,18 @@ import pytest
 from align.circuit.core import NTerminalDevice, Circuit, SubCircuit, Model
 
 def test_n_terminal_device():
-    inst = NTerminalDevice('X1')
+    inst = NTerminalDevice('NTerminalDevice')('X1')
+    assert inst.__class__.__name__ == 'NTerminalDevice'
     assert inst.name == 'X1'
-    with pytest.raises(AssertionError):
-        inst = NTerminalDevice('X2', 'net1')
+    # TODO: Add more tests here
 
 @pytest.fixture
 def TwoTerminalDevice():
-    return type('TwoTerminalDevice', (NTerminalDevice,), {'_pins': ['a', 'b']})
+    return NTerminalDevice('TwoTerminalDevice', 'a', 'b')
 
 @pytest.fixture
 def ThreeTerminalDevice():
-    return type('ThreeTerminalDevice', (NTerminalDevice,), {'_pins': ['a', 'b', 'c'], '_parameters': {'myparameter': 1}})
+    return NTerminalDevice('ThreeTerminalDevice', 'a', 'b', 'c', myparameter=1)
 
 def test_2_terminal_device(TwoTerminalDevice):
     with pytest.raises(AssertionError):
