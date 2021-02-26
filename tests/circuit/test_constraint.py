@@ -25,13 +25,22 @@ def test_AlignHorizontal_nblock_checking(solver):
         x.check()
 
 def test_AlignHorizontal_order_checking(solver):
+    '''
+    This is just a unittest of generated constraints
+
+    Please use ConstraintDB to manage constraints
+    (See test_ConstraintDB_checking() for example)
+    '''
     x = constraint.AlignHorizontal(blocks=['M1', 'M2', 'M3'])
-    x.check(solver)
+    solver.append(*x.check())
+    assert solver.check() == z3.sat
     x = constraint.AlignHorizontal(blocks=['M4', 'M5'], alignment='bottom')
-    x.check(solver)
+    solver.append(*x.check())
+    assert solver.check() == z3.sat
     x = constraint.AlignHorizontal(blocks=['M3', 'M2'], alignment='bottom')
+    solver.append(*x.check())
     with pytest.raises(AssertionError):
-        x.check(solver)
+        assert solver.check() == z3.sat
 
 def test_ConstraintDB_inputapi(db):
     with pytest.raises(Exception):
@@ -72,8 +81,8 @@ def test_ConstraintDB_incremental_checking(db):
 
 def test_ConstraintDB_nonincremental_revert(db):
     '''
-    It is possible to revert() back to a certain
-    checkpoint() by name. Needing to unroll multiple
+    While it is possible to revert() back to a certain
+    checkpoint() by name, needing to unroll multiple
     checkpoints can indicate suboptimal compiler design
     '''
     db.append(constraint.AlignHorizontal(blocks=['M1', 'M2']))
@@ -86,3 +95,12 @@ def test_ConstraintDB_nonincremental_revert(db):
     assert len(db.constraints) == 1
     assert len(db._commits) == 0
     assert 'M3' not in str(db._solver)
+
+def test_ConstraintDB_permissive():
+    '''
+    Check that it is possible to turn validation OFF
+    NOT RECOMMENDED !! DO NOT DO THIS !!!
+    '''
+    db = constraint.ConstraintDB(validation=False)
+    db.append(constraint.AlignHorizontal(blocks=['M1', 'M2']))
+    db.append(constraint.AlignHorizontal(blocks=['M2', 'M1']))
