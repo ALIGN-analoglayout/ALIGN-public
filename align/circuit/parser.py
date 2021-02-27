@@ -3,7 +3,7 @@ import re
 import logging
 
 from .core import Circuit, SubCircuit, _SubCircuit, Model
-from .elements import Library
+from .library import Library
 from . import constraint
 
 logger = logging.getLogger(__name__)

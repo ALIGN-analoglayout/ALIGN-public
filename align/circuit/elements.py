@@ -1,6 +1,6 @@
 import sys, inspect
 
-from .core import NTerminalDevice, Device
+from .core import NTerminalDevice
 
 # WARNING: All pin & parameter names must be capitalized
 #          to support case-insensitive parsing
@@ -38,12 +38,3 @@ IND = NTerminalDevice(
     prefix = 'L'
     )
 
-class Library(dict):
-
-    def __init__(self, default=None):
-        if default is None:
-            default = { x[0]: x[1] for x in
-            inspect.getmembers(sys.modules[__name__], lambda x: inspect.isclass(x) and
-                                                                issubclass(x, Device) and
-                                                                not x.__name__.startswith('_')) }
-        self.update(default)
