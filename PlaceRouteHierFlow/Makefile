@@ -18,12 +18,22 @@ GTEST_DIR?=/opt/googletest/googletest
 JSON?=/opt/json
 SuperLu_DIR?=/opt/superlu
 
+NOCOVERAGE?=0
+
 # Compilation options
 # OPTIMFLAGS gets used in `make`
 # DEBUGFLAGS gets used in `make debug`
 # You may override them before calling make as previously shown
 NOPYBIND11?=0
-FLAGS?=-std=c++17 -m64 -fPIC --coverage -DNDEBUG -DPRNTlevel=0 -DAdd_
+
+ifeq ($(NOCOVERAGE),0)
+COVERAGE=--coverage
+else
+COVERAGE=
+endif
+
+FLAGS?=-std=c++17 -m64 -fPIC $(COVERAGE) -DNDEBUG -DPRNTlevel=0 -DAdd_
+
 DEBUGFLAGS?=-Og -g -Wall # Consider using -Og instead of -O3
 OPTIMFLAGS?=-O3 # -s -w
 
