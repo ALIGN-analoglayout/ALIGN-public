@@ -35,7 +35,7 @@ def test_NMOS():
         inst = elements.NMOS('X1', 'net10', 'net12', 'net13', 'vss')
     inst = elements.NMOS('M1', 'net10', 'net12', 'net13', 'vss')
     assert inst.name == 'M1'
-    assert inst.model.name == 'NMOS'
+    assert inst.model == 'NMOS'
     assert inst.pins == {'D': 'net10', 'G': 'net12', 'S': 'net13', 'B': 'vss'}
     assert list(inst.parameters.keys()) == ['W', 'L', 'NFIN']
     assert inst.parameters['W'] == 0
@@ -51,7 +51,7 @@ def test_PMOS():
         inst = elements.PMOS('X1', 'net10', 'net12', 'net13', 'vss')
     inst = elements.PMOS('M1', 'net10', 'net12', 'net13', 'vss')
     assert inst.name == 'M1'
-    assert inst.model.name == 'PMOS'
+    assert inst.model == 'PMOS'
     assert inst.pins == {'D': 'net10', 'G': 'net12', 'S': 'net13', 'B': 'vss'}
     assert list(inst.parameters.keys()) == ['W', 'L', 'NFIN']
     assert inst.parameters['W'] == 0
@@ -67,7 +67,7 @@ def test_res():
         inst = elements.RES('X1', 'net10', 'net12', 1.3)
     inst = elements.RES('R1', 'net10', 'net12', VALUE=1.3)
     assert inst.name == 'R1'
-    assert inst.model.name == 'RES'
+    assert inst.model == 'RES'
     assert inst.pins == {'+': 'net10', '-': 'net12'}
     assert inst.parameters['VALUE'] == 1.3
 
@@ -78,6 +78,6 @@ def test_cap():
         inst = elements.CAP('X1', 'net10', 'net12', 1.3)
     inst = elements.CAP('C1', 'net10', 'net12', VALUE=1.3)
     assert inst.name == 'C1'
-    assert inst.model.name == 'CAP'
+    assert inst.model == 'CAP'
     assert inst.pins == {'+': 'net10', '-': 'net12'}
     assert inst.parameters['VALUE'] == 1.3

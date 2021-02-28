@@ -66,3 +66,10 @@ def test_model_instance(testmos):
 #     assert type(inst).__name__ == 'CustomDevice'
 #     assert inst.pins == {'a': 'net01', 'b': 'net02', 'c': 'net03'}
 #     assert inst.parameters == {'myparameter': 2, 'newparam': 2, 'newparam2': 'hello'}
+
+def test_model_json(testmos):
+    assert testmos.json() == '{"type": "Model", "name": "TestMOS", "base": null, "pins": ["D", "G", "S", "B"], "parameters": {"PARAM1": 1.0, "PARAM2": 2}, "prefix": null}'
+
+def test_device_json(testmos):
+    M1 = M1 = testmos('M1', 'net01', 'net02', 'net03', 'net04', PARAM1='nf*4')
+    assert M1.json() == '{"type": "Device", "model": "TestMOS", "name": "M1", "pins": {"D": "net01", "G": "net02", "S": "net03", "B": "net04"}, "parameters": {"PARAM1": "nf*4", "PARAM2": 2}}'

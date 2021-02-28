@@ -2,6 +2,7 @@ import pydantic
 import logging
 
 from typing import Dict, ClassVar, Union, Optional, List
+from typing_extensions import Literal
 from pydantic import StrictStr, StrictFloat, StrictInt, PrivateAttr, Field
 ParamValue = Union[StrictFloat, StrictInt, StrictStr]
 
@@ -34,6 +35,7 @@ class Model(pydantic.BaseModel):
         assumed to be the same as base if not specified
     '''
 
+    type : Literal['Model'] = 'Model'
     name : StrictStr
     base : Optional[StrictStr]       # Optional for Base Models
     pins : Optional[List[StrictStr]] # Optional when inheriting
@@ -60,7 +62,7 @@ class Model(pydantic.BaseModel):
 
     def __call__(self, name, *pins, **parameters):
         return Device(
-            model=self,
+            model=self.name,
             library=self.library,
             name=name,
             pins=pins,
@@ -110,7 +112,8 @@ class Model(pydantic.BaseModel):
 
 class Device(pydantic.BaseModel):
 
-    model: Model
+    type: Literal['Device'] = 'Device'
+    model: StrictStr
     name: StrictStr
     pins : Dict[StrictStr, StrictStr]
     parameters : Dict[StrictStr, ParamValue]
@@ -125,34 +128,42 @@ class Device(pydantic.BaseModel):
         assert library is not None
         self.__class__.library = library
         super().__init__(**data)
-        self.__class__.library = None
+
+    @pydantic.validator('model', pre=True, always=True)
+    def model_check(cls, model):
+        if isinstance(model, Model):
+            if cls.library is None:
+                cls.library = model.library
+            else:
+                assert model in cls.library
+        return model
 
     @pydantic.validator('name', pre=True)
     def name_complies_with_model(cls, name, values):
-        if values['model'].prefix:
-            if not name.startswith(values['model'].prefix):
-                logger.error(f"{name} does not start with {values['model'].prefix}")
+        if cls.library[values['model']].prefix:
+            if not name.startswith(cls.library[values['model']].prefix):
+                logger.error(f"{name} does not start with {cls.library[values['model']].prefix}")
                 raise AssertionError
         return name
 
     @pydantic.validator('pins', pre=True)
     def pins_comply_with_model(cls, pins, values):
         if isinstance(pins, dict):
-            assert set(pins.keys()) == set(values['model'].pins)
+            assert set(pins.keys()) == set(cls.library[values['model']].pins)
         else:
-            if len(pins) != len(values['model'].pins):
+            if len(pins) != len(cls.library[values['model']].pins):
                 logger.error(
-                    f"Model {values['model'].name} has {len(values['model'].pins)} pins {values['model'].pins}. " \
+                    f"Model {cls.library[values['model']].name} has {len(cls.library[values['model']].pins)} pins {cls.library[values['model']].pins}. " \
                     + f"{len(pins)} nets {pins} were passed when instantiating {values['name']}.")
                 raise AssertionError
-            pins = {pin: net for pin, net in zip(values['model'].pins, pins)}
+            pins = {pin: net for pin, net in zip(cls.library[values['model']].pins, pins)}
         return pins
 
     @pydantic.validator('parameters', pre=True)
     def parameters_comply_with_model(cls, parameters, values):
-        assert set(parameters).issubset(values['model'].parameters.keys())
+        assert set(parameters).issubset(cls.library[values['model']].parameters.keys())
         parameters = {k: parameters[k] if k in parameters else v \
-            for k, v in values['model'].parameters.items()}
+            for k, v in cls.library[values['model']].parameters.items()}
         return parameters
 
     def xyce(self):
