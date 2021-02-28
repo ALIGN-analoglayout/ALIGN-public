@@ -4,7 +4,7 @@ from align.circuit import device
 
 @pytest.fixture()
 def testmos():
-    return device.BaseModel(
+    return device.Model(
         name = 'TestMOS',
         pins = ['D', 'G', 'S', 'B'],
         parameters = {
@@ -14,10 +14,10 @@ def testmos():
 
 def test_new_model():
     with pytest.raises(Exception):
-        MyDevice = device.BaseModel()
+        MyDevice = device.Model()
     with pytest.raises(Exception):
-        MyDevice = device.BaseModel(name='MyDevice')
-    MyDevice = device.BaseModel(
+        MyDevice = device.Model(name='MyDevice')
+    MyDevice = device.Model(
         name = 'MyDevice',
         pins = ['D', 'S'],
         parameters = {
@@ -27,19 +27,19 @@ def test_new_model():
 
 def test_derived_model(testmos):
     with pytest.raises(Exception):
-        MyDevice = device.Model(base=testmos)
+        MyDevice = device.Model(base='TestMOS')
     with pytest.raises(Exception):
         MyDevice = device.Model(name='MyDevice')
     with pytest.raises(Exception):
         MyDevice = device.Model(
-            name='MyDevice', base=testmos,
+            name='MyDevice', base='TestMOS',
             pins=['D', 'G'], parameters={'PARAM1': 3})
     with pytest.raises(Exception):
         MyDevice = device.Model(
-            name='MyDevice', base=testmos,
+            name='MyDevice', base='TestMOS',
             pins=['D', 'G'], parameters={'PARAM1': 3})
     MyDevice = device.Model(
-        name='MyDevice', base=testmos,
+        name='MyDevice', base='TestMOS',
         parameters={'PARAM1': 3})
 
 def test_model_instance(testmos):
@@ -59,7 +59,7 @@ def test_model_instance(testmos):
     M1 = testmos('M1', 'net01', 'net02', 'net03', 'net04', PARAM2=13)
 
 # def test_model(ThreeTerminalDevice):
-#     CustomDevice = BaseModel('CustomDevice', ThreeTerminalDevice, newparam=1, newparam2='hello')
+#     CustomDevice = Model('CustomDevice', ThreeTerminalDevice, newparam=1, newparam2='hello')
 #     with pytest.raises(AssertionError):
 #         inst = CustomDevice('X1', 'net01', 'net02', 'net03', garbage=2)
 #     inst = CustomDevice('X1', 'net01', 'net02', 'net03', myparameter=2, newparam=2)

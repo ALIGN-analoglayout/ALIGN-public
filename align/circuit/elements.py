@@ -1,40 +1,55 @@
 import sys, inspect
 
-from .core import NTerminalDevice
+from .library import Library
+
+library = Library()
+Model = library.Model
 
 # WARNING: All pin & parameter names must be capitalized
 #          to support case-insensitive parsing
 
-NMOS = NTerminalDevice(
-    'NMOS',
-    'D', 'G', 'S', 'B',
-    W = 0, L = 0, NFIN = 1,
+NMOS = Model(
+    name='NMOS',
+    pins=['D', 'G', 'S', 'B'],
+    parameters={
+        'W': 0,
+        'L': 0,
+        'NFIN': 1},
     prefix = 'M')
 
-PMOS = NTerminalDevice(
-    'PMOS',
-    'D', 'G', 'S', 'B',
-    W = 0, L = 0, NFIN = 1,
+PMOS = Model(
+    name='PMOS',
+    pins=['D', 'G', 'S', 'B'],
+    parameters={
+        'W': 0,
+        'L': 0,
+        'NFIN': 1},
     prefix = 'M')
 
-CAP = NTerminalDevice(
-    'CAP',
-    '+', '-',
-    VALUE = 0,
+CAP = Model(
+    name='CAP',
+    pins=['+', '-'],
+    parameters={
+        'VALUE': 0
+    },
     prefix = 'C'
     )
 
-RES = NTerminalDevice(
-    'RES',
-    '+', '-',
-    VALUE = 0,
+RES = Model(
+    name='RES',
+    pins=['+', '-'],
+    parameters={
+        'VALUE': 0
+    },
     prefix = 'R'
     )
 
-IND = NTerminalDevice(
-    'IND',
-    '+', '-',
-    VALUE = 0,
+IND = Model(
+    name='IND',
+    pins=['+', '-'],
+    parameters={
+        'VALUE': 0
+    },
     prefix = 'L'
     )
 

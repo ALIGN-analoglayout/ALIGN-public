@@ -1,14 +1,16 @@
 import inspect
 
-from . import core
-from . import elements
+from . import device
 
 class Library(dict):
 
-    def __init__(self, default=None):
-        if default is None:
-            default = { x[0]: x[1] for x in
-            inspect.getmembers(elements, lambda x: inspect.isclass(x)
-                                                    and issubclass(x, core.Device)
-                                                    and not x.__name__.startswith('_')) }
-        self.update(default)
+    @property
+    def Model(self):
+        return self._model
+
+    def __init__(self, name='default', pdk=None):
+        self._initialize_library_methods(name)
+
+    def _initialize_library_methods(self, name):
+        self._model = type(f'{name}Model', (device.Model, ), {})
+        self._model.library = self

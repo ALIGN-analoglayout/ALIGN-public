@@ -2,66 +2,49 @@ import pydantic
 import logging
 
 from typing import Dict, ClassVar, Union, Optional, List
-from pydantic import StrictStr, StrictFloat, StrictInt, PrivateAttr
+from pydantic import StrictStr, StrictFloat, StrictInt, PrivateAttr, Field
 ParamValue = Union[StrictFloat, StrictInt, StrictStr]
 
 logger = logging.getLogger(__name__)
-class BaseModel(pydantic.BaseModel):
-    '''
-    Use this class to define base types such as NMOS, PMOS etc.
-    This is likely needed only by align.circuit.elements but
-    may be need to be specialized by PDK going forward
-
-    :param name: Name of the model (eg. PMOS)
-    :param pins: List of pins (eg. ['D', 'G', 'S', 'B'])
-    :param parameters: Dictionary of parameters (eg. {param: 1.0})
-    :param prefix: Instance name prefix (eg. M for transistor),
-    '''
-
-    name: StrictStr
-    pins : List[StrictStr]
-    parameters : Dict[StrictStr, ParamValue]
-    prefix : Optional[StrictStr]
-
-    class Config:
-        validate_assignment = True
-        extra = 'forbid'
-        allow_mutation = False
-
-    @pydantic.validator('pins', always=True)
-    def min_pins(cls, pins, values):
-        assert len(pins) > 1, 'Device must have at least two terminals'
-        return pins
-
-    def __call__(self, name, *pins, **parameters):
-        return Device(
-            model=self,
-            name=name,
-            pins=pins,
-            parameters=parameters
-        )
-
 class Model(pydantic.BaseModel):
     '''
-    Use this class to define derived models such as pmos_rvt etc.
-    This is almost certain to be needed by the PDK
+    Model creation class
 
-    :param name: Name of the model (eg. PMOS)
-    :param base: instance of class BaseModel
-    :param pins: List of pins (eg. ['D', 'G', 'S', 'B'])
+    This class is responsible for creating (and registering)
+    new device types for a given PDK
+
+    This class may be used in one of two ways:
+
+    Mode1: To define base models (eg. PMOS, NMOS)
+    :param name: Name of base model (eg. PMOS)
+        common names: PMOS, NMOS, RES, CAP, IND
+    :param pins: List of pins (eg. ['D', 'G', 'S', 'B']),
+        must have at least two pins
+    :param parameters: Dictionary of parameters (eg. {'param': 1.0}),
+        must have at least one parameter to be meaningful
+    :param prefix: Instance name prefix (eg. 'M' for transistor),
+        optional
+
+    Mode2: To define derived models (SPICE .MODEL)
+    :param name: Name of new model (eg. PMOS_RVT)
+    :param base: Library element to use as base (eg. PMOS)
     :param parameters: Dictionary of parameters (eg. {param: 1.0})
+        IMPORTANT: Must be a subset of base parameters
     :param prefix: Instance name prefix (eg. M for transistor),
+        assumed to be the same as base if not specified
     '''
 
-    name: StrictStr
-    base: BaseModel = None
-    pins : Optional[List[StrictStr]]
-    parameters : Optional[Dict[StrictStr, ParamValue]]
-    prefix : Optional[StrictStr]
+    name : StrictStr
+    base : Optional[StrictStr]       # Optional for Base Models
+    pins : Optional[List[StrictStr]] # Optional when inheriting
+    parameters : Dict[StrictStr, ParamValue]
+    prefix : Optional[StrictStr]     # Always optional
 
     #
     # Private attributes affecting class behavior
     #
+
+    library : ClassVar[Dict] = dict()
 
     class Config:
         validate_assignment = True
@@ -69,6 +52,12 @@ class Model(pydantic.BaseModel):
         allow_mutation = False
         validate_all = True
 
+    def __init__(self, **data):
+        super().__init__(**data)
+        self.__class__.library.update(
+            {self.name: self}
+        )
+
     def __call__(self, name, *pins, **parameters):
         return Device(
             model=self,
@@ -77,42 +66,50 @@ class Model(pydantic.BaseModel):
             parameters=parameters
         )
 
+    @pydantic.validator('name')
+    def name_check(cls, name):
+        assert len(name) > 0
+        return name
+
     @pydantic.validator('base', pre=True, always=True)
-    def base_must_be_defined(cls, base, values):
-        if not base:
-            logger.error( f"Base must be defined for {values['name']}." \
-            + 'Did you mean to define BaseModel instead?' )
+    def base_check(cls, base, values):
+        if base and base not in cls.library:
+            logger.error(f'Could not find {base} in library')
             raise AssertionError
         return base
 
     @pydantic.validator('pins', pre=True, always=True)
-    def do_not_override_base_pins(cls, pins, values):
-        if pins:
+    def pin_check(cls, pins, values):
+        if 'base' not in values or not values['base']:
+            assert len(pins) > 1, 'Device must have at least two terminals'
+        elif pins:
             logger.error( f"Inheriting from {values['base'].name}. Cannot add pins" )
             raise AssertionError
-        pins = values['base'].pins.copy()
+        else:
+            pins = cls.library[values['base']].pins.copy()
         return pins
 
     @pydantic.validator('parameters', pre=True, always=True)
-    def parameters_must_respect_base_params(cls, parameters, values):
-        if not set(parameters).issubset(values['base'].parameters.keys()):
+    def parameter_check(cls, parameters, values):
+        if 'base' not in values or not values['base']:
+            assert len(parameters) > 0, 'Device must have at least one parameter'
+        elif not set(parameters.keys()).issubset(cls.library[values['base']].parameters.keys()):
             logger.error(f"Inheriting from {base.name}. Cannot add new parameters")
             raise AssertionError
-        parameters = {k: parameters[k] if k in parameters else v \
-            for k, v in values['base'].parameters.items()}
+        else:
+            parameters = {k: parameters[k] if k in parameters else v \
+                for k, v in cls.library[values['base']].parameters.items()}
         return parameters
 
     @pydantic.validator('prefix', pre=True, always=True)
-    def reuse_base_prefix_if_null(cls, prefix, values):
-        if not prefix:
-            prefix = values['base'].prefix
+    def prefix_check(cls, prefix, values):
+        if 'base' in values and values['base']:
+            prefix = cls.library[values['base']].prefix
         return prefix
-
-Model.update_forward_refs()
 
 class Device(pydantic.BaseModel):
 
-    model: Union[BaseModel, Model]
+    model: Model
     name: StrictStr
     pins : Dict[StrictStr, StrictStr]
     parameters : Dict[StrictStr, ParamValue]
@@ -120,6 +117,8 @@ class Device(pydantic.BaseModel):
     #
     # Private attributes affecting class behavior
     #
+
+    library : ClassVar[Dict] = dict()
 
     @pydantic.validator('name', pre=True)
     def name_complies_with_model(cls, name, values):
