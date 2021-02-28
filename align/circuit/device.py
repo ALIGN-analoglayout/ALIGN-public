@@ -61,6 +61,7 @@ class Model(pydantic.BaseModel):
     def __call__(self, name, *pins, **parameters):
         return Device(
             model=self,
+            library=self.library,
             name=name,
             pins=pins,
             parameters=parameters
@@ -118,7 +119,13 @@ class Device(pydantic.BaseModel):
     # Private attributes affecting class behavior
     #
 
-    library : ClassVar[Dict] = dict()
+    library : ClassVar[Dict] = None
+
+    def __init__(self, library=None, **data):
+        assert library is not None
+        self.__class__.library = library
+        super().__init__(**data)
+        self.__class__.library = None
 
     @pydantic.validator('name', pre=True)
     def name_complies_with_model(cls, name, values):
