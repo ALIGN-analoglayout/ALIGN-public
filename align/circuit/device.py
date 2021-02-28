@@ -3,8 +3,6 @@ import logging
 
 from typing import Dict, ClassVar, Union, Optional, List
 from typing_extensions import Literal
-from pydantic import StrictStr, StrictFloat, StrictInt, PrivateAttr, Field
-ParamValue = Union[StrictFloat, StrictInt, StrictStr]
 
 logger = logging.getLogger(__name__)
 class Model(pydantic.BaseModel):
@@ -36,11 +34,11 @@ class Model(pydantic.BaseModel):
     '''
 
     type : Literal['Model'] = 'Model'
-    name : StrictStr
-    base : Optional[StrictStr]       # Optional for Base Models
-    pins : Optional[List[StrictStr]] # Optional when inheriting
-    parameters : Dict[StrictStr, ParamValue]
-    prefix : Optional[StrictStr]     # Always optional
+    name : str
+    base : Optional[str]       # Optional for Base Models
+    pins : Optional[List[str]] # Optional when inheriting
+    parameters : Dict[str, str]
+    prefix : Optional[str]     # Always optional
 
     #
     # Private attributes affecting class behavior
@@ -72,7 +70,7 @@ class Model(pydantic.BaseModel):
     @pydantic.validator('name')
     def name_check(cls, name):
         assert len(name) > 0
-        return name
+        return name.upper()
 
     @pydantic.validator('base', pre=True, always=True)
     def base_check(cls, base, values):
@@ -81,10 +79,11 @@ class Model(pydantic.BaseModel):
             raise AssertionError
         return base
 
-    @pydantic.validator('pins', pre=True, always=True)
+    @pydantic.validator('pins', always=True)
     def pin_check(cls, pins, values):
         if 'base' not in values or not values['base']:
             assert len(pins) > 1, 'Device must have at least two terminals'
+            pins = [p.upper() for p in pins]
         elif pins:
             logger.error( f"Inheriting from {values['base'].name}. Cannot add pins" )
             raise AssertionError
@@ -92,19 +91,20 @@ class Model(pydantic.BaseModel):
             pins = cls.library[values['base']].pins.copy()
         return pins
 
-    @pydantic.validator('parameters', pre=True, always=True)
+    @pydantic.validator('parameters', always=True)
     def parameter_check(cls, parameters, values):
         if 'base' not in values or not values['base']:
             assert len(parameters) > 0, 'Device must have at least one parameter'
+            parameters = {k.upper(): v.upper() for k, v in parameters.items()}
         elif not set(parameters.keys()).issubset(cls.library[values['base']].parameters.keys()):
             logger.error(f"Inheriting from {base.name}. Cannot add new parameters")
             raise AssertionError
         else:
-            parameters = {k: parameters[k] if k in parameters else v \
+            parameters = {k.upper(): parameters[k].upper() if k in parameters else v \
                 for k, v in cls.library[values['base']].parameters.items()}
         return parameters
 
-    @pydantic.validator('prefix', pre=True, always=True)
+    @pydantic.validator('prefix', always=True)
     def prefix_check(cls, prefix, values):
         if 'base' in values and values['base']:
             prefix = cls.library[values['base']].prefix
@@ -113,10 +113,10 @@ class Model(pydantic.BaseModel):
 class Device(pydantic.BaseModel):
 
     type: Literal['Device'] = 'Device'
-    model: StrictStr
-    name: StrictStr
-    pins : Dict[StrictStr, StrictStr]
-    parameters : Dict[StrictStr, ParamValue]
+    model: str
+    name: str
+    pins : Dict[str, str]
+    parameters : Dict[str, str]
 
     #
     # Private attributes affecting class behavior
@@ -138,8 +138,9 @@ class Device(pydantic.BaseModel):
                 assert model in cls.library
         return model
 
-    @pydantic.validator('name', pre=True)
+    @pydantic.validator('name')
     def name_complies_with_model(cls, name, values):
+        name = name.upper()
         if cls.library[values['model']].prefix:
             if not name.startswith(cls.library[values['model']].prefix):
                 logger.error(f"{name} does not start with {cls.library[values['model']].prefix}")
@@ -149,6 +150,7 @@ class Device(pydantic.BaseModel):
     @pydantic.validator('pins', pre=True)
     def pins_comply_with_model(cls, pins, values):
         if isinstance(pins, dict):
+            pins = {k.upper(): v.upper() for k, v in pins.items()}
             assert set(pins.keys()) == set(cls.library[values['model']].pins)
         else:
             if len(pins) != len(cls.library[values['model']].pins):
@@ -156,11 +158,12 @@ class Device(pydantic.BaseModel):
                     f"Model {cls.library[values['model']].name} has {len(cls.library[values['model']].pins)} pins {cls.library[values['model']].pins}. " \
                     + f"{len(pins)} nets {pins} were passed when instantiating {values['name']}.")
                 raise AssertionError
-            pins = {pin: net for pin, net in zip(cls.library[values['model']].pins, pins)}
+            pins = {pin: net.upper() for pin, net in zip(cls.library[values['model']].pins, pins)}
         return pins
 
-    @pydantic.validator('parameters', pre=True)
+    @pydantic.validator('parameters')
     def parameters_comply_with_model(cls, parameters, values):
+        parameters = {k.upper(): v.upper() for k, v in parameters.items()}
         assert set(parameters).issubset(cls.library[values['model']].parameters.keys())
         parameters = {k: parameters[k] if k in parameters else v \
             for k, v in cls.library[values['model']].parameters.items()}

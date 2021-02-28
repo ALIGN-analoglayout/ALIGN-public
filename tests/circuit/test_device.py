@@ -5,11 +5,11 @@ from align.circuit import device
 @pytest.fixture()
 def testmos():
     return device.Model(
-        name = 'TestMOS',
+        name = 'TESTMOS',
         pins = ['D', 'G', 'S', 'B'],
         parameters = {
-            'PARAM1': 1.0,
-            'PARAM2': 2
+            'PARAM1': '1.0',
+            'PARAM2': '2'
         })
 
 def test_new_model():
@@ -21,55 +21,98 @@ def test_new_model():
         name = 'MyDevice',
         pins = ['D', 'S'],
         parameters = {
-            'PARAM1': 1.0,
-            'PARAM2': 2
+            'PARAM1': '1.0',
+            'PARAM2': '2'
         })
 
 def test_derived_model(testmos):
     with pytest.raises(Exception):
-        MyDevice = device.Model(base='TestMOS')
+        MyDevice = device.Model(base='TESTMOS')
     with pytest.raises(Exception):
         MyDevice = device.Model(name='MyDevice')
     with pytest.raises(Exception):
         MyDevice = device.Model(
-            name='MyDevice', base='TestMOS',
-            pins=['D', 'G'], parameters={'PARAM1': 3})
+            name='MyDevice', base='TESTMOS',
+            pins=['D', 'G'], parameters={'PARAM1': '3'})
     with pytest.raises(Exception):
         MyDevice = device.Model(
-            name='MyDevice', base='TestMOS',
-            pins=['D', 'G'], parameters={'PARAM1': 3})
+            name='MyDevice', base='TESTMOS',
+            pins=['D', 'G'], parameters={'PARAM1': '3'})
     MyDevice = device.Model(
-        name='MyDevice', base='TestMOS',
-        parameters={'PARAM1': 3})
+        name='MyDevice', base='TESTMOS',
+        parameters={'PARAM1': '3'})
 
-def test_model_instance(testmos):
+def test_model_case_insensitivity():
+    '''
+    Everything should be converted to uppercase internally
+        (SPICE is case-insensitive)
+    '''
+    MyDevice = device.Model(
+        name = 'MyDevice',
+        pins = ['d', 'S'],
+        parameters = {
+            'PARAM1': 'nf*4',
+            'param2': '2'
+        })
+    assert MyDevice.name == 'MYDEVICE'
+    assert MyDevice.pins == ['D', 'S']
+    assert MyDevice.parameters == {
+        'PARAM1': 'NF*4',
+        'PARAM2': '2'
+    }
+
+def test_model_str_casting():
+    '''
+    Parameter values are stored as string internally
+    (for model consistency)
+    '''
+    MyDevice = device.Model(
+        name = 'MyDevice',
+        pins = ['D', 'S'],
+        parameters = {
+            'PARAM1': 1.0,
+            'PARAM2': 2
+        })
+    assert MyDevice.parameters == {
+        'PARAM1': '1.0',
+        'PARAM2': '2'
+    }
+
+def test_instance_init(testmos):
     with pytest.raises(Exception):
         M1 = testmos()
     with pytest.raises(Exception):
         M1 = testmos('M1')
     with pytest.raises(Exception):
-        M1 = testmos('M1', 'net01')
+        M1 = testmos('M1', 'NET01')
     with pytest.raises(Exception):
-        M1 = testmos('M1', 'net01', 'net02', 'net03', 'net04', 'net05')
-    M1 = testmos('M1', 'net01', 'net02', 'net03', 'net04')
+        M1 = testmos('M1', 'NET01', 'NET02', 'NET03', 'NET04', 'NET05')
+    M1 = testmos('M1', 'NET01', 'NET02', 'NET03', 'NET04')
     with pytest.raises(Exception):
-        M1 = testmos('M1', 'net01', 'net02', 'net03', 'net04', garbage='dfddfd')
-    M1 = testmos('M1', 'net01', 'net02', 'net03', 'net04', PARAM1='nf*4')
-    M1 = testmos('M1', 'net01', 'net02', 'net03', 'net04', PARAM1=12)
-    M1 = testmos('M1', 'net01', 'net02', 'net03', 'net04', PARAM2=13)
+        M1 = testmos('M1', 'NET01', 'NET02', 'NET03', 'NET04', garbage='dfddfd')
+    M1 = testmos('M1', 'NET01', 'NET02', 'NET03', 'NET04')
+    assert M1.name == 'M1'
+    assert M1.model == 'TESTMOS'
+    assert M1.pins == {'D': 'NET01', 'G': 'NET02', 'S': 'NET03', 'B': 'NET04'}
+    assert M1.parameters == {'PARAM1': "1.0", 'PARAM2': "2"}
+    M1 = testmos('M1', 'NET01', 'NET02', 'NET03', 'NET04', PARAM1='NF*4')
+    assert M1.parameters == {'PARAM1': 'NF*4', 'PARAM2': "2"}
+    M1 = testmos('M1', 'NET01', 'NET02', 'NET03', 'NET04', PARAM1='12', PARAM2='13')
+    assert M1.parameters == {'PARAM1': "12", 'PARAM2': "13"}
 
-# def test_model(ThreeTerminalDevice):
-#     CustomDevice = Model('CustomDevice', ThreeTerminalDevice, newparam=1, newparam2='hello')
-#     with pytest.raises(AssertionError):
-#         inst = CustomDevice('X1', 'net01', 'net02', 'net03', garbage=2)
-#     inst = CustomDevice('X1', 'net01', 'net02', 'net03', myparameter=2, newparam=2)
-#     assert type(inst).__name__ == 'CustomDevice'
-#     assert inst.pins == {'a': 'net01', 'b': 'net02', 'c': 'net03'}
-#     assert inst.parameters == {'myparameter': 2, 'newparam': 2, 'newparam2': 'hello'}
+def test_instance_case_insensitivity(testmos):
+    '''
+    Everything should be converted to uppercase internally
+        (SPICE is case-insensitive)
+    '''
+    M1 = testmos('m1', 'net01', 'Net02', 'NET03', 'NeT04', PARAM1='nf*4', param2='2.0')
+    assert M1.name == 'M1'
+    assert M1.pins == {'D': 'NET01', 'G': 'NET02', 'S': 'NET03', 'B': 'NET04'}
+    assert M1.parameters == {'PARAM1': 'NF*4', 'PARAM2': "2.0"}
 
 def test_model_json(testmos):
-    assert testmos.json() == '{"type": "Model", "name": "TestMOS", "base": null, "pins": ["D", "G", "S", "B"], "parameters": {"PARAM1": 1.0, "PARAM2": 2}, "prefix": null}'
+    assert testmos.json() == '{"type": "Model", "name": "TESTMOS", "base": null, "pins": ["D", "G", "S", "B"], "parameters": {"PARAM1": "1.0", "PARAM2": "2"}, "prefix": null}'
 
 def test_device_json(testmos):
-    M1 = M1 = testmos('M1', 'net01', 'net02', 'net03', 'net04', PARAM1='nf*4')
-    assert M1.json() == '{"type": "Device", "model": "TestMOS", "name": "M1", "pins": {"D": "net01", "G": "net02", "S": "net03", "B": "net04"}, "parameters": {"PARAM1": "nf*4", "PARAM2": 2}}'
+    M1 = testmos('M1', 'NET01', 'NET02', 'NET03', 'NET04', PARAM1='NF*4')
+    assert M1.json() == '{"type": "Device", "model": "TESTMOS", "name": "M1", "pins": {"D": "NET01", "G": "NET02", "S": "NET03", "B": "NET04"}, "parameters": {"PARAM1": "NF*4", "PARAM2": "2"}}'
