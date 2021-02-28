@@ -89,6 +89,32 @@ class Canvas:
 
         self.addWire( wire, netName, pinName, c, mn, mx)
 
+    def join_wires(self, layer, exclude_nets=None):
+        """
+        Merge neighbor wires on the same center line if merged wire length < MaxL
+        """
+        if exclude_nets is None:
+            exclude_nets = set()
+        _ = self.removeDuplicates(allow_opens=True)
+        m_lines = self.rd.store_scan_lines[layer]
+        wire = getattr(self, layer)
+        drc = wire.direction.upper()
+        max_l = self.pdk[layer]['MaxL']
+        for (cl, sl) in m_lines.items():
+            c_idx = wire.clg.inverseBounds(cl//2)[0]
+            for (idx, slr) in enumerate(sl.rects):
+                if slr.netName is None or slr.netName in exclude_nets:
+                    continue
+                # Connect with successor
+                if idx+1 < len(sl.rects):
+                    next_slr = sl.rects[idx+1]
+                    if slr.netName == next_slr.netName:
+                        i = 0 if drc == 'H' else 1
+                        if max_l is None or next_slr.rect[i+2] - slr.rect[i] <= max_l:
+                            (b_idx, _) = wire.spg.inverseBounds(slr.rect[i])
+                            (_, e_idx) = wire.spg.inverseBounds(next_slr.rect[i+2])
+                            self.addWire(wire, slr.netName, None, c_idx, b_idx, e_idx)
+
     def asciiStickDiagram( self, v1, m2, v2, m3, matrix, *, xpitch=4, ypitch=2):
         # clean up text input
         a = matrix.split( '\n')[1:-1]
@@ -211,8 +237,8 @@ class Canvas:
         self.trStack.pop()
         assert self.trStack != []
 
-    def removeDuplicates( self, *, nets_allowed_to_be_open=None):
-        self.rd = RemoveDuplicates( self, nets_allowed_to_be_open=nets_allowed_to_be_open)
+    def removeDuplicates( self, *, nets_allowed_to_be_open=None, allow_opens=False):
+        self.rd = RemoveDuplicates( self, nets_allowed_to_be_open=nets_allowed_to_be_open, allow_opens=allow_opens)
         return self.rd.remove_duplicates()
 
     def gen_data( self, *, draw_grid=False, run_drc=True, run_pex=True, nets_allowed_to_be_open=None, postprocess=False):
