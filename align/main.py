@@ -1,4 +1,6 @@
 import pathlib
+import shutil
+import os
 
 from .compiler import generate_hierarchy
 from .primitive import generate_primitive
@@ -79,6 +81,11 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         for variant, filemap in variants.items():
             convert_GDSjson_GDS(filemap['gdsjson'], working_dir / f'{variant}.gds')
             print("Use KLayout to visualize the generated GDS:",working_dir / f'{variant}.gds')
+
+            if os.getenv('ALIGN_HOME', False):
+                shutil.copy(pnr_dir/f'{variant}.json',
+                            pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/f'{variant}.json')
+
             if 'python_gds_json' in filemap:
                 convert_GDSjson_GDS(filemap['python_gds_json'], working_dir / f'{variant}.python.gds')                
                 print("Use KLayout to visualize the python generated GDS:",working_dir / f'{variant}.python.gds')
