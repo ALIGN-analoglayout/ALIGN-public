@@ -136,11 +136,17 @@ class Device(pydantic.BaseModel):
     #
 
     library : ClassVar[Dict] = None
+    _moduleptr = pydantic.PrivateAttr()
 
     def __init__(self, library=None, **data):
         assert library is not None
         self.__class__.library = library
         super().__init__(**data)
+        self._moduleptr = library[self.model]
+
+    @property
+    def m(self):
+        return self._moduleptr
 
     @pydantic.validator('model', pre=True, always=True)
     def model_check(cls, model):
