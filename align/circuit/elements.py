@@ -1,9 +1,6 @@
 import sys, inspect
 
-from .library import Library
-
-library = Library()
-Model = library.Model
+from .device import Model
 
 # WARNING: All pin & parameter names must be capitalized
 #          to support case-insensitive parsing

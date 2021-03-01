@@ -4,7 +4,10 @@ import logging
 from typing import Dict, ClassVar, Union, Optional, List
 from typing_extensions import Literal
 
+from . import library
+
 logger = logging.getLogger(__name__)
+
 class Model(pydantic.BaseModel):
     '''
     Model creation class
@@ -20,15 +23,16 @@ class Model(pydantic.BaseModel):
     :param pins: List of pins (eg. ['D', 'G', 'S', 'B']),
         must have at least two pins
     :param parameters: Dictionary of parameters (eg. {'param': 1.0}),
-        must have at least one parameter to be meaningful
+        optional
     :param prefix: Instance name prefix (eg. 'M' for transistor),
         optional
 
     Mode2: To define derived models (SPICE .MODEL)
     :param name: Name of new model (eg. PMOS_RVT)
     :param base: Library element to use as base (eg. PMOS)
-    :param parameters: Dictionary of parameters (eg. {param: 1.0})
-        IMPORTANT: Must be a subset of base parameters
+    :param parameters: Dictionary of parameters (eg. {param: 1.0}),
+        optional
+        IMPORTANT: Must be a subset of base parameters if specified
     :param prefix: Instance name prefix (eg. M for transistor),
         assumed to be the same as base if not specified
     '''
@@ -37,14 +41,14 @@ class Model(pydantic.BaseModel):
     name : str
     base : Optional[str]       # Optional for Base Models
     pins : Optional[List[str]] # Optional when inheriting
-    parameters : Dict[str, str]
+    parameters : Optional[Dict[str, str]]
     prefix : Optional[str]     # Always optional
 
     #
     # Private attributes affecting class behavior
     #
 
-    library : ClassVar[Dict] = dict()
+    library : ClassVar[library.Library]
 
     class Config:
         validate_assignment = True
@@ -52,7 +56,8 @@ class Model(pydantic.BaseModel):
         allow_mutation = False
         validate_all = True
 
-    def __init__(self, **data):
+    def __init__(self, library = library.default, **data):
+        self.__class__.library = library
         super().__init__(**data)
         self.__class__.library.update(
             {self.name: self}
@@ -74,7 +79,13 @@ class Model(pydantic.BaseModel):
 
     @pydantic.validator('base', pre=True, always=True)
     def base_check(cls, base, values):
-        if base and base not in cls.library:
+        if isinstance(base, Model):
+            if cls.library is None:
+                cls.library = base.library
+            else:
+                assert base in cls.library
+            base = base.name
+        elif base and base not in cls.library:
             logger.error(f'Could not find {base} in library')
             raise AssertionError
         return base
@@ -94,8 +105,10 @@ class Model(pydantic.BaseModel):
     @pydantic.validator('parameters', always=True)
     def parameter_check(cls, parameters, values):
         if 'base' not in values or not values['base']:
-            assert len(parameters) > 0, 'Device must have at least one parameter'
-            parameters = {k.upper(): v.upper() for k, v in parameters.items()}
+            if parameters:
+                parameters = {k.upper(): v.upper() for k, v in parameters.items()}
+            else:
+                parameters = {}
         elif not set(parameters.keys()).issubset(cls.library[values['base']].parameters.keys()):
             logger.error(f"Inheriting from {base.name}. Cannot add new parameters")
             raise AssertionError
@@ -163,8 +176,11 @@ class Device(pydantic.BaseModel):
 
     @pydantic.validator('parameters')
     def parameters_comply_with_model(cls, parameters, values):
-        parameters = {k.upper(): v.upper() for k, v in parameters.items()}
-        assert set(parameters).issubset(cls.library[values['model']].parameters.keys())
+        if parameters:
+            parameters = {k.upper(): v.upper() for k, v in parameters.items()}
+        else:
+            parameters = {}
+        assert set(parameters.keys()).issubset(cls.library[values['model']].parameters.keys())
         parameters = {k: parameters[k] if k in parameters else v \
             for k, v in cls.library[values['model']].parameters.items()}
         return parameters
