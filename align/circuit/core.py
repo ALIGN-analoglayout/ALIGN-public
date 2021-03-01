@@ -37,14 +37,17 @@ class Circuit(networkx.Graph):
         self.remove_nodes_from([x for x in self.neighbors(element.name) if self.degree(x) == 1])
         self.remove_node(element.name)
 
-    def __str__(self):
-        return '\n'.join(f'{x}' for x in self.elements)
+    def xyce(self):
+        return '\n'.join(x.xyce() for x in self.elements)
 
     # Algorithms to find & replace subgraph / subckt matches
 
     @staticmethod
     def default_node_match(x, y):
-        return x.get('instance').base == y.get('instance').model
+        if isinstance(x.get('instance'), Device) and isinstance(y.get('instance'), Device):
+            return y.get('instance').model in x.get('instance').m.bases + [x.get('instance').model]
+        else:
+            return type(x.get('instance')) == type(y.get('instance'))
 
     @staticmethod
     def default_edge_match(x, y):
@@ -64,7 +67,7 @@ class Circuit(networkx.Graph):
         return ret
 
     def replace_matching_subckts(self, subckts, node_match=None, edge_match=None):
-        if not isinstance(subckts, Iterable):
+        if isinstance(subckts, Model):
             subckts = [subckts]
         for subckt in subckts:
             matches = self.find_subgraph_matches(subckt.circuit, node_match, edge_match)
@@ -77,17 +80,17 @@ class Circuit(networkx.Graph):
             # Cannot replace as some prior transformation has made the current one invalid
             assert all(x in self.nodes for x in match)
             # Cannot replace as internal node is used elsewhere in circuit
-            internal_nodes = [x for x, y in match.items() if y not in subckt._pins]
+            internal_nodes = [x for x, y in match.items() if y not in subckt.pins]
             if not all(x in match for node in internal_nodes for x in self.neighbors(node)):
                 continue
             # Remove nodes not on subckt boundary
             self.remove_nodes_from(internal_nodes)
             # Create new instance of subckt
-            name, counter = f'X_{subckt.__name__}_{counter}', counter + 1
+            name, counter = f'X_{subckt.name}_{counter}', counter + 1
             assert name not in self.elements
-            pinmap = {pin: net for net, pin in match.items() if pin in subckt._pins}
-            assert all(x in pinmap for x in subckt._pins), (match, subckt)
-            inst = subckt(name, *[pinmap[x] for x in subckt._pins])
+            pinmap = {pin: net for net, pin in match.items() if pin in subckt.pins}
+            assert all(x in pinmap for x in subckt.pins), (match, subckt)
+            inst = subckt(name, *[pinmap[x] for x in subckt.pins])
             # attach instance to current graph
             self.add_element(inst)
 
@@ -170,23 +173,18 @@ class SubCircuit(Model):
         Model.__init__(self, *args, **kwargs)
 
     def __getattr__(self, name):
-        if name in self.__dict__:
-            return getattr(self, name)
-        elif hasattr(self.circuit, name):
-            return getattr(self.circuit, name)
-        else:
-            raise AssertionError
+        return getattr(self.circuit, name)
 
     class Config(Model.Config):
         arbitrary_types_allowed = True
 
-    def __str__(self):
+    def xyce(self):
         ret = []
-        for constraint in self._constraint.constraints:
+        for constraint in self.constraint.constraints:
             ret.append(f'* @: {constraint}')
-        ret.append(f'.SUBCKT {self.__name__} ' + ' '.join(f'{x}' for x in self._pins))
-        ret.extend([f'.PARAM {x}=' + (f'{{{y}}}' if isinstance(y, str) else f'{y}') for x, y in self._parameters.items()])
-        ret.append(str(self.circuit))
-        ret.append(f'.ENDS {self.__name__}')
+        ret.append(f'.SUBCKT {self.name} ' + ' '.join(f'{x}' for x in self.pins))
+        ret.extend([f'.PARAM {x}=' + (f'{{{y}}}' if isinstance(y, str) else f'{y}') for x, y in self.parameters.items()])
+        ret.append(self.circuit.xyce())
+        ret.append(f'.ENDS {self.name}')
         return '\n'.join(ret)
 

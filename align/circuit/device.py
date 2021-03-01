@@ -49,6 +49,7 @@ class Model(pydantic.BaseModel):
     #
 
     library : ClassVar[library.Library]
+    _baseptr = pydantic.PrivateAttr()
 
     class Config:
         validate_assignment = True
@@ -59,9 +60,9 @@ class Model(pydantic.BaseModel):
     def __init__(self, library = library.default, **data):
         self.__class__.library = library
         super().__init__(**data)
-        self.__class__.library.update(
-            {self.name: self}
-        )
+        self.__class__.library.update({self.name: self})
+        if self.base:
+            self._baseptr = library[self.base]
 
     def __call__(self, name, *pins, **parameters):
         return Device(
@@ -72,12 +73,19 @@ class Model(pydantic.BaseModel):
             parameters=parameters
         )
 
+    @property
+    def bases(self):
+        if self.base:
+            return [self.base] + self._baseptr.bases
+        else:
+            return []
+
     @pydantic.validator('name')
     def name_check(cls, name):
         assert len(name) > 0
         return name.upper()
 
-    @pydantic.validator('base', pre=True, always=True)
+    @pydantic.validator('base')
     def base_check(cls, base, values):
         if base:
             base = base.upper()
@@ -198,5 +206,5 @@ class Device(pydantic.BaseModel):
     def xyce(self):
         return f'{self.name} ' + \
             ' '.join(self.pins.values()) + \
-            f' {self.model.name} ' + \
-            ' '.join(f'{x}='+ (f'{{{y}}}' if isinstance(y, str) else f'{y}') for x, y in self.parameters.items())
+            f' {self.model} ' + \
+            ' '.join(f'{x}={{{y}}}' for x, y in self.parameters.items())

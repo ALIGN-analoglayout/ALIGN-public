@@ -87,7 +87,7 @@ def test_circuit_shared_net(TwoTerminalDevice, ThreeTerminalDevice):
 @pytest.fixture
 def simple_netlist(TwoTerminalDevice, ThreeTerminalDevice):
     ckt = Circuit()
-    CustomDevice = Model(name='CustomDevice', base='ThreeTerminalDevice', parameters={'newparam':1, 'newparam2':'HELLO'}, library=library)
+    CustomDevice = Model(name='CustomDevice', base='ThreeTerminalDevice', parameters={'myparameter':1}, library=library)
     ckt.add_element(CustomDevice('X1', 'NET1', 'in1', 'net01'))
     ckt.add_element(CustomDevice('X2', 'NET2', 'in2', 'net02'))
     ckt.add_element(CustomDevice('X3', 'NET3', 'NET1', 'NET1'))
@@ -110,23 +110,24 @@ def test_find_subgraph_matches(simple_netlist, matching_subckt, ThreeTerminalDev
     assert len(ckt.find_subgraph_matches(subckt.circuit)) == 1
     assert ckt.find_subgraph_matches(subckt.circuit)[0] == {'X3': 'X1', 'NET3': 'PIN3', 'NET1': 'PIN1', 'X4': 'X2', 'NET2': 'PIN2'}
     # Validate false match
-    subckt2 = SubCircuit(name='test_subckt2', pins=['PIN1', 'PIN2', 'PIN3', 'pin4', 'pin5'], library=library)
-    subckt2.add_element(ThreeTerminalDevice('X1', 'PIN1', 'PIN3', 'pin4'))
-    subckt2.add_element(ThreeTerminalDevice('X2', 'PIN2', 'PIN3', 'pin5'))
+    subckt2 = SubCircuit(name='test_subckt2', pins=['PIN1', 'PIN2', 'PIN3', 'PIN4', 'PIN5'], library=library)
+    subckt2.add_element(ThreeTerminalDevice('X1', 'PIN1', 'PIN3', 'PIN4'))
+    subckt2.add_element(ThreeTerminalDevice('X2', 'PIN2', 'PIN3', 'PIN5'))
     assert len(ckt.find_subgraph_matches(subckt2.circuit)) == 0
     # Validate filtering of redundant subgraphs (There are 4 matches. Only 1 should be returned)
-    subckt3 = SubCircuit(name='test_subckt3', pins=['PIN1', 'PIN2', 'PIN3', 'pin4'], library=library)
+    subckt3 = SubCircuit(name='test_subckt3', pins=['PIN1', 'PIN2', 'PIN3', 'PIN4'], library=library)
     subckt3.add_element(TwoTerminalDevice('X1', 'PIN1', 'PIN2'))
-    subckt3.add_element(TwoTerminalDevice('X2', 'PIN3', 'pin4'))
+    subckt3.add_element(TwoTerminalDevice('X2', 'PIN3', 'PIN4'))
     assert len(ckt.find_subgraph_matches(subckt3.circuit)) == 1
 
 def test_replace_matching_subgraphs(simple_netlist, matching_subckt):
     ckt, subckt = simple_netlist, matching_subckt
+    print(matching_subckt.xyce())
     matches = [{'X3': 'X1', 'NET3': 'PIN3', 'NET1': 'PIN1', 'X4': 'X2', 'NET2': 'PIN2'}]
     ckt.replace_matching_subckts(subckt)
     assert all(x not in ckt.nodes for x in matches[0].keys() if x.startswith('X'))
-    assert 'X_test_subckt_0' in ckt.nodes
-    new_edges = [('X_test_subckt_0', 'NET3', {'PIN3'}), ('X_test_subckt_0', 'NET1', {'PIN1'}), ('X_test_subckt_0', 'NET2', {'PIN2'})]
+    assert 'X_TEST_SUBCKT_0' in ckt.nodes
+    new_edges = [('X_TEST_SUBCKT_0', 'NET3', {'PIN3'}), ('X_TEST_SUBCKT_0', 'NET1', {'PIN1'}), ('X_TEST_SUBCKT_0', 'NET2', {'PIN2'})]
     assert all(x in ckt.edges.data('pin') for x in new_edges), ckt.edges.data('pin')
 
 @pytest.fixture

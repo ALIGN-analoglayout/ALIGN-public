@@ -152,12 +152,14 @@ X1 vcc outplus outminus inplus src 0 inminus diffamp res=200
     assert 'DIFFAMP' in parser.library
     assert len(parser.library['DIFFAMP'].elements) == 6
     assert len(parser.circuit.elements) == 1
-    assert type(parser.circuit.element('X1')).__name__ == 'DIFFAMP'
+    assert parser.circuit.element('X1').model == 'DIFFAMP'
 
 def test_model(parser):
     parser.parse('.MODEL nmos_rvt nmos KP=0.5M VT0=2')
+    print('from MODEL')
+    print(parser.library)
     assert 'NMOS_RVT' in parser.library
-    assert list(parser.library['NMOS_RVT']._parameters.keys()) == ['W', 'L', 'NFIN', 'KP', 'VT0']
+    assert list(parser.library['NMOS_RVT'].parameters.keys()) == ['W', 'L', 'NFIN', 'KP', 'VT0']
 
 def test_ota_cir_parsing(parser):
     with open((pathlib.Path(__file__).parent / 'ota.cir').resolve()) as fp:
@@ -166,6 +168,8 @@ def test_ota_cir_parsing(parser):
     assert len(parser.library['OTA'].elements) == 10
 
 def test_ota_sp_parsing(parser):
+    print('from OTA')
+    print(parser.library)
     with open((pathlib.Path(__file__).parent / 'ota.sp').resolve()) as fp:
         parser.parse(fp.read())
     assert 'OTA' in parser.library

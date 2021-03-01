@@ -2,8 +2,9 @@ import collections
 import re
 import logging
 
-from .core import Circuit, SubCircuit, _SubCircuit, Model
-from .library import Library
+from .core import Circuit, SubCircuit, Model
+from . import library
+from . import elements
 from . import constraint
 
 logger = logging.getLogger(__name__)
@@ -60,7 +61,8 @@ class SpiceParser:
     def __init__(self, mode='Xyce'):
         self.mode = mode.lower()
         assert self.mode in ('xyce', 'hspice')
-        self.library = Library()
+        self.library = library.Library()
+        self.library.update(library.default)
         self.circuit = Circuit()
         self._scope = [self.circuit]
 
@@ -155,16 +157,20 @@ class SpiceParser:
         if decl == '.SUBCKT':
             name = args.pop(0)
             assert name not in self.library, f"User is attempting to redeclare {name}"
-            subckt = SubCircuit(name, *args, library=self.library, **kwargs)
+            subckt = SubCircuit(name=name, pins=args, library=self.library, parameters=kwargs)
             self._scope.append(subckt)
         elif decl == '.ENDS':
             self._scope.pop()
         elif decl == '.PARAM':
             assert len(args) == 0
-            self._scope[-1].add_parameters(kwargs)
+            self._scope[-1] = subckt = SubCircuit(
+                name=self._scope[-1].name,
+                pins=self._scope[-1].pins,
+                library=self.library,
+                parameters=self._scope[-1].parameters.update(kwargs))
         elif decl == '.MODEL':
             assert len(args) == 2, args
-            name, type_ = args[0], args[1]
+            name, base = args[0], args[1]
             assert name not in self.library, f"User is attempting to redeclare {name}"
-            assert type_ in self.library, type_
-            Model(name, self.library[type_], library=self.library, **kwargs)
+            assert base in self.library, base
+            Model(name=name, base=base, library=self.library, parameters=kwargs)
