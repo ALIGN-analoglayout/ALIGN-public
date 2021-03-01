@@ -81,7 +81,7 @@ class Model(pydantic.BaseModel):
     def base_check(cls, base, values):
         if base and base not in cls.library:
             logger.error(f'Could not find {base} in library')
-            raise AssertionError
+            raise AssertionError(f'Could not find {base} in library')
         return base
 
     @pydantic.validator('pins', always=True)
@@ -90,8 +90,8 @@ class Model(pydantic.BaseModel):
             assert len(pins) > 1, 'Device must have at least two terminals'
             pins = [p.upper() for p in pins]
         elif pins:
-            logger.error( f"Inheriting from {values['base'].name}. Cannot add pins" )
-            raise AssertionError
+            logger.error(f"Inheriting from {values['base'].name}. Cannot add pins")
+            raise AssertionError(f"Inheriting from {values['base'].name}. Cannot add pins")
         else:
             pins = cls.library[values['base']].pins.copy()
         return pins
@@ -105,7 +105,7 @@ class Model(pydantic.BaseModel):
                 parameters = {}
         elif not set(parameters.keys()).issubset(cls.library[values['base']].parameters.keys()):
             logger.error(f"Inheriting from {base.name}. Cannot add new parameters")
-            raise AssertionError
+            raise AssertionError(f"Inheriting from {base.name}. Cannot add new parameters")
         else:
             parameters = {k.upper(): parameters[k].upper() if k in parameters else v \
                 for k, v in cls.library[values['base']].parameters.items()}
@@ -154,7 +154,7 @@ class Device(pydantic.BaseModel):
         if cls.library[values['model']].prefix:
             if not name.startswith(cls.library[values['model']].prefix):
                 logger.error(f"{name} does not start with {cls.library[values['model']].prefix}")
-                raise AssertionError
+                raise AssertionError(f"{name} does not start with {cls.library[values['model']].prefix}")
         return name
 
     @pydantic.validator('pins', pre=True)
@@ -167,7 +167,9 @@ class Device(pydantic.BaseModel):
                 logger.error(
                     f"Model {cls.library[values['model']].name} has {len(cls.library[values['model']].pins)} pins {cls.library[values['model']].pins}. " \
                     + f"{len(pins)} nets {pins} were passed when instantiating {values['name']}.")
-                raise AssertionError
+                raise AssertionError(
+                    f"Model {cls.library[values['model']].name} has {len(cls.library[values['model']].pins)} pins {cls.library[values['model']].pins}. " \
+                    + f"{len(pins)} nets {pins} were passed when instantiating {values['name']}.")
             pins = {pin: net.upper() for pin, net in zip(cls.library[values['model']].pins, pins)}
         return pins
 
