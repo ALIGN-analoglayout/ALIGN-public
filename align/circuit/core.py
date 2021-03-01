@@ -1,10 +1,9 @@
 import networkx
+from pydantic import PrivateAttr
+
 from collections.abc import Iterable
 from .constraint import ConstraintDB
-from .device import Device
-
-def NTerminalDevice(name, *pins, prefix=None, **parameters):
-    return type(name, (Device,), {'_prefix': prefix, '_pins': pins, '_parameters': parameters})
+from .device import Device, Model
 
 class Circuit(networkx.Graph):
 
@@ -45,7 +44,7 @@ class Circuit(networkx.Graph):
 
     @staticmethod
     def default_node_match(x, y):
-        return issubclass(type(x.get('instance')), type(y.get('instance')))
+        return x.get('instance').base == y.get('instance').model
 
     @staticmethod
     def default_edge_match(x, y):
@@ -118,7 +117,7 @@ class Circuit(networkx.Graph):
                         if not all(neighbor in ckt.nodes for neighbor in self.neighbors(net))))}
                 subckt, index = SubCircuit(f'XREP{index}', *list(pinmap.values())), index + 1
                 for element in ckt.elements:
-                    subckt.add_element(element.__class__(element.name,
+                    subckt.add_element(element.m(element.name,
                         *[pinmap[x] if x in pinmap else x for x in element.pins.values()]))
                 subckts.append(subckt)
                 matches = self.find_subgraph_matches(subckt.circuit)
@@ -147,38 +146,42 @@ class Circuit(networkx.Graph):
         if any((hasattr(x, 'circuit') for x in self.elements)) and depth > 0:
             self.flatten(depth)
         for element in self.elements:
-            if element._prefix and not element.name.startswith(element._prefix):
-                    element.name = f'{element._prefix}_{element.name}'
+            if element.m.prefix and not element.name.startswith(element.m.prefix):
+                    element.name = f'{element.m.prefix}_{element.name}'
 
     def _replace_subckt_with_components(self, subcktinst):
         # Remove element from graph
         self.remove_node(subcktinst.name)
         # Add new elements
         for element in subcktinst.circuit.elements:
-            newelement = element.__class__(f'{subcktinst.name}_{element.name}',
+            newelement = element.m(f'{subcktinst.name}_{element.name}',
                 *[subcktinst.pins[x] if x in subcktinst.pins else f'{subcktinst. name}_{x}' for x in element.pins.values()],
                 **{key: eval(val, {}, subcktinst.parameters) if isinstance(val, str) else val for key, val in element.parameters.items()})
             self.add_element(newelement)
 
-# WARNING: Do not add attributes/methods which may exist
-#          in Circuit to _SubCircuitMetaClass/_SubCircuit
+class SubCircuit(Model):
 
-class _SubCircuitMetaClass(type):
+    circuit : Circuit
+    constraint: ConstraintDB
 
-    def __new__(cls, clsname, bases, attributedict):
-        if 'circuit' not in attributedict: attributedict.update({'circuit': Circuit()})
-        if '_parameters' not in attributedict: attributedict.update({'_parameters': {}})
-        if '_constraint' not in attributedict: attributedict.update({'_constraint': ConstraintDB()})
-        return super(_SubCircuitMetaClass, cls).__new__(cls, clsname, bases, attributedict)
+    def __init__(self, *args, **kwargs):
+        kwargs['circuit'] = Circuit()
+        kwargs['constraint'] = ConstraintDB()
+        Model.__init__(self, *args, **kwargs)
 
     def __getattr__(self, name):
-        if name in 'constraint':
-            return self._constraint
-        return getattr(self.circuit, name)
+        if name in self.__dict__:
+            return getattr(self, name)
+        elif hasattr(self.circuit, name):
+            return getattr(self.circuit, name)
+        else:
+            raise AssertionError
+
+    class Config(Model.Config):
+        arbitrary_types_allowed = True
 
     def __str__(self):
         ret = []
-        print(self._constraint)
         for constraint in self._constraint.constraints:
             ret.append(f'* @: {constraint}')
         ret.append(f'.SUBCKT {self.__name__} ' + ' '.join(f'{x}' for x in self._pins))
@@ -187,32 +190,3 @@ class _SubCircuitMetaClass(type):
         ret.append(f'.ENDS {self.__name__}')
         return '\n'.join(ret)
 
-class _SubCircuit(Device, metaclass=_SubCircuitMetaClass):
-    _prefix = 'X'
-
-    def __getattr__(self, name):
-        if name in ('add_element', 'add_constraint'):
-            raise AssertionError("Add elements / constraints directly to subcircuit definition (not to instance)")
-        elif name == '__str__':
-            return Device.__str__(self)
-        return getattr(self.circuit, name)
-
-def SubCircuit(name, *pins, library=None, **parameters):
-    assert len(pins) >= 1, "Subcircuit must have at least 1 pin"
-    subckt = type(name, (_SubCircuit,), {'_pins': pins})
-    subckt.add_parameters(parameters)
-    # Automatically register subcircuit into library for later reuse
-    if library is not None:
-        library[name] = subckt
-    # return new class containing subcircuit
-    return subckt
-
-def Model(name, base, library=None, **parameters):
-    assert issubclass(base, Device), base
-    model = type(name, (base, ), {'_parameters': base._parameters.copy()})
-    model.add_parameters(parameters)
-    # Automatically register model into library for later reuse
-    if library is not None:
-        library[name] = model
-    # return new class containing model
-    return model

@@ -79,13 +79,7 @@ class Model(pydantic.BaseModel):
 
     @pydantic.validator('base', pre=True, always=True)
     def base_check(cls, base, values):
-        if isinstance(base, Model):
-            if cls.library is None:
-                cls.library = base.library
-            else:
-                assert base in cls.library
-            base = base.name
-        elif base and base not in cls.library:
+        if base and base not in cls.library:
             logger.error(f'Could not find {base} in library')
             raise AssertionError
         return base
@@ -150,11 +144,8 @@ class Device(pydantic.BaseModel):
 
     @pydantic.validator('model', pre=True, always=True)
     def model_check(cls, model):
-        if isinstance(model, Model):
-            if cls.library is None:
-                cls.library = model.library
-            else:
-                assert model in cls.library
+        if cls.library is None:
+            assert model in cls.library
         return model
 
     @pydantic.validator('name')
@@ -190,6 +181,14 @@ class Device(pydantic.BaseModel):
         parameters = {k: parameters[k] if k in parameters else v \
             for k, v in cls.library[values['model']].parameters.items()}
         return parameters
+
+    def __getattr__(self, name):
+        if name in self.__dict__:
+            return self.__dict__['name']
+        elif hasattr(self.m, name):
+            return getattr(self.m, name)
+        else:
+            raise AttributeError
 
     def xyce(self):
         return f'{self.name} ' + \
