@@ -42,7 +42,7 @@ def test_derived_model(testmos):
         name='MyDevice', base='TESTMOS',
         parameters={'PARAM1': '3'})
 
-def test_model_case_insensitivity():
+def test_base_model_case_insensitivity():
     '''
     Everything should be converted to uppercase internally
         (SPICE is case-insensitive)
@@ -60,6 +60,33 @@ def test_model_case_insensitivity():
         'PARAM1': 'NF*4',
         'PARAM2': '2'
     }
+
+def test_derived_model_case_insensitivity(testmos):
+    DerivedMOS = device.Model(
+        name = 'DerivedMOS',
+        base = 'TestMOS',
+        parameters = {'param1': 'nf*4'})
+    assert DerivedMOS.name == 'DERIVEDMOS'
+    assert DerivedMOS.base == 'TESTMOS'
+    assert DerivedMOS.pins == ['D', 'G', 'S', 'B']
+    assert DerivedMOS.parameters == {'PARAM1': 'NF*4', 'PARAM2': '2'}
+
+def test_derived_model_new_parameter_checking(testmos):
+    with pytest.raises(Exception):
+        DerivedMOS = device.Model(
+            name = 'DERIVEDMOS',
+            base = 'TESTMOS',
+            parameters = {'PARAM3': 'NF*4'})
+    with pytest.raises(Exception):
+        DerivedMOS = device.Model(
+            name = 'DERIVEDMOS',
+            base = 'TESTMOS',
+            pins = ['D', 'S'],
+            parameters = {'PARAM1': 'NF*4'})
+    DerivedMOS = device.Model(
+        name = 'DERIVEDMOS',
+        base = 'TESTMOS',
+        parameters = {'PARAM1': 'NF*4'})
 
 def test_model_str_casting():
     '''

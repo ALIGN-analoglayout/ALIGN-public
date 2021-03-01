@@ -79,9 +79,11 @@ class Model(pydantic.BaseModel):
 
     @pydantic.validator('base', pre=True, always=True)
     def base_check(cls, base, values):
-        if base and base not in cls.library:
-            logger.error(f'Could not find {base} in library')
-            raise AssertionError(f'Could not find {base} in library')
+        if base:
+            base = base.upper()
+            if base not in cls.library:
+                logger.error(f'Could not find {base} in library')
+                raise AssertionError(f'Could not find {base} in library')
         return base
 
     @pydantic.validator('pins', always=True)
@@ -98,14 +100,15 @@ class Model(pydantic.BaseModel):
 
     @pydantic.validator('parameters', always=True)
     def parameter_check(cls, parameters, values):
+        if parameters:
+            parameters = {k.upper(): v.upper() for k, v in parameters.items()}
+        else:
+            parameters = {}
         if 'base' not in values or not values['base']:
-            if parameters:
-                parameters = {k.upper(): v.upper() for k, v in parameters.items()}
-            else:
-                parameters = {}
+            assert cls.__name__ != 'Model' or len(parameters) > 0, 'BaseModel should have one or more parameters'
         elif not set(parameters.keys()).issubset(cls.library[values['base']].parameters.keys()):
-            logger.error(f"Inheriting from {base.name}. Cannot add new parameters")
-            raise AssertionError(f"Inheriting from {base.name}. Cannot add new parameters")
+            logger.error(f"Inheriting from {values['base']}. Cannot add new parameters")
+            raise AssertionError(f"Inheriting from {values['base']}. Cannot add new parameters")
         else:
             parameters = {k.upper(): parameters[k].upper() if k in parameters else v \
                 for k, v in cls.library[values['base']].parameters.items()}
