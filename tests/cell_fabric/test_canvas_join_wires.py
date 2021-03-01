@@ -88,3 +88,8 @@ def test_two():
         data2 = json.load(fp)
 
     assert data == data2
+
+
+if __name__ == "__main__":
+    test_one()
+    test_two()

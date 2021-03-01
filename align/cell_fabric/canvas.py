@@ -95,7 +95,6 @@ class Canvas:
         """
         if exclude_nets is None:
             exclude_nets = set()
-        _ = self.removeDuplicates(allow_opens=True)
         m_lines = self.rd.store_scan_lines[layer]
         wire = getattr(self, layer)
         drc = wire.direction.upper()
@@ -114,6 +113,7 @@ class Canvas:
                             (b_idx, _) = wire.spg.inverseBounds(slr.rect[i])
                             (_, e_idx) = wire.spg.inverseBounds(next_slr.rect[i+2])
                             self.addWire(wire, slr.netName, None, c_idx, b_idx, e_idx)
+        self.terminals = self.removeDuplicates(allow_opens=True).copy()
 
     def asciiStickDiagram( self, v1, m2, v2, m3, matrix, *, xpitch=4, ypitch=2):
         # clean up text input
