@@ -143,6 +143,63 @@ class Canvas:
                         new_length = 0
         self.terminals = self.removeDuplicates(allow_opens=True).copy()
 
+    def drop_via(self, via, net_name=None):
+
+        def is_overlapping(r1, r2):
+            if r1[0] < r2[2] and r2[0] < r1[2]:
+                if r1[1] < r2[3] and r2[1] < r1[3]:
+                    return True
+            return False
+
+        _ = self.removeDuplicates() # allow_opens later
+        via_matrix = self._construct_via_matrix(via)
+
+        [ml, mh] = self.canvas.pdk[via.layer]['Stack']
+        mh_lines = self.rd.store_scan_lines[ml]
+        ml_lines = self.rd.store_scan_lines[mh]
+        ml = getattr(self, ml)
+        mh = getattr(self, mh)
+        dr = 1 if mh.direction.upper() == 'V' else 0
+
+        # Start at lower layer as it is more likely to be denser
+        for (ml_cl, ml_sl) in ml_lines.items():
+            for (_, ml_slr) in enumerate(ml_sl.rects):
+                ml_name = ml_slr.netName
+                if ml_name is None:
+                    continue
+                if net_name is not None and ml_name != net_name:
+                    continue
+                for (mh_cl, mh_sl) in ml_lines.items():
+                    # Check only the scan lines that can intersect with ml_slr
+                    if mh_cl < 2*ml_slr.rect[dr] or mh_cl > 2*ml_slr.rect[dr+2]:
+                        continue
+                    for (_, mh_slr) in enumerate(mh_sl.rects):
+                        mh_name = mh_slr.netName
+                        if mh_name is None or mh_name != ml_name:
+                            continue
+                        # Check only if the rectangles intersect
+
+                #             if mh_dir == 'V':
+                #                 if is_overlapping(ml_slr.rect, mh_slr.rect):
+                #                     self.addVia(via, ml_name, None, mh_c_idx, ml_c_idx)
+                #                 else:
+                #                     if is_overlapping(ml_slr.rect, mh_slr.rect):
+                #                         self.addVia(via, ml_name, None, ml_c_idx, mh_c_idx)
+
+        pass
+
+    def _construct_via_matrix(self, via):
+        via_lines = self.rd.store_scan_lines[via.layer]
+        via_matrix = dict()
+        for (_, via_sl) in via_lines.items():
+            for (_, via_slr) in enumerate(via_sl.rects):
+                via_x = via_slr.rect[0] + via_slr.rect[2]
+                via_y = via_slr.rect[1] + via_slr.rect[3]
+                if via_x not in via_matrix:
+                    via_matrix[via_x] = dict()
+                via_matrix[via_x][via_y] = via_slr.rect.copy()
+        return via_matrix
+
     def asciiStickDiagram( self, v1, m2, v2, m3, matrix, *, xpitch=4, ypitch=2):
         # clean up text input
         a = matrix.split( '\n')[1:-1]
