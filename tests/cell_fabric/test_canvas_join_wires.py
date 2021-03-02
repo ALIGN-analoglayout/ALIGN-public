@@ -10,28 +10,30 @@ def test_one():
 
     c.pdk = {'M1': {'MaxL': None}, 'M2': {'MaxL': 10000}}
 
-    c.M1 = c.addGen(Wire(nm='m1', layer='M1', direction='v',
-                         clg=UncoloredCenterLineGrid(width=400, pitch=720, repeat=2),
-                         spg=EnclosureGrid(pitch=720, stoppoint=360)))
+    m1 = c.addGen(Wire(nm='m1', layer='M1', direction='v',
+                       clg=UncoloredCenterLineGrid(width=400, pitch=720, repeat=2),
+                       spg=EnclosureGrid(pitch=720, stoppoint=360)))
 
-    c.M2 = c.addGen(Wire(nm='m2', layer='M2', direction='h',
-                         clg=UncoloredCenterLineGrid(width=400, pitch=720, repeat=5),
-                         spg=EnclosureGrid(pitch=720, stoppoint=360)))
+    m2 = c.addGen(Wire(nm='m2', layer='M2', direction='h',
+                       clg=UncoloredCenterLineGrid(width=400, pitch=720, repeat=5),
+                       spg=EnclosureGrid(pitch=720, stoppoint=360)))
 
-    c.addWire(c.M1, 'a', None, 0, (0, 1), (3, 3))
-    c.addWire(c.M1, 'a', None, 0, (4, 1), (5, 3))
-    c.addWire(c.M1, 'a', None, 0, (6, 1), (50, 3))
+    # These three should be merged
+    c.addWire(m1, 'a', None, 0, (0, 1), (3, 3))
+    c.addWire(m1, 'a', None, 0, (4, 1), (5, 3))
+    c.addWire(m1, 'a', None, 0, (6, 1), (50, 3))
 
-    c.addWire(c.M2, 'a', None, 1, (0, 1), (3, 3))
-    c.addWire(c.M2, 'a', None, 1, (4, 1), (5, 3))
-    c.addWire(c.M2, 'a', None, 1, (6, 1), (50, 3))
+    # Only the first two should be merged
+    c.addWire(m2, 'a', None, 1, (0, 1), (3, 3))
+    c.addWire(m2, 'a', None, 1, (4, 1), (5, 3))
+    c.addWire(m2, 'a', None, 1, (6, 1), (50, 3))
 
     new_terminals = c.removeDuplicates(allow_opens=True)
-    print(new_terminals)
-    c.join_wires('M1')
-    c.join_wires('M2')
+    print('OLD:', new_terminals)
+    c.join_wires(m1)
+    c.join_wires(m2)
     new_terminals = c.removeDuplicates(allow_opens=True)
-    print(new_terminals)
+    print('NEW:', new_terminals)
 
     c.computeBbox()
 
@@ -56,21 +58,25 @@ def test_two():
 
     c.pdk = {'M1': {'MaxL': None}, 'M2': {'MaxL': 10000}}
 
-    c.M1 = c.addGen(Wire(nm='m1', layer='M1', direction='v',
+    m1 = c.addGen(Wire(nm='m1', layer='M1', direction='v',
                          clg=UncoloredCenterLineGrid(width=400, pitch=720, repeat=2),
                          spg=EnclosureGrid(pitch=720, stoppoint=360)))
 
-    c.addWire(c.M1, 'a',  None, 1, (0, 1), (1, 3))
-    c.addWire(c.M1, 'b',  None, 1, (2, 1), (3, 3))
-    c.addWire(c.M1, 'a',  None, 1, (4, 1), (5, 3))
-    c.addWire(c.M1, None, None, 1, (6, 1), (7, 3))
-    c.addWire(c.M1, None, None, 1, (8, 1), (9, 3))
+    # None of the below should merge
+    c.addWire(m1, 'a',  None, 1, (0, 1), (1, 3))
+    c.addWire(m1, 'b',  None, 1, (2, 1), (3, 3))
+    c.addWire(m1, 'a',  None, 1, (4, 1), (5, 3))
+
+    # Append different width
+    c.terminals.append({'layer': 'M1', 'netName': 'a', 'rect': [540, 4680, 900, 5400]})
+
+    c.addWire(m1, None, None, 1, (8, 1), (9, 3))
 
     new_terminals = c.removeDuplicates(allow_opens=True)
     print(new_terminals)
-    c.join_wires('M1')
+    c.join_wires(m1)
     new_terminals = c.removeDuplicates(allow_opens=True)
-    print(new_terminals)
+    print('new:', new_terminals)
 
     c.computeBbox()
 
@@ -92,4 +98,4 @@ def test_two():
 
 if __name__ == "__main__":
     test_one()
-    test_two()
+    # test_two()

@@ -89,29 +89,40 @@ class Canvas:
 
         self.addWire( wire, netName, pinName, c, mn, mx)
 
-    def join_wires(self, layer, exclude_nets=None):
+    def join_wires(self, wire, exclude_nets=None, include_nets=None):
         """
-        Merge neighbor wires on the same center line if merged wire length < MaxL
+        Merge neighbor wires on the same center line if wire widths match and merged wire length < MaxL
+        :param wire: wire generator
+        :param exclude_nets: set of nets to be excluded (precedes include_nets)
+        :param include_nets: set of nets to be included (if None, merge any wire)
+        :return:
         """
+        if include_nets is not None:
+            include_nets = set(include_nets)
         if exclude_nets is None:
             exclude_nets = set()
-        m_lines = self.rd.store_scan_lines[layer]
-        wire = getattr(self, layer)
-        drc = wire.direction.upper()
-        max_l = self.pdk[layer]['MaxL']
+        self.terminals = self.removeDuplicates(allow_opens=True).copy()
+        m_lines = self.rd.store_scan_lines[wire.layer]
+        iy = 1 if wire.direction.upper() == 'V' else 0
+        ix = 0 if wire.direction.upper() == 'V' else 1
+        max_l = self.pdk[wire.layer]['MaxL']
         for (cl, sl) in m_lines.items():
             c_idx = wire.clg.inverseBounds(cl//2)[0]
             for (idx, slr) in enumerate(sl.rects):
                 if slr.netName is None or slr.netName in exclude_nets:
                     continue
+                if include_nets is not None and slr.netName not in include_nets:
+                    continue
+                w = slr.rect[ix+2] - slr.rect[ix]
                 # Connect with successor
                 if idx+1 < len(sl.rects):
                     next_slr = sl.rects[idx+1]
-                    if slr.netName == next_slr.netName:
-                        i = 0 if drc == 'H' else 1
-                        if max_l is None or next_slr.rect[i+2] - slr.rect[i] <= max_l:
-                            (b_idx, _) = wire.spg.inverseBounds(slr.rect[i])
-                            (_, e_idx) = wire.spg.inverseBounds(next_slr.rect[i+2])
+                    next_w = next_slr.rect[ix + 2] - next_slr.rect[ix]
+                    if slr.netName == next_slr.netName and w == next_w:
+                        if max_l is None or next_slr.rect[iy+2] - slr.rect[iy] <= max_l:
+                            (b_idx, _) = wire.spg.inverseBounds(slr.rect[iy])
+                            (_, e_idx) = wire.spg.inverseBounds(next_slr.rect[iy+2])
+                            print(wire.layer, b_idx, e_idx)
                             self.addWire(wire, slr.netName, None, c_idx, b_idx, e_idx)
         self.terminals = self.removeDuplicates(allow_opens=True).copy()
 
