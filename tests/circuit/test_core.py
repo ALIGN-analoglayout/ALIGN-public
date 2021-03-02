@@ -122,7 +122,6 @@ def test_find_subgraph_matches(simple_netlist, matching_subckt, ThreeTerminalDev
 
 def test_replace_matching_subgraphs(simple_netlist, matching_subckt):
     ckt, subckt = simple_netlist, matching_subckt
-    print(matching_subckt.xyce())
     matches = [{'X3': 'X1', 'NET3': 'PIN3', 'NET1': 'PIN1', 'X4': 'X2', 'NET2': 'PIN2'}]
     ckt.replace_matching_subckts(subckt)
     assert all(x not in ckt.nodes for x in matches[0].keys() if x.startswith('X'))

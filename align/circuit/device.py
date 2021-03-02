@@ -108,18 +108,11 @@ class Model(pydantic.BaseModel):
 
     @pydantic.validator('parameters', always=True)
     def parameter_check(cls, parameters, values):
-        if parameters:
-            parameters = {k.upper(): v.upper() for k, v in parameters.items()}
-        else:
-            parameters = {}
-        if 'base' not in values or not values['base']:
-            assert cls.__name__ != 'Model' or len(parameters) > 0, 'BaseModel should have one or more parameters'
-        elif not set(parameters.keys()).issubset(cls.library[values['base']].parameters.keys()):
-            logger.error(f"Inheriting from {values['base']}. Cannot add new parameters")
-            raise AssertionError(f"Inheriting from {values['base']}. Cannot add new parameters")
-        else:
-            parameters = {k.upper(): parameters[k].upper() if k in parameters else v \
-                for k, v in cls.library[values['base']].parameters.items()}
+        parameters = {k.upper(): v.upper() for k, v in parameters.items()} if parameters else {}
+        if 'base' in values and values['base']:
+            x = cls.library[values['base']].parameters.copy()
+            x.update(parameters)
+            parameters = x
         return parameters
 
     @pydantic.validator('prefix', always=True)

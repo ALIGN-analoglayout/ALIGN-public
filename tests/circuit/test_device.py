@@ -71,23 +71,18 @@ def test_derived_model_case_insensitivity(testmos):
     assert DerivedMOS.pins == ['D', 'G', 'S', 'B']
     assert DerivedMOS.parameters == {'PARAM1': 'NF*4', 'PARAM2': '2'}
 
-def test_derived_model_new_parameter_checking(testmos):
-    with pytest.raises(Exception):
-        DerivedMOS = device.Model(
-            name = 'DERIVEDMOS',
-            base = 'TESTMOS',
-            parameters = {'PARAM3': 'NF*4'})
-    with pytest.raises(Exception):
-        DerivedMOS = device.Model(
-            name = 'DERIVEDMOS',
-            base = 'TESTMOS',
-            pins = ['D', 'S'],
-            parameters = {'PARAM1': 'NF*4'})
+def test_derived_model_new_parameters(testmos):
     DerivedMOS = device.Model(
         name = 'DERIVEDMOS',
         base = 'TESTMOS',
-        parameters = {'PARAM1': 'NF*4'})
-
+        parameters = {
+            'PARAM1': 'NF*6',
+            'PARAM3': 'NF*4'})
+    assert DerivedMOS.parameters == {
+            'PARAM1': 'NF*6',
+            'PARAM2': '2',
+            'PARAM3': 'NF*4'
+    }
 def test_model_str_casting():
     '''
     Parameter values are stored as string internally
