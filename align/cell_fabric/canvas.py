@@ -151,15 +151,16 @@ class Canvas:
                     return True
             return False
 
-        _ = self.removeDuplicates() # allow_opens later
+        self.terminals = self.removeDuplicates().copy() # allow_opens later
         via_matrix = self._construct_via_matrix(via)
 
-        [ml, mh] = self.canvas.pdk[via.layer]['Stack']
+        [ml, mh] = self.pdk[via.layer]['Stack']
         mh_lines = self.rd.store_scan_lines[ml]
         ml_lines = self.rd.store_scan_lines[mh]
         ml = getattr(self, ml)
         mh = getattr(self, mh)
-        dr = 1 if mh.direction.upper() == 'V' else 0
+        il = 1 if ml.direction.upper() == 'V' else 0
+        ih = 0 if ml.direction.upper() == 'V' else 1
 
         # Start at lower layer as it is more likely to be denser
         for (ml_cl, ml_sl) in ml_lines.items():
@@ -169,23 +170,30 @@ class Canvas:
                     continue
                 if net_name is not None and ml_name != net_name:
                     continue
-                for (mh_cl, mh_sl) in ml_lines.items():
+                for (mh_cl, mh_sl) in mh_lines.items():
                     # Check only the scan lines that can intersect with ml_slr
-                    if mh_cl < 2*ml_slr.rect[dr] or mh_cl > 2*ml_slr.rect[dr+2]:
+                    if mh_cl < 2*ml_slr.rect[il]:
                         continue
+                    if mh_cl > 2*ml_slr.rect[il+2]:
+                        break
                     for (_, mh_slr) in enumerate(mh_sl.rects):
                         mh_name = mh_slr.netName
                         if mh_name is None or mh_name != ml_name:
                             continue
-                        # Check only if the rectangles intersect
+                        # Check only the rectangles that overlap with the centerline
+                        if 2*mh_slr.rect[ih] > ml_cl:
+                            break
+                        if 2*mh_slr.rect[ih+2] < ml_cl:
+                            continue
+                        # Skip if there is already a via
+                        # Add via only if spacing and width rules are satisfied
 
-                #             if mh_dir == 'V':
-                #                 if is_overlapping(ml_slr.rect, mh_slr.rect):
-                #                     self.addVia(via, ml_name, None, mh_c_idx, ml_c_idx)
-                #                 else:
-                #                     if is_overlapping(ml_slr.rect, mh_slr.rect):
-                #                         self.addVia(via, ml_name, None, ml_c_idx, mh_c_idx)
-
+                        # if dr:
+                        #     if is_overlapping(ml_slr.rect, mh_slr.rect):
+                        #         self.addVia(via, ml_name, None, mh_c_idx, ml_c_idx)
+                        # else:
+                        #     if is_overlapping(ml_slr.rect, mh_slr.rect):
+                        #         self.addVia(via, ml_name, None, ml_c_idx, mh_c_idx)
         pass
 
     def _construct_via_matrix(self, via):

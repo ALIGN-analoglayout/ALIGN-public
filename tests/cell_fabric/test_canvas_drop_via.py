@@ -109,13 +109,13 @@ if __name__ == "__main__":
 
     c.V1 = c.addGen(Via(nm='v1', layer='V1', h_clg=c.M2.clg, v_clg=c.M1.clg, WidthX=100, WidthY=100))
 
-    # c.addWire(c.M1, 'a', None, 0, (0, 1), (3, 3))
-    # c.addWire(c.M1, 'a', None, 0, (4, 1), (5, 3))
-    # c.addWire(c.M1, 'a', None, 0, (6, 1), (50, 3))
-    #
-    # c.addWire(c.M2, 'a', None, 1, (0, 1), (3, 3))
-    # c.addWire(c.M2, 'a', None, 1, (4, 1), (5, 3))
-    # c.addWire(c.M2, 'a', None, 1, (6, 1), (50, 3))
+    c.addWire(c.M1, 'a', None, 0, (0, 1), (3, 3))
+    c.addWire(c.M1, 'a', None, 0, (4, 1), (5, 3))
+    c.addWire(c.M1, 'a', None, 0, (6, 1), (50, 3))
+
+    c.addWire(c.M2, 'a', None, 1, (0, 1), (3, 3))
+    c.addWire(c.M2, 'a', None, 1, (4, 1), (5, 3))
+    c.addWire(c.M2, 'a', None, 1, (6, 1), (50, 3))
 
     for i in [0, 2, 4]:
         c.addWire(c.M1, 'a', None, i, (0, 1), (4, -1))
@@ -123,8 +123,8 @@ if __name__ == "__main__":
     for i in [1, 3, 5]:
         c.addWire(c.M1, 'b', None, i, (0, 1), (4, -1))
 
-    c.addWireAndViaSet('a', None, c.M2, c.V1, 2, [0, 2, 4])
-    c.addWireAndViaSet('b', None, c.M2, c.V1, 1, [1, 3, 5])
+    # c.addWireAndViaSet('a', None, c.M2, c.V1, 2, [0, 2, 4])
+    # c.addWireAndViaSet('b', None, c.M2, c.V1, 1, [1, 3, 5])
 
     c.drop_via(c.V1)
     # c.removeDuplicates()
