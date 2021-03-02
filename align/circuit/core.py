@@ -74,7 +74,7 @@ class Circuit(networkx.Graph):
             self._replace_matches_with_subckt(matches, subckt)
 
     def _replace_matches_with_subckt(self, matches, subckt):
-        assert hasattr(subckt, 'circuit') and isinstance(subckt.circuit, Circuit)
+        assert isinstance(subckt, SubCircuit)
         counter = 0
         for match in matches:
             # Cannot replace as some prior transformation has made the current one invalid
@@ -118,7 +118,7 @@ class Circuit(networkx.Graph):
                 pinmap = {y: f'pin{x}' for x, y in enumerate(
                     (net for net in ckt.nets \
                         if not all(neighbor in ckt.nodes for neighbor in self.neighbors(net))))}
-                subckt, index = SubCircuit(f'XREP{index}', *list(pinmap.values())), index + 1
+                subckt, index = SubCircuit(name=f'XREP{index}', pins=list(pinmap.values())), index + 1
                 for element in ckt.elements:
                     subckt.add_element(element.m(element.name,
                         *[pinmap[x] if x in pinmap else x for x in element.pins.values()]))

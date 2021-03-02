@@ -37,18 +37,18 @@ def gen_dot_file(nm, ifn, ofn):
         print( "\tnode[shape=record]", file=fp)
 
         for e in elements_no_dummys:
-            if   e.__class__.__name__ == "NMOS":
+            if   e.model == "NMOS":
                 print( f"\t{e.name} [label=\"{{ {e.name}|<f0>d|<f1>g|<f2>s}}\"]", file=fp)
-            elif e.__class__.__name__ == "PMOS":
+            elif e.model == "PMOS":
                 print( f"\t{e.name} [label=\"{{<f2>s|<f1>g|<f0>d|{e.name} }}\"]", file=fp)
-            elif e.__class__.__name__ == "CAP":
+            elif e.model == "CAP":
                 print( f"\t{e.name} [label=\"{{ {e.name}|<f1>+|<f0>- }}\"]", file=fp)
             else:
-                assert False, e.__class__.__name__
+                assert False, e.model
 
         # lst = []
         # for e in elements_no_dummys:
-        #     if e.__class__.__name__ == "NMOS":
+        #     if e.model == "NMOS":
         #         lst.append( e.name)
 
         # if lst:
@@ -57,7 +57,7 @@ def gen_dot_file(nm, ifn, ofn):
 
         # lst = []
         # for e in elements_no_dummys:
-        #     if e.__class__.__name__ == "PMOS":
+        #     if e.model == "PMOS":
         #         lst.append( e.name)
 
         # if lst:
@@ -82,8 +82,8 @@ def gen_dot_file(nm, ifn, ofn):
             for k,v in e.pins.items():
                 if k in m:
                     vv = f"{v}{tbl[v][e.name]}" if v in tbl and e.name in tbl[v] else v
-                    if k in ["S"]     and e.__class__.__name__ == "PMOS" or \
-                       k in ["D","G"] and e.__class__.__name__ == "NMOS":
+                    if k in ["S"]     and e.model == "PMOS" or \
+                       k in ["D","G"] and e.model == "NMOS":
                         print( f"\t{vv} -- {e.name}:{m[k]}", file=fp)
                     else:
                         print( f"\t{e.name}:{m[k]} -- {vv}", file=fp)

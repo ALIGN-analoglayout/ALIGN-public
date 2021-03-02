@@ -4,27 +4,28 @@ import pathlib
 from align import circuit
 
 def test_combined():
-    library = circuit.Library()
+    library = circuit.Library(loadbuiltins=True)
     ckt = circuit.Circuit()
     # Not specifying library causes default library to be used
     mysubckt = circuit.SubCircuit(name='mysubckt', pins=['pin1', 'pin2'], parameters={'param1':1, 'param2':1e-3, 'param3':'0.1f', 'param4':'hello'})
-    mysubckt.add_element(library['NMOS']('M1', 'pin1', 'net10', 'net13', 'vss'))
-    mysubckt.add_element(library['NMOS']('M2', 'pin2', 'net10', 'net13', 'vss'))
-    X1 = ckt.add_element(mysubckt('X1', 'net10', 'net12'))
+    mysubckt.add_element(library['NMOS']('M1', 'pin1', 'NET10', 'net13', 'vss'))
+    mysubckt.add_element(library['NMOS']('M2', 'pin2', 'NET10', 'net13', 'vss'))
+    X1 = ckt.add_element(mysubckt('X1', 'NET10', 'NET12'))
     # Registering & reusing subckt from custom library
     _ = circuit.SubCircuit(name='mysubckt2', pins=['pin1', 'pin2', 'pin3'], library=library)
-    library['mysubckt2'].add_element(library['NMOS']('M1', 'pin1', 'pin3', 'net13', 'vss'))
-    library['mysubckt2'].add_element(library['NMOS']('M2', 'pin2', 'pin3', 'net13', 'vss'))
-    X2 = ckt.add_element(library['mysubckt2']('X2', 'net10', 'net12', 'net14'))
+    library['MYSUBCKT2'].add_element(library['NMOS']('M1', 'pin1', 'pin3', 'net13', 'vss'))
+    library['MYSUBCKT2'].add_element(library['NMOS']('M2', 'pin2', 'pin3', 'net13', 'vss'))
+    X2 = ckt.add_element(library['MYSUBCKT2']('X2', 'NET10', 'NET12', 'NET14'))
     assert ckt.elements == [X1, X2]
-    assert ckt.nets == ['net10', 'net12', 'net14']
+    assert ckt.nets == ['NET10', 'NET12', 'NET14']
 
 def test_replace_matching_subckts():
     # parse subckts
     parser = circuit.SpiceParser()
     with open((pathlib.Path(__file__).parent / 'basic_template.sp').resolve()) as fp:
         parser.parse(fp.read())
-    primitivelib = circuit.Library({x: y for x, y in parser.library.items() if isinstance(y, circuit.core.SubCircuit)})
+    primitivelib = circuit.Library(loadbuiltins=False)
+    primitivelib.update({x: y for x, y in parser.library.items() if isinstance(y, circuit.SubCircuit)})
     # parse netlist
     parser = circuit.SpiceParser()
     with open((pathlib.Path(__file__).parent / 'ota.cir').resolve()) as fp:
@@ -34,7 +35,7 @@ def test_replace_matching_subckts():
     ckt.flatten()
     # Sort subckts using hypothetical complexity cost
     subckts = list(primitivelib.values())
-    subckts.sort(key=lambda x: len(x.elements)*10000 - 100 * len(x._pins) + len(x.nets), reverse=True)
+    subckts.sort(key=lambda x: len(x.elements)*10000 - 100 * len(x.pins) + len(x.nets), reverse=True)
     assert len(ckt.elements) == 10
     assert all(x.name.startswith('M') for x in ckt.elements)
     # Perform subgraph matching & replacement

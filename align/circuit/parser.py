@@ -2,8 +2,9 @@ import collections
 import re
 import logging
 
-from .core import Circuit, SubCircuit, Model
+from .core import Circuit, SubCircuit
 from . import library
+from .device import Model
 from . import elements
 from . import constraint
 
@@ -61,8 +62,7 @@ class SpiceParser:
     def __init__(self, mode='Xyce'):
         self.mode = mode.lower()
         assert self.mode in ('xyce', 'hspice')
-        self.library = library.Library()
-        self.library.update(library.default)
+        self.library = library.Library(loadbuiltins=True)
         self.circuit = Circuit()
         self._scope = [self.circuit]
 
@@ -163,11 +163,9 @@ class SpiceParser:
             self._scope.pop()
         elif decl == '.PARAM':
             assert len(args) == 0
-            self._scope[-1] = subckt = SubCircuit(
-                name=self._scope[-1].name,
-                pins=self._scope[-1].pins,
-                library=self.library,
-                parameters=self._scope[-1].parameters.update(kwargs))
+            self._scope[-1].parameters.update({
+                k.upper() : str(v).upper() for k, v in kwargs.items()
+            })
         elif decl == '.MODEL':
             assert len(args) == 2, args
             name, base = args[0], args[1]

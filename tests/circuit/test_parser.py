@@ -108,21 +108,21 @@ def test_lexer_realistic(setup_realistic):
     assert [tok.type for tok in SpiceParser._generate_tokens(str_)] == types
 
 def test_parser_basic(setup_basic, parser):
-    parser.library['TESTDEV'] = SubCircuit('TESTDEV', '+', '-', X='1F', Y=0.1)
+    parser.library['TESTDEV'] = SubCircuit(name='TESTDEV', pins=['+', '-'], parameters={'X':'1F', 'Y':'0.1'}, library=parser.library)
     parser.parse(setup_basic)
     assert len(parser.circuit.elements) == 1
     assert parser.circuit.elements[0].name == 'X1'
-    assert isinstance(parser.circuit.elements[0], parser.library['TESTDEV'])
+    assert parser.circuit.elements[0].model == 'TESTDEV'
     assert parser.circuit.nets == ['A', 'B']
 
 def test_parser_multiline(setup_multiline, parser):
-    parser.library['TESTDEV'] = SubCircuit('TESTDEV', '+', '-', X='1F', Y=0.1)
+    parser.library['TESTDEV'] = SubCircuit(name='TESTDEV', pins=['+', '-'], parameters={'X':'1F', 'Y':'0.1'})
     parser.parse(setup_multiline)
     assert len(parser.circuit.elements) == 2
     assert parser.circuit.elements[0].name == 'X1'
     assert parser.circuit.elements[1].name == 'X2'
-    assert isinstance(parser.circuit.elements[0], parser.library['TESTDEV'])
-    assert isinstance(parser.circuit.elements[1], parser.library['TESTDEV'])
+    assert parser.circuit.elements[0].model == 'TESTDEV'
+    assert parser.circuit.elements[1].model == 'TESTDEV'
     assert parser.circuit.nets == ['A', 'B']
 
 def test_parser_realistic(setup_realistic, parser):
@@ -156,8 +156,6 @@ X1 vcc outplus outminus inplus src 0 inminus diffamp res=200
 
 def test_model(parser):
     parser.parse('.MODEL nmos_rvt nmos KP=0.5M VT0=2')
-    print('from MODEL')
-    print(parser.library)
     assert 'NMOS_RVT' in parser.library
     assert list(parser.library['NMOS_RVT'].parameters.keys()) == ['W', 'L', 'NFIN', 'KP', 'VT0']
 
@@ -168,8 +166,6 @@ def test_ota_cir_parsing(parser):
     assert len(parser.library['OTA'].elements) == 10
 
 def test_ota_sp_parsing(parser):
-    print('from OTA')
-    print(parser.library)
     with open((pathlib.Path(__file__).parent / 'ota.sp').resolve()) as fp:
         parser.parse(fp.read())
     assert 'OTA' in parser.library
