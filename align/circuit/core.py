@@ -3,7 +3,7 @@ from pydantic import PrivateAttr
 
 from collections.abc import Iterable
 from .constraint import ConstraintDB
-from .device import Device, Model
+from .device import Instance, Model
 
 class Circuit(networkx.Graph):
 
@@ -24,7 +24,7 @@ class Circuit(networkx.Graph):
         return [x for x, v in self.nodes.items() if not self._is_element(v)]
 
     def add_element(self, element):
-        assert isinstance(element, Device)
+        assert isinstance(element, Instance)
         for pin, net in element.pins.items():
             if self.has_edge(element.name, net):
                 self[element.name][net]['pin'].add(pin)
@@ -44,7 +44,7 @@ class Circuit(networkx.Graph):
 
     @staticmethod
     def default_node_match(x, y):
-        if isinstance(x.get('instance'), Device) and isinstance(y.get('instance'), Device):
+        if isinstance(x.get('instance'), Instance) and isinstance(y.get('instance'), Instance):
             return y.get('instance').model in x.get('instance').m.bases + [x.get('instance').model]
         else:
             return type(x.get('instance')) == type(y.get('instance'))

@@ -65,7 +65,7 @@ class Model(pydantic.BaseModel):
             self._baseptr = library[self.base]
 
     def __call__(self, name, *pins, **parameters):
-        return Device(
+        return Instance(
             model=self.name,
             library=self.library,
             name=name,
@@ -97,7 +97,7 @@ class Model(pydantic.BaseModel):
     @pydantic.validator('pins', always=True)
     def pin_check(cls, pins, values):
         if 'base' not in values or not values['base']:
-            assert len(pins) > 1, 'Device must have at least two terminals'
+            assert len(pins) > 1, 'Instance must have at least two terminals'
             pins = [p.upper() for p in pins]
         elif pins:
             logger.error(f"Inheriting from {values['base'].name}. Cannot add pins")
@@ -121,9 +121,9 @@ class Model(pydantic.BaseModel):
             prefix = cls.library[values['base']].prefix
         return prefix
 
-class Device(pydantic.BaseModel):
+class Instance(pydantic.BaseModel):
 
-    type: Literal['Device'] = 'Device'
+    type: Literal['Instance'] = 'Instance'
     model: str
     name: str
     pins : Dict[str, str]

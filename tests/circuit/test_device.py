@@ -135,6 +135,6 @@ def test_instance_case_insensitivity(testmos):
 def test_model_json(testmos):
     assert testmos.json() == '{"type": "Model", "name": "TESTMOS", "base": null, "pins": ["D", "G", "S", "B"], "parameters": {"PARAM1": "1.0", "PARAM2": "2"}, "prefix": null}'
 
-def test_device_json(testmos):
+def test_instance_json(testmos):
     M1 = testmos('M1', 'NET01', 'NET02', 'NET03', 'NET04', PARAM1='NF*4')
-    assert M1.json() == '{"type": "Device", "model": "TESTMOS", "name": "M1", "pins": {"D": "NET01", "G": "NET02", "S": "NET03", "B": "NET04"}, "parameters": {"PARAM1": "NF*4", "PARAM2": "2"}}'
+    assert M1.json() == '{"type": "Instance", "model": "TESTMOS", "name": "M1", "pins": {"D": "NET01", "G": "NET02", "S": "NET03", "B": "NET04"}, "parameters": {"PARAM1": "NF*4", "PARAM2": "2"}}'
