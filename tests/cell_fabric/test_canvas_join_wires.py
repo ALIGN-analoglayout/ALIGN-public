@@ -96,6 +96,50 @@ def test_two():
     assert data == data2
 
 
+def test_three():
+    c = Canvas()
+
+    c.pdk = {'M1': {'MaxL': 5000}}
+
+    m1 = c.addGen(Wire(nm='m1', layer='M1', direction='v',
+                       clg=UncoloredCenterLineGrid(width=400, pitch=720, repeat=2),
+                       spg=EnclosureGrid(pitch=720, stoppoint=360)))
+
+    # Below should be merged
+    c.addWire(m1, 'a', None, 0, (0, 1), (3, 3))
+    c.addWire(m1, 'a', None, 0, (4, 1), (5, 3))
+    # Below should be merged (but not with above)
+    c.addWire(m1, 'a', None, 0, (6, 1), (8, 3))
+    c.addWire(m1, 'a', None, 0, (10, 1), (11, 3))
+
+    c.addWire(m1, 'b', None, 0, (12, 1), (13, 3))
+    c.addWire(m1, 'a', None, 0, (14, 1), (15, 3))
+
+    new_terminals = c.removeDuplicates(allow_opens=True)
+    print('OLD:', new_terminals)
+    c.join_wires(m1)
+    new_terminals = c.removeDuplicates(allow_opens=True)
+    print('NEW:', new_terminals)
+
+    c.computeBbox()
+
+    fn = "__json_join_wires_three"
+
+    data = {'bbox': c.bbox.toList(),
+            'globalRoutes': [],
+            'globalRouteGrid': [],
+            'terminals': c.removeDuplicates(allow_opens=True)}
+
+    with open(mydir / (fn + "_cand"), "wt") as fp:
+        fp.write(json.dumps( data, indent=2) + '\n')
+
+    with open(mydir / (fn + "_gold"), "rt") as fp:
+        data2 = json.load(fp)
+
+    assert data == data2
+
+
 if __name__ == "__main__":
     test_one()
-    # test_two()
+    test_two()
+    test_three()
