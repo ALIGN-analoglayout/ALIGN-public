@@ -120,7 +120,7 @@ class Circuit(networkx.Graph):
                         if not all(neighbor in ckt.nodes for neighbor in self.neighbors(net))))}
                 subckt, index = SubCircuit(name=f'XREP{index}', pins=list(pinmap.values())), index + 1
                 for element in ckt.elements:
-                    subckt.add_element(element.m(element.name,
+                    subckt.add_element(element.model(element.name,
                         *[pinmap[x] if x in pinmap else x for x in element.pins.values()]))
                 subckts.append(subckt)
                 matches = self.find_subgraph_matches(subckt.circuit)
@@ -157,7 +157,7 @@ class Circuit(networkx.Graph):
         self.remove_node(subcktinst.name)
         # Add new elements
         for element in subcktinst.model.circuit.elements:
-            newelement = element.m(f'{subcktinst.name}_{element.name}',
+            newelement = element.model(f'{subcktinst.name}_{element.name}',
                 *[subcktinst.pins[x] if x in subcktinst.pins else f'{subcktinst. name}_{x}' for x in element.pins.values()],
                 **{key: eval(val, {}, subcktinst.parameters) if isinstance(val, str) else val for key, val in element.parameters.items()})
             self.add_element(newelement)

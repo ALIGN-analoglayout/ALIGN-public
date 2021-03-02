@@ -39,12 +39,11 @@ class Model(pydantic.BaseModel):
         assumed to be the same as base if not specified
     '''
 
-    type : Literal['Model'] = 'Model'
-    name : str
-    base : Optional[str]       # Optional for Base Models
-    pins : Optional[List[str]] # Optional when inheriting
-    parameters : Optional[Dict[str, str]]
-    prefix : Optional[str]     # Always optional
+    name : str                 # Model Name
+    base : Optional[str]       # Model Base (for derived models)
+    pins : Optional[List[str]] # List of pin names (derived from base if base exists)
+    parameters : Optional[Dict[str, str]]   # Parameter Name: Value mapping (inherits & adds to base if needed)
+    prefix : Optional[str]     # Instance name prefix, optional
 
     #
     # Private attributes affecting class behavior
@@ -57,7 +56,6 @@ class Model(pydantic.BaseModel):
         validate_assignment = True
         extra = 'forbid'
         allow_mutation = False
-        validate_all = True
 
     def __init__(self, library = library.default, **data):
         self.__class__.library = library
@@ -67,9 +65,13 @@ class Model(pydantic.BaseModel):
             self._baseptr = library[self.base]
 
     def __call__(self, name, *pins, **parameters):
+        assert len(pins) == len(self.pins), \
+                f"Model {self.name} has {len(self.pins)} pins {self.pins}. " \
+                + f"{len(pins)} nets {pins} were passed when instantiating {values['name']}."
+        pins = {pin: net.upper() for pin, net in zip(self.pins, pins)}
+
         return Instance(
-            model=self.name,
-            library=self.library,
+            model=self,
             name=name,
             pins=pins,
             parameters=parameters
@@ -155,11 +157,19 @@ class SubCircuit(Model):
 
 class Instance(pydantic.BaseModel):
 
-    type: Literal['Instance'] = 'Instance'
     model: Union[Model, SubCircuit]
     name: str
     pins : Dict[str, str]
     parameters : Dict[str, str]
+
+    def json(self):
+        return super().json(include=self.jsonfilter)
+
+    def xyce(self):
+        return f'{self.name} ' + \
+            ' '.join(self.pins.values()) + \
+            f' {self.model.name} ' + \
+            ' '.join(f'{x}={{{y}}}' for x, y in self.parameters.items())
 
     #
     # Private attributes affecting class behavior
@@ -171,70 +181,33 @@ class Instance(pydantic.BaseModel):
         allow_mutation = False
 
     jsonfilter: ClassVar[Dict] = {
-        'type': ...,
         'model': {'name'},
         'name': ...,
         'pins' : ...,
         'parameters' : ...
     }
 
-    library : ClassVar[Dict] = None
-
-    def __init__(self, library=None, **data):
-        # This is only to help with JSON deserialization
-        if isinstance(data['model'], str):
-            assert library is not None
-            data['model'] = library[data['model']]
-        super().__init__(**data)
-
-    @property
-    def m(self):
-        return self.model
-
     @pydantic.validator('name')
     def name_complies_with_model(cls, name, values):
         name = name.upper()
-        if values['model'].prefix:
-            if not name.startswith(values['model'].prefix):
-                logger.error(f"{name} does not start with {values['model'].prefix}")
-                raise AssertionError(f"{name} does not start with {values['model'].prefix}")
+        if values['model'].prefix and not name.startswith(values['model'].prefix):
+            logger.error(f"{name} does not start with {values['model'].prefix}")
+            raise AssertionError(f"{name} does not start with {values['model'].prefix}")
         return name
 
-    @pydantic.validator('pins', pre=True)
+    @pydantic.validator('pins')
     def pins_comply_with_model(cls, pins, values):
-        if isinstance(pins, dict):
-            pins = {k.upper(): v.upper() for k, v in pins.items()}
-            assert set(pins.keys()) == set(values['model'].pins)
-        else:
-            # TODO: This is not integral to Instance class
-            #       Move to Model.__call__ instead
-            if len(pins) != len(values['model'].pins):
-                logger.error(
-                    f"Model {values['model'].name} has {len(values['model'].pins)} pins {values['model'].pins}. " \
-                    + f"{len(pins)} nets {pins} were passed when instantiating {values['name']}.")
-                raise AssertionError(
-                    f"Model {values['model'].name} has {len(values['model'].pins)} pins {values['model'].pins}. " \
-                    + f"{len(pins)} nets {pins} were passed when instantiating {values['name']}.")
-            pins = {pin: net.upper() for pin, net in zip(values['model'].pins, pins)}
+        pins = {k.upper(): v.upper() for k, v in pins.items()}
+        assert set(pins.keys()) == set(values['model'].pins)
         return pins
 
     @pydantic.validator('parameters')
     def parameters_comply_with_model(cls, parameters, values):
-        if parameters:
-            parameters = {k.upper(): v.upper() for k, v in parameters.items()}
-        else:
-            parameters = {}
+        parameters = {k.upper(): v.upper() for k, v in parameters.items()}
         assert set(parameters.keys()).issubset(values['model'].parameters.keys())
         parameters = {k: parameters[k] if k in parameters else v \
             for k, v in values['model'].parameters.items()}
         return parameters
-
-    def xyce(self):
-        return f'{self.name} ' + \
-            ' '.join(self.pins.values()) + \
-            f' {self.model.name} ' + \
-            ' '.join(f'{x}={{{y}}}' for x, y in self.parameters.items())
-
 
 from . import core
 from . import constraint
