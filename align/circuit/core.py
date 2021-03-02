@@ -3,7 +3,7 @@ from pydantic import PrivateAttr
 
 from collections.abc import Iterable
 from .constraint import ConstraintDB
-from .device import Instance, Model
+from .device import Instance, Model, SubCircuit
 
 class Circuit(networkx.Graph):
 
@@ -45,7 +45,7 @@ class Circuit(networkx.Graph):
     @staticmethod
     def default_node_match(x, y):
         if isinstance(x.get('instance'), Instance) and isinstance(y.get('instance'), Instance):
-            return y.get('instance').model in x.get('instance').m.bases + [x.get('instance').model]
+            return y.get('instance').model.name in x.get('instance').model.bases + [x.get('instance').model.name]
         else:
             return type(x.get('instance')) == type(y.get('instance'))
 
@@ -144,47 +144,21 @@ class Circuit(networkx.Graph):
     def flatten(self, depth=999):
         ''' depth = 999 helps protect against recursive subckt definitions '''
         depth = depth - 1
-        for subcktinst in (x for x in self.elements if hasattr(x, 'circuit')):
+        for subcktinst in (x for x in self.elements if isinstance(x.model, SubCircuit)):
             self._replace_subckt_with_components(subcktinst)
-        if any((hasattr(x, 'circuit') for x in self.elements)) and depth > 0:
+        if any((isinstance(x.model, SubCircuit) for x in self.elements)) and depth > 0:
             self.flatten(depth)
         for element in self.elements:
-            if element.m.prefix and not element.name.startswith(element.m.prefix):
-                    element.name = f'{element.m.prefix}_{element.name}'
+            if element.model.prefix and not element.name.startswith(element.model.prefix):
+                    element.name = f'{element.model.prefix}_{element.name}'
 
     def _replace_subckt_with_components(self, subcktinst):
         # Remove element from graph
         self.remove_node(subcktinst.name)
         # Add new elements
-        for element in subcktinst.circuit.elements:
+        for element in subcktinst.model.circuit.elements:
             newelement = element.m(f'{subcktinst.name}_{element.name}',
                 *[subcktinst.pins[x] if x in subcktinst.pins else f'{subcktinst. name}_{x}' for x in element.pins.values()],
                 **{key: eval(val, {}, subcktinst.parameters) if isinstance(val, str) else val for key, val in element.parameters.items()})
             self.add_element(newelement)
-
-class SubCircuit(Model):
-
-    circuit : Circuit
-    constraint: ConstraintDB
-
-    def __init__(self, *args, **kwargs):
-        kwargs['circuit'] = Circuit()
-        kwargs['constraint'] = ConstraintDB()
-        Model.__init__(self, *args, **kwargs)
-
-    def __getattr__(self, name):
-        return getattr(self.circuit, name)
-
-    class Config(Model.Config):
-        arbitrary_types_allowed = True
-
-    def xyce(self):
-        ret = []
-        for constraint in self.constraint.constraints:
-            ret.append(f'* @: {constraint}')
-        ret.append(f'.SUBCKT {self.name} ' + ' '.join(f'{x}' for x in self.pins))
-        ret.extend([f'.PARAM {x}=' + (f'{{{y}}}' if isinstance(y, str) else f'{y}') for x, y in self.parameters.items()])
-        ret.append(self.circuit.xyce())
-        ret.append(f'.ENDS {self.name}')
-        return '\n'.join(ret)
 

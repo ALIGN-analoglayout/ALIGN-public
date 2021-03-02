@@ -114,7 +114,7 @@ def test_instance_init(testmos):
         M1 = testmos('M1', 'NET01', 'NET02', 'NET03', 'NET04', garbage='dfddfd')
     M1 = testmos('M1', 'NET01', 'NET02', 'NET03', 'NET04')
     assert M1.name == 'M1'
-    assert M1.model == 'TESTMOS'
+    assert M1.model.name == 'TESTMOS'
     assert M1.pins == {'D': 'NET01', 'G': 'NET02', 'S': 'NET03', 'B': 'NET04'}
     assert M1.parameters == {'PARAM1': "1.0", 'PARAM2': "2"}
     M1 = testmos('M1', 'NET01', 'NET02', 'NET03', 'NET04', PARAM1='NF*4')
@@ -137,4 +137,4 @@ def test_model_json(testmos):
 
 def test_instance_json(testmos):
     M1 = testmos('M1', 'NET01', 'NET02', 'NET03', 'NET04', PARAM1='NF*4')
-    assert M1.json() == '{"type": "Instance", "model": "TESTMOS", "name": "M1", "pins": {"D": "NET01", "G": "NET02", "S": "NET03", "B": "NET04"}, "parameters": {"PARAM1": "NF*4", "PARAM2": "2"}}'
+    assert M1.json(include=M1.jsonfilter) == '{"type": "Instance", "model": {"name": "TESTMOS"}, "name": "M1", "pins": {"D": "NET01", "G": "NET02", "S": "NET03", "B": "NET04"}, "parameters": {"PARAM1": "NF*4", "PARAM2": "2"}}'

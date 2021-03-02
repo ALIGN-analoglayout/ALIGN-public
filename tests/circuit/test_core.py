@@ -29,16 +29,13 @@ def test_subckt_class(TwoTerminalDevice):
         inst = subckt('X1', 'NET10')
     inst = subckt('X1', 'NET10', 'NET12')
     assert inst.name == 'X1'
-    assert inst.model == 'TEST_SUBCKT'
+    assert inst.model.name == 'TEST_SUBCKT'
     assert inst.pins == {'PIN1': 'NET10', 'PIN2': 'NET12'}
     assert inst.parameters == {'PARAM1': '1', 'PARAM2': '0.001', 'PARAM3': '1E-16', 'PARAM4': 'HELLO'}
-    assert inst.circuit.elements == [X1, X2]
-    assert inst.circuit.element('X1') == X1
-    assert inst.circuit.element('X2') == X2
-    assert inst.circuit.nets == ['NET1', 'NET2', 'NET3']
-    # TODO: Disallow accesses to methods that will change state
-    # with pytest.raises(Exception):
-    #     inst.add_element(TwoTerminalDevice('X3', 'NET1', 'NET3'))
+    assert inst.model.circuit.elements == [X1, X2]
+    assert inst.model.circuit.element('X1') == X1
+    assert inst.model.circuit.element('X2') == X2
+    assert inst.model.circuit.nets == ['NET1', 'NET2', 'NET3']
 
 def test_circuit(TwoTerminalDevice, ThreeTerminalDevice):
     ckt = Circuit()
@@ -124,6 +121,8 @@ def test_replace_matching_subgraphs(simple_netlist, matching_subckt):
     ckt, subckt = simple_netlist, matching_subckt
     matches = [{'X3': 'X1', 'NET3': 'PIN3', 'NET1': 'PIN1', 'X4': 'X2', 'NET2': 'PIN2'}]
     ckt.replace_matching_subckts(subckt)
+    print(ckt.xyce())
+    print(subckt.xyce())
     assert all(x not in ckt.nodes for x in matches[0].keys() if x.startswith('X'))
     assert 'X_TEST_SUBCKT_0' in ckt.nodes
     new_edges = [('X_TEST_SUBCKT_0', 'NET3', {'PIN3'}), ('X_TEST_SUBCKT_0', 'NET1', {'PIN1'}), ('X_TEST_SUBCKT_0', 'NET2', {'PIN2'})]

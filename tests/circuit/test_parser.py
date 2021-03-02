@@ -112,7 +112,7 @@ def test_parser_basic(setup_basic, parser):
     parser.parse(setup_basic)
     assert len(parser.circuit.elements) == 1
     assert parser.circuit.elements[0].name == 'X1'
-    assert parser.circuit.elements[0].model == 'TESTDEV'
+    assert parser.circuit.elements[0].model.name == 'TESTDEV'
     assert parser.circuit.nets == ['A', 'B']
 
 def test_parser_multiline(setup_multiline, parser):
@@ -121,8 +121,8 @@ def test_parser_multiline(setup_multiline, parser):
     assert len(parser.circuit.elements) == 2
     assert parser.circuit.elements[0].name == 'X1'
     assert parser.circuit.elements[1].name == 'X2'
-    assert parser.circuit.elements[0].model == 'TESTDEV'
-    assert parser.circuit.elements[1].model == 'TESTDEV'
+    assert parser.circuit.elements[0].model.name == 'TESTDEV'
+    assert parser.circuit.elements[1].model.name == 'TESTDEV'
     assert parser.circuit.nets == ['A', 'B']
 
 def test_parser_realistic(setup_realistic, parser):
@@ -152,7 +152,7 @@ X1 vcc outplus outminus inplus src 0 inminus diffamp res=200
     assert 'DIFFAMP' in parser.library
     assert len(parser.library['DIFFAMP'].elements) == 6
     assert len(parser.circuit.elements) == 1
-    assert parser.circuit.element('X1').model == 'DIFFAMP'
+    assert parser.circuit.element('X1').model.name == 'DIFFAMP'
 
 def test_model(parser):
     parser.parse('.MODEL nmos_rvt nmos KP=0.5M VT0=2')
