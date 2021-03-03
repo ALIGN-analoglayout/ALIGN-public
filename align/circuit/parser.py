@@ -4,7 +4,7 @@ import logging
 
 from .core import Circuit, SubCircuit
 from . import library
-from .device import Model
+from . import model
 from . import elements
 from . import constraint
 
@@ -171,4 +171,4 @@ class SpiceParser:
             name, base = args[0], args[1]
             assert name not in self.library, f"User is attempting to redeclare {name}"
             assert base in self.library, base
-            Model(name=name, base=base, library=self.library, parameters=kwargs)
+            model.Model(name=name, base=base, library=self.library, parameters=kwargs)

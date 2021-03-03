@@ -1,6 +1,6 @@
 import sys, inspect
 
-from .device import Model
+from .model import Model
 
 # WARNING: All pin & parameter names must be capitalized
 #          to support case-insensitive parsing

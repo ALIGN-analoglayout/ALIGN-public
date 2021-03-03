@@ -1,12 +1,9 @@
 import pydantic
 import logging
 
-from typing import Dict, ClassVar, Union, Optional, List
-from typing_extensions import Literal
+from typing import Dict, ClassVar, Optional, List
 
 from . import library
-from . import core
-from . import constraint
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +67,7 @@ class Model(pydantic.BaseModel):
                 + f"{len(pins)} nets {pins} were passed when instantiating {values['name']}."
         pins = {pin: net.upper() for pin, net in zip(self.pins, pins)}
 
-        return Instance(
+        return instance.Instance(
             model=self,
             name=name,
             pins=pins,
@@ -125,89 +122,4 @@ class Model(pydantic.BaseModel):
             prefix = cls.library[values['base']].prefix
         return prefix
 
-class SubCircuit(Model):
-
-    _circuit = pydantic.PrivateAttr()
-    constraint = constraint.ConstraintDB()
-
-    @property
-    def circuit(self):
-        return self._circuit
-
-    def __init__(self, *args, **kwargs):
-        self._circuit = core.Circuit()
-        kwargs['constraint'] = constraint.ConstraintDB()
-        Model.__init__(self, *args, **kwargs)
-
-    def __getattr__(self, name):
-        return getattr(self._circuit, name)
-
-    class Config(Model.Config):
-        arbitrary_types_allowed = True
-
-    def xyce(self):
-        ret = []
-        for constraint in self.constraint.constraints:
-            ret.append(f'* @: {constraint}')
-        ret.append(f'.SUBCKT {self.name} ' + ' '.join(f'{x}' for x in self.pins))
-        ret.extend([f'.PARAM {x}=' + (f'{{{y}}}' if isinstance(y, str) else f'{y}') for x, y in self.parameters.items()])
-        ret.append(self.circuit.xyce())
-        ret.append(f'.ENDS {self.name}')
-        return '\n'.join(ret)
-
-class Instance(pydantic.BaseModel):
-
-    model: Union[Model, SubCircuit]
-    name: str
-    pins : Dict[str, str]
-    parameters : Dict[str, str]
-
-    def json(self):
-        return super().json(include=self.jsonfilter)
-
-    def xyce(self):
-        return f'{self.name} ' + \
-            ' '.join(self.pins.values()) + \
-            f' {self.model.name} ' + \
-            ' '.join(f'{x}={{{y}}}' for x, y in self.parameters.items())
-
-    #
-    # Private attributes affecting class behavior
-    #
-
-    class Config:
-        validate_assignment = True
-        extra = 'forbid'
-        allow_mutation = False
-
-    jsonfilter: ClassVar[Dict] = {
-        'model': {'name'},
-        'name': ...,
-        'pins' : ...,
-        'parameters' : ...
-    }
-
-    @pydantic.validator('name')
-    def name_complies_with_model(cls, name, values):
-        name = name.upper()
-        if values['model'].prefix and not name.startswith(values['model'].prefix):
-            logger.error(f"{name} does not start with {values['model'].prefix}")
-            raise AssertionError(f"{name} does not start with {values['model'].prefix}")
-        return name
-
-    @pydantic.validator('pins')
-    def pins_comply_with_model(cls, pins, values):
-        pins = {k.upper(): v.upper() for k, v in pins.items()}
-        assert set(pins.keys()) == set(values['model'].pins)
-        return pins
-
-    @pydantic.validator('parameters')
-    def parameters_comply_with_model(cls, parameters, values):
-        parameters = {k.upper(): v.upper() for k, v in parameters.items()}
-        assert set(parameters.keys()).issubset(values['model'].parameters.keys())
-        parameters = {k: parameters[k] if k in parameters else v \
-            for k, v in values['model'].parameters.items()}
-        return parameters
-
-from . import core
-from . import constraint
+from . import instance

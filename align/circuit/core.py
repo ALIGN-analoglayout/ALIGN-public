@@ -3,7 +3,9 @@ from pydantic import PrivateAttr
 
 from collections.abc import Iterable
 from .constraint import ConstraintDB
-from .device import Instance, Model, SubCircuit
+from .model import Model
+from .instance import Instance
+from .subcircuit import SubCircuit
 
 class Circuit(networkx.Graph):
 
