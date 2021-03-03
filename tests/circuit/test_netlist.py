@@ -3,20 +3,17 @@ import pytest
 from align.circuit.model import Model
 from align.circuit.subcircuit import SubCircuit
 from align.circuit.netlist import Netlist
-from align.circuit.library import Library
-
-library = Library('dummy')
 
 @pytest.fixture
 def TwoTerminalDevice():
-    return Model(name='TwoTerminalDevice', pins=['A', 'B'], parameters={'MYPARAMETER': '3'}, library=library)
+    return Model(name='TwoTerminalDevice', pins=['A', 'B'], parameters={'MYPARAMETER': '3'})
 
 @pytest.fixture
 def ThreeTerminalDevice():
-    return Model(name='ThreeTerminalDevice', pins=['A', 'B', 'C'], parameters={'MYPARAMETER': '1'}, library=library)
+    return Model(name='ThreeTerminalDevice', pins=['A', 'B', 'C'], parameters={'MYPARAMETER': '1'})
 
 def test_subckt_class(TwoTerminalDevice):
-    subckt = SubCircuit(name='TEST_SUBCKT', pins=['PIN1', 'PIN2'], parameters={'PARAM1':1, 'PARAM2':1e-3, 'PARAM3':1E-16, 'PARAM4':"HELLO"}, library=library)
+    subckt = SubCircuit(name='TEST_SUBCKT', pins=['PIN1', 'PIN2'], parameters={'PARAM1':1, 'PARAM2':1e-3, 'PARAM3':1E-16, 'PARAM4':"HELLO"})
     X1 = TwoTerminalDevice('X1', 'NET1', 'NET2')
     X2 = TwoTerminalDevice('X2', 'NET2', 'NET3')
     subckt.add_element(X1)
@@ -86,7 +83,7 @@ def test_circuit_shared_net(TwoTerminalDevice, ThreeTerminalDevice):
 @pytest.fixture
 def simple_netlist(TwoTerminalDevice, ThreeTerminalDevice):
     ckt = Netlist()
-    CustomDevice = Model(name='CustomDevice', base='ThreeTerminalDevice', parameters={'myparameter':1}, library=library)
+    CustomDevice = Model(name='CustomDevice', base=ThreeTerminalDevice, parameters={'myparameter':1})
     ckt.add_element(CustomDevice('X1', 'NET1', 'in1', 'net01'))
     ckt.add_element(CustomDevice('X2', 'NET2', 'in2', 'net02'))
     ckt.add_element(CustomDevice('X3', 'NET3', 'NET1', 'NET1'))
@@ -98,7 +95,7 @@ def simple_netlist(TwoTerminalDevice, ThreeTerminalDevice):
 
 @pytest.fixture
 def matching_subckt(ThreeTerminalDevice):
-    subckt = SubCircuit(name='TEST_SUBCKT', pins=['PIN1', 'PIN2', 'PIN3'], parameters={'MYPARAMETER':1}, library=library)
+    subckt = SubCircuit(name='TEST_SUBCKT', pins=['PIN1', 'PIN2', 'PIN3'], parameters={'MYPARAMETER':1})
     subckt.add_element(ThreeTerminalDevice('X1', 'PIN3', 'PIN1', 'PIN1', MYPARAMETER=1))
     subckt.add_element(ThreeTerminalDevice('X2', 'PIN3', 'PIN1', 'PIN2', MYPARAMETER='MYPARAMETER'))
     return subckt
@@ -109,12 +106,12 @@ def test_find_subgraph_matches(simple_netlist, matching_subckt, ThreeTerminalDev
     assert len(ckt.find_subgraph_matches(subckt.circuit)) == 1
     assert ckt.find_subgraph_matches(subckt.circuit)[0] == {'X3': 'X1', 'NET3': 'PIN3', 'NET1': 'PIN1', 'X4': 'X2', 'NET2': 'PIN2'}
     # Validate false match
-    subckt2 = SubCircuit(name='test_subckt2', pins=['PIN1', 'PIN2', 'PIN3', 'PIN4', 'PIN5'], library=library)
+    subckt2 = SubCircuit(name='test_subckt2', pins=['PIN1', 'PIN2', 'PIN3', 'PIN4', 'PIN5'])
     subckt2.add_element(ThreeTerminalDevice('X1', 'PIN1', 'PIN3', 'PIN4'))
     subckt2.add_element(ThreeTerminalDevice('X2', 'PIN2', 'PIN3', 'PIN5'))
     assert len(ckt.find_subgraph_matches(subckt2.circuit)) == 0
     # Validate filtering of redundant subgraphs (There are 4 matches. Only 1 should be returned)
-    subckt3 = SubCircuit(name='test_subckt3', pins=['PIN1', 'PIN2', 'PIN3', 'PIN4'], library=library)
+    subckt3 = SubCircuit(name='test_subckt3', pins=['PIN1', 'PIN2', 'PIN3', 'PIN4'])
     subckt3.add_element(TwoTerminalDevice('X1', 'PIN1', 'PIN2'))
     subckt3.add_element(TwoTerminalDevice('X2', 'PIN3', 'PIN4'))
     assert len(ckt.find_subgraph_matches(subckt3.circuit)) == 1
@@ -133,7 +130,7 @@ def test_replace_matching_subgraphs(simple_netlist, matching_subckt):
 @pytest.fixture
 def heirarchical_ckt(matching_subckt, ThreeTerminalDevice):
     ckt = Netlist()
-    subckt = SubCircuit(name='parent_subckt', pins=['PIN1', 'PIN2'], library=library)
+    subckt = SubCircuit(name='parent_subckt', pins=['PIN1', 'PIN2'])
     subckt.add_element(matching_subckt('X1', 'PIN1', 'PIN2', 'NET1', MYPARAMETER='2'))
     subckt.add_element(ThreeTerminalDevice('X2', 'NET1', 'PIN1', 'PIN2', MYPARAMETER='1'))
     ckt.add_element(subckt('XSUB1', 'NET1', 'NET2'))

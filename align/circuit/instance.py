@@ -1,9 +1,12 @@
 import pydantic
+import logging
 
 from typing import Union, Dict, ClassVar, Optional
 
 from .model import Model
 from .subcircuit import SubCircuit
+
+logger = logging.getLogger(__name__)
 
 class Instance(pydantic.BaseModel):
 

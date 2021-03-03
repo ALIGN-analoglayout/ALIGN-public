@@ -6,7 +6,6 @@ from . import netlist
 
 class SubCircuit(model.Model):
 
-    _circuit = pydantic.PrivateAttr()
     constraint : constraint.ConstraintDB
 
     @property
@@ -15,11 +14,14 @@ class SubCircuit(model.Model):
 
     def __init__(self, *args, **kwargs):
         self._circuit = netlist.Netlist()
-        kwargs['constraint'] = constraint.ConstraintDB()
-        model.Model.__init__(self, *args, **kwargs)
+        if 'constraint' not in kwargs:
+            kwargs['constraint'] = constraint.ConstraintDB()
+        super().__init__(*args, **kwargs)
 
     def __getattr__(self, name):
         return getattr(self._circuit, name)
+
+    _circuit = pydantic.PrivateAttr()
 
     class Config(model.Model.Config):
         arbitrary_types_allowed = True

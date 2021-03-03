@@ -2,10 +2,9 @@ import collections
 import re
 import logging
 
+from .model import Model
 from .netlist import Netlist, SubCircuit
 from . import library
-from . import model
-from . import elements
 from . import constraint
 
 logger = logging.getLogger(__name__)
@@ -157,7 +156,8 @@ class SpiceParser:
         if decl == '.SUBCKT':
             name = args.pop(0)
             assert name not in self.library, f"User is attempting to redeclare {name}"
-            subckt = SubCircuit(name=name, pins=args, library=self.library, parameters=kwargs)
+            subckt = SubCircuit(name=name, pins=args, parameters=kwargs)
+            self.library[name] = subckt
             self._scope.append(subckt)
         elif decl == '.ENDS':
             self._scope.pop()
@@ -171,4 +171,5 @@ class SpiceParser:
             name, base = args[0], args[1]
             assert name not in self.library, f"User is attempting to redeclare {name}"
             assert base in self.library, base
-            model.Model(name=name, base=base, library=self.library, parameters=kwargs)
+            model = Model(name=name, base=self.library[base], parameters=kwargs)
+            self.library[name] = model

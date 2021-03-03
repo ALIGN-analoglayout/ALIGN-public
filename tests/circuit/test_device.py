@@ -27,19 +27,19 @@ def test_new_model():
 
 def test_derived_model(testmos):
     with pytest.raises(Exception):
-        MyDevice = Model(base='TESTMOS')
+        MyDevice = Model(base=testmos)
     with pytest.raises(Exception):
         MyDevice = Model(name='MyDevice')
     with pytest.raises(Exception):
         MyDevice = Model(
-            name='MyDevice', base='TESTMOS',
+            name='MyDevice', base=testmos,
             pins=['D', 'G'], parameters={'PARAM1': '3'})
     with pytest.raises(Exception):
         MyDevice = Model(
-            name='MyDevice', base='TESTMOS',
+            name='MyDevice', base=testmos,
             pins=['D', 'G'], parameters={'PARAM1': '3'})
     MyDevice = Model(
-        name='MyDevice', base='TESTMOS',
+        name='MyDevice', base=testmos,
         parameters={'PARAM1': '3'})
 
 def test_base_model_case_insensitivity():
@@ -64,17 +64,17 @@ def test_base_model_case_insensitivity():
 def test_derived_model_case_insensitivity(testmos):
     DerivedMOS = Model(
         name = 'DerivedMOS',
-        base = 'TestMOS',
+        base = testmos,
         parameters = {'param1': 'nf*4'})
     assert DerivedMOS.name == 'DERIVEDMOS'
-    assert DerivedMOS.base == 'TESTMOS'
+    assert DerivedMOS.base.name == 'TESTMOS'
     assert DerivedMOS.pins == ['D', 'G', 'S', 'B']
     assert DerivedMOS.parameters == {'PARAM1': 'NF*4', 'PARAM2': '2'}
 
 def test_derived_model_new_parameters(testmos):
     DerivedMOS = Model(
         name = 'DERIVEDMOS',
-        base = 'TESTMOS',
+        base = testmos,
         parameters = {
             'PARAM1': 'NF*6',
             'PARAM3': 'NF*4'})

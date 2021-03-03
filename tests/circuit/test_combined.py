@@ -12,7 +12,7 @@ def test_combined():
     mysubckt.add_element(library['NMOS']('M2', 'pin2', 'NET10', 'net13', 'vss'))
     X1 = ckt.add_element(mysubckt('X1', 'NET10', 'NET12'))
     # Registering & reusing subckt from custom library
-    _ = circuit.SubCircuit(name='mysubckt2', pins=['pin1', 'pin2', 'pin3'], library=library)
+    library['MYSUBCKT2'] = circuit.SubCircuit(name='mysubckt2', pins=['pin1', 'pin2', 'pin3'])
     library['MYSUBCKT2'].add_element(library['NMOS']('M1', 'pin1', 'pin3', 'net13', 'vss'))
     library['MYSUBCKT2'].add_element(library['NMOS']('M2', 'pin2', 'pin3', 'net13', 'vss'))
     X2 = ckt.add_element(library['MYSUBCKT2']('X2', 'NET10', 'NET12', 'NET14'))
