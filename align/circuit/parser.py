@@ -2,7 +2,7 @@ import collections
 import re
 import logging
 
-from .core import Circuit, SubCircuit
+from .netlist import Netlist, SubCircuit
 from . import library
 from . import model
 from . import elements
@@ -63,7 +63,7 @@ class SpiceParser:
         self.mode = mode.lower()
         assert self.mode in ('xyce', 'hspice')
         self.library = library.Library(loadbuiltins=True)
-        self.circuit = Circuit()
+        self.circuit = Netlist()
         self._scope = [self.circuit]
 
     @staticmethod

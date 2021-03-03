@@ -1,7 +1,7 @@
 import pytest
 import pathlib
 
-from align.circuit.core import SubCircuit
+from align.circuit.netlist import SubCircuit
 from align.circuit.parser import SpiceParser
 
 # WARNING: Parser capitalizes everything internally as SPICE is case-insensitive

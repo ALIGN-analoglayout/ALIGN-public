@@ -2,7 +2,7 @@ import pydantic
 
 from . import model
 from . import constraint
-from . import core
+from . import netlist
 
 class SubCircuit(model.Model):
 
@@ -14,7 +14,7 @@ class SubCircuit(model.Model):
         return self._circuit
 
     def __init__(self, *args, **kwargs):
-        self._circuit = core.Circuit()
+        self._circuit = netlist.Netlist()
         kwargs['constraint'] = constraint.ConstraintDB()
         model.Model.__init__(self, *args, **kwargs)
 

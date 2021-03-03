@@ -7,7 +7,7 @@ from .model import Model
 from .instance import Instance
 from .subcircuit import SubCircuit
 
-class Circuit(networkx.Graph):
+class Netlist(networkx.Graph):
 
     @staticmethod
     def _is_element(v):
@@ -104,7 +104,7 @@ class Circuit(networkx.Graph):
         worklist = list(self.elements)
         while len(worklist) > 0:
             # Create new graph with a single element
-            ckt = Circuit()
+            ckt = Netlist()
             ckt.add_element(worklist.pop(0))
             # Grow graph iteratively & look for subgraph matches
             matchlist = self._get_match_candidates(worklist, ckt)

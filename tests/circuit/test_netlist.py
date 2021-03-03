@@ -1,6 +1,8 @@
 import pytest
 
-from align.circuit.core import Model, Circuit, SubCircuit
+from align.circuit.model import Model
+from align.circuit.subcircuit import SubCircuit
+from align.circuit.netlist import Netlist
 from align.circuit.library import Library
 
 library = Library('dummy')
@@ -38,7 +40,7 @@ def test_subckt_class(TwoTerminalDevice):
     assert inst.model.circuit.nets == ['NET1', 'NET2', 'NET3']
 
 def test_circuit(TwoTerminalDevice, ThreeTerminalDevice):
-    ckt = Circuit()
+    ckt = Netlist()
     X1 = ckt.add_element(TwoTerminalDevice('X1', 'NET1', 'NET2'))
     X2 = ckt.add_element(ThreeTerminalDevice('X2', 'NET1', 'NET2', 'NET3'))
     assert ckt.elements == [X1, X2]
@@ -60,7 +62,7 @@ def test_circuit(TwoTerminalDevice, ThreeTerminalDevice):
     assert all(x in edges for x in ckt.edges.data('pin')), ckt.edges
 
 def test_circuit_shared_net(TwoTerminalDevice, ThreeTerminalDevice):
-    ckt = Circuit()
+    ckt = Netlist()
     X1 = ckt.add_element(TwoTerminalDevice('X1', 'NET1', 'NET2'))
     X2 = ckt.add_element(ThreeTerminalDevice('X2', 'NET1', 'NET1', 'NET2'))
     assert ckt.elements == [X1, X2]
@@ -83,7 +85,7 @@ def test_circuit_shared_net(TwoTerminalDevice, ThreeTerminalDevice):
 
 @pytest.fixture
 def simple_netlist(TwoTerminalDevice, ThreeTerminalDevice):
-    ckt = Circuit()
+    ckt = Netlist()
     CustomDevice = Model(name='CustomDevice', base='ThreeTerminalDevice', parameters={'myparameter':1}, library=library)
     ckt.add_element(CustomDevice('X1', 'NET1', 'in1', 'net01'))
     ckt.add_element(CustomDevice('X2', 'NET2', 'in2', 'net02'))
@@ -130,7 +132,7 @@ def test_replace_matching_subgraphs(simple_netlist, matching_subckt):
 
 @pytest.fixture
 def heirarchical_ckt(matching_subckt, ThreeTerminalDevice):
-    ckt = Circuit()
+    ckt = Netlist()
     subckt = SubCircuit(name='parent_subckt', pins=['PIN1', 'PIN2'], library=library)
     subckt.add_element(matching_subckt('X1', 'PIN1', 'PIN2', 'NET1', MYPARAMETER='2'))
     subckt.add_element(ThreeTerminalDevice('X2', 'NET1', 'PIN1', 'PIN2', MYPARAMETER='1'))
