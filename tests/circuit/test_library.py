@@ -15,32 +15,6 @@ def test_library_registration(library):
     assert 'TEST' in library
     assert library['TEST'].name == 'TEST'
 
-# def TEST_SUBCKT(library):
-#     assert 'TEST_SUBCKT' not in library
-#     subckt = core.SubCircuit('TEST_SUBCKT', 'pin1', 'pin2', library=library, param1=1, param2=1e-3, param3="0.1f", param4="hello")
-#     assert 'TEST_SUBCKT' in library
-#     assert library['TEST_SUBCKT'] is subckt
-#     with pytest.raises(Exception):
-#         inst = subckt('X1')
-#     with pytest.raises(Exception):
-#         inst = subckt('X1', 'NET10')
-#     inst = subckt('X1', 'NET10', 'NET12')
-#     assert inst.name == 'X1'
-#     assert type(inst).__name__ == 'TEST_SUBCKT'
-#     assert inst.pins == {'pin1': 'NET10', 'pin2': 'NET12'}
-#     assert list(inst.parameters.keys()) == ['param1', 'param2', 'param3', 'param4']
-#     assert inst.parameters['param1'] == '1'
-#     assert inst.parameters['param2'] - 1e-3 <= 1e-19 # safe floating point comparison
-#     assert inst.parameters['param3'] - 1e-16 <= 1e-19 # safe floating point comparison
-#     assert inst.parameters['param4'] == 'hello'
-#     with pytest.raises(Exception):
-#         inst = subckt('X1', 'NET10', 'NET12', garbage='')
-#     with pytest.raises(Exception):
-#         inst = subckt('X1', 'NET10', 'NET12', param1='invalid_number')
-#     inst = subckt('X1', 'NET10', 'NET12', param1=2, param3=1e-16)
-#     assert inst.parameters['param1'] == '2'
-#     assert inst.parameters['param3'] - 1e-16 <= 1e-19 # safe floating point comparison
-
 def test_NMOS(library):
     assert 'NMOS' in library
     with pytest.raises(Exception):
