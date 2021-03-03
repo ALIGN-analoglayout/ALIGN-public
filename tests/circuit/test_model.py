@@ -162,3 +162,7 @@ def test_instance_init_via_model(testmos):
 def test_model_json(testmos):
     assert testmos.json() == '{"name": "TESTMOS", "base": null, "pins": ["D", "G", "S", "B"], "parameters": {"PARAM1": "1.0", "PARAM2": "2"}, "prefix": null}'
 
+def test_model_xyce(testmos):
+    assert testmos.xyce() == '* .MODEL TESTMOS ElementaryDevice(D, G, S, B) PARAM1={1.0} PARAM2={2}'
+    newmos = Model(name='newmos', base=testmos, parameters={'param3': '3'})
+    assert newmos.xyce() == '.MODEL NEWMOS TESTMOS PARAM1={1.0} PARAM2={2} PARAM3={3}'

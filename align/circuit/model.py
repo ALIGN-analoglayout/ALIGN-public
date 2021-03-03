@@ -40,6 +40,13 @@ class Model(pydantic.BaseModel):
     parameters : Optional[Dict[str, str]]   # Parameter Name: Value mapping (inherits & adds to base if needed)
     prefix : Optional[str]     # Instance name prefix, optional
 
+    def xyce(self):
+        params = ' '.join(f'{k}={{{v}}}' for k, v in self.parameters.items())
+        if self.base:
+            return f'.MODEL {self.name} {self.base.name} {params}'
+        else:
+            return f'* .MODEL {self.name} ElementaryDevice({", ".join(self.pins)}) {params}'
+
     #
     # Private attributes affecting class behavior
     #
