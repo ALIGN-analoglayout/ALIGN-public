@@ -89,6 +89,26 @@ def test_instance_init_parameters(testmos):
         )
     assert M1.parameters == {'PARAM1': "12", 'PARAM2': "13"}
 
+def test_model_instantiation(testmos):
+    M1 = Instance(
+            name='m1',
+            model=testmos,
+            pins={'d': 'net01', 'G': 'Net02', 's': 'NET03', 'B': 'NeT04'},
+            parameters={'PARAM1':'nf*4', 'param2':'2.0'}
+        )
+    M2 =Instance(
+            name='m2',
+            model=testmos,
+            pins={'d': 'net03', 'G': 'Net02', 's': 'NET01', 'B': 'NeT04'},
+            parameters={'PARAM1':'2.0', 'param2':'nf*4'}
+        )
+    assert M1  != M2
+    assert M1.name != M2.name
+    assert M1.pins != M2.pins
+    assert M1.parameters != M2.parameters
+    assert M1.model == M2.model
+    assert id(M1.model) == id(M2.model)
+
 def test_instance_case_insensitivity(testmos):
     '''
     Everything should be converted to uppercase internally

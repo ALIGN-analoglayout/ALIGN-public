@@ -1,11 +1,12 @@
-import pydantic
 import logging
 
 from typing import Dict, ClassVar, Optional, List
 
 logger = logging.getLogger(__name__)
 
-class Model(pydantic.BaseModel):
+from . import schema
+
+class Model(schema.BaseModel):
     '''
     Model creation class
     '''
@@ -27,11 +28,6 @@ class Model(pydantic.BaseModel):
     # Private attributes affecting class behavior
     #
 
-    class Config:
-        validate_assignment = True
-        extra = 'forbid'
-        allow_mutation = False
-
     def __call__(self, name, *pins, **parameters):
         assert len(pins) == len(self.pins), \
                 f"Model {self.name} has {len(self.pins)} pins {self.pins}. " \
@@ -52,12 +48,12 @@ class Model(pydantic.BaseModel):
         else:
             return []
 
-    @pydantic.validator('name', allow_reuse=True)
+    @schema.validator('name', allow_reuse=True)
     def name_check(cls, name):
         assert len(name) > 0, 'Model name cannot be an empty string'
         return name.upper()
 
-    @pydantic.validator('pins', always=True, allow_reuse=True)
+    @schema.validator('pins', always=True, allow_reuse=True)
     def pin_check(cls, pins, values):
         if 'base' not in values or not values['base']:
             assert pins, 'Pins must be specified for base models. Did something go wrong in base?'
@@ -70,7 +66,7 @@ class Model(pydantic.BaseModel):
             pins = values['base'].pins.copy()
         return pins
 
-    @pydantic.validator('parameters', always=True, allow_reuse=True)
+    @schema.validator('parameters', always=True, allow_reuse=True)
     def parameter_check(cls, parameters, values):
         parameters = {k.upper(): v.upper() for k, v in parameters.items()} if parameters else {}
         if 'base' in values and values['base']:
@@ -79,7 +75,7 @@ class Model(pydantic.BaseModel):
             parameters = x
         return parameters
 
-    @pydantic.validator('prefix', always=True, allow_reuse=True)
+    @schema.validator('prefix', always=True, allow_reuse=True)
     def prefix_check(cls, prefix, values):
         if 'base' in values and values['base']:
             prefix = values['base'].prefix

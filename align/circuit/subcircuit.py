@@ -1,16 +1,17 @@
-import pydantic
 from typing import Optional, List
 
 from .model import Model
 from .instance import Instance
 from .constraint import ConstraintDB
 
+from . import schema
+
 class SubCircuit(Model):
 
     elements: List[Instance]
-    constraint : ConstraintDB
+    constraints : ConstraintDB
 
-    @pydantic.validate_arguments
+    @schema.validate_arguments
     def add(self, instance: Instance):
         self.elements.append(instance)
         return instance
@@ -25,16 +26,13 @@ class SubCircuit(Model):
     def __init__(self, *args, **kwargs):
         if 'elements' not in kwargs:
             kwargs['elements'] = []
-        if 'constraint' not in kwargs:
-            kwargs['constraint'] = ConstraintDB()
+        if 'constraints' not in kwargs:
+            kwargs['constraints'] = ConstraintDB()
         super().__init__(*args, **kwargs)
-
-    class Config(Model.Config):
-        arbitrary_types_allowed = True
 
     def xyce(self):
         ret = []
-        for constraint in self.constraint.constraints:
+        for constraint in self.constraints:
             ret.append(f'* @: {constraint}')
         ret.append(f'.SUBCKT {self.name} ' + ' '.join(f'{x}' for x in self.pins))
         ret.extend([f'.PARAM {x}=' + (f'{{{y}}}' if isinstance(y, str) else f'{y}') for x, y in self.parameters.items()])
@@ -50,7 +48,7 @@ class Circuit(SubCircuit):
     def xyce(self):
         return '\n'.join([element.xyce() for element in self.elements])
 
-    @pydantic.validator('pins')
+    @schema.validator('pins')
     def pin_check(cls, pins, values):
         if pins:
             pins = [p.upper() for p in pins]

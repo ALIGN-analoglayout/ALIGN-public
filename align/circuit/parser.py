@@ -148,9 +148,9 @@ class SpiceParser:
         except:
             logger.warning(f'Error parsing constraint {repr(constraint)}')
             return
-        assert hasattr(self._scope[-1], 'constraint'), \
+        assert hasattr(self._scope[-1], 'constraints'), \
             f'Constraint {repr(constraint)} can only be defined within a .SUBCKT \nCurrent scope:{self._scope[-1]}'
-        self._scope[-1].constraint.append(constraint)
+        self._scope[-1].constraints.append(constraint)
 
     def _process_declaration(self, decl, args, kwargs):
         if decl == '.SUBCKT':

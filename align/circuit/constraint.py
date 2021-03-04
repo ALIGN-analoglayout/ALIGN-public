@@ -1,4 +1,3 @@
-import pydantic
 import abc
 import z3
 import random
@@ -9,12 +8,9 @@ import more_itertools as itertools
 from typing import List, Union, NamedTuple, Optional
 from typing_extensions import Literal
 
-class ConstraintBase(pydantic.BaseModel, abc.ABC):
+from . import schema
 
-    class Config:
-        validate_assignment = True
-        extra = 'forbid'
-        allow_mutation = False
+class ConstraintBase(schema.BaseModel, abc.ABC):
 
     @abc.abstractmethod
     def check(self):
@@ -79,24 +75,38 @@ class AlignVertical(ConstraintBase):
 ConstraintType=Union[ \
         AlignHorizontal, AlignVertical]
 
-class ConstraintDB():
+class ConstraintDB(schema.BaseModel):
 
-    @property
-    def constraints(self):
-        return tuple(self._constraints)
+    __root__ : List[ConstraintType]
 
-    @pydantic.validate_arguments
+    @schema.validate_arguments
     def append(self, constraint: ConstraintType):
-        self._constraints.append(constraint)
+        self.__root__.append(constraint)
         if self._validation:
             self._solver.append(*constraint.check())
             assert self._solver.check() == z3.sat
 
     def __init__(self, validation=True):
-        self._constraints = []
+        super().__init__(__root__=[])
         self._solver = z3.Solver()
         self._commits = collections.OrderedDict()
         self._validation = validation
+
+    #
+    # Private attribute affecting class behavior
+    #
+    _solver = schema.PrivateAttr()
+    _commits = schema.PrivateAttr()
+    _validation = schema.PrivateAttr()
+
+    def __iter__(self):
+        return iter(self.__root__)
+
+    def __getitem__(self, item):
+        return self.__root__[item]
+
+    def __len__(self):
+        return len(self.__root__)
 
     def _gen_commit_id(self, nchar=8):
         id_ = ''.join(random.choices(string.ascii_uppercase + string.digits, k=nchar))
@@ -104,13 +114,13 @@ class ConstraintDB():
 
     def checkpoint(self):
         self._solver.push()
-        self._commits[self._gen_commit_id()] = len(self._constraints)
+        self._commits[self._gen_commit_id()] = len(self.__root__)
         return next(reversed(self._commits))
 
     def _revert(self):
         self._solver.pop()
         _, length = self._commits.popitem()
-        self._constraints = self._constraints[0:length]
+        del self.__root__[length:]
 
     def revert(self, name=None):
         assert len(self._commits) > 0, 'Top of scope. Nothing to revert'

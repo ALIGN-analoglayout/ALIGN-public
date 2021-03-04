@@ -21,7 +21,7 @@ There are essentially two types of SPICE models:
 
 Both of these are handled in align.circuit using a single Model class:
 ```python
-class Model(pydantic.BaseModel):
+class Model(schema.BaseModel):
     name : str                 # Model Name
     base : Optional[Model]     # Model Base (for derived models)
     pins : Optional[List[str]] # List of pin names (derived from base if base exists)

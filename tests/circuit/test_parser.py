@@ -139,7 +139,7 @@ def test_parser_annotation(setup_annotation, parser):
     assert [x.name for x in parser.library['DIFFAMP'].elements] == ['R1', 'R2', 'M1', 'M2'], parser.library['DIFFAMP'].elements
     assert len(parser.library['DIFFAMP'].nets) == 7, parser.library['DIFFAMP'].nets
     assert parser.library['DIFFAMP'].nets == ['VCC', 'OUTPLUS', 'OUTMINUS', 'INPLUS', 'SRC', '0', 'INMINUS'], parser.circuit.nets
-    assert len(parser.library['DIFFAMP'].constraint.constraints) == 2
+    assert len(parser.library['DIFFAMP'].constraints) == 2
 
 def test_subckt_decl(setup_realistic, parser):
     parser.parse(f'''

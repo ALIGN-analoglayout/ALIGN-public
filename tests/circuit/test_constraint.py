@@ -92,7 +92,7 @@ def test_ConstraintDB_nonincremental_revert(db):
     db.append(constraint.AlignHorizontal(blocks=['M2', 'M3']))
     db.checkpoint()
     db.revert(idx)
-    assert len(db.constraints) == 1
+    assert len(db) == 1
     assert len(db._commits) == 0
     assert 'M3' not in str(db._solver)
 

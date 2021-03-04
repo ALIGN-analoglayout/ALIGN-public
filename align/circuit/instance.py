@@ -1,10 +1,11 @@
-import pydantic
 from typing import Union, Dict, ClassVar, Optional
 
 import logging
 logger = logging.getLogger(__name__)
 
-class Instance(pydantic.BaseModel):
+from . import schema
+
+class Instance(schema.BaseModel):
 
     model: "Union[Model, SubCircuit]"
     name: str
@@ -21,12 +22,7 @@ class Instance(pydantic.BaseModel):
     # Private attributes affecting class behavior
     #
 
-    class Config:
-        validate_assignment = True
-        extra = 'forbid'
-        allow_mutation = False
-
-    @pydantic.validator('name', allow_reuse=True)
+    @schema.validator('name', allow_reuse=True)
     def name_complies_with_model(cls, name, values):
         name = name.upper()
         assert 'model' in values, 'Cannot run check without model definition'
@@ -35,14 +31,14 @@ class Instance(pydantic.BaseModel):
             raise AssertionError(f"{name} does not start with {values['model'].prefix}")
         return name
 
-    @pydantic.validator('pins', allow_reuse=True)
+    @schema.validator('pins', allow_reuse=True)
     def pins_comply_with_model(cls, pins, values):
         pins = {k.upper(): v.upper() for k, v in pins.items()}
         assert 'model' in values, 'Cannot run check without model definition'
         assert set(pins.keys()) == set(values['model'].pins)
         return pins
 
-    @pydantic.validator('parameters', allow_reuse=True, always=True)
+    @schema.validator('parameters', allow_reuse=True, always=True)
     def parameters_comply_with_model(cls, parameters, values):
         assert 'model' in values, 'Cannot run check without model definition'
         if parameters:
