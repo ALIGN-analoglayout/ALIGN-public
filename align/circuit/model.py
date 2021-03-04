@@ -8,30 +8,6 @@ logger = logging.getLogger(__name__)
 class Model(pydantic.BaseModel):
     '''
     Model creation class
-
-    This class is responsible for creating (and registering)
-    new device types for a given PDK
-
-    This class may be used in one of two ways:
-
-    Mode1: To define base models (eg. PMOS, NMOS)
-    :param name: Name of base model (eg. PMOS)
-        common names: PMOS, NMOS, RES, CAP, IND
-    :param pins: List of pins (eg. ['D', 'G', 'S', 'B']),
-        must have at least two pins
-    :param parameters: Dictionary of parameters (eg. {'param': 1.0}),
-        optional
-    :param prefix: Instance name prefix (eg. 'M' for transistor),
-        optional
-
-    Mode2: To define derived models (SPICE .MODEL)
-    :param name: Name of new model (eg. PMOS_RVT)
-    :param base: Library element to use as base (eg. PMOS)
-    :param parameters: Dictionary of parameters (eg. {param: 1.0}),
-        optional
-        IMPORTANT: Must be a subset of base parameters if specified
-    :param prefix: Instance name prefix (eg. M for transistor),
-        assumed to be the same as base if not specified
     '''
 
     name : str                 # Model Name
