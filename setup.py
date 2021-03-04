@@ -37,7 +37,7 @@ setup(name='align',
           'matplotlib',
           'pyyaml',
           'pybind11',
-          'pydantic',
+          'pydantic>=1.8',
           'typing-extensions',
           'z3-solver',
           'more-itertools'
