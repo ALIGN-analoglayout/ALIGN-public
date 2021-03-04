@@ -22,7 +22,7 @@ class SubCircuit(model.Model):
         return self._netlist.add(instance)
 
     def remove_instance(self, instance):
-        self._netlist.remove_element(instance)
+        self._netlist.remove(instance)
 
     @property
     def elements(self):

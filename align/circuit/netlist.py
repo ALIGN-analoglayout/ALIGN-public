@@ -1,5 +1,4 @@
 import networkx
-from pydantic import PrivateAttr
 from typing import Optional, List
 
 from .instance import Instance
@@ -23,7 +22,7 @@ class Netlist(networkx.Graph):
         super().__init__()
         self.subckt = subckt
         for inst in instances:
-            self.add_element(inst)
+            self.add(inst)
 
     def add(self, element):
         assert isinstance(element, Instance)
@@ -35,7 +34,7 @@ class Netlist(networkx.Graph):
                 self.nodes[element.name]['instance'] = element
         return element
 
-    def remove_element(self, element):
+    def remove(self, element):
         self.remove_nodes_from([x for x in self.neighbors(element.name) if self.degree(x) == 1])
         self.remove_node(element.name)
 
@@ -119,7 +118,7 @@ class Netlist(networkx.Graph):
                 element = matchlist.pop(0)
                 netlist.add(element)
                 if len(self.find_subgraph_matches(netlist)) <= 1:
-                    netlist.remove_element(element)
+                    netlist.remove(element)
                 else:
                     matchlist = self._get_match_candidates(worklist, netlist)
             # Create subcircuit & update worklist if needed
