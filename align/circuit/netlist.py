@@ -78,7 +78,7 @@ class Netlist(networkx.Graph):
         if isinstance(subckts, SubCircuit):
             subckts = [subckts]
         for subckt in subckts:
-            matches = self.find_subgraph_matches(subckt.circuit, node_match, edge_match)
+            matches = self.find_subgraph_matches(subckt.netlist, node_match, edge_match)
             self._replace_matches_with_subckt(matches, subckt)
 
     def _replace_matches_with_subckt(self, matches, subckt):
@@ -131,7 +131,7 @@ class Netlist(networkx.Graph):
                     subckt.add(element.model(element.name,
                         *[pinmap[x] if x in pinmap else x for x in element.pins.values()]))
                 subckts.append(subckt)
-                matches = self.find_subgraph_matches(subckt.circuit)
+                matches = self.find_subgraph_matches(subckt.netlist)
                 worklist = [element for element in worklist if not any(element.name in match for match in matches)]
                 if replace:
                     self._replace_matches_with_subckt(matches, subckt)
@@ -164,7 +164,7 @@ class Netlist(networkx.Graph):
         # Remove element from graph
         self.remove_node(subcktinst.name)
         # Add new elements
-        for element in subcktinst.model.circuit.elements:
+        for element in subcktinst.model.netlist.elements:
             newelement = element.model(f'{subcktinst.name}_{element.name}',
                 *[subcktinst.pins[x] if x in subcktinst.pins else f'{subcktinst. name}_{x}' for x in element.pins.values()],
                 **{key: eval(val, {}, subcktinst.parameters) if isinstance(val, str) else val for key, val in element.parameters.items()})

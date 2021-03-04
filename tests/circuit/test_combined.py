@@ -58,7 +58,7 @@ def test_replace_repeated_subckts():
     with open((pathlib.Path(__file__).parent / 'ota.cir').resolve()) as fp:
         parser.parse(fp.read())
     # Extract ckt
-    ckt = parser.library['OTA'].circuit
+    ckt = parser.library['OTA'].netlist
     ckt.flatten()
     subckts = ckt.replace_repeated_subckts()
     assert len(subckts) == 1

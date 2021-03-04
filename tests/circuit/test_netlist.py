@@ -34,10 +34,10 @@ def test_subckt_class(TwoTerminalDevice):
     assert inst.model.name == 'TEST_SUBCKT'
     assert inst.pins == {'PIN1': 'NET10', 'PIN2': 'NET12'}
     assert inst.parameters == {'PARAM1': '1', 'PARAM2': '0.001', 'PARAM3': '1E-16', 'PARAM4': 'HELLO'}
-    assert inst.model.circuit.elements == [X1, X2]
-    assert inst.model.circuit.element('X1') == X1
-    assert inst.model.circuit.element('X2') == X2
-    assert inst.model.circuit.nets == ['NET1', 'NET2', 'NET3']
+    assert inst.model.netlist.elements == [X1, X2]
+    assert inst.model.netlist.element('X1') == X1
+    assert inst.model.netlist.element('X2') == X2
+    assert inst.model.netlist.nets == ['NET1', 'NET2', 'NET3']
 
 def test_circuit(TwoTerminalDevice, ThreeTerminalDevice, circuit):
     netlist = circuit.netlist
@@ -112,12 +112,12 @@ def test_find_subgraph_matches(simple_netlist, matching_subckt, ThreeTerminalDev
     subckt2 = SubCircuit(name='test_subckt2', pins=['PIN1', 'PIN2', 'PIN3', 'PIN4', 'PIN5'])
     subckt2.add(ThreeTerminalDevice('X1', 'PIN1', 'PIN3', 'PIN4'))
     subckt2.add(ThreeTerminalDevice('X2', 'PIN2', 'PIN3', 'PIN5'))
-    assert len(ckt.find_subgraph_matches(subckt2.circuit)) == 0
+    assert len(ckt.find_subgraph_matches(subckt2.netlist)) == 0
     # Validate filtering of redundant subgraphs (There are 4 matches. Only 1 should be returned)
     subckt3 = SubCircuit(name='test_subckt3', pins=['PIN1', 'PIN2', 'PIN3', 'PIN4'])
     subckt3.add(TwoTerminalDevice('X1', 'PIN1', 'PIN2'))
     subckt3.add(TwoTerminalDevice('X2', 'PIN3', 'PIN4'))
-    assert len(ckt.find_subgraph_matches(subckt3.circuit)) == 1
+    assert len(ckt.find_subgraph_matches(subckt3.netlist)) == 1
 
 def test_replace_matching_subgraphs(simple_netlist, matching_subckt):
     ckt, subckt = simple_netlist, matching_subckt

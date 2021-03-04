@@ -12,9 +12,6 @@ class Instance(pydantic.BaseModel):
     pins : Dict[str, str]
     parameters : Optional[Dict[str, str]]
 
-    def json(self):
-        return super().json(include=self.jsonfilter)
-
     def xyce(self):
         return f'{self.name} ' + \
             ' '.join(self.pins.values()) + \
@@ -29,13 +26,6 @@ class Instance(pydantic.BaseModel):
         validate_assignment = True
         extra = 'forbid'
         allow_mutation = False
-
-    jsonfilter: ClassVar[Dict] = {
-        'model': {'name'},
-        'name': ...,
-        'pins' : ...,
-        'parameters' : ...
-    }
 
     @pydantic.validator('name')
     def name_complies_with_model(cls, name, values):

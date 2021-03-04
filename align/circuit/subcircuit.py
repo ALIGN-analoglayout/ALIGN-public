@@ -11,10 +11,6 @@ class SubCircuit(model.Model):
     constraint : constraint.ConstraintDB
 
     @property
-    def circuit(self):
-        return self._netlist
-
-    @property
     def netlist(self):
         return self._netlist
 
@@ -68,7 +64,7 @@ class Circuit(SubCircuit):
     pins: Optional[List[str]]
 
     def xyce(self):
-        return self.circuit.xyce()
+        return self.netlist.xyce()
 
     @pydantic.validator('pins')
     def pin_check(cls, pins, values):
