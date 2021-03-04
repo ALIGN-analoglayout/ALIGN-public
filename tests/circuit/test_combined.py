@@ -5,17 +5,18 @@ from align import circuit
 
 def test_combined():
     library = circuit.Library(loadbuiltins=True)
-    ckt = circuit.Circuit(name='top').netlist
+    ckt = circuit.Circuit(name='top')
     # Not specifying library causes default library to be used
     mysubckt = circuit.SubCircuit(name='mysubckt', pins=['pin1', 'pin2'], parameters={'param1':1, 'param2':1e-3, 'param3':'0.1f', 'param4':'hello'})
-    mysubckt.add_element(library['NMOS']('M1', 'pin1', 'NET10', 'net13', 'vss'))
-    mysubckt.add_element(library['NMOS']('M2', 'pin2', 'NET10', 'net13', 'vss'))
-    X1 = ckt.add_element(mysubckt('X1', 'NET10', 'NET12'))
+    mysubckt.add_instance(library['NMOS']('M1', 'pin1', 'NET10', 'net13', 'vss'))
+    mysubckt.add_instance(library['NMOS']('M2', 'pin2', 'NET10', 'net13', 'vss'))
+    X1 = ckt.add_instance(mysubckt('X1', 'NET10', 'NET12'))
     # Registering & reusing subckt from custom library
     library['MYSUBCKT2'] = circuit.SubCircuit(name='mysubckt2', pins=['pin1', 'pin2', 'pin3'])
-    library['MYSUBCKT2'].add_element(library['NMOS']('M1', 'pin1', 'pin3', 'net13', 'vss'))
-    library['MYSUBCKT2'].add_element(library['NMOS']('M2', 'pin2', 'pin3', 'net13', 'vss'))
-    X2 = ckt.add_element(library['MYSUBCKT2']('X2', 'NET10', 'NET12', 'NET14'))
+    library['MYSUBCKT2'].add_instance(library['NMOS']('M1', 'pin1', 'pin3', 'net13', 'vss'))
+    library['MYSUBCKT2'].add_instance(library['NMOS']('M2', 'pin2', 'pin3', 'net13', 'vss'))
+    X2 = ckt.add_instance(library['MYSUBCKT2']('X2', 'NET10', 'NET12', 'NET14'))
+    print(ckt.xyce())
     assert ckt.elements == [X1, X2]
     assert ckt.nets == ['NET10', 'NET12', 'NET14']
 
@@ -31,7 +32,7 @@ def test_replace_matching_subckts():
     with open((pathlib.Path(__file__).parent / 'ota.cir').resolve()) as fp:
         parser.parse(fp.read())
     # Extract ckt
-    ckt = parser.library['OTA'].circuit
+    ckt = parser.library['OTA']
     ckt.flatten()
     # Sort subckts using hypothetical complexity cost
     subckts = list(primitivelib.values())

@@ -2,6 +2,7 @@ import pydantic
 from typing import Optional, List
 
 from . import model
+from . import instance
 from . import constraint
 from . import netlist
 
@@ -11,36 +12,36 @@ class SubCircuit(model.Model):
 
     @property
     def circuit(self):
-        return self._circuit
+        return self._netlist
 
     @property
     def netlist(self):
-        return self._circuit
+        return self._netlist
 
-    def add_element(self, instance):
-        self._circuit.add_element(instance)
+    def add_instance(self, instance):
+        return self._netlist.add(instance)
 
-    def remove_element(self, instance):
-        self._circuit.remove_element(instance)
+    def remove_instance(self, instance):
+        self._netlist.remove_element(instance)
 
     @property
     def elements(self):
-        return self._circuit.elements
+        return self._netlist.elements
 
     def element(self, name):
-        return self._circuit.element(name)
+        return self._netlist.element(name)
 
     @property
     def nets(self):
-        return self._circuit.nets
+        return self._netlist.nets
 
     def __init__(self, *args, **kwargs):
-        self._circuit = netlist.Netlist(self)
+        self._netlist = netlist.Netlist(self)
         if 'constraint' not in kwargs:
             kwargs['constraint'] = constraint.ConstraintDB()
         super().__init__(*args, **kwargs)
 
-    _circuit = pydantic.PrivateAttr()
+    _netlist = pydantic.PrivateAttr()
 
     class Config(model.Model.Config):
         arbitrary_types_allowed = True
@@ -55,6 +56,11 @@ class SubCircuit(model.Model):
         ret.append(f'.ENDS {self.name}')
         return '\n'.join(ret)
 
+    def flatten(self, depth=999):
+        self.netlist.flatten(depth)
+
+    def replace_matching_subckts(self, subckts, node_match=None, edge_match=None):
+        self.netlist.replace_matching_subckts(subckts, node_match, edge_match)
 
 class Circuit(SubCircuit):
 

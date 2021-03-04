@@ -25,7 +25,7 @@ class Netlist(networkx.Graph):
         for inst in instances:
             self.add_element(inst)
 
-    def add_element(self, element):
+    def add(self, element):
         assert isinstance(element, Instance)
         for pin, net in element.pins.items():
             if self.has_edge(element.name, net):
@@ -101,7 +101,7 @@ class Netlist(networkx.Graph):
             assert all(x in pinmap for x in subckt.pins), (match, subckt)
             inst = subckt(name, *[pinmap[x] for x in subckt.pins])
             # attach instance to current graph
-            self.add_element(inst)
+            self.add(inst)
 
     # Algorithms to find & replace repeated subgraphs
 
@@ -111,25 +111,25 @@ class Netlist(networkx.Graph):
         worklist = list(self.elements)
         while len(worklist) > 0:
             # Create new graph with a single element
-            ckt = Circuit().netlist
-            ckt.add_element(worklist.pop(0))
+            netlist = Circuit().netlist
+            netlist.add(worklist.pop(0))
             # Grow graph iteratively & look for subgraph matches
-            matchlist = self._get_match_candidates(worklist, ckt)
+            matchlist = self._get_match_candidates(worklist, netlist)
             while len(matchlist) > 0:
                 element = matchlist.pop(0)
-                ckt.add_element(element)
-                if len(self.find_subgraph_matches(ckt)) <= 1:
-                    ckt.remove_element(element)
+                netlist.add(element)
+                if len(self.find_subgraph_matches(netlist)) <= 1:
+                    netlist.remove_element(element)
                 else:
-                    matchlist = self._get_match_candidates(worklist, ckt)
+                    matchlist = self._get_match_candidates(worklist, netlist)
             # Create subcircuit & update worklist if needed
-            if len(ckt.elements) > 1:
+            if len(netlist.elements) > 1:
                 pinmap = {y: f'pin{x}' for x, y in enumerate(
-                    (net for net in ckt.nets \
-                        if not all(neighbor in ckt.nodes for neighbor in self.neighbors(net))))}
+                    (net for net in netlist.nets \
+                        if not all(neighbor in netlist.nodes for neighbor in self.neighbors(net))))}
                 subckt, index = SubCircuit(name=f'XREP{index}', pins=list(pinmap.values())), index + 1
-                for element in ckt.elements:
-                    subckt.add_element(element.model(element.name,
+                for element in netlist.elements:
+                    subckt.add_instance(element.model(element.name,
                         *[pinmap[x] if x in pinmap else x for x in element.pins.values()]))
                 subckts.append(subckt)
                 matches = self.find_subgraph_matches(subckt.circuit)
@@ -141,11 +141,11 @@ class Netlist(networkx.Graph):
     def replace_repeated_subckts(self):
         return self.find_repeated_subckts(True)
 
-    def _get_match_candidates(self, worklist, ckt):
-        # Pick circuit elements that have some net-name based overlap with ckt subgraph
-        matchlist = [element for element in worklist if element.name not in ckt and any(x in ckt for x in self.neighbors(element.name))]
-        # Sort circuit elements to minimize the number of (net) nodes added to ckt subgraph
-        matchlist.sort(key=lambda element: sum([x not in ckt for x in self.neighbors(element.name)]))
+    def _get_match_candidates(self, worklist, netlist):
+        # Pick circuit elements that have some net-name based overlap with netlist subgraph
+        matchlist = [element for element in worklist if element.name not in netlist and any(x in netlist for x in self.neighbors(element.name))]
+        # Sort circuit elements to minimize the number of (net) nodes added to netlist subgraph
+        matchlist.sort(key=lambda element: sum([x not in netlist for x in self.neighbors(element.name)]))
         return matchlist
 
     # Algorithms to flatten netlist
@@ -169,5 +169,5 @@ class Netlist(networkx.Graph):
             newelement = element.model(f'{subcktinst.name}_{element.name}',
                 *[subcktinst.pins[x] if x in subcktinst.pins else f'{subcktinst. name}_{x}' for x in element.pins.values()],
                 **{key: eval(val, {}, subcktinst.parameters) if isinstance(val, str) else val for key, val in element.parameters.items()})
-            self.add_element(newelement)
+            self.add(newelement)
 

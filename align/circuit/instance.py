@@ -3,14 +3,11 @@ import logging
 
 from typing import Union, Dict, ClassVar, Optional
 
-from .model import Model
-from .subcircuit import SubCircuit
-
 logger = logging.getLogger(__name__)
 
 class Instance(pydantic.BaseModel):
 
-    model: Union[Model, SubCircuit]
+    model: "Union[Model, SubCircuit]"
     name: str
     pins : Dict[str, str]
     parameters : Optional[Dict[str, str]]
@@ -68,3 +65,7 @@ class Instance(pydantic.BaseModel):
         elif values['model'].parameters:
             parameters = values['model'].parameters.copy()
         return parameters
+
+from .model import Model
+from .subcircuit import SubCircuit
+Instance.update_forward_refs()
