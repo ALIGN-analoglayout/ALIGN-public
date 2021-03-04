@@ -18,10 +18,10 @@ class SubCircuit(model.Model):
     def netlist(self):
         return self._netlist
 
-    def add_instance(self, instance):
+    def add(self, instance):
         return self._netlist.add(instance)
 
-    def remove_instance(self, instance):
+    def remove(self, instance):
         self._netlist.remove(instance)
 
     @property

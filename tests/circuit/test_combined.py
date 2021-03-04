@@ -8,14 +8,14 @@ def test_combined():
     ckt = circuit.Circuit(name='top')
     # Not specifying library causes default library to be used
     mysubckt = circuit.SubCircuit(name='mysubckt', pins=['pin1', 'pin2'], parameters={'param1':1, 'param2':1e-3, 'param3':'0.1f', 'param4':'hello'})
-    mysubckt.add_instance(library['NMOS']('M1', 'pin1', 'NET10', 'net13', 'vss'))
-    mysubckt.add_instance(library['NMOS']('M2', 'pin2', 'NET10', 'net13', 'vss'))
-    X1 = ckt.add_instance(mysubckt('X1', 'NET10', 'NET12'))
+    mysubckt.add(library['NMOS']('M1', 'pin1', 'NET10', 'net13', 'vss'))
+    mysubckt.add(library['NMOS']('M2', 'pin2', 'NET10', 'net13', 'vss'))
+    X1 = ckt.add(mysubckt('X1', 'NET10', 'NET12'))
     # Registering & reusing subckt from custom library
     library['MYSUBCKT2'] = circuit.SubCircuit(name='mysubckt2', pins=['pin1', 'pin2', 'pin3'])
-    library['MYSUBCKT2'].add_instance(library['NMOS']('M1', 'pin1', 'pin3', 'net13', 'vss'))
-    library['MYSUBCKT2'].add_instance(library['NMOS']('M2', 'pin2', 'pin3', 'net13', 'vss'))
-    X2 = ckt.add_instance(library['MYSUBCKT2']('X2', 'NET10', 'NET12', 'NET14'))
+    library['MYSUBCKT2'].add(library['NMOS']('M1', 'pin1', 'pin3', 'net13', 'vss'))
+    library['MYSUBCKT2'].add(library['NMOS']('M2', 'pin2', 'pin3', 'net13', 'vss'))
+    X2 = ckt.add(library['MYSUBCKT2']('X2', 'NET10', 'NET12', 'NET14'))
     print(ckt.xyce())
     assert ckt.elements == [X1, X2]
     assert ckt.nets == ['NET10', 'NET12', 'NET14']

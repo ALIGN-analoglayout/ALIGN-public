@@ -140,7 +140,7 @@ class SpiceParser:
 
         pins = [str(x) for x in args]
         assert model in self.library, (model, name, args, kwargs)
-        self._scope[-1].add_instance(self.library[model](name, *pins, **kwargs))
+        self._scope[-1].add(self.library[model](name, *pins, **kwargs))
 
     def _process_constraint(self, constraint):
         try:

@@ -89,7 +89,7 @@ subckt = SubCircuit(
     name = 'leaf_subckt',
     pins = ['PIN1', 'PIN2'],
     parameters = {'PARAM1':1, 'PARAM2':'1E-3'})
-subckt.add_instance(M1)
+subckt.add(M1)
 ```
 
 ## Tying it all together
@@ -106,23 +106,23 @@ leaf_subckt = SubCircuit(
     name='leaf_subckt',
     pins=['PIN1', 'PIN2', 'PIN3'],
     parameters={'MYPARAMETER':1})
-leaf_subckt.add_instance(
+leaf_subckt.add(
     ThreeTerminalDevice('X1', 'PIN3', 'PIN1', 'PIN1', MYPARAMETER=1))
-leaf_subckt.add_instance(
+leaf_subckt.add(
     ThreeTerminalDevice('X2', 'PIN3', 'PIN1', 'PIN2', MYPARAMETER='MYPARAMETER'))
 
 # Create intermediate level subcircuit with 1 transistor & 1 leaf_subckt
 intermediate_subckt = SubCircuit(
     name='intermediate_subckt',
     pins=['PIN1', 'PIN2'])
-intermediate_subckt.add_instance(
+intermediate_subckt.add(
     leaf_subckt('X1', 'PIN1', 'PIN2', 'NET1', MYPARAMETER='2'))
-intermediate_subckt.add_instance(
+intermediate_subckt.add(
     ThreeTerminalDevice('X2', 'NET1', 'PIN1', 'PIN2', MYPARAMETER='1'))
 
 # Create top level netlist with 1 intermediate level & 1 leaf level subckt
 ckt = Netlist()
-ckt.add_instance(intermediate_subckt('XSUB1', 'NET1', 'NET2'))
-ckt.add_instance(leaf_subckt('XSUB2', 'NET1', 'NET2', 'NET3', MYPARAMETER='3'))
+ckt.add(intermediate_subckt('XSUB1', 'NET1', 'NET2'))
+ckt.add(leaf_subckt('XSUB2', 'NET1', 'NET2', 'NET3', MYPARAMETER='3'))
 
 ```

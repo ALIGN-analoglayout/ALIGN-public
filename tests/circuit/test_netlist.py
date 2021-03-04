@@ -19,8 +19,8 @@ def test_subckt_class(TwoTerminalDevice):
     subckt = SubCircuit(name='TEST_SUBCKT', pins=['PIN1', 'PIN2'], parameters={'PARAM1':1, 'PARAM2':1e-3, 'PARAM3':1E-16, 'PARAM4':"HELLO"})
     X1 = TwoTerminalDevice('X1', 'NET1', 'NET2')
     X2 = TwoTerminalDevice('X2', 'NET2', 'NET3')
-    subckt.add_instance(X1)
-    subckt.add_instance(X2)
+    subckt.add(X1)
+    subckt.add(X2)
     assert subckt.elements == [X1, X2]
     assert subckt.element('X1') == X1
     assert subckt.element('X2') == X2
@@ -99,8 +99,8 @@ def simple_netlist(TwoTerminalDevice, ThreeTerminalDevice, circuit):
 @pytest.fixture
 def matching_subckt(ThreeTerminalDevice):
     subckt = SubCircuit(name='TEST_SUBCKT', pins=['PIN1', 'PIN2', 'PIN3'], parameters={'MYPARAMETER':1})
-    subckt.add_instance(ThreeTerminalDevice('X1', 'PIN3', 'PIN1', 'PIN1', MYPARAMETER=1))
-    subckt.add_instance(ThreeTerminalDevice('X2', 'PIN3', 'PIN1', 'PIN2', MYPARAMETER='MYPARAMETER'))
+    subckt.add(ThreeTerminalDevice('X1', 'PIN3', 'PIN1', 'PIN1', MYPARAMETER=1))
+    subckt.add(ThreeTerminalDevice('X2', 'PIN3', 'PIN1', 'PIN2', MYPARAMETER='MYPARAMETER'))
     return subckt
 
 def test_find_subgraph_matches(simple_netlist, matching_subckt, ThreeTerminalDevice, TwoTerminalDevice):
@@ -110,13 +110,13 @@ def test_find_subgraph_matches(simple_netlist, matching_subckt, ThreeTerminalDev
     assert ckt.find_subgraph_matches(subckt.netlist)[0] == {'X3': 'X1', 'NET3': 'PIN3', 'NET1': 'PIN1', 'X4': 'X2', 'NET2': 'PIN2'}
     # Validate false match
     subckt2 = SubCircuit(name='test_subckt2', pins=['PIN1', 'PIN2', 'PIN3', 'PIN4', 'PIN5'])
-    subckt2.add_instance(ThreeTerminalDevice('X1', 'PIN1', 'PIN3', 'PIN4'))
-    subckt2.add_instance(ThreeTerminalDevice('X2', 'PIN2', 'PIN3', 'PIN5'))
+    subckt2.add(ThreeTerminalDevice('X1', 'PIN1', 'PIN3', 'PIN4'))
+    subckt2.add(ThreeTerminalDevice('X2', 'PIN2', 'PIN3', 'PIN5'))
     assert len(ckt.find_subgraph_matches(subckt2.circuit)) == 0
     # Validate filtering of redundant subgraphs (There are 4 matches. Only 1 should be returned)
     subckt3 = SubCircuit(name='test_subckt3', pins=['PIN1', 'PIN2', 'PIN3', 'PIN4'])
-    subckt3.add_instance(TwoTerminalDevice('X1', 'PIN1', 'PIN2'))
-    subckt3.add_instance(TwoTerminalDevice('X2', 'PIN3', 'PIN4'))
+    subckt3.add(TwoTerminalDevice('X1', 'PIN1', 'PIN2'))
+    subckt3.add(TwoTerminalDevice('X2', 'PIN3', 'PIN4'))
     assert len(ckt.find_subgraph_matches(subckt3.circuit)) == 1
 
 def test_replace_matching_subgraphs(simple_netlist, matching_subckt):
@@ -132,10 +132,10 @@ def test_replace_matching_subgraphs(simple_netlist, matching_subckt):
 def heirarchical_ckt(matching_subckt, ThreeTerminalDevice, circuit):
     ckt = circuit
     subckt = SubCircuit(name='parent_subckt', pins=['PIN1', 'PIN2'])
-    subckt.add_instance(matching_subckt('X1', 'PIN1', 'PIN2', 'NET1', MYPARAMETER='2'))
-    subckt.add_instance(ThreeTerminalDevice('X2', 'NET1', 'PIN1', 'PIN2', MYPARAMETER='1'))
-    ckt.add_instance(subckt('XSUB1', 'NET1', 'NET2'))
-    ckt.add_instance(matching_subckt('XSUB2', 'NET1', 'NET2', 'NET3', MYPARAMETER='3'))
+    subckt.add(matching_subckt('X1', 'PIN1', 'PIN2', 'NET1', MYPARAMETER='2'))
+    subckt.add(ThreeTerminalDevice('X2', 'NET1', 'PIN1', 'PIN2', MYPARAMETER='1'))
+    ckt.add(subckt('XSUB1', 'NET1', 'NET2'))
+    ckt.add(matching_subckt('XSUB2', 'NET1', 'NET2', 'NET3', MYPARAMETER='3'))
     return ckt
 
 def test_flatten(heirarchical_ckt):

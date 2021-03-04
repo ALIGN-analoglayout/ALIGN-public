@@ -128,7 +128,7 @@ class Netlist(networkx.Graph):
                         if not all(neighbor in netlist.nodes for neighbor in self.neighbors(net))))}
                 subckt, index = SubCircuit(name=f'XREP{index}', pins=list(pinmap.values())), index + 1
                 for element in netlist.elements:
-                    subckt.add_instance(element.model(element.name,
+                    subckt.add(element.model(element.name,
                         *[pinmap[x] if x in pinmap else x for x in element.pins.values()]))
                 subckts.append(subckt)
                 matches = self.find_subgraph_matches(subckt.circuit)
