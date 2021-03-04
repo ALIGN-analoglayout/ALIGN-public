@@ -17,14 +17,28 @@ class SubCircuit(model.Model):
     def netlist(self):
         return self._circuit
 
+    def add_element(self, instance):
+        self._circuit.add_element(instance)
+
+    def remove_element(self, instance):
+        self._circuit.remove_element(instance)
+
+    @property
+    def elements(self):
+        return self._circuit.elements
+
+    def element(self, name):
+        return self._circuit.element(name)
+
+    @property
+    def nets(self):
+        return self._circuit.nets
+
     def __init__(self, *args, **kwargs):
         self._circuit = netlist.Netlist(self)
         if 'constraint' not in kwargs:
             kwargs['constraint'] = constraint.ConstraintDB()
         super().__init__(*args, **kwargs)
-
-    def __getattr__(self, name):
-        return getattr(self._circuit, name)
 
     _circuit = pydantic.PrivateAttr()
 
@@ -41,8 +55,6 @@ class SubCircuit(model.Model):
         ret.append(f'.ENDS {self.name}')
         return '\n'.join(ret)
 
-    def add_element(self, instance):
-        self._circuit.add_element(instance)
 
 class Circuit(SubCircuit):
 
