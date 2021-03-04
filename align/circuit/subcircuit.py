@@ -24,9 +24,6 @@ class SubCircuit(model.Model):
     def elements(self):
         return self._netlist.elements
 
-    def element(self, name):
-        return self._netlist.element(name)
-
     @property
     def nets(self):
         return self._netlist.nets

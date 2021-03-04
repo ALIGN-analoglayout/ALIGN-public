@@ -22,8 +22,8 @@ def test_subckt_class(TwoTerminalDevice):
     subckt.add(X1)
     subckt.add(X2)
     assert subckt.elements == [X1, X2]
-    assert subckt.element('X1') == X1
-    assert subckt.element('X2') == X2
+    assert subckt.elements[0] == X1
+    assert subckt.elements[1] == X2
     assert subckt.nets == ['NET1', 'NET2', 'NET3']
     with pytest.raises(Exception):
         inst = subckt('X1')
@@ -35,8 +35,8 @@ def test_subckt_class(TwoTerminalDevice):
     assert inst.pins == {'PIN1': 'NET10', 'PIN2': 'NET12'}
     assert inst.parameters == {'PARAM1': '1', 'PARAM2': '0.001', 'PARAM3': '1E-16', 'PARAM4': 'HELLO'}
     assert inst.model.netlist.elements == [X1, X2]
-    assert inst.model.netlist.element('X1') == X1
-    assert inst.model.netlist.element('X2') == X2
+    assert inst.model.netlist.elements[0] == X1
+    assert inst.model.netlist.elements[1] == X2
     assert inst.model.netlist.nets == ['NET1', 'NET2', 'NET3']
 
 def test_circuit(TwoTerminalDevice, ThreeTerminalDevice, circuit):
@@ -150,7 +150,7 @@ def test_flatten(heirarchical_ckt):
     }
     assert {x.name for x in ckt.elements} == set(myparametermap.keys())
     assert set(ckt.nets) == {'NET1', 'NET2', 'NET3', 'XSUB1_NET1'}
-    assert all(ckt.element(elem).parameters['MYPARAMETER'] == param for elem, param in myparametermap.items()), [ckt.element(elem).parameters['MYPARAMETER'] for elem in myparametermap.keys()]
+    assert all(element.parameters['MYPARAMETER'] == myparametermap[element.name] for element in ckt.elements)
 
 def test_flatten_depth1(heirarchical_ckt):
     ckt = heirarchical_ckt
@@ -163,4 +163,4 @@ def test_flatten_depth1(heirarchical_ckt):
     }
     assert {x.name for x in ckt.elements} == set(myparametermap.keys())
     assert set(ckt.nets) == {'NET1', 'NET2', 'NET3', 'XSUB1_NET1'}
-    assert all(ckt.element(elem).parameters['MYPARAMETER'] == param for elem, param in myparametermap.items()), [ckt.element(elem).parameters['MYPARAMETER'] for elem in myparametermap.keys()]
+    assert all(element.parameters['MYPARAMETER'] == myparametermap[element.name] for element in ckt.elements)
