@@ -1,17 +1,11 @@
 import networkx
 from pydantic import PrivateAttr
+from typing import Optional, List
 
-from collections.abc import Iterable
-from .constraint import ConstraintDB
-from .model import Model
 from .instance import Instance
-from .subcircuit import SubCircuit
+from .subcircuit import SubCircuit, Circuit
 
 class Netlist(networkx.Graph):
-
-    @staticmethod
-    def _is_element(v):
-        return 'instance' in v
 
     @property
     def elements(self):
@@ -24,6 +18,12 @@ class Netlist(networkx.Graph):
     @property
     def nets(self):
         return [x for x, v in self.nodes.items() if not self._is_element(v)]
+
+    def __init__(self, subckt, instances = []):
+        super().__init__()
+        self.subckt = subckt
+        for inst in instances:
+            self.add_element(inst)
 
     def add_element(self, element):
         assert isinstance(element, Instance)
@@ -41,6 +41,13 @@ class Netlist(networkx.Graph):
 
     def xyce(self):
         return '\n'.join(x.xyce() for x in self.elements)
+
+    #
+    # Helpers
+    #
+    @staticmethod
+    def _is_element(v):
+        return 'instance' in v
 
     # Algorithms to find & replace subgraph / subckt matches
 
@@ -69,7 +76,7 @@ class Netlist(networkx.Graph):
         return ret
 
     def replace_matching_subckts(self, subckts, node_match=None, edge_match=None):
-        if isinstance(subckts, Model):
+        if isinstance(subckts, SubCircuit):
             subckts = [subckts]
         for subckt in subckts:
             matches = self.find_subgraph_matches(subckt.circuit, node_match, edge_match)
@@ -104,7 +111,7 @@ class Netlist(networkx.Graph):
         worklist = list(self.elements)
         while len(worklist) > 0:
             # Create new graph with a single element
-            ckt = Netlist()
+            ckt = Circuit().netlist
             ckt.add_element(worklist.pop(0))
             # Grow graph iteratively & look for subgraph matches
             matchlist = self._get_match_candidates(worklist, ckt)

@@ -1,8 +1,12 @@
 import pytest
 
 from align.circuit.model import Model
-from align.circuit.subcircuit import SubCircuit
+from align.circuit.subcircuit import SubCircuit, Circuit
 from align.circuit.netlist import Netlist
+
+@pytest.fixture
+def circuit():
+    return Circuit()
 
 @pytest.fixture
 def TwoTerminalDevice():
@@ -36,8 +40,8 @@ def test_subckt_class(TwoTerminalDevice):
     assert inst.model.circuit.element('X2') == X2
     assert inst.model.circuit.nets == ['NET1', 'NET2', 'NET3']
 
-def test_circuit(TwoTerminalDevice, ThreeTerminalDevice):
-    ckt = Netlist()
+def test_circuit(TwoTerminalDevice, ThreeTerminalDevice, circuit):
+    ckt = Netlist(circuit)
     X1 = ckt.add_element(TwoTerminalDevice('X1', 'NET1', 'NET2'))
     X2 = ckt.add_element(ThreeTerminalDevice('X2', 'NET1', 'NET2', 'NET3'))
     assert ckt.elements == [X1, X2]
@@ -58,8 +62,8 @@ def test_circuit(TwoTerminalDevice, ThreeTerminalDevice):
     assert all(x in ckt.edges.data('pin') for x in edges), ckt.edges
     assert all(x in edges for x in ckt.edges.data('pin')), ckt.edges
 
-def test_circuit_shared_net(TwoTerminalDevice, ThreeTerminalDevice):
-    ckt = Netlist()
+def test_circuit_shared_net(TwoTerminalDevice, ThreeTerminalDevice, circuit):
+    ckt = Netlist(circuit)
     X1 = ckt.add_element(TwoTerminalDevice('X1', 'NET1', 'NET2'))
     X2 = ckt.add_element(ThreeTerminalDevice('X2', 'NET1', 'NET1', 'NET2'))
     assert ckt.elements == [X1, X2]
@@ -81,8 +85,8 @@ def test_circuit_shared_net(TwoTerminalDevice, ThreeTerminalDevice):
     assert all(x in edges for x in ckt.edges.data('pin')), ckt.edges
 
 @pytest.fixture
-def simple_netlist(TwoTerminalDevice, ThreeTerminalDevice):
-    ckt = Netlist()
+def simple_netlist(TwoTerminalDevice, ThreeTerminalDevice, circuit):
+    ckt = Netlist(circuit)
     CustomDevice = Model(name='CustomDevice', base=ThreeTerminalDevice, parameters={'myparameter':1})
     ckt.add_element(CustomDevice('X1', 'NET1', 'in1', 'net01'))
     ckt.add_element(CustomDevice('X2', 'NET2', 'in2', 'net02'))
@@ -128,8 +132,8 @@ def test_replace_matching_subgraphs(simple_netlist, matching_subckt):
     assert all(x in ckt.edges.data('pin') for x in new_edges), ckt.edges.data('pin')
 
 @pytest.fixture
-def heirarchical_ckt(matching_subckt, ThreeTerminalDevice):
-    ckt = Netlist()
+def heirarchical_ckt(matching_subckt, ThreeTerminalDevice, circuit):
+    ckt = Netlist(circuit)
     subckt = SubCircuit(name='parent_subckt', pins=['PIN1', 'PIN2'])
     subckt.add_element(matching_subckt('X1', 'PIN1', 'PIN2', 'NET1', MYPARAMETER='2'))
     subckt.add_element(ThreeTerminalDevice('X2', 'NET1', 'PIN1', 'PIN2', MYPARAMETER='1'))

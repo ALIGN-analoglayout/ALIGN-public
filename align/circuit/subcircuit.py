@@ -1,4 +1,5 @@
 import pydantic
+from typing import Optional, List
 
 from . import model
 from . import constraint
@@ -12,8 +13,12 @@ class SubCircuit(model.Model):
     def circuit(self):
         return self._circuit
 
+    @property
+    def netlist(self):
+        return self._circuit
+
     def __init__(self, *args, **kwargs):
-        self._circuit = netlist.Netlist()
+        self._circuit = netlist.Netlist(self)
         if 'constraint' not in kwargs:
             kwargs['constraint'] = constraint.ConstraintDB()
         super().__init__(*args, **kwargs)
@@ -36,3 +41,19 @@ class SubCircuit(model.Model):
         ret.append(f'.ENDS {self.name}')
         return '\n'.join(ret)
 
+    def add_element(self, instance):
+        self._circuit.add_element(instance)
+
+class Circuit(SubCircuit):
+
+    name: Optional[str]
+    pins: Optional[List[str]]
+
+    def xyce(self):
+        return self.circuit.xyce()
+
+    @pydantic.validator('pins')
+    def pin_check(cls, pins, values):
+        if pins:
+            pins = [p.upper() for p in pins]
+        return pins

@@ -5,7 +5,7 @@ from align import circuit
 
 def test_combined():
     library = circuit.Library(loadbuiltins=True)
-    ckt = circuit.Netlist()
+    ckt = circuit.Circuit(name='top').netlist
     # Not specifying library causes default library to be used
     mysubckt = circuit.SubCircuit(name='mysubckt', pins=['pin1', 'pin2'], parameters={'param1':1, 'param2':1e-3, 'param3':'0.1f', 'param4':'hello'})
     mysubckt.add_element(library['NMOS']('M1', 'pin1', 'NET10', 'net13', 'vss'))
