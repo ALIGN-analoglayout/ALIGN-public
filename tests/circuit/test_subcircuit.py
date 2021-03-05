@@ -1,6 +1,6 @@
 import pytest
 
-from align.circuit.subcircuit import Model, SubCircuit
+from align.circuit.subcircuit import Model, SubCircuit, Instance
 
 @pytest.fixture
 def TwoTerminalDevice():
@@ -12,10 +12,10 @@ def test_subckt_definition():
         pins = ['PIN1', 'PIN2'],
         parameters = {'PARAM1':1, 'PARAM2':'1E-3', 'PARAM3':'0.1F', 'PARAM4':'HELLO'})
     with pytest.raises(Exception):
-        inst = subckt('X1')
+        inst = Instance(name='X1', model=subckt)
     with pytest.raises(Exception):
-        inst = subckt('X1', 'NET10')
-    inst = subckt('X1', 'NET10', 'NET12')
+        inst = Instance(name='X1', model=subckt, pins={'PIN1': 'NET10'})
+    inst = Instance(name='X1', model=subckt, pins={'PIN1': 'NET10', 'PIN2': 'NET12'})
     assert inst.name == 'X1'
     assert inst.model.name == 'TEST_SUBCKT'
     assert inst.pins == {'PIN1': 'NET10', 'PIN2': 'NET12'}
@@ -25,15 +25,15 @@ def test_subckt_definition():
     assert inst.parameters['PARAM3'] == '0.1F'
     assert inst.parameters['PARAM4'] == 'HELLO'
     with pytest.raises(Exception):
-        inst = subckt('X1', 'NET10', 'NET12', garbage='')
-    inst = subckt('X1', 'NET10', 'NET12', param1=2, param3=1e-16)
+        inst = subckt(name='X1', model=subckt, pins={'PIN1': 'NET10', 'PIN2': 'NET12'}, parameters={'garbage':''})
+    inst = Instance(name='X1', model=subckt, pins={'PIN1': 'NET10', 'PIN2': 'NET12'}, parameters={'param1': '2', 'param3': '1e-16'})
     assert inst.parameters['PARAM1'] == '2'
     assert inst.parameters['PARAM3'] == '1E-16'
 
 def test_subckt_instantiation(TwoTerminalDevice):
     subckt = SubCircuit(name='TEST_SUBCKT', pins=['PIN1', 'PIN2'], parameters={'PARAM1':1, 'PARAM2':1e-3, 'PARAM3':1E-16, 'PARAM4':"HELLO"})
-    X1 = TwoTerminalDevice('X1', 'NET1', 'NET2')
-    X2 = TwoTerminalDevice('X2', 'NET2', 'NET3')
+    X1 = Instance(name='X1', model=TwoTerminalDevice, pins={'A': 'NET1', 'B': 'NET2'})
+    X2 = Instance(name='X2', model=TwoTerminalDevice, pins={'A': 'NET2', 'B': 'NET3'})
     subckt.add(X1)
     subckt.add(X2)
     assert subckt.elements == [X1, X2]
@@ -44,7 +44,7 @@ def test_subckt_instantiation(TwoTerminalDevice):
         inst = subckt('X1')
     with pytest.raises(Exception):
         inst = subckt('X1', 'NET10')
-    inst = subckt('X1', 'NET10', 'NET12')
+    inst = Instance(name='X1', model=subckt, pins={'PIN1': 'NET10', 'PIN2': 'NET12'})
     assert inst.name == 'X1'
     assert inst.model.name == 'TEST_SUBCKT'
     assert inst.pins == {'PIN1': 'NET10', 'PIN2': 'NET12'}

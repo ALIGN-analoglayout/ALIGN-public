@@ -4,6 +4,7 @@ import logging
 
 from .model import Model
 from .subcircuit import Circuit, SubCircuit
+from .instance import Instance
 from . import library
 from . import constraint
 
@@ -138,9 +139,12 @@ class SpiceParser:
         else:
             raise NotImplementedError(name, args, kwargs, "is not yet recognized by parser")
 
-        pins = [str(x) for x in args]
         assert model in self.library, (model, name, args, kwargs)
-        self._scope[-1].add(self.library[model](name, *pins, **kwargs))
+        assert len(args) == len(self.library[model].pins), \
+                f"Model {model} has {len(self.library[model].pins)} pins {self.library[model].pins}. " \
+                + f"{len(args)} nets {args} were passed when instantiating {name}."
+        pins = {pin:net for pin, net in zip(self.library[model].pins, args)}
+        self._scope[-1].add(Instance(name=name, model=self.library[model], pins=pins, parameters=kwargs))
 
     def _process_constraint(self, constraint):
         try:

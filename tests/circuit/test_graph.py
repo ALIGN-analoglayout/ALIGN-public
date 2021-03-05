@@ -2,6 +2,7 @@ import pytest
 import pathlib
 
 from align.circuit.model import Model
+from align.circuit.instance import Instance
 from align.circuit.subcircuit import SubCircuit, Circuit
 from align.circuit.parser import SpiceParser
 
@@ -26,30 +27,41 @@ def ThreeTerminalDevice():
 @pytest.fixture
 def simple_circuit(TwoTerminalDevice, ThreeTerminalDevice, circuit):
     CustomDevice = Model(name='CustomDevice', base=ThreeTerminalDevice, parameters={'myparameter':1})
-    circuit.add(CustomDevice('X1', 'NET1', 'in1', 'net01'))
-    circuit.add(CustomDevice('X2', 'NET2', 'in2', 'net02'))
-    circuit.add(CustomDevice('X3', 'NET3', 'NET1', 'NET1'))
-    circuit.add(CustomDevice('X4', 'NET3', 'NET1', 'NET2'))
-    circuit.add(TwoTerminalDevice('X5', 'net01', 'net00'))
-    circuit.add(TwoTerminalDevice('X6', 'net02', 'net00'))
-    circuit.add(TwoTerminalDevice('X7', 'NET3', 'net03'))
+    circuit.add(Instance(name='X1', model=CustomDevice, pins={'A': 'NET1', 'B': 'in1', 'C': 'net01'}))
+    circuit.add(Instance(name='X2', model=CustomDevice, pins={'A': 'NET2', 'B': 'in2', 'C': 'net02'}))
+    circuit.add(Instance(name='X3', model=CustomDevice, pins={'A': 'NET3', 'B': 'NET1', 'C': 'NET1'}))
+    circuit.add(Instance(name='X4', model=CustomDevice, pins={'A': 'NET3', 'B': 'NET1', 'C': 'NET2'}))
+    circuit.add(Instance(name='X5', model=TwoTerminalDevice, pins={'A':'net01', 'B':'net00'}))
+    circuit.add(Instance(name='X6', model=TwoTerminalDevice, pins={'A':'net02', 'B':'net00'}))
+    circuit.add(Instance(name='X7', model=TwoTerminalDevice, pins={'A':'NET3', 'B':'net03'}))
     return circuit
 
 @pytest.fixture
 def matching_subckt(ThreeTerminalDevice):
     subckt = SubCircuit(name='TEST_SUBCKT', pins=['PIN1', 'PIN2', 'PIN3'], parameters={'MYPARAMETER':1})
-    subckt.add(ThreeTerminalDevice('X1', 'PIN3', 'PIN1', 'PIN1', MYPARAMETER=1))
-    subckt.add(ThreeTerminalDevice('X2', 'PIN3', 'PIN1', 'PIN2', MYPARAMETER='MYPARAMETER'))
+    subckt.add(Instance(name='X1', model=ThreeTerminalDevice, pins={'A': 'PIN3', 'B': 'PIN1', 'C': 'PIN1'}, parameters={'MYPARAMETER': 1}))
+    subckt.add(Instance(name='X2', model=ThreeTerminalDevice, pins={'A': 'PIN3', 'B': 'PIN1', 'C': 'PIN2'}, parameters={'MYPARAMETER': 'MYPARAMETER'}))
     return subckt
 
 @pytest.fixture
 def heirarchical_ckt(matching_subckt, ThreeTerminalDevice, circuit):
     ckt = circuit
     subckt = SubCircuit(name='parent_subckt', pins=['PIN1', 'PIN2'])
-    subckt.add(matching_subckt('X1', 'PIN1', 'PIN2', 'NET1', MYPARAMETER='2'))
-    subckt.add(ThreeTerminalDevice('X2', 'NET1', 'PIN1', 'PIN2', MYPARAMETER='1'))
-    ckt.add(subckt('XSUB1', 'NET1', 'NET2'))
-    ckt.add(matching_subckt('XSUB2', 'NET1', 'NET2', 'NET3', MYPARAMETER='3'))
+    subckt.add(Instance(
+        name='X1',
+        model=matching_subckt,
+        pins={'PIN1': 'PIN1', 'PIN2': 'PIN2', 'PIN3': 'NET1'},
+        parameters={'MYPARAMETER': '2'}))
+    subckt.add(Instance(name='X2', model=ThreeTerminalDevice, pins={'A': 'NET1', 'B': 'PIN1', 'C': 'PIN2'}, parameters={'MYPARAMETER': '1'}))
+    ckt.add(Instance(
+        name='XSUB1',
+        model=subckt,
+        pins={'PIN1': 'NET1', 'PIN2': 'NET2'}))
+    ckt.add(Instance(
+        name='XSUB2',
+        model=matching_subckt,
+        pins={'PIN1': 'NET1', 'PIN2': 'NET2', 'PIN3': 'NET3'},
+        parameters={'MYPARAMETER': '3'}))
     return ckt
 
 @pytest.fixture
@@ -69,8 +81,8 @@ def primitives():
     return [v for v in parser.library.values() if isinstance(v, SubCircuit)]
 
 def test_netlist(TwoTerminalDevice, ThreeTerminalDevice, circuit):
-    X1 = circuit.add(TwoTerminalDevice('X1', 'NET1', 'NET2'))
-    X2 = circuit.add(ThreeTerminalDevice('X2', 'NET1', 'NET2', 'NET3'))
+    X1 = circuit.add(Instance(name='X1', model=TwoTerminalDevice, pins={'A': 'NET1', 'B': 'NET2'}))
+    X2 = circuit.add(Instance(name='X2', model=ThreeTerminalDevice, pins={'A': 'NET1', 'B': 'NET2', 'C': 'NET3'}))
     netlist = Graph(circuit)
     assert netlist.elements == circuit.elements
     assert netlist.nets == circuit.nets
@@ -89,8 +101,8 @@ def test_netlist(TwoTerminalDevice, ThreeTerminalDevice, circuit):
     assert all(x in edges for x in netlist.edges.data('pin')), netlist.edges
 
 def test_netlist_shared_net(TwoTerminalDevice, ThreeTerminalDevice, circuit):
-    X1 = circuit.add(TwoTerminalDevice('X1', 'NET1', 'NET2'))
-    X2 = circuit.add(ThreeTerminalDevice('X2', 'NET1', 'NET1', 'NET2'))
+    X1 = circuit.add(Instance(name='X1', model=TwoTerminalDevice, pins={'A': 'NET1', 'B': 'NET2'}))
+    X2 = circuit.add(Instance(name='X2', model=ThreeTerminalDevice, pins={'A': 'NET1', 'B': 'NET1', 'C': 'NET2'}))
     netlist = Graph(circuit)
     assert netlist.elements == circuit.elements
     assert netlist.nets == circuit.nets
@@ -115,13 +127,13 @@ def test_find_subgraph_matches(simple_circuit, matching_subckt, ThreeTerminalDev
     assert netlist.find_subgraph_matches(matching_netlist)[0] == {'X3': 'X1', 'NET3': 'PIN3', 'NET1': 'PIN1', 'X4': 'X2', 'NET2': 'PIN2'}
     # Validate false match
     subckt2 = SubCircuit(name='test_subckt2', pins=['PIN1', 'PIN2', 'PIN3', 'PIN4', 'PIN5'])
-    subckt2.add(ThreeTerminalDevice('X1', 'PIN1', 'PIN3', 'PIN4'))
-    subckt2.add(ThreeTerminalDevice('X2', 'PIN2', 'PIN3', 'PIN5'))
+    subckt2.add(Instance(name='X1', model=ThreeTerminalDevice, pins={'A': 'PIN1', 'B': 'PIN3', 'C': 'PIN4'}))
+    subckt2.add(Instance(name='X2', model=ThreeTerminalDevice, pins={'A': 'PIN2', 'B': 'PIN3', 'C': 'PIN5'}))
     assert len(netlist.find_subgraph_matches(Graph(subckt2))) == 0
     # Validate filtering of redundant subgraphs (There are 4 matches. Only 1 should be returned)
     subckt3 = SubCircuit(name='test_subckt3', pins=['PIN1', 'PIN2', 'PIN3', 'PIN4'])
-    subckt3.add(TwoTerminalDevice('X1', 'PIN1', 'PIN2'))
-    subckt3.add(TwoTerminalDevice('X2', 'PIN3', 'PIN4'))
+    subckt3.add(Instance(name='X1', model=TwoTerminalDevice, pins={'A': 'PIN1', 'B': 'PIN2'}))
+    subckt3.add(Instance(name='X2', model=TwoTerminalDevice, pins={'A': 'PIN3', 'B': 'PIN4'}))
     assert len(netlist.find_subgraph_matches(Graph(subckt3))) == 1
 
 def test_replace_matching_subgraph(simple_circuit, matching_subckt):

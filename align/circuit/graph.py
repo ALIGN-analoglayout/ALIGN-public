@@ -104,7 +104,11 @@ class Graph(networkx.Graph):
             assert name not in self.elements
             pinmap = {pin: net for net, pin in match.items() if pin in subckt.pins}
             assert all(x in pinmap for x in subckt.pins), (match, subckt)
-            inst = subckt(name, *[pinmap[x] for x in subckt.pins])
+            inst = Instance(
+                name=name,
+                model=subckt,
+                pins=pinmap
+            )
             # attach instance to current graph
             self.add(inst)
 
@@ -134,8 +138,10 @@ class Graph(networkx.Graph):
                         if not all(neighbor in netlist.nodes for neighbor in self.neighbors(net))))}
                 subckt, index = SubCircuit(name=f'XREP{index}', pins=list(pinmap.values())), index + 1
                 for element in netlist.elements:
-                    subckt.add(element.model(element.name,
-                        *[pinmap[x] if x in pinmap else x for x in element.pins.values()]))
+                    subckt.add(Instance(
+                        name=element.name,
+                        model=element.model,
+                        pins={pin: pinmap[net] if net in pinmap else net for pin, net in element.pins.items()}))
                 subckts.append(subckt)
                 matches = self.find_subgraph_matches(Graph(subckt))
                 worklist = [element for element in worklist if not any(element.name in match for match in matches)]
