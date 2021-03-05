@@ -160,19 +160,19 @@ def test_model(parser):
     assert list(parser.library['NMOS_RVT'].parameters.keys()) == ['W', 'L', 'NFIN', 'KP', 'VT0']
 
 def test_ota_cir_parsing(parser):
-    with open((pathlib.Path(__file__).parent / 'ota.cir').resolve()) as fp:
+    with open((pathlib.Path(__file__).parent.parent / 'files' / 'ota.cir').resolve()) as fp:
         parser.parse(fp.read())
     assert 'OTA' in parser.library
     assert len(parser.library['OTA'].elements) == 10
 
 def test_ota_sp_parsing(parser):
-    with open((pathlib.Path(__file__).parent / 'ota.sp').resolve()) as fp:
+    with open((pathlib.Path(__file__).parent.parent / 'files' / 'ota.sp').resolve()) as fp:
         parser.parse(fp.read())
     assert 'OTA' in parser.library
     assert len(parser.library['OTA'].elements) == 10
 
 def test_basic_template_parsing(parser):
     libsize = len(parser.library)
-    with open((pathlib.Path(__file__).parent / 'basic_template.sp').resolve()) as fp:
+    with open((pathlib.Path(__file__).parent.parent / 'files' / 'basic_template.sp').resolve()) as fp:
         parser.parse(fp.read())
     assert len(parser.library) - libsize == 31
