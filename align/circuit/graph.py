@@ -4,7 +4,7 @@ from typing import Optional, List
 from ..circuit.instance import Instance
 from ..circuit.subcircuit import SubCircuit, Circuit
 
-class Netlist(networkx.Graph):
+class Graph(networkx.Graph):
 
     @property
     def elements(self):
@@ -81,7 +81,7 @@ class Netlist(networkx.Graph):
                 ret.append(match)
         return ret
 
-    def replace_matching_subgraph(self, subgraph: "Netlist", node_match=None, edge_match=None):
+    def replace_matching_subgraph(self, subgraph, node_match=None, edge_match=None):
         matches = self.find_subgraph_matches(subgraph, node_match, edge_match)
         self._replace_matches_with_subckt(matches, subgraph.subckt)
 
@@ -116,7 +116,7 @@ class Netlist(networkx.Graph):
         worklist = list(self.elements)
         while len(worklist) > 0:
             # Create new graph with a single element
-            netlist = Netlist(Circuit())
+            netlist = Graph(Circuit())
             netlist.add(worklist.pop(0))
             # Grow graph iteratively & look for subgraph matches
             matchlist = self._get_match_candidates(worklist, netlist)
@@ -137,7 +137,7 @@ class Netlist(networkx.Graph):
                     subckt.add(element.model(element.name,
                         *[pinmap[x] if x in pinmap else x for x in element.pins.values()]))
                 subckts.append(subckt)
-                matches = self.find_subgraph_matches(Netlist(subckt))
+                matches = self.find_subgraph_matches(Graph(subckt))
                 worklist = [element for element in worklist if not any(element.name in match for match in matches)]
                 if replace:
                     self._replace_matches_with_subckt(matches, subckt)

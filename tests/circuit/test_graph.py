@@ -5,7 +5,7 @@ from align.circuit.model import Model
 from align.circuit.subcircuit import SubCircuit, Circuit
 from align.circuit.parser import SpiceParser
 
-from align.compiler.netlist import Netlist
+from align.circuit.graph import Graph
 
 @pytest.fixture
 def circuit():
@@ -13,7 +13,7 @@ def circuit():
 
 @pytest.fixture
 def netlist(circuit):
-    return Netlist(circuit)
+    return Graph(circuit)
 
 @pytest.fixture
 def TwoTerminalDevice():
@@ -71,7 +71,7 @@ def primitives():
 def test_netlist(TwoTerminalDevice, ThreeTerminalDevice, circuit):
     X1 = circuit.add(TwoTerminalDevice('X1', 'NET1', 'NET2'))
     X2 = circuit.add(ThreeTerminalDevice('X2', 'NET1', 'NET2', 'NET3'))
-    netlist = Netlist(circuit)
+    netlist = Graph(circuit)
     assert netlist.elements == circuit.elements
     assert netlist.nets == circuit.nets
     # Advanced graphx functionality test
@@ -91,7 +91,7 @@ def test_netlist(TwoTerminalDevice, ThreeTerminalDevice, circuit):
 def test_netlist_shared_net(TwoTerminalDevice, ThreeTerminalDevice, circuit):
     X1 = circuit.add(TwoTerminalDevice('X1', 'NET1', 'NET2'))
     X2 = circuit.add(ThreeTerminalDevice('X2', 'NET1', 'NET1', 'NET2'))
-    netlist = Netlist(circuit)
+    netlist = Graph(circuit)
     assert netlist.elements == circuit.elements
     assert netlist.nets == circuit.nets
     # Advanced graphx functionality test
@@ -109,7 +109,7 @@ def test_netlist_shared_net(TwoTerminalDevice, ThreeTerminalDevice, circuit):
     assert all(x in edges for x in netlist.edges.data('pin')), netlist.edges
 
 def test_find_subgraph_matches(simple_circuit, matching_subckt, ThreeTerminalDevice, TwoTerminalDevice):
-    netlist, matching_netlist = Netlist(simple_circuit), Netlist(matching_subckt)
+    netlist, matching_netlist = Graph(simple_circuit), Graph(matching_subckt)
     # Validate true match
     assert len(netlist.find_subgraph_matches(matching_netlist)) == 1
     assert netlist.find_subgraph_matches(matching_netlist)[0] == {'X3': 'X1', 'NET3': 'PIN3', 'NET1': 'PIN1', 'X4': 'X2', 'NET2': 'PIN2'}
@@ -117,15 +117,15 @@ def test_find_subgraph_matches(simple_circuit, matching_subckt, ThreeTerminalDev
     subckt2 = SubCircuit(name='test_subckt2', pins=['PIN1', 'PIN2', 'PIN3', 'PIN4', 'PIN5'])
     subckt2.add(ThreeTerminalDevice('X1', 'PIN1', 'PIN3', 'PIN4'))
     subckt2.add(ThreeTerminalDevice('X2', 'PIN2', 'PIN3', 'PIN5'))
-    assert len(netlist.find_subgraph_matches(Netlist(subckt2))) == 0
+    assert len(netlist.find_subgraph_matches(Graph(subckt2))) == 0
     # Validate filtering of redundant subgraphs (There are 4 matches. Only 1 should be returned)
     subckt3 = SubCircuit(name='test_subckt3', pins=['PIN1', 'PIN2', 'PIN3', 'PIN4'])
     subckt3.add(TwoTerminalDevice('X1', 'PIN1', 'PIN2'))
     subckt3.add(TwoTerminalDevice('X2', 'PIN3', 'PIN4'))
-    assert len(netlist.find_subgraph_matches(Netlist(subckt3))) == 1
+    assert len(netlist.find_subgraph_matches(Graph(subckt3))) == 1
 
 def test_replace_matching_subgraph(simple_circuit, matching_subckt):
-    netlist, matching_netlist = Netlist(simple_circuit), Netlist(matching_subckt)
+    netlist, matching_netlist = Graph(simple_circuit), Graph(matching_subckt)
     matches = [{'X3': 'X1', 'NET3': 'PIN3', 'NET1': 'PIN1', 'X4': 'X2', 'NET2': 'PIN2'}]
     netlist.replace_matching_subgraph(matching_netlist)
     assert all(x not in netlist.nodes for x in matches[0].keys() if x.startswith('X'))
@@ -135,7 +135,7 @@ def test_replace_matching_subgraph(simple_circuit, matching_subckt):
 
 def test_replace_repeated_subckts(ota):
     # parse netlist
-    netlist = Netlist(ota)
+    netlist = Graph(ota)
     netlist.flatten()
     subckts = netlist.replace_repeated_subckts()
     assert len(subckts) == 1
@@ -146,7 +146,7 @@ def test_replace_repeated_subckts(ota):
 def test_replace_matching_subckts(ota, primitives):
     ckt = ota
     # Extract ckt
-    netlist = Netlist(ckt)
+    netlist = Graph(ckt)
     netlist.flatten()
     # Sort subckts using hypothetical complexity cost
     primitives.sort(key=lambda x: len(x.elements)*10000 - 100 * len(x.pins) + len(x.nets), reverse=True)
@@ -154,13 +154,13 @@ def test_replace_matching_subckts(ota, primitives):
     assert all(x.name.startswith('M') for x in ckt.elements)
     # Perform subgraph matching & replacement
     for subckt in primitives:
-        netlist.replace_matching_subgraph(Netlist(subckt))
+        netlist.replace_matching_subgraph(Graph(subckt))
     assert len(ckt.elements) == 5
     assert all(x.name.startswith('X') for x in ckt.elements)
 
 def test_flatten(heirarchical_ckt):
     ckt = heirarchical_ckt
-    netlist = Netlist(ckt)
+    netlist = Graph(ckt)
     netlist.flatten()
     myparametermap = {
         'XSUB1_X2': '1',
@@ -175,7 +175,7 @@ def test_flatten(heirarchical_ckt):
 
 def test_flatten_depth1(heirarchical_ckt):
     ckt = heirarchical_ckt
-    netlist = Netlist(ckt)
+    netlist = Graph(ckt)
     netlist.flatten(1)
     myparametermap = {
         'XSUB1_X2': '1',
