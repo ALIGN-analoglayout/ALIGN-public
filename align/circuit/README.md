@@ -62,10 +62,9 @@ However, since parameters hold a lot of importance in the ALIGN flow, we find it
 
 ## Instantiate a device
 
-Now that we have a model available to us, we can instantiate a device. There are a couple of mechanisms to achieve these.
+Now that we have a model available to us, we can instantiate a device.
 
 ```python
-# Syntax 1: Use Instance directly and pass the model to it
 M1 = Instance(
         name='M1',
         model=testmos,
@@ -73,14 +72,7 @@ M1 = Instance(
         parameters={'PARAM1':'NF*4'}
     )
 
-# Syntax 2: Call the model itself with positional / keyword arguments
-M1 = testmos(
-    'M1', # name
-    'NET01', 'NET02', 'NET03', 'NET04', # pin to net mapping
-    PARAM1 = 'NF*4' # parameter key = value
-)
 ```
-We highly recommend you use the first mechanism as explicit is better than implicit. While Syntax 2 involves less typing, it is more error-prone as it makes assumptions regarding positional argument.
 
 ## Create a subcircuit
 
@@ -107,9 +99,17 @@ leaf_subckt = SubCircuit(
     pins=['PIN1', 'PIN2', 'PIN3'],
     parameters={'MYPARAMETER':1})
 leaf_subckt.add(
-    ThreeTerminalDevice('X1', 'PIN3', 'PIN1', 'PIN1', MYPARAMETER=1))
+    Instance(
+        name='M1',
+        model=testmos,
+        pins={'D': 'PIN3', 'G': 'PIN1', 'S': 'PIN1', 'B': '0'},
+        parameters={'PARAM1':'NF*4'}))
 leaf_subckt.add(
-    ThreeTerminalDevice('X2', 'PIN3', 'PIN1', 'PIN2', MYPARAMETER='MYPARAMETER'))
+    Instance(
+        name='M2',
+        model=testmos,
+        pins={'D': 'PIN3', 'G': 'PIN1', 'S': 'PIN2', 'B': '0'},
+        parameters={'PARAM1':'NF*4'}))
 
 # Create intermediate level subcircuit with 1 transistor & 1 leaf_subckt
 intermediate_subckt = SubCircuit(
@@ -118,11 +118,22 @@ intermediate_subckt = SubCircuit(
 intermediate_subckt.add(
     leaf_subckt('X1', 'PIN1', 'PIN2', 'NET1', MYPARAMETER='2'))
 intermediate_subckt.add(
-    ThreeTerminalDevice('X2', 'NET1', 'PIN1', 'PIN2', MYPARAMETER='1'))
+    Instance(
+        name='M1',
+        model=testmos,
+        pins={'D': 'NET1', 'G': 'PIN1', 'S': 'PIN2', 'B': '0'},
+        parameters={'PARAM1':'NF*4'}
+    )
 
 # Create top level netlist with 1 intermediate level & 1 leaf level subckt
-ckt = Netlist()
-ckt.add(intermediate_subckt('XSUB1', 'NET1', 'NET2'))
-ckt.add(leaf_subckt('XSUB2', 'NET1', 'NET2', 'NET3', MYPARAMETER='3'))
-
+ckt = Circuit()
+ckt.add(Instance(
+    name='XSUB1',
+    model=intermediate_subckt,
+    pins={'PIN1':'NET1', 'PIN2': 'NET2'}))
+ckt.add(Instance(
+    name='XSUB2',
+    model=leaf_subckt,
+    pins={'PIN1': 'NET1', 'PIN2': 'NET2', 'PIN3': 'NET3'},
+    parameters={'MYPARAMETER': '3'}))
 ```
