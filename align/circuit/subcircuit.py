@@ -1,10 +1,10 @@
 from typing import Optional, List
 
+from . import schema
+
 from .model import Model
 from .instance import Instance
 from .constraint import ConstraintDB
-
-from . import schema
 
 class SubCircuit(Model):
 

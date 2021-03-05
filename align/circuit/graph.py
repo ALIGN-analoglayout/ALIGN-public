@@ -6,6 +6,13 @@ from ..circuit.subcircuit import SubCircuit, Circuit
 
 class Graph(networkx.Graph):
 
+    '''
+    Helper class to traverse & modify graph-like netlists
+
+    This class is meant to wrap around a SubCircuit (or Circuit) definition
+    and modifies the wrapped object IN PLACE (does not create a copy).
+    '''
+
     @property
     def elements(self):
         return [v['instance'] for v in self.nodes.values() if self._is_element(v)]
@@ -91,23 +98,23 @@ class Graph(networkx.Graph):
         for match in matches:
             # Cannot replace as some prior transformation has made the current one invalid
             assert all(x in self.nodes for x in match)
-            # Cannot replace as internal node is used elsewhere in circuit
-            internal_nodes = [x for x, y in match.items() if y not in subckt.pins]
-            if not all(x in match for node in internal_nodes for x in self.neighbors(node)):
+            removal_candidates = [x for x, y in match.items() if y not in subckt.pins]
+            # Cannot replace if internal node is used elsewhere in circuit (Boundary elements / nets)
+            if not all(x in match for node in removal_candidates for x in self.neighbors(node)):
                 continue
             # Remove nodes not on subckt boundary
-            for node in internal_nodes:
-                if node in self.nodes and self._is_element(self.nodes[node]):
-                    self.remove(self.nodes[node]['instance'])
+            for node in removal_candidates:
+                if node in self.nodes and self._is_element(self.nodes[node]): # Elements only
+                    self.remove(self.element(node)) # Takes care of nets attached to element too
             # Create new instance of subckt
             name, counter = f'X_{subckt.name}_{counter}', counter + 1
             assert name not in self.elements
-            pinmap = {pin: net for net, pin in match.items() if pin in subckt.pins}
-            assert all(x in pinmap for x in subckt.pins), (match, subckt)
+            pin2net_map = {pin: net for net, pin in match.items() if pin in subckt.pins}
+            assert all(x in pin2net_map for x in subckt.pins), (match, subckt)
             inst = Instance(
                 name=name,
                 model=subckt,
-                pins=pinmap
+                pins=pin2net_map
             )
             # attach instance to current graph
             self.add(inst)
@@ -133,15 +140,15 @@ class Graph(networkx.Graph):
                     matchlist = self._get_match_candidates(worklist, netlist)
             # Create subcircuit & update worklist if needed
             if len(netlist.elements) > 1:
-                pinmap = {y: f'pin{x}' for x, y in enumerate(
+                net2pin_map = {y: f'pin{x}' for x, y in enumerate(
                     (net for net in netlist.nets \
                         if not all(neighbor in netlist.nodes for neighbor in self.neighbors(net))))}
-                subckt, index = SubCircuit(name=f'XREP{index}', pins=list(pinmap.values())), index + 1
+                subckt, index = SubCircuit(name=f'XREP{index}', pins=list(net2pin_map.values())), index + 1
                 for element in netlist.elements:
                     subckt.add(Instance(
                         name=element.name,
                         model=element.model,
-                        pins={pin: pinmap[net] if net in pinmap else net for pin, net in element.pins.items()}))
+                        pins={pin: net2pin_map[net] if net in net2pin_map else net for pin, net in element.pins.items()}))
                 subckts.append(subckt)
                 matches = self.find_subgraph_matches(Graph(subckt))
                 worklist = [element for element in worklist if not any(element.name in match for match in matches)]

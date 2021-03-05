@@ -34,7 +34,7 @@ class Model(schema.BaseModel):
                 + f"{len(pins)} nets {pins} were passed when instantiating {values['name']}."
         pins = {pin: net.upper() for pin, net in zip(self.pins, pins)}
 
-        return instance.Instance(
+        return Instance(
             model=self,
             name=name,
             pins=pins,
@@ -83,4 +83,4 @@ class Model(schema.BaseModel):
 
 Model.update_forward_refs()
 
-from . import instance
+from .instance import Instance
