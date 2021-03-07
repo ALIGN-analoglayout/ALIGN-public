@@ -1,0 +1,4 @@
+SymmBlock ( {m1,m2} , {m3} )
+#AlignBlock( H , m1 , m2 )
+#Ordering ( m1 , m2 , V )
+
