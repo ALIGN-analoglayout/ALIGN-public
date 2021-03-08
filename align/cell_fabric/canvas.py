@@ -143,7 +143,15 @@ class Canvas:
                         new_length = 0
         self.terminals = self.removeDuplicates(allow_opens=True).copy()
 
-    def drop_via(self, via, net_name=None):
+    def drop_via(self, via, exclude_nets=None, include_nets=None):
+
+        if exclude_nets is None:
+            exclude_nets = set()
+        else:
+            exclude_nets = set(exclude_nets)
+
+        if include_nets is not None:
+            include_nets = set(include_nets)
 
         self.terminals = self.removeDuplicates(allow_opens=True).copy()
 
@@ -158,14 +166,14 @@ class Canvas:
         mh_lines = self.rd.store_scan_lines[mh.layer]
         mv_lines = self.rd.store_scan_lines[mv.layer]   #
 
-        via_matrix = self._construct_via_matrix(via, mh, mv)
+        via_matrix = self._construct_via_matrix(via)
 
         for (mh_cl, mh_sl) in mh_lines.items():
             for (_, mh_slr) in enumerate(mh_sl.rects):
                 mh_name = mh_slr.netName
-                if mh_name is None:
+                if mh_name is None or mh_name in exclude_nets:
                     continue
-                if net_name is not None and mh_name != net_name:
+                if include_nets is not None and mh_name not in include_nets:
                     continue
                 for (mv_cl, mv_sl) in mv_lines.items():
                     # Check only the scan lines that can intersect with ml_slr
@@ -194,7 +202,7 @@ class Canvas:
                 return gen
         assert False, f'A generator not found for {layer}'
 
-    def _construct_via_matrix(self, via, mh, mv):
+    def _construct_via_matrix(self, via):
         via_lines = self.rd.store_scan_lines[via.layer]
         via_matrix = dict()
         for (_, via_sl) in via_lines.items():
