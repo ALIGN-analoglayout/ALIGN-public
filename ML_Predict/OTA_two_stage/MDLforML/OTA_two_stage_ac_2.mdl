@@ -1,0 +1,14 @@
+
+
+alias measurement get_ac{
+
+// Maintain alphebatical order here.
+	run ac
+export real CMGain = db(max(yval(mag(V(VOUT)))))
+
+}
+
+
+foreach data {
+				run get_ac
+}

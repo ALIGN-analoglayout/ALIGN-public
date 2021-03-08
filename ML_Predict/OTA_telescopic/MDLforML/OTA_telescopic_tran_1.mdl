@@ -1,0 +1,11 @@
+
+
+alias measurement get_tran {
+	run tran
+	export real SR = ((max(V(n6)) - min(V(n6)))*0.80)/falltime ( sig=V(n6), initval=max(V(n6)), inittype='y, finalval=min(V(n6)), finaltype='y, theta1=90, theta2=10)
+}
+
+
+foreach data {
+	run get_tran
+}

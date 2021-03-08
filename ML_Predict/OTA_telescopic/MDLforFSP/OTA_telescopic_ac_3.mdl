@@ -1,0 +1,12 @@
+
+
+alias measurement get_ac{
+
+	run ac
+	export real PSGain = db(max(yval(mag(V(n6)))))
+
+}
+
+foreach rpnet0239 from swp(start=0, stop=40, step=0.1){
+				run get_ac
+}

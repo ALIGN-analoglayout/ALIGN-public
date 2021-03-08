@@ -1,0 +1,19 @@
+
+
+alias measurement get_ac{
+
+// Maintain alphebatical order here.
+	run ac
+	export real bwout = bw(mag(V(VOUT)),response='low)
+	export real gainbwprod = gainBwProd(mag(V(VOUT)))
+//	export real gm = gainmargin(V(VOUT))
+	export real maxgain = db(max(yval(mag(V(VOUT)))))
+	export real pm = phasemargin(V(VOUT))
+
+
+}
+
+
+foreach data {
+				run get_ac
+}

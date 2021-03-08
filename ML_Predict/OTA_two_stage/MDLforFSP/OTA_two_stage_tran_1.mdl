@@ -1,0 +1,11 @@
+
+
+alias measurement get_tran {
+	run tran
+	export real SR = ((max(V(VOUT)) - min(V(VOUT)))*0.80)/falltime ( sig=V(VOUT), initval=max(V(VOUT)), inittype='y, finalval=min(V(VOUT)), finaltype='y, theta1=90, theta2=10)
+}
+
+
+foreach lp_net21 from swp(start=0, stop=30, step=1){
+	run get_tran
+}

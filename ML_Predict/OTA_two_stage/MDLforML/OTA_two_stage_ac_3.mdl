@@ -1,0 +1,12 @@
+
+
+alias measurement get_ac{
+
+	run ac
+	export real PSGain = db(max(yval(mag(V(VOUT)))))
+
+}
+
+foreach data {
+				run get_ac
+}

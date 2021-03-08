@@ -1,0 +1,14 @@
+
+
+alias measurement get_ac{
+
+// Maintain alphebatical order here.
+	run ac
+//	export real CMRR = 43.8743 - abs(db(max(yval(mag(V(vout))))))
+export real CMGain = db(max(yval(mag(V(n6)))))
+
+}
+
+foreach data {
+	run get_ac
+}

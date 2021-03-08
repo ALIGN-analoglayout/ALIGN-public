@@ -1,0 +1,31 @@
+
+alias measurement get_dc {
+  run dcOp
+	export real dv_M01 = I1.M01:vds - (I1.M01:vgs - I1.M01:vth)
+	export real dv_M02 = I1.M02:vds - (I1.M02:vgs - I1.M02:vth)
+	export real dv_M03 = I2.M03:vds - (I2.M03:vgs - I2.M03:vth)
+	export real dv_M04 = I2.M04:vds - (I2.M04:vgs - I2.M04:vth)
+  export real dv_M05 = M05:vds - (M05:vgs - M05:vth)
+	export real dv_M06 = M06:vds - (M06:vgs - M06:vth)
+  export real dv_M07 = abs(M07:vds) - (abs(M07:vgs) - abs(M07:vth))
+	export real dv_M08 = abs(M08:vds) - (abs(M08:vgs) - abs(M08:vth))
+  export real dv_M09 = abs(I3.M09:vds) - (abs(I3.M09:vgs) - abs(I3.M09:vth))
+	export real dv_M10 = abs(I3.M10:vds) - (abs(I3.M10:vgs) - abs(I3.M10:vth))
+	export real ov_M01 = I1.M01:vgs - I1.M01:vth
+	export real ov_M02 = I1.M02:vgs - I1.M02:vth
+	export real ov_M03 = I2.M03:vgs - I2.M03:vth
+	export real ov_M04 = I2.M04:vgs - I2.M04:vth
+  export real ov_M05 = M05:vgs - M05:vth
+	export real ov_M06 = M06:vgs - M06:vth
+	export real ov_M07 = abs(M07:vgs) - abs(M07:vth)
+	export real ov_M08 = abs(M08:vgs) - abs(M08:vth)
+  export real ov_M09 = abs(I3.M09:vgs) - abs(I3.M09:vth)
+  export real ov_M10 = abs(I3.M10:vgs) - abs(I3.M10:vth)
+}
+
+
+foreach data{
+  foreach vcm_r from swp(start=0.41, stop=0.59, step=0.18){
+  			run get_dc
+  }
+}
