@@ -1,7 +1,8 @@
 #! /bin/csh
 
 #./pnr_compiler ./testcase_example switched_capacitor_filter.lef switched_capacitor_filter.v switched_capacitor_filter.map layers.json switched_capacitor_filter 2 0 | tee log
-./pnr_compiler ./testcase_example cascode_current_mirror_ota.lef cascode_current_mirror_ota.v cascode_current_mirror_ota.map layers.json cascode_current_mirror_ota 1 0 | tee log
+#./pnr_compiler ./testcase_example cascode_current_mirror_ota.lef cascode_current_mirror_ota.v cascode_current_mirror_ota.map layers.json cascode_current_mirror_ota 1 0 | tee log
+./pnr_compiler ./testcase_OTA_5T OTA_5T.lef OTA_5T.v OTA_5T.map layers.json OTA_5T 1 0 | tee log
 #./pnr_compiler ./testcase_latest2 sc.lef sc_block.v sc.map NO.rul switched_capacitor_filter 1 0 | tee log
 #./pnr_compiler ./testcase_small sc.lef sc_block.v sc.map NO.rul switched_capacitor_filter 1 0 | tee log
 #./pnr_compiler ./testcase_cap common_centroid.lef common_centroid.v common_centroid.map NO.rul common_centroid 1 0 | tee log

@@ -14,15 +14,15 @@ M0 (D G S S) NMOS w=w1 l=l1
 M0 (D G S S) PMOS w=w1 l=l1
 .ends Switch_PMOS
 
-.subckt SCM_NMOS_B DA DB S B
-M0 (DA DA S B) NMOS w=w l=90n
-M1 (DB DA S B) NMOS w=w l=90n
-.ends SCM_NMOS_B
+**.subckt SCM_NMOS_B DA DB S B
+**M0 (DA DA S B) NMOS w=w l=90n
+**M1 (DB DA S B) NMOS w=w l=90n
+**.ends SCM_NMOS_B
 
-.subckt SCM_PMOS_B DA DB S B
-M0 (DA DA S B) PMOS w=w l=90n
-M1 (DB DA S B) PMOS w=w l=90n
-.ends SCM_PMOS_B
+**.subckt SCM_PMOS_B DA DB S B
+**M0 (DA DA S B) PMOS w=w l=90n
+**M1 (DB DA S B) PMOS w=w l=90n
+**.ends SCM_PMOS_B
 
 .subckt SCM_NMOS DA DB S
 M0 (DA DA S S) NMOS w=w l=90n
@@ -93,10 +93,10 @@ M0 (DA G SA SA) PMOS w=w l=90n
 M1 (DB G SB SB) PMOS w=w l=90n
 .ends CMC_S_PMOS
 
-.subckt DP_NMOS_B  DA DB GA GB S B
-M0 (DA GA S B) NMOS w=w l=90n
-M1 (DB GB S B) NMOS w=w l=90n
-.ends DP_NMOS_B
+**.subckt DP_NMOS_B  DA DB GA GB S B
+**M0 (DA GA S B) NMOS w=w l=90n
+**M1 (DB GB S B) NMOS w=w l=90n
+**.ends DP_NMOS_B
 
 .subckt DP_PMOS_B  DA DB GA GB S B
 M0 (DA GA S B) PMOS w=w l=90n
