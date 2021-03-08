@@ -145,68 +145,71 @@ class Canvas:
 
     def drop_via(self, via, net_name=None):
 
-        def is_overlapping(r1, r2):
-            if r1[0] < r2[2] and r2[0] < r1[2]:
-                if r1[1] < r2[3] and r2[1] < r1[3]:
-                    return True
-            return False
+        self.terminals = self.removeDuplicates(allow_opens=True).copy()
 
-        self.terminals = self.removeDuplicates().copy() # allow_opens later
-        via_matrix = self._construct_via_matrix(via)
+        [mb, ma] = self.pdk[via.layer]['Stack']
+        # mh: horizontal wire, mv: vertical wire
+        if self.pdk[mb]['Direction'].upper() == 'H':
+            mh = self._find_generator(mb)
+            mv = self._find_generator(ma)
+        else:
+            mh = self._find_generator(ma)
+            mv = self._find_generator(mb)
+        mh_lines = self.rd.store_scan_lines[mh.layer]
+        mv_lines = self.rd.store_scan_lines[mv.layer]   #
 
-        [ml, mh] = self.pdk[via.layer]['Stack']
-        mh_lines = self.rd.store_scan_lines[ml]
-        ml_lines = self.rd.store_scan_lines[mh]
-        ml = getattr(self, ml)
-        mh = getattr(self, mh)
-        il = 1 if ml.direction.upper() == 'V' else 0
-        ih = 0 if ml.direction.upper() == 'V' else 1
+        via_matrix = self._construct_via_matrix(via, mh, mv)
 
-        # Start at lower layer as it is more likely to be denser
-        for (ml_cl, ml_sl) in ml_lines.items():
-            for (_, ml_slr) in enumerate(ml_sl.rects):
-                ml_name = ml_slr.netName
-                if ml_name is None:
+        for (mh_cl, mh_sl) in mh_lines.items():
+            for (_, mh_slr) in enumerate(mh_sl.rects):
+                mh_name = mh_slr.netName
+                if mh_name is None:
                     continue
-                if net_name is not None and ml_name != net_name:
+                if net_name is not None and mh_name != net_name:
                     continue
-                for (mh_cl, mh_sl) in mh_lines.items():
+                for (mv_cl, mv_sl) in mv_lines.items():
                     # Check only the scan lines that can intersect with ml_slr
-                    if mh_cl < 2*ml_slr.rect[il]:
+                    if mv_cl < 2*mh_slr.rect[0]:
                         continue
-                    if mh_cl > 2*ml_slr.rect[il+2]:
+                    if mv_cl > 2*mh_slr.rect[2]:
                         break
-                    for (_, mh_slr) in enumerate(mh_sl.rects):
-                        mh_name = mh_slr.netName
-                        if mh_name is None or mh_name != ml_name:
+                    for (_, mv_slr) in enumerate(mh_sl.rects):
+                        mv_name = mv_slr.netName
+                        if mv_name is None or mv_name != mh_name:
                             continue
                         # Check only the rectangles that overlap with the centerline
-                        if 2*mh_slr.rect[ih] > ml_cl:
-                            break
-                        if 2*mh_slr.rect[ih+2] < ml_cl:
+                        if mh_cl > 2*mv_slr.rect[3]:
                             continue
-                        # Skip if there is already a via
-                        # Add via only if spacing and width rules are satisfied
+                        if mh_cl < 2*mv_slr.rect[1]:
+                            break
+                        # Check if via exists
+                        if mh_cl//2 in via_matrix and mv_cl//2 in via_matrix[mh_cl]:
+                            continue
+                        # Check if DR-clean via can dropped
+                        self._drop_via_if_dr_clean()
 
-                        # if dr:
-                        #     if is_overlapping(ml_slr.rect, mh_slr.rect):
-                        #         self.addVia(via, ml_name, None, mh_c_idx, ml_c_idx)
-                        # else:
-                        #     if is_overlapping(ml_slr.rect, mh_slr.rect):
-                        #         self.addVia(via, ml_name, None, ml_c_idx, mh_c_idx)
-        pass
+    def _find_generator(self, layer):
+        for key, gen in self.generators.items():
+            if gen.layer == layer:
+                return gen
+        assert False, f'A generator not found for {layer}'
 
-    def _construct_via_matrix(self, via):
+    def _construct_via_matrix(self, via, mh, mv):
         via_lines = self.rd.store_scan_lines[via.layer]
         via_matrix = dict()
         for (_, via_sl) in via_lines.items():
             for (_, via_slr) in enumerate(via_sl.rects):
-                via_x = via_slr.rect[0] + via_slr.rect[2]
-                via_y = via_slr.rect[1] + via_slr.rect[3]
-                if via_x not in via_matrix:
-                    via_matrix[via_x] = dict()
-                via_matrix[via_x][via_y] = via_slr.rect.copy()
+                mh_cl = via_slr.rect[0] + via_slr.rect[2]
+                mv_cl = via_slr.rect[1] + via_slr.rect[3]
+                if mh_cl not in via_matrix:
+                    via_matrix[mh_cl] = dict()
+                via_matrix[mh_cl][mv_cl] = via_slr.rect.copy()
         return via_matrix
+
+    def _drop_via_if_dr_clean(self):
+        # check above, below, left, right via spacings
+        # check via enclosures
+        pass
 
     def asciiStickDiagram( self, v1, m2, v2, m3, matrix, *, xpitch=4, ypitch=2):
         # clean up text input
