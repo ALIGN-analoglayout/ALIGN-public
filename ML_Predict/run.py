@@ -25,7 +25,7 @@ from classifiers.analyses import analyses, analysis_with_svm, analysis_with_mlp
 
 WORK_DIR = os.getcwd()
 SAMPLE_COUNT_SPARSE = 1000
-SAMPLE_COUNT_DENSE = 3000
+SAMPLE_COUNT_DENSE = 6000
 
 parser = argparse.ArgumentParser(description = 'This functions generates ML \
                                  models from performance constraints.')
