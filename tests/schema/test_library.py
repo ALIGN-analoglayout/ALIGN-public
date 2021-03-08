@@ -1,8 +1,8 @@
 import pytest
 
-from align.circuit.library import Library
-from align.circuit import model
-from align.circuit.instance import Instance
+from align.schema.library import Library
+from align.schema import model
+from align.schema.instance import Instance
 
 @pytest.fixture
 def library():

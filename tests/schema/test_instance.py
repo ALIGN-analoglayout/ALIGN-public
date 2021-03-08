@@ -1,7 +1,7 @@
 import pytest
 
-from align.circuit.model import Model
-from align.circuit.instance import Instance
+from align.schema.model import Model
+from align.schema.instance import Instance
 
 @pytest.fixture()
 def testmos():

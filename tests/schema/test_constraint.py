@@ -1,6 +1,6 @@
 import z3
 import pytest
-from align.circuit import constraint
+from align.schema import constraint
 
 @pytest.fixture
 def solver():

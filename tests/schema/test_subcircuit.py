@@ -1,6 +1,6 @@
 import pytest
 
-from align.circuit.subcircuit import Model, SubCircuit, Instance
+from align.schema.subcircuit import Model, SubCircuit, Instance
 
 @pytest.fixture
 def TwoTerminalDevice():

@@ -1,8 +1,8 @@
 import pytest
 import pathlib
 
-from align.circuit.subcircuit import SubCircuit
-from align.circuit.parser import SpiceParser
+from align.schema.subcircuit import SubCircuit
+from align.schema.parser import SpiceParser
 
 # WARNING: Parser capitalizes everything internally as SPICE is case-insensitive
 #          Please formulate tests accordingly

@@ -1,8 +1,8 @@
 import networkx
 from typing import Optional, List
 
-from ..circuit.instance import Instance
-from ..circuit.subcircuit import SubCircuit, Circuit
+from .instance import Instance
+from .subcircuit import SubCircuit, Circuit
 
 class Graph(networkx.Graph):
 
@@ -99,7 +99,7 @@ class Graph(networkx.Graph):
             # Cannot replace as some prior transformation has made the current one invalid
             assert all(x in self.nodes for x in match)
             removal_candidates = [x for x, y in match.items() if y not in subckt.pins]
-            # Cannot replace if internal node is used elsewhere in circuit (Boundary elements / nets)
+            # Cannot replace if internal node is used elsewhere in subckt (Boundary elements / nets)
             if not all(x in match for node in removal_candidates for x in self.neighbors(node)):
                 continue
             # Remove nodes not on subckt boundary
@@ -160,9 +160,9 @@ class Graph(networkx.Graph):
         return self.find_repeated_subckts(True)
 
     def _get_match_candidates(self, worklist, netlist):
-        # Pick circuit elements that have some net-name based overlap with netlist subgraph
+        # Pick subckt elements that have some net-name based overlap with netlist subgraph
         matchlist = [element for element in worklist if element.name not in netlist and any(x in netlist for x in self.neighbors(element.name))]
-        # Sort circuit elements to minimize the number of (net) nodes added to netlist subgraph
+        # Sort subckt elements to minimize the number of (net) nodes added to netlist subgraph
         matchlist.sort(key=lambda element: sum([x not in netlist for x in self.neighbors(element.name)]))
         return matchlist
 

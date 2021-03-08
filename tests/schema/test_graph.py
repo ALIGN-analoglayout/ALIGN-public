@@ -1,12 +1,12 @@
 import pytest
 import pathlib
 
-from align.circuit.model import Model
-from align.circuit.instance import Instance
-from align.circuit.subcircuit import SubCircuit, Circuit
-from align.circuit.parser import SpiceParser
+from align.schema.model import Model
+from align.schema.instance import Instance
+from align.schema.subcircuit import SubCircuit, Circuit
+from align.schema.parser import SpiceParser
 
-from align.circuit.graph import Graph
+from align.schema.graph import Graph
 
 @pytest.fixture
 def circuit():
