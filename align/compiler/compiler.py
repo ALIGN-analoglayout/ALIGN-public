@@ -243,8 +243,8 @@ def compiler_output(input_ckt, lib_names , hier_graph_dict, design_name:str, res
             logger.debug(f"cap constraint gen for block: {name}")
 
             ##Removing constraints to fix cascoded cmc
-            if name not in design_setup['DIGITAL'] and name not in lib_names:
-                logger.debug(f"call constraint generator writer for block: {name}")
+            if name not in design_setup['DIGITAL']:
+                logger.debug(f"call constraint generator writer for block: {name} {const}")
                 stop_points=design_setup['POWER']+design_setup['GND']+design_setup['CLOCK']
                 if name not in design_setup['NO_CONST']:
                     const = WriteConst(graph, name, inoutpin, member["ports_weight"], const, stop_points)

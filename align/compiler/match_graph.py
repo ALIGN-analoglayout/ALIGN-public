@@ -26,7 +26,6 @@ class Annotate:
     """
     def __init__(self,hier_graph_dict,design_setup,library,existing_generator):
         """
-
         Args:
             hier_graph_dict (dict): all subckt graph, names and port
             design_setup (dict): information from setup file
@@ -162,7 +161,10 @@ class Annotate:
                     "ports_weight": ports_weight,
                     "const": None # In future we can add constraints provided
                     }
-                self._update_sym_const(name,G1,const['blocks'], matched_ports,inst_name)
+                self._update_sym_const(name, G1, const['blocks'], inst_name)
+                self._update_order_block_const(name, G1, const['blocks'], inst_name)
+                self._top_to_bottom_translation(name, G1, const['blocks'], inst_name, const['name'])
+
 
     def _group_cap_const(self, G1, name):
         """
@@ -198,7 +200,7 @@ class Annotate:
                     const['cap_r'] = -1
                     const['cap_s'] = -1
                 
-    def _update_sym_const(self,name,G1,remove_nodes, matched_ports,new_inst):
+    def _update_sym_const(self,name,G1,remove_nodes,new_inst):
         """
         Update instance names in the constraint in case they are reduced
 
@@ -206,7 +208,6 @@ class Annotate:
             name (str): name of subckt
             G1 (graph): subckt graph
             remove_nodes (list): nodes which are being removed
-            matched_ports (dict): matching ports
         """
         if self._if_const(name):
             const_list = self.hier_graph_dict[name]["const"]["constraints"]
@@ -220,7 +221,46 @@ class Annotate:
                                 del pair['block1']
                                 del pair['block2']
                                 logger.debug(f"updated symmetric pair constraint to self symmetry:{const}")
+    def _top_to_bottom_translation(self, name, G1, remove_nodes, new_inst, sub_hierarchy_name):
+        """
+        Update instance names in the constraint in case they are reduced
 
+        Args:
+            name (str): name of subckt
+            G1 (graph): subckt graph
+            remove_nodes (list): nodes which are being removed
+        """
+        logger.debug(f"transfering global constraints from top {name} to bottom {sub_hierarchy_name} ")
+        if self._if_const(name):
+            if not self.hier_graph_dict[sub_hierarchy_name]["const"]:
+                self.hier_graph_dict[sub_hierarchy_name]["const"] = {}
+                list_of_const=[]
+                for const in self.hier_graph_dict[name]["const"]["constraints"]:
+                    if 'graph' in const['const_name']:
+                        list_of_const.append(const)
+                self.hier_graph_dict[sub_hierarchy_name]["const"]["constraints"]=list_of_const
+            
+
+    def _update_order_block_const(self,name,G1,remove_nodes,new_inst):
+        """
+        Update instance names in the constraint in case they are reduced
+
+        Args:
+            name (str): name of subckt
+            G1 (graph): subckt graph
+            remove_nodes (list): nodes which are being removed
+        """
+        logger.debug("update constraints with block in them for hierarchy {name}")
+        if self._if_const(name):
+            const_list = self.hier_graph_dict[name]["const"]["constraints"]
+            for const in const_list:
+                if 'blocks' in const:
+                    if set(const['blocks']) & set(remove_nodes):
+                        for block in remove_nodes:
+                            if block in const['blocks']:
+                                const['blocks'].remove(block)
+                        const['blocks'].append(new_inst)
+                        logger.debug(f"updated blocks in the constraint:{const}")
     def _if_const(self,name):
         """
         check if constraint exists for a subckt
@@ -267,7 +307,8 @@ class Annotate:
                         logger.debug(f"Multi node element: {lib_name} {matched_ports}")
                         subgraph,new_node = merge_nodes(
                             G1, lib_name, remove_nodes, matched_ports)
-                        self._update_sym_const(name,G1,remove_nodes, matched_ports,new_node)
+                        self._update_sym_const(name, G1, remove_nodes, new_node)
+                        self._update_order_block_const(name, G1, remove_nodes, new_node)
                         if lib_name not in self.all_lef:
                             logger.debug(f'Calling recursive for block: {lib_name}')
                             mapped_subgraph_list = self._mapped_graph_list(G2, lib_name)
@@ -291,7 +332,8 @@ class Annotate:
                                 "const": const,
                                 "size": len(subgraph.nodes())
                                 }
-                        self.multiple_instances(G1,new_node,lib_name,subckt)
+                        updated_name= self.multiple_instances(G1,new_node,lib_name,subckt)
+                        self._top_to_bottom_translation(name, G1, remove_nodes, new_node, updated_name)
 
                         check_nodes(self.hier_graph_dict)
         logger.debug(f"Finished one branch: {lib_name}")
@@ -415,7 +457,7 @@ class Annotate:
             self.hier_graph_dict[update_name]=subckt
             self.hier_graph_dict[block_name]['id']+=[val_n_type]
         logger.debug(f"list all copies {block_name} {self.hier_graph_dict[block_name]['id']}")
-    
+        return block_name
 #%%
 def fix_order_for_multimatch(G1,map_list,Gsub):
     for previous_match in map_list[:-1]:
