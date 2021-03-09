@@ -156,6 +156,9 @@ class Canvas:
         self.terminals = self.removeDuplicates(allow_opens=True).copy()
 
         [mb, ma] = self.pdk[via.layer]['Stack']
+        assert mb is not None, f'Lower layer is not a metal'
+        assert ma is not None, f'Upper layer is not a metal'
+
         # mh: horizontal wire, mv: vertical wire
         if self.pdk[mb]['Direction'].upper() == 'H':
             mh = self._find_generator(mb)
@@ -194,7 +197,7 @@ class Canvas:
                         if mh_cl//2 in via_matrix and mv_cl//2 in via_matrix[mh_cl]:
                             continue
                         # Check if DR-clean via can dropped
-                        self._drop_via_if_dr_clean()
+                        self._drop_via_if_dr_clean(via, via_matrix, mh, mh_cl, mh_slr, mv, mv_cl, mv_slr)
 
     def _find_generator(self, layer):
         for key, gen in self.generators.items():
@@ -214,10 +217,61 @@ class Canvas:
                 via_matrix[mh_cl][mv_cl] = via_slr.rect.copy()
         return via_matrix
 
-    def _drop_via_if_dr_clean(self):
-        # check above, below, left, right via spacings
-        # check via enclosures
-        pass
+    def _drop_via_if_dr_clean(self, via, via_matrix, mh, mh_cl, mh_slr, mv, mv_cl, mv_slr):
+        via_def = self.pdk[via.layer]
+        via_half_w = via_def["WidthX"] // 2
+        via_half_h = via_def["WidthY"] // 2
+        via_rect = [mv_cl//2 - via_half_w, mh_cl//2 - via_half_h,
+                    mv_cl//2 + via_half_w, mh_cl//2 + via_half_h]
+
+        [mb, _] = self.pdk[via.layer]['Stack']
+        if mh.layer == mb:
+            venca_h = via_def["VencA_L"]
+            venca_v = via_def["VencA_H"]
+        else:
+            venca_h = via_def["VencA_H"]
+            venca_v = via_def["VencA_L"]
+
+        # Check via enclosure along the way (perpendicular should be correct by grid definition)
+        if mh_slr.rect[0] > via_rect[0] + venca_h:
+            return
+        if mh_slr.rect[2] < via_rect[2] + venca_h:
+            return
+        if mv_slr.rect[0] > via_rect[1] + venca_v:
+            return
+        if mv_slr.rect[2] < via_rect[3] + venca_v:
+            return
+
+        # check left and right neighbors
+        if mh_cl in via_matrix:
+            for v_cl, r in via_matrix[mh_cl]:
+                if (r[2] < via_rect[0]) and (r[2] > via_rect[0]-via_def["SpaceX"]):
+                    return
+                if (r[0] > via_rect[2]) and (r[0] < via_rect[2]+via_def["SpaceX"]):
+                    return
+
+        (b_idx, _) = via.h_clg.inverseBounds(mh_cl//2)
+        via_h_idx = b_idx[1]
+        mh_cl_m1 = via.h_clg.value(via_h_idx - 1)[1][0] * 2
+        mh_cl_p1 = via.h_clg.value(via_h_idx + 1)[1][0] * 2
+
+        # check via below
+        if mh_cl_m1 in via_matrix:
+            for v_cl, r in via_matrix[mh_cl_m1]:
+                if v_cl == mv_cl:
+                    if (r[1] < via_rect[1]) and (r[1] > via_rect[1]-via_def["SpaceY"]):
+                        return
+
+        # check via above
+        if mh_cl_p1 in via_matrix:
+            for v_cl, r in via_matrix[mh_cl_p1]:
+                if v_cl == mv_cl:
+                    if (r[3] > via_rect[3]) and (r[3] < via_rect[3]+via_def["SpaceY"]):
+                        return
+
+        self.addVia(via, mh_slr.netName, None,
+                    mh.clg.inverseBounds(mh_cl//2)[0],
+                    mv.clg.inverseBounds(mv_cl//2)[0])
 
     def asciiStickDiagram( self, v1, m2, v2, m3, matrix, *, xpitch=4, ypitch=2):
         # clean up text input
