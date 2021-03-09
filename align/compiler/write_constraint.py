@@ -53,7 +53,7 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
         stores list of matched pairs.
 
     """
-    logger.debug("comparing %s,%s, traversed %s",node1,node2,traversed)
+    logger.debug(f"comparing {node1},{node2}, traversed {traversed}")
     nbrs1 = sorted(set(G.neighbors(node1)) - set(traversed))
     #remove dummies
     nbrs1 = sorted(set([nbr for nbr in nbrs1 if G.get_edge_data(node1, nbr)['weight'] !=7]))
@@ -191,7 +191,8 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
 def recursive_start_points(G,all_match_pairs,traversed,node1,node2, ports_weight):
     logger.debug(f"symmetry start point {node1} {node2}")
     pair = {}
-    compare_nodes(G,all_match_pairs, pair, traversed, node1, node2,ports_weight)
+    if node1 in G.nodes() and node2 in G.nodes():
+        compare_nodes(G,all_match_pairs, pair, traversed, node1, node2,ports_weight)
     if not pair:
         logger.debug(f"no pair found from {node1} {node2}")
         return

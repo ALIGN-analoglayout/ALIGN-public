@@ -185,9 +185,13 @@ def compiler_output(input_ckt, lib_names , hier_graph_dict, design_name:str, res
                 logger.debug(f"Created new lef for: {block_name} {lef_name}")
                 #Multiple instances of same module
                 if 'inst_copy' in attr:
-                    for nm in hier_graph_dict.keys():
+                    for nm in list(hier_graph_dict.keys()):
                         if nm == lef_name + attr['inst_copy']:
-                            hier_graph_dict[block_name] = hier_graph_dict.pop(nm)
+                            if block_name not in hier_graph_dict.keys():
+                                hier_graph_dict[block_name] = hier_graph_dict.pop(nm)
+                            else:
+                                #For cells with extra parameters than current primitive naming convention
+                                all_lef.append(nm)
                     graph.nodes[node]["inst_type"]=block_name
                     all_lef.append(block_name)
 
@@ -210,7 +214,7 @@ def compiler_output(input_ckt, lib_names , hier_graph_dict, design_name:str, res
             else:
                 logger.debug(f"No physical information found for: {name}")
         logger.debug(f"generated data for {name} : {pprint.pformat(primitives, indent=4)}")
-
+    logger.debug(f"All available cell generator with updates: {all_lef}")
     for name,member in hier_graph_dict.items():
         graph = member["graph"]
         if not 'const' in member:

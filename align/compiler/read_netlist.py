@@ -216,7 +216,7 @@ class SpiceParser:
             while self.next_line.strip().endswith('\\') or \
                 self.check_next_line.strip().startswith('+') \
                 or (self.check_next_line and not self.check_next_line.strip()):
-                self.next_line += self.check_next_line
+                self.next_line = self.next_line.strip() + self.check_next_line
                 self.check_next_line = file_pointer.readline().strip()
             self.next_line = self.next_line.replace('+', '')
             self.next_line = self.next_line.replace('\\','')
