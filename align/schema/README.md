@@ -8,7 +8,7 @@ While the classes and methods implemented in this module can also be used as a D
 Almost all the attributes for our API can be easily interpreted by simply viewing the type hints in our class definitions. This document instead focuses on how these classes may be used using concrete examples. Please view tests/schema for additional examples.
 
 A couple of important things to note:
-1. All the classes do a certain level of data validation. Some of the classes might additionally do a certain level of casting. Parameter values are a unique example of this. Whether you provide int, float or string, the values will get converted to python strings for internal storage. Remember the type hings in our implementation refer to what the programmer should expect the type to be after an object has already been loaded in. It says nothing about the user input.
+1. All the classes do a certain level of data validation. Some of the classes might additionally do a certain level of casting. Parameter values are a unique example of this. Whether you provide int, float or string, the values will get converted to python strings for internal storage. Remember the type hints in our implementation refer to what the programmer should expect the type to be after an object has already been loaded in. It says nothing about the user input.
 2. Nearly all attributes get converted to upper-case internally. The simple reason behind this is that SPICE is case-insensitive. The most notable exception to this rule are the commands under align.schema.constraints which are parsed as python expressions and are hence case sensitive.
 
 With that said, let us get started!
@@ -51,7 +51,7 @@ MyDevice = Model(
 ```
 Note the absence of the 'pins' argument above.
 
-The above statement is sort of equivalent to the SPICE statement:
+The above statement is motivated by the SPICE statement:
 ```spice
 .MODEL NEWMOS TESTMOS PARAM3=3
 ```
@@ -80,7 +80,7 @@ M1 = Instance(
 subckt = SubCircuit(
     name = 'leaf_subckt',
     pins = ['PIN1', 'PIN2'],
-    parameters = {'PARAM1':1, 'PARAM2':'1E-3'})
+    parameters = {'PARAM1':'1', 'PARAM2':'1E-3'})
 subckt.add(M1)
 ```
 
@@ -97,7 +97,7 @@ ThreeTerminalDevice = Model(
 leaf_subckt = SubCircuit(
     name='leaf_subckt',
     pins=['PIN1', 'PIN2', 'PIN3'],
-    parameters={'MYPARAMETER':1})
+    parameters={'MYPARAMETER':'1'})
 leaf_subckt.add(
     Instance(
         name='M1',
@@ -116,7 +116,13 @@ intermediate_subckt = SubCircuit(
     name='intermediate_subckt',
     pins=['PIN1', 'PIN2'])
 intermediate_subckt.add(
-    leaf_subckt('X1', 'PIN1', 'PIN2', 'NET1', MYPARAMETER='2'))
+    leaf_subckt( name='I1', 
+                 pins=['PIN1', 'PIN2', 'NET1'], 
+                 parameters= {'MYPARAMETER':'2'}))
+intermediate_subckt.add(
+    leaf_subckt( name='I2', 
+                 pins=['PIN1', 'PIN2', 'NET2'], 
+                 parameters= {'MYPARAMETER':'2'}))
 intermediate_subckt.add(
     Instance(
         name='M1',

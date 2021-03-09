@@ -6,10 +6,11 @@ from .model import Model
 from .instance import Instance
 from .constraint import ConstraintDB
 
+
 class SubCircuit(Model):
 
     elements: List[Instance]
-    constraints : ConstraintDB
+    constraints: ConstraintDB
 
     @schema.validate_arguments
     def add(self, instance: Instance):
@@ -39,6 +40,7 @@ class SubCircuit(Model):
         ret.extend([element.xyce() for element in self.elements])
         ret.append(f'.ENDS {self.name}')
         return '\n'.join(ret)
+
 
 class Circuit(SubCircuit):
 
