@@ -209,7 +209,6 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
                 size = design_config["unit_size_cap"]
             else:
                 size = float('%g' % (round(values["cap"] * 1E15,4)))
-                design_config["unit_size_cap"]=size
             num_of_unit = float(size)/design_config["unit_size_cap"]
             block_name = name + '_' + str(int(size)) + 'f'
         else:
