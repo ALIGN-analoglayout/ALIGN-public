@@ -186,7 +186,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
             (working_dir / file_.name).write_text(file_.read_text())
 
 
-    if True:
+    if False:
         if check or extract or gds_json:
             order = [(i,DB.CheckoutHierNode(i).name) for i in DB.TraverseHierTree()]
             assert order[-1][1] == subckt, f"Last in topological order should be the subckt {subckt} {order}"
@@ -196,14 +196,17 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
                 nodeVec = DB.CheckoutHierNodeVec(idx)
 
                 variant_names = find_variant_names(nm)
-                logger.info(f'SMB: {variant_names}')
-                logger.info(f'SMB: {idx} {nm} {DB.hierTree[idx].n_copy} {DB.hierTree[idx].numPlacement}')
+                logger.info(f'SMB: variant_names {variant_names}')
+                logger.info(f'SMB: idx {idx} nm {nm} n_copy {DB.hierTree[idx].n_copy} numPlacement {DB.hierTree[idx].numPlacement}')
 
                 alt_variant_names = [ f'{nm}_{i_copy}_{i_placement}' for i_copy in range(DB.hierTree[idx].n_copy) for i_placement in range(DB.hierTree[idx].numPlacement)]
 
                 assert set(variant_names) == set(alt_variant_names)
 
                 for i_copy,i_placement in itertools.product(range(DB.hierTree[idx].n_copy),range(DB.hierTree[idx].numPlacement)):
+                    logger.info(f'SMB: i_copy {i_copy} i_placement {i_placement}')
+                    assert 0 <= i_copy < len(nodeVec)
+
                     hN = nodeVec[i_copy]
                     variant_name = f'{nm}_{i_copy}_{i_placement}'
                     DB.WriteDBJSON( hN, f"__SMB_{variant_name}")
