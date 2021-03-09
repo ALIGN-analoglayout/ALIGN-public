@@ -167,7 +167,7 @@ class Canvas:
             mh = self._find_generator(ma)
             mv = self._find_generator(mb)
         mh_lines = self.rd.store_scan_lines[mh.layer]
-        mv_lines = self.rd.store_scan_lines[mv.layer]   #
+        mv_lines = self.rd.store_scan_lines[mv.layer]
 
         via_matrix = self._construct_via_matrix(via)
 
@@ -184,7 +184,7 @@ class Canvas:
                         continue
                     if mv_cl > 2*mh_slr.rect[2]:
                         break
-                    for (_, mv_slr) in enumerate(mh_sl.rects):
+                    for (_, mv_slr) in enumerate(mv_sl.rects):
                         mv_name = mv_slr.netName
                         if mv_name is None or mv_name != mh_name:
                             continue
@@ -194,7 +194,7 @@ class Canvas:
                         if mh_cl < 2*mv_slr.rect[1]:
                             break
                         # Check if via exists
-                        if mh_cl//2 in via_matrix and mv_cl//2 in via_matrix[mh_cl]:
+                        if mh_cl in via_matrix and mv_cl in via_matrix[mh_cl]:
                             continue
                         # Check if DR-clean via can dropped
                         self._drop_via_if_dr_clean(via, via_matrix, mh, mh_cl, mh_slr, mv, mv_cl, mv_slr)
@@ -233,45 +233,49 @@ class Canvas:
             venca_v = via_def["VencA_L"]
 
         # Check via enclosure along the way (perpendicular should be correct by grid definition)
-        if mh_slr.rect[0] > via_rect[0] + venca_h:
+        if mh_slr.rect[0] > via_rect[0] - venca_h:
             return
         if mh_slr.rect[2] < via_rect[2] + venca_h:
             return
-        if mv_slr.rect[0] > via_rect[1] + venca_v:
+        if mv_slr.rect[1] > via_rect[1] - venca_v:
             return
-        if mv_slr.rect[2] < via_rect[3] + venca_v:
+        if mv_slr.rect[3] < via_rect[3] + venca_v:
             return
 
         # check left and right neighbors
         if mh_cl in via_matrix:
-            for v_cl, r in via_matrix[mh_cl]:
+            for v_cl, r in via_matrix[mh_cl].items():
                 if (r[2] < via_rect[0]) and (r[2] > via_rect[0]-via_def["SpaceX"]):
                     return
                 if (r[0] > via_rect[2]) and (r[0] < via_rect[2]+via_def["SpaceX"]):
                     return
 
-        (b_idx, _) = via.h_clg.inverseBounds(mh_cl//2)
-        via_h_idx = b_idx[1]
-        mh_cl_m1 = via.h_clg.value(via_h_idx - 1)[1][0] * 2
-        mh_cl_p1 = via.h_clg.value(via_h_idx + 1)[1][0] * 2
+        (b_idx, _) = mh.clg.inverseBounds(mh_cl//2 - 1)
+        mh_cl_m1 = 2*mh.clg.value(b_idx)[0]
+        (_, b_idx) = mh.clg.inverseBounds(mh_cl//2 + 1)
+        mh_cl_p1 = 2*mh.clg.value(b_idx)[0]
 
         # check via below
         if mh_cl_m1 in via_matrix:
-            for v_cl, r in via_matrix[mh_cl_m1]:
+            for v_cl, r in via_matrix[mh_cl_m1].items():
                 if v_cl == mv_cl:
-                    if (r[1] < via_rect[1]) and (r[1] > via_rect[1]-via_def["SpaceY"]):
+                    if (r[3] < via_rect[1]) and (r[3] > via_rect[1]-via_def["SpaceY"]):
                         return
 
         # check via above
         if mh_cl_p1 in via_matrix:
-            for v_cl, r in via_matrix[mh_cl_p1]:
+            for v_cl, r in via_matrix[mh_cl_p1].items():
                 if v_cl == mv_cl:
-                    if (r[3] > via_rect[3]) and (r[3] < via_rect[3]+via_def["SpaceY"]):
+                    if (r[1] > via_rect[3]) and (r[1] < via_rect[3]+via_def["SpaceY"]):
                         return
 
         self.addVia(via, mh_slr.netName, None,
-                    mh.clg.inverseBounds(mh_cl//2)[0],
-                    mv.clg.inverseBounds(mv_cl//2)[0])
+                    mv.clg.inverseBounds(mv_cl // 2)[0],
+                    mh.clg.inverseBounds(mh_cl//2)[0])
+
+        if mh_cl not in via_matrix:
+            via_matrix[mh_cl] = dict()
+        via_matrix[mh_cl][mv_cl] = via_rect.copy()
 
     def asciiStickDiagram( self, v1, m2, v2, m3, matrix, *, xpitch=4, ypitch=2):
         # clean up text input
