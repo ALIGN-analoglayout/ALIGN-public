@@ -1,0 +1,42 @@
+{
+  "bbox": [
+    -200,
+    360,
+    36360,
+    36360
+  ],
+  "globalRoutes": [],
+  "globalRouteGrid": [],
+  "terminals": [
+    {
+      "layer": "M1",
+      "netName": "a",
+      "rect": [
+        -200,
+        360,
+        200,
+        36360
+      ]
+    },
+    {
+      "layer": "M2",
+      "netName": "a",
+      "rect": [
+        360,
+        520,
+        3960,
+        920
+      ]
+    },
+    {
+      "layer": "M2",
+      "netName": "a",
+      "rect": [
+        4680,
+        520,
+        36360,
+        920
+      ]
+    }
+  ]
+}

@@ -1055,7 +1055,7 @@ bool SeqPair::SwapTwoBlocksofSameGroup(design& caseNL) {
   //cout<<"sgid "<<sgid<<endl;
   vector<int> blist=caseNL.GetRealBlockListfromSymmGroup(sgid); // all real blocks in symmetry group cosidering mixFlag
   //cout<<"blist size: "<<blist.size()<<endl;
-  if(blist.empty() or (int)blist.size()==1) {std::cout<<"empty or 1"<<std::endl;return false;}
+  if(blist.empty() or (int)blist.size()==1) {return false;}//std::cout<<"empty or 1"<<std::endl;}
   if((int)blist.size()==2 and blist.at(0)==caseNL.GetBlockCounterpart(blist.at(1))) {return false;}
   int A=blist.at( rand() % (int)blist.size() );
   //while(A>=(int)caseNL.GetSizeofBlocks()) {
@@ -1096,7 +1096,7 @@ bool SeqPair::SwapMultiBlocksofSameGroup(design& caseNL) {
   //cout<<"sgid "<<sgid<<endl;
   vector<int> blist=caseNL.GetRealBlockListfromSymmGroup(sgid); // all real blocks in symmetry group considering mixFlag
   //cout<<"blist size: "<<blist.size()<<endl;
-  if(blist.empty() or (int)blist.size()==1) {std::cout<<"empty or 2"<<std::endl;return false;}
+  if(blist.empty() or (int)blist.size()==1) {return false;}//std::cout<<"empty or 2"<<std::endl;}
   if((int)blist.size()==2 and blist.at(0)==caseNL.GetBlockCounterpart(blist.at(1))) {return false;}
   for(int i=0;i<count;++i) {
     int A=blist.at( rand() % (int)blist.size() );

@@ -28,7 +28,6 @@ align.pnr.main module
    :undoc-members:
    :show-inheritance:
 
-
 Module contents
 ---------------
 

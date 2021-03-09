@@ -3,8 +3,8 @@ How to use ALIGN
 
 By default, the design directory is set to the examples directory. This can be modfied in the Makefile.
 
-Native environment flow
--------------------------
+Native Linux environment flow
+-------------------------------
 
 .. note:: 
 

@@ -1,0 +1,31 @@
+{
+"constraints":[
+    {   "const_name":"HorizontalDistance",
+        "abs_distance":0
+    },
+    {   "const_name":"VerticalDistance",
+        "abs_distance":0
+    },
+    {   "const_name": "GroupBlocks",
+        "blocks": ["mmn0", "mmn1"],
+        "name": "diffpair"
+    },
+    {   "const_name":"GroupBlocks",
+        "blocks": ["mmn4", "mmn3"],
+        "name": "ccn"
+    },
+    {   "const_name": "GroupBlocks",
+        "blocks": ["mmp1", "mmp0"],
+        "name": "ccp"
+    },
+    {   "const_name": "SymmetricBlocks",
+        "direction" : "V",
+        "pairs": [["mmn2"], ["diffpair"], ["ccn"], ["ccp"]]
+    },
+    {   "const_name": "OrderBlocks",
+        "blocks": ["mmn2", "diffpair", "ccn", "ccp"],
+        "direction": "V"
+    }
+    ]
+}
+

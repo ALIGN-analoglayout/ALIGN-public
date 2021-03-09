@@ -1,18 +1,17 @@
-.subckt high_speed_comparator clk vdd_nom_123 v_in vip von vop vss
-mmp5 vy clk vdd_nom_123 vdd_nom_123 p w=270e-9 l=20e-9 nfin=12
-mmp1 vxx vyy vdd_nom_123 vdd_nom_123 p w=270e-9 l=20e-9 nfin=48
-mmp7 vop vyy vdd_nom_123 vdd_nom_123 p w=270e-9 l=20e-9 nfin=12
-mmp4 vyy clk vdd_nom_123 vdd_nom_123 p w=270e-9 l=20e-9 nfin=12
-mmp6 von vxx vdd_nom_123 vdd_nom_123 p w=270e-9 l=20e-9 nfin=12
-mmp3 vx clk vdd_nom_123 vdd_nom_123 p w=270e-9 l=20e-9 nfin=12
-mmp2 vxx clk vdd_nom_123 vdd_nom_123 p w=270e-9 l=20e-9 nfin=12
-mmp0 vyy vxx vdd_nom_123 vdd_nom_123 p w=270e-9 l=20e-9 nfin=48
-mmn2 vcom clk vss vss n w=270e-9 l=20e-9 nfin=96
-mmn5 von vxx vss vss n w=270e-9 l=20e-9 nfin=12
-mmn6 vop vyy vss vss n w=270e-9 l=20e-9 nfin=12
-mmn1 vy vip vcom vss n w=270e-9 l=20e-9 nfin=192
-mmn4 vxx vyy vx vss n w=270e-9 l=20e-9 nfin=96
-mmn3 vyy vxx vy vss n w=270e-9 l=20e-9 nfin=96
-mmn0 vx v_in vcom vss n w=270e-9 l=20e-9 nfin=192
+.subckt high_speed_comparator clk vcc vin vip von vop vss
+mmp5 vip_d clk vcc vcc p nfin=12 l=14e-9 m=1
+mmp4 vip_o clk vcc vcc p nfin=12 l=14e-9 m=1
+mmp3 vin_d clk vcc vcc p nfin=12 l=14e-9 m=1
+mmp2 vin_o clk vcc vcc p nfin=12 l=14e-9 m=1
+mmn2 vcom clk vss vss n nfin=12 l=14e-9 m=8
+mmn0 vin_d vin vcom vss n nfin=12 l=14e-9 m=16
+mmn1 vip_d vip vcom vss n nfin=12 l=14e-9 m=16
+mmn4 vin_o vip_o vin_d vss n nfin=12 l=14e-9 m=8
+mmn3 vip_o vin_o vip_d vss n nfin=12 l=14e-9 m=8
+mmp1 vin_o vip_o vcc vcc p nfin=12 l=14e-9 m=4
+mmp0 vip_o vin_o vcc vcc p nfin=12 l=14e-9 m=4
+mmp7 vop vip_o vcc vcc p nfin=12 l=14e-9 m=1
+mmp6 von vin_o vcc vcc p nfin=12 l=14e-9 m=1
+mmn5 von vin_o vss vss n nfin=12 l=14e-9 m=1
+mmn6 vop vip_o vss vss n nfin=12 l=14e-9 m=1
 .ends high_speed_comparator
-

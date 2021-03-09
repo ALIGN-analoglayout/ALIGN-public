@@ -1,6 +1,40 @@
 {
     "constraints": [
         {
+            "const_name": "SymmNet",
+            "axis_dir": "V",
+            "net1": {
+                "name": "out1",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "c2_c1",
+                        "pin": "PLUS0"
+                    },
+                    {
+                        "type": "terminal",
+                        "name": "out1",
+                        "pin": null
+                    }
+                ]
+            },
+            "net2": {
+                "name": "out2",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "c2_c1",
+                        "pin": "PLUS1"
+                    },
+                    {
+                        "type": "terminal",
+                        "name": "out2",
+                        "pin": null
+                    }
+                ]
+            }
+        },
+        {
             "const_name": "SymmBlock",
             "axis_dir": "V",
             "pairs": [
