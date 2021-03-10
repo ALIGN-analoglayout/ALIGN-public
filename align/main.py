@@ -57,8 +57,8 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     topology_dir.mkdir(exist_ok=True)
     primitive_dir = (working_dir / '2_primitives')
     primitive_dir.mkdir(exist_ok=True)
-    primitive_dir = (working_dir / '2_primitives/wo_tap')
-    primitive_dir.mkdir(exist_ok=True)
+    primitive_dir_wo_tap = (working_dir / '2_primitives/wo_tap')
+    primitive_dir_wo_tap.mkdir(exist_ok=True)
     pnr_dir = working_dir / '3_pnr'
     pnr_dir.mkdir(exist_ok=True)
     if regression:
