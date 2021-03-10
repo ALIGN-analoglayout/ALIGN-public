@@ -57,6 +57,8 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     topology_dir.mkdir(exist_ok=True)
     primitive_dir = (working_dir / '2_primitives')
     primitive_dir.mkdir(exist_ok=True)
+    primitive_dir = (working_dir / '2_primitives/wo_tap')
+    primitive_dir.mkdir(exist_ok=True)
     pnr_dir = working_dir / '3_pnr'
     pnr_dir.mkdir(exist_ok=True)
     if regression:
@@ -73,6 +75,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         for block_name, block_args in primitives.items():
             logger.debug(f"Generating primitive: {block_name}")
             generate_primitive(block_name, **block_args, pdkdir=pdk_dir, outputdir=primitive_dir)
+            generate_primitive(block_name, **block_args, pdkdir=pdk_dir, outputdir=primitive_dir_wo_tap, bodyswitch = 0)
         # Copy over necessary collateral & run PNR tool
         variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, nvariants, effort, check, extract, gds_json=python_gds_json)
         results.append( (netlist, variants))

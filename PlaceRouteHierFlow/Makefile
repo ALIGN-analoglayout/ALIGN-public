@@ -42,7 +42,7 @@ export GTEST_LIB_DIR = $(GTEST_DIR)/mybuild/lib
 OPTS?=$(FLAGS) $(OPTIMFLAGS)
 export CXXFLAGS = $(OPTS) -pthread -isystem $(LIB_LP) -I$(BOOST_LP) -I$(SuperLu) -I$(JSON)/include -isystem $(GTEST_DIR)/include -isystem $(SPDLOG_DIR)/include
 export CXX=g++
-export LDFLAGS = -lm -ldl -pthread
+export LDFLAGS = -lm -ldl -pthread -lstdc++fs
 
 PnRDB_path=PnRDB
 cap_placer_path=cap_placer
@@ -83,7 +83,7 @@ PYBIND_SUFFIX = $(shell python3-config --extension-suffix)
 python_object_file: PnR$(EXTENSION_SUFFIX)
 
 PnR$(EXTENSION_SUFFIX): subsystem $(OBJS)
-	$(CXX) $(CXXFLAGS) -shared $(PYBIND_INCLUDES) PnR-pybind11.cpp -o PnR$(PYBIND_SUFFIX) toplevel.o cap_placer/cap_placer.a placer/placer.a router/router.a PnRDB/PnRDB.a -L$(GTEST_LIB_DIR) -lgtest -L$(LIB_LP) -llpsolve55
+	$(CXX) $(CXXFLAGS) -shared $(PYBIND_INCLUDES) PnR-pybind11.cpp -o PnR$(PYBIND_SUFFIX) toplevel.o cap_placer/cap_placer.a placer/placer.a router/router.a PnRDB/PnRDB.a -L$(GTEST_LIB_DIR) -lgtest -L$(LIB_LP) -llpsolve55 -lstdc++fs
 else
 python_object_file:
 	echo "Skipping generation of python object file because NOPYBIND11 is set."

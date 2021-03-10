@@ -10,6 +10,8 @@ using namespace nlohmann;
 #include <gtest/gtest.h>
 #include "spdlog/spdlog.h"
 
+#include "TapRemoval.h"
+
 /*
 static bool EndsWith( const string& str, const string& pat)
 {
@@ -1994,4 +1996,31 @@ void PnRdatabase::WritePlacement(string outfile) {
     fout << "endmodule" << endl << endl;
   }
   fout.close();
+}
+
+void PnRdatabase::RemoveRedundantTaps(PnRDB::hierNode &node) {
+
+  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.RemoveRedundantTaps");
+
+  logger->info( "PnRDB-Info: Removing redundant taps for cell {0}", node.name);
+  string pdir, pdirWOTap, distStr;
+  auto ptr = getenv("PRIMITIVE_DIR");
+  if (ptr != nullptr) {
+	  pdir = ptr;
+  }
+  ptr = getenv("PRIMITIVE_DIR_WO_TAP");
+  if (ptr != nullptr) {
+	  pdirWOTap = ptr;
+  }
+  ptr = getenv("TAP_DISTANCE");
+  if (ptr != nullptr) {
+	  distStr = ptr;
+  }
+
+  if (!pdir.empty() && pdirWOTap.empty() && !distStr.empty()) {
+	  unsigned dist = stoi(distStr);
+	  TapRemoval tr(pdir, pdirWOTap, node, dist);
+	  logger->info("delta area : {0}", tr.deltaArea());
+  }
+
 }
