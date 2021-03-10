@@ -162,6 +162,7 @@ class Annotate:
                     "const": None # In future we can add constraints provided
                     }
                 self._update_sym_const(name, G1, const['blocks'], inst_name)
+                self._update_sym_const(name, G1, const['name'], inst_name)
                 self._update_order_block_const(name, G1, const['blocks'], inst_name)
                 self._top_to_bottom_translation(name, G1, const['blocks'], inst_name, const['name'])
 
@@ -209,18 +210,27 @@ class Annotate:
             G1 (graph): subckt graph
             remove_nodes (list): nodes which are being removed
         """
+        logger.debug(f"updating symmetry block constraints of subcircuit {name}, nodes: {remove_nodes}, new name: {new_inst}")
         if self._if_const(name):
             const_list = self.hier_graph_dict[name]["const"]["constraints"]
             for const in const_list:
                 if 'pairs' in const:
                     for pair in const['pairs']:
-                        if pair['type']=='sympair':
+                        if pair['type'] == 'sympair':
                             if pair['block1'] in remove_nodes and pair['block2'] in remove_nodes:
-                                pair['type']='selfsym'
+                                pair['type'] = 'selfsym'
                                 pair['block'] = new_inst
                                 del pair['block1']
                                 del pair['block2']
                                 logger.debug(f"updated symmetric pair constraint to self symmetry:{const}")
+                            elif pair['block1'] in remove_nodes or pair['block2'] in remove_nodes:
+                                logger.error(f"Improper constraint {const}")
+                        elif pair['type'] == 'selfsym':
+                            if pair['block'] in remove_nodes:
+                                pair['block'] = new_inst
+                                logger.debug(f"updated symmetric pair constraint to self symmetry:{const}")
+                                                            
+
     def _top_to_bottom_translation(self, name, G1, remove_nodes, new_inst, sub_hierarchy_name):
         """
         Update instance names in the constraint in case they are reduced
@@ -250,7 +260,7 @@ class Annotate:
             G1 (graph): subckt graph
             remove_nodes (list): nodes which are being removed
         """
-        logger.debug("update constraints with block in them for hierarchy {name}")
+        logger.debug(f"update constraints with block in them for hierarchy {name}")
         if self._if_const(name):
             const_list = self.hier_graph_dict[name]["const"]["constraints"]
             for const in const_list:
