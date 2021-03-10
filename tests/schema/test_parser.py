@@ -1,8 +1,8 @@
 import pytest
 import pathlib
 
-from align.circuit.core import SubCircuit
-from align.circuit.parser import SpiceParser
+from align.schema.subcircuit import SubCircuit
+from align.schema.parser import SpiceParser
 
 # WARNING: Parser capitalizes everything internally as SPICE is case-insensitive
 #          Please formulate tests accordingly
@@ -31,6 +31,23 @@ C1 outplus 0 1e-12
 C2 outminus 0 1e-12
 '''
 
+@pytest.fixture
+def setup_annotation():
+    return '''
+.subckt diffamp vcc outplus outminus inplus src 0 inminus
+* This is one awesome diffamp
+
+* Subcircuit constraints can be directly specified here
+* @: AlignHorizontal(blocks=['R2', 'M1'], alignment='top')
+* @: AlignHorizontal(blocks=['M1', 'M2'], alignment='bottom')
+
+R1 vcc outplus 1e4;  Or even here! Amazing !
+R2 vcc outminus 1e4; @: AlignHorizontal(blocks=['R1', 'R2'], alignment='center')
+M1 outplus inplus src 0 NMOS   l=0.014u nfin=2
+M2 outminus inminus src 0 NMOS l=0.014u nfin=2
+
+.ends
+'''
 @pytest.fixture
 def parser():
     parser = SpiceParser()
@@ -68,6 +85,17 @@ def test_lexer_multiline(setup_multiline):
              'NAME', 'NAME', 'NAME', 'NAME', 'NAME', 'EQUALS', 'EXPR', 'NEWL']
     assert [tok.type for tok in SpiceParser._generate_tokens(str_)] == types
 
+def test_lexer_annotation(setup_annotation):
+    str_ = setup_annotation
+    types = ['NEWL', 'DECL', 'NAME', 'NAME', 'NAME', 'NAME', 'NAME', 'NAME', 'NUMBER', 'NAME',
+             'ANNOTATION', 'ANNOTATION', 'NEWL',
+             'NAME', 'NAME', 'NAME', 'NUMBER', 'NEWL',
+             'NAME', 'NAME', 'NAME', 'NUMBER', 'ANNOTATION', 'NEWL',
+             'NAME', 'NAME', 'NAME', 'NAME', 'NUMBER', 'NAME', 'NAME', 'EQUALS', 'NUMBER', 'NAME', 'EQUALS', 'NUMBER', 'NEWL',
+             'NAME', 'NAME', 'NAME', 'NAME', 'NUMBER', 'NAME', 'NAME', 'EQUALS', 'NUMBER', 'NAME', 'EQUALS', 'NUMBER', 'NEWL',
+             'DECL', 'NEWL']
+    assert [tok.type for tok in SpiceParser._generate_tokens(str_)] == types
+
 def test_lexer_realistic(setup_realistic):
     str_ = setup_realistic
     types = ['NEWL',
@@ -80,21 +108,21 @@ def test_lexer_realistic(setup_realistic):
     assert [tok.type for tok in SpiceParser._generate_tokens(str_)] == types
 
 def test_parser_basic(setup_basic, parser):
-    parser.library['TESTDEV'] = SubCircuit('TESTDEV', '+', '-', X='1F', Y=0.1)
+    parser.library['TESTDEV'] = SubCircuit(name='TESTDEV', pins=['+', '-'], parameters={'X':'1F', 'Y':'0.1'})
     parser.parse(setup_basic)
     assert len(parser.circuit.elements) == 1
     assert parser.circuit.elements[0].name == 'X1'
-    assert isinstance(parser.circuit.elements[0], parser.library['TESTDEV'])
+    assert parser.circuit.elements[0].model.name == 'TESTDEV'
     assert parser.circuit.nets == ['A', 'B']
 
 def test_parser_multiline(setup_multiline, parser):
-    parser.library['TESTDEV'] = SubCircuit('TESTDEV', '+', '-', X='1F', Y=0.1)
+    parser.library['TESTDEV'] = SubCircuit(name='TESTDEV', pins=['+', '-'], parameters={'X':'1F', 'Y':'0.1'})
     parser.parse(setup_multiline)
     assert len(parser.circuit.elements) == 2
     assert parser.circuit.elements[0].name == 'X1'
     assert parser.circuit.elements[1].name == 'X2'
-    assert isinstance(parser.circuit.elements[0], parser.library['TESTDEV'])
-    assert isinstance(parser.circuit.elements[1], parser.library['TESTDEV'])
+    assert parser.circuit.elements[0].model.name == 'TESTDEV'
+    assert parser.circuit.elements[1].model.name == 'TESTDEV'
     assert parser.circuit.nets == ['A', 'B']
 
 def test_parser_realistic(setup_realistic, parser):
@@ -103,6 +131,15 @@ def test_parser_realistic(setup_realistic, parser):
     assert [x.name for x in parser.circuit.elements] == ['R1', 'R2', 'M1', 'M2', 'C1', 'C2'], parser.circuit.elements
     assert len(parser.circuit.nets) == 7, parser.circuit.nets
     assert parser.circuit.nets == ['VCC', 'OUTPLUS', 'OUTMINUS', 'INPLUS', 'SRC', '0', 'INMINUS'], parser.circuit.nets
+
+def test_parser_annotation(setup_annotation, parser):
+    parser.parse(setup_annotation)
+    assert 'DIFFAMP' in parser.library
+    assert len(parser.library['DIFFAMP'].elements) == 4
+    assert [x.name for x in parser.library['DIFFAMP'].elements] == ['R1', 'R2', 'M1', 'M2'], parser.library['DIFFAMP'].elements
+    assert len(parser.library['DIFFAMP'].nets) == 7, parser.library['DIFFAMP'].nets
+    assert parser.library['DIFFAMP'].nets == ['VCC', 'OUTPLUS', 'OUTMINUS', 'INPLUS', 'SRC', '0', 'INMINUS'], parser.circuit.nets
+    assert len(parser.library['DIFFAMP'].constraints) == 2
 
 def test_subckt_decl(setup_realistic, parser):
     parser.parse(f'''
@@ -115,27 +152,27 @@ X1 vcc outplus outminus inplus src 0 inminus diffamp res=200
     assert 'DIFFAMP' in parser.library
     assert len(parser.library['DIFFAMP'].elements) == 6
     assert len(parser.circuit.elements) == 1
-    assert type(parser.circuit.element('X1')).__name__ == 'DIFFAMP'
+    assert parser.circuit.elements[0].model.name == 'DIFFAMP'
 
 def test_model(parser):
     parser.parse('.MODEL nmos_rvt nmos KP=0.5M VT0=2')
     assert 'NMOS_RVT' in parser.library
-    assert list(parser.library['NMOS_RVT']._parameters.keys()) == ['W', 'L', 'NFIN', 'KP', 'VT0']
+    assert list(parser.library['NMOS_RVT'].parameters.keys()) == ['W', 'L', 'NFIN', 'KP', 'VT0']
 
 def test_ota_cir_parsing(parser):
-    with open((pathlib.Path(__file__).parent / 'ota.cir').resolve()) as fp:
+    with open((pathlib.Path(__file__).parent.parent / 'files' / 'ota.cir').resolve()) as fp:
         parser.parse(fp.read())
     assert 'OTA' in parser.library
     assert len(parser.library['OTA'].elements) == 10
 
 def test_ota_sp_parsing(parser):
-    with open((pathlib.Path(__file__).parent / 'ota.sp').resolve()) as fp:
+    with open((pathlib.Path(__file__).parent.parent / 'files' / 'ota.sp').resolve()) as fp:
         parser.parse(fp.read())
     assert 'OTA' in parser.library
     assert len(parser.library['OTA'].elements) == 10
 
 def test_basic_template_parsing(parser):
     libsize = len(parser.library)
-    with open((pathlib.Path(__file__).parent / 'basic_template.sp').resolve()) as fp:
+    with open((pathlib.Path(__file__).parent.parent / 'files' / 'basic_template.sp').resolve()) as fp:
         parser.parse(fp.read())
     assert len(parser.library) - libsize == 31

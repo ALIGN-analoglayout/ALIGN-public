@@ -1,6 +1,6 @@
 import pathlib
 
-from align.circuit.gen_dot import gen_dot_file
+from align.schema.gen_dot import gen_dot_file
 
 def test_gen_dot_BUFFER1():
     gen_dot_file(
