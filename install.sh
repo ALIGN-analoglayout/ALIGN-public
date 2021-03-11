@@ -44,22 +44,23 @@ if [[ "$*" != *"--no-deps"* ]]
 then
 
     #### Install Packages
-    $SUDO apt-get update && $SUDO apt-get install -yq \
-        git \
-        curl \
-        python3 \
-        python3-pip \
-        python3-venv \
-        python3-dev \
-        g++\
-        cmake \
-        libboost-container-dev \
-        graphviz \
-        gnuplot \
-        xvfb \
-        gfortran \
-        lcov \
-    &&  $SUDO apt-get clean
+    $SUDO apt-get update \
+        && $SUDO DEBIAN_FRONTEND=noninteractive apt-get install -yq \
+            git \
+            curl \
+            python3 \
+            python3-pip \
+            python3-venv \
+            python3-dev \
+            g++\
+            cmake \
+            libboost-container-dev \
+            graphviz \
+            gnuplot \
+            xvfb \
+            gfortran \
+            lcov \
+        && $SUDO apt-get clean
 
     #### Install klayout 
     curl -k -o ./klayout_0.26.3-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-18/klayout_0.26.3-1_amd64.deb
