@@ -63,8 +63,8 @@ class Point {
 class Rect
 {
 	private:
-		int _index;
 		Point _ll, _ur;
+		int _index;
 
 	public:
 		Rect(const Point& ll, const Point& ur) : _ll(ll), _ur(ur) {}
@@ -373,16 +373,19 @@ class Graph {
 
 class TapRemoval {
 	private:
+		DomSetGraph::Graph *_graph;
+		unsigned _dist;
 		PrimitiveData::Instances _instances;
 		PrimitiveData::Primitives _primitives, _primitivesWOTap;
-		DomSetGraph::Graph _graph;
 	public:
-		TapRemoval(const string& pdir, const string& pdirWOTap, PnRDB::hierNode &node, const unsigned dist);
+		TapRemoval(const string& pdir, const string& pdirWOTap, std::vector<PnRDB::hierNode> &nodeVec, const unsigned dist);
+		TapRemoval(const string& pdir, const string& pdirWOTap, const unsigned dist);
 		~TapRemoval();
 		void readPrimitives(PrimitiveData::Primitives& primitives, const string& pdir);
 		void createInstances(PnRDB::hierNode &node);
 		void buildGraph(const unsigned dist);
 		long deltaArea() const;
+		void rebuildInstances(const PrimitiveData::PlMap& plmap);
 
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

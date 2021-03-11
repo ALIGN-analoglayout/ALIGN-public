@@ -348,7 +348,7 @@ int toplevel( const std::vector<std::string>& argv) {
     std::vector<PnRDB::hierNode>& nodeVec(curr_plc.get());
 
 	// Tap removal
-	DB.RemoveRedundantTaps(current_node);
+	DB.RemoveRedundantTaps(nodeVec);
 
     logger->debug("Checkpoint: generated {0} palcements",nodeVec.size());
     //insert guard ring

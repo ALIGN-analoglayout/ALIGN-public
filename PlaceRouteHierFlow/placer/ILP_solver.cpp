@@ -1,4 +1,5 @@
 #include "ILP_solver.h"
+#include "../PnRDB/TapRemoval.h"
 
 ILP_solver::ILP_solver() {}
 
@@ -45,6 +46,8 @@ void ILP_solver::lpsolve_logger(lprec* lp, void* userhandle, char* buf) {
   // Log non-empty lines
   if (*buf != '\0') logger->debug("Placer lpsolve: {0}", buf);
 }
+
+TapRemoval tapRemover("../2_primitives", "../2_primitives/wo_tap", 50000);
 
 double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
@@ -402,12 +405,19 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   }
 
   // calculate LL and UR
+  PrimitiveData::PlMap plmap;
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
     LL.x = std::min(LL.x, Blocks[i].x);
     LL.y = std::min(LL.y, Blocks[i].y);
     UR.x = std::max(UR.x, Blocks[i].x + mydesign.Blocks[i][curr_sp.selected[i]].width);
     UR.y = std::max(UR.y, Blocks[i].y + mydesign.Blocks[i][curr_sp.selected[i]].height);
+	if (mydesign.Blocks[i][curr_sp.selected[i]].type.find("PMOS") == string::npos) {
+		plmap[mydesign.Blocks[i][curr_sp.selected[i]].name]._primName = mydesign.Blocks[i][curr_sp.selected[i]].type;
+		plmap[mydesign.Blocks[i][curr_sp.selected[i]].name]._ll = geom::Point(Blocks[i].x * 5, Blocks[i].y * 5);
+	}
   }
+  tapRemover.rebuildInstances(plmap);
+  logger->info("maximum delta area from tap removal : {0}", tapRemover.deltaArea());
   // calculate area
   area = double(UR.x - LL.x) * double(UR.y - LL.y);
   // calculate dead area

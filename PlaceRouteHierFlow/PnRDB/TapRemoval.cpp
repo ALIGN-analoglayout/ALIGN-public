@@ -4,6 +4,7 @@
 #include "TapRemoval.h"
 #include <filesystem>
 #include <nlohmann/json.hpp>
+#include "spdlog/spdlog.h"
 
 using namespace std;
 
@@ -287,13 +288,35 @@ void Graph::parseGraph(const string& fn)
 
 ConstNodes Graph::dominatingSet() const
 {
+	auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.dominatingSet");
 	set<const Node*> whiteNodes, dom;
+	size_t tapNodes(0), rowNodes(0), isoRow(0);
+	ConstNodes domNodes;
 	for (auto& n : _nodes) {
-		whiteNodes.insert(n);
-		n->setColor(NodeColor::White);
+		bool foundTap(false);
+		if (n->nodeType() == NodeType::Tap) {
+			foundTap = true;
+			++tapNodes;
+		} else {
+			++rowNodes;
+			for (auto& e : n->edges()) {
+				const Node* nbr = (e->v() == n) ? e->u() : e->v();
+				if (nbr && nbr->nodeType() == NodeType::Tap) {
+					foundTap = true;
+					break;
+				}
+			}
+		}
+		if (foundTap) {
+			whiteNodes.insert(n);
+			n->setColor(NodeColor::White);
+		} else ++isoRow;
 	}
+	logger->info("tap nodes : {0} row nodes : {1} {2}", tapNodes, rowNodes, isoRow); 
+	
 
 	while (!whiteNodes.empty()) {
+		logger->info("white nodes : {0}", whiteNodes.size());
 		for (auto& n : _nodes) {
 			unsigned span(0);
 			if (whiteNodes.find(n) != whiteNodes.end()) ++span;
@@ -336,7 +359,6 @@ ConstNodes Graph::dominatingSet() const
 		}
 	}
 
-	ConstNodes domNodes;
 	for (auto& n : dom) domNodes.push_back(n);
 
 	return move(domNodes);
@@ -363,15 +385,18 @@ void TapRemoval::readPrimitives(PrimitiveData::Primitives& primitives, const str
 	} catch (const fs::filesystem_error& ex) {
 		cout << ex.what() << '\n';
 	}
-	PrimitiveData::readJSONPrimitives(primitives, primFiles);
+	if (!primFiles.empty()) PrimitiveData::readJSONPrimitives(primitives, primFiles);
 }
 
 void TapRemoval::createInstances(PnRDB::hierNode &node)
 {
-	string plfile;
+	auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.createInstances");
+	if (_primitives.empty()) return;
 	PrimitiveData::PlMap plmap;
-    for (const auto& bl : node.Blocks) {
-      const auto& block = bl.instance[bl.selectedInstance];
+    for (unsigned i = 0; i < node.Blocks.size(); ++i) {
+	  logger->info("print : {0} {1}", node.Blocks[i].instance.size(), node.Blocks[i].selectedInstance);
+	  if (node.Blocks[i].selectedInstance >= node.Blocks[i].instance.size()) continue;
+      auto block = node.Blocks[i].instance[node.Blocks[i].selectedInstance];
       string ort;
       switch (block.orient) {
         case PnRDB::N:
@@ -389,6 +414,7 @@ void TapRemoval::createInstances(PnRDB::hierNode &node)
         default:
           break;
       };
+	  logger->info("info for {0} {1} {2} {3}", block.master, block.name, block.placedBox.LL.x, block.placedBox.LL.y, ort);
 	  if (block.master.find("PMOS") == string::npos && _primitives.find(block.master) != _primitives.end()) {
 		  plmap[block.name]._primName = block.master;
 		  plmap[block.name]._ll = geom::Point(block.placedBox.LL.x * 5, block.placedBox.LL.y * 5);
@@ -401,20 +427,21 @@ void TapRemoval::buildGraph(const unsigned dist)
 {
 	RTree rtree;
 	map<string, geom::Rect> allTaps;
+	if (_graph == nullptr) _graph = new DomSetGraph::Graph;
 	for (const auto& inst : _instances) {
 		auto& taps = inst->getTaps();
 		for (unsigned i = 0; i < taps.size(); ++i) {
 			bgBox b(bgPt(taps[i].xmin(), taps[i].ymin()), bgPt(taps[i].xmax(), taps[i].ymax()));
-			rtree.insert(bgVal(b, _graph.nodes().size()));
+			rtree.insert(bgVal(b, _graph->nodes().size()));
 			string nodeName(inst->name() + "__tap_" + to_string(i));
 			allTaps[nodeName] = taps[i];
-			_graph.addNode(nodeName, DomSetGraph::NodeType::Tap);
+			_graph->addNode(nodeName, DomSetGraph::NodeType::Tap);
 		}
 		auto& rows = inst->getRows();
 		for (unsigned i = 0; i < rows.size(); ++i) {
 			bgBox b(bgPt(rows[i].xmin(), rows[i].ymin()), bgPt(rows[i].xmax(), rows[i].ymax()));
-			rtree.insert(bgVal(b, _graph.nodes().size()));
-			_graph.addNode(inst->name() + "__row_" + to_string(i), DomSetGraph::NodeType::Active);
+			rtree.insert(bgVal(b, _graph->nodes().size()));
+			_graph->addNode(inst->name() + "__row_" + to_string(i), DomSetGraph::NodeType::Active);
 		}
 	}
 
@@ -426,23 +453,36 @@ void TapRemoval::buildGraph(const unsigned dist)
 		vector<bgVal> overlapRects;
 		rtree.query(bgi::covered_by(box), back_inserter(overlapRects));
 		for (auto& val : overlapRects) {
-			auto& rname = _graph.nodes()[val.second]->name();
+			auto& rname = _graph->nodes()[val.second]->name();
 			if (it.first != rname) {
 				//cout << it.first << ' ' << rname << endl;
-				_graph.addEdge(it.first, rname);
+				_graph->addEdge(it.first, rname);
 			}
 		}
 	}
 
 }
 
-TapRemoval::TapRemoval(const string& pdir, const string& pdirWOTap, PnRDB::hierNode &node, const unsigned dist)
+TapRemoval::TapRemoval(const string& pdir, const string& pdirWOTap, std::vector<PnRDB::hierNode> &nodeVec, const unsigned dist) : _graph(nullptr), _dist(dist)
 {
+	auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval");
 	readPrimitives(_primitives, pdir);
+	logger->info("Read primitives from {0}", pdir);
 	readPrimitives(_primitivesWOTap, pdirWOTap);
-	string plfile;
-	createInstances(node);
-	buildGraph(dist);
+	logger->info("Read primitives from {0}", pdirWOTap);
+	if (!nodeVec.empty()) createInstances(nodeVec.back());
+	logger->info("Created instances");
+	buildGraph(_dist);
+	logger->info("built graph using dist {0}", _dist);
+}
+
+TapRemoval::TapRemoval(const string& pdir, const string& pdirWOTap, const unsigned dist) : _graph(nullptr), _dist(dist)
+{
+	auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval");
+	readPrimitives(_primitives, pdir);
+	logger->info("Read primitives from {0}", pdir);
+	readPrimitives(_primitivesWOTap, pdirWOTap);
+	logger->info("Read primitives from {0}", pdirWOTap);
 }
 
 TapRemoval::~TapRemoval()
@@ -459,16 +499,23 @@ TapRemoval::~TapRemoval()
 		delete x.second;
 	}
 	_primitivesWOTap.clear();
+
+	delete _graph;
+	_graph = nullptr;
 }
 
 long TapRemoval::deltaArea() const
 {
-	auto nodes = _graph.dominatingSet();
-
+	auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.deltaArea");
 	long deltaarea(0);
-	for (auto& it : _instances) {
-		deltaarea += it->primitive()->area();
-	}
+	if (_graph == nullptr) return deltaarea;
+	auto nodes = _graph->dominatingSet();
+
+	logger->info("Found {0} nodes in dominating set", nodes.size());
+
+	//for (auto& it : _instances) {
+	//	deltaarea += it->primitive()->area();
+	//}
 
 	for (auto& n : nodes) {
 		string name;
@@ -478,6 +525,7 @@ long TapRemoval::deltaArea() const
 			auto it = PrimitiveData::instMap.find(name);
 			if (it != PrimitiveData::instMap.end()) {
 				auto itWO = _primitivesWOTap.find(it->second->primitive()->name());
+				logger->info("Remove tap for cell {0}", it->second->name());
 				if (itWO != _primitivesWOTap.end()) {
 					auto delarea = it->second->primitive()->area() - itWO->second->area();
 					deltaarea += delarea;
@@ -488,3 +536,17 @@ long TapRemoval::deltaArea() const
 	return deltaarea;
 }
 
+
+void TapRemoval::rebuildInstances(const PrimitiveData::PlMap& plmap) {
+	for (auto& x : _instances) {
+		delete x;
+	}
+	_instances.clear();
+
+	PrimitiveData::createInstances(_instances, _primitives, plmap);
+	delete _graph;
+	_graph = new DomSetGraph::Graph;
+
+	buildGraph(_dist);
+
+}

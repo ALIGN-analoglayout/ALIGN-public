@@ -1998,29 +1998,21 @@ void PnRdatabase::WritePlacement(string outfile) {
   fout.close();
 }
 
-void PnRdatabase::RemoveRedundantTaps(PnRDB::hierNode &node) {
+void PnRdatabase::RemoveRedundantTaps(std::vector<PnRDB::hierNode>& nodeVec) {
 
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.RemoveRedundantTaps");
 
-  logger->info( "PnRDB-Info: Removing redundant taps for cell {0}", node.name);
-  string pdir, pdirWOTap, distStr;
+  if (nodeVec.empty()) return;
+  logger->info( "PnRDB-Info: Removing redundant taps for cell {0}", nodeVec.back().name);
+  string pdir, pdirWOTap;
   auto ptr = getenv("PRIMITIVE_DIR");
-  if (ptr != nullptr) {
-	  pdir = ptr;
-  }
+  pdir = (ptr != nullptr) ? ptr : "../2_primitives";
   ptr = getenv("PRIMITIVE_DIR_WO_TAP");
-  if (ptr != nullptr) {
-	  pdirWOTap = ptr;
-  }
+  pdirWOTap = (ptr != nullptr) ? ptr : "../2_primitives/wo_tap";
   ptr = getenv("TAP_DISTANCE");
-  if (ptr != nullptr) {
-	  distStr = ptr;
-  }
+  unsigned dist = (ptr != nullptr) ? atoi(ptr) : 50000;
 
-  if (!pdir.empty() && pdirWOTap.empty() && !distStr.empty()) {
-	  unsigned dist = stoi(distStr);
-	  TapRemoval tr(pdir, pdirWOTap, node, dist);
-	  logger->info("delta area : {0}", tr.deltaArea());
-  }
+  TapRemoval tr(pdir, pdirWOTap, nodeVec, dist);
+  logger->info("delta area : {0}", tr.deltaArea());
 
 }
