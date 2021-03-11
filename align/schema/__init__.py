@@ -1,3 +1,4 @@
+from .types import *
 from .model import Model
 from .subcircuit import SubCircuit, Circuit
 from .instance import Instance
