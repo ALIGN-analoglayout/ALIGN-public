@@ -16,7 +16,7 @@ ARG ALIGN_DEPLOY_DIR=/ALIGN-public
 #
 ####################################
 
-FROM ubuntu:18.04 as align_builder
+FROM ubuntu:20.04 as align_builder
 
 # import global args
 ARG http_proxy
@@ -100,7 +100,7 @@ RUN \
 #       size here
 #
 ####################################
-FROM ubuntu:18.04 as align_image
+FROM ubuntu:20.04 as align_image
 
 # import global args
 ARG http_proxy
