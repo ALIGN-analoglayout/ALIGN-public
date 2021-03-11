@@ -32,7 +32,6 @@ class NonuniformCanvas(Canvas):
             stop_point=200,
             stop_offset=0
         )
-
         m2 = LayerMetal(
             name="M2",
             gds_layer_number=2,
@@ -46,10 +45,36 @@ class NonuniformCanvas(Canvas):
             stop_point=350,
             stop_offset=0,
         )
-
         m3 = LayerMetal(
             name="M3",
             gds_layer_number=3,
+            direction="v",
+            min_length=1000,
+            min_end_to_end=400,
+            offset=0,
+            width=[800, 1000],
+            space=[600, 600],
+            color=["a", "b"],
+            stop_pitch=1000,
+            stop_point=500,
+            stop_offset=0
+        )
+        m4 = LayerMetal(
+            name="M4",
+            gds_layer_number=4,
+            direction="h",
+            min_length=500,
+            min_end_to_end=300,
+            offset=0,
+            width=[400, 500, 500, 600, 600, 500, 500],
+            space=[300, 300, 400, 400, 400, 300, 300],
+            stop_pitch=1000,
+            stop_point=350,
+            stop_offset=0,
+        )
+        m5 = LayerMetal(
+            name="M5",
+            gds_layer_number=5,
             direction="v",
             min_length=1000,
             min_end_to_end=400,
@@ -66,7 +91,7 @@ class NonuniformCanvas(Canvas):
                        """Mock FinFET technology with non-uniform metal grids.\
 This PDK is for development and not functional yet.\
 This file is auto-generated using tests/schema/test_pdk.py""",
-                       layers=[m1, m2, m3])
+                       layers=[m1, m2, m3, m4, m5])
 
         # pprint.pprint(self.pdk.dict())
 

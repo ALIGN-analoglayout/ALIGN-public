@@ -92,6 +92,73 @@
       "unit_c": null,
       "unit_r": null,
       "unit_cc": null
+    },
+    {
+      "name": "M4",
+      "gds_layer_number": 4,
+      "gds_data_type": {
+        "draw": 0
+      },
+      "direction": "h",
+      "min_length": 500,
+      "max_length": null,
+      "min_end_to_end": 300,
+      "offset": 0,
+      "width": [
+        400,
+        500,
+        500,
+        600,
+        600,
+        500,
+        500
+      ],
+      "space": [
+        300,
+        300,
+        400,
+        400,
+        400,
+        300,
+        300
+      ],
+      "color": null,
+      "stop_pitch": 1000,
+      "stop_point": 350,
+      "stop_offset": 0,
+      "unit_c": null,
+      "unit_r": null,
+      "unit_cc": null
+    },
+    {
+      "name": "M5",
+      "gds_layer_number": 5,
+      "gds_data_type": {
+        "draw": 0
+      },
+      "direction": "v",
+      "min_length": 1000,
+      "max_length": null,
+      "min_end_to_end": 400,
+      "offset": 0,
+      "width": [
+        800,
+        1000
+      ],
+      "space": [
+        600,
+        600
+      ],
+      "color": [
+        "a",
+        "b"
+      ],
+      "stop_pitch": 1000,
+      "stop_point": 500,
+      "stop_offset": 0,
+      "unit_c": null,
+      "unit_r": null,
+      "unit_cc": null
     }
   ],
   "scale_factor": 1
