@@ -1,4 +1,4 @@
-from typing import List, Union, Dict, Optional
+from typing import List, Union, Dict, Optional, Tuple
 from align.schema import schema
 from pydantic import validator, ValidationError, Field
 
@@ -78,13 +78,46 @@ class LayerMetal(Layer):
 
 
 class LayerVia(Layer):
-    # Option #1: Specify list of options WxH  => specify in add via
-    # Option #2: Specify option per metal combination m1_w x m2_w  => via_x
-    # Option #3: Specify option per metal combination m1_w_c x m2_w_c  => via_1, via_2, via_3
-    pass
+    """
+    Option #1: Specify a canonical via and adjust size via postprocessor (e.g self-aligned via)
+               This is not sufficient for Analog Detailed Router
+
+    Option #2: Specify a via for each lower and upper metal width combination
+               This is not sufficient for Analog Detailed Router
+
+    Option #3: Specify a canonical via and adjust size via postprocessor
+               Specify the complete list of via width_x by width_y by color (auto-convert to ADR format)
+               Optional: Specify via_patterns as needed for Intel ADR
+               This seems to work
+    """
+    # Option #1: to demonstrate
+
+    stack: Tuple[str, str]
+
+    width_x: int
+    width_y: int
+
+    space_x: int
+    space_y: int
+
+    enc_l_x: Optional[int] = 0
+    enc_l_y: Optional[int] = 0
+    enc_h_x: Optional[int] = 0
+    enc_h_y: Optional[int] = 0
+
+    unit_r: Optional[Dict[int, ParasiticValues]]
 
 
 class PDK(schema.BaseModel):
     name: str
-    layers: List[Union[LayerMetal, LayerVia]]
+    layers: Dict[str, Union[LayerMetal, LayerVia]] = Field(default_factory=lambda: {})
     scale_factor: int = 1
+
+    def add_layer(self, layer):
+        assert layer.name not in self.layers
+        self.layers[layer.name] = layer
+
+    @validator('layers')
+    def _validate_stack_exists(cls, v):
+        # TODO: For each via, check metal stack exists and metals are in orthogonal direction
+        return v

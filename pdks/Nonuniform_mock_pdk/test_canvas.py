@@ -12,13 +12,17 @@ def test_canvas():
     c = canvas.NonuniformCanvas()
 
     for x in range(0, 7):
-        c.addWire(c.M1, 'M1', None, x, (0, 1), (5, 3))
+        c.addWire(c.M1, 'a', None, x, (0, 1), (5, 3))
     for y in range(0, 8):
-        c.addWire(c.M2, 'M2', None, y, (0, 1), (5, 3))
-        c.addWire(c.M4, 'M4', None, y, (0, 1), (5, 3))
+        c.addWire(c.M2, 'a', None, y, (0, 1), (5, 3))
+        c.addWire(c.M4, 'a', None, y, (0, 1), (5, 3))
     for x in range(0, 5):
-        c.addWire(c.M3, 'M3', None, x, (0, 1), (5, 3))
-        c.addWire(c.M5, 'M5', None, x, (0, 1), (5, 3))
+        c.addWire(c.M3, 'a', None, x, (0, 1), (5, 3))
+        c.addWire(c.M5, 'a', None, x, (0, 1), (5, 3))
+
+    for x in range(1, 6):
+        for y in range(1, 3):
+            c.addVia(c.V1, 'a', None, x, y)
 
     c.computeBbox()
 
@@ -32,6 +36,5 @@ def test_canvas():
     # for viewing
     with open(pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/'nonuniform_canvas.json', "wt") as fp:
         fp.write(json.dumps(data, indent=2) + '\n')
-
 
 test_canvas()

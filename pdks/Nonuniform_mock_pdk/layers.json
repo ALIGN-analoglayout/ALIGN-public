@@ -1,7 +1,7 @@
 {
   "name": "Mock FinFET technology with non-uniform metal grids.This PDK is for development and not functional yet.This file is auto-generated using tests/schema/test_pdk.py",
-  "layers": [
-    {
+  "layers": {
+    "M1": {
       "name": "M1",
       "gds_layer_number": 1,
       "gds_data_type": {
@@ -26,7 +26,7 @@
       "unit_r": null,
       "unit_cc": null
     },
-    {
+    "M2": {
       "name": "M2",
       "gds_layer_number": 2,
       "gds_data_type": {
@@ -63,7 +63,7 @@
       "unit_r": null,
       "unit_cc": null
     },
-    {
+    "M3": {
       "name": "M3",
       "gds_layer_number": 3,
       "gds_data_type": {
@@ -93,7 +93,7 @@
       "unit_r": null,
       "unit_cc": null
     },
-    {
+    "M4": {
       "name": "M4",
       "gds_layer_number": 4,
       "gds_data_type": {
@@ -130,7 +130,7 @@
       "unit_r": null,
       "unit_cc": null
     },
-    {
+    "M5": {
       "name": "M5",
       "gds_layer_number": 5,
       "gds_data_type": {
@@ -159,7 +159,27 @@
       "unit_c": null,
       "unit_r": null,
       "unit_cc": null
+    },
+    "V1": {
+      "name": "V1",
+      "gds_layer_number": 21,
+      "gds_data_type": {
+        "draw": 0
+      },
+      "stack": [
+        "M1",
+        "M2"
+      ],
+      "width_x": 600,
+      "width_y": 500,
+      "space_x": 1000,
+      "space_y": 1000,
+      "enc_l_x": 0,
+      "enc_l_y": 0,
+      "enc_h_x": 0,
+      "enc_h_y": 0,
+      "unit_r": null
     }
-  ],
+  },
   "scale_factor": 1
 }
