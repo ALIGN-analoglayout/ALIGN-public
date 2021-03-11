@@ -30,6 +30,7 @@ ENV http_proxy=$http_proxy
 ENV https_proxy=$https_proxy
 ENV ALIGN_HOME=$ALIGN_DEPLOY_DIR
 ENV USER=$ALIGN_USER
+ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR $ALIGN_HOME
 
 # Install ALIGN dependencies
