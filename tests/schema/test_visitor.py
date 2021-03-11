@@ -103,7 +103,7 @@ def test_transformer_string_visitor(dummy):
     assert transformed.arg3 is not dummy.arg3
     # No string in subtree
     assert transformed.arg4 == []
-    # assert transformed.arg4 is dummy.arg4, f'old:({id(dummy.arg4)}, {dummy.arg4}), new:({id(transformed.arg4)}, {transformed.arg4})'
+    assert transformed.arg4 is dummy.arg4, f'old:({id(dummy.arg4)}, {dummy.arg4}), new:({id(transformed.arg4)}, {transformed.arg4})'
     # String in subtree
     assert transformed.arg5 == {'arg5_k': 'prefix_arg5_v'}
     assert transformed.arg5 is not dummy.arg5
