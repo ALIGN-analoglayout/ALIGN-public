@@ -4,7 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from . import schema
-from .types import List
+from .types import List, Dict
 
 class Visitor(object):
     """
@@ -31,7 +31,7 @@ class Visitor(object):
     either a list or None for most visitors.
     """
     def visit(self, node):
-        if isinstance(node, (schema.BaseModel, List, str, dict, int, type(None))):
+        if isinstance(node, (schema.BaseModel, List, Dict, str, int, type(None))):
             method = 'visit_' + node.__class__.__name__
             return getattr(self, method, self.generic_visit)(node)
         else:
@@ -62,7 +62,7 @@ class Visitor(object):
             return None
         elif isinstance(node, List):
             return self.flatten(self.visit(v) for v in node)
-        elif isinstance(node, dict):
+        elif isinstance(node, Dict):
             return self.flatten(self.visit(v) for _, v in node.items())
         else:
             raise NotImplementedError( \
@@ -88,14 +88,14 @@ class Transformer(Visitor):
     def generic_visit(self, node):
         if isinstance(node, schema.BaseModel):
             field_dict = dict(self.iter_fields(node))
-            new_field_dict = self.generic_visit(field_dict)
-            return node if field_dict is new_field_dict else node.__class__(**new_field_dict)
+            new_field_dict = {k: self.visit(v) for k, v in field_dict.items()}
+            return node if all(x is y for x, y in zip(field_dict.values(), new_field_dict.values())) else node.__class__(**new_field_dict)
         elif isinstance(node, (int, str, type(None))):
             return node
         elif isinstance(node, List):
             new_node = [self.visit(v) for v in node]
             return node if all(x is y for x, y in zip(node, new_node)) else new_node
-        elif isinstance(node, dict):
+        elif isinstance(node, Dict):
             new_node = {k: self.visit(v) for k, v in node.items()}
             return node if all(x is y for x, y in zip(node.values(), new_node.values())) else new_node
         else:

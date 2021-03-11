@@ -37,6 +37,26 @@ class List(GenericModel, Generic[DataT]):
     def __eq__(self, other):
         return self.__root__ == other
 
-# class Dict(GenericModel, Generic[KeyT], Generic[DataT]):
-#     __root__: typing.Dict[KeyT, DataT]
+class Dict(GenericModel, Generic[KeyT,DataT]):
+    __root__: typing.Dict[KeyT, DataT]
 
+    class Config:
+        copy_on_model_validation = False
+
+    def items(self):
+        return self.__root__.items()
+
+    def values(self):
+        return self.__root__.values()
+
+    def __len__(self):
+        return len(self.__root__)
+
+    def __iter__(self):
+        return iter(self.__root__)
+
+    def __getitem__(self, item):
+        return self.__root__[item]
+
+    def __eq__(self, other):
+        return self.__root__ == other

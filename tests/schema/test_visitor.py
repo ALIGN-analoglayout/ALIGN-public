@@ -109,7 +109,7 @@ def test_transformer_string_visitor(dummy):
     assert transformed.arg5 is not dummy.arg5
     # No string in subtree
     assert transformed.arg6 == {'arg6_k': None}
-    # assert transformed.arg6 is dummy.arg6
+    assert transformed.arg6 is dummy.arg6
     # Expected result for arg7 and arg8
     basedict = {'arg1': 'prefix_arg1',
                 'arg2': None,
