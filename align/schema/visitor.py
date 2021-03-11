@@ -4,6 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from . import schema
+from .types import List
 
 class Visitor(object):
     """
@@ -30,7 +31,7 @@ class Visitor(object):
     either a list or None for most visitors.
     """
     def visit(self, node):
-        if isinstance(node, (schema.BaseModel, str, list, dict, int, type(None))):
+        if isinstance(node, (schema.BaseModel, List, str, dict, int, type(None))):
             method = 'visit_' + node.__class__.__name__
             return getattr(self, method, self.generic_visit)(node)
         else:
@@ -59,7 +60,7 @@ class Visitor(object):
             return self.flatten(self.visit(v) for _, v in self.iter_fields(node))
         elif isinstance(node, (str, int, type(None))):
             return None
-        elif isinstance(node, list):
+        elif isinstance(node, List):
             return self.flatten(self.visit(v) for v in node)
         elif isinstance(node, dict):
             return self.flatten(self.visit(v) for _, v in node.items())
@@ -91,7 +92,7 @@ class Transformer(Visitor):
             return node if field_dict is new_field_dict else node.__class__(**new_field_dict)
         elif isinstance(node, (int, str, type(None))):
             return node
-        elif isinstance(node, list):
+        elif isinstance(node, List):
             new_node = [self.visit(v) for v in node]
             return node if all(x is y for x, y in zip(node, new_node)) else new_node
         elif isinstance(node, dict):

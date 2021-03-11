@@ -5,10 +5,8 @@ import string
 import collections
 import more_itertools as itertools
 
-from typing import List, Union, NamedTuple, Optional
-from typing_extensions import Literal
-
 from . import schema
+from .types import Union, NamedTuple, Optional, Literal, List
 
 class ConstraintBase(schema.BaseModel, abc.ABC):
 
@@ -41,7 +39,8 @@ class ConstraintBase(schema.BaseModel, abc.ABC):
            (Useful for pairwise constraints)
             bbox1, bbox2 = self._z3_bbox_variables(box1, box2)
         '''
-        if len(blocks) == 1 and isinstance(blocks[0], list):
+        print([block for block in blocks])
+        if len(blocks) == 1 and isinstance(blocks[0], List):
             blocks = blocks[0]
         return [ConstraintDB.GenerateVar(
                     'Bbox',

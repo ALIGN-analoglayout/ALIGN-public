@@ -1,4 +1,4 @@
-from typing import Optional, List
+from .types import Optional, List
 
 from . import schema
 

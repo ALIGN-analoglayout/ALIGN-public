@@ -1,6 +1,6 @@
 import pytest
 
-from typing import Optional, List, Dict
+from align.schema.types import Optional, List, Dict
 
 from align.schema.schema import BaseModel
 from align.schema.visitor import Visitor, Transformer
@@ -112,14 +112,14 @@ def test_transformer_string_visitor(dummy):
     # assert transformed.arg6 is dummy.arg6
     # Expected result for arg7 and arg8
     basedict = {'arg1': 'prefix_arg1',
-                   'arg2': None,
-                   'arg3': ['prefix_arg3_1',
-                            'prefix_arg3_2'],
-                   'arg4': [],
-                   'arg5': {'arg5_k': 'prefix_arg5_v'},
-                   'arg6': {'arg6_k': None},
-                   'arg7': None,
-                   'arg8': None}
+                'arg2': None,
+                'arg3': ['prefix_arg3_1',
+                        'prefix_arg3_2'],
+                'arg4': [],
+                'arg5': {'arg5_k': 'prefix_arg5_v'},
+                'arg6': {'arg6_k': None},
+                'arg7': None,
+                'arg8': None}
     # String in subtree
     assert transformed.arg7 == basedict
     assert transformed.arg7 is not dummy.arg7

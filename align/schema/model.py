@@ -1,6 +1,6 @@
 import logging
 
-from typing import Dict, ClassVar, Optional, List
+from .types import Dict, ClassVar, Optional, List
 
 logger = logging.getLogger(__name__)
 

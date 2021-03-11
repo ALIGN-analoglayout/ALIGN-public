@@ -1,4 +1,4 @@
-from typing import Union, Dict, ClassVar, Optional
+from .types import Union, Dict, ClassVar, Optional
 
 import logging
 logger = logging.getLogger(__name__)
