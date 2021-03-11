@@ -1,7 +1,7 @@
 #
 # Base container starts here
 #
-FROM ubuntu:18.04 as align_base_using_install
+FROM ubuntu:20.04 as align_base_using_install
 
 #
 # Set required environment variables
