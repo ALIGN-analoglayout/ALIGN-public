@@ -6,7 +6,7 @@ import collections
 import more_itertools as itertools
 
 from . import schema
-from .types import Union, NamedTuple, Optional, Literal, List
+from .types import Union, NamedTuple, Optional, Literal, List, PrivateAttr
 
 class ConstraintBase(schema.BaseModel, abc.ABC):
 
@@ -94,9 +94,9 @@ class ConstraintDB(schema.BaseModel):
     #
     # Private attribute affecting class behavior
     #
-    _solver = schema.PrivateAttr()
-    _commits = schema.PrivateAttr()
-    _validation = schema.PrivateAttr()
+    _solver = PrivateAttr()
+    _commits = PrivateAttr()
+    _validation = PrivateAttr()
 
     def __iter__(self):
         return iter(self.__root__)

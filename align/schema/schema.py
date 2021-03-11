@@ -9,5 +9,4 @@ class BaseModel(pydantic.BaseModel):
 
 from pydantic import \
     validator, \
-    validate_arguments, \
-    PrivateAttr
+    validate_arguments
