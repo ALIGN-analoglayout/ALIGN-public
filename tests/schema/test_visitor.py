@@ -3,7 +3,7 @@ import pytest
 from align.schema.types import Optional, List, Dict
 
 from align.schema.schema import BaseModel
-from align.schema.visitor import Visitor, Transformer
+from align.schema.visitor import Visitor, Transformer, cache
 
 @pytest.fixture
 def dummy():
@@ -126,3 +126,31 @@ def test_transformer_string_visitor(dummy):
     # String in subtree
     assert transformed.arg8 == [basedict, basedict]
     assert transformed.arg8 is not dummy.arg8
+    # Ensure cache is working for generic_visitor
+    assert transformed.arg7 is transformed.arg8[0]
+    assert transformed.arg8[0] is transformed.arg8[1]
+
+def test_cache(dummy):
+
+    class UncachedTransformer(Transformer):
+        def visit_DummyModel(self, node):
+            if not hasattr(self, 'top'):
+                self.top = node
+                return self.generic_visit(node)
+            else:
+                return node.copy()
+    control = UncachedTransformer().visit(dummy)
+    assert control.arg7 is not control.arg8[0]
+    assert control.arg8[0] is not control.arg8[1]
+
+    class CachedTransformer(Transformer):
+        @cache # DO THIS FOR MOST VISITORS
+        def visit_DummyModel(self, node):
+            if not hasattr(self, 'top'):
+                self.top = node
+                return self.generic_visit(node)
+            else:
+                return node.copy()
+    transformed = CachedTransformer().visit(dummy)
+    assert transformed.arg7 is transformed.arg8[0]
+    assert transformed.arg8[0] is transformed.arg8[1]

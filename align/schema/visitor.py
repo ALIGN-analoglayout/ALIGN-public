@@ -1,10 +1,49 @@
 import abc
 import logging
+import functools
 
 logger = logging.getLogger(__name__)
 
 from . import schema
 from .types import List, Dict
+
+def cache(function=None, *, types=None):
+    '''
+    This decorator will store the results of a visitor method
+    in self.cache and retrieve it if the id of a new object
+    matches one in the cache.
+
+    This simultaeneously helps avoid redundant computation and
+    ensures that shared pointers in the original tree results
+    in shared pointers in the new tree. If this is not desired
+    (if the result of a subtree is dependent upon the nodes
+    above it for example), please implement a custom visit_*
+    method WITHOUT the @cache decorator.
+
+    It is to be noted that the decorator can be used in two ways:
+    1) @cache
+       Cache all results (Used 99.999% of the time)
+    2) @cache(types=[...])
+       Cache all incoming nodes that are instances of types
+       (Mostly used by generic_visit)
+    '''
+    def decorator(f):
+        @functools.wraps(f)
+        def cached_method(visitor, node):
+            if types and not isinstance(node, types):
+                return f(visitor, node)
+            try:
+                return visitor.cache[id(node)]
+            except:
+                pass
+            newnode = f(visitor, node)
+            visitor.cache[id(node)] = newnode
+            return newnode
+        return cached_method
+    if function:
+        return decorator(function)
+    else:
+        return decorator
 
 class Visitor(object):
     """
@@ -30,6 +69,10 @@ class Visitor(object):
     root node visitor. Note that the generic_visitor attempts to return
     either a list or None for most visitors.
     """
+
+    def __init__(self):
+        self.cache = {}
+
     def visit(self, node):
         if isinstance(node, (schema.BaseModel, List, Dict, str, int, type(None))):
             method = 'visit_' + node.__class__.__name__
@@ -55,15 +98,16 @@ class Visitor(object):
                 ret.append(item)
         return ret
 
+    @cache(types=(schema.BaseModel, List, Dict))
     def generic_visit(self, node):
         if isinstance(node, schema.BaseModel):
             return self.flatten(self.visit(v) for _, v in self.iter_fields(node))
-        elif isinstance(node, (str, int, type(None))):
-            return None
         elif isinstance(node, List):
             return self.flatten(self.visit(v) for v in node)
         elif isinstance(node, Dict):
             return self.flatten(self.visit(v) for _, v in node.items())
+        elif isinstance(node, (str, int, type(None))):
+            return None
         else:
             raise NotImplementedError( \
                 f'{self.__class__.__name__}.generic_visit() does not support node of type {node.__class__.__name__}:\n{node}')
@@ -85,19 +129,20 @@ class Transformer(Visitor):
     node = YourTransformer().visit(node)
     """
 
+    @cache(types=(schema.BaseModel, List, Dict))
     def generic_visit(self, node):
         if isinstance(node, schema.BaseModel):
             field_dict = dict(self.iter_fields(node))
             new_field_dict = {k: self.visit(v) for k, v in field_dict.items()}
             return node if all(x is y for x, y in zip(field_dict.values(), new_field_dict.values())) else node.__class__(**new_field_dict)
-        elif isinstance(node, (int, str, type(None))):
-            return node
         elif isinstance(node, List):
             new_node = [self.visit(v) for v in node]
             return node if all(x is y for x, y in zip(node, new_node)) else new_node
         elif isinstance(node, Dict):
             new_node = {k: self.visit(v) for k, v in node.items()}
             return node if all(x is y for x, y in zip(node.values(), new_node.values())) else new_node
+        elif isinstance(node, (int, str, type(None))):
+            return node
         else:
             raise NotImplementedError( \
                 f'{self.__class__.__name__}.generic_visit() does not support node of type {node.__class__.__name__}:\n{node}')

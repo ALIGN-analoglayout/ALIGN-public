@@ -55,9 +55,6 @@ class Dict(GenericModel, Generic[KeyT,DataT]):
     def __len__(self):
         return len(self.__root__)
 
-    def __iter__(self):
-        return iter(self.__root__)
-
     def __getitem__(self, item):
         return self.__root__[item]
 
