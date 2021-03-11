@@ -4,8 +4,7 @@ import functools
 
 logger = logging.getLogger(__name__)
 
-from . import schema
-from .types import List, Dict
+from . import types
 
 def cache(function=None, *, types=None):
     '''
@@ -50,7 +49,7 @@ class Visitor(object):
     The Visitor base class walks the ALIGN specification tree and calls a
     visitor function for every node found.  This is very similar to the
     `NodeVisitor` class implemented by the python internal `ast` module (except
-    that it operates on schema.BaseModel derivates).
+    that it operates on types.BaseModel derivates).
 
     This class is meant to be subclassed, with the subclass adding visitor
     methods. The visitor functions for the nodes are ``'visit_'`` + the
@@ -74,7 +73,7 @@ class Visitor(object):
         self.cache = {}
 
     def visit(self, node):
-        if isinstance(node, (schema.BaseModel, List, Dict, str, int, type(None))):
+        if isinstance(node, (types.BaseModel, types.List, types.Dict, str, int, type(None))):
             method = 'visit_' + node.__class__.__name__
             return getattr(self, method, self.generic_visit)(node)
         else:
@@ -98,13 +97,13 @@ class Visitor(object):
                 ret.append(item)
         return ret
 
-    @cache(types=(schema.BaseModel, List, Dict))
+    @cache(types=(types.BaseModel, types.List, types.Dict))
     def generic_visit(self, node):
-        if isinstance(node, schema.BaseModel):
+        if isinstance(node, types.BaseModel):
             return self.flatten(self.visit(v) for _, v in self.iter_fields(node))
-        elif isinstance(node, List):
+        elif isinstance(node, types.List):
             return self.flatten(self.visit(v) for v in node)
-        elif isinstance(node, Dict):
+        elif isinstance(node, types.Dict):
             return self.flatten(self.visit(v) for _, v in node.items())
         elif isinstance(node, (str, int, type(None))):
             return None
@@ -129,16 +128,16 @@ class Transformer(Visitor):
     node = YourTransformer().visit(node)
     """
 
-    @cache(types=(schema.BaseModel, List, Dict))
+    @cache(types=(types.BaseModel, types.List, types.Dict))
     def generic_visit(self, node):
-        if isinstance(node, schema.BaseModel):
+        if isinstance(node, types.BaseModel):
             field_dict = dict(self.iter_fields(node))
             new_field_dict = {k: self.visit(v) for k, v in field_dict.items()}
             return node if all(x is y for x, y in zip(field_dict.values(), new_field_dict.values())) else node.__class__(**new_field_dict)
-        elif isinstance(node, List):
+        elif isinstance(node, types.List):
             new_node = [self.visit(v) for v in node]
             return node if all(x is y for x, y in zip(node, new_node)) else new_node
-        elif isinstance(node, Dict):
+        elif isinstance(node, types.Dict):
             new_node = {k: self.visit(v) for k, v in node.items()}
             return node if all(x is y for x, y in zip(node.values(), new_node.values())) else new_node
         elif isinstance(node, (int, str, type(None))):

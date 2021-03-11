@@ -1,15 +1,19 @@
+import pydantic.generics
 import typing
-import pydantic
 
-from typing import TypeVar, Optional, Generic, Union, NamedTuple, Literal, ClassVar, Sequence, Mapping
-from pydantic.generics import GenericModel
-from pydantic import PrivateAttr
+class BaseModel(pydantic.BaseModel):
 
-KeyT = TypeVar('KeyT')
-DataT = TypeVar('DataT')
+    class Config:
+        validate_assignment = True
+        extra = 'forbid'
+        allow_mutation = False
+        copy_on_model_validation = False
 
-class List(GenericModel, Generic[DataT]):
-    __root__: Sequence[DataT]
+KeyT = typing.TypeVar('KeyT')
+DataT = typing.TypeVar('DataT')
+
+class List(pydantic.generics.GenericModel, typing.Generic[DataT]):
+    __root__: typing.Sequence[DataT]
 
     class Config:
         copy_on_model_validation = False
@@ -37,8 +41,8 @@ class List(GenericModel, Generic[DataT]):
     def __eq__(self, other):
         return self.__root__ == other
 
-class Dict(GenericModel, Generic[KeyT,DataT]):
-    __root__: Mapping[KeyT, DataT]
+class Dict(pydantic.generics.GenericModel, typing.Generic[KeyT,DataT]):
+    __root__: typing.Mapping[KeyT, DataT]
 
     class Config:
         copy_on_model_validation = False
@@ -60,3 +64,25 @@ class Dict(GenericModel, Generic[KeyT,DataT]):
 
     def __eq__(self, other):
         return self.__root__ == other
+
+# Pass through directly from typing
+from typing import \
+    Optional, \
+    Union, \
+    NamedTuple, \
+    Literal, \
+    ClassVar
+
+# Pass through directly from pydantic
+from pydantic import \
+    validator, \
+    validate_arguments, \
+    PrivateAttr
+
+__all__ = [
+    'BaseModel', 'List', 'Dict',
+    'validator', 'validate_arguments',
+    'Optional', 'Union',
+    'NamedTuple', 'Literal',
+    'ClassVar', 'PrivateAttr'
+            ]

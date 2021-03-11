@@ -1,8 +1,6 @@
 import pytest
 
-from align.schema.types import Optional, List, Dict
-
-from align.schema.schema import BaseModel
+from align.schema.types import BaseModel, Optional, List, Dict
 from align.schema.visitor import Visitor, Transformer, cache
 
 @pytest.fixture

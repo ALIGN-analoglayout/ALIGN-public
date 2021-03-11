@@ -5,10 +5,10 @@ import string
 import collections
 import more_itertools as itertools
 
-from . import schema
-from .types import Union, NamedTuple, Optional, Literal, List, PrivateAttr
+from . import types
+from .types import Union, Optional, Literal, List
 
-class ConstraintBase(schema.BaseModel, abc.ABC):
+class ConstraintBase(types.BaseModel, abc.ABC):
 
     @abc.abstractmethod
     def check(self):
@@ -74,11 +74,11 @@ class AlignVertical(ConstraintBase):
 ConstraintType=Union[ \
         AlignHorizontal, AlignVertical]
 
-class ConstraintDB(schema.BaseModel):
+class ConstraintDB(types.BaseModel):
 
     __root__ : List[ConstraintType]
 
-    @schema.validate_arguments
+    @types.validate_arguments
     def append(self, constraint: ConstraintType):
         self.__root__.append(constraint)
         if self._validation:
@@ -94,9 +94,9 @@ class ConstraintDB(schema.BaseModel):
     #
     # Private attribute affecting class behavior
     #
-    _solver = PrivateAttr()
-    _commits = PrivateAttr()
-    _validation = PrivateAttr()
+    _solver = types.PrivateAttr()
+    _commits = types.PrivateAttr()
+    _validation = types.PrivateAttr()
 
     def __iter__(self):
         return iter(self.__root__)

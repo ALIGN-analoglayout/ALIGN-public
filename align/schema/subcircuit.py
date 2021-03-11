@@ -1,6 +1,6 @@
 from .types import Optional, List
 
-from . import schema
+from . import types
 
 from .model import Model
 from .instance import Instance
@@ -12,7 +12,7 @@ class SubCircuit(Model):
     elements: List[Instance]
     constraints: ConstraintDB
 
-    @schema.validate_arguments
+    @types.validate_arguments
     def add(self, instance: Instance):
         self.elements.append(instance)
         return instance
@@ -50,7 +50,7 @@ class Circuit(SubCircuit):
     def xyce(self):
         return '\n'.join([element.xyce() for element in self.elements])
 
-    @schema.validator('pins')
+    @types.validator('pins')
     def pin_check(cls, pins, values):
         if pins:
             pins = [p.upper() for p in pins]
