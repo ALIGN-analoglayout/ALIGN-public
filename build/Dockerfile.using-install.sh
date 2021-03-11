@@ -62,6 +62,7 @@ RUN \
         \) \) \
     \) -exec rm -rf '{}' + \
     # Remove all build dirs not needed by PnR
+    && rm -rf /var/lib/apt/lists/* \
     && cp -r --parents $LP_DIR/lp_solve_5.5.2.5_dev_ux64 /tmp \
     && cp -r --parents $JSON/include /tmp \
     && cp -r --parents $GTEST_DIR/mybuild/lib /tmp \
@@ -129,14 +130,14 @@ RUN \
     # Get Klayout using curl
     && savedAptMark="$(apt-mark showmanual)" \
     && apt-get install -y --no-install-recommends curl \
-    && curl -k -o ./klayout_0.26.3-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-18/klayout_0.26.3-1_amd64.deb \
+    && curl -k -o ./klayout_0.26.11-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-20/klayout_0.26.11-1_amd64.deb \
     && apt-mark auto '.*' > /dev/null \
     && [ -z "$savedAptMark" ] || apt-mark manual $savedAptMark \
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
     # Install Klayout
-    && apt-get install -yq ./klayout_0.26.3-1_amd64.deb \
+    && apt-get install -yq ./klayout_0.26.11-1_amd64.deb \
     # Clean up
-    && rm ./klayout_0.26.3-1_amd64.deb \
+    && rm ./klayout_0.26.11-1_amd64.deb \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=align_builder $ALIGN_HOME .
