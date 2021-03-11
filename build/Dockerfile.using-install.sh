@@ -12,6 +12,7 @@ ENV https_proxy=$https_proxy
 ENV ALIGN_HOME=/ALIGN-public
 WORKDIR $ALIGN_HOME
 ENV USER=root
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Install ALIGN dependencies
 # Note: - We copy (or create placeholders for) only those files
