@@ -1,6 +1,6 @@
 import os
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Extension
 
 def get_version(pkg_path):
     with open(os.path.join(pkg_path, '__init__.py'), 'r') as fp:
@@ -12,6 +12,48 @@ def get_readme_text():
     with open("README.md", "r", encoding="utf8") as fp:
         long_description = fp.read()
     return long_description
+
+def get_PnR():
+
+    import pybind11
+
+    SRC_FILES ={ # DIRECTORY,List[FILE]
+        'PlaceRouteHierFlow/PnRDB': ['readfile.cpp', 'PnRdatabase.cpp', 'ReadDesignRule.cpp', 'ReadDesignRuleJson.cpp', 'HardDesignRule.cpp', 'WriteJSON.cpp', 'ReadVerilog.cpp', 'ReadConstraint.cpp', 'Print.cpp', 'ReadLEF.cpp', 'PnRDBJSON.cpp'],
+        'PlaceRouteHierFlow/placer': ['design.cpp', 'SeqPair.cpp', 'ConstGraph.cpp', 'Aplace.cpp', 'Placer.cpp', 'ILP_solver.cpp', 'PlacerIfc.cpp'],
+        'PlaceRouteHierFlow/router': ['RawRouter.cpp', 'Grid.cpp', 'GlobalGrid.cpp', 'Graph.cpp', 'A_star.cpp', 'GlobalGraph.cpp', 'GlobalRouter.cpp', 'GcellGlobalRouter.cpp', 'DetailRouter.cpp', 'GcellDetailRouter.cpp', 'PowerRouter.cpp', 'Router.cpp'],
+        'PlaceRouteHierFlow/cap_placer': ['capplacer.cpp', 'CapPlacerIfc.cpp'],
+        'PlaceRouteHierFlow/MNA': ['MNASimulation.cpp'],
+        'PlaceRouteHierFlow/guard_ring': ['GuardRing.cpp', 'GuardRingIfc.cpp'],
+        'PlaceRouteHierFlow': ['toplevel.cpp', 'PnR-pybind11.cpp']
+    }
+
+    return Extension(
+        name='align.PnR',
+        sources=[ \
+            f'{d}/{f}' \
+                for d, files in SRC_FILES.items() \
+                    for f in files],
+        include_dirs = list(SRC_FILES.keys()) + [ \
+            pybind11.get_include(),
+            'lpsolve/lp_solve_5.5.2.5_dev_ux64',
+            'json/include',
+            'googletest/googletest/include',
+            'spdlog/include',
+            'superlu/SuperLU_5.2.1/SRC'
+        ],
+        extra_objects=[
+            'superlu/SuperLU_5.2.1/build/SRC/libsuperlu.a',
+            'superlu/SuperLU_5.2.1/build/CBLAS/libblas.a',
+        ],
+        library_dirs = [
+            'lpsolve/lp_solve_5.5.2.5_dev_ux64',
+            'googletest/googletest/mybuild/lib'
+        ],
+        libraries = [
+            'lpsolve55',
+            'gtest'
+        ]
+    )
 
 setup(name='align',
       version=get_version(
@@ -55,4 +97,5 @@ setup(name='align',
           'Programming Language :: C++',
           'Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)'
       ],
+      ext_modules=[get_PnR()],
       zip_safe=False)
