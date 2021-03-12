@@ -150,7 +150,8 @@ class NonuniformCanvas(Canvas):
             stop_point=500,
             stop_offset=0
         )
-        v1 = LayerVia(
+
+        v1 = LayerViaSet(name="V1", gds_layer_number=21, default_via=LayerVia(
             name="V1",
             gds_layer_number=21,
             stack=('M1', 'M2'),
@@ -158,15 +159,44 @@ class NonuniformCanvas(Canvas):
             width_y=500,
             space_x=100,
             space_y=100,
-        )
-        v1_set = LayerViaSet(name="V1", gds_layer_number=21, default_via=v1)
+        ))
+
+        v2 = LayerViaSet(name="V2", gds_layer_number=22, default_via=LayerVia(
+            name="V2",
+            gds_layer_number=22,
+            stack=('M2', 'M3'),
+            width_x=600,
+            width_y=500,
+            space_x=100,
+            space_y=100,
+        ))
+
+        v3 = LayerViaSet(name="V3", gds_layer_number=23, default_via=LayerVia(
+            name="V3",
+            gds_layer_number=23,
+            stack=('M3', 'M4'),
+            width_x=600,
+            width_y=500,
+            space_x=100,
+            space_y=100,
+        ))
+
+        v4 = LayerViaSet(name="V4", gds_layer_number=24, default_via=LayerVia(
+            name="V4",
+            gds_layer_number=24,
+            stack=('M3', 'M4'),
+            width_x=600,
+            width_y=500,
+            space_x=100,
+            space_y=100,
+        ))
 
         self.pdk = PDK(name=
                        """Mock FinFET technology with non-uniform metal grids.\
 This PDK is for development and not functional yet.\
 This file is auto-generated using tests/schema/test_pdk.py""",
                        layers={'M1': m1, 'M2': m2, 'M3': m3, 'M4': m4, 'M5': m5,
-                               'V1': v1_set})
+                               'V1': v1, 'V2': v2, 'V3': v3, 'V4': v4,})
 
         my_dir = pathlib.Path(__file__).resolve().parent
         with open(my_dir / "layers.json", "wt") as fp:

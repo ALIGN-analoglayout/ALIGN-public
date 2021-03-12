@@ -20,9 +20,12 @@ def test_canvas():
         c.addWire(c.M3, 'a', None, x, (0, 1), (5, 3))
         c.addWire(c.M5, 'a', None, x, (0, 1), (5, 3))
 
-    for x in range(1, 6):
-        for y in range(1, 3):
+    for y in range(1, 2):
+        for x in range(1, 4):
             c.addVia(c.V1, 'a', None, x, y)
+            c.addVia(c.V2, 'a', None, x, y+1)
+            c.addVia(c.V3, 'a', None, x, y+2)
+            c.addVia(c.V4, 'a', None, x, y+3)
 
     c.computeBbox()
 
