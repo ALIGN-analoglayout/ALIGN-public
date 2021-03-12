@@ -19,6 +19,7 @@ googletest/
 lpsolve/
 spdlog/
 superlu/
+dist/
 # Exclude common user / machine generated files
 pycharm/
 .idea/
