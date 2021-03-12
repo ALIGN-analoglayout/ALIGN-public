@@ -37,21 +37,18 @@ def get_PnR():
             pybind11.get_include(),
             'lpsolve/lp_solve_5.5.2.5_dev_ux64',
             'json/include',
-            'googletest/googletest/include',
             'spdlog/include',
             'superlu/SuperLU_5.2.1/SRC'
         ],
         extra_objects=[
             'superlu/SuperLU_5.2.1/build/SRC/libsuperlu.a',
-            'superlu/SuperLU_5.2.1/build/CBLAS/libblas.a',
+            'superlu/SuperLU_5.2.1/build/CBLAS/libblas.a'
         ],
         library_dirs = [
-            'lpsolve/lp_solve_5.5.2.5_dev_ux64',
-            'googletest/googletest/mybuild/lib'
+            'lpsolve/lp_solve_5.5.2.5_dev_ux64'
         ],
         libraries = [
-            'lpsolve55',
-            'gtest'
+            'lpsolve55'
         ]
     )
 
