@@ -16,6 +16,7 @@ if ( ! $?LD_LIBRARY_PATH ) then
 else
         setenv LD_LIBRARY_PATH "${LD_LIBRARY_PATH}:"
 endif
-setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}${LP_DIR}/lp_solve_5.5.2.5_dev_ux64/
+setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}${LP_DIR}/lp_solve_5.5.2.5_dev_ux64/:$GTEST_DIR/mybuild/lib/
+setenv PYTHONPATH $ALIGN_HOME/PlaceRouteHierFlow/
 
 source $VENV/bin/activate.csh

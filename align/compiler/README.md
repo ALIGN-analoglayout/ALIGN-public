@@ -22,7 +22,7 @@ Circuit annotation automatically identifies hierarchies in the design using a co
 #### Getting started
 
     * Requirements:
-        - Python3.6
+        - Python3.8
         - networkx
         - matplotlib
         - pyyaml

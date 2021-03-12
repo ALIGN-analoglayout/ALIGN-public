@@ -72,13 +72,17 @@ class BasicElement:
              The assumption is 2 port network
         """
         self.get_elements(2)
+        value = parse_value(self.value, "cap")
+        if 'c' in value.keys():
+            value['cap'] = value['c']
+            del value['c']
         return {
             "inst": self.inst,
             "inst_type": "cap",
             "real_inst_type": self.real_inst_type,
             "ports": self.pins,
             "edge_weight": [1]*(self.num_pins),
-            "values": parse_value(self.value, "cap")
+            "values": value
         }
 
     def resistor(self):
@@ -86,13 +90,17 @@ class BasicElement:
              The assumption is 2 port network
         """
         self.get_elements(2)
+        value = parse_value(self.value, "res")
+        if 'r' in value.keys():
+            value['res'] = value['r']
+            del value['r']
         return {
             "inst": self.inst,
             "inst_type": "res",
             "real_inst_type": self.real_inst_type,
             "ports": self.pins,
             "edge_weight": [1]*(self.num_pins),
-            "values": parse_value(self.value, "res")
+            "values": value
         }
 
     def inductor(self):
@@ -265,7 +273,6 @@ def _parse_inst(line):
             "inst_type": hier_nodes[-1],
             "real_inst_type": hier_nodes[-1],
             "ports": hier_nodes[1:-1],
-            #"edge_weight": list(range(len(hier_nodes[1:-1]))),
             "values": device_param_list
         }
         logger.debug(f'FOUND subckt instance: {device["inst"]}, type {device["inst_type"]}')

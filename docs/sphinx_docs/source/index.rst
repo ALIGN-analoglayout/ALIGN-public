@@ -11,7 +11,7 @@ ALIGN is an open source automatic layout generator for analog circuits jointly d
 The goal of ALIGN is to automatically translate an unannotated (or partially annotated) SPICE netlist of an analog circuit to a GDSII layout. The repository also releases a set of analog circuit designs. 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
    :caption: Contents:
 
    database
@@ -20,11 +20,14 @@ The goal of ALIGN is to automatically translate an unannotated (or partially ann
    usage
    viewer
    debug
+   const
+   setup
    upcoming
    modules
 
 Indices and tables
 ==================
+
 
 * :ref:`genindex`
 * :ref:`modindex`

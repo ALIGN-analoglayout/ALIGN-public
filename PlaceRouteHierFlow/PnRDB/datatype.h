@@ -404,6 +404,8 @@ struct hierNode {
   vector<pair<vector<int>, Smark>> Ordering_Constraints;
   int bias_Hgraph = 0;
   int bias_Vgraph=0;
+  double Aspect_Ratio_weight = 1000;
+  double Aspect_Ratio = 1;
   vector<Router_report> router_report;
   vector<Multi_connection> Multi_connections;
 
@@ -617,6 +619,10 @@ struct guardring_info {
   GdsDatatype gds_datatype;
 };
 
+struct design_info {
+  int Hspace = 0, Vspace = 0;  // global Hspace and Vspace in placement
+};
+
 struct Drc_info {
   int MaxLayer; //index
   map<string, int> Metalmap, Viamap; // map from metal/via's name(M1, M2, V1...) to metal/via's index in the below vectors
@@ -628,9 +634,8 @@ struct Drc_info {
   vector<string> MaskID_Via;
   Boundary top_boundary;
   guardring_info Guardring_info; //guardring info read from layers.json
+  design_info Design_info;       // design ingo from layer.json
 };
-
-
 
 struct routing_net{
    

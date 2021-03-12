@@ -1,4 +1,4 @@
-POWER = vdd_nom_123
+POWER = vcc
 GND = vss
 CLOCK = clk
 DIGITAL =
