@@ -35,17 +35,17 @@ def get_PnR():
                     for f in files],
         include_dirs = list(SRC_FILES.keys()) + [ \
             pybind11.get_include(),
-            'lpsolve/lp_solve_5.5.2.5_dev_ux64',
-            'json/include',
-            'spdlog/include',
-            'superlu/SuperLU_5.2.1/SRC'
+            os.environ['LP_DIR'] + '/lp_solve_5.5.2.5_dev_ux64',
+            os.environ['JSON'] + '/include',
+            os.environ['SPDLOG_DIR'] + '/include',
+            os.environ['SuperLu_DIR'] + '/SuperLU_5.2.1/SRC'
         ],
         extra_objects=[
-            'superlu/SuperLU_5.2.1/build/SRC/libsuperlu.a',
-            'superlu/SuperLU_5.2.1/build/CBLAS/libblas.a'
+            os.environ['SuperLu_DIR'] + '/SuperLU_5.2.1/build/SRC/libsuperlu.a',
+            os.environ['SuperLu_DIR'] + '/SuperLU_5.2.1/build/CBLAS/libblas.a'
         ],
         library_dirs = [
-            'lpsolve/lp_solve_5.5.2.5_dev_ux64'
+            os.environ['LP_DIR'] + '/lp_solve_5.5.2.5_dev_ux64'
         ],
         libraries = [
             'lpsolve55'
