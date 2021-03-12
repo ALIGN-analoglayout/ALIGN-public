@@ -40,4 +40,5 @@ def test_canvas():
     with open(pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/'nonuniform_canvas.json', "wt") as fp:
         fp.write(json.dumps(data, indent=2) + '\n')
 
+
 test_canvas()
