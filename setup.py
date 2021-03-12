@@ -1,6 +1,7 @@
 import os
 
 from setuptools import setup, find_packages, Extension
+import pybind11
 
 def get_version(pkg_path):
     with open(os.path.join(pkg_path, '__init__.py'), 'r') as fp:
@@ -14,8 +15,6 @@ def get_readme_text():
     return long_description
 
 def get_PnR():
-
-    import pybind11
 
     SRC_FILES ={ # DIRECTORY,List[FILE]
         'PlaceRouteHierFlow/PnRDB': ['readfile.cpp', 'PnRdatabase.cpp', 'ReadDesignRule.cpp', 'ReadDesignRuleJson.cpp', 'HardDesignRule.cpp', 'WriteJSON.cpp', 'ReadVerilog.cpp', 'ReadConstraint.cpp', 'Print.cpp', 'ReadLEF.cpp', 'PnRDBJSON.cpp'],
