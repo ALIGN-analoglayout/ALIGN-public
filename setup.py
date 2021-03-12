@@ -81,7 +81,6 @@ setup(name='align',
           'colorlog',
           'plotly'
           ],
-      setup_requires=[],
       python_requires='~=3.8',
       classifiers=[
           'Development Status :: 2 - Pre-Alpha',
