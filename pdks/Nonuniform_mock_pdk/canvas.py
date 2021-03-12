@@ -5,7 +5,7 @@ import pprint
 from align.cell_fabric.canvas import Canvas
 from align.cell_fabric import Wire, Via
 from align.cell_fabric import CenterLineGrid, EnclosureGrid
-from align.schema.pdk import LayerMetal, LayerVia, PDK
+from align.schema.pdk import LayerMetal, LayerVia, LayerViaSet, PDK
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class NonuniformCanvas(Canvas):
             if layer_name.startswith('M'):
                 self._add_metal_generator(layer)
             elif layer_name.startswith('V'):
-                self._add_via_generator(layer)
+                self._add_via_generator(layer.default_via)
 
     def _add_metal_generator(self, layer):
 
@@ -69,8 +69,8 @@ class NonuniformCanvas(Canvas):
         m_hor = layer.stack[x]
         m_ver = layer.stack[(x+1)%2]
 
-        h_clg = getattr(self, m_hor).clg
-        v_clg = getattr(self, m_ver).clg
+        h_clg = self.generators[m_hor].clg
+        v_clg = self.generators[m_ver].clg
 
         v = Via(layer.name, layer.name, h_clg=h_clg, v_clg=v_clg,
                 WidthX=layer.width_x, WidthY=layer.width_y, h_ext=None, v_ext=None)
@@ -156,16 +156,17 @@ class NonuniformCanvas(Canvas):
             stack=('M1', 'M2'),
             width_x=600,
             width_y=500,
-            space_x=1000,
-            space_y=1000,
+            space_x=100,
+            space_y=100,
         )
+        v1_set = LayerViaSet(name="V1", gds_layer_number=21, default_via=v1)
 
         self.pdk = PDK(name=
                        """Mock FinFET technology with non-uniform metal grids.\
 This PDK is for development and not functional yet.\
 This file is auto-generated using tests/schema/test_pdk.py""",
                        layers={'M1': m1, 'M2': m2, 'M3': m3, 'M4': m4, 'M5': m5,
-                               'V1': v1})
+                               'V1': v1_set})
 
         my_dir = pathlib.Path(__file__).resolve().parent
         with open(my_dir / "layers.json", "wt") as fp:

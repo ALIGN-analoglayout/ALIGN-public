@@ -78,19 +78,6 @@ class LayerMetal(Layer):
 
 
 class LayerVia(Layer):
-    """
-    Option #1: Specify a canonical via and adjust size via postprocessor (e.g self-aligned via)
-               This is not sufficient for Analog Detailed Router
-
-    Option #2: Specify a via for each lower and upper metal width combination
-               This is not sufficient for Analog Detailed Router
-
-    Option #3: Specify a canonical via and adjust size via postprocessor
-               Specify the complete list of via width_x by width_y by color (auto-convert to ADR format)
-               Optional: Specify via_patterns as needed for Intel ADR
-               This seems to work
-    """
-    # Option #1: to demonstrate
 
     stack: Tuple[str, str]
 
@@ -100,17 +87,26 @@ class LayerVia(Layer):
     space_x: int
     space_y: int
 
-    enc_l_x: Optional[int] = 0
-    enc_l_y: Optional[int] = 0
-    enc_h_x: Optional[int] = 0
-    enc_h_y: Optional[int] = 0
+    layer1_width: Optional[int]
+    enc_layer1_x: Optional[int] = 0
+    enc_layer1_y: Optional[int] = 0
+
+    layer2_width: Optional[int]
+    enc_layer2_x: Optional[int] = 0
+    enc_layer2_y: Optional[int] = 0
 
     unit_r: Optional[Dict[int, ParasiticValues]]
 
 
+class LayerViaSet(Layer):
+
+    default_via: LayerVia
+    via_list: Optional[List[LayerVia]]
+
+
 class PDK(schema.BaseModel):
     name: str
-    layers: Dict[str, Union[LayerMetal, LayerVia]] = Field(default_factory=lambda: {})
+    layers: Dict[str, Union[LayerMetal, LayerViaSet]] = Field(default_factory=lambda: {})
     scale_factor: int = 1
 
     def add_layer(self, layer):

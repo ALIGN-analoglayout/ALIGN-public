@@ -2,7 +2,7 @@ import pathlib
 import pprint
 import json
 
-from align.schema.pdk import LayerMetal, LayerVia, PDK
+from align.schema.pdk import LayerMetal, LayerVia, LayerViaSet, PDK
 
 my_dir = pathlib.Path(__file__).resolve().parent
 
@@ -75,22 +75,24 @@ def test_one():
         stop_point=500,
         stop_offset=0
     )
+
     v1 = LayerVia(
         name="V1",
         gds_layer_number=21,
         stack=('M1', 'M2'),
         width_x=600,
         width_y=500,
-        space_x=1000,
-        space_y=1000,
+        space_x=100,
+        space_y=100,
     )
+    v1_set = LayerViaSet(name="V1", gds_layer_number=21, default_via=v1)
 
     pdk = PDK(name=
                    """Mock FinFET technology with non-uniform metal grids.\
 This PDK is for development and not functional yet.\
 This file is auto-generated using tests/schema/test_pdk.py""",
                    layers={'M1': m1, 'M2': m2, 'M3': m3, 'M4': m4, 'M5': m5,
-                           'V1': v1})
+                           'V1': v1set})
 
     pprint.pprint(pdk.dict())
     with open(my_dir/"layers.json", "wt") as fp:
