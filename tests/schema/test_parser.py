@@ -14,7 +14,7 @@ def setup_basic():
 @pytest.fixture
 def setup_multiline():
     return '''
-    X1 a b  testdev x =1f y= 0.1
+    X1 a b  testdev x =1f y= 0.1 
     X2 a  b testdev x = {capval*2}
     '''
 

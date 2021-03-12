@@ -1,5 +1,4 @@
 import networkx
-from typing import Optional, List
 
 from .instance import Instance
 from .subcircuit import SubCircuit, Circuit

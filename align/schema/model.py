@@ -1,12 +1,11 @@
 import logging
+from . import types
 
-from typing import Dict, ClassVar, Optional, List
+from .types import Dict, Optional, List
 
 logger = logging.getLogger(__name__)
 
-from . import schema
-
-class Model(schema.BaseModel):
+class Model(types.BaseModel):
     '''
     Model creation class
     '''
@@ -48,12 +47,12 @@ class Model(schema.BaseModel):
         else:
             return []
 
-    @schema.validator('name', allow_reuse=True)
+    @types.validator('name', allow_reuse=True)
     def name_check(cls, name):
         assert len(name) > 0, 'Model name cannot be an empty string'
         return name.upper()
 
-    @schema.validator('pins', always=True, allow_reuse=True)
+    @types.validator('pins', always=True, allow_reuse=True)
     def pin_check(cls, pins, values):
         if 'base' not in values or not values['base']:
             assert pins, 'Pins must be specified for base models. Did something go wrong in base?'
@@ -66,7 +65,7 @@ class Model(schema.BaseModel):
             pins = values['base'].pins.copy()
         return pins
 
-    @schema.validator('parameters', always=True, allow_reuse=True)
+    @types.validator('parameters', always=True, allow_reuse=True)
     def parameter_check(cls, parameters, values):
         parameters = {k.upper(): v.upper() for k, v in parameters.items()} if parameters else {}
         if 'base' in values and values['base']:
@@ -75,7 +74,7 @@ class Model(schema.BaseModel):
             parameters = x
         return parameters
 
-    @schema.validator('prefix', always=True, allow_reuse=True)
+    @types.validator('prefix', always=True, allow_reuse=True)
     def prefix_check(cls, prefix, values):
         if 'base' in values and values['base']:
             prefix = values['base'].prefix
