@@ -116,6 +116,7 @@ ENV http_proxy=$http_proxy
 ENV https_proxy=$https_proxy
 ENV ALIGN_HOME=$ALIGN_DEPLOY_DIR
 ENV USER=$ALIGN_USER
+ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR $ALIGN_HOME
 
 RUN \
@@ -143,6 +144,8 @@ RUN \
 COPY --from=align_builder $ALIGN_HOME .
 
 COPY . .
+
+ENV DEBIAN_FRONTEND=
 
 RUN source setup.sh \
     && pip install -e .
