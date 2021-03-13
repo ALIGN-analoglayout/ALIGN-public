@@ -3,8 +3,8 @@ import pathlib
 import logging
 import pprint
 from align.cell_fabric.canvas import Canvas
-from align.cell_fabric import Wire, Via
-from align.cell_fabric import CenterLineGrid, EnclosureGrid
+from align.cell_fabric import Wire, Via, Region
+from align.cell_fabric import CenterLineGrid, EnclosureGrid, SingleGrid
 from align.schema.pdk import LayerMetal, LayerVia, LayerViaSet, PDK
 
 logger = logging.getLogger(__name__)
@@ -29,6 +29,12 @@ class NonuniformCanvas(Canvas):
                 self._add_metal_generator(layer)
             elif layer_name.startswith('V'):
                 self._add_via_generator(layer.default_via)
+
+        v_grid_pitch = sum(self.pdk.layers['M1'].width) + sum(self.pdk.layers['M1'].space)
+        h_grid_pitch = sum(self.pdk.layers['M2'].width) + sum(self.pdk.layers['M2'].space)
+        setattr(self, 'BB', self.addGen(Region('boundary', 'Boundary',
+                                               h_grid=SingleGrid(pitch=h_grid_pitch),
+                                               v_grid=SingleGrid(pitch=v_grid_pitch))))
 
     def _add_metal_generator(self, layer):
 
