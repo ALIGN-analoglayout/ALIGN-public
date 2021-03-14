@@ -1,7 +1,18 @@
+import sys
 import os
 
 from setuptools import setup, find_packages, Extension
 import pybind11
+
+extra_compile_args = []
+extra_link_args = []
+
+# Coverage support
+# --install-option='--coverage'
+if '--coverage' in sys.argv:
+    sys.argv.remove('--coverage')
+    extra_compile_args.append('--coverage')
+    extra_link_args.append('--coverage')
 
 def get_version(pkg_path):
     with open(os.path.join(pkg_path, '__init__.py'), 'r') as fp:
@@ -48,7 +59,9 @@ def get_PnR():
         ],
         libraries = [
             'lpsolve55'
-        ]
+        ],
+        extra_compile_args = extra_compile_args,
+        extra_link_args = extra_link_args
     )
 
 setup(name='align',
