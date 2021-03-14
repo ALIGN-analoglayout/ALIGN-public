@@ -1,7 +1,7 @@
 #
 # Base container starts here
 #
-FROM ubuntu:18.04 as align_base_using_install
+FROM ubuntu:20.04 as align_base_using_install
 
 #
 # Set required environment variables
@@ -12,6 +12,7 @@ ENV https_proxy=$https_proxy
 ENV ALIGN_HOME=/ALIGN-public
 WORKDIR $ALIGN_HOME
 ENV USER=root
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Install ALIGN dependencies
 # Note: - We copy (or create placeholders for) only those files
