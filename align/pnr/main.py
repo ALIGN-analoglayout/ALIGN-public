@@ -186,30 +186,53 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
             (working_dir / file_.name).write_text(file_.read_text())
 
 
-    if False:
+    if True:
         if check or extract or gds_json:
             order = [(i,DB.CheckoutHierNode(i).name) for i in DB.TraverseHierTree()]
             assert order[-1][1] == subckt, f"Last in topological order should be the subckt {subckt} {order}"
 
-            for idx,nm in order[:-1]:
+            for idx,nm in order:
+                logger.info( f'Topoorder: {idx},{nm}')
+
+
+            for idx,nm in order[:]:
 
                 nodeVec = DB.CheckoutHierNodeVec(idx)
 
+                copy_placement_pairs = list(itertools.product(range(DB.hierTree[idx].n_copy),range(DB.hierTree[idx].numPlacement)))
+
                 variant_names = find_variant_names(nm)
                 logger.info(f'SMB: variant_names {variant_names}')
-                logger.info(f'SMB: idx {idx} nm {nm} n_copy {DB.hierTree[idx].n_copy} numPlacement {DB.hierTree[idx].numPlacement}')
+                logger.info(f'SMB: idx {idx} nm {nm} n_copy {DB.hierTree[idx].n_copy} numPlacement {DB.hierTree[idx].numPlacement} pairs {copy_placement_pairs} len(nodeVec) {len(nodeVec)}')
 
-                alt_variant_names = [ f'{nm}_{i_copy}_{i_placement}' for i_copy in range(DB.hierTree[idx].n_copy) for i_placement in range(DB.hierTree[idx].numPlacement)]
 
-                assert set(variant_names) == set(alt_variant_names)
 
-                for i_copy,i_placement in itertools.product(range(DB.hierTree[idx].n_copy),range(DB.hierTree[idx].numPlacement)):
+                if (idx,nm) != order[-1]:
+                    alt_variant_names = [ f'{nm}_{i_copy}_{i_placement}' for i_copy,i_placement in copy_placement_pairs]
+                    assert set(variant_names) == set(alt_variant_names)
+
+                for i_copy,i_placement in copy_placement_pairs:
                     logger.info(f'SMB: i_copy {i_copy} i_placement {i_placement}')
-                    assert 0 <= i_copy < len(nodeVec)
+
+                    if 0 <= i_copy < len(nodeVec):
+                        pass
+                    else:
+                        logger.info(f'SMB: skipping because {i_copy} is out of range >= {len(nodeVec)}')
+                        continue
 
                     hN = nodeVec[i_copy]
                     variant_name = f'{nm}_{i_copy}_{i_placement}'
                     DB.WriteDBJSON( hN, f"__SMB_{variant_name}")
+
+                    print('subblocks')
+                    for blk in hN.Blocks:
+                        child_idx = blk.child
+
+                        if child_idx == -1: continue
+                        inst = blk.instance[blk.selectedInstance]
+                        print( f'inst {inst.name} {inst.master} {inst.orient} {inst.placedBox.LL.x} {inst.placedBox.LL.y} {inst.placedBox.UR.x } {inst.placedBox.UR.y}')
+                        for lidx in range(DB.hierTree[child_idx].numPlacement):
+                            print( f'lidx {lidx}')
 
                     continue
 
