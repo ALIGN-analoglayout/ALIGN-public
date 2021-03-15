@@ -123,6 +123,7 @@ then
             cd $VENV/bin/
 	    pycfg=`which python3.8-config`
 	    ln -s $pycfg python3-config
+	fi
     fi
 
     # Reset working directory
