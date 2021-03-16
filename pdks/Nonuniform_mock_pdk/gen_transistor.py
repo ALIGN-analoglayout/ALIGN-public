@@ -3,6 +3,7 @@ import json
 import pathlib
 from canvas import NonuniformCanvas
 from align.schema.transistor import Transistor
+from align.cell_fabric import transformation
 
 
 def mos(tx: Transistor):
@@ -34,7 +35,14 @@ def mos(tx: Transistor):
     # for x in range(0, 8):
     #     c.addWire(c.M2,  None, None,  x, (0, 1), (6, 1))
 
-    c.computeBbox()
+    # Precomputed bounding box
+    # rx = c.M1.segment(None, None, 2+tx.nf, (0, 1), (1, 3))
+    # ry = c.M2.segment(None, None, 7,       (0, 1), (1, 3))
+    x1 = c.M1.clg.value(2+tx.nf)
+    y1 = c.M2.clg.value(7)
+    r = [0, 0, x1[0], y1[0]]
+    c.bbox = transformation.Rect(*r)
+    # c.computeBbox()
 
     return {"bbox": c.bbox.toList(), "instance": instance, "terminals": c.terminals}
 
@@ -65,3 +73,4 @@ def test_two():
     print(data)
     with open(pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/'test_transistor_two.json', "wt") as fp:
         fp.write(json.dumps(data, indent=2) + '\n')
+
