@@ -113,5 +113,7 @@ public:
     static bool comp_y(Ppoint_F c1, Ppoint_F c2);
     //donghao end
 
+    float Cal_Overlap();
+
 };
 #endif

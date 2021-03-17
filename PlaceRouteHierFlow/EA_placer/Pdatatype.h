@@ -55,6 +55,7 @@ struct block {
     Ppoint_F Net_block_force_N; //Netforce in X/Y direction: exp(-xi/gammer)
     vector<int> connected_net;
     int index; //index in Blocks[i]
+    float overlap;
 };
 
 struct net {

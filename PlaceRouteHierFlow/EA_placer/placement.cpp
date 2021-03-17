@@ -699,6 +699,54 @@ bool Placement::Stop_Condition(float density, float &max_density){
 
 }
 
+float Placement::Cal_Overlap(){
+
+  float max_overlap = 0.0f;
+
+  for(unsigned int i=0;i<Blocks.size();++i){
+   
+    Blocks[i].overlap = 0.0f;
+
+    for(unsigned int j=0;j<Blocks.size();++j){
+
+       if(i!=j){
+
+          float x_common_length=0.0;
+          bool x_common;
+          x_common = Find_Common_Area(Blocks[i].Cpoint.x, Blocks[i].Dpoint.x, Blocks[j].Cpoint.x, Blocks[j].Dpoint.x, x_common_length);
+          float y_common_length=0.0;
+          bool y_common;
+          y_common = Find_Common_Area(Blocks[i].Cpoint.y, Blocks[i].Dpoint.y, Blocks[j].Cpoint.y, Blocks[j].Dpoint.y, y_common_length);
+
+          if(x_common and y_common){
+            float overlap = x_common_length*y_common_length/(Blocks[i].Dpoint.x*Blocks[i].Dpoint.y);
+            if(overlap>Blocks[i].overlap){
+                 Blocks[i].overlap = overlap;
+              }
+            //Blocks[i].overlap += overlap;
+            
+          }
+
+       }
+
+    }
+
+  }
+
+  for(unsigned int i=0;i<Blocks.size();++i){
+
+    if(max_overlap<Blocks[i].overlap){
+        max_overlap = Blocks[i].overlap;
+      }
+    
+  }
+
+  std::cout<<"Max overlap "<<max_overlap<<std::endl;
+
+  return max_overlap;
+
+}
+
 void Placement::E_Placer(){
 
   int i=0;
@@ -754,9 +802,12 @@ void Placement::E_Placer(){
   int upper_count_number = 200;
   vector<float> Density;
   std::cout<<"E_placer debug flage: 14"<<std::endl;
+  PlotPlacement(0);
+  Cal_Overlap();
   while(!Stop_Condition(stop_density,current_max_density) and count_number<upper_count_number){//Q: stop condition
   // while(i<20){//Q: stop condition
-      Density.push_back(current_max_density);
+     Density.push_back(current_max_density);
+     Cal_Overlap();
      if(current_max_density<max_density){
         max_density = current_max_density;
         std::cout<<"E_placer debug flage: 16"<<std::endl;
