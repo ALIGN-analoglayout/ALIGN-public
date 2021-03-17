@@ -62,6 +62,9 @@ Placement::Placement(PnRDB::hierNode &current_node) {
     std::cout<<"Unify the block coordinate"<<std::endl;
     scale_factor = 40.0;
     Unify_blocks(area, scale_factor);
+
+    //read alignment constrains
+    read_alignment(current_node);
     Initilize_Placement();
 
     print_blocks_nets();  
@@ -692,6 +695,9 @@ void Placement::E_Placer(){
 
   int i=0;
   std::cout<<"E_placer debug flage: 0"<<std::endl;
+  //force to align and order
+  force_alignment();
+  force_order();
   Update_Bin_Density();
   std::cout<<"E_placer debug flage: 1"<<std::endl;
   //gradient cal
@@ -700,6 +706,9 @@ void Placement::E_Placer(){
   std::cout<<"E_placer debug flage: 2"<<std::endl;
   Cal_Density_Eforce();
   std::cout<<"E_placer debug flage: 3"<<std::endl;
+  
+  Cal_sym_Force();
+   std::cout<<"E_placer debug flage: 3.5"<<std::endl;
   Cal_force();
   std::cout<<"E_placer debug flage: 4"<<std::endl;
 
@@ -754,6 +763,15 @@ void Placement::E_Placer(){
      //lambda = lambda *1.20;
      beta = beta*0.95;
      sym_beta = sym_beta*1.01;
+
+     //force to align
+     if(i%10 == 0)
+     {
+       force_alignment();
+       force_order();
+     }
+     
+
      PlotPlacement(i);
 
      Update_Bin_Density();
@@ -1477,4 +1495,111 @@ void Placement::Cal_sym_Force()
     }
   }
   std::cout<<"Cal_sym_Force debug flag: 2"<<std::endl;
+}
+
+void Placement::read_alignment(PnRDB::hierNode &current_node)
+{
+  float height = this->est_Size.y;
+  float weight = this->est_Size.x;
+  Alignment_blocks.clear();
+
+  for(int i = 0;i < current_node.Alignment_blocks.size();++i)
+  {
+    Alignment temp;
+    //find the larger blocks
+    float s1,s2;
+    int id1,id2;
+    id1 = current_node.Alignment_blocks[i].blockid1;
+    id2 = current_node.Alignment_blocks[i].blockid2;
+
+    s1 = Blocks[id1].Dpoint.x * Blocks[id1].Dpoint.y;
+    s2 = Blocks[id2].Dpoint.x * Blocks[id2].Dpoint.y;
+    if(s2 > s1)
+    {
+      temp.blockid1 = id2;
+      temp.blockid2 = id1;
+    }
+    else
+    {
+      temp.blockid1 = id1;
+      temp.blockid2 = id2;
+    }
+
+    temp.horizon = current_node.Alignment_blocks[i].horizon;
+    if(temp.horizon == 1)//LL1.x = LL2.x ->c1.x - d1.x/2 = c2.x - d2.x/2
+    //distance = c2.x - c1.x = d2.x/2 - d1.x/2
+    {
+      temp.distance = 0.5*(Blocks[temp.blockid2].Dpoint.x - Blocks[temp.blockid1].Dpoint.x);
+    }
+    else
+    {
+      temp.distance = 0.5*(Blocks[temp.blockid2].Dpoint.y - Blocks[temp.blockid1].Dpoint.y);
+    }
+
+    Alignment_blocks.push_back(temp);
+  }
+}
+
+void Placement::force_alignment()
+{
+  for(int i = 0;i < Alignment_blocks.size();++i)
+  {
+    int id1 = Alignment_blocks[i].blockid1;
+    int id2 = Alignment_blocks[i].blockid2;
+    float distance = Alignment_blocks[i].distance;
+    if(Alignment_blocks[i].horizon == 1)
+    {
+      Blocks[id2].Cpoint.x = Blocks[id1].Cpoint.x + distance;
+    }
+    else
+    {
+      Blocks[id2].Cpoint.y = Blocks[id1].Cpoint.y + distance;
+    }
+  }
+}
+
+void Placement::read_order(PnRDB::hierNode &current_node)
+{
+  Ordering_Constraints = current_node.Ordering_Constraints;
+}
+
+void Placement::force_order()
+{
+  //step 1: put the Cpoint into verctor
+  for(int i = 0;i < Ordering_Constraints.size();++i)
+  {
+    vector<Ppoint_F> Centers = vector<Ppoint_F>();
+    for(int j = 0;j <Ordering_Constraints[i].first.size();++j)
+    {
+      Centers.push_back(Blocks[Ordering_Constraints[i].first[j]].Cpoint);
+    }
+    //step 2: sort the Cpoint vector
+    if(Ordering_Constraints[i].second == PnRDB::H)
+    {
+      sort(Centers.begin(),Centers.end(),comp_x);
+    }
+    else
+    {
+      sort(Centers.begin(),Centers.end(),comp_y);
+    }
+    //step 3: assign the sorted cpoint 
+
+    for(int j = 0;j <Ordering_Constraints[i].first.size();++j)
+    {
+      int id = Ordering_Constraints[i].first[j];
+      Blocks[id].Cpoint = Centers[j];
+    }
+  }
+  
+  
+}
+
+bool Placement::comp_x(Ppoint_F c1, Ppoint_F c2)
+{
+  return c1.x < c2.x;
+}
+
+bool Placement::comp_y(Ppoint_F c1, Ppoint_F c2)
+{
+  return c1.y < c2.y;
 }

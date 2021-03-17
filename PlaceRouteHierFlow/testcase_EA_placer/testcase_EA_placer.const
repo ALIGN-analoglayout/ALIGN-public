@@ -1,4 +1,4 @@
-SymmBlock ( {m1,m2} , {m3} )
+SymmBlock ( {m1,m2} , {m3} , {V} )
 #AlignBlock( H , m1 , m2 )
 #Ordering ( m1 , m2 , V )
 

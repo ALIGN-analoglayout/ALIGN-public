@@ -22,6 +22,8 @@ private:
     vector<net> Nets; //nets
     vector<vector<bin> > Bins; //bins inside the chip
     vector<vector<Ppoint_F> > symmetric_force_matrix;// sysmmtric force=M *x(y)
+    vector<Alignment> Alignment_blocks;//store the alignment constrains.
+    vector<pair<vector<int>, PnRDB::Smark>> Ordering_Constraints;//as same in PnRDB
     float gammar = 1.0f; //Q: need to ajust
     float lambda= 1.0f; //Q: need to ajust
     float beta = 1.0f;
@@ -103,7 +105,12 @@ public:
     void Unify_blocks(float area, float scale_factor);
     void print_blocks_nets();
     void Cal_sym_Force();
-
+    void read_alignment(PnRDB::hierNode &current_node);
+    void read_order(PnRDB::hierNode &current_node);
+    void force_alignment();
+    void force_order();
+    static bool comp_x(Ppoint_F c1, Ppoint_F c2);
+    static bool comp_y(Ppoint_F c1, Ppoint_F c2);
     //donghao end
 
 };
