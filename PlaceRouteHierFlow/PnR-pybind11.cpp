@@ -126,6 +126,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("interVias", &net::interVias)
     .def_readwrite("path_metal", &net::path_metal)
     .def_readwrite("GcellGlobalRouterPath", &net::GcellGlobalRouterPath)
+    .def_readwrite("path_via", &net::path_via)
     .def_readwrite("axis_dir", &net::axis_dir)
     .def_readwrite("axis_coor", &net::axis_coor)
     .def_readwrite("connectedTile", &net::connectedTile);

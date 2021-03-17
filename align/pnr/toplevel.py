@@ -12,6 +12,12 @@ import PnR
 
 logger = logging.getLogger(__name__)
 
+def get_NType():
+    return PnR.NType
+
+def get_Omark():
+    return PnR.Omark
+
 def toplevel(args):
 
     assert len(args) == 9

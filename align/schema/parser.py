@@ -1,8 +1,14 @@
 import collections
 import re
+import logging
 
-from .core import Circuit, SubCircuit, Model
-from .elements import Library
+from .model import Model
+from .subcircuit import Circuit, SubCircuit
+from .instance import Instance
+from . import library
+from . import constraint
+
+logger = logging.getLogger(__name__)
 
 unit_multipliers = {
     'T': 1e12,
@@ -31,18 +37,20 @@ exprcontent = fr'(?:{numericval}|{identifier})(?:{operator}(?:{numericval}|{iden
 commentchars = r'(?:[;$]|//)'
 
 token_re_map = {
+    'ANNOTATION': fr'(^|\s)*(\*|{commentchars})+\s*\@:\s*[^\n\r]*',
     'NLCOMMENT': r'(^|[\n\r])+\*[^\n\r]*',
     'COMMENT': fr'(^|\s)*{commentchars}[^\n\r]*',
     'CONTINUE': r'(^|[\n\r])+\+',
-    'NEWL': r'[\n\r]+',
+    'NEWL': r'\s*[\n\r]+',
     'EQUALS': r'\s*=\s*',
     'EXPR': fr"""(?P<quote>['"]){exprcontent}(?P=quote)|({{){exprcontent}(}})""",
     'NUMBER': numericval + fr'(?=\s|\Z|{commentchars})',
     'DECL': fr'\.{identifier}',
     'NAME': identifier,
     'WS': r'\s+'}
-# re.IGNORECASE is not required since everything is capitalized prior to tokenization
-spice_pat = re.compile('|'.join(fr'(?P<{x}>{y})' for x, y in token_re_map.items()))
+spice_pat = re.compile('|'.join(fr'(?P<{x}>{y})' for x, y in token_re_map.items()), flags=re.IGNORECASE)
+
+constraint_dict = {x: getattr(constraint, x) for x in dir(constraint) if not x.startswith('_')}
 
 # Tokenizer
 Token = collections.namedtuple('Token', ['type','value'])
@@ -54,16 +62,16 @@ class SpiceParser:
     def __init__(self, mode='Xyce'):
         self.mode = mode.lower()
         assert self.mode in ('xyce', 'hspice')
-        self.library = Library()
+        self.library = library.Library(loadbuiltins=True)
         self.circuit = Circuit()
         self._scope = [self.circuit]
 
     @staticmethod
     def _generate_tokens(text):
-        scanner = spice_pat.scanner(text.upper())
+        scanner = spice_pat.scanner(text)
         for m in iter(scanner.match, None):
             tok = Token(m.lastgroup, m.group())
-            if tok.type in ['EXPR', 'NUMBER', 'DECL', 'NAME', 'NEWL', 'EQUALS']:
+            if tok.type in ['EXPR', 'NUMBER', 'DECL', 'NAME', 'NEWL', 'EQUALS', 'ANNOTATION']:
                 yield tok
 
     def parse(self, text):
@@ -72,6 +80,11 @@ class SpiceParser:
             if tok.type == 'NEWL':
                 self._dispatch(cache)
                 cache.clear()
+            elif tok.type == 'ANNOTATION':
+                self._dispatch(cache)
+                cache.clear()
+                constraint = self._extract_constraint(tok.value)
+                self._process_constraint(constraint)
             else:
                 cache.append(tok)
         self._dispatch(cache)
@@ -82,19 +95,23 @@ class SpiceParser:
         token = cache.pop(0)
         args, kwargs = self._decompose(cache)
         if token.type == 'DECL':
-            self._process_declaration(token.value, args, kwargs)
+            self._process_declaration(token.value.upper(), args, kwargs)
         elif token.type == 'NAME':
-            self._process_instance(token.value, args, kwargs)
+            self._process_instance(token.value.upper(), args, kwargs)
         else:
             assert False
 
     @staticmethod
+    def _extract_constraint(annotation):
+        return annotation.split('@:')[1].strip()
+
+    @staticmethod
     def _decompose(cache):
-        assert all(x.type in ('NAME', 'NUMBER', 'EXPR', 'EQUALS') for x in cache)
+        assert all(x.type in ('NAME', 'NUMBER', 'EXPR', 'EQUALS') for x in cache), cache
         assignments = {i for i, x in enumerate(cache) if x.type == 'EQUALS'}
         assert all(cache[i-1].type == 'NAME' for i in assignments)
-        args = [SpiceParser._cast(x.value, x.type) for i, x in enumerate(cache) if len(assignments.intersection({i-1, i, i+1})) == 0]
-        kwargs = {cache[i-1].value: SpiceParser._cast(cache[i+1].value, cache[i+1].type) for i in assignments}
+        args = [SpiceParser._cast(x.value.upper(), x.type) for i, x in enumerate(cache) if len(assignments.intersection({i-1, i, i+1})) == 0]
+        kwargs = {cache[i-1].value.upper(): SpiceParser._cast(cache[i+1].value.upper(), cache[i+1].type) for i in assignments}
         return args, kwargs
 
     @staticmethod
@@ -122,24 +139,41 @@ class SpiceParser:
         else:
             raise NotImplementedError(name, args, kwargs, "is not yet recognized by parser")
 
-        pins = [str(x) for x in args]
         assert model in self.library, (model, name, args, kwargs)
-        self._scope[-1].add_element(self.library[model](name, *pins, **kwargs))
+        assert len(args) == len(self.library[model].pins), \
+                f"Model {model} has {len(self.library[model].pins)} pins {self.library[model].pins}. " \
+                + f"{len(args)} nets {args} were passed when instantiating {name}."
+        pins = {pin:net for pin, net in zip(self.library[model].pins, args)}
+        self._scope[-1].add(Instance(name=name, model=self.library[model], pins=pins, parameters=kwargs))
+
+    def _process_constraint(self, constraint):
+        try:
+            constraint = eval(constraint, {}, constraint_dict)
+        except:
+            logger.warning(f'Error parsing constraint {repr(constraint)}')
+            return
+        assert hasattr(self._scope[-1], 'constraints'), \
+            f'Constraint {repr(constraint)} can only be defined within a .SUBCKT \nCurrent scope:{self._scope[-1]}'
+        self._scope[-1].constraints.append(constraint)
 
     def _process_declaration(self, decl, args, kwargs):
         if decl == '.SUBCKT':
             name = args.pop(0)
             assert name not in self.library, f"User is attempting to redeclare {name}"
-            subckt = SubCircuit(name, *args, library=self.library, **kwargs)
+            subckt = SubCircuit(name=name, pins=args, parameters=kwargs)
+            self.library[name] = subckt
             self._scope.append(subckt)
         elif decl == '.ENDS':
             self._scope.pop()
         elif decl == '.PARAM':
             assert len(args) == 0
-            self._scope[-1].add_parameters(kwargs)
+            self._scope[-1].parameters.update({
+                k.upper() : str(v).upper() for k, v in kwargs.items()
+            })
         elif decl == '.MODEL':
             assert len(args) == 2, args
-            name, type_ = args[0], args[1]
+            name, base = args[0], args[1]
             assert name not in self.library, f"User is attempting to redeclare {name}"
-            assert type_ in self.library, type_
-            Model(name, self.library[type_], library=self.library, **kwargs)
+            assert base in self.library, base
+            model = Model(name=name, base=self.library[base], parameters=kwargs)
+            self.library[name] = model

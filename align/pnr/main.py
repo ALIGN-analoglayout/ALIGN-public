@@ -8,6 +8,7 @@ import collections
 import json
 import re
 import itertools
+from collections import deque
 
 from .db import hierNode
 from .checkers import gen_viewer_json
@@ -186,43 +187,48 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
             (working_dir / file_.name).write_text(file_.read_text())
 
 
-    if True:
+    if False:
         if check or extract or gds_json:
-            order = [(i,DB.CheckoutHierNode(i).name) for i in DB.TraverseHierTree()]
+
+            def TraverseHierTree():
+                """Find topoorder of routing copies: (start from last node)"""
+                q = []
+                visited = set()
+                def TraverseDFS( idx):
+                    visited.add(idx)
+                    for bit in DB.hierTree[idx].Blocks:
+                        if bit.child != -1 and bit.child not in visited:
+                            TraverseDFS( bit.child)
+                    q.append( idx)
+                TraverseDFS( len(DB.hierTree)-1)
+                return q
+
+            order = [(i,DB.CheckoutHierNode(i).name) for i in TraverseHierTree()]
             assert order[-1][1] == subckt, f"Last in topological order should be the subckt {subckt} {order}"
+
+            logger.info( f'len(DB.hierTree) {len(DB.hierTree)}')
+            for idx,hN in enumerate(DB.hierTree):
+                print( f'idx: {idx} node: {hN.name}')
 
             for idx,nm in order:
                 logger.info( f'Topoorder: {idx},{nm}')
 
 
-            for idx,nm in order[:]:
+            for idx,nm in order[:-1]:
 
                 nodeVec = DB.CheckoutHierNodeVec(idx)
 
-                copy_placement_pairs = list(itertools.product(range(DB.hierTree[idx].n_copy),range(DB.hierTree[idx].numPlacement)))
-
                 variant_names = find_variant_names(nm)
                 logger.info(f'SMB: variant_names {variant_names}')
-                logger.info(f'SMB: idx {idx} nm {nm} n_copy {DB.hierTree[idx].n_copy} numPlacement {DB.hierTree[idx].numPlacement} pairs {copy_placement_pairs} len(nodeVec) {len(nodeVec)}')
+                logger.info(f'SMB: idx {idx} nm {nm} n_copy {DB.hierTree[idx].n_copy} numPlacement {DB.hierTree[idx].numPlacement} len(nodeVec) {len(nodeVec)}')
 
+                n_copy = DB.hierTree[idx].n_copy
+                for i_placement in range(DB.hierTree[idx].numPlacement):
 
+                    logger.info(f'SMB: n_copy {n_copy} i_placement {i_placement}')
 
-                if (idx,nm) != order[-1]:
-                    alt_variant_names = [ f'{nm}_{i_copy}_{i_placement}' for i_copy,i_placement in copy_placement_pairs]
-                    assert set(variant_names) == set(alt_variant_names)
-
-                for i_copy,i_placement in copy_placement_pairs:
-                    logger.info(f'SMB: i_copy {i_copy} i_placement {i_placement}')
-
-                    if 0 <= i_copy < len(nodeVec):
-                        pass
-                    else:
-                        logger.info(f'SMB: skipping because {i_copy} is out of range >= {len(nodeVec)}')
-                        continue
-
-                    hN = nodeVec[i_copy]
-                    variant_name = f'{nm}_{i_copy}_{i_placement}'
-                    DB.WriteDBJSON( hN, f"__SMB_{variant_name}")
+                    hN = nodeVec[i_placement]
+                    variant_name = f'{nm}_{n_copy}_{i_placement}'
 
                     print('subblocks')
                     for blk in hN.Blocks:
@@ -230,13 +236,10 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
 
                         if child_idx == -1: continue
                         inst = blk.instance[blk.selectedInstance]
-                        print( f'inst {inst.name} {inst.master} {inst.orient} {inst.placedBox.LL.x} {inst.placedBox.LL.y} {inst.placedBox.UR.x } {inst.placedBox.UR.y}')
+                        logger.info( f'inst {inst.name} {inst.master} {inst.orient} {inst.placedBox.LL.x} {inst.placedBox.LL.y} {inst.placedBox.UR.x } {inst.placedBox.UR.y}')
                         for lidx in range(DB.hierTree[child_idx].numPlacement):
-                            print( f'lidx {lidx}')
+                            logger.info( f'lidx {lidx}')
 
-                    continue
-
-                    assert i_placement == 0, "Don't know what do if there is more than one placement"
                     _generate_json_from_hN( hN = hN,
                                     variant = variant_name,
                                     pdk_dir = pdk_dir,
@@ -248,33 +251,41 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
                                     gds_json=gds_json,
                                     toplevel=False)
 
-    if False:
-        variants = collections.defaultdict(collections.defaultdict)
-        for file_ in results_dir.iterdir():
-            variant = file_.name.split('.')[0]
-            if not variant.replace(f'{subckt}_', '').isdigit():
-                continue
-            if file_.suffixes == ['.gds', '.json']:
-                variants[variant]['gdsjson'] = file_
-            elif file_.suffixes == ['.lef']:
-                variants[variant]['lef'] = file_
-            elif file_.suffixes == ['.db', '.json'] and (check or extract or gds_json):
-                logger.debug( f".db.json: {file_.name}")
+            variants = collections.defaultdict(collections.defaultdict)
+
+            (idx,nm) = order[-1]
+
+            nodeVec = DB.CheckoutHierNodeVec(idx)
+
+            assert 0 == DB.hierTree[idx].n_copy
+            for i_placement in range(DB.hierTree[idx].numPlacement):
+                hN = nodeVec[i_placement]
+                variant = f'{nm}_{i_placement}'
+
                 variants[variant].update(
-                    _generate_json_from_json( dbfile = file_,
-                                    variant = variant,
-                                    pdk_dir = pdk_dir,
-                                    primitive_dir = input_dir,
-                                    input_dir=working_dir,
-                                    output_dir=working_dir,
-                                    check=check,
-                                    extract=extract,
-                                    gds_json=gds_json,
-                                    toplevel=True))
+                    _generate_json_from_hN( hN = hN,
+                                            variant = variant,
+                                            pdk_dir = pdk_dir,
+                                            primitive_dir = input_dir,
+                                            input_dir=working_dir,
+                                            output_dir=working_dir,
+                                            check=check,
+                                            extract=extract,
+                                            gds_json=gds_json,
+                                            toplevel=True))
 
 
+            for file_ in results_dir.iterdir():
+                variant = file_.name.split('.')[0]
+                if not variant.replace(f'{subckt}_', '').isdigit():
+                    continue
+                if file_.suffixes == ['.gds', '.json']:
+                    variants[variant]['gdsjson'] = file_
+                elif file_.suffixes == ['.lef']:
+                    variants[variant]['lef'] = file_
 
-    if True:
+
+    else:
         if check or extract or gds_json:
             with (results_dir / "__hierTree.json").open("rt") as fp:
                 order = json.load(fp)

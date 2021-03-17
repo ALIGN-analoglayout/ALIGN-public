@@ -18,14 +18,24 @@ GTEST_DIR?=/opt/googletest/googletest
 JSON?=/opt/json
 SuperLu_DIR?=/opt/superlu
 
+NOCOVERAGE?=0
+
 # Compilation options
 # OPTIMFLAGS gets used in `make`
 # DEBUGFLAGS gets used in `make debug`
 # You may override them before calling make as previously shown
 NOPYBIND11?=0
-FLAGS?=-std=c++17 -m64 -fPIC --coverage -DNDEBUG -DPRNTlevel=0 -DAdd_
-DEBUGFLAGS?=-O3 -g -Wall # Consider using -Og instead of -O3
-OPTIMFLAGS?=-O3 -s -w
+
+ifeq ($(NOCOVERAGE),0)
+COVERAGE=--coverage
+else
+COVERAGE=
+endif
+
+FLAGS?=-std=c++17 -m64 -fPIC $(COVERAGE) -DNDEBUG -DPRNTlevel=0 -DAdd_
+
+DEBUGFLAGS?=-Og -g -Wall # Consider using -Og instead of -O3
+OPTIMFLAGS?=-O3 # -s -w
 
 all: depend subsystem pnr_compiler python_object_file unit_tests
 
@@ -56,7 +66,7 @@ SuperLu_path2=$(SuperLu_DIR)/SuperLU_5.2.1/build/CBLAS
 
 OBJS=main.o toplevel.o
 SRCS=$(OBJS:.o=.cpp)
-LIBS=$(placer_path)/placer.a $(router_path)/router.a $(cap_placer_path)/cap_placer.a $(PnRDB_path)/PnRDB.a $(MNA_path)/MNA.a $(SuperLu_path1)/libsuperlu.a $(SuperLu_path2)/libblas.a $(GuardRing_path)/GuardRing.a
+LIBS=$(placer_path)/placer.a $(router_path)/router.a $(cap_placer_path)/cap_placer.a $(GuardRing_path)/GuardRing.a $(PnRDB_path)/PnRDB.a $(MNA_path)/MNA.a $(SuperLu_path1)/libsuperlu.a $(SuperLu_path2)/libblas.a
 
 depend:
 	@$(CXX) $(CXXFLAGS) -E -MM $(SRCS) unit_tests.cpp > .depend
@@ -82,8 +92,8 @@ PYBIND_SUFFIX = $(shell python3-config --extension-suffix)
 
 python_object_file: PnR$(EXTENSION_SUFFIX)
 
-PnR$(EXTENSION_SUFFIX): subsystem $(OBJS)
-	$(CXX) $(CXXFLAGS) -shared $(PYBIND_INCLUDES) PnR-pybind11.cpp -o PnR$(PYBIND_SUFFIX) toplevel.o cap_placer/cap_placer.a placer/placer.a router/router.a PnRDB/PnRDB.a -L$(GTEST_LIB_DIR) -lgtest -L$(LIB_LP) -llpsolve55
+PnR$(EXTENSION_SUFFIX): subsystem PnR-pybind11.cpp toplevel.o
+	$(CXX) $(CXXFLAGS) -shared $(PYBIND_INCLUDES) PnR-pybind11.cpp -o PnR$(PYBIND_SUFFIX) toplevel.o $(LIBS) -L$(GTEST_LIB_DIR) -lgtest -L$(LIB_LP) -llpsolve55 $(LDFLAGS)
 else
 python_object_file:
 	echo "Skipping generation of python object file because NOPYBIND11 is set."
@@ -131,3 +141,4 @@ coverage-report:
 # Declare all phony targets
 .PHONY: depend subsystem python_object_file
 .PHONY: clean coverage-init coverage-report
+

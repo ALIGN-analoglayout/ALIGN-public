@@ -58,9 +58,9 @@ The second is a working directory ALIGN_WORK_DIR, which can either be the full p
 You can use '[source install.sh](install.sh)' (for bash shell) or '[source install_tcsh.sh](install_tcsh.sh)' (for tcsh/ Red Hat) to install all the requirements and the native flow. Please go through [debug documentation](https://align-analoglayout.github.io/ALIGN-public/) for detailed explanation and common errors during installation.
 
 * Requirements
-  * Python >= 3.6
+  * Python >= 3.8
   * gcc >= 4.2
-  * Ubuntu >= 18.04/ RedHat
+  * Ubuntu >= 20.04/ RedHat
   * [Boost]( https://github.com/boostorg/boost.git) >= 1.68.0
   * [Lpsolve](https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_source.tar.gz/download) >= 5.5.2.5
   * [JSON]( https://github.com/nlohmann/json.git) >= 3.7.3

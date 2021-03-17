@@ -47,10 +47,10 @@ then
     $SUDO apt-get update && $SUDO apt-get install -yq \
         git \
         curl \
-        python3 \
+        python3.8 \
         python3-pip \
-        python3-venv \
-        python3-dev \
+        python3.8-venv \
+        python3.8-dev \
         g++\
         cmake \
         libboost-container-dev \
@@ -62,9 +62,9 @@ then
     &&  $SUDO apt-get clean
 
     #### Install klayout 
-    curl -k -o ./klayout_0.26.3-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-18/klayout_0.26.3-1_amd64.deb
-    $SUDO apt-get install -yq ./klayout_0.26.3-1_amd64.deb
-    rm ./klayout_0.26.3-1_amd64.deb
+    curl -k -o ./klayout_0.26.11-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-20/klayout_0.26.11-1_amd64.deb
+    $SUDO apt-get install -yq ./klayout_0.26.11-1_amd64.deb
+    rm ./klayout_0.26.11-1_amd64.deb
     #** WSL users would need to install Xming for the display to work
 
     #### Install lpsolve
@@ -117,6 +117,14 @@ then
     python setup.py egg_info
     pip install -r *.egg-info/requires.txt
     rm -fr *.egg-info
+
+    if [ ! -f "$VENV/bin/python3-config" ]; then
+	if [ ! -e "$VENV/bin/python3-config" ]; then
+            cd $VENV/bin/
+	    pycfg=`which python3.8-config`
+	    ln -s $pycfg python3-config
+	fi
+    fi
 
     # Reset working directory
     cd $cwd
