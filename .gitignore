@@ -20,6 +20,7 @@ lpsolve/
 spdlog/
 superlu/
 dist/
+_skbuild/
 # Exclude common user / machine generated files
 pycharm/
 .idea/

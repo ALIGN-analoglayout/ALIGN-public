@@ -1,14 +1,18 @@
 import sys
 import os
 
-from setuptools import setup, find_packages, Extension
-import pybind11
+import sys
 
-extra_compile_args = []
-extra_link_args = []
+try:
+    from skbuild import setup
+    from setuptools import find_packages
+except ImportError:
+    raise AssertionError("Use pip 10+, or install pyproject.toml requirements yourself")
 
 # Coverage support
 # --install-option='--coverage'
+extra_compile_args = []
+extra_link_args = []
 if '--coverage' in sys.argv:
     sys.argv.remove('--coverage')
     extra_compile_args.append('--coverage')
@@ -24,45 +28,6 @@ def get_readme_text():
     with open("README.md", "r", encoding="utf8") as fp:
         long_description = fp.read()
     return long_description
-
-def get_PnR():
-
-    SRC_FILES ={ # DIRECTORY,List[FILE]
-        'PlaceRouteHierFlow/PnRDB': ['readfile.cpp', 'PnRdatabase.cpp', 'ReadDesignRule.cpp', 'ReadDesignRuleJson.cpp', 'HardDesignRule.cpp', 'WriteJSON.cpp', 'ReadVerilog.cpp', 'ReadConstraint.cpp', 'Print.cpp', 'ReadLEF.cpp', 'PnRDBJSON.cpp'],
-        'PlaceRouteHierFlow/placer': ['design.cpp', 'SeqPair.cpp', 'ConstGraph.cpp', 'Aplace.cpp', 'Placer.cpp', 'ILP_solver.cpp', 'PlacerIfc.cpp'],
-        'PlaceRouteHierFlow/router': ['RawRouter.cpp', 'Grid.cpp', 'GlobalGrid.cpp', 'Graph.cpp', 'A_star.cpp', 'GlobalGraph.cpp', 'GlobalRouter.cpp', 'GcellGlobalRouter.cpp', 'DetailRouter.cpp', 'GcellDetailRouter.cpp', 'PowerRouter.cpp', 'Router.cpp'],
-        'PlaceRouteHierFlow/cap_placer': ['capplacer.cpp', 'CapPlacerIfc.cpp'],
-        'PlaceRouteHierFlow/MNA': ['MNASimulation.cpp'],
-        'PlaceRouteHierFlow/guard_ring': ['GuardRing.cpp', 'GuardRingIfc.cpp'],
-        'PlaceRouteHierFlow': ['toplevel.cpp', 'PnR-pybind11.cpp']
-    }
-
-    return Extension(
-        name='align.PnR',
-        sources=[ \
-            f'{d}/{f}' \
-                for d, files in SRC_FILES.items() \
-                    for f in files],
-        include_dirs = list(SRC_FILES.keys()) + [ \
-            pybind11.get_include(),
-            os.environ['LP_DIR'] + '/lp_solve_5.5.2.5_dev_ux64',
-            os.environ['JSON'] + '/include',
-            os.environ['SPDLOG_DIR'] + '/include',
-            os.environ['SuperLu_DIR'] + '/SuperLU_5.2.1/SRC'
-        ],
-        extra_objects=[
-            os.environ['SuperLu_DIR'] + '/SuperLU_5.2.1/build/SRC/libsuperlu.a',
-            os.environ['SuperLu_DIR'] + '/SuperLU_5.2.1/build/CBLAS/libblas.a'
-        ],
-        library_dirs = [
-            os.environ['LP_DIR'] + '/lp_solve_5.5.2.5_dev_ux64'
-        ],
-        libraries = [
-            'lpsolve55'
-        ],
-        extra_compile_args = extra_compile_args,
-        extra_link_args = extra_link_args
-    )
 
 setup(name='align',
       version=get_version(
@@ -105,5 +70,5 @@ setup(name='align',
           'Programming Language :: C++',
           'Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)'
       ],
-      ext_modules=[get_PnR()],
+      cmake_install_dir='align',
       zip_safe=False)
