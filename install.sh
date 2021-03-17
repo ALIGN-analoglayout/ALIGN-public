@@ -8,24 +8,9 @@ set -ex
 
 cwd=$PWD
 
-source setup.sh
+export ALIGN_HOME=${ALIGN_HOME:-$PWD}
+export VENV=${VENV:-$ALIGN_HOME/general}
 
-# Attempt to speed up Make
-NB_CORES=$(grep -c '^processor' /proc/cpuinfo)
-export MAKEFLAGS="-j$((NB_CORES+1)) -l${NB_CORES}"
-
-### Helper function to git clone only when needed ###
-function git_clone () {
-    local url="$1"
-    local dir="${2:-$(basename $url .git)}"
-    if [ ! -d $dir ] ; then
-        git clone --depth 1 $url
-    else
-        cd $dir
-        git pull
-        cd -
-    fi
-}
 
 #
 # Use sudo if not root; for compatibility with docker
@@ -37,119 +22,32 @@ else
     export SUDO=sudo
 fi
 
-## Install Prerequisite
-#-----------------------
+#### Install Packages
+$SUDO apt-get update && $SUDO apt-get install -yq \
+    git \
+    curl \
+    python3 \
+    python3-pip \
+    python3-venv \
+    python3-dev \
+    g++\
+    cmake \
+    libboost-container-dev \
+    graphviz \
+    gnuplot \
+    xvfb \
+    gfortran \
+    lcov \
+&&  $SUDO apt-get clean
 
-if [[ "$*" != *"--no-deps"* ]]
-then
+cd $ALIGN_HOME
 
-    #### Install Packages
-    $SUDO apt-get update && $SUDO apt-get install -yq \
-        git \
-        curl \
-        python3.8 \
-        python3-pip \
-        python3.8-venv \
-        python3.8-dev \
-        g++\
-        cmake \
-        libboost-container-dev \
-        graphviz \
-        gnuplot \
-        xvfb \
-        gfortran \
-        lcov \
-    &&  $SUDO apt-get clean
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install \
+    pytest pytest-timeout \
+    coverage coverage-badge
+python -m pip install -e . --no-build-isolation
 
-    #### Install klayout 
-    curl -k -o ./klayout_0.26.11-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-20/klayout_0.26.11-1_amd64.deb
-    $SUDO apt-get install -yq ./klayout_0.26.11-1_amd64.deb
-    rm ./klayout_0.26.11-1_amd64.deb
-    #** WSL users would need to install Xming for the display to work
-
-    #### Install lpsolve
-    git_clone https://www.github.com/ALIGN-analoglayout/lpsolve.git
-
-    ####  Install json
-    git_clone https://github.com/nlohmann/json.git
-
-    #### Install boost (don't need to; already installed using libboost-container-dev above 
-    #git clone --recursive https://github.com/boostorg/boost.git
-    #cd $ALIGN_HOME/boost
-    #./bootstrap.sh -prefix=$ALIGN_HOME/boost
-    #./b2 headers
-
-    #### Install googletest
-    cd $ALIGN_HOME
-    git_clone https://github.com/google/googletest
-    cd googletest/
-    cmake CMakeLists.txt
-    make
-    cmake -DBUILD_SHARED_LIBS=ON CMakeLists.txt
-    make
-    mkdir -p googletest/mybuild
-    cp -r lib googletest/mybuild/.
-
-    #### Install logger
-    cd $ALIGN_HOME
-    git_clone https://github.com/gabime/spdlog.git
-    cd spdlog && mkdir -p build && cd build
-    cmake .. && make
-
-    ### Install superLU // this now is not correct
-    #version 1
-    cd $ALIGN_HOME
-    git_clone https://www.github.com/ALIGN-analoglayout/superlu.git
-    cd superlu
-    tar xvfz superlu_5.2.1.tar.gz
-    cd SuperLU_5.2.1/
-    mkdir -p build
-    cd build
-    cmake ..
-    make
-
-    ## Install pip dependencies
-    cd $ALIGN_HOME
-    python3 -m venv $VENV
-    source $VENV/bin/activate
-    python -m pip install --upgrade pip
-    python -m pip install \
-        pytest pytest-timeout \
-        coverage coverage-badge
-    python setup.py egg_info
-    pip install -r *.egg-info/requires.txt
-    rm -fr *.egg-info
-
-    if [ ! -f "$VENV/bin/python3-config" ]; then
-	if [ ! -e "$VENV/bin/python3-config" ]; then
-            cd $VENV/bin/
-	    pycfg=`which python3.8-config`
-	    ln -s $pycfg python3-config
-	fi
-    fi
-
-    # Reset working directory
-    cd $cwd
-fi
-
-## Install ALIGN
-#---------------
-
-if [[ "$*" != *"--deps-only"* ]]
-then
-
-    # Activate environment
-    cd $ALIGN_HOME
-    source $VENV/bin/activate
-
-    # Install ALIGN python packages
-
-    python -m pip install -e .
-
-    ## Install ALIGN_PnR
-    cd $ALIGN_HOME/PlaceRouteHierFlow/ && make
-
-    # Reset working directory
-    cd $cwd
-
-fi
+cd $cwd
