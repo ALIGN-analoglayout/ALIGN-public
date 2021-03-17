@@ -85,11 +85,17 @@ Placement::Placement(float chip_width, float chip_hight, float bin_width, float 
 }
 
 void Placement::generate_testing_data(){
+  #ifdef DEBUG
   std::cout<<"generating test 1"<<std::endl;
+  #endif
   Random_Generation_Block_Nets();
+  #ifdef DEBUG
   std::cout<<"generating test 2"<<std::endl;
+  #endif
   Initilize_Placement();
+  #ifdef DEBUG
   std::cout<<"generating test 3"<<std::endl;
+  #endif
   PlotPlacement(0);
 
 }
@@ -231,10 +237,7 @@ void Placement::Update_Bin_Density(){
           }
        }
 
-       #ifdef DEBUG
-       std::cout<<"Bin density"<<Bins[i][j].density<<std::endl;
        Bins[i][j].density = Bins[i][j].density/(Bin_D.x*Bin_D.y);
-       #endif
 
      }
   }
@@ -593,36 +596,44 @@ void Placement::Cal_Density_Eforce(){
     #ifdef DEBUG
     cout<<"start test fft functions"<<endl;
     #endif
+    #ifdef DEBUG
     std::cout<<"Cal_Density_Eforce debug 0"<<std::endl;
+    #endif
     int binCntX=x_dimension_bin; 
     int binCntY=y_dimension_bin;
     float binSizeX= unit_x_bin;
     float binSizeY= unit_y_bin;
+    #ifdef DEBUG
     std::cout<<"Cal_Density_Eforce debug 1"<<std::endl;
+    #endif
     replace::FFT fft(binCntX, binCntY, binSizeX, binSizeY);
     #ifdef DEBUG
     cout<<"test flag 1"<<endl;
+    std::cout<<"Cal_Density_Eforce debug 2"<<std::endl;   
     #endif
-    std::cout<<"Cal_Density_Eforce debug 2"<<std::endl;
     for(unsigned int i=0;i<binCntX;++i){
        for(unsigned int j=0;j<binCntY;j++){
+          #ifdef DEBUG
           std::cout<<"Bin: ("<<i<<", "<<j<<")"<<std::endl;
           std::cout<<"density:"<<Bins[i][j].density<<std::endl;
+          #endif
           fft.updateDensity(i, j, Bins[i][j].density); 
        }
     }
-    std::cout<<"Cal_Density_Eforce debug 3"<<std::endl;
     #ifdef DEBUG
+    std::cout<<"Cal_Density_Eforce debug 3"<<std::endl;
     cout<<"test flag 2"<<endl;
     #endif
     fft.doFFT();
-    std::cout<<"Cal_Density_Eforce debug 4"<<std::endl;
     #ifdef DEBUG
+    std::cout<<"Cal_Density_Eforce debug 4"<<std::endl;
     cout<<"end test fft functions"<<endl;
-    #endif
     std::cout<<"Cal_Density_Eforce debug 5"<<std::endl;
+    #endif
     for(unsigned int i=0;i<binCntX;++i) {
+      #ifdef DEBUG
       std::cout<<"Cal_Density_Eforce debug 6"<<std::endl;
+      #endif
       for(unsigned int j=0;j<binCntY;++j){
         auto eForcePair = fft.getElectroForce(i, j);
         Bins[i][j].Eforce.x = eForcePair.first;
@@ -635,11 +646,15 @@ void Placement::Cal_Density_Eforce(){
       }
         //sumPhi_ += electroPhi*static_cast<float>(bin->nonPlaceArea()+bin->instPlacedArea()+bin->fillerArea());
     }
+    #ifdef DEBUG
     std::cout<<"Cal_Density_Eforce debug 7"<<std::endl;
+    #endif
     for(unsigned int i=0;i<Blocks.size();++i){
       Cal_Eforce_Block(i);
     }
+    #ifdef DEBUG
     std::cout<<"Cal_Density_Eforce debug 8"<<std::endl;
+    #endif
 }
 
 void Placement::Cal_Net_force(){
@@ -687,13 +702,10 @@ bool Placement::Stop_Condition(float density, float &max_density){
         }
      }
   }
-
   std::cout<<"max_density "<<max_density<<std::endl;
   if(max_density<density){
-    std::cout<<"stop condition debug flag: false"<<std::endl;
     return false;
   }else{
-    std::cout<<"stop condition debug flag: true"<<std::endl;
     return true;
   }
 
@@ -750,50 +762,80 @@ float Placement::Cal_Overlap(){
 void Placement::E_Placer(){
 
   int i=0;
+  #ifdef DEBUG
   std::cout<<"E_placer debug flage: 0"<<std::endl;
+  #endif
   //force to align and order
   force_alignment();
   force_order();
   Update_Bin_Density();
+  #ifdef DEBUG
   std::cout<<"E_placer debug flage: 1"<<std::endl;
+  #endif
   //gradient cal
   Cal_WA_Net_Force();
   //Cal_LSE_Net_Force();
+  #ifdef DEBUG
   std::cout<<"E_placer debug flage: 2"<<std::endl;
+  #endif
   Cal_Density_Eforce();
+  #ifdef DEBUG
   std::cout<<"E_placer debug flage: 3"<<std::endl;
+  #endif
   
   Cal_sym_Force();
-   std::cout<<"E_placer debug flage: 3.5"<<std::endl;
+  #ifdef DEBUG
+  std::cout<<"E_placer debug flage: 3.5"<<std::endl;
+  #endif
   Cal_force();
+  #ifdef DEBUG
   std::cout<<"E_placer debug flage: 4"<<std::endl;
+  #endif
 
   float ac_x=1.0f;
   vector<float> pre_vc_x, pre_vl_x;
   pre_conditioner(pre_vl_x,1); //1 x direction
+  #ifdef DEBUG
   std::cout<<"E_placer debug flage: 5"<<std::endl;
+  #endif
   vector<float> uc_x,vc_x,vl_x;
   Extract_Placement_Vectors(uc_x, 1);
+  #ifdef DEBUG
   std::cout<<"E_placer debug flage: 6"<<std::endl;
+  #endif
   Extract_Placement_Vectors(vc_x, 1);
+  #ifdef DEBUG
   std::cout<<"E_placer debug flage: 7"<<std::endl;
+  #endif
   Extract_Placement_Vectors(vl_x, 1);
+  #ifdef DEBUG
   std::cout<<"E_placer debug flage: 8"<<std::endl;
+  #endif
 
   float ac_y=1.0f;
   vector<float> pre_vc_y, pre_vl_y;
   pre_conditioner(pre_vl_y,0); //1 x direction
+  #ifdef DEBUG
   std::cout<<"E_placer debug flage: 9"<<std::endl;
+  #endif
   vector<float> uc_y,vc_y,vl_y;
   Extract_Placement_Vectors(uc_y, 0);
+  #ifdef DEBUG
   std::cout<<"E_placer debug flage: 10"<<std::endl;
+  #endif
   Extract_Placement_Vectors(vc_y, 0);
+  #ifdef DEBUG
   std::cout<<"E_placer debug flage: 11"<<std::endl;
+  #endif
   Extract_Placement_Vectors(vl_y, 0);
+  #ifdef DEBUG
   std::cout<<"E_placer debug flage: 12"<<std::endl;
+  #endif
   bool start_flag = 1;
   Update_Bin_Density();
+  #ifdef DEBUG
   std::cout<<"E_placer debug flage: 13"<<std::endl;
+  #endif
 
   float stop_density = 0.01;
   float max_density = 1.0;
@@ -801,23 +843,33 @@ void Placement::E_Placer(){
   int count_number = 0;
   int upper_count_number = 200;
   vector<float> Density;
+  #ifdef DEBUG
   std::cout<<"E_placer debug flage: 14"<<std::endl;
+  #endif
   PlotPlacement(0);
   Cal_Overlap();
-  while(!Stop_Condition(stop_density,current_max_density) and count_number<upper_count_number){//Q: stop condition
+  while(Stop_Condition(stop_density,current_max_density) and count_number<upper_count_number){//Q: stop condition
   // while(i<20){//Q: stop condition
      Density.push_back(current_max_density);
      Cal_Overlap();
      if(current_max_density<max_density){
         max_density = current_max_density;
+        #ifdef DEBUG
         std::cout<<"E_placer debug flage: 16"<<std::endl;
+        #endif
       }else if(current_max_density==Density.back()){
+        #ifdef DEBUG
         std::cout<<"E_placer debug flage: 17"<<std::endl;
+        #endif
         count_number++;
       }
+      #ifdef DEBUG
       std::cout<<"E_placer debug flage: 15"<<std::endl;
+      #endif
     //  Density.push_back(current_max_density);
+     #ifdef DEBUG
      std::cout<<"Iteration "<<i<<std::endl;
+     #endif
      //if(lambda<100)
      //lambda = lambda *1.20;
      beta = beta*0.95;
@@ -838,12 +890,14 @@ void Placement::E_Placer(){
      Cal_WA_Net_Force();
      //Cal_LSE_Net_Force();
      Cal_Density_Eforce();
+     #ifdef DEBUG
      std::cout<<"E_placer debug flag: 18"<<std::endl;
+     #endif
      Cal_sym_Force();
      Cal_force();
 
-     WriteOut_Blocks(i);
-     WriteOut_Bins(i);
+     //WriteOut_Blocks(i);
+     //WriteOut_Bins(i);
      //step size
      //two direction x
      #ifdef DEBUG
@@ -1537,33 +1591,44 @@ void Placement::print_blocks_nets()
 
 void Placement::Cal_sym_Force()
 {
+  #ifdef DEBUG
   std::cout<<"Cal_sym_Force debug flag: 1"<<std::endl;
+  #endif
   for(int i = 0;i < symmetric_force_matrix.size();++i)
   {
     Blocks[i].Symmetricforce.x = 0;
     Blocks[i].Symmetricforce.y = 0;
     for(int j = 0;j < symmetric_force_matrix[i].size();++j)
     {
+      #ifdef DEBUG
       std::cout<<"Cal_sym_Force debug flag: 3"<<std::endl;
       std::cout<<"force x="<<symmetric_force_matrix[i][j].x<<", force y="<<symmetric_force_matrix[i][j].y;
       std::cout<<"center x="<<Blocks[j].Cpoint.x<<", center y="<<Blocks[j].Cpoint.y<<std::endl;
+      #endif
       Blocks[i].Symmetricforce.x += symmetric_force_matrix[i][j].x * Blocks[j].Cpoint.x;
       Blocks[i].Symmetricforce.y += symmetric_force_matrix[i][j].y * Blocks[j].Cpoint.y;
-      
+      #ifdef DEBUG
       std::cout<<"Cal_sym_Force debug flag: 4"<<std::endl;
+      #endif
     }
     if(isnan(Blocks[i].Symmetricforce.x ))
-    {
+    { 
+      #ifdef DEBUG
       std::cout<<"Cal_sym_Force debug flag: 5"<<std::endl;
+      #endif
       Blocks[i].Symmetricforce.x = 0;
     }
     if(isnan(Blocks[i].Symmetricforce.y ))
     {
+      #ifdef DEBUG
       std::cout<<"Cal_sym_Force debug flag: 6"<<std::endl;
+      #endif
       Blocks[i].Symmetricforce.y = 0;
     }
   }
+  #ifdef DEBUG
   std::cout<<"Cal_sym_Force debug flag: 2"<<std::endl;
+  #endif
 }
 
 void Placement::read_alignment(PnRDB::hierNode &current_node)
