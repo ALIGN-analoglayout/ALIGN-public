@@ -662,7 +662,15 @@ void Placement::Cal_force(){
      
      Blocks[i].Force.x = lambda*Blocks[i].Eforce.x - beta*Blocks[i].Netforce.x - sym_beta*Blocks[i].Symmetricforce.x;
      Blocks[i].Force.y = lambda*Blocks[i].Eforce.y - beta*Blocks[i].Netforce.y - sym_beta*Blocks[i].Symmetricforce.y;
-     std::cout<<"symmetricforce/all"<<sym_beta*Blocks[i].Symmetricforce.x/Blocks[i].Force.x<<", "<<sym_beta*Blocks[i].Symmetricforce.y/Blocks[i].Force.y<<std::endl;
+     std::cout<<"symmetricforce/all"<<sym_beta*Blocks[i].Symmetricforce.x<<", "<<sym_beta*Blocks[i].Symmetricforce.y<<std::endl;
+     if(isnan(Blocks[i].Force.x))
+     {
+       Blocks[i].Force.x = 0;
+     }
+     if(isnan(Blocks[i].Force.y))
+     {
+       Blocks[i].Force.y = 0;
+     }
   }
 
 }
@@ -1492,6 +1500,16 @@ void Placement::Cal_sym_Force()
       Blocks[i].Symmetricforce.y += symmetric_force_matrix[i][j].y * Blocks[j].Cpoint.y;
       
       std::cout<<"Cal_sym_Force debug flag: 4"<<std::endl;
+    }
+    if(isnan(Blocks[i].Symmetricforce.x ))
+    {
+      std::cout<<"Cal_sym_Force debug flag: 5"<<std::endl;
+      Blocks[i].Symmetricforce.x = 0;
+    }
+    if(isnan(Blocks[i].Symmetricforce.y ))
+    {
+      std::cout<<"Cal_sym_Force debug flag: 6"<<std::endl;
+      Blocks[i].Symmetricforce.y = 0;
     }
   }
   std::cout<<"Cal_sym_Force debug flag: 2"<<std::endl;
