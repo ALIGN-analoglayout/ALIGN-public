@@ -25,7 +25,6 @@ fi
 #### Install Packages
 $SUDO apt-get update && $SUDO apt-get install -yq \
     git \
-    curl \
     python3 \
     python3-pip \
     python3-venv \
@@ -42,8 +41,8 @@ $SUDO apt-get update && $SUDO apt-get install -yq \
 
 cd $ALIGN_HOME
 
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv $VENV
+source $VENV/bin/activate
 python -m pip install --upgrade pip
 python -m pip install \
     pytest pytest-timeout \
