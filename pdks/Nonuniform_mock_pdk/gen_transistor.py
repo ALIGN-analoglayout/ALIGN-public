@@ -1,7 +1,7 @@
 import os
 import json
 import pathlib
-from canvas import NonuniformCanvas
+from canvas import CanvasPDK
 from align.schema.transistor import Transistor
 from align.cell_fabric import transformation
 
@@ -19,7 +19,7 @@ def mos(tx: Transistor):
                        ])
     instance = {"library": "pdk_library", "cell": "pdk_mos", "view": "layout", "params": f'({params})'},
 
-    c = NonuniformCanvas()
+    c = CanvasPDK()
 
     if tx.device_type == 'stack':
         c.addWire(c.M1, 'S', 'S', 1,       (0, 1), (3, 3))

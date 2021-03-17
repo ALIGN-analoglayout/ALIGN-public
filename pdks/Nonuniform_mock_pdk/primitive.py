@@ -1,16 +1,12 @@
 import os
-import json
-import math
-import pathlib
-import importlib
 from itertools import cycle, islice, chain
 from align.cell_fabric import transformation
-from canvas import NonuniformCanvas
-from align.schema.transistor import Transistor, TransistorArray
+from canvas import CanvasPDK
 from gen_transistor import mos
+from align.schema.transistor import Transistor, TransistorArray
 
 
-class MOSGenerator(NonuniformCanvas):
+class MOSGenerator(CanvasPDK):
 
     def __init__(self, *args, **kwargs):
         super().__init__()

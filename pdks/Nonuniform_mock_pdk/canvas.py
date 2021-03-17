@@ -1,7 +1,6 @@
 import json
 import pathlib
 import logging
-import pprint
 from align.cell_fabric.canvas import Canvas
 from align.cell_fabric import Wire, Via, Region
 from align.cell_fabric import CenterLineGrid, EnclosureGrid, SingleGrid
@@ -16,7 +15,7 @@ def color_closure(*, layer, generator):
     return func
 
 
-class NonuniformCanvas(Canvas):
+class CanvasPDK(Canvas):
 
     def __init__(self):
         super().__init__()
@@ -205,5 +204,5 @@ This file is auto-generated using tests/schema/test_pdk.py""",
                                'V1': v1, 'V2': v2, 'V3': v3, 'V4': v4,})
 
         my_dir = pathlib.Path(__file__).resolve().parent
-        with open(my_dir / "layers.json", "wt") as fp:
+        with open(my_dir / "layers_auto.json", "wt") as fp:
             fp.write(json.dumps(self.pdk.dict(), indent=2) + '\n')

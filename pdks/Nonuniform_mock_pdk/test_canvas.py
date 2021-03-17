@@ -9,7 +9,7 @@ import canvas
 
 def test_canvas():
 
-    c = canvas.NonuniformCanvas()
+    c = canvas.CanvasPDK()
 
     for x in range(0, 7):
         c.addWire(c.M1, 'a', None, x, (0, 1), (5, 3))

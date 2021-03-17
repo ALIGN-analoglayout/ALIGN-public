@@ -8,6 +8,8 @@ class Transistor(schema.BaseModel):
     device_type: str
     nf: int
 
+    l: Optional[float]
+
     w: Optional[float]
     nfin: Optional[int]
 
