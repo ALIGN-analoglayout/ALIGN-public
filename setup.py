@@ -59,6 +59,13 @@ setup(name='align',
           'colorlog',
           'plotly'
           ],
+      extras_require={
+          'test': [
+              'pytest',
+              'pytest-cov',
+              'pytest-xdist'
+          ]
+      }
       python_requires='~=3.8',
       classifiers=[
           'Development Status :: 2 - Pre-Alpha',

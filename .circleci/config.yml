@@ -35,6 +35,36 @@ executors:
       - image: cimg/base:2021.01
 
 jobs:
+  build-wheel:
+    executor: docker-executor
+
+    parameters:
+      python-tags:
+        description: "Python version tag(See https://www.python.org/dev/peps/pep-0425/)"
+        type: string
+        default: "cp38-cp38"
+      platform:
+        description: "PEP600 compatible platform name"
+        type: string
+        default: "manylinux2010_x86_64"
+
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 19.03.13
+
+      - run:
+          name: Build Wheel
+          command: |
+            docker run --rm -v `pwd`:/ALIGN-public quay.io/pypa/<<parameters.platform>> \
+              /ALIGN-public/bin/build_wheel.sh <<parameters.python-tags>>
+
+      - run:
+          name: Test wheel
+          command: |
+            docker run --rm -v `pwd`:/ALIGN-public quay.io/pypa/<<parameters.platform>> \
+              /ALIGN-public/bin/test_wheel.sh <<parameters.python-tags>>
+
   build-align:
     executor: docker-executor
     steps:
@@ -295,26 +325,34 @@ workflows:
 
   commit:
     jobs:
-      - build-align
-      - build-test-cktgen
-      - test-PlaceRouteHierFlow:
-          requires:
-            - build-align
-      - test-align:
-          requires:
-            - build-align
-      - build-make-docker:
-          requires:
-            - build-align
-      - test-integration:
-          name: "test-integration-<<matrix.pdk>>(<<matrix.design>>)"
-          requires:
-            - build-align
+      # - build-align
+      # - build-test-cktgen
+      # - test-PlaceRouteHierFlow:
+      #     requires:
+      #       - build-align
+      # - test-align:
+      #     requires:
+      #       - build-align
+      # - build-make-docker:
+      #     requires:
+      #       - build-align
+      # - test-integration:
+      #     name: "test-integration-<<matrix.pdk>>(<<matrix.design>>)"
+      #     requires:
+      #       - build-align
+      #     matrix:
+      #       parameters:
+      #         pdk:
+      #           - "Finfet"
+      #         design:
+      #           - "BUFFER or ota"
+      #           - "San or BTSW"
+      #           - "not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD"
+      - build-wheel:
+          name: "build-wheel-<<matrix.python-tags>>-<<matrix.platform>>"
           matrix:
             parameters:
-              pdk:
-                - "Finfet"
-              design:
-                - "BUFFER or ota"
-                - "San or BTSW"
-                - "not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD"
+              python-tags:
+                - "cp38-cp38"
+              platform:
+                - "manylinux2010_x86_64"
