@@ -301,7 +301,7 @@ float Placement::Cal_HPWL(){
     for(unsigned int j=0;j<Nets[i].connected_block.size();++j){
       int block_index = Nets[i].connected_block[j];
       x_value.push_back(Blocks[block_index].Cpoint.x);
-      y_value.push_back(Blocks[block_index].Cpoint.x);
+      y_value.push_back(Blocks[block_index].Cpoint.y);
     }
     float max_x = x_value[0];
     float min_x = x_value[0];
@@ -415,10 +415,10 @@ void Placement::Cal_WA_Net_Force(){
         Ppoint_F NSumNetforce = Nets[net_index].NSumNetforce;
         Ppoint_F PSumNetforce_WA = Nets[net_index].PSumNetforce_WA;
         Ppoint_F NSumNetforce_WA = Nets[net_index].NSumNetforce_WA;
-        float x_positive = ( (1+Blocks[i].Cpoint.x/gammar)*Blocks[i].Net_block_force_P.x*PSumNetforce.x + Blocks[i].Net_block_force_P.x*PSumNetforce_WA.x ) / (PSumNetforce.x * PSumNetforce.x);
-        float x_nagative = ( (1+Blocks[i].Cpoint.x/gammar)*Blocks[i].Net_block_force_N.x*NSumNetforce.x + Blocks[i].Net_block_force_N.x*NSumNetforce_WA.x ) / (NSumNetforce.x * NSumNetforce.x);
-        float y_positive = ( (1+Blocks[i].Cpoint.y/gammar)*Blocks[i].Net_block_force_P.y*PSumNetforce.y + Blocks[i].Net_block_force_P.y*PSumNetforce_WA.y ) / (PSumNetforce.y * PSumNetforce.y);
-        float y_nagative = ( (1+Blocks[i].Cpoint.y/gammar)*Blocks[i].Net_block_force_N.y*NSumNetforce.y + Blocks[i].Net_block_force_N.y*NSumNetforce_WA.y ) / (NSumNetforce.y * NSumNetforce.y);
+        float x_positive = ( (1+Blocks[i].Cpoint.x/gammar)*Blocks[i].Net_block_force_P.x*PSumNetforce.x - Blocks[i].Net_block_force_P.x*PSumNetforce_WA.x ) / (PSumNetforce.x * PSumNetforce.x);
+        float x_nagative = ( (1+Blocks[i].Cpoint.x/gammar)*Blocks[i].Net_block_force_N.x*NSumNetforce.x - Blocks[i].Net_block_force_N.x*NSumNetforce_WA.x ) / (NSumNetforce.x * NSumNetforce.x);
+        float y_positive = ( (1+Blocks[i].Cpoint.y/gammar)*Blocks[i].Net_block_force_P.y*PSumNetforce.y - Blocks[i].Net_block_force_P.y*PSumNetforce_WA.y ) / (PSumNetforce.y * PSumNetforce.y);
+        float y_nagative = ( (1+Blocks[i].Cpoint.y/gammar)*Blocks[i].Net_block_force_N.y*NSumNetforce.y - Blocks[i].Net_block_force_N.y*NSumNetforce_WA.y ) / (NSumNetforce.y * NSumNetforce.y);
         Blocks[i].Netforce.x += x_positive - x_nagative;
         Blocks[i].Netforce.y += y_positive - y_nagative;
      }
@@ -662,15 +662,15 @@ void Placement::Cal_force(){
      
      Blocks[i].Force.x = lambda*Blocks[i].Eforce.x - beta*Blocks[i].Netforce.x - sym_beta*Blocks[i].Symmetricforce.x;
      Blocks[i].Force.y = lambda*Blocks[i].Eforce.y - beta*Blocks[i].Netforce.y - sym_beta*Blocks[i].Symmetricforce.y;
-     std::cout<<"symmetricforce/all"<<sym_beta*Blocks[i].Symmetricforce.x<<", "<<sym_beta*Blocks[i].Symmetricforce.y<<std::endl;
-     if(isnan(Blocks[i].Force.x))
-     {
-       Blocks[i].Force.x = 0;
-     }
-     if(isnan(Blocks[i].Force.y))
-     {
-       Blocks[i].Force.y = 0;
-     }
+    //  std::cout<<"symmetricforce/all"<<sym_beta*Blocks[i].Symmetricforce.x<<", "<<sym_beta*Blocks[i].Symmetricforce.y<<std::endl;
+    //  if(isnan(Blocks[i].Force.x))
+    //  {
+    //    Blocks[i].Force.x = 0;
+    //  }
+    //  if(isnan(Blocks[i].Force.y))
+    //  {
+    //    Blocks[i].Force.y = 0;
+    //  }
   }
 
 }
@@ -709,8 +709,8 @@ void Placement::E_Placer(){
   Update_Bin_Density();
   std::cout<<"E_placer debug flage: 1"<<std::endl;
   //gradient cal
-  //Cal_WA_Net_Force();
-  Cal_LSE_Net_Force();
+  Cal_WA_Net_Force();
+  //Cal_LSE_Net_Force();
   std::cout<<"E_placer debug flage: 2"<<std::endl;
   Cal_Density_Eforce();
   std::cout<<"E_placer debug flage: 3"<<std::endl;
