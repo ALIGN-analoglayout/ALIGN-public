@@ -49,17 +49,21 @@ FetchContent_MakeAvailable(superlu)
 # lpsolve: Use precompiled .so & .h tarball
 add_library(lpsolve SHARED IMPORTED)
 ExternalProject_Add(
-    lpsolve_getter
+    lp_lib
     URL https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11/lp_solve_5.5.2.11_dev_ux64.tar.gz/download
     URL_HASH MD5=66fe051d8f3e964624b925b8899b7588
+    BUILD_IN_SOURCE TRUE
+    PREFIX _deps/lpsolve55
+    BUILD_BYPRODUCTS _deps/lpsolve55/src/lp_lib/liblpsolve55.so
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ""
     TEST_COMMAND ""
 )
-ExternalProject_Get_Property(lpsolve_getter SOURCE_DIR)
+ExternalProject_Get_Property(lp_lib BUILD_BYPRODUCTS)
 set_property(TARGET lpsolve PROPERTY IMPORTED_LOCATION
-    "${SOURCE_DIR}/liblpsolve55.so")
+    ${BUILD_BYPRODUCTS})
+ExternalProject_Get_Property(lp_lib SOURCE_DIR)
 target_include_directories(lpsolve
     INTERFACE "${SOURCE_DIR}")
 
