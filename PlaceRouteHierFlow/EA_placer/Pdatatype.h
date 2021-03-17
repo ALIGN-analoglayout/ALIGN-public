@@ -26,6 +26,14 @@ struct Ppoint_I{ //placement point, int
     int y;
 };
 
+//added by donghao
+struct Alignment {
+  int blockid1;
+  int blockid2;
+  float distance;//normalize to 0 - 1
+  int horizon; // 1 is h, 0 is v.
+};
+
 struct bin {
     Ppoint_F Cpoint; //center point
     Ppoint_F Dpoint; //demension point: width/hight
@@ -41,6 +49,7 @@ struct block {
     Ppoint_F Dpoint; //demension point: width/hight
     Ppoint_F Eforce; //Eforce in X/Y direction
     Ppoint_F Netforce; //Netforce in X/Y direction
+    Ppoint_F Symmetricforce;
     Ppoint_F Force; // Force = Eforce + Netforce
     Ppoint_F Net_block_force_P; //Netforce in X/Y direction: exp(xi/gammer)
     Ppoint_F Net_block_force_N; //Netforce in X/Y direction: exp(-xi/gammer)
