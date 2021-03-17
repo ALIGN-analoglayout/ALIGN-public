@@ -36,8 +36,7 @@ def _generate_json_from_hN( *, hN, variant, primitive_dir, pdk_dir, output_dir, 
         m = p2.match(variant)
         assert m
         ncpy = int(m.groups()[1])
-        #SMB Maybe too restrictive
-        #assert ncpy == hN.n_copy, f"n_copy {hN.n_copy} should be same as in the variant name {variant} {ncpy}"
+        assert ncpy == hN.n_copy, f"n_copy {hN.n_copy} should be same as in the variant name {variant} {ncpy}"
 
     res = gen_viewer_json( hN, pdkdir=pdk_dir, draw_grid=True, json_dir=str(primitive_dir), checkOnly=(check or extract or gds_json), extract=extract, input_dir=input_dir, toplevel=toplevel)
 
@@ -206,12 +205,12 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
             order = [(i,DB.CheckoutHierNode(i).name) for i in TraverseHierTree()]
             assert order[-1][1] == subckt, f"Last in topological order should be the subckt {subckt} {order}"
 
-            logger.info( f'len(DB.hierTree) {len(DB.hierTree)}')
+            logger.info( f'{len(DB.hierTree)=}')
             for idx,hN in enumerate(DB.hierTree):
-                print( f'idx: {idx} node: {hN.name}')
+                logger.info( f'{idx=} {hN.name=}')
 
             for idx,nm in order:
-                logger.info( f'Topoorder: {idx},{nm}')
+                logger.info( f'Topoorder: {idx=} {nm=}')
 
 
             for idx,nm in order[:-1]:
@@ -219,18 +218,17 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
                 nodeVec = DB.CheckoutHierNodeVec(idx)
 
                 variant_names = find_variant_names(nm)
-                logger.info(f'SMB: variant_names {variant_names}')
-                logger.info(f'SMB: idx {idx} nm {nm} n_copy {DB.hierTree[idx].n_copy} numPlacement {DB.hierTree[idx].numPlacement} len(nodeVec) {len(nodeVec)}')
+                logger.info(f'SMB: {variant_names=}')
+                logger.info(f'SMB: {idx=} {nm=} {DB.hierTree[idx].n_copy=} {DB.hierTree[idx].numPlacement=} {len(nodeVec)=}')
 
                 n_copy = DB.hierTree[idx].n_copy
                 for i_placement in range(DB.hierTree[idx].numPlacement):
-
-                    logger.info(f'SMB: n_copy {n_copy} i_placement {i_placement}')
-
                     hN = nodeVec[i_placement]
                     variant_name = f'{nm}_{n_copy}_{i_placement}'
 
-                    print('subblocks')
+                    logger.info(f'SMB: {variant_name=}')
+
+                    logger.info('subblocks')
                     for blk in hN.Blocks:
                         child_idx = blk.child
 
