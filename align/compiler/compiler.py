@@ -185,7 +185,7 @@ def compiler_output(input_ckt, lib_names , hier_graph_dict, design_name:str, res
                 logger.debug(f"Created new lef for: {block_name} {lef_name}")
                 #Multiple instances of same module
                 if 'inst_copy' in attr:
-                    for nm in hier_graph_dict.keys():
+                    for nm in list(hier_graph_dict.keys()):
                         if nm == lef_name + attr['inst_copy']:
                             hier_graph_dict[block_name] = hier_graph_dict.pop(nm)
                     graph.nodes[node]["inst_type"]=block_name

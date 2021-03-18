@@ -5,12 +5,10 @@ import string
 import collections
 import more_itertools as itertools
 
-from typing import List, Union, NamedTuple, Optional
-from typing_extensions import Literal
+from . import types
+from .types import Union, Optional, Literal, List
 
-from . import schema
-
-class ConstraintBase(schema.BaseModel, abc.ABC):
+class ConstraintBase(types.BaseModel, abc.ABC):
 
     @abc.abstractmethod
     def check(self):
@@ -41,7 +39,8 @@ class ConstraintBase(schema.BaseModel, abc.ABC):
            (Useful for pairwise constraints)
             bbox1, bbox2 = self._z3_bbox_variables(box1, box2)
         '''
-        if len(blocks) == 1 and isinstance(blocks[0], list):
+        print([block for block in blocks])
+        if len(blocks) == 1 and isinstance(blocks[0], List):
             blocks = blocks[0]
         return [ConstraintDB.GenerateVar(
                     'Bbox',
@@ -75,11 +74,11 @@ class AlignVertical(ConstraintBase):
 ConstraintType=Union[ \
         AlignHorizontal, AlignVertical]
 
-class ConstraintDB(schema.BaseModel):
+class ConstraintDB(types.BaseModel):
 
     __root__ : List[ConstraintType]
 
-    @schema.validate_arguments
+    @types.validate_arguments
     def append(self, constraint: ConstraintType):
         self.__root__.append(constraint)
         if self._validation:
@@ -95,9 +94,9 @@ class ConstraintDB(schema.BaseModel):
     #
     # Private attribute affecting class behavior
     #
-    _solver = schema.PrivateAttr()
-    _commits = schema.PrivateAttr()
-    _validation = schema.PrivateAttr()
+    _solver = types.PrivateAttr()
+    _commits = types.PrivateAttr()
+    _validation = types.PrivateAttr()
 
     def __iter__(self):
         return iter(self.__root__)

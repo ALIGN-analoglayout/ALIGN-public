@@ -116,13 +116,15 @@ intermediate_subckt = SubCircuit(
     name='intermediate_subckt',
     pins=['PIN1', 'PIN2'])
 intermediate_subckt.add(
-    leaf_subckt( name='I1', 
-                 pins=['PIN1', 'PIN2', 'NET1'], 
-                 parameters= {'MYPARAMETER':'2'}))
+    Instance( name='I1',
+              model=leaf_subckt,
+              pins={'PIN1': 'PIN1', 'PIN2': 'PIN2', 'PIN3': 'NET1'},
+              parameters= {'MYPARAMETER':'2'}))
 intermediate_subckt.add(
-    leaf_subckt( name='I2', 
-                 pins=['PIN1', 'PIN2', 'NET2'], 
-                 parameters= {'MYPARAMETER':'2'}))
+    Instance( name='I2',
+              model=leaf_subckt,
+              pins={'PIN1': 'PIN1', 'PIN2': 'PIN2', 'PIN3': 'NET2'},
+              parameters= {'MYPARAMETER':'2'}))
 intermediate_subckt.add(
     Instance(
         name='M1',
