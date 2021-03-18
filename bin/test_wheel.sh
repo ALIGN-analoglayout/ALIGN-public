@@ -12,7 +12,7 @@ set -eo pipefail
 export ALIGN_HOME=${ALIGN_HOME:-$PWD}
 # TODO: Investigate whether we can simply use
 #       current directory all the time!
-export ALIGN_WORK_DIR=${ALIGN_WORK_DIR:-$PWD}
+export ALIGN_WORK_DIR=${ALIGN_WORK_DIR:-$PWD/work}
 MAX_JOBS=${MAX_JOBS:-auto}
 
 # Install packages and test

@@ -258,9 +258,11 @@ jobs:
           path: coverage-reports
 
   test-integration:
-    executor: docker-executor
 
     parameters:
+      platform:
+        description: "Choose docker image to run integration test on (eg. Ubuntu:18.04)"
+        type: string
       pdk:
         description: "Choose PDK (Can be substring as it gets fed to pytest -k argument)"
         type: string
@@ -272,26 +274,29 @@ jobs:
         type: string
         default: "1800"
 
-    steps:
-      - setup_remote_docker
+    docker:
+      - image: <<parameters.platform>>
 
+    environment:
+      ALIGN_HOME: .
+      ALIGN_WORK_DIR: ./work
+
+    steps:
+      - checkout
       - attach_workspace:
           at: .
-
-      - run-load-align
 
       - run:
           name: "test-integration-<<parameters.pdk>>-<<parameters.design>>-<<parameters.timeout>>"
           no_output_timeout: "<<parameters.timeout>>s"
           command: |
-            docker run --name align_container align_image bash -c '\
-              source setup.sh && \
-              filter="<<parameters.design>>" && \
-              filter="<<parameters.pdk>>${filter:+ and $filter}" && \
-              pytest -vv --runnightly --maxerrors 12 --tb=line --timeout=<<parameters.timeout>> -k "$filter" -- tests/integration && \
-              mkdir -p /test-reports && cp -r junit.xml LOG /test-reports && \
-              cd $ALIGN_WORK_DIR && find . -name *.png -exec cp --parents \{\} /test-reports \; \
-            '
+            pip install align -f ./dist
+            filter="<<parameters.design>>"
+            filter="<<parameters.pdk>>${filter:+ and $filter}"
+            pytest -vv --runnightly --tb=line --timeout=<<parameters.timeout>> -k "$filter" -- tests/integration
+            mkdir -p /test-reports
+            cp -r junit.xml LOG /test-reports
+            cd $ALIGN_WORK_DIR && find . -name *.png -exec cp --parents \{\} /test-reports \;
             docker cp align_container:test-reports .
             docker rm align_container
 
@@ -375,7 +380,22 @@ workflows:
               platform:
                 - "manylinux2010_x86_64"  # PEP 571
                 - "manylinux2014_x86_64"  # PEP 599
-                - "manylinux_2_24_x86_64" # PEP 600
+                # - "manylinux_2_24_x86_64" # PEP 600
       - publish-wheel:
           requires:
             - build-wheel
+      - test-integration:
+          name: "test-integration-<<matrix.platform>>-<<matrix.pdk>>(<<matrix.design>>)"
+          requires:
+            - build-wheel
+          matrix:
+            parameters:
+              platform:
+                - "ubuntu:18.04"
+                - "ubuntu:20.04"
+              pdk:
+                - "Finfet"
+              design:
+                - "BUFFER or ota"
+                # - "San or BTSW"
+                # - "not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD"
