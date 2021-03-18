@@ -224,8 +224,12 @@ def generate_Res(pdkdir, block_name, height, x_cells, y_cells, nfin, unit_res):
     return uc, ['PLUS', 'MINUS']
 
 def get_generator(name, pdkdir):
-    spec = importlib.util.spec_from_file_location("primitive", pdkdir / 'primitive.py')
+    try:
+        spec = importlib.util.spec_from_file_location(pdkdir.stem, pdkdir / '__init__.py')
+    except:
+        spec = importlib.util.spec_from_file_location(pdkdir.stem, pdkdir / 'primitive.py')
     primitive = importlib.util.module_from_spec(spec)
+    sys.modules[pdkdir.stem] = primitive
     spec.loader.exec_module(primitive)
     return getattr(primitive, name)
 
