@@ -36,7 +36,6 @@ executors:
 
 jobs:
   build-wheel:
-    executor: docker-executor
 
     parameters:
       python-tags:
@@ -48,22 +47,32 @@ jobs:
         type: string
         default: "manylinux2010_x86_64"
 
+    docker:
+      - image: quay.io/pypa/<<parameters.platform>>
+
     steps:
       - checkout
-      - setup_remote_docker:
-          version: 19.03.13
-
       - run:
           name: Build Wheel
           command: |
-            docker run --rm -v `pwd`:/ALIGN-public quay.io/pypa/<<parameters.platform>> \
-              /ALIGN-public/bin/build_wheel.sh <<parameters.python-tags>>
-
+              bin/build_wheel.sh <<parameters.python-tags>>
       - run:
           name: Test wheel
           command: |
-            docker run --rm -v `pwd`:/ALIGN-public quay.io/pypa/<<parameters.platform>> \
-              /ALIGN-public/bin/test_wheel.sh <<parameters.python-tags>>
+              bin/test_wheel.sh <<parameters.python-tags>>
+      - persist_to_workspace:
+          root: .
+          paths:
+            - dist
+
+  publish-wheel:
+    executor: docker-executor
+
+    steps:
+      - attach_workspace:
+          at: .
+      - store_artifacts:
+          path: dist
 
   build-align:
     executor: docker-executor
@@ -356,3 +365,6 @@ workflows:
                 - "cp38-cp38"
               platform:
                 - "manylinux2010_x86_64"
+      - publish-wheel:
+          requires:
+            - build-wheel
