@@ -79,6 +79,13 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+
+      - run:
+          name: "Zip distribution directory"
+          command: |
+            mkdir export
+            tar --gzip -cf export/wheels-${CIRCLE_SHA1}.tar.gz ./dist
+
       - store_artifacts:
           path: dist
 
@@ -290,15 +297,12 @@ jobs:
           name: "test-integration-<<parameters.pdk>>-<<parameters.design>>-<<parameters.timeout>>"
           no_output_timeout: "<<parameters.timeout>>s"
           command: |
-            pip install align -f ./dist
+            pip install align[test] -f ./dist
             filter="<<parameters.design>>"
             filter="<<parameters.pdk>>${filter:+ and $filter}"
-            pytest -vv --runnightly --tb=line --timeout=<<parameters.timeout>> -k "$filter" -- tests/integration
-            mkdir -p /test-reports
-            cp -r junit.xml LOG /test-reports
-            cd $ALIGN_WORK_DIR && find . -name *.png -exec cp --parents \{\} /test-reports \;
-            docker cp align_container:test-reports .
-            docker rm align_container
+            pytest -vv --runnightly -n 4 --tb=line --timeout=<<parameters.timeout>> -k "$filter" -- tests/integration
+            mkdir test-reports && cp -r junit.xml LOG test-reports
+            find $ALIGN_WORK_DIR -name *.json -exec cp --parents \{\} test-reports \;
 
       - store_test_results:
           path: test-reports
@@ -391,8 +395,8 @@ workflows:
           matrix:
             parameters:
               platform:
-                - "ubuntu:18.04"
-                - "ubuntu:20.04"
+                - "python:3.7"
+                - "python:3.8"
               pdk:
                 - "Finfet"
               design:
