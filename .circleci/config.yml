@@ -56,7 +56,7 @@ jobs:
       - run:
           name: Build Wheel
           command: |
-              bin/build_wheel.sh <<parameters.python-tags>>
+              MAX_JOBS=2 bin/build_wheel.sh <<parameters.python-tags>>
       - run:
           name: Test wheel
           command: |

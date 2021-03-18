@@ -2,10 +2,20 @@ cmake_minimum_required(VERSION 3.15..3.18)
 
 #
 # Initial Setup
+#
+
 # TODO: Single source version number
 project(align VERSION "1.0.0")
+
 # We will finally export a dynamic library
 SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -fPIC")
+
+# May need to limit ninja's max concurrency for CIRCLECI
+if(DEFINED ENV{MAX_JOBS})
+  message(STATUS "Limiting maximum number of compile jobs to $ENV{MAX_JOBS}")
+  set_property(GLOBAL APPEND PROPERTY JOB_POOLS compile_pool=$ENV{MAX_JOBS})
+  set(CMAKE_JOB_POOL_COMPILE compile_pool)
+endif()
 
 #
 # Get the following CPP dependencies
