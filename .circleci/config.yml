@@ -87,7 +87,7 @@ jobs:
             tar --gzip -cf export/wheels-${CIRCLE_SHA1}.tar.gz ./dist
 
       - store_artifacts:
-          path: dist
+          path: export
 
   build-align:
     executor: docker-executor
