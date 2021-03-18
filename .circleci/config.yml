@@ -309,41 +309,41 @@ jobs:
 workflows:
   version: 2.1
 
-  nightly:
-    triggers:
-      - schedule:
-          cron: "0 8 * * *"
-          filters:
-            branches:
-              only:
-                - master
+  # nightly:
+  #   triggers:
+  #     - schedule:
+  #         cron: "0 8 * * *"
+  #         filters:
+  #           branches:
+  #             only:
+  #               - master
 
-    jobs:
-      - build-align
-      - build-test-cktgen
-      - test-integration:
-          name: "test-integration-<<matrix.pdk>>(<<matrix.design>>)"
-          requires:
-            - build-align
-          matrix:
-            parameters:
-              pdk:
-                - "Finfet"
-                - "Bulk"
-              design:
-                - "BUFFER or ota"
-                - "San or BTSW"
-                - "not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD"
-                - "single_SAR and not tb_single_SAR"
-      - test-PlaceRouteHierFlow:
-          requires:
-            - build-align
-      - test-align:
-          requires:
-            - build-align
-      - build-make-docker:
-          requires:
-            - build-align
+  #   jobs:
+  #     - build-align
+  #     - build-test-cktgen
+  #     - test-integration:
+  #         name: "test-integration-<<matrix.pdk>>(<<matrix.design>>)"
+  #         requires:
+  #           - build-align
+  #         matrix:
+  #           parameters:
+  #             pdk:
+  #               - "Finfet"
+  #               - "Bulk"
+  #             design:
+  #               - "BUFFER or ota"
+  #               - "San or BTSW"
+  #               - "not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD"
+  #               - "single_SAR and not tb_single_SAR"
+  #     - test-PlaceRouteHierFlow:
+  #         requires:
+  #           - build-align
+  #     - test-align:
+  #         requires:
+  #           - build-align
+  #     - build-make-docker:
+  #         requires:
+  #           - build-align
 
   commit:
     jobs:
