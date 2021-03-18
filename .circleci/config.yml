@@ -49,6 +49,7 @@ jobs:
 
     docker:
       - image: quay.io/pypa/<<parameters.platform>>
+    resource_class: medium
 
     steps:
       - checkout
