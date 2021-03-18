@@ -13,9 +13,10 @@ export ALIGN_HOME=${ALIGN_HOME:-$PWD}
 # TODO: Investigate whether we can simply use
 #       current directory all the time!
 export ALIGN_WORK_DIR=${ALIGN_WORK_DIR:-$PWD}
+MAX_JOBS=${MAX_JOBS:-auto}
 
 # Install packages and test
 for pyver in "$@"; do
     "/opt/python/${pyver}/bin/pip" install align[test] -f "$ALIGN_HOME"/dist
-    "/opt/python/${pyver}/bin/pytest" -n auto -vv --max-worker-restart 0 --dist loadscope "$ALIGN_HOME"/tests
+    "/opt/python/${pyver}/bin/pytest" -n "$MAX_JOBS" -vv --max-worker-restart 0 --dist loadscope "$ALIGN_HOME"/tests
 done
