@@ -386,6 +386,10 @@ void Placement::PlotPlacement(int index){
       fout<<"\nset label \""<<" B"+to_string(i)<<"\" at "<<Blocks[i].Cpoint.x<<" , "<<Blocks[i].Cpoint.y<<" center "<<endl;
     }
     */
+
+    for(int i=0;i<(int)Blocks.size();++i){
+      fout<<"\nset label \""<<Blocks[i].blockname<<"\" at "<<Blocks[i].Cpoint.x<<" , "<<Blocks[i].Cpoint.y<<" center "<<endl;
+    }
     
     fout<<"\nplot[:][:] \'-\' with lines linestyle 3, \'-\' with lines linestyle 7, \'-\' with lines linestyle 1, \'-\' with lines linestyle 0"<<endl<<endl;;
 
