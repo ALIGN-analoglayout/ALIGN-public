@@ -199,6 +199,38 @@ void Placement::Pull_back(){
 
 }
 
+void Placement::Pull_back_vector(vector<float> &temp_vector, bool x_or_y){// 1 is x, 0 is y
+
+  for(unsigned int i=0;i<temp_vector.size();++i){
+    if(x_or_y){
+
+      if(temp_vector[i]+Blocks[i].Dpoint.x/2>Chip_D.x){
+         temp_vector[i] = Chip_D.x - Blocks[i].Dpoint.x/2-(1.5)*Bin_D.x/2;
+         //temp_vector[i] = Chip_D.x - Blocks[i].Dpoint.x/2;
+      }
+      if(temp_vector[i]-Blocks[i].Dpoint.x/2<0){
+         temp_vector[i] = Blocks[i].Dpoint.x/2+(1.5)*Bin_D.x/2;
+         //temp_vector[i] = Blocks[i].Dpoint.x/2;
+      }
+
+    }else{
+
+      if(temp_vector[i]+Blocks[i].Dpoint.y/2>Chip_D.y){
+         temp_vector[i] = Chip_D.y - Blocks[i].Dpoint.y/2-(1.5)*Bin_D.y/2;
+         //temp_vector[i] = Chip_D.y - Blocks[i].Dpoint.y/2;
+      }
+      if(temp_vector[i]-Blocks[i].Dpoint.y/2<0){
+         temp_vector[i] = Blocks[i].Dpoint.y/2+(1.5)*Bin_D.y/2;
+         //temp_vector[i] = Blocks[i].Dpoint.y/2;
+      }
+
+
+    }
+
+  }
+
+}
+
 
 void Placement::Initilize_Placement(){
 
@@ -931,6 +963,11 @@ void Placement::E_Placer(){
      #endif
      Feedback_Placement_Vectors(uc_x, 1);
      Feedback_Placement_Vectors(uc_y, 0);
+     Pull_back_vector(vc_x,1);
+     Pull_back_vector(vl_x,1);
+     Pull_back_vector(vc_y,0);
+     Pull_back_vector(vl_y,0);    
+     //Pull_back();
      #ifdef DEBUG
      std::cout<<"test 4"<<std::endl;
      #endif
