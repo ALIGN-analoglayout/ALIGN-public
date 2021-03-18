@@ -1,3 +1,4 @@
+import sys
 import datetime
 import pathlib
 import logging
@@ -224,12 +225,21 @@ def generate_Res(pdkdir, block_name, height, x_cells, y_cells, nfin, unit_res):
     return uc, ['PLUS', 'MINUS']
 
 def get_generator(name, pdkdir):
-    try:
-        spec = importlib.util.spec_from_file_location(pdkdir.stem, pdkdir / '__init__.py')
-    except:
-        spec = importlib.util.spec_from_file_location(pdkdir.stem, pdkdir / 'primitive.py')
-    primitive = importlib.util.module_from_spec(spec)
-    sys.modules[pdkdir.stem] = primitive
+    # pdkdir is file / directory path
+    if isinstance(pdkdir, pathlib.Path):
+        try:
+            spec = importlib.util.spec_from_file_location(pdkdir.stem, pdkdir / '__init__.py')
+        except:
+            spec = importlib.util.spec_from_file_location(pdkdir.stem, pdkdir / 'primitive.py')
+        primitive = importlib.util.module_from_spec(spec)
+        sys.modules[pdkdir.stem] = primitive
+    # Assume module name has been passed
+    elif isinstance(pdkdir, str):
+        spec = importlib.util.find_spec(pdkdir)
+        primitive = importlib.util.module_from_spec(spec)
+    # Not sure what I have to do !
+    else:
+        raise NotImplementedError(f'Unexpected datatype {type(pdkdir)}: {pdkdir}')
     spec.loader.exec_module(primitive)
     return getattr(primitive, name)
 
