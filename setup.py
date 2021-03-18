@@ -57,7 +57,8 @@ setup(name='align',
           'z3-solver',
           'more-itertools',
           'colorlog',
-          'plotly'
+          'plotly',
+          'typing_extensions; python_version<"3.8"'
           ],
       extras_require={
           'test': [
@@ -66,7 +67,7 @@ setup(name='align',
               'pytest-xdist'
           ]
       },
-      python_requires='~=3.8',
+      python_requires='>=3.7',
       classifiers=[
           'Development Status :: 2 - Pre-Alpha',
           'Environment :: Console',
