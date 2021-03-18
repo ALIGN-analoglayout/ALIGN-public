@@ -163,6 +163,7 @@ class Annotate:
                     }
                 self._update_sym_const(name, G1, const['blocks'], inst_name)
                 self._update_sym_const(name, G1, const['name'], inst_name)
+                self._update_order_block_const(name, G1, [const['name']], inst_name)
                 self._update_order_block_const(name, G1, const['blocks'], inst_name)
                 self._top_to_bottom_translation(name, G1, const['blocks'], inst_name, const['name'])
 
@@ -223,8 +224,10 @@ class Annotate:
                                 del pair['block1']
                                 del pair['block2']
                                 logger.debug(f"updated symmetric pair constraint to self symmetry:{const}")
-                            elif pair['block1'] in remove_nodes or pair['block2'] in remove_nodes:
-                                logger.error(f"Improper constraint {const}")
+                            elif pair['block1'] in remove_nodes and pair['block2'] not in remove_nodes:
+                                pair['block1'] = new_inst
+                            elif pair['block2'] in remove_nodes and pair['block1'] not in remove_nodes:
+                                pair['block2'] = new_inst
                         elif pair['type'] == 'selfsym':
                             if pair['block'] in remove_nodes:
                                 pair['block'] = new_inst
@@ -260,11 +263,12 @@ class Annotate:
             G1 (graph): subckt graph
             remove_nodes (list): nodes which are being removed
         """
-        logger.debug(f"update constraints with block in them for hierarchy {name}")
+        logger.debug(f"update constraints with block in them for hierarchy {name} {remove_nodes}")
         if self._if_const(name):
             const_list = self.hier_graph_dict[name]["const"]["constraints"]
             for const in const_list:
                 if 'blocks' in const:
+                    logger.debug(f"checking blocks in the constraint:{const['blocks']} {set(remove_nodes)}")
                     if set(const['blocks']) & set(remove_nodes):
                         for block in remove_nodes:
                             if block in const['blocks']:
