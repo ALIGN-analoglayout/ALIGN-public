@@ -33,8 +33,3 @@ for whl in /tmp/dist/align*.whl; do
     repair_wheel "$whl" "$ALIGN_HOME"/dist/
     rm $whl
 done
-
-# Install packages and test
-for pyver in "$@"; do
-    "/opt/python/${pyver}/bin/pip" install align -f "$ALIGN_HOME"/dist
-done
