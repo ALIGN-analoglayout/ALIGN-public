@@ -261,7 +261,10 @@ int route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::bbox 
 
   // 8.transform (translate and rotate) current_node into current_node coordinate
   // undo transform current_node.LL and current_node_ort
-  DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, PnRDB::TransformType::Backward);
+  if (!current_node.isTop) {
+    // Don't seem to be doing this for the top cell in route_single...
+    DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, PnRDB::TransformType::Backward);
+  }
 
   // 9.pushback current_node into hiertree, update current_node copy's index
   // update hiertree[blocks.*.child].parent = new_currentnode_idx

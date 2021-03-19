@@ -222,9 +222,9 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
             #embed()
 
             def fetch_hN_from_file( variant_name):
-                # Second one works; first one doesn't
-                #fn = results_dir / (variant_name + "_from_DB" + '.db.json')
-                fn = results_dir / (variant_name + '.db.json')
+                # Both work now
+                fn = results_dir / (variant_name + "_from_DB" + '.db.json')
+                #fn = results_dir / (variant_name + '.db.json')
                 with open(fn, 'rt') as fp:
                     hN = hierNode(json.load(fp))
                 return hN
@@ -259,7 +259,6 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
                     hovertext = f'{inst.name}<br>{inst.master} ({child_idx})<br>{str(inst.orient)} {inst.placedBox.LL.x} {inst.placedBox.LL.y} {inst.placedBox.UR.x} {inst.placedBox.UR.y}'
 
                     x,y = gen_trace_xy( inst.placedBox)
-                    print(x,y)
                     fig.add_trace(go.Scatter( x=x, y=y, mode='lines', name=hovertext, fill="toself", showlegend=False))
 
                 fig.update_yaxes( scaleanchor = "x", scaleratio = 1)
