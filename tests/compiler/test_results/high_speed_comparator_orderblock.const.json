@@ -1,0 +1,118 @@
+{
+    "constraints": [
+        {
+            "const_name": "bias_Hgraph",
+            "distance": 0
+        },
+        {
+            "const_name": "bias_Vgraph",
+            "distance": 0
+        },
+        {
+            "const_name": "Ordering",
+            "direction": "V",
+            "blocks": [
+                "mn0",
+                "mn1_mn2",
+                "mn3_mn4",
+                "mp5_mp6"
+            ]
+        },
+        {
+            "const_name": "SymmNet",
+            "axis_dir": "V",
+            "net1": {
+                "name": "vin_d",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "mn1_mn2",
+                        "pin": "vin_d"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "mn3_mn4",
+                        "pin": "vin_d"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "mp8_mp7",
+                        "pin": "DB"
+                    }
+                ]
+            },
+            "net2": {
+                "name": "vip_d",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "mn1_mn2",
+                        "pin": "vip_d"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "mn3_mn4",
+                        "pin": "vip_d"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "mp8_mp7",
+                        "pin": "DA"
+                    }
+                ]
+            }
+        },
+        {
+            "const_name": "SymmNet",
+            "axis_dir": "V",
+            "net1": {
+                "name": "vin_o",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "mp5_mp6",
+                        "pin": "vin_o"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "mp9_mp10",
+                        "pin": "DA"
+                    }
+                ]
+            },
+            "net2": {
+                "name": "vip_o",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "mp5_mp6",
+                        "pin": "vip_o"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "mp9_mp10",
+                        "pin": "DB"
+                    }
+                ]
+            }
+        },
+        {
+            "const_name": "SymmBlock",
+            "axis_dir": "V",
+            "pairs": [
+                {
+                    "type": "selfsym",
+                    "block": "mn3_mn4"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "mp5_mp6"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "mp9_mp10"
+                }
+            ]
+        }
+    ]
+}
