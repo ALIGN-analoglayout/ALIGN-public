@@ -1,4 +1,7 @@
 SymmBlock ( {m2,m3} , {m4,m7} , {m5,m6} , {m8,m11} , {m9,m10} , {m12,m13} , {m1} , {m14} , {V} )
-#AlignBlock( H , m1 , m2 )
-#Ordering ( m1 , m2 , V )
+AlignBlock ( H , m2 , m3 )
+AlignBlock ( H , m4 , m5 , m6 , m7 )
+AlignBlock ( H , m8 , m9 , m10 , m11 )
+AlignBlock ( H , m12 , m13 )
+Ordering ( m3 , m2 , H )
 

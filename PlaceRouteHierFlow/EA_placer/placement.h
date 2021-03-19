@@ -113,5 +113,8 @@ public:
     static bool comp_y(Ppoint_F c1, Ppoint_F c2);
     //donghao end
 
+    float Cal_Overlap();
+    void Pull_back_vector(vector<float> &temp_vector, bool x_or_y);
+
 };
 #endif
