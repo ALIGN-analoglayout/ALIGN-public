@@ -189,7 +189,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
             (working_dir / file_.name).write_text(file_.read_text())
 
 
-    if False:
+    if True:
         if check or extract or gds_json:
 
             def TraverseHierTree():
@@ -222,7 +222,9 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
             #embed()
 
             def fetch_hN_from_file( variant_name):
-                fn = results_dir / (variant_name + "_from_DB" + '.db.json')
+                # Second one works; first one doesn't
+                #fn = results_dir / (variant_name + "_from_DB" + '.db.json')
+                fn = results_dir / (variant_name + '.db.json')
                 with open(fn, 'rt') as fp:
                     hN = hierNode(json.load(fp))
                 return hN
@@ -254,11 +256,11 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
                     inst = blk.instance[blk.selectedInstance]
                     #logger.info( f'inst {inst.name} {inst.master} ({child_idx}) {inst.orient} {inst.placedBox.LL.x} {inst.placedBox.LL.y} {inst.placedBox.UR.x } {inst.placedBox.UR.y}')
 
-                    hovertxt = f'{inst.name}<br>{inst.master} ({child_idx})<br>{str(inst.orient)} {inst.placedBox.LL.x} {inst.placedBox.LL.y} {inst.placedBox.UR.x} {inst.placedBox.UR.y}'
+                    hovertext = f'{inst.name}<br>{inst.master} ({child_idx})<br>{str(inst.orient)} {inst.placedBox.LL.x} {inst.placedBox.LL.y} {inst.placedBox.UR.x} {inst.placedBox.UR.y}'
 
                     x,y = gen_trace_xy( inst.placedBox)
                     print(x,y)
-                    fig.add_trace(go.Scatter( x=x, y=y, mode='lines', name=hovertxt, fill="toself"))
+                    fig.add_trace(go.Scatter( x=x, y=y, mode='lines', name=hovertext, fill="toself", showlegend=False))
 
                 fig.update_yaxes( scaleanchor = "x", scaleratio = 1)
                 fig.update_layout( title=dict( text=f'{hN.name}_{hN.n_copy}'))
