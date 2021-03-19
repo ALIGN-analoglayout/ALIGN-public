@@ -41,7 +41,7 @@ class SpiceParser:
         """Parse the defined file line wise"""
 
         if not os.path.isfile(self.netlist):
-            logger.ERROR(f"File doesn't exist {self.netlist}")
+            logger.error(f"File doesn't exist {self.netlist}")
         else:
             logger.debug(f"File exist: {self.netlist}")
             fp_l = open(self.netlist, "r")
