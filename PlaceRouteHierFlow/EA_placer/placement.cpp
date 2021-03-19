@@ -803,8 +803,10 @@ void Placement::E_Placer(){
   std::cout<<"E_placer debug flage: 0"<<std::endl;
   #endif
   //force to align and order
-  force_alignment();
+  // force_alignment();
   force_order();
+  force_alignment();
+  
   Update_Bin_Density();
   #ifdef DEBUG
   std::cout<<"E_placer debug flage: 1"<<std::endl;
@@ -908,15 +910,22 @@ void Placement::E_Placer(){
      std::cout<<"Iteration "<<i<<std::endl;
      #endif
      //if(lambda<100)
-     //lambda = lambda *1.20;
+    //  lambda = lambda *1.2;
      beta = beta*0.95;
-     sym_beta = sym_beta*1.01;
-
+     if(sym_beta < 0.1)
+     {
+        sym_beta = sym_beta*1.0125;
+     }
+    
+      std::cout<<"sym_beta:= "<<sym_beta<<std::endl;
      //force to align
      if(i%10 == 0)
      {
-       force_alignment();
        force_order();
+       force_alignment();
+       
+      //  force_alignment();
+       
      }
      
 
@@ -1822,7 +1831,15 @@ void Placement::force_order()
     {
       int id = Ordering_Constraints[i].first[j];
       std::cout<<"ordering id after sort: "<< id;
-      Blocks[id].Cpoint = Centers[j];
+      if(Ordering_Constraints[i].second == PnRDB::H)
+      {
+        Blocks[id].Cpoint.x = Centers[j].x;
+      }
+      else
+      {
+        Blocks[id].Cpoint.y = Centers[j].y;
+      }
+      
       std::cout<<"pos:"<<Centers[j].x<<", "<<Centers[j].y<<std::endl;
     }
   }

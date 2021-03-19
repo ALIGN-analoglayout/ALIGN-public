@@ -1,7 +1,6 @@
-start=$1
-end=$2
+#start=$1
+#end=$200
 
-for i in $(seq $start $end)  
-do   
+for((i=0;i<201;i=i+10));do 
 gnuplot $i.plt 
 done 
