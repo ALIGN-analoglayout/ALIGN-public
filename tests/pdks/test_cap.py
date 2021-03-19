@@ -22,7 +22,13 @@ def build_test(pdk, b, *, n):
     check_shorts(['-b', b, '-n', f"{n}"])
     sys.path.pop(0)
 
+@pytest.mark.parametrize( "pdk", pdks, ids=lambda x: x.name)
+def test_cap_smoke(pdk):
+    n = 4
+    build_test(pdk, f'cap_{4}', n=4)
+
+@pytest.mark.nightly
 @pytest.mark.parametrize( "n", range( 4, 32, 2), ids=lambda x: f'n{x}')
 @pytest.mark.parametrize( "pdk", pdks, ids=lambda x: x.name)
-def test_caps(pdk, n):
+def test_cap_full(pdk, n):
     build_test(pdk, f'cap_{n}', n=n)

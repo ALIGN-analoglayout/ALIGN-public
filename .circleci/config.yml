@@ -49,7 +49,7 @@ jobs:
 
     # https://github.com/pypa/manylinux
     docker:
-      - image: quay.io/pypa/<<parameters.platform>>
+      - image: <<parameters.platform>>
 
     # Set MAX_JOBS for Ninja & Pytest = number of vCPUs (2) + 1
     environment:
@@ -283,10 +283,10 @@ jobs:
 
     docker:
       - image: <<parameters.platform>>
-
+    working_directory: /root/ALIGN-public
     environment:
-      ALIGN_HOME: .
-      ALIGN_WORK_DIR: ./work
+      ALIGN_HOME: /root/ALIGN-public
+      ALIGN_WORK_DIR: /root/ALIGN-public/work
 
     steps:
       - checkout
@@ -297,10 +297,11 @@ jobs:
           name: "test-integration-<<parameters.pdk>>-<<parameters.design>>-<<parameters.timeout>>"
           no_output_timeout: "<<parameters.timeout>>s"
           command: |
+            rm -fr align setup.py
             pip install align[test] -f ./dist
             filter="<<parameters.design>>"
             filter="<<parameters.pdk>>${filter:+ and $filter}"
-            pytest -vv --runnightly -n 4 --tb=line --timeout=<<parameters.timeout>> -k "$filter" -- tests/integration
+            pytest -vv --runnightly --maxerrors=10 --timeout=<<parameters.timeout>> -k "$filter" -- tests/integration
             mkdir test-reports && cp -r junit.xml LOG test-reports
             find $ALIGN_WORK_DIR -name *.json -exec cp --parents \{\} test-reports \;
 
@@ -379,12 +380,14 @@ workflows:
           matrix:
             parameters:
               python-tags:
-                - "cp38-cp38"             # Python 3.8
+                # - "cp38-cp38"             # Python 3.8
                 - "cp37-cp37m"            # Python 3.7
               platform:
-                - "manylinux2010_x86_64"  # PEP 571
-                - "manylinux2014_x86_64"  # PEP 599
-                # - "manylinux_2_24_x86_64" # PEP 600
+                - "skhep/manylinuxgcc-x86_64"
+                # - "quay.io/pypa/manylinux2010_x86_64"  # PEP 571
+                # - "quay.io/pypa/manylinux2014_x86_64"  # PEP 599
+                # Enable once we support python 3.10
+                # - "quay.io/pypa/manylinux_2_24_x86_64" # PEP 600
       - publish-wheel:
           requires:
             - build-wheel
@@ -396,7 +399,7 @@ workflows:
             parameters:
               platform:
                 - "python:3.7"
-                - "python:3.8"
+                # - "python:3.8"
               pdk:
                 - "Finfet"
               design:

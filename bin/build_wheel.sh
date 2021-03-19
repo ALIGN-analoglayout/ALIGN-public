@@ -8,6 +8,21 @@
 
 set -eo pipefail
 
+# install some dependencies
+case "$AUDITWHEEL_PLAT" in
+    "manylinux1_x86_64"|"manylinux2010_x86_64"|"manylinux2014_x86_64")
+        yum -y install boost-devel lpsolve
+    ;;
+    # "manylinux_2_24_x86_64")
+    # TODO: Implement this for Python 3.10 support
+    #       (PEP600 requires pip >= 20.3)
+    *)
+        echo "WARNING: Unknown environment."
+        echo "Please make sure you are using a supported manylinux platform to run this script"
+        exit 1
+    ;;
+esac
+
 export ALIGN_HOME=${ALIGN_HOME:-$PWD}
 
 function repair_wheel {

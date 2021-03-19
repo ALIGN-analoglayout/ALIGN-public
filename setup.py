@@ -64,7 +64,8 @@ setup(name='align',
           'test': [
               'pytest',
               'pytest-cov',
-              'pytest-xdist'
+              'pytest-xdist',
+              'pytest-timeout'
           ]
       },
       python_requires='>=3.7',
