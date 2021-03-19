@@ -65,6 +65,7 @@ Placement::Placement(PnRDB::hierNode &current_node) {
 
     //read alignment constrains
     read_alignment(current_node);
+    read_order(current_node);
     Initilize_Placement();
 
     print_blocks_nets();  
@@ -1791,6 +1792,7 @@ void Placement::force_alignment()
 void Placement::read_order(PnRDB::hierNode &current_node)
 {
   Ordering_Constraints = current_node.Ordering_Constraints;
+  std::cout<<"ordering constraints size: "<<Ordering_Constraints.size()<<std::endl;
 }
 
 void Placement::force_order()
@@ -1801,7 +1803,9 @@ void Placement::force_order()
     vector<Ppoint_F> Centers = vector<Ppoint_F>();
     for(int j = 0;j <Ordering_Constraints[i].first.size();++j)
     {
+      std::cout<<"ordering id before sort: "<< Ordering_Constraints[i].first[j];
       Centers.push_back(Blocks[Ordering_Constraints[i].first[j]].Cpoint);
+      std::cout<<"pos:"<<Centers[j].x<<", "<<Centers[j].y<<std::endl;
     }
     //step 2: sort the Cpoint vector
     if(Ordering_Constraints[i].second == PnRDB::H)
@@ -1817,7 +1821,9 @@ void Placement::force_order()
     for(int j = 0;j <Ordering_Constraints[i].first.size();++j)
     {
       int id = Ordering_Constraints[i].first[j];
+      std::cout<<"ordering id after sort: "<< id;
       Blocks[id].Cpoint = Centers[j];
+      std::cout<<"pos:"<<Centers[j].x<<", "<<Centers[j].y<<std::endl;
     }
   }
   
