@@ -1,10 +1,7 @@
 import os
 import json
 import pathlib
-# from align.cell_fabric import Canvas, Wire, Via, UncoloredCenterLineGrid, EnclosureGrid
-import canvas
-
-# mydir = pathlib.Path(__file__).resolve().parent
+from . import canvas
 
 
 def test_canvas():
@@ -28,8 +25,6 @@ def test_canvas():
             c.addVia(c.V4, 'a', None, x, y+3)
 
     c.computeBbox()
-
-    print(c.terminals)
 
     data = {'bbox': c.bbox.toList(),
             'globalRoutes': [],

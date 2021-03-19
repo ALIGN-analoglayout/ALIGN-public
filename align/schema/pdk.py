@@ -1,15 +1,15 @@
 from typing import List, Union, Dict, Optional, Tuple
-from align.schema import schema
 from pydantic import validator, ValidationError, Field
+from . import types
 
 
-class ParasiticValues(schema.BaseModel):
+class ParasiticValues(types.BaseModel):
     mean: int = 0
     min: int = 0
     max: int = 0
 
 
-class Layer(schema.BaseModel):
+class Layer(types.BaseModel):
     name: str
     gds_layer_number: int
     gds_data_type: Optional[Dict[str, int]] = Field(default_factory=lambda: {"draw": 0})
@@ -104,7 +104,7 @@ class LayerViaSet(Layer):
     via_list: Optional[List[LayerVia]]
 
 
-class PDK(schema.BaseModel):
+class PDK(types.BaseModel):
     name: str
     layers: Dict[str, Union[LayerMetal, LayerViaSet]] = Field(default_factory=lambda: {})
     scale_factor: int = 1

@@ -1,8 +1,8 @@
 import os
 from itertools import cycle, islice, chain
 from align.cell_fabric import transformation
-from canvas import CanvasPDK
-from gen_transistor import mos
+from .canvas import CanvasPDK
+from .gen_transistor import mos
 from align.schema.transistor import Transistor, TransistorArray
 
 

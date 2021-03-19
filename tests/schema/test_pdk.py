@@ -1,7 +1,5 @@
 import pathlib
-import pprint
 import json
-
 from align.schema.pdk import LayerMetal, LayerVia, LayerViaSet, PDK
 
 my_dir = pathlib.Path(__file__).resolve().parent
@@ -92,8 +90,8 @@ def test_one():
 This PDK is for development and not functional yet.\
 This file is auto-generated using tests/schema/test_pdk.py""",
                    layers={'M1': m1, 'M2': m2, 'M3': m3, 'M4': m4, 'M5': m5,
-                           'V1': v1set})
+                           'V1': v1_set})
 
-    pprint.pprint(pdk.dict())
+    # pprint.pprint(pdk.dict())
     with open(my_dir/"layers.json", "wt") as fp:
         fp.write(json.dumps(pdk.dict(), indent=2) + '\n')

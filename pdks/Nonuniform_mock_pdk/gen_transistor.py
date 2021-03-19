@@ -1,7 +1,7 @@
 import os
 import json
 import pathlib
-from canvas import CanvasPDK
+from .canvas import CanvasPDK
 from align.schema.transistor import Transistor
 from align.cell_fabric import transformation
 
@@ -57,7 +57,7 @@ def test_one():
     data['globalRoutes'] = []
     data['globalRouteGrid'] = []
     print(data)
-    with open(pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/'test_transistor_one.json', "wt") as fp:
+    with open(pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/'test_mos_one.json', "wt") as fp:
         fp.write(json.dumps(data, indent=2) + '\n')
 
 
@@ -71,6 +71,6 @@ def test_two():
     data['globalRoutes'] = []
     data['globalRouteGrid'] = []
     print(data)
-    with open(pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/'test_transistor_two.json', "wt") as fp:
+    with open(pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/'test_mos_two.json', "wt") as fp:
         fp.write(json.dumps(data, indent=2) + '\n')
 

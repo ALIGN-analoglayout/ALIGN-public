@@ -1,9 +1,9 @@
 from typing import List, Union, Dict, Optional, Tuple
-from align.schema import schema
 from pydantic import validator, ValidationError, Field
+from . import types
 
 
-class Transistor(schema.BaseModel):
+class Transistor(types.BaseModel):
 
     device_type: str
     nf: int
@@ -37,7 +37,7 @@ class Transistor(schema.BaseModel):
         return v
 
 
-class TransistorArray(schema.BaseModel):
+class TransistorArray(types.BaseModel):
 
     unit_transistor: Transistor
     m: Dict[int, int]
