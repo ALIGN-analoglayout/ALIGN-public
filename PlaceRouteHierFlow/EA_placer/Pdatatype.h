@@ -33,6 +33,11 @@ struct Alignment {
   float distance;//normalize to 0 - 1
   int horizon; // 1 is h, 0 is v.
 };
+//added by donghao :alignment blocks, # of blocks >= 2
+struct AlignBlock {
+  std::vector<int> blocks;//LL.x/LL.y equal
+  int horizon; // 1 is h, 0 is v.
+};
 
 struct bin {
     Ppoint_F Cpoint; //center point

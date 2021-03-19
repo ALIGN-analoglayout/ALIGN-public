@@ -23,6 +23,7 @@ private:
     vector<vector<bin> > Bins; //bins inside the chip
     vector<vector<Ppoint_F> > symmetric_force_matrix;// sysmmtric force=M *x(y)
     vector<Alignment> Alignment_blocks;//store the alignment constrains.
+    vector<AlignBlock> AlignBlocks;
     vector<pair<vector<int>, PnRDB::Smark>> Ordering_Constraints;//as same in PnRDB
     float gammar = 1.0f; //Q: need to ajust
     float lambda= 1.0f; //Q: need to ajust
