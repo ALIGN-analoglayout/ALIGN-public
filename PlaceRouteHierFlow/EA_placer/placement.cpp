@@ -1674,63 +1674,118 @@ void Placement::Cal_sym_Force()
 
 void Placement::read_alignment(PnRDB::hierNode &current_node)
 {
-  float height = this->est_Size.y;
-  float weight = this->est_Size.x;
-  Alignment_blocks.clear();
+  //###############################################
+    //old version using struct Alignment//
+    //###############################################
+  // float height = this->est_Size.y;
+  // float weight = this->est_Size.x;
+  // Alignment_blocks.clear();
 
-  for(int i = 0;i < current_node.Alignment_blocks.size();++i)
+  // for(int i = 0;i < current_node.Alignment_blocks.size();++i)
+  // {
+    
+    
+    // Alignment temp;
+    // //find the larger blocks
+    // float s1,s2;
+    // int id1,id2;
+    // id1 = current_node.Alignment_blocks[i].blockid1;
+    // id2 = current_node.Alignment_blocks[i].blockid2;
+
+    // s1 = Blocks[id1].Dpoint.x * Blocks[id1].Dpoint.y;
+    // s2 = Blocks[id2].Dpoint.x * Blocks[id2].Dpoint.y;
+    // if(s2 > s1)
+    // {
+    //   temp.blockid1 = id2;
+    //   temp.blockid2 = id1;
+    // }
+    // else
+    // {
+    //   temp.blockid1 = id1;
+    //   temp.blockid2 = id2;
+    // }
+
+    // temp.horizon = current_node.Alignment_blocks[i].horizon;
+    // if(temp.horizon == 1)//LL1.x = LL2.x ->c1.x - d1.x/2 = c2.x - d2.x/2
+    // //distance = c2.x - c1.x = d2.x/2 - d1.x/2
+    // {
+    //   temp.distance = 0.5*(Blocks[temp.blockid2].Dpoint.x - Blocks[temp.blockid1].Dpoint.x);
+    // }
+    // else
+    // {
+    //   temp.distance = 0.5*(Blocks[temp.blockid2].Dpoint.y - Blocks[temp.blockid1].Dpoint.y);
+    // }
+
+    // Alignment_blocks.push_back(temp);
+
+    //###############################################
+    //new version using struct AlignBLock//
+    //###############################################
+
+  // }
+  AlignBlocks.clear();
+  for(int i = 0;i<current_node.Align_blocks.size();++i)
   {
-    Alignment temp;
-    //find the larger blocks
-    float s1,s2;
-    int id1,id2;
-    id1 = current_node.Alignment_blocks[i].blockid1;
-    id2 = current_node.Alignment_blocks[i].blockid2;
-
-    s1 = Blocks[id1].Dpoint.x * Blocks[id1].Dpoint.y;
-    s2 = Blocks[id2].Dpoint.x * Blocks[id2].Dpoint.y;
-    if(s2 > s1)
-    {
-      temp.blockid1 = id2;
-      temp.blockid2 = id1;
-    }
-    else
-    {
-      temp.blockid1 = id1;
-      temp.blockid2 = id2;
-    }
-
-    temp.horizon = current_node.Alignment_blocks[i].horizon;
-    if(temp.horizon == 1)//LL1.x = LL2.x ->c1.x - d1.x/2 = c2.x - d2.x/2
-    //distance = c2.x - c1.x = d2.x/2 - d1.x/2
-    {
-      temp.distance = 0.5*(Blocks[temp.blockid2].Dpoint.x - Blocks[temp.blockid1].Dpoint.x);
-    }
-    else
-    {
-      temp.distance = 0.5*(Blocks[temp.blockid2].Dpoint.y - Blocks[temp.blockid1].Dpoint.y);
-    }
-
-    Alignment_blocks.push_back(temp);
+    AlignBlock temp;
+    PnRDB::AlignBlock *curAlign = &current_node.Align_blocks[i];
+    temp.blocks.clear();
+    temp.blocks = curAlign->blocks;
+    temp.horizon = curAlign->horizon;
+    //find the largest blocks and put it into begin()
+    AlignBlocks.push_back(temp);
   }
 }
 
 void Placement::force_alignment()
 {
-  for(int i = 0;i < Alignment_blocks.size();++i)
+  //###############################################
+  //old version using struct Alignment//
+  //###############################################
+
+  // for(int i = 0;i < Alignment_blocks.size();++i)
+  // {
+  //   int id1 = Alignment_blocks[i].blockid1;
+  //   int id2 = Alignment_blocks[i].blockid2;
+  //   float distance = Alignment_blocks[i].distance;
+  //   if(Alignment_blocks[i].horizon == 1)
+  //   {
+  //     Blocks[id2].Cpoint.x = Blocks[id1].Cpoint.x + distance;
+  //   }
+  //   else
+  //   {
+  //     Blocks[id2].Cpoint.y = Blocks[id1].Cpoint.y + distance;
+  //   }
+  // }
+  std::cout<<"force align begin"<<std::endl;
+  for(int i = 0;i < AlignBlocks.size();++i)
   {
-    int id1 = Alignment_blocks[i].blockid1;
-    int id2 = Alignment_blocks[i].blockid2;
-    float distance = Alignment_blocks[i].distance;
-    if(Alignment_blocks[i].horizon == 1)
+    int headIdx = AlignBlocks[i].blocks[0];
+    Ppoint_F head_pos = Blocks[headIdx].Cpoint;
+    Ppoint_F head_dem = Blocks[headIdx].Dpoint;
+    if(AlignBlocks[i].horizon)
     {
-      Blocks[id2].Cpoint.x = Blocks[id1].Cpoint.x + distance;
+      for(int j = 1;j<AlignBlocks[i].blocks.size();++j)
+      {
+        int cur_idx = AlignBlocks[i].blocks[j];
+        Ppoint_F cur_dem = Blocks[cur_idx].Dpoint;
+        
+        float distance = 1/2*(cur_dem.y - head_dem.y);
+        Blocks[cur_idx].Cpoint.y = head_pos.y + distance;
+      }
     }
     else
     {
-      Blocks[id2].Cpoint.y = Blocks[id1].Cpoint.y + distance;
+      for(int j = 1;j<AlignBlocks[i].blocks.size();++j)
+      {
+        int cur_idx = AlignBlocks[i].blocks[j];
+        Ppoint_F cur_dem = Blocks[cur_idx].Dpoint;
+        
+        float distance = 1/2*(cur_dem.x - head_dem.x);
+        Blocks[cur_idx].Cpoint.x = head_pos.x + distance;
+      }
     }
   }
+  std::cout<<"force align finish"<<std::endl;
 }
 
 void Placement::read_order(PnRDB::hierNode &current_node)
