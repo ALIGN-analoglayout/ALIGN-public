@@ -188,7 +188,6 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
         if file_.suffixes == ['.json']:
             (working_dir / file_.name).write_text(file_.read_text())
 
-
     if True:
         if check or extract or gds_json:
 
@@ -278,8 +277,8 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
                     variant_name = f'{nm}_{n_copy}_{i_placement}'
                     logger.info(f'SMB: {variant_name=}')
 
-                    #hN = nodeVec[i_placement]
-                    hN = fetch_hN_from_file( variant_name)
+                    hN = nodeVec[i_placement]
+                    #hN = fetch_hN_from_file( variant_name)
 
                     dump_blocks( hN, DB)
 
@@ -302,10 +301,10 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
 
             assert 0 == DB.hierTree[idx].n_copy
             for i_placement in range(DB.hierTree[idx].numPlacement):
-                #hN = nodeVec[i_placement]
                 variant = f'{nm}_{i_placement}'
 
-                hN = fetch_hN_from_file( variant)
+                hN = nodeVec[i_placement]
+                #hN = fetch_hN_from_file( variant)
 
                 dump_blocks( hN, DB)
 
