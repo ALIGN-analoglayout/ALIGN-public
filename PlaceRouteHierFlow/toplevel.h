@@ -3,7 +3,9 @@
 #include <vector>
 #include <string>
 #include "PnRDB/PnRdatabase.h"
-int toplevel( const std::vector<std::string>& argv );
+#include <memory>
+
+std::unique_ptr<PnRdatabase> toplevel( const std::vector<std::string>& argv );
 
 void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_node, int lidx,
 		 const string& opath, const string& tag, const string& ltag, bool skip);

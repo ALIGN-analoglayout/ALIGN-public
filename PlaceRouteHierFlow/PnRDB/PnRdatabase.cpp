@@ -10,12 +10,6 @@ using namespace nlohmann;
 #include <gtest/gtest.h>
 #include "spdlog/spdlog.h"
 
-/*
-static bool EndsWith( const string& str, const string& pat)
-{
-    return str.size() >= pat.size() && str.substr( str.size() - pat.size(), pat.size()) == pat;
-}
-*/
 static bool EndsWith( const string& str, const string& pat)
 {
   return std::mismatch( str.rbegin(), str.rend(), pat.rbegin(), pat.rend()).second == pat.rend();
@@ -31,6 +25,11 @@ TEST( EndsWithTest, Test1)
     EXPECT_FALSE( EndsWith( "Steve Burns", "Treefrog Steve Burns"));
 }
 
+
+PnRdatabase::~PnRdatabase() {
+  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.~PnRdatabase");
+  logger->info( "Deconstructing PnRdatabase");
+}
 
 PnRdatabase::PnRdatabase(string path, string topcell, string vname, string lefname, string mapname, string drname) {
 

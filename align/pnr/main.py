@@ -8,6 +8,8 @@ import collections
 import json
 import re
 import itertools
+#from IPython import embed
+
 from collections import deque
 
 from .db import hierNode
@@ -92,8 +94,8 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
     compiler_path = pathlib.Path(os.environ['ALIGN_HOME']).resolve() / 'PlaceRouteHierFlow' / 'pnr_compiler'
     assert compiler_path.is_file(), f"{compiler_path} not found. Has it been built?"
 
-    #sys.setdlopenflags(os.RTLD_GLOBAL|os.RTLD_LAZY)
-    #import PnR
+    sys.setdlopenflags(os.RTLD_GLOBAL|os.RTLD_LAZY)
+    import PnR
     from .toplevel import toplevel
 
     # Create working & input directories
@@ -149,8 +151,9 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
     if True:
         current_working_dir = os.getcwd()
         os.chdir(working_dir)
-        #PnR.toplevel(cmd)
-        DB = toplevel(cmd)
+        DB = PnR.toplevel(cmd)
+        #Python version; currently broken
+        #DB = toplevel(cmd)
         os.chdir(current_working_dir)
     else:
         try:
@@ -211,7 +214,55 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
 
             for idx,nm in order:
                 logger.info( f'Topoorder: {idx=} {nm=}')
+                hN = DB.hierTree[idx]
+                # Need the slash
+                PnR.save_state( DB, hN, 0, str(results_dir)+'/', "_from_DB", "Final result from DB", False)
 
+
+            #embed()
+
+            def fetch_hN_from_file( variant_name):
+                fn = results_dir / (variant_name + "_from_DB" + '.db.json')
+                with open(fn, 'rt') as fp:
+                    hN = hierNode(json.load(fp))
+                return hN
+
+            import plotly.graph_objects as go
+
+            def dump_blocks( hN, DB):
+                blocks_with_subhierarchy = [ blk for blk in hN.Blocks if blk.child != -1]
+
+                logger.info( f'{hN.parent=}')
+                logger.info( f'{len(blocks_with_subhierarchy)=}')
+
+                #if not blocks_with_subhierarchy: return
+
+                fig = go.Figure()
+
+                def gen_trace_xy( placedBox):
+                    x0 = placedBox.LL.x
+                    y0 = placedBox.LL.y
+                    x1 = placedBox.UR.x
+                    y1 = placedBox.UR.y
+                    x = [x0,x1,x1,x0,x0]
+                    y = [y0,y0,y1,y1,y0]
+                    return x,y
+                    
+
+                for blk in hN.Blocks: # blocks_with_subhierarchy:
+                    child_idx = blk.child
+                    inst = blk.instance[blk.selectedInstance]
+                    #logger.info( f'inst {inst.name} {inst.master} ({child_idx}) {inst.orient} {inst.placedBox.LL.x} {inst.placedBox.LL.y} {inst.placedBox.UR.x } {inst.placedBox.UR.y}')
+
+                    hovertxt = f'{inst.name}<br>{inst.master} ({child_idx})<br>{str(inst.orient)} {inst.placedBox.LL.x} {inst.placedBox.LL.y} {inst.placedBox.UR.x} {inst.placedBox.UR.y}'
+
+                    x,y = gen_trace_xy( inst.placedBox)
+                    print(x,y)
+                    fig.add_trace(go.Scatter( x=x, y=y, mode='lines', name=hovertxt, fill="toself"))
+
+                fig.update_yaxes( scaleanchor = "x", scaleratio = 1)
+                fig.update_layout( title=dict( text=f'{hN.name}_{hN.n_copy}'))
+                fig.show()
 
             for idx,nm in order[:-1]:
 
@@ -223,20 +274,13 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
 
                 n_copy = DB.hierTree[idx].n_copy
                 for i_placement in range(DB.hierTree[idx].numPlacement):
-                    hN = nodeVec[i_placement]
                     variant_name = f'{nm}_{n_copy}_{i_placement}'
-
                     logger.info(f'SMB: {variant_name=}')
 
-                    logger.info('subblocks')
-                    for blk in hN.Blocks:
-                        child_idx = blk.child
+                    #hN = nodeVec[i_placement]
+                    hN = fetch_hN_from_file( variant_name)
 
-                        if child_idx == -1: continue
-                        inst = blk.instance[blk.selectedInstance]
-                        logger.info( f'inst {inst.name} {inst.master} {inst.orient} {inst.placedBox.LL.x} {inst.placedBox.LL.y} {inst.placedBox.UR.x } {inst.placedBox.UR.y}')
-                        for lidx in range(DB.hierTree[child_idx].numPlacement):
-                            logger.info( f'lidx {lidx}')
+                    dump_blocks( hN, DB)
 
                     _generate_json_from_hN( hN = hN,
                                     variant = variant_name,
@@ -257,8 +301,12 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
 
             assert 0 == DB.hierTree[idx].n_copy
             for i_placement in range(DB.hierTree[idx].numPlacement):
-                hN = nodeVec[i_placement]
+                #hN = nodeVec[i_placement]
                 variant = f'{nm}_{i_placement}'
+
+                hN = fetch_hN_from_file( variant)
+
+                dump_blocks( hN, DB)
 
                 variants[variant].update(
                     _generate_json_from_hN( hN = hN,
@@ -282,7 +330,8 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
                 elif file_.suffixes == ['.lef']:
                     variants[variant]['lef'] = file_
 
-
+            logger.info( 'Explicitly deleting DB...')
+            del DB
     else:
         if check or extract or gds_json:
             with (results_dir / "__hierTree.json").open("rt") as fp:

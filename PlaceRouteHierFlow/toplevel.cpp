@@ -43,7 +43,7 @@ void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_node, int
     ofn = opath+current_node.name + tag + ".db.json";
   }
   DB.WriteDBJSON(current_node,ofn);
-  logger->info("{0}", ltag);
+  logger->info("{0} to {1}", ltag, ofn);
 }
 
 void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::hierNode& current_node, int lidx, const string& opath, const string& binary_directory, bool skip_saving_state, bool adr_mode)
@@ -275,7 +275,7 @@ int route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::bbox 
   return new_currentnode_idx;
 }
 
-int toplevel( const std::vector<std::string>& argv) {
+std::unique_ptr<PnRdatabase> toplevel( const std::vector<std::string>& argv) {
   
   auto logger = spdlog::default_logger()->clone("toplevel");
 
@@ -310,10 +310,10 @@ int toplevel( const std::vector<std::string>& argv) {
   logger->info("binary_directory: {0}", binary_directory);
 
   mkdir(opath.c_str(), 0777);
-  PnRdatabase DB(fpath, topcell, vfile, lfile, mfile, dfile); // construction of database
+  std::unique_ptr<PnRdatabase> DB_ptr(new PnRdatabase(fpath, topcell, vfile, lfile, mfile, dfile)); // construction of database
+  PnRdatabase& DB = *DB_ptr;
   PnRDB::Drc_info drcInfo=DB.getDrc_info();
   map<string, PnRDB::lefMacro> lefData = DB.checkoutSingleLEF();
-
 
   deque<int> TraverseOrder = DB.TraverseHierTree();  // traverse hierarchical tree in topological order
 
@@ -379,5 +379,5 @@ int toplevel( const std::vector<std::string>& argv) {
         PnRDB::N, TraverseOrder.back(), lidx, opath, binary_directory, skip_saving_state, adr_mode);
   }
 
-  return 0;
+  return DB_ptr;
 }
