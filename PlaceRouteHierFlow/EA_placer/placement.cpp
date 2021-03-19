@@ -1,5 +1,5 @@
 #include "placement.h"
-// #define DEBUG
+#define DEBUG
 Placement::Placement() {
 
 }
@@ -187,6 +187,17 @@ void Placement::Pull_back(){
     if(Blocks[i].Cpoint.y-Blocks[i].Dpoint.y/2<0){
        Blocks[i].Cpoint.y = Blocks[i].Dpoint.y/2+(1.5)*Bin_D.y/2;
        //Blocks[i].Cpoint.y = Blocks[i].Dpoint.y/2;
+    }
+    //add by donghao
+    //when block center point become nan
+    //force them back to the center 
+    if(isnan(Blocks[i].Cpoint.x))
+    {
+      Blocks[i].Cpoint.x = 0.5 + (float) (rand()% 100)/1000;
+    }
+    if(isnan(Blocks[i].Cpoint.y))
+    {
+      Blocks[i].Cpoint.y = 0.5 + (float) (rand()% 100)/1000;
     }
 
   }
@@ -662,15 +673,15 @@ void Placement::Cal_force(){
      
      Blocks[i].Force.x = lambda*Blocks[i].Eforce.x - beta*Blocks[i].Netforce.x - sym_beta*Blocks[i].Symmetricforce.x;
      Blocks[i].Force.y = lambda*Blocks[i].Eforce.y - beta*Blocks[i].Netforce.y - sym_beta*Blocks[i].Symmetricforce.y;
-    //  std::cout<<"symmetricforce/all"<<sym_beta*Blocks[i].Symmetricforce.x<<", "<<sym_beta*Blocks[i].Symmetricforce.y<<std::endl;
-    //  if(isnan(Blocks[i].Force.x))
-    //  {
-    //    Blocks[i].Force.x = 0;
-    //  }
-    //  if(isnan(Blocks[i].Force.y))
-    //  {
-    //    Blocks[i].Force.y = 0;
-    //  }
+     std::cout<<"symmetricforce/all"<<sym_beta*Blocks[i].Symmetricforce.x<<", "<<sym_beta*Blocks[i].Symmetricforce.y<<std::endl;
+     if(isnan(Blocks[i].Force.x))
+     {
+       Blocks[i].Force.x = 0;
+     }
+     if(isnan(Blocks[i].Force.y))
+     {
+       Blocks[i].Force.y = 0;
+     }
   }
 
 }
@@ -751,10 +762,10 @@ void Placement::E_Placer(){
   float max_density = 1.0;
   float current_max_density=10.0;
   int count_number = 0;
-  int upper_count_number = 200;
+  int upper_count_number = 112;
   vector<float> Density;
   std::cout<<"E_placer debug flage: 14"<<std::endl;
-  while(!Stop_Condition(stop_density,current_max_density) and count_number<upper_count_number){//Q: stop condition
+  while(Stop_Condition(stop_density,current_max_density) and count_number<upper_count_number){//Q: stop condition
   // while(i<20){//Q: stop condition
       Density.push_back(current_max_density);
      if(current_max_density<max_density){
@@ -842,7 +853,8 @@ void Placement::Extract_Placement_Vectors(vector<float> &temp_vector, bool x_or_
   for(unsigned int i=0;i<Blocks.size();++i){
      if(x_or_y){
          temp_vector.push_back(Blocks[i].Cpoint.x);
-       }else{
+     }
+       else{
          temp_vector.push_back(Blocks[i].Cpoint.y);
        }
   }
@@ -901,6 +913,7 @@ void Placement::Nesterov_based_iteration(float &ac,vector<float> &uc,vector<floa
    }
    #ifdef DEBUG
    std::cout<<"Nesterov_based_iteration test 4"<<std::endl;
+   std::cout<<"an:="<<an<<std::endl;
    #endif
    //ac = an;
    uc = un;
@@ -914,10 +927,12 @@ void Placement::BkTrk(float &ac, float &an, vector<float> &uc,vector<float> &vc,
    //algorithm 2 of ePlace-MS: Electrostatics-Based Placement forMixed-Size Circuits
    #ifdef DEBUG
    std::cout<<"BkTrk 1"<<std::endl;
+   std::cout<<"#######################################################################"<<std::endl;
    #endif
    float hat_ac = vector_fraction(vc, vl, pre_vc, pre_vl);
    #ifdef DEBUG
    std::cout<<"BkTrk 2"<<std::endl;
+   std::cout<<"hat ac:= "<< hat_ac<<std::endl;
    #endif
    vector<float> hat_un;
    cal_hat_un(hat_ac, hat_un, vc, pre_vc);
@@ -943,7 +958,9 @@ void Placement::BkTrk(float &ac, float &an, vector<float> &uc,vector<float> &vc,
    //this part could actually be ignored
    #ifdef DEBUG
    std::cout<<"BkTrk 5"<<std::endl;
+   std::cout<<"hat ac:= "<< hat_ac<<std::endl;
    #endif
+
    ac = hat_ac;
 
 }
@@ -953,15 +970,34 @@ float Placement::vector_fraction(vector<float> &vc, vector<float> &vl, vector<fl
    float sum_upper = 0.0;
    for(unsigned int i=0;i<vc.size();++i){
        sum_upper += (vc[i]-vl[i])*(vc[i]-vl[i]);
+       #ifdef DEBUG
+       std::cout<<"vc[i] = "<<vc[i]<<", vl[i]="<<vl[i]<<std::endl;
+       #endif
    }
    sum_upper = sqrt(sum_upper);
    float sum_lower = 0.0;
    for(unsigned int i=0;i<vc.size();++i){
        sum_lower += (pre_vc[i]-pre_vl[i])*(pre_vc[i]-pre_vl[i]);
+       #ifdef DEBUG
+       std::cout<<"pre_vc[i] = "<<pre_vc[i]<<", pre_vl[i]="<<pre_vl[i]<<std::endl;
+       #endif
    }
    sum_lower = sqrt(sum_lower);
-
-   float hat_ac=sum_upper/sum_lower;
+  float hat_ac;
+   if(sum_lower == 0)
+   {
+     hat_ac = 1.0f;
+     
+   }
+   else
+   {
+     hat_ac=sum_upper/sum_lower;
+   }
+   if(isnan(hat_ac))
+   {
+     hat_ac = 1.0f;
+   }
+    
    return hat_ac;
 }
 

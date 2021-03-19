@@ -391,7 +391,7 @@ struct hierNode {
   //vector<SymmBlock> SBlocks;
   vector<Preplace> Preplace_blocks;
   vector<Alignment> Alignment_blocks;
-  vector<AlignBlock> Align_blocks;
+  vector<AlignBlock> Align_blocks;//align constrainst
   vector<Abument> Abument_blocks;
   vector<MatchBlock> Match_blocks;
   vector<CCCap> CC_Caps;
@@ -461,7 +461,7 @@ struct MatchBlock {
 };
 
 struct AlignBlock {
-  std::vector<int> blocks;
+  std::vector<int> blocks;//LL.x/LL.y equal
   int horizon; // 1 is h, 0 is v.
 };
 
