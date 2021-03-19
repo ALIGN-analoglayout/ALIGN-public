@@ -115,6 +115,8 @@ class ConstraintParser:
             const['abs_distance']=int(const['abs_distance'])
         if 'criticality' in const:
             const['abs_distance'] = int(const['criticality'])
+        if 'multiplier' in const:
+            const['multiplier'] = int(const['multiplier'])
         if 'weight' in const:
             const['weight'] = int(const['weight'])
         if 'direction' in const:
@@ -275,7 +277,7 @@ class ConstraintParser:
                 for net in const["nets"]:
                     extra = {
                         "const_name" : 'Multi_Connection',
-                        "multi_number" : const["multiplier"],
+                        "multi_number" : int(const["multiplier"]),
                         "net_name" : net
                     }
                     added_const.append(extra)
@@ -309,7 +311,9 @@ class ConstraintParser:
                             "priority" : const["criticality"]
                             }
                         added_const.append(extra)
-        self.block_const["constraints"] = [i for i in all_const if not i['const_name']=='NetConst' and not i['const_name']=='PortLocation']
+        self.block_const["constraints"] = [i for i in all_const if not i['const_name'] == 'NetConst' \
+                                            and not i['const_name'] == 'PortLocation'\
+                                            and not  i['const_name'] == 'MultiConnection']
         self.block_const["constraints"].extend(added_const)
         logger.info(f"Const mapped to PnR const format {self.block_const['constraints']}")
     

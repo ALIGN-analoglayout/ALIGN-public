@@ -17,7 +17,9 @@ def test_compiler_hsc(dir_name):
     assert 'INV' in updated_ckt
     return (updated_ckt, library, dir_name)
 
-@pytest.mark.parametrize('dir_name', ['high_speed_comparator_orderblock', 'high_speed_comparator_symmblock'])
+@pytest.mark.parametrize('dir_name', ['high_speed_comparator_orderblock', \
+    'high_speed_comparator_symmblock', 'high_speed_comparator_portlocation', 'high_speed_comparator_multiconnection', \
+        'high_speed_comparator_align'])
 def test_group_block_hsc(test_compiler_hsc):
     updated_ckt, library, dir_name = test_compiler_hsc
     assert 'dp' in updated_ckt
