@@ -322,6 +322,8 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
 
     d = {}
 
+    logger.info( f'bbox: {hN.LL.x} {hN.LL.y} {hN.UR.x} {hN.UR.y}')
+
     d["bbox"] = [hN.LL.x,hN.LL.y,hN.UR.x,hN.UR.y]
 
     d["globalRoutes"] = []

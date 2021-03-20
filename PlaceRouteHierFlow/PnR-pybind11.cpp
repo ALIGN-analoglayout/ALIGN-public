@@ -414,6 +414,7 @@ PYBIND11_MODULE(PnR, m) {
     .def( "Extract_RemovePowerPins", &PnRdatabase::Extract_RemovePowerPins)
     .def( "CheckinHierNode", &PnRdatabase::CheckinHierNode)
     .def_readwrite("hierTree", &PnRdatabase::hierTree)
+    .def_readwrite("topidx", &PnRdatabase::topidx)
   ;
 
   py::class_<Placer_Router_Cap_Ifc>( m, "Placer_Router_Cap_Ifc")

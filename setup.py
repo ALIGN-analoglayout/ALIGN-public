@@ -40,7 +40,8 @@ setup(name='align',
           'pydantic>=1.8',
           'z3-solver',
           'more-itertools',
-          'colorlog'
+          'colorlog',
+          'plotly'
           ],
       setup_requires=[],
       python_requires='~=3.8',
