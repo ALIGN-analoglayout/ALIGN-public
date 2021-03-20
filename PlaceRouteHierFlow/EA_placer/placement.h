@@ -112,6 +112,7 @@ public:
     void force_order();
     static bool comp_x(Ppoint_F c1, Ppoint_F c2);
     static bool comp_y(Ppoint_F c1, Ppoint_F c2);
+    void writeback(PnRDB::hierNode &current_node);
     //donghao end
 
     float Cal_Overlap();

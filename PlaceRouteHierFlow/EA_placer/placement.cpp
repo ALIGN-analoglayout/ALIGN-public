@@ -72,7 +72,8 @@ Placement::Placement(PnRDB::hierNode &current_node) {
   //step 3: call E_placer
   std::cout<<"start ePlacement"<<std::endl;
     E_Placer();
-
+  //setp 4: write back to HierNode
+  writeback(current_node);
 }
 
 
@@ -1855,4 +1856,26 @@ bool Placement::comp_x(Ppoint_F c1, Ppoint_F c2)
 bool Placement::comp_y(Ppoint_F c1, Ppoint_F c2)
 {
   return c1.y < c2.y;
+}
+
+void Placement::writeback(PnRDB::hierNode &current_node)
+{
+  int idx = 0;
+  for(vector<PnRDB::blockComplex>::iterator it=current_node.Blocks.begin(); it!=current_node.Blocks.end(); ++it)
+  {
+    for(int i = 0;i < it->instNum;++i)
+    {
+      it->instance[i].placedCenter.x = (int)(est_Size.x * Blocks[idx].Cpoint.x);
+      it->instance[i].placedCenter.y = (int)(est_Size.y * Blocks[idx].Cpoint.y);
+
+      it->instance[i].placedBox.LL.x = (int)(est_Size.x*Blocks[idx].Cpoint.x ) - it->instance[i].width/2;
+      it->instance[i].placedBox.LL.y = (int)(est_Size.y*Blocks[idx].Cpoint.y ) - it->instance[i].height/2;
+
+      it->instance[i].placedBox.UR.x = (int)(est_Size.x*Blocks[idx].Cpoint.x ) + it->instance[i].width/2;
+      it->instance[i].placedBox.UR.y = (int)(est_Size.y*Blocks[idx].Cpoint.y ) + it->instance[i].height/2;
+      it->instance[i].orient = PnRDB::N;
+      ++idx;
+    }
+  }
+
 }
