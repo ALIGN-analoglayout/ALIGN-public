@@ -10,7 +10,9 @@ set -eo pipefail
 
 # install some dependencies
 case "$AUDITWHEEL_PLAT" in
-    "manylinux1_x86_64"|"manylinux2010_x86_64"|"manylinux2014_x86_64")
+    "manylinux1_x86_64")
+    ;;
+    "manylinux2010_x86_64"|"manylinux2014_x86_64")
         yum -y install boost-devel lpsolve
     ;;
     # "manylinux_2_24_x86_64")
@@ -25,6 +27,25 @@ esac
 
 export ALIGN_HOME=${ALIGN_HOME:-$PWD}
 
+# install some dependencies
+case "$AUDITWHEEL_PLAT" in
+    "manylinux1_x86_64")
+    # TODO: Identify image with a compilation toolchain
+    #       supporting manylinux1
+    ;;
+    "manylinux2010_x86_64"|"manylinux2014_x86_64")
+        yum -y install boost-devel
+    ;;
+    # "manylinux_2_24_x86_64")
+    # TODO: Implement this for Python 3.10 support
+    #       (PEP600 requires pip >= 20.3)
+    *)
+        echo "WARNING: Unknown environment."
+        echo "Please make sure you are using a supported manylinux platform to run this script"
+        exit 1
+    ;;
+esac
+
 function repair_wheel {
     wheel="$1"
     dest="$2"
@@ -34,9 +55,6 @@ function repair_wheel {
         auditwheel repair "$wheel" --plat "$AUDITWHEEL_PLAT" -w "$dest"
     fi
 }
-
-# install some dependencies
-yum -y install boost boost-devel lpsolve
 
 # Compile all wheels
 for pyver in "$@"; do

@@ -13,4 +13,5 @@ target_link_libraries(
      MNA PRIVATE
      spdlog::spdlog
      superlu
+     Boost::boost
 )

@@ -79,5 +79,5 @@ setup(name='align',
           'Programming Language :: C++',
           'Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)'
       ],
-      cmake_install_dir='align',
+      cmake_install_dir='.',
       zip_safe=False)

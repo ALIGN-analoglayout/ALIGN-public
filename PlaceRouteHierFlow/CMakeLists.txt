@@ -28,4 +28,5 @@ target_link_libraries(
      spdlog::spdlog
      superlu
      pybind11::module
+     Boost::boost
 )

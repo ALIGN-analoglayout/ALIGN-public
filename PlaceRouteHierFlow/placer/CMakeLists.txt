@@ -25,4 +25,5 @@ target_link_libraries(
      placer PRIVATE
      spdlog::spdlog
      lpsolve
+     Boost::boost
 )

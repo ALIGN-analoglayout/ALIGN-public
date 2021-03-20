@@ -19,14 +19,14 @@ endif()
 
 #
 # Get the following CPP dependencies
-# STATIC: json, spdlog, superlu
-# SHARED: lpsolve, boost
+# STATIC: json, spdlog, superlu, boost
+# SHARED: lpsolve
 #
 
 include(FetchContent) # CMAKE projects
 include(ExternalProject) # non-CMAKE projects
 
-# json: CMAKE project
+# json v3.7.3
 FetchContent_Declare(
     json
     GIT_REPOSITORY https://github.com/ArthurSonzogni/nlohmann_json_cmake_fetchcontent
@@ -36,7 +36,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(json)
 
-# spdlog: CMAKE project
+# spdlog v1.x
 FetchContent_Declare(
     spdlog
     GIT_REPOSITORY https://github.com/gabime/spdlog.git
@@ -46,7 +46,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(spdlog)
 
-# superlu: CMAKE project
+# superlu v5.2.2
 FetchContent_Declare(
     superlu
     GIT_REPOSITORY https://github.com/xiaoyeli/superlu.git
@@ -56,15 +56,33 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(superlu)
 
-# lpsolve: Use precompiled .so & .h tarball
+# Boost v1.75.0 (header-only Boost::boost)
+find_package(Boost QUIET COMPONENTS boost)
+if (NOT TARGET Boost::boost)
+  FetchContent_Declare(
+    boost
+    URL https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.tar.bz2
+    URL_HASH SHA256=953db31e016db7bb207f11432bef7df100516eeb746843fa0486a222e3fd49cb
+  )
+  FetchContent_GetProperties(boost)
+  if(NOT boost_POPULATED)
+      FetchContent_Populate(boost)
+      add_library(boost INTERFACE)
+      target_include_directories(boost INTERFACE ${boost_SOURCE_DIR})
+  endif()
+  add_library(Boost::boost ALIAS boost)
+endif()
+
+# lpsolve 5.5.2.11
+# Note: Precompiled .so & .h tarball
 add_library(lpsolve SHARED IMPORTED)
 ExternalProject_Add(
     lp_lib
     URL https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11/lp_solve_5.5.2.11_dev_ux64.tar.gz/download
     URL_HASH MD5=66fe051d8f3e964624b925b8899b7588
     BUILD_IN_SOURCE TRUE
-    PREFIX _deps/lpsolve55
-    BUILD_BYPRODUCTS _deps/lpsolve55/src/lp_lib/liblpsolve55.so
+    PREFIX _deps
+    BUILD_BYPRODUCTS _deps/src/lp_lib/liblpsolve55.so
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ""
@@ -109,4 +127,5 @@ add_subdirectory(PlaceRouteHierFlow)
 # - align.PnR
 #
 pybind11_extension(PnR)
-install(TARGETS PnR DESTINATION .)
+install(TARGETS PnR DESTINATION align)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/_deps/src/lp_lib/liblpsolve55.so DESTINATION align.libs)
