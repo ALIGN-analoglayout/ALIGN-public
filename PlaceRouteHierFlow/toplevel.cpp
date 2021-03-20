@@ -273,23 +273,11 @@ int route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::bbox 
   DB.hierTree.push_back(current_node);
   int new_currentnode_idx = DB.hierTree.size() - 1;
 
-  {
-    auto& LL = current_node.LL;
-    auto& UR = current_node.UR;
-    logger->info( "current node bbox {0} {1} {2} {3} ({4})", LL.x, LL.y, UR.x, UR.y, new_currentnode_idx);
-  }
-
   for (unsigned int bit = 0; bit < current_node.Blocks.size(); bit++) {
     auto& blk = current_node.Blocks[bit];
     if (blk.child == -1) continue;
     assert( DB.hierTree[blk.child].parent.size() > 0);
     DB.hierTree[blk.child].parent[0] = new_currentnode_idx;
-  }
-
-  {
-    auto& LL = DB.hierTree[new_currentnode_idx].LL;
-    auto& UR = DB.hierTree[new_currentnode_idx].UR;
-    logger->info( "DB.hierTree[{4}] bbox {0} {1} {2} {3} ({4})", LL.x, LL.y, UR.x, UR.y, new_currentnode_idx);
   }
 
   return new_currentnode_idx;
@@ -393,17 +381,10 @@ std::unique_ptr<PnRdatabase> toplevel( const std::vector<std::string>& argv) {
   for (unsigned int lidx = 0; lidx < DB.hierTree[TraverseOrder.back()].numPlacement; lidx++) {
     auto &ct = DB.hierTree[TraverseOrder.back()];
     PnRDB::bbox bb( PnRDB::point(0, 0), PnRDB::point(ct.PnRAS[0].width, ct.PnRAS[0].height));
-    logger->info( "Top-level bbox {0} {1} {2} {3}", bb.LL.x, bb.LL.y, bb.UR.x, bb.UR.y);
     new_topnode_idx = route_top_down(
         DB, drcInfo,
 	bb, PnRDB::N,
 	TraverseOrder.back(), lidx, opath, binary_directory, skip_saving_state, adr_mode);
-  }
-
-  for (unsigned int idx = 0; idx < DB.hierTree.size(); ++idx) {
-    auto &LL = DB.hierTree[idx].LL;
-    auto &UR = DB.hierTree[idx].UR;
-    logger->info( "Final DB.hierTree[{4}] bbox {0} {1} {2} {3}", LL.x, LL.y, UR.x, UR.y, idx);
   }
 
   return DB_ptr;
