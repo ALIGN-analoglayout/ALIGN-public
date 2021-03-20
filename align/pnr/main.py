@@ -143,7 +143,8 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
 
     # Dump out intermediate states
     if check or extract or gds_json:
-        os.environ['PNRDB_SAVE_STATE'] = ''
+        pass
+        #os.environ['PNRDB_SAVE_STATE'] = ''
 
     # Run pnr_compiler
     cmd = [str(x) for x in (compiler_path, input_dir, lef_file, verilog_file, map_file, pdk_file, subckt, nvariants, effort)]
