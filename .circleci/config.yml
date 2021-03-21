@@ -383,12 +383,11 @@ workflows:
                 - "cp38-cp38"             # Python 3.8
                 - "cp37-cp37m"            # Python 3.7
               platform:
-                # TODO: Look for a suitable manylinux1 package
-                # - "skhep/manylinuxgcc-x86_64"
+                # stdc++ is not statically compiled yet
+                - "skhep/manylinuxgcc-x86_64"          # PEP 513
                 - "quay.io/pypa/manylinux2010_x86_64"  # PEP 571
                 - "quay.io/pypa/manylinux2014_x86_64"  # PEP 599
-                # Enable once we support python 3.10
-                # - "quay.io/pypa/manylinux_2_24_x86_64" # PEP 600
+                - "quay.io/pypa/manylinux_2_24_x86_64" # PEP 600
       - publish-wheel:
           requires:
             - build-wheel

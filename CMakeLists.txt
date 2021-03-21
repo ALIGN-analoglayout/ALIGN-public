@@ -7,6 +7,9 @@ cmake_minimum_required(VERSION 3.15..3.18)
 # TODO: Single source version number
 project(align VERSION "1.0.0")
 
+# High verbosity for debug
+set(CMAKE_VERBOSE_MAKEFILE ON CACHE BOOL "ON" FORCE)
+
 # A few safe (for align) defaults
 option(BUILD_SHARED_LIBS "Use SHARED keyword to mark shared libraries" OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
