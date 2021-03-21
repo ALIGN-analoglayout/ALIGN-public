@@ -103,7 +103,7 @@ class PnRdatabase
     // constructor with augments
     PnRdatabase(string path, string topcell, string vname, string lefname, string mapname, string drname);
     // destructor
-    ~PnRdatabase() {}
+    ~PnRdatabase();
 
     int get_unitScale() const { return unitScale; }
     int get_maxNode() const { return maxNode; }

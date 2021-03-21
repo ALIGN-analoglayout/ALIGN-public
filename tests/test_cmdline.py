@@ -26,7 +26,7 @@ def test_cmdline(design):
 
     design_dir = ALIGN_HOME / 'examples' / design
     pdk_dir = ALIGN_HOME / 'pdks' / 'FinFET14nm_Mock_PDK'
-    args = [str(design_dir), '-f', str(design_dir / f"{design}.sp"), '-s', design, '-p', str(pdk_dir), '-flat',  str(0), '--check']
+    args = [str(design_dir), '-f', str(design_dir / f"{design}.sp"), '-s', design, '-p', str(pdk_dir), '-flat',  str(0), '--check', '-v', 'INFO', '-l', 'INFO']
 
     results = align.CmdlineParser().parse_args(args)
 
