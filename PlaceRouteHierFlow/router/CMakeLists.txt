@@ -32,7 +32,7 @@ set(sources
 add_library(router STATIC ${sources} ${headers})
 target_link_libraries(
      router PRIVATE
-     lpsolve
+     lpsolve::lpsolve55
      nlohmann_json::nlohmann_json
      spdlog::spdlog
 )

@@ -24,6 +24,6 @@ add_library(placer STATIC ${sources} ${headers})
 target_link_libraries(
      placer PRIVATE
      spdlog::spdlog
-     lpsolve
+     lpsolve::lpsolve55
      Boost::boost
 )

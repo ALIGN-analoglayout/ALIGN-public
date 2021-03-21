@@ -23,7 +23,7 @@ target_link_libraries(
      guard_ring
      MNA
      # External Dependencies
-     lpsolve
+     lpsolve::lpsolve55
      nlohmann_json::nlohmann_json
      spdlog::spdlog
      superlu

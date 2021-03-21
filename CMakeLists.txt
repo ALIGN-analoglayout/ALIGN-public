@@ -7,8 +7,17 @@ cmake_minimum_required(VERSION 3.15..3.18)
 # TODO: Single source version number
 project(align VERSION "1.0.0")
 
-# We will finally export a dynamic library
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -fPIC")
+# A few safe (for align) defaults
+option(BUILD_SHARED_LIBS "Use SHARED keyword to mark shared libraries" OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/thirdparty")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+if("${isSystemDir}" STREQUAL "-1")
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+endif("${isSystemDir}" STREQUAL "-1")
 
 # May need to limit ninja's max concurrency for CIRCLECI
 if(DEFINED ENV{MAX_JOBS})
@@ -59,6 +68,7 @@ FetchContent_MakeAvailable(superlu)
 # Boost v1.75.0 (header-only Boost::boost)
 find_package(Boost QUIET COMPONENTS boost)
 if (NOT TARGET Boost::boost)
+  message(STATUS "Boost not found on host system. Downloading headers.")
   FetchContent_Declare(
     boost
     URL https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.tar.bz2
@@ -74,26 +84,40 @@ if (NOT TARGET Boost::boost)
 endif()
 
 # lpsolve 5.5.2.11
-# Note: Precompiled .so & .h tarball
-add_library(lpsolve SHARED IMPORTED)
-ExternalProject_Add(
-    lp_lib
-    URL https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11/lp_solve_5.5.2.11_dev_ux64.tar.gz/download
-    URL_HASH MD5=66fe051d8f3e964624b925b8899b7588
-    BUILD_IN_SOURCE TRUE
-    PREFIX _deps
-    BUILD_BYPRODUCTS _deps/src/lp_lib/liblpsolve55.so
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
-    INSTALL_COMMAND ""
-    TEST_COMMAND ""
+FetchContent_Declare(
+  lpsolve
+  URL https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11/lp_solve_5.5.2.11_source.tar.gz/download
+  URL_HASH MD5=a829a8d9c60ff81dc72ff52363703886
 )
-ExternalProject_Get_Property(lp_lib BUILD_BYPRODUCTS)
-set_property(TARGET lpsolve PROPERTY IMPORTED_LOCATION
-    ${BUILD_BYPRODUCTS})
-ExternalProject_Get_Property(lp_lib SOURCE_DIR)
-target_include_directories(lpsolve
-    INTERFACE "${SOURCE_DIR}")
+find_library(
+  lpsolve_lib lpsolve55
+  PATH_SUFFIXES lpsolve lp_solve)
+if (NOT lpsolve_lib)
+  message(STATUS "lpsolve library file not found. Building from source.")
+  FetchContent_GetProperties(lpsolve)
+  if(NOT lpsolve_POPULATED)
+    FetchContent_Populate(lpsolve)
+    configure_file(
+      ${CMAKE_CURRENT_SOURCE_DIR}/PlaceRouteHierFlow/thirdparty/CMakeLists.txt
+      ${lpsolve_SOURCE_DIR}
+      COPYONLY)
+    add_subdirectory(${lpsolve_SOURCE_DIR} ${lpsolve_BINARY_DIR})
+    target_include_directories(lpsolve55 INTERFACE ${lpsolve_SOURCE_DIR})
+  endif()
+  add_library(lpsolve::lpsolve55 ALIAS lpsolve55)
+else()
+  message(STATUS "lpsolve library file found. Using headers from source distribution.")
+  FetchContent_GetProperties(lpsolve)
+  if(NOT lpsolve_POPULATED)
+    FetchContent_Populate(lpsolve)
+    add_library(lpsolve SHARED IMPORTED)
+    target_include_directories(lpsolve INTERFACE ${lpsolve_SOURCE_DIR})
+    set_property(
+      TARGET lpsolve
+      PROPERTY IMPORTED_LOCATION ${lpsolve_lib})
+  endif()
+  add_library(lpsolve::lpsolve55 ALIAS lpsolve)
+endif()
 
 # python: Point to existing installation
 # (Steps from https://github.com/pybind/scikit_build_example)
@@ -128,4 +152,3 @@ add_subdirectory(PlaceRouteHierFlow)
 #
 pybind11_extension(PnR)
 install(TARGETS PnR DESTINATION align)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/_deps/src/lp_lib/liblpsolve55.so DESTINATION align.libs)
