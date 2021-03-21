@@ -380,12 +380,13 @@ workflows:
           matrix:
             parameters:
               python-tags:
-                # - "cp38-cp38"             # Python 3.8
+                - "cp38-cp38"             # Python 3.8
                 - "cp37-cp37m"            # Python 3.7
               platform:
-                - "skhep/manylinuxgcc-x86_64"
-                # - "quay.io/pypa/manylinux2010_x86_64"  # PEP 571
-                # - "quay.io/pypa/manylinux2014_x86_64"  # PEP 599
+                # TODO: Look for a suitable manylinux1 package
+                # - "skhep/manylinuxgcc-x86_64"
+                - "quay.io/pypa/manylinux2010_x86_64"  # PEP 571
+                - "quay.io/pypa/manylinux2014_x86_64"  # PEP 599
                 # Enable once we support python 3.10
                 # - "quay.io/pypa/manylinux_2_24_x86_64" # PEP 600
       - publish-wheel:
@@ -399,10 +400,10 @@ workflows:
             parameters:
               platform:
                 - "python:3.7"
-                # - "python:3.8"
+                - "python:3.8"
               pdk:
                 - "Finfet"
               design:
                 - "BUFFER or ota"
-                # - "San or BTSW"
-                # - "not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD"
+                - "San or BTSW"
+                - "not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD"
