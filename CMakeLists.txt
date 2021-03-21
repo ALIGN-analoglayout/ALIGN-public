@@ -90,7 +90,8 @@ FetchContent_Declare(
   URL_HASH MD5=a829a8d9c60ff81dc72ff52363703886
 )
 find_library(
-  lpsolve_lib lpsolve55
+  lpsolve_lib
+  NAMES liblpsolve55.so
   PATH_SUFFIXES lpsolve lp_solve)
 if (NOT lpsolve_lib)
   message(STATUS "lpsolve library file not found. Building from source.")
