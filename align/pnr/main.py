@@ -146,9 +146,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
 
     current_working_dir = os.getcwd()
     os.chdir(working_dir)
-    DB = PnR.toplevel(cmd)
-    #Python version; currently broken
-    #DB = toplevel(cmd)
+    DB = toplevel(cmd)
     os.chdir(current_working_dir)
 
     # Copy generated (Cap) jsons from results_dir to working_dir
