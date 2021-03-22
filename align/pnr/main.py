@@ -166,12 +166,12 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
         order = [(i,DB.CheckoutHierNode(i).name) for i in TraverseHierTree()]
         assert order[-1][1] == subckt, f"Last in topological order should be the subckt {subckt} {order}"
 
-        logger.info( f'{order=}')
+        logger.info( f'order={order}')
 
         def dump_blocks( hN, DB):
             import plotly.graph_objects as go
 
-            logger.info( f'{hN.parent=}')
+            logger.info( f'hN.parent={hN.parent}')
 
             fig = go.Figure()
 
@@ -203,7 +203,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
             i_placement = 0
 
             variant_name = f'{nm}_{n_copy}_{i_placement}'
-            logger.info(f'Processing top-down generated blocks: {idx=} {nm=} {variant_name=}')
+            logger.info(f'Processing top-down generated blocks: idx={idx} nm={nm} variant_name={variant_name}')
 
             hN = DB.CheckoutHierNode(idx)
 
