@@ -160,7 +160,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
 
     if check or extract or gds_json:
 
-        def TraverseHierTree():
+        def TraverseHierTree( topidx):
             """Find topoorder of routing copies: (start from last node)"""
             q = []
             visited = set()
@@ -170,13 +170,10 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
                     if bit.child != -1 and bit.child not in visited:
                         TraverseDFS( bit.child)
                 q.append( idx)
-            TraverseDFS( len(DB.hierTree)-1)
+            # This isn't correct unless there is only one top level node
+            TraverseDFS( topidx)
             return q
 
-        order = [(i,DB.CheckoutHierNode(i).name) for i in TraverseHierTree()]
-        assert order[-1][1] == subckt, f"Last in topological order should be the subckt {subckt} {order}"
-
-        logger.info( f'{order=}')
 
         def dump_blocks( hN, DB):
             import plotly.graph_objects as go
@@ -207,68 +204,82 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
             fig.update_layout( title=dict( text=f'{hN.name}_{hN.n_copy}'))
             fig.show()
 
-        for idx,nm in order[:-1]:
-            n_copy = DB.hierTree[idx].n_copy
-            assert 1 == DB.hierTree[idx].numPlacement
-            i_placement = 0
 
-            variant_name = f'{nm}_{n_copy}_{i_placement}'
-            logger.info(f'Processing top-down generated blocks: {idx=} {nm=} {variant_name=}')
+        possible_final_circuits = [(i, hN) for i, hN in enumerate(DB.hierTree) if hN.name == subckt]
+        assert len(possible_final_circuits) > 1
+
+        for topidx,_ in possible_final_circuits[1:]:
+
+            order = [(i,DB.CheckoutHierNode(i).name) for i in TraverseHierTree(topidx)]
+            assert order[-1][1] == subckt, f"Last in topological order should be the subckt {subckt} {order}"
+
+            logger.info( f'{order=}')
+
+            for idx,nm in order[:-1]:
+                n_copy = DB.hierTree[idx].n_copy
+                #assert 1 == DB.hierTree[idx].numPlacement
+                i_placement = 0
+
+                variant_name = f'{nm}_{n_copy}_{i_placement}'
+                logger.info(f'Processing top-down generated blocks {DB.hierTree[idx].numPlacement}: {idx=} {nm=} {variant_name=}')
+
+                hN = DB.CheckoutHierNode(idx)
+
+                if render_placements:
+                    dump_blocks( hN, DB)
+
+                _generate_json_from_hN( hN = hN,
+                                variant = variant_name,
+                                pdk_dir = pdk_dir,
+                                primitive_dir = input_dir,
+                                input_dir=working_dir,
+                                output_dir=working_dir,
+                                check=check,
+                                extract=extract,
+                                gds_json=gds_json,
+                                toplevel=False)
+
+            variants = collections.defaultdict(collections.defaultdict)
+
+            # toplevel
+            (idx,nm) = order[-1]
+
+            n_copy = DB.hierTree[idx].n_copy
+            #assert 1 == DB.hierTree[idx].numPlacement
+
+
+
+            i_placement = 0
+            variant = f'{nm}_{n_copy}'
+
+            logger.info(f'Processing top-down generated blocks {DB.hierTree[idx].numPlacement}: {idx=} {nm=} {variant=}')
 
             hN = DB.CheckoutHierNode(idx)
 
-            
             if render_placements:
                 dump_blocks( hN, DB)
 
-            _generate_json_from_hN( hN = hN,
-                            variant = variant_name,
-                            pdk_dir = pdk_dir,
-                            primitive_dir = input_dir,
-                            input_dir=working_dir,
-                            output_dir=working_dir,
-                            check=check,
-                            extract=extract,
-                            gds_json=gds_json,
-                            toplevel=False)
-
-        variants = collections.defaultdict(collections.defaultdict)
-
-        # toplevel
-        (idx,nm) = order[-1]
-
-        assert 0 == DB.hierTree[idx].n_copy
-        assert 1 == DB.hierTree[idx].numPlacement
-
-        i_placement = 0
-        variant = f'{nm}_{i_placement}'
-
-        hN = DB.CheckoutHierNode(idx)
-
-        if render_placements:
-            dump_blocks( hN, DB)
-
-        variants[variant].update(
-            _generate_json_from_hN( hN = hN,
-                                    variant = variant,
-                                    pdk_dir = pdk_dir,
-                                    primitive_dir = input_dir,
-                                    input_dir=working_dir,
-                                    output_dir=working_dir,
-                                    check=check,
-                                    extract=extract,
-                                    gds_json=gds_json,
-                                    toplevel=True))
+            variants[variant].update(
+                _generate_json_from_hN( hN = hN,
+                                        variant = variant,
+                                        pdk_dir = pdk_dir,
+                                        primitive_dir = input_dir,
+                                        input_dir=working_dir,
+                                        output_dir=working_dir,
+                                        check=check,
+                                        extract=extract,
+                                        gds_json=gds_json,
+                                        toplevel=True))
 
 
-        for file_ in results_dir.iterdir():
-            variant = file_.name.split('.')[0]
-            if not variant.replace(f'{subckt}_', '').isdigit():
-                continue
-            if file_.suffixes == ['.gds', '.json']:
-                variants[variant]['gdsjson'] = file_
-            elif file_.suffixes == ['.lef']:
-                variants[variant]['lef'] = file_
+            for file_ in results_dir.iterdir():
+                variant = file_.name.split('.')[0]
+                if not variant.replace(f'{subckt}_', '').isdigit():
+                    continue
+                if file_.suffixes == ['.gds', '.json']:
+                    variants[variant]['gdsjson'] = file_
+                elif file_.suffixes == ['.lef']:
+                    variants[variant]['lef'] = file_
 
     logger.info( 'Explicitly deleting DB...')
     del DB

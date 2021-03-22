@@ -1839,12 +1839,12 @@ void PnRdatabase::AddingPowerPins(PnRDB::hierNode &node){
        for(unsigned int j=0;j<node.PowerNets[i].dummy_connected.size();j++){
             int iter2 = node.PowerNets[i].dummy_connected[j].iter2;
             int iter = node.PowerNets[i].dummy_connected[j].iter;
-            for(unsigned int k=0;k<node.Blocks[iter2].instance.size();k++){
+            for(unsigned int k=0;k<node.Blocks.at(iter2).instance.size();k++){
                  PnRDB::pin temp_pin;
-                 temp_pin = node.Blocks[iter2].instance[k].dummy_power_pin[iter];
+                 temp_pin = node.Blocks.at(iter2).instance[k].dummy_power_pin.at(iter);
                  temp_pin.netIter = -2;
-                 node.PowerNets[i].dummy_connected[j].iter = node.Blocks[iter2].instance[k].blockPins.size();
-                 node.Blocks[iter2].instance[k].blockPins.push_back(temp_pin);
+                 node.PowerNets[i].dummy_connected[j].iter = node.Blocks.at(iter2).instance[k].blockPins.size();
+                 node.Blocks.at(iter2).instance[k].blockPins.push_back(temp_pin);
                }
            
           }     

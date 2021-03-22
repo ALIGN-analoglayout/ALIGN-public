@@ -165,7 +165,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
 
             tr3 = tr.preMult(tr2)
 
-            logger.info( f"TRANS {blk.master} {blk.orient} {tr} {tr2} {tr3}")
+            logger.debug( f"TRANS {blk.master} {blk.orient} {tr} {tr2} {tr3}")
             for term in d['terminals']:
                 term['rect'] = tr3.hitRect( transformation.Rect( *term['rect'])).canonical().toList()
 

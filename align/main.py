@@ -93,8 +93,12 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
 
             (working_dir / filemap['lef'].name).write_text(filemap['lef'].read_text())
             if check:
-                if filemap['errors'] > 0:
-                    (working_dir / filemap['errfile'].name).write_text(filemap['errfile'].read_text())
+                logger.info( f'{variant} {list(filemap.keys())=}')
+                if 'errors' in filemap:
+                    if filemap['errors'] > 0:
+                        (working_dir / filemap['errfile'].name).write_text(filemap['errfile'].read_text())
+                else:
+                    logger.warning( f"No 'errors' field for in file map for {variant}")
             if extract:
                 (working_dir / filemap['cir'].name).write_text(filemap['cir'].read_text())
             # Generate PNG
