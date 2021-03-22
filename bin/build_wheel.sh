@@ -13,15 +13,15 @@ export ALIGN_HOME=${ALIGN_HOME:-$PWD}
 # install some dependencies
 case "$AUDITWHEEL_PLAT" in
     "manylinux1_x86_64")
-    # Everything compiled from source
-    # (System compilation toolchain doesn't support C++14)
+    # Docker image we are using sets CFLAGS but not CXXFLAGS
+    export CXXFLAGS=${CFLAGS}
     ;;
     "manylinux2010_x86_64"|"manylinux2014_x86_64")
         yum -y install boost-devel lpsolve
     ;;
     "manylinux_2_24_x86_64")
         apt update
-        apt -y install libboost-dev liblpsolve55-dev
+        apt -y install libboost-dev lp-solve
     ;;
     *)
         echo "WARNING: Unknown environment."
