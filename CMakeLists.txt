@@ -6,21 +6,28 @@ cmake_minimum_required(VERSION 3.15..3.18)
 
 # TODO: Single source version number
 project(align VERSION "1.0.0")
+set(ALIGN_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/align")
+set(ALIGN_INSTALL_LIBDIR "${ALIGN_INSTALL_PREFIX}/thirdparty")
 
 # High verbosity for debug
 set(CMAKE_VERBOSE_MAKEFILE ON CACHE BOOL "ON" FORCE)
 
-# A few safe (for align) defaults
+# Compiler defaults
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose Release or Debug" FORCE)
+endif()
+if(NOT CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+endif()
+
+# A few safe (for align) library defaults
 option(BUILD_SHARED_LIBS "Use SHARED keyword to mark shared libraries" OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/thirdparty")
+set(CMAKE_INSTALL_RPATH "$ORIGIN/thirdparty")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
-if("${isSystemDir}" STREQUAL "-1")
-    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-endif("${isSystemDir}" STREQUAL "-1")
 
 # May need to limit ninja's max concurrency for CIRCLECI
 if(DEFINED ENV{MAX_JOBS})
@@ -54,4 +61,4 @@ add_subdirectory(PlaceRouteHierFlow)
 # - align.PnR
 #
 pybind11_extension(PnR)
-install(TARGETS PnR DESTINATION align)
+install(TARGETS PnR DESTINATION ${ALIGN_INSTALL_PREFIX})

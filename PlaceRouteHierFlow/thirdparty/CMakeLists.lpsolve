@@ -1,6 +1,5 @@
 #
-# CMakeLists.txt for "lp_solve_5.5.2.0_source.tar.gz"
-#
+# Adapted from https://github.com/PADrend/ThirdParty/blob/master/lpsolve-CMakeLists.txt
 # Copyright 2012-2013 Benjamin Eikel
 # License: Public Domain
 #
@@ -86,7 +85,7 @@ target_include_directories(lpsolve55 PRIVATE
 	"${CMAKE_CURRENT_SOURCE_DIR}/colamd"
 )
 
-target_compile_definitions(lpsolve55 PUBLIC
+target_compile_definitions(lpsolve55 PRIVATE
 	YY_NEVER_INTERACTIVE
 	PARSER_LP
 	INVERSE_ACTIVE=INVERSE_LUSOL
@@ -94,7 +93,7 @@ target_compile_definitions(lpsolve55 PUBLIC
 )
 
 if(WIN32)
-	target_compile_definitions(lpsolve55 PUBLIC
+	target_compile_definitions(lpsolve55 PRIVATE
 		INLINE=static
 		_USRDLL
 		WIN32
@@ -124,8 +123,4 @@ set_target_properties(lpsolve55 PROPERTIES VERSION ${LPSOLVE_VERSION}
 
 # Install the library
 install(TARGETS lpsolve55 EXPORT LibraryExport
-	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-	PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lpsolve
-)
+	LIBRARY DESTINATION ${ALIGN_INSTALL_LIBDIR})
