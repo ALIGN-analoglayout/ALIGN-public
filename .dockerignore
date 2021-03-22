@@ -15,11 +15,6 @@ DetailedRouter
 # Exclude files built by Dockerfile or install.sh
 **/*.tar
 general/
-json/
-googletest/
-lpsolve/
-spdlog/
-superlu/
 dist/
 _skbuild/
 # Exclude common user / machine generated files
