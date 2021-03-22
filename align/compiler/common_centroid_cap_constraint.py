@@ -137,8 +137,13 @@ def merge_symmetric_caps(all_const, graph, unit_size_cap, available_cap_const):
         if const["const_name"]== "SymmNet":	
             net1 = const['net1']["name"]	
             net2 = const['net2']["name"]	
-            existing = ""	
-            removed_blocks = [block for block in const['net1']["blocks"] if net1 in graph.nodes() and block['name'] not in graph.nodes()]	
+            existing = ""
+            logger.debug(f"updating symmnet constraint {const}")
+            removed_blocks1 = [block for block in const['net1']["blocks"] if net1 in graph.nodes() \
+                and block['name'] not in graph.nodes()]	
+            removed_blocks2 = [block for block in const['net1']["blocks"] if net1 in graph.nodes() \
+                and block['name'] not in graph.nodes()]	
+            removed_blocks = removed_blocks1 + removed_blocks2
             if removed_blocks:	
                 pairs,s1,s2 = symmnet_device_pairs(graph,net1,net2,existing)	
                 if pairs:	

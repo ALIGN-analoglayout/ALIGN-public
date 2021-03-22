@@ -283,6 +283,10 @@ def WriteConst(graph, name, ports, ports_weight, input_const, stop_points=None):
     if input_const:
         logger.debug(f"input const {input_const}")
         all_const = input_const["constraints"]
+        for const in all_const:
+            if const["const_name"] == "SymmNet":
+                symmNet = const['net1']["name"] + ',' + const['net2']["name"]
+                written_symmetries +=  symmNet
     else:
         input_const = {}
         all_const = []
@@ -318,7 +322,7 @@ def WriteConst(graph, name, ports, ports_weight, input_const, stop_points=None):
             if key in stop_points:
                 logger.debug(f"skipping symmetry b/w {key} {value} as they are present in stop_points")
                 continue
-            elif key in written_symmetries or value in written_symmetries:
+            elif key+',' in written_symmetries or value+',' in written_symmetries:
                 logger.debug(f"skipping symmetry b/w {key} {value} as already written {written_symmetries}")
                 continue
             elif key in new_hier_keys:
@@ -341,7 +345,7 @@ def WriteConst(graph, name, ports, ports_weight, input_const, stop_points=None):
                         all_const.append(symmNetj)
                         logger.debug(f"adding symmetries: {symmNetj}")
                     else:
-                        logger.debug(f"skipping symmetry between large fanout nets {key} {value}")
+                        logger.debug(f"skipping symmetry between large fanout nets {key} {value} {pairs}")
                         logger.debug("TBF:Need update in placer to simplify this")
                 else:
                     logger.debug(f"skipping self symmetric nets {key} {value}")
@@ -357,9 +361,9 @@ def WriteConst(graph, name, ports, ports_weight, input_const, stop_points=None):
                     pairsj.append({"type":"selfsym","block":key})
         if len(pairsj)> 1 or (len(pairsj)>0 and 'block1' in pairsj[0].keys()):
             symmBlock = {'const_name': "SymmBlock","axis_dir":"V","pairs":pairsj}
-            written_symmetries += ' '.join([a['block'] for a in pairsj if 'block' in a.keys()])
-            written_symmetries += ' '.join([a['block1'] for a in pairsj if 'block1' in a.keys()])
-            written_symmetries += ' '.join([a['block2'] for a in pairsj if 'block2' in a.keys()])
+            written_symmetries += ','.join([a['block'] for a in pairsj if 'block' in a.keys()])
+            written_symmetries += ','.join([a['block1'] for a in pairsj if 'block1' in a.keys()])
+            written_symmetries += ','.join([a['block2'] for a in pairsj if 'block2' in a.keys()])
             all_const.append(symmBlock)
             logger.debug(f"one axis of written symmetries: {symmBlock}")
 
@@ -367,7 +371,7 @@ def WriteConst(graph, name, ports, ports_weight, input_const, stop_points=None):
     logger.debug(f"Identified constraints of {name} are {input_const}")
     return input_const
 
-def symmnet_device_pairs(G, net_A, net_B,existing):
+def symmnet_device_pairs(G, net_A, net_B,existing_symmetry_blocks):
     """
     Parameters
     ----------
@@ -402,9 +406,9 @@ def symmnet_device_pairs(G, net_A, net_B,existing):
                 if ele_B in pairs.values():
                     logger.debug(f"skipping symmetry due to multiple possible matching of net {net_B} nbr {ele_B} to {pairs.values()} ")
                     return [None,None,None]
-                elif ele_A.split('/')[0] in existing and blockA+','+blockB not in existing:
+                elif ele_A.split('/')[0] in existing_symmetry_blocks and blockA+','+blockB not in existing_symmetry_blocks:
                     continue
-                elif ele_B.split('/')[0] in existing and blockA+','+blockB not in existing:
+                elif ele_B.split('/')[0] in existing_symmetry_blocks and blockA+','+blockB not in existing_symmetry_blocks:
                     continue
                 else:
                     pairs[ele_A] = ele_B
@@ -413,7 +417,7 @@ def symmnet_device_pairs(G, net_A, net_B,existing):
     if len(pairs.keys())>1:
         return pairs,{"name":net_A,"blocks":blocksA},{"name":net_B,"blocks":blocksB}
     else:
-        logger.debug("skipping symmnet as: symmetry of net is between two non identical devices")
+        logger.debug(f"skipping symmnet as: symmetry of net is between two non identical devices {conn_A} {conn_B} {existing_symmetry_blocks}")
         return [None,None,None]
 
 def connection(graph,net:str):

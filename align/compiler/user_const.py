@@ -257,14 +257,20 @@ class ConstraintParser:
             elif const["const_name"] == 'SymmetricNets':
                 const["const_name"] = 'SymmNet'
                 const["axis_dir"] = const.pop("direction")
+                if "pins1" in const and "pins2" in const:
+                    pins1 = self._map_pins(const["pins1"])
+                    pins2 = self._map_pins(const["pins2"])
+                    del const["pins1"]
+                    del const["pins2"]
+                else:
+                    pins1 = [{"type": "dummy", "name": "dummy", "pin": None}]
+                    pins2 = [{"type": "dummy", "name": "dummy", "pin": None}]
                 const['net1'] = {
                     "name": const['net1'],
-                    "blocks": self._map_pins(const["pins1"])}
+                    "blocks": pins1}
                 const['net2'] = {
                     "name": const['net2'],
-                    "blocks": self._map_pins(const["pins2"])}
-                del const["pins1"]
-                del const["pins2"]
+                    "blocks": pins2}
             elif const["const_name"] == 'PortLocation':
                 for port in const["ports"]:
                     extra = {
