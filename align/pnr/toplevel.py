@@ -3,12 +3,7 @@
 import logging
 import pathlib
 import json
-
-# Needed for Pybind11 dynamic executables
-import sys, os
-sys.setdlopenflags(os.RTLD_GLOBAL|os.RTLD_LAZY)
-
-import PnR
+from .. import PnR
 
 logger = logging.getLogger(__name__)
 
