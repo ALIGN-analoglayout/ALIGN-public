@@ -42,27 +42,11 @@ jobs:
 
       - setup_remote_docker
 
-      - restore_cache:
-          keys:
-            # Use checksums for critical files as cache key to promote layer reuse
-            # Please increment v1 to v2 if you wish to invalidate all existing caches
-            # (Must be replicated in save_cache as well)
-            - align-v1-{{ checksum "build/Dockerfile.using-install.sh" }}-{{ checksum "install.sh" }}-{{ checksum "setup.sh" }}-{{ checksum "setup.py" }}
-            # Fall back to most recent cache from any branch
-            - align-v1
-          paths:
-            - align_image.tar
-
-      - run:
-          name: Load Docker image layer cache
-          command: |
-            set +o pipefail
-            docker load -i align_image.tar | true
 
       - run:
           name: "Build align_image"
           command: |
-            docker build --cache-from=align_image -t align_image -f ./build/Dockerfile.using-install.sh .
+            docker build -t align_image -f ./build/Dockerfile.using-install.sh .
 
       - run:
           name: "Save align_image"
@@ -70,11 +54,6 @@ jobs:
             git clean -xdf
             docker save --output align_image.tar align_image
             du -h align_image.tar
-
-      - save_cache:
-          key: align-v1-{{ checksum "build/Dockerfile.using-install.sh" }}-{{ checksum "install.sh" }}-{{ checksum "setup.sh" }}-{{ checksum "setup.py" }}
-          paths:
-            - align_image.tar
 
       - persist_to_workspace:
           root: .
