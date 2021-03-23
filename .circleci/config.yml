@@ -50,9 +50,11 @@ jobs:
     # https://github.com/pypa/manylinux
     docker:
       - image: <<parameters.platform>>
-
-    # Set MAX_JOBS for Ninja & Pytest = number of vCPUs (2) + 1
+    working_directory: /root/ALIGN-public
     environment:
+      ALIGN_HOME: /root/ALIGN-public
+      ALIGN_WORK_DIR: /root/ALIGN-public/work
+      # Set MAX_JOBS for Ninja & Pytest = number of vCPUs (2) + 1
       MAX_JOBS: 2
 
     steps:
