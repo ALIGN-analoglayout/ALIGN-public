@@ -251,7 +251,7 @@ jobs:
             pip install align[test] -f ./dist
             filter="<<parameters.design>>"
             filter="<<parameters.pdk>>${filter:+ and $filter}"
-            pytest -vv --runnightly --maxerrors=10 --timeout=<<parameters.timeout>> -k "$filter" -- tests/integration
+            pytest -vv --runnightly --maxerrors=20 --timeout=<<parameters.timeout>> -k "$filter" -- tests/integration
             mkdir test-reports && cp -r junit.xml LOG test-reports
             find $ALIGN_WORK_DIR -name *.json -exec cp --parents \{\} test-reports \;
 
