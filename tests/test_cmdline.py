@@ -2,6 +2,7 @@ import pytest
 import align
 import os
 import pathlib
+import shutil
 
 examples = ['inverter_v1',
             'buffer',
@@ -21,7 +22,12 @@ if 'LD_LIBRARY_PATH' not in os.environ:
 @pytest.mark.parametrize( "design", examples)
 def test_cmdline(design):
     run_dir = ALIGN_HOME / 'tests' / 'tmp'
-    run_dir.mkdir(parents=True, exist_ok=True)
+
+    if run_dir.exists():
+        assert run_dir.is_dir()
+        shutil.rmtree(run_dir)
+
+    run_dir.mkdir(parents=True, exist_ok=False)
     os.chdir(run_dir)
 
     design_dir = ALIGN_HOME / 'examples' / design
