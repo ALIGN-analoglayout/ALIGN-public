@@ -18,9 +18,8 @@ module switched_capacitor_filter ( vinp, voutn, vss, vinn, agnd, voutp, id );
 input vinp, voutn, vss, vinn, agnd, voutp, id;
 
 telescopic_ota xi0 ( .d1(id), .vbiasn(vbiasn), .vbiasnd(vbiasnd), .vbiasp1(vbiasp1), .vbiasp2(vbiasp2), .vdd(vdd), .vinn(net64), .vinp(net66), .voutn(voutn), .voutp(voutp), .vss(vss) ); 
-switched_capacitor_combination m6_c0_m4_m3_m5_c1_m7_c3_m0 ( .Vin(vinn), .agnd(agnd), .Vin_ota(net66), .Voutn(voutn), .phi1(phi1), .phi2(phi2) ); 
+switched_capacitor_combination m6_c0_m4_m3_m5_c1_m7_c3_m0 ( .Vin(vinn), .agnd(agnd), .Vin_ota(net66), .Voutn(voutn), .phi1(phi1), .phi2(phi2) );
 switched_capacitor_combination m12_c4_m8_m11_m9_c7_m10_c6_m14 ( .Vin(vinp), .agnd(agnd), .Vin_ota(net64), .Voutn(voutp), .phi1(phi1), .phi2(phi2) ); 
-
 Cap_30fF_Cap_30fF c2_c5 ( .MINUS1(net66), .PLUS1(vinp), .MINUS2(net64), .PLUS2(vinn) );
 Cap_60fF_Cap_60fF c8_c9 ( .MINUS1(vss), .PLUS1(voutn), .MINUS2(vss), .PLUS2(voutp) );
 endmodule

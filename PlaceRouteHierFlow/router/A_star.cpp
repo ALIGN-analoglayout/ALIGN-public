@@ -45,6 +45,33 @@ bool A_star::FindFeasiblePath(Grid& grid, int pathNo, int left_up, int right_dow
 
 }
 
+bool A_star::FindFeasiblePath_sym(Grid& grid, int pathNo, int left_up, int right_down, std::vector<RouterDB::Metal> &sym_path) {
+
+  auto logger = spdlog::default_logger()->clone("router.A_star.FindFeasiblePath");
+
+  bool mark=false;
+  for(int i =0;i<pathNo;++i){
+
+     logger->debug("Path No {0} current path index {1}",pathNo,i);
+
+     std::vector<std::vector<int> > temp_path;
+     logger->debug("start A_star");
+
+     temp_path = A_star_algorithm_Sym(grid, left_up, right_down, sym_path);// grid.Source grid.dest
+     logger->debug("end A_star");
+
+     if((int)temp_path.size()>0) {
+       Path = temp_path;
+       mark=true;
+     } else {
+       mark=(mark or false);
+       logger->warn("Router-Warning: feasible path might not be found");
+     }
+  }
+  return mark;
+
+}
+
 void A_star::print_path(){
 
   auto logger = spdlog::default_logger()->clone("router.A_star.print_path");
@@ -1133,6 +1160,182 @@ void A_star::erase_candidate_node(std::set<int> &Close_set, std::vector<int> &ca
 
   candidate = temp_candidate;
 
+};
+
+std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left_up, int right_down, vector<RouterDB::Metal> &sym_path){
+
+  auto logger = spdlog::default_logger()->clone("router.A_star.A_star_algorithm");
+
+  int via_expand_effort = 100;
+
+  std::set<std::pair<int,int>, RouterDB::pairComp> L_list;
+  std::set<int> close_set;
+  std::pair<int,int> temp_pair; 
+
+  std::set<int> src_index;
+  
+  logger->debug("source size {0}",source.size());
+  logger->debug("dest size {0} ",dest.size());
+  
+  
+  logger->debug("A star source info");
+  for(int i=0;i<(int)source.size();i++){
+    
+      src_index.insert(source[i]);
+      logger->debug("Source {0} {1} {2} ",grid.vertices_total[source[i]].metal,grid.vertices_total[source[i]].x,grid.vertices_total[source[i]].y);
+      close_set.insert(source[i]);
+
+     }
+  
+  std::set<int> dest_index;
+  for(int i=0;i<(int)dest.size();i++){
+      logger->debug("Dest {0} {1} {2}",grid.vertices_total[dest[i]].metal,grid.vertices_total[dest[i]].x,grid.vertices_total[dest[i]].y);
+      dest_index.insert(dest[i]);
+
+     }
+
+  initial_source(grid, L_list, source);
+
+  bool found = 0;
+  int current_node = -1;
+  
+  while(!L_list.empty() and !found){
+    std::set<std::pair<int,int>, RouterDB::pairComp>::iterator it;
+    it = L_list.begin();
+    current_node = it->second;
+    L_list.erase(it);
+    
+    //judge whether dest found Q2// judge whether dest works
+    if(dest_index.find(current_node)!=dest_index.end()){
+       bool extend = Pre_trace_back(grid, current_node, left_up, right_down, src_index,dest_index); //add pre_trace_back and extendtion check here?
+       if(extend){
+         found=1;
+       }
+       continue;
+      }
+    
+    close_set.insert(current_node);
+
+
+    //found the candidates nodes
+    std::vector<int> candidate_node;
+    bool near_node_exist =found_near_node(current_node, grid, candidate_node);
+    erase_candidate_node(close_set, candidate_node);
+    if(!near_node_exist){
+       continue;
+      }
+
+    std::vector<int> temp_candidate_node;
+    std::vector<int> temp_candidate_cost;
+    for(int i=0;i<candidate_node.size();i++){
+       std::vector<std::vector<int> > node_L_path;
+       int cost = 0;
+       bool parallel = parallel_routing(grid, current_node, candidate_node[i], left_up, right_down, src_index, dest_index,node_L_path, cost); //check parents
+       //bool parallel = 1;
+       if(parallel){
+         //assert(0);
+         temp_candidate_node.push_back(candidate_node[i]);
+         temp_candidate_cost.push_back(cost);
+       }
+    }
+
+    candidate_node = temp_candidate_node;
+    
+    if(candidate_node.size()==0){
+       continue;
+      }
+
+
+    //std::vector<int> expand_candidate_node;
+    for(int i=0;i<(int)candidate_node.size();i++){
+
+       int M_dis = Manhattan_distan(candidate_node[i], grid);
+       int temp_cost = grid.vertices_total[current_node].Cost + abs(grid.vertices_total[current_node].x - grid.vertices_total[candidate_node[i]].x) + abs(grid.vertices_total[current_node].y - grid.vertices_total[candidate_node[i]].y) + via_expand_effort*abs(grid.vertices_total[candidate_node[i]].metal-grid.vertices_total[current_node].metal)+temp_candidate_cost[i];
+       if(temp_cost < grid.vertices_total[candidate_node[i]].Cost ){
+
+          grid.vertices_total[candidate_node[i]].Cost = temp_cost;
+          int sym_cost = Find_Symmetry_Cost(grid,candidate_node[i],sym_path);
+          //std::cout<<"sym cost "<<sym_cost<<" sym path size "<<sym_path.size()<<std::endl;
+          int sym_factor = 100;
+          int dis = grid.vertices_total[candidate_node[i]].Cost + M_dis + sym_factor*sym_cost;
+          grid.vertices_total[candidate_node[i]].parent = current_node;
+          //grid.vertices_total[candidate_node[i]].trace_back_node = current_node;
+          temp_pair.first = dis;
+          temp_pair.second = candidate_node[i];
+          L_list.insert(temp_pair);
+
+         }
+      
+       }
+
+  }
+
+  std::vector<std::vector<int> > temp_path; //Q4 return sheilding and parallel path?  sheild and parallel should be recovered in outer loop???
+  if(found==0){
+     logger->debug("A_star fails to find a feasible path");
+    }else{
+     logger->debug("Trace back paths");
+     logger->debug("Source {0}, {1}, {2}",grid.vertices_total[current_node].metal,grid.vertices_total[current_node].x,grid.vertices_total[current_node].y);
+     temp_path = Trace_Back_Paths(grid, current_node, left_up, right_down, src_index, dest_index);
+    }
+   refreshGrid(grid);
+
+
+   return temp_path;
+    
+};
+
+int A_star::Find_Symmetry_Cost(Grid& grid, int current_node, vector<RouterDB::Metal> &sym_path){
+
+  int sym_cost = 0;
+  if(sym_path.size()==0){
+    return sym_cost;
+  }else{
+    sym_cost = INT_MAX;
+    for(unsigned int i=0;i<sym_path.size();++i){
+       int sym_cost_temp = Find_Symmetry_cost(grid, current_node, sym_path[i]);
+       if(sym_cost_temp<sym_cost){
+          sym_cost = sym_cost_temp;
+        }
+    }
+    return sym_cost;
+  }
+};
+
+int A_star::Find_Symmetry_cost(Grid& grid, int current_node, RouterDB::Metal &temp_path){
+
+  int layer_cost = 100;
+
+  int x = grid.vertices_total[current_node].x;
+  int y = grid.vertices_total[current_node].y;
+  int metal = grid.vertices_total[current_node].metal;
+  
+  int metal_cost = abs(metal-temp_path.MetalIdx)*layer_cost;
+  int length_cost = 0;
+
+  int direct = drc_info.Metal_info[temp_path.MetalIdx].direct;
+
+  if(direct==1){//H
+    length_cost = abs(y-temp_path.LinePoint[0].y);
+    int min_x = std::min(temp_path.LinePoint[0].x,temp_path.LinePoint[1].x);
+    int max_x = std::max(temp_path.LinePoint[0].x,temp_path.LinePoint[1].x);
+    if(x<=max_x and x>=min_x){
+      length_cost +=0;
+    }else{
+      length_cost += std::min(abs(x-min_x),abs(x-max_x));
+    }
+  }else{
+    length_cost = abs(x-temp_path.LinePoint[0].x);
+    int min_y = std::min(temp_path.LinePoint[0].y,temp_path.LinePoint[1].y);
+    int max_y = std::max(temp_path.LinePoint[0].y,temp_path.LinePoint[1].y);
+    if(y<=max_y and y>=min_y){
+      length_cost +=0;
+    }else{
+      length_cost += std::min(abs(y-min_y),abs(y-max_y));
+    }
+
+  }
+  return metal_cost+length_cost;
 };
 
 std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up, int right_down){
