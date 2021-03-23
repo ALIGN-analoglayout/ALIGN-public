@@ -10,11 +10,11 @@ def test_compiler_hsc(dir_name):
     test_path=pathlib.Path(__file__).resolve().parent / 'test_circuits' / dir_name / (circuit_name+'.sp')
     pdk_dir = pathlib.Path(__file__).resolve().parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK'
     updated_ckt, library = compiler(test_path, circuit_name, pdk_dir)
-    assert 'DP_NMOS_B' in updated_ckt
-    assert 'CCP_S_NMOS_B' in updated_ckt
-    assert 'CCP_PMOS' in updated_ckt
-    assert 'DP_NMOS_B' in updated_ckt
-    assert 'INV' in updated_ckt
+    assert 'DP_NMOS_B' in updated_ckt.keys()
+    assert 'CCP_S_NMOS_B' in updated_ckt.keys()
+    assert 'CCP_PMOS' in updated_ckt.keys()
+    assert 'DP_NMOS_B' in updated_ckt.keys()
+    assert 'INV' in updated_ckt.keys()
     return (updated_ckt, library, dir_name)
 
 @pytest.mark.parametrize('dir_name', ['high_speed_comparator_orderblock', \
@@ -22,11 +22,11 @@ def test_compiler_hsc(dir_name):
         'high_speed_comparator_align', 'high_speed_comparator_symmnet'])
 def test_group_block_hsc(test_compiler_hsc):
     updated_ckt, library, dir_name = test_compiler_hsc
-    assert 'dp' in updated_ckt
-    assert 'ccn' in updated_ckt
-    assert 'ccp' in updated_ckt
-    assert 'inv_p' in updated_ckt
-    assert 'inv_n' in updated_ckt
+    assert 'dp' in updated_ckt.keys()
+    assert 'ccn' in updated_ckt.keys()
+    assert 'ccp' in updated_ckt.keys()
+    assert 'inv_p' in updated_ckt.keys()
+    assert 'inv_n' in updated_ckt.keys()
     
     test_path=pathlib.Path(__file__).resolve().parent / 'test_circuits' / dir_name / ('high_speed_comparator.sp')
     out_path = pathlib.Path(__file__).resolve().parent
