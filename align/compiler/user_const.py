@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 pp = pprint.PrettyPrinter(indent=4)
 
 class ConstraintParser:
-    def __init__(self,pdk_dir:pathlib.Path,input_dir:pathlib.Path):
+    def __init__(self, pdk_dir: pathlib.Path, input_dir: pathlib.Path):
         self.input_dir = input_dir
         self.known_types = {
             'int':int,
@@ -25,7 +25,7 @@ class ConstraintParser:
             pdk_info = json.load(fp)
             self.valid_const =pdk_info["valid_constraints"]
         
-    def read_user_const(self,design_name:str):
+    def read_user_const(self, design_name: str):
         """
         Reads user defined constraints and create a dictionary for each hierarchy
   
@@ -56,6 +56,7 @@ class ConstraintParser:
                     all_const.append(const)
             self.block_const['constraints'] = all_const
         else:
+            logger.info(f"No user constraints found for block {design_name} in path {self.input_dir}")
             return None
         self._map_valid_const()
         return self.block_const

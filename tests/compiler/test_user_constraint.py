@@ -7,7 +7,7 @@ from align.compiler.compiler import compiler, compiler_output
 @pytest.fixture
 def test_compiler_hsc(dir_name):
     circuit_name = 'high_speed_comparator'
-    test_path=pathlib.Path(__file__).resolve().parent / 'test_circuits' / dir_name / (circuit_name+'.sp')
+    test_path = pathlib.Path(__file__).resolve().parent / 'test_circuits' / dir_name / (circuit_name + '.sp')
     pdk_dir = pathlib.Path(__file__).resolve().parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK'
     updated_ckt, library = compiler(test_path, circuit_name, pdk_dir)
     assert 'DP_NMOS_B' in updated_ckt.keys()

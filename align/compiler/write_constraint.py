@@ -394,12 +394,12 @@ def symmnet_device_pairs(G, net_A, net_B,existing_symmetry_blocks):
     for ele_A in conn_A.keys():
         for ele_B in conn_B.keys():
             if '/' in ele_A:
-                blockA,pinA = ele_A.split('/')
+                blockA, pinA = ele_A.split('/')
             else:
                 blockA =  ele_A
                 pinA = None
             if '/' in ele_B:
-                blockB,pinB = ele_B.split('/')
+                blockB, pinB = ele_B.split('/')
             else:
                 blockB = ele_B
                 pinB = None
@@ -450,11 +450,10 @@ def connection(graph,net:str):
         elif "connection" in graph.nodes[nbr] and graph.nodes[nbr]["connection"]:
             logger.debug(f"connection: {nbr}, {graph.nodes[nbr]['connection']}")
             if net in graph.nodes[nbr]["connection"].values():
-                idx=list(graph.nodes[nbr]["connection"].values()).index(net)
+                idx = list(graph.nodes[nbr]["connection"].values()).index(net)
                 conn[nbr + '/' + list(graph.nodes[nbr]["connection"].keys())[idx]] = (graph.get_edge_data(net, nbr)['weight'] & ~2)
         else:
             logger.debug("internal net")
     if graph.nodes[net]["net_type"]=="external":
         conn[net] = sum(conn.values())
-
     return conn
