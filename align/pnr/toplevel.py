@@ -12,11 +12,59 @@ import PnR
 
 logger = logging.getLogger(__name__)
 
-def get_NType():
-    return PnR.NType
+NType = PnR.NType
+Omark = PnR.Omark
+TransformType = PnR.TransformType
 
-def get_Omark():
-    return PnR.Omark
+def route_top_down( DB, drcInfo,
+                    bounding_box,
+                    current_node_ort, idx, lidx,
+                    opath, binary_directory, skip_saving_state, adr_mode):
+
+    logger.debug( f'Start of route_top_down {idx=}')
+
+    current_node = DB.CheckoutHierNode(idx) # Make a copy
+    DB.hierTree[idx].n_copy += 1
+    current_node_name = current_node.name
+    current_node.LL = bounding_box.LL
+    current_node.UR = bounding_box.UR
+    current_node.abs_orient = current_node_ort
+    DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Forward)
+
+    for bit, blk in enumerate(current_node.Blocks):
+        child_idx = blk.child
+        if child_idx == -1: continue
+        inst = blk.instance[blk.selectedInstance]
+        childnode_orient = DB.RelOrt2AbsOrt( current_node_ort, inst.orient)
+        child_node_name = DB.hierTree[child_idx].name
+        childnode_bbox = PnR.bbox( inst.placedBox.LL, inst.placedBox.UR)
+        new_childnode_idx = 0
+        for lidx in range(DB.hierTree[child_idx].numPlacement):
+            new_childnode_idx = route_top_down(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, lidx, opath, binary_directory, skip_saving_state, adr_mode)
+
+        DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_childnode_idx])
+        current_node.Blocks[bit].child = new_childnode_idx
+
+    DB.ExtractPinsToPowerPins(current_node)
+    PnR.route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, skip_saving_state, adr_mode)
+
+    if not current_node.isTop:
+        DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Backward)
+
+    logger.debug( f'Before DB.AppendToHierTree {len(DB.hierTree)=}')
+    DB.AppendToHierTree(current_node)
+    logger.debug( f'After DB.AppendToHierTree {len(DB.hierTree)=}')
+    new_currentnode_idx = len(DB.hierTree) - 1
+
+    for bit,blk in enumerate(current_node.Blocks):
+        if blk.child == -1: continue
+        DB.SetParentInHierTree( blk.child, 0, new_currentnode_idx)
+        logger.debug( f'Set parent of {blk.child} to {new_currentnode_idx} => {DB.hierTree[blk.child].parent[0]=}')
+
+    logger.debug( f'End of route_top_down {len(DB.hierTree)=}')
+
+    return new_currentnode_idx
+
 
 def toplevel(args):
 
@@ -72,15 +120,15 @@ def toplevel(args):
 
         DB.hierTree[idx].numPlacement = actualNumLayout
 
-
     last = TraverseOrder[-1]
-    new_topnode_idx = 0
+    new_topnode_indices = []
     for lidx in range(DB.hierTree[last].numPlacement):
-        new_topnode_idx = PnR.route_top_down( DB, drcInfo, PnR.bbox( PnR.point(0,0),
-                                               PnR.point(DB.hierTree[last].PnRAS[0].width,
-                                                         DB.hierTree[last].PnRAS[0].height)),
-                            PnR.Omark.N, last, lidx,
-                            opath, binary_directory, skip_saving_state, adr_mode)
-
+        new_topnode_idx = route_top_down( DB, drcInfo,
+                                          PnR.bbox( PnR.point(0,0),
+                                                    PnR.point(DB.hierTree[last].PnRAS[0].width,
+                                                              DB.hierTree[last].PnRAS[0].height)),
+                                          Omark.N, last, lidx,
+                                          opath, binary_directory, skip_saving_state, adr_mode)
+        new_topnode_indices.append(new_topnode_idx)
 
     return DB

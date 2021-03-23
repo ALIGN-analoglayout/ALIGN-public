@@ -413,6 +413,12 @@ PYBIND11_MODULE(PnR, m) {
     .def( "AddingPowerPins", &PnRdatabase::AddingPowerPins)
     .def( "Extract_RemovePowerPins", &PnRdatabase::Extract_RemovePowerPins)
     .def( "CheckinHierNode", &PnRdatabase::CheckinHierNode)
+    .def( "TransformNode", &PnRdatabase::TransformNode)
+    .def( "RelOrt2AbsOrt", &PnRdatabase::RelOrt2AbsOrt)
+    .def( "ExtractPinsToPowerPins", &PnRdatabase::ExtractPinsToPowerPins)
+    .def( "CheckinChildnodetoBlock", &PnRdatabase::CheckinChildnodetoBlock)
+    .def( "AppendToHierTree", &PnRdatabase::AppendToHierTree)
+    .def( "SetParentInHierTree", &PnRdatabase::SetParentInHierTree)
     .def_readwrite("hierTree", &PnRdatabase::hierTree)
     .def_readwrite("topidx", &PnRdatabase::topidx)
   ;
