@@ -33,7 +33,7 @@ jobs:
     environment:
       ALIGN_HOME: /root/ALIGN-public
       ALIGN_WORK_DIR: /root/ALIGN-public/work
-      # Set MAX_JOBS for Ninja & Pytest = number of vCPUs (2) + 1
+      # Set MAX_JOBS for Ninja & Pytest = number of vCPUs (2)
       MAX_JOBS: 2
 
     steps:
@@ -234,6 +234,7 @@ jobs:
     environment:
       ALIGN_HOME: /root/ALIGN-public
       ALIGN_WORK_DIR: /root/ALIGN-public/work
+      MAX_JOBS: 2
 
     steps:
       - checkout
@@ -241,16 +242,15 @@ jobs:
           at: .
 
       - run:
-          name: "test-integration-<<parameters.pdk>>-<<parameters.design>>-<<parameters.timeout>>"
+          name: "test-integration-<<parameters.platform>>-<<parameters.pdk>>(<<parameters.design>>)"
           no_output_timeout: "<<parameters.timeout>>s"
           command: |
             rm -fr align setup.py
             pip install align[test] -f ./wheelhouse
             filter="<<parameters.design>>"
             filter="<<parameters.pdk>>${filter:+ and $filter}"
-            pytest -vv --runnightly --maxerrors=20 --timeout=<<parameters.timeout>> --durations=0 -k "$filter" -- tests/integration
-            mkdir test-reports && cp -r junit.xml LOG test-reports
-            find $ALIGN_WORK_DIR -name *.json -exec cp --parents \{\} test-reports \;
+            pytest -vv -n "$MAX_JOBS" --runnightly --maxerrors=20 --timeout=<<parameters.timeout>> --durations=0 -k "$filter" -- tests/integration
+            mkdir -p test-reports/${CIRCLE_BUILD_NUM} && cp -r junit.xml LOG test-reports/${CIRCLE_BUILD_NUM}
 
       - store_test_results:
           path: test-reports
@@ -286,7 +286,7 @@ workflows:
               pdk:
                 - "Finfet"
               design:
-                - "BUFFER or ota"
-                - "San or BTSW"
+                - "BUFFER or ota or powertrain"
+                - "Sanitized"
                 - "vco_dtype"
-                - "not BUFFER and not ota and not San and not BTSW and not vco_dtype and not SAR and not DLL and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD"
+                - "not BUFFER and not ota and not Sanitized and not vco_dtype and not powertrain and not SAR and not DLL and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD"
