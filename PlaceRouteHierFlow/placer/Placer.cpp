@@ -529,7 +529,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     curr_sp.PerturbationNew(designData);
     trial_count++;
     if (trial_count > 100) {
-      logger->warn("please check constraint" );
+      logger->warn("please check constraint");
+      curr_cost = __DBL_MAX__;
       break;
     }
   }

@@ -39,7 +39,9 @@ setup(name='align',
           'pybind11',
           'pydantic>=1.8',
           'z3-solver',
-          'more-itertools'
+          'more-itertools',
+          'colorlog',
+          'plotly'
           ],
       setup_requires=[],
       python_requires='~=3.8',

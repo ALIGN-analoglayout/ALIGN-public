@@ -499,9 +499,9 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
         node.ML_Constraints.push_back(temp_Multi_LinearConst);
       } else if (constraint["const_name"] == "Aspect_Ratio") {
         node.Aspect_Ratio_weight = constraint["weight"];
-        if(constraint.contains("ratio")){
-          node.Aspect_Ratio = constraint["ratio"];
-        }
+        node.Aspect_Ratio[0] = constraint["ratio_low"];
+        node.Aspect_Ratio[1] = constraint["ratio_high"];
+        if (node.Aspect_Ratio[0] > node.Aspect_Ratio[1]) logger->error("Aspect ratio lower bound should be smaller than upper bound.");
       } else if (constraint["const_name"] == "Multi_Connection") {
         PnRDB::Multi_connection temp_multi_Connection;
         temp_multi_Connection.net_name = constraint["net_name"];

@@ -7,6 +7,7 @@ import importlib
 import sys
 import pathlib
 import re
+from .toplevel import get_NType, get_Omark
 
 import logging
 logger = logging.getLogger(__name__)
@@ -95,7 +96,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     fa_map = {}
     for n in itertools.chain( hN.Nets, hN.PowerNets):
         for c in n.connected:
-            if c.type == 'Block':
+            if c.type == 'Block' or c.type == get_NType().Block:
                 cblk = hN.Blocks[c.iter2]
                 blk = cblk.instance[cblk.selectedInstance]
                 block_name = blk.name
@@ -104,11 +105,12 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                 formal_name = f"{blk.name}/{pin.name}"
                 assert formal_name not in fa_map
                 fa_map[formal_name] = n.name
-
-            else:
+            elif c.type == 'Terminal' or c.type == get_NType().Terminal:
                 term = hN.Terminals[c.iter]
                 terminal_name = term.name
-                assert terminal_name == n.name
+                assert n.name == terminal_name
+            else:
+                assert False, c.type
 
     for cblk in hN.Blocks:
         blk = cblk.instance[cblk.selectedInstance]
@@ -141,14 +143,29 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
             # Scale to PnRDB coords (seems like 10x um, but PnRDB is 2x um, so divide by 5
             rational_scaling( d, div=5, errors=errors)
 
-            tr = transformation.Transformation.genTr( blk.orient, w=blk.width, h=blk.height)
+
+            if type(blk.orient) is str:
+                orient = blk.orient
+            else:
+                if blk.orient == get_Omark().FN:
+                    orient = 'FN'
+                elif blk.orient == get_Omark().FS:
+                    orient = 'FS'
+                elif blk.orient == get_Omark().N:
+                    orient = 'N'
+                elif blk.orient == get_Omark().S:
+                    orient = 'S'
+                else:
+                    assert False, blk.orient
+
+            tr = transformation.Transformation.genTr( orient, w=blk.width, h=blk.height)
 
             tr2 = transformation.Transformation( oX=blk.placedBox.UR.x - blk.originBox.LL.x,
                                                  oY=blk.placedBox.UR.y - blk.originBox.LL.y)
 
             tr3 = tr.preMult(tr2)
 
-            logger.debug( f"TRANS {blk.master} {blk.orient} {tr} {tr2} {tr3}")
+            logger.info( f"TRANS {blk.master} {blk.orient} {tr} {tr2} {tr3}")
             for term in d['terminals']:
                 term['rect'] = tr3.hitRect( transformation.Rect( *term['rect'])).canonical().toList()
 
@@ -193,7 +210,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                 add_terminal( obj, con.metal, b, tag=tag)
 
         for c in n.connected:
-            if c.type == 'Block':
+            if c.type == 'Block' or c.type == get_NType().Block:
                 cblk = hN.Blocks[c.iter2]
                 blk = cblk.instance[cblk.selectedInstance]
                 block_name = blk.name
@@ -206,7 +223,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
 
                 for con in pin.pinContacts:
                     addt( n, con, "blockPin")
-            else:
+            elif c.type == 'Terminal' or c.type == get_NType().Terminal:
                 term = hN.Terminals[c.iter]
                 terminal_name = term.name
                 assert terminal_name == n.name
@@ -215,6 +232,9 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                 for con in term.termContacts:
                     pass
 #                    addt( n, con)
+            else:
+                assert False, c.type
+
 
         for metal in n.path_metal:
             con = metal.MetalRect
@@ -301,6 +321,8 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     # Create viewer dictionary
 
     d = {}
+
+    logger.info( f'bbox: {hN.LL.x} {hN.LL.y} {hN.UR.x} {hN.UR.y}')
 
     d["bbox"] = [hN.LL.x,hN.LL.y,hN.UR.x,hN.UR.y]
 
