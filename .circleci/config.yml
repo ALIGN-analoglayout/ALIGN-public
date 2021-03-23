@@ -8,26 +8,6 @@ commands:
           name: "Load align_image"
           command: |
             docker load --input align_image.tar
-  run-make-docker:
-    description: "Exercise the monolithic make docker flow"
-    parameters:
-      design:
-        description: "Name of design (must exist within examples dir)"
-        type: string
-      flat:
-        description: "Enter '1' if you want design to be flattened"
-        type: string
-        default: "0"
-    steps:
-      - run:
-          name: "make docker DESIGN=<<parameters.design>>"
-          command: |
-            export ALIGN_HOME=`pwd`
-            export ALIGN_WORK_DIR=compose_dataVolume
-            cd build
-            make docker DESIGN=<<parameters.design>> FLAT=<<parameters.flat>>
-      - store_artifacts:
-          path: build/<<parameters.design>>
 
 executors:
   docker-executor:
@@ -36,18 +16,17 @@ executors:
 
 jobs:
   build-wheel:
-
     parameters:
       python-tags:
         description: "Python version tag(See https://www.python.org/dev/peps/pep-0425/)"
         type: string
-        default: "cp38-cp38"
+        default: "cp37-cp37m cp38-cp38" # Python 3.7 & 3.8
       platform:
+        # https://github.com/pypa/manylinux
         description: "PEP600 compatible platform name"
         type: string
         default: "manylinux2010_x86_64"
 
-    # https://github.com/pypa/manylinux
     docker:
       - image: <<parameters.platform>>
     working_directory: /root/ALIGN-public
@@ -136,37 +115,6 @@ jobs:
           root: .
           paths:
             - align_image.tar
-
-  build-make-docker:
-    executor: docker-executor
-    steps:
-      - checkout
-
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: .
-
-      - run-load-align
-
-      - run:
-          name: "Make align-service"
-          command: |
-            export ALIGN_HOME=`pwd`
-            export ALIGN_WORK_DIR=compose_dataVolume
-            docker volume create --name=$ALIGN_WORK_DIR
-            cd build
-            make align-service
-
-      - run-make-docker:
-          design: "test_vga"
-
-      - run-make-docker:
-          design: "five_transistor_ota"
-
-      - run-make-docker:
-          design: "adder"
-          flat: "1"
 
   build-test-cktgen:
     executor: docker-executor
@@ -315,77 +263,14 @@ jobs:
 
 workflows:
   version: 2.1
-
-  # nightly:
-  #   triggers:
-  #     - schedule:
-  #         cron: "0 8 * * *"
-  #         filters:
-  #           branches:
-  #             only:
-  #               - master
-
-  #   jobs:
-  #     - build-align
-  #     - build-test-cktgen
-  #     - test-integration:
-  #         name: "test-integration-<<matrix.pdk>>(<<matrix.design>>)"
-  #         requires:
-  #           - build-align
-  #         matrix:
-  #           parameters:
-  #             pdk:
-  #               - "Finfet"
-  #               - "Bulk"
-  #             design:
-  #               - "BUFFER or ota"
-  #               - "San or BTSW"
-  #               - "not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD"
-  #               - "single_SAR and not tb_single_SAR"
-  #     - test-PlaceRouteHierFlow:
-  #         requires:
-  #           - build-align
-  #     - test-align:
-  #         requires:
-  #           - build-align
-  #     - build-make-docker:
-  #         requires:
-  #           - build-align
-
   commit:
     jobs:
-      # - build-align
-      # - build-test-cktgen
-      # - test-PlaceRouteHierFlow:
-      #     requires:
-      #       - build-align
-      # - test-align:
-      #     requires:
-      #       - build-align
-      # - build-make-docker:
-      #     requires:
-      #       - build-align
-      # - test-integration:
-      #     name: "test-integration-<<matrix.pdk>>(<<matrix.design>>)"
-      #     requires:
-      #       - build-align
-      #     matrix:
-      #       parameters:
-      #         pdk:
-      #           - "Finfet"
-      #         design:
-      #           - "BUFFER or ota"
-      #           - "San or BTSW"
-      #           - "not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD"
+      - build-test-cktgen
       - build-wheel:
-          name: "build-wheel-<<matrix.python-tags>>-<<matrix.platform>>"
+          name: "build-wheel-<<matrix.platform>>"
           matrix:
             parameters:
-              python-tags:
-                - "cp38-cp38"             # Python 3.8
-                - "cp37-cp37m"            # Python 3.7
               platform:
-                # stdc++ is not statically compiled yet
                 - "skhep/manylinuxgcc-x86_64"          # PEP 513
                 - "quay.io/pypa/manylinux2010_x86_64"  # PEP 571
                 - "quay.io/pypa/manylinux2014_x86_64"  # PEP 599
