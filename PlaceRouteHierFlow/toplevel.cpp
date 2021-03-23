@@ -91,6 +91,7 @@ void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
     logger->debug("***End WriteGcellGlobalRoute Debugging***" );
 
     curr_route.RouteWork(5, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor,dummy_file);
+    DB.WriteGcellDetailRoute(current_node, current_node.name+"_DetailRoute_"+std::to_string(lidx)+".json", opath);
 
   } else {
     // Global Routing (old version)
@@ -103,6 +104,7 @@ void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
 
     // Detail Routing
     curr_route.RouteWork(1, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor,dummy_file);
+    DB.WriteGcellDetailRoute(current_node, current_node.name+"_DetailRoute_"+std::to_string(lidx)+".json", opath);
   }
 
   if (current_node.isTop) {
@@ -307,6 +309,7 @@ std::unique_ptr<PnRdatabase> toplevel( const std::vector<std::string>& argv) {
   int effort=std::stoi(argv[8]);
   if(fpath.back()=='/') {fpath.erase(fpath.end()-1);}
   if(opath.back()!='/') {opath+="/";}
+  //spdlog::set_level(spdlog::level::debug);
 
   // Following codes try to get the path of binary codes
   string binary_directory = argv[0];
