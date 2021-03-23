@@ -34,21 +34,38 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
         curr_route.RouteWork( global_router_mode, current_node, drcInfo,
                               signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor, dummy_file)
 
-        # Call DB.WriteGcellGlobalRouter (back transforming or not depending on whether it is a toplevel cell)
+        logger.debug( "Start WriteGcellGlobalRoute")
+        if current_node.isTop:
+            DB.WriteGcellGlobalRoute(current_node, f'{current_node.name}_GcellGlobalRoute_{lidx}.json', opath)
+        else:
+            current_node_copy = PnR.hierNode(current_node)
+            DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, TransformType.Backward)
+            DB.WriteGcellGlobalRoute(
+                current_node_copy,
+                f'{current_node_copy.name}_GcellGlobalRoute_{current_node_copy.n_copy}_{lidx}.json', opath)
+        logger.debug("End WriteGcellGlobalRoute" )
 
         curr_route.RouteWork( 5, current_node, drcInfo,
                               signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor, dummy_file)
     else:
-        assert False, "Old global router currently not supported"
+        # Global Routing (old version)
+        curr_route.RouteWork(0, current_node, drcInfo, signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor, dummy_file)
+
+        DB.WriteJSON(current_node, True, True, False, False, f'{current_node.name}_GR_{lidx}', drcInfo, opath)
+        # The following line is used to write global route results for Intel router (only for old version)
+        DB.WriteGlobalRoute(current_node, f'{current_node.name}_GlobalRoute_{lidx}.json', opath)
+
+        # Detail Routing
+        curr_route.RouteWork(1, current_node, drcInfo, signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor, dummy_file);
 
 
     if current_node.isTop:
-        DB.WriteJSON(current_node, True, True, False, False, current_node.name + "_DR_" + str(lidx), drcInfo, opath)
+        DB.WriteJSON(current_node, True, True, False, False, f'{current_node.name}_DR_{lidx}', drcInfo, opath)
     else:
         current_node_copy = PnR.hierNode(current_node)
         DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, TransformType.Backward)
         DB.WriteJSON(current_node_copy, True, True, False, False,
-                     current_node_copy.name + "_DR_" + str(current_node_copy.n_copy) + "_" + str(lidx), drcInfo, opath)
+                     f'{current_node_copy.name}_DR_{current_node_copy.n_copy}_{lidx}', drcInfo, opath)
         current_node.gdsFile = current_node_copy.gdsFile
 
 

@@ -423,6 +423,7 @@ PYBIND11_MODULE(PnR, m) {
     .def( "WriteJSON", &PnRdatabase::WriteJSON)
     .def( "WriteLef", &PnRdatabase::WriteLef)
     .def( "Write_Router_Report", &PnRdatabase::Write_Router_Report)
+    .def( "WriteGcellGlobalRoute", &PnRdatabase::WriteGcellGlobalRoute)
     .def_readwrite("hierTree", &PnRdatabase::hierTree)
     .def_readwrite("topidx", &PnRdatabase::topidx)
   ;
