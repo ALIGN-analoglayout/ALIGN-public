@@ -316,7 +316,8 @@ def WriteConst(graph, name, ports, ports_weight, input_const, stop_points=None):
     for pairs in all_pairs:
         pairsj = []
         pairs=sorted(pairs.items(),key=lambda k: k[0])
-        logger.debug(f"all symmblock pairs {pairs} {written_symmetries}")
+        logger.debug(f"All symmblock pairs {pairs}")
+        logger.debug(f"All written symmetric blocks {written_symmetries}")
         for key, value in pairs:
             #print("key,value,hier",key,value,new_hier_keys)
             if key in stop_points:
@@ -338,10 +339,10 @@ def WriteConst(graph, name, ports, ports_weight, input_const, stop_points=None):
                 if key!=value  :
                     pairs,s1,s2 = symmnet_device_pairs(graph,key,value,written_symmetries)
                     if pairs:
-                        symmNet = key+','+','.join(pairs.keys()) + \
-                                ','+value+','+','.join(pairs.values())
-                        written_symmetries+=symmNet
-                        symmNetj = {"const_name":"SymmNet","axis_dir":"V","net1":s1,"net2":s2}
+                        symmNet = ',' + key + ',' + ','.join(pairs.keys()) + \
+                                ',' + value + ',' + ','.join(pairs.values())
+                        written_symmetries += symmNet
+                        symmNetj = {"const_name": "SymmNet", "axis_dir": "V", "net1": s1, "net2": s2}
                         all_const.append(symmNetj)
                         logger.debug(f"adding symmetries: {symmNetj}")
                     else:
@@ -361,9 +362,9 @@ def WriteConst(graph, name, ports, ports_weight, input_const, stop_points=None):
                     pairsj.append({"type":"selfsym","block":key})
         if len(pairsj)> 1 or (len(pairsj)>0 and 'block1' in pairsj[0].keys()):
             symmBlock = {'const_name': "SymmBlock","axis_dir":"V","pairs":pairsj}
-            written_symmetries += ','.join([a['block'] for a in pairsj if 'block' in a.keys()])
-            written_symmetries += ','.join([a['block1'] for a in pairsj if 'block1' in a.keys()])
-            written_symmetries += ','.join([a['block2'] for a in pairsj if 'block2' in a.keys()])
+            written_symmetries += ',' + ','.join([a['block'] for a in pairsj if 'block' in a.keys()])
+            written_symmetries += ',' + ','.join([a['block1'] for a in pairsj if 'block1' in a.keys()])
+            written_symmetries += ',' + ','.join([a['block2'] for a in pairsj if 'block2' in a.keys()])
             all_const.append(symmBlock)
             logger.debug(f"one axis of written symmetries: {symmBlock}")
 
@@ -411,9 +412,9 @@ def symmnet_device_pairs(G, net_A, net_B,existing_symmetry_blocks):
                 elif ele_B.split('/')[0] in existing_symmetry_blocks and blockA+','+blockB not in existing_symmetry_blocks:
                     continue
                 else:
-                    pairs[ele_A] = ele_B
-                    blocksA.append({"type":"pin" if pinA else "terminal","name":blockA,"pin":pinA})
-                    blocksB.append({"type":"pin" if pinB else "terminal","name":blockB,"pin":pinB})
+                    pairs[ele_A.split('/')[0]] = ele_B.split('/')[0]
+                    blocksA.append({"type": "pin" if pinA else "terminal", "name": blockA, "pin": pinA})
+                    blocksB.append({"type": "pin" if pinB else "terminal", "name": blockB, "pin": pinB})
     if len(pairs.keys())>1:
         return pairs,{"name":net_A,"blocks":blocksA},{"name":net_B,"blocks":blocksB}
     else:
