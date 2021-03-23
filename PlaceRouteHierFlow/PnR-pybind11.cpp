@@ -15,6 +15,7 @@ using namespace pybind11::literals;
 #include "cap_placer/CapPlacerIfc.h"
 #include "placer/PlacerIfc.h"
 #include "guard_ring/GuardRingIfc.h"
+#include "router/Router.h"
 #include "toplevel.h"
 
 using namespace PnRDB;
@@ -419,6 +420,9 @@ PYBIND11_MODULE(PnR, m) {
     .def( "CheckinChildnodetoBlock", &PnRdatabase::CheckinChildnodetoBlock)
     .def( "AppendToHierTree", &PnRdatabase::AppendToHierTree)
     .def( "SetParentInHierTree", &PnRdatabase::SetParentInHierTree)
+    .def( "WriteJSON", &PnRdatabase::WriteJSON)
+    .def( "WriteLef", &PnRdatabase::WriteLef)
+    .def( "Write_Router_Report", &PnRdatabase::Write_Router_Report)
     .def_readwrite("hierTree", &PnRdatabase::hierTree)
     .def_readwrite("topidx", &PnRdatabase::topidx)
   ;
@@ -433,6 +437,10 @@ PYBIND11_MODULE(PnR, m) {
 
   py::class_<GuardRingIfc>( m, "GuardRingIfc")
     .def( py::init<hierNode&, const map<string, lefMacro>&, const Drc_info&>());
+
+  py::class_<Router>( m, "Router")
+    .def( py::init<>())
+    .def( "RouteWork", &Router::RouteWork);
 
 
 

@@ -1,14 +1,31 @@
 #include "Router.h"
-#include "spdlog/spdlog.h"
 
-/*
-Router::Router(PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int Lmetal, int Hmetal, std::string binaryDIR) {
-  this->GR=NULL;
-  GlobalRouter GR2(node, drcData, Lmetal, Hmetal, binaryDIR);
-  DetailRouter(node, GR2, 1, 1);
-  
-};
-*/
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <sstream>
+#include <cmath>
+#include <algorithm>
+#include <limits.h>
+#include <bitset>
+#include <cstdlib>
+#include <iterator>
+#include <cctype>
+#include <unistd.h>
+
+#include "Rdatatype.h"
+#include "GlobalRouter.h"
+#include "GcellGlobalRouter.h"
+#include "DetailRouter.h"
+#include "GcellDetailRouter.h"
+#include "PowerRouter.h"
+//using std::cout;
+//using std::endl;
+
+
+
+#include "spdlog/spdlog.h"
 
 void Router::RouteWork(int mode, PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int Lmetal, int Hmetal, std::string binaryDIR, int h_skip_factor, int v_skip_factor, string inputfile) {
   //mode 0 global router, 1 detail router, 2 power grid router, 3 power net router, 4 gcell global router, 5 gcell detail router

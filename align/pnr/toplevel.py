@@ -16,6 +16,82 @@ NType = PnR.NType
 Omark = PnR.Omark
 TransformType = PnR.TransformType
 
+def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, skip_saving_state, adr_mode):
+    NEW_GLOBAL_ROUTER = True
+    h_skip_factor = 5;
+    v_skip_factor = 5;
+
+    signal_routing_metal_l = 0;
+    signal_routing_metal_u = 8;
+
+    curr_route = PnR.Router()
+
+    dummy_file = ""
+
+    if NEW_GLOBAL_ROUTER:
+        global_router_mode = 6 if adr_mode else 4
+
+        curr_route.RouteWork( global_router_mode, current_node, drcInfo,
+                              signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor, dummy_file)
+
+        # Call DB.WriteGcellGlobalRouter (back transforming or not depending on whether it is a toplevel cell)
+
+        curr_route.RouteWork( 5, current_node, drcInfo,
+                              signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor, dummy_file)
+    else:
+        assert False, "Old global router currently not supported"
+
+
+    if current_node.isTop:
+        DB.WriteJSON(current_node, True, True, False, False, current_node.name + "_DR_" + str(lidx), drcInfo, opath)
+    else:
+        current_node_copy = PnR.hierNode(current_node)
+        DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, TransformType.Backward)
+        DB.WriteJSON(current_node_copy, True, True, False, False,
+                     current_node_copy.name + "_DR_" + str(current_node_copy.n_copy) + "_" + str(lidx), drcInfo, opath)
+        current_node.gdsFile = current_node_copy.gdsFile
+
+
+    # DC Power Grid Simulation not supported
+
+    if current_node.isTop:
+
+        power_grid_metal_l = 5
+        power_grid_metal_u = 6
+        power_routing_metal_l = 0
+        power_routing_metal_u = 6
+
+        curr_route.RouteWork(2, current_node, drcInfo, power_grid_metal_l, power_grid_metal_u, binary_directory, h_skip_factor, v_skip_factor,dummy_file)
+
+        DB.WriteJSON(current_node, True, True, False, True, current_node.name + "_PG_" + str(lidx), drcInfo, opath)
+
+        logger.debug("Checkpoint : Starting Power Routing");
+
+        curr_route.RouteWork(3, current_node, drcInfo, power_routing_metal_l, power_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor,dummy_file);
+
+        DB.WriteJSON(current_node, True, False, True, True, current_node.name + "_PR_" + str(lidx), drcInfo, opath)
+
+        DB.Write_Router_Report(current_node, opath)
+
+    # transform current_node into current_node coordinate
+    if current_node.isTop:
+        DB.WriteJSON(current_node, True, True, True, True, current_node.name + "_" + str(lidx), drcInfo, opath)
+        DB.WriteLef(current_node, current_node.name + "_" + str(lidx) + ".lef", opath)
+        #save_state( DB, current_node, lidx, opath, "", "Final result", skip_saving_state)
+        #DB.PrintHierNode(current_node)
+    else:
+        current_node_copy = PnR.hierNode(current_node)
+        DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, TransformType.Backward)
+        DB.WriteJSON(current_node_copy, True, True, True, True,
+                     current_node_copy.name + "_" + str(current_node_copy.n_copy) + "_" + str(lidx), drcInfo, opath)
+        current_node.gdsFile = current_node_copy.gdsFile
+        DB.WriteLef(current_node_copy,
+                    current_node_copy.name + "_" + str(current_node_copy.n_copy) + "_" + str(lidx) + ".lef", opath)
+
+        #save_state( DB, current_node_copy, lidx, opath, "", "Final result", skip_saving_state)
+        #DB.PrintHierNode(current_node_copy)
+
+
 def route_top_down( DB, drcInfo,
                     bounding_box,
                     current_node_ort, idx, lidx,
@@ -46,7 +122,7 @@ def route_top_down( DB, drcInfo,
         current_node.Blocks[bit].child = new_childnode_idx
 
     DB.ExtractPinsToPowerPins(current_node)
-    PnR.route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, skip_saving_state, adr_mode)
+    route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, skip_saving_state, adr_mode)
 
     if not current_node.isTop:
         DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Backward)
