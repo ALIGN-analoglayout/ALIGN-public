@@ -1,0 +1,20 @@
+{
+  "constraints": [
+    {
+      "constraint_name": "alignment",
+      "instances": ["i0"],
+      "direction": "horizontal",
+      "edge": "bottom"
+    },
+    {
+      "constraint_name": "generator",
+      "instances": ["i1", "i2"],
+      "style": "cc"
+    },
+    {
+      "constraint_name": "orientation",
+      "instances": ["i1"],
+      "flip_y": true
+    }
+  ]
+}
