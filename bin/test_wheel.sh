@@ -13,11 +13,24 @@ export ALIGN_HOME=${ALIGN_HOME:-$PWD}
 export ALIGN_WORK_DIR=${ALIGN_WORK_DIR:-$PWD/work}
 MAX_JOBS=${MAX_JOBS:-auto}
 
+align_root="$ALIGN_HOME"
+align_work_root="$ALIGN_WORK_DIR"
 # Install packages and test
 for pyver in "$@"; do
+    current_test_dir="${ALIGN_WORK_DIR}/${pyver}"
+    mkdir -p "$current_test_dir"
+    cd "$ALIGN_HOME"
+    cp -r tests examples pytest.ini conftest.py pdks PlaceRouteHierFlow Viewer "$current_test_dir"
+    # All operations in newly created $current_test_dir
+    cd "$current_test_dir"
+    export ALIGN_HOME="$current_test_dir"
+    export ALIGN_WORK_DIR="${current_test_dir}/work"
     "/opt/python/${pyver}/bin/python" -m venv .venv
     source .venv/bin/activate
     pip install pip --upgrade
-    pip install align[test] -f "$ALIGN_HOME"/dist
-    pytest -n "$MAX_JOBS" -vv --max-worker-restart 0 --dist loadscope "$ALIGN_HOME"/tests
+    pip install align[test] -f "$align_root"/dist
+    pytest -n "$MAX_JOBS" -vv --max-worker-restart 0 --dist loadscope tests
+    # Reset ALIGN_WORK_DIR
+    export ALIGN_WORK_DIR="$align_work_root"
+    export ALIGN_HOME="$align_root"
 done

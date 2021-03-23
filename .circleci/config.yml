@@ -44,10 +44,7 @@ jobs:
               bin/build_wheel.sh <<parameters.python-tags>>
       - run:
           name: Test wheel
-          # TODO: Rewrite this to use an independent test directory
-          #       Simply deleting align & setup.py for now
           command: |
-              rm -fr align setup.py
               bin/test_wheel.sh <<parameters.python-tags>>
       - persist_to_workspace:
           root: .
