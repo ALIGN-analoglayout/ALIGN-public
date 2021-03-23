@@ -28,7 +28,7 @@ for pyver in "$@"; do
     "/opt/python/${pyver}/bin/python" -m venv .venv
     source .venv/bin/activate
     pip install pip --upgrade
-    pip install align[test] -f "$align_root"/dist
+    pip install align[test] -f "$align_root"/wheelhouse
     pytest -n "$MAX_JOBS" -vv --max-worker-restart 0 --dist loadscope tests
     # Reset ALIGN_WORK_DIR
     export ALIGN_WORK_DIR="$align_work_root"

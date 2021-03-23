@@ -42,11 +42,11 @@ function repair_wheel {
 
 # Compile all wheels
 for pyver in "$@"; do
-    "/opt/python/${pyver}/bin/pip" -v wheel "$ALIGN_HOME" -w /tmp/dist/ --no-deps
+    "/opt/python/${pyver}/bin/pip" -v wheel "$ALIGN_HOME" -w /tmp/wheelhouse/ --no-deps
 done
 
 # Bundle external shared libraries into the align wheels
-for whl in /tmp/dist/align*.whl; do
-    repair_wheel "$whl" "$ALIGN_HOME"/dist/
+for whl in /tmp/wheelhouse/align*.whl; do
+    repair_wheel "$whl" "$ALIGN_HOME"/wheelhouse/
     rm $whl
 done

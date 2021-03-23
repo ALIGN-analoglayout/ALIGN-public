@@ -49,7 +49,7 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - dist
+            - wheelhouse
 
   publish-wheel:
     executor: docker-executor
@@ -62,7 +62,7 @@ jobs:
           name: "Zip distribution directory"
           command: |
             mkdir export
-            tar --gzip -cf export/wheels-${CIRCLE_SHA1}.tar.gz ./dist
+            tar --gzip -cf export/align-wheelhouse-$(git rev-parse --short ${CIRCLE_SHA1}).tar.gz ./wheelhouse
 
       - store_artifacts:
           path: export
@@ -245,10 +245,10 @@ jobs:
           no_output_timeout: "<<parameters.timeout>>s"
           command: |
             rm -fr align setup.py
-            pip install align[test] -f ./dist
+            pip install align[test] -f ./wheelhouse
             filter="<<parameters.design>>"
             filter="<<parameters.pdk>>${filter:+ and $filter}"
-            pytest -vv --runnightly --maxerrors=20 --timeout=<<parameters.timeout>> -k "$filter" -- tests/integration
+            pytest -vv --runnightly --maxerrors=20 --timeout=<<parameters.timeout>> --durations=0 -k "$filter" -- tests/integration
             mkdir test-reports && cp -r junit.xml LOG test-reports
             find $ALIGN_WORK_DIR -name *.json -exec cp --parents \{\} test-reports \;
 
@@ -282,11 +282,11 @@ workflows:
           matrix:
             parameters:
               platform:
-                - "python:3.7"
                 - "python:3.8"
               pdk:
                 - "Finfet"
               design:
                 - "BUFFER or ota"
                 - "San or BTSW"
-                - "not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD"
+                - "vco_dtype"
+                - "not BUFFER and not ota and not San and not BTSW and not vco_dtype and not SAR and not DLL and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD"

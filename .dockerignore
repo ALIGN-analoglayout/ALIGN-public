@@ -15,7 +15,7 @@ DetailedRouter
 # Exclude files built by Dockerfile or install.sh
 **/*.tar
 general/
-dist/
+wheelhouse/
 _skbuild/
 # Exclude common user / machine generated files
 pycharm/
