@@ -62,7 +62,7 @@ jobs:
           name: "Zip distribution directory"
           command: |
             mkdir export
-            tar --gzip -cf export/align-wheelhouse-$(git rev-parse --short ${CIRCLE_SHA1}).tar.gz ./wheelhouse
+            tar --gzip -cf export/align-wheelhouse-$(echo "$CIRCLE_SHA1" | cut -c -7).tar.gz ./wheelhouse
 
       - store_artifacts:
           path: export
