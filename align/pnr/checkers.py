@@ -96,7 +96,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     fa_map = {}
     for n in itertools.chain( hN.Nets, hN.PowerNets):
         for c in n.connected:
-            if c.type == NType.Block:
+            if c.type == 'Block' or c.type == NType.Block:
                 cblk = hN.Blocks[c.iter2]
                 blk = cblk.instance[cblk.selectedInstance]
                 block_name = blk.name
@@ -105,7 +105,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                 formal_name = f"{blk.name}/{pin.name}"
                 assert formal_name not in fa_map
                 fa_map[formal_name] = n.name
-            elif c.type == NType.Terminal:
+            elif c.type == 'Terminal' or c.type == NType.Terminal:
                 term = hN.Terminals[c.iter]
                 terminal_name = term.name
                 assert n.name == terminal_name
@@ -207,7 +207,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                 add_terminal( obj, con.metal, b, tag=tag)
 
         for c in n.connected:
-            if c.type == NType.Block:
+            if c.type == 'Block' or c.type == NType.Block:
                 cblk = hN.Blocks[c.iter2]
                 blk = cblk.instance[cblk.selectedInstance]
                 block_name = blk.name
@@ -220,7 +220,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
 
                 for con in pin.pinContacts:
                     addt( n, con, "blockPin")
-            elif c.type == NType.Terminal:
+            elif c.type == 'Terminal' or c.type == NType.Terminal:
                 term = hN.Terminals[c.iter]
                 terminal_name = term.name
                 assert terminal_name == n.name
