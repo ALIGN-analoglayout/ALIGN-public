@@ -403,8 +403,8 @@ def symmnet_device_pairs(G, net_A, net_B,existing_symmetry_blocks):
             else:
                 blockB = ele_B
                 pinB = None
-            if conn_A[ele_A]==conn_B[ele_B] and G.nodes[blockA]["inst_type"]==G.nodes[blockB]["inst_type"]:
-                if ele_B in pairs.values():
+            if conn_A[ele_A] == conn_B[ele_B] and G.nodes[blockA]["inst_type"] == G.nodes[blockB]["inst_type"]:
+                if ele_B.split('/')[0] in pairs.values():
                     logger.debug(f"skipping symmetry due to multiple possible matching of net {net_B} nbr {ele_B} to {pairs.values()} ")
                     return [None,None,None]
                 elif ele_A.split('/')[0] in existing_symmetry_blocks and blockA+','+blockB not in existing_symmetry_blocks:
@@ -443,18 +443,18 @@ def connection(graph,net:str):
     logger.debug(f"checking connections of net: {net}, {list(graph.neighbors(net))}")
     for nbr in list(graph.neighbors(net)):
         if "ports_match" in graph.nodes[nbr] and graph.nodes[nbr]["ports_match"]:
-            logger.debug(f"ports match:%s %s",nbr,graph.nodes[nbr]["ports_match"].items())
+            logger.debug(f"ports match: {nbr}, {graph.nodes[nbr]['ports_match']}")
             if net in graph.nodes[nbr]["ports_match"].values():
                 idx = list(graph.nodes[nbr]["ports_match"].values()).index(net)
-                conn[nbr+'/'+list(graph.nodes[nbr]["ports_match"].keys())[idx]] = (graph.get_edge_data(net, nbr)['weight'] & ~2)
+                conn[nbr + '/' + list(graph.nodes[nbr]["ports_match"].keys())[idx]] = (graph.get_edge_data(net, nbr)['weight'] & ~2)
         elif "connection" in graph.nodes[nbr] and graph.nodes[nbr]["connection"]:
-            logger.debug("connection:%s%s",nbr,graph.nodes[nbr]["connection"])
+            logger.debug(f"connection: {nbr}, {graph.nodes[nbr]['connection']}")
             if net in graph.nodes[nbr]["connection"].values():
                 idx=list(graph.nodes[nbr]["connection"].values()).index(net)
-                conn[nbr+'/'+list(graph.nodes[nbr]["connection"].keys())[idx]]= (graph.get_edge_data(net, nbr)['weight'] & ~2)
+                conn[nbr + '/' + list(graph.nodes[nbr]["connection"].keys())[idx]] = (graph.get_edge_data(net, nbr)['weight'] & ~2)
         else:
             logger.debug("internal net")
     if graph.nodes[net]["net_type"]=="external":
-        conn[net]=sum(conn.values())
+        conn[net] = sum(conn.values())
 
     return conn
