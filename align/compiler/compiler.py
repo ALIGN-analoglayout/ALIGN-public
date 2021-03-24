@@ -80,7 +80,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path,flat=
                                          "./circuit_graphs/")
     #Converting graph to dict
     const_parse = ConstraintParser(pdk_dir, input_dir)
-    create_data = CreateDatabase(circuit["graph"],const_parse)
+    create_data = CreateDatabase(circuit["graph"], const_parse)
     hier_graph_dict = create_data.read_inputs(circuit["name"])
 
     logger.debug("START preprocessing")
@@ -106,8 +106,8 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path,flat=
             if node[1]["inst_type"]!='net':
                 logger.debug(node)
 
-    annotate =Annotate(hier_graph_dict, design_setup,library,all_lef)
-    lib_names =annotate.annotate()
+    annotate = Annotate(hier_graph_dict, design_setup, library, all_lef)
+    lib_names = annotate.annotate()
 
     return hier_graph_dict, lib_names
 
