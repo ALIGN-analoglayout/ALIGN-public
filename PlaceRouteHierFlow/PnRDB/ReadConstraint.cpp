@@ -341,10 +341,14 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
         //  L indicates the approximate position of the port. Value of L should be taken from the set
         // {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT, }
         PnRDB::PortPos tmp_portpos;
+        std::cout<<"debug 1"<<std::endl;
         if (constraint["location"] == "TL")
           tmp_portpos.pos = PnRDB::TL;
-        else if (constraint["location"] == "TC")
+        else if (constraint["location"] == "TC"){
+          std::cout<<"debug 1.5 "<<constraint["location"]<<std::endl;
           tmp_portpos.pos = PnRDB::TC;
+          std::cout<<"debug 1.6 "<<tmp_portpos.pos<<std::endl;
+        }
         else if (constraint["location"] == "TR")
           tmp_portpos.pos = PnRDB::TR;
         else if (constraint["location"] == "RT")
@@ -365,13 +369,15 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
           tmp_portpos.pos = PnRDB::LC;
         else if (constraint["location"] == "LT")
           tmp_portpos.pos = PnRDB::LT;
-        string name = constraint["termianl_name"];
+        string name = constraint["terminal_name"];
+        std::cout<<"debug 2"<<std::endl;
         for (int k = 0; k < (int)node.Terminals.size(); ++k) {
           if (node.Terminals.at(k).name.compare(name) == 0) {
             tmp_portpos.tid = k;
             break;
           }
         }
+        std::cout<<"debug 3"<<std::endl;
         node.Port_Location.push_back(tmp_portpos);
       } else if (constraint["const_name"] == "R_Const") {
         PnRDB::R_const temp_r_const;
