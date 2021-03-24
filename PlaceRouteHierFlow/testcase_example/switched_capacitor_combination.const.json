@@ -4,8 +4,8 @@
             "const_name": "CC",
             "cap_name": "c1_c3",
             "size": [
-                3,
-                6
+                4,
+                4
             ],
             "unit_capacitor": "cap_12f",
             "nodummy": true,
@@ -16,7 +16,7 @@
             "const_name": "CC",
             "cap_name": "c0",
             "size": [
-                6
+                8
             ],
             "unit_capacitor": "cap_12f",
             "nodummy": true,

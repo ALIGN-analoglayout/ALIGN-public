@@ -113,6 +113,8 @@ class PnRdatabase
     deque<int> TraverseHierTree(); // traverse hierarchical tree in topological order
     PnRDB::hierNode CheckoutHierNode(int nodeID); // check out data of specific hierarchical node
     std::vector<PnRDB::hierNode> CheckoutHierNodeVec(int nodeID);//checkout nodeVec, which consists of different placement
+    void AppendToHierTree( const PnRDB::hierNode& updatedNode); // append node to end of hierTree
+    void SetParentInHierTree( int idx, int pidx, int parent_id); // set parent: hierTree[idx].parent[pidx] = parent_id
     void CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode); // check out data of specific hierarchical node
     void CheckinChildnodetoBlock(PnRDB::hierNode &parent, int blockID, const PnRDB::hierNode &updatedNode);
     void updatePowerPins(PnRDB::pin &temp_pin);
@@ -197,6 +199,7 @@ class PnRdatabase
     void extend_pin(PnRDB::pin &temp_pin, int width, int height);
     void Write_Power_Mesh_Conf(std::string outputfile);
     void Write_Current_Workload(PnRDB::hierNode &node, double total_current, int current_number, std::string outputfile);
+    void WriteGcellDetailRoute(const PnRDB::hierNode& node, const string& rofile, const string& opath) const;
     
 };
 
