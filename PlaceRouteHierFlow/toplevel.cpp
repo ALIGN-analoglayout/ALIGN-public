@@ -9,8 +9,7 @@
 #include "./cap_placer/CapPlacerIfc.h"
 #include "./guard_ring/GuardRingIfc.h"
 
-// Need to eventuall replace with similar Ifc, but not until we remove the helper functions: route_single_variant and route top_down
-#include "./MNA/MNASimulation.h"
+#include "./MNA/MNASimulationIfc.h"
 #include "./router/Router.h"
 
 #include <sys/types.h>
@@ -145,7 +144,7 @@ void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
       logger->debug("Start MNA ");
       string output_file_IR = "IR_drop.txt";
       string output_file_EM = "EM.txt";
-      MNASimulation Test_MNA(current_node, const_cast<PnRDB::Drc_info&>(drcInfo), current_file, output_file_IR, output_file_EM);
+      MNASimulationIfc Test_MNA(current_node, const_cast<PnRDB::Drc_info&>(drcInfo), current_file, output_file_IR, output_file_EM);
       double worst = Test_MNA.Return_Worst_Voltage();
       logger->debug("worst voltage is {0} ", worst);
       logger->debug("End MNA ");

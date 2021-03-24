@@ -105,7 +105,7 @@ then
     cd SuperLU_5.2.1/
     mkdir -p build
     cd build
-    cmake ..
+    cmake -DBUILD_SHARED_LIBS=ON ..
     make
 
     ## Install pip dependencies
