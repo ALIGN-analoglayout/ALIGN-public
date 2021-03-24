@@ -772,8 +772,10 @@ bool Placement::Stop_Condition(float density, float &max_density){
   }
   std::cout<<"max_density "<<max_density<<std::endl;
   if(max_density<density){
+    std::cout<<"stop condition result: false"<<std::endl;
     return false;
   }else{
+    std::cout<<"stop condition result: true"<<std::endl;
     return true;
   }
 
@@ -1886,7 +1888,7 @@ bool Placement::comp_x(Ppoint_F c1, Ppoint_F c2)
 
 bool Placement::comp_y(Ppoint_F c1, Ppoint_F c2)
 {
-  return c1.y < c2.y;
+  return c1.y > c2.y;
 }
 
 void Placement::writeback(PnRDB::hierNode &current_node)
