@@ -365,7 +365,7 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
           tmp_portpos.pos = PnRDB::LC;
         else if (constraint["location"] == "LT")
           tmp_portpos.pos = PnRDB::LT;
-        string name = constraint["termianl_name"];
+        string name = constraint["terminal_name"];
         for (int k = 0; k < (int)node.Terminals.size(); ++k) {
           if (node.Terminals.at(k).name.compare(name) == 0) {
             tmp_portpos.tid = k;
