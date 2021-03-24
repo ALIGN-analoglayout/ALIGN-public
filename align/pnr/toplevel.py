@@ -26,12 +26,10 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
 
     curr_route = PnR.Router()
 
-    def RouteWork( mode, current_node, *, metal_l=signal_routing_metal_l, metal_u=signal_routing_metal_u):
+    def RouteWork( mode, current_node, *, metal_l=signal_routing_metal_l, metal_u=signal_routing_metal_u, fn=''):
         curr_route.RouteWork( mode, current_node, drcInfo,
                               metal_l, metal_u,
-                              binary_directory, h_skip_factor, v_skip_factor, dummy_file)
-
-    dummy_file = ""
+                              binary_directory, h_skip_factor, v_skip_factor, fn)
 
     if NEW_GLOBAL_ROUTER:
         RouteWork( 6 if adr_mode else 4, current_node)
@@ -94,7 +92,7 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
 
             power_grid_metal_l = 2
             power_grid_metal_u = 11
-            curr_route.RouteWork(7, current_node, drcInfo, power_grid_metal_l, power_grid_metal_u, binary_directory, h_skip_factor, v_skip_factor, power_mesh_conffile)
+            RouteWork(7, current_node, metal_l=power_grid_metal_l, metal_u=power_grid_metal_u, fn=power_mesh_conffile)
 
             logger.debug("Start MNA ")
             output_file_IR = "IR_drop.txt"
