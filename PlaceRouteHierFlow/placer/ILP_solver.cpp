@@ -442,9 +442,9 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
           HPWL_min_y = std::min(HPWL_min_y, pin_y);
           HPWL_max_y = std::max(HPWL_max_y, pin_y);
         }
-      }
-      HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);
+      }    
     }
+    HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);  
   }
 
   // calculate linear constraint
