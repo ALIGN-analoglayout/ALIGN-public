@@ -4,6 +4,36 @@ Placement::Placement() {
 
 }
 
+void Placement::Initilize_lambda(){
+
+  Ppoint_F norm_wire_gradient;
+  norm_wire_gradient.x=0;
+  norm_wire_gradient.y=0;
+  Ppoint_F norm_E_force_gradient;
+  norm_E_force_gradient.x=0;
+  norm_E_force_gradient.y=0;
+
+  for(unsigned int i=0;i<Blocks.size();++i){
+    norm_wire_gradient.x+=abs(Blocks[i].Netforce.x);
+    norm_wire_gradient.y+=abs(Blocks[i].Netforce.y);
+    norm_E_force_gradient.x+=abs(Blocks[i].Eforce.x);
+    norm_E_force_gradient.y+=abs(Blocks[i].Eforce.y);
+  }
+
+  float lambda_x=beta*norm_wire_gradient.x/norm_E_force_gradient.x;
+  float lambda_y=beta*norm_wire_gradient.y/norm_E_force_gradient.y;
+
+  std::cout<<"lambda_x "<<lambda_x<<" "<<norm_wire_gradient.x/Blocks.size()<<" "<<norm_E_force_gradient.x/Blocks.size()<<std::endl;
+  std::cout<<"lambda_y "<<lambda_y<<" "<<norm_wire_gradient.y/Blocks.size()<<" "<<norm_E_force_gradient.y/Blocks.size()<<std::endl;
+
+  if(lambda_x<lambda_y){
+    lambda = lambda_x;
+  }else{
+    lambda = lambda_y;
+  }
+
+}
+
 Placement::Placement(PnRDB::hierNode &current_node) {
   //step 1: transfroming info. of current_node to Blocks and Nets
     //create a small function for this
@@ -888,6 +918,7 @@ void Placement::E_Placer(){
   #endif
   PlotPlacement(0);
   Cal_Overlap();
+  Initilize_lambda();
   while(Stop_Condition(stop_density,current_max_density) and count_number<upper_count_number){//Q: stop condition
   // while(i<20){//Q: stop condition
      Density.push_back(current_max_density);
