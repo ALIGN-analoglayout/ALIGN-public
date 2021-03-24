@@ -206,7 +206,8 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
         possible_final_circuits = [(i, hN) for i, hN in enumerate(DB.hierTree) if hN.name == subckt]
         assert len(possible_final_circuits) > 1
 
-        for topidx,_ in possible_final_circuits[1:]:
+        variants = collections.defaultdict(collections.defaultdict)
+        for lidx,(topidx,_) in enumerate(possible_final_circuits[1:]):
 
             order = [(i,DB.CheckoutHierNode(i).name) for i in TraverseHierTree(topidx)]
             assert order[-1][1] == subckt, f"Last in topological order should be the subckt {subckt} {order}"
@@ -215,7 +216,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
 
             for idx,nm in order[:-1]:
                 n_copy = DB.hierTree[idx].n_copy
-                #assert 1 == DB.hierTree[idx].numPlacement
+                assert 1 == DB.hierTree[idx].numPlacement
                 i_placement = 0
 
                 variant_name = f'{nm}_{n_copy}_{i_placement}'
@@ -237,20 +238,15 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
                                 gds_json=gds_json,
                                 toplevel=False)
 
-            variants = collections.defaultdict(collections.defaultdict)
+
 
             # toplevel
             (idx,nm) = order[-1]
+            assert idx == topidx
 
-            n_copy = DB.hierTree[idx].n_copy
-            #assert 1 == DB.hierTree[idx].numPlacement
+            variant = f'{nm}_{lidx}'
 
-
-
-            i_placement = 0
-            variant = f'{nm}_{n_copy}'
-
-            logger.info(f'Processing top-down generated blocks {DB.hierTree[idx].numPlacement}: {idx=} {nm=} {variant=}')
+            logger.info(f'Processing top-down generated blocks: {lidx=} {topidx=} {nm=} {variant=}')
 
             hN = DB.CheckoutHierNode(idx)
 
@@ -270,14 +266,10 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
                                         toplevel=True))
 
 
-            for file_ in results_dir.iterdir():
-                variant = file_.name.split('.')[0]
-                if not variant.replace(f'{subckt}_', '').isdigit():
-                    continue
-                if file_.suffixes == ['.gds', '.json']:
-                    variants[variant]['gdsjson'] = file_
-                elif file_.suffixes == ['.lef']:
-                    variants[variant]['lef'] = file_
+            for tag, suffix in [('lef', '.lef'), ('gdsjson', '.gds.json')]:
+                path = results_dir / (variant + suffix)
+                assert path.exists()
+                variants[variant][tag] = path
 
     logger.info( 'Explicitly deleting DB...')
     del DB
