@@ -103,10 +103,11 @@ Constraint options
 	* Example: ``PortLocation -ports [P1,P2,P3] -location TL``
 
 * SymmetricNets:
-	Routes two nets in mirror symmetric fashion.
+	Routes two nets in mirror symmetric fashion. For each symmetric net pair you can optionally add pins connected to the nets. For transistor pins please use [D, G, S, B] and for resistors use [PLUS, MINUS] as pin names.
 
-	* Format: ``SymmetricNets -net1 < name of net1> -net2 <name of net2> -pins1 <list of pins of net1> -pins2 <list of nets in same order as pins1> -direction H/V``
-	* Example: ``SymmetricNets -net1 neta -net2 netb -pins1 [B1/a,B2/a] -pins2 [B1/b,B2/b] -direction V``
+	* Format: ``SymmetricNets -net1 < name of net1> -net2 <name of net2> -pins1(optional) <list of pins of net1> -pins2(optional) <list of nets in same order as pins1> -direction H/V``
+	* Example: ``SymmetricNets -net1 neta -net2 netb -pins1 [M1/D,B2/out1] -pins2(optional) [M2/D,B2/out2] -direction V``
+	* Example: ``SymmetricNets -net1 neta -net2 netb -direction V``
 
 * MultiConnection:
 	Uses multiple parallel wires to route these nets.

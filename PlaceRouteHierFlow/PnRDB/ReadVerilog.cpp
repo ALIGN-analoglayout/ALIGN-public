@@ -213,6 +213,7 @@ db.hierTree[i].Terminals[db.hierTree[i].Nets[j].connected[k].iter].netIter = j;
       }
 
   //adjust symmetry net iter
+
   for(unsigned int i=0;i<db.hierTree.size();i++){
      for(unsigned int j=0;j<db.hierTree[i].SNets.size();j++){
         int iter1=-1;
@@ -233,8 +234,6 @@ db.hierTree[i].Terminals[db.hierTree[i].Nets[j].connected[k].iter].netIter = j;
         db.hierTree[i].Nets[iter2].symCounterpart=iter1; 
      }
   }
-
-
 
 //Add LinearConst here
 
