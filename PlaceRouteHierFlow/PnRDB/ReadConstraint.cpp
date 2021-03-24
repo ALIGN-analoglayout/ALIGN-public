@@ -75,15 +75,19 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
           }
         }
         node.Nets.at(iter1).symCounterpart = iter2;
+        node.Nets.at(iter1).axis_dir = constraint["axis_dir"] == "H" ? PnRDB::H : PnRDB::V;
         node.Nets.at(iter1).iter2SNetLsit = node.SNets.size();
         node.Nets.at(iter2).symCounterpart = iter1;
+        std::cout<<"Reading Const symCounterpart"<<iter1<<"@"<<iter2<<" "<<iter2<<"@"<<iter1<<std::endl;
+        node.Nets.at(iter2).axis_dir = constraint["axis_dir"] == "H" ? PnRDB::H : PnRDB::V;
         node.Nets.at(iter2).iter2SNetLsit = node.SNets.size();
         node.SNets.resize(node.SNets.size() + 1);
         node.SNets.back().net1 = tmpnet;
         node.SNets.back().net2 = tmpnet2;
         node.SNets.back().iter1 = iter1;
         node.SNets.back().iter2 = iter2;
-        node.SNets.back().axis_dir = constraint["axis_dir"]=="H"?PnRDB::H:PnRDB::V;
+
+        node.SNets.back().axis_dir = constraint["axis_dir"] == "H" ? PnRDB::H : PnRDB::V;
       } else if (constraint["const_name"] == "CritNet") {
         for (int i = 0; i < (int)node.Nets.size(); i++) {
           if (node.Nets.at(i).name == constraint["net_name"]) {

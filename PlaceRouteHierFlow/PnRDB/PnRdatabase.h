@@ -197,6 +197,7 @@ class PnRdatabase
     void extend_pin(PnRDB::pin &temp_pin, int width, int height);
     void Write_Power_Mesh_Conf(std::string outputfile);
     void Write_Current_Workload(PnRDB::hierNode &node, double total_current, int current_number, std::string outputfile);
+    void WriteGcellDetailRoute(const PnRDB::hierNode& node, const string& rofile, const string& opath) const;
     
 };
 

@@ -177,7 +177,7 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
             db.hierTree[j].Nets = temp_net;
          }
      }
- 
+
   //update pins & terminal connection iternet
   for(unsigned int i=0;i<db.hierTree.size();i++){
       for(unsigned int j=0;j<db.hierTree[i].Nets.size();j++){
@@ -212,7 +212,8 @@ db.hierTree[i].Terminals[db.hierTree[i].Nets[j].connected[k].iter].netIter = j;
 
       }
 
-//adjust symmetry net iter
+  //adjust symmetry net iter
+
   for(unsigned int i=0;i<db.hierTree.size();i++){
      for(unsigned int j=0;j<db.hierTree[i].SNets.size();j++){
         int iter1=-1;
