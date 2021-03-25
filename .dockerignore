@@ -36,6 +36,7 @@ pycharm/
 **/*.o
 **/*.a
 **/*.so
+**/*.so.*
 **/*.gcno
 **/*.gcda
 # Exclude align outputs that we don't usually want
@@ -52,9 +53,7 @@ pycharm/
 **/work/
 **/Results/
 **/LOG/
-PlaceRouteHierFlow/**/.depend
-PlaceRouteHierFlow/**/unit_tests
-PlaceRouteHierFlow/**/pnr_compiler
+**/test_PnR
 # Include files based on ALIGN naming conventions
 !**/*-freeze.json
 !**/Process.json
