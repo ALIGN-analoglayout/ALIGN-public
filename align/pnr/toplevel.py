@@ -26,13 +26,13 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
 
     curr_route = PnR.Router()
 
-    dummy_file = ""
+    def RouteWork( mode, current_node, *, metal_l=signal_routing_metal_l, metal_u=signal_routing_metal_u, fn=''):
+        curr_route.RouteWork( mode, current_node, drcInfo,
+                              metal_l, metal_u,
+                              binary_directory, h_skip_factor, v_skip_factor, fn)
 
     if NEW_GLOBAL_ROUTER:
-        global_router_mode = 6 if adr_mode else 4
-
-        curr_route.RouteWork( global_router_mode, current_node, drcInfo,
-                              signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor, dummy_file)
+        RouteWork( 6 if adr_mode else 4, current_node)
 
         logger.debug( "Start WriteGcellGlobalRoute")
         if current_node.isTop:
@@ -45,19 +45,18 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
                 f'{current_node_copy.name}_GcellGlobalRoute_{current_node_copy.n_copy}_{lidx}.json', opath)
         logger.debug("End WriteGcellGlobalRoute" )
 
-        curr_route.RouteWork( 5, current_node, drcInfo,
-                              signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor, dummy_file)
+        RouteWork( 5, current_node)
     else:
         # Global Routing (old version)
-        curr_route.RouteWork(0, current_node, drcInfo, signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor, dummy_file)
+        RouteWork(0, current_node)
 
         DB.WriteJSON(current_node, True, True, False, False, f'{current_node.name}_GR_{lidx}', drcInfo, opath)
+
         # The following line is used to write global route results for Intel router (only for old version)
         DB.WriteGlobalRoute(current_node, f'{current_node.name}_GlobalRoute_{lidx}.json', opath)
 
         # Detail Routing
-        curr_route.RouteWork(1, current_node, drcInfo, signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor, dummy_file);
-
+        RouteWork( 1, current_node)
 
     if current_node.isTop:
         DB.WriteJSON(current_node, True, True, False, False, f'{current_node.name}_DR_{lidx}', drcInfo, opath)
@@ -69,7 +68,7 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
         current_node.gdsFile = current_node_copy.gdsFile
 
 
-    # DC Power Grid Simulation not supported
+
 
     if current_node.isTop:
 
@@ -78,35 +77,64 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
         power_routing_metal_l = 0
         power_routing_metal_u = 6
 
-        curr_route.RouteWork(2, current_node, drcInfo, power_grid_metal_l, power_grid_metal_u, binary_directory, h_skip_factor, v_skip_factor,dummy_file)
+        # DC Power Grid Simulation not supported
+        PDN_mode = False
+        # Power Grid Simulation
+        if PDN_mode:
+            dataset_generation = False
+            current_file = "InputCurrent_initial.txt"
+            power_mesh_conffile = "Power_Grid_Conf.txt"
+            if dataset_generation:
+                total_current = 0.036
+                current_number = 20
+                DB.Write_Current_Workload(current_node, total_current, current_number, current_file)
+                DB.Write_Power_Mesh_Conf(power_mesh_conffile)
 
-        DB.WriteJSON(current_node, True, True, False, True, current_node.name + "_PG_" + str(lidx), drcInfo, opath)
+            power_grid_metal_l = 2
+            power_grid_metal_u = 11
+            RouteWork(7, current_node, metal_l=power_grid_metal_l, metal_u=power_grid_metal_u, fn=power_mesh_conffile)
+
+            logger.debug("Start MNA ")
+            output_file_IR = "IR_drop.txt"
+            output_file_EM = "EM.txt"
+            Test_MNA = PnR.MNASimulationIfc(current_node, drcInfo, current_file, output_file_IR, output_file_EM)
+            worst = Test_MNA.Return_Worst_Voltage()
+            logger.debug(f"worst voltage is {worst}")
+            Test_MNA.Clear_Power_Grid(current_node.Vdd)
+            Test_MNA.Clear_Power_Grid(current_node.Gnd)
+            logger.debug("End MNA")
+            return
+
+
+        RouteWork(2, current_node, metal_l=power_grid_metal_l, metal_u=power_grid_metal_u)
+
+        DB.WriteJSON(current_node, True, True, False, True, f'{current_node.name}_PG_{lidx}', drcInfo, opath)
 
         logger.debug("Checkpoint : Starting Power Routing");
 
-        curr_route.RouteWork(3, current_node, drcInfo, power_routing_metal_l, power_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor,dummy_file);
+        RouteWork(3, current_node, metal_l=power_routing_metal_l, metal_u=power_routing_metal_u)
 
-        DB.WriteJSON(current_node, True, False, True, True, current_node.name + "_PR_" + str(lidx), drcInfo, opath)
+        DB.WriteJSON(current_node, True, False, True, True, f'{current_node.name}_PR_{lidx}', drcInfo, opath)
 
         DB.Write_Router_Report(current_node, opath)
 
     # transform current_node into current_node coordinate
     if current_node.isTop:
-        DB.WriteJSON(current_node, True, True, True, True, current_node.name + "_" + str(lidx), drcInfo, opath)
-        DB.WriteLef(current_node, current_node.name + "_" + str(lidx) + ".lef", opath)
+        DB.WriteJSON(current_node, True, True, True, True, f'{current_node.name}_{lidx}', drcInfo, opath)
+        DB.WriteLef(current_node, f'{current_node.name}_{lidx}.lef', opath)
         #save_state( DB, current_node, lidx, opath, "", "Final result", skip_saving_state)
-        #DB.PrintHierNode(current_node)
+        DB.PrintHierNode(current_node)
     else:
         current_node_copy = PnR.hierNode(current_node)
         DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, TransformType.Backward)
         DB.WriteJSON(current_node_copy, True, True, True, True,
-                     current_node_copy.name + "_" + str(current_node_copy.n_copy) + "_" + str(lidx), drcInfo, opath)
+                     f'{current_node_copy.name}_{current_node_copy.n_copy}_{lidx}', drcInfo, opath)
         current_node.gdsFile = current_node_copy.gdsFile
         DB.WriteLef(current_node_copy,
-                    current_node_copy.name + "_" + str(current_node_copy.n_copy) + "_" + str(lidx) + ".lef", opath)
+                    f'{current_node_copy.name}_{current_node_copy.n_copy}_{lidx}.lef', opath)
 
         #save_state( DB, current_node_copy, lidx, opath, "", "Final result", skip_saving_state)
-        #DB.PrintHierNode(current_node_copy)
+        DB.PrintHierNode(current_node_copy)
 
 
 def route_top_down( DB, drcInfo,

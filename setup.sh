@@ -14,7 +14,8 @@ export SPDLOG_DIR=${SPDLOG_DIR:-$ALIGN_HOME/spdlog}
 export SuperLu_DIR=${SuperLu_DIR:-$ALIGN_HOME/superlu}
 export VENV=${VENV:-$ALIGN_HOME/general}
 
-if [[ $LD_LIBRARY_PATH != *"$LP_DIR/lp_solve_5.5.2.5_dev_ux64"* && $LD_LIBRARY_PATH != *"$GTEST_DIR/mybuild/lib/"* ]]
+if [[ $LD_LIBRARY_PATH != *"$LP_DIR/lp_solve_5.5.2.5_dev_ux64"* && \
+      $LD_LIBRARY_PATH != *"$GTEST_DIR/mybuild/lib/"* ]]
 then
     export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}$LP_DIR/lp_solve_5.5.2.5_dev_ux64/:$GTEST_DIR/mybuild/lib/
 fi

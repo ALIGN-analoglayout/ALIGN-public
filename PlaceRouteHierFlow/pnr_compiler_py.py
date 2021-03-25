@@ -24,10 +24,10 @@ else:
 handler.setFormatter(formatter)
 root.addHandler(handler)
 
+from toplevel import toplevel
+
 logger = logging.getLogger(__name__)
 
 logger.info('Running C++ toplevel(args)')
-
-from toplevel import toplevel
 
 toplevel( sys.argv)

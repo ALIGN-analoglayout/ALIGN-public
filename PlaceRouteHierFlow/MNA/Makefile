@@ -1,6 +1,6 @@
 # Need CXX and CXXFLAGS
 
-OBJS=MNASimulation.o
+OBJS=MNASimulationIfc.o MNASimulation.o 
 SRCS=$(OBJS:.o=.cpp)
 
 all: depend MNA.a
