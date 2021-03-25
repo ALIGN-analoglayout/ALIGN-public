@@ -1022,6 +1022,8 @@ void Placement::E_Placer(){
      start_flag=0;
      i++;
   }
+  force_order();
+  force_alignment();
   std::cout<<"iter num when stop:="<<count_number<<std::endl;
 
 }
