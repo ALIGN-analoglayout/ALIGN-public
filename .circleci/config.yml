@@ -1,14 +1,5 @@
 version: 2.1
 
-commands:
-  run-load-align:
-    description: "Load align image (contains pip installed align module + PlaceRouteHierFlow)"
-    steps:
-      - run:
-          name: "Load align_image"
-          command: |
-            docker load --input align_image.tar
-
 executors:
   docker-executor:
     docker:
@@ -20,7 +11,7 @@ jobs:
       python-tags:
         description: "Python version tag(See https://www.python.org/dev/peps/pep-0425/)"
         type: string
-        default: "cp37-cp37m cp38-cp38" # Python 3.7 & 3.8
+        default: "cp37-cp37m cp38-cp38" # Python 3.7 *AND* 3.8
       platform:
         # https://github.com/pypa/manylinux
         description: "PEP600 compatible platform name"
@@ -33,8 +24,7 @@ jobs:
     environment:
       ALIGN_HOME: /root/ALIGN-public
       ALIGN_WORK_DIR: /root/ALIGN-public/work
-      # Set MAX_JOBS for Ninja & Pytest = number of vCPUs (2)
-      MAX_JOBS: 2
+      MAX_JOBS: 2 # number of vCPUs (2)
 
     steps:
       - checkout
@@ -57,75 +47,24 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-
       - run:
           name: "Zip distribution directory"
           command: |
             mkdir export
             tar --gzip -cf export/align-wheelhouse-$(echo "$CIRCLE_SHA1" | cut -c -7).tar.gz ./wheelhouse
-
       - store_artifacts:
           path: export
-
-  build-align:
-    executor: docker-executor
-    steps:
-      - checkout
-
-      - setup_remote_docker
-
-      - restore_cache:
-          keys:
-            # Use checksums for critical files as cache key to promote layer reuse
-            # Please increment v1 to v2 if you wish to invalidate all existing caches
-            # (Must be replicated in save_cache as well)
-            - align-v1-{{ checksum "build/Dockerfile.using-install.sh" }}-{{ checksum "install.sh" }}-{{ checksum "setup.sh" }}-{{ checksum "setup.py" }}
-            # Fall back to most recent cache from any branch
-            - align-v1
-          paths:
-            - align_image.tar
-
-      - run:
-          name: Load Docker image layer cache
-          command: |
-            set +o pipefail
-            docker load -i align_image.tar | true
-
-      - run:
-          name: "Build align_image"
-          command: |
-            docker build --cache-from=align_image -t align_image -f ./build/Dockerfile.using-install.sh .
-
-      - run:
-          name: "Save align_image"
-          command: |
-            git clean -xdf
-            docker save --output align_image.tar align_image
-            du -h align_image.tar
-
-      - save_cache:
-          key: align-v1-{{ checksum "build/Dockerfile.using-install.sh" }}-{{ checksum "install.sh" }}-{{ checksum "setup.sh" }}-{{ checksum "setup.py" }}
-          paths:
-            - align_image.tar
-
-      - persist_to_workspace:
-          root: .
-          paths:
-            - align_image.tar
 
   build-test-cktgen:
     executor: docker-executor
     steps:
       - checkout
-
       - setup_remote_docker
-
       - run:
           name: "Build & run Cktgen tests"
           command: |
             cd Cktgen
             docker build -t cktgen_image .
-
             docker run --name cktgen_container cktgen_image bash -c '\
               source general/bin/activate && \
               cd cktgen && \
@@ -135,71 +74,44 @@ jobs:
               mkdir -p /coverage-reports/cktgen && cp -r coverage.xml htmlcov /coverage-reports/cktgen\
             '
             cd -
-
             docker cp cktgen_container:coverage-reports .
             docker cp cktgen_container:test-reports .
             docker rm cktgen_container
-
       - store_test_results:
           path: test-reports
-
       - store_artifacts:
           path: coverage-reports
 
-  test-align:
-    executor: docker-executor
+  build-test-coverage:
+
+    docker:
+      - image: python:3.8
+    working_directory: /root/ALIGN-public
+    environment:
+      ALIGN_HOME: /root/ALIGN-public
+      ALIGN_WORK_DIR: /root/ALIGN-public/work
+      MAX_JOBS: 2
+
     steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: .
-
-      - run-load-align
-
+      - checkout
       - run:
-          name: "Run pytest on align"
+          name: "Install coverage dependencies (lcov)"
           command: |
-            docker run --name align_container align_image bash -c '\
-              source setup.sh && \
-              unset ALIGN_WORK_DIR && \
-              (cd PlaceRouteHierFlow && make coverage-init) && \
-              coverage run --source=align,tests -m pytest && \
-              coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && \
-              mkdir -p /test-reports/align && cp junit.xml /test-reports/align && \
-              mkdir -p /coverage-reports && cp -r htmlcov /coverage-reports/align && \
-              (cd PlaceRouteHierFlow && make coverage-report) && \
-              cp -r PlaceRouteHierFlow/htmlcov /coverage-reports/PnR \
-            '
-            docker cp align_container:coverage-reports .
-            docker cp align_container:test-reports .
-            docker rm align_container
-
-      - store_test_results:
-          path: test-reports
-
-      - store_artifacts:
-          path: coverage-reports
-
-  test-PlaceRouteHierFlow:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: .
-
-      - run-load-align
-
+            apt-get update
+            apt-get -y install lcov
       - run:
-          name: "Run PlaceRouteHierFlow tests"
-          no_output_timeout: "30m"
+          name: "Build align in developer mode"
+          command: |
+            pip install setuptools wheel pybind11 scikit-build cmake ninja
+            pip install -e .[test] --no-build-isolation --install-option="-DCODE_COVERAGE=ON"
+      - run:
+          name: "Test align using coverage.py"
           command: |
             rm -fr align setup.py
             ./runcoverage.py tests/
             cp junit.xml coverage-reports
       - store_test_results:
-          path: test-reports
-
+          path: coverage-reports
       - store_artifacts:
           path: coverage-reports
 
@@ -232,7 +144,6 @@ jobs:
       - checkout
       - attach_workspace:
           at: .
-
       - run:
           name: "test-integration-<<parameters.platform>>-<<parameters.pdk>>(<<parameters.design>>)"
           no_output_timeout: "<<parameters.timeout>>s"
@@ -243,10 +154,8 @@ jobs:
             filter="<<parameters.pdk>>${filter:+ and $filter}"
             pytest -vv -n "$MAX_JOBS" --runnightly --maxerrors=20 --timeout=<<parameters.timeout>> --durations=0 -k "$filter" -- tests/integration
             mkdir -p test-reports/${CIRCLE_BUILD_NUM} && cp -r junit.xml LOG test-reports/${CIRCLE_BUILD_NUM}
-
       - store_test_results:
           path: test-reports
-
       - store_artifacts:
           path: test-reports
 
@@ -255,6 +164,7 @@ workflows:
   commit:
     jobs:
       - build-test-cktgen
+      - build-test-coverage
       - build-wheel:
           name: "build-wheel-<<matrix.platform>>"
           matrix:
