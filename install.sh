@@ -8,9 +8,7 @@ set -ex
 
 cwd=$PWD
 
-export ALIGN_HOME=${ALIGN_HOME:-$PWD}
-export VENV=${VENV:-$ALIGN_HOME/general}
-
+source setup.sh
 
 #
 # Use sudo if not root; for compatibility with docker
@@ -43,10 +41,7 @@ cd $ALIGN_HOME
 
 python3 -m venv $VENV
 source $VENV/bin/activate
-python -m pip install --upgrade pip
-python -m pip install \
-    pytest pytest-timeout \
-    coverage coverage-badge
-python -m pip install -e . --no-build-isolation
+python -m pip install setuptools wheel pybind11 scikit-build cmake ninja
+python -m pip install -e .[test] --no-build-isolation
 
 cd $cwd
