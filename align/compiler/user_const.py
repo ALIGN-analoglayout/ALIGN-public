@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 pp = pprint.PrettyPrinter(indent=4)
 
 class ConstraintParser:
-    def __init__(self,pdk_dir:pathlib.Path,input_dir:pathlib.Path):
+    def __init__(self, pdk_dir: pathlib.Path, input_dir: pathlib.Path):
         self.input_dir = input_dir
         self.known_types = {
             'int':int,
@@ -25,7 +25,7 @@ class ConstraintParser:
             pdk_info = json.load(fp)
             self.valid_const =pdk_info["valid_constraints"]
         
-    def read_user_const(self,design_name:str):
+    def read_user_const(self, design_name: str):
         """
         Reads user defined constraints and create a dictionary for each hierarchy
   
@@ -56,6 +56,7 @@ class ConstraintParser:
                     all_const.append(const)
             self.block_const['constraints'] = all_const
         else:
+            logger.info(f"No user constraints found for block {design_name} in path {self.input_dir}")
             return None
         self._map_valid_const()
         return self.block_const
@@ -115,6 +116,8 @@ class ConstraintParser:
             const['abs_distance']=int(const['abs_distance'])
         if 'criticality' in const:
             const['abs_distance'] = int(const['criticality'])
+        if 'multiplier' in const:
+            const['multiplier'] = int(const['multiplier'])
         if 'weight' in const:
             const['weight'] = int(const['weight'])
         if 'direction' in const:
@@ -255,14 +258,20 @@ class ConstraintParser:
             elif const["const_name"] == 'SymmetricNets':
                 const["const_name"] = 'SymmNet'
                 const["axis_dir"] = const.pop("direction")
+                if "pins1" in const and "pins2" in const:
+                    pins1 = self._map_pins(const["pins1"])
+                    pins2 = self._map_pins(const["pins2"])
+                    del const["pins1"]
+                    del const["pins2"]
+                else:
+                    pins1 = [{"type": "dummy", "name": "dummy", "pin": None}]
+                    pins2 = [{"type": "dummy", "name": "dummy", "pin": None}]
                 const['net1'] = {
                     "name": const['net1'],
-                    "blocks": self._map_pins(const["pins1"])}
+                    "blocks": pins1}
                 const['net2'] = {
                     "name": const['net2'],
-                    "blocks": self._map_pins(const["pins2"])}
-                del const["pins1"]
-                del const["pins2"]
+                    "blocks": pins2}
             elif const["const_name"] == 'PortLocation':
                 for port in const["ports"]:
                     extra = {
@@ -275,7 +284,7 @@ class ConstraintParser:
                 for net in const["nets"]:
                     extra = {
                         "const_name" : 'Multi_Connection',
-                        "multi_number" : const["multiplier"],
+                        "multi_number" : int(const["multiplier"]),
                         "net_name" : net
                     }
                     added_const.append(extra)
@@ -309,7 +318,9 @@ class ConstraintParser:
                             "priority" : const["criticality"]
                             }
                         added_const.append(extra)
-        self.block_const["constraints"] = [i for i in all_const if not i['const_name']=='NetConst' and not i['const_name']=='PortLocation']
+        self.block_const["constraints"] = [i for i in all_const if not i['const_name'] == 'NetConst' \
+                                            and not i['const_name'] == 'PortLocation'\
+                                            and not  i['const_name'] == 'MultiConnection']
         self.block_const["constraints"].extend(added_const)
         logger.info(f"Const mapped to PnR const format {self.block_const['constraints']}")
     

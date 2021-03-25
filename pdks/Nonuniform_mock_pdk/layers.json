@@ -1,0 +1,322 @@
+{
+  "name": "Mock FinFET technology with non-uniform metal grids.This PDK is for development and not functional yet.This file is auto-generated using tests/schema/test_pdk.py",
+  "design_info": {
+  "vt_type":["SLVT", "HVT","LVT","RVT"],
+  "top_signal_routing_layer": "M12",
+  "bottom_signal_routing_layer": "M2",
+  "top_clock_routing_layer": "M12",
+  "bottom_clock_routing_layer":"M2",
+  "top_power_routing_layer": "M12",
+  "bottom_power_routing_layer": "M2",
+  "top_port_routing_layer": "M12",
+  "bottom_port_routing_layer": "M2",
+  "power_rail_frequency":2,
+  "Hspace": 32,
+  "Vspace": 32,
+  "unit_size_nmos":12,
+  "unit_size_pmos":12,
+  "unit_size_cap":12,
+  "max_nfin_mos":48,
+  "Gate_pitch":45,
+  "unit_height_res":600
+  },
+  "valid_constraints" : {
+  "CreateAlias":  { "blocks":"list","name":"str"},
+  "GroupBlocks":  {"blocks":"list","name":"str","style":["None","tbd_interdigitated","tbd_common_centroid"]},
+  "OrderBlocks": {"blocks":"list","name":"str","direction":["H","V"]},
+  "MatchBlocks": {"blocks":"list"},
+  "BlockDistance":       {"abs_distance":"int"},
+  "HorizontalDistance":  {"abs_distance":"int"},
+  "VerticalDistance":    {"abs_distance":"int"},
+  "SymmetricBlocks":  {"pairs":"list","direction":["H","V"]},
+  "GroupCaps":       {"blocks":"list","name":"str","unit_cap":"str","num_units":"list","dummy":"bool"},
+  "AlignBlocks":     {"blocks":"list","direction":["H","V"]},
+  "NetConst":        {"nets":"list","shield":"str","criticality":"int"},
+  "PortLocation":    {"ports":"list","location":["BL","BR","BC","TL","TR","TC","RL","RR","RC","LL","LR","LC"]},
+  "SymmetricNets":   {"net1":"str","net2":"str","pins1":"list","pins2":"list","direction":["H","V"]},
+  "AspectRatio": {"weight":"int"},
+  "MultiConnection": {"nets":"list", "multiplier":"int"}
+  },
+  "layers": {
+    "M1": {
+      "name": "M1",
+      "gds_layer_number": 1,
+      "gds_data_type": {
+        "draw": 0
+      },
+      "direction": "v",
+      "min_length": 1000,
+      "max_length": null,
+      "min_end_to_end": 400,
+      "offset": 0,
+      "width": [
+        600
+      ],
+      "space": [
+        400
+      ],
+      "color": null,
+      "stop_pitch": 1000,
+      "stop_point": 200,
+      "stop_offset": 0,
+      "unit_c": null,
+      "unit_r": null,
+      "unit_cc": null
+    },
+    "M2": {
+      "name": "M2",
+      "gds_layer_number": 2,
+      "gds_data_type": {
+        "draw": 0
+      },
+      "direction": "h",
+      "min_length": 500,
+      "max_length": null,
+      "min_end_to_end": 300,
+      "offset": 0,
+      "width": [
+        400,
+        500,
+        500,
+        600,
+        600,
+        500,
+        500
+      ],
+      "space": [
+        300,
+        300,
+        400,
+        400,
+        400,
+        300,
+        300
+      ],
+      "color": null,
+      "stop_pitch": 1000,
+      "stop_point": 350,
+      "stop_offset": 0,
+      "unit_c": null,
+      "unit_r": null,
+      "unit_cc": null
+    },
+    "M3": {
+      "name": "M3",
+      "gds_layer_number": 3,
+      "gds_data_type": {
+        "draw": 0
+      },
+      "direction": "v",
+      "min_length": 1000,
+      "max_length": null,
+      "min_end_to_end": 400,
+      "offset": 0,
+      "width": [
+        800,
+        1000
+      ],
+      "space": [
+        600,
+        600
+      ],
+      "color": [
+        "a",
+        "b"
+      ],
+      "stop_pitch": 1000,
+      "stop_point": 500,
+      "stop_offset": 0,
+      "unit_c": null,
+      "unit_r": null,
+      "unit_cc": null
+    },
+    "M4": {
+      "name": "M4",
+      "gds_layer_number": 4,
+      "gds_data_type": {
+        "draw": 0
+      },
+      "direction": "h",
+      "min_length": 500,
+      "max_length": null,
+      "min_end_to_end": 300,
+      "offset": 0,
+      "width": [
+        400,
+        500,
+        500,
+        600,
+        600,
+        500,
+        500
+      ],
+      "space": [
+        300,
+        300,
+        400,
+        400,
+        400,
+        300,
+        300
+      ],
+      "color": null,
+      "stop_pitch": 1000,
+      "stop_point": 350,
+      "stop_offset": 0,
+      "unit_c": null,
+      "unit_r": null,
+      "unit_cc": null
+    },
+    "M5": {
+      "name": "M5",
+      "gds_layer_number": 5,
+      "gds_data_type": {
+        "draw": 0
+      },
+      "direction": "v",
+      "min_length": 1000,
+      "max_length": null,
+      "min_end_to_end": 400,
+      "offset": 0,
+      "width": [
+        800,
+        1000
+      ],
+      "space": [
+        600,
+        600
+      ],
+      "color": [
+        "a",
+        "b"
+      ],
+      "stop_pitch": 1000,
+      "stop_point": 500,
+      "stop_offset": 0,
+      "unit_c": null,
+      "unit_r": null,
+      "unit_cc": null
+    },
+    "V1": {
+      "name": "V1",
+      "gds_layer_number": 21,
+      "gds_data_type": {
+        "draw": 0
+      },
+      "default_via": {
+        "name": "V1",
+        "gds_layer_number": 21,
+        "gds_data_type": {
+          "draw": 0
+        },
+        "stack": [
+          "M1",
+          "M2"
+        ],
+        "width_x": 600,
+        "width_y": 500,
+        "space_x": 100,
+        "space_y": 100,
+        "layer1_width": null,
+        "enc_layer1_x": 0,
+        "enc_layer1_y": 0,
+        "layer2_width": null,
+        "enc_layer2_x": 0,
+        "enc_layer2_y": 0,
+        "unit_r": null
+      },
+      "via_list": null
+    },
+    "V2": {
+      "name": "V2",
+      "gds_layer_number": 22,
+      "gds_data_type": {
+        "draw": 0
+      },
+      "default_via": {
+        "name": "V2",
+        "gds_layer_number": 22,
+        "gds_data_type": {
+          "draw": 0
+        },
+        "stack": [
+          "M2",
+          "M3"
+        ],
+        "width_x": 600,
+        "width_y": 500,
+        "space_x": 100,
+        "space_y": 100,
+        "layer1_width": null,
+        "enc_layer1_x": 0,
+        "enc_layer1_y": 0,
+        "layer2_width": null,
+        "enc_layer2_x": 0,
+        "enc_layer2_y": 0,
+        "unit_r": null
+      },
+      "via_list": null
+    },
+    "V3": {
+      "name": "V3",
+      "gds_layer_number": 23,
+      "gds_data_type": {
+        "draw": 0
+      },
+      "default_via": {
+        "name": "V3",
+        "gds_layer_number": 23,
+        "gds_data_type": {
+          "draw": 0
+        },
+        "stack": [
+          "M3",
+          "M4"
+        ],
+        "width_x": 600,
+        "width_y": 500,
+        "space_x": 100,
+        "space_y": 100,
+        "layer1_width": null,
+        "enc_layer1_x": 0,
+        "enc_layer1_y": 0,
+        "layer2_width": null,
+        "enc_layer2_x": 0,
+        "enc_layer2_y": 0,
+        "unit_r": null
+      },
+      "via_list": null
+    },
+    "V4": {
+      "name": "V4",
+      "gds_layer_number": 24,
+      "gds_data_type": {
+        "draw": 0
+      },
+      "default_via": {
+        "name": "V4",
+        "gds_layer_number": 24,
+        "gds_data_type": {
+          "draw": 0
+        },
+        "stack": [
+          "M3",
+          "M4"
+        ],
+        "width_x": 600,
+        "width_y": 500,
+        "space_x": 100,
+        "space_y": 100,
+        "layer1_width": null,
+        "enc_layer1_x": 0,
+        "enc_layer1_y": 0,
+        "layer2_width": null,
+        "enc_layer2_x": 0,
+        "enc_layer2_y": 0,
+        "unit_r": null
+      },
+      "via_list": null
+    }
+  },
+  "scale_factor": 1
+}
