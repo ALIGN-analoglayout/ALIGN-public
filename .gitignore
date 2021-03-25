@@ -53,6 +53,7 @@ pycharm/
 **/Results/
 **/LOG/
 **/test_PnR
+**/_cmake.py
 # Include files based on ALIGN naming conventions
 !**/*-freeze.json
 !**/Process.json

@@ -24,17 +24,21 @@ def align_manifest_filter(cmake_manifest):
     '''
     Pick out all generated *.so* & test_* files
     '''
-    return list(filter(lambda name: 'test_' in name or '.so' in name, cmake_manifest))
+    return list(filter(lambda name: 'test_' in name or '.so' in name or '.py' in name, cmake_manifest))
 
-# Is this an inplace install?
-# (pip install -e .)
-devmode = 'develop' in sys.argv
-
-setup(name='align',
-      version=get_version(
+version=get_version(
             os.path.join(
                   os.path.abspath(os.path.dirname(__file__)),
-                  'align')),
+                  'align'))
+cmake_args = [f"-DALIGN_VERSION:string={version}"]
+
+# Enable unit-tests for all in-place builds (pip install -e . --no-build-isolation)
+devmode = 'develop' in sys.argv
+if devmode and not any(x.startswith('-DBUILD_TESTING') for x in sys.argv):
+    cmake_args.append('-DBUILD_TESTING=ON')
+
+setup(name='align',
+      version=version,
       description='Analog Layout Synthesis Package',
       long_description=get_readme_text(),
       long_description_content_type="text/markdown",
@@ -46,8 +50,7 @@ setup(name='align',
           find_packages(include=['align', 'align.*']) \
         + (['tests'] if devmode else []),
       package_data={'align': ['config/*']},
-      cmake_args = \
-          ['-DALIGN_BUILD_TESTING:bool=TRUE'] if devmode else [],
+      cmake_args = cmake_args,
       cmake_process_manifest_hook=align_manifest_filter,
       scripts=[
           'bin/schematic2layout.py',

@@ -27,3 +27,4 @@ target_link_libraries(
      lpsolve::lpsolve55
      Boost::boost
 )
+target_code_coverage(placer)

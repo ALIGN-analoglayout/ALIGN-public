@@ -15,3 +15,4 @@ target_link_libraries(
      guard_ring PRIVATE
      spdlog::spdlog
 )
+target_code_coverage(guard_ring)

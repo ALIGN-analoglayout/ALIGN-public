@@ -123,4 +123,4 @@ set_target_properties(lpsolve55 PROPERTIES VERSION ${LPSOLVE_VERSION}
 
 # Install the library
 install(TARGETS lpsolve55 EXPORT LibraryExport
-	LIBRARY DESTINATION ${ALIGN_INSTALL_LIBDIR})
+	LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/align/thirdparty")

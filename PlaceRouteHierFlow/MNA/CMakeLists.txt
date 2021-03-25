@@ -15,3 +15,4 @@ target_link_libraries(
      superlu
      Boost::boost
 )
+target_code_coverage(MNA)

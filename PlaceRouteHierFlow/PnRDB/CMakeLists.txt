@@ -26,3 +26,4 @@ target_link_libraries(
      nlohmann_json::nlohmann_json
      spdlog::spdlog
 )
+target_code_coverage(PnRDB)

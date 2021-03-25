@@ -30,8 +30,9 @@ target_link_libraries(
      pybind11::module
      Boost::boost
 )
+target_code_coverage(PnR)
 
-if(ALIGN_BUILD_TESTING)
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
      add_executable(test_PnR
           unit_tests.cpp
           PnRDB/unit_tests.cpp
