@@ -55,7 +55,7 @@ class ILP_solver {
   ILP_solver(const ILP_solver& solver);
   ILP_solver& operator=(const ILP_solver& solver);
   double GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node);
-  double CalculateCost(design& mydesign, SeqPair& curr_sp);
+  double CalculateCost(design& mydesign);
   void WritePlacement(design& caseNL, SeqPair& curr_sp, string outfile);
   void PlotPlacement(design& caseNL, string outfile);
   std::vector<double> Calculate_Center_Point_feature(std::vector<std::vector<placerDB::point> >& temp_contact);

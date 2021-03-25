@@ -28,6 +28,7 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
         }
       }
       temp.first.push_back(temp_seq);
+      //group alignblock into the same order group
     }
     ordering_alignblock.push_back(temp);
   }
@@ -617,7 +618,6 @@ double ILP_solver::GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcI
     set_obj_fn(lp, row);
     set_minim(lp);
     set_timeout(lp, 10);
-    print_lp(lp);
     int ret = solve(lp);
     if (ret != 0 && ret != 1) return -1;
   }
@@ -657,9 +657,10 @@ double ILP_solver::GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcI
     LL.y = std::min(LL.y, Blocks[i].y);
     UR.x = std::max(UR.x, Blocks[i].x + mydesign.Blocks[i][0].width);
     UR.y = std::max(UR.y, Blocks[i].y + mydesign.Blocks[i][0].height);
-  } /**
+  } 
    // calculate area
    area = double(UR.x - LL.x) * double(UR.y - LL.y);
+   /**
    // calculate dead area
    dead_area = area;
    for (int i = 0; i < mydesign.Blocks.size(); i++) {
@@ -667,6 +668,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcI
    }
    // calculate ratio
    ratio = std::max(double(UR.x - LL.x) / double(UR.y - LL.y), double(UR.y - LL.y) / double(UR.x - LL.x));
+   **/
    // calculate HPWL
    HPWL = 0;
    for (auto neti : mydesign.Nets) {
@@ -687,11 +689,10 @@ double ILP_solver::GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcI
            HPWL_min_y = std::min(HPWL_min_y, pin_y);
            HPWL_max_y = std::max(HPWL_max_y, pin_y);
          }
-       }
-       HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);
+       }  
      }
+     HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);
    }
-
    // calculate linear constraint
    linear_const = 0;
    std::vector<std::vector<double>> feature_value;
@@ -700,12 +701,12 @@ double ILP_solver::GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcI
      for (auto connectedj : neti.connected) {
        if (connectedj.type == placerDB::Block) {
          std::vector<placerDB::point> pos;
-         for (auto ci : mydesign.Blocks[connectedj.iter2][curr_sp.selected[connectedj.iter2]].blockPins[connectedj.iter].center) {
+         for (auto ci : mydesign.Blocks[connectedj.iter2][0].blockPins[connectedj.iter].center) {
            placerDB::point newp;
            newp.x = ci.x;
            newp.y = ci.y;
-           if (Blocks[connectedj.iter2].H_flip) newp.x = mydesign.Blocks[connectedj.iter2][curr_sp.selected[connectedj.iter2]].width - newp.x;
-           if (Blocks[connectedj.iter2].V_flip) newp.y = mydesign.Blocks[connectedj.iter2][curr_sp.selected[connectedj.iter2]].height - newp.y;
+           if (Blocks[connectedj.iter2].H_flip) newp.x = mydesign.Blocks[connectedj.iter2][0].width - newp.x;
+           if (Blocks[connectedj.iter2].V_flip) newp.y = mydesign.Blocks[connectedj.iter2][0].height - newp.y;
            newp.x += Blocks[connectedj.iter2].x;
            newp.y += Blocks[connectedj.iter2].y;
            pos.push_back(newp);
@@ -747,21 +748,21 @@ double ILP_solver::GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcI
      multi_linear_const += temp_sum;
    }
 
-   double cost = CalculateCost(mydesign, curr_sp);**/
-  return 0;
+   double cost = CalculateCost(mydesign);
+  return cost;
 }
 
-double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
+double ILP_solver::CalculateCost(design& mydesign) {
   ConstGraph const_graph;
   double cost = 0;
   cost += area;
   cost += HPWL * const_graph.LAMBDA;
   double match_cost = 0;
   for (auto mbi : mydesign.Match_blocks) {
-    match_cost += abs(Blocks[mbi.blockid1].x + mydesign.Blocks[mbi.blockid1][curr_sp.selected[mbi.blockid1]].width / 2 - Blocks[mbi.blockid2].x -
-                      mydesign.Blocks[mbi.blockid2][curr_sp.selected[mbi.blockid2]].width / 2) +
-                  abs(Blocks[mbi.blockid1].y + mydesign.Blocks[mbi.blockid1][curr_sp.selected[mbi.blockid1]].height / 2 - Blocks[mbi.blockid2].y -
-                      mydesign.Blocks[mbi.blockid2][curr_sp.selected[mbi.blockid2]].height / 2);
+    match_cost += abs(Blocks[mbi.blockid1].x + mydesign.Blocks[mbi.blockid1][0].width / 2 - Blocks[mbi.blockid2].x -
+                      mydesign.Blocks[mbi.blockid2][0].width / 2) +
+                  abs(Blocks[mbi.blockid1].y + mydesign.Blocks[mbi.blockid1][0].height / 2 - Blocks[mbi.blockid2].y -
+                      mydesign.Blocks[mbi.blockid2][0].height / 2);
   }
   cost += match_cost * const_graph.BETA;
   cost += ratio * Aspect_Ratio_weight;
