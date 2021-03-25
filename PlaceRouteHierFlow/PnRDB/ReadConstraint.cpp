@@ -86,6 +86,7 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
         node.SNets.back().net2 = tmpnet2;
         node.SNets.back().iter1 = iter1;
         node.SNets.back().iter2 = iter2;
+
         node.SNets.back().axis_dir = constraint["axis_dir"] == "H" ? PnRDB::H : PnRDB::V;
       } else if (constraint["const_name"] == "CritNet") {
         for (int i = 0; i < (int)node.Nets.size(); i++) {
@@ -364,7 +365,7 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
           tmp_portpos.pos = PnRDB::LC;
         else if (constraint["location"] == "LT")
           tmp_portpos.pos = PnRDB::LT;
-        string name = constraint["termianl_name"];
+        string name = constraint["terminal_name"];
         for (int k = 0; k < (int)node.Terminals.size(); ++k) {
           if (node.Terminals.at(k).name.compare(name) == 0) {
             tmp_portpos.tid = k;
