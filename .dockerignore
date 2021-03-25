@@ -13,11 +13,12 @@ DetailedRouter
 #
 
 # Exclude files built by Dockerfile or install.sh
-**/*.tar
 general/
 wheelhouse/
 _skbuild/
 # Exclude common user / machine generated files
+**/*.tar
+**/*.tar.gz
 pycharm/
 .idea/
 .vscode/
@@ -55,6 +56,7 @@ pycharm/
 **/LOG/
 **/test_PnR
 **/_cmake.py
+coverage-reports/
 # Include files based on ALIGN naming conventions
 !**/*-freeze.json
 !**/Process.json

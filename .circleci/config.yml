@@ -194,17 +194,9 @@ jobs:
           name: "Run PlaceRouteHierFlow tests"
           no_output_timeout: "30m"
           command: |
-            docker run --name align_container align_image bash -c '\
-              source setup.sh && \
-              cd PlaceRouteHierFlow && \
-              ./test_all.sh && \
-              mkdir -p /test-reports/PlaceRouteHierFlow && find . -name junit.xml -exec cp --parents \{\} /test-reports/PlaceRouteHierFlow \; && cp PnR.log /test-reports/PlaceRouteHierFlow && \
-              mkdir -p /coverage-reports && cp -r htmlcov /coverage-reports/PnR \
-            '
-            docker cp align_container:test-reports .
-            docker cp align_container:coverage-reports .
-            docker rm align_container
-
+            rm -fr align setup.py
+            ./runcoverage.py tests/
+            cp junit.xml coverage-reports
       - store_test_results:
           path: test-reports
 
