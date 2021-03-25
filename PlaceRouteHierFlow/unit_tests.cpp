@@ -137,12 +137,10 @@ TEST(PnRTest, GlobalRouter_telescopic_ota) {
   generic_router_test( "telescopic_ota", "gr", 4, 1, 6);
 };
 
-*/
 TEST(PnRTest, DetailedRouter_telescopic_ota) {
   generic_router_test( "telescopic_ota", "dr", 5, 1, 6);
 };
 
-/*
 TEST(PnRTest, GlobalRouter_switched_capacitor_filter) {
   generic_router_test( "switched_capacitor_filter", "gr", 4, 1, 6);
 };

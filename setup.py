@@ -9,15 +9,6 @@ try:
 except ImportError:
     raise AssertionError("Use pip 10+, or install pyproject.toml requirements yourself")
 
-# Coverage support
-# --install-option='--coverage'
-extra_compile_args = []
-extra_link_args = []
-if '--coverage' in sys.argv:
-    sys.argv.remove('--coverage')
-    extra_compile_args.append('--coverage')
-    extra_link_args.append('--coverage')
-
 def get_version(pkg_path):
     with open(os.path.join(pkg_path, '__init__.py'), 'r') as fp:
         for line in fp:
@@ -28,6 +19,16 @@ def get_readme_text():
     with open("README.md", "r", encoding="utf8") as fp:
         long_description = fp.read()
     return long_description
+
+def align_manifest_filter(cmake_manifest):
+    '''
+    Pick out all generated *.so* & test_* files
+    '''
+    return list(filter(lambda name: 'test_' in name or '.so' in name, cmake_manifest))
+
+# Is this an inplace install?
+# (pip install -e .)
+devmode = 'develop' in sys.argv
 
 setup(name='align',
       version=get_version(
@@ -41,8 +42,13 @@ setup(name='align',
       author='Parijat Mukherjee',
       author_email='parijat.mukherjee@intel.com',
       license='BSD-3-Clause',
-      packages=find_packages(include=['align', 'align.*']),
+      packages = \
+          find_packages(include=['align', 'align.*']) \
+        + (['tests'] if devmode else []),
       package_data={'align': ['config/*']},
+      cmake_args = \
+          ['-DALIGN_BUILD_TESTING:bool=TRUE'] if devmode else [],
+      cmake_process_manifest_hook=align_manifest_filter,
       scripts=[
           'bin/schematic2layout.py',
           'bin/gds2png.sh'
@@ -65,7 +71,8 @@ setup(name='align',
               'pytest',
               'pytest-cov',
               'pytest-xdist',
-              'pytest-timeout'
+              'pytest-timeout',
+              'pytest-cpp'
           ]
       },
       python_requires='>=3.7',
@@ -79,5 +86,4 @@ setup(name='align',
           'Programming Language :: C++',
           'Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)'
       ],
-      cmake_install_dir='.',
       zip_safe=False)

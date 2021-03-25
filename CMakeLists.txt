@@ -26,8 +26,6 @@ option(BUILD_SHARED_LIBS "Use SHARED keyword to mark shared libraries" OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH "$ORIGIN/thirdparty")
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 # May need to limit ninja's max concurrency for CIRCLECI
 if(DEFINED ENV{MAX_JOBS})
@@ -49,6 +47,9 @@ include(PlaceRouteHierFlow/thirdparty/superlu.cmake)
 include(PlaceRouteHierFlow/thirdparty/boost.cmake)
 include(PlaceRouteHierFlow/thirdparty/lpsolve.cmake)
 include(PlaceRouteHierFlow/thirdparty/pybind11.cmake)
+if(ALIGN_BUILD_TESTING)
+  include(PlaceRouteHierFlow/thirdparty/googletest.cmake)
+endif()
 
 #
 # Build C++ code residing in the following directories:
@@ -61,4 +62,21 @@ add_subdirectory(PlaceRouteHierFlow)
 # - align.PnR
 #
 pybind11_extension(PnR)
-install(TARGETS PnR DESTINATION ${ALIGN_INSTALL_PREFIX})
+install(TARGETS PnR DESTINATION "${ALIGN_INSTALL_PREFIX}")
+set_target_properties(PnR PROPERTIES
+  INSTALL_RPATH "$ORIGIN/thirdparty"
+  INSTALL_RPATH_USE_LINK_PATH TRUE
+)
+
+#
+# Install the following executables
+# when called using `pip install -e .`
+# - tests/test_PnR
+#
+if(ALIGN_BUILD_TESTING)
+  install(TARGETS test_PnR DESTINATION "${CMAKE_INSTALL_PREFIX}/tests")
+  set_target_properties(test_PnR PROPERTIES
+    INSTALL_RPATH "$ORIGIN/../align/thirdparty"
+    INSTALL_RPATH_USE_LINK_PATH TRUE
+  )
+endif()

@@ -30,3 +30,32 @@ target_link_libraries(
      pybind11::module
      Boost::boost
 )
+
+if(ALIGN_BUILD_TESTING)
+     add_executable(test_PnR
+          unit_tests.cpp
+          PnRDB/unit_tests.cpp
+          placer/unit_tests.cpp
+          router/unit_tests.cpp
+          cap_placer/unit_tests.cpp
+          )
+
+     target_link_libraries(
+          test_PnR
+          # Internal Dependencies
+          PnRDB
+          placer
+          router
+          cap_placer
+          guard_ring
+          MNA
+          # External Dependencies
+          lpsolve::lpsolve55
+          nlohmann_json::nlohmann_json
+          spdlog::spdlog
+          superlu
+          pybind11::module
+          Boost::boost
+          GTest::gtest
+          GTest::gtest_main)
+endif()
