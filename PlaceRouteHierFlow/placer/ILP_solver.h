@@ -46,18 +46,20 @@ class ILP_solver {
   double Aspect_Ratio_weight = 1000;
   typedef void (lphandlestr_func)(lprec *lp, void *userhandle, char *buf);
   static void lpsolve_logger(lprec *lp, void *userhandle, char *buf);
+  vector<vector<int>> block_order;
 
   public:
   ILP_solver();
+  ILP_solver(design& mydesign, PnRDB::hierNode& node);
   ILP_solver(design& mydesign);
   ILP_solver(const ILP_solver& solver);
   ILP_solver& operator=(const ILP_solver& solver);
-  double GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
+  double GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node);
   double CalculateCost(design& mydesign, SeqPair& curr_sp);
   void WritePlacement(design& caseNL, SeqPair& curr_sp, string outfile);
-  void PlotPlacement(design& caseNL, SeqPair& curr_sp, string outfile);
+  void PlotPlacement(design& caseNL, string outfile);
   std::vector<double> Calculate_Center_Point_feature(std::vector<std::vector<placerDB::point> >& temp_contact);
-  void updateTerminalCenter(design& mydesign, SeqPair& caseSP);
+  void updateTerminalCenter(design& mydesign, SeqPair& curr_sp);
   void UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo);
   void UpdateBlockinHierNode(design& mydesign, placerDB::Omark ort, PnRDB::hierNode& node, int i, int sel, PnRDB::Drc_info& drcInfo);
   void UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo);
