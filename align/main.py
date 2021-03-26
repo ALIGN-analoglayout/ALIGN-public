@@ -78,8 +78,6 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         results.append( (netlist, variants))
         assert len(variants) >= 1, f"No layouts were generated for {netlist}. Cannot proceed further. See LOG/align.log for last error."
 
-        logger.info( f'{variants=}')
-
         # Generate necessary output collateral into current directory
         for variant, filemap in variants.items():
             convert_GDSjson_GDS(filemap['gdsjson'], working_dir / f'{variant}.gds')
@@ -96,7 +94,6 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
 
             (working_dir / filemap['lef'].name).write_text(filemap['lef'].read_text())
             if check:
-                logger.info( f'{filemap=}')
                 if filemap['errors'] > 0:
                     (working_dir / filemap['errfile'].name).write_text(filemap['errfile'].read_text())
 

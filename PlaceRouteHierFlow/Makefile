@@ -32,10 +32,10 @@ else
 COVERAGE=
 endif
 
-FLAGS?=-std=c++17 -m64 -fPIC $(COVERAGE) -DNDEBUG -DPRNTlevel=0 -DAdd_
+FLAGS?=-std=c++17 -m64 -fPIC $(COVERAGE) -DPRNTlevel=0 -DAdd_
 
-DEBUGFLAGS?=-Og -g -Wall # Consider using -Og instead of -O3
-OPTIMFLAGS?=-O3 # -s -w
+DEBUGFLAGS?=-O0 -g -Wall # Consider using -Og instead of -O3
+OPTIMFLAGS?=-DNDEBUG -O3 # -s -w
 
 all: depend subsystem pnr_compiler python_object_file unit_tests
 

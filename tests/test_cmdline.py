@@ -7,9 +7,9 @@ import shutil
 examples = [('inverter_v1',1),
             ('buffer',1),
             ('five_transistor_ota',1),
-#            ('five_transistor_ota',2),
+            ('five_transistor_ota',2),
             ('cascode_current_mirror_ota',1),
-#            ('cascode_current_mirror_ota',2),
+            ('cascode_current_mirror_ota',2),
             ('adder',1)]
 
 ALIGN_HOME = pathlib.Path(__file__).resolve().parent.parent

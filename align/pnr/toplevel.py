@@ -142,9 +142,14 @@ def route_top_down( DB, drcInfo,
                     current_node_ort, idx, lidx,
                     opath, binary_directory, skip_saving_state, adr_mode):
 
-    logger.debug( f'Start of route_top_down {idx=}')
+
 
     current_node = DB.CheckoutHierNode(idx) # Make a copy
+    i_copy = DB.hierTree[idx].n_copy
+
+    logger.info( f'Start of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy}')
+    
+
     DB.hierTree[idx].n_copy += 1
     current_node_name = current_node.name
     current_node.LL = bounding_box.LL
@@ -159,9 +164,7 @@ def route_top_down( DB, drcInfo,
         childnode_orient = DB.RelOrt2AbsOrt( current_node_ort, inst.orient)
         child_node_name = DB.hierTree[child_idx].name
         childnode_bbox = PnR.bbox( inst.placedBox.LL, inst.placedBox.UR)
-        new_childnode_idx = 0
-        for lidx in range(DB.hierTree[child_idx].numPlacement):
-            new_childnode_idx = route_top_down(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, lidx, opath, binary_directory, skip_saving_state, adr_mode)
+        new_childnode_idx = route_top_down(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, 0, opath, binary_directory, skip_saving_state, adr_mode)
 
         DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_childnode_idx])
         current_node.Blocks[bit].child = new_childnode_idx
@@ -182,7 +185,7 @@ def route_top_down( DB, drcInfo,
         DB.SetParentInHierTree( blk.child, 0, new_currentnode_idx)
         logger.debug( f'Set parent of {blk.child} to {new_currentnode_idx} => {DB.hierTree[blk.child].parent[0]=}')
 
-    logger.debug( f'End of route_top_down {len(DB.hierTree)=}')
+    logger.info( f'End of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy} new_currentnode_idx {new_currentnode_idx}')
 
     return new_currentnode_idx
 
@@ -217,7 +220,7 @@ def toplevel(args):
             json.dump( [DB.CheckoutHierNode(i).name for i in TraverseOrder], indent=2, fp=fp)
 
     for idx in TraverseOrder:
-        logger.info(f'Topo order: {idx}')
+        logger.info(f'Topo order: {idx} {DB.hierTree[idx].name}')
 
         current_node = DB.CheckoutHierNode(idx)
 
@@ -241,13 +244,18 @@ def toplevel(args):
 
         DB.hierTree[idx].numPlacement = actualNumLayout
 
+    logger.info(f'Starting top-down routing')
+
     last = TraverseOrder[-1]
     new_topnode_indices = []
+
+    assert len(DB.hierTree[last].PnRAS) == DB.hierTree[last].numPlacement
+
     for lidx in range(DB.hierTree[last].numPlacement):
         new_topnode_idx = route_top_down( DB, drcInfo,
                                           PnR.bbox( PnR.point(0,0),
-                                                    PnR.point(DB.hierTree[last].PnRAS[0].width,
-                                                              DB.hierTree[last].PnRAS[0].height)),
+                                                    PnR.point(DB.hierTree[last].PnRAS[lidx].width,
+                                                              DB.hierTree[last].PnRAS[lidx].height)),
                                           Omark.N, last, lidx,
                                           opath, binary_directory, skip_saving_state, adr_mode)
         new_topnode_indices.append(new_topnode_idx)
