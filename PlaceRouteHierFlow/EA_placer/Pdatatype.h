@@ -73,4 +73,10 @@ struct net {
     Ppoint_F NSumNetforce_WA; //sum Netforce in X/Y direction wa: sum( xi*exp(-xi/gammer) )
 };
 
+struct SymmPairBlock {
+  vector< pair<int,int> > sympair;
+  vector< int> selfsym;//first, block id, second direction
+  int horizon=0;
+  pair<int, int> axis;//symmetrix axis = (first + second)/2
+};
 #endif
