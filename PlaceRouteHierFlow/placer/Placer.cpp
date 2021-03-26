@@ -719,8 +719,9 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   //curr_sp.PrintSeqPair();
   ILP_solver curr_sol(designData,nodeVec.back());
   curr_sol.GenerateValidSolution(designData, drcInfo, nodeVec.back());
-  //curr_sol.updateTerminalCenter(designData);
+  curr_sol.updateTerminalCenter(designData);
   curr_sol.PlotPlacement(designData, opath + nodeVec.back().name + "_" + std::to_string(0) + ".plt");
+  curr_sol.UpdateHierNode(designData, nodeVec.back(), drcInfo);
   // std::map<double, std::pair<SeqPair, ILP_solver>> spVec=PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo);
   // curr_sol.updateTerminalCenter(designData, curr_sp);
   // curr_sol.PlotPlacement(designData, curr_sp, opath+nodeVec.back().name+"opt.plt");
@@ -742,7 +743,6 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   // 
   // it->second.second.WritePlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".pl");
   // it->second.second.PlotPlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".plt");
-  // it->second.second.UpdateHierNode(designData, it->second.first, nodeVec[idx], drcInfo);
   //}
 }
 

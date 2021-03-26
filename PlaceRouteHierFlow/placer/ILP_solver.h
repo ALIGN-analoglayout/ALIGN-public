@@ -59,11 +59,11 @@ class ILP_solver {
   void WritePlacement(design& caseNL, SeqPair& curr_sp, string outfile);
   void PlotPlacement(design& caseNL, string outfile);
   std::vector<double> Calculate_Center_Point_feature(std::vector<std::vector<placerDB::point> >& temp_contact);
-  void updateTerminalCenter(design& mydesign, SeqPair& curr_sp);
-  void UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo);
+  void updateTerminalCenter(design& mydesign);
+  void UpdateHierNode(design& mydesign, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo);
   void UpdateBlockinHierNode(design& mydesign, placerDB::Omark ort, PnRDB::hierNode& node, int i, int sel, PnRDB::Drc_info& drcInfo);
   void UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo);
-  void UpdateSymmetryNetInfo(design& mydesign, PnRDB::hierNode& node, int i, int SBidx, placerDB::Smark axis_dir, SeqPair& curr_sp);
+  void UpdateSymmetryNetInfo(design& mydesign, PnRDB::hierNode& node, int i, int SBidx, placerDB::Smark axis_dir);
   PnRDB::bbox ConvertBoundaryData(vector<placerDB::point> Bdata);
   PnRDB::point ConvertPointData(placerDB::point Pdata);
 };
