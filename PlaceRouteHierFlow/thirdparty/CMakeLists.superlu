@@ -14,16 +14,6 @@ set(VERSION_MINOR "2")
 set(VERSION_BugFix "2")
 set(PROJECT_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_BugFix})
 
-######################################################################
-#
-# IDEAS: xSDK standards module
-MESSAGE("\nProcess XSDK defaults ...")
-# SET(USE_XSDK_DEFAULTS_DEFAULT TRUE) # Set to false if desired
-INCLUDE("cmake/XSDKDefaults.cmake")
-
-######################################################################
-
-
 if (BUILD_SHARED_LIBS)
   message("-- SuperLU will be built as a shared library.")
   set(PROJECT_NAME_LIB_EXPORT libsuperlu.so)
@@ -32,20 +22,10 @@ else()
   set(PROJECT_NAME_LIB_EXPORT libsuperlu.a)
 endif()
 
-enable_language(C)
-if (XSDK_ENABLE_Fortran)
-  enable_language (Fortran)
-  set(NOFORTRAN FALSE)
-endif()
 set(SUPERLU_VERSION "${PROJECT_VERSION}")
 set(SUPERLU_REV "${PROJECT_REV}")
 
-# The XSDK standard does not allow using internally built BLAS
-if (USE_XSDK_DEFAULTS)
-  set(enable_blaslib_DEFAULT OFF)
-else()
-  set(enable_blaslib_DEFAULT ON)
-endif()
+set(enable_blaslib_DEFAULT ON)
 
 if (NOT CMAKE_INSTALL_PREFIX)
   set(CMAKE_INSTALL_PREFIX /usr/local)
