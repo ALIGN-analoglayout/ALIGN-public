@@ -189,7 +189,8 @@ void PnRdatabase::Write_Power_Mesh_Conf(std::string outputfile){
 
 
   for(int i=0;i<DRC_info.Metal_info.size();i++){
-    PMCfile<<(double) (rand()%5+1)/10<<" "; //power density change from 0.1 to 0.5
+    //PMCfile<<(double) (rand()%5+1)/10<<" "; //power density change from 0.1 to 0.5
+    PMCfile<<(double) 4/10<<" "; //power density change from 0.1 to 0.5
   }
   PMCfile<<std::endl;  
 

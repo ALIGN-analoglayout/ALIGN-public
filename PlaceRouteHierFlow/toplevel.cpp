@@ -141,7 +141,7 @@ void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
         DB.Write_Power_Mesh_Conf(power_mesh_conffile);
       }
       power_grid_metal_l = 2;
-      power_grid_metal_u = 11;
+      power_grid_metal_u = 9;
       curr_route.RouteWork(7, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), power_grid_metal_l, power_grid_metal_u, binary_directory, h_skip_factor, v_skip_factor, power_mesh_conffile);
       logger->debug("Start MNA ");
       string output_file_IR = "IR_drop.txt";
