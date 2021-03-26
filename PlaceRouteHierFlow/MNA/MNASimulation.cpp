@@ -1239,7 +1239,7 @@ void MNASimulation::Map_new(std::vector<std::vector<double>> &currentstore, std:
 		  }
 	  }
     for(auto it = point_set.begin(); it != point_set.end(); ++it){
-	     if (it->x >= gnd_maxx && it->y >= gnd_maxx && it->metal_layer == metal_layer && it->power == 0){
+	     if (it->x >= gnd_maxx && it->y >= gnd_maxy && it->metal_layer == metal_layer && it->power == 0){
 		    end_index = it->index;
                     end_metal_point.x = it->x;
                     end_metal_point.y = it->y;
@@ -1309,4 +1309,3 @@ void MNASimulation::Map_new(std::vector<std::vector<double>> &currentstore, std:
     Power_Grid_devices.push_back(temp_device);
   }
 };
-
