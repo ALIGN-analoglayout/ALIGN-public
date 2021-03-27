@@ -45,6 +45,55 @@ TEST(PnRDBTest, get_number) {
   EXPECT_EQ( foo.get_number( "10000000000000"), 10000000000000ULL);
 }
 
+
+// TEST( EndsWithTest, Test1)
+// {
+//     EXPECT_TRUE( EndsWith( "", ""));
+//     EXPECT_TRUE( EndsWith( "a", ""));
+//     EXPECT_FALSE( EndsWith( "", "a"));
+//     EXPECT_TRUE( EndsWith( "Steve Burns", "Burns"));
+//     EXPECT_FALSE( EndsWith( "Steve Burns", "Treefrog Steve Burns"));
+// }
+
+// TEST( hierNodeTest, TestA)
+// {
+
+//   auto logger = spdlog::default_logger()->clone("PnRDB.TEST");
+
+//   PnRDB::hierNode hN;
+//   hN.name = "hierNodeName";
+
+//   json json_hN(hN);
+
+//   EXPECT_EQ( json_hN["name"], "hierNodeName");
+
+//   {
+//     std::ofstream jsonStream( "__json");
+//     if(jsonStream.fail()) {
+//       logger->error("Cannot open file __json for writing");
+//       return;
+//     }
+//     jsonStream << std::setw(4) << json_hN;
+//     jsonStream.close();
+//   }
+
+// }
+
+// TEST( hierNodeTest, TestInOut)
+// {
+//   std::ifstream ifs( "telescopic_ota-freeze.json");
+//   json j = json::parse( ifs);
+
+//   PnRDB::hierNode hN;
+
+//   j.get_to( hN);
+
+//   json json_hN(hN);
+
+//   EXPECT_EQ( j, json_hN);
+
+// }
+
 TEST(PnRDBTest, Lexer) {
   string str =
 "//Verilog block level netlist file for telescopic_ota\n"
