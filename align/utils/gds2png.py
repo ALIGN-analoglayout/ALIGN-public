@@ -1,12 +1,13 @@
 import pathlib
 import subprocess
+import sys
 
 import logging
 logger = logging.getLogger(__name__)
 
 def generate_png(working_dir, variant):
     cmd = [
-        "gds2png.sh",
+        os.path.dirname(sys.executable) + "/gds2png.sh",
         str(working_dir / f'{variant}.gds'),
         str(working_dir / f'{variant}.png'),
         str(pathlib.Path(__file__).parent.parent / 'config' / 'image_png.rb')

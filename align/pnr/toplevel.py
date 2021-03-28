@@ -5,11 +5,7 @@ import pathlib
 import json
 from itertools import chain
 
-# Needed for Pybind11 dynamic executables
-import sys, os
-sys.setdlopenflags(os.RTLD_GLOBAL|os.RTLD_LAZY)
-
-import PnR
+from .. import PnR
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +13,7 @@ NType = PnR.NType
 Omark = PnR.Omark
 TransformType = PnR.TransformType
 
-def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, skip_saving_state, adr_mode):
+def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, adr_mode, *, PDN_mode, dataset_generation):
     NEW_GLOBAL_ROUTER = True
     h_skip_factor = 5;
     v_skip_factor = 5;
@@ -78,11 +74,8 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
         power_routing_metal_l = 0
         power_routing_metal_u = 6
 
-        # DC Power Grid Simulation not supported
-        PDN_mode = False
         # Power Grid Simulation
         if PDN_mode:
-            dataset_generation = False
             current_file = "InputCurrent_initial.txt"
             power_mesh_conffile = "Power_Grid_Conf.txt"
             if dataset_generation:
@@ -123,7 +116,6 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
     if current_node.isTop:
         DB.WriteJSON(current_node, True, True, True, True, f'{current_node.name}_{lidx}', drcInfo, opath)
         DB.WriteLef(current_node, f'{current_node.name}_{lidx}.lef', opath)
-        #save_state( DB, current_node, lidx, opath, "", "Final result", skip_saving_state)
         DB.PrintHierNode(current_node)
     else:
         current_node_copy = PnR.hierNode(current_node)
@@ -134,16 +126,13 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
         DB.WriteLef(current_node_copy,
                     f'{current_node_copy.name}_{current_node_copy.n_copy}_{lidx}.lef', opath)
 
-        #save_state( DB, current_node_copy, lidx, opath, "", "Final result", skip_saving_state)
         DB.PrintHierNode(current_node_copy)
 
 
 def route_top_down( DB, drcInfo,
                     bounding_box,
                     current_node_ort, idx, lidx,
-                    opath, binary_directory, skip_saving_state, adr_mode):
-
-
+                    opath, binary_directory, adr_mode, *, PDN_mode, dataset_generation):
 
     current_node = DB.CheckoutHierNode(idx) # Make a copy
     i_copy = DB.hierTree[idx].n_copy
@@ -166,25 +155,24 @@ def route_top_down( DB, drcInfo,
         child_node_name = DB.hierTree[child_idx].name
         childnode_bbox = PnR.bbox( inst.placedBox.LL, inst.placedBox.UR)
         new_childnode_idx = route_top_down(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, 0, opath, binary_directory, skip_saving_state, adr_mode)
-
         DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_childnode_idx])
         current_node.Blocks[bit].child = new_childnode_idx
 
     DB.ExtractPinsToPowerPins(current_node)
-    route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, skip_saving_state, adr_mode)
+    route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, adr_mode, PDN_mode=PDN_mode, dataset_generation=dataset_generation)
 
     if not current_node.isTop:
         DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Backward)
 
-    logger.debug( f'Before DB.AppendToHierTree {len(DB.hierTree)=}')
+    logger.debug( f'Before DB.AppendToHierTree len(DB.hierTree)={len(DB.hierTree)}')
     DB.AppendToHierTree(current_node)
-    logger.debug( f'After DB.AppendToHierTree {len(DB.hierTree)=}')
+    logger.debug( f'After DB.AppendToHierTree len(DB.hierTree)={len(DB.hierTree)}')
     new_currentnode_idx = len(DB.hierTree) - 1
 
     for bit,blk in enumerate(current_node.Blocks):
         if blk.child == -1: continue
         DB.SetParentInHierTree( blk.child, 0, new_currentnode_idx)
-        logger.debug( f'Set parent of {blk.child} to {new_currentnode_idx} => {DB.hierTree[blk.child].parent[0]=}')
+        logger.debug( f'Set parent of {blk.child} to {new_currentnode_idx} => DB.hierTree[blk.child].parent[0]={DB.hierTree[blk.child].parent[0]}')
 
     logger.info( f'End of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy} new_currentnode_idx {new_currentnode_idx}')
 
@@ -241,11 +229,10 @@ def analyze_hN( tag, hN, beforeAddingBlockPins=False):
             logger.info( f'    {inst.name=} {inst.master=} {len(inst.dummy_power_pin)=}')
 
 
-def toplevel(args):
+def toplevel(args, *, PDN_mode=False, dataset_generation=False):
 
     assert len(args) == 9
 
-    skip_saving_state = False
     adr_mode = False
 
     opath = './Results/'
@@ -309,7 +296,7 @@ def toplevel(args):
                                                     PnR.point(DB.hierTree[last].PnRAS[lidx].width,
                                                               DB.hierTree[last].PnRAS[lidx].height)),
                                           Omark.N, last, lidx,
-                                          opath, binary_directory, skip_saving_state, adr_mode)
+                                          opath, binary_directory, adr_mode, PDN_mode=PDN_mode, dataset_generation=dataset_generation)
         new_topnode_indices.append(new_topnode_idx)
 
     return DB

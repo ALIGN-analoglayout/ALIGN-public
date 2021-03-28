@@ -1,5 +1,4 @@
 import abc
-import z3
 import random
 import string
 import collections
@@ -7,6 +6,15 @@ import more_itertools as itertools
 
 from . import types
 from .types import Union, Optional, Literal, List
+
+import logging
+logger = logging.getLogger(__name__)
+
+try:
+    import z3
+except:
+    z3 = None
+    logger.warning("Could not import z3. ConstraintDB will not look for spec inconsistency.")
 
 class ConstraintBase(types.BaseModel, abc.ABC):
 
@@ -85,18 +93,22 @@ class ConstraintDB(types.BaseModel):
             self._solver.append(*constraint.check())
             assert self._solver.check() == z3.sat
 
-    def __init__(self, validation=True):
+    def __init__(self, validation=None):
         super().__init__(__root__=[])
-        self._solver = z3.Solver()
         self._commits = collections.OrderedDict()
-        self._validation = validation
+        if z3 is not None:
+            self._solver = z3.Solver()
+            if validation is not None:
+                self._validation = validation
+        else:
+            assert not validation, "Cannot validate without z3"
 
     #
     # Private attribute affecting class behavior
     #
     _solver = types.PrivateAttr()
     _commits = types.PrivateAttr()
-    _validation = types.PrivateAttr()
+    _validation = types.PrivateAttr(default_factory=lambda: z3 is not None)
 
     def __iter__(self):
         return iter(self.__root__)
@@ -112,12 +124,14 @@ class ConstraintDB(types.BaseModel):
         return self._gen_commit_id(nchar) if id_ in self._commits else id_
 
     def checkpoint(self):
-        self._solver.push()
         self._commits[self._gen_commit_id()] = len(self.__root__)
+        if self._validation:
+            self._solver.push()
         return next(reversed(self._commits))
 
     def _revert(self):
-        self._solver.pop()
+        if self._validation:
+            self._solver.pop()
         _, length = self._commits.popitem()
         del self.__root__[length:]
 

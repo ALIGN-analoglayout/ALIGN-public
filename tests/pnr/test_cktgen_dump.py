@@ -234,22 +234,32 @@ def aux(design, subdesign=None):
     with open( mydir / f"__json_{subdesign}_gr", "wt") as fp:
         json.dump( newGRs, fp=fp, indent=2)
 
-@pytest.mark.skipif('ALIGN_WORK_DIR' not in os.environ,
+def results_directory_missing(design):
+    '''
+    This function will return true
+    if dependency is not satisfied
+    '''
+    if 'ALIGN_WORK_DIR' not in os.environ: return True
+    assert design, 'Function expects design name'
+    rdir = pathlib.Path( os.environ["ALIGN_WORK_DIR"]) / design / "3_pnr" / "Results"
+    return not rdir.is_dir()
+
+@pytest.mark.skipif(results_directory_missing("five_transistor_ota"),
                     reason='Necessary test collateral has not been built')
 def test_A():
     aux( "five_transistor_ota", "five_transistor_ota")
 
-@pytest.mark.skipif('ALIGN_WORK_DIR' not in os.environ,
+@pytest.mark.skipif(results_directory_missing("switched_capacitor_filter"),
                     reason='Necessary test collateral has not been built')
 def test_B():
     aux( "switched_capacitor_filter", "telescopic_ota")
 
-@pytest.mark.skipif('ALIGN_WORK_DIR' not in os.environ,
+@pytest.mark.skipif(results_directory_missing("telescopic_ota"),
                     reason='Necessary test collateral has not been built')
 def test_B2():
     aux( "telescopic_ota", "telescopic_ota")
 
-@pytest.mark.skipif('ALIGN_WORK_DIR' not in os.environ,
+@pytest.mark.skipif(results_directory_missing("cascode_current_mirror_ota"),
                     reason='Necessary test collateral has not been built')
 def test_C():
     aux( "cascode_current_mirror_ota", "CASCODED_CMC_PMOS")
