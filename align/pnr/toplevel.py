@@ -11,7 +11,7 @@ NType = PnR.NType
 Omark = PnR.Omark
 TransformType = PnR.TransformType
 
-def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, skip_saving_state, adr_mode):
+def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, adr_mode, *, PDN_mode, dataset_generation):
     NEW_GLOBAL_ROUTER = True
     h_skip_factor = 5;
     v_skip_factor = 5;
@@ -72,11 +72,8 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
         power_routing_metal_l = 0
         power_routing_metal_u = 6
 
-        # DC Power Grid Simulation not supported
-        PDN_mode = False
         # Power Grid Simulation
         if PDN_mode:
-            dataset_generation = False
             current_file = "InputCurrent_initial.txt"
             power_mesh_conffile = "Power_Grid_Conf.txt"
             if dataset_generation:
@@ -117,7 +114,6 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
     if current_node.isTop:
         DB.WriteJSON(current_node, True, True, True, True, f'{current_node.name}_{lidx}', drcInfo, opath)
         DB.WriteLef(current_node, f'{current_node.name}_{lidx}.lef', opath)
-        #save_state( DB, current_node, lidx, opath, "", "Final result", skip_saving_state)
         DB.PrintHierNode(current_node)
     else:
         current_node_copy = PnR.hierNode(current_node)
@@ -128,14 +124,13 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
         DB.WriteLef(current_node_copy,
                     f'{current_node_copy.name}_{current_node_copy.n_copy}_{lidx}.lef', opath)
 
-        #save_state( DB, current_node_copy, lidx, opath, "", "Final result", skip_saving_state)
         DB.PrintHierNode(current_node_copy)
 
 
 def route_top_down( DB, drcInfo,
                     bounding_box,
                     current_node_ort, idx, lidx,
-                    opath, binary_directory, skip_saving_state, adr_mode):
+                    opath, binary_directory, adr_mode, *, PDN_mode, dataset_generation):
 
     logger.debug( f'Start of route_top_down idx={idx}')
 
@@ -156,13 +151,13 @@ def route_top_down( DB, drcInfo,
         childnode_bbox = PnR.bbox( inst.placedBox.LL, inst.placedBox.UR)
         new_childnode_idx = 0
         for lidx in range(DB.hierTree[child_idx].numPlacement):
-            new_childnode_idx = route_top_down(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, lidx, opath, binary_directory, skip_saving_state, adr_mode)
+            new_childnode_idx = route_top_down(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, lidx, opath, binary_directory, adr_mode, PDN_mode=PDN_mode, dataset_generation=dataset_generation)
 
         DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_childnode_idx])
         current_node.Blocks[bit].child = new_childnode_idx
 
     DB.ExtractPinsToPowerPins(current_node)
-    route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, skip_saving_state, adr_mode)
+    route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, adr_mode, PDN_mode=PDN_mode, dataset_generation=dataset_generation)
 
     if not current_node.isTop:
         DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Backward)
@@ -182,11 +177,10 @@ def route_top_down( DB, drcInfo,
     return new_currentnode_idx
 
 
-def toplevel(args):
+def toplevel(args, *, PDN_mode=False, dataset_generation=False):
 
     assert len(args) == 9
 
-    skip_saving_state = False
     adr_mode = False
 
     opath = './Results/'
@@ -206,10 +200,6 @@ def toplevel(args):
     lefData = DB.checkoutSingleLEF()
 
     TraverseOrder = DB.TraverseHierTree()
-
-    if not skip_saving_state:
-        with open( opath + "__hierTree.json", "wt") as fp:
-            json.dump( [DB.CheckoutHierNode(i).name for i in TraverseOrder], indent=2, fp=fp)
 
     for idx in TraverseOrder:
         logger.info(f'Topo order: {idx}')
@@ -244,7 +234,7 @@ def toplevel(args):
                                                     PnR.point(DB.hierTree[last].PnRAS[0].width,
                                                               DB.hierTree[last].PnRAS[0].height)),
                                           Omark.N, last, lidx,
-                                          opath, binary_directory, skip_saving_state, adr_mode)
+                                          opath, binary_directory, adr_mode, PDN_mode=PDN_mode, dataset_generation=dataset_generation)
         new_topnode_indices.append(new_topnode_idx)
 
     return DB
