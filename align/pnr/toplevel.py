@@ -154,7 +154,7 @@ def route_top_down( DB, drcInfo,
         childnode_orient = DB.RelOrt2AbsOrt( current_node_ort, inst.orient)
         child_node_name = DB.hierTree[child_idx].name
         childnode_bbox = PnR.bbox( inst.placedBox.LL, inst.placedBox.UR)
-        new_childnode_idx = route_top_down(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, 0, opath, binary_directory, skip_saving_state, adr_mode)
+        new_childnode_idx = route_top_down(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, 0, opath, binary_directory, adr_mode, PDN_mode=PDN_mode, dataset_generation=dataset_generation)
         DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_childnode_idx])
         current_node.Blocks[bit].child = new_childnode_idx
 
