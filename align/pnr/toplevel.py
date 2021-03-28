@@ -212,21 +212,21 @@ def analyze_hN( tag, hN, beforeAddingBlockPins=False):
         for conn in net.dummy_connected:
             if 0 <= conn.iter2 < len(hN.Blocks):
                 blk = hN.Blocks[conn.iter2]
-                logger.info( f'    {blk.selectedInstance=}')
+                logger.info( f'    blk.selectedInstance={blk.selectedInstance}')
                 for inst_idx,inst in enumerate(blk.instance):
                     if beforeAddingBlockPins:
                         if 0 <= conn.iter < len(inst.dummy_power_pin):
-                            logger.info( f'    {conn.iter} ({inst.dummy_power_pin[conn.iter].name}) {conn.iter2} ({inst.name} {inst.master}) {inst_idx=}')
+                            logger.info( f'    {conn.iter} ({inst.dummy_power_pin[conn.iter].name}) {conn.iter2} ({inst.name} {inst.master}) inst_idx={inst_idx}')
                         else:
-                            logger.info( f'    {conn.iter} (<out of range>) {conn.iter2} ({inst.name} {inst.master}) {inst_idx=}')                        
+                            logger.info( f'    {conn.iter} (<out of range>) {conn.iter2} ({inst.name} {inst.master}) inst_idx={inst_idx}')                        
             else:
                 logger.info( f'    {conn.iter} (<unknown>) {conn.iter2} (<out of range>)')
 
     logger.info( f'Blocks')
     for blk in hN.Blocks:
-        logger.info( f'  {blk.child=} {len(blk.instance)=} {blk.selectedInstance=} {blk.instNum=}')
+        logger.info( f'  blk.child={blk.child} len(blk.instance)={len(blk.instance)} blk.selectedInstance={blk.selectedInstance} blk.instNum={blk.instNum}')
         for inst in blk.instance:
-            logger.info( f'    {inst.name=} {inst.master=} {len(inst.dummy_power_pin)=}')
+            logger.info( f'    inst.name={inst.name} inst.master={inst.master} len(inst.dummy_power_pin)={len(inst.dummy_power_pin)}')
 
 
 def toplevel(args, *, PDN_mode=False, dataset_generation=False):

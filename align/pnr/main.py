@@ -203,7 +203,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
             order = [(i,DB.CheckoutHierNode(i).name) for i in TraverseHierTree(topidx)]
             assert order[-1][1] == subckt, f"Last in topological order should be the subckt {subckt} {order}"
 
-            logger.info( f'{order=}')
+            logger.info( f'order={order}')
 
             for idx,nm in order[:-1]:
                 n_copy = DB.hierTree[idx].n_copy
@@ -211,7 +211,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
                 i_placement = 0
 
                 variant_name = f'{nm}_{n_copy}_{i_placement}'
-                logger.info(f'Processing top-down generated blocks {DB.hierTree[idx].numPlacement}: {idx=} {nm=} {variant_name=}')
+                logger.info(f'Processing top-down generated blocks {DB.hierTree[idx].numPlacement}: idx={idx} nm={nm} variant_name={variant_name}')
 
                 hN = DB.CheckoutHierNode(idx)
 
@@ -237,7 +237,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
 
             variant = f'{nm}_{lidx}'
 
-            logger.info(f'Processing top-down generated blocks: {lidx=} {topidx=} {nm=} {variant=}')
+            logger.info(f'Processing top-down generated blocks: lidx={lidx} topidx={topidx} nm={nm} variant={variant}')
 
             hN = DB.CheckoutHierNode(idx)
 
