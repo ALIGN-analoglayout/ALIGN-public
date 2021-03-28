@@ -3,6 +3,7 @@
 import logging
 import pathlib
 import json
+from itertools import chain
 
 # Needed for Pybind11 dynamic executables
 import sys, os
@@ -190,6 +191,56 @@ def route_top_down( DB, drcInfo,
     return new_currentnode_idx
 
 
+def analyze_hN( tag, hN, beforeAddingBlockPins=False):
+    logger.info( f'{tag} name {hN.name}')
+
+    logger.info( f'Nets and PowerNets')
+    for net in chain( hN.Nets, hN.PowerNets):
+        logger.info( f'  {net.name}')
+        for conn in net.connected:
+            if conn.type == NType.Block:
+                if 0 <= conn.iter2 < len(hN.Blocks):
+                    blk = hN.Blocks[conn.iter2]
+                    inst = blk.instance[0]
+
+                    if 0 <= conn.iter < len(inst.blockPins):
+
+                        logger.info( f'    {conn.type} {conn.iter} ({inst.blockPins[conn.iter].name}) {conn.iter2} ({inst.name} {inst.master})')
+                    else:
+                        logger.info( f'    {conn.type} {conn.iter} (<out of range>) {conn.iter2} ({inst.name} {inst.master})')                        
+
+                else:
+                    logger.info( f'    {conn.type} {conn.iter} (<unknown>) {conn.iter2} (<out of range>)')
+            elif conn.type == NType.Terminal:
+                assert conn.iter2 == -1
+                if 0 <= conn.iter < len(hN.Terminals):
+                    logger.info( f'    {conn.type} {conn.iter} ({hN.Terminals[conn.iter].name})')
+                else:
+                    logger.info( f'    {conn.type} {conn.iter} (<out of range>)')
+
+    logger.info( f'PowerNets (second pass)')
+    for net in hN.PowerNets:
+        logger.info( f'  {net.name}')
+        for conn in net.dummy_connected:
+            if 0 <= conn.iter2 < len(hN.Blocks):
+                blk = hN.Blocks[conn.iter2]
+                logger.info( f'    {blk.selectedInstance=}')
+                for inst_idx,inst in enumerate(blk.instance):
+                    if beforeAddingBlockPins:
+                        if 0 <= conn.iter < len(inst.dummy_power_pin):
+                            logger.info( f'    {conn.iter} ({inst.dummy_power_pin[conn.iter].name}) {conn.iter2} ({inst.name} {inst.master}) {inst_idx=}')
+                        else:
+                            logger.info( f'    {conn.iter} (<out of range>) {conn.iter2} ({inst.name} {inst.master}) {inst_idx=}')                        
+            else:
+                logger.info( f'    {conn.iter} (<unknown>) {conn.iter2} (<out of range>)')
+
+    logger.info( f'Blocks')
+    for blk in hN.Blocks:
+        logger.info( f'  {blk.child=} {len(blk.instance)=} {blk.selectedInstance=} {blk.instNum=}')
+        for inst in blk.instance:
+            logger.info( f'    {inst.name=} {inst.master=} {len(inst.dummy_power_pin)=}')
+
+
 def toplevel(args):
 
     assert len(args) == 9
@@ -215,16 +266,14 @@ def toplevel(args):
 
     TraverseOrder = DB.TraverseHierTree()
 
-    if not skip_saving_state:
-        with open( opath + "__hierTree.json", "wt") as fp:
-            json.dump( [DB.CheckoutHierNode(i).name for i in TraverseOrder], indent=2, fp=fp)
-
     for idx in TraverseOrder:
         logger.info(f'Topo order: {idx} {DB.hierTree[idx].name}')
 
         current_node = DB.CheckoutHierNode(idx)
+        analyze_hN( 'Start', current_node, True)
 
         DB.AddingPowerPins(current_node)
+        analyze_hN( 'After adding power pins', current_node, False)
 
         PRC = PnR.Placer_Router_Cap_Ifc(opath,fpath,current_node,drcInfo,lefData,1,6)
 
@@ -239,10 +288,13 @@ def toplevel(args):
             node = curr_plc.getNode(lidx)
             if node.Guardring_Consts:
                 PnR.GuardRingIfc( node, lefData, drcInfo)
+            analyze_hN( f'After placement {lidx}', node, False)
             DB.Extract_RemovePowerPins(node)
+            analyze_hN( f'After remove power pins {lidx}', node, True)
             DB.CheckinHierNode(idx, node)
 
         DB.hierTree[idx].numPlacement = actualNumLayout
+        analyze_hN( 'End', current_node, False)
 
     logger.info(f'Starting top-down routing')
 
