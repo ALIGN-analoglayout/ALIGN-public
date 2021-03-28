@@ -3,12 +3,7 @@
 import logging
 import pathlib
 import json
-
-# Needed for Pybind11 dynamic executables
-import sys, os
-sys.setdlopenflags(os.RTLD_GLOBAL|os.RTLD_LAZY)
-
-import PnR
+from .. import PnR
 
 logger = logging.getLogger(__name__)
 
@@ -142,7 +137,7 @@ def route_top_down( DB, drcInfo,
                     current_node_ort, idx, lidx,
                     opath, binary_directory, skip_saving_state, adr_mode):
 
-    logger.debug( f'Start of route_top_down {idx=}')
+    logger.debug( f'Start of route_top_down idx={idx}')
 
     current_node = DB.CheckoutHierNode(idx) # Make a copy
     DB.hierTree[idx].n_copy += 1
@@ -172,17 +167,17 @@ def route_top_down( DB, drcInfo,
     if not current_node.isTop:
         DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Backward)
 
-    logger.debug( f'Before DB.AppendToHierTree {len(DB.hierTree)=}')
+    logger.debug( f'Before DB.AppendToHierTree len(DB.hierTree)={len(DB.hierTree)}')
     DB.AppendToHierTree(current_node)
-    logger.debug( f'After DB.AppendToHierTree {len(DB.hierTree)=}')
+    logger.debug( f'After DB.AppendToHierTree len(DB.hierTree)={len(DB.hierTree)}')
     new_currentnode_idx = len(DB.hierTree) - 1
 
     for bit,blk in enumerate(current_node.Blocks):
         if blk.child == -1: continue
         DB.SetParentInHierTree( blk.child, 0, new_currentnode_idx)
-        logger.debug( f'Set parent of {blk.child} to {new_currentnode_idx} => {DB.hierTree[blk.child].parent[0]=}')
+        logger.debug( f'Set parent of {blk.child} to {new_currentnode_idx} => DB.hierTree[blk.child].parent[0]={DB.hierTree[blk.child].parent[0]}')
 
-    logger.debug( f'End of route_top_down {len(DB.hierTree)=}')
+    logger.debug( f'End of route_top_down len(DB.hierTree)={len(DB.hierTree)}')
 
     return new_currentnode_idx
 

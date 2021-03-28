@@ -37,93 +37,77 @@ The ALIGN flow includes the following steps:
 
 ## Outputs
 
+* Design JSON: Final layout in JSON form which can be viewed using the ALIGN Viewer.
 * Layout GDS: Final layout of the design. The output GDS can be imported into any GDSII viewer.
-* Design JSON: Final layout which can be viewed using the ALIGN Viewer.
-* Layout image: .jpg format of the layout saved using the [KLayout tool](https://github.com/KLayout/klayout).
 
 ## Getting started
 
-The suggested way to run the end-to-end ALIGN flow uses a Docker container-based flow for which the user must have docker-compose installed. The ALIGN software is installed in a container image and Make is used to run the flow through the containers. The user may also use the Makefile to run the ALIGN flow through the native Linux build of all the components in the current environment (assuming that all software prerequisites have been installed).
-Two environment variables must be set to run the Makefile in any environment. The first is the ALIGN_HOME variable, which should point the top directory of the ALIGN analog system.
+### Step 0: Check prerequisites
+The following dependencies must be met by your system:
+  * gcc >= 6.1.0 (For C++14 support)
+  * python >= 3.7 (For [PEP 560](https://www.python.org/dev/peps/pep-0560/) support)
+You may optionally install [Boost](https://www.boost.org/) & [lp_solve](http://lpsolve.sourceforge.net/5.5/) using your distro package manager (apt, yum etc) to save some compilation time.
 
-	    % export ALIGN_HOME=<top of ALIGN source area>
+Note: In case you have multiple gcc versions installed on your system, we recommend explicitly setting the compiler paths as follows:
+```console
+$ export CC=/path/to/your/gcc
+$ export CXX=/path/to/your/g++
+```
 
-The second is a working directory ALIGN_WORK_DIR, which can either be the full path to a working directory or a docker volume name.  
+### Step 1: Clone the ALIGN source code to your local environment
+```console
+$ git clone https://github.com/ALIGN-analoglayout/ALIGN-public
+$ cd ALIGN-public
+```
 
-        % docker volume create <volumeName>
-        % export ALIGN_WORK_DIR=<volumeName for docker flow / full work dir path for native flow>
+### Step 2: Create a [Python virtualenv](https://docs.python.org/3/tutorial/venv.html)
+Note: You may choose to skip this step if you are doing a system-wide install for multiple users.
+      Please DO NOT skip this step if you are installing for personal use and/or you are a developer.
+```console
+$ python -m venv general
+$ source general/bin/activate
+$ python -m pip install pip --upgrade
+```
 
-### Native Environment Flow
+### Step 3a: Install ALIGN as a USER
+If you already have a working installation of Python 3.7 or Python 3.8, the easiest way to install ALIGN is:
+```console
+$ pip install .
+```
 
-You can use '[source install.sh](install.sh)' (for bash shell) or '[source install_tcsh.sh](install_tcsh.sh)' (for tcsh/ Red Hat) to install all the requirements and the native flow. Please go through [debug documentation](https://align-analoglayout.github.io/ALIGN-public/) for detailed explanation and common errors during installation.
+### Step 3b: Install ALIGN as a DEVELOPER
+If you are a developer, you may wish to install align with some additional flags.
 
-* Requirements
-  * Python >= 3.8
-  * gcc >= 4.2
-  * Ubuntu >= 20.04/ RedHat
-  * [Boost]( https://github.com/boostorg/boost.git) >= 1.68.0
-  * [Lpsolve](https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_source.tar.gz/download) >= 5.5.2.5
-  * [JSON]( https://github.com/nlohmann/json.git) >= 3.7.3
-  * [Googletest]( https://github.com/google/googletest) >= 1.10
-  * Skip these steps if you are using [install.sh](install.sh)
+For python developers:
+```console
+$ pip install -e .[test]
+```
+The `-e` or `--editable` flag generates links to the align package within your current directory. This allows you to modify python files and test them out immediately. You will still need to re-run this command to build your C++ collateral (when you are changing branches for example). More on that below.
 
-* Setting up local environment variables if installations are not in system search path.
+For ALIGN (C++) Extension developers:
+```console
+$ pip install setuptools wheel pybind11 scikit-build cmake ninja
+$ pip install -e .[test] --no-build-isolation
+```
+The second command doesn't just install ALIGN inplace, it also caches generated object files etc. under an `_skbuild` subdirectory. Re-running `pip install -e .[test] --no-build-isolation` will reuse this cache to perform an incremental build.
 
-        % export BOOST_LP= <boost installation path, e.g., $ALIGN_HOME/boost>
-        % export LP_DIR=<lpsolve installation path, e.g., $ALIGN_HOME/lpsolve>
-        % export JSON= <json installation path, e.g., $ALIGN_HOME/json>
-        % export LD_LIBRARY_PATH=<lpsolve library path, e.g., $ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/>
-        % export GTEST_DIR=<googletest installation path, e.g., $ALIGN_HOME/googletest/googletest/>
-        % export VENV= <python virtual environment path, e.g., ./align_venv>
-        % Skip these steps if you are using [install.sh](install.sh)
+### Step 4: Run ALIGN
+You may run the align tool using a simple command line tool named `schematic2layout.py`
+For most common cases, you will simply run:
+```console
+$ schematic2layout.py <NETLIST_DIR> -p <PDK_DIR> -c
+```
 
-* Installation
+For instance, to build the layout for telescopic_ota:
+```console
+$ mkdir work && cd work
+$ schematic2layout.py ../examples/telescopic_ota -p ../pdks/FinFET14nm_Mock_PDK/
+```
 
-        % cd PlaceRouteHierFlow
-        % make
-        % cd $ALIGN_HOME
-        % python3 -m venv $VENV 
-        % source $VENV/bin/activate 
-        % pip install --upgrade pip
-        % pip install -e .
-
-### Docker flow
-
-ALIGN also supports push button flow on docker.
-* Requirements
-  * Docker-ce > 17.12
-  * Docker compose > 3.6
-
-## Usage
-
-By default, the design directory is set to the examples directory. This can be modified in the Makefile.
-
-### Run native environment flow
-
-* Setup your own work directory
-
-        % mkdir $ALIGN_WORK_DIR
-        % cd $ALIGN_WORK_DIR
-        % ln -s $ALIGN_HOME/build/Makefile
-
-* Run your first design "[telescopic_ota](examples/telescopic_ota/)" on ALIGN
-
-        % make VENV=$VENV
-
-* Run different designs from [example](examples) on ALIGN
-
-        % make VENV=$VENV DESIGN=<design>
-
-* Explore different features of ALIGN using python arguments 
-
-        % source $VENV/bin/activate
-        % schematic2layout.py <input_directory> -f <spice file> -s <design_name> -p <pdk path> -flat <0/1> -c (to check drc) -g (to generate image of layout)
-        % e.g., > schematic2layout.py $ALIGN_HOME/examples/buffer/ -f $ALIGN_HOME/examples/buffer/buffer.sp -s buffer -p $ALIGN_HOME/pdks/FinFET14nm_Mock_PDK -flat 0 -c -g
-
-### Run Docker based flow
-
-        % cd $ALIGN_HOME/build
-        % make docker DESIGN=<design>
+For a full list of options supported by the tool, please use the following command:
+```console
+$ schematic2layout.py -h
+```
 
 ## Design database:
 

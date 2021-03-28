@@ -1,6 +1,10 @@
-import z3
 import pytest
 from align.schema import constraint
+
+try:
+    import z3
+except:
+    z3 = None
 
 @pytest.fixture
 def solver():
@@ -10,12 +14,14 @@ def solver():
 def db():
     return constraint.ConstraintDB()
 
+@pytest.mark.skipif(z3 is None, reason="requires z3")
 def test_AlignHorizontal_input_sanitation(solver):
     x = constraint.AlignHorizontal(blocks=['M1', 'M2'], alignment='top')
     x = constraint.AlignHorizontal(blocks=['M1', 'M2', 'M3'], alignment='top')
     with pytest.raises(Exception):
         x = constraint.AlignHorizontal(blocks=['M1', 'M2', 'M3'], alignment='garbage')
 
+@pytest.mark.skipif(z3 is None, reason="requires z3")
 def test_AlignHorizontal_nblock_checking(solver):
     x = constraint.AlignHorizontal(blocks=[], alignment='top')
     with pytest.raises(AssertionError):
@@ -24,6 +30,7 @@ def test_AlignHorizontal_nblock_checking(solver):
     with pytest.raises(AssertionError):
         x.check()
 
+@pytest.mark.skipif(z3 is None, reason="requires z3")
 def test_AlignHorizontal_order_checking(solver):
     '''
     This is just a unittest of generated constraints
@@ -46,12 +53,14 @@ def test_ConstraintDB_inputapi(db):
     with pytest.raises(Exception):
         db.append('garbage')
 
+@pytest.mark.skipif(z3 is None, reason="requires z3")
 def test_ConstraintDB_checking(db):
     db.append(constraint.AlignHorizontal(blocks=['M1', 'M2', 'M3']))
     db.append(constraint.AlignHorizontal(blocks=['M4', 'M5'], alignment='bottom'))
     with pytest.raises(AssertionError):
         db.append(constraint.AlignHorizontal(blocks=['M3', 'M2'], alignment='bottom'))
 
+@pytest.mark.skipif(z3 is None, reason="requires z3")
 def test_ConstraintDB_incremental_checking(db):
     '''
     ConstraintDB can be used to run experiments
@@ -94,7 +103,8 @@ def test_ConstraintDB_nonincremental_revert(db):
     db.revert(idx)
     assert len(db) == 1
     assert len(db._commits) == 0
-    assert 'M3' not in str(db._solver)
+    if db._validation:
+        assert 'M3' not in str(db._solver)
 
 def test_ConstraintDB_permissive():
     '''
