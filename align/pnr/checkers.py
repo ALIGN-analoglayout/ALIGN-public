@@ -41,10 +41,6 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
 
     errors = []
 
-    t_tbl = { "M1": "m1", "M2": "m2", "M3": "m3",
-              "M4": "m4", "M5": "m5", "M6": "m6",
-              "M7": "m7", "M8": "m8"}
-
     def add_terminal( netName, layer, b, tag=None):
 
         r = [ b.LL.x, b.LL.y, b.UR.x, b.UR.y]
@@ -76,7 +72,8 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
             else:
                 center = None
             if center is not None:
-                f( cnv.generators[t_tbl[layer]], center, tag)
+                lyr = layer.lower() if layer.lower() in cnv.generators else layer.upper()
+                f( cnv.generators[lyr], center, tag)
 
     if not checkOnly and draw_grid:
         m1_pitch = 2*cnv.pdk['M1']['Pitch']

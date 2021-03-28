@@ -183,7 +183,7 @@ class Canvas:
                     if mv_cl < 2*mh_slr.rect[0]:
                         continue
                     if mv_cl > 2*mh_slr.rect[2]:
-                        break
+                        continue  # Scanlines are not in order
                     for (_, mv_slr) in enumerate(mv_sl.rects):
                         mv_name = mv_slr.netName
                         if mv_name is None or mv_name != mh_name:
