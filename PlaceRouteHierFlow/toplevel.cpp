@@ -348,7 +348,7 @@ int toplevel( const std::vector<std::string>& argv) {
     Placement EA_placer(current_node);
     //EA_placer.generate_testing_data();
     //EA_placer.E_Placer();
-    //return 0;
+    return 0;
     // Placement
     PlacerIfc curr_plc(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
     std::vector<PnRDB::hierNode>& nodeVec(curr_plc.get());

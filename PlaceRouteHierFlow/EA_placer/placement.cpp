@@ -913,7 +913,7 @@ void Placement::E_Placer(){
   float max_density = 1.0;
   float current_max_density=10.0;
   int count_number = 0;
-  int upper_count_number = 200;
+  int upper_count_number = 201;
   float symmetricMin = 1.0;//need to tune
   vector<float> Density;
   #ifdef DEBUG
@@ -922,7 +922,7 @@ void Placement::E_Placer(){
   PlotPlacement(0);
   Cal_Overlap();
   Initilize_lambda();
-  while(Stop_Condition(stop_density,current_max_density) and count_number<upper_count_number and symCheck(symmetricMin)){//Q: stop condition
+  while((Stop_Condition(stop_density,current_max_density) or symCheck(symmetricMin)) and count_number<upper_count_number ){//Q: stop condition
   // while(i<20){//Q: stop condition
      Density.push_back(current_max_density);
      Cal_Overlap();
