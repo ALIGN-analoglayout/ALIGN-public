@@ -114,13 +114,13 @@ public:
     static bool comp_x(Ppoint_F c1, Ppoint_F c2);
     static bool comp_y(Ppoint_F c1, Ppoint_F c2);
     void writeback(PnRDB::hierNode &current_node);
-
     bool symCheck(float tol);
     //donghao end
 
     float Cal_Overlap();
     void Pull_back_vector(vector<float> &temp_vector, bool x_or_y);
     void Initilize_lambda();
+    void Initilize_sym_beta();
 
 };
 #endif

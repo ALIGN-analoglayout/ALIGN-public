@@ -34,6 +34,44 @@ void Placement::Initilize_lambda(){
 
 }
 
+void Placement::Initilize_sym_beta(){
+
+  Ppoint_F norm_wire_gradient;
+  norm_wire_gradient.x=0;
+  norm_wire_gradient.y=0;
+  Ppoint_F norm_sym_force_gradient;
+  norm_sym_force_gradient.x=0;
+  norm_sym_force_gradient.y=0;
+
+  for(unsigned int i=0;i<Blocks.size();++i){
+    norm_wire_gradient.x+=abs(Blocks[i].Netforce.x);
+    norm_wire_gradient.y+=abs(Blocks[i].Netforce.y);
+    norm_sym_force_gradient.x+=abs(Blocks[i].Symmetricforce.x);
+    norm_sym_force_gradient.y+=abs(Blocks[i].Symmetricforce.y);
+  }
+  
+  float sym_beta_x=0;
+  float sym_beta_y=0;
+
+  if(norm_sym_force_gradient.x!=0){
+    sym_beta_x=beta*norm_wire_gradient.x/norm_sym_force_gradient.x;
+  }
+  if(norm_sym_force_gradient.y!=0){
+  float sym_beta_y=beta*norm_wire_gradient.y/norm_sym_force_gradient.y;
+  }
+
+  std::cout<<"sym_beta_x "<<sym_beta_x<<" "<<norm_wire_gradient.x/Blocks.size()<<" "<<norm_sym_force_gradient.x/Blocks.size()<<std::endl;
+  std::cout<<"sym_beta_y "<<sym_beta_y<<" "<<norm_wire_gradient.y/Blocks.size()<<" "<<norm_sym_force_gradient.y/Blocks.size()<<std::endl;
+
+  if(sym_beta_x<sym_beta_y){
+    sym_beta = 0.5*sym_beta_y;
+  }else{
+    sym_beta = 0.5*sym_beta_x;
+  }
+
+}
+
+
 Placement::Placement(PnRDB::hierNode &current_node) {
   //step 1: transfroming info. of current_node to Blocks and Nets
     //create a small function for this
@@ -913,7 +951,7 @@ void Placement::E_Placer(){
   float max_density = 1.0;
   float current_max_density=10.0;
   int count_number = 0;
-  int upper_count_number = 201;
+  int upper_count_number = 200;
   float symmetricMin = 1.0;//need to tune
   vector<float> Density;
   #ifdef DEBUG
@@ -921,8 +959,9 @@ void Placement::E_Placer(){
   #endif
   PlotPlacement(0);
   Cal_Overlap();
-  Initilize_lambda();
   while((Stop_Condition(stop_density,current_max_density) or symCheck(symmetricMin)) and count_number<upper_count_number ){//Q: stop condition
+     //Initilize_lambda();
+     //Initilize_sym_beta();
   // while(i<20){//Q: stop condition
      Density.push_back(current_max_density);
      Cal_Overlap();
@@ -1408,8 +1447,9 @@ float Placement::readInputNode(PnRDB::hierNode &current_node)
       std::cout<<"sym group start"<<endl;
       std::cout<<"self size = "<<it->selfsym.size()<<", pair size = "<<it->sympair.size()<<endl;
     // #endif;
+
     SymmPairBlock tempSPB;
-    
+
     tempSPB.selfsym.clear();
     tempSPB.sympair.clear();
     // tempSPB.selfsym = it->selfsym;
@@ -1422,7 +1462,8 @@ float Placement::readInputNode(PnRDB::hierNode &current_node)
     {
       tempSPB.sympair.push_back(it->sympair[i]);
     }
-    
+
+
     if(it->axis_dir ==PnRDB::V)
     {
       //cond 1: only one sym pair
@@ -1657,7 +1698,6 @@ float Placement::readInputNode(PnRDB::hierNode &current_node)
       }
     }
     SPBlocks.push_back(tempSPB);
-    
   }
   //PRINT symmetric _force matrix
   std::cout<<"symmetric_force matrix"<<std::endl;
@@ -1998,7 +2038,7 @@ bool Placement::symCheck(float tol)
         tot_bias += fabs(Blocks[id0].Cpoint.x - axis);
       }
     }
-    
+
   }
   std::cout<<"tot_symmetric bias = "<<tot_bias<<std::endl;
   return tot_bias>tol;
