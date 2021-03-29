@@ -86,7 +86,7 @@ def _generate_json_from_hN( *, hN, variant, primitive_dir, pdk_dir, output_dir, 
 
     return ret
 
-def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nvariants=1, effort=0, check=False, extract=False, gds_json=False, render_placements=False):
+def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nvariants=1, effort=0, check=False, extract=False, gds_json=False, render_placements=False, PDN_mode=False):
 
     logger.info(f"Running Place & Route for {subckt}")
 
@@ -138,7 +138,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
 
     current_working_dir = os.getcwd()
     os.chdir(working_dir)
-    DB = toplevel(cmd)
+    DB = toplevel(cmd, PDN_mode=PDN_mode)
     #DB = PnR.toplevel(cmd)
     os.chdir(current_working_dir)
 

@@ -13,7 +13,7 @@ NType = PnR.NType
 Omark = PnR.Omark
 TransformType = PnR.TransformType
 
-def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, adr_mode, *, PDN_mode, dataset_generation):
+def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, adr_mode, *, PDN_mode):
     NEW_GLOBAL_ROUTER = True
     h_skip_factor = 5;
     v_skip_factor = 5;
@@ -76,28 +76,31 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
 
         # Power Grid Simulation
         if PDN_mode:
+            current_node_copy = PnR.hierNode(current_node)
+
             current_file = "InputCurrent_initial.txt"
             power_mesh_conffile = "Power_Grid_Conf.txt"
+            dataset_generation = True
             if dataset_generation:
                 total_current = 0.036
                 current_number = 20
-                DB.Write_Current_Workload(current_node, total_current, current_number, current_file)
+                DB.Write_Current_Workload(current_node_copy, total_current, current_number, current_file)
                 DB.Write_Power_Mesh_Conf(power_mesh_conffile)
 
             power_grid_metal_l = 2
             power_grid_metal_u = 11
-            RouteWork(7, current_node, metal_l=power_grid_metal_l, metal_u=power_grid_metal_u, fn=power_mesh_conffile)
+            RouteWork(7, current_node_copy, metal_l=power_grid_metal_l, metal_u=power_grid_metal_u, fn=power_mesh_conffile)
 
-            logger.debug("Start MNA ")
+            logger.info("Start MNA ")
             output_file_IR = "IR_drop.txt"
             output_file_EM = "EM.txt"
-            Test_MNA = PnR.MNASimulationIfc(current_node, drcInfo, current_file, output_file_IR, output_file_EM)
+            Test_MNA = PnR.MNASimulationIfc(current_node_copy, drcInfo, current_file, output_file_IR, output_file_EM)
             worst = Test_MNA.Return_Worst_Voltage()
-            logger.debug(f"worst voltage is {worst}")
-            Test_MNA.Clear_Power_Grid(current_node.Vdd)
-            Test_MNA.Clear_Power_Grid(current_node.Gnd)
-            logger.debug("End MNA")
-            return
+            logger.info(f"worst voltage is {worst}")
+            Test_MNA.Clear_Power_Grid(current_node_copy.Vdd)
+            Test_MNA.Clear_Power_Grid(current_node_copy.Gnd)
+            logger.info("End MNA")
+            #return
 
 
         RouteWork(2, current_node, metal_l=power_grid_metal_l, metal_u=power_grid_metal_u)
@@ -132,12 +135,12 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
 def route_top_down( DB, drcInfo,
                     bounding_box,
                     current_node_ort, idx, lidx,
-                    opath, binary_directory, adr_mode, *, PDN_mode, dataset_generation):
+                    opath, binary_directory, adr_mode, *, PDN_mode):
 
     current_node = DB.CheckoutHierNode(idx) # Make a copy
     i_copy = DB.hierTree[idx].n_copy
 
-    logger.info( f'Start of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy}')
+    logger.debug( f'Start of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy}')
     
 
     DB.hierTree[idx].n_copy += 1
@@ -154,12 +157,12 @@ def route_top_down( DB, drcInfo,
         childnode_orient = DB.RelOrt2AbsOrt( current_node_ort, inst.orient)
         child_node_name = DB.hierTree[child_idx].name
         childnode_bbox = PnR.bbox( inst.placedBox.LL, inst.placedBox.UR)
-        new_childnode_idx = route_top_down(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, 0, opath, binary_directory, adr_mode, PDN_mode=PDN_mode, dataset_generation=dataset_generation)
+        new_childnode_idx = route_top_down(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, 0, opath, binary_directory, adr_mode, PDN_mode=PDN_mode)
         DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_childnode_idx])
         current_node.Blocks[bit].child = new_childnode_idx
 
     DB.ExtractPinsToPowerPins(current_node)
-    route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, adr_mode, PDN_mode=PDN_mode, dataset_generation=dataset_generation)
+    route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, adr_mode, PDN_mode=PDN_mode)
 
     if not current_node.isTop:
         DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Backward)
@@ -174,7 +177,7 @@ def route_top_down( DB, drcInfo,
         DB.SetParentInHierTree( blk.child, 0, new_currentnode_idx)
         logger.debug( f'Set parent of {blk.child} to {new_currentnode_idx} => DB.hierTree[blk.child].parent[0]={DB.hierTree[blk.child].parent[0]}')
 
-    logger.info( f'End of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy} new_currentnode_idx {new_currentnode_idx}')
+    logger.debug( f'End of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy} new_currentnode_idx {new_currentnode_idx}')
 
     return new_currentnode_idx
 
@@ -229,7 +232,7 @@ def analyze_hN( tag, hN, beforeAddingBlockPins=False):
             logger.info( f'    inst.name={inst.name} inst.master={inst.master} len(inst.dummy_power_pin)={len(inst.dummy_power_pin)}')
 
 
-def toplevel(args, *, PDN_mode=False, dataset_generation=False):
+def toplevel(args, *, PDN_mode=False):
 
     assert len(args) == 9
 
@@ -257,10 +260,10 @@ def toplevel(args, *, PDN_mode=False, dataset_generation=False):
         logger.info(f'Topo order: {idx} {DB.hierTree[idx].name}')
 
         current_node = DB.CheckoutHierNode(idx)
-        analyze_hN( 'Start', current_node, True)
+        #analyze_hN( 'Start', current_node, True)
 
         DB.AddingPowerPins(current_node)
-        analyze_hN( 'After adding power pins', current_node, False)
+        #analyze_hN( 'After adding power pins', current_node, False)
 
         PRC = PnR.Placer_Router_Cap_Ifc(opath,fpath,current_node,drcInfo,lefData,1,6)
 
@@ -275,15 +278,15 @@ def toplevel(args, *, PDN_mode=False, dataset_generation=False):
             node = curr_plc.getNode(lidx)
             if node.Guardring_Consts:
                 PnR.GuardRingIfc( node, lefData, drcInfo)
-            analyze_hN( f'After placement {lidx}', node, False)
+            #analyze_hN( f'After placement {lidx}', node, False)
             DB.Extract_RemovePowerPins(node)
-            analyze_hN( f'After remove power pins {lidx}', node, True)
+            #analyze_hN( f'After remove power pins {lidx}', node, True)
             DB.CheckinHierNode(idx, node)
 
         DB.hierTree[idx].numPlacement = actualNumLayout
-        analyze_hN( 'End', current_node, False)
+        #analyze_hN( 'End', current_node, False)
 
-    logger.info(f'Starting top-down routing')
+    logger.debug(f'Starting top-down routing')
 
     last = TraverseOrder[-1]
     new_topnode_indices = []
@@ -296,7 +299,7 @@ def toplevel(args, *, PDN_mode=False, dataset_generation=False):
                                                     PnR.point(DB.hierTree[last].PnRAS[lidx].width,
                                                               DB.hierTree[last].PnRAS[lidx].height)),
                                           Omark.N, last, lidx,
-                                          opath, binary_directory, adr_mode, PDN_mode=PDN_mode, dataset_generation=dataset_generation)
+                                          opath, binary_directory, adr_mode, PDN_mode=PDN_mode)
         new_topnode_indices.append(new_topnode_idx)
 
     return DB

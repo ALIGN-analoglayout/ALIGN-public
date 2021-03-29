@@ -4,14 +4,15 @@ import os
 import pathlib
 import shutil
 
-examples = [('inverter_v1',1),
-            ('buffer',1),
-            ('five_transistor_ota',1),
-            ('five_transistor_ota',2),
-            ('cascode_current_mirror_ota',1),
+examples = [('inverter_v1',1,False),
+            ('buffer',1,False),
+            ('five_transistor_ota',1,False),
+            ('five_transistor_ota',2,False),
+            ('cascode_current_mirror_ota',1,False),
             #Hierarchical block fail with num_placements > 1
-            #('cascode_current_mirror_ota',2),
-            ('adder',1)]
+            #('cascode_current_mirror_ota',2,False),
+            ('high_speed_comparator',1,True),
+            ('adder',1,False)]
 
 ALIGN_HOME = pathlib.Path(__file__).resolve().parent.parent
 
@@ -23,8 +24,8 @@ else:
 if 'LD_LIBRARY_PATH' not in os.environ:
     os.environ['LD_LIBRARY_PATH'] = '/usr/local/lib/lpsolve/lp_solve_5.5.2.5_dev_ux64'
 
-@pytest.mark.parametrize( "design,num_placements", examples)
-def test_cmdline(design,num_placements):
+@pytest.mark.parametrize( "design,num_placements,PDN_mode", examples)
+def test_cmdline(design,num_placements,PDN_mode):
     run_dir = ALIGN_HOME / 'tests' / 'tmp'
 
     if run_dir.exists():
@@ -37,6 +38,8 @@ def test_cmdline(design,num_placements):
     design_dir = ALIGN_HOME / 'examples' / design
     pdk_dir = ALIGN_HOME / 'pdks' / 'FinFET14nm_Mock_PDK'
     args = [str(design_dir), '-f', str(design_dir / f"{design}.sp"), '-s', design, '-p', str(pdk_dir), '-flat',  str(0), '--check', '-v', 'INFO', '-l', 'INFO', '-n', str(num_placements)]
+    if PDN_mode:
+        args.append( '--PDN_mode')
 
     results = align.CmdlineParser().parse_args(args)
 
