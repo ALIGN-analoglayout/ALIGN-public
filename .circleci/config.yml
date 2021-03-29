@@ -103,8 +103,8 @@ jobs:
           name: "Build align in developer mode"
           command: |
             pip install setuptools wheel pybind11 scikit-build cmake ninja
-            pip install --no-build-isolation -e .[test]
-            pip install --no-build-isolation -e . --no-deps --install-option="-DCODE_COVERAGE=ON"
+            pip install -v --no-build-isolation -e .[test]
+            pip install -v --no-build-isolation -e . --no-deps --install-option="-DCODE_COVERAGE=ON"
       - run:
           name: "Test align using coverage.py"
           command: |
