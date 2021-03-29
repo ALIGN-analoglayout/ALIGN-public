@@ -75,9 +75,9 @@ class Scanline:
         return 'Scanline( rects=' + str(self.rects) + ')'
 
     def find_touching(self, via_rect):
-#
-# Linear search --- could improve performance by binary search since rects are sorted
-#
+        #
+        # Linear search --- could improve performance by binary search since rects are sorted
+        #
         result = None
         for metal_rect in self.rects:
             if RemoveDuplicates.touching( via_rect.rect, metal_rect.rect):
