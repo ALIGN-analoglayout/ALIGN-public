@@ -27,9 +27,9 @@ void Placement::Initilize_lambda(){
   std::cout<<"lambda_y "<<lambda_y<<" "<<norm_wire_gradient.y/Blocks.size()<<" "<<norm_E_force_gradient.y/Blocks.size()<<std::endl;
 
   if(lambda_x<lambda_y){
-    lambda = 2*lambda_x;
+    lambda = lambda_x;
   }else{
-    lambda = 2*lambda_y;
+    lambda = lambda_y;
   }
 
 }
@@ -952,13 +952,14 @@ void Placement::E_Placer(){
   float current_max_density=10.0;
   int count_number = 0;
   int upper_count_number = 200;
+  float symmetricMin = 1.0;//need to tune
   vector<float> Density;
   #ifdef DEBUG
   std::cout<<"E_placer debug flage: 14"<<std::endl;
   #endif
   PlotPlacement(0);
   Cal_Overlap();
-  while(Stop_Condition(stop_density,current_max_density) and count_number<upper_count_number){//Q: stop condition
+  while((Stop_Condition(stop_density,current_max_density) or symCheck(symmetricMin)) and count_number<upper_count_number ){//Q: stop condition
      Initilize_lambda();
      Initilize_sym_beta();
   // while(i<20){//Q: stop condition
@@ -984,11 +985,11 @@ void Placement::E_Placer(){
      #endif
      //if(lambda<100)
     //  lambda = lambda *1.2;
-     //beta = beta*0.95;
-     //if(sym_beta < 0.1)
-     //{
-        //sym_beta = sym_beta*1.0125;
-     //}
+     beta = beta*0.95;
+     if(sym_beta < 0.1)
+     {
+        sym_beta = sym_beta*1.0125;
+     }
     
       std::cout<<"sym_beta:= "<<sym_beta<<std::endl;
      //force to align
@@ -1061,6 +1062,8 @@ void Placement::E_Placer(){
      start_flag=0;
      i++;
   }
+  force_order();
+  force_alignment();
   std::cout<<"iter num when stop:="<<count_number<<std::endl;
 
 }
@@ -1444,9 +1447,27 @@ float Placement::readInputNode(PnRDB::hierNode &current_node)
       std::cout<<"sym group start"<<endl;
       std::cout<<"self size = "<<it->selfsym.size()<<", pair size = "<<it->sympair.size()<<endl;
     // #endif;
+
+    SymmPairBlock tempSPB;
+
+    tempSPB.selfsym.clear();
+    tempSPB.sympair.clear();
+    // tempSPB.selfsym = it->selfsym;
+    // tempSPB.sympair = it->sympair;
+    for(int i = 0;i < it->selfsym.size();++i)
+    {
+      tempSPB.selfsym.push_back(it->selfsym[i].first);
+    }
+    for(int i = 0;i < it->sympair.size();++i)
+    {
+      tempSPB.sympair.push_back(it->sympair[i]);
+    }
+
+
     if(it->axis_dir ==PnRDB::V)
     {
       //cond 1: only one sym pair
+      tempSPB.horizon = 0;
       if(it->sympair.size()== 1 && it->selfsym.size() == 0)
       {
         int id0 = it->sympair[0].first;
@@ -1458,10 +1479,15 @@ float Placement::readInputNode(PnRDB::hierNode &current_node)
         symmetric_force_matrix[id0][id1].y-=2;
         symmetric_force_matrix[id1][id0].y-=2;
         symmetric_force_matrix[id1][id1].y+=2;
+
+        tempSPB.axis.first = id0;
+        tempSPB.axis.second = id1;
       }
       else if(it->selfsym.size()>0)//exist self sym, consider the first self sym block center as axis = x0
       {
         int base = it->selfsym[0].first;
+        tempSPB.axis.first = base;
+        tempSPB.axis.second = base;
         // #ifdef DEBUG
         std::cout<<"V: cond2, base = "<<base<<endl;
         // #endif;
@@ -1506,6 +1532,8 @@ float Placement::readInputNode(PnRDB::hierNode &current_node)
       {
         int idbase0 = it->sympair[0].first;
         int idbase1 = it->sympair[0].second;
+        tempSPB.axis.first = idbase0;
+        tempSPB.axis.second = idbase1;
         // #ifdef DEBUG
         std::cout<<"V: cond3, idbase0 = "<<idbase0<<", idbase1 = "<<idbase1<<endl;
         // #endif;
@@ -1553,11 +1581,14 @@ float Placement::readInputNode(PnRDB::hierNode &current_node)
     }
     else //axis : H
     {
+      tempSPB.horizon = 1;
       //cond 1: only one sym pair
       if(it->sympair.size()== 1 && it->selfsym.size() == 0)
       {
         int id0 = it->sympair[0].first;
         int id1 = it->sympair[1].second;
+        tempSPB.axis.first = id0;
+        tempSPB.axis.second = id1;
         // #ifdef DEBUG
         std::cout<<"H: cond1, id0 = "<<id0<<", idb1 = "<<id1<<endl;
         // #endif;
@@ -1569,6 +1600,8 @@ float Placement::readInputNode(PnRDB::hierNode &current_node)
       else if(it->selfsym.size()>0)//exist self sym, consider the first self sym block center as axis = x0
       {
         int base = it->selfsym[0].first;
+        tempSPB.axis.first = base;
+        tempSPB.axis.second = base;
         //for self sym (yi - y0)^2
         // #ifdef DEBUG
         std::cout<<"H: cond2, base = "<<base<<endl;
@@ -1617,6 +1650,8 @@ float Placement::readInputNode(PnRDB::hierNode &current_node)
       {
         int idbase0 = it->sympair[0].first;
         int idbase1 = it->sympair[0].second;
+        tempSPB.axis.first = idbase0;
+        tempSPB.axis.second = idbase1;
         // #ifdef DEBUG
         std::cout<<"H: cond3, idbase0 = "<<idbase0<<", idbase1 = "<<idbase1<<endl;
         // #endif;
@@ -1662,7 +1697,7 @@ float Placement::readInputNode(PnRDB::hierNode &current_node)
         continue;
       }
     }
-    
+    SPBlocks.push_back(tempSPB);
   }
   //PRINT symmetric _force matrix
   std::cout<<"symmetric_force matrix"<<std::endl;
@@ -1950,4 +1985,61 @@ void Placement::writeback(PnRDB::hierNode &current_node)
     }
   }
 
+}
+
+bool Placement::symCheck(float tol)
+{
+  float tot_bias = 0;
+  for(int i = 0;i < SPBlocks.size();++i)
+  {
+    if(SPBlocks[i].horizon)
+    {
+      //step 1: find the axis 
+      float axis,axis_double;
+      int baseid0,baseid1;
+      baseid0 = SPBlocks[i].axis.first;
+      baseid1 = SPBlocks[i].axis.second;
+      axis = 0.5*(Blocks[baseid0].Cpoint.y +Blocks[baseid1].Cpoint.y );
+      axis_double = axis*2;
+      //step 2: evalue all modules in sympair
+      for(int j = 0;j < SPBlocks[i].sympair.size();++j)
+      {
+        int id0 = SPBlocks[i].sympair[j].first;
+        int id1 = SPBlocks[i].sympair[j].second;
+        tot_bias += fabs(Blocks[id0].Cpoint.y+Blocks[id1].Cpoint.y - axis_double);
+      }
+      //step 3: evalue all modules in selfsym
+      for(int j = 0;j < SPBlocks[i].selfsym.size();++j)
+      {
+        int id0 = SPBlocks[i].selfsym[j];
+        tot_bias += fabs(Blocks[id0].Cpoint.y - axis);
+      }
+    }
+    else
+    {
+      //step 1: find the axis 
+      float axis,axis_double;
+      int baseid0,baseid1;
+      baseid0 = SPBlocks[i].axis.first;
+      baseid1 = SPBlocks[i].axis.second;
+      axis = 0.5*(Blocks[baseid0].Cpoint.x +Blocks[baseid1].Cpoint.x );
+      axis_double = axis*2;
+      //step 2: evalue all modules in sympair
+      for(int j = 0;j < SPBlocks[i].sympair.size();++j)
+      {
+        int id0 = SPBlocks[i].sympair[j].first;
+        int id1 = SPBlocks[i].sympair[j].second;
+        tot_bias += fabs(Blocks[id0].Cpoint.x+Blocks[id1].Cpoint.x - axis_double);
+      }
+      //step 3: evalue all modules in selfsym
+      for(int j = 0;j < SPBlocks[i].selfsym.size();++j)
+      {
+        int id0 = SPBlocks[i].selfsym[j];
+        tot_bias += fabs(Blocks[id0].Cpoint.x - axis);
+      }
+    }
+
+  }
+  std::cout<<"tot_symmetric bias = "<<tot_bias<<std::endl;
+  return tot_bias>tol;
 }

@@ -22,6 +22,7 @@ private:
     vector<net> Nets; //nets
     vector<vector<bin> > Bins; //bins inside the chip
     vector<vector<Ppoint_F> > symmetric_force_matrix;// sysmmtric force=M *x(y)
+    vector<SymmPairBlock> SPBlocks;
     vector<Alignment> Alignment_blocks;//store the alignment constrains.
     vector<AlignBlock> AlignBlocks;
     vector<pair<vector<int>, PnRDB::Smark>> Ordering_Constraints;//as same in PnRDB
@@ -113,6 +114,7 @@ public:
     static bool comp_x(Ppoint_F c1, Ppoint_F c2);
     static bool comp_y(Ppoint_F c1, Ppoint_F c2);
     void writeback(PnRDB::hierNode &current_node);
+    bool symCheck(float tol);
     //donghao end
 
     float Cal_Overlap();
