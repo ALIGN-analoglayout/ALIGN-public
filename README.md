@@ -72,7 +72,7 @@ $ python -m pip install pip --upgrade
 ### Step 3a: Install ALIGN as a USER
 If you already have a working installation of Python 3.7 or Python 3.8, the easiest way to install ALIGN is:
 ```console
-$ pip install .
+$ pip install -v .
 ```
 
 ### Step 3b: Install ALIGN as a DEVELOPER
@@ -87,9 +87,9 @@ The `-e` or `--editable` flag generates links to the align package within your c
 For ALIGN (C++) Extension developers:
 ```console
 $ pip install setuptools wheel pybind11 scikit-build cmake ninja
-$ pip install -e .[test] --no-build-isolation
+$ pip install -v -e .[test] --no-build-isolation
 ```
-The second command doesn't just install ALIGN inplace, it also caches generated object files etc. under an `_skbuild` subdirectory. Re-running `pip install -e .[test] --no-build-isolation` will reuse this cache to perform an incremental build.
+The second command doesn't just install ALIGN inplace, it also caches generated object files etc. under an `_skbuild` subdirectory. Re-running `pip install -v -e .[test] --no-build-isolation` will reuse this cache to perform an incremental build. We add the `-v` or `--verbose` flag to be able to see build flags in the terminal.
 
 ### Step 4: Run ALIGN
 You may run the align tool using a simple command line tool named `schematic2layout.py`
