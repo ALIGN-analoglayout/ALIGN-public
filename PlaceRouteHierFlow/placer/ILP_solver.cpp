@@ -61,7 +61,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   lprec* lp = make_lp(0, N_var);
   set_verbose(lp, IMPORTANT);
   put_logfunc(lp, &ILP_solver::lpsolve_logger, NULL);
-  set_outputfile(lp, const_cast<char*>("/dev/null"));
+  //set_outputfile(lp, const_cast<char*>("/dev/null"));
 
   // set integer constraint, H_flip and V_flip can only be 0 or 1
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
