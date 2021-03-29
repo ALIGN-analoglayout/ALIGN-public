@@ -8,6 +8,7 @@ class Alignment(ConstraintBase):
     instances: List[str]
     direction: Optional[Literal['horizontal', 'vertical']] = 'horizontal'
     edge: Optional[Literal['top', 'center', 'bottom', 'left', 'right']] = 'bottom'
+    abut: Optional[Literal[True, False]] = True
 
     @classmethod
     @validator('edge')
