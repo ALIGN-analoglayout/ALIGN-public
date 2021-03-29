@@ -48,7 +48,7 @@ class TransistorArray(types.BaseModel):
     def _validate_ports(cls, v, values):
         if set(v.keys()) != set(values['m'].keys()):
             raise ValueError('Number of devices and ports should match')
-        for n, ports in v.items():
-            if set(ports.keys()) != {'S', 'D', 'G'}:
+        for _, ports in v.items():
+            if set(ports.keys()) != {'S', 'D', 'G'} and set(ports.keys()) != {'S', 'D', 'G', 'B'} :
                 raise ValueError(f'Missing transistor terminal S/D/G: {ports}')
         return v
