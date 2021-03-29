@@ -15,6 +15,7 @@ using namespace pybind11::literals;
 #include "cap_placer/CapPlacerIfc.h"
 #include "placer/PlacerIfc.h"
 #include "guard_ring/GuardRingIfc.h"
+#include "router/Router.h"
 #include "toplevel.h"
 
 using namespace PnRDB;
@@ -126,6 +127,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("interVias", &net::interVias)
     .def_readwrite("path_metal", &net::path_metal)
     .def_readwrite("GcellGlobalRouterPath", &net::GcellGlobalRouterPath)
+    .def_readwrite("path_via", &net::path_via)
     .def_readwrite("axis_dir", &net::axis_dir)
     .def_readwrite("axis_coor", &net::axis_coor)
     .def_readwrite("connectedTile", &net::connectedTile);
@@ -402,6 +404,7 @@ PYBIND11_MODULE(PnR, m) {
     .def( py::init<>())
     .def( "TraverseHierTree", &PnRdatabase::TraverseHierTree)
     .def( "CheckoutHierNode", &PnRdatabase::CheckoutHierNode)
+    .def( "CheckoutHierNodeVec", &PnRdatabase::CheckoutHierNodeVec)
     .def( "PrintHierNode", &PnRdatabase::PrintHierNode)
     .def( "PrintHierTree", &PnRdatabase::PrintHierTree)
     .def( "ReadDBJSON", &PnRdatabase::ReadDBJSON)
@@ -411,7 +414,18 @@ PYBIND11_MODULE(PnR, m) {
     .def( "AddingPowerPins", &PnRdatabase::AddingPowerPins)
     .def( "Extract_RemovePowerPins", &PnRdatabase::Extract_RemovePowerPins)
     .def( "CheckinHierNode", &PnRdatabase::CheckinHierNode)
+    .def( "TransformNode", &PnRdatabase::TransformNode)
+    .def( "RelOrt2AbsOrt", &PnRdatabase::RelOrt2AbsOrt)
+    .def( "ExtractPinsToPowerPins", &PnRdatabase::ExtractPinsToPowerPins)
+    .def( "CheckinChildnodetoBlock", &PnRdatabase::CheckinChildnodetoBlock)
+    .def( "AppendToHierTree", &PnRdatabase::AppendToHierTree)
+    .def( "SetParentInHierTree", &PnRdatabase::SetParentInHierTree)
+    .def( "WriteJSON", &PnRdatabase::WriteJSON)
+    .def( "WriteLef", &PnRdatabase::WriteLef)
+    .def( "Write_Router_Report", &PnRdatabase::Write_Router_Report)
+    .def( "WriteGcellGlobalRoute", &PnRdatabase::WriteGcellGlobalRoute)
     .def_readwrite("hierTree", &PnRdatabase::hierTree)
+    .def_readwrite("topidx", &PnRdatabase::topidx)
   ;
 
   py::class_<Placer_Router_Cap_Ifc>( m, "Placer_Router_Cap_Ifc")
@@ -425,21 +439,15 @@ PYBIND11_MODULE(PnR, m) {
   py::class_<GuardRingIfc>( m, "GuardRingIfc")
     .def( py::init<hierNode&, const map<string, lefMacro>&, const Drc_info&>());
 
+  py::class_<Router>( m, "Router")
+    .def( py::init<>())
+    .def( "RouteWork", &Router::RouteWork);
+
 
 
   m.def("save_state", &save_state, "helper function to save_state");
   m.def("route_single_variant", &route_single_variant, "helper function to route a single variant");
   m.def("route_top_down", &route_top_down, "helper function to perform top-down routing");
 
-  m.def("toplevel", [](const std::vector<std::string>& argv) {
-    py::scoped_ostream_redirect coutstream(
-        std::cout,
-        py::module_::import("align").attr("utils").attr("logging").attr("StreamLogger")(std::string("PnR.console"), std::string("INFO"))
-    );
-    py::scoped_estream_redirect cerrstream(
-        std::cerr,
-        py::module_::import("align").attr("utils").attr("logging").attr("StreamLogger")(std::string("PnR.console"), std::string("ERROR"))
-    );
-    toplevel(argv);},
-    "helper function to perform the whole C++ flow");
+  m.def("toplevel", &toplevel, py::return_value_policy::take_ownership, "helper function to perform the whole C++ flow");
 };

@@ -177,6 +177,9 @@ class GcellDetailRouter : public GcellGlobalRouter{
     void InsertRoutingContact(A_star &a_star, Grid &grid, std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via,
                               std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &contacts, int net_num);
     void ExtendMetals(int i);
+    void Topology_extraction(vector<RouterDB::Metal> &temp_path);
+    void Mirror_Topology(std::vector<RouterDB::Metal> &sym_path,int HV_sym,int center);
+   
 };
 
 #endif

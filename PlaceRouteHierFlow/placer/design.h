@@ -110,7 +110,7 @@ class design
     std::vector<PnRDB::Multi_LinearConst> ML_Constraints;
     std::vector<pair<pair<int,int>, placerDB::Smark>> Ordering_Constraints;
     double Aspect_Ratio_weight = 1000;
-    double Aspect_Ratio = 1;
+    double Aspect_Ratio[2] = {0, 100};
 
     //added by ya
     

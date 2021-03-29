@@ -14,6 +14,14 @@ M0 (D G S S) NMOS w=w1 l=l1
 M0 (D G S S) PMOS w=w1 l=l1
 .ends Switch_PMOS
 
+.subckt Switch_NMOS_G  D G S
+M0 (D G S G) NMOS w=w1 l=l1
+.ends Switch_NMOS_G
+
+.subckt Switch_PMOS_G D G S 
+M0 (D G S G) PMOS w=w1 l=l1
+.ends Switch_PMOS_G
+
 .subckt SCM_NMOS_B DA DB S B
 M0 (DA DA S B) NMOS w=w l=90n
 M1 (DB DA S B) NMOS w=w l=90n

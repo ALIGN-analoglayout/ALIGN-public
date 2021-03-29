@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class WriteVerilog:
     """ write hierarchical verilog file """
 
-    def __init__(self, circuit_graph, circuit_name, inout_pin_names,subckt_list, power_pins):
+    def __init__(self, circuit_graph, circuit_name, inout_pin_names,subckt_dict, power_pins):
         self.circuit_graph = circuit_graph
         self.circuit_name = circuit_name
         self.inout_pins = inout_pin_names
@@ -25,7 +25,7 @@ class WriteVerilog:
             if port not in power_pins:
                 self.pins.append(port)
         self.power_pins=power_pins
-        self.subckt_list = subckt_list
+        self.subckt_dict = subckt_dict
 
     def print_module(self, fp):
         logger.debug(f"Writing module : {self.circuit_name}")
@@ -53,16 +53,17 @@ class WriteVerilog:
                     for key, value in attr["ports_match"].items():
                         ports.append(key)
                         nets.append(value)
-                elif "connection" in attr:
-                    try:
-                        logger.debug(f'connection to ports: {attr["connection"]}')
-                        for key, value in attr["connection"].items():
-                            if check_ports_match(self.subckt_list,key,attr['inst_type']):
-                                ports.append(key)
-                                nets.append(value)
-                    except:
-                        logger.error(f"ERROR: Subckt {attr['inst_type']} defination not found")
-
+                    if 'Switch_NMOS_G' in attr['inst_type']:
+                        ports.append('B')
+                        nets.append(nets[1])
+                    elif 'Switch_PMOS_G' in attr['inst_type']:
+                        ports.append('B')
+                        nets.append(nets[1])
+                elif "connection" in attr and attr["connection"]:
+                    for key, value in attr["connection"].items():
+                        if attr['inst_type'] in self.subckt_dict and key in self.subckt_dict[attr['inst_type']]['ports']:
+                            ports.append(key)
+                            nets.append(value)
                 else:
                     logger.error(f"No connectivity info found : {', '.join(attr['ports'])}")
                     ports = attr["ports"]
@@ -111,12 +112,12 @@ class WriteVerilog:
 class WriteSpice:
     """ write hierarchical verilog file """
 
-    def __init__(self, circuit_graph, circuit_name, inout_pin_names,subckt_list, lib_names):
+    def __init__(self, circuit_graph, circuit_name, inout_pin_names,subckt_dict, lib_names):
         self.circuit_graph = circuit_graph
         self.circuit_name = circuit_name
         self.inout_pins = inout_pin_names
         self.pins = inout_pin_names
-        self.subckt_list = subckt_list
+        self.subckt_dict = subckt_dict
         self.lib_names = lib_names
         self.all_mos = []
     def print_mos_subckt(self,fp,printed_mos):
@@ -152,29 +153,16 @@ class WriteSpice:
                     for key, value in attr["ports_match"].items():
                         ports.append(key)
                         nets.append(value)
-                    #move body pin to last
-                    #ports.append(ports.pop(0))
-                    #nets.append(nets.pop(0))
-                    # transitor with shorted terminals
                     if 'DCL_NMOS' in attr['inst_type']:
                         nets[1:1]=[nets[0]]
                     elif 'DCL_PMOS' in attr['inst_type']:
                         nets[1:1]=[nets[1]]
-                    # add body ports to transistor
-                    #if 'PMOS' in attr['inst_type']:
-                    #    nets.append('vdd')
-                    #elif 'NMOS' in attr['inst_type']:
-                    #    nets.append('vss')
-                elif "connection" in attr:
-                    try:
-                        logger.debug(f'connection to ports: {attr["connection"]}')
-                        for key, value in attr["connection"].items():
-                            if check_ports_match(self.subckt_list,key,attr['inst_type']):
-                                ports.append(key)
-                                nets.append(value)
-                    except:
-                        logger.error(f"ERROR: Subckt {attr['inst_type']} defination not found")
 
+                elif "connection" in attr and attr["connection"]:
+                    for key, value in attr["connection"].items():
+                        if attr['inst_type'] in self.subckt_dict and key in self.subckt_dict[attr['inst_type']]['ports']:
+                            ports.append(key)
+                            nets.append(value)
                 else:
                     logger.error(f"No connectivity info found : {', '.join(attr['ports'])}")
                     ports = attr["ports"]
@@ -217,10 +205,12 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
     if name.lower().startswith('cap'):
         #print("all val",values)
         if 'cap' in values.keys():
-            size = float('%g'%(round(values["cap"]*1E15,4)))
+            if values["cap"]=="unit_size":
+                size = design_config["unit_size_cap"]
+            else:
+                size = float('%g' % (round(values["cap"] * 1E15,4)))
             num_of_unit = float(size)/design_config["unit_size_cap"]
             block_name = name + '_' + str(int(size)) + 'f'
-
         else:
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
@@ -243,17 +233,17 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
                 'primitive': block_name,
                 'value': design_config["unit_size_cap"]
             }
-
-
     elif name.lower().startswith('res'):
         if 'res' in values.keys():
-            size = '%g'%(round(values["res"],2))
+            if values["res"]=="unit_size":
+                size = design_config["unit_height_res"]
+            else:
+                size = '%g'%(round(values["res"],2))
         else :
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
-        block_name = name + '_' + size.replace('.','p')
+        block_name = name + '_' + str(size).replace('.','p')
         try:
-            #size = float(size)
             height = ceil(sqrt(float(size) / design_config["unit_height_res"]))
             if block_name in available_block_lef:
                 return block_name, available_block_lef[block_name]
@@ -267,35 +257,40 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
                 'primitive': name,
                 'value': (1, design_config["unit_height_res"])
             }
-
     else:
         if 'nmos' in name.lower():
             unit_size_mos = design_config["unit_size_nmos"]
         else:
             unit_size_mos = design_config["unit_size_pmos"]
-
         if "nfin" in values.keys():
             #FinFET design
-            size = int(values["nfin"])
+            if values["nfin"]=="unit_size":
+                size = unit_size_mos
+            else:
+                size = int(values["nfin"])
             name_arg ='nfin'+str(size)
-
         elif "w" in values.keys():
             #Bulk design
-            size = int(values["w"]*1E+9/design_config["Gate_pitch"])
+            if values["w"]=="unit_size":
+                size = unit_size_mos
+            else:
+                size = int(values["w"]*1E+9/design_config["Gate_pitch"])                
             values["nfin"]=size
             name_arg ='nfin'+str(size)
-
-
         else:
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
         if 'nf' in values.keys():
-                size=size*int(values["nf"])
-                name_arg =name_arg+'_nf'+str(int(values["nf"]))
+            if values['nf'] == 'unit_size':
+                values['nf'] =size
+            size=size*int(values["nf"])
+            name_arg =name_arg+'_nf'+str(int(values["nf"]))
 
         if 'm' in values.keys():
-                size=size*int(values["m"])
-                name_arg =name_arg+'_m'+str(int(values["m"]))
+            if values['m'] == 'unit_size':
+                values['m'] = 1
+            size=size*int(values["m"])
+            name_arg =name_arg+'_m'+str(int(values["m"]))
 
         no_units = ceil(size / unit_size_mos)
 
@@ -314,7 +309,13 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
 
             if block_name in available_block_lef:
                 return block_name, available_block_lef[block_name]
-            logger.debug("Generating parametric lef of: %s", block_name)
+            if name == 'Switch_NMOS_G':
+                #TBD in celll generator
+                name = 'Switch_NMOS_B'
+            elif name == 'Switch_PMOS_G':
+                name = 'Switch_PMOS_B'
+
+            logger.debug(f"Generating parametric lef of:  {block_name} {name}")
             values["real_inst_type"]=attr["real_inst_type"]
             cell_gen_parameters= {
                 'primitive': name,
@@ -324,8 +325,8 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
                 'parameters':values
             }
             if 'stack' in values.keys():
-                cell_gen_parameters['stack']=values["stack"]
-                block_name = block_name+'_ST'+str(values["stack"])
+                cell_gen_parameters['stack']=int(values["stack"])
+                block_name = block_name+'_ST'+str(int(values["stack"]))
             #cell generator takes only one VT so doing a string search
             #To be fixed:
             if isinstance(attr["real_inst_type"],list):
@@ -343,12 +344,3 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
             block_name = name+"_"+size
 
     raise NotImplementedError(f"Could not generate LEF for {name}")
-
-
-def check_ports_match(subckt_list,port,subckt):
-    for members in subckt_list:
-        if members["name"]==subckt and port in members["ports"]:
-            return 1
-        else:
-            logger.debug("ports match: %s %s",subckt,port)
-            return 1

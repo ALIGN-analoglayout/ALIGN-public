@@ -60,7 +60,7 @@ m11 phieb net013 avdd avdd lvtpfet w=w6 l=l0
 m8 net013 phi avdd avdd lvtpfet w=w6 l=l0
 m1 vg net06 net8 net8 lvtpfet w=w5 l=l0
 m4 net06 phieb avdd avdd lvtpfet w=w5 l=l0
-m0 net8 vg avdd net8 lvtpfet w=w5 l=l0
+**need primitive m0 net8 vg avdd net8 lvtpfet w=w5 l=l0
 c0 net8 net13 cap cap=10f
 .ends BSSW_WOTOD
 
@@ -78,7 +78,7 @@ m9 phie phi avdd avdd lvtpfet w=w5 l=l0
 m6 net018 phie net019 avdd lvtpfet w=w5 l=l0
 m1 vg net018 net8 net8 lvtpfet w=w6 l=l0
 m4 net018 phieb avdd avdd lvtpfet w=w5 l=l0
-m0 net8 phieb avdd net8 lvtpfet w=w5 l=l0
+**need primitive m0 net8 phieb avdd net8 lvtpfet w=w5 l=l0
 c0 net8 net019 cap cap=10f
 .ends BSSW_WOTOD_NS
 
@@ -184,7 +184,7 @@ m120 dn d vss vss lvtnfet w=w5 l=l0
 m1 db d vmid vss lvtnfet w=w7 l=l0
 m113 vmidb v2n vss vss lvtnfet w=w7 l=l0
 m7 net031 net027 vss vss lvtnfet w=w5 l=l0
-m28 vss vss v1p vss lvtnfet w=w8 l=l0
+**need primitive m28 vss vss v1p vss lvtnfet w=w8 l=l0
 m70 v1p vinb vss vss lvtnfet w=w8 l=l0
 m97 net027 clkb net0107 vss lvtnfet w=w5 l=l0
 m12 net0107 vb vss vss lvtnfet w=w7 l=l0
@@ -195,7 +195,7 @@ m20 v2p vxn vss vss lvtnfet w=w7 l=l0
 m3 d db vmidb vss lvtnfet w=w7 l=l0
 m18 vss vss vss vss lvtnfet w=w8 l=l0
 m55 v1n vin vss vss lvtnfet w=w8 l=l0
-m23 vss vss v1n vss lvtnfet w=w8 l=l0
+**need primitive m23 vss vss v1n vss lvtnfet w=w8 l=l0
 m57 v1n vintp<2> vss vss lvtnfet w=w13 l=l0
 m125 clkbo clk vss vss lvtnfet w=w8 l=l0
 m22 vmid v2p vss vss lvtnfet w=w7 l=l0
@@ -411,7 +411,7 @@ xi170 avdd avss botp<3> botp<2> botp<1> botp<0> botep<3> botep<2> botep<1> botep
 xi176 deb<3> deb<2> deb<1> deb<0> don<3> don<2> don<1> don<0> phe dvdd dvss LOGIC_ELD
 xi173 de<3> de<2> de<1> de<0> dop<3> dop<2> dop<1> dop<0> phe dvdd dvss LOGIC_ELD
 xi189 clk clkb din dip gt vb_clk avdd vintp<0> vintn<0> vintn<2> vintn<1> vintp<2> vintp<1> avss CLK_COMP
-m1 avss avdd avss avdd lvtpfet w=w21 l=l0
+**need primitive m1 avss avdd avss avdd lvtpfet w=w21 l=l0
 xi206 avdd avss phs phsbuf net05 BUF248
 xi174 clkb clke d<3> d<2> d<1> d<0> db<3> db<2> db<1> db<0> dbn<3> dbn<2> dbn<1> dbn<0> din dip dvdd dvss f1 gt ns<2> ns<1> phe net07 s<4> s<3> s<2> s<1> sc<4> sc<3> sc<2> sc<1> vb_samp NSSAR_LOGIC_ELD_V2
 .ends NSSAR4B_wELD_V2A
@@ -498,14 +498,13 @@ m35 vdd_d vss_d vdd_d vdd_d lvtpfet w=w5 l=l0
 m38 net025 net017 vss_d vss_d lvtnfet w=w33 l=l0
 m30 clk clkb vss_d vss_d lvtnfet w=w8 l=l0
 m17 do clk net37 vss_d lvtnfet w=w33 l=l0
-m32 vdd_d vss_d vdd_d vss_d lvtnfet w=w33 l=l0
 m27 clkn clk vss_d vss_d lvtnfet w=w8 l=l0
 m13 dob clk net38 vss_d lvtnfet w=w33 l=l0
 m36 net017 d vss_d vss_d lvtnfet w=w33 l=l0
 m21 dob do vss_d vss_d lvtnfet w=w18 l=l0
 m20 do dob vss_d vss_d lvtnfet w=w18 l=l0
 m19 net38 net017 vss_d vss_d lvtnfet w=w33 l=l0
-m34 vdd_d vss_d vdd_d vss_d lvtnfet w=w33 l=l0
+**need primitive m34 vdd_d vss_d vdd_d vss_d lvtnfet w=w33 l=l0
 m18 net37 net025 vss_d vss_d lvtnfet w=w33 l=l0
 .ends Retiming_Latch_common
 

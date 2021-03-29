@@ -17,7 +17,7 @@ def get_next_level(G, tree_l1):
     for node in list(tree_l1):
         if node not in G.nodes:
             continue
-        #logger.debug(f"neighbors of {node}: {list(G.neighbors(node))}")
+        # logger.debug(f"neighbors of {node}: {list(G.neighbors(node))}")
         if 'mos' in G.nodes[node]["inst_type"]:
             for nbr in list(G.neighbors(node)):
                 if G.get_edge_data(node, nbr)['weight']!=2:
@@ -31,6 +31,7 @@ def get_next_level(G, tree_l1):
                     tree_next.append(nbr)               
         else:
             tree_next.extend(list(G.neighbors(node)))
+    # logger.debug(f"next nodes {tree_next} ")
     return tree_next
 def compare_two_nodes(G,node1:str,node2:str ,ports_weight):
     """
@@ -109,16 +110,9 @@ def max_connectivity(G):
             #print (v,conn_value)
     return conn_value
 def plt_graph(subgraph,sub_block_name):
-    #print(sub_block_name,subgraph.nodes())
-    #for x,y in subgraph.nodes(data=True):
-    #    print(x,y)
     copy_graph=subgraph
     for node,attr in list(copy_graph.nodes(data=True)):
-        #print(node)
-        #print(copy_graph.nodes[node])
         if 'source' in attr["inst_type"]:
-            #print("deleting source node",node)
-            #   copy_graph.nodes(node)['inst_type']:
             copy_graph.remove_node(node)
 
     no_of_transistor =len([x for x,y in subgraph.nodes(data=True) if 'net' not in y['inst_type']] )
@@ -129,12 +123,6 @@ def plt_graph(subgraph,sub_block_name):
         plt.figure(figsize=(4, 3))
     nx.draw(copy_graph,with_labels=True,pos=nx.spring_layout(copy_graph))
     plt.title(Title, fontsize=20)
-    #fig.savefig(Title+'.png', dpi=fig.dpi)
-
-    #plt.show()
-    #plt.show(block=False)
-    #plt.pause(0.3) # pause how many seconds
-    #plt.close()
 
 def _show_circuit_graph(filename, graph, dir_path):
     #print(graph)
@@ -145,7 +133,7 @@ def _show_circuit_graph(filename, graph, dir_path):
         color_map = []
 
         plt.figure(figsize=(6, 8))
-        for node, attr in subgraph.nodes(data=True):
+        for _, attr in subgraph.nodes(data=True):
             if "inst_type" in attr:
                 if attr["inst_type"] == 'pmos':
                     color_map.append('red')
@@ -157,7 +145,6 @@ def _show_circuit_graph(filename, graph, dir_path):
                     color_map.append('pink')
                 else:
                     color_map.append('green')
-        #%matplotlib inline
         nx.draw(subgraph, node_color=color_map)
         plt.title(filename, fontsize=20)
         if not os.path.exists(dir_path):

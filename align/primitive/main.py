@@ -1,3 +1,4 @@
+import sys
 import datetime
 import pathlib
 import logging
@@ -223,11 +224,30 @@ def generate_Res(pdkdir, block_name, height, x_cells, y_cells, nfin, unit_res):
 
     return uc, ['PLUS', 'MINUS']
 
+
 def get_generator(name, pdkdir):
-    spec = importlib.util.spec_from_file_location("primitive", pdkdir / 'primitive.py')
-    primitive = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(primitive)
-    return getattr(primitive, name)
+    pdk_dir_path = pdkdir
+    if isinstance(pdkdir, str):
+        pdk_dir_path = pathlib.Path(pdkdir)
+    pdk_dir_stem = pdk_dir_path.stem
+
+    try:  # is pdk an installed module
+        module = importlib.import_module(pdk_dir_stem)
+        return getattr(module, name)
+    except ImportError:
+        init_file = pdk_dir_path / '__init__.py'
+        if init_file.is_file():  # is pdk a package
+            spec = importlib.util.spec_from_file_location(pdk_dir_stem, pdk_dir_path / '__init__.py')
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[pdk_dir_stem] = module
+            spec.loader.exec_module(module)
+            return getattr(module, name)
+        else:  # is pdk old school (backward compatibility)
+            spec = importlib.util.spec_from_file_location("primitive", pdkdir / 'primitive.py')
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return getattr(module, name)
+
 
 # WARNING: Bad code. Changing these default values breaks functionality.
 def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None, pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd()):

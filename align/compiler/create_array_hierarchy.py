@@ -13,35 +13,9 @@ from .util import compare_two_nodes
 import logging
 logger = logging.getLogger(__name__)
 
-# def FindArray(graph,input_dir,name,ports_weight):
-    
-#     templates = {}
-#     array_of_node = {}
-#     visited =[]
-#     all_array = {}
-
-#     for node, attr in graph.nodes(data=True):
-#         if  'net' in attr["inst_type"] and len(list(graph.neighbors(node)))>2:
-#             logger.debug(f"extracting array starting from net {node}")
-#             level1 = [l1 for l1 in graph.neighbors(node) if l1 not in visited]
-#             array_of_node[node] = matching_groups(graph,level1,ports_weight)
-#             logger.debug(f"group of matching nodes connected to net {node}: {array_of_node[node]}")
-#             if len(array_of_node[node]) > 0 and len(array_of_node[node][0])>1:
-#                 for group in array_of_node[node]:
-#                     similar_node_groups = {}
-#                     for el in group:
-#                         similar_node_groups[el]=[el]
-#                     templates[node] = [el]
-#                     visited = group+[node]
-#                     array = similar_node_groups.copy()
-#                     trace_template(graph,similar_node_groups,visited,templates[node],array)
-#                     logger.debug(f"similar groups final from net {node}:{array}")
-#                     all_array[node] = array
-#     return all_array
-
 def matching_groups(G,level1,ports_weight):
     """
-    Creates a a 2D list from 1D list of level1 grouping similar elements in separate group
+    Creates a a 2D list from 1D list of level1, grouping similar elements in separate group
 
     Parameters
     ----------
@@ -51,7 +25,6 @@ def matching_groups(G,level1,ports_weight):
         DESCRIPTION.
     ports_weight : TYPE
         DESCRIPTION.
-
     Returns
     -------
     similar_groups : TYPE
@@ -85,7 +58,6 @@ def matching_groups(G,level1,ports_weight):
 
 
 def trace_template(graph, similar_node_groups,visited,template,array):
-    
     next_match={}
     traversed=visited.copy()
 
@@ -134,7 +106,6 @@ def match_branches(graph,nodes_dict):
     return True
 
 
-
 def check_convergence(match:dict):
     vals=[]
     for val in match.values():
@@ -167,10 +138,10 @@ def create_hierarchy(graph,node:str,traversed:list,ports_weight:dict):
     """
 
     hier_of_node ={}
-    level1=list(set(graph.neighbors(node))-set(traversed))
+    level1 = list(set(graph.neighbors(node))-set(traversed))
     
     hier_of_node[node]=matching_groups(graph,level1,None)
-    logger.debug(f"new hierarchy points {hier_of_node}")
+    logger.debug(f"new hierarchy points {hier_of_node} from node {node}")
 
     if len(hier_of_node[node]) > 0:
         for group in sorted(hier_of_node[node] , key=lambda group: len(group)):
@@ -180,10 +151,10 @@ def create_hierarchy(graph,node:str,traversed:list,ports_weight:dict):
                 for el in sorted(group):
                     similar_node_groups[el]=[el]
                 templates[node] = [el]
-                visited = group+[node]
+                visited = group
                 array = similar_node_groups.copy()
                 trace_template(graph,similar_node_groups,visited,templates[node],array)
-                logger.debug(f"similar groups final from net {node}:{array}")
+                logger.debug(f"similar groups final from {node}:{array}")
         
         #check number of levels in detected array
         #single hierarchy arrays can be handled using simple approaches
@@ -209,14 +180,14 @@ def create_hierarchy(graph,node:str,traversed:list,ports_weight:dict):
             for inst in  all_inst:
                 for node_hier in list(set(graph.neighbors(inst))):
                     if graph.nodes[node_hier]['inst_type']== 'net':
-                        if (set(graph.neighbors(node_hier))- set(all_inst)):
-                            matched_ports[node_hier]=node_hier
+                        if (set(graph.neighbors(node_hier))- set(all_inst)) or graph.nodes[node_hier]["net_type"]=='external':
+                            matched_ports[node_hier] = node_hier
                             h_ports_weight[node_hier] = []
                             for nbr in list(graph.neighbors(node_hier)):
                                 h_ports_weight[node_hier].append(graph.get_edge_data(node_hier, nbr)['weight'])
                        
             logger.debug(f"creating a new hierarchy for {node}, {all_inst}, {matched_ports}")
-            graph, subgraph,_ = merge_nodes(
+            subgraph,_ = merge_nodes(
                     graph, 'array_hier_'+node,all_inst , matched_ports)
             hier_of_node[node]={
                         "name": 'array_hier_'+node,

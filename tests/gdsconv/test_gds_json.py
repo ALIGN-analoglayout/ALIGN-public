@@ -7,13 +7,13 @@ from align.gdsconv.json2gds import convert_GDSjson_GDS
 mydir = pathlib.Path(__file__).resolve().parent
 
 def test_gds_json_roundtrip ():
-    convert_GDS_GDSjson (mydir / "file.gds", mydir / "fromgds.json")
-    convert_GDSjson_GDS (mydir / "fromgds.json", mydir / "fromjson.gds")
-    assert (filecmp.cmp (mydir / "file.gds", mydir / "fromjson.gds"))
+    convert_GDS_GDSjson (mydir / "file.gds", mydir / "fromgds1.json")
+    convert_GDSjson_GDS (mydir / "fromgds1.json", mydir / "fromjson1.gds")
+    assert (filecmp.cmp (mydir / "file.gds", mydir / "fromjson1.gds"))
 
-    convert_GDS_GDSjson (mydir / "only_paths.gds", mydir / "only_paths_fromgds.json")
-    convert_GDSjson_GDS (mydir / "only_paths_fromgds.json", mydir / "only_paths_fromjson.gds")
-    assert (filecmp.cmp (mydir / "only_paths.gds", mydir / "only_paths_fromjson.gds"))
+    convert_GDS_GDSjson (mydir / "only_paths.gds", mydir / "only_paths_fromgds1.json")
+    convert_GDSjson_GDS (mydir / "only_paths_fromgds1.json", mydir / "only_paths_fromjson1.gds")
+    assert (filecmp.cmp (mydir / "only_paths.gds", mydir / "only_paths_fromjson1.gds"))
 
 def test_json_gds_roundtrip ():
     convert_GDSjson_GDS (mydir / "file.json", mydir / "fromjson2.gds")

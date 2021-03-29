@@ -75,9 +75,9 @@ class Scanline:
         return 'Scanline( rects=' + str(self.rects) + ')'
 
     def find_touching(self, via_rect):
-#
-# Linear search --- could improve performance by binary search since rects are sorted
-#
+        #
+        # Linear search --- could improve performance by binary search since rects are sorted
+        #
         result = None
         for metal_rect in self.rects:
             if RemoveDuplicates.touching( via_rect.rect, metal_rect.rect):
@@ -131,7 +131,7 @@ class RemoveDuplicates():
         # not touching if completely to left or right or above or below
         return not (rA[2] < rB[0] or rB[2] < rA[0] or rA[3] < rB[1] or rB[3] < rA[1])
 
-    def __init__( self, canvas, *, nets_allowed_to_be_open=None):
+    def __init__( self, canvas, *, nets_allowed_to_be_open=None, allow_opens=False):
         self.canvas = canvas
         self.store_scan_lines = None
         self.different_widths = []
@@ -145,9 +145,10 @@ class RemoveDuplicates():
             self.nets_allowed_to_be_open = set([])
         else:
             self.nets_allowed_to_be_open = set(nets_allowed_to_be_open)
+        self.allow_opens = bool(allow_opens)
 
     def set_open( self, nm, opn):
-        if nm not in self.nets_allowed_to_be_open:
+        if nm not in self.nets_allowed_to_be_open and not self.allow_opens:
             self.opens.append( opn)
 
     def setup_layer_structures( self):

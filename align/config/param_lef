@@ -1,5 +1,7 @@
 Switch_NMOS_B
 Switch_PMOS_B
+Switch_NMOS_G
+Switch_PMOS_G
 Switch_NMOS
 Switch_PMOS
 SCM_NMOS_B

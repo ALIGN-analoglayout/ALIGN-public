@@ -177,7 +177,7 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
             db.hierTree[j].Nets = temp_net;
          }
      }
- 
+
   //update pins & terminal connection iternet
   for(unsigned int i=0;i<db.hierTree.size();i++){
       for(unsigned int j=0;j<db.hierTree[i].Nets.size();j++){
@@ -211,6 +211,29 @@ db.hierTree[i].Terminals[db.hierTree[i].Nets[j].connected[k].iter].netIter = j;
               }
 
       }
+
+  //adjust symmetry net iter
+
+  for(unsigned int i=0;i<db.hierTree.size();i++){
+     for(unsigned int j=0;j<db.hierTree[i].SNets.size();j++){
+        int iter1=-1;
+        int iter2=-1;
+        for(unsigned int k=0;k<db.hierTree[i].Nets.size();k++){
+           if(db.hierTree[i].Nets[k].name==db.hierTree[i].SNets[j].net1.name){
+               iter1 = k;
+               break;
+             }
+        }
+        for(unsigned int k=0;k<db.hierTree[i].Nets.size();k++){
+           if(db.hierTree[i].Nets[k].name==db.hierTree[i].SNets[j].net2.name){
+               iter2 = k;
+               break;
+             }
+        }
+        db.hierTree[i].Nets[iter1].symCounterpart=iter2;
+        db.hierTree[i].Nets[iter2].symCounterpart=iter1; 
+     }
+  }
 
 //Add LinearConst here
 

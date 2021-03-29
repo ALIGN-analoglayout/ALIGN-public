@@ -19,7 +19,7 @@ m30 net93 vbias vdd vdd pfet w=w6 l=l0
 m32 net111 net96 vdd vdd pfet w=w9 l=l0
 m33 net96 net96 vdd vdd pfet w=w9 l=l0
 m1 vout net111 vdd vdd pfet w=w10 l=l0
-c1 net107 vout 5e-12
-c0 vout gnd 1e-12
+c1 net107 vout 5e-14
+c0 vout gnd 1e-14
 .ends BUFFER_VCM
 

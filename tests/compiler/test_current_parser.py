@@ -1,7 +1,9 @@
 import pathlib
 
 from align.compiler.read_netlist import SpiceParser
-from align.compiler.match_graph import reduce_graph, _mapped_graph_list
+from align.compiler.match_graph import Annotate
+from align.compiler.create_database import CreateDatabase
+from align.compiler.user_const import ConstraintParser
 
 def test_parser1():
     test_path=(pathlib.Path(__file__).parent / 'test_circuits' / 'test1.sp').resolve()
@@ -30,28 +32,25 @@ def test_parser3():
     return(g["graph"], lib_list)
 
 def test_match_ota():
-    g,lib_list =test_parser3()
-    design_setup = {'POWER':['vdd'],'GND':['vss']}
+    pdk_dir = pathlib.Path(__file__).resolve().parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK'
+    input_dir = pathlib.Path(__file__).resolve().parent / 'test_circuits'
+    g,lib_list = test_parser3()
+    design_setup = {'POWER':['vdd'],'GND':['vss'], 'DIGITAL':[], 'CLOCK':[],'NO_ARRAY':[]}
     all_lef = ['Switch_NMOS','Switch_PMOS','CMC_PMOS','CMC_S_NMOS_B','DP_NMOS_B','SCM_NMOS']
-    duplicate = {}
-    mapped_graph_list = _mapped_graph_list(g, lib_list,['vdd!','vss'])
+    const_parse = ConstraintParser(pdk_dir, input_dir)
+    create_data = CreateDatabase(g,const_parse)
+    hier_graph_dict = create_data.read_inputs("ota")
+    annotate = Annotate(hier_graph_dict, design_setup,lib_list,all_lef)
+    mapped_graph_list = annotate._mapped_graph_list(g, lib_list,['vdd!','vss'])
     assert 'Switch_NMOS' in mapped_graph_list.keys()
     assert 'Switch_PMOS' in mapped_graph_list.keys()
     assert 'CMC_PMOS' in mapped_graph_list.keys()
     assert 'CMC_S_NMOS_B' in mapped_graph_list.keys()
     assert 'DP_NMOS_B' in mapped_graph_list.keys()
-    subckts_created, reduced_graph = reduce_graph(g, mapped_graph_list, lib_list,duplicate,design_setup,all_lef)
-    assert len(reduced_graph.nodes()) == 19
-    subckts_created.append({
-            "name": "ota",
-            "graph":reduced_graph ,
-            "ports":find_ports(reduced_graph),
-            "ports_weight":find_ports_weight(reduced_graph),
-            "size": len(reduced_graph.nodes())
-        })
-    print(reduced_graph.nodes())
-    print(subckts_created)
-    return subckts_created
+
+    hier_graph_dict['ota']['graph'] = annotate._reduce_graph(g, "ota", mapped_graph_list)
+    assert len( hier_graph_dict['ota']['graph'].nodes()) == 19
+    return hier_graph_dict
 
 def find_ports(graph):
     ports = []

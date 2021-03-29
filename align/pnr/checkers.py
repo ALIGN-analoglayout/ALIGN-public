@@ -7,6 +7,7 @@ import importlib
 import sys
 import pathlib
 import re
+from .toplevel import NType, Omark
 
 import logging
 logger = logging.getLogger(__name__)
@@ -40,10 +41,6 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
 
     errors = []
 
-    t_tbl = { "M1": "m1", "M2": "m2", "M3": "m3",
-              "M4": "m4", "M5": "m5", "M6": "m6",
-              "M7": "m7", "M8": "m8"}
-
     def add_terminal( netName, layer, b, tag=None):
 
         r = [ b.LL.x, b.LL.y, b.UR.x, b.UR.y]
@@ -75,7 +72,8 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
             else:
                 center = None
             if center is not None:
-                f( cnv.generators[t_tbl[layer]], center, tag)
+                lyr = layer.lower() if layer.lower() in cnv.generators else layer.upper()
+                f( cnv.generators[lyr], center, tag)
 
     if not checkOnly and draw_grid:
         m1_pitch = 2*cnv.pdk['M1']['Pitch']
@@ -95,7 +93,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     fa_map = {}
     for n in itertools.chain( hN.Nets, hN.PowerNets):
         for c in n.connected:
-            if c.type == 'Block':
+            if c.type == 'Block' or c.type == NType.Block:
                 cblk = hN.Blocks[c.iter2]
                 blk = cblk.instance[cblk.selectedInstance]
                 block_name = blk.name
@@ -104,11 +102,12 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                 formal_name = f"{blk.name}/{pin.name}"
                 assert formal_name not in fa_map
                 fa_map[formal_name] = n.name
-
-            else:
+            elif c.type == 'Terminal' or c.type == NType.Terminal:
                 term = hN.Terminals[c.iter]
                 terminal_name = term.name
-                assert terminal_name == n.name
+                assert n.name == terminal_name
+            else:
+                assert False, c.type
 
     for cblk in hN.Blocks:
         blk = cblk.instance[cblk.selectedInstance]
@@ -141,7 +140,19 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
             # Scale to PnRDB coords (seems like 10x um, but PnRDB is 2x um, so divide by 5
             rational_scaling( d, div=5, errors=errors)
 
-            tr = transformation.Transformation.genTr( blk.orient, w=blk.width, h=blk.height)
+
+            if blk.orient == Omark.FN:
+                orient = 'FN'
+            elif blk.orient == Omark.FS:
+                orient = 'FS'
+            elif blk.orient == Omark.N:
+                orient = 'N'
+            elif blk.orient == Omark.S:
+                orient = 'S'
+            else:
+                assert False, blk.orient
+
+            tr = transformation.Transformation.genTr( orient, w=blk.width, h=blk.height)
 
             tr2 = transformation.Transformation( oX=blk.placedBox.UR.x - blk.originBox.LL.x,
                                                  oY=blk.placedBox.UR.y - blk.originBox.LL.y)
@@ -193,7 +204,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                 add_terminal( obj, con.metal, b, tag=tag)
 
         for c in n.connected:
-            if c.type == 'Block':
+            if c.type == 'Block' or c.type == NType.Block:
                 cblk = hN.Blocks[c.iter2]
                 blk = cblk.instance[cblk.selectedInstance]
                 block_name = blk.name
@@ -206,7 +217,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
 
                 for con in pin.pinContacts:
                     addt( n, con, "blockPin")
-            else:
+            elif c.type == 'Terminal' or c.type == NType.Terminal:
                 term = hN.Terminals[c.iter]
                 terminal_name = term.name
                 assert terminal_name == n.name
@@ -215,6 +226,9 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                 for con in term.termContacts:
                     pass
 #                    addt( n, con)
+            else:
+                assert False, c.type
+
 
         for metal in n.path_metal:
             con = metal.MetalRect
@@ -301,6 +315,8 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     # Create viewer dictionary
 
     d = {}
+
+    logger.debug( f'bbox: {hN.LL.x} {hN.LL.y} {hN.UR.x} {hN.UR.y}')
 
     d["bbox"] = [hN.LL.x,hN.LL.y,hN.UR.x,hN.UR.y]
 

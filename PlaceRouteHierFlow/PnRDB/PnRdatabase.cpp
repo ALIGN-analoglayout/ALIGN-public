@@ -7,30 +7,17 @@
 
 using namespace nlohmann;
 
-#include <gtest/gtest.h>
 #include "spdlog/spdlog.h"
 
-/*
-static bool EndsWith( const string& str, const string& pat)
-{
-    return str.size() >= pat.size() && str.substr( str.size() - pat.size(), pat.size()) == pat;
-}
-*/
 static bool EndsWith( const string& str, const string& pat)
 {
   return std::mismatch( str.rbegin(), str.rend(), pat.rbegin(), pat.rend()).second == pat.rend();
 }
 
-
-TEST( EndsWithTest, Test1)
-{
-    EXPECT_TRUE( EndsWith( "", ""));
-    EXPECT_TRUE( EndsWith( "a", ""));
-    EXPECT_FALSE( EndsWith( "", "a"));
-    EXPECT_TRUE( EndsWith( "Steve Burns", "Burns"));
-    EXPECT_FALSE( EndsWith( "Steve Burns", "Treefrog Steve Burns"));
+PnRdatabase::~PnRdatabase() {
+  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.~PnRdatabase");
+  logger->info( "Deconstructing PnRdatabase");
 }
-
 
 PnRdatabase::PnRdatabase(string path, string topcell, string vname, string lefname, string mapname, string drname) {
 
@@ -214,7 +201,16 @@ void PnRdatabase::TraverseDFS(deque<int>& Q, vector<string>& color, int idx) {
 }
 
 PnRDB::hierNode PnRdatabase::CheckoutHierNode(int nodeID) {
-  return hierTree[nodeID];
+  return hierTree.at(nodeID);
+}
+
+void PnRdatabase::AppendToHierTree(const PnRDB::hierNode& hN) {
+  hierTree.push_back( hN);
+}
+
+void PnRdatabase::SetParentInHierTree( int idx, int pidx, int parent_id) {
+  assert( 0 <= pidx && pidx < hierTree[idx].parent.size());
+  hierTree[idx].parent[pidx] = parent_id;
 }
 
 std::vector<PnRDB::hierNode> PnRdatabase::CheckoutHierNodeVec(int nodeID){
@@ -929,7 +925,8 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
 	    auto& net2 = updatedNode.Nets[cit->second];
 	    net.path_metal = net2.path_metal;
 	    net.path_via = net2.path_via;
-	}
+      net.axis_coor = net2.axis_coor;
+  }
     }
 
     /*
@@ -1548,6 +1545,94 @@ void PnRdatabase::WriteGcellGlobalRoute(const PnRDB::hierNode& node, const strin
 
     json jsonTop;
     jsonTop["wires"] = jsonWiresArray;
+
+    std::ofstream jsonStream(opath+rofile);
+    if (jsonStream.fail()) {
+      logger->error("PnRData-Error: cannot open file {0} for writing", opath + rofile);
+      return;
+    }
+    jsonStream << std::setw(4) << jsonTop;
+    jsonStream.close();
+    
+}
+
+void PnRdatabase::WriteGcellDetailRoute(const PnRDB::hierNode& node, const string& rofile, const string& opath) const {
+
+    auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.WriteGcellDetailRoute");
+
+    json jsonWiresArray = json::array();
+    for(unsigned int i=0;i<node.Nets.size();++i){
+
+      json jsonNet;
+      jsonNet["name"] = node.Nets[i].name;
+      json jsonpath = json::array();
+      for(unsigned int j=0;j<node.Nets[i].path_metal.size();++j){
+
+         json jsonRect =  json::array();
+         jsonRect.push_back(node.Nets[i].path_metal[j].LinePoint[0].x);
+         jsonRect.push_back(node.Nets[i].path_metal[j].LinePoint[0].y);
+         jsonRect.push_back(node.Nets[i].path_metal[j].LinePoint[1].x);
+         jsonRect.push_back(node.Nets[i].path_metal[j].LinePoint[1].y);
+         jsonpath.push_back(jsonRect);
+
+      }
+      jsonNet["path"] = jsonpath;
+
+      json connections = json::array();
+
+      for(unsigned int j=0;j<node.Nets[i].connected.size();++j){
+
+         json connection =  json::array();
+         if(node.Nets[i].connected[j].iter2>=0){
+           connection.push_back(node.Nets[i].connected[j].iter2);
+           connection.push_back(node.Nets[i].connected[j].iter);
+           connections.push_back(connection);
+         }
+
+      }
+      jsonNet["path"] = jsonpath;
+      jsonNet["connection"] = connections;
+
+      
+      jsonWiresArray.push_back(jsonNet);
+
+    }
+
+    json jsonBlocks = json::array();
+    for(unsigned int i=0;i<node.Blocks.size();++i){
+      int selected_index = node.Blocks[i].selectedInstance;
+      json jsonblock;
+      jsonblock["name"] = node.Blocks[i].instance[selected_index].name;
+      json blockposition = json::array();
+      blockposition.push_back(node.Blocks[i].instance[selected_index].placedBox.LL.x);
+      blockposition.push_back(node.Blocks[i].instance[selected_index].placedBox.LL.y);
+      blockposition.push_back(node.Blocks[i].instance[selected_index].placedBox.UR.x);
+      blockposition.push_back(node.Blocks[i].instance[selected_index].placedBox.UR.y);
+      jsonblock["position"] = blockposition;
+      json blockpins = json::array();
+      for(unsigned int j=0;j<node.Blocks[i].instance[selected_index].blockPins.size();++j){
+        json blockpin;
+        blockpin["name"] = node.Blocks[i].instance[selected_index].blockPins[j].name;
+        json blockpincontacts = json::array();
+        for(unsigned int k=0;k<node.Blocks[i].instance[selected_index].blockPins[j].pinContacts.size();++k){
+           json blockpincontact = json::array();
+           blockpincontact.push_back(node.Blocks[i].instance[selected_index].blockPins[j].pinContacts[k].placedBox.LL.x);
+           blockpincontact.push_back(node.Blocks[i].instance[selected_index].blockPins[j].pinContacts[k].placedBox.LL.y);
+           blockpincontact.push_back(node.Blocks[i].instance[selected_index].blockPins[j].pinContacts[k].placedBox.UR.x);
+           blockpincontact.push_back(node.Blocks[i].instance[selected_index].blockPins[j].pinContacts[k].placedBox.UR.y);
+           blockpincontacts.push_back(blockpincontact);
+        }
+        blockpin["contact"] = blockpincontacts;
+        blockpins.push_back(blockpin);
+      }
+      jsonblock["pin"] = blockpins;
+      jsonBlocks.push_back(jsonblock);
+    }
+    
+
+    json jsonTop;
+    jsonTop["wires"] = jsonWiresArray;
+    jsonTop["blocks"] = jsonBlocks;
 
     std::ofstream jsonStream(opath+rofile);
     if (jsonStream.fail()) {
