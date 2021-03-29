@@ -14,6 +14,7 @@ DetailedRouter
 
 # Exclude files built by Dockerfile or install.sh
 general/
+.venv/
 wheelhouse/
 _skbuild/
 # Exclude common user / machine generated files
