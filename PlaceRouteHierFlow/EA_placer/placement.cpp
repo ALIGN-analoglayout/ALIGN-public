@@ -921,7 +921,7 @@ void Placement::E_Placer(){
   #endif
   PlotPlacement(0);
   Cal_Overlap();
-  // Initilize_lambda();
+  Initilize_lambda();
   while((Stop_Condition(stop_density,current_max_density) or symCheck(symmetricMin)) and count_number<upper_count_number ){//Q: stop condition
   // while(i<20){//Q: stop condition
      Density.push_back(current_max_density);
