@@ -875,8 +875,10 @@ void Placement::E_Placer(){
   #endif
   //force to align and order
   // force_alignment();
-  force_order();
-  force_alignment();
+  vector<float> uc_y,vc_y,vl_y;
+  vector<float> uc_x,vc_x,vl_x;
+  force_order(vc_x,vl_x,vc_y,vl_y);
+  force_alignment(vc_x,vl_x,vc_y,vl_y);
   
   Update_Bin_Density();
   #ifdef DEBUG
@@ -908,7 +910,7 @@ void Placement::E_Placer(){
   #ifdef DEBUG
   std::cout<<"E_placer debug flage: 5"<<std::endl;
   #endif
-  vector<float> uc_x,vc_x,vl_x;
+  // vector<float> uc_x,vc_x,vl_x;
   Extract_Placement_Vectors(uc_x, 1);
   #ifdef DEBUG
   std::cout<<"E_placer debug flage: 6"<<std::endl;
@@ -928,7 +930,7 @@ void Placement::E_Placer(){
   #ifdef DEBUG
   std::cout<<"E_placer debug flage: 9"<<std::endl;
   #endif
-  vector<float> uc_y,vc_y,vl_y;
+  // vector<float> uc_y,vc_y,vl_y;
   Extract_Placement_Vectors(uc_y, 0);
   #ifdef DEBUG
   std::cout<<"E_placer debug flage: 10"<<std::endl;
@@ -952,19 +954,21 @@ void Placement::E_Placer(){
   float current_max_density=10.0;
   int count_number = 0;
   int upper_count_number = 200;
-  float symmetricMin = 1.0;//need to tune
+  float current_overlap = 1.0;
+  float symmetricMin = 0.3;//need to tune
   vector<float> Density;
   #ifdef DEBUG
   std::cout<<"E_placer debug flage: 14"<<std::endl;
   #endif
   PlotPlacement(0);
-  Cal_Overlap();
-  while((Stop_Condition(stop_density,current_max_density) or symCheck(symmetricMin)) and count_number<upper_count_number ){//Q: stop condition
+  current_overlap = Cal_Overlap();
+  // while((Stop_Condition(stop_density,current_max_density) or symCheck(symmetricMin)) and count_number<upper_count_number ){//Q: stop condition
+  while((current_overlap>0.1 or symCheck(symmetricMin)) and count_number<upper_count_number ){//Q: stop condition
      //Initilize_lambda();
      //Initilize_sym_beta();
   // while(i<20){//Q: stop condition
      Density.push_back(current_max_density);
-     Cal_Overlap();
+     current_overlap = Cal_Overlap();
      if(current_max_density<max_density){
         max_density = current_max_density;
         #ifdef DEBUG
@@ -988,15 +992,15 @@ void Placement::E_Placer(){
      beta = beta*0.95;
      if(sym_beta < 0.1)
      {
-        sym_beta = sym_beta*1.0125;
+        sym_beta = sym_beta*1.05;
      }
     
       std::cout<<"sym_beta:= "<<sym_beta<<std::endl;
      //force to align
      if(i%10 == 0)
      {
-       force_order();
-       force_alignment();
+       force_order(vc_x,vl_x,vc_y,vl_y);
+       force_alignment(vc_x,vl_x,vc_y,vl_y);
        
       //  force_alignment();
        
@@ -1062,8 +1066,9 @@ void Placement::E_Placer(){
      start_flag=0;
      i++;
   }
-  force_order();
-  force_alignment();
+  force_order(vc_x,vl_x,vc_y,vl_y);
+  force_alignment(vc_x,vl_x,vc_y,vl_y);
+  PlotPlacement(count_number);
   std::cout<<"iter num when stop:="<<count_number<<std::endl;
 
 }
@@ -1496,10 +1501,10 @@ float Placement::readInputNode(PnRDB::hierNode &current_node)
         {
           int id = it->selfsym[i].first;
           std::cout<<"V: cond2, id = "<<id<<endl;
-          symmetric_force_matrix[id][id].x += 2;
-          symmetric_force_matrix[id][base].x -= 2;
-          symmetric_force_matrix[base][id].x -= 2;
-          symmetric_force_matrix[base][base].x += 2;
+          symmetric_force_matrix[id][id].x += 8;
+          symmetric_force_matrix[id][base].x -= 8;
+          symmetric_force_matrix[base][id].x -= 8;
+          symmetric_force_matrix[base][base].x += 8;
         }
         //for pair sym (xi + xj - 2*x0)^2
         for(int i = 0;i < it->sympair.size();++i)
@@ -1613,10 +1618,10 @@ float Placement::readInputNode(PnRDB::hierNode &current_node)
           std::cout<<"H: cond2, id = "<<id<<endl;
           // std::cout<<"matrix size:"<<symmetric_force_matrix.size()<<", "<<symmetric_force_matrix[0].size()<<endl;
           // #endif;
-          symmetric_force_matrix[id][id].y += 2;
-          symmetric_force_matrix[id][base].y -= 2;
-          symmetric_force_matrix[base][id].y -= 2;
-          symmetric_force_matrix[base][base].y += 2;
+          symmetric_force_matrix[id][id].y += 8;
+          symmetric_force_matrix[id][base].y -= 8;
+          symmetric_force_matrix[base][id].y -= 8;
+          symmetric_force_matrix[base][base].y += 8;
         }
         //for pair sym (xi + xj - 2*x0)^2
         for(int i = 0;i < it->sympair.size();++i)
@@ -1854,7 +1859,7 @@ void Placement::read_alignment(PnRDB::hierNode &current_node)
   }
 }
 
-void Placement::force_alignment()
+void Placement::force_alignment(vector<float> &vc_x,vector<float> &vl_x,vector<float> &vc_y,vector<float> &vl_y)
 {
   //###############################################
   //old version using struct Alignment//
@@ -1889,6 +1894,13 @@ void Placement::force_alignment()
         
         float distance = 1/2*(cur_dem.y - head_dem.y);
         Blocks[cur_idx].Cpoint.y = head_pos.y + distance;
+        //update vl and vc
+        if(vl_y.size()>cur_idx)
+        {
+          // vl_y[cur_idx] = Blocks[cur_idx].Cpoint.y;
+          vc_y[cur_idx] = Blocks[cur_idx].Cpoint.y;
+        }
+        
       }
     }
     else
@@ -1900,6 +1912,13 @@ void Placement::force_alignment()
         
         float distance = 1/2*(cur_dem.x - head_dem.x);
         Blocks[cur_idx].Cpoint.x = head_pos.x + distance;
+        //update vl and vc
+        if(vl_x.size()>cur_idx)
+        {
+          // vl_x[cur_idx] = Blocks[cur_idx].Cpoint.x;
+          vc_x[cur_idx] = Blocks[cur_idx].Cpoint.x;
+        }
+        
       }
     }
   }
@@ -1912,7 +1931,7 @@ void Placement::read_order(PnRDB::hierNode &current_node)
   std::cout<<"ordering constraints size: "<<Ordering_Constraints.size()<<std::endl;
 }
 
-void Placement::force_order()
+void Placement::force_order(vector<float> &vc_x,vector<float> &vl_x,vector<float> &vc_y,vector<float> &vl_y)
 {
   //step 1: put the Cpoint into verctor
   for(int i = 0;i < Ordering_Constraints.size();++i)
@@ -1942,10 +1961,21 @@ void Placement::force_order()
       if(Ordering_Constraints[i].second == PnRDB::H)
       {
         Blocks[id].Cpoint.x = Centers[j].x;
+        if(vl_x.size()>id)
+        {
+          // vl_x[id] = Blocks[id].Cpoint.x;
+          vc_x[id] = Blocks[id].Cpoint.x;
+        }
+        
       }
       else
       {
         Blocks[id].Cpoint.y = Centers[j].y;
+        if(vl_y.size()>id)
+        {
+          // vl_y[id] = Blocks[id].Cpoint.y;
+          vc_y[id] = Blocks[id].Cpoint.y;
+        }
       }
       
       std::cout<<"pos:"<<Centers[j].x<<", "<<Centers[j].y<<std::endl;
@@ -2008,7 +2038,7 @@ bool Placement::symCheck(float tol)
         int id1 = SPBlocks[i].sympair[j].second;
         tot_bias += fabs(Blocks[id0].Cpoint.y+Blocks[id1].Cpoint.y - axis_double);
       }
-      //step 3: evalue all modules in selfsym
+      //step 3: evalue all modules in selfs0.211138m0.211138
       for(int j = 0;j < SPBlocks[i].selfsym.size();++j)
       {
         int id0 = SPBlocks[i].selfsym[j];

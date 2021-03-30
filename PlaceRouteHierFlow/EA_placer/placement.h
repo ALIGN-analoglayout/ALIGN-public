@@ -109,8 +109,8 @@ public:
     void Cal_sym_Force();
     void read_alignment(PnRDB::hierNode &current_node);
     void read_order(PnRDB::hierNode &current_node);
-    void force_alignment();
-    void force_order();
+    void force_alignment(vector<float> &vc_x,vector<float> &vl_x,vector<float> &vc_y,vector<float> &vl_y);
+    void force_order(vector<float> &vc_x,vector<float> &vl_x,vector<float> &vc_y,vector<float> &vl_y);
     static bool comp_x(Ppoint_F c1, Ppoint_F c2);
     static bool comp_y(Ppoint_F c1, Ppoint_F c2);
     void writeback(PnRDB::hierNode &current_node);
