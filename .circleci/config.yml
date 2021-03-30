@@ -108,7 +108,6 @@ jobs:
       - run:
           name: "Test align using coverage.py"
           command: |
-            rm -fr align setup.py
             ./runcoverage.py tests/
             cp junit.xml coverage-reports
       - store_test_results:
