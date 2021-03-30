@@ -34,8 +34,10 @@ cmake_args = [f"-DALIGN_VERSION:string={version}"]
 
 # Enable unit-tests for all in-place builds (pip install -e . --no-build-isolation)
 devmode = 'develop' in sys.argv
-if devmode and not any(x.startswith('-DBUILD_TESTING') for x in sys.argv):
-    cmake_args.append('-DBUILD_TESTING=ON')
+# if devmode and not any(x.startswith('-DBUILD_TESTING') for x in sys.argv):
+#     cmake_args.append('-DBUILD_TESTING=ON')
+if devmode and '--build-type' not in sys.argv:
+    sys.argv.extend(["--build-type", "Debug"])
 
 cmake_args.append('-DCMAKE_BUILD_TYPE:STRING=Debug')
 
