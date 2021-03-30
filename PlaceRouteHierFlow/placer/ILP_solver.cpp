@@ -18,6 +18,8 @@ ILP_solver::ILP_solver(const ILP_solver& solver) {
   UR = solver.UR;
   area = solver.area;
   HPWL = solver.HPWL;
+  area_norm = solver.area_norm;
+  HPWL_norm = solver.HPWL_norm;
   ratio = solver.ratio;
   dead_area = solver.dead_area;
   linear_const = solver.linear_const;
@@ -32,6 +34,8 @@ ILP_solver& ILP_solver::operator=(const ILP_solver& solver) {
   UR = solver.UR;
   area = solver.area;
   HPWL = solver.HPWL;
+  area_norm = solver.area_norm;
+  HPWL_norm = solver.HPWL_norm;
   ratio = solver.ratio;
   dead_area = solver.dead_area;
   multi_linear_const = solver.multi_linear_const;
@@ -418,6 +422,8 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
     dead_area -= double(mydesign.Blocks[i][curr_sp.selected[i]].width) * double(mydesign.Blocks[i][curr_sp.selected[i]].height);
   }
+  //calculate norm area
+  area_norm = area / (area - dead_area);
   // calculate ratio
   // ratio = std::max(double(UR.x - LL.x) / double(UR.y - LL.y), double(UR.y - LL.y) / double(UR.x - LL.x));
   ratio = double(UR.x - LL.x) / double(UR.y - LL.y);
@@ -446,7 +452,12 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     }
     HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);  
   }
-
+  //HPWL norm
+  double block_HPWL = 0;
+  for (int i = 0; i < mydesign.Blocks.size(); i++) {
+    block_HPWL += double(mydesign.Blocks[i][curr_sp.selected[i]].width) + double(mydesign.Blocks[i][curr_sp.selected[i]].height);
+  }
+  HPWL_norm = HPWL / block_HPWL / double(mydesign.Blocks.size());
   // calculate linear constraint
   linear_const = 0;
   std::vector<std::vector<double>> feature_value;
@@ -509,8 +520,8 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
 double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
   ConstGraph const_graph;
   double cost = 0;
-  cost += area;
-  cost += HPWL * const_graph.LAMBDA;
+  cost += area_norm;
+  cost += HPWL_norm * const_graph.LAMBDA;
   double match_cost = 0;
   for (auto mbi : mydesign.Match_blocks) {
     match_cost += abs(Blocks[mbi.blockid1].x + mydesign.Blocks[mbi.blockid1][curr_sp.selected[mbi.blockid1]].width / 2 - Blocks[mbi.blockid2].x -
