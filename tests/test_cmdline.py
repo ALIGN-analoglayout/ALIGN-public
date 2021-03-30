@@ -11,6 +11,7 @@ examples = [('inverter_v1',1,False),
             ('cascode_current_mirror_ota',1,False),
             #Hierarchical block fail with num_placements > 1
             #('cascode_current_mirror_ota',2,False),
+            ('telescopic_ota',1,True),
             ('high_speed_comparator',1,True),
             ('adder',1,False)]
 

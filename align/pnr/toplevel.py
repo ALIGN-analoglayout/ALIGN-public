@@ -13,10 +13,14 @@ NType = PnR.NType
 Omark = PnR.Omark
 TransformType = PnR.TransformType
 
-def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, adr_mode, *, PDN_mode):
+def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, adr_mode, *, PDN_mode, pdk):
     NEW_GLOBAL_ROUTER = True
     h_skip_factor = 5;
     v_skip_factor = 5;
+
+    #logger.info( f"SMB {list(pdk['design_info'].keys())}")
+    logger.info( f"SMB {list(pdk.keys())}")
+
 
     signal_routing_metal_l = 0;
     signal_routing_metal_u = 8;
@@ -135,7 +139,7 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
 def route_top_down( DB, drcInfo,
                     bounding_box,
                     current_node_ort, idx, lidx,
-                    opath, binary_directory, adr_mode, *, PDN_mode):
+                    opath, binary_directory, adr_mode, *, PDN_mode, pdk):
 
     current_node = DB.CheckoutHierNode(idx) # Make a copy
     i_copy = DB.hierTree[idx].n_copy
@@ -157,12 +161,12 @@ def route_top_down( DB, drcInfo,
         childnode_orient = DB.RelOrt2AbsOrt( current_node_ort, inst.orient)
         child_node_name = DB.hierTree[child_idx].name
         childnode_bbox = PnR.bbox( inst.placedBox.LL, inst.placedBox.UR)
-        new_childnode_idx = route_top_down(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, 0, opath, binary_directory, adr_mode, PDN_mode=PDN_mode)
+        new_childnode_idx = route_top_down(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, 0, opath, binary_directory, adr_mode, PDN_mode=PDN_mode, pdk=pdk)
         DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_childnode_idx])
         current_node.Blocks[bit].child = new_childnode_idx
 
     DB.ExtractPinsToPowerPins(current_node)
-    route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, adr_mode, PDN_mode=PDN_mode)
+    route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, adr_mode, PDN_mode=PDN_mode, pdk=pdk)
 
     if not current_node.isTop:
         DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Backward)
@@ -232,7 +236,7 @@ def analyze_hN( tag, hN, beforeAddingBlockPins=False):
             logger.info( f'    inst.name={inst.name} inst.master={inst.master} len(inst.dummy_power_pin)={len(inst.dummy_power_pin)}')
 
 
-def toplevel(args, *, PDN_mode=False):
+def toplevel(args, *, PDN_mode=False, pdk=None):
 
     assert len(args) == 9
 
@@ -299,7 +303,7 @@ def toplevel(args, *, PDN_mode=False):
                                                     PnR.point(DB.hierTree[last].PnRAS[lidx].width,
                                                               DB.hierTree[last].PnRAS[lidx].height)),
                                           Omark.N, last, lidx,
-                                          opath, binary_directory, adr_mode, PDN_mode=PDN_mode)
+                                          opath, binary_directory, adr_mode, PDN_mode=PDN_mode, pdk=pdk)
         new_topnode_indices.append(new_topnode_idx)
 
     return DB

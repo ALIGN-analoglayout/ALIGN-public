@@ -37,6 +37,9 @@ devmode = 'develop' in sys.argv
 if devmode and not any(x.startswith('-DBUILD_TESTING') for x in sys.argv):
     cmake_args.append('-DBUILD_TESTING=ON')
 
+cmake_args.append('-DCMAKE_BUILD_TYPE:STRING=Debug')
+
+
 setup(name='align',
       version=version,
       description='Analog Layout Synthesis Package',

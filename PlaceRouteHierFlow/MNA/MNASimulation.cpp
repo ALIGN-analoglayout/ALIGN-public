@@ -189,7 +189,8 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
   dCreate_Dense_Matrix(&B, m, nrhs, rhs, m, SLU_DN, SLU_D, SLU_GE);
   dCreate_Dense_Matrix(&X, m, nrhs, rhs, m, SLU_DN, SLU_D, SLU_GE);
 
-  dPrint_Dense_Matrix("B",&B);
+  // SMB
+  // dPrint_Dense_Matrix("B",&B);
     /* Initialize matrix A. */
 
   int count = 0;
@@ -287,7 +288,8 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
   /* Create matrix A in the format expected by SuperLU. */
   dCreate_CompCol_Matrix(&A, m, n, nnz, a, asub, xa, SLU_NC, SLU_D, SLU_GE);
   //std::cout<<"check point2"<<std::endl;
-  dPrint_CompCol_Matrix("A", &A);
+  // SMB
+  // dPrint_CompCol_Matrix("A", &A);
   char equed[1] = {'B'};
   int *etree;
   int ldx;
@@ -341,12 +343,14 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
   dgssv(&options, &A, perm_c, perm_r, &L, &U, &B, &stat, &info);
   logger->debug("check point6 info == {0}", info);  
   
-  dPrint_CompCol_Matrix("A", &A);
+  // SMB
+  //dPrint_CompCol_Matrix("A", &A);
   //dPrint_CompCol_Matrix("U", &U);
   //dPrint_SuperNode_Matrix("L", &L);
   //print_int_vec("\nperm_r", m, perm_r);
   //std::cout<<"check point7"<<std::endl;  
-  dPrint_Dense_Matrix("B",&B);
+  // SMB
+  // dPrint_Dense_Matrix("B",&B);
   //std::cout<<"check point8"<<std::endl;
   /*Detect the result*/
   DNformat* Bstore = (DNformat*) B.Store;

@@ -11,9 +11,11 @@ import itertools
 
 from collections import deque
 
+from ..cell_fabric.pdk import Pdk
+
 from .db import hierNode
-from .checkers import gen_viewer_json
-from ..cell_fabric import gen_gds_json
+from .checkers import gen_viewer_json, gen_transformation
+from ..cell_fabric import gen_gds_json, transformation
 from .. import PnR
 from .toplevel import toplevel
 
@@ -88,6 +90,8 @@ def _generate_json_from_hN( *, hN, variant, primitive_dir, pdk_dir, output_dir, 
 
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nvariants=1, effort=0, check=False, extract=False, gds_json=False, render_placements=False, PDN_mode=False):
 
+    pdk = Pdk().load(pdk_dir / 'layers.json')
+
     logger.info(f"Running Place & Route for {subckt}")
 
     # Create working & input directories
@@ -138,7 +142,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
 
     current_working_dir = os.getcwd()
     os.chdir(working_dir)
-    DB = toplevel(cmd, PDN_mode=PDN_mode)
+    DB = toplevel(cmd, PDN_mode=PDN_mode, pdk=pdk)
     #DB = PnR.toplevel(cmd)
     os.chdir(current_working_dir)
 
@@ -165,30 +169,51 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
             TraverseDFS( topidx)
             return q
 
-        def dump_blocks( hN, DB):
+        def dump_blocks( hN, DB, leaves_only=False):
             import plotly.graph_objects as go
 
             logger.info( f'hN.parent={hN.parent}')
 
             fig = go.Figure()
 
-            def gen_trace_xy( placedBox):
-                x0 = placedBox.LL.x
-                y0 = placedBox.LL.y
-                x1 = placedBox.UR.x
-                y1 = placedBox.UR.y
+            def gen_trace_xy( inst, prefix_path, child_idx, tr):
+
+                if leaves_only and child_idx >= 0: return
+
+                # tr converts local coordinates into global coordinates
+
+                b = inst.originBox
+                r = b.LL.x, b.LL.y, b.UR.x, b.UR.y
+                [x0,y0,x1,y1] = tr.hitRect(transformation.Rect(*r)).canonical().toList()
                 x = [x0,x1,x1,x0,x0]
                 y = [y0,y0,y1,y1,y0]
-                return x,y
 
-            for blk in hN.Blocks:
-                child_idx = blk.child
-                inst = blk.instance[blk.selectedInstance]
+                hovertext = f'{"/".join(prefix_path)}<br>{inst.master} ({child_idx})<br>{tr}<br>Global {x0} {y0} {x1} {y1}<br>Local {r[0]} {r[1]} {r[2]} {r[3]}'
 
-                hovertext = f'{inst.name}<br>{inst.master} ({child_idx})<br>{str(inst.orient)} {inst.placedBox.LL.x} {inst.placedBox.LL.y} {inst.placedBox.UR.x} {inst.placedBox.UR.y}'
-
-                x,y = gen_trace_xy( inst.placedBox)
                 fig.add_trace(go.Scatter( x=x, y=y, mode='lines', name=hovertext, fill="toself", showlegend=False))
+
+            def aux( hN, prefix_path, tr):
+
+                for blk in hN.Blocks:
+                    child_idx = blk.child
+                    inst = blk.instance[blk.selectedInstance]
+
+                    new_prefix_path =  prefix_path + [inst.name]
+
+                    # tr converts hN coordinates to global coordinates
+                    # tr2 = gen_transformation(inst) converts local coordinates to hN coordinates
+                    # new_tr should be global = tr(tr2(local)
+
+                    new_tr = tr.postMult( gen_transformation( inst))
+
+                    gen_trace_xy( inst, new_prefix_path, child_idx, new_tr)
+
+                    if child_idx >= 0:
+                        new_hN = DB.hierTree[child_idx]
+                        aux( new_hN, new_prefix_path, new_tr)
+                    
+
+            aux( hN, [], transformation.Transformation())
 
             fig.update_yaxes( scaleanchor = "x", scaleratio = 1)
             fig.update_layout( title=dict( text=f'{hN.name}_{hN.n_copy}'))
@@ -215,7 +240,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
 
                 hN = DB.CheckoutHierNode(idx)
 
-                if render_placements:
+                if False and render_placements:
                     dump_blocks( hN, DB)
 
                 _generate_json_from_hN( hN = hN,
@@ -242,7 +267,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
             hN = DB.CheckoutHierNode(idx)
 
             if render_placements:
-                dump_blocks( hN, DB)
+                dump_blocks( hN, DB, False)
 
             variants[variant].update(
                 _generate_json_from_hN( hN = hN,
