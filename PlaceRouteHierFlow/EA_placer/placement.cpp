@@ -988,7 +988,7 @@ void Placement::E_Placer(){
      std::cout<<"Iteration "<<i<<std::endl;
      #endif
      //if(lambda<100)
-    //  lambda = lambda *1.2;
+     lambda = lambda *1.1;
      beta = beta*0.95;
      if(sym_beta < 0.1)
      {

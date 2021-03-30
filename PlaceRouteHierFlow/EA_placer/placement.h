@@ -27,7 +27,7 @@ private:
     vector<AlignBlock> AlignBlocks;
     vector<pair<vector<int>, PnRDB::Smark>> Ordering_Constraints;//as same in PnRDB
     float gammar = 1.0f; //Q: need to ajust
-    float lambda= 1.0f; //Q: need to ajust
+    float lambda= 0.01f; //Q: need to ajust
     float beta = 1.0f;
     float sym_beta = 0.01f;//weigth for sym force,  need to ajust
 
