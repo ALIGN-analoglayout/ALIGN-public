@@ -49,7 +49,11 @@ setup(name='align',
       packages = \
           find_packages(include=['align', 'align.*']) \
         + (['tests'] if devmode else []),
-      package_data={'align': ['config/*', 'pdk/*']},
+      package_data={
+          'align': [
+              'config/*',
+              'pdk/finfet/*.json',
+          ]},
       cmake_args = cmake_args,
       cmake_process_manifest_hook=align_manifest_filter,
       scripts=[
