@@ -52,8 +52,9 @@ setup(name='align',
       package_data={
           'align': [
               'config/*',
-              'pdk/finfet/*.json',
-          ]},
+              'pdk/finfet/*.json'
+          ]
+      },
       cmake_args = cmake_args,
       cmake_process_manifest_hook=align_manifest_filter,
       scripts=[
