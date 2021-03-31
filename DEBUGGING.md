@@ -1,4 +1,4 @@
---- Debugging C++ code called from Python
+# Debugging C++ code called from Python
 
 This command will build the ALIGN environment with debug symbols:
 ```bash
@@ -6,7 +6,7 @@ pip install -e .[test] --no-build-isolation --install-option='-DBUILD_TESTING=OF
 ```
 (We will try to remove the install option at some point, but it is currently require for a successful build.)
 
--- Command-line `gdb`
+## Command-line `gdb`
 
 You can now debug the C++ code using command-line `gdb`. Let's do this for the `cascode_current_mirror_ota` example, which is a small design with an intermediate level of hierarchy.
 
@@ -30,7 +30,7 @@ run $VENV/bin/schematic2layout.py $ALIGN_HOME/examples/cascode_current_mirror_ot
 ```
 where `$VENV` is the path to your virtual environment.
 
--- Debugging using the Visual Studio Code IDE
+## Debugging using the Visual Studio Code IDE
 
 You can also do similar debugging using vscode.
 For this, set up the same sub-directory:
