@@ -309,7 +309,7 @@ std::unique_ptr<PnRdatabase> toplevel( const std::vector<std::string>& argv) {
   int effort=std::stoi(argv[8]);
   if(fpath.back()=='/') {fpath.erase(fpath.end()-1);}
   if(opath.back()!='/') {opath+="/";}
-  spdlog::set_level(spdlog::level::debug);
+  //spdlog::set_level(spdlog::level::debug);
 
   // Following codes try to get the path of binary codes
   string binary_directory = argv[0];
