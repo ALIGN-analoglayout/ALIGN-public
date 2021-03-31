@@ -1,4 +1,5 @@
 #include "ILP_solver.h"
+#include <regex>
 
 ILP_solver::ILP_solver() {}
 
@@ -423,7 +424,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     dead_area -= double(mydesign.Blocks[i][curr_sp.selected[i]].width) * double(mydesign.Blocks[i][curr_sp.selected[i]].height);
   }
   //calculate norm area
-  area_norm = area / (area - dead_area);
+  area_norm = area * 0.1 / (area - dead_area);
   // calculate ratio
   // ratio = std::max(double(UR.x - LL.x) / double(UR.y - LL.y), double(UR.y - LL.y) / double(UR.x - LL.x));
   ratio = double(UR.x - LL.x) / double(UR.y - LL.y);
@@ -517,23 +518,168 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   return cost;
 }
 
+double ILP_solver::CalculateCostFromSim(design& mydesign, SeqPair& curr_sp)
+{
+	auto logger = spdlog::default_logger()->clone("placer.cost.Cost");
+// <<<<<<< HEAD
+// 	set<string> nets;
+// 	if (PinPairWeights.empty()) {
+// 		char* sideload = getenv("COST_FROM_SIM");
+// 		string slf;
+// 		if (sideload) {
+// 			slf = sideload;
+// 			ifstream ifs(slf);
+// 			if (ifs) {
+// 				string tmps1, tmps2;
+// 				double wt(0.);
+// 				while (ifs) {
+// 					ifs >> tmps1;
+// 					nets.insert(tmps1);
+// 					ifs >> tmps1 >> tmps2 >> wt;
+// 					PinPairWeights[make_pair(tmps1, tmps2)] = wt;
+// 				}
+// 			}
+// 			ifs.close();
+//
+// 			for (auto& it : PinPairWeights) {
+// 				logger->info("DEBUG pins {0} {1} {2}", it.first.first, it.first.second, it.second);
+// 			}
+// 		}
+// 	}
+// 	map<string, PnRDB::bbox> pinCoords;
+// =======
+	map<string, PnRDB::bbox> pinCoords;
+// >>>>>>> 5b8999932e6f9ca9634be2d7e600f085aa21b10b
+	for (auto neti : mydesign.Nets) {
+		if (!mydesign.IsNetInCF(neti.name))  continue;
+		for (auto connectedj : neti.connected) {
+			if (connectedj.type == placerDB::Block) {
+				int iter2 = connectedj.iter2, iter = connectedj.iter;
+				PnRDB::bbox box;
+				bool first(true);
+				for (auto& bnd : mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].boundary) {
+					// calculate contact center
+					int x1(INT_MAX), y1(INT_MAX), x2(INT_MIN), y2(INT_MIN);
+					for (auto& pt : bnd.polygon) {
+						int ptx = pt.x, pty = pt.y;
+						if (Blocks[iter2].H_flip) {
+							ptx = mydesign.Blocks[iter2][curr_sp.selected[iter2]].width - ptx;
+						}
+						if (Blocks[iter2].V_flip) {
+							pty = mydesign.Blocks[iter2][curr_sp.selected[iter2]].height - pty;
+						}
+						ptx += Blocks[iter2].x;
+						pty += Blocks[iter2].y;
+						x1 = std::min(ptx, x1);
+						y1 = std::min(pty, y1);
+						x2 = std::max(ptx, x2);
+						y2 = std::max(pty, y2);
+					}
+					if (first) {
+						box = PnRDB::bbox(std::min(x1, x2), std::min(y1, y2), std::max(x1, x2), std::max(y1, y2));
+						first = false;
+					} else {
+						box.unionBox(PnRDB::bbox(std::min(x1, x2), std::min(y1, y2), std::max(x1, x2), std::max(y1, y2)));
+					}
+				}
+				pinCoords[mydesign.GetBlockName(iter2) + "/" + mydesign.GetBlockPinName(iter2, iter, curr_sp.selected[iter2])] = box;
+			}
+		}
+	}
+
+	//for (auto& it : inCoords) {
+	//	logger->info("DEBUG  {0} : {1} {2}", it.first, it.second.first, it.second.second);
+	//}
+
+	double cost(0.);
+	if (getenv("DEBUG_PLOT") != nullptr) {
+		if (mydesign._cfCostHeader.empty()) {
+			unsigned cnt(0);
+			mydesign._cfCostHeader = "p ";
+			for (auto& it : mydesign.GetCFPinPairWeights()) {
+				mydesign._cfCostHeader += "$x u " + std::to_string((++cnt) * 2) + " w lp t '" + std::regex_replace(it.first.first, std::regex("_"), "\\_") + " " + std::regex_replace(it.first.second, std::regex("_"), "\\_") + "',\\\n";
+			}
+		}
+		mydesign._cfCostComponents.clear();
+	}
+
+	for (auto& it : mydesign.GetCFPinPairWeights()) {
+		double dist(0.);
+		auto it1 = pinCoords.find(it.first.first);
+		auto it2 = pinCoords.find(it.first.second);
+		PnRDB::bbox b1, b2;
+		if (it1 != pinCoords.end() && it2 != pinCoords.end()) {
+			b1 = it1->second;
+			b2 = it2->second;
+			int xprl = std::min(it1->second.UR.x, it2->second.UR.x) - std::max(it1->second.LL.x, it2->second.LL.x);
+			int yprl = std::min(it1->second.UR.y, it2->second.UR.y) - std::max(it1->second.LL.y, it2->second.LL.y);
+			dist = (xprl < 0 ? abs(xprl) : 0) + (yprl < 0 ? abs(yprl) : 0);
+		} else {
+			it1 = pinCoords.find(it.first.second);
+			it2 = pinCoords.find(it.first.first);
+			if (it1 != pinCoords.end() && it2 != pinCoords.end()) {
+				b1 = it1->second;
+				b2 = it2->second;
+				int xprl = std::min(it1->second.UR.x, it2->second.UR.x) - std::max(it1->second.LL.x, it2->second.LL.x);
+				int yprl = std::min(it1->second.UR.y, it2->second.UR.y) - std::max(it1->second.LL.y, it2->second.LL.y);
+				dist = (xprl < 0 ? abs(xprl) : 0) + (yprl < 0 ? abs(yprl) : 0);
+			}
+		}
+		auto dcost = dist * it.second.first;
+		if (getenv("DEBUG_PLOT") != nullptr) {
+			mydesign._cfCostComponents += std::to_string(dist) + " " + std::to_string(dcost) + " " ;
+		}
+		//logger->info("DEBUG_delta_cost_pin_pair : {0} {1} {2} {3} {4}", it.first.first, it.first.second, dist, it.second, dcost);
+		//logger->info("DEBUG_delta_cost_pin_pos : {0} {1} {2} {3} {4} {5} {6} {7} {8} {9}", it.first.first, it.first.second,
+		//		b1.LL.x, b1.LL.y, b1.UR.x, b1.UR.y, b2.LL.x, b2.LL.y, b2.UR.x, b2.UR.y);
+		cost += dcost;
+	}
+
+	return cost*1.5e4;
+}
+
 double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
+	auto logger = spdlog::default_logger()->clone("placer.cost.Cost");
   ConstGraph const_graph;
   double cost = 0;
   cost += area_norm;
   cost += HPWL_norm * const_graph.LAMBDA;
   double match_cost = 0;
-  for (auto mbi : mydesign.Match_blocks) {
-    match_cost += abs(Blocks[mbi.blockid1].x + mydesign.Blocks[mbi.blockid1][curr_sp.selected[mbi.blockid1]].width / 2 - Blocks[mbi.blockid2].x -
-                      mydesign.Blocks[mbi.blockid2][curr_sp.selected[mbi.blockid2]].width / 2) +
-                  abs(Blocks[mbi.blockid1].y + mydesign.Blocks[mbi.blockid1][curr_sp.selected[mbi.blockid1]].height / 2 - Blocks[mbi.blockid2].y -
-                      mydesign.Blocks[mbi.blockid2][curr_sp.selected[mbi.blockid2]].height / 2);
-  }
+  //for (auto mbi : mydesign.Match_blocks) {
+  //  match_cost += abs(Blocks[mbi.blockid1].x + mydesign.Blocks[mbi.blockid1][curr_sp.selected[mbi.blockid1]].width / 2 - Blocks[mbi.blockid2].x -
+  //                    mydesign.Blocks[mbi.blockid2][curr_sp.selected[mbi.blockid2]].width / 2) +
+  //                abs(Blocks[mbi.blockid1].y + mydesign.Blocks[mbi.blockid1][curr_sp.selected[mbi.blockid1]].height / 2 - Blocks[mbi.blockid2].y -
+  //                    mydesign.Blocks[mbi.blockid2][curr_sp.selected[mbi.blockid2]].height / 2);
+  //}
   cost += match_cost * const_graph.BETA;
   // cost += abs(log(ratio) - log(Aspect_Ratio[0])) * Aspect_Ratio_weight;
+  dead_area = 0.;
   cost += dead_area / area * const_graph.PHI;
+  linear_const = 0.;
   cost += linear_const * const_graph.PI;
+  multi_linear_const = 0.;
   cost += multi_linear_const * const_graph.PII;
+  double cf_cost =  CalculateCostFromSim(mydesign, curr_sp);
+  cost += cf_cost*2;
+  if (getenv("DEBUG_PLOT") != nullptr) {
+    // std::cout << "Lambda: " << const_graph.LAMBDA << std::endl;
+	  mydesign._costComponents = std::to_string(area_norm) + " " + std::to_string(HPWL_norm * const_graph.LAMBDA) + " " + std::to_string( match_cost * const_graph.BETA) + " ";
+	  mydesign._costComponents += std::to_string(0.) + " " + std::to_string(dead_area / area * const_graph.PHI) + " ";
+	  mydesign._costComponents += std::to_string(linear_const * const_graph.PI) + " " + std::to_string(multi_linear_const * const_graph.PII) + " " + std::to_string(cf_cost) + " " + std::to_string(cost);
+	  if (mydesign._costHeader.empty()) {
+		  mydesign._costHeader  = "p $x u 1 w lp t 'Area', $x u 2 w lp t 'HPWL', $x u 3 w lp t 'match\\_cost',\\\n";
+		  mydesign._costHeader += "$x u 4 w lp t 'ratio', $x u 5 w lp t 'dead\\_area', $x u 6 w lp t 'linear\\_const',\\\n";
+		  mydesign._costHeader += "$x u 7 w lp t 'mult\\_linear\\_const', $x u 8 w lp t 'CF\\_cost', $x u 9 w lp t 'Total\\_cost'";
+	  }
+  }
+  if (getenv("DETAIL_PLOT_GEN") != nullptr) {
+	  mydesign._costComponentsIP = std::to_string(area_norm) + ", " + std::to_string(HPWL_norm * const_graph.LAMBDA) + ", " + std::to_string( match_cost * const_graph.BETA) + ", ";
+	  mydesign._costComponentsIP += std::to_string(0.) + ", " + std::to_string(dead_area / area * const_graph.PHI) + ", ";
+	  mydesign._costComponentsIP += std::to_string(linear_const * const_graph.PI) + ", " + std::to_string(multi_linear_const * const_graph.PII) + ", " + std::to_string(cf_cost) + ", " + std::to_string(cost);
+	  if (mydesign._costHeaderIP.empty()) {
+		  mydesign._costHeaderIP = "'Area', 'HPWL', 'match_cost', 'ratio', 'dead_area', 'linear_const', 'mult_linear_const', 'CF_cost', 'Total_cost'";
+	  }
+  }
   return cost;
 }
 

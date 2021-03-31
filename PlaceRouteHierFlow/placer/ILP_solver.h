@@ -36,6 +36,7 @@ using std::vector;
 
 class ILP_solver {
   private:
+  friend class MatPlotGen;
   struct Block {
     int x = 0, y = 0;         // LL of each block
     int H_flip = 0, V_flip = 0;  // flip along V axis and H axis
@@ -55,6 +56,7 @@ class ILP_solver {
   ILP_solver(const ILP_solver& solver);
   ILP_solver& operator=(const ILP_solver& solver);
   double GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
+  double CalculateCostFromSim(design& mydesign, SeqPair& curr_sp);
   double CalculateCost(design& mydesign, SeqPair& curr_sp);
   void WritePlacement(design& caseNL, SeqPair& curr_sp, string outfile);
   void PlotPlacement(design& caseNL, SeqPair& curr_sp, string outfile);
