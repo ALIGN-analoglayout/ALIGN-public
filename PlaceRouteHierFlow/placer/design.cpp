@@ -362,6 +362,7 @@ design::design(PnRDB::hierNode& node) {
       tmpblock.boundary.polygon.push_back( {pit.UR.x,pit.UR.y});
       tmpblock.boundary.polygon.push_back( {pit.UR.x,pit.LL.y});
 
+      tmpblock.master=(it->instance).at(bb).master;
       tmpblock.type=(it->instance).at(bb).type;
       tmpblock.width=(it->instance).at(bb).width;
       tmpblock.height=(it->instance).at(bb).height;

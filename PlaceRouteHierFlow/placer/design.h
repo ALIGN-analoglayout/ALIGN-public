@@ -47,6 +47,7 @@ class design
     struct block {
       string name="";
       placerDB::bbox boundary;
+      string master="";
       string type="";
       int width=0;
       int height=0;

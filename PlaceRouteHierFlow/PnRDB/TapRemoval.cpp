@@ -2,7 +2,8 @@
 #include <sstream>
 #include <iterator>
 #include "TapRemoval.h"
-#include <filesystem>
+//#include <filesystem>
+#include <boost/filesystem.hpp>
 #include <nlohmann/json.hpp>
 #include "spdlog/spdlog.h"
 
@@ -288,7 +289,7 @@ void Graph::parseGraph(const string& fn)
 
 ConstNodes Graph::dominatingSet() const
 {
-	auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.dominatingSet");
+	//auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.dominatingSet");
 	set<const Node*> whiteNodes, dom;
 	size_t tapNodes(0), rowNodes(0), isoRow(0);
 	ConstNodes domNodes;
@@ -312,11 +313,11 @@ ConstNodes Graph::dominatingSet() const
 			n->setColor(NodeColor::White);
 		} else ++isoRow;
 	}
-	logger->info("tap nodes : {0} row nodes : {1} {2}", tapNodes, rowNodes, isoRow); 
+	//logger->info("tap nodes : {0} row nodes : {1} {2}", tapNodes, rowNodes, isoRow); 
 	
 
 	while (!whiteNodes.empty()) {
-		logger->info("white nodes : {0}", whiteNodes.size());
+		//logger->info("white nodes : {0}", whiteNodes.size());
 		for (auto& n : _nodes) {
 			unsigned span(0);
 			if (whiteNodes.find(n) != whiteNodes.end()) ++span;
@@ -366,7 +367,7 @@ ConstNodes Graph::dominatingSet() const
 
 }
 
-namespace fs = std::filesystem;
+namespace fs = boost::filesystem;
 
 void TapRemoval::readPrimitives(PrimitiveData::Primitives& primitives, const string& pdir)
 {
@@ -390,11 +391,11 @@ void TapRemoval::readPrimitives(PrimitiveData::Primitives& primitives, const str
 
 void TapRemoval::createInstances(PnRDB::hierNode &node)
 {
-	auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.createInstances");
+	//auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.createInstances");
 	if (_primitives.empty()) return;
 	PrimitiveData::PlMap plmap;
     for (unsigned i = 0; i < node.Blocks.size(); ++i) {
-	  logger->info("print : {0} {1}", node.Blocks[i].instance.size(), node.Blocks[i].selectedInstance);
+	  //logger->info("print : {0} {1}", node.Blocks[i].instance.size(), node.Blocks[i].selectedInstance);
 	  if (node.Blocks[i].selectedInstance >= node.Blocks[i].instance.size()) continue;
       auto block = node.Blocks[i].instance[node.Blocks[i].selectedInstance];
       string ort;
@@ -414,7 +415,7 @@ void TapRemoval::createInstances(PnRDB::hierNode &node)
         default:
           break;
       };
-	  logger->info("info for {0} {1} {2} {3}", block.master, block.name, block.placedBox.LL.x, block.placedBox.LL.y, ort);
+	  //logger->info("info for {0} {1} {2} {3}", block.master, block.name, block.placedBox.LL.x, block.placedBox.LL.y, ort);
 	  if (block.master.find("PMOS") == string::npos && _primitives.find(block.master) != _primitives.end()) {
 		  plmap[block.name]._primName = block.master;
 		  plmap[block.name]._ll = geom::Point(block.placedBox.LL.x * 5, block.placedBox.LL.y * 5);
@@ -467,9 +468,9 @@ TapRemoval::TapRemoval(const string& pdir, const string& pdirWOTap, std::vector<
 {
 	auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval");
 	readPrimitives(_primitives, pdir);
-	logger->info("Read primitives from {0}", pdir);
+	logger->info("Read {0} primitives from {1}", _primitives.size(), pdir);
 	readPrimitives(_primitivesWOTap, pdirWOTap);
-	logger->info("Read primitives from {0}", pdirWOTap);
+	logger->info("Read {0} primitives from {0}", _primitivesWOTap.size(), pdirWOTap);
 	if (!nodeVec.empty()) createInstances(nodeVec.back());
 	logger->info("Created instances");
 	buildGraph(_dist);
@@ -480,9 +481,9 @@ TapRemoval::TapRemoval(const string& pdir, const string& pdirWOTap, const unsign
 {
 	auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval");
 	readPrimitives(_primitives, pdir);
-	logger->info("Read primitives from {0}", pdir);
+	logger->info("Read {0} primitives from {1}", _primitives.size(), pdir);
 	readPrimitives(_primitivesWOTap, pdirWOTap);
-	logger->info("Read primitives from {0}", pdirWOTap);
+	logger->info("Read {0} primitives from {0}", _primitivesWOTap.size(), pdirWOTap);
 }
 
 TapRemoval::~TapRemoval()
@@ -506,12 +507,12 @@ TapRemoval::~TapRemoval()
 
 long TapRemoval::deltaArea() const
 {
-	auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.deltaArea");
+	//auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.deltaArea");
 	long deltaarea(0);
 	if (_graph == nullptr) return deltaarea;
 	auto nodes = _graph->dominatingSet();
 
-	logger->info("Found {0} nodes in dominating set", nodes.size());
+	//logger->info("Found {0} nodes in dominating set", nodes.size());
 
 	//for (auto& it : _instances) {
 	//	deltaarea += it->primitive()->area();
@@ -525,7 +526,7 @@ long TapRemoval::deltaArea() const
 			auto it = PrimitiveData::instMap.find(name);
 			if (it != PrimitiveData::instMap.end()) {
 				auto itWO = _primitivesWOTap.find(it->second->primitive()->name());
-				logger->info("Remove tap for cell {0}", it->second->name());
+				//logger->info("Remove tap for cell {0}", it->second->name());
 				if (itWO != _primitivesWOTap.end()) {
 					auto delarea = it->second->primitive()->area() - itWO->second->area();
 					deltaarea += delarea;
@@ -538,6 +539,12 @@ long TapRemoval::deltaArea() const
 
 
 void TapRemoval::rebuildInstances(const PrimitiveData::PlMap& plmap) {
+//	auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.rebuildInstances");
+//
+//	for (auto& p : plmap) {
+//		logger->info("plmap {0} {1} {2} {3}", p.first, p.second._primName, p.second._ll.x(), p.second._ll.y());
+//	}
+	
 	for (auto& x : _instances) {
 		delete x;
 	}

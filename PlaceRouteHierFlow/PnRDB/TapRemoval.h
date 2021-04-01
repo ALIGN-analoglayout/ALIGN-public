@@ -386,6 +386,7 @@ class TapRemoval {
 		void buildGraph(const unsigned dist);
 		long deltaArea() const;
 		void rebuildInstances(const PrimitiveData::PlMap& plmap);
+		bool containsPrimitive(const string& prim) const { return _primitives.find(prim) != _primitives.end(); }
 
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
