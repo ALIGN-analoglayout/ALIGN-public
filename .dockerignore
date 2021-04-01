@@ -86,4 +86,3 @@ tests/cell_fabric/Foo*.cir
 !tests/gdsconv/only_paths.*
 !Viewer/INPUT/mydesign_dr_globalrouting.json
 !Viewer/larger_example/mydesign_dr_globalrouting.json
-
