@@ -4,8 +4,9 @@ import pathlib
 from align.pdk.finfet import CanvasPDK, mos, tap
 from align.schema.transistor import Transistor
 
-
 my_dir = pathlib.Path(__file__).resolve().parent
+
+align_home = os.getenv('ALIGN_HOME')
 
 
 def test_one():
@@ -15,8 +16,9 @@ def test_one():
 
     fn = "test_transistor_1"
 
-    with open(pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
-        fp.write(json.dumps(data, indent=2) + '\n')
+    if align_home:
+        with open(pathlib.Path(align_home)/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
+            fp.write(json.dumps(data, indent=2) + '\n')
 
     with open(my_dir / (fn + "_cand.json"), "wt") as fp:
         fp.write(json.dumps(data, indent=2) + '\n')
@@ -33,9 +35,9 @@ def test_two():
     data['globalRoutes'] = data['globalRouteGrid'] = []
 
     fn = "test_transistor_2"
-
-    with open(pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
-        fp.write(json.dumps(data, indent=2) + '\n')
+    if align_home:
+        with open(pathlib.Path(align_home)/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
+            fp.write(json.dumps(data, indent=2) + '\n')
 
     with open(my_dir / (fn + "_cand.json"), "wt") as fp:
         fp.write(json.dumps(data, indent=2) + '\n')
@@ -52,9 +54,9 @@ def test_three():
     data['globalRoutes'] = data['globalRouteGrid'] = []
 
     fn = "test_transistor_3"
-
-    with open(pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
-        fp.write(json.dumps(data, indent=2) + '\n')
+    if align_home:
+        with open(pathlib.Path(align_home)/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
+            fp.write(json.dumps(data, indent=2) + '\n')
 
     with open(my_dir / (fn + "_cand.json"), "wt") as fp:
         fp.write(json.dumps(data, indent=2) + '\n')
@@ -71,9 +73,9 @@ def test_four():
     data['globalRoutes'] = data['globalRouteGrid'] = []
 
     fn = "test_transistor_4"
-
-    with open(pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
-        fp.write(json.dumps(data, indent=2) + '\n')
+    if align_home:
+        with open(pathlib.Path(align_home)/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
+            fp.write(json.dumps(data, indent=2) + '\n')
 
     with open(my_dir / (fn + "_cand.json"), "wt") as fp:
         fp.write(json.dumps(data, indent=2) + '\n')
@@ -90,9 +92,9 @@ def test_five():
     data['globalRoutes'] = data['globalRouteGrid'] = []
 
     fn = "test_transistor_5"
-
-    with open(pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
-        fp.write(json.dumps(data, indent=2) + '\n')
+    if align_home:
+        with open(pathlib.Path(align_home)/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
+            fp.write(json.dumps(data, indent=2) + '\n')
 
     with open(my_dir / (fn + "_cand.json"), "wt") as fp:
         fp.write(json.dumps(data, indent=2) + '\n')
@@ -109,9 +111,9 @@ def test_six():
     data['globalRoutes'] = data['globalRouteGrid'] = []
 
     fn = "test_transistor_6"
-
-    with open(pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
-        fp.write(json.dumps(data, indent=2) + '\n')
+    if align_home:
+        with open(pathlib.Path(align_home)/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
+            fp.write(json.dumps(data, indent=2) + '\n')
 
     with open(my_dir / (fn + "_cand.json"), "wt") as fp:
         fp.write(json.dumps(data, indent=2) + '\n')
