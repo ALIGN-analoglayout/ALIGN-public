@@ -3,9 +3,6 @@ import pytest
 import pathlib
 from align.schema import ConstraintsPlacement
 from pydantic import parse_obj_as
-import io
-
-my_dir = pathlib.Path(__file__).resolve().parent
 
 
 def test_one():
@@ -37,10 +34,9 @@ def test_one():
     ]
   }
 """   
-    with io.StringIO( json_str) as fp:
-        const = json.load(fp)
-        placement_constraints = parse_obj_as(ConstraintsPlacement, const)
-        print(placement_constraints.json())
+    const = json.loads(json_str)
+    placement_constraints = parse_obj_as(ConstraintsPlacement, const)
+    print(placement_constraints.json())
 
 
 def test_two():
@@ -61,8 +57,7 @@ def test_two():
     ]
   }
 """
-    with io.StringIO( json_str) as fp:
-        const = json.load(fp)
-        with pytest.raises(Exception):
-            placement_constraints = parse_obj_as(ConstraintsPlacement, const)
-            print(placement_constraints.json())
+    const = json.loads(json_str)
+    with pytest.raises(Exception):
+        placement_constraints = parse_obj_as(ConstraintsPlacement, const)
+        print(placement_constraints.json())
