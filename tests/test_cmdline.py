@@ -16,12 +16,14 @@ if 'ALIGN_HOME' in os.environ:
 else:
     os.environ['ALIGN_HOME'] = str(ALIGN_HOME)
 
-if 'LD_LIBRARY_PATH' not in os.environ:
-    os.environ['LD_LIBRARY_PATH'] = '/usr/local/lib/lpsolve/lp_solve_5.5.2.5_dev_ux64'
+if 'ALIGN_WORK_DIR' in os.environ:
+    ALIGN_WORK_DIR = pathlib.Path( os.environ['ALIGN_WORK_DIR']).resolve() 
+else:
+    ALIGN_WORK_DIR = ALIGN_HOME / 'tests' / 'tmp'
 
 @pytest.mark.parametrize( "design", examples)
 def test_cmdline(design):
-    run_dir = ALIGN_HOME / 'tests' / 'tmp'
+    run_dir = ALIGN_WORK_DIR / design
 
     if run_dir.exists():
         assert run_dir.is_dir()
