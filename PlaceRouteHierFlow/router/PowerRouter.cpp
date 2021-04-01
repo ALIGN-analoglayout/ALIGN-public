@@ -496,11 +496,6 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
 
             bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, 0, 0);
 
-            if(!pathMark){
-               std::cout<<"fail to find a path for power routing"<<std::endl;
-               grid.CreateGridData();
-               assert(0);
-            }
             std::vector<std::vector<RouterDB::Metal>> physical_path;
             logger->debug("Power router routing pathMark {0}",pathMark);
             Update_powerrouter_report_info(temp_routing_net, i, j, pathMark);
