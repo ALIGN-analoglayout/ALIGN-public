@@ -170,7 +170,7 @@ void A_star::initial_source(Grid& grid, std::set<std::pair<int,int>, RouterDB::p
 bool A_star::expand_node_ud(int direction, std::vector<int> &temp_node, Grid &grid){
 
   //if( direction!= -1 and grid.vertices_total[direction].active and grid.vertices_total[direction].Cost==-1){
-  if( direction!= -1 and grid.vertices_total[direction].active){
+  if( direction!= -1 and grid.vertices_total[direction].active and grid.vertices_total[direction].Cost!=0){
      temp_node.push_back(direction);
     }
 
@@ -258,7 +258,7 @@ bool A_star::expand_node(std::vector<int> &direction, std::vector<int> &temp_nod
   for(int i=0;i<(int)direction.size();i++){
  
        //if(grid.vertices_total[direction[i]].active and grid.vertices_total[direction[i]].Cost==-1){
-       if(grid.vertices_total[direction[i]].active){
+       if(grid.vertices_total[direction[i]].active and grid.vertices_total[direction[i]].Cost!=0){
        temp_node.push_back(direction[i]);
        }
      }
@@ -1183,7 +1183,6 @@ std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left
   logger->debug("source size {0}",source.size());
   logger->debug("dest size {0} ",dest.size());
   
-  
   logger->debug("A star source info");
   for(int i=0;i<(int)source.size();i++){
     
@@ -1205,12 +1204,16 @@ std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left
   bool found = 0;
   int current_node = -1;
 
+  bool dest_found = 0;
   while(!L_list.empty() and !found){
 
     std::set<std::pair<int,int>, RouterDB::pairComp>::iterator it;
-    it = L_list.begin();
-    current_node = it->second;
-    L_list.erase(it);
+
+    if(!dest_found){
+      it = L_list.begin();
+      current_node = it->second;
+      L_list.erase(it);
+    }
     
     //judge whether dest found Q2// judge whether dest works
     if(dest_index.find(current_node)!=dest_index.end()){
@@ -1249,7 +1252,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left
     }
 
     candidate_node = temp_candidate_node;
-    
+
     if(candidate_node.size()==0){
        //grid.vertices_total[current_node].Cost = INT_MAX;
        continue;
@@ -1257,15 +1260,14 @@ std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left
 
 
     //std::vector<int> expand_candidate_node;
-    for(int i=0;i<(int)candidate_node.size();i++){
 
+    for(int i=0;i<(int)candidate_node.size();i++){
        int M_dis = Manhattan_distan(candidate_node[i], grid);
        int temp_cost = grid.vertices_total[current_node].Cost + abs(grid.vertices_total[current_node].x - grid.vertices_total[candidate_node[i]].x) + abs(grid.vertices_total[current_node].y - grid.vertices_total[candidate_node[i]].y) + via_expand_effort*abs(grid.vertices_total[candidate_node[i]].metal-grid.vertices_total[current_node].metal)+temp_candidate_cost[i];
        //if(temp_cost < grid.vertices_total[candidate_node[i]].Cost ){
-
           int sym_cost = Find_Symmetry_Cost(grid,candidate_node[i],sym_path);
           //std::cout<<"sym cost "<<sym_cost<<" sym path size "<<sym_path.size()<<std::endl;
-          int sym_factor = 0;
+          int sym_factor = 1;
 
           temp_pair.first = grid.vertices_total[candidate_node[i]].Cost + M_dis +sym_factor*sym_cost;
           temp_pair.second = candidate_node[i];
@@ -1282,11 +1284,15 @@ std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left
           temp_pair.first = dis;
           temp_pair.second = candidate_node[i];
           L_list.insert(temp_pair);
-
+          if(dest_index.find(candidate_node[i])!=dest_index.end()){
+             dest_found = 1;
+             current_node = candidate_node[i];
+             break;
+            }
          //}
+
       
        }
-
 
   }
 
@@ -1392,13 +1398,16 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
 
   bool found = 0;
   int current_node = -1;
-
+  bool dest_found = 0;
   while(!L_list.empty() and !found){
 
     std::set<std::pair<int,int>, RouterDB::pairComp>::iterator it;
-    it = L_list.begin();
-    current_node = it->second;
-    L_list.erase(it);
+
+    if(!dest_found){
+      it = L_list.begin();
+      current_node = it->second;
+      L_list.erase(it);
+    }
 
     //judge whether dest found Q2// judge whether dest works
     if(dest_index.find(current_node)!=dest_index.end()){
@@ -1461,6 +1470,12 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
           //grid.vertices_total[candidate_node[i]].trace_back_node = current_node;
           temp_pair.first = dis;
           L_list.insert(temp_pair);
+
+          if(dest_index.find(candidate_node[i])!=dest_index.end()){
+             dest_found = 1;
+             current_node = candidate_node[i];
+             break;
+            }
 
          //}
       
@@ -1627,13 +1642,9 @@ bool A_star::Check_Path_Extension(Grid& grid, std::vector<std::vector<int> >& no
 bool A_star::Pre_trace_back(Grid& grid, int current_node, int left, int right, std::set<int> &src_index, std::set<int> &dest_index){
 
   auto logger = spdlog::default_logger()->clone("router.A_star.Pre_trace_back");
-
   std::vector<int> temp_path = Trace_Back_Path_parent(grid, current_node, src_index);
 
-
   std::vector<std::vector<int> > Node_Path(left+right+1);
-
-
 
   if(src_index.find(current_node)!=src_index.end()){
 
@@ -1642,13 +1653,11 @@ bool A_star::Pre_trace_back(Grid& grid, int current_node, int left, int right, s
   }
 
   
-
   for(int i=0;i<temp_path.size() - 1; i++){
 
     std::vector<std::vector<int> > node_L_path;
     int cost = 0;
     parallel_routing(grid, temp_path[i], temp_path[i+1], left, right, src_index, dest_index, node_L_path, cost);
-
     for(int j=0;j<Node_Path.size();j++){
 
        //if(node_L_path.size()==Node_Path.size())
@@ -1657,20 +1666,15 @@ bool A_star::Pre_trace_back(Grid& grid, int current_node, int left, int right, s
     }
 
   }
-
   logger->debug("Pre trace 1");
   rm_cycle_path(Node_Path);
-
   logger->debug("Pre trace 1");
   lable_father(grid, Node_Path);
-
   logger->debug("Pre trace 1");
   //bool extend = 1;
   logger->debug("Check extention 1");
-
   bool extend = Check_Path_Extension(grid, Node_Path, src_index);
   logger->debug("Check extention 2");
-
   return extend;
  
 };
