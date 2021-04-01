@@ -8,7 +8,7 @@ class Alignment(ConstraintBase):
     instances: List[str]
     direction: Optional[Literal['horizontal', 'vertical']] = 'horizontal'
     edge: Optional[Literal['top', 'center', 'bottom', 'left', 'right']] = 'bottom'
-    abut: Optional[Literal[True, False]] = True
+    abut: Optional[bool] = True
 
     @classmethod
     @validator('edge')
@@ -28,7 +28,7 @@ class Generator(ConstraintBase):
     style: Optional[Literal['cc', 'id']] = 'cc'
     alias: Optional[str]
     n_rows: Optional[int] = None
-    add_guard_ring: Optional[Literal[True, False]] = False
+    add_guard_ring: Optional[bool] = False
 
     def check(self):
         pass
@@ -37,8 +37,8 @@ class Generator(ConstraintBase):
 class Orientation(ConstraintBase):
     constraint_name: Literal["orientation"]
     instances: List[str]
-    flip_x: Optional[Literal[True, False]] = False
-    flip_y: Optional[Literal[True, False]] = False
+    flip_x: Optional[bool] = False
+    flip_y: Optional[bool] = False
 
     def check(self):
         pass
