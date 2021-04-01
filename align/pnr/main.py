@@ -12,6 +12,7 @@ import itertools
 from collections import deque
 
 from ..cell_fabric.pdk import Pdk
+from .render_placement import dump_blocks
 
 from .db import hierNode
 from .checkers import gen_viewer_json, gen_transformation
@@ -179,58 +180,6 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
             # This isn't correct unless there is only one top level node
             TraverseDFS(topidx)
             return q
-
-        def dump_blocks(hN, DB, leaves_only=False):
-            import plotly.graph_objects as go
-
-            logger.info(f'hN.parent={hN.parent}')
-
-            fig = go.Figure()
-
-            def gen_trace_xy(inst, prefix_path, child_idx, tr):
-
-                if leaves_only and child_idx >= 0:
-                    return
-
-                # tr converts local coordinates into global coordinates
-
-                b = inst.originBox
-                r = b.LL.x, b.LL.y, b.UR.x, b.UR.y
-                [x0, y0, x1, y1] = tr.hitRect(
-                    transformation.Rect(*r)).canonical().toList()
-                x = [x0, x1, x1, x0, x0]
-                y = [y0, y0, y1, y1, y0]
-
-                hovertext = f'{"/".join(prefix_path)}<br>{inst.master} ({child_idx})<br>{tr}<br>Global {x0} {y0} {x1} {y1}<br>Local {r[0]} {r[1]} {r[2]} {r[3]}'
-
-                fig.add_trace(go.Scatter(x=x, y=y, mode='lines',
-                              name=hovertext, fill="toself", showlegend=False))
-
-            def aux(hN, prefix_path, tr):
-
-                for blk in hN.Blocks:
-                    child_idx = blk.child
-                    inst = blk.instance[blk.selectedInstance]
-
-                    new_prefix_path = prefix_path + [inst.name]
-
-                    # tr converts hN coordinates to global coordinates
-                    # tr2 = gen_transformation(inst) converts local coordinates to hN coordinates
-                    # new_tr should be global = tr(tr2(local)
-
-                    new_tr = tr.postMult(gen_transformation(inst))
-
-                    gen_trace_xy(inst, new_prefix_path, child_idx, new_tr)
-
-                    if child_idx >= 0:
-                        new_hN = DB.hierTree[child_idx]
-                        aux(new_hN, new_prefix_path, new_tr)
-
-            aux(hN, [], transformation.Transformation())
-
-            fig.update_yaxes(scaleanchor="x", scaleratio=1)
-            fig.update_layout(title=dict(text=f'{hN.name}_{hN.n_copy}'))
-            fig.show()
 
         possible_final_circuits = [(i, hN) for i, hN in enumerate(
             DB.hierTree) if hN.name == subckt]

@@ -1,4 +1,3 @@
-
 from ..cell_fabric import transformation, pdk
 from .. import primitive
 import itertools
@@ -7,7 +6,9 @@ import importlib
 import sys
 import pathlib
 import re
-from .toplevel import NType, Omark
+from .toplevel import NType
+
+from .render_placement import gen_transformation
 
 import logging
 logger = logging.getLogger(__name__)
@@ -23,32 +24,6 @@ def rational_scaling( d, *, mul=1, div=1, errors=None):
             logger.error( txt)
 
         term['rect'] = [ (mul*c)//div for c in term['rect']]
-
-def gen_transformation( blk):
-    if blk.orient == Omark.FN:
-        orient = 'FN'
-    elif blk.orient == Omark.FS:
-        orient = 'FS'
-    elif blk.orient == Omark.N:
-        orient = 'N'
-    elif blk.orient == Omark.S:
-        orient = 'S'
-    else:
-        assert False, blk.orient
-
-    # tr is the reflection part
-    tr = transformation.Transformation.genTr( orient, w=blk.width, h=blk.height)
-
-    # tr2 is the translation part
-    tr2 = transformation.Transformation( oX=blk.placedBox.UR.x - blk.originBox.LL.x,
-                                         oY=blk.placedBox.UR.y - blk.originBox.LL.y)
-
-    # tr3 converts local coords into global coordinates
-    tr3 = tr.preMult(tr2)
-
-    logger.debug( f"TRANS {blk.master} {blk.orient} {tr} {tr2} {tr3}")
-    return tr3
-
 
 def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False, extract=False, input_dir=None, markers=False, toplevel=True):
 

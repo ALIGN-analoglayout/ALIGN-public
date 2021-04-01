@@ -1,11 +1,10 @@
-#!/usr/bin/env python
-
 import logging
 import pathlib
 import json
 from itertools import chain
 
 from .. import PnR
+from .render_placement import dump_blocks
 
 logger = logging.getLogger(__name__)
 
@@ -284,6 +283,8 @@ def toplevel(args, *, PDN_mode=False, pdk=None):
 
         DB.hierTree[idx].numPlacement = actualNumLayout
         #analyze_hN( 'End', current_node, False)
+
+    dump_blocks( DB.hierTree[TraverseOrder[-1]], DB, leaves_only=False)
 
     logger.debug(f'Starting top-down routing')
 
