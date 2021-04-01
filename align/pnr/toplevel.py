@@ -21,7 +21,6 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
     #logger.info( f"SMB {list(pdk['design_info'].keys())}")
     logger.info( f"SMB {list(pdk.keys())}")
 
-
     signal_routing_metal_l = 0;
     signal_routing_metal_u = 8;
 
@@ -68,11 +67,7 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
                      f'{current_node_copy.name}_DR_{current_node_copy.n_copy}_{lidx}', drcInfo, opath)
         current_node.gdsFile = current_node_copy.gdsFile
 
-
-
-
     if current_node.isTop:
-
         power_grid_metal_l = 5
         power_grid_metal_u = 6
         power_routing_metal_l = 0
