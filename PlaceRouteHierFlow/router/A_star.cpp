@@ -1174,7 +1174,6 @@ std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left
   auto logger = spdlog::default_logger()->clone("router.A_star.A_star_algorithm");
 
   int via_expand_effort = 100;
-
   std::set<std::pair<int,int>, RouterDB::pairComp> L_list;
   std::set<int> close_set;
   std::pair<int,int> temp_pair; 
@@ -1205,8 +1204,9 @@ std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left
 
   bool found = 0;
   int current_node = -1;
-  
+
   while(!L_list.empty() and !found){
+
     std::set<std::pair<int,int>, RouterDB::pairComp>::iterator it;
     it = L_list.begin();
     current_node = it->second;
@@ -1214,7 +1214,9 @@ std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left
     
     //judge whether dest found Q2// judge whether dest works
     if(dest_index.find(current_node)!=dest_index.end()){
+
        bool extend = Pre_trace_back(grid, current_node, left_up, right_down, src_index,dest_index); //add pre_trace_back and extendtion check here?
+
        if(extend){
          found=1;
        }
@@ -1263,7 +1265,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left
 
           int sym_cost = Find_Symmetry_Cost(grid,candidate_node[i],sym_path);
           //std::cout<<"sym cost "<<sym_cost<<" sym path size "<<sym_path.size()<<std::endl;
-          int sym_factor = 100;
+          int sym_factor = 0;
 
           temp_pair.first = grid.vertices_total[candidate_node[i]].Cost + M_dis +sym_factor*sym_cost;
           temp_pair.second = candidate_node[i];
@@ -1284,6 +1286,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left
          //}
       
        }
+
 
   }
 
