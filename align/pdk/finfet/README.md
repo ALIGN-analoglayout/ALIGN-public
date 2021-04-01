@@ -8,7 +8,6 @@ This is a mock PDK inspired by [Intel 22nm FinFET Fact Sheet](https://newsroom.i
 
 ## Tests
 ```
-    cd $ALIGN_HOME/tests/pdk/finfet/
-    pytest -v 
+    pytest -v $ALIGN_HOME/tests/pdk/finfet/
 ```
 
