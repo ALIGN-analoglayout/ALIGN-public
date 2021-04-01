@@ -1267,7 +1267,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left
        //if(temp_cost < grid.vertices_total[candidate_node[i]].Cost ){
           int sym_cost = Find_Symmetry_Cost(grid,candidate_node[i],sym_path);
           //std::cout<<"sym cost "<<sym_cost<<" sym path size "<<sym_path.size()<<std::endl;
-          int sym_factor = 1;
+          int sym_factor = 100;
 
           temp_pair.first = grid.vertices_total[candidate_node[i]].Cost + M_dis +sym_factor*sym_cost;
           temp_pair.second = candidate_node[i];
