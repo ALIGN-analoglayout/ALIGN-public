@@ -16,6 +16,16 @@ except:
     z3 = None
     logger.warning("Could not import z3. ConstraintDB will not look for spec inconsistency.")
 
+
+def _abs(x):
+    return z3.If(x >= 0, x, -x)
+    
+def _min(x, y):
+    return z3.If(x<=y, x, y)
+    
+def _max(x, y):
+    return z3.If(x>=y, x, y)
+
 class ConstraintBase(types.BaseModel, abc.ABC):
 
     @abc.abstractmethod
@@ -58,14 +68,13 @@ class ConstraintBase(types.BaseModel, abc.ABC):
                     ury = f'{block}_ury') \
                 for block in blocks]
 
+
 class AlignHorizontal(ConstraintBase):
     '''
-    All blocks in 'block' will be lined up (in order) on the X axis
-
-    The optional 'alignment' parameter determines alignment along Y axis
+    All `blocks` should be aligned along the `line` on the x axis in order.
     '''
-    blocks : List[str]
-    alignment : Optional[Literal['top', 'middle', 'bottom']] = 'middle'
+    blocks: List[str]
+    line: Optional[Literal['top', 'center', 'bottom']] = 'bottom'
 
     def check(self):
         constraints = super().check()
@@ -73,14 +82,64 @@ class AlignHorizontal(ConstraintBase):
         bvars = self._get_bbox_vars(self.blocks)
         for b1, b2 in itertools.pairwise(bvars):
             constraints.append(b1.urx <= b2.llx)
+            if self.line == 'bottom':
+                constraints.append(b1.lly == b2.lly)
+            elif self.line == 'top':
+                constraints.append(b1.ury == b2.ury)
+            else:
+                # TODO: relative tolerance could be a global variable
+                constraints.append(20 * _abs(b1.lly + b1.ury - b2.lly - b2.ury) <= (b1.lly + b1.ury + b2.lly + b2.ury))
         return constraints
 
-class AlignVertical(ConstraintBase):
-    blocks : List[str]
-    alignment : Literal['left', 'center', 'right']
 
-ConstraintType=Union[ \
-        AlignHorizontal, AlignVertical]
+class AlignVertical(ConstraintBase):
+    '''
+    All `blocks` should be aligned along the `line` on the y axis in order.
+    '''
+    blocks: List[str]
+    line: Optional[Literal['left', 'center', 'right']] = 'center'
+
+    def check(self):
+        constraints = super().check()
+        assert len(self.blocks) >= 2
+        bvars = self._get_bbox_vars(self.blocks)
+        for b1, b2 in itertools.pairwise(bvars):
+            constraints.append(b1.ury <= b2.lly)
+            if self.line == 'left':
+                constraints.append(b1.llx == b2.llx)
+            elif self.line == 'right':
+                constraints.append(b1.urx == b2.urx)
+            else:
+                # TODO: relative tolerance could be a global variable
+                constraints.append(20*_abs(b1.llx + b1.urx - b2.llx - b2.urx) <= b1.llx + b1.urx, b2.llx + b2.urx)
+        return constraints
+
+
+class AbutPair(ConstraintBase):
+    '''
+    The pair of `blocks` should be abutted along the `direction` in order.
+    '''
+    blocks: List[str]
+    direction: Literal['horizontal', 'vertical']
+
+    def check(self):
+        constraints = super().check()
+        assert len(self.blocks) == 2, f'Only pair of blocks allows {blocks}'
+        bvars = self._get_bbox_vars(self.blocks)
+        for b1, b2 in itertools.pairwise(bvars):
+            if direction == 'horizontal':
+                constraints.append( b2.urx - b1.urx < _min(b1.urx - b1.llx, b2.urx - b2.llx) // 10 )
+            else:
+                # TODO: relative tolerance could be a global variable
+                constraints.append( b2.ury - b1.ury < _min(b1.ury - b1.lly, b2.ury - b2.lly) // 10 )
+        return constraints
+
+
+ConstraintType=Union[
+    AlignHorizontal,
+    AlignVertical,
+    AbutPair]
+
 
 class ConstraintDB(types.BaseModel):
 
