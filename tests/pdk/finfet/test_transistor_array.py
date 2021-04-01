@@ -5,6 +5,7 @@ from align.pdk.finfet import MOSGenerator
 
 my_dir = pathlib.Path(__file__).resolve().parent
 
+
 def test_array_one():
     c = MOSGenerator()
     ports = {'SA': [('M1', 'S')], 'DA': [('M1', 'D')], 'GA': [('M1', 'G')]}
@@ -14,14 +15,16 @@ def test_array_one():
     data = {'bbox': c.bbox.toList(), 'globalRoutes': [], 'globalRouteGrid': [], 'terminals': c.removeDuplicates(allow_opens=True)}
 
     fn = "test_transistor_array_1"
-    with open(pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
-        fp.write(json.dumps(data, indent=2) + '\n')
+    if align_home := os.getenv('ALIGN_HOME'):
+        with open(pathlib.Path(align_home)/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
+            fp.write(json.dumps(data, indent=2) + '\n')
 
     with open(my_dir / (fn + "_cand.json"), "wt") as fp:
         fp.write(json.dumps(data, indent=2) + '\n')
 
     with open(my_dir / (fn + "_gold.json"), "rt") as fp:
         data2 = json.load(fp)
+
     assert data == data2
 
 
@@ -37,13 +40,14 @@ def test_array_two():
     data = {'bbox': c.bbox.toList(), 'globalRoutes': [], 'globalRouteGrid': [], 'terminals': c.removeDuplicates(allow_opens=True)}
 
     fn = "test_transistor_array_2"
-    with open(pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
-        fp.write(json.dumps(data, indent=2) + '\n')
+    if align_home := os.getenv('ALIGN_HOME'):
+        with open(pathlib.Path(align_home)/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
+            fp.write(json.dumps(data, indent=2) + '\n')
 
     with open(my_dir / (fn + "_cand.json"), "wt") as fp:
         fp.write(json.dumps(data, indent=2) + '\n')
 
     with open(my_dir / (fn + "_gold.json"), "rt") as fp:
         data2 = json.load(fp)
-    assert data == data2
 
+    assert data == data2
