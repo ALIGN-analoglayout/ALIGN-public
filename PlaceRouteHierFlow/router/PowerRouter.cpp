@@ -495,6 +495,7 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
             A_star a_star(grid, 0); // no sheilding
 
             bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, 0, 0);
+
             std::vector<std::vector<RouterDB::Metal>> physical_path;
             logger->debug("Power router routing pathMark {0}",pathMark);
             Update_powerrouter_report_info(temp_routing_net, i, j, pathMark);
@@ -761,6 +762,7 @@ void PowerRouter::SetSrcDest(RouterDB::Pin temp_pin, RouterDB::PowerGrid Vdd_gri
   temp_ll.y = INT_MAX;
   temp_ur.x = INT_MIN;
   temp_ur.y = INT_MIN;
+
 
   for(unsigned int i=0;i<temp_dest.size();i++){
      for(unsigned int j=0;j<temp_dest[i].coord.size();j++){

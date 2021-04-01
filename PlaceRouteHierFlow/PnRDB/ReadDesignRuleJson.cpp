@@ -392,6 +392,14 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
           DRC_info.Design_info.Vspace = design_info["Vspace"];
           DRC_info.Design_info.Hspace *= times;
           DRC_info.Design_info.Vspace *= times;
+          DRC_info.Design_info.signal_routing_metal_l = DRC_info.Metalmap[design_info["bottom_signal_routing_layer"]];
+          DRC_info.Design_info.signal_routing_metal_u = DRC_info.Metalmap[design_info["top_signal_routing_layer"]];
+          DRC_info.Design_info.power_grid_metal_l = DRC_info.Metalmap[design_info["top_power_routing_layer"]]-1;
+          DRC_info.Design_info.power_grid_metal_u = DRC_info.Metalmap[design_info["top_power_routing_layer"]];
+          DRC_info.Design_info.power_routing_metal_l = DRC_info.Metalmap[design_info["bottom_power_routing_layer"]];
+          DRC_info.Design_info.power_routing_metal_u = DRC_info.Metalmap[design_info["top_power_routing_layer"]];
+          std::cout<<"design info "<<DRC_info.Design_info.signal_routing_metal_l<<" "<<DRC_info.Design_info.signal_routing_metal_u<<" "<<DRC_info.Design_info.power_grid_metal_l<<" "<<DRC_info.Design_info.power_grid_metal_u<<" "<<DRC_info.Design_info.power_routing_metal_l<<" "<<DRC_info.Design_info.power_routing_metal_u<<std::endl;
+
         }
     }
 }
