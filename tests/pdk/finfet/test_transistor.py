@@ -6,6 +6,8 @@ from align.schema.transistor import Transistor
 
 my_dir = pathlib.Path(__file__).resolve().parent
 
+align_home = os.getenv('ALIGN_HOME')
+
 
 def test_one():
     tx = Transistor(model_name='n', nf=2, nfin=4, device_type='stack')
@@ -14,7 +16,7 @@ def test_one():
 
     fn = "test_transistor_1"
 
-    if align_home := os.getenv('ALIGN_HOME'):
+    if align_home:
         with open(pathlib.Path(align_home)/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
             fp.write(json.dumps(data, indent=2) + '\n')
 
@@ -33,7 +35,7 @@ def test_two():
     data['globalRoutes'] = data['globalRouteGrid'] = []
 
     fn = "test_transistor_2"
-    if align_home := os.getenv('ALIGN_HOME'):
+    if align_home:
         with open(pathlib.Path(align_home)/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
             fp.write(json.dumps(data, indent=2) + '\n')
 
@@ -52,7 +54,7 @@ def test_three():
     data['globalRoutes'] = data['globalRouteGrid'] = []
 
     fn = "test_transistor_3"
-    if align_home := os.getenv('ALIGN_HOME'):
+    if align_home:
         with open(pathlib.Path(align_home)/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
             fp.write(json.dumps(data, indent=2) + '\n')
 
@@ -71,7 +73,7 @@ def test_four():
     data['globalRoutes'] = data['globalRouteGrid'] = []
 
     fn = "test_transistor_4"
-    if align_home := os.getenv('ALIGN_HOME'):
+    if align_home:
         with open(pathlib.Path(align_home)/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
             fp.write(json.dumps(data, indent=2) + '\n')
 
@@ -90,7 +92,7 @@ def test_five():
     data['globalRoutes'] = data['globalRouteGrid'] = []
 
     fn = "test_transistor_5"
-    if align_home := os.getenv('ALIGN_HOME'):
+    if align_home:
         with open(pathlib.Path(align_home)/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
             fp.write(json.dumps(data, indent=2) + '\n')
 
@@ -109,7 +111,7 @@ def test_six():
     data['globalRoutes'] = data['globalRouteGrid'] = []
 
     fn = "test_transistor_6"
-    if align_home := os.getenv('ALIGN_HOME'):
+    if align_home:
         with open(pathlib.Path(align_home)/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
             fp.write(json.dumps(data, indent=2) + '\n')
 

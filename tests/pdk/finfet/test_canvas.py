@@ -10,6 +10,7 @@ my_dir = pathlib.Path(__file__).resolve().parent
 
 layers_json = pathlib.Path(align.pdk.finfet.__file__).parent / 'layers.json'
 
+align_home = os.getenv('ALIGN_HOME')
 
 def test_canvas_one():
 
@@ -34,7 +35,7 @@ def test_canvas_one():
     data = {'bbox': c.bbox.toList(), 'globalRoutes': [], 'globalRouteGrid': [], 'terminals': c.removeDuplicates(allow_opens=True)}
 
     fn = "test_canvas_1"
-    if align_home := os.getenv('ALIGN_HOME'):
+    if align_home:
         with open(pathlib.Path(align_home)/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
             fp.write(json.dumps(data, indent=2) + '\n')
 
@@ -108,7 +109,7 @@ def test_canvas_backward():
     d2 = {'bbox': c2.bbox.toList(), 'globalRoutes': [], 'globalRouteGrid': [], 'terminals': c2.removeDuplicates(allow_opens=True)}
 
     # for viewing
-    if align_home := os.getenv('ALIGN_HOME'):
+    if align_home:
         with open(pathlib.Path(align_home)/'Viewer'/'INPUT'/'test_canvas_1.json', "wt") as fp:
             fp.write(json.dumps(d1, indent=2) + '\n')
 

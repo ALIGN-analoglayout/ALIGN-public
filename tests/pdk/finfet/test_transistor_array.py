@@ -5,6 +5,8 @@ from align.pdk.finfet import MOSGenerator
 
 my_dir = pathlib.Path(__file__).resolve().parent
 
+align_home = os.getenv('ALIGN_HOME')
+
 
 def test_array_one():
     c = MOSGenerator()
@@ -15,7 +17,7 @@ def test_array_one():
     data = {'bbox': c.bbox.toList(), 'globalRoutes': [], 'globalRouteGrid': [], 'terminals': c.removeDuplicates(allow_opens=True)}
 
     fn = "test_transistor_array_1"
-    if align_home := os.getenv('ALIGN_HOME'):
+    if align_home:
         with open(pathlib.Path(align_home)/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
             fp.write(json.dumps(data, indent=2) + '\n')
 
@@ -40,7 +42,7 @@ def test_array_two():
     data = {'bbox': c.bbox.toList(), 'globalRoutes': [], 'globalRouteGrid': [], 'terminals': c.removeDuplicates(allow_opens=True)}
 
     fn = "test_transistor_array_2"
-    if align_home := os.getenv('ALIGN_HOME'):
+    if align_home:
         with open(pathlib.Path(align_home)/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
             fp.write(json.dumps(data, indent=2) + '\n')
 
