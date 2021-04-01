@@ -5,12 +5,10 @@ from align.pdk.finfet import CanvasPDK
 from align.primitive.default import DefaultCanvas
 from align.cell_fabric import Pdk
 import align.pdk.finfet
-
-my_dir = pathlib.Path(__file__).resolve().parent
+from .helper import *
 
 layers_json = pathlib.Path(align.pdk.finfet.__file__).parent / 'layers.json'
 
-align_home = os.getenv('ALIGN_HOME')
 
 def test_canvas_one():
 
@@ -30,25 +28,10 @@ def test_canvas_one():
     c.addVia(c.v4, 'a', None, 1, 4)
     c.addVia(c.v5, 'a', None, 1, 5)
 
-    c.computeBbox()
-
-    data = {'bbox': c.bbox.toList(), 'globalRoutes': [], 'globalRouteGrid': [], 'terminals': c.removeDuplicates(allow_opens=True)}
-
-    fn = "test_canvas_1"
-    if align_home:
-        with open(pathlib.Path(align_home)/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
-            fp.write(json.dumps(data, indent=2) + '\n')
-
-    with open(my_dir / (fn + "_cand.json"), "wt") as fp:
-        fp.write(json.dumps(data, indent=2) + '\n')
-
-    with open(my_dir / (fn + "_gold.json"), "rt") as fp:
-        data2 = json.load(fp)
-
-    assert data == data2
+    compare_with_golden("test_canvas_1", c)
 
 
-def test_canvas_drc():
+def test_canvas_two():
 
     c1 = CanvasPDK()
     c1.addWire(c1.m1, 'a', None, 1, (1, -1), (6, 1))
@@ -79,7 +62,7 @@ def test_canvas_drc():
     assert c1.drc.num_errors == 1, f'vertical via spacing'
 
 
-def test_canvas_backward():
+def test_canvas_three():
 
     def _helper(c):
         c.addWire(c.m1, 'a', None, 1, (1, -1), (6, 1))
@@ -105,21 +88,10 @@ def test_canvas_backward():
     c2.gen_data(run_drc=True)
     assert c2.drc.num_errors == 0
 
+    export_to_viewer("test_canvas_3_c1", c1)
+    export_to_viewer("test_canvas_3_c2", c2)
+
     d1 = {'bbox': c1.bbox.toList(), 'globalRoutes': [], 'globalRouteGrid': [], 'terminals': c1.removeDuplicates(allow_opens=True)}
     d2 = {'bbox': c2.bbox.toList(), 'globalRoutes': [], 'globalRouteGrid': [], 'terminals': c2.removeDuplicates(allow_opens=True)}
-
-    # for viewing
-    if align_home:
-        with open(pathlib.Path(align_home)/'Viewer'/'INPUT'/'test_canvas_1.json', "wt") as fp:
-            fp.write(json.dumps(d1, indent=2) + '\n')
-
-        with open(pathlib.Path(align_home)/'Viewer'/'INPUT'/'test_canvas_2.json', "wt") as fp:
-            fp.write(json.dumps(d2, indent=2) + '\n')
-
-        with open(my_dir / "text_canvas_backward_d1_cand.json", "wt") as fp:
-            fp.write(json.dumps(d1, indent=2) + '\n')
-
-        with open(my_dir / "text_canvas_backward_d1_cand.json", "wt") as fp:
-            fp.write(json.dumps(d2, indent=2) + '\n')
 
     assert d1 == d2
