@@ -338,7 +338,7 @@ design::design(PnRDB::hierNode& node) {
   bias_Vgraph=node.bias_Vgraph; // from node
   bias_Hgraph=node.bias_Hgraph; // from node
   Aspect_Ratio_weight = node.Aspect_Ratio_weight;
-  Aspect_Ratio = node.Aspect_Ratio;
+  memcpy(Aspect_Ratio, node.Aspect_Ratio, sizeof(node.Aspect_Ratio));
   mixFlag = false;
   double averageWL=0;
   double macroThreshold=0.5; // threshold to filter out small blocks
@@ -1285,6 +1285,7 @@ void design::PrintDesign() {
   PrintNets();
   PrintConstraints();
   PrintSymmGroup();
+  //std::cout<<"symmetry group size "<<SPBlocks.size()<<std::endl;
   for(unsigned int i=0;i<SNets.size();++i) {
     logger->debug("Symmetry net {0} SBidx {1}",i,SNets.at(i).SBidx);
   }
@@ -1759,7 +1760,7 @@ void design::constructSymmGroup() {
       logger->debug("self-symmectric: {0} {1}",tmpselfsym.at(i).first,tmpselfsym.at(i).second);
     }
     int sbidx=MergeNewBlockstoSymmetryGroup(tmpsympair, tmpselfsym, SBs, this->SNets, axis_dir);
-    //std::cout<<"Placer-Info: symmetry net "<<sni-SNets.begin()<<" sbidx "<<sbidx<<std::endl;
+    //std::cout<<"Placer-Info: symmetry net "<<sni-SNets.begin()<<" sbidx "<<sbidx<<"SBs size()"<<SBs.size()<<std::endl;
     sni->SBidx=sbidx;
     //vector<pair<int,int> > matchedPair,matchedSelf;
     //matchedPair=checkSympairInSymmBlock(SBs, tmpsympair);
@@ -1855,7 +1856,7 @@ void design::constructSymmGroup() {
   }
   SBlocks.clear();
   for(vector<placerDB::SymmBlock>::iterator it=SBs.begin();it!=SBs.end();++it) {
-    if(it->sympair.empty() and it->selfsym.empty()) {continue;}
+    //if(it->sympair.empty() and it->selfsym.empty()) {continue;}
     SBlocks.resize(SBlocks.size()+1);
     SBlocks.back().sympair=it->sympair;
     SBlocks.back().selfsym=it->selfsym;
@@ -1920,7 +1921,9 @@ int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  
           SBs.at(itt->first).sympair.clear();
           SBs.at(itt->first).selfsym.clear();
           for(vector<SymmNet>::iterator nit=SNs.begin(); nit!=SNs.end(); ++nit) {
-            if(nit->SBidx==itt->first) {nit->SBidx=gidx;}
+            if(nit->SBidx==itt->first) {
+              nit->SBidx=gidx;
+            }
           }
         }
       }

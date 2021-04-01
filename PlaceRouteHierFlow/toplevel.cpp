@@ -43,7 +43,7 @@ void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_node, int
     ofn = opath+current_node.name + tag + ".db.json";
   }
   DB.WriteDBJSON(current_node,ofn);
-  logger->info("{0}", ltag);
+  logger->info("{0} to {1}", ltag, ofn);
 }
 
 void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::hierNode& current_node, int lidx, const string& opath, const string& binary_directory, bool skip_saving_state, bool adr_mode)
@@ -91,6 +91,7 @@ void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
     logger->debug("***End WriteGcellGlobalRoute Debugging***" );
 
     curr_route.RouteWork(5, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor,dummy_file);
+    DB.WriteGcellDetailRoute(current_node, current_node.name+"_DetailRoute_"+std::to_string(lidx)+".json", opath);
 
   } else {
     // Global Routing (old version)
@@ -103,6 +104,7 @@ void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
 
     // Detail Routing
     curr_route.RouteWork(1, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor,dummy_file);
+    DB.WriteGcellDetailRoute(current_node, current_node.name+"_DetailRoute_"+std::to_string(lidx)+".json", opath);
   }
 
   if (current_node.isTop) {
@@ -211,6 +213,8 @@ int route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::bbox 
                            int idx, int lidx, const string& opath, const string& binary_directory,
                            bool skip_saving_state, bool adr_mode) {
 
+  auto logger = spdlog::default_logger()->clone("route_top_down");
+
   /*
   recursively DFS hiertree
   Inputs:
@@ -261,21 +265,27 @@ int route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::bbox 
 
   // 8.transform (translate and rotate) current_node into current_node coordinate
   // undo transform current_node.LL and current_node_ort
-  DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, PnRDB::TransformType::Backward);
+  if (!current_node.isTop) {
+    // Don't seem to be doing this for the top cell in route_single...
+    DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, PnRDB::TransformType::Backward);
+  }
 
   // 9.pushback current_node into hiertree, update current_node copy's index
   // update hiertree[blocks.*.child].parent = new_currentnode_idx
   DB.hierTree.push_back(current_node);
   int new_currentnode_idx = DB.hierTree.size() - 1;
+
   for (unsigned int bit = 0; bit < current_node.Blocks.size(); bit++) {
     auto& blk = current_node.Blocks[bit];
     if (blk.child == -1) continue;
+    assert( DB.hierTree[blk.child].parent.size() > 0);
     DB.hierTree[blk.child].parent[0] = new_currentnode_idx;
   }
+
   return new_currentnode_idx;
 }
 
-int toplevel( const std::vector<std::string>& argv) {
+std::unique_ptr<PnRdatabase> toplevel( const std::vector<std::string>& argv) {
   
   auto logger = spdlog::default_logger()->clone("toplevel");
 
@@ -299,6 +309,7 @@ int toplevel( const std::vector<std::string>& argv) {
   int effort=std::stoi(argv[8]);
   if(fpath.back()=='/') {fpath.erase(fpath.end()-1);}
   if(opath.back()!='/') {opath+="/";}
+  //spdlog::set_level(spdlog::level::debug);
 
   // Following codes try to get the path of binary codes
   string binary_directory = argv[0];
@@ -310,10 +321,10 @@ int toplevel( const std::vector<std::string>& argv) {
   logger->info("binary_directory: {0}", binary_directory);
 
   mkdir(opath.c_str(), 0777);
-  PnRdatabase DB(fpath, topcell, vfile, lfile, mfile, dfile); // construction of database
+  std::unique_ptr<PnRdatabase> DB_ptr(new PnRdatabase(fpath, topcell, vfile, lfile, mfile, dfile)); // construction of database
+  PnRdatabase& DB = *DB_ptr;
   PnRDB::Drc_info drcInfo=DB.getDrc_info();
   map<string, PnRDB::lefMacro> lefData = DB.checkoutSingleLEF();
-
 
   deque<int> TraverseOrder = DB.TraverseHierTree();  // traverse hierarchical tree in topological order
 
@@ -376,12 +387,12 @@ int toplevel( const std::vector<std::string>& argv) {
   int new_topnode_idx = 0;
   for (unsigned int lidx = 0; lidx < DB.hierTree[TraverseOrder.back()].numPlacement; lidx++) {
     auto &ct = DB.hierTree[TraverseOrder.back()];
+    PnRDB::bbox bb( PnRDB::point(0, 0), PnRDB::point(ct.PnRAS[0].width, ct.PnRAS[0].height));
     new_topnode_idx = route_top_down(
         DB, drcInfo,
-        PnRDB::bbox(PnRDB::point(0, 0),
-		    PnRDB::point(ct.PnRAS[0].width, ct.PnRAS[0].height)),
-        PnRDB::N, TraverseOrder.back(), lidx, opath, binary_directory, skip_saving_state, adr_mode);
+	bb, PnRDB::N,
+	TraverseOrder.back(), lidx, opath, binary_directory, skip_saving_state, adr_mode);
   }
 
-  return 0;
+  return DB_ptr;
 }

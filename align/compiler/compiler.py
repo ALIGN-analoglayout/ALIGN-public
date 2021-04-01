@@ -45,16 +45,16 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path,flat=
 
     """
     logger.info("Starting topology identification...")
-    input_dir=input_ckt.parents[0]
+    input_dir = input_ckt.parents[0]
     logger.debug(f"Reading subckt {input_ckt}")
     sp = SpiceParser(input_ckt, design_name, flat)
     circuit_graphs = sp.sp_parser()
     assert circuit_graphs !=None  , f"No subcircuit with name {design_name} found in spice {input_ckt}"
     circuit = circuit_graphs[0]
 
-    design_setup=read_setup(input_dir / f'{input_ckt.stem}.setup')
+    design_setup = read_setup(input_dir / f'{design_name}.setup')
     logger.debug(f"template parent path: {pathlib.Path(__file__).parent}")
-    lib_path=pathlib.Path(__file__).resolve().parent.parent / 'config' / 'basic_template.sp'
+    lib_path = pathlib.Path(__file__).resolve().parent.parent / 'config' / 'basic_template.sp'
     logger.debug(f"template library path: {lib_path}")
     basic_lib = SpiceParser(lib_path)
     library = basic_lib.sp_parser()
@@ -80,7 +80,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path,flat=
                                          "./circuit_graphs/")
     #Converting graph to dict
     const_parse = ConstraintParser(pdk_dir, input_dir)
-    create_data = CreateDatabase(circuit["graph"],const_parse)
+    create_data = CreateDatabase(circuit["graph"], const_parse)
     hier_graph_dict = create_data.read_inputs(circuit["name"])
 
     logger.debug("START preprocessing")
@@ -106,8 +106,8 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path,flat=
             if node[1]["inst_type"]!='net':
                 logger.debug(node)
 
-    annotate =Annotate(hier_graph_dict, design_setup,library,all_lef)
-    lib_names =annotate.annotate()
+    annotate = Annotate(hier_graph_dict, design_setup, library, all_lef)
+    lib_names = annotate.annotate()
 
     return hier_graph_dict, lib_names
 
@@ -149,17 +149,17 @@ def compiler_output(input_ckt, lib_names , hier_graph_dict, design_name:str, res
     if not result_dir.exists():
         result_dir.mkdir()
     logger.debug(f"Writing results in dir: {result_dir} {hier_graph_dict}")
-    input_dir=input_ckt.parents[0]
+    input_dir = input_ckt.parents[0]
     VERILOG_FP = open(result_dir / f'{design_name}.v', 'w')
 
     ## File pointer for spice generator
     #SP_FP = open(result_dir / (design_name + '_blocks.sp'), 'w')
     print_header(VERILOG_FP, design_name)
-    design_setup=read_setup(input_dir / (input_ckt.stem + '.setup'))
+    design_setup = read_setup(input_dir / (design_name + '.setup'))
     try:
         POWER_PINS = [design_setup['GND'][0],design_setup['POWER'][0]]
     except (IndexError, ValueError):
-        POWER_PINS=[]
+        POWER_PINS = []
         logger.error("no power and gnd defination, correct setup file")
 
     #read lef to not write those modules as macros
@@ -185,9 +185,13 @@ def compiler_output(input_ckt, lib_names , hier_graph_dict, design_name:str, res
                 logger.debug(f"Created new lef for: {block_name} {lef_name}")
                 #Multiple instances of same module
                 if 'inst_copy' in attr:
-                    for nm in hier_graph_dict.keys():
+                    for nm in list(hier_graph_dict.keys()):
                         if nm == lef_name + attr['inst_copy']:
-                            hier_graph_dict[block_name] = hier_graph_dict.pop(nm)
+                            if block_name not in hier_graph_dict.keys():
+                                hier_graph_dict[block_name] = hier_graph_dict.pop(nm)
+                            else:
+                                #For cells with extra parameters than current primitive naming convention
+                                all_lef.append(nm)
                     graph.nodes[node]["inst_type"]=block_name
                     all_lef.append(block_name)
 
@@ -210,7 +214,7 @@ def compiler_output(input_ckt, lib_names , hier_graph_dict, design_name:str, res
             else:
                 logger.debug(f"No physical information found for: {name}")
         logger.debug(f"generated data for {name} : {pprint.pformat(primitives, indent=4)}")
-
+    logger.debug(f"All available cell generator with updates: {all_lef}")
     for name,member in hier_graph_dict.items():
         graph = member["graph"]
         if not 'const' in member:
@@ -239,9 +243,9 @@ def compiler_output(input_ckt, lib_names , hier_graph_dict, design_name:str, res
             logger.debug(f"cap constraint gen for block: {name}")
 
             ##Removing constraints to fix cascoded cmc
-            if name not in design_setup['DIGITAL'] and name not in lib_names:
-                logger.debug(f"call constraint generator writer for block: {name}")
-                stop_points=design_setup['POWER']+design_setup['GND']+design_setup['CLOCK']
+            if name not in design_setup['DIGITAL']:
+                logger.debug(f"call constraint generator writer for block: {name} {const}")
+                stop_points = design_setup['POWER'] + design_setup['GND'] + design_setup['CLOCK']
                 if name not in design_setup['NO_CONST']:
                     const = WriteConst(graph, name, inoutpin, member["ports_weight"], const, stop_points)
                 const = WriteCap(graph, name, design_config["unit_size_cap"], const, design_setup['MERGE_SYMM_CAPS'])

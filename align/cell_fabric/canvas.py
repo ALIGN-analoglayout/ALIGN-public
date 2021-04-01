@@ -143,6 +143,140 @@ class Canvas:
                         new_length = 0
         self.terminals = self.removeDuplicates(allow_opens=True).copy()
 
+    def drop_via(self, via, exclude_nets=None, include_nets=None):
+
+        if exclude_nets is None:
+            exclude_nets = set()
+        else:
+            exclude_nets = set(exclude_nets)
+
+        if include_nets is not None:
+            include_nets = set(include_nets)
+
+        self.terminals = self.removeDuplicates(allow_opens=True).copy()
+
+        [mb, ma] = self.pdk[via.layer]['Stack']
+        assert mb is not None, f'Lower layer is not a metal'
+        assert ma is not None, f'Upper layer is not a metal'
+
+        # mh: horizontal wire, mv: vertical wire
+        if self.pdk[mb]['Direction'].upper() == 'H':
+            mh = self._find_generator(mb)
+            mv = self._find_generator(ma)
+        else:
+            mh = self._find_generator(ma)
+            mv = self._find_generator(mb)
+        mh_lines = self.rd.store_scan_lines[mh.layer]
+        mv_lines = self.rd.store_scan_lines[mv.layer]
+
+        via_matrix = self._construct_via_matrix(via)
+
+        for (mh_cl, mh_sl) in mh_lines.items():
+            for (_, mh_slr) in enumerate(mh_sl.rects):
+                mh_name = mh_slr.netName
+                if mh_name is None or mh_name in exclude_nets:
+                    continue
+                if include_nets is not None and mh_name not in include_nets:
+                    continue
+                for (mv_cl, mv_sl) in mv_lines.items():
+                    # Check only the scan lines that can intersect with ml_slr
+                    if mv_cl < 2*mh_slr.rect[0]:
+                        continue
+                    if mv_cl > 2*mh_slr.rect[2]:
+                        continue  # Scanlines are not in order
+                    for (_, mv_slr) in enumerate(mv_sl.rects):
+                        mv_name = mv_slr.netName
+                        if mv_name is None or mv_name != mh_name:
+                            continue
+                        # Check only the rectangles that overlap with the centerline
+                        if mh_cl > 2*mv_slr.rect[3]:
+                            continue
+                        if mh_cl < 2*mv_slr.rect[1]:
+                            break
+                        # Check if via exists
+                        if mh_cl in via_matrix and mv_cl in via_matrix[mh_cl]:
+                            continue
+                        # Check if DR-clean via can dropped
+                        self._drop_via_if_dr_clean(via, via_matrix, mh, mh_cl, mh_slr, mv, mv_cl, mv_slr)
+
+    def _find_generator(self, layer):
+        for key, gen in self.generators.items():
+            if gen.layer == layer:
+                return gen
+        assert False, f'A generator not found for {layer}'
+
+    def _construct_via_matrix(self, via):
+        via_lines = self.rd.store_scan_lines[via.layer]
+        via_matrix = dict()
+        for (_, via_sl) in via_lines.items():
+            for (_, via_slr) in enumerate(via_sl.rects):
+                mh_cl = via_slr.rect[0] + via_slr.rect[2]
+                mv_cl = via_slr.rect[1] + via_slr.rect[3]
+                if mh_cl not in via_matrix:
+                    via_matrix[mh_cl] = dict()
+                via_matrix[mh_cl][mv_cl] = via_slr.rect.copy()
+        return via_matrix
+
+    def _drop_via_if_dr_clean(self, via, via_matrix, mh, mh_cl, mh_slr, mv, mv_cl, mv_slr):
+        via_def = self.pdk[via.layer]
+        via_half_w = via_def["WidthX"] // 2
+        via_half_h = via_def["WidthY"] // 2
+        via_rect = [mv_cl//2 - via_half_w, mh_cl//2 - via_half_h,
+                    mv_cl//2 + via_half_w, mh_cl//2 + via_half_h]
+
+        [mb, _] = self.pdk[via.layer]['Stack']
+        if mh.layer == mb:
+            venca_h = via_def["VencA_L"]
+            venca_v = via_def["VencA_H"]
+        else:
+            venca_h = via_def["VencA_H"]
+            venca_v = via_def["VencA_L"]
+
+        # Check via enclosure along the way (perpendicular should be correct by grid definition)
+        if mh_slr.rect[0] > via_rect[0] - venca_h:
+            return
+        if mh_slr.rect[2] < via_rect[2] + venca_h:
+            return
+        if mv_slr.rect[1] > via_rect[1] - venca_v:
+            return
+        if mv_slr.rect[3] < via_rect[3] + venca_v:
+            return
+
+        # check left and right neighbors
+        if mh_cl in via_matrix:
+            for v_cl, r in via_matrix[mh_cl].items():
+                if (r[2] < via_rect[0]) and (r[2] > via_rect[0]-via_def["SpaceX"]):
+                    return
+                if (r[0] > via_rect[2]) and (r[0] < via_rect[2]+via_def["SpaceX"]):
+                    return
+
+        (b_idx, _) = mh.clg.inverseBounds(mh_cl//2 - 1)
+        mh_cl_m1 = 2*mh.clg.value(b_idx)[0]
+        (_, b_idx) = mh.clg.inverseBounds(mh_cl//2 + 1)
+        mh_cl_p1 = 2*mh.clg.value(b_idx)[0]
+
+        # check via below
+        if mh_cl_m1 in via_matrix:
+            for v_cl, r in via_matrix[mh_cl_m1].items():
+                if v_cl == mv_cl:
+                    if (r[3] < via_rect[1]) and (r[3] > via_rect[1]-via_def["SpaceY"]):
+                        return
+
+        # check via above
+        if mh_cl_p1 in via_matrix:
+            for v_cl, r in via_matrix[mh_cl_p1].items():
+                if v_cl == mv_cl:
+                    if (r[1] > via_rect[3]) and (r[1] < via_rect[3]+via_def["SpaceY"]):
+                        return
+
+        self.addVia(via, mh_slr.netName, None,
+                    mv.clg.inverseBounds(mv_cl // 2)[0],
+                    mh.clg.inverseBounds(mh_cl//2)[0])
+
+        if mh_cl not in via_matrix:
+            via_matrix[mh_cl] = dict()
+        via_matrix[mh_cl][mv_cl] = via_rect.copy()
+
     def asciiStickDiagram( self, v1, m2, v2, m3, matrix, *, xpitch=4, ypitch=2):
         # clean up text input
         a = matrix.split( '\n')[1:-1]

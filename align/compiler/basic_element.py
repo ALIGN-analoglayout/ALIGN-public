@@ -229,12 +229,15 @@ def _parse_inst(line):
         logger.debug(f'FOUND i_source: {line.strip()}')
         device = element.i_source()
     elif line.strip().lower().startswith('c') \
-            or ( line.strip().lower().startswith('xc') \
+            or (line.strip().lower().startswith('xc') \
             and 'cap' in  line.strip().split()[3].lower()):
         #DESIGN=Sanitized_TX_8l12b has XC for caps
         logger.debug(f'FOUND cap: {line.strip()}')
         device = element.capacitor()
-    elif line.strip().lower().startswith('r') or line.strip().lower().startswith('xr'):
+    elif line.strip().lower().startswith('r') \
+            or (line.strip().lower().startswith('xr') \
+            and 'res' in line.strip().split()[3].lower()):
+        #modified for frontend design from NW
         logger.debug(f'FOUND resistor: {line.strip()}')
         device = element.resistor()
     elif line.strip().lower().startswith('l'):

@@ -1,130 +1,70 @@
 version: 2.1
 
-commands:
-  run-load-align:
-    description: "Load align image (contains pip installed align module + PlaceRouteHierFlow)"
-    steps:
-      - run:
-          name: "Load align_image"
-          command: |
-            docker load --input align_image.tar
-  run-make-docker:
-    description: "Exercise the monolithic make docker flow"
-    parameters:
-      design:
-        description: "Name of design (must exist within examples dir)"
-        type: string
-      flat:
-        description: "Enter '1' if you want design to be flattened"
-        type: string
-        default: "0"
-    steps:
-      - run:
-          name: "make docker DESIGN=<<parameters.design>>"
-          command: |
-            export ALIGN_HOME=`pwd`
-            export ALIGN_WORK_DIR=compose_dataVolume
-            cd build
-            make docker DESIGN=<<parameters.design>> FLAT=<<parameters.flat>>
-      - store_artifacts:
-          path: build/<<parameters.design>>
-
 executors:
   docker-executor:
     docker:
       - image: cimg/base:2021.01
 
 jobs:
-  build-align:
-    executor: docker-executor
+  build-wheel:
+    parameters:
+      python-tags:
+        description: "Python version tag(See https://www.python.org/dev/peps/pep-0425/)"
+        type: string
+        default: "cp37-cp37m cp38-cp38" # Python 3.7 *AND* 3.8
+      platform:
+        # https://github.com/pypa/manylinux
+        description: "PEP600 compatible platform name"
+        type: string
+        default: "manylinux2010_x86_64"
+
+    docker:
+      - image: <<parameters.platform>>
+    working_directory: /root/ALIGN-public
+    environment:
+      ALIGN_HOME: /root/ALIGN-public
+      ALIGN_WORK_DIR: /root/ALIGN-public/work
+      MAX_JOBS: 2 # number of vCPUs (2)
+
     steps:
       - checkout
-
-      - setup_remote_docker
-
-      - restore_cache:
-          keys:
-            # Use checksums for critical files as cache key to promote layer reuse
-            # Please increment v1 to v2 if you wish to invalidate all existing caches
-            # (Must be replicated in save_cache as well)
-            - align-v1-{{ checksum "build/Dockerfile.using-install.sh" }}-{{ checksum "install.sh" }}-{{ checksum "setup.sh" }}-{{ checksum "setup.py" }}
-            # Fall back to most recent cache from any branch
-            - align-v1
-          paths:
-            - align_image.tar
-
       - run:
-          name: Load Docker image layer cache
+          name: Build Wheel
           command: |
-            set +o pipefail
-            docker load -i align_image.tar | true
-
+              bin/build_wheel.sh <<parameters.python-tags>>
       - run:
-          name: "Build align_image"
+          name: Test wheel
           command: |
-            docker build --cache-from=align_image -t align_image -f ./build/Dockerfile.using-install.sh .
-
-      - run:
-          name: "Save align_image"
-          command: |
-            git clean -xdf
-            docker save --output align_image.tar align_image
-            du -h align_image.tar
-
-      - save_cache:
-          key: align-v1-{{ checksum "build/Dockerfile.using-install.sh" }}-{{ checksum "install.sh" }}-{{ checksum "setup.sh" }}-{{ checksum "setup.py" }}
-          paths:
-            - align_image.tar
-
+              bin/test_wheel.sh <<parameters.python-tags>>
       - persist_to_workspace:
           root: .
           paths:
-            - align_image.tar
+            - wheelhouse
 
-  build-make-docker:
+  publish-wheel:
     executor: docker-executor
+
     steps:
-      - checkout
-
-      - setup_remote_docker
-
       - attach_workspace:
           at: .
-
-      - run-load-align
-
       - run:
-          name: "Make align-service"
+          name: "Zip distribution directory"
           command: |
-            export ALIGN_HOME=`pwd`
-            export ALIGN_WORK_DIR=compose_dataVolume
-            docker volume create --name=$ALIGN_WORK_DIR
-            cd build
-            make align-service
-
-      - run-make-docker:
-          design: "test_vga"
-
-      - run-make-docker:
-          design: "five_transistor_ota"
-
-      - run-make-docker:
-          design: "adder"
-          flat: "1"
+            mkdir export
+            tar --gzip -cf export/align-wheelhouse-$(echo "$CIRCLE_SHA1" | cut -c -7).tar.gz ./wheelhouse
+      - store_artifacts:
+          path: export
 
   build-test-cktgen:
     executor: docker-executor
     steps:
       - checkout
-
       - setup_remote_docker
-
       - run:
           name: "Build & run Cktgen tests"
           command: |
             cd Cktgen
             docker build -t cktgen_image .
-
             docker run --name cktgen_container cktgen_image bash -c '\
               source general/bin/activate && \
               cd cktgen && \
@@ -134,86 +74,54 @@ jobs:
               mkdir -p /coverage-reports/cktgen && cp -r coverage.xml htmlcov /coverage-reports/cktgen\
             '
             cd -
-
             docker cp cktgen_container:coverage-reports .
             docker cp cktgen_container:test-reports .
             docker rm cktgen_container
-
       - store_test_results:
           path: test-reports
-
       - store_artifacts:
           path: coverage-reports
 
-  test-align:
-    executor: docker-executor
+  build-test-coverage:
+
+    docker:
+      - image: python:3.8
+    working_directory: /root/ALIGN-public
+    environment:
+      ALIGN_HOME: /root/ALIGN-public
+      ALIGN_WORK_DIR: /root/ALIGN-public/work
+      MAX_JOBS: 2
+
     steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: .
-
-      - run-load-align
-
+      - checkout
       - run:
-          name: "Run pytest on align"
+          name: "Install coverage dependencies (lcov)"
           command: |
-            docker run --name align_container align_image bash -c '\
-              source setup.sh && \
-              unset ALIGN_WORK_DIR && \
-              (cd PlaceRouteHierFlow && make coverage-init) && \
-              coverage run --source=align,tests -m pytest && \
-              coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && \
-              mkdir -p /test-reports/align && cp junit.xml /test-reports/align && \
-              mkdir -p /coverage-reports && cp -r htmlcov /coverage-reports/align && \
-              (cd PlaceRouteHierFlow && make coverage-report) && \
-              cp -r PlaceRouteHierFlow/htmlcov /coverage-reports/PnR \
-            '
-            docker cp align_container:coverage-reports .
-            docker cp align_container:test-reports .
-            docker rm align_container
-
+            apt-get update
+            apt-get -y install lcov
+      - run:
+          name: "Build align in developer mode"
+          command: |
+            pip install setuptools wheel pybind11 scikit-build cmake ninja
+            pip install -v --no-build-isolation -e .[test]
+            pip install -v --no-build-isolation -e . --no-deps --install-option="-DCODE_COVERAGE=ON"
+      - run:
+          name: "Test align using coverage.py"
+          command: |
+            rm -fr align setup.py
+            ./runcoverage.py tests/
+            cp junit.xml coverage-reports
       - store_test_results:
-          path: test-reports
-
-      - store_artifacts:
           path: coverage-reports
-
-  test-PlaceRouteHierFlow:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: .
-
-      - run-load-align
-
-      - run:
-          name: "Run PlaceRouteHierFlow tests"
-          no_output_timeout: "30m"
-          command: |
-            docker run --name align_container align_image bash -c '\
-              source setup.sh && \
-              cd PlaceRouteHierFlow && \
-              ./test_all.sh && \
-              mkdir -p /test-reports/PlaceRouteHierFlow && find . -name junit.xml -exec cp --parents \{\} /test-reports/PlaceRouteHierFlow \; && cp PnR.log /test-reports/PlaceRouteHierFlow && \
-              mkdir -p /coverage-reports && cp -r htmlcov /coverage-reports/PnR \
-            '
-            docker cp align_container:test-reports .
-            docker cp align_container:coverage-reports .
-            docker rm align_container
-
-      - store_test_results:
-          path: test-reports
-
       - store_artifacts:
           path: coverage-reports
 
   test-integration:
-    executor: docker-executor
 
     parameters:
+      platform:
+        description: "Choose docker image to run integration test on (eg. Ubuntu:18.04)"
+        type: string
       pdk:
         description: "Choose PDK (Can be substring as it gets fed to pytest -k argument)"
         type: string
@@ -225,96 +133,63 @@ jobs:
         type: string
         default: "1800"
 
-    steps:
-      - setup_remote_docker
+    docker:
+      - image: <<parameters.platform>>
+    working_directory: /root/ALIGN-public
+    environment:
+      ALIGN_HOME: /root/ALIGN-public
+      ALIGN_WORK_DIR: /root/ALIGN-public/work
+      MAX_JOBS: 2
 
+    steps:
+      - checkout
       - attach_workspace:
           at: .
-
-      - run-load-align
-
       - run:
-          name: "test-integration-<<parameters.pdk>>-<<parameters.design>>-<<parameters.timeout>>"
+          name: "test-integration-<<parameters.platform>>-<<parameters.pdk>>(<<parameters.design>>)"
           no_output_timeout: "<<parameters.timeout>>s"
           command: |
-            docker run --name align_container align_image bash -c '\
-              source setup.sh && \
-              filter="<<parameters.design>>" && \
-              filter="<<parameters.pdk>>${filter:+ and $filter}" && \
-              pytest -vv --runnightly --maxerrors 12 --tb=line --timeout=<<parameters.timeout>> -k "$filter" -- tests/integration && \
-              mkdir -p /test-reports && cp -r junit.xml LOG /test-reports && \
-              cd $ALIGN_WORK_DIR && find . -name *.png -exec cp --parents \{\} /test-reports \; \
-            '
-            docker cp align_container:test-reports .
-            docker rm align_container
-
+            rm -fr align setup.py
+            pip install align[test] -f ./wheelhouse
+            filter="<<parameters.design>>"
+            filter="<<parameters.pdk>>${filter:+ and $filter}"
+            pytest -vv -n "$MAX_JOBS" --runnightly --maxerrors=20 --timeout=<<parameters.timeout>> --durations=0 -k "$filter" -- tests/integration tests/pdks
+            mkdir -p test-reports/${CIRCLE_BUILD_NUM} && cp -r junit.xml LOG test-reports/${CIRCLE_BUILD_NUM}
       - store_test_results:
           path: test-reports
-
       - store_artifacts:
           path: test-reports
 
 workflows:
   version: 2.1
-
-  nightly:
-    triggers:
-      - schedule:
-          cron: "0 8 * * *"
-          filters:
-            branches:
-              only:
-                - master
-
-    jobs:
-      - build-align
-      - build-test-cktgen
-      - test-integration:
-          name: "test-integration-<<matrix.pdk>>(<<matrix.design>>)"
-          requires:
-            - build-align
-          matrix:
-            parameters:
-              pdk:
-                - "Finfet"
-                - "Bulk"
-              design:
-                - "BUFFER or ota"
-                - "San or BTSW"
-                - "not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD"
-                - "single_SAR and not tb_single_SAR"
-      - test-PlaceRouteHierFlow:
-          requires:
-            - build-align
-      - test-align:
-          requires:
-            - build-align
-      - build-make-docker:
-          requires:
-            - build-align
-
   commit:
     jobs:
-      - build-align
       - build-test-cktgen
-      - test-PlaceRouteHierFlow:
-          requires:
-            - build-align
-      - test-align:
-          requires:
-            - build-align
-      - build-make-docker:
-          requires:
-            - build-align
-      - test-integration:
-          name: "test-integration-<<matrix.pdk>>(<<matrix.design>>)"
-          requires:
-            - build-align
+      - build-test-coverage
+      - build-wheel:
+          name: "build-wheel-<<matrix.platform>>"
           matrix:
             parameters:
+              platform:
+                - "skhep/manylinuxgcc-x86_64"          # PEP 513
+                - "quay.io/pypa/manylinux2010_x86_64"  # PEP 571
+                - "quay.io/pypa/manylinux2014_x86_64"  # PEP 599
+                - "quay.io/pypa/manylinux_2_24_x86_64" # PEP 600
+      - publish-wheel:
+          requires:
+            - build-wheel
+      - test-integration:
+          name: "test-integration-<<matrix.platform>>-<<matrix.pdk>>(<<matrix.design>>)"
+          requires:
+            - build-wheel
+          matrix:
+            parameters:
+              platform:
+                - "python:3.8"
               pdk:
                 - "Finfet"
               design:
-                - "BUFFER or ota"
-                - "San or BTSW"
-                - "not SAR and not San and not BUFFER and not DLL and not ota and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD"
+                - "BUFFER or ota or powertrain"
+                - "Sanitized"
+                - "vco_dtype"
+                - "not BUFFER and not ota and not Sanitized and not vco_dtype and not powertrain and not SAR and not DLL and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD"

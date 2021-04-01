@@ -208,7 +208,7 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
             if values["cap"]=="unit_size":
                 size = design_config["unit_size_cap"]
             else:
-                size = float('%g'%(round(values["cap"]*1E15,4)))
+                size = float('%g' % (round(values["cap"] * 1E15,4)))
             num_of_unit = float(size)/design_config["unit_size_cap"]
             block_name = name + '_' + str(int(size)) + 'f'
         else:
@@ -242,7 +242,7 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
         else :
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
-        block_name = name + '_' + size.replace('.','p')
+        block_name = name + '_' + str(size).replace('.','p')
         try:
             height = ceil(sqrt(float(size) / design_config["unit_height_res"]))
             if block_name in available_block_lef:

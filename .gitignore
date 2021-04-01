@@ -12,14 +12,13 @@
 #
 
 # Exclude files built by Dockerfile or install.sh
-**/*.tar
 general/
-json/
-googletest/
-lpsolve/
-spdlog/
-superlu/
+.venv/
+wheelhouse/
+_skbuild/
 # Exclude common user / machine generated files
+**/*.tar
+**/*.tar.gz
 pycharm/
 .idea/
 .vscode/
@@ -38,6 +37,7 @@ pycharm/
 **/*.o
 **/*.a
 **/*.so
+**/*.so.*
 **/*.gcno
 **/*.gcda
 # Exclude align outputs that we don't usually want
@@ -54,9 +54,9 @@ pycharm/
 **/work/
 **/Results/
 **/LOG/
-PlaceRouteHierFlow/**/.depend
-PlaceRouteHierFlow/**/unit_tests
-PlaceRouteHierFlow/**/pnr_compiler
+**/test_PnR
+**/_cmake.py
+coverage-reports/
 # Include files based on ALIGN naming conventions
 !**/*-freeze.json
 !**/Process.json

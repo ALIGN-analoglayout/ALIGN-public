@@ -75,15 +75,18 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
           }
         }
         node.Nets.at(iter1).symCounterpart = iter2;
+        node.Nets.at(iter1).axis_dir = constraint["axis_dir"] == "H" ? PnRDB::H : PnRDB::V;
         node.Nets.at(iter1).iter2SNetLsit = node.SNets.size();
         node.Nets.at(iter2).symCounterpart = iter1;
+        std::cout<<"Reading Const symCounterpart"<<iter1<<"@"<<iter2<<" "<<iter2<<"@"<<iter1<<std::endl;
+        node.Nets.at(iter2).axis_dir = constraint["axis_dir"] == "H" ? PnRDB::H : PnRDB::V;
         node.Nets.at(iter2).iter2SNetLsit = node.SNets.size();
         node.SNets.resize(node.SNets.size() + 1);
         node.SNets.back().net1 = tmpnet;
         node.SNets.back().net2 = tmpnet2;
         node.SNets.back().iter1 = iter1;
         node.SNets.back().iter2 = iter2;
-        node.SNets.back().axis_dir = constraint["axis_dir"]=='H'?PnRDB::H:PnRDB::V;
+        node.SNets.back().axis_dir = constraint["axis_dir"] == "H" ? PnRDB::H : PnRDB::V;
       } else if (constraint["const_name"] == "CritNet") {
         for (int i = 0; i < (int)node.Nets.size(); i++) {
           if (node.Nets.at(i).name == constraint["net_name"]) {
@@ -246,7 +249,7 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
         }
       } else if (constraint["const_name"] == "SymmBlock") {
         PnRDB::SymmPairBlock temp_SymmPairBlock;
-        temp_SymmPairBlock.axis_dir = constraint["axis_dir"]=='H'?PnRDB::H:PnRDB::V;
+        temp_SymmPairBlock.axis_dir = constraint["axis_dir"]=="H"?PnRDB::H:PnRDB::V;
         pair<int, int> temp_pair;
         pair<int, PnRDB::Smark> temp_selfsym;
         for (auto pair : constraint["pairs"]) {
@@ -272,7 +275,7 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
             for (int j = 0; j < (int)node.Blocks.size(); j++) {
               if (node.Blocks.at(j).instance.back().name.compare(pair["block"]) == 0) {
                 temp_selfsym.first = j;
-                temp_selfsym.second = constraint["axis_dir"]=='H'?PnRDB::H:PnRDB::V;
+                temp_selfsym.second = constraint["axis_dir"]=="H"?PnRDB::H:PnRDB::V;
                 temp_SymmPairBlock.selfsym.push_back(temp_selfsym);
                 break;
               }
@@ -280,7 +283,7 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
           }
         }
         for (unsigned int sym_index = 0; sym_index < temp_SymmPairBlock.selfsym.size(); sym_index++) {
-          temp_SymmPairBlock.selfsym[sym_index].second = constraint["axis_dir"]=='H'?PnRDB::H:PnRDB::V;
+          temp_SymmPairBlock.selfsym[sym_index].second = constraint["axis_dir"]=="H"?PnRDB::H:PnRDB::V;
         }
         node.SPBlocks.push_back(temp_SymmPairBlock);
       } else if (constraint["const_name"] == "Ordering") {
@@ -361,7 +364,7 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
           tmp_portpos.pos = PnRDB::LC;
         else if (constraint["location"] == "LT")
           tmp_portpos.pos = PnRDB::LT;
-        string name = constraint["termianl_name"];
+        string name = constraint["terminal_name"];
         for (int k = 0; k < (int)node.Terminals.size(); ++k) {
           if (node.Terminals.at(k).name.compare(name) == 0) {
             tmp_portpos.tid = k;
@@ -499,9 +502,9 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
         node.ML_Constraints.push_back(temp_Multi_LinearConst);
       } else if (constraint["const_name"] == "Aspect_Ratio") {
         node.Aspect_Ratio_weight = constraint["weight"];
-        if(constraint.contains("ratio")){
-          node.Aspect_Ratio = constraint["ratio"];
-        }
+        node.Aspect_Ratio[0] = constraint["ratio_low"];
+        node.Aspect_Ratio[1] = constraint["ratio_high"];
+        if (node.Aspect_Ratio[0] > node.Aspect_Ratio[1]) logger->error("Aspect ratio lower bound should be smaller than upper bound.");
       } else if (constraint["const_name"] == "Multi_Connection") {
         PnRDB::Multi_connection temp_multi_Connection;
         temp_multi_Connection.net_name = constraint["net_name"];

@@ -13,14 +13,13 @@ DetailedRouter
 #
 
 # Exclude files built by Dockerfile or install.sh
-**/*.tar
 general/
-json/
-googletest/
-lpsolve/
-spdlog/
-superlu/
+.venv/
+wheelhouse/
+_skbuild/
 # Exclude common user / machine generated files
+**/*.tar
+**/*.tar.gz
 pycharm/
 .idea/
 .vscode/
@@ -39,6 +38,7 @@ pycharm/
 **/*.o
 **/*.a
 **/*.so
+**/*.so.*
 **/*.gcno
 **/*.gcda
 # Exclude align outputs that we don't usually want
@@ -55,9 +55,9 @@ pycharm/
 **/work/
 **/Results/
 **/LOG/
-PlaceRouteHierFlow/**/.depend
-PlaceRouteHierFlow/**/unit_tests
-PlaceRouteHierFlow/**/pnr_compiler
+**/test_PnR
+**/_cmake.py
+coverage-reports/
 # Include files based on ALIGN naming conventions
 !**/*-freeze.json
 !**/Process.json
@@ -80,8 +80,9 @@ tests/cell_fabric/Foo*.cir
 !tests/cell_fabric/__json_cmc_nmos_big_no_duplicates_cand
 !tests/cell_fabric/__json_diff_pair_cand
 !tests/compiler/test_results/test_cap.const.json
+!tests/compiler/test_circuits/high_speed_comparator_*/high_speed_comparator.const.json
+!tests/compiler/test_results/high_speed_comparator_*.const.json
 !tests/gdsconv/file.*
 !tests/gdsconv/only_paths.*
 !Viewer/INPUT/mydesign_dr_globalrouting.json
 !Viewer/larger_example/mydesign_dr_globalrouting.json
-
