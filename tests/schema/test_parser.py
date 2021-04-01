@@ -38,11 +38,11 @@ def setup_annotation():
 * This is one awesome diffamp
 
 * Subcircuit constraints can be directly specified here
-* @: AlignHorizontal(blocks=['R2', 'M1'], alignment='top')
-* @: AlignHorizontal(blocks=['M1', 'M2'], alignment='bottom')
+* @: AlignHorizontal(blocks=['R2', 'M1'], line='top')
+* @: AlignHorizontal(blocks=['M1', 'M2'], line='bottom')
 
 R1 vcc outplus 1e4;  Or even here! Amazing !
-R2 vcc outminus 1e4; @: AlignHorizontal(blocks=['R1', 'R2'], alignment='center')
+R2 vcc outminus 1e4; @: AlignHorizontal(blocks=['R1', 'R2'], line='center')
 M1 outplus inplus src 0 NMOS   l=0.014u nfin=2
 M2 outminus inminus src 0 NMOS l=0.014u nfin=2
 
@@ -139,7 +139,7 @@ def test_parser_annotation(setup_annotation, parser):
     assert [x.name for x in parser.library['DIFFAMP'].elements] == ['R1', 'R2', 'M1', 'M2'], parser.library['DIFFAMP'].elements
     assert len(parser.library['DIFFAMP'].nets) == 7, parser.library['DIFFAMP'].nets
     assert parser.library['DIFFAMP'].nets == ['VCC', 'OUTPLUS', 'OUTMINUS', 'INPLUS', 'SRC', '0', 'INMINUS'], parser.circuit.nets
-    assert len(parser.library['DIFFAMP'].constraints) == 2
+    assert len(parser.library['DIFFAMP'].constraints) == 3
 
 def test_subckt_decl(setup_realistic, parser):
     parser.parse(f'''

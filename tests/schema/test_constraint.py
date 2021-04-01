@@ -16,17 +16,17 @@ def db():
 
 @pytest.mark.skipif(z3 is None, reason="requires z3")
 def test_AlignHorizontal_input_sanitation(solver):
-    x = constraint.AlignHorizontal(blocks=['M1', 'M2'], alignment='top')
-    x = constraint.AlignHorizontal(blocks=['M1', 'M2', 'M3'], alignment='top')
+    x = constraint.AlignHorizontal(blocks=['M1', 'M2'], line='top')
+    x = constraint.AlignHorizontal(blocks=['M1', 'M2', 'M3'], line='top')
     with pytest.raises(Exception):
-        x = constraint.AlignHorizontal(blocks=['M1', 'M2', 'M3'], alignment='garbage')
+        x = constraint.AlignHorizontal(blocks=['M1', 'M2', 'M3'], line='garbage')
 
 @pytest.mark.skipif(z3 is None, reason="requires z3")
 def test_AlignHorizontal_nblock_checking(solver):
-    x = constraint.AlignHorizontal(blocks=[], alignment='top')
+    x = constraint.AlignHorizontal(blocks=[], line='top')
     with pytest.raises(AssertionError):
         x.check()
-    x = constraint.AlignHorizontal(blocks=['M1'], alignment='top')
+    x = constraint.AlignHorizontal(blocks=['M1'], line='top')
     with pytest.raises(AssertionError):
         x.check()
 
@@ -41,10 +41,10 @@ def test_AlignHorizontal_order_checking(solver):
     x = constraint.AlignHorizontal(blocks=['M1', 'M2', 'M3'])
     solver.append(*x.check())
     assert solver.check() == z3.sat
-    x = constraint.AlignHorizontal(blocks=['M4', 'M5'], alignment='bottom')
+    x = constraint.AlignHorizontal(blocks=['M4', 'M5'], line='bottom')
     solver.append(*x.check())
     assert solver.check() == z3.sat
-    x = constraint.AlignHorizontal(blocks=['M3', 'M2'], alignment='bottom')
+    x = constraint.AlignHorizontal(blocks=['M3', 'M2'], line='bottom')
     solver.append(*x.check())
     with pytest.raises(AssertionError):
         assert solver.check() == z3.sat
@@ -56,9 +56,9 @@ def test_ConstraintDB_inputapi(db):
 @pytest.mark.skipif(z3 is None, reason="requires z3")
 def test_ConstraintDB_checking(db):
     db.append(constraint.AlignHorizontal(blocks=['M1', 'M2', 'M3']))
-    db.append(constraint.AlignHorizontal(blocks=['M4', 'M5'], alignment='bottom'))
+    db.append(constraint.AlignHorizontal(blocks=['M4', 'M5'], line='bottom'))
     with pytest.raises(AssertionError):
-        db.append(constraint.AlignHorizontal(blocks=['M3', 'M2'], alignment='bottom'))
+        db.append(constraint.AlignHorizontal(blocks=['M3', 'M2'], line='bottom'))
 
 @pytest.mark.skipif(z3 is None, reason="requires z3")
 def test_ConstraintDB_incremental_checking(db):
@@ -72,20 +72,20 @@ def test_ConstraintDB_incremental_checking(db):
     db.checkpoint()
     # Experiment 2 : Failure
     with pytest.raises(AssertionError):
-        db.append(constraint.AlignHorizontal(blocks=['M3', 'M2'], alignment='bottom'))
+        db.append(constraint.AlignHorizontal(blocks=['M3', 'M2'], line='bottom'))
     db.revert()
     # Experiment 3 : Success
-    db.append(constraint.AlignHorizontal(blocks=['M4', 'M5'], alignment='bottom'))
+    db.append(constraint.AlignHorizontal(blocks=['M4', 'M5'], line='bottom'))
     db.checkpoint()
     # Experiment 4: Failure
     with pytest.raises(AssertionError):
-        db.append(constraint.AlignHorizontal(blocks=['M3', 'M2'], alignment='bottom'))
+        db.append(constraint.AlignHorizontal(blocks=['M3', 'M2'], line='bottom'))
     db.revert()
     # Experiment 5: Success
     db.append(constraint.AlignHorizontal(blocks=['M2', 'M5']))
     # Experiments Completed ! Final Constraints:
     # constraint.AlignHorizontal(blocks=['M1', 'M2', 'M3'])
-    # constraint.AlignHorizontal(blocks=['M4', 'M5'], alignment='bottom')
+    # constraint.AlignHorizontal(blocks=['M4', 'M5'], line='bottom')
     # constraint.AlignHorizontal(blocks=['M2', 'M5'])
 
 def test_ConstraintDB_nonincremental_revert(db):
