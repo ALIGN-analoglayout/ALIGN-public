@@ -1,0 +1,14 @@
+{
+    "constraints": [
+        {"constraint_name": "generator", "instances": ["mn3", "mn4"], "style": "cc", "name": "scm"},
+        {"constraint_name": "generator", "instances": ["mn3", "mn4"], "style": "cc", "name": "dp"},
+        {"constraint_name": "generator", "instances": ["mp5", "mp6"], "style": "cc", "name": "load"},
+        {
+            "constraint_name": "alignment", 
+            "instances": ["scm", "dp", "load"], 
+            "direction": "vertical",
+            "edge": "center", 
+            "abut": true
+        }
+    ]
+}

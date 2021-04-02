@@ -1,0 +1,11 @@
+{
+    "constraints": [
+        {
+            "constraint_name": "alignment",
+            "instances": ["mp0", "mn0"],
+            "direction": "vertical",
+            "edge": "left",
+            "abut": true
+        }
+    ]
+}

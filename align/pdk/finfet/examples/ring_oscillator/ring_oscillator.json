@@ -1,0 +1,11 @@
+{
+    "constraints": [
+        {
+            "constraint_name": "alignment", 
+            "instances": ["xi0", "xi1", "xi2", "xi3", "xi4"], 
+            "direction": "horizontal",
+            "edge": "bottom", 
+            "abut": true
+        }
+    ]
+}

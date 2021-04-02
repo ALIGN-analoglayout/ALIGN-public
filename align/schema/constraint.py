@@ -5,7 +5,7 @@ import collections
 import more_itertools as itertools
 
 from . import types
-from .types import Union, Optional, Literal, List
+from .types import Union, Optional, Literal, List, ClassVar
 
 import logging
 logger = logging.getLogger(__name__)
@@ -17,16 +17,9 @@ except:
     logger.warning("Could not import z3. ConstraintDB will not look for spec inconsistency.")
 
 
-def _abs(x):
-    return z3.If(x >= 0, x, -x)
-    
-def _min(x, y):
-    return z3.If(x<=y, x, y)
-    
-def _max(x, y):
-    return z3.If(x>=y, x, y)
-
 class ConstraintBase(types.BaseModel, abc.ABC):
+
+    rel_tol: ClassVar[int] = 10
 
     @abc.abstractmethod
     def check(self):
@@ -68,6 +61,18 @@ class ConstraintBase(types.BaseModel, abc.ABC):
                     ury = f'{block}_ury') \
                 for block in blocks]
 
+    @staticmethod
+    def abs(x):
+        return z3.If(x >= 0, x, -x)
+    
+    @staticmethod
+    def min(x, y):
+        return z3.If(x<=y, x, y)
+    
+    @staticmethod
+    def max(x, y):
+        return z3.If(x>=y, x, y)
+
 
 class AlignHorizontal(ConstraintBase):
     '''
@@ -88,7 +93,7 @@ class AlignHorizontal(ConstraintBase):
                 constraints.append(b1.ury == b2.ury)
             else:
                 # TODO: relative tolerance could be a global variable
-                constraints.append(20 * _abs(b1.lly + b1.ury - b2.lly - b2.ury) <= (b1.lly + b1.ury + b2.lly + b2.ury))
+                constraints.append(2 * self.rel_tol * self.abs(b1.lly + b1.ury - b2.lly - b2.ury) <= (b1.lly + b1.ury + b2.lly + b2.ury))
         return constraints
 
 
@@ -111,7 +116,7 @@ class AlignVertical(ConstraintBase):
                 constraints.append(b1.urx == b2.urx)
             else:
                 # TODO: relative tolerance could be a global variable
-                constraints.append(20*_abs(b1.llx + b1.urx - b2.llx - b2.urx) <= b1.llx + b1.urx, b2.llx + b2.urx)
+                constraints.append(2 * self.rel_tol * self.abs(b1.llx + b1.urx - b2.llx - b2.urx) <= b1.llx + b1.urx, b2.llx + b2.urx)
         return constraints
 
 
@@ -128,10 +133,10 @@ class AbutPair(ConstraintBase):
         bvars = self._get_bbox_vars(self.blocks)
         for b1, b2 in itertools.pairwise(bvars):
             if direction == 'horizontal':
-                constraints.append( b2.urx - b1.urx < _min(b1.urx - b1.llx, b2.urx - b2.llx) // 10 )
+                constraints.append( b2.urx - b1.urx < self.min(b1.urx - b1.llx, b2.urx - b2.llx) // self.rel_tol )
             else:
                 # TODO: relative tolerance could be a global variable
-                constraints.append( b2.ury - b1.ury < _min(b1.ury - b1.lly, b2.ury - b2.lly) // 10 )
+                constraints.append( b2.ury - b1.ury < self.min(b1.ury - b1.lly, b2.ury - b2.lly) // self.rel_tol )
         return constraints
 
 
