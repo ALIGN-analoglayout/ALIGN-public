@@ -65,8 +65,8 @@ void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
   int h_skip_factor = 5;
   int v_skip_factor = 5;
 
-  int signal_routing_metal_l = drcInfo.Design_info.signal_routing_metal_l;
-  int signal_routing_metal_u = drcInfo.Design_info.signal_routing_metal_u;
+  int signal_routing_metal_l = 0;
+  int signal_routing_metal_u = 8;
 
   if ( NEW_GLOBAL_ROUTER) {
     // Gcell Global Routing
@@ -124,10 +124,10 @@ void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
 
   if(current_node.isTop){
 
-    int power_grid_metal_l = drcInfo.Design_info.power_grid_metal_l;
-    int power_grid_metal_u = drcInfo.Design_info.power_grid_metal_u;
-    int power_routing_metal_l = drcInfo.Design_info.power_routing_metal_l;
-    int power_routing_metal_u = drcInfo.Design_info.power_routing_metal_u;
+    int power_grid_metal_l = 5;
+    int power_grid_metal_u = 6;
+    int power_routing_metal_l = 0;
+    int power_routing_metal_u = 6;
  
     bool PDN_mode = false;
     //DC Power Grid Simulation

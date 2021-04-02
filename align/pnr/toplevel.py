@@ -13,11 +13,11 @@ TransformType = PnR.TransformType
 
 def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, skip_saving_state, adr_mode):
     NEW_GLOBAL_ROUTER = True
-    h_skip_factor = 7
-    v_skip_factor = 8
+    h_skip_factor = 5;
+    v_skip_factor = 5;
 
-    signal_routing_metal_l = 0
-    signal_routing_metal_u = 4
+    signal_routing_metal_l = 0;
+    signal_routing_metal_u = 8;
 
     curr_route = PnR.Router()
 
@@ -27,8 +27,7 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
         global_router_mode = 6 if adr_mode else 4
 
         curr_route.RouteWork( global_router_mode, current_node, drcInfo,
-                              signal_routing_metal_l, signal_routing_metal_u, 
-                              binary_directory, h_skip_factor, v_skip_factor, dummy_file)
+                              signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor, dummy_file)
 
         logger.debug( "Start WriteGcellGlobalRoute")
         if current_node.isTop:
@@ -69,10 +68,10 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
 
     if current_node.isTop:
 
-        power_grid_metal_l = 4
-        power_grid_metal_u = 5
+        power_grid_metal_l = 5
+        power_grid_metal_u = 6
         power_routing_metal_l = 0
-        power_routing_metal_u = 5
+        power_routing_metal_u = 6
 
         curr_route.RouteWork(2, current_node, drcInfo, power_grid_metal_l, power_grid_metal_u, binary_directory, h_skip_factor, v_skip_factor,dummy_file)
 
@@ -208,7 +207,7 @@ def toplevel(args):
             DB.CheckinHierNode(idx, node)
 
         DB.hierTree[idx].numPlacement = actualNumLayout
-    
+
     last = TraverseOrder[-1]
     new_topnode_indices = []
     for lidx in range(DB.hierTree[last].numPlacement):

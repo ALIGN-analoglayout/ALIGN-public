@@ -41,7 +41,6 @@ bool PnRdatabase::ReadLEF(string leffile) {
   vector<PnRDB::contact> interMetals;  // metal within each MACRO
   vector<PnRDB::Via> interVias; //via within each MACRO
   fin.exceptions(ifstream::failbit | ifstream::badbit);
-  bool Metal_Flag;
   try {
     fin.open(leffile.c_str());
     int stage = 0;
@@ -186,16 +185,10 @@ bool PnRdatabase::ReadLEF(string leffile) {
         if ((found = def.find("LAYER")) != string::npos) {
           // Metal_Flag = true;
           temp = get_true_word(found, def, 0, ';', p);
-          char rect_type = temp[1].front();
-          if(rect_type=='M'){
-            Metal_Flag = true;
-            macroPins.back().pinContacts.resize(macroPins.back().pinContacts.size() + 1);
-            macroPins.back().pinContacts.back().metal = temp[1];
-          }else{
-            Metal_Flag = false;
-          }
+          macroPins.back().pinContacts.resize(macroPins.back().pinContacts.size() + 1);
+          macroPins.back().pinContacts.back().metal = temp[1];
           // cout<<"Stage "<<stage<<" @ contact layer "<<macroPins.back().pinContacts.back().metal<<endl;
-        } else if ((found = def.find("RECT")) != string::npos and Metal_Flag) {
+        } else if ((found = def.find("RECT")) != string::npos) {
           // Metal_Flag = true;
           temp = get_true_word(found, def, 0, ';', p);
           int LLx = parse_and_scale(temp[1], unitScale);
