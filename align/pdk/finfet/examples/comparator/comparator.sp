@@ -1,3 +1,8 @@
+* Let PDK define the supported models. Do not require netlist to contain model statements.
+
+.model n nmos nfin=2 nf=2 m=8 l=0
+.model p pmos nfin=2 nf=2 m=1 l=0
+
 .subckt comparator clk vcc vin vip von vop vss
 
 mn0 vcom clk vss vss n nfin=6 nf=2 l=14e-9 m=8
