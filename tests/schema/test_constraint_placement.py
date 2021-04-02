@@ -6,7 +6,7 @@ from pydantic import parse_obj_as
 
 
 def test_one():
-        const = json.loads("""\
+    const = json.loads("""\
 {
     "constraints": [
       {

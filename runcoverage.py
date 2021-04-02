@@ -66,7 +66,6 @@ def main():
         # Finish capture
         ret = subprocess.run(' '.join([
             'lcov', '--capture', '--no-external',
-            '--exclude', '*/_deps/*',
             '--directory', '.',
             '--output-file', f'{c_coverage_file}']),
             shell=True)
