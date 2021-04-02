@@ -24,7 +24,7 @@ MatPlotGen::~MatPlotGen()
         _ofs << "'" << it << "', ";
       }
       _ofs << "]\n";
-      _ofs << "ax = fig.add_subplot(121)\n";
+      _ofs << "ax = fig.add_subplot(211)\n";
       _ofs << "costHeader = [" << _costComp << "]\n";
       _ofs << "markers=['+', '*', '^', 's', 'p', 'h', '8']\n";
       _ofs << "colors=['red', 'green', 'blue', 'orange', 'cyan', 'magenta']\n";
@@ -36,8 +36,7 @@ MatPlotGen::~MatPlotGen()
       _ofs << "plt.ylabel('Cost')\n";
       _ofs << "ax.grid()\n\n";
 
-      _ofs << "ax = fig.add_subplot(122)\n";
-      _ofs << "ax.axis('scaled')\n";
+      _ofs << "ax = fig.add_subplot(212)\n";
       _ofs << "iter = 0\n";
       _ofs << "plt.xlim([" << _xmin-2 << ", " << _xmax+2 << "])\n";
       _ofs << "plt.ylim([" << _ymin-2 << ", " << _ymax+2 << "])\n";
