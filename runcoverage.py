@@ -70,6 +70,14 @@ def main():
             '--output-file', f'{c_coverage_file}']),
             shell=True)
         if not exit_status: exit_status = ret.returncode
+        # Remove coverage we aren't interested in
+        ret = subprocess.run(' '.join([
+            'lcov', '--remove',
+            f'{c_coverage_file}',
+            '--output-file', f'{c_coverage_file}',
+            '*/_deps/*']),
+            shell=True)
+        if not exit_status: exit_status = ret.returncode
         # Generate report
         ret = subprocess.run(' '.join([
             'genhtml', f'{c_coverage_file}',
