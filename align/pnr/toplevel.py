@@ -230,7 +230,7 @@ def analyze_hN( tag, hN, beforeAddingBlockPins=False):
             logger.info( f'    inst.name={inst.name} inst.master={inst.master} len(inst.dummy_power_pin)={len(inst.dummy_power_pin)}')
 
 
-def toplevel(args, *, PDN_mode=False, pdk=None):
+def toplevel(args, *, PDN_mode=False, pdk=None, render_placements=False):
 
     assert len(args) == 9
 
@@ -284,7 +284,8 @@ def toplevel(args, *, PDN_mode=False, pdk=None):
         DB.hierTree[idx].numPlacement = actualNumLayout
         #analyze_hN( 'End', current_node, False)
 
-    dump_blocks( DB.hierTree[TraverseOrder[-1]], DB, leaves_only=False)
+    if render_placements:
+        dump_blocks( DB.hierTree[TraverseOrder[-1]], DB, leaves_only=False)
 
     logger.debug(f'Starting top-down routing')
 

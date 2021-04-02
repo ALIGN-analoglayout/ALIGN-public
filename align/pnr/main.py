@@ -153,7 +153,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
 
     current_working_dir = os.getcwd()
     os.chdir(working_dir)
-    DB = toplevel(cmd, PDN_mode=PDN_mode, pdk=pdk)
+    DB = toplevel(cmd, PDN_mode=PDN_mode, pdk=pdk, render_placements=render_placements)
     #DB = PnR.toplevel(cmd)
     os.chdir(current_working_dir)
 
@@ -205,9 +205,6 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
 
                 hN = DB.CheckoutHierNode(idx)
 
-                if False and render_placements:
-                    dump_blocks(hN, DB)
-
                 _generate_json_from_hN(hN=hN,
                                        variant=variant_name,
                                        pdk_dir=pdk_dir,
@@ -229,9 +226,6 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
                 f'Processing top-down generated blocks: lidx={lidx} topidx={topidx} nm={nm} variant={variant}')
 
             hN = DB.CheckoutHierNode(idx)
-
-            if render_placements:
-                dump_blocks(hN, DB, False)
 
             variants[variant].update(
                 _generate_json_from_hN(hN=hN,
