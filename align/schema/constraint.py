@@ -28,59 +28,114 @@ class ConstraintBase(types.BaseModel, abc.ABC):
 
         :return list of z3 constraints
         '''
-        assert len(self.blocks) >= 1
+        assert len(self.instances) >= 1
         constraints = []
-        bvars = self._get_bbox_vars(self.blocks)
+        bvars = self._get_bbox_vars(self.instances)
         for b in bvars:
             constraints.append(b.llx < b.urx)
             constraints.append(b.lly < b.ury)
         return constraints
 
     @staticmethod
-    def _get_bbox_vars(*blocks):
+    def _get_bbox_vars(*instances):
         '''
         This function can be used in two ways:
-        1) Get all bboxes for a list set of blocks:
+        1) Get all bboxes for a list set of instances:
            (Useful for constraints that accept lists)
-            l_bbox = self._z3_bbox_variables(blocks)
-        2) Choose which blocks to get bbox vars for:
+            l_bbox = self._z3_bbox_variables(instances)
+        2) Choose which instances to get bbox vars for:
            (Useful for pairwise constraints)
             bbox1, bbox2 = self._z3_bbox_variables(box1, box2)
         '''
-        print([block for block in blocks])
-        if len(blocks) == 1 and isinstance(blocks[0], List):
-            blocks = blocks[0]
+        if len(instances) == 1 and isinstance(instances[0], List):
+            instances = instances[0]
         return [ConstraintDB.GenerateVar(
                     'Bbox',
-                    llx = f'{block}_llx',
-                    lly = f'{block}_lly',
-                    urx = f'{block}_urx',
-                    ury = f'{block}_ury') \
-                for block in blocks]
+                    llx = f'{instance}_llx',
+                    lly = f'{instance}_lly',
+                    urx = f'{instance}_urx',
+                    ury = f'{instance}_ury') \
+                for instance in instances]
 
-class AlignHorizontal(ConstraintBase):
+class Order(ConstraintBase):
     '''
-    All blocks in 'block' will be lined up (in order) on the X axis
+    All 'instances' will ordered with respect to each other
 
-    The optional 'alignment' parameter determines alignment along Y axis
+    Only the following orderings are supported:
+    - left->right
+    - bottom->top
+
+    We DO NOT plan to additionally support:
+    - right->left
+    - top->bottom
+    Create a custom constraint that reverses the instance
+        list if this is something you absolutely need
+
+    Any other combination does not make sense
     '''
-    blocks : List[str]
-    alignment : Optional[Literal['top', 'middle', 'bottom']] = 'middle'
+    instances : List[str]
+    direction: Optional[Literal['left->right', 'bottom->top']]
 
     def check(self):
         constraints = super().check()
-        assert len(self.blocks) >= 2
-        bvars = self._get_bbox_vars(self.blocks)
+        assert len(self.instances) >= 2
+        bvars = self._get_bbox_vars(self.instances)
         for b1, b2 in itertools.pairwise(bvars):
-            constraints.append(b1.urx <= b2.llx)
+            if self.direction == 'left->right':
+                constraints.append(b1.urx <= b2.llx)
+            elif self.direction == 'bottom->top':
+                constraints.append(b1.ury <= b2.lly)
         return constraints
 
-class AlignVertical(ConstraintBase):
-    blocks : List[str]
-    alignment : Literal['left', 'center', 'right']
+class Align(ConstraintBase):
+    '''
+    All 'instances' will be aligned along the specified edge
 
-ConstraintType=Union[ \
-        AlignHorizontal, AlignVertical]
+    Only the following alignments are supported currently:
+    - top       (horizontal)
+    - bottom    (horizontal)
+    - left      (vertical)
+    - right     (vertical)
+
+    We plan to additionally support:
+    - center    (horizontal)
+    - middle    (vertical)
+    '''
+    instances : List[str]
+    alignment : Literal['top', 'bottom', 'left', 'right']
+
+    def check(self):
+        constraints = super().check()
+        assert len(self.instances) >= 2
+        bvars = self._get_bbox_vars(self.instances)
+        for b1, b2 in itertools.pairwise(bvars):
+            if self.alignment == 'top':
+                constraints.append(b1.ury == b2.ury)
+            elif self.alignment == 'bottom':
+                constraints.append(b1.lly == b2.lly)
+            elif self.alignment == 'left':
+                constraints.append(b1.llx == b2.llx)
+            elif self.alignment == 'right':
+                constraints.append(b1.urx == b2.urx)
+        return constraints
+
+# TODO: Write a helper utility that allows custom
+#       constraints to be added to ConstraintDB
+#       Sample complex constraint below
+# NOTE: This may even happen automatically if we
+#       use List from .types as baseclass for
+#       ConstraintDB
+class AlignHorizontal(ConstraintBase):
+    blocks : List[str]
+    alignment : Optional[Literal['top', 'bottom']]
+
+    def check(self):
+        constraints = Order(instances=self.blocks, direction='left->right').check()
+        if self.alignment:
+            constraints.extend(Align(instances=self.blocks, alignment=self.alignment).check())
+        return constraints
+
+ConstraintType=Union[Order, Align, AlignHorizontal]
 
 class ConstraintDB(types.BaseModel):
 
