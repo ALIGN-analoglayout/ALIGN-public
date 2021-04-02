@@ -5,6 +5,7 @@
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
 #include <cmath>
+#include <ctime>
 #include "design.h"
 #include "Aplace.h"
 #include "SeqPair.h"
@@ -14,7 +15,7 @@
 using std::cout;
 using std::endl;
 
-//#define MAX_TIMEOUT 4300000 //4.3 seconds = 4300000 us
+#define MAX_TIMEOUT 100 
 #define T_INT 1e6
 #define T_MIN 1e-6
 #define ALPHA 0.95
@@ -42,7 +43,7 @@ class Placer {
     void ThreadFunc(Thread_data* MT);
     void PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& curr_sol, int mode, int effort);
     std::map<double, SeqPair> PlacementCoreAspectRatio(design& designData, SeqPair& curr_sp, ConstGraph& curr_sol, int mode, int nodeSize, int effort);
-    std::map<double, std::pair<SeqPair, ILP_solver>> PlacementCoreAspectRatio_ILP(design& designData, SeqPair& curr_sp, ILP_solver& curr_sol, int mode, int nodeSize, int effort, PnRDB::Drc_info& drcInfo);
+    void PlacementCoreAspectRatio_ILP(design& designData, ILP_solver& curr_sol, int mode, int nodeSize, int effort, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node);
     void ReshapeSeqPairMap(std::map<double, SeqPair>& spMap, int nodeSize);
     void ReshapeSeqPairMap(std::map<double, std::pair<SeqPair, ILP_solver>>& spMap, int nodeSize);
     void PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo);
