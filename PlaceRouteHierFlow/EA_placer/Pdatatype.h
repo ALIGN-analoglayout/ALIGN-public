@@ -64,6 +64,7 @@ struct block {
     vector<int> spiltBlock;
     bool splited;
     int splitedsource;
+    int commonCentroid=0;
 
 };
 
@@ -89,5 +90,12 @@ struct SymmPairBlock {
   vector< int> selfsym;//first, block id, second direction
   int horizon=0;
   pair<int, int> axis;//symmetrix axis = (first + second)/2
+};
+
+struct commonCentroid
+{
+  vector<int> blocks;
+  string label;
+  Ppoint_I shape;
 };
 #endif

@@ -27,6 +27,7 @@ private:
     vector<AlignBlock> AlignBlocks;
     vector<pair<vector<int>, PnRDB::Smark>> Ordering_Constraints;//as same in PnRDB
     vector<originBlock> OriginBlocks;
+    vector<commonCentroid> commonCentroids;
     int originalBlockCNT;
     int originalNetCNT;
     float gammar = 1.0f; //Q: need to ajust
@@ -122,6 +123,10 @@ public:
     void addNet_for_one_split_Blocks(int blockID,Ppoint_I num);
     void update_netlist_after_split_MS();
     Ppoint_F find_uni_cell();
+    void readCC();
+    void addNet_after_split_Blocks(int tol_diff);//tol diff is the maximum difference of abs(shape.x - shape.y)
+    Ppoint_I determineShape(int cellNum,int tol_diff);
+    void addNet_commonCentroid(commonCentroid CC,int cell_num);
     //donghao end
 
     float Cal_Overlap();
