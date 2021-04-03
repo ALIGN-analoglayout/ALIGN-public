@@ -96,6 +96,7 @@ Placement::Placement(PnRDB::hierNode &current_node) {
     Bin_D.y = unit_y_bin;
     std::cout<<"start reading node file"<<std::endl;
     area = readInputNode(current_node);
+    
     // for blocks
     unit_x = (float)1/Blocks.size();
     unit_y = (float)1/Blocks.size();
@@ -130,6 +131,9 @@ Placement::Placement(PnRDB::hierNode &current_node) {
     std::cout<<"Unify the block coordinate"<<std::endl;
     scale_factor = 40.0;
     Unify_blocks(area, scale_factor);
+    Ppoint_F uni_cell_Dpoint = find_uni_cell();
+
+    splitNode_MS(uni_cell_Dpoint.x,uni_cell_Dpoint.y);
 
     //read alignment constrains
     read_alignment(current_node);
@@ -304,9 +308,15 @@ void Placement::Pull_back_vector(vector<float> &temp_vector, bool x_or_y){// 1 i
 
 void Placement::Initilize_Placement(){
 
-  for(unsigned int i=0;i<Blocks.size();++i){
-    Blocks[i].Cpoint.x = 0.5+(float) (rand()% 100)/1000;
-    Blocks[i].Cpoint.y = 0.5+(float) (rand()% 100)/1000;
+  for(unsigned int i=0;i<originalBlockCNT;++i){
+    Blocks[i].Cpoint.x = 0.5+(float) (rand()% 300)/1000;
+    Blocks[i].Cpoint.y = 0.5+(float) (rand()% 300)/1000;
+  }
+  for(int i = originalBlockCNT;i< Blocks.size();++i)
+  {
+    int id = Blocks[i].splitedsource;
+    Blocks[i].Cpoint.x = Blocks[id].Cpoint.x+(float) (rand()% 100)/1000;
+    Blocks[i].Cpoint.y = Blocks[id].Cpoint.y+(float) (rand()% 100)/1000;
   }
 
 }
@@ -1182,6 +1192,14 @@ void Placement::BkTrk(float &ac, float &an, vector<float> &uc,vector<float> &vc,
    std::cout<<"BkTrk 5"<<std::endl;
    #endif
    ac = hat_ac;
+  //  if(isnan(ac))
+  //  {
+  //    ac = 1;
+  //  }
+  //  else if(isnan(-ac))
+  //  {
+  //    ac = -1;
+  //  }
 
 }
 
@@ -1715,10 +1733,136 @@ float Placement::readInputNode(PnRDB::hierNode &current_node)
     std::cout<<std::endl;
   }
   //return the total area
-  
+  originalBlockCNT = Blocks.size();
+  originalNetCNT = Nets.size();
   return totalArea;
 }
 
+void Placement::splitNode_MS(float uniHeight, float uniWidth)
+{
+  std::cout<<"split Node MS: debug 0"<<std::endl;
+  int original_block_num = originalBlockCNT;
+  for(int i = 0;i < original_block_num;++i)
+  {
+    //step 1: determine the x-direction Standard blocks num
+    std::cout<<"split Node MS: debug 1"<<std::endl;
+    Ppoint_F split_numF;
+    Ppoint_I split_numI;
+    split_numF.y = ceil(Blocks[i].Dpoint.y / uniHeight);
+    split_numF.x = ceil(Blocks[i].Dpoint.x / uniWidth);
+    split_numI.x = int(split_numF.x);
+    split_numI.y = int(split_numF.y);
+    //step 2: determine the y-direction standard blocks num
+    int num_of_add_blocks = split_numI.y*split_numI.x - 1;
+    if(num_of_add_blocks>0)
+    {
+      Blocks[i].splited = 1;
+      Blocks[i].Dpoint.x = uniWidth;
+      Blocks[i].Dpoint.y = uniHeight;
+    }
+    int id = Blocks.size();
+    for(int j = 0;j< num_of_add_blocks;++j)
+    {
+      std::cout<<"split Node MS: debug 2"<<std::endl;
+      block temp;
+      temp.blockname = Blocks[i].blockname + "_"+to_string(j+1);
+      temp.Dpoint.x = uniWidth;
+      temp.Dpoint.y = uniHeight;
+      temp.splited = 0;
+      temp.splitedsource = i;
+      temp.index = id;
+      Blocks.push_back(temp);
+      Blocks[i].spiltBlock.push_back(id);
+      ++id;
+    }
+    //edit the splited module in original block, and add x*y-1 splited block into 
+    //push the 
+    std::cout<<"split Node MS: debug 3"<<std::endl;
+    if(num_of_add_blocks>0)
+    {
+      addNet_for_one_split_Blocks(i, split_numI);
+    }
+    
+    std::cout<<"split Node MS: debug 4"<<std::endl;
+  }
+}
+
+void Placement::addNet_for_one_split_Blocks(int blockID,Ppoint_I num)
+{
+  //step 1: put all block id into a x by y 2d array
+  std::cout<<"add net for one splited blocks: debug 0"<<std::endl;
+  vector< vector< int > > ID_array;
+  ID_array.clear();
+  int id = 0;
+  for(int i = 0;i < num.x;++i)
+  {
+    vector< int > row;
+    row.clear();
+    for(int j = 0;j < num.y;++j)
+    {
+      row.push_back(Blocks[blockID].spiltBlock[id]);
+      ++id;
+      if(id == Blocks[blockID].spiltBlock.size())
+      {
+        break;
+      }
+    }
+    ID_array.push_back(row);
+  }
+  std::cout<<"add net for one splited blocks: debug 1"<<std::endl;
+  //put the source block into the center position
+  Ppoint_I centerPoint;
+  centerPoint.x = (num.x - 1)/2 ;
+  centerPoint.y = (num.y - 1)/2 ;
+  std::cout<<"add net for one splited blocks: debug 2"<<std::endl;
+  ID_array[num.x-1].push_back(ID_array[centerPoint.x][centerPoint.y]);
+  ID_array[centerPoint.x][centerPoint.y] = blockID;
+
+  std::cout<<"add net for one splited blocks: debug 3"<<std::endl;
+  //add net for each block to connect the adjacent block
+  int netID = Nets.size();
+  for(int i =0;i < num.x;++i)
+  {
+    for(int j = 0;j < num.y;++j)
+    {
+      std::cout<<"add net for one splited blocks: debug 4"<<std::endl;
+      net temp1,temp2;
+      if(i < num.x - 1)
+      {
+        std::cout<<"add net for one splited blocks: debug 5"<<std::endl;
+        temp1.index = netID;
+        std::cout<<"add net for one splited blocks: debug 6"<<std::endl;
+        temp1.connected_block.push_back(ID_array[i][j]);
+        std::cout<<"add net for one splited blocks: debug 7"<<std::endl;
+        temp1.connected_block.push_back(ID_array[i+1][j]);
+        std::cout<<"add net for one splited blocks: debug 8"<<std::endl;
+        Blocks[ID_array[i][j]].connected_net.push_back(netID);
+        std::cout<<"add net for one splited blocks: debug 9"<<std::endl;
+        std::cout<<ID_array[i+1][j]<<std::endl;
+        Blocks[ID_array[i+1][j]].connected_net.push_back(netID);
+        std::cout<<"add net for one splited blocks: debug 10"<<std::endl;
+        ++netID;
+        Nets.push_back(temp1);
+      }
+      if(j < num.y - 1)
+      {
+        std::cout<<"add net for one splited blocks: debug 11"<<std::endl;
+        temp2.index = netID;
+        temp1.connected_block.push_back(ID_array[i][j]);
+        temp1.connected_block.push_back(ID_array[i][j+1]);
+        Blocks[ID_array[i][j]].connected_net.push_back(netID);
+        Blocks[ID_array[i][j+1]].connected_net.push_back(netID);
+        ++netID;
+      }
+    }
+  }
+  std::cout<<"add net for one splited blocks: debug 4"<<std::endl;
+}
+
+void Placement::update_netlist_after_split_MS()
+{
+  //step 1: for all original nets, split the 
+}
 void Placement::Unify_blocks(float area, float scale_factor)
 {
   float height = sqrt(scale_factor * area);
@@ -1732,6 +1876,26 @@ void Placement::Unify_blocks(float area, float scale_factor)
     Blocks[i].Dpoint.x /= height;
     Blocks[i].Dpoint.y /= height;
   }
+}
+
+Ppoint_F Placement::find_uni_cell()
+{
+  Ppoint_F uni_cell_Dpoint;
+  float sizeMin;
+  sizeMin = Blocks[0].Dpoint.x * Blocks[0].Dpoint.x;
+  int id = 0;
+  for(int i = 1;i < originalBlockCNT;++i)
+  {
+    float temp_size;
+    temp_size = Blocks[i].Dpoint.x * Blocks[i].Dpoint.x;
+    if(temp_size < sizeMin)
+    {
+      id = i;
+      sizeMin = temp_size;
+    }
+  }
+  uni_cell_Dpoint = Blocks[id].Dpoint;
+  return uni_cell_Dpoint;
 }
 //donghao end
 

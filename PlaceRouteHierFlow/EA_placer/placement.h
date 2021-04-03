@@ -26,6 +26,9 @@ private:
     vector<Alignment> Alignment_blocks;//store the alignment constrains.
     vector<AlignBlock> AlignBlocks;
     vector<pair<vector<int>, PnRDB::Smark>> Ordering_Constraints;//as same in PnRDB
+    vector<originBlock> OriginBlocks;
+    int originalBlockCNT;
+    int originalNetCNT;
     float gammar = 1.0f; //Q: need to ajust
     float lambda= 0.01f; //Q: need to ajust
     float beta = 1.0f;
@@ -115,6 +118,10 @@ public:
     static bool comp_y(Ppoint_F c1, Ppoint_F c2);
     void writeback(PnRDB::hierNode &current_node);
     bool symCheck(float tol);
+    void splitNode_MS(float uniHeight, float uniWidth);
+    void addNet_for_one_split_Blocks(int blockID,Ppoint_I num);
+    void update_netlist_after_split_MS();
+    Ppoint_F find_uni_cell();
     //donghao end
 
     float Cal_Overlap();

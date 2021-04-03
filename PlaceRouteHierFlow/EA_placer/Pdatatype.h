@@ -61,6 +61,16 @@ struct block {
     vector<int> connected_net;
     int index; //index in Blocks[i]
     float overlap;
+    vector<int> spiltBlock;
+    bool splited;
+    int splitedsource;
+
+};
+
+struct originBlock{
+  string blockname = "";
+  vector<int> connected_net;//index in HierNode.net
+  vector<int> spilt_block;
 };
 
 struct net {
@@ -71,6 +81,7 @@ struct net {
     Ppoint_F NSumNetforce; //Netforce in X/Y direction lse: sum( exp(-xi/gammer) )
     Ppoint_F PSumNetforce_WA; //sum Netforce in X/Y direction wa: sum( xi*exp(xi/gammer) )
     Ppoint_F NSumNetforce_WA; //sum Netforce in X/Y direction wa: sum( xi*exp(-xi/gammer) )
+    float weight = 1.0;//for original net, weight  = 1.0; for splited net, the weight  = 1/ (# of split)
 };
 
 struct SymmPairBlock {
