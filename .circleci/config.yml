@@ -150,10 +150,11 @@ jobs:
           command: |
             rm -fr align setup.py
             pip install align[test] -f ./wheelhouse
+            mkdir -p test-reports/${CIRCLE_BUILD_NUM}
             filter="<<parameters.design>>"
             filter="<<parameters.pdk>>${filter:+ and $filter}"
-            pytest -vv -s --runnightly --maxerrors=20 --timeout=<<parameters.timeout>> --durations=0 -k "$filter" -- tests/integration tests/pdks
-            mkdir -p test-reports/${CIRCLE_BUILD_NUM} && cp -r junit.xml LOG test-reports/${CIRCLE_BUILD_NUM}
+            pytest -vv -s --runnightly --maxerrors=20 --timeout=<<parameters.timeout>> --durations=0 -k "$filter" -- tests/integration tests/pdks || cp -r LOG test-reports/${CIRCLE_BUILD_NUM}
+            cp -r junit.xml LOG test-reports/${CIRCLE_BUILD_NUM}
       - store_test_results:
           path: test-reports
       - store_artifacts:
