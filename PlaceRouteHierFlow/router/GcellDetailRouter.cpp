@@ -1202,7 +1202,7 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set = Findset(temp_Set,LL,UR);
   //std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set = temp_Set;
   // need to select some contacts accroding to the routing area
-  std::cout<<"via enclosure set number "<<temp_Set.size()<<" "<<Set.size()<<std::endl;
+  //std::cout<<"via enclosure set number "<<temp_Set.size()<<" "<<Set.size()<<std::endl;
   bool bidirection = false;
   if (bidirection) {
     for (std::set<RouterDB::SinkData, RouterDB::SinkDataComp>::iterator mit = Set.begin(); mit != Set.end(); ++mit) {
@@ -1302,7 +1302,7 @@ void GcellDetailRouter::AddViaSpacing(std::set<std::pair<int, RouterDB::point>, 
   std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> temp_Pset_via = findviaset(Pset_via,LL,UR);
   //std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> temp_Pset_via = Pset_via;
 
-  std::cout<<"viaspaceing set number "<<Pset_via.size()<<" "<<temp_Pset_via.size()<<std::endl;
+  //std::cout<<"viaspaceing set number "<<Pset_via.size()<<" "<<temp_Pset_via.size()<<std::endl;
 
   //1.convert via point into via spacing box and 
   for (std::set<std::pair<int, RouterDB::point>>::iterator vit = temp_Pset_via.begin(); vit != temp_Pset_via.end();++vit)
