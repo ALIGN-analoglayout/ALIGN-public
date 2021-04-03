@@ -50,7 +50,8 @@ void ILP_solver::lpsolve_logger(lprec* lp, void* userhandle, char* buf) {
   if (*buf != '\0') logger->debug("Placer lpsolve: {0}", buf);
 }
 
-TapRemoval tapRemover("/home/srini229/scratch/red_tap_removal/ALIGN-public/work/telescopic_ota/2_primitives/", "/home/srini229/scratch/red_tap_removal/ALIGN-public/work/telescopic_ota/2_primitives/wo_tap/", 50000);
+string PrimitiveDir(getenv("TR_PRIMITIVE_DIR") != nullptr ? string(getenv("TR_PRIMITIVE_DIR")) : "");
+TapRemoval tapRemover(PrimitiveDir, PrimitiveDir + "/wo_tap/", 50000);
 
 double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
@@ -414,15 +415,16 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     LL.y = std::min(LL.y, Blocks[i].y);
     UR.x = std::max(UR.x, Blocks[i].x + mydesign.Blocks[i][curr_sp.selected[i]].width);
     UR.y = std::max(UR.y, Blocks[i].y + mydesign.Blocks[i][curr_sp.selected[i]].height);
-	const auto& master = mydesign.Blocks[i][curr_sp.selected[i]].master;
-	const auto& instName = mydesign.Blocks[i][curr_sp.selected[i]].name;
-	if (master.find("PMOS") == string::npos && tapRemover.containsPrimitive(master)) {
-		plmap[instName]._primName = master;
-		plmap[instName]._ll = geom::Point(Blocks[i].x * 5, Blocks[i].y * 5);
-	}
+    const auto& master = mydesign.Blocks[i][curr_sp.selected[i]].master;
+    const auto& instName = mydesign.Blocks[i][curr_sp.selected[i]].name;
+    if (master.find("PMOS") == string::npos && tapRemover.containsPrimitive(master)) {
+      plmap[instName]._primName = master;
+      plmap[instName]._ll = geom::Point(Blocks[i].x * 5, Blocks[i].y * 5);
+    }
   }
   tapRemover.rebuildInstances(plmap);
-  //logger->info("maximum delta area from tap removal : {0}", tapRemover.deltaArea());
+  auto delArea = tapRemover.deltaArea();
+  //logger->info("maximum delta area from tap removal : {0}", delArea);
   // calculate area
   area = double(UR.x - LL.x) * double(UR.y - LL.y);
   // calculate dead area

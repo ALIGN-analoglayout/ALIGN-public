@@ -1,11 +1,11 @@
 #include <set>
 #include <sstream>
 #include <iterator>
-#include "TapRemoval.h"
-//#include <filesystem>
-#include <boost/filesystem.hpp>
+#include <filesystem>
+#include <fstream>
 #include <nlohmann/json.hpp>
 #include "spdlog/spdlog.h"
+#include "TapRemoval.h"
 
 using namespace std;
 
@@ -124,7 +124,7 @@ using json = nlohmann::json;
 void readPrimitivesFromJSON(Primitives& primitives, const string& pn, const string& fn)
 {
 	if (fn.empty()) return;
-	fstream fs(fn);
+	ifstream fs(fn);
 
 	if (fs) {
 		json j;
@@ -367,7 +367,7 @@ ConstNodes Graph::dominatingSet() const
 
 }
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 void TapRemoval::readPrimitives(PrimitiveData::Primitives& primitives, const string& pdir)
 {
@@ -384,7 +384,7 @@ void TapRemoval::readPrimitives(PrimitiveData::Primitives& primitives, const str
 			}
 		}
 	} catch (const fs::filesystem_error& ex) {
-		cout << ex.what() << '\n';
+		//cout << ex.what() << '\n';
 	}
 	if (!primFiles.empty()) PrimitiveData::readJSONPrimitives(primitives, primFiles);
 }
@@ -466,11 +466,12 @@ void TapRemoval::buildGraph(const unsigned dist)
 
 TapRemoval::TapRemoval(const string& pdir, const string& pdirWOTap, std::vector<PnRDB::hierNode> &nodeVec, const unsigned dist) : _graph(nullptr), _dist(dist)
 {
+  if (pdir.empty() || pdirWOTap.empty() || nodeVec.empty()) return;
 	auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval");
 	readPrimitives(_primitives, pdir);
 	logger->info("Read {0} primitives from {1}", _primitives.size(), pdir);
 	readPrimitives(_primitivesWOTap, pdirWOTap);
-	logger->info("Read {0} primitives from {0}", _primitivesWOTap.size(), pdirWOTap);
+	logger->info("Read {0} primitives from {1}", _primitivesWOTap.size(), pdirWOTap);
 	if (!nodeVec.empty()) createInstances(nodeVec.back());
 	logger->info("Created instances");
 	buildGraph(_dist);
@@ -479,6 +480,7 @@ TapRemoval::TapRemoval(const string& pdir, const string& pdirWOTap, std::vector<
 
 TapRemoval::TapRemoval(const string& pdir, const string& pdirWOTap, const unsigned dist) : _graph(nullptr), _dist(dist)
 {
+  if (pdir.empty() || pdirWOTap.empty()) return;
 	auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval");
 	readPrimitives(_primitives, pdir);
 	logger->info("Read {0} primitives from {1}", _primitives.size(), pdir);

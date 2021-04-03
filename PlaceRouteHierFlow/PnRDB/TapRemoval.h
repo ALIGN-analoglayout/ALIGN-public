@@ -8,7 +8,7 @@
 
 #include <boost/geometry.hpp>
 #include <boost/geometry/index/rtree.hpp>
-#include "PnRdatabase.h"
+#include "datatype.h"
 
 typedef std::vector<std::string> Strings;
 namespace bg = boost::geometry;
