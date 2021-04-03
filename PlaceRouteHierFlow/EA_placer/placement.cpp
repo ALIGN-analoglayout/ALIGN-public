@@ -1165,6 +1165,7 @@ void Placement::E_Placer()
   }
   force_order(vc_x, vl_x, vc_y, vl_y);
   force_alignment(vc_x, vl_x, vc_y, vl_y);
+  restore_MS();
   PlotPlacement(count_number);
   std::cout << "iter num when stop:=" << count_number << std::endl;
 }
@@ -1875,6 +1876,7 @@ void Placement::splitNode_MS(float uniHeight, float uniWidth)
       Blocks[i].splited = 1;
       Blocks[i].Dpoint.x = uniWidth;
       Blocks[i].Dpoint.y = uniHeight;
+      Blocks[i].split_shape = split_numF;//save the information to restore 
     }
     int id = Blocks.size();
     for (int j = 0; j < num_of_add_blocks; ++j)
@@ -1997,17 +1999,18 @@ void Placement::Unify_blocks(float area, float scale_factor)
 Ppoint_F Placement::find_uni_cell()
 {
   Ppoint_F uni_cell_Dpoint;
-  float sizeMin;
-  sizeMin = Blocks[0].Dpoint.x * Blocks[0].Dpoint.x;
+  uni_cell_Dpoint.x = Blocks[0].Dpoint.x;
+  uni_cell_Dpoint.y = Blocks[0].Dpoint.y;
   int id = 0;
   for (int i = 1; i < originalBlockCNT; ++i)
   {
-    float temp_size;
-    temp_size = Blocks[i].Dpoint.x * Blocks[i].Dpoint.x;
-    if (temp_size < sizeMin)
+    if(Blocks[i].Dpoint.x < uni_cell_Dpoint.x)
     {
-      id = i;
-      sizeMin = temp_size;
+      uni_cell_Dpoint.x = Blocks[i].Dpoint.x;
+    }
+    if(Blocks[i].Dpoint.y < uni_cell_Dpoint.y)
+    {
+      uni_cell_Dpoint.y = Blocks[i].Dpoint.y;
     }
   }
   uni_cell_Dpoint = Blocks[id].Dpoint;
@@ -2181,6 +2184,33 @@ void Placement::addNet_commonCentroid(commonCentroid CC, int cell_num)
         }
       }
     }
+  }
+}
+
+void Placement::restore_MS()
+{
+  for(int i = 0;i < originalBlockCNT;++i)
+  {
+    //restore the shape
+    
+    //restore the center
+    if(Blocks[i].commonCentroid == 0)
+    {
+      Ppoint_F split_shape = Blocks[i].split_shape;
+      Blocks[i].Dpoint.x *= split_shape.x;
+      Blocks[i].Dpoint.y *= split_shape.y;
+      for(int j = 0;j < Blocks[i].spiltBlock.size();++j)
+      {
+        Blocks[i].Cpoint.x += Blocks[Blocks[i].spiltBlock[j]].Cpoint.x;
+        Blocks[i].Cpoint.y += Blocks[Blocks[i].spiltBlock[j]].Cpoint.y;
+
+        Blocks[Blocks[i].spiltBlock[j]].Cpoint.x = 0;
+        Blocks[Blocks[i].spiltBlock[j]].Cpoint.y = 0;
+      }
+      Blocks[i].Cpoint.x /= Blocks[i].spiltBlock.size() + 1;
+      Blocks[i].Cpoint.y /= Blocks[i].spiltBlock.size() + 1;
+    }
+    
   }
 }
 //donghao end

@@ -127,6 +127,7 @@ public:
     void addNet_after_split_Blocks(int tol_diff);//tol diff is the maximum difference of abs(shape.x - shape.y)
     Ppoint_I determineShape(int cellNum,int tol_diff);
     void addNet_commonCentroid(commonCentroid CC,int cell_num);
+    void restore_MS();
     //donghao end
 
     float Cal_Overlap();
