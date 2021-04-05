@@ -459,9 +459,8 @@ struct SinkDataComp {
         } else {
           return lhs.coord[0].y<rhs.coord[0].y;
         }
-      } else {
-        return lhs.coord[0].x<rhs.coord[0].x;
       }
+      return lhs.coord[0].x<rhs.coord[0].x;
    }
 };
 

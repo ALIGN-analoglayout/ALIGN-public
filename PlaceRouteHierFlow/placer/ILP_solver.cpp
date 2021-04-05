@@ -591,12 +591,12 @@ double ILP_solver::CalculateCostFromSim(design& mydesign, SeqPair& curr_sp)
 			if (distType) {
 				auto center1 = it1->second.center();
 				auto center2 = it2->second.center();
-				auto dx = center1.x - center2.x;
-				auto dy = center1.y - center2.y;
+				double dx = center1.x - center2.x;
+				double dy = center1.y - center2.y;
 				dist = sqrt(dx*dx + dy*dy);
 			} else {
-				int xprl = std::min(it1->second.UR.x, it2->second.UR.x) - std::max(it1->second.LL.x, it2->second.LL.x);
-				int yprl = std::min(it1->second.UR.y, it2->second.UR.y) - std::max(it1->second.LL.y, it2->second.LL.y);
+				double xprl = std::min(it1->second.UR.x, it2->second.UR.x) - std::max(it1->second.LL.x, it2->second.LL.x);
+				double yprl = std::min(it1->second.UR.y, it2->second.UR.y) - std::max(it1->second.LL.y, it2->second.LL.y);
 				dist = (xprl < 0 ? abs(xprl) : 0) + (yprl < 0 ? abs(yprl) : 0);
 			}
 		} else {
@@ -608,17 +608,17 @@ double ILP_solver::CalculateCostFromSim(design& mydesign, SeqPair& curr_sp)
 				if (distType) {
 					auto center1 = it1->second.center();
 					auto center2 = it2->second.center();
-					auto dx = center1.x - center2.x;
-					auto dy = center1.y - center2.y;
+					double dx = center1.x - center2.x;
+					double dy = center1.y - center2.y;
 					dist = sqrt(dx*dx + dy*dy);
 				} else {
-					int xprl = std::min(it1->second.UR.x, it2->second.UR.x) - std::max(it1->second.LL.x, it2->second.LL.x);
-					int yprl = std::min(it1->second.UR.y, it2->second.UR.y) - std::max(it1->second.LL.y, it2->second.LL.y);
+					double xprl = std::min(it1->second.UR.x, it2->second.UR.x) - std::max(it1->second.LL.x, it2->second.LL.x);
+					double yprl = std::min(it1->second.UR.y, it2->second.UR.y) - std::max(it1->second.LL.y, it2->second.LL.y);
 					dist = (xprl < 0 ? abs(xprl) : 0) + (yprl < 0 ? abs(yprl) : 0);
 				}
 			}
 		}
-		auto dcost = dist * it.second.first / block_HPWL / static_cast<double>(mydesign.Blocks.size());
+		double dcost = dist * it.second.first / block_HPWL / static_cast<double>(mydesign.Blocks.size());
 		if (getenv("DEBUG_PLOT") != nullptr) {
 			mydesign._cfCostComponents += std::to_string(dist) + " " + std::to_string(dcost) + " " ;
 		}

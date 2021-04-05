@@ -2,6 +2,38 @@
 #include "spdlog/spdlog.h"
 #include <cassert>
 
+void design::readCFConstraints()
+{
+  if (_cfdata._pinPairWeights.empty()) {
+    char* sideload = getenv("COST_FROM_SIM");
+    string slf;
+    if (sideload) {
+      auto logger = spdlog::default_logger()->clone("placer.design.readCFConstraints");
+      slf = sideload;
+      ifstream ifs(slf);
+      if (ifs) {
+        string tmps1, tmps2;
+        double wt(0.);
+		vector<string> strings;
+		string line;
+		while (!ifs.eof()) {
+			getline(ifs, line);
+			strings = split_by_spaces(line);
+			if (strings.size() >= 4) {
+				_cfdata._nets.insert(strings[0]);
+				_cfdata._pinPairWeights[make_pair(strings[1], strings[2])] = make_pair(stof(strings[3]), strings.size() > 4 ? stof(strings[4]) : 0.);
+			}
+        }
+      }
+      ifs.close();
+
+      for (auto& it : _cfdata._pinPairWeights) {
+        logger->info("CF constraint {0} {1} {2} {3}", it.first.first, it.first.second, it.second.first, it.second.second);
+      }
+    }
+  }
+}
+
 design::design() {
   bias_Hgraph=92;
   bias_Vgraph=92;
@@ -12,6 +44,7 @@ design::design() {
   noAsymBlock4Move=0;
   noSymGroup4PartMove=0;
   noSymGroup4FullMove=0;
+  readCFConstraints();
 }
 
 design::design(design& other, int mode) {
@@ -22,6 +55,9 @@ design::design(design& other, int mode) {
   // small blocks will be filtered out
   // Limitation: currently we ignore terminals when placer works on big macros only
   //cout<<"Test: design mode "<<mode<<endl;
+  name = other.name;
+  _cfdata = other._cfdata;
+
   if(mode==1) {
     this->mixFlag=false;
     other.mixFlag=true;
@@ -299,6 +335,7 @@ design::design(design& other, int mode) {
     logger->debug("Test: add paramenter 9");
     other.noSymGroup4PartMove=other.GetSizeSymGroup4PartMove(0);
     logger->debug("Test: add paramenter 10");
+	readCFConstraints();
 /*
     for(vector<placerDB::net>::iterator it=other.Nets.begin(); it!=other.Nets.end(); ++it) {
       int sink=0;
@@ -335,6 +372,7 @@ design::design(PnRDB::hierNode& node) {
 
   auto logger = spdlog::default_logger()->clone("placer.design.design");
 
+  name = node.name;
   bias_Vgraph=node.bias_Vgraph; // from node
   bias_Hgraph=node.bias_Hgraph; // from node
   Aspect_Ratio_weight = node.Aspect_Ratio_weight;
@@ -550,6 +588,7 @@ design::design(PnRDB::hierNode& node) {
   noAsymBlock4Move=GetSizeAsymBlock4Move(1);
   noSymGroup4FullMove=GetSizeSymGroup4FullMove(1);
   noSymGroup4PartMove=noSymGroup4FullMove;
+  readCFConstraints();
   //std::cout<<"Leaving design\n";
 }
 
@@ -1229,6 +1268,8 @@ void design::readRandConstFile(string random_constrain_file) {
 //}
 
 design::design(const design& other):Port_Location(other.Port_Location) {
+  this->name=other.name;
+  this->_cfdata=other._cfdata;
   this->Blocks=other.Blocks;
   this->Terminals=other.Terminals;
   this->Nets=other.Nets;
@@ -1251,6 +1292,8 @@ design::design(const design& other):Port_Location(other.Port_Location) {
 }
 
 design& design::operator= (const design& other) {
+  this->name=other.name;
+  this->_cfdata=other._cfdata;
   this->Blocks=other.Blocks;
   this->Terminals=other.Terminals;
   this->Nets=other.Nets;

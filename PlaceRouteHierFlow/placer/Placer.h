@@ -5,19 +5,24 @@
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
 #include <cmath>
+#include <ctime>
+#include <chrono>
 #include "design.h"
 #include "Aplace.h"
 #include "SeqPair.h"
 #include "ConstGraph.h"
 #include "ILP_solver.h"
 #include "../PnRDB/datatype.h"
+
+#include "IntPlot.h"
+
 using std::cout;
 using std::endl;
 
 //#define MAX_TIMEOUT 4300000 //4.3 seconds = 4300000 us
-#define T_INT 1e6
-#define T_MIN 1e-6
-#define ALPHA 0.95
+#define T_INT 1e4
+#define T_MIN 1e-10
+#define ALPHA 0.9995
 #define COUNT_LIMIT 200
 
 //#define MTMODE 1 // flag to turn on multi-threading
@@ -35,6 +40,7 @@ class Placer {
     };
     //design designData;
     //PnRDB::hierNode node;
+    MatPlotGen *_mpgen;
     bool GenerateValidSolution(design& mydesign, SeqPair& curr_sp, ConstGraph& curr_sol, int mode);
     void PlacementRegular(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo); // do placement with simulated annealing 
     void PlacementMixSA(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo); // do placement with mix-sized simulated annealing
@@ -55,6 +61,8 @@ class Placer {
     Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo);
     //Placer(PnRDB::hierNode& input_node); // Constructor
     //PnRDB::hierNode CheckoutHierNode(); // Output hier Node after placement
+	ofstream _debugCostCompStream, _debugCFCompStream;
+	~Placer();
 };
 
 #endif

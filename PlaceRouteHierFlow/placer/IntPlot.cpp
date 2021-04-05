@@ -64,7 +64,9 @@ MatPlotGen::~MatPlotGen()
       _ofs << "iterSlider.on_changed(update)\n";
       _ofs << "plt.grid()\n";
       _ofs << "plt.show()" << std::endl;
-    }
+    } else {
+      _ofs << "]\n";
+	}
     _ofs.close();
   }
 }
