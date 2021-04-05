@@ -424,7 +424,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   }
   tapRemover.rebuildInstances(plmap);
   auto delArea = tapRemover.deltaArea();
-  //logger->info("maximum delta area from tap removal : {0}", delArea);
+  logger->info("maximum delta area from tap removal : {0}", delArea);
   // calculate area
   area = double(UR.x - LL.x) * double(UR.y - LL.y);
   // calculate dead area
