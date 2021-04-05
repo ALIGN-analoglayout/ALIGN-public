@@ -128,27 +128,27 @@
         },
         {
             "const_name":"PortLocation",
-            "terminal_name":"vinn",
+            "termianl_name":"vinn",
             "location":"BL"
         },
         {
             "const_name":"PortLocation",
-            "terminal_name":"vinp",
+            "termianl_name":"vinp",
             "location":"BR"
         },
         {
             "const_name":"PortLocation",
-            "terminal_name":"agnd",
+            "termianl_name":"agnd",
             "location":"BC"
         },
         {
             "const_name":"PortLocation",
-            "terminal_name":"voutn",
+            "termianl_name":"voutn",
             "location":"TL"
         },
         {
             "const_name":"PortLocation",
-            "terminal_name":"voutp",
+            "termianl_name":"voutp",
             "location":"TR"
         }
     ]
