@@ -90,7 +90,7 @@ void GlobalGraph::Iterated_Steiner(GlobalGrid &grid, std::vector<int> &Pontentia
 
   int Flag = 1;
 
-  while(iterate_number>0 and Flag){
+  while(iterate_number>0 && Flag){
 
         int index = -1;        
  
@@ -384,7 +384,7 @@ void GlobalGraph::CreateAdjacentList(GlobalGrid& grid){
         for(unsigned int q=0;q<temp_vector.size();q++){
 
 
-            if(temp_vector[q].capacity>0 and temp_vector[q].next != -1){
+            if(temp_vector[q].capacity>0 && temp_vector[q].next != -1){
 
                tempEdge.dest=temp_vector[q].next;
                tempEdge.weight = (double) abs(grid.tiles_total[p].y-grid.tiles_total[temp_vector[q].next].y)+abs(grid.tiles_total[p].x-grid.tiles_total[temp_vector[q].next].x);
@@ -550,7 +550,7 @@ std::vector<int>  GlobalGraph::dijkstra(GlobalGrid& grid){
   distMap.insert ( std::pair<double,int>(dist[source], source) );
   int count=0;
   int v;
-  while(status[dest]!=2 and count<(int)graph.size()-1)
+  while(status[dest]!=2 && count<(int)graph.size()-1)
        {
           std::vector<int> ulist = minDistancefromMultiMap (distMap);
           //std::cout<<"size of Q: "<<ulist.size()<<std::endl;
@@ -572,7 +572,7 @@ std::vector<int>  GlobalGraph::dijkstra(GlobalGrid& grid){
                            status[v]=1;
                            distMap.insert( std::pair<double,int>(dist[v], v) );
                          }
-                      else if (status[v]==1 and dist[v]>dist[u]+graph[u].list[j].weight)
+                      else if (status[v]==1 && dist[v]>dist[u]+graph[u].list[j].weight)
                          {
                             parent[v] = u;
                             double olddist=dist[v];

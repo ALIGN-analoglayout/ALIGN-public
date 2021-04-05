@@ -1355,7 +1355,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign) {
           // Bmark {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT};
           switch (mydesign.Port_Location.at(tar).pos) {
             case placerDB::TL:
-              if (p.x >= 0 and p.x <= x1) {
+              if (p.x >= 0 && p.x <= x1) {
                 if (Ymax - p.y < distTerm) {
                   distTerm = Ymax - p.y;
                   shot = k;
@@ -1375,7 +1375,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign) {
               }
               break;
             case placerDB::TC:
-              if (p.x >= x1 and p.x <= x2) {
+              if (p.x >= x1 && p.x <= x2) {
                 if (Ymax - p.y < distTerm) {
                   distTerm = Ymax - p.y;
                   shot = k;
@@ -1395,7 +1395,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign) {
               }
               break;
             case placerDB::TR:
-              if (p.x >= x2 and p.x <= x3) {
+              if (p.x >= x2 && p.x <= x3) {
                 if (Ymax - p.y < distTerm) {
                   distTerm = Ymax - p.y;
                   shot = k;
@@ -1415,7 +1415,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign) {
               }
               break;
             case placerDB::RT:
-              if (p.y >= y2 and p.y <= y3) {
+              if (p.y >= y2 && p.y <= y3) {
                 if (Xmax - p.x < distTerm) {
                   distTerm = Xmax - p.x;
                   shot = k;
@@ -1435,7 +1435,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign) {
               }
               break;
             case placerDB::RC:
-              if (p.y >= y1 and p.y <= y2) {
+              if (p.y >= y1 && p.y <= y2) {
                 if (Xmax - p.x < distTerm) {
                   distTerm = Xmax - p.x;
                   shot = k;
@@ -1455,7 +1455,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign) {
               }
               break;
             case placerDB::RB:
-              if (p.y >= 0 and p.y <= y1) {
+              if (p.y >= 0 && p.y <= y1) {
                 if (Xmax - p.x < distTerm) {
                   distTerm = Xmax - p.x;
                   shot = k;
@@ -1475,7 +1475,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign) {
               }
               break;
             case placerDB::BL:
-              if (p.x >= 0 and p.x <= x1) {
+              if (p.x >= 0 && p.x <= x1) {
                 if (p.y < distTerm) {
                   distTerm = p.y;
                   shot = k;
@@ -1495,7 +1495,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign) {
               }
               break;
             case placerDB::BC:
-              if (p.x >= x1 and p.x <= x2) {
+              if (p.x >= x1 && p.x <= x2) {
                 if (p.y < distTerm) {
                   distTerm = p.y;
                   shot = k;
@@ -1515,7 +1515,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign) {
               }
               break;
             case placerDB::BR:
-              if (p.x >= x2 and p.x <= x3) {
+              if (p.x >= x2 && p.x <= x3) {
                 if (p.y < distTerm) {
                   distTerm = p.y;
                   shot = k;
@@ -1535,7 +1535,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign) {
               }
               break;
             case placerDB::LT:
-              if (p.y >= y2 and p.y <= y3) {
+              if (p.y >= y2 && p.y <= y3) {
                 if (p.x < distTerm) {
                   distTerm = p.x;
                   shot = k;
@@ -1555,7 +1555,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign) {
               }
               break;
             case placerDB::LC:
-              if (p.y >= y1 and p.y <= y2) {
+              if (p.y >= y1 && p.y <= y2) {
                 if (p.x < distTerm) {
                   distTerm = p.x;
                   shot = k;
@@ -1575,7 +1575,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign) {
               }
               break;
             case placerDB::LB:
-              if (p.y >= 0 and p.y <= y1) {
+              if (p.y >= 0 && p.y <= y1) {
                 if (p.x < distTerm) {
                   distTerm = p.x;
                   shot = k;

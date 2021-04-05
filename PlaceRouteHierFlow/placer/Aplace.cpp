@@ -414,13 +414,13 @@ double Aplace::CalculateSymmetryViolation(design& caseNL, boost_vector& x_k) {
     // for each vertical symmetry group
     for(std::vector<pair<int,placerDB::Smark> >::iterator it2=caseNL.SBlocks.at(*it).selfsym.begin(); it2!=caseNL.SBlocks.at(*it).selfsym.end(); ++it2) {
       // for each selfsymmetric block
-      if(it2->first>=0 and it2->first<caseNL.GetSizeofBlocks()) {
+      if(it2->first>=0 && it2->first<caseNL.GetSizeofBlocks()) {
         sum += std::pow( x_k(2*it2->first)-x_k(it-this->VSG.begin()+2*this->B_len), 2 ); // (x_i-x_axis)^2
       }
     }
     for(std::vector<pair<int,int> >::iterator it2=caseNL.SBlocks.at(*it).sympair.begin(); it2!=caseNL.SBlocks.at(*it).sympair.end(); ++it2) {
       // for each symmetry pair
-      if(it2->first>=0 and it2->first<caseNL.GetSizeofBlocks() and it2->second>=0 and it2->second<caseNL.GetSizeofBlocks()) {
+      if(it2->first>=0 && it2->first<caseNL.GetSizeofBlocks() && it2->second>=0 && it2->second<caseNL.GetSizeofBlocks()) {
         sum+= std::pow(x_k(2*it2->first)+x_k(2*it2->second)-2*x_k(it-this->VSG.begin()+2*this->B_len), 2); // (x_i+x_j-2x_axis)^2
         sum+= std::pow(x_k(2*it2->first+1)-x_k(2*it2->second+1), 2); // (y_i-y_j)^2
       }
@@ -430,13 +430,13 @@ double Aplace::CalculateSymmetryViolation(design& caseNL, boost_vector& x_k) {
     // for each vertical symmetry group
     for(std::vector<pair<int,placerDB::Smark> >::iterator it2=caseNL.SBlocks.at(*it).selfsym.begin(); it2!=caseNL.SBlocks.at(*it).selfsym.end(); ++it2) {
       // for each selfsymmetric block
-      if(it2->first>=0 and it2->first<caseNL.GetSizeofBlocks()) {
+      if(it2->first>=0 && it2->first<caseNL.GetSizeofBlocks()) {
         sum+=std::pow( x_k(2*it2->first+1)-x_k(it-this->HSG.begin()+2*this->B_len+this->VSG_len) , 2 ); // (y_i-y_axis)^2
       }
     }
     for(std::vector<pair<int,int> >::iterator it2=caseNL.SBlocks.at(*it).sympair.begin(); it2!=caseNL.SBlocks.at(*it).sympair.end(); ++it2) {
       // for each symmetry pair
-      if(it2->first>=0 and it2->first<caseNL.GetSizeofBlocks() and it2->second>=0 and it2->second<caseNL.GetSizeofBlocks()) {
+      if(it2->first>=0 && it2->first<caseNL.GetSizeofBlocks() && it2->second>=0 && it2->second<caseNL.GetSizeofBlocks()) {
         sum+= std::pow(x_k(2*it2->first+1)+x_k(2*it2->second+1)-2*x_k(it-this->HSG.begin()+2*this->B_len+this->VSG_len), 2 ); // (y_i+y_j-2y_axis)^2
         sum+= std::pow(x_k(2*it2->first)-x_k(2*it2->second),2); // (x_i-x_j)^2
       }
@@ -451,7 +451,7 @@ void Aplace::AddSymmetryGradient(boost_vector& G_k, boost_vector& x_k, design& c
     // for each vertical symmetry group
     for(std::vector<pair<int,placerDB::Smark> >::iterator it2=caseNL.SBlocks.at(*it).selfsym.begin(); it2!=caseNL.SBlocks.at(*it).selfsym.end(); ++it2) {
       // for each selfsymmetric block
-      if(it2->first>=0 and it2->first<caseNL.GetSizeofBlocks()) {
+      if(it2->first>=0 && it2->first<caseNL.GetSizeofBlocks()) {
         G_k(2*it2->first) += scale*2*( x_k(2*it2->first)-x_k(it-this->VSG.begin()+2*this->B_len) ); // 2(x_i-x_axis)
         // wbxu- temporarily fix the symmetry axis
         //G_k(it-this->VSG.begin()+2*this->B_len) += scale*2*( x_k(it-this->VSG.begin()+2*this->B_len)-x_k(2*it2->first) ); // 2(x_axis-x_i)
@@ -459,7 +459,7 @@ void Aplace::AddSymmetryGradient(boost_vector& G_k, boost_vector& x_k, design& c
     }
     for(std::vector<pair<int,int> >::iterator it2=caseNL.SBlocks.at(*it).sympair.begin(); it2!=caseNL.SBlocks.at(*it).sympair.end(); ++it2) {
       // for each symmetry pair
-      if(it2->first>=0 and it2->first<caseNL.GetSizeofBlocks() and it2->second>=0 and it2->second<caseNL.GetSizeofBlocks()) {
+      if(it2->first>=0 && it2->first<caseNL.GetSizeofBlocks() && it2->second>=0 && it2->second<caseNL.GetSizeofBlocks()) {
         G_k(2*it2->first) += scale*2*(x_k(2*it2->first)+x_k(2*it2->second)-2*x_k(it-this->VSG.begin()+2*this->B_len)); // 2(x_i+x_j-2x_axis)
         G_k(2*it2->second) += scale*2*(x_k(2*it2->first)+x_k(2*it2->second)-2*x_k(it-this->VSG.begin()+2*this->B_len)); // 2(x_j+x_i-2x_axis)
         G_k(2*it2->first+1) += scale*2*(x_k(2*it2->first+1)-x_k(2*it2->second+1)); // 2(y_i-y_j)
@@ -473,7 +473,7 @@ void Aplace::AddSymmetryGradient(boost_vector& G_k, boost_vector& x_k, design& c
     // for each vertical symmetry group
     for(std::vector<pair<int,placerDB::Smark> >::iterator it2=caseNL.SBlocks.at(*it).selfsym.begin(); it2!=caseNL.SBlocks.at(*it).selfsym.end(); ++it2) {
       // for each selfsymmetric block
-      if(it2->first>=0 and it2->first<caseNL.GetSizeofBlocks()) {
+      if(it2->first>=0 && it2->first<caseNL.GetSizeofBlocks()) {
         G_k(2*it2->first+1) += scale*2*( x_k(2*it2->first+1)-x_k(it-this->HSG.begin()+2*this->B_len+this->VSG_len) ); // 2(y_i-y_axis)
         // wbxu- temporarily fix the symmetry axis
         //G_k(it-this->HSG.begin()+2*this->B_len+this->VSG_len) += scale*2*( x_k(it-this->HSG.begin()+2*this->B_len+this->VSG_len)-x_k(2*it2->first+1) ); // 2(y_axis-y_i)
@@ -481,7 +481,7 @@ void Aplace::AddSymmetryGradient(boost_vector& G_k, boost_vector& x_k, design& c
     }
     for(std::vector<pair<int,int> >::iterator it2=caseNL.SBlocks.at(*it).sympair.begin(); it2!=caseNL.SBlocks.at(*it).sympair.end(); ++it2) {
       // for each symmetry pair
-      if(it2->first>=0 and it2->first<caseNL.GetSizeofBlocks() and it2->second>=0 and it2->second<caseNL.GetSizeofBlocks()) {
+      if(it2->first>=0 && it2->first<caseNL.GetSizeofBlocks() && it2->second>=0 && it2->second<caseNL.GetSizeofBlocks()) {
         G_k(2*it2->first+1) += scale*2*(x_k(2*it2->first+1)+x_k(2*it2->second+1)-2*x_k(it-this->HSG.begin()+2*this->B_len+this->VSG_len)); // 2(y_i+y_j-2y_axis)
         G_k(2*it2->second+1) += scale*2*(x_k(2*it2->first+1)+x_k(2*it2->second+1)-2*x_k(it-this->HSG.begin()+2*this->B_len+this->VSG_len)); // 2(y_j+y_i-2y_axis)
         G_k(2*it2->first) += scale*2*(x_k(2*it2->first)-x_k(2*it2->second)); // 2(x_i-x_j)

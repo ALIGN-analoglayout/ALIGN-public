@@ -195,7 +195,7 @@ bool PnRdatabase::ReadLEF(string leffile) {
             Metal_Flag = false;
           }
           // cout<<"Stage "<<stage<<" @ contact layer "<<macroPins.back().pinContacts.back().metal<<endl;
-        } else if ((found = def.find("RECT")) != string::npos and Metal_Flag) {
+        } else if ((found = def.find("RECT")) != string::npos && Metal_Flag) {
           // Metal_Flag = true;
           temp = get_true_word(found, def, 0, ';', p);
           int LLx = parse_and_scale(temp[1], unitScale);

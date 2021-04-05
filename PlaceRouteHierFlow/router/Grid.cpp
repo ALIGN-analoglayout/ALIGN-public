@@ -132,7 +132,7 @@ void Grid::Check_Full_Connection_Grid(){
 
           }
 
-          if( east_error == 0 and west_error==0 and south_error ==0 and north_error ==0 and east_empty ==0 and west_empty ==0 and south_empty ==0 and north_empty ==0 ){
+          if( east_error == 0 && west_error==0 && south_error ==0 && north_error ==0 && east_empty ==0 && west_empty ==0 && south_empty ==0 && north_empty ==0 ){
 
             }else{
                if(east_error==1){logger->error("east_error ");}  
@@ -182,14 +182,14 @@ void Grid::CreateGridData(){
 
       for(unsigned int j=0;j<vertices_total[i].north.size();j++){
 
-           if(vertices_total[i].active and vertices_total[vertices_total[i].north[j]].active){
+           if(vertices_total[i].active && vertices_total[vertices_total[i].north[j]].active){
               write_out_matlab_file(i, vertices_total[i].north[j]);
              }
           }
 
       for(unsigned int j=0;j<vertices_total[i].south.size();j++){
 
-           if(vertices_total[i].active and vertices_total[vertices_total[i].south[j]].active){
+           if(vertices_total[i].active && vertices_total[vertices_total[i].south[j]].active){
               write_out_matlab_file(i, vertices_total[i].south[j]);
              }   
          
@@ -197,7 +197,7 @@ void Grid::CreateGridData(){
 
       for(unsigned int j=0;j<vertices_total[i].west.size();j++){
 
-           if(vertices_total[i].active and vertices_total[vertices_total[i].west[j]].active){
+           if(vertices_total[i].active && vertices_total[vertices_total[i].west[j]].active){
               write_out_matlab_file(i, vertices_total[i].west[j]);
              }   
          
@@ -205,7 +205,7 @@ void Grid::CreateGridData(){
 
       for(unsigned int j=0;j<vertices_total[i].east.size();j++){
 
-           if(vertices_total[i].active and vertices_total[vertices_total[i].east[j]].active){
+           if(vertices_total[i].active && vertices_total[vertices_total[i].east[j]].active){
               write_out_matlab_file(i, vertices_total[i].east[j]);
              }   
          
@@ -213,7 +213,7 @@ void Grid::CreateGridData(){
 
       for(int j=0;j<1;j++){
 
-           if(vertices_total[i].up!=-1 and vertices_total[i].active and vertices_total[vertices_total[i].up].active){
+           if(vertices_total[i].up!=-1 && vertices_total[i].active && vertices_total[vertices_total[i].up].active){
               write_out_matlab_file(i, vertices_total[i].up);
              }   
          
@@ -221,7 +221,7 @@ void Grid::CreateGridData(){
 
       for(int j=0;j<1;j++){
 
-           if(vertices_total[i].down != -1 and vertices_total[i].active and vertices_total[vertices_total[i].down].active){
+           if(vertices_total[i].down != -1 && vertices_total[i].active && vertices_total[vertices_total[i].down].active){
               write_out_matlab_file(i, vertices_total[i].down);
              }   
          
@@ -262,18 +262,18 @@ void Grid::InactivePointlist(std::vector< std::set<RouterDB::point, RouterDB::po
       int history_index = it->index-1;
       if(drc_info.Metal_info[it->metal].direct==1){//h
          int via_space = -drc_info.Via_model[it->metal].LowerRect[0].x;
-         if(next_index >= 0 and next_index<(int)vertices_total.size() and vertices_total[next_index].metal == it->metal and vertices_total[next_index].y == it->y and abs(vertices_total[next_index].x-it->x)<= drc_info.Metal_info[it->metal].dist_ee + via_integ*via_space){
+         if(next_index >= 0 && next_index<(int)vertices_total.size() && vertices_total[next_index].metal == it->metal && vertices_total[next_index].y == it->y && abs(vertices_total[next_index].x-it->x)<= drc_info.Metal_info[it->metal].dist_ee + via_integ*via_space){
             vertices_total[next_index].active=false;
            }
-         if(history_index >= 0 and history_index<(int)vertices_total.size() and vertices_total[history_index].metal == it->metal and vertices_total[history_index].y == it->y and abs(vertices_total[history_index].x-it->x)<= drc_info.Metal_info[it->metal].dist_ee + via_integ*via_space){
+         if(history_index >= 0 && history_index<(int)vertices_total.size() && vertices_total[history_index].metal == it->metal && vertices_total[history_index].y == it->y && abs(vertices_total[history_index].x-it->x)<= drc_info.Metal_info[it->metal].dist_ee + via_integ*via_space){
             vertices_total[history_index].active=false;
            }
         }else{//v
          int via_space = -drc_info.Via_model[it->metal].LowerRect[0].y;
-         if(next_index >=0 and next_index<(int)vertices_total.size() and vertices_total[next_index].metal == it->metal and vertices_total[next_index].x == it->x and abs(vertices_total[next_index].y-it->y)<= drc_info.Metal_info[it->metal].dist_ee + via_integ*via_space){
+         if(next_index >=0 && next_index<(int)vertices_total.size() && vertices_total[next_index].metal == it->metal && vertices_total[next_index].x == it->x && abs(vertices_total[next_index].y-it->y)<= drc_info.Metal_info[it->metal].dist_ee + via_integ*via_space){
             vertices_total[next_index].active=false;
            }
-         if(history_index >=0 and history_index<(int)vertices_total.size() and vertices_total[history_index].metal == it->metal and vertices_total[history_index].x == it->x and abs(vertices_total[history_index].y-it->y)<= drc_info.Metal_info[it->metal].dist_ee + via_integ*via_space){
+         if(history_index >=0 && history_index<(int)vertices_total.size() && vertices_total[history_index].metal == it->metal && vertices_total[history_index].x == it->x && abs(vertices_total[history_index].y-it->y)<= drc_info.Metal_info[it->metal].dist_ee + via_integ*via_space){
             vertices_total[history_index].active=false;
            }
         }
@@ -383,7 +383,7 @@ Grid::Grid(std::vector< std::vector<RouterDB::SinkData> >& SinkList, std::vector
       }
       GetGlobalRouteRange(mdx, pLLx, pLLy, pURx, pURy, offset, gLL, gUR, this->lowest_metal, this->highest_metal);
       for(int i=mdx-layer_offset;i<=mdx+layer_offset;i++) {
-        if(i>=this->lowest_metal and i<=this->highest_metal) {CollectPointSet(Vset, Hset, i, gLL.x, gLL.y, gUR.x, gUR.y, this->lowest_metal, this->highest_metal);}
+        if(i>=this->lowest_metal && i<=this->highest_metal) {CollectPointSet(Vset, Hset, i, gLL.x, gLL.y, gUR.x, gUR.y, this->lowest_metal, this->highest_metal);}
       }
     }
   }
@@ -394,7 +394,7 @@ Grid::Grid(std::vector< std::vector<RouterDB::SinkData> >& SinkList, std::vector
     pURx=it->MetalRect.placedUR.x; pURy=it->MetalRect.placedUR.y;
     GetGlobalRouteRange(mdx, pLLx, pLLy, pURx, pURy, offset, gLL, gUR, this->lowest_metal, this->highest_metal);
     for(int i=mdx-layer_offset;i<=mdx+layer_offset;i++) {
-      if(i>=this->lowest_metal and i<=this->highest_metal) {CollectPointSet(Vset, Hset, i, gLL.x, gLL.y, gUR.x, gUR.y, this->lowest_metal, this->highest_metal);}
+      if(i>=this->lowest_metal && i<=this->highest_metal) {CollectPointSet(Vset, Hset, i, gLL.x, gLL.y, gUR.x, gUR.y, this->lowest_metal, this->highest_metal);}
     }
   }
   // 5. create fake grids in rectangular shape
@@ -431,7 +431,7 @@ void Grid::ReduceGrid(std::vector<RouterDB::vertex>& old_vertices, std::vector<R
   // a. copy vertices from old list to new one, build mapping
   for(unsigned int i=0; i<old_vertices.size(); i++) {
     if(old_vertices.at(i).active) {
-      if(old_vertices.at(i).x>=LLx and old_vertices.at(i).x<=URx and old_vertices.at(i).y>=LLy and old_vertices.at(i).y<=URy) {
+      if(old_vertices.at(i).x>=LLx && old_vertices.at(i).x<=URx && old_vertices.at(i).y>=LLy && old_vertices.at(i).y<=URy) {
         new_vertices.push_back(old_vertices.at(i));
         old2new[i]=new_vertices.size()-1;
         new2old[new_vertices.size()-1]=i;
@@ -649,7 +649,7 @@ void Grid::CreateGridCoreFunc(int Lmetal, int Hmetal, bool VFlag, RouterDB::poin
         fake_vertices_total[mit->second].down=i;
       }
       //for(int j=fake_Start_index_metal_vertices.at(k+1);j<=fake_End_index_metal_vertices.at(k+1);j++) {
-      //  if(fake_vertices_total[j].x==fake_vertices_total[i].x and fake_vertices_total[j].y==fake_vertices_total[i].y ) {
+      //  if(fake_vertices_total[j].x==fake_vertices_total[i].x && fake_vertices_total[j].y==fake_vertices_total[i].y ) {
       //    fake_vertices_total[j].down=i;
       //    fake_vertices_total[i].up=j;
       //    break;
@@ -683,7 +683,7 @@ void Grid::GetGlobalRouteRange(int mdx, int pLLx, int pLLy, int pURx, int pURy, 
       gLLy-=nexlayer_unit*offset;
       gURy= nexlayer_unit * (int)ceil(double(pURy)/nexlayer_unit); 
       gURy+=nexlayer_unit*offset;
-    } else if(mdx>0 and mdx<this->layerNo-1) { // if middle layer
+    } else if(mdx>0 && mdx<this->layerNo-1) { // if middle layer
       //nexlayer_unit=gcd(this->y_unit.at(mdx-1), this->y_unit.at(mdx+1));
       int LLy_1, LLy_2;
       LLy_1= this->y_unit.at(mdx-1) * (int)floor(double(pLLy)/this->y_unit.at(mdx-1));
@@ -731,7 +731,7 @@ void Grid::GetGlobalRouteRange(int mdx, int pLLx, int pLLy, int pURx, int pURy, 
       gLLx-=nexlayer_unit*offset;
       gURx= nexlayer_unit * (int)ceil(double(pURx)/nexlayer_unit); 
       gURx+=nexlayer_unit*offset;
-    } else if(mdx>0 and mdx<this->layerNo-1) { // if middle layer
+    } else if(mdx>0 && mdx<this->layerNo-1) { // if middle layer
       //nexlayer_unit=gcd(this->x_unit.at(mdx-1), this->x_unit.at(mdx+1));
       int LL_1, LL_2;
       LL_1= this->x_unit.at(mdx-1) * (int)floor(double(pLLx)/this->x_unit.at(mdx-1));
@@ -782,7 +782,7 @@ void Grid::CollectPointSet(std::vector< std::set<RouterDB::point, RouterDB::poin
       nexlayer_unit=this->y_unit.at(mdx-1);
       gLLy= nexlayer_unit * (int)ceil(double(pLLy)/nexlayer_unit); 
       gURy= nexlayer_unit * (int)floor(double(pURy)/nexlayer_unit); 
-    } else if(mdx>0 and mdx<this->layerNo-1) { // if middle layer
+    } else if(mdx>0 && mdx<this->layerNo-1) { // if middle layer
       nexlayer_unit=gcd(this->y_unit.at(mdx-1), this->y_unit.at(mdx+1));
       int LLy_1, LLy_2;
       LLy_1= this->y_unit.at(mdx-1) * (int)ceil(double(pLLy)/this->y_unit.at(mdx-1));
@@ -825,7 +825,7 @@ void Grid::CollectPointSet(std::vector< std::set<RouterDB::point, RouterDB::poin
       nexlayer_unit=this->x_unit.at(mdx-1);
       gLLx= nexlayer_unit * (int)ceil(double(pLLx)/nexlayer_unit); 
       gURx= nexlayer_unit * (int)floor(double(pURx)/nexlayer_unit); 
-    } else if(mdx>0 and mdx<this->layerNo-1) { // if middle layer
+    } else if(mdx>0 && mdx<this->layerNo-1) { // if middle layer
       nexlayer_unit=gcd(this->x_unit.at(mdx-1), this->x_unit.at(mdx+1));
       int LL_1, LL_2;
       LL_1= this->x_unit.at(mdx-1) * (int)ceil(double(pLLx)/this->x_unit.at(mdx-1));
@@ -1078,7 +1078,7 @@ Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, in
         this->vertices_total[mit->second].down=i;
       }
       //for(int j=this->Start_index_metal_vertices.at(k+1);j<=this->End_index_metal_vertices.at(k+1);j++) {
-      //  if(this->vertices_total[j].x==this->vertices_total[i].x and this->vertices_total[j].y==this->vertices_total[i].y ) {
+      //  if(this->vertices_total[j].x==this->vertices_total[i].x && this->vertices_total[j].y==this->vertices_total[i].y ) {
       //    this->vertices_total[j].down=i;
       //    this->vertices_total[i].up=j;
       //    break;
@@ -1144,7 +1144,7 @@ void Grid::InactiveGlobalInternalMetal(std::vector<RouterDB::Block>& Blocks) {
     }
     //for(int i=this->Start_index_metal_vertices.at(k);i<=this->End_index_metal_vertices.at(k);i++) {
     //  for(int j=0;j<plist.at(k).size();j++) {
-    //    if(plist.at(k).at(j).x==this->vertices_total[i].x and plist.at(k).at(j).y==this->vertices_total[i].y ) {
+    //    if(plist.at(k).at(j).x==this->vertices_total[i].x && plist.at(k).at(j).y==this->vertices_total[i].y ) {
     //      this->vertices_total[i].active=false;
     //      break;
     //    }
@@ -1158,7 +1158,7 @@ void Grid::InactivePlist(std::vector<std::vector<RouterDB::DetailPoint> > &plist
   for(int k=this->lowest_metal; k<=this->highest_metal; k++) {
     for(int i=this->Start_index_metal_vertices.at(k);i<=this->End_index_metal_vertices.at(k);i++) {
       for(unsigned int j=0;j<plist.at(k).size();j++) {
-        if(plist.at(k).at(j).x==this->vertices_total[i].x and plist.at(k).at(j).y==this->vertices_total[i].y ) {
+        if(plist.at(k).at(j).x==this->vertices_total[i].x && plist.at(k).at(j).y==this->vertices_total[i].y ) {
           this->vertices_total[i].active=false;
           break;
         }
@@ -1219,7 +1219,7 @@ void Grid::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::point> >& pl
         newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
         logger->debug( "converter check point 1");
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
-          if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+          if(x>=LLx && x<=URx && y>=LLy && y<=URy){
             logger->debug( "Plist problem");
             tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
           }
@@ -1241,7 +1241,7 @@ void Grid::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::point> >& pl
         newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
 	logger->debug( "converter check point 2");
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
-          if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+          if(x>=LLx && x<=URx && y>=LLy && y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
           //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
@@ -1268,7 +1268,7 @@ void Grid::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::point> >& pl
         newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
 	logger->debug( "converter check point 3");
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
-           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+           if(x>=LLx && x<=URx && y>=LLy && y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
            //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
@@ -1288,7 +1288,7 @@ void Grid::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::point> >& pl
         newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
 	logger->debug( "converter check point 4");
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
-          if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+          if(x>=LLx && x<=URx && y>=LLy && y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
           //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
@@ -1425,7 +1425,7 @@ void Grid::PrepareGraphVertices(int LLx, int LLy, int URx, int URy) {
     for(std::set<int>::iterator sit=vSet.begin(); sit!=vSet.end(); ++sit) {
       int i=*sit;
       if(vertices_total.at(i).active) {
-        if(vertices_total.at(i).x>=LLx and vertices_total.at(i).x<=URx and vertices_total.at(i).y>=LLy and vertices_total.at(i).y<=URy) {
+        if(vertices_total.at(i).x>=LLx && vertices_total.at(i).x<=URx && vertices_total.at(i).y>=LLy && vertices_total.at(i).y<=URy) {
           vertices_graph.push_back(vertices_total.at(i));
           total2graph[i]=vertices_graph.size()-1;
           graph2total[vertices_graph.size()-1]=i;
@@ -1456,7 +1456,7 @@ void Grid::PrepareGraphVertices(int LLx, int LLy, int URx, int URy) {
   }
   //for(int i=0; i<(int)vertices_total.size(); i++) {
   //  if(vertices_total.at(i).active) {
-  //    if(vertices_total.at(i).x>=LLx and vertices_total.at(i).x<=URx and vertices_total.at(i).y>=LLy and vertices_total.at(i).y<=URy) {
+  //    if(vertices_total.at(i).x>=LLx && vertices_total.at(i).x<=URx && vertices_total.at(i).y>=LLy && vertices_total.at(i).y<=URy) {
   //      vertices_graph.push_back(vertices_total.at(i));
   //      total2graph[i]=vertices_graph.size()-1;
   //      graph2total[vertices_graph.size()-1]=i;
@@ -1615,7 +1615,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
         }
       }
   }
-  if(Vsource.size()>0 and Source.empty()) {logger->error("Router-Error: fail to find source vertices on grids"); return Terminal_contact;}
+  if(Vsource.size()>0 && Source.empty()) {logger->error("Router-Error: fail to find source vertices on grids"); return Terminal_contact;}
 //for dest
 
   for(unsigned int i=0;i<Vdest.size();i++){
@@ -1727,7 +1727,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
        }
      }
   }
-  if(Vdest.size()>0 and Dest.empty()) {logger->error("Router-Error: fail to find dest vertices on grids"); return Terminal_contact;}
+  if(Vdest.size()>0 && Dest.empty()) {logger->error("Router-Error: fail to find dest vertices on grids"); return Terminal_contact;}
 
 logger->debug("Router-Info: finished detecting");
 
@@ -1844,7 +1844,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest_detail(std::vector<RouterDB::Sin
         }
       }
   }
-  if(Vsource.size()>0 and Source.empty()) {logger->error("Router-Error: fail to find source vertices on grids"); return Terminal_contact;}
+  if(Vsource.size()>0 && Source.empty()) {logger->error("Router-Error: fail to find source vertices on grids"); return Terminal_contact;}
 //for dest
 
   for(unsigned int i=0;i<Vdest.size();i++){
@@ -1947,7 +1947,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest_detail(std::vector<RouterDB::Sin
        }
      }
   }
-  if(Vdest.size()>0 and Dest.empty()) {logger->error("Router-Error: fail to find dest vertices on grids");return Terminal_contact;}
+  if(Vdest.size()>0 && Dest.empty()) {logger->error("Router-Error: fail to find dest vertices on grids");return Terminal_contact;}
 
 return Terminal_contact;
 
@@ -2413,7 +2413,7 @@ bool Grid::CheckExtendable(int i, int metal){
        }else if(vertices_total[next_node].active==0) {
           search_flag = false;
           feasible = false;
-       }else if( (vertices_total[next_node].x != vertices_total[i].x and vertices_total[next_node].y != vertices_total[i].y) or vertices_total[next_node].metal != vertices_total[i].metal ){
+       }else if( (vertices_total[next_node].x != vertices_total[i].x && vertices_total[next_node].y != vertices_total[i].y) or vertices_total[next_node].metal != vertices_total[i].metal ){
           search_flag = false;
           feasible = false;
        }else {
@@ -2436,7 +2436,7 @@ bool Grid::CheckExtendable(int i, int metal){
        }else if(vertices_total[next_node].active==0) {
           search_flag = false;
           feasible = false;
-       }else if( (vertices_total[next_node].x != vertices_total[i].x and vertices_total[next_node].y != vertices_total[i].y) or vertices_total[next_node].metal != vertices_total[i].metal){
+       }else if( (vertices_total[next_node].x != vertices_total[i].x && vertices_total[next_node].y != vertices_total[i].y) or vertices_total[next_node].metal != vertices_total[i].metal){
           search_flag = false;
           feasible = false;
        }else {
@@ -2494,7 +2494,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_terminal(RouterDB::SinkData& sourcel
            grid_node.y=grid_y1+j*grid_unit_y1*grid_scale_func;
            int flag_found = 0;
            for(unsigned int k=0;k<grid_node_coord.size();k++){
-               if(grid_node_coord[k].x==grid_node.x and grid_node_coord[k].y==grid_node.y){
+               if(grid_node_coord[k].x==grid_node.x && grid_node_coord[k].y==grid_node.y){
                  flag_found =1;
                  }
               }
@@ -2608,7 +2608,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_stiner(RouterDB::SinkData& sourcelis
            grid_node.y=grid_y1+j*grid_unit_y1*grid_scale_func;
            int flag_found = 0;
            for(unsigned int k=0;k<grid_node_coord.size();k++){
-               if(grid_node_coord[k].x==grid_node.x and grid_node_coord[k].y==grid_node.y){
+               if(grid_node_coord[k].x==grid_node.x && grid_node_coord[k].y==grid_node.y){
                  flag_found =1;
                  }
               }
@@ -3107,7 +3107,7 @@ int Grid::Find_EndIndex(int start_index, int direction){
 
        if(direction==0){//vertical
          
-          if(vertices_total[i].x==vertices_total[start_index].x and vertices_total[i].metal == vertices_total[start_index].metal){
+          if(vertices_total[i].x==vertices_total[start_index].x && vertices_total[i].metal == vertices_total[start_index].metal){
 
               end_index=i;
 
@@ -3119,7 +3119,7 @@ int Grid::Find_EndIndex(int start_index, int direction){
 
          }else{
 
-          if(vertices_total[i].y==vertices_total[start_index].y and vertices_total[i].metal == vertices_total[start_index].metal){
+          if(vertices_total[i].y==vertices_total[start_index].y && vertices_total[i].metal == vertices_total[start_index].metal){
 
               end_index =i;
            

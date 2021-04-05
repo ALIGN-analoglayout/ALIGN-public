@@ -9,16 +9,16 @@ std::string MNASimulation::Index_Postion(std::set<MDB::metal_point, MDB::Compare
 
   std::string position_string;
   for(auto it=point_set.begin();it!=point_set.end();++it){
-     if(it->index==index and it->metal_layer>=0 and it->power!=0){
+     if(it->index==index && it->metal_layer>=0 && it->power!=0){
            position_string = std::to_string(it->metal_layer)+"_"+std::to_string(it->x)+"_"+std::to_string(it->y)+"_v";
            break;
-     }else if(it->index==index and it->metal_layer>=0 and it->power==0){
+     }else if(it->index==index && it->metal_layer>=0 && it->power==0){
            position_string = std::to_string(it->metal_layer)+"_"+std::to_string(it->x)+"_"+std::to_string(it->y)+"_g";
            break;
-     }else if(it->index==index and it->metal_layer<0 and it->power!=0){
+     }else if(it->index==index && it->metal_layer<0 && it->power!=0){
            position_string = "n_"+std::to_string(abs(it->metal_layer))+"_"+std::to_string(it->x)+"_"+std::to_string(it->y)+"_v";
            break;
-     }else if(it->index==index and it->metal_layer<0 and it->power==0){
+     }else if(it->index==index && it->metal_layer<0 && it->power==0){
            position_string = "n_"+std::to_string(abs(it->metal_layer))+"_"+std::to_string(it->x)+"_"+std::to_string(it->y)+"_g";
            break;
      }
@@ -37,13 +37,13 @@ std::string MNASimulation::Index_Postion_New(int index, bool start_end){
     temp_point = Power_Grid_devices[index].end_point;
   }
   
-  if(temp_point.metal_layer>=0 and temp_point.power==0)
+  if(temp_point.metal_layer>=0 && temp_point.power==0)
       position_string = std::to_string(temp_point.metal_layer)+"_"+std::to_string(temp_point.x)+"_"+std::to_string(temp_point.y)+"_g";
-  if(temp_point.metal_layer>=0 and temp_point.power!=0)
+  if(temp_point.metal_layer>=0 && temp_point.power!=0)
       position_string = std::to_string(temp_point.metal_layer)+"_"+std::to_string(temp_point.x)+"_"+std::to_string(temp_point.y)+"_v";
-  if(temp_point.metal_layer<0 and temp_point.power==0)
+  if(temp_point.metal_layer<0 && temp_point.power==0)
       position_string = "n_"+std::to_string(temp_point.metal_layer)+"_"+std::to_string(temp_point.x)+"_"+std::to_string(temp_point.y)+"_g";
-  if(temp_point.metal_layer<0 and temp_point.power!=0)
+  if(temp_point.metal_layer<0 && temp_point.power!=0)
       position_string = "n_"+std::to_string(temp_point.metal_layer)+"_"+std::to_string(temp_point.x)+"_"+std::to_string(temp_point.y)+"_v";
 
   return position_string;
@@ -782,7 +782,7 @@ void MNASimulation::FindPowerPoints(std::set<MDB::metal_point, MDB::Compare_meta
   //std::cout<<"size of point set"<< point_set.size() <<std::endl;
   for(auto it = point_set.begin(); it != point_set.end(); ++it){
   //std::cout<<"metal layer = " << metal_layer <<" it layer = "<< it->metal_layer <<" power = "<<power << " it power = "<< it->power << std::endl;
-       if(it->metal_layer == metal_layer and it->power == power){
+       if(it->metal_layer == metal_layer && it->power == power){
          power_point_set.insert(*it);
          x_set.insert(it->x);
          y_set.insert(it->y);
@@ -837,7 +837,7 @@ void MNASimulation::FindPowerPoints_New(std::set<MDB::metal_point, MDB::Compare_
   //std::cout<<"size of point set"<< point_set.size() <<std::endl;
   for(auto it = point_set.begin(); it != point_set.end(); ++it){
   //std::cout<<"metal layer = " << metal_layer <<" it layer = "<< it->metal_layer <<" power = "<<power << " it power = "<< it->power << std::endl;
-       if(it->metal_layer == metal_layer and it->power == power){
+       if(it->metal_layer == metal_layer && it->power == power){
          power_point_set.insert(*it);
          x_set.insert(it->x);
          y_set.insert(it->y);

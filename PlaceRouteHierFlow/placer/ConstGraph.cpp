@@ -16,7 +16,7 @@ bool ConstGraph::RemoveEdgeforVertex(int current, int next, vector<Vertex> &grap
   bool mark=false;
   int iN=0;
   for(std::vector<Edge>::iterator it=graph.at(current).Edges.begin(); it!=graph.at(current).Edges.end(); ++it,++iN) {
-    if(it->isBackward==isBackward and it->next==next) {mark=true; break;}
+    if(it->isBackward==isBackward && it->next==next) {mark=true; break;}
   }
   if(mark) { graph.at(current).Edges.erase(graph.at(current).Edges.begin()+iN); }
   return mark;
@@ -39,7 +39,7 @@ void ConstGraph::RemoveOverlapEdge(design& caseNL, Aplace& caseAP) {
       jY=caseAP.GetBlockCenter(j).y+caseNL.GetBlockHeight(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j) )/2;
       xOL=std::max(std::min(std::min(iX-jx, jX-ix), std::min(iX-ix, jX-jx)), 0);
       yOL=std::max(std::min(std::min(iY-jy, jY-iy), std::min(iY-iy, jY-jy)), 0);
-      if(xOL>0 and yOL>0) {
+      if(xOL>0 && yOL>0) {
         logger->debug(" overlap with {0}",j);
         if(xOL>yOL) {
           RemoveEdgeforVertex(i, j, this->HGraph, false);
@@ -534,7 +534,7 @@ void ConstGraph::DeleteSetNodeConstraint(design& caseNL, Aplace& caseAP, std::se
             } else {
               xj=0;
             }
-            if(xj>=xi and xj<=xi+caseNL.GetBlockWidth(i, caseAP.GetBlockOrient(i), caseAP.GetSelectedInstance(i))) {mark=true;break;}
+            if(xj>=xi && xj<=xi+caseNL.GetBlockWidth(i, caseAP.GetBlockOrient(i), caseAP.GetSelectedInstance(i))) {mark=true;break;}
           }
         } else { mark=true; break;}
       } else {
@@ -551,7 +551,7 @@ void ConstGraph::DeleteSetNodeConstraint(design& caseNL, Aplace& caseAP, std::se
             } else {
               yj=caseAP.GetSBlockCorr(j-caseNL.GetSizeofBlocks()-2);
             }
-            if(yj>=yi and yj<=yi+caseNL.GetBlockHeight(i, caseAP.GetBlockOrient(i), caseAP.GetSelectedInstance(i))) {mark=true;break;}
+            if(yj>=yi && yj<=yi+caseNL.GetBlockHeight(i, caseAP.GetBlockOrient(i), caseAP.GetSelectedInstance(i))) {mark=true;break;}
           }
         } else {mark=true; break;}
       }
@@ -567,7 +567,7 @@ void ConstGraph::DeleteSetNodeConstraint(design& caseNL, Aplace& caseAP, std::se
           }
           if(j<caseNL.GetSizeofBlocks()) {
             xj=caseAP.GetBlockCenter(j).x-caseNL.GetBlockWidth(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j))/2;
-            if(xi>=xj and xi<=xj+caseNL.GetBlockWidth(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j))) {mark=true;break;}
+            if(xi>=xj && xi<=xj+caseNL.GetBlockWidth(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j))) {mark=true;break;}
           } else {
             if(caseAP.GetSBlockDir(j-caseNL.GetSizeofBlocks()-2)==placerDB::V) {
               xj=caseAP.GetSBlockCorr(j-caseNL.GetSizeofBlocks()-2);
@@ -588,7 +588,7 @@ void ConstGraph::DeleteSetNodeConstraint(design& caseNL, Aplace& caseAP, std::se
           }
           if(j<caseNL.GetSizeofBlocks()) {
             yj=caseAP.GetBlockCenter(j).y-caseNL.GetBlockHeight(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j))/2;
-            if(yi>=yj and yi<=yj+caseNL.GetBlockHeight(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j))) {mark=true;break;}
+            if(yi>=yj && yi<=yj+caseNL.GetBlockHeight(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j))) {mark=true;break;}
           } else {
             if(caseAP.GetSBlockDir(j-caseNL.GetSizeofBlocks()-2)==placerDB::V) {
               yj=0;
@@ -650,7 +650,7 @@ void ConstGraph::DeleteSetNodeConstraint(design& caseNL, Aplace& caseAP, std::se
             } else {
               xj=0;
             }
-            if(xj>=xi and xj<=xi+caseNL.GetBlockWidth(i, caseAP.GetBlockOrient(i), caseAP.GetSelectedInstance(i))) {mark=true;break;}
+            if(xj>=xi && xj<=xi+caseNL.GetBlockWidth(i, caseAP.GetBlockOrient(i), caseAP.GetSelectedInstance(i))) {mark=true;break;}
           }
         } else { mark=true; break;}
       } else {
@@ -667,7 +667,7 @@ void ConstGraph::DeleteSetNodeConstraint(design& caseNL, Aplace& caseAP, std::se
             } else {
               yj=caseAP.GetSBlockCorr(j-caseNL.GetSizeofBlocks()-2);
             }
-            if(yj>=yi and yj<=yi+caseNL.GetBlockHeight(i, caseAP.GetBlockOrient(i), caseAP.GetSelectedInstance(i))) {mark=true;break;}
+            if(yj>=yi && yj<=yi+caseNL.GetBlockHeight(i, caseAP.GetBlockOrient(i), caseAP.GetSelectedInstance(i))) {mark=true;break;}
           }
         } else {mark=true; break;}
       }
@@ -683,7 +683,7 @@ void ConstGraph::DeleteSetNodeConstraint(design& caseNL, Aplace& caseAP, std::se
           }
           if(j<caseNL.GetSizeofBlocks()) {
             xj=caseAP.GetBlockCenter(j).x-caseNL.GetBlockWidth(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j))/2;
-            if(xi>=xj and xi<=xj+caseNL.GetBlockWidth(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j))) {mark=true;break;}
+            if(xi>=xj && xi<=xj+caseNL.GetBlockWidth(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j))) {mark=true;break;}
           } else {
             if(caseAP.GetSBlockDir(j-caseNL.GetSizeofBlocks()-2)==placerDB::V) {
               xj=caseAP.GetSBlockCorr(j-caseNL.GetSizeofBlocks()-2);
@@ -704,7 +704,7 @@ void ConstGraph::DeleteSetNodeConstraint(design& caseNL, Aplace& caseAP, std::se
           }
           if(j<caseNL.GetSizeofBlocks()) {
             yj=caseAP.GetBlockCenter(j).y-caseNL.GetBlockHeight(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j))/2;
-            if(yi>=yj and yi<=yj+caseNL.GetBlockHeight(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j))) {mark=true;break;}
+            if(yi>=yj && yi<=yj+caseNL.GetBlockHeight(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j))) {mark=true;break;}
           } else {
             if(caseAP.GetSBlockDir(j-caseNL.GetSizeofBlocks()-2)==placerDB::V) {
               yj=0;
@@ -783,7 +783,7 @@ void ConstGraph::InsetSetNodeConstraint(design& caseNL, Aplace& caseAP, std::set
             } else {
               xj=0;
             }
-            if(xj>=xi and xj<=xi+caseNL.GetBlockWidth(i, caseAP.GetBlockOrient(i), caseAP.GetSelectedInstance(i))) {mark=true;break;}
+            if(xj>=xi && xj<=xi+caseNL.GetBlockWidth(i, caseAP.GetBlockOrient(i), caseAP.GetSelectedInstance(i))) {mark=true;break;}
           }
         } else { mark=true; break;}
       } else {
@@ -800,7 +800,7 @@ void ConstGraph::InsetSetNodeConstraint(design& caseNL, Aplace& caseAP, std::set
             } else {
               yj=caseAP.GetSBlockCorr(j-caseNL.GetSizeofBlocks()-2);
             }
-            if(yj>=yi and yj<=yi+caseNL.GetBlockHeight(i, caseAP.GetBlockOrient(i), caseAP.GetSelectedInstance(i))) {mark=true;break;}
+            if(yj>=yi && yj<=yi+caseNL.GetBlockHeight(i, caseAP.GetBlockOrient(i), caseAP.GetSelectedInstance(i))) {mark=true;break;}
           }
         } else {mark=true; break;}
       }
@@ -818,7 +818,7 @@ void ConstGraph::InsetSetNodeConstraint(design& caseNL, Aplace& caseAP, std::set
           }
           if(j<caseNL.GetSizeofBlocks()) {
             xj=caseAP.GetBlockCenter(j).x-caseNL.GetBlockWidth(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j))/2;
-            if(xi>=xj and xi<=xj+caseNL.GetBlockWidth(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j))) {mark=true;break;}
+            if(xi>=xj && xi<=xj+caseNL.GetBlockWidth(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j))) {mark=true;break;}
           } else {
             if(caseAP.GetSBlockDir(j-caseNL.GetSizeofBlocks()-2)==placerDB::V) {
               xj=caseAP.GetSBlockCorr(j-caseNL.GetSizeofBlocks()-2);
@@ -840,7 +840,7 @@ void ConstGraph::InsetSetNodeConstraint(design& caseNL, Aplace& caseAP, std::set
           }
           if(j<caseNL.GetSizeofBlocks()) {
             yj=caseAP.GetBlockCenter(j).y-caseNL.GetBlockHeight(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j))/2;
-            if(yi>=yj and yi<=yj+caseNL.GetBlockHeight(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j))) {mark=true;break;}
+            if(yi>=yj && yi<=yj+caseNL.GetBlockHeight(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j))) {mark=true;break;}
           } else {
             if(caseAP.GetSBlockDir(j-caseNL.GetSizeofBlocks()-2)==placerDB::V) {
               yj=0;
@@ -881,7 +881,7 @@ void ConstGraph::InsetSetNodeConstraint(design& caseNL, Aplace& caseAP, std::set
             } else {
               xj=0;
             }
-            if(xj>=xi and xj<=xi+caseNL.GetBlockWidth(i, caseAP.GetBlockOrient(i), caseAP.GetSelectedInstance(i))) {mark=true;break;}
+            if(xj>=xi && xj<=xi+caseNL.GetBlockWidth(i, caseAP.GetBlockOrient(i), caseAP.GetSelectedInstance(i))) {mark=true;break;}
           }
         } else { mark=true; break;}
       } else {
@@ -898,7 +898,7 @@ void ConstGraph::InsetSetNodeConstraint(design& caseNL, Aplace& caseAP, std::set
             } else {
               yj=caseAP.GetSBlockCorr(j-caseNL.GetSizeofBlocks()-2);
             }
-            if(yj>=yi and yj<=yi+caseNL.GetBlockHeight(i, caseAP.GetBlockOrient(i), caseAP.GetSelectedInstance(i))) {mark=true;break;}
+            if(yj>=yi && yj<=yi+caseNL.GetBlockHeight(i, caseAP.GetBlockOrient(i), caseAP.GetSelectedInstance(i))) {mark=true;break;}
           }
         } else {mark=true; break;}
       }
@@ -914,7 +914,7 @@ void ConstGraph::InsetSetNodeConstraint(design& caseNL, Aplace& caseAP, std::set
           }
           if(j<caseNL.GetSizeofBlocks()) {
             xj=caseAP.GetBlockCenter(j).x-caseNL.GetBlockWidth(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j))/2;
-            if(xi>=xj and xi<=xj+caseNL.GetBlockWidth(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j))) {mark=true;break;}
+            if(xi>=xj && xi<=xj+caseNL.GetBlockWidth(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j))) {mark=true;break;}
           } else {
             if(caseAP.GetSBlockDir(j-caseNL.GetSizeofBlocks()-2)==placerDB::V) {
               xj=caseAP.GetSBlockCorr(j-caseNL.GetSizeofBlocks()-2);
@@ -935,7 +935,7 @@ void ConstGraph::InsetSetNodeConstraint(design& caseNL, Aplace& caseAP, std::set
           }
           if(j<caseNL.GetSizeofBlocks()) {
             yj=caseAP.GetBlockCenter(j).y-caseNL.GetBlockHeight(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j))/2;
-            if(yi>=yj and yi<=yj+caseNL.GetBlockHeight(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j))) {mark=true;break;}
+            if(yi>=yj && yi<=yj+caseNL.GetBlockHeight(j, caseAP.GetBlockOrient(j), caseAP.GetSelectedInstance(j))) {mark=true;break;}
           } else {
             if(caseAP.GetSBlockDir(j-caseNL.GetSizeofBlocks()-2)==placerDB::V) {
               yj=0;
@@ -1116,7 +1116,7 @@ int bias_Hgraph = caseNL.bias_Hgraph;
       //tmpE.weight=HGraph.at(i).weight;
       //tmpE.next=(*it);
       //HGraph.at(i).Edges.push_back(tmpE);
-      if(i<caseNL.GetSizeofBlocks() and *it<caseNL.GetSizeofBlocks() ) {
+      if(i<caseNL.GetSizeofBlocks() && *it<caseNL.GetSizeofBlocks() ) {
         if(mode==0) {
           AddEdgeforVertex(i, *it, HGraph.at(i).weight+bias_Hgraph, this->HGraph);
         } else if (mode==1) {
@@ -1172,7 +1172,7 @@ int bias_Hgraph = caseNL.bias_Hgraph;
       //while(bias<150){	
     //bias = (rand()%10) *50;
     //}
-      if(i<caseNL.GetSizeofBlocks() and *it<caseNL.GetSizeofBlocks() ) {
+      if(i<caseNL.GetSizeofBlocks() && *it<caseNL.GetSizeofBlocks() ) {
         if(mode==0 ) {
           AddEdgeforVertex(i, *it, VGraph.at(i).weight+bias_Vgraph, this->VGraph);
         } else if (mode ==1) {
@@ -1334,7 +1334,7 @@ int bias_Hgraph = caseNL.bias_Hgraph;
 
      
 
-      if(i<caseNL.GetSizeofBlocks() and *it<caseNL.GetSizeofBlocks() ) {
+      if(i<caseNL.GetSizeofBlocks() && *it<caseNL.GetSizeofBlocks() ) {
         AddEdgeforVertex(i, *it, HGraph.at(i).weight+bias_Hgraph, this->HGraph);
       } else {
         AddEdgeforVertex(i, *it, HGraph.at(i).weight, this->HGraph);
@@ -1378,7 +1378,7 @@ int bias_Hgraph = caseNL.bias_Hgraph;
     //}
 
 
-      if(i<caseNL.GetSizeofBlocks() and *it<caseNL.GetSizeofBlocks() ) {
+      if(i<caseNL.GetSizeofBlocks() && *it<caseNL.GetSizeofBlocks() ) {
         AddEdgeforVertex(i, *it, VGraph.at(i).weight+bias_Vgraph, this->VGraph);
       } else {
         AddEdgeforVertex(i, *it, VGraph.at(i).weight, this->VGraph);
@@ -1468,7 +1468,7 @@ bool ConstGraph::AddEdgeforVertex(int current, int next, int weight, vector<Vert
   //if(CheckRelatedForwardEdge(current, next, graph)) {tmpE.isBackward=true;
   } else { tmpE.isBackward=false; }
   bool mark=false;
-  if(current>=0 and current<(int)graph.size() and next>=0 and next<(int)graph.size() ) {
+  if(current>=0 && current<(int)graph.size() && next>=0 && next<(int)graph.size() ) {
     graph.at(current).Edges.push_back(tmpE);
     mark=true;
   }
@@ -1480,9 +1480,9 @@ bool ConstGraph::CheckRelatedForwardEdge(int current, int next, vector<Vertex> &
   // checking edge: current --> next
   // return true if corresponding forward edge exists, otherwise return false
   bool mark=false;
-  if(current>=0 and current<(int)graph.size() and next>=0 and next<(int)graph.size()) {
+  if(current>=0 && current<(int)graph.size() && next>=0 && next<(int)graph.size()) {
     for(int i=0;i<(int)graph.at(next).Edges.size();i++ ) {
-      if(graph.at(next).Edges.at(i).next==current and !graph.at(next).Edges.at(i).isBackward) {
+      if(graph.at(next).Edges.at(i).next==current && !graph.at(next).Edges.at(i).isBackward) {
         mark=true; break;
       }
     }
@@ -1494,7 +1494,7 @@ bool ConstGraph::CheckOppositeEdge(int current, int next, vector<Vertex> &graph)
   // checking edge: current --> next
   // return True if opposite edge exists, otherwise return False
   bool mark=false;
-  if(current>=0 and current<(int)graph.size() and next>=0 and next<(int)graph.size()) {
+  if(current>=0 && current<(int)graph.size() && next>=0 && next<(int)graph.size()) {
     for(int i=0;i<(int)graph.at(next).Edges.size();i++ ) {
       if(graph.at(next).Edges.at(i).next==current) {
         mark=true; break;
@@ -1521,9 +1521,9 @@ void ConstGraph::topologicalSortUtil(int v, bool visited[], stack<int> &Stack, v
   visited[v] = true;
   for(vector<Edge>::iterator it=graph.at(v).Edges.begin(); it!=graph.at(v).Edges.end(); ++it) {
     if (!backward ) { // forward sorting
-      if( !it->isBackward and  !visited[it->next]) { topologicalSortUtil(it->next, visited, Stack, graph, backward);}
+      if( !it->isBackward &&  !visited[it->next]) { topologicalSortUtil(it->next, visited, Stack, graph, backward);}
     } else { // backward sorting
-      if(  it->isBackward and  !visited[it->next]) { topologicalSortUtil(it->next, visited, Stack, graph, backward);}
+      if(  it->isBackward &&  !visited[it->next]) { topologicalSortUtil(it->next, visited, Stack, graph, backward);}
     }
   }
   Stack.push(v);
@@ -1615,8 +1615,8 @@ bool ConstGraph::CheckPositiveCycle(vector<Vertex> &graph) {
   CalculateLongestPath(sourceNode, graph, false);
   bool mark=false;
   //int sum=0;
-  for(unsigned int i=0;i<graph.size() and !mark ;++i) {
-    for(vector<Edge>::iterator ei=graph.at(i).Edges.begin(); ei!=graph.at(i).Edges.end() and !mark ; ++ei) {
+  for(unsigned int i=0;i<graph.size() && !mark ;++i) {
+    for(vector<Edge>::iterator ei=graph.at(i).Edges.begin(); ei!=graph.at(i).Edges.end() && !mark ; ++ei) {
       int dist=min(graph.at(ei->next).position-graph.at(i).position-ei->weight, 0);
       if(dist!=0) {mark=true;}
       //sum+=dist*dist;
@@ -1861,7 +1861,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
           // Bmark {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT};
           switch(caseNL.Port_Location.at(tar).pos) {
             case placerDB::TL :
-                 if(p.x>=0 and p.x<=x1) { 
+                 if(p.x>=0 && p.x<=x1) { 
                    if(Ymax-p.y<distTerm) {distTerm=Ymax-p.y; shot=k;}
                  } else {
                    if( std::abs(p.x-0)+Ymax-p.y<distTerm ) {distTerm=std::abs(p.x-0)+Ymax-p.y; shot=k;}
@@ -1869,7 +1869,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
                  }
                  break;
             case placerDB::TC :
-                 if(p.x>=x1 and p.x<=x2) { 
+                 if(p.x>=x1 && p.x<=x2) { 
                    if(Ymax-p.y<distTerm) {distTerm=Ymax-p.y; shot=k;}
                  } else {
                    if( std::abs(p.x-x2)+Ymax-p.y<distTerm ) {distTerm=std::abs(p.x-x2)+Ymax-p.y; shot=k;}
@@ -1877,7 +1877,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
                  }
                  break;
             case placerDB::TR :
-                 if(p.x>=x2 and p.x<=x3) { 
+                 if(p.x>=x2 && p.x<=x3) { 
                    if(Ymax-p.y<distTerm) {distTerm=Ymax-p.y; shot=k;}
                  } else {
                    if( std::abs(p.x-x2)+Ymax-p.y<distTerm ) {distTerm=std::abs(p.x-x2)+Ymax-p.y; shot=k;}
@@ -1885,7 +1885,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
                  }
                  break;
             case placerDB::RT :
-                 if(p.y>=y2 and p.y<=y3) { 
+                 if(p.y>=y2 && p.y<=y3) { 
                    if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x; shot=k;}
                  } else {
                    if( std::abs(p.y-y2)+Xmax-p.x<distTerm ) {distTerm=std::abs(p.y-y2)+Xmax-p.x; shot=k;}
@@ -1893,7 +1893,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
                  }
                  break;
             case placerDB::RC :
-                 if(p.y>=y1 and p.y<=y2) { 
+                 if(p.y>=y1 && p.y<=y2) { 
                    if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x; shot=k;}
                  } else {
                    if( std::abs(p.y-y2)+Xmax-p.x<distTerm ) {distTerm=std::abs(p.y-y2)+Xmax-p.x; shot=k;}
@@ -1901,7 +1901,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
                  }
                  break;
             case placerDB::RB :
-                 if(p.y>=0 and p.y<=y1) { 
+                 if(p.y>=0 && p.y<=y1) { 
                    if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x; shot=k;}
                  } else {
                    if( std::abs(p.y-0)+Xmax-p.x<distTerm ) {distTerm=std::abs(p.y-0)+Xmax-p.x; shot=k;}
@@ -1909,7 +1909,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
                  }
                  break;
             case placerDB::BL :
-                 if(p.x>=0 and p.x<=x1) { 
+                 if(p.x>=0 && p.x<=x1) { 
                    if(p.y<distTerm) {distTerm=p.y; shot=k;}
                  } else {
                    if( std::abs(p.x-0)+p.y<distTerm ) {distTerm=std::abs(p.x-0)+p.y; shot=k;}
@@ -1917,7 +1917,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
                  }
                  break;
             case placerDB::BC :
-                 if(p.x>=x1 and p.x<=x2) { 
+                 if(p.x>=x1 && p.x<=x2) { 
                    if(p.y<distTerm) {distTerm=p.y; shot=k;}
                  } else {
                    if( std::abs(p.x-x2)+p.y<distTerm ) {distTerm=std::abs(p.x-x2)+p.y; shot=k;}
@@ -1925,7 +1925,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
                  }
                  break;
             case placerDB::BR :
-                 if(p.x>=x2 and p.x<=x3) { 
+                 if(p.x>=x2 && p.x<=x3) { 
                    if(p.y<distTerm) {distTerm=p.y; shot=k;}
                  } else {
                    if( std::abs(p.x-x2)+p.y<distTerm ) {distTerm=std::abs(p.x-x2)+p.y; shot=k;}
@@ -1933,7 +1933,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
                  }
                  break;
             case placerDB::LT :
-                 if(p.y>=y2 and p.y<=y3) { 
+                 if(p.y>=y2 && p.y<=y3) { 
                    if(p.x<distTerm) {distTerm=p.x; shot=k;}
                  } else {
                    if( std::abs(p.y-y2)+p.x<distTerm ) {distTerm=std::abs(p.y-y2)+p.x; shot=k;}
@@ -1941,7 +1941,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
                  }
                  break;
             case placerDB::LC :
-                 if(p.y>=y1 and p.y<=y2) { 
+                 if(p.y>=y1 && p.y<=y2) { 
                    if(p.x<distTerm) {distTerm=p.x; shot=k;}
                  } else {
                    if( std::abs(p.y-y2)+p.x<distTerm ) {distTerm=std::abs(p.y-y2)+p.x; shot=k;}
@@ -1949,7 +1949,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
                  }
                  break;
             case placerDB::LB :
-                 if(p.y>=0 and p.y<=y1) { 
+                 if(p.y>=0 && p.y<=y1) { 
                    if(p.x<distTerm) {distTerm=p.x; shot=k;}
                  } else {
                    if( std::abs(p.y-0)+p.x<distTerm ) {distTerm=std::abs(p.y-0)+p.x; shot=k;}
@@ -2190,7 +2190,7 @@ double ConstGraph::ML_LinearConst(design& caseNL, SeqPair& caseSP){
 
                   //std::cout<<"searching" <<m<<" "<<n<<" "<<caseNL.Nets[m].connected[n].iter << " "<< caseNL.Nets[m].connected[n].iter2 << " " << caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].first << " " << caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].second<<std::endl;
 
-                  if(caseNL.Nets[m].connected[n].iter2 == caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].first and caseNL.Nets[m].connected[n].iter == caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].second){
+                  if(caseNL.Nets[m].connected[n].iter2 == caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].first && caseNL.Nets[m].connected[n].iter == caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].second){
 
                      //std::cout<<" found " <<caseNL.Nets[m].connected[n].iter2 << " "<< caseNL.Nets[m].connected[n].iter << " " << caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].first << " " << caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].second<<std::endl;
 
@@ -2564,7 +2564,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
           // Bmark {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT};
           switch(caseNL.Port_Location.at(tar).pos) {
             case placerDB::TL :
-                 if(p.x>=0 and p.x<=x1) { 
+                 if(p.x>=0 && p.x<=x1) { 
                    if(Ymax-p.y<distTerm) {distTerm=Ymax-p.y; shot=k;}
                  } else {
                    if( std::abs(p.x-0)+Ymax-p.y<distTerm ) {distTerm=std::abs(p.x-0)+Ymax-p.y; shot=k;}
@@ -2572,7 +2572,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             case placerDB::TC :
-                 if(p.x>=x1 and p.x<=x2) { 
+                 if(p.x>=x1 && p.x<=x2) { 
                    if(Ymax-p.y<distTerm) {distTerm=Ymax-p.y; shot=k;}
                  } else {
                    if( std::abs(p.x-x2)+Ymax-p.y<distTerm ) {distTerm=std::abs(p.x-x2)+Ymax-p.y; shot=k;}
@@ -2580,7 +2580,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             case placerDB::TR :
-                 if(p.x>=x2 and p.x<=x3) { 
+                 if(p.x>=x2 && p.x<=x3) { 
                    if(Ymax-p.y<distTerm) {distTerm=Ymax-p.y; shot=k;}
                  } else {
                    if( std::abs(p.x-x2)+Ymax-p.y<distTerm ) {distTerm=std::abs(p.x-x2)+Ymax-p.y; shot=k;}
@@ -2588,7 +2588,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             case placerDB::RT :
-                 if(p.y>=y2 and p.y<=y3) { 
+                 if(p.y>=y2 && p.y<=y3) { 
                    if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x; shot=k;}
                  } else {
                    if( std::abs(p.y-y2)+Xmax-p.x<distTerm ) {distTerm=std::abs(p.y-y2)+Xmax-p.x; shot=k;}
@@ -2596,7 +2596,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             case placerDB::RC :
-                 if(p.y>=y1 and p.y<=y2) { 
+                 if(p.y>=y1 && p.y<=y2) { 
                    if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x; shot=k;}
                  } else {
                    if( std::abs(p.y-y2)+Xmax-p.x<distTerm ) {distTerm=std::abs(p.y-y2)+Xmax-p.x; shot=k;}
@@ -2604,7 +2604,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             case placerDB::RB :
-                 if(p.y>=0 and p.y<=y1) { 
+                 if(p.y>=0 && p.y<=y1) { 
                    if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x; shot=k;}
                  } else {
                    if( std::abs(p.y-0)+Xmax-p.x<distTerm ) {distTerm=std::abs(p.y-0)+Xmax-p.x; shot=k;}
@@ -2612,7 +2612,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             case placerDB::BL :
-                 if(p.x>=0 and p.x<=x1) { 
+                 if(p.x>=0 && p.x<=x1) { 
                    if(p.y<distTerm) {distTerm=p.y; shot=k;}
                  } else {
                    if( std::abs(p.x-0)+p.y<distTerm ) {distTerm=std::abs(p.x-0)+p.y; shot=k;}
@@ -2620,7 +2620,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             case placerDB::BC :
-                 if(p.x>=x1 and p.x<=x2) { 
+                 if(p.x>=x1 && p.x<=x2) { 
                    if(p.y<distTerm) {distTerm=p.y; shot=k;}
                  } else {
                    if( std::abs(p.x-x2)+p.y<distTerm ) {distTerm=std::abs(p.x-x2)+p.y; shot=k;}
@@ -2628,7 +2628,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             case placerDB::BR :
-                 if(p.x>=x2 and p.x<=x3) { 
+                 if(p.x>=x2 && p.x<=x3) { 
                    if(p.y<distTerm) {distTerm=p.y; shot=k;}
                  } else {
                    if( std::abs(p.x-x2)+p.y<distTerm ) {distTerm=std::abs(p.x-x2)+p.y; shot=k;}
@@ -2636,7 +2636,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             case placerDB::LT :
-                 if(p.y>=y2 and p.y<=y3) { 
+                 if(p.y>=y2 && p.y<=y3) { 
                    if(p.x<distTerm) {distTerm=p.x; shot=k;}
                  } else {
                    if( std::abs(p.y-y2)+p.x<distTerm ) {distTerm=std::abs(p.y-y2)+p.x; shot=k;}
@@ -2644,7 +2644,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             case placerDB::LC :
-                 if(p.y>=y1 and p.y<=y2) { 
+                 if(p.y>=y1 && p.y<=y2) { 
                    if(p.x<distTerm) {distTerm=p.x; shot=k;}
                  } else {
                    if( std::abs(p.y-y2)+p.x<distTerm ) {distTerm=std::abs(p.y-y2)+p.x; shot=k;}
@@ -2652,7 +2652,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             case placerDB::LB :
-                 if(p.y>=0 and p.y<=y1) { 
+                 if(p.y>=0 && p.y<=y1) { 
                    if(p.x<distTerm) {distTerm=p.x; shot=k;}
                  } else {
                    if( std::abs(p.y-0)+p.x<distTerm ) {distTerm=std::abs(p.y-0)+p.x; shot=k;}
@@ -2792,16 +2792,16 @@ void ConstGraph::Update_parameters(design& caseNL, SeqPair& caseSP) {
 
 bool ConstGraph::ConstraintHorizontalDistance(int n1, int n2, int c1, int c2 ) {
   bool mark=true;
-  mark = (mark and AddEdgeforVertex(n1, n2, c1, HGraph) );
-  mark = (mark and AddEdgeforVertex(n1, n2, -1*c2, HGraph) );
+  mark = (mark && AddEdgeforVertex(n1, n2, c1, HGraph) );
+  mark = (mark && AddEdgeforVertex(n1, n2, -1*c2, HGraph) );
   return mark;
   //return (AddEdgeforVertex(n1, n2, c1, HGraph) or AddEdgeforVertex(n1, n2, -1*c2, HGraph));
 }
 
 bool ConstGraph::ConstraintVerticalDistance(int n1, int n2, int c1, int c2 ) {
   bool mark=true;
-  mark = (mark and AddEdgeforVertex(n1, n2, c1, VGraph) );
-  mark = (mark and AddEdgeforVertex(n1, n2, -1*c2, VGraph) );
+  mark = (mark && AddEdgeforVertex(n1, n2, c1, VGraph) );
+  mark = (mark && AddEdgeforVertex(n1, n2, -1*c2, VGraph) );
   return mark;
   //return (AddEdgeforVertex(n1, n2, c1, VGraph) or AddEdgeforVertex(n1, n2, -1*c2, VGraph));
 }
@@ -2840,7 +2840,7 @@ void ConstGraph::AlignReorganize(design& caseNL, vector< pair<int,int> >& sympai
     // Vertical symmetry axis
     CalculateLongestPath(sourceNode, this->HGraph, false);
     for(vector< pair<int,int> >::iterator pit=caseNL.SBlocks.at(i).sympair.begin(); pit!=caseNL.SBlocks.at(i).sympair.end(); ++pit) {
-      if(pit->first<(int)caseNL.GetSizeofBlocks() and pit->second<(int)caseNL.GetSizeofBlocks()) {
+      if(pit->first<(int)caseNL.GetSizeofBlocks() && pit->second<(int)caseNL.GetSizeofBlocks()) {
         // block pair
         // *  VGraph constraints BEGIN
         CalculateLongestPath(sourceNode, this->VGraph, false);
@@ -2866,7 +2866,7 @@ void ConstGraph::AlignReorganize(design& caseNL, vector< pair<int,int> >& sympai
           }
         }
         sympair.push_back(tp);
-      } else if(pit->first>(int)caseNL.GetSizeofBlocks() and pit->second>(int)caseNL.GetSizeofBlocks()) {
+      } else if(pit->first>(int)caseNL.GetSizeofBlocks() && pit->second>(int)caseNL.GetSizeofBlocks()) {
         // terminal pair
         tp.first=sourceNode; tp.second=sinkNode;
         sympair.push_back(tp);
@@ -2876,7 +2876,7 @@ void ConstGraph::AlignReorganize(design& caseNL, vector< pair<int,int> >& sympai
     // Horizontal symmetry axis
     CalculateLongestPath(sourceNode, this->VGraph, false);
     for(vector< pair<int,int> >::iterator pit=caseNL.SBlocks.at(i).sympair.begin(); pit!=caseNL.SBlocks.at(i).sympair.end(); ++pit) {
-      if(pit->first<(int)caseNL.GetSizeofBlocks() and pit->second<(int)caseNL.GetSizeofBlocks()) {
+      if(pit->first<(int)caseNL.GetSizeofBlocks() && pit->second<(int)caseNL.GetSizeofBlocks()) {
         // block pair
         // *  HGraph constraints BEGIN
         CalculateLongestPath(sourceNode, this->HGraph, false);
@@ -2902,7 +2902,7 @@ void ConstGraph::AlignReorganize(design& caseNL, vector< pair<int,int> >& sympai
           }
         }
         sympair.push_back(tp);
-      } else if(pit->first>(int)caseNL.GetSizeofBlocks() and pit->second>(int)caseNL.GetSizeofBlocks()) {
+      } else if(pit->first>(int)caseNL.GetSizeofBlocks() && pit->second>(int)caseNL.GetSizeofBlocks()) {
         // terminal pair
         tp.first=sourceNode; tp.second=sinkNode;
         sympair.push_back(tp);
@@ -2919,9 +2919,9 @@ void ConstGraph::InitializexL(design& caseNL, vector< pair<int,int> >& sympair, 
       for(int j=0;j<(int)sympair.size();j++) {
         int tmpx=0;
         // x_ij >= w(Yj)
-        if(sympair.at(j).first<(int)caseNL.GetSizeofBlocks() and sympair.at(j).second<(int)caseNL.GetSizeofBlocks() ) { // block pair
+        if(sympair.at(j).first<(int)caseNL.GetSizeofBlocks() && sympair.at(j).second<(int)caseNL.GetSizeofBlocks() ) { // block pair
           tmpx=HGraph.at(sympair.at(j).second).weight;
-        } else if( sympair.at(j).first==sourceNode and sympair.at(j).second==sinkNode ) { // terminal pair
+        } else if( sympair.at(j).first==sourceNode && sympair.at(j).second==sinkNode ) { // terminal pair
           tmpx=0;
         }
         // L1: Xj(first) -> Yj(second) -> di(axis) -> Xj(first)
@@ -2987,9 +2987,9 @@ void ConstGraph::InitializexL(design& caseNL, vector< pair<int,int> >& sympair, 
       for(int j=0;j<(int)sympair.size();j++) {
         int tmpx=0;
         // x_ij >= w(Yj)
-        if(sympair.at(j).first<(int)caseNL.GetSizeofBlocks() and sympair.at(j).second<(int)caseNL.GetSizeofBlocks() ) { // block pair
+        if(sympair.at(j).first<(int)caseNL.GetSizeofBlocks() && sympair.at(j).second<(int)caseNL.GetSizeofBlocks() ) { // block pair
           tmpx=VGraph.at(sympair.at(j).second).weight;
-        } else if( sympair.at(j).first==sourceNode and sympair.at(j).second==sinkNode ) { // terminal pair
+        } else if( sympair.at(j).first==sourceNode && sympair.at(j).second==sinkNode ) { // terminal pair
           tmpx=0;
         }
         // L1: Xj(first) -> Yj(second) -> di(axis) -> Xj(first)
@@ -3141,7 +3141,7 @@ bool ConstGraph::SymmetryConstraintCoreAxisCenter(design& caseNL, placerDB::Smar
     }
     // 7. Add edges for symmetry pairs
     for(int j=0;j<(int)sympair.size();j++) {
-      if(sympair.at(j).first<(int)caseNL.GetSizeofBlocks() and sympair.at(j).second<(int)caseNL.GetSizeofBlocks()) {
+      if(sympair.at(j).first<(int)caseNL.GetSizeofBlocks() && sympair.at(j).second<(int)caseNL.GetSizeofBlocks()) {
          if(axis==placerDB::V) {
            AddEdgeforVertex(sympair.at(j).first, dnode, xL.at(j), HGraph);
            AddEdgeforVertex(dnode, sympair.at(j).first, -1*xL.at(j), HGraph);
@@ -3153,7 +3153,7 @@ bool ConstGraph::SymmetryConstraintCoreAxisCenter(design& caseNL, placerDB::Smar
            AddEdgeforVertex(dnode, sympair.at(j).second, xL.at(j)-VGraph.at(sympair.at(j).second).weight, VGraph);
            AddEdgeforVertex(sympair.at(j).second, dnode, -1*xL.at(j)+VGraph.at(sympair.at(j).second).weight, VGraph);
          }
-      } else if (sympair.at(j).first==sourceNode and sympair.at(j).second==sinkNode) {
+      } else if (sympair.at(j).first==sourceNode && sympair.at(j).second==sinkNode) {
          if(axis==placerDB::V) {
            AddEdgeforVertex(sympair.at(j).first, dnode, xL.at(j), HGraph);
            AddEdgeforVertex(dnode, sympair.at(j).first, -1*xL.at(j), HGraph);
@@ -3211,7 +3211,7 @@ bool ConstGraph::SymmetryConstraintCoreAxisCenter(design& caseNL, placerDB::Smar
     PrintConstGraph();
     // forth, revise edges
     for(int j=0;j<(int)sympair.size();j++) {
-      if(sympair.at(j).first<(int)caseNL.GetSizeofBlocks() and sympair.at(j).second<(int)caseNL.GetSizeofBlocks()) {
+      if(sympair.at(j).first<(int)caseNL.GetSizeofBlocks() && sympair.at(j).second<(int)caseNL.GetSizeofBlocks()) {
          if(axis==placerDB::V) {
            if(HGraph.at(dnode).precedent!=sympair.at(j).first) {
              ReverseEdge(sympair.at(j).first, dnode, HGraph);
@@ -3324,7 +3324,7 @@ bool ConstGraph::SymmetryConstraintCore(design& caseNL, placerDB::Smark axis, in
     }
     // 7. Add edges for symmetry pairs
     for(unsigned int j=0;j<sympair.size();j++) {
-      if(sympair.at(j).first<(int)caseNL.GetSizeofBlocks() and sympair.at(j).second<(int)caseNL.GetSizeofBlocks()) {
+      if(sympair.at(j).first<(int)caseNL.GetSizeofBlocks() && sympair.at(j).second<(int)caseNL.GetSizeofBlocks()) {
          if(axis==placerDB::V) {
            AddEdgeforVertex(sympair.at(j).first, dnode, xL.at(j), HGraph);
            AddEdgeforVertex(dnode, sympair.at(j).first, -1*xL.at(j), HGraph);
@@ -3336,7 +3336,7 @@ bool ConstGraph::SymmetryConstraintCore(design& caseNL, placerDB::Smark axis, in
            AddEdgeforVertex(dnode, sympair.at(j).second, xL.at(j)-VGraph.at(sympair.at(j).second).weight, VGraph);
            AddEdgeforVertex(sympair.at(j).second, dnode, -1*xL.at(j)+VGraph.at(sympair.at(j).second).weight, VGraph);
          }
-      } else if (sympair.at(j).first==sourceNode and sympair.at(j).second==sinkNode) {
+      } else if (sympair.at(j).first==sourceNode && sympair.at(j).second==sinkNode) {
          if(axis==placerDB::V) {
            AddEdgeforVertex(sympair.at(j).first, dnode, xL.at(j), HGraph);
            AddEdgeforVertex(dnode, sympair.at(j).first, -1*xL.at(j), HGraph);
@@ -3600,7 +3600,7 @@ bool ConstGraph::ConstraintGraph(design& caseNL, SeqPair& caseSP) {
 //    }
 //    // 7. Add edges for symmetry pairs
 //    for(int j=0;j<(int)sympair.size();j++) {
-//      if(sympair.at(j).first<(int)caseNL.GetSizeofBlocks() and sympair.at(j).second<(int)caseNL.GetSizeofBlocks()) {
+//      if(sympair.at(j).first<(int)caseNL.GetSizeofBlocks() && sympair.at(j).second<(int)caseNL.GetSizeofBlocks()) {
 //         if(axis==placerDB::V) {
 //           AddEdgeforVertex(sympair.at(j).first, dnode, xL.at(j), HGraph);
 //           AddEdgeforVertex(dnode, sympair.at(j).first, -1*xL.at(j), HGraph);
@@ -3612,7 +3612,7 @@ bool ConstGraph::ConstraintGraph(design& caseNL, SeqPair& caseSP) {
 //           AddEdgeforVertex(dnode, sympair.at(j).second, xL.at(j)-VGraph.at(sympair.at(j).second).weight, VGraph);
 //           AddEdgeforVertex(sympair.at(j).second, dnode, -1*xL.at(j)+VGraph.at(sympair.at(j).second).weight, VGraph);
 //         }
-//      } else if (sympair.at(j).first==sourceNode and sympair.at(j).second==sinkNode) {
+//      } else if (sympair.at(j).first==sourceNode && sympair.at(j).second==sinkNode) {
 //         if(axis==placerDB::V) {
 //           AddEdgeforVertex(sympair.at(j).first, dnode, xL.at(j), HGraph);
 //           AddEdgeforVertex(dnode, sympair.at(j).first, -1*xL.at(j), HGraph);
@@ -4913,7 +4913,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
           // Bmark {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT};
           switch(caseNL.Port_Location.at(tar).pos) {
             case placerDB::TL :
-                 if(p.x>=0 and p.x<=x1) { 
+                 if(p.x>=0 && p.x<=x1) { 
                    if(Ymax-p.y<distTerm) {distTerm=Ymax-p.y; shot=k; tp.x=p.x; tp.y=Ymax;}
                  } else {
                    if( std::abs(p.x-0)+Ymax-p.y<distTerm ) {distTerm=std::abs(p.x-0)+Ymax-p.y; shot=k; tp.x=0; tp.y=Ymax; }
@@ -4921,7 +4921,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
                  }
                  break;
             case placerDB::TC :
-                 if(p.x>=x1 and p.x<=x2) { 
+                 if(p.x>=x1 && p.x<=x2) { 
                    if(Ymax-p.y<distTerm) {distTerm=Ymax-p.y; shot=k; tp.x=p.x; tp.y=Ymax;}
                  } else {
                    if( std::abs(p.x-x2)+Ymax-p.y<distTerm ) {distTerm=std::abs(p.x-x2)+Ymax-p.y; shot=k;tp.x=x2;tp.y=Ymax;}
@@ -4929,7 +4929,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
                  }
                  break;
             case placerDB::TR :
-                 if(p.x>=x2 and p.x<=x3) { 
+                 if(p.x>=x2 && p.x<=x3) { 
                    if(Ymax-p.y<distTerm) {distTerm=Ymax-p.y; shot=k; tp.x=p.x; tp.y=Ymax;}
                  } else {
                    if( std::abs(p.x-x2)+Ymax-p.y<distTerm ) {distTerm=std::abs(p.x-x2)+Ymax-p.y; shot=k;tp.x=x2;tp.y=Ymax;}
@@ -4937,7 +4937,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
                  }
                  break;
             case placerDB::RT :
-                 if(p.y>=y2 and p.y<=y3) { 
+                 if(p.y>=y2 && p.y<=y3) { 
                    if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x; shot=k;tp.x=Xmax; tp.y=p.y;}
                  } else {
                    if( std::abs(p.y-y2)+Xmax-p.x<distTerm ) {distTerm=std::abs(p.y-y2)+Xmax-p.x; shot=k;tp.x=Xmax;tp.y=y2;}
@@ -4945,7 +4945,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
                  }
                  break;
             case placerDB::RC :
-                 if(p.y>=y1 and p.y<=y2) { 
+                 if(p.y>=y1 && p.y<=y2) { 
                    if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x; shot=k;tp.x=Xmax; tp.y=p.y;}
                  } else {
                    if( std::abs(p.y-y2)+Xmax-p.x<distTerm ) {distTerm=std::abs(p.y-y2)+Xmax-p.x; shot=k;tp.x=Xmax;tp.y=y2;}
@@ -4953,7 +4953,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
                  }
                  break;
             case placerDB::RB :
-                 if(p.y>=0 and p.y<=y1) { 
+                 if(p.y>=0 && p.y<=y1) { 
                    if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x; shot=k;tp.x=Xmax;tp.y=p.y;}
                  } else {
                    if( std::abs(p.y-0)+Xmax-p.x<distTerm ) {distTerm=std::abs(p.y-0)+Xmax-p.x; shot=k;tp.x=Xmax;tp.y=0;}
@@ -4961,7 +4961,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
                  }
                  break;
             case placerDB::BL :
-                 if(p.x>=0 and p.x<=x1) { 
+                 if(p.x>=0 && p.x<=x1) { 
                    if(p.y<distTerm) {distTerm=p.y; shot=k;tp.x=p.x;tp.y=0;}
                  } else {
                    if( std::abs(p.x-0)+p.y<distTerm ) {distTerm=std::abs(p.x-0)+p.y; shot=k;tp.x=0;tp.y=0;}
@@ -4969,7 +4969,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
                  }
                  break;
             case placerDB::BC :
-                 if(p.x>=x1 and p.x<=x2) { 
+                 if(p.x>=x1 && p.x<=x2) { 
                    if(p.y<distTerm) {distTerm=p.y; shot=k;tp.x=p.x;tp.y=0;}
                  } else {
                    if( std::abs(p.x-x2)+p.y<distTerm ) {distTerm=std::abs(p.x-x2)+p.y; shot=k;tp.x=x2;tp.y=0;}
@@ -4977,7 +4977,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
                  }
                  break;
             case placerDB::BR :
-                 if(p.x>=x2 and p.x<=x3) { 
+                 if(p.x>=x2 && p.x<=x3) { 
                    if(p.y<distTerm) {distTerm=p.y; shot=k;tp.x=p.x;tp.y=0;}
                  } else {
                    if( std::abs(p.x-x2)+p.y<distTerm ) {distTerm=std::abs(p.x-x2)+p.y; shot=k;tp.x=x2;tp.y=0;}
@@ -4985,7 +4985,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
                  }
                  break;
             case placerDB::LT :
-                 if(p.y>=y2 and p.y<=y3) { 
+                 if(p.y>=y2 && p.y<=y3) { 
                    if(p.x<distTerm) {distTerm=p.x; shot=k;tp.x=0;tp.y=p.y;}
                  } else {
                    if( std::abs(p.y-y2)+p.x<distTerm ) {distTerm=std::abs(p.y-y2)+p.x; shot=k;tp.x=0;tp.y=y2;}
@@ -4993,7 +4993,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
                  }
                  break;
             case placerDB::LC :
-                 if(p.y>=y1 and p.y<=y2) { 
+                 if(p.y>=y1 && p.y<=y2) { 
                    if(p.x<distTerm) {distTerm=p.x; shot=k;tp.x=0;tp.y=p.y;}
                  } else {
                    if( std::abs(p.y-y2)+p.x<distTerm ) {distTerm=std::abs(p.y-y2)+p.x; shot=k;tp.x=0;tp.y=y2;}
@@ -5001,7 +5001,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
                  }
                  break;
             case placerDB::LB :
-                 if(p.y>=0 and p.y<=y1) { 
+                 if(p.y>=0 && p.y<=y1) { 
                    if(p.x<distTerm) {distTerm=p.x; shot=k;tp.x=0;tp.y=p.y;}
                  } else {
                    if( std::abs(p.y-0)+p.x<distTerm ) {distTerm=std::abs(p.y-0)+p.x; shot=k;tp.x=0;tp.y=0;}
@@ -5393,7 +5393,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
           // Bmark {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT};
           switch(caseNL.Port_Location.at(tar).pos) {
             case placerDB::TL :
-                 if(p.x>=0 and p.x<=x1) { 
+                 if(p.x>=0 && p.x<=x1) { 
                    if(Ymax-p.y<distTerm) {distTerm=Ymax-p.y; shot=k; tp.x=p.x; tp.y=Ymax;}
                  } else {
                    if( std::abs(p.x-0)+Ymax-p.y<distTerm ) {distTerm=std::abs(p.x-0)+Ymax-p.y; shot=k; tp.x=0; tp.y=Ymax; }
@@ -5401,7 +5401,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             case placerDB::TC :
-                 if(p.x>=x1 and p.x<=x2) { 
+                 if(p.x>=x1 && p.x<=x2) { 
                    if(Ymax-p.y<distTerm) {distTerm=Ymax-p.y; shot=k; tp.x=p.x; tp.y=Ymax;}
                  } else {
                    if( std::abs(p.x-x2)+Ymax-p.y<distTerm ) {distTerm=std::abs(p.x-x2)+Ymax-p.y; shot=k;tp.x=x2;tp.y=Ymax;}
@@ -5409,7 +5409,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             case placerDB::TR :
-                 if(p.x>=x2 and p.x<=x3) { 
+                 if(p.x>=x2 && p.x<=x3) { 
                    if(Ymax-p.y<distTerm) {distTerm=Ymax-p.y; shot=k; tp.x=p.x; tp.y=Ymax;}
                  } else {
                    if( std::abs(p.x-x2)+Ymax-p.y<distTerm ) {distTerm=std::abs(p.x-x2)+Ymax-p.y; shot=k;tp.x=x2;tp.y=Ymax;}
@@ -5417,7 +5417,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             case placerDB::RT :
-                 if(p.y>=y2 and p.y<=y3) { 
+                 if(p.y>=y2 && p.y<=y3) { 
                    if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x; shot=k;tp.x=Xmax; tp.y=p.y;}
                  } else {
                    if( std::abs(p.y-y2)+Xmax-p.x<distTerm ) {distTerm=std::abs(p.y-y2)+Xmax-p.x; shot=k;tp.x=Xmax;tp.y=y2;}
@@ -5425,7 +5425,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             case placerDB::RC :
-                 if(p.y>=y1 and p.y<=y2) { 
+                 if(p.y>=y1 && p.y<=y2) { 
                    if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x; shot=k;tp.x=Xmax; tp.y=p.y;}
                  } else {
                    if( std::abs(p.y-y2)+Xmax-p.x<distTerm ) {distTerm=std::abs(p.y-y2)+Xmax-p.x; shot=k;tp.x=Xmax;tp.y=y2;}
@@ -5433,7 +5433,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             case placerDB::RB :
-                 if(p.y>=0 and p.y<=y1) { 
+                 if(p.y>=0 && p.y<=y1) { 
                    if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x; shot=k;tp.x=Xmax;tp.y=p.y;}
                  } else {
                    if( std::abs(p.y-0)+Xmax-p.x<distTerm ) {distTerm=std::abs(p.y-0)+Xmax-p.x; shot=k;tp.x=Xmax;tp.y=0;}
@@ -5441,7 +5441,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             case placerDB::BL :
-                 if(p.x>=0 and p.x<=x1) { 
+                 if(p.x>=0 && p.x<=x1) { 
                    if(p.y<distTerm) {distTerm=p.y; shot=k;tp.x=p.x;tp.y=0;}
                  } else {
                    if( std::abs(p.x-0)+p.y<distTerm ) {distTerm=std::abs(p.x-0)+p.y; shot=k;tp.x=0;tp.y=0;}
@@ -5449,7 +5449,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             case placerDB::BC :
-                 if(p.x>=x1 and p.x<=x2) { 
+                 if(p.x>=x1 && p.x<=x2) { 
                    if(p.y<distTerm) {distTerm=p.y; shot=k;tp.x=p.x;tp.y=0;}
                  } else {
                    if( std::abs(p.x-x2)+p.y<distTerm ) {distTerm=std::abs(p.x-x2)+p.y; shot=k;tp.x=x2;tp.y=0;}
@@ -5457,7 +5457,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             case placerDB::BR :
-                 if(p.x>=x2 and p.x<=x3) { 
+                 if(p.x>=x2 && p.x<=x3) { 
                    if(p.y<distTerm) {distTerm=p.y; shot=k;tp.x=p.x;tp.y=0;}
                  } else {
                    if( std::abs(p.x-x2)+p.y<distTerm ) {distTerm=std::abs(p.x-x2)+p.y; shot=k;tp.x=x2;tp.y=0;}
@@ -5465,7 +5465,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             case placerDB::LT :
-                 if(p.y>=y2 and p.y<=y3) { 
+                 if(p.y>=y2 && p.y<=y3) { 
                    if(p.x<distTerm) {distTerm=p.x; shot=k;tp.x=0;tp.y=p.y;}
                  } else {
                    if( std::abs(p.y-y2)+p.x<distTerm ) {distTerm=std::abs(p.y-y2)+p.x; shot=k;tp.x=0;tp.y=y2;}
@@ -5473,7 +5473,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             case placerDB::LC :
-                 if(p.y>=y1 and p.y<=y2) { 
+                 if(p.y>=y1 && p.y<=y2) { 
                    if(p.x<distTerm) {distTerm=p.x; shot=k;tp.x=0;tp.y=p.y;}
                  } else {
                    if( std::abs(p.y-y2)+p.x<distTerm ) {distTerm=std::abs(p.y-y2)+p.x; shot=k;tp.x=0;tp.y=y2;}
@@ -5481,7 +5481,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
                  }
                  break;
             case placerDB::LB :
-                 if(p.y>=0 and p.y<=y1) { 
+                 if(p.y>=0 && p.y<=y1) { 
                    if(p.x<distTerm) {distTerm=p.x; shot=k;tp.x=0;tp.y=p.y;}
                  } else {
                    if( std::abs(p.y-0)+p.x<distTerm ) {distTerm=std::abs(p.y-0)+p.x; shot=k;tp.x=0;tp.y=0;}

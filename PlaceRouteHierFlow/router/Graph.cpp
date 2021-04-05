@@ -140,13 +140,13 @@ void Graph::CreatePower_Grid(Grid& grid){ //grid function needs to be changed...
              if(grid.total2graph.find(temp_vector[j])!=grid.total2graph.end())
                {
                   int graph_index = grid.total2graph[temp_vector[j]];
-                  if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 1 and grid.vertices_graph[graph_index].power==1) 
+                  if(grid.vertices_graph[graph_index].active == 1 && grid.vertices_graph[i].power == 1 && grid.vertices_graph[graph_index].power==1) 
                     {  
                       adjust_line(graph_index);
                       VddPower_Set.insert(temp_metal);
                     }
 
-                  if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 0 and grid.vertices_graph[graph_index].power==0) 
+                  if(grid.vertices_graph[graph_index].active == 1 && grid.vertices_graph[i].power == 0 && grid.vertices_graph[graph_index].power==0) 
                    {  
                       adjust_line(graph_index);
                       GndPower_Set.insert(temp_metal);
@@ -163,7 +163,7 @@ void Graph::CreatePower_Grid(Grid& grid){ //grid function needs to be changed...
          {
             if(grid.total2graph.find(temp_index)!=grid.total2graph.end()){
                  int graph_index = grid.total2graph[temp_index];
-                 if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 1 and grid.vertices_graph[graph_index].power==1 and CheckActive(grid,graph_index) and CheckActive(grid,i)) 
+                 if(grid.vertices_graph[graph_index].active == 1 && grid.vertices_graph[i].power == 1 && grid.vertices_graph[graph_index].power==1 && CheckActive(grid,graph_index) && CheckActive(grid,i)) 
                    { 
                      if(grid.vertices_graph[i].metal<grid.vertices_graph[graph_index].metal){
                         temp_via.model_index = grid.vertices_graph[i].metal;
@@ -174,7 +174,7 @@ void Graph::CreatePower_Grid(Grid& grid){ //grid function needs to be changed...
                      //VddPower_Set.insert(temp_metal);
                    }
 
-                 if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 0 and grid.vertices_graph[graph_index].power==0 and CheckActive(grid,graph_index) and CheckActive(grid,i)) 
+                 if(grid.vertices_graph[graph_index].active == 1 && grid.vertices_graph[i].power == 0 && grid.vertices_graph[graph_index].power==0 && CheckActive(grid,graph_index) && CheckActive(grid,i)) 
                    { 
                        if(grid.vertices_graph[i].metal<grid.vertices_graph[graph_index].metal){
                         temp_via.model_index = grid.vertices_graph[i].metal;
@@ -245,7 +245,7 @@ void Graph::collect_nodes(Grid &grid, vector<int> temp_vector, vector<int>& adja
                   int index = grid.total2graph[temp_vector[j]];
                   logger->debug("temp {0} index {1} ",temp_vector[j],index);
                   logger->debug("index edge {0} graph size {1} temp_vector[j] {2} ", index,grid.vertices_graph.size(),temp_vector[j]);
-                  if( index<grid.vertices_graph.size() and index>=0 and grid.vertices_graph[index].active and grid.vertices_graph[index].power == power and grid.vertices_graph[index].graph_index==-1) 
+                  if( index<grid.vertices_graph.size() && index>=0 && grid.vertices_graph[index].active && grid.vertices_graph[index].power == power && grid.vertices_graph[index].graph_index==-1) 
                     {  
                       adjacent_nodes.push_back(index);
                     }
@@ -259,7 +259,7 @@ void Graph::collect_node(Grid &grid, int temp_vector, vector<int>& adjacent_node
              if(grid.total2graph.find(temp_vector)!=grid.total2graph.end())
                {
                   int index = grid.total2graph[temp_vector];
-                  if( index<grid.vertices_graph.size() and index>=0 and grid.vertices_graph[index].active and grid.vertices_graph[index].power == power and grid.vertices_graph[index].graph_index==-1) 
+                  if( index<grid.vertices_graph.size() && index>=0 && grid.vertices_graph[index].active && grid.vertices_graph[index].power == power && grid.vertices_graph[index].graph_index==-1) 
                     {  
                       adjacent_nodes.push_back(index);
                     }
@@ -293,7 +293,7 @@ void Graph::power_grid_dsf(Grid& grid, int i, int graph_index, int& connection_g
                   int index = grid.total2graph[temp_vector[j]];
                   //std::cout<<"temp "<<temp_vector[j]<<"index"<<index<<std::endl;
                   std::cout<<"index edge "<<index<<" graph size "<<grid.vertices_graph.size()<<" temp_vector[j] "<<temp_vector[j]<<std::endl;
-                  if( index<grid.vertices_graph.size() and index>=0 and grid.vertices_graph[index].active and grid.vertices_graph[index].power == power and grid.vertices_graph[index].graph_index==-1) 
+                  if( index<grid.vertices_graph.size() && index>=0 && grid.vertices_graph[index].active && grid.vertices_graph[index].power == power && grid.vertices_graph[index].graph_index==-1) 
                     {  
                       adjacent_nodes.push_back(index);
                     }
@@ -310,7 +310,7 @@ void Graph::power_grid_dsf(Grid& grid, int i, int graph_index, int& connection_g
                   int index = grid.total2graph[temp_vector];
                   //std::cout<<"temp down/up"<<temp_vector<<"index"<<index<<std::endl;
                   std::cout<<"index via "<<index<<" graph size "<<grid.vertices_graph.size()<<std::endl;
-                  if( index<grid.vertices_graph.size() and index>=0 and grid.vertices_graph[index].active and grid.vertices_graph[index].power == power and grid.vertices_graph[index].graph_index==-1) 
+                  if( index<grid.vertices_graph.size() && index>=0 && grid.vertices_graph[index].active && grid.vertices_graph[index].power == power && grid.vertices_graph[index].graph_index==-1) 
                     {  
                       adjacent_nodes.push_back(index);
                     }
@@ -374,7 +374,7 @@ void Graph::Connection_Check_Power_Grid(Grid& grid, int power){
   //std::cout<<"Connection_Check_Power_Grid checkpoint1"<<std::endl;
   for(unsigned int i=0;i<grid.vertices_graph.size();++i){
       
-      if(grid.vertices_graph[i].graph_index==-1 and grid.vertices_graph[i].power==power and grid.vertices_graph[i].active){
+      if(grid.vertices_graph[i].graph_index==-1 && grid.vertices_graph[i].power==power && grid.vertices_graph[i].active){
           int connection_graph_number = 0;
           //std::cout<<"start dsf"<<std::endl;
           power_grid_dsf(grid,i,graph_index,connection_graph_number,power);
@@ -403,7 +403,7 @@ void Graph::Connection_Check_Power_Grid(Grid& grid, int power){
 
   for(unsigned int i=0;i<grid.vertices_graph.size();++i){
 
-      if(grid.vertices_graph[i].power==power and grid.vertices_graph[i].graph_index!=max_index){
+      if(grid.vertices_graph[i].power==power && grid.vertices_graph[i].graph_index!=max_index){
           grid.vertices_graph[i].active = false;
         }
 
@@ -423,7 +423,7 @@ bool Graph::CheckActive(Grid& grid, int index){
              if(grid.total2graph.find(temp_vector[j])!=grid.total2graph.end())
                {
                   int graph_index = grid.total2graph[temp_vector[j]];
-                  if(graph_index>=0 and graph_index< grid.vertices_graph.size() and grid.vertices_graph[graph_index].active == 1) 
+                  if(graph_index>=0 && graph_index< grid.vertices_graph.size() && grid.vertices_graph[graph_index].active == 1) 
                     {  
                        found = true;
                     }
@@ -759,7 +759,7 @@ std::vector<int>  Graph::dijkstra(){
   int count=0;
   int v;
   //std::cout<<"graph source "<<source<<" vs graph dest "<<dest<<std::endl;
-  while(status[dest]!=2 and count<(int)graph.size()-1)
+  while(status[dest]!=2 && count<(int)graph.size()-1)
        {
           std::vector<int> ulist = minDistancefromMultiMap (distMap);
           //std::cout<<"size of Q: "<<ulist.size()<<std::endl;
@@ -781,7 +781,7 @@ std::vector<int>  Graph::dijkstra(){
                            status[v]=1;
                            distMap.insert( std::pair<double,int>(dist[v], v) );
                          }
-                      else if (status[v]==1 and dist[v]>dist[u]+graph[u].list[j].weight)
+                      else if (status[v]==1 && dist[v]>dist[u]+graph[u].list[j].weight)
                          {
                             parent[v] = u;
                             double olddist=dist[v];
@@ -836,7 +836,7 @@ std::vector<int>  Graph::dijkstraRetire(Grid& grid){
   int count=0;
   int v;
   //std::cout<<"graph source "<<source<<" vs graph dest "<<dest<<std::endl;
-  while(status[dest]!=2 and count<(int)graph.size()-1)
+  while(status[dest]!=2 && count<(int)graph.size()-1)
        {
           std::vector<int> ulist = minDistance(dist, status, graph.size());
           //std::cout<<"size of Q: "<<ulist.size()<<std::endl;
@@ -856,7 +856,7 @@ std::vector<int>  Graph::dijkstraRetire(Grid& grid){
                            dist[v] = dist[u]+graph[u].list[j].weight;
                            status[v]=1;
                          }
-                      else if (status[v]==1 and dist[v]>dist[u]+graph[u].list[j].weight)
+                      else if (status[v]==1 && dist[v]>dist[u]+graph[u].list[j].weight)
                          {
                             parent[v] = u;
                             dist[v] = dist[u]+graph[u].list[j].weight;
@@ -971,7 +971,7 @@ std::vector<std::vector<RouterDB::Metal> >  Graph::ConvertPathintoPhysical(Grid&
               temp_metal.LinePoint.push_back(temp_point);
               flag_start_write = 0;
             }
- 	  if(j+1<Path[i].size() and grid.vertices_total[Path[i][j]].metal!=grid.vertices_total[Path[i][j+1]].metal){
+ 	  if(j+1<Path[i].size() && grid.vertices_total[Path[i][j]].metal!=grid.vertices_total[Path[i][j+1]].metal){
               flag_start_write = 1;
               temp_point.x = grid.vertices_total[Path[i][j]].x;
               temp_point.y = grid.vertices_total[Path[i][j]].y;
@@ -979,7 +979,7 @@ std::vector<std::vector<RouterDB::Metal> >  Graph::ConvertPathintoPhysical(Grid&
               temp_metal.width = grid.drc_info.Metal_info[grid.vertices_total[Path[i][j]].metal].width;
               temp_physical_path.push_back(temp_metal);
             }
-	  if(j+1==Path[i].size() and flag_start_write == 0){
+	  if(j+1==Path[i].size() && flag_start_write == 0){
 
               flag_start_write = 1;
               temp_point.x = grid.vertices_total[Path[i][j]].x;

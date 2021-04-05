@@ -871,7 +871,7 @@ void PowerRouter::Physical_metal_via_power_grid(RouterDB::PowerGrid &temp_grid){
                 }
             }
 
-         if(temp_grid.metals[i].LinePoint[0].y==temp_grid.metals[i].LinePoint[1].y and temp_grid.metals[i].LinePoint[0].x==temp_grid.metals[i].LinePoint[1].x){          
+         if(temp_grid.metals[i].LinePoint[0].y==temp_grid.metals[i].LinePoint[1].y && temp_grid.metals[i].LinePoint[0].x==temp_grid.metals[i].LinePoint[1].x){          
            
               temp_grid.metals[i].MetalRect.placedLL.x =  temp_grid.metals[i].LinePoint[0].x-temp_grid.metals[i].width/2;
               temp_grid.metals[i].MetalRect.placedLL.y =  temp_grid.metals[i].LinePoint[0].y-temp_grid.metals[i].width/2;
@@ -932,7 +932,7 @@ void PowerRouter::GetPhsical_Metal_Via(int i){
                 }
             }
 
-         if(PowerNets[i].path_metal[h].LinePoint[0].y==PowerNets[i].path_metal[h].LinePoint[1].y and PowerNets[i].path_metal[h].LinePoint[0].x==PowerNets[i].path_metal[h].LinePoint[1].x){          
+         if(PowerNets[i].path_metal[h].LinePoint[0].y==PowerNets[i].path_metal[h].LinePoint[1].y && PowerNets[i].path_metal[h].LinePoint[0].x==PowerNets[i].path_metal[h].LinePoint[1].x){          
            
               PowerNets[i].path_metal[h].MetalRect.placedLL.x =  PowerNets[i].path_metal[h].LinePoint[0].x-PowerNets[i].path_metal[h].width/2;
               PowerNets[i].path_metal[h].MetalRect.placedLL.y =  PowerNets[i].path_metal[h].LinePoint[0].y-PowerNets[i].path_metal[h].width/2;
@@ -959,28 +959,28 @@ void PowerRouter::GetPhsical_Metal_Via(int i){
 
             if(temp_metal_index == next_metal_index -1){
                 
-                if(PowerNets[i].path_metal[h].LinePoint[0].x==PowerNets[i].path_metal[l].LinePoint[0].x and PowerNets[i].path_metal[h].LinePoint[0].y==PowerNets[i].path_metal[l].LinePoint[0].y){
+                if(PowerNets[i].path_metal[h].LinePoint[0].x==PowerNets[i].path_metal[l].LinePoint[0].x && PowerNets[i].path_metal[h].LinePoint[0].y==PowerNets[i].path_metal[l].LinePoint[0].y){
                   temp_via.position = PowerNets[i].path_metal[h].LinePoint[0];
                   temp_via.model_index = temp_metal_index;
                   UpdateVia(temp_via);
                   set_via.insert(temp_via);
                   }
 
-                if(PowerNets[i].path_metal[h].LinePoint[0].x==PowerNets[i].path_metal[l].LinePoint[1].x and PowerNets[i].path_metal[h].LinePoint[0].y==PowerNets[i].path_metal[l].LinePoint[1].y){
+                if(PowerNets[i].path_metal[h].LinePoint[0].x==PowerNets[i].path_metal[l].LinePoint[1].x && PowerNets[i].path_metal[h].LinePoint[0].y==PowerNets[i].path_metal[l].LinePoint[1].y){
                   temp_via.position = PowerNets[i].path_metal[h].LinePoint[0];
                   temp_via.model_index = temp_metal_index;
                   UpdateVia(temp_via);
                   set_via.insert(temp_via);
                   }
 
-                if(PowerNets[i].path_metal[h].LinePoint[1].x==PowerNets[i].path_metal[l].LinePoint[0].x and PowerNets[i].path_metal[h].LinePoint[1].y==PowerNets[i].path_metal[l].LinePoint[0].y){
+                if(PowerNets[i].path_metal[h].LinePoint[1].x==PowerNets[i].path_metal[l].LinePoint[0].x && PowerNets[i].path_metal[h].LinePoint[1].y==PowerNets[i].path_metal[l].LinePoint[0].y){
                   temp_via.position = PowerNets[i].path_metal[h].LinePoint[1];
                   temp_via.model_index = temp_metal_index;
                   UpdateVia(temp_via);
                   set_via.insert(temp_via);
                   }
 
-                if(PowerNets[i].path_metal[h].LinePoint[1].x==PowerNets[i].path_metal[l].LinePoint[1].x and PowerNets[i].path_metal[h].LinePoint[1].y==PowerNets[i].path_metal[l].LinePoint[1].y){
+                if(PowerNets[i].path_metal[h].LinePoint[1].x==PowerNets[i].path_metal[l].LinePoint[1].x && PowerNets[i].path_metal[h].LinePoint[1].y==PowerNets[i].path_metal[l].LinePoint[1].y){
                   temp_via.position = PowerNets[i].path_metal[h].LinePoint[1];
                   temp_via.model_index = temp_metal_index;
                   UpdateVia(temp_via);

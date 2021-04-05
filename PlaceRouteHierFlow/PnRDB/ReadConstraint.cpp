@@ -1226,9 +1226,9 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
            if(node.Nets[i].name == temp_LinearConst.net_name){
              for(int j=0;j<node.Nets[i].connected.size();j++){
                 for(int k=0;k<temp_LinearConst.pins.size();k++){
-                  if(node.Nets[i].connected[j].type == PnRDB::Block and node.Nets[i].connected[j].iter == temp_LinearConst.pins[k].first and node.Nets[i].connected[j].iter2 == temp_LinearConst.pins[k].second){
+                  if(node.Nets[i].connected[j].type == PnRDB::Block && node.Nets[i].connected[j].iter == temp_LinearConst.pins[k].first && node.Nets[i].connected[j].iter2 == temp_LinearConst.pins[k].second){
                     node.Nets[i].connected[j].alpha = temp_LinearConst.alpha[k];
-                  }else if(node.Nets[i].connected[j].type == PnRDB::Terminal and temp_LinearConst.pins[k].first==-1 and node.Nets[i].connected[j].iter2 == temp_LinearConst.pins[k].second){
+                  }else if(node.Nets[i].connected[j].type == PnRDB::Terminal && temp_LinearConst.pins[k].first==-1 && node.Nets[i].connected[j].iter2 == temp_LinearConst.pins[k].second){
                     node.Nets[i].connected[j].alpha = temp_LinearConst.alpha[k];
                   }
                  }

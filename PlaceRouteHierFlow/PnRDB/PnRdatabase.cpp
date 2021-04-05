@@ -1672,7 +1672,7 @@ void PnRdatabase::WriteGlobalRoute(const PnRDB::hierNode& node, const string& ro
 
 	    for(unsigned int k=0;k<it->connectedContact.size();++k) {
 		if(it->connectedContact.at(k).metalIdx!=mIdx) {continue;}
-		if(it->connected.at(k).type==PnRDB::Block || (it->connected.at(k).type==PnRDB::Terminal and node.isTop)) {
+		if(it->connected.at(k).type==PnRDB::Block || (it->connected.at(k).type==PnRDB::Terminal && node.isTop)) {
 		    json jsonConnectedPin;
 		    if ( it->connected.at(k).type==PnRDB::Block) {
 			jsonConnectedPin["sink_name"] = node.Blocks.at(it->connected.at(k).iter2).instance.back().name + "/" + node.Blocks.at(it->connected.at(k).iter2).instance.back().blockPins.at(it->connected.at(k).iter).name;
@@ -1721,7 +1721,7 @@ void PnRdatabase::WriteGlobalRoute(PnRDB::hierNode& node, string rofile, string 
   int i=0;
   for(vector<PnRDB::net>::iterator it=node.Nets.begin(); it!=node.Nets.end(); ++it) {
     for(vector<PnRDB::Metal>::iterator it2=it->path_metal.begin(); it2!=it->path_metal.end(); ++it2) {
-      //if(it2->LinePoint.at(0).x==it2->LinePoint.at(1).x and it2->LinePoint.at(0).y==it2->LinePoint.at(1).y) {continue;}
+      //if(it2->LinePoint.at(0).x==it2->LinePoint.at(1).x && it2->LinePoint.at(0).y==it2->LinePoint.at(1).y) {continue;}
       if(i!=0) {OF2<<","<<std::endl;}
       i++;
       OF2<<"    { \"layer\": \""<<DRC_info.Metal_info.at(it2->MetalIdx).name;
@@ -1735,7 +1735,7 @@ void PnRdatabase::WriteGlobalRoute(PnRDB::hierNode& node, string rofile, string 
         if(it->connected.at(k).type==PnRDB::Block) {
           if(sinkCount!=0) {OF2<<","<<std::endl;}
           OF2<<"          { "<<"\"sink_name\": \""<<node.Blocks.at(it->connected.at(k).iter2).instance.back().name<<"/"<<node.Blocks.at(it->connected.at(k).iter2).instance.back().blockPins.at(it->connected.at(k).iter).name<<"\"";
-        } else if (it->connected.at(k).type==PnRDB::Terminal and node.isTop) {
+        } else if (it->connected.at(k).type==PnRDB::Terminal && node.isTop) {
           if(sinkCount!=0) {OF2<<","<<std::endl;}
           OF2<<"          { "<<"\"sink_name\": \""<<node.Terminals.at(it->connected.at(k).iter).name<<"\"";
         } else {continue;}
@@ -1755,13 +1755,13 @@ void PnRdatabase::WriteGlobalRoute(PnRDB::hierNode& node, string rofile, string 
   //  if(node.isTop) {
   //    if(it->connected.size()<=1) {continue;}
   //  } else {
-  //    if(!it->sink2Terminal and it->connected.size()<=1) {continue;}
-  //    if(it->sink2Terminal and it->connected.size()<=2) {continue;}
+  //    if(!it->sink2Terminal && it->connected.size()<=1) {continue;}
+  //    if(it->sink2Terminal && it->connected.size()<=2) {continue;}
   //  }
   //  for(int k=0;k<it->connectedContact.size();++k) {
   //    if(it->connected.at(k).type==PnRDB::Block) {
   //      OF2<<"    { \"net_name\": \""<<it->name<<"\", \"sink_name\": \""<<node.Blocks.at(it->connected.at(k).iter2).instance.back().name<<"/"<<node.Blocks.at(it->connected.at(k).iter2).instance.back().blockPins.at(it->connected.at(k).iter).name<<"\"";
-  //    } else if (it->connected.at(k).type==PnRDB::Terminal and node.isTop) {
+  //    } else if (it->connected.at(k).type==PnRDB::Terminal && node.isTop) {
   //      OF2<<"    { \"net_name\": \""<<it->name<<"\", \"sink_name\": \""<<node.Terminals.at(it->connected.at(k).iter).name<<"\"";
   //    } else {continue;}
   //    OF2<<", metalIdx: "<<it->connectedContact.at(k).metalIdx<<", \"layer\": \""<<it->connectedContact.at(k).conTact.metal<<"\", \"rect\": ["<<it->connectedContact.at(k).conTact.placedBox.LL.x<<", "<<it->connectedContact.at(k).conTact.placedBox.LL.y<<", "<<it->connectedContact.at(k).conTact.placedBox.UR.x<<", "<<it->connectedContact.at(k).conTact.placedBox.UR.y<<"] },"<<endl;
@@ -1843,7 +1843,7 @@ void PnRdatabase::WritePlaceRoute(PnRDB::hierNode& node, string pofile, string r
         //  cout<<"PnRDB-Error: undefined direction found"<<endl;
         //}
         OF<<"        { \"net_name\": \""<<it2->name<<"\", \"layer\": \""<<it3->metal<<"\", \"rect\": [ "<<it3->originBox.LL.x<<", "<<it3->originBox.LL.y<<", "<<it3->originBox.UR.x<<", "<<it3->originBox.UR.y<<"]}";
-        if(!(it2==(it->second).at(sel).macroPins.end()-1 and it3==it2->pinContacts.end()-1)) {
+        if(!(it2==(it->second).at(sel).macroPins.end()-1 && it3==it2->pinContacts.end()-1)) {
           OF<<",";
         }
         OF<<endl;

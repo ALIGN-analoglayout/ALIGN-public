@@ -459,7 +459,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 
     int x[5], y[5];
     int write_blockPins_name = 0;
-    if (write_blockPins_name and node.isTop ==1){
+    if (write_blockPins_name && node.isTop ==1){
 	for (unsigned int i = 0; i < node.blockPins.size(); i++) {
 	    int write = 0;
             logger->debug("Write blockPins info {0}",node.blockPins[i].name);

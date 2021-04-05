@@ -177,7 +177,7 @@ design::design(design& other, int mode) {
       // new symmetry pair
       for(std::vector< std::pair<int,int> >::iterator spit=sbit->sympair.begin(); spit!=sbit->sympair.end(); ++spit) {
         if(spit->first>=(int)other.Blocks.size() or spit->second>=(int)other.Blocks.size()) {continue;}
-        if(other.Blocks.at(spit->first).back().bigMacro and other.Blocks.at(spit->second).back().bigMacro) {
+        if(other.Blocks.at(spit->first).back().bigMacro && other.Blocks.at(spit->second).back().bigMacro) {
           int m1=other.Blocks.at(spit->first).back().mapIdx;
           int m2=other.Blocks.at(spit->second).back().mapIdx;
           SB.sympair.push_back( m1<m2 ? make_pair( m1,m2 ) : make_pair(m2,m1) );
@@ -223,7 +223,7 @@ design::design(design& other, int mode) {
     //
     logger->debug("Test: add matching block");
     for(vector<MatchBlock>::iterator it=other.Match_blocks.begin(); it!=other.Match_blocks.end(); ++it) {
-      if(other.Blocks.at(it->blockid1).back().bigMacro and other.Blocks.at(it->blockid2).back().bigMacro) {
+      if(other.Blocks.at(it->blockid1).back().bigMacro && other.Blocks.at(it->blockid2).back().bigMacro) {
         this->Match_blocks.resize(this->Match_blocks.size()+1);
         this->Match_blocks.back().blockid1=other.Blocks.at(it->blockid1).back().mapIdx;
         this->Match_blocks.back().blockid2=other.Blocks.at(it->blockid2).back().mapIdx;
@@ -232,7 +232,7 @@ design::design(design& other, int mode) {
     // Add preplace blocks
     logger->debug("Test: add preplace blocks");
     for(vector<Preplace>::iterator it=other.Preplace_blocks.begin(); it!=other.Preplace_blocks.end(); ++it) {
-      if(other.Blocks.at(it->blockid1).back().bigMacro and other.Blocks.at(it->blockid2).back().bigMacro) {
+      if(other.Blocks.at(it->blockid1).back().bigMacro && other.Blocks.at(it->blockid2).back().bigMacro) {
         this->Preplace_blocks.resize(this->Preplace_blocks.size()+1);
         this->Preplace_blocks.back().blockid1=other.Blocks.at(it->blockid1).back().mapIdx;
         this->Preplace_blocks.back().blockid2=other.Blocks.at(it->blockid2).back().mapIdx;
@@ -244,7 +244,7 @@ design::design(design& other, int mode) {
     // Add aligned blocks
     logger->debug("Test: add aligned block");
     for(vector<Alignment>::iterator it=other.Alignment_blocks.begin(); it!=other.Alignment_blocks.end(); ++it) {
-      if(other.Blocks.at(it->blockid1).back().bigMacro and other.Blocks.at(it->blockid2).back().bigMacro) {
+      if(other.Blocks.at(it->blockid1).back().bigMacro && other.Blocks.at(it->blockid2).back().bigMacro) {
         this->Alignment_blocks.resize(this->Alignment_blocks.size()+1);
         this->Alignment_blocks.back().blockid1=other.Blocks.at(it->blockid1).back().mapIdx;
         this->Alignment_blocks.back().blockid2=other.Blocks.at(it->blockid2).back().mapIdx;
@@ -255,7 +255,7 @@ design::design(design& other, int mode) {
     // Add abutted blocks
     logger->debug("Test: add abutted blocks");
     for(vector<Abument>::iterator it=other.Abument_blocks.begin(); it!=other.Abument_blocks.end(); ++it) {
-      if(other.Blocks.at(it->blockid1).back().bigMacro and other.Blocks.at(it->blockid2).back().bigMacro) {
+      if(other.Blocks.at(it->blockid1).back().bigMacro && other.Blocks.at(it->blockid2).back().bigMacro) {
         this->Abument_blocks.resize(this->Abument_blocks.size()+1);
         this->Abument_blocks.back().blockid1=other.Blocks.at(it->blockid1).back().mapIdx;
         this->Abument_blocks.back().blockid2=other.Blocks.at(it->blockid2).back().mapIdx;
@@ -304,7 +304,7 @@ design::design(design& other, int mode) {
       int sink=0;
       for(vector<placerDB::Node>::iterator it2=it->connected.begin(); it2!=it->connected.end(); ++it2) {
         if( it2->type==placerDB::Terminal ) { sink++;
-        } else if (it2->type==placerDB::Block and other.Blocks.at(it2->iter2).bigMacro ) { sink++;
+        } else if (it2->type==placerDB::Block && other.Blocks.at(it2->iter2).bigMacro ) { sink++;
         }
       }
       if( sink>1 ) {
@@ -317,7 +317,7 @@ design::design(design& other, int mode) {
             tmpnode.iter=it2->iter; tmpnode.iter2=-1;
             this->Terminals.at(tmpnode.iter).netIter=this->Nets.size();
             tmpnet.connected.push_back(tmpnode);
-          } else if (it2->type==placerDB::Block and other.Blocks.at(it2->iter2).bigMacro ) {
+          } else if (it2->type==placerDB::Block && other.Blocks.at(it2->iter2).bigMacro ) {
             tmpnode.type=placerDB::Block;
             tmpnode.iter=it2->iter; tmpnode.iter2=other.Blocks.at(it2->iter2).mapIdx;
             this->Blocks.at(tmpnode.iter2).blockPins.at(tmpnode.iter).netIter=this->Nets.size();
@@ -573,7 +573,7 @@ int design::GetSizeAsymBlock4Move(int mode) {
   int ss=0;
   for(unsigned int i=0;i<this->Blocks.size();++i) {
     if(mode==0) {
-    if(this->Blocks.at(i).back().mapIdx==-1 and this->Blocks.at(i).back().SBidx==-1) {ss++;}
+    if(this->Blocks.at(i).back().mapIdx==-1 && this->Blocks.at(i).back().SBidx==-1) {ss++;}
     } else {
     if(this->Blocks.at(i).back().SBidx==-1) {ss++;}
     }
@@ -588,12 +588,12 @@ int design::GetSizeSymGroup4PartMove(int mode) {
   if(mode==0) {
     for(unsigned int i=0;i<this->SBlocks.size();++i) {
       bool mark=false;
-      for(std::vector< std::pair<int,int> >::iterator it=this->SBlocks.at(i).sympair.begin(); it!=this->SBlocks.at(i).sympair.end() and !mark; ++it) {
-        if(it->first<this->GetSizeofBlocks() and it->second<this->GetSizeofBlocks()) {
-        if(this->Blocks.at(it->first).back().mapIdx==-1 and this->Blocks.at(it->second).back().mapIdx==-1) { mark=true; break;}
+      for(std::vector< std::pair<int,int> >::iterator it=this->SBlocks.at(i).sympair.begin(); it!=this->SBlocks.at(i).sympair.end() && !mark; ++it) {
+        if(it->first<this->GetSizeofBlocks() && it->second<this->GetSizeofBlocks()) {
+        if(this->Blocks.at(it->first).back().mapIdx==-1 && this->Blocks.at(it->second).back().mapIdx==-1) { mark=true; break;}
         }
       }
-      for(std::vector< std::pair<int,placerDB::Smark> >::iterator it=this->SBlocks.at(i).selfsym.begin(); it!=this->SBlocks.at(i).selfsym.end() and !mark; ++it) {
+      for(std::vector< std::pair<int,placerDB::Smark> >::iterator it=this->SBlocks.at(i).selfsym.begin(); it!=this->SBlocks.at(i).selfsym.end() && !mark; ++it) {
         if(it->first<this->GetSizeofBlocks()) {
         if(this->Blocks.at(it->first).back().mapIdx==-1) { mark=true; break;}
         }
@@ -777,7 +777,7 @@ void design::Generate_random_const(string random_constrain_file) {
 
 	int bias_Vgraph = 0;
 	int bias_Hgraph = 0;
-	while(bias_Vgraph<200 and bias_Hgraph<200){	
+	while(bias_Vgraph<200 && bias_Hgraph<200){	
     bias_Vgraph = (rand()%10) *50;
     bias_Hgraph = (rand()%10) *50;
     }	
@@ -1654,7 +1654,7 @@ vector<pair<int,int> > design::checkSympairInSymmBlock(vector<placerDB::SymmBloc
   for(unsigned int j=0; j<SBs.size(); ++j ) {
     for(vector< pair<int,int> >::iterator pi=SBs.at(j).sympair.begin(); pi!=SBs.at(j).sympair.end(); ++pi) {
       for( unsigned int i=0; i<Tsympair.size(); ++i ) {
-        if( pi->first==Tsympair.at(i).first and pi->second==Tsympair.at(i).second ) {
+        if( pi->first==Tsympair.at(i).first && pi->second==Tsympair.at(i).second ) {
           pp.push_back(make_pair(j,i));
         }
       }
@@ -1670,7 +1670,7 @@ vector<pair<int,int> > design::checkSelfsymInSymmBlock(vector<placerDB::SymmBloc
   for(unsigned int j=0; j<SBs.size(); ++j ) {
     for(vector< pair<int,placerDB::Smark> >::iterator pi=SBs.at(j).selfsym.begin(); pi!=SBs.at(j).selfsym.end(); ++pi) {
       for( unsigned int i=0; i<Tselfsym.size(); ++i ) {
-        if( pi->first==Tselfsym.at(i).first and pi->second==Tselfsym.at(i).second ) { 
+        if( pi->first==Tselfsym.at(i).first && pi->second==Tselfsym.at(i).second ) { 
           pp.push_back(make_pair(j,i));
         }
       }
@@ -1856,7 +1856,7 @@ void design::constructSymmGroup() {
   }
   SBlocks.clear();
   for(vector<placerDB::SymmBlock>::iterator it=SBs.begin();it!=SBs.end();++it) {
-    //if(it->sympair.empty() and it->selfsym.empty()) {continue;}
+    //if(it->sympair.empty() && it->selfsym.empty()) {continue;}
     SBlocks.resize(SBlocks.size()+1);
     SBlocks.back().sympair=it->sympair;
     SBlocks.back().selfsym=it->selfsym;
@@ -2024,11 +2024,11 @@ int design::GetBlockCounterpart(int blockid) {
 
 vector<int> design::GetRealBlockListfromSymmGroup(int sgid) {
   vector<int> blist;
-  if(sgid>=0 and sgid<(int)SBlocks.size()) {
+  if(sgid>=0 && sgid<(int)SBlocks.size()) {
     for(vector< pair<int,int> >::iterator sit=SBlocks.at(sgid).sympair.begin(); sit!=SBlocks.at(sgid).sympair.end(); ++sit) {
       if(this->mixFlag) {
-      if(sit->first<(int)Blocks.size() and Blocks.at(sit->first).back().mapIdx==-1) {blist.push_back(sit->first);}
-      if(sit->second<(int)Blocks.size() and Blocks.at(sit->first).back().mapIdx==-1) {blist.push_back(sit->second);}
+      if(sit->first<(int)Blocks.size() && Blocks.at(sit->first).back().mapIdx==-1) {blist.push_back(sit->first);}
+      if(sit->second<(int)Blocks.size() && Blocks.at(sit->first).back().mapIdx==-1) {blist.push_back(sit->second);}
       } else {
       if(sit->first<(int)Blocks.size() ) {blist.push_back(sit->first);}
       if(sit->second<(int)Blocks.size() ) {blist.push_back(sit->second);}
@@ -2036,7 +2036,7 @@ vector<int> design::GetRealBlockListfromSymmGroup(int sgid) {
     }
     for(vector<pair<int,placerDB::Smark> >::iterator sit=SBlocks.at(sgid).selfsym.begin(); sit!=SBlocks.at(sgid).selfsym.end(); ++sit) {
       if(this->mixFlag) {
-      if(sit->first<(int)Blocks.size() and Blocks.at(sit->first).back().mapIdx==-1) {blist.push_back(sit->first);}//cout<<"Push "<<sit->first<<endl;}
+      if(sit->first<(int)Blocks.size() && Blocks.at(sit->first).back().mapIdx==-1) {blist.push_back(sit->first);}//cout<<"Push "<<sit->first<<endl;}
       } else {
       if(sit->first<(int)Blocks.size()) {blist.push_back(sit->first);}//cout<<"Push "<<sit->first<<endl;}
       }
@@ -2047,7 +2047,7 @@ vector<int> design::GetRealBlockListfromSymmGroup(int sgid) {
 
 vector<int> design::GetRealBlockPlusAxisListfromSymmGroup(int sgid) {
   vector<int> blist;
-  if(sgid>=0 and sgid<(int)SBlocks.size()) {
+  if(sgid>=0 && sgid<(int)SBlocks.size()) {
     for(vector< pair<int,int> >::iterator sit=SBlocks.at(sgid).sympair.begin(); sit!=SBlocks.at(sgid).sympair.end(); ++sit) {
       if(sit->first<(int)Blocks.size()) {blist.push_back(sit->first);}
       if(sit->second<(int)Blocks.size()) {blist.push_back(sit->second);}
@@ -2062,7 +2062,7 @@ vector<int> design::GetRealBlockPlusAxisListfromSymmGroup(int sgid) {
 
 vector<int> design::GetBlockListfromSymmGroup(int sgid) {
   vector<int> blist;
-  if(sgid>=0 and sgid<(int)SBlocks.size()) {
+  if(sgid>=0 && sgid<(int)SBlocks.size()) {
     for(vector< pair<int,int> >::iterator sit=SBlocks.at(sgid).sympair.begin(); sit!=SBlocks.at(sgid).sympair.end(); ++sit) {
       blist.push_back(sit->first);
       blist.push_back(sit->second);
@@ -2111,14 +2111,14 @@ int design::CheckCommonSymmGroup(design& reducedNL, placerDB::SymmBlock& reduced
       // for each symmetry pair in current design *it
       for(vector< pair<int,int> >::iterator sqit=reducedSB.sympair.begin(); sqit!=reducedSB.sympair.end(); ++sqit) {
         // for each symmetry pair in reduced design *sqit
-        if(spit->first==reducedNL.GetMappedBlockIdx(sqit->first) and spit->second==reducedNL.GetMappedBlockIdx(sqit->second)) {return (it-this->SBlocks.begin());}
+        if(spit->first==reducedNL.GetMappedBlockIdx(sqit->first) && spit->second==reducedNL.GetMappedBlockIdx(sqit->second)) {return (it-this->SBlocks.begin());}
       }
     }
     for(vector< pair<int,placerDB::Smark> >::iterator sfit=it->selfsym.begin(); sfit!=it->selfsym.end(); ++sfit) {
       // for each self-symmetry block in current design *it
       for(vector< pair<int,placerDB::Smark> >::iterator sgit=reducedSB.selfsym.begin(); sgit!=reducedSB.selfsym.end(); ++sgit) {
         // for each self-symmetry block in reduced design *sgit
-        if(sfit->first==reducedNL.GetMappedBlockIdx(sgit->first) and sfit->second==sgit->second) {return (it-this->SBlocks.begin());}
+        if(sfit->first==reducedNL.GetMappedBlockIdx(sgit->first) && sfit->second==sgit->second) {return (it-this->SBlocks.begin());}
       }
     }
   }
@@ -2126,7 +2126,7 @@ int design::CheckCommonSymmGroup(design& reducedNL, placerDB::SymmBlock& reduced
 }
 
 int design::GetMappedBlockIdx(int idx) {
-  if(idx>=0 and idx<(int)Blocks.size()) {
+  if(idx>=0 && idx<(int)Blocks.size()) {
     return Blocks.at(idx).back().mapIdx;
   } else {
     return -1;
@@ -2134,7 +2134,7 @@ int design::GetMappedBlockIdx(int idx) {
 }
 
 int design::GetMappedSymmBlockIdx(int idx) {
-  if(idx>=0 and idx<(int)SBlocks.size()) {
+  if(idx>=0 && idx<(int)SBlocks.size()) {
     return SBlocks.at(idx).mapIdx;
   } else {
     return -1;
@@ -2167,7 +2167,7 @@ std::vector<placerDB::SymmBlock> design::SplitSymmBlock(design& reducedNL, int o
     for(std::vector< pair<int,int> >::iterator it2=reducedSB.sympair.begin(); it2!=reducedSB.sympair.end(); ++it2) {
       int reduced1=reducedNL.Blocks.at(it2->first).back().mapIdx;
       int reduced2=reducedNL.Blocks.at(it2->second).back().mapIdx;
-      if(origin1==reduced1 and origin2==reduced2) {mark=true; break;}
+      if(origin1==reduced1 && origin2==reduced2) {mark=true; break;}
     }
     if(mark) { comm.sympair.push_back( *it );}
     else { diff.sympair.push_back( *it );}
@@ -2177,7 +2177,7 @@ std::vector<placerDB::SymmBlock> design::SplitSymmBlock(design& reducedNL, int o
     bool mark=false;
     for(std::vector< pair<int,placerDB::Smark> >::iterator it2=reducedSB.selfsym.begin(); it2!=reducedSB.selfsym.end(); ++it2) {
        int reduced1=reducedNL.Blocks.at(it2->first).back().mapIdx;
-      if(it->first==reduced1 and it->second==it2->second) {mark=true; break;}
+      if(it->first==reduced1 && it->second==it2->second) {mark=true; break;}
     }
     if(mark) { comm.selfsym.push_back( *it );}
     else { diff.selfsym.push_back( *it );}
@@ -2202,7 +2202,7 @@ int design::GetBlockMargin(int i, int j) {
     int inet=this->Blocks.at(i).back().blockPins.at(a).netIter;
     if(inet==-1) {continue;}
     for(vector<placerDB::Node>::iterator it=this->Nets.at(inet).connected.begin(); it!=this->Nets.at(inet).connected.end(); ++it) {
-      if(it->type==placerDB::Block and it->iter2==j and this->Nets.at(inet).margin>margin) {
+      if(it->type==placerDB::Block && it->iter2==j && this->Nets.at(inet).margin>margin) {
         margin=this->Nets.at(inet).margin; break;
       }
     }

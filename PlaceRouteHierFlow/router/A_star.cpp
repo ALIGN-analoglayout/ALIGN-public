@@ -105,7 +105,7 @@ std::vector<std::vector<RouterDB::Metal> > A_star::ConvertPathintoPhysical(Grid&
               temp_metal.LinePoint.push_back(temp_point);
               flag_start_write = 0;
             }
-           if(j<(int) Path[i].size()-1 and grid.vertices_total[Path[i][j]].metal!=grid.vertices_total[Path[i][j+1]].metal){
+           if(j<(int) Path[i].size()-1 && grid.vertices_total[Path[i][j]].metal!=grid.vertices_total[Path[i][j+1]].metal){
               flag_start_write = 1;
               temp_point.x = grid.vertices_total[Path[i][j]].x;
               temp_point.y = grid.vertices_total[Path[i][j]].y;
@@ -113,7 +113,7 @@ std::vector<std::vector<RouterDB::Metal> > A_star::ConvertPathintoPhysical(Grid&
               temp_metal.width = grid.drc_info.Metal_info[grid.vertices_total[Path[i][j]].metal].width;
               temp_physical_path.push_back(temp_metal);
             }
-            if(j==(int) Path[i].size()-1 and flag_start_write == 0){
+            if(j==(int) Path[i].size()-1 && flag_start_write == 0){
 
               flag_start_write = 1;
               temp_point.x = grid.vertices_total[Path[i][j]].x;
@@ -169,8 +169,8 @@ void A_star::initial_source(Grid& grid, std::set<std::pair<int,int>, RouterDB::p
 
 bool A_star::expand_node_ud(int direction, std::vector<int> &temp_node, Grid &grid){
 
-  //if( direction!= -1 and grid.vertices_total[direction].active and grid.vertices_total[direction].Cost==-1){
-  if( direction!= -1 and grid.vertices_total[direction].active){
+  //if( direction!= -1 && grid.vertices_total[direction].active && grid.vertices_total[direction].Cost==-1){
+  if( direction!= -1 && grid.vertices_total[direction].active){
      temp_node.push_back(direction);
     }
 
@@ -257,7 +257,7 @@ bool A_star::expand_node(std::vector<int> &direction, std::vector<int> &temp_nod
 
   for(int i=0;i<(int)direction.size();i++){
  
-       //if(grid.vertices_total[direction[i]].active and grid.vertices_total[direction[i]].Cost==-1){
+       //if(grid.vertices_total[direction[i]].active && grid.vertices_total[direction[i]].Cost==-1){
        if(grid.vertices_total[direction[i]].active){
        temp_node.push_back(direction[i]);
        }
@@ -292,25 +292,25 @@ int A_star::trace_back_node_parent(int current_node, Grid& grid, std::set<int> &
 
     if(last_node<0 or last_node>=grid.vertices_total.size()){
       trace_back_flag = false;
-    }else if(grid.vertices_total[last_node].metal == grid.vertices_total[dummy_node].metal and last_nodes.find(last_node)==last_nodes.end()){
+    }else if(grid.vertices_total[last_node].metal == grid.vertices_total[dummy_node].metal && last_nodes.find(last_node)==last_nodes.end()){
       first_node_same_layer = last_node;
       dummy_node = last_node;
-    }else if(grid.vertices_total[last_node].metal != grid.vertices_total[dummy_node].metal and last_nodes.find(last_node)==last_nodes.end()){
+    }else if(grid.vertices_total[last_node].metal != grid.vertices_total[dummy_node].metal && last_nodes.find(last_node)==last_nodes.end()){
       trace_back_flag = false;
     }
 
 /*
     if(last_node<0 or last_node>=grid.vertices_total.size()){
       trace_back_flag = false;
-    }else if(grid.vertices_total[last_node].metal == grid.vertices_total[dummy_node].metal and last_nodes.find(last_node)==last_nodes.end()){
+    }else if(grid.vertices_total[last_node].metal == grid.vertices_total[dummy_node].metal && last_nodes.find(last_node)==last_nodes.end()){
       first_node_same_layer = last_node;
       dummy_node = last_node;
-    }else if(grid.vertices_total[last_node].metal != grid.vertices_total[dummy_node].metal and last_nodes.find(last_node)==last_nodes.end()){
+    }else if(grid.vertices_total[last_node].metal != grid.vertices_total[dummy_node].metal && last_nodes.find(last_node)==last_nodes.end()){
       trace_back_flag = false;
-    }else if(last_nodes.find(last_node)!=last_nodes.end() and source_index.find(last_node)!=source_index.end()){
+    }else if(last_nodes.find(last_node)!=last_nodes.end() && source_index.find(last_node)!=source_index.end()){
       first_node_same_layer = last_node;
       trace_back_flag = false;
-    }else if(last_nodes.find(last_node)!=last_nodes.end() and source_index.find(last_node)==source_index.end()){
+    }else if(last_nodes.find(last_node)!=last_nodes.end() && source_index.find(last_node)==source_index.end()){
       assert(0);
     }
     last_nodes.insert(last_node);
@@ -342,25 +342,25 @@ int A_star::trace_back_node(int current_node, Grid& grid, std::set<int> &source_
 
     if(last_node<0 or last_node>=grid.vertices_total.size()){
       trace_back_flag = false;
-    }else if(grid.vertices_total[last_node].metal == grid.vertices_total[dummy_node].metal and last_nodes.find(last_node)==last_nodes.end()){
+    }else if(grid.vertices_total[last_node].metal == grid.vertices_total[dummy_node].metal && last_nodes.find(last_node)==last_nodes.end()){
       first_node_same_layer = last_node;
       dummy_node = last_node;
-    }else if(grid.vertices_total[last_node].metal != grid.vertices_total[dummy_node].metal and last_nodes.find(last_node)==last_nodes.end()){
+    }else if(grid.vertices_total[last_node].metal != grid.vertices_total[dummy_node].metal && last_nodes.find(last_node)==last_nodes.end()){
       trace_back_flag = false;
     }
 
 /*
     if(last_node<0 or last_node>=grid.vertices_total.size()){
       trace_back_flag = false;
-    }else if(grid.vertices_total[last_node].metal == grid.vertices_total[dummy_node].metal and last_nodes.find(last_node)==last_nodes.end()){
+    }else if(grid.vertices_total[last_node].metal == grid.vertices_total[dummy_node].metal && last_nodes.find(last_node)==last_nodes.end()){
       first_node_same_layer = last_node;
       dummy_node = last_node;
-    }else if(grid.vertices_total[last_node].metal != grid.vertices_total[dummy_node].metal and last_nodes.find(last_node)==last_nodes.end()){
+    }else if(grid.vertices_total[last_node].metal != grid.vertices_total[dummy_node].metal && last_nodes.find(last_node)==last_nodes.end()){
       trace_back_flag = false;
-    }else if(last_nodes.find(last_node)!=last_nodes.end() and source_index.find(last_node)!=source_index.end()){
+    }else if(last_nodes.find(last_node)!=last_nodes.end() && source_index.find(last_node)!=source_index.end()){
       first_node_same_layer = last_node;
       trace_back_flag = false;
-    }else if(last_nodes.find(last_node)!=last_nodes.end() and source_index.find(last_node)==source_index.end()){
+    }else if(last_nodes.find(last_node)!=last_nodes.end() && source_index.find(last_node)==source_index.end()){
       assert(0);
     }
     last_nodes.insert(last_node);
@@ -409,7 +409,7 @@ bool A_star::CheckExendable_With_Certain_Length(int first_node_same_layer,int cu
        }else if(grid.vertices_total[next_node].active==0) {
           search_flag = false;
           feasible = false;
-       }else if( (grid.vertices_total[next_node].x != grid.vertices_total[first_node_same_layer].x and grid.vertices_total[next_node].y != grid.vertices_total[first_node_same_layer].y) or grid.vertices_total[next_node].metal != grid.vertices_total[first_node_same_layer].metal ){
+       }else if( (grid.vertices_total[next_node].x != grid.vertices_total[first_node_same_layer].x && grid.vertices_total[next_node].y != grid.vertices_total[first_node_same_layer].y) or grid.vertices_total[next_node].metal != grid.vertices_total[first_node_same_layer].metal ){
           search_flag = false;
           feasible = false;
        }else {
@@ -433,7 +433,7 @@ bool A_star::CheckExendable_With_Certain_Length(int first_node_same_layer,int cu
        }else if(grid.vertices_total[next_node].active==0) {
           search_flag = false;
           feasible = false;
-       }else if( (grid.vertices_total[next_node].x != grid.vertices_total[current_node].x and grid.vertices_total[next_node].y != grid.vertices_total[current_node].y) or grid.vertices_total[next_node].metal != grid.vertices_total[current_node].metal){
+       }else if( (grid.vertices_total[next_node].x != grid.vertices_total[current_node].x && grid.vertices_total[next_node].y != grid.vertices_total[current_node].y) or grid.vertices_total[next_node].metal != grid.vertices_total[current_node].metal){
           search_flag = false;
           feasible = false;
        }else {
@@ -813,7 +813,7 @@ bool A_star::parallel_routing(Grid& grid, int current_node, int next_node, int l
 
 
 
-  if(found_s and found_e){
+  if(found_s && found_e){
 
      //assert(0);
      logger->debug("L shape connection 1");
@@ -878,7 +878,7 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
     //assert(0);
     if(next <0 or next>= grid.vertices_total.size()){
       return false;
-    }else if(next>=0 and next< grid.vertices_total.size() ){
+    }else if(next>=0 && next< grid.vertices_total.size() ){
       node_set_up.push_back(next); 
     }else{
       logger->error("L shape connection check bug, next node is out of grid");
@@ -910,7 +910,7 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
     int next = find_next_node(grid, current_node, x, y, metal, dummy_layer);
     if(next <0 or next>= grid.vertices_total.size()){
       return false;
-    }else if(next>=0 and next< grid.vertices_total.size() ){
+    }else if(next>=0 && next< grid.vertices_total.size() ){
       //grid.vertices_total[next].trace_back_node = current_node;
       node_set_down.push_back(next); 
     }else{
@@ -945,29 +945,29 @@ int A_star::find_next_node( Grid& grid, int current_node, int x, int y, int laye
 
   int next_node = -1;
 
-  if(drc_info.Metal_info[grid.vertices_total[current_node].metal].direct==1 and x!=0){//h
+  if(drc_info.Metal_info[grid.vertices_total[current_node].metal].direct==1 && x!=0){//h
     next_node = current_node + x;
-  }else if(drc_info.Metal_info[grid.vertices_total[current_node].metal].direct==1 and x==0 and layer!=0){
+  }else if(drc_info.Metal_info[grid.vertices_total[current_node].metal].direct==1 && x==0 && layer!=0){
     if(layer>0){
       next_node = grid.vertices_total[current_node].up;
     }else{
       next_node = grid.vertices_total[current_node].down;
     }
-  }else if(drc_info.Metal_info[grid.vertices_total[current_node].metal].direct==1 and x==0 and layer==0){
+  }else if(drc_info.Metal_info[grid.vertices_total[current_node].metal].direct==1 && x==0 && layer==0){
     if(dummy_layer>0){
       next_node = grid.vertices_total[current_node].up;
     }else{
       next_node = grid.vertices_total[current_node].down;
     }
-  }else if(drc_info.Metal_info[grid.vertices_total[current_node].metal].direct==0 and y!=0){//v
+  }else if(drc_info.Metal_info[grid.vertices_total[current_node].metal].direct==0 && y!=0){//v
     next_node = current_node + y;
-  }else if(drc_info.Metal_info[grid.vertices_total[current_node].metal].direct==0 and y==0 and layer!=0){
+  }else if(drc_info.Metal_info[grid.vertices_total[current_node].metal].direct==0 && y==0 && layer!=0){
     if(layer>0){
       next_node = grid.vertices_total[current_node].up;
     }else{
       next_node = grid.vertices_total[current_node].down;
     }
-  }else if(drc_info.Metal_info[grid.vertices_total[current_node].metal].direct==0 and y==0 and layer==0){
+  }else if(drc_info.Metal_info[grid.vertices_total[current_node].metal].direct==0 && y==0 && layer==0){
     if(dummy_layer>0){
       next_node = grid.vertices_total[current_node].up;
     }else{
@@ -993,11 +993,11 @@ bool A_star::Check_activa_via_active(Grid& grid, std::vector<int> &nodes){
      }
      int parent_metal = grid.vertices_total[parent].metal;
      int current_metal = grid.vertices_total[nodes[i]].metal;
-     if(parent_metal == current_metal and !grid.vertices_total[nodes[i]].active){
+     if(parent_metal == current_metal && !grid.vertices_total[nodes[i]].active){
        return false;
-     }else if(parent_metal > current_metal and (!grid.vertices_total[nodes[i]].active or !grid.vertices_total[nodes[i]].via_active_up or !grid.vertices_total[parent].active or !grid.vertices_total[parent].via_active_down)){
+     }else if(parent_metal > current_metal && (!grid.vertices_total[nodes[i]].active or !grid.vertices_total[nodes[i]].via_active_up or !grid.vertices_total[parent].active or !grid.vertices_total[parent].via_active_down)){
        return false;
-     }else if(parent_metal < current_metal and (!grid.vertices_total[nodes[i]].active or !grid.vertices_total[nodes[i]].via_active_down or !grid.vertices_total[parent].active or !grid.vertices_total[parent].via_active_up)){
+     }else if(parent_metal < current_metal && (!grid.vertices_total[nodes[i]].active or !grid.vertices_total[nodes[i]].via_active_down or !grid.vertices_total[parent].active or !grid.vertices_total[parent].via_active_up)){
        return false;
      }
      
@@ -1026,11 +1026,11 @@ bool A_star::Check_activa_via_active(Grid& grid, std::vector<int> &nodes){
      int parent_metal = grid.vertices_total[parent].metal;
      int current_metal = grid.vertices_total[nodes[i]].metal;
 
-     if(parent_metal == current_metal and !grid.vertices_total[nodes[i]].active){
+     if(parent_metal == current_metal && !grid.vertices_total[nodes[i]].active){
        return false;
-     }else if(parent_metal > current_metal and (!grid.vertices_total[nodes[i]].active or !grid.vertices_total[nodes[i]].via_active_up or !grid.vertices_total[parent].active or !grid.vertices_total[parent].via_active_down)){
+     }else if(parent_metal > current_metal && (!grid.vertices_total[nodes[i]].active or !grid.vertices_total[nodes[i]].via_active_up or !grid.vertices_total[parent].active or !grid.vertices_total[parent].via_active_down)){
        return false;
-     }else if(parent_metal < current_metal and (!grid.vertices_total[nodes[i]].active or !grid.vertices_total[nodes[i]].via_active_down or !grid.vertices_total[parent].active or !grid.vertices_total[parent].via_active_up)){
+     }else if(parent_metal < current_metal && (!grid.vertices_total[nodes[i]].active or !grid.vertices_total[nodes[i]].via_active_down or !grid.vertices_total[parent].active or !grid.vertices_total[parent].via_active_up)){
        return false;
      }
     
@@ -1083,7 +1083,7 @@ bool A_star::Extention_check_prime(Grid& grid, int current_node, int next_node, 
         }
       }
 
-  if(delta_length<0 and length >= via_space_length){
+  if(delta_length<0 && length >= via_space_length){
        bool feasible = CheckExendable_With_Certain_Length(node_same_layer,current_node,length,minL,grid);
        return feasible;
     }else if(length >= via_space_length){
@@ -1105,7 +1105,7 @@ bool A_star::Extention_check(Grid& grid, int current_node, std::set<int> &source
   if(parent==-1 ){
     return true;
   }
-  if(parent>=0 and parent<grid.vertices_total.size()){
+  if(parent>=0 && parent<grid.vertices_total.size()){
 
     if(grid.vertices_total[current_node].metal==grid.vertices_total[parent].metal){
       return true;
@@ -1136,7 +1136,7 @@ bool A_star::Extention_check(Grid& grid, int current_node, std::set<int> &source
               }
           }
        }
-       if(delta_length<0 and length >= via_space_length){
+       if(delta_length<0 && length >= via_space_length){
            bool feasible = CheckExendable_With_Certain_Length(node_same_layer,parent,length,minL,grid);
            return feasible;
        }else if(length >= via_space_length){
@@ -1205,7 +1205,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left
   bool found = 0;
   int current_node = -1;
 
-  while(!L_list.empty() and !found){
+  while(!L_list.empty() && !found){
 
     std::set<std::pair<int,int>, RouterDB::pairComp>::iterator it;
     it = L_list.begin();
@@ -1339,7 +1339,7 @@ int A_star::Find_Symmetry_cost(Grid& grid, int current_node, RouterDB::Metal &te
     length_cost = abs(y-temp_path.LinePoint[0].y);
     int min_x = std::min(temp_path.LinePoint[0].x,temp_path.LinePoint[1].x);
     int max_x = std::max(temp_path.LinePoint[0].x,temp_path.LinePoint[1].x);
-    if(x<=max_x and x>=min_x){
+    if(x<=max_x && x>=min_x){
       length_cost +=0;
     }else{
       length_cost += std::min(abs(x-min_x),abs(x-max_x));
@@ -1348,7 +1348,7 @@ int A_star::Find_Symmetry_cost(Grid& grid, int current_node, RouterDB::Metal &te
     length_cost = abs(x-temp_path.LinePoint[0].x);
     int min_y = std::min(temp_path.LinePoint[0].y,temp_path.LinePoint[1].y);
     int max_y = std::max(temp_path.LinePoint[0].y,temp_path.LinePoint[1].y);
-    if(y<=max_y and y>=min_y){
+    if(y<=max_y && y>=min_y){
       length_cost +=0;
     }else{
       length_cost += std::min(abs(y-min_y),abs(y-max_y));
@@ -1393,7 +1393,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
   bool found = 0;
   int current_node = -1;
 
-  while(!L_list.empty() and !found){
+  while(!L_list.empty() && !found){
 
     std::set<std::pair<int,int>, RouterDB::pairComp>::iterator it;
     it = L_list.begin();
@@ -1534,7 +1534,7 @@ void A_star::rm_cycle_path(std::vector<std::vector<int> > &Node_Path){
         int first_node = -1;
         int end_node = -1;
         for(int j =0; j < Node_Path[i].size(); j++){
-           if(Node_Path[i][j]==*it and first_node==-1){
+           if(Node_Path[i][j]==*it && first_node==-1){
               first_node = j+1;
            }else if(Node_Path[i][j]==*it){
               end_node = j;

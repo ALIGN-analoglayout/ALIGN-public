@@ -141,7 +141,7 @@ GlobalGrid::GlobalGrid(PnRDB::Drc_info& drc_info, int LLx, int LLy, int URx, int
     int layerIdx=(i-Lmetal)/tileLayerNo; // current tile index
     this->tile2metal[layerIdx].clear();
     std::vector<int> tmpV;
-    for(int j=0;j<tileLayerNo and i+j<=Hmetal;j++) {
+    for(int j=0;j<tileLayerNo && i+j<=Hmetal;j++) {
       logger->debug("Traverse layer ",j);
       this->metal2tile[i+j]=layerIdx;
       this->tile2metal[layerIdx].insert(i+j);
@@ -174,7 +174,7 @@ GlobalGrid::GlobalGrid(PnRDB::Drc_info& drc_info, int LLx, int LLy, int URx, int
         tmpT.Xidx=Xidx; tmpT.Yidx=Yidx;
         tmpT.tileLayer=layerIdx;
         //tmpT.metal.clear();
-        //for(int j=0;j<tileLayerNo and i+j<=Hmetal;j++) {
+        //for(int j=0;j<tileLayerNo && i+j<=Hmetal;j++) {
         //  tmpT.metal.insert(i+j);
         //}
         RouterDB::point tmpP;

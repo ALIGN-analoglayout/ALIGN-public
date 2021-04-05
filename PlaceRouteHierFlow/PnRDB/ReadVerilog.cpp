@@ -248,10 +248,10 @@ db.hierTree[i].Terminals[db.hierTree[i].Nets[j].connected[k].iter].netIter = j;
                 logger->debug("Connected {0} {1} {2}",db.hierTree[i].Nets[k].connected[h].type,db.hierTree[i].Nets[k].connected[h].iter,db.hierTree[i].Nets[k].connected[h].iter2);
                 for(int l=0;l<temp_LinearConst.pins.size();l++){
                   logger->debug("LinearConst cont {0} {1} {2}",temp_LinearConst.pins[l].first,temp_LinearConst.pins[l].second,temp_LinearConst.alpha[l]);
-                  if(db.hierTree[i].Nets[k].connected[h].type == PnRDB::Block and db.hierTree[i].Nets[k].connected[h].iter2 == temp_LinearConst.pins[l].first and db.hierTree[i].Nets[k].connected[h].iter == temp_LinearConst.pins[l].second){
+                  if(db.hierTree[i].Nets[k].connected[h].type == PnRDB::Block && db.hierTree[i].Nets[k].connected[h].iter2 == temp_LinearConst.pins[l].first && db.hierTree[i].Nets[k].connected[h].iter == temp_LinearConst.pins[l].second){
                     logger->debug("LinearConst alpha {0}",temp_LinearConst.alpha[l]);
                     db.hierTree[i].Nets[k].connected[h].alpha = temp_LinearConst.alpha[l];
-                  }else if(db.hierTree[i].Nets[k].connected[h].type == PnRDB::Terminal and temp_LinearConst.pins[l].first==-1 and db.hierTree[i].Nets[k].connected[h].iter == temp_LinearConst.pins[l].second){
+                  }else if(db.hierTree[i].Nets[k].connected[h].type == PnRDB::Terminal && temp_LinearConst.pins[l].first==-1 && db.hierTree[i].Nets[k].connected[h].iter == temp_LinearConst.pins[l].second){
                     db.hierTree[i].Nets[k].connected[h].alpha = temp_LinearConst.alpha[l];
                     logger->debug("LinearConst alpha {0}",temp_LinearConst.alpha[l]);
                   }

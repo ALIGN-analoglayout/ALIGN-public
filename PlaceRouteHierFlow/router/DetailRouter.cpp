@@ -207,7 +207,7 @@ std::vector<std::vector<RouterDB::SinkData> > DetailRouter::findPins(RouterDB::N
             int found = 0;
             for(unsigned int k=0;k<temp_Pin.size();k++){
                for(unsigned int l=0;l<temp_Pin[k].size();l++){
-                  if(temp_pin_s[j].coord[0].x==temp_Pin[k][l].coord[0].x and temp_pin_s[j].coord[0].y==temp_Pin[k][l].coord[0].y and temp_pin_s[j].coord[1].x==temp_Pin[k][l].coord[1].x and temp_pin_s[j].coord[1].y==temp_Pin[k][l].coord[1].y and temp_pin_s[j].metalIdx == temp_Pin[k][l].metalIdx){found=1;}
+                  if(temp_pin_s[j].coord[0].x==temp_Pin[k][l].coord[0].x && temp_pin_s[j].coord[0].y==temp_Pin[k][l].coord[0].y && temp_pin_s[j].coord[1].x==temp_Pin[k][l].coord[1].x && temp_pin_s[j].coord[1].y==temp_Pin[k][l].coord[1].y && temp_pin_s[j].metalIdx == temp_Pin[k][l].metalIdx){found=1;}
                   }
                }
             if(found==0){temp_pin_ss.push_back(temp_pin_s[j]);}
@@ -220,7 +220,7 @@ std::vector<std::vector<RouterDB::SinkData> > DetailRouter::findPins(RouterDB::N
             int found = 0;
             for(unsigned int k=0;k<temp_Pin.size();k++){
                for(unsigned int l=0;l<temp_Pin[k].size();l++){
-                  if(temp_pin_d[j].coord[0].x==temp_Pin[k][l].coord[0].x and temp_pin_d[j].coord[0].y==temp_Pin[k][l].coord[0].y and temp_pin_d[j].coord[1].x==temp_Pin[k][l].coord[1].x and temp_pin_d[j].coord[1].y==temp_Pin[k][l].coord[1].y and temp_pin_d[j].metalIdx == temp_Pin[k][l].metalIdx){found=1;}
+                  if(temp_pin_d[j].coord[0].x==temp_Pin[k][l].coord[0].x && temp_pin_d[j].coord[0].y==temp_Pin[k][l].coord[0].y && temp_pin_d[j].coord[1].x==temp_Pin[k][l].coord[1].x && temp_pin_d[j].coord[1].y==temp_Pin[k][l].coord[1].y && temp_pin_d[j].metalIdx == temp_Pin[k][l].metalIdx){found=1;}
                   }
                }
             if(found==0){temp_pin_dd.push_back(temp_pin_d[j]);}
@@ -285,8 +285,8 @@ std::vector<std::vector<RouterDB::SinkData> > DetailRouter::findPins(RouterDB::N
        for(int j=0;j<temp_Pin[i].size();j++){
             for(int k=0;k<temp_Pin.size();k++){
                  for(int l=0;l<temp_Pin[k].size();l++){ 
-                       if(i==k and j==l){continue;}
-                       if(temp_Pin[i][j].coord[0].x == temp_Pin[k][l].coord[0].x and temp_Pin[i][j].coord[0].y == temp_Pin[k][l].coord[0].y and temp_Pin[i][j].coord[1].x == temp_Pin[k][l].coord[1].x and temp_Pin[i][j].coord[1].y == temp_Pin[k][l].coord[1].y and temp_Pin[i][j].metalIdx == temp_Pin[k][l].metalIdx){std::cout<<"Pin Error"<<std::endl;}
+                       if(i==k && j==l){continue;}
+                       if(temp_Pin[i][j].coord[0].x == temp_Pin[k][l].coord[0].x && temp_Pin[i][j].coord[0].y == temp_Pin[k][l].coord[0].y && temp_Pin[i][j].coord[1].x == temp_Pin[k][l].coord[1].x && temp_Pin[i][j].coord[1].y == temp_Pin[k][l].coord[1].y && temp_Pin[i][j].metalIdx == temp_Pin[k][l].metalIdx){std::cout<<"Pin Error"<<std::endl;}
                     }
                }
           }
@@ -351,14 +351,14 @@ void DetailRouter::splitPath(std::vector<std::vector<RouterDB::Metal> > temp_pat
          }
 
 
-      if(temp_metalIdx ==temp_net.path_metal[i].MetalIdx and temp_point.x>Lpoint.x and temp_point.x<Upoint.x and temp_point.y==Lpoint.y and temp_point.y==Upoint.y){
+      if(temp_metalIdx ==temp_net.path_metal[i].MetalIdx && temp_point.x>Lpoint.x && temp_point.x<Upoint.x && temp_point.y==Lpoint.y && temp_point.y==Upoint.y){
           
           found_index = i;
           break;
         
          }
 
-      if(temp_metalIdx ==temp_net.path_metal[i].MetalIdx and temp_point.x==Lpoint.x and temp_point.x==Upoint.x and temp_point.y>Lpoint.y and temp_point.y<Upoint.y){
+      if(temp_metalIdx ==temp_net.path_metal[i].MetalIdx && temp_point.x==Lpoint.x && temp_point.x==Upoint.x && temp_point.y>Lpoint.y && temp_point.y<Upoint.y){
           found_index = i;
           break;
          }
@@ -398,11 +398,11 @@ void DetailRouter::lastmile_source_new(std::vector<std::vector<RouterDB::Metal> 
 
   for(unsigned int i =0;i<temp_source.size();i++){
      
-     //if(temp_source[i].coord[0].x<=temp_source[i].coord[1].x and temp_source[i].coord[0].y<=temp_source[i].coord[1].y){}else{}//std::cout<<"EEroor"<<std::endl;} 
+     //if(temp_source[i].coord[0].x<=temp_source[i].coord[1].x && temp_source[i].coord[0].y<=temp_source[i].coord[1].y){}else{}//std::cout<<"EEroor"<<std::endl;} 
        
-     if(temp_point.x>=temp_source[i].coord[0].x and temp_point.y>=temp_source[i].coord[0].y and temp_point.x<=temp_source[i].coord[1].x and temp_point.y<=temp_source[i].coord[1].y and temp_source[i].metalIdx == temp_metal_metalidx){connected = 1;}
+     if(temp_point.x>=temp_source[i].coord[0].x && temp_point.y>=temp_source[i].coord[0].y && temp_point.x<=temp_source[i].coord[1].x && temp_point.y<=temp_source[i].coord[1].y && temp_source[i].metalIdx == temp_metal_metalidx){connected = 1;}
 
-     if(abs(temp_source[i].coord[0].x - temp_point.x)+abs(temp_source[i].coord[0].y - temp_point.y)<dis and temp_source[i].metalIdx == temp_metal_metalidx){
+     if(abs(temp_source[i].coord[0].x - temp_point.x)+abs(temp_source[i].coord[0].y - temp_point.y)<dis && temp_source[i].metalIdx == temp_metal_metalidx){
          dis = abs(temp_source[i].coord[0].x - temp_point.x)+abs(temp_source[i].coord[0].y - temp_point.y);
          source_point = temp_source[i].coord[0];
          point_flag = 0;
@@ -410,7 +410,7 @@ void DetailRouter::lastmile_source_new(std::vector<std::vector<RouterDB::Metal> 
 
 
 
-     if(abs(temp_source[i].coord[1].x - temp_point.x)+abs(temp_source[i].coord[1].y - temp_point.y)<dis and temp_source[i].metalIdx == temp_metal_metalidx){
+     if(abs(temp_source[i].coord[1].x - temp_point.x)+abs(temp_source[i].coord[1].y - temp_point.y)<dis && temp_source[i].metalIdx == temp_metal_metalidx){
          dis = abs(temp_source[i].coord[1].x - temp_point.x)+abs(temp_source[i].coord[1].y - temp_point.y);
          source_point = temp_source[i].coord[1];
          point_flag = 1;
@@ -513,17 +513,17 @@ void DetailRouter::lastmile_dest_new(std::vector<std::vector<RouterDB::Metal> > 
 
   for(unsigned int i =0;i<temp_source.size();i++){
      
-     //if(temp_source[i].coord[0].x<=temp_source[i].coord[1].x and temp_source[i].coord[0].y<=temp_source[i].coord[1].y){}else{std::cout<<"EEroor"<<std::endl;}  
+     //if(temp_source[i].coord[0].x<=temp_source[i].coord[1].x && temp_source[i].coord[0].y<=temp_source[i].coord[1].y){}else{std::cout<<"EEroor"<<std::endl;}  
        
-     if(temp_point.x>=temp_source[i].coord[0].x and temp_point.y>=temp_source[i].coord[0].y and temp_point.x<=temp_source[i].coord[1].x and temp_point.y<=temp_source[i].coord[1].y and temp_source[i].metalIdx == temp_metal_metalidx){connected = 1;}
+     if(temp_point.x>=temp_source[i].coord[0].x && temp_point.y>=temp_source[i].coord[0].y && temp_point.x<=temp_source[i].coord[1].x && temp_point.y<=temp_source[i].coord[1].y && temp_source[i].metalIdx == temp_metal_metalidx){connected = 1;}
 
-     if(abs(temp_source[i].coord[0].x - temp_point.x)+abs(temp_source[i].coord[0].y - temp_point.y)<dis and temp_source[i].metalIdx == temp_metal_metalidx){
+     if(abs(temp_source[i].coord[0].x - temp_point.x)+abs(temp_source[i].coord[0].y - temp_point.y)<dis && temp_source[i].metalIdx == temp_metal_metalidx){
          dis = abs(temp_source[i].coord[0].x - temp_point.x)+abs(temp_source[i].coord[0].y - temp_point.y);
          source_point = temp_source[i].coord[0];
          point_flag = 0;
          }
 
-     if(abs(temp_source[i].coord[1].x - temp_point.x)+abs(temp_source[i].coord[1].y - temp_point.y)<dis and temp_source[i].metalIdx == temp_metal_metalidx){
+     if(abs(temp_source[i].coord[1].x - temp_point.x)+abs(temp_source[i].coord[1].y - temp_point.y)<dis && temp_source[i].metalIdx == temp_metal_metalidx){
          dis = abs(temp_source[i].coord[1].x - temp_point.x)+abs(temp_source[i].coord[1].y - temp_point.y);
          source_point = temp_source[i].coord[1];
          point_flag = 1;
@@ -767,7 +767,7 @@ void DetailRouter::GetPhsical_Metal_Via(int i){
                 }
             }
 
-         if(Nets[i].path_metal[h].LinePoint[0].y==Nets[i].path_metal[h].LinePoint[1].y and Nets[i].path_metal[h].LinePoint[0].x==Nets[i].path_metal[h].LinePoint[1].x){          
+         if(Nets[i].path_metal[h].LinePoint[0].y==Nets[i].path_metal[h].LinePoint[1].y && Nets[i].path_metal[h].LinePoint[0].x==Nets[i].path_metal[h].LinePoint[1].x){          
            
               Nets[i].path_metal[h].MetalRect.placedLL.x =  Nets[i].path_metal[h].LinePoint[0].x-Nets[i].path_metal[h].width/2;
               Nets[i].path_metal[h].MetalRect.placedLL.y =  Nets[i].path_metal[h].LinePoint[0].y-Nets[i].path_metal[h].width/2;
@@ -794,28 +794,28 @@ void DetailRouter::GetPhsical_Metal_Via(int i){
 
             if(temp_metal_index == next_metal_index -1){
                 
-                if(Nets[i].path_metal[h].LinePoint[0].x==Nets[i].path_metal[l].LinePoint[0].x and Nets[i].path_metal[h].LinePoint[0].y==Nets[i].path_metal[l].LinePoint[0].y){
+                if(Nets[i].path_metal[h].LinePoint[0].x==Nets[i].path_metal[l].LinePoint[0].x && Nets[i].path_metal[h].LinePoint[0].y==Nets[i].path_metal[l].LinePoint[0].y){
                   temp_via.position = Nets[i].path_metal[h].LinePoint[0];
                   temp_via.model_index = temp_metal_index;
                   UpdateVia(temp_via);
                   set_via.insert(temp_via);
                   }
 
-                if(Nets[i].path_metal[h].LinePoint[0].x==Nets[i].path_metal[l].LinePoint[1].x and Nets[i].path_metal[h].LinePoint[0].y==Nets[i].path_metal[l].LinePoint[1].y){
+                if(Nets[i].path_metal[h].LinePoint[0].x==Nets[i].path_metal[l].LinePoint[1].x && Nets[i].path_metal[h].LinePoint[0].y==Nets[i].path_metal[l].LinePoint[1].y){
                   temp_via.position = Nets[i].path_metal[h].LinePoint[0];
                   temp_via.model_index = temp_metal_index;
                   UpdateVia(temp_via);
                   set_via.insert(temp_via);
                   }
 
-                if(Nets[i].path_metal[h].LinePoint[1].x==Nets[i].path_metal[l].LinePoint[0].x and Nets[i].path_metal[h].LinePoint[1].y==Nets[i].path_metal[l].LinePoint[0].y){
+                if(Nets[i].path_metal[h].LinePoint[1].x==Nets[i].path_metal[l].LinePoint[0].x && Nets[i].path_metal[h].LinePoint[1].y==Nets[i].path_metal[l].LinePoint[0].y){
                   temp_via.position = Nets[i].path_metal[h].LinePoint[1];
                   temp_via.model_index = temp_metal_index;
                   UpdateVia(temp_via);
                   set_via.insert(temp_via);
                   }
 
-                if(Nets[i].path_metal[h].LinePoint[1].x==Nets[i].path_metal[l].LinePoint[1].x and Nets[i].path_metal[h].LinePoint[1].y==Nets[i].path_metal[l].LinePoint[1].y){
+                if(Nets[i].path_metal[h].LinePoint[1].x==Nets[i].path_metal[l].LinePoint[1].x && Nets[i].path_metal[h].LinePoint[1].y==Nets[i].path_metal[l].LinePoint[1].y){
                   temp_via.position = Nets[i].path_metal[h].LinePoint[1];
                   temp_via.model_index = temp_metal_index;
                   UpdateVia(temp_via);
@@ -987,28 +987,28 @@ void DetailRouter::GetPhsical_Via_contacts(std::vector<std::vector<RouterDB::Met
 
                if(temp_metal_index == next_metal_index -1){
                 
-                if(temp_path[j].LinePoint[0].x==temp_path[h].LinePoint[0].x and temp_path[j].LinePoint[0].y==temp_path[h].LinePoint[0].y){
+                if(temp_path[j].LinePoint[0].x==temp_path[h].LinePoint[0].x && temp_path[j].LinePoint[0].y==temp_path[h].LinePoint[0].y){
                   temp_via.position = temp_path[j].LinePoint[0];
                   temp_via.model_index = temp_metal_index;
                   UpdateVia(temp_via);
                   set_via.insert(temp_via);
                   }
 
-                if(temp_path[j].LinePoint[0].x==temp_path[h].LinePoint[1].x and temp_path[j].LinePoint[0].y==temp_path[h].LinePoint[1].y){
+                if(temp_path[j].LinePoint[0].x==temp_path[h].LinePoint[1].x && temp_path[j].LinePoint[0].y==temp_path[h].LinePoint[1].y){
                   temp_via.position = temp_path[j].LinePoint[0];
                   temp_via.model_index = temp_metal_index;
                   UpdateVia(temp_via);
                   set_via.insert(temp_via);
                   }
 
-                if(temp_path[j].LinePoint[1].x==temp_path[h].LinePoint[0].x and temp_path[j].LinePoint[1].y==temp_path[h].LinePoint[0].y){
+                if(temp_path[j].LinePoint[1].x==temp_path[h].LinePoint[0].x && temp_path[j].LinePoint[1].y==temp_path[h].LinePoint[0].y){
                   temp_via.position = temp_path[j].LinePoint[1];
                   temp_via.model_index = temp_metal_index;
                   UpdateVia(temp_via);
                   set_via.insert(temp_via);
                   }
 
-                if(temp_path[j].LinePoint[1].x==temp_path[h].LinePoint[1].x and temp_path[j].LinePoint[1].y==temp_path[h].LinePoint[1].y){
+                if(temp_path[j].LinePoint[1].x==temp_path[h].LinePoint[1].x && temp_path[j].LinePoint[1].y==temp_path[h].LinePoint[1].y){
                   temp_via.position = temp_path[j].LinePoint[1];
                   temp_via.model_index = temp_metal_index;
                   UpdateVia(temp_via);
@@ -1099,7 +1099,7 @@ void DetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::poin
         newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
 	logger->debug( "converter check point 1");
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
-          if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+          if(x>=LLx && x<=URx && y>=LLy && y<=URy){
             logger->debug( "Plist problem");
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
@@ -1120,7 +1120,7 @@ void DetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::poin
         newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
 	logger->debug( "converter check point 2");
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
-          if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+          if(x>=LLx && x<=URx && y>=LLy && y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
           //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
@@ -1147,7 +1147,7 @@ void DetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::poin
         newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
 	logger->debug( "converter check point 3");
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
-           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+           if(x>=LLx && x<=URx && y>=LLy && y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
            //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
@@ -1167,7 +1167,7 @@ void DetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::poin
         newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
 	logger->debug( "converter check point 4");
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
-          if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+          if(x>=LLx && x<=URx && y>=LLy && y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
           //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
@@ -1198,7 +1198,7 @@ void DetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::poin
         int newURy=URy+nexlayer_unit;
         int boundY=(newLLy%nexlayer_unit==0) ? (newLLy+nexlayer_unit) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ? (newLLy/nexlayer_unit+1)*nexlayer_unit : (newLLy/nexlayer_unit)*nexlayer_unit  );
         for(int y=boundY; y<newURy; y+=nexlayer_unit) {
-          if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+          if(x>=LLx && x<=URx && y>=LLy && y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
           //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
@@ -1210,7 +1210,7 @@ void DetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::poin
         int newURy=URy+nexlayer_unit;
         int boundY=(newLLy%nexlayer_unit==0) ? (newLLy+nexlayer_unit) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ? (newLLy/nexlayer_unit+1)*nexlayer_unit : (newLLy/nexlayer_unit)*nexlayer_unit  );
         for(int y=boundY; y<newURy; y+=nexlayer_unit) {
-          if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+          if(x>=LLx && x<=URx && y>=LLy && y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
           //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
@@ -1229,7 +1229,7 @@ void DetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::poin
         int newURx=URx+nexlayer_unit;
         int boundX=(newLLx%nexlayer_unit==0) ? (newLLx+nexlayer_unit) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ? (newLLx/nexlayer_unit+1)*nexlayer_unit : (newLLx/nexlayer_unit)*nexlayer_unit  );
         for(int x=boundX; x<newURx; x+=nexlayer_unit) {
-           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+           if(x>=LLx && x<=URx && y>=LLy && y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
            //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
@@ -1241,7 +1241,7 @@ void DetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::poin
         int newURx=URx+nexlayer_unit;
         int boundX=(newLLx%nexlayer_unit==0) ? (newLLx+nexlayer_unit) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ? (newLLx/nexlayer_unit+1)*nexlayer_unit : (newLLx/nexlayer_unit)*nexlayer_unit  );
         for(int x=boundX; x<newURx; x+=nexlayer_unit) {
-          if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+          if(x>=LLx && x<=URx && y>=LLy && y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
           //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);

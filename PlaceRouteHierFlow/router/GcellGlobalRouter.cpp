@@ -299,7 +299,7 @@ void GcellGlobalRouter::AssignMetal(RouterDB::terminal &temp_Terminal, int horiz
     return;
   }
 
-  if(temp_point.x%v_pitches!=0 and temp_point.y%h_pitches!=0){
+  if(temp_point.x%v_pitches!=0 && temp_point.y%h_pitches!=0){
     logger->error("Terminal off grid, please check the width/height of module");
     assert(0);
   }
@@ -357,7 +357,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
      
      for(int j=1;j<v_L.size();j++){
         dis = abs(temp_point.y -j*v_dist-LL.y)+abs(temp_point.x -LL.x);
-        if(dis<min_dist and v_L[j]==0){
+        if(dis<min_dist && v_L[j]==0){
           min_dist = dis;
           min_index = j;
           found_v_L = 1;
@@ -371,7 +371,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
 
      for(int j=1;j<v_U.size();j++){
         dis = abs(temp_point.y -j*v_dist-LL.y)+abs(temp_point.x -UR.x);
-        if(dis<min_dist and v_U[j]==0){
+        if(dis<min_dist && v_U[j]==0){
           min_dist = dis;
           min_index = j;
           found_v_L = 0;
@@ -385,7 +385,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
 
      for(int j=1;j<h_L.size();j++){
         dis = abs(temp_point.x -j*h_dist-LL.x)+abs(temp_point.y -LL.y);
-        if(dis<min_dist and h_L[j]==0){
+        if(dis<min_dist && h_L[j]==0){
           min_dist = dis;
           min_index = j;
           found_v_L = 0;
@@ -399,7 +399,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
 
      for(int j=1;j<h_U.size();j++){
         dis = abs(temp_point.x -j*h_dist-LL.x)+abs(temp_point.y -UR.y);
-        if(dis<min_dist and h_U[j]==0){
+        if(dis<min_dist && h_U[j]==0){
           min_dist = dis;
           min_index = j;
           found_v_L = 0;
@@ -411,7 +411,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
         }
      }
 
-     if(found_v_L==0 and found_v_U==0 and found_h_L==0 and found_h_U==0){
+     if(found_v_L==0 && found_v_U==0 && found_h_L==0 && found_h_U==0){
        logger->debug("Fail to determine a terminal");
      }else{
 
@@ -716,7 +716,7 @@ void GcellGlobalRouter::MirrorSymSTs(GlobalGrid &grid, std::set<RouterDB::tile, 
 
   for(unsigned int i=0;i<this->Nets.size();++i){
 
-    if(this->Nets.at(i).global_sym != -1 and this->Nets.at(i).global_sym < (int)this->Nets.size() -1 ){
+    if(this->Nets.at(i).global_sym != -1 && this->Nets.at(i).global_sym < (int)this->Nets.size() -1 ){
    
           int global_sym = this->Nets.at(i).global_sym;
           std::vector<int> temp_vector = GenerateSTsUniqueV(this->Nets.at(i)) ;
@@ -787,7 +787,7 @@ int GcellGlobalRouter::PrimeSetGenerate(std::vector<std::vector<int> > &connecte
             }
          }
        
-       if(sy_prime.size()!=0 and prime.size()!=0){
+       if(sy_prime.size()!=0 && prime.size()!=0){
           connectedTiles[i] = prime;
           sy_connectedTiles[i] = sy_prime;
          }else{ 
@@ -870,7 +870,7 @@ void GcellGlobalRouter::SymNet(GlobalGrid &grid, std::set<RouterDB::tile, Router
 
      for(unsigned int i=0;i<this->Nets.size();++i){
       
-       if(this->Nets.at(i).symCounterpart!=-1 and this->Nets.at(i).symCounterpart<(int)this->Nets.size()-1){
+       if(this->Nets.at(i).symCounterpart!=-1 && this->Nets.at(i).symCounterpart<(int)this->Nets.size()-1){
 
             int symCounterpart = this->Nets.at(i).symCounterpart;
 
@@ -1348,13 +1348,13 @@ int GcellGlobalRouter::CopyPath(std::vector<std::pair<int,int> > &path, std::map
   std::pair<int,int> temp_path;
   for(unsigned int i=0;i<path.size();++i){
 
-       if(temp_map.find(path[i].first)!=temp_map.end() and temp_map[path[i].first]!= -1){
+       if(temp_map.find(path[i].first)!=temp_map.end() && temp_map[path[i].first]!= -1){
             temp_path.first = temp_map[path[i].first];
          }else{
             return 0;
          }
 
-       if(temp_map.find(path[i].second)!=temp_map.end() and temp_map[path[i].second]!= -1){
+       if(temp_map.find(path[i].second)!=temp_map.end() && temp_map[path[i].second]!= -1){
             temp_path.second = temp_map[path[i].second];
          }else{
             return 0;
@@ -1567,7 +1567,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   logger->debug("LP test flag 4");
   for(unsigned int i=0;i<this->Nets.size();++i){
 
-    if(this->Nets.at(i).global_sym!=-1 and this->Nets.at(i).global_sym < (int)this->Nets.size()-1){
+    if(this->Nets.at(i).global_sym!=-1 && this->Nets.at(i).global_sym < (int)this->Nets.size()-1){
 
           int global_sym = this->Nets.at(i).global_sym;   
           for(unsigned int j=0;j<this->Nets.at(i).STs.size();++j){
@@ -1638,7 +1638,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
                int index = -1;
                for(unsigned int l=0;l<Edges.size();++l){
                       
-                    if((this->Nets.at(i).STs[j].path[k].first == Edges[l].first and this->Nets.at(i).STs[j].path[k].second == Edges[l].second) or (this->Nets.at(i).STs[j].path[k].first == Edges[l].second and this->Nets.at(i).STs[j].path[k].second == Edges[l].first ) ){
+                    if((this->Nets.at(i).STs[j].path[k].first == Edges[l].first && this->Nets.at(i).STs[j].path[k].second == Edges[l].second) or (this->Nets.at(i).STs[j].path[k].first == Edges[l].second && this->Nets.at(i).STs[j].path[k].second == Edges[l].first ) ){
                       found = 1;
                       index = l;
                       break;
@@ -1890,7 +1890,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
 
   for(unsigned int i=0;i<this->Nets.size();++i){
 
-    if(this->Nets.at(i).global_sym!=-1 and this->Nets.at(i).global_sym < (int)this->Nets.size()-1){
+    if(this->Nets.at(i).global_sym!=-1 && this->Nets.at(i).global_sym < (int)this->Nets.size()-1){
           std::cout<<"net index "<<i<<" global_sym "<< this->Nets.at(i).global_sym<<std::endl;
           int global_sym = this->Nets.at(i).global_sym;   
           for(unsigned int j=0;j<this->Nets.at(i).STs.size();++j){
@@ -1943,7 +1943,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
                int index = -1;
                for(unsigned int l=0;l<Edges.size();++l){
                       
-                    if((this->Nets.at(i).STs[j].path[k].first == Edges[l].first and this->Nets.at(i).STs[j].path[k].second == Edges[l].second) or (this->Nets.at(i).STs[j].path[k].first == Edges[l].second and this->Nets.at(i).STs[j].path[k].second == Edges[l].first ) ){
+                    if((this->Nets.at(i).STs[j].path[k].first == Edges[l].first && this->Nets.at(i).STs[j].path[k].second == Edges[l].second) or (this->Nets.at(i).STs[j].path[k].first == Edges[l].second && this->Nets.at(i).STs[j].path[k].second == Edges[l].first ) ){
                       found = 1;
                       index = l;
                       break;
