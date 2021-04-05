@@ -1084,8 +1084,8 @@ void Placer_Router_Cap::check_grid( const net& n) const
     for( unsigned int i=0; i<n.start_connection_pos.size(); ++i) {
 	const auto& s = n.start_connection_pos[i];
 	const auto& e = n.end_connection_pos[i];
-	const auto& m = n.metal[i];
-	const auto& p = n.Is_pin[i];
+	//const auto& m = n.metal[i];
+	//const auto& p = n.Is_pin[i];
 	if ( s.x == e.x) {
 	    // Vertical wi
 	    int x = s.x;
@@ -1712,7 +1712,7 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 	for (unsigned int j = 0; j < jsonUnit["terminals"].size(); ++j) {
 	    const json& term0 = jsonUnit["terminals"][j];
 	    	
-	    bool addNetName = true;
+	    //bool addNetName = true;
 
 	    json term1;
 /*

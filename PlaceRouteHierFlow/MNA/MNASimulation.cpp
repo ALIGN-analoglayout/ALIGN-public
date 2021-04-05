@@ -129,26 +129,26 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
 
   SuperMatrix A, L, U, B, X;
   double   *a, *rhs;
-  double   s, u, p, e, r, l;
+  //double   s, u, p, e, r, l;
   int      *asub, *xa;
   int      *perm_r; /* row permutations from partial pivoting */
   int      *perm_c; /* column permutation vector */
-  int      nrhs, info, i, m, n, nnz, permc_spec;
+  int      nrhs, info, i, m, n, nnz;//, permc_spec;
   superlu_options_t options;
   SuperLUStat_t stat;
 
   int node_num1 = nodenum(Power_Grid_devices);
 
-  int maxx,maxy; 
-  int layer = 6;
-  maxx = MaxX(gnd_point_set,layer);
-  maxy = MaxY(gnd_point_set,layer);
+  //int maxx,maxy; 
+  //int layer = 6;
+  //maxx = MaxX(gnd_point_set,layer);
+  //maxy = MaxY(gnd_point_set,layer);
   //std::cout << "maxx = "<< maxx <<" maxy= " << maxy << std::endl;
 
   int powerdev = 0;
   int currentdev = 0;
   //int zeropower = 0;
-  for(int it=0;it<Power_Grid_devices.size();++it){
+  for(unsigned int it=0;it<Power_Grid_devices.size();++it){
 	  if(Power_Grid_devices[it].device_type == MDB::V){
 	    powerdev++;
 	  }
@@ -164,7 +164,7 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
   if ( !(rhs = doubleMalloc(m * nrhs)) ) ABORT("Malloc fails for rhs[].");
   for (int i = 0; i < m; ++i) rhs[i] = 0.0;
   for (int i =0.0 ; i < node_num1; i++){ //start is -current, end is current
-	  for(int it=0;it<Power_Grid_devices.size();++it){
+	  for(unsigned int it=0;it<Power_Grid_devices.size();++it){
 	    if(Power_Grid_devices[it].device_type == MDB::I){
 		    int start = Power_Grid_devices[it].start_point_index-1;
 		    int end = Power_Grid_devices[it].end_point_index-1;
@@ -175,7 +175,7 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
 		  }
 	
 	    if (Power_Grid_devices[it].device_type == MDB::V){ //start is +1, end is -1
-		    int start = Power_Grid_devices[it].start_point_index-1;
+		    //int start = Power_Grid_devices[it].start_point_index-1;
 		    int end = Power_Grid_devices[it].end_point_index;
 		    //end = -1;
 		    double power = Power_Grid_devices[it].value;
@@ -196,7 +196,7 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
   logger->debug("count= {0}" , count);
   std::vector<double> store;
 
-  count = 2 * (Power_Grid_devices.size()-currentdev) + node_num1;
+  count = 2 * (int(Power_Grid_devices.size())-currentdev) + node_num1;
 
   logger->debug("count= {0}",count);
   m = n = node_num1 + powerdev;
@@ -215,7 +215,7 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
 	  int flag = 0;
     if(i<node_num1){
 	    double self = 0.0;	
-	    for(int j = 0; j<Power_Grid_devices.size(); ++j){
+	    for(unsigned int j = 0; j<Power_Grid_devices.size(); ++j){
 	      if(Power_Grid_devices[j].device_type== 0 && Power_Grid_devices[j].start_point_index == i+1){//Resistance
 		      int position = Power_Grid_devices[j].end_point_index-1;
 		      double value = Power_Grid_devices[j].value;
@@ -241,7 +241,7 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
 		    }
 	    }
 	    temp[i] = self; // this flag might be some problem?
-	    for (int j = 0;j <temp.size();++j){
+	    for (unsigned int j = 0;j <temp.size();++j){
 		    if (temp[j]!=0){
 			    if (flag == 0){
 				    flag = 1;
@@ -254,7 +254,7 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
       }
     }else{
 	    std::vector<double> temp(node_num1+powerdev,0);
-	    for(int j = 0; j<Power_Grid_devices.size(); ++j){
+	    for(unsigned int j = 0; j<Power_Grid_devices.size(); ++j){
 		    if(Power_Grid_devices[j].device_type == 2 && Power_Grid_devices[j].value != 0){
 			    int start = Power_Grid_devices[j].start_point_index-1;
 			    if(-Power_Grid_devices[j].end_point_index == i+1-node_num1){
@@ -268,7 +268,7 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
 			    }
 	  	  }
 	    }
-	    for (int j = 0;j <temp.size();++j){
+	    for (unsigned int j = 0;j <temp.size();++j){
 	      //store.push_back(temp[j]);
 	      if (temp[j]!=0){
 			    if (flag == 0){
@@ -288,13 +288,13 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
   dCreate_CompCol_Matrix(&A, m, n, nnz, a, asub, xa, SLU_NC, SLU_D, SLU_GE);
   //std::cout<<"check point2"<<std::endl;
   dPrint_CompCol_Matrix("A", &A);
-  char equed[1] = {'B'};
+  //char equed[1] = {'B'};
   int *etree;
   int ldx;
   double *R, *C, *xact;
   double *work = NULL;
-  trans_t  trans;
-  trans = NOTRANS;
+  //trans_t  trans;
+  //trans = NOTRANS;
   xact = doubleMalloc(n * nrhs);
   ldx = n;
   dGenXtrue(n, nrhs, xact, ldx);
@@ -305,9 +305,9 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
   ABORT("SUPERLU_MALLOC fails for R[].");
   if ( !(C = (double *) SUPERLU_MALLOC(A.ncol * sizeof(double))) )
   ABORT("SUPERLU_MALLOC fails for C[].");
-  double rpg, rcond;
-  mem_usage_t   mem_usage;
-  GlobalLU_t  Glu;
+  //double rpg, rcond;
+  //mem_usage_t   mem_usage;
+  //GlobalLU_t  Glu;
   int lwork = 0;
   if ( lwork > 0 ) {
     work = (double *) SUPERLU_MALLOC(lwork);
@@ -355,7 +355,7 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
   double* volt;
   dp = (double*) Bstore->nzval; 
 
-  int vol_count = 0;
+  //int vol_count = 0;
   if (!(volt = doubleMalloc(n)))    ABORT("Malloc fails for volt[].")
     //std::cout<<"check point9"<<std::endl;  
   //int num_nodes         = m_Gmat->GetNumNodes();
@@ -408,8 +408,8 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
 void MNASimulation::Print_Result(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set,double* dp, std::string outputfile){
   // data format: x y voltage vdd/gnd
   // now only print lowest metal, and vdd
-  int target_metal_layer_index = 2;
-  int target_power_grid_index = 1;
+  //int target_metal_layer_index = 2;
+  //int target_power_grid_index = 1;
   //dp the voltage solution
   std::ofstream pythonfile;
   pythonfile.open(outputfile);
@@ -431,7 +431,7 @@ void MNASimulation::Print_Grid(std::set<MDB::metal_point, MDB::Compare_metal_poi
 
   std::ofstream pythonfile;
   pythonfile.open("gridresult.txt");
-  for(int i=0;i<temp_devices.size();i++){
+  for(unsigned int i=0;i<temp_devices.size();i++){
     if(temp_devices[i].device_type==0){
   	  int first = temp_devices[i].start_point_index;
 	    int second = temp_devices[i].end_point_index;
@@ -456,34 +456,36 @@ void MNASimulation::Print_EM(std::set<MDB::metal_point, MDB::Compare_metal_point
   pythonfile.open(outputem);
   //int size = dp.size(); 
   std::vector<double> em(size,0);
-  for(int i=0;i<temp_devices.size();i++){
+  for(unsigned int i=0;i<temp_devices.size();i++){
     if(temp_devices[i].device_type==0){
        int first = temp_devices[i].start_point_index;
        int second = temp_devices[i].end_point_index;
-       double resistance = temp_devices[i].value;
-       int x1,x2,y1,y2,layer1,layer2,index1,index2;
-       int flag = 0;
+       //double resistance = temp_devices[i].value;
+       //int x1,x2,y1,y2,
+       //int layer1,layer2,
+       int index1,index2;
+       //int flag = 0;
        double v1,v2;
        for(auto it = point_set.begin(); it != point_set.end(); it++){
           if(it->index == first){
-             x1 = it->x;
-             y1 = it->y;
-             layer1 = it->metal_layer;
+             //x1 = it->x;
+             //y1 = it->y;
+             //layer1 = it->metal_layer;
              index1 = it->index - 1;
              v1 = dp[it->index - 1];		
              }
           if(it->index == second){
-             x2 = it->x;
-             y2 = it->y;
-             layer2 = it->metal_layer;
+             //x2 = it->x;
+             //y2 = it->y;
+             //layer2 = it->metal_layer;
              index2 = it->index - 1;
              v2 = dp[it->index - 1];		
              }
           // pythonfile<< it->x << " " << it->y << " " << it->metal_layer << " " << it->power << " ";
         }
       //Q: dp is voltage, while em should be current-related?  
-      int layer = layer1;
-      if (layer2 < layer1) layer = layer2;
+      //int layer = layer1;
+      //if (layer2 < layer1) layer = layer2;
       double diff = abs(v1-v2);
       if (diff > em[index1]){
         em[index1]=diff;
@@ -494,7 +496,7 @@ void MNASimulation::Print_EM(std::set<MDB::metal_point, MDB::Compare_metal_point
     }
   }
   int target_metal_layer_index = 2;
-  int target_power_grid_index = 1;
+  //int target_power_grid_index = 1;
   logger->debug("finish em");
   for(auto it = point_set.begin(); it != point_set.end(); it++){
     if(it->metal_layer == target_metal_layer_index && it->power !=0){
@@ -508,7 +510,7 @@ void MNASimulation::Print_Devices(std::vector<MDB::device> &temp_devices){
 
   auto logger = spdlog::default_logger()->clone("MNA.MNASimulation.Print_Devices");
 
-  for(int i=0;i<temp_devices.size();i++){
+  for(unsigned int i=0;i<temp_devices.size();i++){
     logger->debug("devices type {0} point1 {1} point2 {2} {3} ",temp_devices[i].device_type,temp_devices[i].start_point_index,temp_devices[i].end_point_index, temp_devices[i].value);
   }
 };
@@ -521,7 +523,7 @@ void MNASimulation::Clear_Power_Grid(PnRDB::PowerGrid &temp_grid){
 
 int MNASimulation::nodenum(std::vector<MDB::device> &temp_devices){
   int num = 0;
-  for(int i=0;i<temp_devices.size();i++){
+  for(unsigned int i=0;i<temp_devices.size();i++){
      //if (temp_devices[i].device_type == 0){
      int start = temp_devices[i].start_point_index;
      int end = temp_devices[i].end_point_index;
@@ -802,8 +804,8 @@ void MNASimulation::FindPowerPoints(std::set<MDB::metal_point, MDB::Compare_meta
   int x_number = sqrt(power_number);
   int y_number = sqrt(power_number);
   int xsize, ysize;
-	xsize = x_v.size();
-	ysize = y_v.size();
+	xsize = int(x_v.size());
+	ysize = int(y_v.size());
   //if (x_v.size()%x_number == 0) x
 	int xstep = ceil((double) x_v.size()/x_number);
 	int ystep = ceil((double) y_v.size()/y_number);
@@ -812,8 +814,8 @@ void MNASimulation::FindPowerPoints(std::set<MDB::metal_point, MDB::Compare_meta
 	if(ysize<=3) ystep = 1;
 	if(xsize<=3) xstep = 1;
 
-  for(int i =xstep_s;i<x_v.size();i=i+xstep){
-     for(int j =ystep_s;j<y_v.size();j=j+ystep){
+  for(unsigned int i =xstep_s;i<x_v.size();i=i+xstep){
+     for(unsigned int j =ystep_s;j<y_v.size();j=j+ystep){
         temp_point.x = x_v[i];
         temp_point.y = y_v[j];
         power_points.push_back(temp_point);
@@ -858,8 +860,8 @@ void MNASimulation::FindPowerPoints_New(std::set<MDB::metal_point, MDB::Compare_
   int y_number = power_number/x_number;
 
   int xsize, ysize;
-	xsize = x_v.size();
-	ysize = y_v.size();
+	xsize = int(x_v.size());
+	ysize = int(y_v.size());
 
   double range_x = (double)(x_v[xsize-1]-x_v[0])/(x_number+1);
   double range_y = (double) (y_v[ysize-1]-y_v[0])/(y_number+1);
@@ -882,8 +884,8 @@ void MNASimulation::FindPowerPoints_New(std::set<MDB::metal_point, MDB::Compare_
   }
   //std::cout<<std::endl;
 
-  for(int i =0;i<candidate_x.size();i++){
-    for(int j=0;j<candidate_y.size();j++){
+  for(unsigned int i =0;i<candidate_x.size();i++){
+    for(unsigned int j=0;j<candidate_y.size();j++){
       temp_point.x = find_nearest(candidate_x[i],x_v);
       temp_point.y = find_nearest(candidate_y[j],y_v);
       power_points.push_back(temp_point);
@@ -895,7 +897,7 @@ void MNASimulation::FindPowerPoints_New(std::set<MDB::metal_point, MDB::Compare_
 int MNASimulation::find_nearest(double x, vector<int> &x_v){
     int index=0;
     double error=INT_MAX;
-    for(int i=0;i<x_v.size();i++){
+    for(unsigned int i=0;i<x_v.size();i++){
       if(abs( (double) x_v[i]-x)<error){
         error = abs((double) x_v[i]-x);
         index = i;
@@ -912,7 +914,7 @@ void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gn
    //Q: fixed via and via number?
    vector<int> vianumber;
    int temp_via_number = 4;
-   for (int i = 0; i<drc_info.Via_info.size(); i++){
+   for (unsigned int i = 0; i<drc_info.Via_info.size(); i++){
 	   vianumber.push_back(temp_via_number);
    }
 
@@ -928,7 +930,7 @@ void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gn
    }
    //std::cout<<"v number "<<v.size()<<" vianumber size "<<vianumber.size()<<std::endl;
    //assert(0);
-   for(int i=0;i<v.size();i++){
+   for(unsigned int i=0;i<v.size();i++){
      vianumber[i]=v[i];
    }
 
@@ -965,7 +967,7 @@ void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gn
    std::vector<MDB::metal_point> I_points_g;
 
    int power_number = 9;
-   int current_number = 1;
+   //int current_number = 1;
    FindPowerPoints(point_set, VDD, highest_metal, power_number, vdd_points);
    FindPowerPoints(point_set, 0.0, highest_metal, power_number, gnd_points);
    //what if I_points_v!=I_points_g
@@ -1187,7 +1189,8 @@ void MNASimulation::Map_new(std::vector<std::vector<double>> &currentstore, std:
 
   // it is adding some current devices 
   for(unsigned int i=0;i<currentstore.size();++i){
-	  double startx,starty,endx,endy,value;
+	  //double startx,starty,endx,endy,
+    double value;
           MDB::metal_point start_metal_point;
           MDB::metal_point end_metal_point;
           double initial_x, initial_y;
@@ -1195,10 +1198,10 @@ void MNASimulation::Map_new(std::vector<std::vector<double>> &currentstore, std:
           initial_x = currentstore[i][0];
 	  initial_y = currentstore[i][1];
 
-	  startx = currentstore[i][0];
-	  starty = currentstore[i][1];
-	  endx = currentstore[i][2];
-	  endy = currentstore[i][3];
+	  //startx = currentstore[i][0];
+	  //starty = currentstore[i][1];
+	  //endx = currentstore[i][2];
+	  //endy = currentstore[i][3];
 	  value = currentstore[i][4];
 	  int start_index,end_index;
 	  double vdd_maxx,vdd_maxy,gnd_maxx,gnd_maxy;

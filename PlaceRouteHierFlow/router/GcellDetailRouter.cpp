@@ -587,7 +587,7 @@ void GcellDetailRouter::Symmetry_metal_Inactive(int i, int sym_flag, Grid &grid,
     sym_gridll = gridll;
     sym_gridur = gridur;
 
-    if(Nets[i].symCounterpart!=-1 && Nets[i].symCounterpart<Nets.size()){
+    if(Nets[i].symCounterpart!=-1 && Nets[i].symCounterpart<int(Nets.size())){
         logger->debug("Starting sym net metal coping");
         RouterDB::SinkData sym_aear;
         sym_aear.metalIdx = -1;
@@ -655,7 +655,7 @@ void GcellDetailRouter::Detailed_router_set_src_dest(Grid &grid, std::vector<Rou
    //std::cout<<"Detail Router check point 2"<<std::endl;
    std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > sym_net_plist;
 
-   if(Nets[i].symCounterpart != -1 && Nets[i].symCounterpart<Nets.size() ){
+   if(Nets[i].symCounterpart != -1 && Nets[i].symCounterpart<int(Nets.size() )){
      //inactivate the point in the sym part, then recover those node in the end
      CreatePlistSymNets(sym_net_plist, sym_gridll, sym_gridur, Nets[i].sym_H, Nets[i].center, gridll, gridur);
      //grid.InactivePointlist(sym_net_plist);
@@ -752,7 +752,7 @@ void GcellDetailRouter::create_detailrouter(){
     int multi_number = Nets[i].multi_connection;
     //std::cout<<"sym net index "<<i<<" sym part"<<Nets[i].symCounterpart<<" sym axis "<<Nets[i].sym_H<<" sym center "<<Nets[i].center<<std::endl;
     std::vector<RouterDB::Metal> symmetry_path;
-    if(Nets[i].symCounterpart!=-1 && Nets[i].symCounterpart<Nets.size()){
+    if(Nets[i].symCounterpart!=-1 && Nets[i].symCounterpart<int(Nets.size())){
       symmetry_path = Nets[Nets[i].symCounterpart].path_metal;
       std::cout<<"symmetry_path size "<< symmetry_path.size() <<std::endl;
       Topology_extraction(symmetry_path);
@@ -762,7 +762,7 @@ void GcellDetailRouter::create_detailrouter(){
       std::cout<<"symmetry_path size "<< symmetry_path.size() <<std::endl;
     }
 
-    for(unsigned int multi_index=0;multi_index<multi_number;multi_index++){
+    for(int multi_index=0;multi_index<multi_number;multi_index++){
 
       std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> Pset_current_net_via; //current net via conter and layer info
       std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_current_net_contact; //current Net metal contact set
@@ -1831,7 +1831,7 @@ std::vector<std::vector<RouterDB::SinkData> > GcellDetailRouter::findPins_new_ol
                     Terminals[temp_net.connected[i].iter].termContacts.push_back(Terminal_contact[k]);
                    }
 
-                int contact_number = Terminals[temp_net.connected[i].iter].termContacts.size();
+                int contact_number = int(Terminals[temp_net.connected[i].iter].termContacts.size());
 
             for(int j=0;j<contact_number;j++){
                RouterDB::SinkData terminals_temp_contact;
@@ -2287,7 +2287,7 @@ void GcellDetailRouter::lastmile_dest_new(std::vector<std::vector<RouterDB::Meta
            temp_metal.LinePoint.push_back(temp_point);
            //std::cout<<"path ( "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[0].y<<") ("<<temp_metal.LinePoint[1].x<<" "<<temp_metal.LinePoint[1].y<<") "<<std::endl;
            temp_path[0].insert(temp_path[0].end(),temp_metal);
-           int last_end_index = temp_path[0].size()-1;
+           //int last_end_index = temp_path[0].size()-1;
         //std::cout<<temp_path[0][last_end_index].LinePoint[0].x<<" "<<temp_path[0][last_end_index].LinePoint[0].y<<" "<<temp_path[0][last_end_index].LinePoint[1].x<<" "<<temp_path[0][last_end_index].LinePoint[1].y<<std::endl;
             }else{
            temp_metal.LinePoint.push_back(source_point); 
@@ -2301,7 +2301,7 @@ void GcellDetailRouter::lastmile_dest_new(std::vector<std::vector<RouterDB::Meta
            temp_metal.LinePoint.push_back(source_point);
            temp_metal.LinePoint.push_back(temp_point);
            temp_path[0].insert(temp_path[0].end(),temp_metal);
-           int last_end_index = temp_path[0].size()-1;
+           //int last_end_index = temp_path[0].size()-1;
         //std::cout<<temp_path[0][last_end_index].LinePoint[0].x<<" "<<temp_path[0][last_end_index].LinePoint[0].y<<" "<<temp_path[0][last_end_index].LinePoint[1].x<<" "<<temp_path[0][last_end_index].LinePoint[1].y<<std::endl;
            
 
@@ -2315,7 +2315,7 @@ void GcellDetailRouter::lastmile_dest_new(std::vector<std::vector<RouterDB::Meta
            temp_metal.LinePoint.push_back(temp_point);
            //std::cout<<"path ( "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[0].y<<") ("<<temp_metal.LinePoint[1].x<<" "<<temp_metal.LinePoint[1].y<<") "<<std::endl;
            temp_path[0].insert(temp_path[0].end(),temp_metal);
-           int last_end_index = temp_path[0].size()-1;
+           //int last_end_index = temp_path[0].size()-1;
         //std::cout<<temp_path[0][last_end_index].LinePoint[0].x<<" "<<temp_path[0][last_end_index].LinePoint[0].y<<" "<<temp_path[0][last_end_index].LinePoint[1].x<<" "<<temp_path[0][last_end_index].LinePoint[1].y<<std::endl;
             }else{
            temp_metal.LinePoint.push_back(source_point); 
@@ -2329,7 +2329,7 @@ void GcellDetailRouter::lastmile_dest_new(std::vector<std::vector<RouterDB::Meta
            temp_metal.LinePoint.push_back(source_point);
            temp_metal.LinePoint.push_back(temp_point);
            temp_path[0].insert(temp_path[0].end(),temp_metal);
-           int last_end_index = temp_path[0].size()-1;
+          // int last_end_index = temp_path[0].size()-1;
         //std::cout<<temp_path[0][last_end_index].LinePoint[0].x<<" "<<temp_path[0][last_end_index].LinePoint[0].y<<" "<<temp_path[0][last_end_index].LinePoint[1].x<<" "<<temp_path[0][last_end_index].LinePoint[1].y<<std::endl;
            
 
@@ -3097,7 +3097,7 @@ void GcellDetailRouter::CreatePlistSrc_Dest(std::vector<std::set<RouterDB::point
   auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.CreatePlistSrc_Dest");
 
   //RouterDB::point tmpP;
-  int LLx, LLy, URx, URy;
+  //int LLx, LLy, URx, URy;
 
   std::vector<RouterDB::contact> Contacts;
   RouterDB::contact temp_contact;
@@ -3117,7 +3117,7 @@ void GcellDetailRouter::CreatePlistSrc_Dest(std::vector<std::set<RouterDB::point
 
   //change sinkdata to contact
   logger->debug("src contact {0}",temp_src.size());
-  for(int i=0;i<temp_src.size();i++){
+  for(unsigned int i=0;i<temp_src.size();i++){
     SinkData_contact(temp_src[i], temp_contact);
     Contacts.push_back(temp_contact);
     if(temp_contact.placedLL.x<ll.x){ll.x=temp_contact.placedLL.x;}
@@ -3127,7 +3127,7 @@ void GcellDetailRouter::CreatePlistSrc_Dest(std::vector<std::set<RouterDB::point
   }
   logger->debug("check point new function 2 ");
   logger->debug("dest contact {0}",temp_dest.size());
-  for(int i=0;i<temp_dest.size();i++){
+  for(unsigned int i=0;i<temp_dest.size();i++){
     SinkData_contact(temp_dest[i], temp_contact);
     Contacts.push_back(temp_contact);
     if(temp_contact.placedLL.x<ll.x){ll.x=temp_contact.placedLL.x;}

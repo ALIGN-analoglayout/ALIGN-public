@@ -245,7 +245,7 @@ void Graph::collect_nodes(Grid &grid, vector<int> temp_vector, vector<int>& adja
                   int index = grid.total2graph[temp_vector[j]];
                   logger->debug("temp {0} index {1} ",temp_vector[j],index);
                   logger->debug("index edge {0} graph size {1} temp_vector[j] {2} ", index,grid.vertices_graph.size(),temp_vector[j]);
-                  if( index<grid.vertices_graph.size() && index>=0 && grid.vertices_graph[index].active && grid.vertices_graph[index].power == power && grid.vertices_graph[index].graph_index==-1) 
+                  if( index<int(grid.vertices_graph.size()) && index>=0 && grid.vertices_graph[index].active && grid.vertices_graph[index].power == power && grid.vertices_graph[index].graph_index==-1) 
                     {  
                       adjacent_nodes.push_back(index);
                     }
@@ -259,7 +259,7 @@ void Graph::collect_node(Grid &grid, int temp_vector, vector<int>& adjacent_node
              if(grid.total2graph.find(temp_vector)!=grid.total2graph.end())
                {
                   int index = grid.total2graph[temp_vector];
-                  if( index<grid.vertices_graph.size() && index>=0 && grid.vertices_graph[index].active && grid.vertices_graph[index].power == power && grid.vertices_graph[index].graph_index==-1) 
+                  if( index<int(grid.vertices_graph.size()) && index>=0 && grid.vertices_graph[index].active && grid.vertices_graph[index].power == power && grid.vertices_graph[index].graph_index==-1) 
                     {  
                       adjacent_nodes.push_back(index);
                     }
@@ -269,7 +269,7 @@ void Graph::collect_node(Grid &grid, int temp_vector, vector<int>& adjacent_node
 
 void Graph::power_grid_dsf(Grid& grid, int i, int graph_index, int& connection_graph_number, int power){
 
-  if(i<0 || i>grid.vertices_graph.size()-1){
+  if(i<0 || i>int(grid.vertices_graph.size()-1)){
      return;
   }
 
@@ -423,7 +423,7 @@ bool Graph::CheckActive(Grid& grid, int index){
              if(grid.total2graph.find(temp_vector[j])!=grid.total2graph.end())
                {
                   int graph_index = grid.total2graph[temp_vector[j]];
-                  if(graph_index>=0 && graph_index< grid.vertices_graph.size() && grid.vertices_graph[graph_index].active == 1) 
+                  if(graph_index>=0 && graph_index< int(grid.vertices_graph.size()) && grid.vertices_graph[graph_index].active == 1) 
                     {  
                        found = true;
                     }

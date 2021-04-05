@@ -143,7 +143,7 @@ JSONReaderWrite_subcells (string GDSData, long int& rndnum,
     ury.push_back(TJ_ury);
 };
 
-
+/**
 static void
 JSONLabelTerminals(PnRDB::hierNode& node, const PnRDB::Drc_info& drc_info, json& elmAry, double unit)
 {
@@ -204,7 +204,7 @@ JSONLabelTerminals(PnRDB::hierNode& node, const PnRDB::Drc_info& drc_info, json&
 	    }
 	}
     }
-}
+}**/
 
 void
 assignBoxPoints (int* x, int*y, struct PnRDB::bbox b, double unit) {

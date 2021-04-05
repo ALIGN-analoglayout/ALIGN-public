@@ -213,7 +213,7 @@ design::design(design& other, int mode) {
         }
         SB.dnode=sbno; sbno++;
         SB.mapIdx=sbit-other.SBlocks.begin();
-        sbit->mapIdx=this->SBlocks.size();
+        sbit->mapIdx=int(this->SBlocks.size());
         //std::cout<<"wbxu-map new "<<SB.mapIdx<<" ; old "<<sbit->mapIdx<<std::endl;
         this->SBlocks.push_back(SB);
       }
@@ -439,7 +439,7 @@ design::design(PnRDB::hierNode& node) {
 
   this->ML_Constraints = node.ML_Constraints;
   for (auto order: node.Ordering_Constraints) {
-    for (int i = 0; i < order.first.size() - 1;i++){
+    for (unsigned int i = 0; i < order.first.size() - 1;i++){
       Ordering_Constraints.push_back(make_pair(make_pair(order.first[i], order.first[i+1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
     }
   }

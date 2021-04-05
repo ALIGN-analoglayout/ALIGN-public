@@ -287,7 +287,7 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
         }
         node.SPBlocks.push_back(temp_SymmPairBlock);
       } else if (constraint["const_name"] == "Ordering") {
-        PnRDB::Smark axis_dir = PnRDB::V;
+        //PnRDB::Smark axis_dir = PnRDB::V;
         pair<vector<int>, PnRDB::Smark> temp_order;
         if (constraint["direction"] == "H") {
           temp_order.second = PnRDB::H;
@@ -929,7 +929,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
 
         node.SPBlocks.push_back(temp_SymmPairBlock);
       }else if (temp[0].compare("Ordering")==0) {
-        PnRDB::Smark axis_dir = PnRDB::V;
+        //PnRDB::Smark axis_dir = PnRDB::V;
         pair<vector<int>, PnRDB::Smark> temp_order;
         for (unsigned int i = 2; i < temp.size(); i = i + 2) {
           string word = temp[i];
@@ -1240,7 +1240,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
       }else if(temp[0].compare("Multi_LinearConst")==0){
         //std::cout<<"Enter ML Linear Const"<<std::endl;
         PnRDB::Multi_LinearConst temp_Multi_LinearConst;
-        for(int i=2;i<temp.size()-3;i=i+2){
+        for(unsigned int i=2;i<temp.size()-3;i=i+2){
            PnRDB::LinearConst temp_LinearConst;
 
            string word=temp[i];
@@ -1248,7 +1248,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
            word=word.substr(0, word.length()-1);
            tempsec=StringSplitbyChar(word, ',');
            
-           for(int p=1;p<tempsec.size();p++){
+           for(unsigned int p=1;p<tempsec.size();p++){
               std::pair<int,int> temp_pin;
               vector<string> pins;
               pins = StringSplitbyChar(tempsec[p], '/');

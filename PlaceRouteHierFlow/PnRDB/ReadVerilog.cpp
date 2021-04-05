@@ -241,12 +241,12 @@ db.hierTree[i].Terminals[db.hierTree[i].Nets[j].connected[k].iter].netIter = j;
 
         PnRDB::LinearConst temp_LinearConst = db.hierTree[i].L_Constraints[j];
 
-        for(int k=0;k<db.hierTree[i].Nets.size();k++){
+        for(unsigned int k=0;k<db.hierTree[i].Nets.size();k++){
            if(db.hierTree[i].Nets[k].name == temp_LinearConst.net_name){
              db.hierTree[i].Nets[k].upperBound = temp_LinearConst.upperBound;
-             for(int h=0;h<db.hierTree[i].Nets[k].connected.size();h++){
+             for(unsigned int h=0;h<db.hierTree[i].Nets[k].connected.size();h++){
                 logger->debug("Connected {0} {1} {2}",db.hierTree[i].Nets[k].connected[h].type,db.hierTree[i].Nets[k].connected[h].iter,db.hierTree[i].Nets[k].connected[h].iter2);
-                for(int l=0;l<temp_LinearConst.pins.size();l++){
+                for(unsigned int l=0;l<temp_LinearConst.pins.size();l++){
                   logger->debug("LinearConst cont {0} {1} {2}",temp_LinearConst.pins[l].first,temp_LinearConst.pins[l].second,temp_LinearConst.alpha[l]);
                   if(db.hierTree[i].Nets[k].connected[h].type == PnRDB::Block && db.hierTree[i].Nets[k].connected[h].iter2 == temp_LinearConst.pins[l].first && db.hierTree[i].Nets[k].connected[h].iter == temp_LinearConst.pins[l].second){
                     logger->debug("LinearConst alpha {0}",temp_LinearConst.alpha[l]);
@@ -486,7 +486,7 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
 
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.MergeLEFMapData");
 
-  bool missing_lef_file = 0;
+  //bool missing_lef_file = 0;
 
   logger->info("PnRdatabase-Info:: merge LEF/map data");
   for(unsigned int i=0;i<node.Blocks.size();i++){

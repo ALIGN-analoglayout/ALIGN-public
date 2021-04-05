@@ -768,12 +768,12 @@ void SeqPair::KeepOrdering(design& caseNL) {
   }
   // places of block_id_with_order in pair
   vector<int> pos_idx, neg_idx;
-  for (int i = 0; i < posPair.size(); i++) {
+  for (unsigned int i = 0; i < posPair.size(); i++) {
     if (block_id_with_order.find(posPair[i]) != block_id_with_order.end()) pos_idx.push_back(i);
     if (block_id_with_order.find(negPair[i]) != block_id_with_order.end()) neg_idx.push_back(i);
   }
   vector<int> pos_order(block_id_with_order.size()), neg_order(block_id_with_order.size());
-  for (int i = 0; i < block_id_with_order.size(); i++) {
+  for (unsigned int i = 0; i < block_id_with_order.size(); i++) {
     pos_order[i] = posPair[pos_idx[i]];
     neg_order[i] = negPair[neg_idx[i]];
   }
@@ -815,7 +815,7 @@ void SeqPair::KeepOrdering(design& caseNL) {
     }
   } while (!neg_keep_order);
   //write order back to pospair and negpair
-  for (int i = 0; i < pos_idx.size(); i++) {
+  for (unsigned int i = 0; i < pos_idx.size(); i++) {
     posPair[pos_idx[i]] = pos_order[i];
     negPair[neg_idx[i]] = neg_order[i];
   }

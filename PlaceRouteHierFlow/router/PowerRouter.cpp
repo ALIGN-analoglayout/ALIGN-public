@@ -448,7 +448,7 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
       int multi_number = FindMulti_Connection_Number(i, node);
       //std::cout<<"Power routing multi_number "<<PowerNets[i].netName<<" "<<multi_number<<std::endl;
 
-      for(unsigned int multi_index = 0; multi_index<multi_number;multi_index++){
+      for(int multi_index = 0; multi_index<multi_number;multi_index++){
 
       std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> Pset_current_net_via; //current net via conter and layer info
       std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_current_net_contact; //current Net metal contact set
@@ -559,7 +559,7 @@ void PowerRouter::CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_in
   //std::cout<<"checkpoint1.2.9"<<std::endl;
   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > netplist = FindsetPlist(Set_x, LL, UR);
   //std::cout<<"checkpoint1.2.10"<<std::endl;
-  for(int i=0;i<netplist.size();i++){
+  for(unsigned int i=0;i<netplist.size();i++){
      //std::cout<<"Power inactive node "<<netplist[i].size()<<std::endl;
      if(i==5){
        for(auto it=netplist[i].begin();it!=netplist[i].end();it++){
@@ -634,7 +634,7 @@ void PowerRouter::CreatePowerGrid_DC(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   //std::cout<<"checkpoint1.2.8.5"<<std::endl;
   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > netplist = FindsetPlist(Set_x, LL, UR);
 
-  for(int i=0;i<netplist.size();i++){
+  for(unsigned int i=0;i<netplist.size();i++){
      //std::cout<<"Power inactive node "<<netplist[i].size()<<std::endl;
      if(i==5){
        for(auto it=netplist[i].begin();it!=netplist[i].end();it++){
@@ -1073,7 +1073,7 @@ void PowerRouter::CreatePowerGridDrc_info_DC(string inputfile){
   while (getline(ss, tmp, ' ')){
     v.push_back(stod(tmp));//stod: string->double
   }
-  for(int i = 0; i<=v.size(); i++){
+  for(unsigned int i = 0; i<=v.size(); i++){
     utilization[i] = v[i];
   }
 

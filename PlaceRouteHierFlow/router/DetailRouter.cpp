@@ -565,7 +565,7 @@ void DetailRouter::lastmile_dest_new(std::vector<std::vector<RouterDB::Metal> > 
            temp_metal.LinePoint.push_back(temp_point);
            //std::cout<<"path ( "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[0].y<<") ("<<temp_metal.LinePoint[1].x<<" "<<temp_metal.LinePoint[1].y<<") "<<std::endl;
            temp_path[0].insert(temp_path[0].end(),temp_metal);
-           int last_end_index = temp_path[0].size()-1;
+           //int last_end_index = temp_path[0].size()-1;
         //std::cout<<temp_path[0][last_end_index].LinePoint[0].x<<" "<<temp_path[0][last_end_index].LinePoint[0].y<<" "<<temp_path[0][last_end_index].LinePoint[1].x<<" "<<temp_path[0][last_end_index].LinePoint[1].y<<std::endl;
             }else{
            temp_metal.LinePoint.push_back(source_point); 
@@ -579,7 +579,7 @@ void DetailRouter::lastmile_dest_new(std::vector<std::vector<RouterDB::Metal> > 
            temp_metal.LinePoint.push_back(source_point);
            temp_metal.LinePoint.push_back(temp_point);
            temp_path[0].insert(temp_path[0].end(),temp_metal);
-           int last_end_index = temp_path[0].size()-1;
+          // int last_end_index = temp_path[0].size()-1;
         //std::cout<<temp_path[0][last_end_index].LinePoint[0].x<<" "<<temp_path[0][last_end_index].LinePoint[0].y<<" "<<temp_path[0][last_end_index].LinePoint[1].x<<" "<<temp_path[0][last_end_index].LinePoint[1].y<<std::endl;
            
 
@@ -593,7 +593,7 @@ void DetailRouter::lastmile_dest_new(std::vector<std::vector<RouterDB::Metal> > 
            temp_metal.LinePoint.push_back(temp_point);
            //std::cout<<"path ( "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[0].y<<") ("<<temp_metal.LinePoint[1].x<<" "<<temp_metal.LinePoint[1].y<<") "<<std::endl;
            temp_path[0].insert(temp_path[0].end(),temp_metal);
-           int last_end_index = temp_path[0].size()-1;
+          // int last_end_index = temp_path[0].size()-1;
         //std::cout<<temp_path[0][last_end_index].LinePoint[0].x<<" "<<temp_path[0][last_end_index].LinePoint[0].y<<" "<<temp_path[0][last_end_index].LinePoint[1].x<<" "<<temp_path[0][last_end_index].LinePoint[1].y<<std::endl;
             }else{
            temp_metal.LinePoint.push_back(source_point); 
@@ -607,7 +607,7 @@ void DetailRouter::lastmile_dest_new(std::vector<std::vector<RouterDB::Metal> > 
            temp_metal.LinePoint.push_back(source_point);
            temp_metal.LinePoint.push_back(temp_point);
            temp_path[0].insert(temp_path[0].end(),temp_metal);
-           int last_end_index = temp_path[0].size()-1;
+          // int last_end_index = temp_path[0].size()-1;
         //std::cout<<temp_path[0][last_end_index].LinePoint[0].x<<" "<<temp_path[0][last_end_index].LinePoint[0].y<<" "<<temp_path[0][last_end_index].LinePoint[1].x<<" "<<temp_path[0][last_end_index].LinePoint[1].y<<std::endl;
            
 

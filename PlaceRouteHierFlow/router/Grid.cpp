@@ -230,11 +230,11 @@ void Grid::CreateGridData(){
      
       }
 	
- for(int i =0;i<Source.size();i++){
+ for(unsigned int i =0;i<Source.size();i++){
      write_out_matlab_file(Source[i], Source[i]);
     }
 
- for(int i =0;i<Dest.size();i++){
+ for(unsigned int i =0;i<Dest.size();i++){
      write_out_matlab_file(Dest[i], Dest[i]);
     }
 
@@ -863,7 +863,7 @@ Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, in
 
   auto logger = spdlog::default_logger()->clone("router.Grid.Grid");
 
-  for(int i=0;i<drc_info.Metal_info.size();i++){
+  for(unsigned int i=0;i<drc_info.Metal_info.size();i++){
     logger->debug("grid info {0} {1} ",drc_info.Metal_info.at(i).grid_unit_x,drc_info.Metal_info.at(i).grid_unit_y);
   }
 
@@ -1961,7 +1961,7 @@ std::vector<int> Grid::Mapping_function_pin_detail(RouterDB::SinkData& source)
   // wbxu: incorrect startpoint and endpoint if source.metalIdx==lowest_metal
   // it results in traversal starting from the second node in the subfunction [fixed]
 
-  if(source.metalIdx<0 || source.metalIdx>drc_info.Metal_info.size()){
+  if(source.metalIdx<0 || source.metalIdx>int(drc_info.Metal_info.size())){
     return map_source;
   }
 
@@ -2055,7 +2055,7 @@ std::vector<int> Grid::Mapping_function_pin(RouterDB::SinkData& source)
   // wbxu: incorrect startpoint and endpoint if source.metalIdx==lowest_metal
   // it results in traversal starting from the second node in the subfunction [fixed]
 
-  if(source.metalIdx<0 || source.metalIdx>drc_info.Metal_info.size()){
+  if(source.metalIdx<0 || source.metalIdx>int(drc_info.Metal_info.size())){
     return map_source;
   }
 

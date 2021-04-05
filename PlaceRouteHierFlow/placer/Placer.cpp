@@ -546,7 +546,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   int update_index = 0;
   int T_index = 0;
   float per = 0.1;
-  int updateThrd = 100;
+  //int updateThrd = 100;
   float total_update_number = log(T_MIN / T_INT) / log(ALPHA);
   while (T > T_MIN) {
     int i = 1;

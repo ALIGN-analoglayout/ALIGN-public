@@ -2131,9 +2131,9 @@ double ConstGraph::LinearConst(design& caseNL, SeqPair& caseSP){
   std::vector<std::vector<std::string> > feature_name;
   ExtractLength(caseNL, caseSP, feature_value, feature_name);
 
-  for(int i=0;i< caseNL.Nets.size(); i++){
+  for(unsigned int i=0;i< caseNL.Nets.size(); i++){
      double temp_sum = 0;
-     for(int j=0;j<caseNL.Nets[i].connected.size();j++){
+     for(unsigned int j=0;j<caseNL.Nets[i].connected.size();j++){
         //std::cout<<"LinearConst Cost"<<caseNL.Nets[i].connected[j].alpha<<" "<<caseNL.Nets[i].upperBound<<std::endl;
         temp_sum += caseNL.Nets[i].connected[j].alpha*feature_value[i][j];
         //std::cout<<"LinearConst Cost"<<caseNL.Nets[i].connected[j].alpha*feature_value[i][j]<<std::endl;
@@ -2158,18 +2158,18 @@ double ConstGraph::ML_LinearConst(design& caseNL, SeqPair& caseSP){
   std::vector<std::vector<std::string> > feature_name;
   ExtractLength(caseNL, caseSP, feature_value, feature_name);
 
-  for(int i =0; i<feature_value.size();i++){
+  for(unsigned int i =0; i<feature_value.size();i++){
      
-     for(int j=0;j<feature_value[i].size();j++){
+     for(unsigned int j=0;j<feature_value[i].size();j++){
         //std::cout<<feature_value[i][j]<<" ";
      }
      //std::cout<<std::endl;
 
   }
 
-  for(int i =0; i<feature_name.size();i++){
+  for(unsigned int i =0; i<feature_name.size();i++){
 
-     for(int j=0;j<feature_name[i].size();j++){
+     for(unsigned int j=0;j<feature_name[i].size();j++){
         //std::cout<<feature_name[i][j]<<" ";
      }
      //std::cout<<std::endl;
@@ -2177,16 +2177,16 @@ double ConstGraph::ML_LinearConst(design& caseNL, SeqPair& caseSP){
   }
 
 
-  for(int i=0;i<caseNL.ML_Constraints.size();i++){
+  for(unsigned int i=0;i<caseNL.ML_Constraints.size();i++){
      double temp_sum = 0;
-     for(int j=0;j<caseNL.ML_Constraints[i].Multi_linearConst.size();j++){
+     for(unsigned int j=0;j<caseNL.ML_Constraints[i].Multi_linearConst.size();j++){
 
-        for(int k=0;k<caseNL.ML_Constraints[i].Multi_linearConst[j].pins.size();k++){
+        for(unsigned int k=0;k<caseNL.ML_Constraints[i].Multi_linearConst[j].pins.size();k++){
            int index_i=0;
            int index_j=0;
            //std::cout<<"ML Linear "<<caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].first<<" "<<caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].second<<std::endl;
-           for(int m=0;m<caseNL.Nets.size();m++){
-               for(int n=0;n<caseNL.Nets[m].connected.size();n++){
+           for(unsigned int m=0;m<caseNL.Nets.size();m++){
+               for(unsigned int n=0;n<caseNL.Nets[m].connected.size();n++){
 
                   //std::cout<<"searching" <<m<<" "<<n<<" "<<caseNL.Nets[m].connected[n].iter << " "<< caseNL.Nets[m].connected[n].iter2 << " " << caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].first << " " << caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].second<<std::endl;
 
@@ -2313,18 +2313,18 @@ std::vector<double> ConstGraph::Calculate_Center_Point_feature(std::vector<std::
 
   std::vector<double> temp_x;
   std::vector<double> temp_y;
-  double temp_value_x;
-  double temp_value_y;
+  //double temp_value_x;
+  //double temp_value_y;
   std::vector<double> feature;
   double sum_x;
   double sum_y;
 
-  for(int i = 0;i < temp_contact.size();i++){
+  for(unsigned int i = 0;i < temp_contact.size();i++){
 
      sum_x = 0;
      sum_y = 0;
 
-     for(int j=0;j < temp_contact[i].size();j++){
+     for(unsigned int j=0;j < temp_contact[i].size();j++){
        sum_x = sum_x + (double) temp_contact[i][j].x;
        sum_y = sum_y + (double) temp_contact[i][j].y;
      }
@@ -2339,7 +2339,7 @@ std::vector<double> ConstGraph::Calculate_Center_Point_feature(std::vector<std::
   sum_x=0;
   sum_y=0;
 
-  for(int i=0; i< temp_x.size();i++){
+  for(unsigned int i=0; i< temp_x.size();i++){
 
     sum_x = sum_x + temp_x[i];
     sum_y = sum_y + temp_y[i];
@@ -2349,7 +2349,7 @@ std::vector<double> ConstGraph::Calculate_Center_Point_feature(std::vector<std::
   double center_x = sum_x/ (double) temp_x.size();
   double center_y = sum_y/ (double) temp_y.size();
 
-  for(int i=0;i<temp_x.size();i++){
+  for(unsigned int i=0;i<temp_x.size();i++){
 
      feature.push_back( abs(center_x - (double) temp_x[i]) + abs(center_y - (double) temp_y[i]) );
 
@@ -4610,7 +4610,7 @@ void ConstGraph::UpdateTerminalinHierNode(design& caseNL, PnRDB::hierNode& node,
 
       temp_pin.netIter = node.Terminals.at(i).netIter;
       temp_pin.pinContacts = node.Terminals.at(i).termContacts;
-      for (int j=0;j<temp_pin.pinContacts.size();j++)
+      for (unsigned int j=0;j<temp_pin.pinContacts.size();j++)
         temp_pin.pinContacts[j].metal = drcInfo.Metal_info[0].name;
 
       temp_pin.name = node.Terminals.at(i).name;

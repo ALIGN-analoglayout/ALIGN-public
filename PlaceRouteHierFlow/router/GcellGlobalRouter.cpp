@@ -342,7 +342,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
      v_U.push_back(0);
   }
 
-  for(int i=0;i<Terminals.size();i++){
+  for(unsigned int i=0;i<Terminals.size();i++){
      RouterDB::point temp_point;
      RouterDB::point new_temp_point;
      temp_point.x=Terminals[i].termContacts[0].placedCenter.x;
@@ -355,7 +355,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
      int found_h_L = 0;
      int found_h_U = 0;
      
-     for(int j=1;j<v_L.size();j++){
+     for(unsigned int j=1;j<v_L.size();j++){
         dis = abs(temp_point.y -j*v_dist-LL.y)+abs(temp_point.x -LL.x);
         if(dis<min_dist && v_L[j]==0){
           min_dist = dis;
@@ -369,7 +369,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
         }
      }
 
-     for(int j=1;j<v_U.size();j++){
+     for(unsigned int j=1;j<v_U.size();j++){
         dis = abs(temp_point.y -j*v_dist-LL.y)+abs(temp_point.x -UR.x);
         if(dis<min_dist && v_U[j]==0){
           min_dist = dis;
@@ -383,7 +383,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
         }
      }
 
-     for(int j=1;j<h_L.size();j++){
+     for(unsigned int j=1;j<h_L.size();j++){
         dis = abs(temp_point.x -j*h_dist-LL.x)+abs(temp_point.y -LL.y);
         if(dis<min_dist && h_L[j]==0){
           min_dist = dis;
@@ -397,7 +397,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
         }
      }
 
-     for(int j=1;j<h_U.size();j++){
+     for(unsigned int j=1;j<h_U.size();j++){
         dis = abs(temp_point.x -j*h_dist-LL.x)+abs(temp_point.y -UR.y);
         if(dis<min_dist && h_U[j]==0){
           min_dist = dis;
@@ -436,7 +436,7 @@ void GcellGlobalRouter::PlaceTerminal(){
   int horizontal_index = 0;  
   int vertical_index = 0;
 
-  for(int i=0;i<this->drc_info.Metal_info.size();i++){
+  for(unsigned int i=0;i<this->drc_info.Metal_info.size();i++){
 
      if(drc_info.Metal_info[i].direct==1){
         //H
@@ -446,7 +446,7 @@ void GcellGlobalRouter::PlaceTerminal(){
 
   }
 
-  for(int i=0;i<this->drc_info.Metal_info.size();i++){
+  for(unsigned int i=0;i<this->drc_info.Metal_info.size();i++){
 
      if(drc_info.Metal_info[i].direct==0){
         //V
@@ -460,7 +460,7 @@ void GcellGlobalRouter::PlaceTerminal(){
   Determine_Terminal_Center(horizontal_index, vertical_index, times);
 
 
-  for(int i=0;i<Terminals.size();i++){
+  for(unsigned int i=0;i<Terminals.size();i++){
      AssignMetal(Terminals[i], horizontal_index, vertical_index, times);
   }
 
@@ -550,7 +550,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
      GGgraph.clearPath();
 
 
-     for(int j=0;j<Nets[i].connectedTile.size();j++){
+     for(unsigned int j=0;j<Nets[i].connectedTile.size();j++){
         if(Nets[i].connectedTile[j].size()==0){
            //std::cout<<"Nets[i].connectedTile[j] "<<i<<" "<<j<<" size is 0"<<std::endl;
            logger->error("Format Issue ");
@@ -856,7 +856,7 @@ void GcellGlobalRouter::transformCenter(bool H, int &center, GlobalGrid &grid){
          }
     
       }
-  if(index>=0 &&index<grid.tiles_total.size()){
+  if(index>=0 &&index<int(grid.tiles_total.size())){
     if(H){
       center = grid.tiles_total[index].y;
     }else{
@@ -1465,8 +1465,8 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   # define ERROR() { logger->error("Error"); }
   logger->debug("LP test flag 1");
   // start of lp_solve
-  int majorversion, minorversion, release, build;
-  char buf[1024];
+  //int majorversion, minorversion, release, build;
+  //char buf[1024];
 
 
   /*
