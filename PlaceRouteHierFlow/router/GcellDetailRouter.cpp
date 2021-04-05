@@ -804,8 +804,8 @@ void GcellDetailRouter::create_detailrouter(){
         std::vector<RouterDB::SinkData> temp_dest = temp_pins[j];
         std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> src_dest_plist;
         Detailed_router_set_src_dest(grid, temp_source, temp_dest, i, sym_gridll, sym_gridur, gridll, gridur, src_dest_plist, Set_net, sym_flag);
-        AddViaEnclosure(Pset_via, grid, Set_x_contact, Set_net_contact);
-        AddViaSpacing(Pset_via, grid);
+        AddViaEnclosure(Pset_via, grid, Set_x_contact, Set_net_contact, gridll, gridur);
+        AddViaSpacing(Pset_via, grid, gridll, gridur);
         A_star a_star(grid, Nets[i].shielding);
         logger->debug("Net name {0}",Nets[i].netName);
         //bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, 0, 0);
@@ -1101,7 +1101,7 @@ void GcellDetailRouter::AddViaEnclosure_old(std::set<std::pair<int, RouterDB::po
 
 void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid &grid,
                                         std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x_contact,
-                                        std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net_contact) {
+                                        std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net_contact, RouterDB::point LL, RouterDB::point UR) {
   RouterDB::box box;
   std::vector<std::vector<RouterDB::point>> plist_metal2uppervia(this->layerNo);  // points in this list cannot have an upper via
   std::vector<std::vector<RouterDB::point>> plist_metal2lowervia(this->layerNo);  // points in this list cannot have a lower via
@@ -1198,7 +1198,11 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
   //***************block vias around metal******************
   plist_metal2uppervia.clear(), plist_metal2uppervia.resize(this->layerNo);
   plist_metal2lowervia.clear(), plist_metal2lowervia.resize(this->layerNo);
-  std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set = CombineTwoSets(Set_net_contact, Set_x_contact);
+  std::set<RouterDB::SinkData, RouterDB::SinkDataComp> temp_Set = CombineTwoSets(Set_net_contact, Set_x_contact);
+  std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set = Findset(temp_Set,LL,UR);
+  //std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set = temp_Set;
+  // need to select some contacts accroding to the routing area
+  //std::cout<<"via enclosure set number "<<temp_Set.size()<<" "<<Set.size()<<std::endl;
   bool bidirection = false;
   if (bidirection) {
     for (std::set<RouterDB::SinkData, RouterDB::SinkDataComp>::iterator mit = Set.begin(); mit != Set.end(); ++mit) {
@@ -1290,12 +1294,18 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
   //***************block vias around metal******************
 };
 
-void GcellDetailRouter::AddViaSpacing(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid& grid){
+void GcellDetailRouter::AddViaSpacing(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid& grid, RouterDB::point LL, RouterDB::point UR){
   RouterDB::box box;
   std::vector<std::vector<RouterDB::point> > plist_via_lower_metal(this->layerNo); //points in this list cannot have an upper via
   std::vector<std::vector<RouterDB::point> > plist_via_upper_metal(this->layerNo); //points in this list cannot have a lower via
+
+  std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> temp_Pset_via = findviaset(Pset_via,LL,UR);
+  //std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> temp_Pset_via = Pset_via;
+
+  //std::cout<<"viaspaceing set number "<<Pset_via.size()<<" "<<temp_Pset_via.size()<<std::endl;
+
   //1.convert via point into via spacing box and 
-  for (std::set<std::pair<int, RouterDB::point>>::iterator vit = Pset_via.begin(); vit != Pset_via.end();++vit)
+  for (std::set<std::pair<int, RouterDB::point>>::iterator vit = temp_Pset_via.begin(); vit != temp_Pset_via.end();++vit)
   {
     int vIdx = vit->first;
     box.LL.x = vit->second.x - drc_info.Via_info[vIdx].dist_ss - drc_info.Via_info[vIdx].width;
