@@ -337,7 +337,7 @@ Placer_Router_Cap::Placer_Router_Cap_function (vector<int> & ki, vector<pair<str
 	    int fi = cap_pair_sequence[i].first;
 	    if( not_on_border(Caps[fi])) {
 		int si = cap_pair_sequence[i].second;
-		if(si==-1 or not_on_border( Caps[si])) {
+		if(si==-1 || not_on_border( Caps[si])) {
 		    temp_cap_pair_sequence.push_back(cap_pair_sequence[i]);
 		}
 	    }
@@ -615,7 +615,7 @@ Placer_Router_Cap::cal_offset(const PnRDB::Drc_info &drc_info, int H_metal, int 
     auto mp = minmax.LL;
     offset = gp - wp - covPnt - mp;
     logger->debug("offset {0} {1}",offset.x,offset.y);
-    if(offset.x%gp.x!=0 or offset.y%gp.y!=0){//why offset is not correct, might have some bug here? Yaguang - 4/12/2020
+    if(offset.x%gp.x!=0 || offset.y%gp.y!=0){//why offset is not correct, might have some bug here? Yaguang - 4/12/2020
       logger->debug("gp {0} {1}",gp.x,gp.y);
       logger->debug("offset.x%gp.x {0} offset.y%gp.y {1}",offset.x%gp.x,offset.y%gp.y);
       offset.x = ceil((double) offset.x/gp.x)*gp.x;
@@ -1028,7 +1028,7 @@ void Placer_Router_Cap::found_neighbor(int j, net& pos, connection_set& temp_set
 	if(pci.access==0){
 	    int adiffx = abs(pci.index_x -pcj.index_x);
 	    int adiffy = abs(pci.index_y -pcj.index_y);
-	    if((adiffx == 0 && adiffy==1) or (adiffy == 0 && adiffx==1)) {
+	    if((adiffx == 0 && adiffy==1) || (adiffy == 0 && adiffx==1)) {
 		pci.access = 1;
 		temp_set.cap_index.push_back(pos.cap_index[i]);
 		found_neighbor(i, pos, temp_set);
@@ -1352,7 +1352,7 @@ void Placer_Router_Cap::GetPhysicalInfo_common_net ( vector<net>& n_array,
 			int absx = abs(Caps[n.Set[j].cap_index[k]].index_x-Caps[n.Set[j].cap_index[index]].index_x);
 			int absy = abs(Caps[n.Set[j].cap_index[k]].index_y-Caps[n.Set[j].cap_index[index]].index_y);
 
-			if( !((absy == 0 && absx == 1) or (absx == 0 && absy == 1))) continue;
+			if( !((absy == 0 && absx == 1) || (absx == 0 && absy == 1))) continue;
 
 			PnRDB::point half_cap_dim = unit_cap_dim / 2;
 			PnRDB::point shift = half_cap_dim - shifting;
@@ -1924,7 +1924,7 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
    
                         Placer_Router_Cap_clean();
 
-                        Placer_Router_Cap_function(ki, pin_names, fpath, unit_capacitor, cc_gds_file, cap_ratio or aspect_ratio, cap_r[q], cap_s[q], drc_info, lefData, dummy_flag, opath);
+                        Placer_Router_Cap_function(ki, pin_names, fpath, unit_capacitor, cc_gds_file, cap_ratio || aspect_ratio, cap_r[q], cap_s[q], drc_info, lefData, dummy_flag, opath);
                         PnRDB::block temp_block=CheckoutData();
 
                         if(q!=0){

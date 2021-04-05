@@ -1457,7 +1457,7 @@ int GcellDetailRouter::Cover_Contact(RouterDB::SinkData &temp_contact, RouterDB:
        
        }
 
-      if(x1 == -1 or x2 == -1 or y1 == -1 or y2 == -1){
+      if(x1 == -1 || x2 == -1 || y1 == -1 || y2 == -1){
 
         return 0;
          }else{
@@ -1681,7 +1681,7 @@ int GcellDetailRouter::Tile_Cover_Contact(RouterDB::SinkData &temp_contact, Rout
        }
 
 
-      if(x1 == -1 or x2 == -1 or y1 == -1 or y2 == -1){
+      if(x1 == -1 || x2 == -1 || y1 == -1 || y2 == -1){
         
            return 0;
  
@@ -2441,7 +2441,7 @@ void GcellDetailRouter::returnPath(std::vector<std::vector<RouterDB::Metal> > &t
   for(unsigned int i=0;i<temp_path.size();i++){
        
      for(unsigned int j=0;j<temp_path[i].size();j++){
-         if(j==0 or j==temp_path[i].size()-1){
+         if(j==0 || j==temp_path[i].size()-1){
            temp_net.extend_label.push_back(0);
          }else{
            temp_net.extend_label.push_back(1);
@@ -2750,7 +2750,7 @@ void GcellDetailRouter::CreatePlistSymBlocks(std::vector<std::set<RouterDB::poin
        URx=temp_contact.placedUR.x;
        URy=temp_contact.placedUR.y;
         
-       if(!(URx<gridll.x or URy<gridll.y or LLx>gridur.x or LLy>gridur.y)){
+       if(!(URx<gridll.x || URy<gridll.y || LLx>gridur.x || LLy>gridur.y)){
            Contacts.push_back(temp_contact);
          }
 
@@ -3168,7 +3168,7 @@ void GcellDetailRouter::CreatePlistSymNets(std::vector<std::set<RouterDB::point,
        URx=temp_contact.placedUR.x;
        URy=temp_contact.placedUR.y;
         
-       if(!(URx<gridll.x or URy<gridll.y or LLx>gridur.x or LLy>gridur.y)){
+       if(!(URx<gridll.x || URy<gridll.y || LLx>gridur.x || LLy>gridur.y)){
            Contacts.push_back(temp_contact);
          }
 

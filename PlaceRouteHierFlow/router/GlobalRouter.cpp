@@ -207,7 +207,7 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
     std::vector<std::pair<int, int> > stiner_coord;
     std::pair<int, int> coord;
     //added by yg
-    if(this->Nets.at(i).degree==0 or this->Nets.at(i).degree==1) {
+    if(this->Nets.at(i).degree==0 || this->Nets.at(i).degree==1) {
       //std::cout<<"Router-Info: no need to route net"<<this->Nets.at(i).netName<<std::endl;
       this->Nets.at(i).numSeg=0;
       this->Nets.at(i).seg.clear();
@@ -773,7 +773,7 @@ void GlobalRouter::MetalSpacingCheckFunc(std::set< std::pair<int,int>, IntPairCo
     // if candidates has been checked, skip to reduce size of ILP instance
     tpair=(val<overlap.valIdx) ? std::make_pair(val, overlap.valIdx) : std::make_pair(overlap.valIdx, val);
     if(checked.find(tpair)!=checked.end()) {continue;} 
-    if(overlap.type==RouterDB::CMM or overlap.type==RouterDB::CVM ) {
+    if(overlap.type==RouterDB::CMM || overlap.type==RouterDB::CVM ) {
       if(overlap.aiter!=h) {
         int ColNum1=this->Nets.at(overlap.aiter).seg.at(overlap.biter).candis.at(overlap.citer).valIdx+1;
         int ColNum2=this->Nets.at(h).seg.at(i).candis.at(j).valIdx+1;
@@ -797,7 +797,7 @@ void GlobalRouter::MetalSpacingCheckFunc(std::set< std::pair<int,int>, IntPairCo
         checked.insert(tpair);
         std::cout<<"Router-Info: candidate metal overlapped with "<<tpair.first<<" vs "<<tpair.second<<std::endl;
       }
-    } else if (overlap.type==RouterDB::PMM or overlap.type==RouterDB::PVM) {
+    } else if (overlap.type==RouterDB::PMM || overlap.type==RouterDB::PVM) {
       if (this->Blocks.at(overlap.aiter).pins.at(overlap.biter).netIter!=h) {
         int ColNum1=this->Nets.at(h).seg.at(i).candis.at(j).valIdx+1;
         this->NumOfVar++;
@@ -820,7 +820,7 @@ void GlobalRouter::MetalSpacingCheckFunc(std::set< std::pair<int,int>, IntPairCo
         checked.insert(tpair);
         std::cout<<"Router-Info: candidate metal overlapped with "<<tpair.first<<" vs "<<tpair.second<<std::endl;
       }
-    } else if (overlap.type==RouterDB::IMM or overlap.type==RouterDB::IVM) {
+    } else if (overlap.type==RouterDB::IMM || overlap.type==RouterDB::IVM) {
         int ColNum1=this->Nets.at(h).seg.at(i).candis.at(j).valIdx+1;
         this->NumOfVar++;
         this->SlackCounter++;

@@ -12,7 +12,7 @@
 //
 bool ConstGraph::RemoveEdgeforVertex(int current, int next, vector<Vertex> &graph, bool isBackward) {
 // only remove the first matched edge
-  if(current<0 or current>=(int)graph.size() or next<0 or next>=(int)graph.size() ) {return false;}
+  if(current<0 || current>=(int)graph.size() || next<0 || next>=(int)graph.size() ) {return false;}
   bool mark=false;
   int iN=0;
   for(std::vector<Edge>::iterator it=graph.at(current).Edges.begin(); it!=graph.at(current).Edges.end(); ++it,++iN) {
@@ -187,7 +187,7 @@ void ConstGraph::ConstructGraphwithConstraint(design& caseNL, Aplace& caseAP, in
   PlaneSweepConstraint(caseNL, caseAP, 1, bias_mode, bias_Vgraph);
   RemoveOverlapEdge(caseNL, caseAP);
   for(int i=0;i<(int)HGraph.size();i++) {
-    if( i==sourceNode or i==sinkNode ) {continue;}
+    if( i==sourceNode || i==sinkNode ) {continue;}
     if( !CheckForwardPath(sourceNode, i, HGraph) ) { // check path from source node
       if(i>=caseNL.GetSizeofBlocks()+2) {
         AddEdgeforVertex(sourceNode, i, HGraph.at(sourceNode).weight, this->HGraph);
@@ -212,7 +212,7 @@ void ConstGraph::ConstructGraphwithConstraint(design& caseNL, Aplace& caseAP, in
     }
   }
   for(int i=0;i<(int)VGraph.size();i++) {
-    if( i==sourceNode or i==sinkNode ) {continue;}
+    if( i==sourceNode || i==sinkNode ) {continue;}
     if( !CheckForwardPath(sourceNode, i, VGraph) ) { // check path from source node
       if(i>=caseNL.GetSizeofBlocks()+2) {
         AddEdgeforVertex(sourceNode, i, VGraph.at(sourceNode).weight, this->VGraph);
@@ -605,7 +605,7 @@ void ConstGraph::DeleteSetNodeConstraint(design& caseNL, Aplace& caseAP, std::se
   if(mark) {
     if(cand.at(lit->node)==Dnode.node) {
       if(mode==1) { // sort in y order, check overlap along x direction
-        if(lit->node>=caseNL.GetSizeofBlocks()+2 or Dnode.node>=caseNL.GetSizeofBlocks()+2 ) {
+        if(lit->node>=caseNL.GetSizeofBlocks()+2 || Dnode.node>=caseNL.GetSizeofBlocks()+2 ) {
           AddEdgeforVertex(lit->node, Dnode.node, VGraph.at(lit->node).weight, this->VGraph);
         } else {
           if(bias_mode==0) {
@@ -615,7 +615,7 @@ void ConstGraph::DeleteSetNodeConstraint(design& caseNL, Aplace& caseAP, std::se
           }
         }
       } else { // sort in x order, check overlap along y direction
-        if(lit->node>=caseNL.GetSizeofBlocks()+2 or Dnode.node>=caseNL.GetSizeofBlocks()+2 ) {
+        if(lit->node>=caseNL.GetSizeofBlocks()+2 || Dnode.node>=caseNL.GetSizeofBlocks()+2 ) {
           AddEdgeforVertex(lit->node, Dnode.node, HGraph.at(lit->node).weight, this->HGraph);
         } else {
           if(bias_mode==0) {
@@ -720,7 +720,7 @@ void ConstGraph::DeleteSetNodeConstraint(design& caseNL, Aplace& caseAP, std::se
   if(mark) {
     if(cand.at(Dnode.node)==rit->node) {
       if(mode==1) { // sort in y order, check overlap along x direction
-        if(Dnode.node>=caseNL.GetSizeofBlocks()+2 or rit->node>=caseNL.GetSizeofBlocks()+2) {
+        if(Dnode.node>=caseNL.GetSizeofBlocks()+2 || rit->node>=caseNL.GetSizeofBlocks()+2) {
           AddEdgeforVertex(Dnode.node, rit->node, VGraph.at(Dnode.node).weight, this->VGraph);
         } else {
           if(bias_mode==0) {
@@ -730,7 +730,7 @@ void ConstGraph::DeleteSetNodeConstraint(design& caseNL, Aplace& caseAP, std::se
           }
         }
       } else { // sort in x order, check overlap along y direction
-        if(Dnode.node>=caseNL.GetSizeofBlocks()+2 or rit->node>=caseNL.GetSizeofBlocks()+2) {
+        if(Dnode.node>=caseNL.GetSizeofBlocks()+2 || rit->node>=caseNL.GetSizeofBlocks()+2) {
           AddEdgeforVertex(Dnode.node, rit->node, HGraph.at(Dnode.node).weight, this->HGraph);
         } else {
           if(bias_mode==0) {
@@ -1109,7 +1109,7 @@ int bias_Hgraph = caseNL.bias_Hgraph;
   //cout<<"bias_graph_for_edge"<<bias_graph<<endl;
   // Add initial edges in horizontal graph
   for(int i=0;i<(int)HGraph.size();i++) {
-    if(i==sourceNode or i==sinkNode) {continue;}
+    if(i==sourceNode || i==sinkNode) {continue;}
     // check blocks right to current block
     candidate.clear(); candidate=caseSP.GetRightBlock(i);
     for(vector<int>::iterator it=candidate.begin(); it!=candidate.end(); ++it) {
@@ -1133,7 +1133,7 @@ int bias_Hgraph = caseNL.bias_Hgraph;
       //tmpE.next=sinkNode;
       //HGraph.at(i).Edges.push_back(tmpE);
       if(i<caseNL.GetSizeofBlocks()) {
-        if(mode==0 or mode==1) {
+        if(mode==0 || mode==1) {
           AddEdgeforVertex(i, sinkNode, HGraph.at(i).weight+bias_Hgraph, this->HGraph);
         } else {
           AddEdgeforVertex(i, sinkNode, HGraph.at(i).weight, this->HGraph);
@@ -1148,7 +1148,7 @@ int bias_Hgraph = caseNL.bias_Hgraph;
       //tmpE.next=i;
       //HGraph.at(sourceNode).Edges.push_back(tmpE);
       if(i<caseNL.GetSizeofBlocks()) {
-        if(mode==0 or mode==1) {
+        if(mode==0 || mode==1) {
           AddEdgeforVertex(sourceNode, i, 0+bias_Hgraph, this->HGraph);
         } else {
           AddEdgeforVertex(sourceNode, i, 0, this->HGraph);
@@ -1161,7 +1161,7 @@ int bias_Hgraph = caseNL.bias_Hgraph;
 
   // Add initial edges in vertical graph
   for(int i=0;i<(int)VGraph.size();i++) {
-    if(i==sourceNode or i==sinkNode) {continue;}
+    if(i==sourceNode || i==sinkNode) {continue;}
     // check blocks above current block
     candidate.clear(); candidate=caseSP.GetAboveBlock(i);
     for(vector<int>::iterator it=candidate.begin(); it!=candidate.end(); ++it) {
@@ -1189,7 +1189,7 @@ int bias_Hgraph = caseNL.bias_Hgraph;
       //tmpE.next=sinkNode;
       //VGraph.at(i).Edges.push_back(tmpE);
       if(i<caseNL.GetSizeofBlocks()) {
-        if(mode==0 or mode==1) {
+        if(mode==0 || mode==1) {
           AddEdgeforVertex(i, sinkNode, VGraph.at(i).weight+bias_Vgraph, this->VGraph);
         } else {
           AddEdgeforVertex(i, sinkNode, VGraph.at(i).weight, this->VGraph);
@@ -1204,7 +1204,7 @@ int bias_Hgraph = caseNL.bias_Hgraph;
       //tmpE.next=i;
       //VGraph.at(sourceNode).Edges.push_back(tmpE);
       if(i<caseNL.GetSizeofBlocks()) {
-        if(mode==0 or mode==1) {
+        if(mode==0 || mode==1) {
           AddEdgeforVertex(sourceNode, i, 0+bias_Vgraph, this->VGraph);
         } else {
           AddEdgeforVertex(sourceNode, i, 0, this->VGraph);
@@ -1324,7 +1324,7 @@ int bias_Hgraph = caseNL.bias_Hgraph;
   //cout<<"bias_graph_for_edge"<<bias_graph<<endl;
   // Add initial edges in horizontal graph
   for(int i=0;i<(int)HGraph.size();i++) {
-    if(i==sourceNode or i==sinkNode) {continue;}
+    if(i==sourceNode || i==sinkNode) {continue;}
     // check blocks right to current block
     candidate.clear(); candidate=caseSP.GetRightBlock(i);
     for(vector<int>::iterator it=candidate.begin(); it!=candidate.end(); ++it) {
@@ -1365,7 +1365,7 @@ int bias_Hgraph = caseNL.bias_Hgraph;
 
   // Add initial edges in vertical graph
   for(int i=0;i<(int)VGraph.size();i++) {
-    if(i==sourceNode or i==sinkNode) {continue;}
+    if(i==sourceNode || i==sinkNode) {continue;}
     // check blocks above current block
     candidate.clear(); candidate=caseSP.GetAboveBlock(i);
     for(vector<int>::iterator it=candidate.begin(); it!=candidate.end(); ++it) {
@@ -1600,7 +1600,7 @@ void ConstGraph::CalculateLongestPath(int s, vector<Vertex> &graph, bool backwar
 bool ConstGraph::FastInitialScan() {
   bool fastscan_H = CheckPositiveCycle(this->HGraph);
   bool fastscan_V = CheckPositiveCycle(this->VGraph);
-  if( fastscan_H or fastscan_V){
+  if( fastscan_H || fastscan_V){
     return true;
   }else{
     return false;
@@ -1702,7 +1702,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
     int netIdx=caseNL.Terminals.at(i).netIter;
     int sbIdx=caseNL.Terminals.at(i).SBidx;
     int cp=caseNL.Terminals.at(i).counterpart;
-    if(netIdx<0 or netIdx>=caseNL.GetSizeofNets()) {
+    if(netIdx<0 || netIdx>=caseNL.GetSizeofNets()) {
       logger->info("Placer-Warning: terminal {0} is dangling; set it on origin", i);
       //caseNL.Terminals.at(i).center.x = 0;
       //caseNL.Terminals.at(i).center.y = 0;
@@ -1753,7 +1753,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
         if(solved_terminals.find(cp)!=solved_terminals.end()) {logger->debug("Placer-Error: terminal {0} and {1} are not solved simultaneously!",i,cp); continue;}
         solved_terminals.insert(cp);
         int netIdx2=caseNL.Terminals.at(cp).netIter;
-        if(netIdx2<0 or netIdx2>=caseNL.GetSizeofNets()) {
+        if(netIdx2<0 || netIdx2>=caseNL.GetSizeofNets()) {
           logger->debug("Placer-Error: terminal {0} is not dangling, but its counterpart {1} is dangling; set them on origin",i,cp);
           //caseNL.Terminals.at(i).center.x = 0;
           //caseNL.Terminals.at(i).center.y = 0;
@@ -2407,7 +2407,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
     int netIdx=caseNL.Terminals.at(i).netIter;
     int sbIdx=caseNL.Terminals.at(i).SBidx;
     int cp=caseNL.Terminals.at(i).counterpart;
-    if(netIdx<0 or netIdx>=caseNL.GetSizeofNets()) {
+    if(netIdx<0 || netIdx>=caseNL.GetSizeofNets()) {
       logger->debug("Placer-Warning: terminal {0} is dangling; set it on origin",i);
       //caseNL.Terminals.at(i).center.x = 0;
       //caseNL.Terminals.at(i).center.y = 0;
@@ -2458,7 +2458,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
         if(solved_terminals.find(cp)!=solved_terminals.end()) {logger->debug("Placer-Error: terminal {0} and {1} are not solved simultaneously!",i,cp); continue;}
         solved_terminals.insert(cp);
         int netIdx2=caseNL.Terminals.at(cp).netIter;
-        if(netIdx2<0 or netIdx2>=caseNL.GetSizeofNets()) {
+        if(netIdx2<0 || netIdx2>=caseNL.GetSizeofNets()) {
           logger->debug("Placer-Error: terminal {0} is not dangling, but its counterpart {1} is dangling",i,cp);
           //caseNL.Terminals.at(i).center.x = 0;
           //caseNL.Terminals.at(i).center.y = 0;
@@ -2795,7 +2795,7 @@ bool ConstGraph::ConstraintHorizontalDistance(int n1, int n2, int c1, int c2 ) {
   mark = (mark && AddEdgeforVertex(n1, n2, c1, HGraph) );
   mark = (mark && AddEdgeforVertex(n1, n2, -1*c2, HGraph) );
   return mark;
-  //return (AddEdgeforVertex(n1, n2, c1, HGraph) or AddEdgeforVertex(n1, n2, -1*c2, HGraph));
+  //return (AddEdgeforVertex(n1, n2, c1, HGraph) || AddEdgeforVertex(n1, n2, -1*c2, HGraph));
 }
 
 bool ConstGraph::ConstraintVerticalDistance(int n1, int n2, int c1, int c2 ) {
@@ -2803,7 +2803,7 @@ bool ConstGraph::ConstraintVerticalDistance(int n1, int n2, int c1, int c2 ) {
   mark = (mark && AddEdgeforVertex(n1, n2, c1, VGraph) );
   mark = (mark && AddEdgeforVertex(n1, n2, -1*c2, VGraph) );
   return mark;
-  //return (AddEdgeforVertex(n1, n2, c1, VGraph) or AddEdgeforVertex(n1, n2, -1*c2, VGraph));
+  //return (AddEdgeforVertex(n1, n2, c1, VGraph) || AddEdgeforVertex(n1, n2, -1*c2, VGraph));
 }
 
 bool ConstGraph::ConstraintVerticalOrder(int below, int above) {
@@ -2830,7 +2830,7 @@ void ConstGraph::AlignReorganize(design& caseNL, vector< pair<int,int> >& sympai
   // Keep all symmetry pairs aligned in vertical(horizontal) graph and reorganize the symmetry pairs
   pair<int,int> tp;
   /*
-  if(caseNL.SBlocks.at(i).sympair.size()!=0 or caseNL.SBlocks.at(i).selfsym.size()!=0){
+  if(caseNL.SBlocks.at(i).sympair.size()!=0 || caseNL.SBlocks.at(i).selfsym.size()!=0){
     tp.first=sourceNode; tp.second=sinkNode;
     sympair.push_back(tp);
   }
@@ -4313,7 +4313,7 @@ void ConstGraph::UpdateDesignHierNode4AP(design& caseNL, design& reducedNL, SeqP
         }
       }
       for( std::vector< pair<int,int> >::iterator it=caseNL.SBlocks.at(j).sympair.begin(); it!=caseNL.SBlocks.at(j).sympair.end(); ++it) {
-        if(it->first>=caseNL.GetSizeofBlocks() or it->second>=caseNL.GetSizeofBlocks()) {continue;}
+        if(it->first>=caseNL.GetSizeofBlocks() || it->second>=caseNL.GetSizeofBlocks()) {continue;}
         int sel1=node.Blocks.at(it->first).selectedInstance;
         int sel2=node.Blocks.at(it->second).selectedInstance;
         if(axis_dir==placerDB::V) {
@@ -4401,7 +4401,7 @@ void ConstGraph::UpdateDesignHierNode4AP(design& caseNL, design& reducedNL, SeqP
         }
       }
       for( std::vector< pair<int,int> >::iterator it=diff.sympair.begin(); it!=diff.sympair.end(); ++it) {
-        if(it->first>=caseNL.GetSizeofBlocks() or it->second>=caseNL.GetSizeofBlocks()) {continue;}
+        if(it->first>=caseNL.GetSizeofBlocks() || it->second>=caseNL.GetSizeofBlocks()) {continue;}
         int sel1=node.Blocks.at(it->first).selectedInstance;
         int sel2=node.Blocks.at(it->second).selectedInstance;
         if(axis_dir==placerDB::V) {
@@ -4683,7 +4683,7 @@ void ConstGraph::UpdateSymmetryNetInfo(design& caseNL, PnRDB::hierNode& node, in
   string net1=caseNL.SNets.at(i).net1.name;
   string net2=caseNL.SNets.at(i).net2.name;
   for(std::vector<PnRDB::net>::iterator it=node.Nets.begin(); it!=node.Nets.end(); ++it) {
-    if(it->name.compare(net1)==0 or it->name.compare(net2)==0) {
+    if(it->name.compare(net1)==0 || it->name.compare(net2)==0) {
       it->axis_dir=PnRDB::Smark(int(axis_dir));
       it->axis_coor=axis_coor;
     }
@@ -4730,7 +4730,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
     int netIdx=caseNL.Terminals.at(i).netIter;
     int sbIdx=caseNL.Terminals.at(i).SBidx;
     int cp=caseNL.Terminals.at(i).counterpart;
-    if(netIdx<0 or netIdx>=caseNL.GetSizeofNets()) {
+    if(netIdx<0 || netIdx>=caseNL.GetSizeofNets()) {
       logger->debug("Placer-Warning: terminal {0} is dangling; set it on origin",i);
       caseNL.Terminals.at(i).center.x = 0;
       caseNL.Terminals.at(i).center.y = 0;
@@ -4788,7 +4788,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
         if(solved_terminals.find(cp)!=solved_terminals.end()) {logger->debug("Placer-Error: terminal {0} and {1} are not solved simultaneously!",i,cp);continue;}
         solved_terminals.insert(cp);
         int netIdx2=caseNL.Terminals.at(cp).netIter;
-        if(netIdx2<0 or netIdx2>=caseNL.GetSizeofNets()) {
+        if(netIdx2<0 || netIdx2>=caseNL.GetSizeofNets()) {
           logger->debug("Placer-Error: terminal {0} is not dangling, but its counterpart {1} is dangling; set them on origin",i,cp);
           caseNL.Terminals.at(i).center.x = 0;
           caseNL.Terminals.at(i).center.y = 0;
@@ -5210,7 +5210,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
     int netIdx=caseNL.Terminals.at(i).netIter;
     int sbIdx=caseNL.Terminals.at(i).SBidx;
     int cp=caseNL.Terminals.at(i).counterpart;
-    if(netIdx<0 or netIdx>=caseNL.GetSizeofNets()) {
+    if(netIdx<0 || netIdx>=caseNL.GetSizeofNets()) {
       logger->debug("Placer-Warning: terminal {0}  is dangling; set it on origin", i);
       caseNL.Terminals.at(i).center.x = 0;
       caseNL.Terminals.at(i).center.y = 0;
@@ -5268,7 +5268,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
         if(solved_terminals.find(cp)!=solved_terminals.end()) {logger->debug("Placer-Error: terminal {0} and {1} are not solved simultaneously",i,cp); continue;}
         solved_terminals.insert(cp);
         int netIdx2=caseNL.Terminals.at(cp).netIter;
-        if(netIdx2<0 or netIdx2>=caseNL.GetSizeofNets()) {
+        if(netIdx2<0 || netIdx2>=caseNL.GetSizeofNets()) {
           logger->debug("Placer-Error: terminal {0} is not dangling, but its counterpart {1} is dangling; set them on origin",i,cp);
           caseNL.Terminals.at(i).center.x = 0;
           caseNL.Terminals.at(i).center.y = 0;

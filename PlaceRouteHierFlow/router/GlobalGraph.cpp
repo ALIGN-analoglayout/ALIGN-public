@@ -598,7 +598,7 @@ void GlobalGraph::printPath(std::vector<int>& parent, int j, int Vsize, std::vec
       return;
     }
   printPath(parent, parent[j], Vsize, temp_path);
-  if( !(j==source or j==dest))
+  if( !(j==source || j==dest))
     { 
        temp_path.push_back(j);
        //std::cout<<"path push "<<j<<std::endl;

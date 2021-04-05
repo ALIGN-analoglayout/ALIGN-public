@@ -48,7 +48,7 @@ bool Graph::FindFeasiblePath(Grid& grid, int pathNo) {
      Path.push_back(temp_path);
      mark=true;
      } else {
-       mark=(mark or false);
+       mark=(mark || false);
        logger->warn("Router-Warning: feasible path might not be found");
      }
   }
@@ -269,7 +269,7 @@ void Graph::collect_node(Grid &grid, int temp_vector, vector<int>& adjacent_node
 
 void Graph::power_grid_dsf(Grid& grid, int i, int graph_index, int& connection_graph_number, int power){
 
-  if(i<0 or i>grid.vertices_graph.size()-1){
+  if(i<0 || i>grid.vertices_graph.size()-1){
      return;
   }
 
@@ -882,7 +882,7 @@ void Graph::printPath(std::vector<int> &parent, int j, int Vsize, std::vector<in
       return;
     }
   printPath(parent, parent[j], Vsize, temp_path);
-  if( !(j==source or j==dest))
+  if( !(j==source || j==dest))
     { 
        temp_path.push_back(j);
        //std::cout<<"path push "<<j<<std::endl;

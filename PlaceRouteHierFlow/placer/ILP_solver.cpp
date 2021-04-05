@@ -834,7 +834,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign, SeqPair& curr_sp) {
         if (solved_terminals.find(cp) != solved_terminals.end()) continue;
         solved_terminals.insert(cp);
         int netIdx2 = mydesign.Terminals.at(cp).netIter;
-        if (netIdx2 < 0 or netIdx2 >= mydesign.Nets.size()) {
+        if (netIdx2 < 0 || netIdx2 >= mydesign.Nets.size()) {
           logger->error("Placer-Error: terminal {0} is not dangling, but its counterpart {1} is dangling; set them on origin", i, cp);
           mydesign.Terminals.at(i).center = {0, 0};
           mydesign.Terminals.at(cp).center = {0, 0};
@@ -1430,7 +1430,7 @@ void ILP_solver::UpdateSymmetryNetInfo(design& mydesign, PnRDB::hierNode& node, 
   string net1 = mydesign.SNets.at(i).net1.name;
   string net2 = mydesign.SNets.at(i).net2.name;
   for (std::vector<PnRDB::net>::iterator it = node.Nets.begin(); it != node.Nets.end(); ++it) {
-    if (it->name.compare(net1) == 0 or it->name.compare(net2) == 0) {
+    if (it->name.compare(net1) == 0 || it->name.compare(net2) == 0) {
       it->axis_dir = PnRDB::Smark(int(axis_dir));
       it->axis_coor = axis_coor;
     }

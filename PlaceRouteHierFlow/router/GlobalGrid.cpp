@@ -34,21 +34,21 @@ void GlobalGrid::CreateGridDataCap(bool Cap_Ncap){
 
       for(unsigned int j=0;j<tiles_total[i].north.size();j++){
 
-           if(tiles_total[i].north[j].capacity>0 or Cap_Ncap){    
+           if(tiles_total[i].north[j].capacity>0 || Cap_Ncap){    
               write_out_matlab_file(i,tiles_total[i].north[j].next); 
              }
           }
 
       for(unsigned int j=0;j<tiles_total[i].south.size();j++){
 
-           if(tiles_total[i].south[j].capacity>0 or Cap_Ncap){    
+           if(tiles_total[i].south[j].capacity>0 || Cap_Ncap){    
               write_out_matlab_file(i,tiles_total[i].south[j].next); 
              }
           }
 
       for(unsigned int j=0;j<tiles_total[i].east.size();j++){
 
-           if(tiles_total[i].east[j].capacity>0 or Cap_Ncap){    
+           if(tiles_total[i].east[j].capacity>0 || Cap_Ncap){    
               write_out_matlab_file(i,tiles_total[i].east[j].next); 
              }
           }
@@ -56,7 +56,7 @@ void GlobalGrid::CreateGridDataCap(bool Cap_Ncap){
 
       for(unsigned int j=0;j<tiles_total[i].west.size();j++){
 
-           if(tiles_total[i].west[j].capacity>0 or Cap_Ncap){    
+           if(tiles_total[i].west[j].capacity>0 || Cap_Ncap){    
               write_out_matlab_file(i,tiles_total[i].west[j].next); 
              }
           }
@@ -64,14 +64,14 @@ void GlobalGrid::CreateGridDataCap(bool Cap_Ncap){
 
       for(unsigned int j=0;j<tiles_total[i].down.size();j++){
 
-           if(tiles_total[i].down[j].capacity>0 or Cap_Ncap){    
+           if(tiles_total[i].down[j].capacity>0 || Cap_Ncap){    
               write_out_matlab_file(i,tiles_total[i].down[j].next);  
              }
           }
 
       for(unsigned int j=0;j<tiles_total[i].up.size();j++){
 
-           if(tiles_total[i].up[j].capacity>0 or Cap_Ncap){    
+           if(tiles_total[i].up[j].capacity>0 || Cap_Ncap){    
               write_out_matlab_file(i,tiles_total[i].up[j].next);  
              }
           }

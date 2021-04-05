@@ -260,7 +260,7 @@ void SeqPair::InsertCommonSBlock(design& originNL, design& reducedNL, int origin
   for(int i=0;i<(int)this->negPair.size();++i) {
     if(this->negPair.at(i)==anode) {anode_neg=i;break;}
   }
-  if(anode_pos==-1 or anode_neg==-1) {
+  if(anode_pos==-1 || anode_neg==-1) {
     logger->debug("Placer-Error: cannot find axis node in seq pair");
   }
   for(int i=0;i<anode_pos;++i) {
@@ -617,21 +617,21 @@ void SeqPair::ChangeOrient(int blockNo, placerDB::Omark ort) {
 
 void SeqPair::AdjustOrient(int blockNo, placerDB::Omark ort) {
   switch(orient.at(blockNo)) {
-    case placerDB::N: if(ort==placerDB::N or ort==placerDB::S or ort==placerDB::FN or ort==placerDB::FS)  orient.at(blockNo)=ort; 
+    case placerDB::N: if(ort==placerDB::N || ort==placerDB::S || ort==placerDB::FN || ort==placerDB::FS)  orient.at(blockNo)=ort; 
             break;
-    case placerDB::S: if(ort==placerDB::N or ort==placerDB::S or ort==placerDB::FN or ort==placerDB::FS)  orient.at(blockNo)=ort; 
+    case placerDB::S: if(ort==placerDB::N || ort==placerDB::S || ort==placerDB::FN || ort==placerDB::FS)  orient.at(blockNo)=ort; 
             break;
-    case placerDB::FN:if(ort==placerDB::N or ort==placerDB::S or ort==placerDB::FN or ort==placerDB::FS)  orient.at(blockNo)=ort; 
+    case placerDB::FN:if(ort==placerDB::N || ort==placerDB::S || ort==placerDB::FN || ort==placerDB::FS)  orient.at(blockNo)=ort; 
             break;
-    case placerDB::FS:if(ort==placerDB::N or ort==placerDB::S or ort==placerDB::FN or ort==placerDB::FS)  orient.at(blockNo)=ort; 
+    case placerDB::FS:if(ort==placerDB::N || ort==placerDB::S || ort==placerDB::FN || ort==placerDB::FS)  orient.at(blockNo)=ort; 
             break;
-    case placerDB::E: if(ort==placerDB::E or ort==placerDB::W or ort==placerDB::FE or ort==placerDB::FW)  orient.at(blockNo)=ort;
+    case placerDB::E: if(ort==placerDB::E || ort==placerDB::W || ort==placerDB::FE || ort==placerDB::FW)  orient.at(blockNo)=ort;
             break;
-    case placerDB::W: if(ort==placerDB::E or ort==placerDB::W or ort==placerDB::FE or ort==placerDB::FW)  orient.at(blockNo)=ort;
+    case placerDB::W: if(ort==placerDB::E || ort==placerDB::W || ort==placerDB::FE || ort==placerDB::FW)  orient.at(blockNo)=ort;
             break;
-    case placerDB::FE:if(ort==placerDB::E or ort==placerDB::W or ort==placerDB::FE or ort==placerDB::FW)  orient.at(blockNo)=ort;
+    case placerDB::FE:if(ort==placerDB::E || ort==placerDB::W || ort==placerDB::FE || ort==placerDB::FW)  orient.at(blockNo)=ort;
             break;
-    case placerDB::FW:if(ort==placerDB::E or ort==placerDB::W or ort==placerDB::FE or ort==placerDB::FW)  orient.at(blockNo)=ort;
+    case placerDB::FW:if(ort==placerDB::E || ort==placerDB::W || ort==placerDB::FE || ort==placerDB::FW)  orient.at(blockNo)=ort;
             break;
     default:break;
   }
@@ -953,7 +953,7 @@ bool SeqPair::SwapTwoSymmetryGroup(design& caseNL) {
     while(sgB==sgA) { sgB=rand() % caseNL.GetSizeofSBlocks(); }
   }
   if(caseNL.mixFlag) {
-    if(caseNL.GetMappedSymmBlockIdx(sgA)!=-1 or caseNL.GetMappedSymmBlockIdx(sgB)!=-1) {return false;}
+    if(caseNL.GetMappedSymmBlockIdx(sgA)!=-1 || caseNL.GetMappedSymmBlockIdx(sgB)!=-1) {return false;}
   }
   //cout<<"Swap symmetry group "<<sgA<<" and "<<sgB<<endl;
   vector<int> Alist=caseNL.GetRealBlockPlusAxisListfromSymmGroup(sgA);
@@ -1055,7 +1055,7 @@ bool SeqPair::SwapTwoBlocksofSameGroup(design& caseNL) {
   //cout<<"sgid "<<sgid<<endl;
   vector<int> blist=caseNL.GetRealBlockListfromSymmGroup(sgid); // all real blocks in symmetry group cosidering mixFlag
   //cout<<"blist size: "<<blist.size()<<endl;
-  if(blist.empty() or (int)blist.size()==1) {return false;}//std::cout<<"empty or 1"<<std::endl;}
+  if(blist.empty() || (int)blist.size()==1) {return false;}//std::cout<<"empty or 1"<<std::endl;}
   if((int)blist.size()==2 && blist.at(0)==caseNL.GetBlockCounterpart(blist.at(1))) {return false;}
   int A=blist.at( rand() % (int)blist.size() );
   //while(A>=(int)caseNL.GetSizeofBlocks()) {
@@ -1063,10 +1063,10 @@ bool SeqPair::SwapTwoBlocksofSameGroup(design& caseNL) {
   //}
   int symA=caseNL.GetBlockCounterpart(A);
   int B=blist.at( rand() % (int)blist.size() );
-  while(B==A or B==symA)  {
+  while(B==A || B==symA)  {
     B=blist.at( rand() % (int)blist.size() );
   }
-  //while(B==A or B==symA or B>=(int)caseNL.GetSizeofBlocks() )  {
+  //while(B==A || B==symA || B>=(int)caseNL.GetSizeofBlocks() )  {
   //  B=blist.at( rand() % (int)blist.size() );
   //}
   int symB=caseNL.GetBlockCounterpart(B);
@@ -1096,7 +1096,7 @@ bool SeqPair::SwapMultiBlocksofSameGroup(design& caseNL) {
   //cout<<"sgid "<<sgid<<endl;
   vector<int> blist=caseNL.GetRealBlockListfromSymmGroup(sgid); // all real blocks in symmetry group considering mixFlag
   //cout<<"blist size: "<<blist.size()<<endl;
-  if(blist.empty() or (int)blist.size()==1) {return false;}//std::cout<<"empty or 2"<<std::endl;}
+  if(blist.empty() || (int)blist.size()==1) {return false;}//std::cout<<"empty or 2"<<std::endl;}
   if((int)blist.size()==2 && blist.at(0)==caseNL.GetBlockCounterpart(blist.at(1))) {return false;}
   for(int i=0;i<count;++i) {
     int A=blist.at( rand() % (int)blist.size() );
@@ -1105,10 +1105,10 @@ bool SeqPair::SwapMultiBlocksofSameGroup(design& caseNL) {
     //}
     int symA=caseNL.GetBlockCounterpart(A);
     int B=blist.at( rand() % (int)blist.size() );
-    while(B==A or B==symA)  {
+    while(B==A || B==symA)  {
       B=blist.at( rand() % (int)blist.size() );
     }
-    //while(B==A or B==symA or B>=(int)caseNL.GetSizeofBlocks() )  {
+    //while(B==A || B==symA || B>=(int)caseNL.GetSizeofBlocks() )  {
     //  B=blist.at( rand() % (int)blist.size() );
     //}
     int symB=caseNL.GetBlockCounterpart(B);
@@ -1219,21 +1219,21 @@ bool SeqPair::ChangeAsymmetricBlockOrient(design& caseNL) {
   while(!mark) {
     ort=placerDB::Omark( rand() % 8 );
     switch(curr_ort) {
-      case placerDB::N: if(ort==placerDB::S or ort==placerDB::FN or ort==placerDB::FS)  {orient.at(anode)=ort;mark=true; }
+      case placerDB::N: if(ort==placerDB::S || ort==placerDB::FN || ort==placerDB::FS)  {orient.at(anode)=ort;mark=true; }
               break;
-      case placerDB::S: if(ort==placerDB::N or ort==placerDB::FN or ort==placerDB::FS)  {orient.at(anode)=ort;mark=true; }
+      case placerDB::S: if(ort==placerDB::N || ort==placerDB::FN || ort==placerDB::FS)  {orient.at(anode)=ort;mark=true; }
               break;                                                             
-      case placerDB::FN:if(ort==placerDB::N or ort==placerDB::S  or ort==placerDB::FS)  {orient.at(anode)=ort;mark=true; }
+      case placerDB::FN:if(ort==placerDB::N || ort==placerDB::S  || ort==placerDB::FS)  {orient.at(anode)=ort;mark=true; }
               break;                                                             
-      case placerDB::FS:if(ort==placerDB::N or ort==placerDB::S  or ort==placerDB::FN)  {orient.at(anode)=ort;mark=true; }
+      case placerDB::FS:if(ort==placerDB::N || ort==placerDB::S  || ort==placerDB::FN)  {orient.at(anode)=ort;mark=true; }
               break;                                                             
-      case placerDB::E: if(ort==placerDB::W or ort==placerDB::FE or ort==placerDB::FW)  {orient.at(anode)=ort;mark=true; }
+      case placerDB::E: if(ort==placerDB::W || ort==placerDB::FE || ort==placerDB::FW)  {orient.at(anode)=ort;mark=true; }
               break;                                                             
-      case placerDB::W: if(ort==placerDB::E or ort==placerDB::FE or ort==placerDB::FW)  {orient.at(anode)=ort;mark=true; }
+      case placerDB::W: if(ort==placerDB::E || ort==placerDB::FE || ort==placerDB::FW)  {orient.at(anode)=ort;mark=true; }
               break;                                                             
-      case placerDB::FE:if(ort==placerDB::E or ort==placerDB::W  or ort==placerDB::FW)  {orient.at(anode)=ort;mark=true; }
+      case placerDB::FE:if(ort==placerDB::E || ort==placerDB::W  || ort==placerDB::FW)  {orient.at(anode)=ort;mark=true; }
               break;                                                             
-      case placerDB::FW:if(ort==placerDB::E or ort==placerDB::W  or ort==placerDB::FE)  {orient.at(anode)=ort;mark=true; }
+      case placerDB::FW:if(ort==placerDB::E || ort==placerDB::W  || ort==placerDB::FE)  {orient.at(anode)=ort;mark=true; }
               break;
       default:break;
     }

@@ -37,7 +37,7 @@ bool A_star::FindFeasiblePath(Grid& grid, int pathNo, int left_up, int right_dow
        Path = temp_path;
        mark=true;
      } else {
-       mark=(mark or false);
+       mark=(mark || false);
        logger->warn("Router-Warning: feasible path might not be found");
      }
   }
@@ -64,7 +64,7 @@ bool A_star::FindFeasiblePath_sym(Grid& grid, int pathNo, int left_up, int right
        Path = temp_path;
        mark=true;
      } else {
-       mark=(mark or false);
+       mark=(mark || false);
        logger->warn("Router-Warning: feasible path might not be found");
      }
   }
@@ -290,7 +290,7 @@ int A_star::trace_back_node_parent(int current_node, Grid& grid, std::set<int> &
 
     int last_node = grid.vertices_total[dummy_node].parent;
 
-    if(last_node<0 or last_node>=grid.vertices_total.size()){
+    if(last_node<0 || last_node>=grid.vertices_total.size()){
       trace_back_flag = false;
     }else if(grid.vertices_total[last_node].metal == grid.vertices_total[dummy_node].metal && last_nodes.find(last_node)==last_nodes.end()){
       first_node_same_layer = last_node;
@@ -300,7 +300,7 @@ int A_star::trace_back_node_parent(int current_node, Grid& grid, std::set<int> &
     }
 
 /*
-    if(last_node<0 or last_node>=grid.vertices_total.size()){
+    if(last_node<0 || last_node>=grid.vertices_total.size()){
       trace_back_flag = false;
     }else if(grid.vertices_total[last_node].metal == grid.vertices_total[dummy_node].metal && last_nodes.find(last_node)==last_nodes.end()){
       first_node_same_layer = last_node;
@@ -340,7 +340,7 @@ int A_star::trace_back_node(int current_node, Grid& grid, std::set<int> &source_
 
     int last_node = grid.vertices_total[dummy_node].trace_back_node;
 
-    if(last_node<0 or last_node>=grid.vertices_total.size()){
+    if(last_node<0 || last_node>=grid.vertices_total.size()){
       trace_back_flag = false;
     }else if(grid.vertices_total[last_node].metal == grid.vertices_total[dummy_node].metal && last_nodes.find(last_node)==last_nodes.end()){
       first_node_same_layer = last_node;
@@ -350,7 +350,7 @@ int A_star::trace_back_node(int current_node, Grid& grid, std::set<int> &source_
     }
 
 /*
-    if(last_node<0 or last_node>=grid.vertices_total.size()){
+    if(last_node<0 || last_node>=grid.vertices_total.size()){
       trace_back_flag = false;
     }else if(grid.vertices_total[last_node].metal == grid.vertices_total[dummy_node].metal && last_nodes.find(last_node)==last_nodes.end()){
       first_node_same_layer = last_node;
@@ -403,13 +403,13 @@ bool A_star::CheckExendable_With_Certain_Length(int first_node_same_layer,int cu
         search_flag = false;
      }else{
        int next_node = dummy_node + first_direction;
-       if(next_node<0 or next_node>=grid.vertices_total.size() ) {
+       if(next_node<0 || next_node>=grid.vertices_total.size() ) {
           search_flag = false;
           feasible = false;
        }else if(grid.vertices_total[next_node].active==0) {
           search_flag = false;
           feasible = false;
-       }else if( (grid.vertices_total[next_node].x != grid.vertices_total[first_node_same_layer].x && grid.vertices_total[next_node].y != grid.vertices_total[first_node_same_layer].y) or grid.vertices_total[next_node].metal != grid.vertices_total[first_node_same_layer].metal ){
+       }else if( (grid.vertices_total[next_node].x != grid.vertices_total[first_node_same_layer].x && grid.vertices_total[next_node].y != grid.vertices_total[first_node_same_layer].y) || grid.vertices_total[next_node].metal != grid.vertices_total[first_node_same_layer].metal ){
           search_flag = false;
           feasible = false;
        }else {
@@ -427,13 +427,13 @@ bool A_star::CheckExendable_With_Certain_Length(int first_node_same_layer,int cu
         search_flag = false;
      }else{
        int next_node = dummy_node + current_direction;
-       if(next_node<0 or next_node>=grid.vertices_total.size() ) {
+       if(next_node<0 || next_node>=grid.vertices_total.size() ) {
           search_flag = false;
           feasible = false;
        }else if(grid.vertices_total[next_node].active==0) {
           search_flag = false;
           feasible = false;
-       }else if( (grid.vertices_total[next_node].x != grid.vertices_total[current_node].x && grid.vertices_total[next_node].y != grid.vertices_total[current_node].y) or grid.vertices_total[next_node].metal != grid.vertices_total[current_node].metal){
+       }else if( (grid.vertices_total[next_node].x != grid.vertices_total[current_node].x && grid.vertices_total[next_node].y != grid.vertices_total[current_node].y) || grid.vertices_total[next_node].metal != grid.vertices_total[current_node].metal){
           search_flag = false;
           feasible = false;
        }else {
@@ -498,7 +498,7 @@ bool A_star::find_nodes_north(Grid& grid, int node, int number, std::vector<int>
         }else{
            n = -1;
         }
-        if(n<0 or n>grid.vertices_total_full_connected.size()-1){
+        if(n<0 || n>grid.vertices_total_full_connected.size()-1){
           return false;
         }else{
           current_node = n;
@@ -537,7 +537,7 @@ bool A_star::find_nodes_east(Grid& grid, int node, int number, std::vector<int>&
         }else{
            n = -1;
         }
-        if(n<0 or n>grid.vertices_total_full_connected.size()-1){
+        if(n<0 || n>grid.vertices_total_full_connected.size()-1){
           return false;
         }else{
           current_node = n;
@@ -576,7 +576,7 @@ bool A_star::find_nodes_west(Grid& grid, int node, int number, std::vector<int>&
         }else{
            n = -1;
         }
-        if(n<0 or n>grid.vertices_total_full_connected.size()-1){
+        if(n<0 || n>grid.vertices_total_full_connected.size()-1){
           return false;
         }else{
           current_node = n;
@@ -615,7 +615,7 @@ bool A_star::find_nodes_south(Grid& grid, int node, int number, std::vector<int>
         }else{
            n = -1;
         }
-        if(n<0 or n>grid.vertices_total_full_connected.size()-1){
+        if(n<0 || n>grid.vertices_total_full_connected.size()-1){
           return false;
         }else{
           current_node = n;
@@ -876,7 +876,7 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
     int next = find_next_node(grid, current_node, x, y, metal, dummy_layer);
 
     //assert(0);
-    if(next <0 or next>= grid.vertices_total.size()){
+    if(next <0 || next>= grid.vertices_total.size()){
       return false;
     }else if(next>=0 && next< grid.vertices_total.size() ){
       node_set_up.push_back(next); 
@@ -908,7 +908,7 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
     if(metal>0){metal=1;}else if(metal<0){metal=-1;}
     int dummy_layer = -1; // go down
     int next = find_next_node(grid, current_node, x, y, metal, dummy_layer);
-    if(next <0 or next>= grid.vertices_total.size()){
+    if(next <0 || next>= grid.vertices_total.size()){
       return false;
     }else if(next>=0 && next< grid.vertices_total.size() ){
       //grid.vertices_total[next].trace_back_node = current_node;
@@ -931,7 +931,7 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
   //bool activa_down = 1;
   
 
-  if( ( activa_up) or (activa_down)){
+  if( ( activa_up) || (activa_down)){
     if(( activa_up)) node_set = node_set_up;
     if(( activa_down)) node_set = node_set_down;
     return true;
@@ -988,16 +988,16 @@ bool A_star::Check_activa_via_active(Grid& grid, std::vector<int> &nodes){
      int parent = grid.vertices_total[nodes[i]].parent;
      if(parent==-1){
         continue;
-     }else if(parent <0 or parent> grid.vertices_total.size() -1){
+     }else if(parent <0 || parent> grid.vertices_total.size() -1){
         logger->error("Check active via active bug, parent out of grid");
      }
      int parent_metal = grid.vertices_total[parent].metal;
      int current_metal = grid.vertices_total[nodes[i]].metal;
      if(parent_metal == current_metal && !grid.vertices_total[nodes[i]].active){
        return false;
-     }else if(parent_metal > current_metal && (!grid.vertices_total[nodes[i]].active or !grid.vertices_total[nodes[i]].via_active_up or !grid.vertices_total[parent].active or !grid.vertices_total[parent].via_active_down)){
+     }else if(parent_metal > current_metal && (!grid.vertices_total[nodes[i]].active || !grid.vertices_total[nodes[i]].via_active_up || !grid.vertices_total[parent].active || !grid.vertices_total[parent].via_active_down)){
        return false;
-     }else if(parent_metal < current_metal && (!grid.vertices_total[nodes[i]].active or !grid.vertices_total[nodes[i]].via_active_down or !grid.vertices_total[parent].active or !grid.vertices_total[parent].via_active_up)){
+     }else if(parent_metal < current_metal && (!grid.vertices_total[nodes[i]].active || !grid.vertices_total[nodes[i]].via_active_down || !grid.vertices_total[parent].active || !grid.vertices_total[parent].via_active_up)){
        return false;
      }
      
@@ -1011,13 +1011,13 @@ bool A_star::Check_activa_via_active(Grid& grid, std::vector<int> &nodes){
 
 bool A_star::Check_activa_via_active(Grid& grid, std::vector<int> &nodes){
 
-  if(nodes.size()==0 or !grid.vertices_total[nodes[0]].active){
+  if(nodes.size()==0 || !grid.vertices_total[nodes[0]].active){
     return false;
   }
 
   for(int i=1;i<nodes.size();i++){
 
-     if(nodes[i]<0 or nodes[i]>grid.vertices_total.size() -1 or !grid.vertices_total[nodes[i]].active){
+     if(nodes[i]<0 || nodes[i]>grid.vertices_total.size() -1 || !grid.vertices_total[nodes[i]].active){
         return false;
      }
      //Q here is a bug?
@@ -1028,9 +1028,9 @@ bool A_star::Check_activa_via_active(Grid& grid, std::vector<int> &nodes){
 
      if(parent_metal == current_metal && !grid.vertices_total[nodes[i]].active){
        return false;
-     }else if(parent_metal > current_metal && (!grid.vertices_total[nodes[i]].active or !grid.vertices_total[nodes[i]].via_active_up or !grid.vertices_total[parent].active or !grid.vertices_total[parent].via_active_down)){
+     }else if(parent_metal > current_metal && (!grid.vertices_total[nodes[i]].active || !grid.vertices_total[nodes[i]].via_active_up || !grid.vertices_total[parent].active || !grid.vertices_total[parent].via_active_down)){
        return false;
-     }else if(parent_metal < current_metal && (!grid.vertices_total[nodes[i]].active or !grid.vertices_total[nodes[i]].via_active_down or !grid.vertices_total[parent].active or !grid.vertices_total[parent].via_active_up)){
+     }else if(parent_metal < current_metal && (!grid.vertices_total[nodes[i]].active || !grid.vertices_total[nodes[i]].via_active_down || !grid.vertices_total[parent].active || !grid.vertices_total[parent].via_active_up)){
        return false;
      }
     
@@ -1101,7 +1101,7 @@ bool A_star::Extention_check(Grid& grid, int current_node, std::set<int> &source
 
   int parent = grid.vertices_total[current_node].trace_back_node;
 
-  //if(parent==-1 or source_index.find(parent)!=source_index.end()){
+  //if(parent==-1 || source_index.find(parent)!=source_index.end()){
   if(parent==-1 ){
     return true;
   }

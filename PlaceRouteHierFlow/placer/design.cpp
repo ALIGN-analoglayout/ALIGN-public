@@ -176,7 +176,7 @@ design::design(design& other, int mode) {
       placerDB::SymmBlock SB;
       // new symmetry pair
       for(std::vector< std::pair<int,int> >::iterator spit=sbit->sympair.begin(); spit!=sbit->sympair.end(); ++spit) {
-        if(spit->first>=(int)other.Blocks.size() or spit->second>=(int)other.Blocks.size()) {continue;}
+        if(spit->first>=(int)other.Blocks.size() || spit->second>=(int)other.Blocks.size()) {continue;}
         if(other.Blocks.at(spit->first).back().bigMacro && other.Blocks.at(spit->second).back().bigMacro) {
           int m1=other.Blocks.at(spit->first).back().mapIdx;
           int m2=other.Blocks.at(spit->second).back().mapIdx;
@@ -193,7 +193,7 @@ design::design(design& other, int mode) {
           SB.selfsym.push_back( make_pair( other.Blocks.at(sfit->first).back().mapIdx, sfit->second) );
         }
       }
-      if(SB.sympair.size()>0 or SB.selfsym.size()>0) {
+      if(SB.sympair.size()>0 || SB.selfsym.size()>0) {
         // if the symmetry group exists
         for(vector< pair<int,int> >::iterator spit=SB.sympair.begin(); spit!=SB.sympair.end(); ++spit) {
           for(unsigned int w=0;w<this->Blocks.at(spit->first).size();++w) {
@@ -1432,7 +1432,7 @@ void design::PrintNets() {
 }
 
 int design::GetBlockWidth(int blockid, placerDB::Omark ort, int sel) {
-  if(ort==placerDB::N or ort==placerDB::S or ort==placerDB::FN or ort==placerDB::FS) {
+  if(ort==placerDB::N || ort==placerDB::S || ort==placerDB::FN || ort==placerDB::FS) {
   return Blocks.at(blockid).at(sel).width;
   } else {
   return Blocks.at(blockid).at(sel).height;
@@ -1440,7 +1440,7 @@ int design::GetBlockWidth(int blockid, placerDB::Omark ort, int sel) {
 }
 
 int design::GetBlockHeight(int blockid, placerDB::Omark ort, int sel) {
-  if(ort==placerDB::N or ort==placerDB::S or ort==placerDB::FN or ort==placerDB::FS) {
+  if(ort==placerDB::N || ort==placerDB::S || ort==placerDB::FN || ort==placerDB::FS) {
   return Blocks.at(blockid).at(sel).height;
   } else {
   return Blocks.at(blockid).at(sel).width;
@@ -2162,7 +2162,7 @@ std::vector<placerDB::SymmBlock> design::SplitSymmBlock(design& reducedNL, int o
   for(std::vector< pair<int,int> >::iterator it=originSB.sympair.begin(); it!=originSB.sympair.end(); ++it) {
     int origin1=it->first;
     int origin2=it->second;
-    if(origin1>=GetSizeofBlocks() or origin2>=GetSizeofBlocks()) {continue;}
+    if(origin1>=GetSizeofBlocks() || origin2>=GetSizeofBlocks()) {continue;}
     bool mark=false;
     for(std::vector< pair<int,int> >::iterator it2=reducedSB.sympair.begin(); it2!=reducedSB.sympair.end(); ++it2) {
       int reduced1=reducedNL.Blocks.at(it2->first).back().mapIdx;
@@ -2211,6 +2211,6 @@ int design::GetBlockMargin(int i, int j) {
 }
 
 int design::GetBlockSymmGroupDnode(int i) {
-  if(i<0 or i>=(int)SBlocks.size()) {return -1;}
+  if(i<0 || i>=(int)SBlocks.size()) {return -1;}
   return SBlocks.at(i).dnode;
 }

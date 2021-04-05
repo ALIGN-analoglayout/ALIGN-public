@@ -465,7 +465,7 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
            RouterDB::Pin temp_pin = PowerNets[i].pins[j];
            std::vector<RouterDB::SinkData> temp_source, temp_dest;
 
-           if(Vdd_grid.metals.size()==0 or Gnd_grid.metals.size()==0){
+           if(Vdd_grid.metals.size()==0 || Gnd_grid.metals.size()==0){
              logger->error("Placement Area is too small, no space to create power grid");
              assert(0);
              //continue;
@@ -669,7 +669,7 @@ void PowerRouter::returnPath(std::vector<std::vector<RouterDB::Metal> > temp_pat
   for(unsigned int i=0;i<temp_path.size();i++){
        
      for(unsigned int j=0;j<temp_path[i].size();j++){
-         if(j==0 or j==temp_path[i].size()-1){
+         if(j==0 || j==temp_path[i].size()-1){
            temp_net.extend_label.push_back(0);
          }else{
            temp_net.extend_label.push_back(1);

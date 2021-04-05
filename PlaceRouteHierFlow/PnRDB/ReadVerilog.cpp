@@ -155,7 +155,7 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
            std::vector<PnRDB::net> temp_net;
            bool powernet_found = 0;
            for(unsigned int k=0;k<db.hierTree[j].Nets.size();k++){
-               if(db.hierTree[j].Nets[k].name == supply_name_full or db.hierTree[j].Nets[k].name == supply_name){
+               if(db.hierTree[j].Nets[k].name == supply_name_full || db.hierTree[j].Nets[k].name == supply_name){
                    powernet_found = 1;
                    PnRDB::PowerNet temp_PowerNet;
                    temp_PowerNet.name = db.hierTree[j].Nets[k].name;
@@ -493,7 +493,7 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
     string master=node.Blocks[i].instance.back().master;
     if(lefData.find(master)==lefData.end()) {
 	// LEF is missing; Ok if a cap or if not a leaf
-	if(master.find("Cap")!=std::string::npos or
+	if(master.find("Cap")!=std::string::npos ||
 	   master.find("cap")!=std::string::npos) continue;
 	if(node.Blocks[i].instance.back().isLeaf) {
 	    logger->error("PnRDB-Error: the key does not exist in map: {0}",master);

@@ -856,7 +856,7 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
   for(unsigned int i=0;i<hierTree[nodeID].Blocks.size();i++){
      int sel=updatedNode.Blocks[i].selectedInstance;
      logger->debug("Block {0} select {1} ",i,sel);
-     if(sel<0 or sel>=updatedNode.Blocks[i].instNum) {logger->error("PnRDB-Error: unselected block {0}",i);continue;}
+     if(sel<0 || sel>=updatedNode.Blocks[i].instNum) {logger->error("PnRDB-Error: unselected block {0}",i);continue;}
      //std::cout<<"dB "<<hierTree[nodeID].Blocks[i].instNum<<std::endl;
      if(hierTree[nodeID].Blocks[i].instNum<updatedNode.Blocks[i].instNum) { // for capacitor, new data in place and route
        hierTree[nodeID].Blocks[i].instance.clear();
@@ -1745,7 +1745,7 @@ void PnRdatabase::WriteGlobalRoute(PnRDB::hierNode& node, string rofile, string 
       if(sinkCount>0) {OF2<<std::endl;}
       OF2<<"      ]"<<std::endl;
       OF2<<"    }";
-      //if(it!=node.Nets.end()-1 or it2!=it->segments.end()-1) {OF2<<",";}
+      //if(it!=node.Nets.end()-1 || it2!=it->segments.end()-1) {OF2<<",";}
       //OF2<<endl;
     }
   }
@@ -1858,7 +1858,7 @@ void PnRdatabase::WritePlaceRoute(PnRDB::hierNode& node, string pofile, string r
   OF<<"  \"instances\": ["<<endl;
   for(vector<PnRDB::blockComplex>::iterator it=node.Blocks.begin(); it!=node.Blocks.end(); ++it) {
     int sel=it->selectedInstance;
-    if(sel<0 or sel>=it->instNum) {logger->error("PnRDB-Error: unselected block");}
+    if(sel<0 || sel>=it->instNum) {logger->error("PnRDB-Error: unselected block");}
     OF<<"    {"<<endl;
     OF<<"      \"instance_name\": \""<<it->instance.at(sel).name<<"\","<<endl;
     OF<<"      \"template_name\": \""<<it->instance.at(sel).master<<"\","<<endl;
@@ -1905,7 +1905,7 @@ void PnRdatabase::WritePlaceRoute(PnRDB::hierNode& node, string pofile, string r
     for(vector<PnRDB::route>::iterator it2=it->segments.begin(); it2!=it->segments.end(); ++it2) {
       int metalIdx=DRC_info.Metalmap[it2->metal];
       OF2<<"    { \"layer\": \""<<it2->metal<<"\", \"net_name\": \""<<it->name<<"\", \"width\": "<<DRC_info.Metal_info.at(metalIdx).width*10/2<<", \"rect\": [ "<<it2->src.x<<", "<<it2->src.y<<", "<<it2->dest.x<<", "<<it2->dest.y<<"]}";
-      if(it!=node.Nets.end()-1 or it2!=it->segments.end()-1) {OF2<<",";}
+      if(it!=node.Nets.end()-1 || it2!=it->segments.end()-1) {OF2<<",";}
       OF2<<endl;
     }
     OF2<<endl;

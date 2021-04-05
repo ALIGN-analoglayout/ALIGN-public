@@ -689,7 +689,7 @@ void MNASimulation::ExtractPowerGridWireR(PnRDB::PowerGrid &temp_grid, std::set<
        MDB::device temp_device;
        MDB::metal_point temp_point; 
        
-       if(temp_grid.metals[i].LinePoint[0].x != temp_grid.metals[i].LinePoint[1].x or temp_grid.metals[i].LinePoint[0].y != temp_grid.metals[i].LinePoint[1].y){
+       if(temp_grid.metals[i].LinePoint[0].x != temp_grid.metals[i].LinePoint[1].x || temp_grid.metals[i].LinePoint[0].y != temp_grid.metals[i].LinePoint[1].y){
           temp_point.metal_layer = temp_grid.metals[i].MetalIdx;
           temp_point.index = -1;
           temp_point.power = power;

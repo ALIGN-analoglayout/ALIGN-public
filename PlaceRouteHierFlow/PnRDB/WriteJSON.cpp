@@ -248,7 +248,7 @@ addMetalBoundaries (json& jsonElements, struct PnRDB::Metal& metal, const PnRDB:
     int x[5], y[5];
     assignBoxPoints (x, y, metal.MetalRect.placedBox, unit);
 
-    if (metal.LinePoint[0].x != metal.LinePoint[1].x or
+    if (metal.LinePoint[0].x != metal.LinePoint[1].x ||
 	metal.LinePoint[0].y != metal.LinePoint[1].y) {
 	json bound0;
 	bound0["type"] = "boundary";

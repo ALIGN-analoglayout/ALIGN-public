@@ -799,7 +799,7 @@ void Grid::CollectPointSet(std::vector< std::set<RouterDB::point, RouterDB::poin
       for(int Y=gLLy; Y<=gURy; Y+=nexlayer_unit) {
         RouterDB::point tmpv;
         bool  pmark=false;
-        if(mdx==0 or mdx==this->layerNo-1) {
+        if(mdx==0 || mdx==this->layerNo-1) {
           pmark=true;
         } else {
           if (Y%this->y_unit.at(mdx-1)==0) {pmark=true;}
@@ -842,7 +842,7 @@ void Grid::CollectPointSet(std::vector< std::set<RouterDB::point, RouterDB::poin
       for(int X=gLLx; X<=gURx; X+=nexlayer_unit) {
         RouterDB::point tmpv;
         bool  pmark=false;
-        if(mdx==0 or mdx==this->layerNo-1) {
+        if(mdx==0 || mdx==this->layerNo-1) {
           pmark=true;
         } else {
           if (X%this->x_unit.at(mdx-1)==0) {pmark=true;}
@@ -1961,7 +1961,7 @@ std::vector<int> Grid::Mapping_function_pin_detail(RouterDB::SinkData& source)
   // wbxu: incorrect startpoint and endpoint if source.metalIdx==lowest_metal
   // it results in traversal starting from the second node in the subfunction [fixed]
 
-  if(source.metalIdx<0 or source.metalIdx>drc_info.Metal_info.size()){
+  if(source.metalIdx<0 || source.metalIdx>drc_info.Metal_info.size()){
     return map_source;
   }
 
@@ -2055,7 +2055,7 @@ std::vector<int> Grid::Mapping_function_pin(RouterDB::SinkData& source)
   // wbxu: incorrect startpoint and endpoint if source.metalIdx==lowest_metal
   // it results in traversal starting from the second node in the subfunction [fixed]
 
-  if(source.metalIdx<0 or source.metalIdx>drc_info.Metal_info.size()){
+  if(source.metalIdx<0 || source.metalIdx>drc_info.Metal_info.size()){
     return map_source;
   }
 
@@ -2407,13 +2407,13 @@ bool Grid::CheckExtendable(int i, int metal){
         search_flag = false;
      }else{
        unsigned int next_node = dummy_node + up_direction;
-       if(next_node<0 or next_node>=vertices_total.size() ) {
+       if(next_node<0 || next_node>=vertices_total.size() ) {
           search_flag = false;
           feasible = false;
        }else if(vertices_total[next_node].active==0) {
           search_flag = false;
           feasible = false;
-       }else if( (vertices_total[next_node].x != vertices_total[i].x && vertices_total[next_node].y != vertices_total[i].y) or vertices_total[next_node].metal != vertices_total[i].metal ){
+       }else if( (vertices_total[next_node].x != vertices_total[i].x && vertices_total[next_node].y != vertices_total[i].y) || vertices_total[next_node].metal != vertices_total[i].metal ){
           search_flag = false;
           feasible = false;
        }else {
@@ -2430,13 +2430,13 @@ bool Grid::CheckExtendable(int i, int metal){
         search_flag = false;
      }else{
        unsigned int next_node = dummy_node + down_direction;
-       if(next_node<0 or next_node>=vertices_total.size() ) {
+       if(next_node<0 || next_node>=vertices_total.size() ) {
           search_flag = false;
           feasible = false;
        }else if(vertices_total[next_node].active==0) {
           search_flag = false;
           feasible = false;
-       }else if( (vertices_total[next_node].x != vertices_total[i].x && vertices_total[next_node].y != vertices_total[i].y) or vertices_total[next_node].metal != vertices_total[i].metal){
+       }else if( (vertices_total[next_node].x != vertices_total[i].x && vertices_total[next_node].y != vertices_total[i].y) || vertices_total[next_node].metal != vertices_total[i].metal){
           search_flag = false;
           feasible = false;
        }else {
@@ -2744,12 +2744,12 @@ void Grid::CheckVerticesTotal() {
       }
     }
     if(it->up!=-1) {
-    if(vertices_total.at(it->up).x!=it->x or vertices_total.at(it->up).y!=it->y) {
+    if(vertices_total.at(it->up).x!=it->x || vertices_total.at(it->up).y!=it->y) {
         logger->debug("Up direction error: {0} {1} {2}",it->x,it->y,it->up);
     }
     }
     if(it->down!=-1) {
-    if(vertices_total.at(it->down).x!=it->x or vertices_total.at(it->down).y!=it->y) {
+    if(vertices_total.at(it->down).x!=it->x || vertices_total.at(it->down).y!=it->y) {
         logger->debug("down direction error: {0} {1} {2}",it->x,it->y,it->down);
     }
     }
@@ -2776,13 +2776,13 @@ void Grid::CheckMaptotal2graph() {
 
   logger->debug("===CheckMaptotal2graph===");
   for(  auto it=this->total2graph.begin(); it!=this->total2graph.end(); ++it ) {
-    if( this->vertices_total.at(it->first).x!=this->vertices_graph.at(it->second).x or this->vertices_total.at(it->first).y!=this->vertices_graph.at(it->second).y ) {
+    if( this->vertices_total.at(it->first).x!=this->vertices_graph.at(it->second).x || this->vertices_total.at(it->first).y!=this->vertices_graph.at(it->second).y ) {
       logger->debug("Mismatch total {0} vs graph {1}", it->first,it->second);
     }
   }
   logger->debug("===CheckMapgraph2total===");
   for(  auto it=this->graph2total.begin(); it!=this->graph2total.end(); ++it ) {
-    if( this->vertices_total.at(it->second).x!=this->vertices_graph.at(it->first).x or this->vertices_total.at(it->second).y!=this->vertices_graph.at(it->first).y ) {
+    if( this->vertices_total.at(it->second).x!=this->vertices_graph.at(it->first).x || this->vertices_total.at(it->second).y!=this->vertices_graph.at(it->first).y ) {
       logger->debug("Mismatch graph {0} vs total {1}", it->first,it->second);
     }
   }
@@ -3245,7 +3245,7 @@ bool Grid::Check_Common_Part(int &start_index1, int &end_index1, int &start_inde
 
     }
 
-  if(new_start_index1==-1 or new_end_index1==-1 or new_start_index2==-1 or new_end_index2==-1){
+  if(new_start_index1==-1 || new_end_index1==-1 || new_start_index2==-1 || new_end_index2==-1){
      //std::cout<<"return point 5"<<std::endl;
      return 0;
     
@@ -3279,7 +3279,7 @@ void Grid::Full_Connected_Vertex(){
        int next_end_index = Find_EndIndex( next_start_index, drc_info.Metal_info[vertices_total[next_start_index].metal].direct);
        int current_end_index = next_end_index;
        //std::cout<<"Full connection vertex check point 2.5"<<std::endl;
-       if(next_end_index==-1 or next_start_index>= (int) vertices_total.size()){start_index=next_start_index;continue;}
+       if(next_end_index==-1 || next_start_index>= (int) vertices_total.size()){start_index=next_start_index;continue;}
        //std::cout<<"start and end index"<<start_index<<" "<<end_index<<" next start and end index "<<next_start_index<<" "<<next_end_index<<std::endl;
 
        bool common_part_exist;
