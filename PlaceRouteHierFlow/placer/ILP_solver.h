@@ -39,7 +39,6 @@ class ILP_solver {
   private:
   placerDB::point LL, UR;
   double area = 0, HPWL = 0, ratio = 0, dead_area = 0, linear_const = 0, multi_linear_const = 0;
-  double area_norm = 0, HPWL_norm = 0;
   double Aspect_Ratio_weight = 1000;
   double Aspect_Ratio[2] = {0, 100};
   typedef void(lphandlestr_func)(lprec* lp, void* userhandle, char* buf);

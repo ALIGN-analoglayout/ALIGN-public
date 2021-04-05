@@ -196,8 +196,6 @@ ILP_solver::ILP_solver(const ILP_solver& solver) {
   UR = solver.UR;
   area = solver.area;
   HPWL = solver.HPWL;
-  area_norm = solver.area_norm;
-  HPWL_norm = solver.HPWL_norm;
   ratio = solver.ratio;
   dead_area = solver.dead_area;
   linear_const = solver.linear_const;
@@ -212,8 +210,6 @@ ILP_solver& ILP_solver::operator=(const ILP_solver& solver) {
   UR = solver.UR;
   area = solver.area;
   HPWL = solver.HPWL;
-  area_norm = solver.area_norm;
-  HPWL_norm = solver.HPWL_norm;
   ratio = solver.ratio;
   dead_area = solver.dead_area;
   multi_linear_const = solver.multi_linear_const;
@@ -777,8 +773,6 @@ double ILP_solver::GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcI
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
     dead_area -= double(mydesign.Blocks[i][0].width) * double(mydesign.Blocks[i][0].height);
   }
-  //calculate norm area
-  area_norm = area / (area - dead_area);
   // calculate ratio
   ratio = std::max(double(UR.x - LL.x) / double(UR.y - LL.y), double(UR.y - LL.y) / double(UR.x - LL.x));
   **/
@@ -806,12 +800,6 @@ double ILP_solver::GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcI
     }
     HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);
   }
-  //HPWL norm
-  double block_HPWL = 0;
-  for (int i = 0; i < mydesign.Blocks.size(); i++) {
-    block_HPWL += double(mydesign.Blocks[i][0].width) + double(mydesign.Blocks[i][0].height);
-  }
-  HPWL_norm = HPWL / block_HPWL / double(mydesign.Blocks.size());
   // calculate linear constraint
   linear_const = 0;
   std::vector<std::vector<double>> feature_value;
@@ -874,8 +862,8 @@ double ILP_solver::GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcI
 double ILP_solver::CalculateCost(design& mydesign) {
   ConstGraph const_graph;
   double cost = 0;
-  cost += area_norm;
-  cost += HPWL_norm * const_graph.LAMBDA;
+  cost += area;
+  cost += HPWL * const_graph.LAMBDA;
   double match_cost = 0;
   for (auto mbi : mydesign.Match_blocks) {
     match_cost +=
