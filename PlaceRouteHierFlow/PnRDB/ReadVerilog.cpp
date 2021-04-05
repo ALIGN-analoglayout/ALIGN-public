@@ -486,7 +486,7 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
 
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.MergeLEFMapData");
 
-  //bool missing_lef_file = 0;
+  bool missing_lef_file = 0;
 
   logger->info("PnRdatabase-Info:: merge LEF/map data");
   for(unsigned int i=0;i<node.Blocks.size();i++){

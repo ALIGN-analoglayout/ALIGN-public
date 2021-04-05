@@ -61,7 +61,7 @@ void GcellDetailRouter::calculate_extension_length() {
   //this calculate difference between minlength and via metal length
   //and used for inactivate contact of extra length to avoid minspacing from metal extension
   Minlength_ViaLength_Diff.resize(drc_info.Metal_info.size());
-  for (int i = 0; i < drc_info.Metal_info.size(); ++i) {
+  for (int i = 0; i < int(drc_info.Metal_info.size()); ++i) {
     int minL = drc_info.Metal_info[i].minL;
     int lower_via_length = INT_MAX;
     int upper_via_length = INT_MAX;
@@ -294,7 +294,7 @@ std::vector<int> GcellDetailRouter::EstimateDist(RouterDB::R_const &temp_R, Rout
 
 void GcellDetailRouter::Copy_tile_metals(){
 
-  for(int i=0;i<Gcell.tiles_total.size();i++){
+  for(unsigned int i=0;i<Gcell.tiles_total.size();i++){
 
       Gcell.tiles_total[i].origin_metal = Gcell.tiles_total[i].metal;
 

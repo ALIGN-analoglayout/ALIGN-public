@@ -76,8 +76,8 @@ void A_star::print_path(){
 
   auto logger = spdlog::default_logger()->clone("router.A_star.print_path");
 
-  for(int i=0;i<Path.size();i++){
-     for(int j =0; j<Path.size();j++){
+  for(unsigned int i=0;i<Path.size();i++){
+     for(unsigned int j =0; j<Path.size();j++){
         logger->debug("{0} ",Path[i][j]);
      }
   }
@@ -1498,7 +1498,7 @@ void A_star::compact_path(std::vector<std::vector<int> > &Node_Path){
       assert(0);
     }
     temp_path.push_back(Node_Path[i][0]);
-    for(int j =1;j<Node_Path[i].size();j++){
+    for(unsigned int j =1;j<Node_Path[i].size();j++){
        if(Node_Path[i][j]!=Node_Path[i][j-1]){
           temp_path.push_back(Node_Path[i][j]);
        }
