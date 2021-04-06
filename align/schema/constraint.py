@@ -127,15 +127,21 @@ class Align(ConstraintBase):
 #       ConstraintDB
 
 class AlignHorizontal(Order, Align):
+    '''
+    Chain simple constraints together for more complex constraints by
+        assigning default values to certain attributes
+    
+    Note: Compositional check() is automatically constructed if
+        every check() in mro starts with `constraints = super().check()`.
+        (mro is Order, Align, ConstraintBase in this example)
+    Note: If you need to specialize check(), you do have the option 
+        to create a custom `check()` in this class. It shouldn't be
+        needed unless you are adding new semantics
+    '''
     instances : List[str]
     alignment : Optional[Literal['top', 'bottom']]
     direction: Literal['left->right'] = 'left->right'
 
-    def check(self):
-        constraints = Order.check(self)
-        if self.alignment:
-            constraints.extend(Align.check(self))
-        return constraints
 
 ConstraintType=Union[Order, Align, AlignHorizontal]
 
