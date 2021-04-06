@@ -109,11 +109,17 @@ class PDK(types.BaseModel):
     layers: Dict[str, Union[LayerMetal, LayerViaSet]] = Field(default_factory=lambda: {})
     scale_factor: int = 1
 
+    @validator('layers')
+    def _validate_metal_stack(cls, layers):
+        for key, value in layers.items():
+            if key.startswith('V'):
+                ml, mh = value.default_via.stack
+                assert ml is None or ml in layers, f'Lower metal layer {ml} not found for {key}'
+                assert mh in layers, f'Upper metal layer {mh} not found for {key}'
+                if ml is not None and mh is not None:
+                    assert layers[ml].direction != layers[mh].direction, f'Metal layer directions are not orthogonal'
+        return layers
+
     def add_layer(self, layer):
         assert layer.name not in self.layers
         self.layers[layer.name] = layer
-
-    @validator('layers')
-    def _validate_stack_exists(cls, v):
-        # TODO: For each via, check metal stack exists and metals are in orthogonal direction
-        return v
