@@ -70,8 +70,14 @@ from typing import \
     Optional, \
     Union, \
     NamedTuple, \
-    Literal, \
     ClassVar
+
+try:
+    # Python 3.8+
+    from typing import Literal
+except:
+    # Python 3.7 Backport
+    from typing_extensions import Literal
 
 # Pass through directly from pydantic
 from pydantic import \

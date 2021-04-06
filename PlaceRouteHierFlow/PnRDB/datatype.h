@@ -621,6 +621,12 @@ struct guardring_info {
 
 struct design_info {
   int Hspace = 0, Vspace = 0;  // global Hspace and Vspace in placement
+  int signal_routing_metal_l;
+  int signal_routing_metal_u;
+  int power_grid_metal_l;
+  int power_grid_metal_u;
+  int power_routing_metal_l;
+  int power_routing_metal_u;  
 };
 
 struct Drc_info {

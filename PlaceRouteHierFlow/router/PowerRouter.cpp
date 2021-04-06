@@ -458,7 +458,7 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
       Initial_powerrouter_report_info(temp_routing_net, i);
 
       for(unsigned int j=0;j<PowerNets[i].pins.size();j++){
-
+           //std::cout<<"Power Net Size "<<PowerNets.size()<<" Power Pin size "<<PowerNets[i].pins.size()<<" current power net and its pin index "<<i<<" "<<j<<" routing area "<<this->LL.x<<" "<<this->LL.y<<" "<<this->UR.x<<" "<<this->UR.y<<std::endl;
            std::vector<std::vector<RouterDB::point> > add_plist;
            add_plist.resize(this->layerNo);
 
@@ -477,24 +477,21 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
               }else{
                SetSrcDest(temp_pin, Gnd_grid, temp_source, temp_dest);
               }
-
             Grid grid(this->drc_info, this->LL, this->UR, lowest_metal, highest_metal, this->grid_scale);
             grid.Full_Connected_Vertex();
             std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > pinplist = FindsetPlist(Set_x, LL, UR);
             grid.InactivePointlist_Power(pinplist);
             std::map<RouterDB::point, std::vector<int>, RouterDB::pointXYComp > Smap;
-            
             grid.setSrcDest( temp_source, temp_dest, this->width, this->height, Smap);
             grid.ActivateSourceDest();
             std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > netplist = FindsetPlist(Set_net, LL, UR);
             grid.InactivePointlist_Power(netplist);
-       
             grid.setSrcDest_detail( temp_source, temp_dest, this->width, this->height, Smap);
-            AddViaEnclosure(Pset_via, grid, Set_x_contact, Set_net_contact);
-            AddViaSpacing(Pset_via, grid);
+            AddViaEnclosure(Pset_via, grid, Set_x_contact, Set_net_contact, LL, UR);
+            AddViaSpacing(Pset_via, grid, LL, UR);
             A_star a_star(grid, 0); // no sheilding
-
             bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, 0, 0);
+
             std::vector<std::vector<RouterDB::Metal>> physical_path;
             logger->debug("Power router routing pathMark {0}",pathMark);
             Update_powerrouter_report_info(temp_routing_net, i, j, pathMark);
@@ -761,6 +758,7 @@ void PowerRouter::SetSrcDest(RouterDB::Pin temp_pin, RouterDB::PowerGrid Vdd_gri
   temp_ll.y = INT_MAX;
   temp_ur.x = INT_MIN;
   temp_ur.y = INT_MIN;
+
 
   for(unsigned int i=0;i<temp_dest.size();i++){
      for(unsigned int j=0;j<temp_dest[i].coord.size();j++){

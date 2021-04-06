@@ -61,7 +61,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   lprec* lp = make_lp(0, N_var);
   set_verbose(lp, IMPORTANT);
   put_logfunc(lp, &ILP_solver::lpsolve_logger, NULL);
-  set_outputfile(lp, const_cast<char*>("/dev/null"));
+  //set_outputfile(lp, const_cast<char*>("/dev/null"));
 
   // set integer constraint, H_flip and V_flip can only be 0 or 1
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
@@ -442,9 +442,9 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
           HPWL_min_y = std::min(HPWL_min_y, pin_y);
           HPWL_max_y = std::max(HPWL_max_y, pin_y);
         }
-      }
-      HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);
+      }    
     }
+    HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);  
   }
 
   // calculate linear constraint

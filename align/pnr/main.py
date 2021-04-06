@@ -1,4 +1,3 @@
-import subprocess
 import pathlib
 import os
 import io
@@ -15,6 +14,8 @@ from collections import deque
 from .db import hierNode
 from .checkers import gen_viewer_json
 from ..cell_fabric import gen_gds_json
+from .. import PnR
+from .toplevel import toplevel
 
 logger = logging.getLogger(__name__)
 
@@ -89,15 +90,6 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
 
     logger.info(f"Running Place & Route for {subckt}")
 
-    # Check to make sure pnr_compiler is available to begin with
-    assert 'ALIGN_HOME' in os.environ, "ALIGN_HOME not in environment"
-    compiler_path = pathlib.Path(os.environ['ALIGN_HOME']).resolve() / 'PlaceRouteHierFlow' / 'pnr_compiler'
-    assert compiler_path.is_file(), f"{compiler_path} not found. Has it been built?"
-
-    sys.setdlopenflags(os.RTLD_GLOBAL|os.RTLD_LAZY)
-    import PnR
-    from .toplevel import toplevel
-
     # Create working & input directories
     working_dir = output_dir
     working_dir.mkdir(exist_ok=True)
@@ -142,13 +134,11 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
             (input_dir / file_.name).write_text(file_.read_text())
 
     # Run pnr_compiler
-    cmd = [str(x) for x in (compiler_path, input_dir, lef_file, verilog_file, map_file, pdk_file, subckt, nvariants, effort)]
+    cmd = [str(x) for x in ('align.PnR', input_dir, lef_file, verilog_file, map_file, pdk_file, subckt, nvariants, effort)]
 
     current_working_dir = os.getcwd()
     os.chdir(working_dir)
-    DB = PnR.toplevel(cmd)
-    #Python version; currently broken
-    #DB = toplevel(cmd)
+    DB = toplevel(cmd)
     os.chdir(current_working_dir)
 
     # Copy generated (Cap) jsons from results_dir to working_dir
@@ -176,12 +166,12 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
         order = [(i,DB.CheckoutHierNode(i).name) for i in TraverseHierTree()]
         assert order[-1][1] == subckt, f"Last in topological order should be the subckt {subckt} {order}"
 
-        logger.info( f'{order=}')
+        logger.info( f'order={order}')
 
         def dump_blocks( hN, DB):
             import plotly.graph_objects as go
 
-            logger.info( f'{hN.parent=}')
+            logger.info( f'hN.parent={hN.parent}')
 
             fig = go.Figure()
 
@@ -213,7 +203,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
             i_placement = 0
 
             variant_name = f'{nm}_{n_copy}_{i_placement}'
-            logger.info(f'Processing top-down generated blocks: {idx=} {nm=} {variant_name=}')
+            logger.info(f'Processing top-down generated blocks: idx={idx} nm={nm} variant_name={variant_name}')
 
             hN = DB.CheckoutHierNode(idx)
 

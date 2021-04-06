@@ -6,7 +6,17 @@ import os
 
 logger = logging.getLogger(__name__)
 
-@pytest.mark.skipif('ALIGN_WORK_DIR' not in os.environ,
+def results_directory_missing(design):
+    '''
+    This function will return true
+    if dependency is not satisfied
+    '''
+    if 'ALIGN_WORK_DIR' not in os.environ: return True
+    assert design, 'Function expects design name'
+    rdir = pathlib.Path( os.environ["ALIGN_WORK_DIR"]) / design / "3_pnr" / "Results"
+    return not rdir.is_dir()
+
+@pytest.mark.skipif(results_directory_missing('adder'),
                     reason='Necessary test collateral has not been built')
 def test_a():
     logging.getLogger().setLevel("DEBUG")

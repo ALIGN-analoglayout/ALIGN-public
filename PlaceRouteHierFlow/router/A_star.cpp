@@ -208,34 +208,40 @@ bool A_star::found_near_node(int current_node, Grid &grid, std::vector<int> &can
 
     if(north_found){
        for(int i=0;i<(int)north_node.size();i++){
+         if(grid.vertices_total[current_node].parent!=north_node[i])
          candidate_node.push_back(north_node[i]);
        }
       }
     if(south_found){
        for(int i=0;i<(int)south_node.size();i++){
+         if(grid.vertices_total[current_node].parent!=south_node[i])
          candidate_node.push_back(south_node[i]);
        }
       }
     if(west_found){
        for(int i=0;i<(int)west_node.size();i++){
+         if(grid.vertices_total[current_node].parent!=west_node[i])
          candidate_node.push_back(west_node[i]);
        }
       }
 
     if(east_found){
        for(int i=0;i<(int)east_node.size();i++){
+         if(grid.vertices_total[current_node].parent!=east_node[i])
          candidate_node.push_back(east_node[i]);
        }
       }
 
     if(up_found){
        for(int i=0;i<(int)up_node.size();i++){
+         if(grid.vertices_total[current_node].parent!=up_node[i])
          candidate_node.push_back(up_node[i]);
        }
       }
 
     if(down_found){
        for(int i=0;i<(int)down_node.size();i++){
+         if(grid.vertices_total[current_node].parent!=down_node[i])
          candidate_node.push_back(down_node[i]);
        }
       }
@@ -1109,6 +1115,7 @@ bool A_star::Extention_check(Grid& grid, int current_node, std::set<int> &source
        int metal = grid.vertices_total[parent].metal;
        int length = abs(grid.vertices_total[parent].x - grid.vertices_total[node_same_layer].x) + abs(grid.vertices_total[parent].y - grid.vertices_total[node_same_layer].y);
        int minL = drc_info.Metal_info[metal].minL;
+       //int minL = 0;
        int delta_length = length - minL;
        int temp_parent = grid.vertices_total[node_same_layer].trace_back_node;
        int via_space_length = 0;
@@ -1167,7 +1174,6 @@ std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left
   auto logger = spdlog::default_logger()->clone("router.A_star.A_star_algorithm");
 
   int via_expand_effort = 100;
-
   std::set<std::pair<int,int>, RouterDB::pairComp> L_list;
   std::set<int> close_set;
   std::pair<int,int> temp_pair; 
@@ -1198,8 +1204,9 @@ std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left
 
   bool found = 0;
   int current_node = -1;
-  
+
   while(!L_list.empty() and !found){
+
     std::set<std::pair<int,int>, RouterDB::pairComp>::iterator it;
     it = L_list.begin();
     current_node = it->second;
@@ -1207,7 +1214,9 @@ std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left
     
     //judge whether dest found Q2// judge whether dest works
     if(dest_index.find(current_node)!=dest_index.end()){
+
        bool extend = Pre_trace_back(grid, current_node, left_up, right_down, src_index,dest_index); //add pre_trace_back and extendtion check here?
+
        if(extend){
          found=1;
        }
@@ -1220,7 +1229,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left
     //found the candidates nodes
     std::vector<int> candidate_node;
     bool near_node_exist =found_near_node(current_node, grid, candidate_node);
-    erase_candidate_node(close_set, candidate_node);
+    //erase_candidate_node(close_set, candidate_node);
     if(!near_node_exist){
        continue;
       }
@@ -1242,6 +1251,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left
     candidate_node = temp_candidate_node;
     
     if(candidate_node.size()==0){
+       //grid.vertices_total[current_node].Cost = INT_MAX;
        continue;
       }
 
@@ -1251,12 +1261,21 @@ std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left
 
        int M_dis = Manhattan_distan(candidate_node[i], grid);
        int temp_cost = grid.vertices_total[current_node].Cost + abs(grid.vertices_total[current_node].x - grid.vertices_total[candidate_node[i]].x) + abs(grid.vertices_total[current_node].y - grid.vertices_total[candidate_node[i]].y) + via_expand_effort*abs(grid.vertices_total[candidate_node[i]].metal-grid.vertices_total[current_node].metal)+temp_candidate_cost[i];
-       if(temp_cost < grid.vertices_total[candidate_node[i]].Cost ){
+       //if(temp_cost < grid.vertices_total[candidate_node[i]].Cost ){
 
-          grid.vertices_total[candidate_node[i]].Cost = temp_cost;
           int sym_cost = Find_Symmetry_Cost(grid,candidate_node[i],sym_path);
           //std::cout<<"sym cost "<<sym_cost<<" sym path size "<<sym_path.size()<<std::endl;
-          int sym_factor = 100;
+          int sym_factor = 0;
+
+          temp_pair.first = grid.vertices_total[candidate_node[i]].Cost + M_dis +sym_factor*sym_cost;
+          temp_pair.second = candidate_node[i];
+          if(L_list.find(temp_pair)!=L_list.end()){
+              auto temp_l_list = L_list.find(temp_pair);
+              L_list.erase(temp_l_list);
+            }
+
+          grid.vertices_total[candidate_node[i]].Cost = temp_cost;
+
           int dis = grid.vertices_total[candidate_node[i]].Cost + M_dis + sym_factor*sym_cost;
           grid.vertices_total[candidate_node[i]].parent = current_node;
           //grid.vertices_total[candidate_node[i]].trace_back_node = current_node;
@@ -1264,9 +1283,10 @@ std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left
           temp_pair.second = candidate_node[i];
           L_list.insert(temp_pair);
 
-         }
+         //}
       
        }
+
 
   }
 
@@ -1353,7 +1373,6 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
   logger->debug("source size {0}",source.size());
   logger->debug("dest size {0} ",dest.size());
   
-  
   logger->debug("A star source info");
   for(int i=0;i<(int)source.size();i++){
     
@@ -1362,7 +1381,6 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
       close_set.insert(source[i]);
 
      }
-  
   std::set<int> dest_index;
   for(int i=0;i<(int)dest.size();i++){
       logger->debug("Dest {0} {1} {2}",grid.vertices_total[dest[i]].metal,grid.vertices_total[dest[i]].x,grid.vertices_total[dest[i]].y);
@@ -1374,29 +1392,32 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
 
   bool found = 0;
   int current_node = -1;
-  
+
   while(!L_list.empty() and !found){
+
     std::set<std::pair<int,int>, RouterDB::pairComp>::iterator it;
     it = L_list.begin();
     current_node = it->second;
     L_list.erase(it);
-    
+
     //judge whether dest found Q2// judge whether dest works
     if(dest_index.find(current_node)!=dest_index.end()){
+
        bool extend = Pre_trace_back(grid, current_node, left_up, right_down, src_index,dest_index); //add pre_trace_back and extendtion check here?
+
        if(extend){
          found=1;
        }
        continue;
       }
-    
-    close_set.insert(current_node);
+
+    //close_set.insert(current_node);
 
 
     //found the candidates nodes
     std::vector<int> candidate_node;
     bool near_node_exist =found_near_node(current_node, grid, candidate_node);
-    erase_candidate_node(close_set, candidate_node);
+    //erase_candidate_node(close_set, candidate_node);
     if(!near_node_exist){
        continue;
       }
@@ -1427,21 +1448,26 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
 
        int M_dis = Manhattan_distan(candidate_node[i], grid);
        int temp_cost = grid.vertices_total[current_node].Cost + abs(grid.vertices_total[current_node].x - grid.vertices_total[candidate_node[i]].x) + abs(grid.vertices_total[current_node].y - grid.vertices_total[candidate_node[i]].y) + via_expand_effort*abs(grid.vertices_total[candidate_node[i]].metal-grid.vertices_total[current_node].metal)+temp_candidate_cost[i];
-       if(temp_cost < grid.vertices_total[candidate_node[i]].Cost ){
-
+       //if(temp_cost < grid.vertices_total[candidate_node[i]].Cost ){
+          temp_pair.first = grid.vertices_total[candidate_node[i]].Cost + M_dis;
+          temp_pair.second = candidate_node[i];
+          if(L_list.find(temp_pair)!=L_list.end()){
+              auto temp_l_list = L_list.find(temp_pair);
+              L_list.erase(temp_l_list);
+            }
           grid.vertices_total[candidate_node[i]].Cost = temp_cost;
           int dis = grid.vertices_total[candidate_node[i]].Cost + M_dis;
           grid.vertices_total[candidate_node[i]].parent = current_node;
           //grid.vertices_total[candidate_node[i]].trace_back_node = current_node;
           temp_pair.first = dis;
-          temp_pair.second = candidate_node[i];
           L_list.insert(temp_pair);
 
-         }
+         //}
       
        }
 
   }
+
 
   std::vector<std::vector<int> > temp_path; //Q4 return sheilding and parallel path?  sheild and parallel should be recovered in outer loop???
   if(found==0){
@@ -1604,7 +1630,7 @@ bool A_star::Pre_trace_back(Grid& grid, int current_node, int left, int right, s
 
   std::vector<int> temp_path = Trace_Back_Path_parent(grid, current_node, src_index);
 
-  
+
   std::vector<std::vector<int> > Node_Path(left+right+1);
 
 
@@ -1618,24 +1644,33 @@ bool A_star::Pre_trace_back(Grid& grid, int current_node, int left, int right, s
   
 
   for(int i=0;i<temp_path.size() - 1; i++){
+
     std::vector<std::vector<int> > node_L_path;
     int cost = 0;
     parallel_routing(grid, temp_path[i], temp_path[i+1], left, right, src_index, dest_index, node_L_path, cost);
+
     for(int j=0;j<Node_Path.size();j++){
 
+       //if(node_L_path.size()==Node_Path.size())
        Node_Path[j].insert(Node_Path[j].end(),node_L_path[j].begin(),node_L_path[j].end());
 
     }
+
   }
+
   logger->debug("Pre trace 1");
   rm_cycle_path(Node_Path);
+
   logger->debug("Pre trace 1");
   lable_father(grid, Node_Path);
+
   logger->debug("Pre trace 1");
   //bool extend = 1;
   logger->debug("Check extention 1");
+
   bool extend = Check_Path_Extension(grid, Node_Path, src_index);
   logger->debug("Check extention 2");
+
   return extend;
  
 };

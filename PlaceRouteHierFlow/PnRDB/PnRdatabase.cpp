@@ -7,24 +7,12 @@
 
 using namespace nlohmann;
 
-#include <gtest/gtest.h>
 #include "spdlog/spdlog.h"
 
 static bool EndsWith( const string& str, const string& pat)
 {
   return std::mismatch( str.rbegin(), str.rend(), pat.rbegin(), pat.rend()).second == pat.rend();
 }
-
-
-TEST( EndsWithTest, Test1)
-{
-    EXPECT_TRUE( EndsWith( "", ""));
-    EXPECT_TRUE( EndsWith( "a", ""));
-    EXPECT_FALSE( EndsWith( "", "a"));
-    EXPECT_TRUE( EndsWith( "Steve Burns", "Burns"));
-    EXPECT_FALSE( EndsWith( "Steve Burns", "Treefrog Steve Burns"));
-}
-
 
 PnRdatabase::~PnRdatabase() {
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.~PnRdatabase");
@@ -213,7 +201,16 @@ void PnRdatabase::TraverseDFS(deque<int>& Q, vector<string>& color, int idx) {
 }
 
 PnRDB::hierNode PnRdatabase::CheckoutHierNode(int nodeID) {
-  return hierTree[nodeID];
+  return hierTree.at(nodeID);
+}
+
+void PnRdatabase::AppendToHierTree(const PnRDB::hierNode& hN) {
+  hierTree.push_back( hN);
+}
+
+void PnRdatabase::SetParentInHierTree( int idx, int pidx, int parent_id) {
+  assert( 0 <= pidx && pidx < hierTree[idx].parent.size());
+  hierTree[idx].parent[pidx] = parent_id;
 }
 
 std::vector<PnRDB::hierNode> PnRdatabase::CheckoutHierNodeVec(int nodeID){
