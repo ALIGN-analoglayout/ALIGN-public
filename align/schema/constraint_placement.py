@@ -25,7 +25,7 @@ class Align(ConstraintBase):
     '''
         Align `instances` in order, along the `direction`, on the `line`
         `direction` == horizontal => left to right
-        `direction` == vertical   => top to bottom
+        `direction` == vertical   => bottom to top
     '''
     name: Literal['align']
     instances: List[str]
