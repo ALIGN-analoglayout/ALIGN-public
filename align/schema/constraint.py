@@ -125,14 +125,16 @@ class Align(ConstraintBase):
 # NOTE: This may even happen automatically if we
 #       use List from .types as baseclass for
 #       ConstraintDB
-class AlignHorizontal(ConstraintBase):
-    blocks : List[str]
+
+class AlignHorizontal(Order, Align):
+    instances : List[str]
     alignment : Optional[Literal['top', 'bottom']]
+    direction: Literal['left->right'] = 'left->right'
 
     def check(self):
-        constraints = Order(instances=self.blocks, direction='left->right').check()
+        constraints = Order.check(self)
         if self.alignment:
-            constraints.extend(Align(instances=self.blocks, alignment=self.alignment).check())
+            constraints.extend(Align.check(self))
         return constraints
 
 ConstraintType=Union[Order, Align, AlignHorizontal]

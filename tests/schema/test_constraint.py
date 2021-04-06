@@ -51,17 +51,17 @@ def test_Order_z3_checking(solver):
 
 @pytest.mark.skipif(z3 is None, reason="requires z3")
 def test_AlignHorizontal_input_sanitation(solver):
-    x = constraint.AlignHorizontal(blocks=['M1', 'M2'], alignment='top')
-    x = constraint.AlignHorizontal(blocks=['M1', 'M2', 'M3'], alignment='top')
+    x = constraint.AlignHorizontal(instances=['M1', 'M2'], alignment='top')
+    x = constraint.AlignHorizontal(instances=['M1', 'M2', 'M3'], alignment='top')
     with pytest.raises(Exception):
-        x = constraint.AlignHorizontal(blocks=['M1', 'M2', 'M3'], alignment='garbage')
+        x = constraint.AlignHorizontal(instances=['M1', 'M2', 'M3'], alignment='garbage')
 
 @pytest.mark.skipif(z3 is None, reason="requires z3")
 def test_AlignHorizontal_nblock_checking(solver):
-    x = constraint.AlignHorizontal(blocks=[], alignment='top')
+    x = constraint.AlignHorizontal(instances=[], alignment='top')
     with pytest.raises(AssertionError):
         x.check()
-    x = constraint.AlignHorizontal(blocks=['M1'], alignment='top')
+    x = constraint.AlignHorizontal(instances=['M1'], alignment='top')
     with pytest.raises(AssertionError):
         x.check()
 
@@ -73,13 +73,13 @@ def test_AlignHorizontal_order_checking(solver):
     Please use ConstraintDB to manage constraints
     (See test_ConstraintDB_checking() for example)
     '''
-    x = constraint.AlignHorizontal(blocks=['M1', 'M2', 'M3'])
+    x = constraint.AlignHorizontal(instances=['M1', 'M2', 'M3'])
     solver.append(*x.check())
     assert solver.check() == z3.sat
-    x = constraint.AlignHorizontal(blocks=['M4', 'M5'], alignment='bottom')
+    x = constraint.AlignHorizontal(instances=['M4', 'M5'], alignment='bottom')
     solver.append(*x.check())
     assert solver.check() == z3.sat
-    x = constraint.AlignHorizontal(blocks=['M3', 'M2'], alignment='bottom')
+    x = constraint.AlignHorizontal(instances=['M3', 'M2'], alignment='bottom')
     solver.append(*x.check())
     with pytest.raises(AssertionError):
         assert solver.check() == z3.sat
