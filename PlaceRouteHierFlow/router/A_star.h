@@ -36,7 +36,7 @@ class A_star {
     bool find_nodes_east(Grid& grid, int node, int number, std::vector<int>& temp_nodes);
     bool find_nodes_south(Grid& grid, int node, int number, std::vector<int>& temp_nodes);
     bool find_nodes_west(Grid& grid, int node, int number, std::vector<int>& temp_nodes);
-    bool found_near_node(int current_node, Grid &grid, std::vector<int> &candidate_node);
+    bool found_near_node(int current_node, Grid &grid, std::vector<int> &candidate_node, std::set<int> &src_index);
     bool Check_Src_Dest(std::vector<int> &nodes, std::set<int> &src_dest);
     bool find_succsive_parallel_node(Grid& grid, int current_node, int left, int right, int mode, std::vector<int> &nodes, std::set<int> &src_index, int &cost);
     bool parallel_routing(Grid& grid, int current_node, int next_node, int left, int right, std::set<int> &source_index, std::set<int> &dest_index,std::vector<std::vector<int> > &node_L_path, int &cost);
@@ -71,6 +71,7 @@ class A_star {
     int Find_Symmetry_Cost(Grid& grid, int current_node, vector<RouterDB::Metal> &sym_path);
     std::vector<std::vector<int> > A_star_algorithm_Sym(Grid& grid, int left_up, int right_down, vector<RouterDB::Metal> &sym_path);
     bool FindFeasiblePath_sym(Grid& grid, int pathNo, int left_up, int right_down, std::vector<RouterDB::Metal> &sym_path);
+    std::set<int> Trace_Back_Path_Parent_Set(Grid& grid, int current_node, std::set<int> &src_index);
 };
 
 #endif

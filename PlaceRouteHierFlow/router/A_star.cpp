@@ -182,7 +182,7 @@ bool A_star::expand_node_ud(int direction, std::vector<int> &temp_node, Grid &gr
 
 };
 
-bool A_star::found_near_node(int current_node, Grid &grid, std::vector<int> &candidate_node){
+bool A_star::found_near_node(int current_node, Grid &grid, std::vector<int> &candidate_node, std::set<int> &src_index){
 
     
     std::vector<int> north_node, south_node, east_node, west_node, up_node, down_node;
@@ -192,6 +192,8 @@ bool A_star::found_near_node(int current_node, Grid &grid, std::vector<int> &can
     south_found = expand_node(grid.vertices_total[current_node].south, south_node, grid);
     east_found = expand_node(grid.vertices_total[current_node].east, east_node, grid);
     west_found = expand_node(grid.vertices_total[current_node].west, west_node, grid);
+
+    std::set<int> parents_nodes = Trace_Back_Path_Parent_Set(grid, current_node, src_index);
 
     //if(grid.vertices_total[current_node].via_active_up){
     if(1){
@@ -208,40 +210,46 @@ bool A_star::found_near_node(int current_node, Grid &grid, std::vector<int> &can
 
     if(north_found){
        for(int i=0;i<(int)north_node.size();i++){
-         if(grid.vertices_total[current_node].parent!=north_node[i])
+         //if(grid.vertices_total[current_node].parent!=north_node[i])
+         if(parents_nodes.find(north_node[i])==parents_nodes.end())
          candidate_node.push_back(north_node[i]);
        }
       }
     if(south_found){
        for(int i=0;i<(int)south_node.size();i++){
-         if(grid.vertices_total[current_node].parent!=south_node[i])
+         //if(grid.vertices_total[current_node].parent!=south_node[i])
+         if(parents_nodes.find(south_node[i])==parents_nodes.end())
          candidate_node.push_back(south_node[i]);
        }
       }
     if(west_found){
        for(int i=0;i<(int)west_node.size();i++){
-         if(grid.vertices_total[current_node].parent!=west_node[i])
+         //if(grid.vertices_total[current_node].parent!=west_node[i])
+         if(parents_nodes.find(west_node[i])==parents_nodes.end())
          candidate_node.push_back(west_node[i]);
        }
       }
 
     if(east_found){
        for(int i=0;i<(int)east_node.size();i++){
-         if(grid.vertices_total[current_node].parent!=east_node[i])
+         //if(grid.vertices_total[current_node].parent!=east_node[i])
+         if(parents_nodes.find(east_node[i])==parents_nodes.end())
          candidate_node.push_back(east_node[i]);
        }
       }
 
     if(up_found){
        for(int i=0;i<(int)up_node.size();i++){
-         if(grid.vertices_total[current_node].parent!=up_node[i])
+         //if(grid.vertices_total[current_node].parent!=up_node[i])
+         if(parents_nodes.find(up_node[i])==parents_nodes.end())
          candidate_node.push_back(up_node[i]);
        }
       }
 
     if(down_found){
        for(int i=0;i<(int)down_node.size();i++){
-         if(grid.vertices_total[current_node].parent!=down_node[i])
+         //if(grid.vertices_total[current_node].parent!=down_node[i])
+         if(parents_nodes.find(down_node[i])==parents_nodes.end())
          candidate_node.push_back(down_node[i]);
        }
       }
@@ -1231,7 +1239,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left
 
     //found the candidates nodes
     std::vector<int> candidate_node;
-    bool near_node_exist =found_near_node(current_node, grid, candidate_node);
+    bool near_node_exist =found_near_node(current_node, grid, candidate_node, src_index);
     //erase_candidate_node(close_set, candidate_node);
     if(!near_node_exist){
        continue;
@@ -1399,6 +1407,8 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
   bool found = 0;
   int current_node = -1;
   bool dest_found = 0;
+
+
   while(!L_list.empty() and !found){
 
     std::set<std::pair<int,int>, RouterDB::pairComp>::iterator it;
@@ -1409,11 +1419,12 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
       L_list.erase(it);
     }
 
+
     //judge whether dest found Q2// judge whether dest works
     if(dest_index.find(current_node)!=dest_index.end()){
 
        bool extend = Pre_trace_back(grid, current_node, left_up, right_down, src_index,dest_index); //add pre_trace_back and extendtion check here?
-
+    
        if(extend){
          found=1;
        }
@@ -1422,15 +1433,17 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
 
     //close_set.insert(current_node);
 
+    
 
     //found the candidates nodes
     std::vector<int> candidate_node;
-    bool near_node_exist =found_near_node(current_node, grid, candidate_node);
+    bool near_node_exist =found_near_node(current_node, grid, candidate_node, src_index);
     //erase_candidate_node(close_set, candidate_node);
     if(!near_node_exist){
        continue;
       }
 
+   
     std::vector<int> temp_candidate_node;
     std::vector<int> temp_candidate_cost;
     for(int i=0;i<candidate_node.size();i++){
@@ -1451,7 +1464,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
        continue;
       }
 
-
+    
     //std::vector<int> expand_candidate_node;
     for(int i=0;i<(int)candidate_node.size();i++){
 
@@ -1483,7 +1496,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
 
   }
 
-
+  
   std::vector<std::vector<int> > temp_path; //Q4 return sheilding and parallel path?  sheild and parallel should be recovered in outer loop???
   if(found==0){
      logger->debug("A_star fails to find a feasible path");
@@ -1494,7 +1507,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
     }
    refreshGrid(grid);
 
-
+   
    return temp_path;
     
 };
@@ -1642,9 +1655,13 @@ bool A_star::Check_Path_Extension(Grid& grid, std::vector<std::vector<int> >& no
 bool A_star::Pre_trace_back(Grid& grid, int current_node, int left, int right, std::set<int> &src_index, std::set<int> &dest_index){
 
   auto logger = spdlog::default_logger()->clone("router.A_star.Pre_trace_back");
+
+
   std::vector<int> temp_path = Trace_Back_Path_parent(grid, current_node, src_index);
 
+
   std::vector<std::vector<int> > Node_Path(left+right+1);
+
 
   if(src_index.find(current_node)!=src_index.end()){
 
@@ -1666,14 +1683,24 @@ bool A_star::Pre_trace_back(Grid& grid, int current_node, int left, int right, s
     }
 
   }
+
+
+
   logger->debug("Pre trace 1");
   rm_cycle_path(Node_Path);
   logger->debug("Pre trace 1");
+
+
+
   lable_father(grid, Node_Path);
   logger->debug("Pre trace 1");
+
+
   //bool extend = 1;
   logger->debug("Check extention 1");
   bool extend = Check_Path_Extension(grid, Node_Path, src_index);
+
+
   logger->debug("Check extention 2");
   return extend;
  
@@ -1747,18 +1774,44 @@ std::vector<int> A_star::Trace_Back_Path_parent(Grid& grid, int current_node, st
   //while(temp_parent!=-1){
       //if(count == 20) assert(0);
       count = count + 1;
+      //std::cout<<temp_parent<<" -> ";
       //temp_parents.insert(temp_parent);
       temp_parent = grid.vertices_total[temp_parent].parent;
       temp_path.push_back(temp_parent);
       //temp_parent = grid.vertices_total[temp_parent].parent;
       //temp_parent = grid.vertices_total[temp_parent].parent;
       }
-
+  //std::cout<<std::endl;
   std::vector<int> reserse_path;
   for(int i=(int)temp_path.size()-1;i>=0;i--){
      reserse_path.push_back(temp_path[i]);
     }
   return reserse_path;
+
+};
+
+std::set<int> A_star::Trace_Back_Path_Parent_Set(Grid& grid, int current_node, std::set<int> &src_index){
+
+  std::set<int> temp_path;
+  //std::set<int> temp_parents;
+  temp_path.insert(current_node);
+  int temp_parent = current_node;
+  //temp_parents.insert(temp_parent);
+  int count = 0;
+  //src_index.insert(-1);
+  while(src_index.find(temp_parent)==src_index.end()){
+  //while(temp_parent!=-1){
+      //if(count == 20) assert(0);
+      count = count + 1;
+      //std::cout<<temp_parent<<" -> ";
+      //temp_parents.insert(temp_parent);
+      temp_parent = grid.vertices_total[temp_parent].parent;
+      temp_path.insert(temp_parent);
+      //temp_parent = grid.vertices_total[temp_parent].parent;
+      //temp_parent = grid.vertices_total[temp_parent].parent;
+      }
+  //std::cout<<std::endl;
+  return temp_path;
 
 };
 
