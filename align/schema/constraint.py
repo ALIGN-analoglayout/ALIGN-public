@@ -48,16 +48,16 @@ class ConstraintBase(types.BaseModel, abc.ABC):
            (Useful for pairwise constraints)
             bbox1, bbox2 = self._z3_bbox_variables(box1, box2)
         '''
-        print([block for block in instances])
+        print([instance for instance in instances])
         if len(instances) == 1 and isinstance(instances[0], List):
             instances = instances[0]
         return [ConstraintDB.GenerateVar(
                     'Bbox',
-                    llx = f'{block}_llx',
-                    lly = f'{block}_lly',
-                    urx = f'{block}_urx',
-                    ury = f'{block}_ury') \
-                for block in instances]
+                    llx = f'{instance}_llx',
+                    lly = f'{instance}_lly',
+                    urx = f'{instance}_urx',
+                    ury = f'{instance}_ury') \
+                for instance in instances]
 
     @staticmethod
     def abs(x):
