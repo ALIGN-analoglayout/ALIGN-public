@@ -4,7 +4,7 @@ from . import types
 
 from .model import Model
 from .instance import Instance
-from .constraint import ConstraintDB
+from .constraint_database import ConstraintDB
 
 
 class SubCircuit(Model):

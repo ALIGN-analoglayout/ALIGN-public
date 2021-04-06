@@ -1,6 +1,7 @@
-from .types import Union, Optional, Literal, List
+from .types import Union, Optional, Literal, List, Dict
 from .constraint import ConstraintBase
-from pydantic import validator
+from pydantic import validator, Field
+import more_itertools as itertools
 
 # Common validators
 def normalize_direction(direction: str) -> str:
@@ -28,7 +29,7 @@ class Align(ConstraintBase):
     '''
     name: Literal['align']
     instances: List[str]
-    direction: Literal['horizontal', 'vertical']
+    direction: Literal['horizontal', 'vertical', 'h', 'v']
     line: Optional[Literal['bottom', 'top', 'left', 'right', 'center', ]] = 'bottom'
     abut: Optional[bool] = True
     order: Optional[bool] = True
@@ -69,7 +70,7 @@ class AlignHorizontal(ConstraintBase):
     '''
     name: Literal['align_horizontal']
     instances: List[str]
-    line: Literal['bottom', 'top', 'center']]
+    line: Literal['bottom', 'top', 'center']
 
     # validators
     _assert_length_gt1 = validator('instances', allow_reuse=True)(assert_length_gt1)
@@ -183,7 +184,7 @@ class Mirror(ConstraintBase):
     ''' 
         Mirror `instances` along `x_axis` and/or `y_axis`
     '''
-    name: Literal['orientation']
+    name: Literal['mirror']
     instances: List[str]
     x_axis: Optional[bool] = False
     y_axis: Optional[bool] = False
@@ -220,6 +221,7 @@ class Boundary(ConstraintBase):
 
 
 class ConstraintsPlacement(ConstraintBase):
+    
     constraints: List[Union[
         Align, AlignHorizontal, AlignVertical, OrderHorizontal, OrderVertical,
         Generator, Mirror, Boundary]]
