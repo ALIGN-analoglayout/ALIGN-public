@@ -524,7 +524,7 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
             node.Blocks[i].instance.back().blockPins[k].pinContacts = lefData[master].at(w).macroPins[j].pinContacts;
             node.Blocks[i].instance.back().blockPins[k].use = lefData[master].at(w).macroPins[j].use;
             found = 1;
-            }
+          }
         }
         if(found == 0){
           node.Blocks[i].instance.back().blockPins.push_back(lefData[master].at(w).macroPins[j]);
@@ -533,6 +533,8 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
 
       node.Blocks[i].instance.back().interMetals = lefData[master].at(w).interMetals;
       node.Blocks[i].instance.back().interVias = lefData[master].at(w).interVias;
+      node.Blocks[i].instance.back()._tapVias = lefData[master].at(w)._tapVias;
+      node.Blocks[i].instance.back()._activeVias = lefData[master].at(w)._activeVias;
       node.Blocks[i].instance.back().gdsFile=gdsData[lefData[master].at(w).name];
   //cout<<"xxx "<<node.Blocks[i].instance.back().gdsFile<<endl;
     }

@@ -163,6 +163,12 @@ struct bbox {
     rt.UR.y = (UR.y > other.UR.y ? UR.y : other.UR.y);
     return rt;
   }
+  void merge (const PnRDB::bbox& other) {
+    LL.x = (LL.x < other.LL.x ? LL.x : other.LL.x);
+    LL.y = (LL.y < other.LL.y ? LL.y : other.LL.y);
+    UR.x = (UR.x > other.UR.x ? UR.x : other.UR.x);
+    UR.y = (UR.y > other.UR.y ? UR.y : other.UR.y);
+  }
 
 }; // structure of boundary box, assum rectangle
 
@@ -304,6 +310,7 @@ struct block {
   vector<Via> interVias;
   vector<pin> dummy_power_pin; //power pins below to this block, but needs updated hierachy
   vector<GuardRing> GuardRings;
+  vector<PnRDB::bbox> _tapVias, _activeVias;
 }; // structure of block
 
 struct terminal {
@@ -544,6 +551,8 @@ struct lefMacro {
   vector<pin> macroPins;
   vector<contact> interMetals;
   vector<Via> interVias;
+  vector<bbox> _tapVias;
+  vector<bbox> _activeVias;
   string master = "";
 };
 

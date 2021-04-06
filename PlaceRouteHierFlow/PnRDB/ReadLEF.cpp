@@ -4,9 +4,11 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <map>
 
 #include "PnRdatabase.h"
 
+using std::map;
 static double parse_and_scale(const std::string& s, double unitScale) {
   auto logger = spdlog::default_logger()->clone("PnRDB.parse_and_scale");
 
@@ -18,6 +20,27 @@ static double parse_and_scale(const std::string& s, double unitScale) {
   }
   return result;
 }
+
+
+//create bbox of vias to create rows or taps and actives
+void MergeVias(vector<PnRDB::bbox>& boxes)
+{
+  map<pair<int, int>, PnRDB::bbox> rowBBox;
+  for (auto& b : boxes) {
+    auto ypair = std::make_pair(b.LL.y, b.UR.y);
+    auto it = rowBBox.find(ypair);
+    if (it == rowBBox.end()) {
+      rowBBox[ypair] = b; 
+    } else {
+      rowBBox[ypair].merge(b);
+    }
+  }
+  boxes.clear();
+  for (auto& it : rowBBox) {
+    boxes.push_back(it.second);
+  }
+}
+
 
 bool PnRdatabase::ReadLEF(string leffile) {
 
@@ -40,8 +63,9 @@ bool PnRdatabase::ReadLEF(string leffile) {
   vector<PnRDB::pin> macroPins;
   vector<PnRDB::contact> interMetals;  // metal within each MACRO
   vector<PnRDB::Via> interVias; //via within each MACRO
+  vector<PnRDB::bbox> tapVias, activeVias;
   fin.exceptions(ifstream::failbit | ifstream::badbit);
-  bool Metal_Flag;
+  bool Metal_Flag, tapVia(false), activeVia(false);
   try {
     fin.open(leffile.c_str());
     int stage = 0;
@@ -88,6 +112,8 @@ bool PnRdatabase::ReadLEF(string leffile) {
           macroIns.macroPins = macroPins;
           macroIns.interMetals = interMetals;
           macroIns.interVias = interVias;
+          macroIns._tapVias = tapVias;
+          macroIns._activeVias = activeVias;
           string key = "_AspectRatio";
           std::size_t found = macroIns.name.find(key);
           if (found != std::string::npos) {  // different aspect ratio exists
@@ -95,6 +121,8 @@ bool PnRdatabase::ReadLEF(string leffile) {
           } else {  // different aspect ratio does not exist
             macroIns.master = macroIns.name;
           }
+          MergeVias(macroIns._tapVias);
+          MergeVias(macroIns._activeVias);
           if (lefData.find(macroIns.master) == lefData.end()) {
             std::vector<PnRDB::lefMacro> lefV;
             lefV.push_back(macroIns);
@@ -115,9 +143,17 @@ bool PnRdatabase::ReadLEF(string leffile) {
             interMetals.resize(interMetals.size() + 1);
             interMetals.back().metal = temp[1];
           } else if (temp[1].front() == 'V' && temp[1].back()!='0') {
-            interVias.resize(interVias.size() + 1);
-            interVias.back().model_index = DRC_info.Viamap[temp[1]];
-            interVias.back().ViaRect.metal = temp[1];
+            tapVia = (temp[1].find("tap") != std::string::npos);
+            activeVia = (temp[1].find("active") != std::string::npos);
+            if (tapVia) {
+              tapVias.resize(tapVias.size() + 1);
+            } else if (activeVia) {
+              activeVias.resize(activeVias.size() + 1);
+            } else {
+              interVias.resize(interVias.size() + 1);
+              interVias.back().model_index = DRC_info.Viamap[temp[1]];
+              interVias.back().ViaRect.metal = temp[1];
+            }
           } else {
             skip_the_rest_of_stage_4 = true;
           }
@@ -137,28 +173,36 @@ bool PnRdatabase::ReadLEF(string leffile) {
           tp.y = URy;
           oBox.UR = tp;
           if (!skip_the_rest_of_stage_4) {
-            if(rect_type=='M'){
+            if (rect_type == 'M') {
               assert(interMetals.size() > 0);
-            interMetals.back().originBox = oBox;
-            interMetals.back().originCenter.x = (LLx + URx) / 2;
-            interMetals.back().originCenter.y = (LLy + URy) / 2;
-            }else if(rect_type=='V'){
-              assert(interVias.size() > 0);
-              PnRDB::point center((LLx + URx) / 2, (LLy + URy) / 2);
-              PnRDB::ViaModel via_model= DRC_info.Via_model[interVias.back().model_index];
-              interVias.back().originpos = center;
-              interVias.back().ViaRect.originCenter = center;
-              interVias.back().ViaRect.originBox.LL = via_model.ViaRect[0] + center;
-              interVias.back().ViaRect.originBox.UR = via_model.ViaRect[1] + center;
-              interVias.back().ViaRect.metal = via_model.name;
-              interVias.back().LowerMetalRect.originCenter = center;
-              interVias.back().LowerMetalRect.originBox.LL = via_model.LowerRect[0] + center;
-              interVias.back().LowerMetalRect.originBox.UR = via_model.LowerRect[1] + center;
-              interVias.back().LowerMetalRect.metal = DRC_info.Metal_info[via_model.LowerIdx].name;
-              interVias.back().UpperMetalRect.originCenter = center;
-              interVias.back().UpperMetalRect.originBox.LL = via_model.UpperRect[0] + center;
-              interVias.back().UpperMetalRect.originBox.UR = via_model.UpperRect[1] + center;
-              interVias.back().UpperMetalRect.metal = DRC_info.Metal_info[via_model.UpperIdx].name;
+              interMetals.back().originBox = oBox;
+              interMetals.back().originCenter.x = (LLx + URx) / 2;
+              interMetals.back().originCenter.y = (LLy + URy) / 2;
+            } else if (rect_type == 'V') {
+              if (!tapVia && !activeVia) {
+                assert(interVias.size() > 0);
+                PnRDB::point center((LLx + URx) / 2, (LLy + URy) / 2);
+                PnRDB::ViaModel via_model = DRC_info.Via_model[interVias.back().model_index];
+                interVias.back().originpos = center;
+                interVias.back().ViaRect.originCenter = center;
+                interVias.back().ViaRect.originBox.LL = via_model.ViaRect[0] + center;
+                interVias.back().ViaRect.originBox.UR = via_model.ViaRect[1] + center;
+                interVias.back().ViaRect.metal = via_model.name;
+                interVias.back().LowerMetalRect.originCenter = center;
+                interVias.back().LowerMetalRect.originBox.LL = via_model.LowerRect[0] + center;
+                interVias.back().LowerMetalRect.originBox.UR = via_model.LowerRect[1] + center;
+                interVias.back().LowerMetalRect.metal = DRC_info.Metal_info[via_model.LowerIdx].name;
+                interVias.back().UpperMetalRect.originCenter = center;
+                interVias.back().UpperMetalRect.originBox.LL = via_model.UpperRect[0] + center;
+                interVias.back().UpperMetalRect.originBox.UR = via_model.UpperRect[1] + center;
+                interVias.back().UpperMetalRect.metal = DRC_info.Metal_info[via_model.UpperIdx].name;
+              } else if (tapVia) {
+                tapVias.push_back(oBox);
+                tapVia = false;
+              } else if (activeVia) {
+                activeVias.push_back(oBox);
+                activeVia = false;
+              }
             }
           }
         } else if ((found = def.find(obsEnd)) != string::npos) {
