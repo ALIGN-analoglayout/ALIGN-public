@@ -3,6 +3,7 @@ import random
 import string
 import collections
 import more_itertools as itertools
+import re
 
 from . import types
 from .types import Union, Optional, Literal, List
@@ -16,20 +17,37 @@ except:
     z3 = None
     logger.warning("Could not import z3. ConstraintDB will not look for spec inconsistency.")
 
-class PlacementConstraint(types.BaseModel, abc.ABC):
+pattern = re.compile(r'(?<!^)(?=[A-Z])')
+class ConstraintBase(types.BaseModel, abc.ABC):
+
+    constraint : str
+
+    def __init__(self, *args, **kwargs):
+        if 'constraint' not in kwargs:
+            kwargs['constraint'] = pattern.sub('_', self.__class__.__name__).lower()
+        super().__init__(*args, **kwargs)
 
     @abc.abstractmethod
     def check(self):
         '''
         Abstract Method for built in self-checks
-          Every class that inherits from PlacementConstraint
+          Every class that inherits from ConstraintBase
           MUST implement this function. Please check minimum
           number of arguments at the very least
-
-        :return list of z3 constraints
         '''
+        return []
+
+class PlacementConstraint(ConstraintBase):
+
+    @abc.abstractmethod
+    def check(self):
+        '''
+        Initialize empty constraint list &
+        return list of z3 constraints associated
+        each bbox at least
+        '''
+        constraints = super().check()
         assert len(self.instances) >= 1
-        constraints = []
         bvars = self._get_bbox_vars(self.instances)
         for b in bvars:
             constraints.append(b.llx < b.urx)

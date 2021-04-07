@@ -4,7 +4,7 @@ from pydantic import validator
 
 
 class Alignment(PlacementConstraint):
-    constraint_name: Literal["alignment"]
+    constraint: Literal["alignment"]
     instances: List[str]
     direction: Optional[Literal['horizontal', 'vertical']] = 'horizontal'
     edge: Optional[Literal['top', 'center', 'bottom', 'left', 'right']] = 'bottom'
@@ -23,7 +23,7 @@ class Alignment(PlacementConstraint):
 
 
 class Generator(PlacementConstraint):
-    constraint_name: Literal["generator"]
+    constraint: Literal["generator"]
     instances: List[str]
     style: Optional[Literal['cc', 'id']] = 'cc'
     alias: Optional[str]
@@ -35,7 +35,7 @@ class Generator(PlacementConstraint):
 
 
 class Orientation(PlacementConstraint):
-    constraint_name: Literal["orientation"]
+    constraint: Literal["orientation"]
     instances: List[str]
     flip_x: Optional[bool] = False
     flip_y: Optional[bool] = False
@@ -45,7 +45,7 @@ class Orientation(PlacementConstraint):
 
 
 class Boundary(PlacementConstraint):
-    constraint_name: Literal["boundary"]
+    constraint: Literal["boundary"]
     subcircuits: List[str]
     height_min: Optional[float] = None
     height_max: Optional[float] = None

@@ -14,15 +14,17 @@ def solver():
 def db():
     return constraint.ConstraintDB()
 
-@pytest.mark.skipif(z3 is None, reason="requires z3")
-def test_Order_input_sanitation(solver):
+def test_Order_input_sanitation():
     x = constraint.Order(direction='left_to_right', instances=['M1', 'M2'])
     x = constraint.Order(direction='left_to_right', instances=['M1', 'M2', 'M3'])
     with pytest.raises(Exception):
-        x = constraint.Order(direction='lefta->rightb', instances=['M1', 'M2', 'M3'])
+        x = constraint.Order(direction='lefta_to_rightb', instances=['M1', 'M2', 'M3'])
 
-@pytest.mark.skipif(z3 is None, reason="requires z3")
-def test_Order_nblock_checking(solver):
+def test_Order_constraint():
+    x = constraint.Order(direction='left_to_right', instances=['M1', 'M2'])
+    assert x.constraint == 'order'
+
+def test_Order_nblock_checking():
     x = constraint.Order(direction='left_to_right', instances=[])
     with pytest.raises(AssertionError):
         x.check()
