@@ -46,7 +46,7 @@ PnRdatabase::PnRdatabase(string path, string topcell, string vname, string lefna
   this->ReadLEF(path+"/"+lefname);
   auto ptr = getenv("LEF_WO_TAP");
   if (ptr != nullptr) {
-    this->ReadLEF(string(ptr), false);
+    this->ReadLEF(string(ptr));
   }
   this->ReadMap(path, mapname);
   this->ReadVerilog(path, vname, topcell);
@@ -254,6 +254,7 @@ bool PnRdatabase::ReadMap(string fpath, string mapname) {
       temp = split_by_spaces_yg(def);
       if(temp.size()>=2) {
         gdsData.insert( std::pair<string,string>(temp[0],fpath+"/"+temp[1]) );
+        _gdsDataWoTap.insert( std::make_pair(temp[0], fpath + "/" + temp[1] + ".wotap") );
       }
     }
     fin.close();
@@ -337,8 +338,8 @@ void PnRdatabase::TransformBlock(PnRDB::block& block, PnRDB::point translate, in
   TransformContacts(block.interMetals, translate, width, height, ort, transform_type);
   TransformVias(block.interVias, translate, width, height, ort, transform_type);
   TransformPins(block.dummy_power_pin, translate, width, height, ort, transform_type);
-  TransformBboxs(block._activeVias, translate, width, height, ort, transform_type);
   TransformBboxs(block._tapVias, translate, width, height, ort, transform_type);
+  TransformBboxs(block._activeVias, translate, width, height, ort, transform_type);
 }
 
 void PnRdatabase::TransformBlocks(std::vector<PnRDB::block>& blocks, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
@@ -861,52 +862,52 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
   hierTree[nodeID].GuardRings = updatedNode.GuardRings;
   // update current node information
   for(unsigned int i=0;i<hierTree[nodeID].Blocks.size();i++){
-     int sel=updatedNode.Blocks[i].selectedInstance;
-     logger->debug("Block {0} select {1} ",i,sel);
-     if(sel<0 or sel>=updatedNode.Blocks[i].instNum) {logger->error("PnRDB-Error: unselected block {0}",i);continue;}
-     //std::cout<<"dB "<<hierTree[nodeID].Blocks[i].instNum<<std::endl;
-     if(hierTree[nodeID].Blocks[i].instNum<updatedNode.Blocks[i].instNum) { // for capacitor, new data in place and route
-       hierTree[nodeID].Blocks[i].instance.clear();
-       hierTree[nodeID].Blocks[i].instance=updatedNode.Blocks[i].instance;
-       hierTree[nodeID].Blocks[i].instNum=updatedNode.Blocks[i].instNum;
-     }
-     hierTree[nodeID].Blocks[i].selectedInstance=sel;
-     for(int w=0;w<updatedNode.Blocks[i].instNum;++w) {
-	 auto& lhs = hierTree[nodeID].Blocks[i].instance.at(w);
-	 auto& rhs = updatedNode.Blocks[i].instance.at(w);
+	  int sel=updatedNode.Blocks[i].selectedInstance;
+	  logger->debug("Block {0} select {1} ",i,sel);
+	  if(sel<0 or sel>=updatedNode.Blocks[i].instNum) {logger->error("PnRDB-Error: unselected block {0}",i);continue;}
+	  //std::cout<<"dB "<<hierTree[nodeID].Blocks[i].instNum<<std::endl;
+	  if(hierTree[nodeID].Blocks[i].instNum<updatedNode.Blocks[i].instNum) { // for capacitor, new data in place and route
+		  hierTree[nodeID].Blocks[i].instance.clear();
+		  hierTree[nodeID].Blocks[i].instance=updatedNode.Blocks[i].instance;
+		  hierTree[nodeID].Blocks[i].instNum=updatedNode.Blocks[i].instNum;
+	  }
+	  hierTree[nodeID].Blocks[i].selectedInstance=sel;
+	  for(int w=0;w<updatedNode.Blocks[i].instNum;++w) {
+		  auto& lhs = hierTree[nodeID].Blocks[i].instance.at(w);
+		  auto& rhs = updatedNode.Blocks[i].instance.at(w);
 
-     //std::cout<<"\tchoice "<<w<<std::endl;
-     //lhs.name = rhs.name;
-     lhs.orient = rhs.orient;
+		  //std::cout<<"\tchoice "<<w<<std::endl;
+		  //lhs.name = rhs.name;
+		  lhs.orient = rhs.orient;
 
-     lhs.placedBox = rhs.placedBox;
+		  lhs.placedBox = rhs.placedBox;
 
-     lhs.placedCenter = rhs.placedCenter;
+		  lhs.placedCenter = rhs.placedCenter;
 
-     for(unsigned int j=0;j<lhs.blockPins.size();j++){
-        for(unsigned int k=0;k<lhs.blockPins[j].pinContacts.size();k++){
-           lhs.blockPins[j].pinContacts[k]= rhs.blockPins[j].pinContacts[k];
-           }
-        for(unsigned int k=0;k<lhs.blockPins[j].pinVias.size();k++){
-           lhs.blockPins[j].pinVias[k]= rhs.blockPins[j].pinVias[k];
-           }  
-        }
+		  for(unsigned int j=0;j<lhs.blockPins.size();j++){
+			  for(unsigned int k=0;k<lhs.blockPins[j].pinContacts.size();k++){
+				  lhs.blockPins[j].pinContacts[k]= rhs.blockPins[j].pinContacts[k];
+			  }
+			  for(unsigned int k=0;k<lhs.blockPins[j].pinVias.size();k++){
+				  lhs.blockPins[j].pinVias[k]= rhs.blockPins[j].pinVias[k];
+			  }  
+		  }
 
-     for(unsigned int j=0;j<lhs.interMetals.size();j++){
-           lhs.interMetals[j]= rhs.interMetals[j];
-        }
+		  for(unsigned int j=0;j<lhs.interMetals.size();j++){
+			  lhs.interMetals[j]= rhs.interMetals[j];
+		  }
 
-     for(unsigned int j=0;j<lhs.interVias.size();j++){
-           lhs.interVias[j]= rhs.interVias[j];
-        }     
-        for (unsigned int j = 0; j < lhs._activeVias.size(); ++j) {
-          lhs._activeVias[j] = rhs._activeVias[j];
-        }
-        for (unsigned int j = 0; j < lhs._tapVias.size(); ++j) {
-          lhs._tapVias[j] = rhs._tapVias[j];
-        }
-     }
-	 
+		  for(unsigned int j=0;j<lhs.interVias.size();j++){
+			  lhs.interVias[j]= rhs.interVias[j];
+		  }
+		  for (unsigned int j = 0; j < lhs._tapVias.size(); ++j) {
+			  lhs._tapVias[j] = rhs._tapVias[j];
+		  }
+		  for (unsigned int j = 0; j < lhs._activeVias.size(); ++j) {
+			  lhs._activeVias[j] = rhs._activeVias[j];
+		  }
+	  }
+
   }
 
   hierTree[nodeID].router_report = updatedNode.router_report; //update router information

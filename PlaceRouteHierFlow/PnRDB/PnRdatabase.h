@@ -81,8 +81,8 @@ class PnRdatabase
     int maxNode;
     int unitScale;
     map<string, vector<PnRDB::lefMacro> > lefData;  //map from Macro name to Macro Instance
-    map<string, vector<PnRDB::lefMacro> > _woTapLefData;
     map<string, string> gdsData; //map from gds name to gds file
+    map<string, string> _gdsDataWoTap; //map from gds name to gds file
     PnRDB::designRule drData;
 
     void UpdateHierNodeParent(int nodeID); // update parent node of current node
@@ -154,7 +154,7 @@ class PnRdatabase
     void ReadVerilog(istream &inps, const string &fpath, const string &topcell);
     bool ReadVerilog(const string &fpath, const string &vname, const string &topcell);
 
-    bool ReadLEF(const string& leffile, bool wotap = true); // read building block data from LEF file
+    bool ReadLEF(const string& leffile); // read building block data from LEF file
     void PrintLEFData();          // print LEF data for debugging
     map<string, vector<PnRDB::lefMacro>> checkoutlef() { return lefData; };
     bool ReadConstraint(PnRDB::hierNode &node, string fpath, string suffix);

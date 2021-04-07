@@ -42,7 +42,7 @@ void MergeVias(vector<PnRDB::bbox>& boxes)
 }
 
 
-bool PnRdatabase::ReadLEF(const string& leffile, bool wotap) {
+bool PnRdatabase::ReadLEF(const string& leffile) {
 
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.ReadLEF");
 
@@ -129,7 +129,7 @@ bool PnRdatabase::ReadLEF(const string& leffile, bool wotap) {
           for (auto& v : macroIns._tapVias) {
             logger->info("active row : {0} {1} {2} {3}", v.LL.x, v.LL.y, v.UR.x, v.UR.y);
           }
-          auto& lefD = wotap ? lefData : _woTapLefData ;
+          auto& lefD = lefData;
           if (lefD.find(macroIns.master) == lefD.end()) {
             std::vector<PnRDB::lefMacro> lefV;
             lefV.push_back(macroIns);

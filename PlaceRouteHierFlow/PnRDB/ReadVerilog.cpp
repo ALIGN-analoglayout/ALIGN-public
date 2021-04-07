@@ -503,42 +503,43 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
     }
     
     //cout<<node.Blocks[i].instance.back().name<<" "<<master<<endl;
-    for(unsigned int w=0;w<lefData[master].size();++w) {
-      if(node.Blocks[i].instNum>0) { node.Blocks[i].instance.push_back( node.Blocks[i].instance.back() ); }
-      node.Blocks[i].instNum++;
-      node.Blocks[i].instance.back().width=lefData[master].at(w).width;
-      node.Blocks[i].instance.back().height=lefData[master].at(w).height;
-      node.Blocks[i].instance.back().lefmaster=lefData[master].at(w).name;
-      node.Blocks[i].instance.back().originBox.LL.x=0;
-      node.Blocks[i].instance.back().originBox.LL.y=0;
-      node.Blocks[i].instance.back().originBox.UR.x=lefData[master].at(w).width;
-      node.Blocks[i].instance.back().originBox.UR.y=lefData[master].at(w).height;
-      node.Blocks[i].instance.back().originCenter.x=lefData[master].at(w).width/2;
-      node.Blocks[i].instance.back().originCenter.y=lefData[master].at(w).height/2;
+	const auto& lefMaster = lefData[master];
+	for(unsigned int w=0;w<lefMaster.size();++w) {
+		if(node.Blocks[i].instNum>0) { node.Blocks[i].instance.push_back( node.Blocks[i].instance.back() ); }
+		node.Blocks[i].instNum++;
+		const auto& lefAtW = lefMaster.at(w);
+		node.Blocks[i].instance.back().width=lefAtW.width;
+		node.Blocks[i].instance.back().height=lefAtW.height;
+		node.Blocks[i].instance.back().lefmaster=lefAtW.name;
+		node.Blocks[i].instance.back().originBox.LL.x=0;
+		node.Blocks[i].instance.back().originBox.LL.y=0;
+		node.Blocks[i].instance.back().originBox.UR.x=lefAtW.width;
+		node.Blocks[i].instance.back().originBox.UR.y=lefAtW.height;
+		node.Blocks[i].instance.back().originCenter.x=lefAtW.width/2;
+		node.Blocks[i].instance.back().originCenter.y=lefAtW.height/2;
 
-      for(unsigned int j=0;j<lefData[master].at(w).macroPins.size();j++){
-        bool found = 0;
-        for(unsigned int k=0;k<node.Blocks[i].instance.back().blockPins.size();k++){
-          if(lefData[master].at(w).macroPins[j].name.compare(node.Blocks[i].instance.back().blockPins[k].name)==0){
-            node.Blocks[i].instance.back().blockPins[k].type = lefData[master].at(w).macroPins[j].type;
-            node.Blocks[i].instance.back().blockPins[k].pinContacts = lefData[master].at(w).macroPins[j].pinContacts;
-            node.Blocks[i].instance.back().blockPins[k].use = lefData[master].at(w).macroPins[j].use;
-            found = 1;
-          }
-        }
-        if(found == 0){
-          node.Blocks[i].instance.back().blockPins.push_back(lefData[master].at(w).macroPins[j]);
-        }
-      }
+		for(unsigned int j=0;j<lefAtW.macroPins.size();j++){
+			bool found = 0;
+			for(unsigned int k=0;k<node.Blocks[i].instance.back().blockPins.size();k++){
+				if(lefAtW.macroPins[j].name.compare(node.Blocks[i].instance.back().blockPins[k].name)==0){
+					node.Blocks[i].instance.back().blockPins[k].type = lefAtW.macroPins[j].type;
+					node.Blocks[i].instance.back().blockPins[k].pinContacts = lefAtW.macroPins[j].pinContacts;
+					node.Blocks[i].instance.back().blockPins[k].use = lefAtW.macroPins[j].use;
+					found = 1;
+				}
+			}
+			if(found == 0){
+				node.Blocks[i].instance.back().blockPins.push_back(lefAtW.macroPins[j]);
+			}
+		}
 
-      node.Blocks[i].instance.back().interMetals = lefData[master].at(w).interMetals;
-      node.Blocks[i].instance.back().interVias = lefData[master].at(w).interVias;
-      node.Blocks[i].instance.back()._tapVias = lefData[master].at(w)._tapVias;
-      node.Blocks[i].instance.back()._activeVias = lefData[master].at(w)._activeVias;
-      node.Blocks[i].instance.back().gdsFile=gdsData[lefData[master].at(w).name];
-  //cout<<"xxx "<<node.Blocks[i].instance.back().gdsFile<<endl;
-    }
-
+		node.Blocks[i].instance.back().interMetals = lefAtW.interMetals;
+		node.Blocks[i].instance.back().interVias = lefAtW.interVias;
+		node.Blocks[i].instance.back()._tapVias = lefAtW._tapVias;
+		node.Blocks[i].instance.back()._activeVias = lefAtW._activeVias;
+		node.Blocks[i].instance.back().gdsFile = gdsData[lefAtW.name];
+		//cout<<"xxx "<<node.Blocks[i].instance.back().gdsFile<<endl;
+	}
 
   }
 

@@ -320,26 +320,26 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
       {
         double sparserow[5] = {const_graph.LAMBDA, (LLblock_width - 2 * LLpin_x) * const_graph.LAMBDA, -const_graph.LAMBDA,
                                -(URblock_width - 2 * URpin_x) * const_graph.LAMBDA, -1};
-        int colno[5] = {LLblock_id * 4 + 1, LLblock_id * 4 + 3, URblock_id * 4 + 1, URblock_id * 4 + 3, mydesign.Blocks.size() * 4 + i * 2 + 1};
+        int colno[5] = {LLblock_id * 4 + 1, LLblock_id * 4 + 3, URblock_id * 4 + 1, URblock_id * 4 + 3, static_cast<int>(mydesign.Blocks.size()) * 4 + i * 2 + 1};
         // add_constraintex(lp, 5, sparserow, colno, LE, -LLpin_x + URpin_x);
       }
       {
         double sparserow[5] = {-const_graph.LAMBDA, -(LLblock_width - 2 * LLpin_x) * const_graph.LAMBDA, const_graph.LAMBDA,
                                (URblock_width - 2 * URpin_x) * const_graph.LAMBDA, -1};
-        int colno[5] = {LLblock_id * 4 + 1, LLblock_id * 4 + 3, URblock_id * 4 + 1, URblock_id * 4 + 3, mydesign.Blocks.size() * 4 + i * 2 + 1};
+        int colno[5] = {LLblock_id * 4 + 1, LLblock_id * 4 + 3, URblock_id * 4 + 1, URblock_id * 4 + 3, static_cast<int>(mydesign.Blocks.size()) * 4 + i * 2 + 1};
         // add_constraintex(lp, 5, sparserow, colno, LE, LLpin_x - URpin_x);
       }
       // row[mydesign.Blocks.size() * 4 + i * 2 + 1] = 1;
       {
         double sparserow[5] = {const_graph.LAMBDA, (LLblock_height - 2 * LLpin_y) * const_graph.LAMBDA, -const_graph.LAMBDA,
                                -(URblock_height - 2 * URpin_y) * const_graph.LAMBDA, -1};
-        int colno[5] = {LLblock_id * 4 + 2, LLblock_id * 4 + 4, URblock_id * 4 + 2, URblock_id * 4 + 4, mydesign.Blocks.size() * 4 + i * 2 + 2};
+        int colno[5] = {LLblock_id * 4 + 2, LLblock_id * 4 + 4, URblock_id * 4 + 2, URblock_id * 4 + 4, static_cast<int>(mydesign.Blocks.size()) * 4 + i * 2 + 2};
         // add_constraintex(lp, 5, sparserow, colno, LE, -LLpin_y + URpin_y);
       }
       {
         double sparserow[5] = {-const_graph.LAMBDA, -(LLblock_height - 2 * LLpin_y) * const_graph.LAMBDA, const_graph.LAMBDA,
                                (URblock_height - 2 * URpin_y) * const_graph.LAMBDA, -1};
-        int colno[5] = {LLblock_id * 4 + 2, LLblock_id * 4 + 4, URblock_id * 4 + 2, URblock_id * 4 + 4, mydesign.Blocks.size() * 4 + i * 2 + 2};
+        int colno[5] = {LLblock_id * 4 + 2, LLblock_id * 4 + 4, URblock_id * 4 + 2, URblock_id * 4 + 4, static_cast<int>(mydesign.Blocks.size()) * 4 + i * 2 + 2};
         // add_constraintex(lp, 5, sparserow, colno, LE, LLpin_y - URpin_y);
       }
       // row[mydesign.Blocks.size() * 4 + i * 2 + 2] = 1;
