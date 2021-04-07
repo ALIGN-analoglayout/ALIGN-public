@@ -1,12 +1,10 @@
 import abc
-import random
-import string
-import collections
 import more_itertools as itertools
 import re
 
 from . import types
 from .types import Union, Optional, Literal, List
+from .checker import Z3Checker
 
 import logging
 logger = logging.getLogger(__name__)
@@ -266,63 +264,20 @@ class AlignInOrder(Order, Align):
 
 ConstraintType=Union[Order, Align, AlignInOrder]
 
-class ConstraintDB(types.List[ConstraintType]):
-
-    @types.validate_arguments
-    def append(self, constraint: ConstraintType):
-        super().append(constraint)
-        if self._validation:
-            self._solver.append(*constraint.check())
-            assert self._solver.check() == z3.sat
-
-    def __init__(self, validation=None):
-        super().__init__(__root__=[])
-        self._commits = collections.OrderedDict()
-        if z3 is not None:
-            self._solver = z3.Solver()
-            if validation is not None:
-                self._validation = validation
-        else:
-            assert not validation, "Cannot validate without z3"
+class ConstraintDB(types.List[ConstraintType], Z3Checker):
 
     #
     # Private attribute affecting class behavior
     #
     _solver = types.PrivateAttr()
     _commits = types.PrivateAttr()
-    _validation = types.PrivateAttr(default_factory=lambda: z3 is not None)
+    _validation = types.PrivateAttr()
 
-    def _gen_commit_id(self, nchar=8):
-        id_ = ''.join(random.choices(string.ascii_uppercase + string.digits, k=nchar))
-        return self._gen_commit_id(nchar) if id_ in self._commits else id_
+    @types.validate_arguments
+    def append(self, constraint: ConstraintType):
+        super().append(constraint)
+        Z3Checker.append(self, constraint)
 
-    def checkpoint(self):
-        self._commits[self._gen_commit_id()] = len(self)
-        if self._validation:
-            self._solver.push()
-        return next(reversed(self._commits))
-
-    def _revert(self):
-        if self._validation:
-            self._solver.pop()
-        _, length = self._commits.popitem()
-        del self[length:]
-
-    def revert(self, name=None):
-        assert len(self._commits) > 0, 'Top of scope. Nothing to revert'
-        if name is None or name == next(reversed(self._commits)):
-            self._revert()
-        else:
-            assert name in self._commits
-            self._revert()
-            self.revert(name)
-
-    @classmethod
-    def GenerateVar(cls, name, **fields):
-        if fields:
-            return collections.namedtuple(
-                name,
-                fields.keys(),
-            )(*z3.Ints(' '.join(fields.values())))
-        else:
-            return z3.Int(name)
+    def __init__(self, validation=None):
+        super().__init__(__root__=[])
+        Z3Checker.__init__(self)

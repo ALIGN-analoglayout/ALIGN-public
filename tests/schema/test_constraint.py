@@ -146,12 +146,3 @@ def test_ConstraintDB_nonincremental_revert(db):
     assert len(db._commits) == 0
     if db._validation:
         assert 'M3' not in str(db._solver)
-
-def test_ConstraintDB_permissive():
-    '''
-    Check that it is possible to turn validation OFF
-    NOT RECOMMENDED !! DO NOT DO THIS !!!
-    '''
-    db = constraint.ConstraintDB(validation=False)
-    db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M2']))
-    db.append(constraint.Order(direction='left_to_right', instances=['M2', 'M1']))
