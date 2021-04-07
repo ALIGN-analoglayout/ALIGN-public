@@ -42,7 +42,7 @@ void MergeVias(vector<PnRDB::bbox>& boxes)
 }
 
 
-bool PnRdatabase::ReadLEF(string leffile) {
+bool PnRdatabase::ReadLEF(const string& leffile, bool wotap) {
 
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.ReadLEF");
 
@@ -123,13 +123,20 @@ bool PnRdatabase::ReadLEF(string leffile) {
           }
           MergeVias(macroIns._tapVias);
           MergeVias(macroIns._activeVias);
-          if (lefData.find(macroIns.master) == lefData.end()) {
+          for (auto& v : macroIns._tapVias) {
+            logger->info("tap row : {0} {1} {2} {3}", v.LL.x, v.LL.y, v.UR.x, v.UR.y);
+          }
+          for (auto& v : macroIns._tapVias) {
+            logger->info("active row : {0} {1} {2} {3}", v.LL.x, v.LL.y, v.UR.x, v.UR.y);
+          }
+          auto& lefD = wotap ? lefData : _woTapLefData ;
+          if (lefD.find(macroIns.master) == lefD.end()) {
             std::vector<PnRDB::lefMacro> lefV;
             lefV.push_back(macroIns);
-            lefData.insert(std::pair<string, std::vector<PnRDB::lefMacro> >(macroIns.master, lefV));
-            // lefData.insert( std::pair<string,PnRDB::lefMacro>(macroName,macroIns) );
+            lefD.insert(std::pair<string, std::vector<PnRDB::lefMacro> >(macroIns.master, lefV));
+            // lefD.insert( std::pair<string,PnRDB::lefMacro>(macroName,macroIns) );
           } else {
-            lefData[macroIns.master].push_back(macroIns);
+            lefD[macroIns.master].push_back(macroIns);
           }
           // cout<<"Stage "<<stage<<" @ insert macro data"<<endl;
           stage = 0;
@@ -145,11 +152,7 @@ bool PnRdatabase::ReadLEF(string leffile) {
           } else if (temp[1].front() == 'V' && temp[1].back()!='0') {
             tapVia = (temp[1].find("tap") != std::string::npos);
             activeVia = (temp[1].find("active") != std::string::npos);
-            if (tapVia) {
-              tapVias.resize(tapVias.size() + 1);
-            } else if (activeVia) {
-              activeVias.resize(activeVias.size() + 1);
-            } else {
+            if (!tapVia && !activeVia) {
               interVias.resize(interVias.size() + 1);
               interVias.back().model_index = DRC_info.Viamap[temp[1]];
               interVias.back().ViaRect.metal = temp[1];

@@ -44,6 +44,10 @@ PnRdatabase::PnRdatabase(string path, string topcell, string vname, string lefna
   }
 
   this->ReadLEF(path+"/"+lefname);
+  auto ptr = getenv("LEF_WO_TAP");
+  if (ptr != nullptr) {
+    this->ReadLEF(string(ptr), false);
+  }
   this->ReadMap(path, mapname);
   this->ReadVerilog(path, vname, topcell);
   //this->extend_pin_function();
