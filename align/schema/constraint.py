@@ -16,13 +16,13 @@ except:
     z3 = None
     logger.warning("Could not import z3. ConstraintDB will not look for spec inconsistency.")
 
-class ConstraintBase(types.BaseModel, abc.ABC):
+class PlacementConstraint(types.BaseModel, abc.ABC):
 
     @abc.abstractmethod
     def check(self):
         '''
         Abstract Method for built in self-checks
-          Every class that inherits from ConstraintBase
+          Every class that inherits from PlacementConstraint
           MUST implement this function. Please check minimum
           number of arguments at the very least
 
@@ -57,66 +57,109 @@ class ConstraintBase(types.BaseModel, abc.ABC):
                     ury = f'{instance}_ury') \
                 for instance in instances]
 
-class Order(ConstraintBase):
+class Order(PlacementConstraint):
     '''
-    All 'instances' will ordered with respect to each other
+    All `instances` will be ordered with respect to each other
 
-    Only the following orderings are supported:
-    - left->right
-    - bottom->top
+    The following `direction` values are supported:
+    > `None`
 
-    We DO NOT plan to additionally support:
-    - right->left
-    - top->bottom
-    Create a custom constraint that reverses the instance
-        list if this is something you absolutely need
+    > `'horizontal'`
+    > `'vertical'`
+    
+    > `'left->right'`
+    > `'right->left'`
+    > `'bottom->top'`
+    > `'top->bottom'`
 
-    Any other combination does not make sense
+    If `abut` is `True`:
+    > adjoining instances will touch
     '''
     instances : List[str]
-    direction: Optional[Literal['left->right', 'bottom->top']]
+    direction: Optional[Literal[
+        'horizontal', 'vertical',
+        'left->right', 'right->left',
+        'bottom->top', 'top->bottom'
+    ]]
+    abut: Optional[bool] = False
 
     def check(self):
+        def cc(b1, b2, c='x'): # Create coordinate constraint
+            if self.abut:
+                return getattr(b1, f'ur{c}') == getattr(b2, f'll{c}')
+            else:
+                return getattr(b1, f'ur{c}') <= getattr(b2, f'll{c}')
         constraints = super().check()
         assert len(self.instances) >= 2
         bvars = self._get_bbox_vars(self.instances)
         for b1, b2 in itertools.pairwise(bvars):
             if self.direction == 'left->right':
-                constraints.append(b1.urx <= b2.llx)
+                constraints.append(cc(b1, b2, 'x'))
+            elif self.direction == 'right->left':
+                constraints.append(cc(b2, b1, 'x'))
             elif self.direction == 'bottom->top':
-                constraints.append(b1.ury <= b2.lly)
+                constraints.append(cc(b1, b2, 'y'))
+            elif self.direction == 'top->bottom':
+                constraints.append(cc(b2, b1, 'y'))
+            if self.direction == 'horizontal':
+                constraints.append(
+                    z3.Or(
+                        cc(b1, b2, 'x'),
+                        cc(b2, b1, 'x')))
+            elif self.direction == 'vertical':
+                constraints.append(
+                    z3.Or(
+                        cc(b1, b2, 'y'),
+                        cc(b2, b1, 'y')))
+            else:
+                constraints.append(
+                    z3.Or(
+                        cc(b1, b2, 'x'),
+                        cc(b2, b1, 'x'),
+                        cc(b1, b2, 'y'),
+                        cc(b2, b1, 'y')))
+
         return constraints
 
-class Align(ConstraintBase):
+class Align(PlacementConstraint):
     '''
-    All 'instances' will be aligned along the specified edge
+    All `instances` will be aligned along the specified `line`
 
-    Only the following alignments are supported currently:
-    - top       (horizontal)
-    - bottom    (horizontal)
-    - left      (vertical)
-    - right     (vertical)
+    The following `line` values are currently supported:
+    > `'top'`
+    > `'bottom'`
+    > `'middle'`
+    
+    > `'left'`
+    > `'right'`
+    > `'center'`
 
-    We plan to additionally support:
-    - center    (horizontal)
-    - middle    (vertical)
     '''
     instances : List[str]
-    alignment : Literal['top', 'bottom', 'left', 'right']
+    line : Literal[
+        'top', 'bottom', 'middle',
+        'left', 'right', 'center'
+    ]
 
     def check(self):
         constraints = super().check()
         assert len(self.instances) >= 2
         bvars = self._get_bbox_vars(self.instances)
         for b1, b2 in itertools.pairwise(bvars):
-            if self.alignment == 'top':
+            if self.line == 'top':
                 constraints.append(b1.ury == b2.ury)
-            elif self.alignment == 'bottom':
+            elif self.line == 'bottom':
                 constraints.append(b1.lly == b2.lly)
-            elif self.alignment == 'left':
+            elif self.line == 'left':
                 constraints.append(b1.llx == b2.llx)
-            elif self.alignment == 'right':
+            elif self.line == 'right':
                 constraints.append(b1.urx == b2.urx)
+            elif self.line == 'middle':
+                constraints.append(
+                    (b1.lly + b1.ury) / 2 == (b2.lly + b2.ury) / 2)
+            elif self.line == 'center':
+                constraints.append(
+                    (b1.llx + b1.urx) / 2 == (b2.llx + b2.urx) / 2)
         return constraints
 
 # TODO: Write a helper utility that allows custom
@@ -139,9 +182,9 @@ class AlignHorizontal(Order, Align):
         needed unless you are adding new semantics
     '''
     instances : List[str]
-    alignment : Optional[Literal['top', 'bottom']]
-    direction: Literal['left->right'] = 'left->right'
-
+    line : Optional[Literal['top', 'bottom']]
+    direction: Literal['horizontal', 'left->right', 'right->left'] = 'left->right'
+    abut: Optional[bool] = False
 
 ConstraintType=Union[Order, Align, AlignHorizontal]
 

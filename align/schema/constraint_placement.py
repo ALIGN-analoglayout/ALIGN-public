@@ -1,9 +1,9 @@
 from .types import Union, Optional, Literal, List
-from .constraint import ConstraintBase
+from .constraint import PlacementConstraint
 from pydantic import validator
 
 
-class Alignment(ConstraintBase):
+class Alignment(PlacementConstraint):
     constraint_name: Literal["alignment"]
     instances: List[str]
     direction: Optional[Literal['horizontal', 'vertical']] = 'horizontal'
@@ -22,7 +22,7 @@ class Alignment(ConstraintBase):
         pass
 
 
-class Generator(ConstraintBase):
+class Generator(PlacementConstraint):
     constraint_name: Literal["generator"]
     instances: List[str]
     style: Optional[Literal['cc', 'id']] = 'cc'
@@ -34,7 +34,7 @@ class Generator(ConstraintBase):
         pass
 
 
-class Orientation(ConstraintBase):
+class Orientation(PlacementConstraint):
     constraint_name: Literal["orientation"]
     instances: List[str]
     flip_x: Optional[bool] = False
@@ -44,7 +44,7 @@ class Orientation(ConstraintBase):
         pass
 
 
-class Boundary(ConstraintBase):
+class Boundary(PlacementConstraint):
     constraint_name: Literal["boundary"]
     subcircuits: List[str]
     height_min: Optional[float] = None
@@ -75,10 +75,10 @@ class Boundary(ConstraintBase):
         pass
 
 
-class ConstraintsPlacement(ConstraintBase):
+class ConstraintsPlacement(PlacementConstraint):
     constraints: List[Union[Alignment, Generator, Orientation, Boundary]]
 
     def check(self):
         pass
 
-# TODO: Enhance ConstraintBase to handle list of lists (e.g. symmetry)
+# TODO: Enhance PlacementConstraint to handle list of lists (e.g. symmetry)
