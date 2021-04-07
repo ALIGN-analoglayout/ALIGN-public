@@ -155,6 +155,21 @@ def route_top_down( DB, drcInfo,
     return new_currentnode_idx
 
 
+def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
+    DB = PnR.PnRdatabase()
+
+    if drname.endswith('.json'):
+        DB.ReadPDKJSON( path + '/' + drname)
+    else:
+        assert False, drname
+
+    DB.ReadLEF( path + '/' + lefname)
+    DB.ReadMap( path, mapname)
+    DB.ReadVerilog( path, vname, topcell)
+
+    return DB
+
+
 def toplevel(args):
 
     assert len(args) == 9
@@ -174,7 +189,8 @@ def toplevel(args):
 
     pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
 
-    DB = PnR.PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile)
+    #DB = PnR.PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile)
+    DB = PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile)
     drcInfo = DB.getDrc_info()
     lefData = DB.checkoutSingleLEF()
 

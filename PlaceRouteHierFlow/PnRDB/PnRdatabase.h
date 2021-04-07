@@ -87,7 +87,8 @@ class PnRdatabase
     void UpdateHierNodeParent(int nodeID); // update parent node of current node
     void TraverseDFS(deque<int>& Q, vector<string>& color, int idx); // DFS subfunc to traverse hierarchical tree 
 
-    void ReadPDKJSON(string drfile);
+ public: 
+
 
     // Not implemented
     PnRdatabase(const PnRdatabase& other); // copy constructor
@@ -110,7 +111,10 @@ class PnRdatabase
 
     long int get_number(string str);
 
+    void ReadPDKJSON(string drfile);
+
     deque<int> TraverseHierTree(); // traverse hierarchical tree in topological order
+
     PnRDB::hierNode CheckoutHierNode(int nodeID); // check out data of specific hierarchical node
     std::vector<PnRDB::hierNode> CheckoutHierNodeVec(int nodeID);//checkout nodeVec, which consists of different placement
     void AppendToHierTree( const PnRDB::hierNode& updatedNode); // append node to end of hierTree
@@ -150,7 +154,6 @@ class PnRdatabase
     PnRDB::Omark RelOrt2AbsOrt(PnRDB::Omark current_node_ort, PnRDB::Omark childnode_ort);
     void ExtractPinsToPowerPins(PnRDB::hierNode &updatedNode);
 
-    void ReadVerilog(istream &inps, const string &fpath, const string &topcell);
     bool ReadVerilog(const string &fpath, const string &vname, const string &topcell);
 
     bool ReadLEF(string leffile); // read building block data from LEF file
