@@ -98,5 +98,6 @@ struct commonCentroid
   vector<int> blocks;
   string label;
   Ppoint_I shape;
+  vector< vector< int > >fillin_matrix;
 };
 #endif

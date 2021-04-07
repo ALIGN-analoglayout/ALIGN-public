@@ -2103,39 +2103,41 @@ Ppoint_I Placement::determineShape(int cell_num, int tol_diff)
   return shape;
 }
 
-void Placement::addNet_commonCentroid(commonCentroid CC, int cell_num)
+void Placement::addNet_commonCentroid(commonCentroid &CC, int cell_num)
 {
   std::cout << "addNet commonCentroid: debug 0"  << std::endl;
   int dummyNum = CC.shape.x * CC.shape.y - cell_num;
   int id = 0;
   std::vector<std::vector<int>> ID_array;
   std::vector<int> ID_vector;
-  for (int i = 0; i < CC.blocks.size(); ++i)
-  {
-    std::cout << "addNet commonCentroid: debug 1"  << std::endl;
-    ID_vector.push_back(CC.blocks[i]);
-    for (int j = 0; j < Blocks[CC.blocks[i]].spiltBlock.size(); ++j)
-    {
-      std::cout << "addNet commonCentroid: debug 2"  << std::endl;
-      ID_vector.push_back(Blocks[CC.blocks[i]].spiltBlock[j]);
-    }
-  }
-  for (int i = 0; i < dummyNum; ++i)
-  {
-    std::cout << "addNet commonCentroid: debug 3"  << std::endl;
-    ID_vector.push_back(-1);
-  }
-  for (int i = 0; i < CC.shape.x; ++i)
-  {
-    std::cout << "addNet commonCentroid: debug 4"  << std::endl;
-    std::vector<int> row;
-    for (int j = 0; j < CC.shape.y; ++j)
-    {
-      row.push_back(ID_vector[id]);
-      ++id;
-    }
-    ID_array.push_back(row);
-  }
+  // for (int i = 0; i < CC.blocks.size(); ++i)
+  // {
+  //   std::cout << "addNet commonCentroid: debug 1"  << std::endl;
+  //   ID_vector.push_back(CC.blocks[i]);
+  //   for (int j = 0; j < Blocks[CC.blocks[i]].spiltBlock.size(); ++j)
+  //   {
+  //     std::cout << "addNet commonCentroid: debug 2"  << std::endl;
+  //     ID_vector.push_back(Blocks[CC.blocks[i]].spiltBlock[j]);
+  //   }
+  // }
+  // for (int i = 0; i < dummyNum; ++i)
+  // {
+  //   std::cout << "addNet commonCentroid: debug 3"  << std::endl;
+  //   ID_vector.push_back(-1);
+  // }
+  // for (int i = 0; i < CC.shape.x; ++i)
+  // {
+  //   std::cout << "addNet commonCentroid: debug 4"  << std::endl;
+  //   std::vector<int> row;
+  //   for (int j = 0; j < CC.shape.y; ++j)
+  //   {
+  //     row.push_back(ID_vector[id]);
+  //     ++id;
+  //   }
+  //   ID_array.push_back(row);
+  // }
+  match_pairs(CC,dummyNum);
+  // ID_array.swap(CC.fillin_matrix);
   //add net
   int netID = Nets.size();
   for(int i = 0;i < CC.shape.x;++i)
@@ -2148,13 +2150,17 @@ void Placement::addNet_commonCentroid(commonCentroid CC, int cell_num)
       {
         int b1, b2;
         std::cout << "addNet commonCentroid: debug 6a"  << std::endl;
-        b1 = ID_array[i][j];
+        std::cout << "shape"<<CC.shape.x<<" "<<CC.shape.y  << std::endl;
+        std::cout << "current pos"<<i<<" "<<j<<" "<<std::endl;
+        // b1 = ID_array[i][j];
+        b1 = CC.fillin_matrix[i][j];
         std::cout << "addNet commonCentroid: debug 6b"  << std::endl;
-        b2 = ID_array[i+1][j];
+        // b2 = ID_array[i+1][j];
+        b2 = CC.fillin_matrix[i+1][j];
         std::cout << "addNet commonCentroid: debug 6c"  << std::endl;
         if(b1 >0 and b2>0)
         {
-          std::cout << "addNet commonCentroid: debug 7"  << std::endl;
+          std::cout << "addNet commonCentroid: debug 7"<< " "<<b1<<" "<<b2  << std::endl;
           net temp;
           temp.index = netID;
           temp.connected_block.push_back(b1);
@@ -2169,8 +2175,8 @@ void Placement::addNet_commonCentroid(commonCentroid CC, int cell_num)
       {
         std::cout << "addNet commonCentroid: debug 8"  << std::endl;
         int b1, b2;
-        b1 = ID_array[i][j];
-        b2 = ID_array[i][j+1];
+        b1 = CC.fillin_matrix[i][j];
+        b2 = CC.fillin_matrix[i][j+1];
         if(b1 >0 and b2>0)
         {
           net temp;
@@ -2185,8 +2191,229 @@ void Placement::addNet_commonCentroid(commonCentroid CC, int cell_num)
       }
     }
   }
+  // CC.fillin_matrix.swap(ID_array);
 }
 
+void Placement::match_pairs(commonCentroid &CC, int dummyNum)
+{
+  //read the shape from CC
+  std::cout << "match pairs: debug 0"  << std::endl;
+  Ppoint_I shape = CC.shape;
+  vector< vector < int > > fillin_matrix;// to store the relative position of Standard cells
+  //determine the center point
+  //but if we consider the (x,y) -> (2x,2y), then in the new map, the center is (x-1,y-1)
+  //For example, if shape = (2,3) then the new map shape is (4,6), (0,0) (2,0);(0,2),(2,2);(0,4),(2,4)
+  //center is (1,2)
+  Ppoint_I center = CC.shape;
+  center.x -= 1;
+  center.y -= 1;
+
+  //calculate the manhattan distance
+  vector<pair<pair<int,int>,int>> position_q;
+  std::cout << "match pairs: debug 1"  << std::endl;
+  for(int i=0;i < shape.x;++i)
+  {
+    vector<int> row;
+    std::cout << "match pairs: debug 2"  << std::endl;
+    for(int j=0;j < shape.y;++j)
+    {
+      std::cout << "match pairs: debug 3"  << std::endl;
+      int dis;
+      dis = abs(2*i - center.x) + abs(2*j - center.y);
+      row.push_back(-1);//-1 means dummy as default
+      pair<pair<int,int>,int> position_info;
+      pair<int,int> temp;
+      temp.first = i;
+      temp.second = j;
+      position_info.first = temp;
+      position_info.second = dis;
+      position_q.push_back(position_info);
+    }
+    std::cout << "match pairs: debug 4"  << std::endl;
+    fillin_matrix.push_back(row);
+  }
+  std::cout << "match pairs: debug 5"  << std::endl;
+  sort(position_q.begin(),position_q.end(),comp_position);
+  std::cout << "match pairs: debug 6"  << std::endl;
+  //match the blocks
+  vector<pair<int,int>> block_pairs;
+  vector<int> block_q;
+  //first find out the original block which be divided into odd number of pieces
+  for(int i = 0;i < CC.blocks.size();++i)
+  {
+    int id = CC.blocks[i];
+    std::cout << "match pairs: debug 7"<<Blocks[id].spiltBlock.size()  << std::endl;
+    
+    if(Blocks[id].spiltBlock.size()%2==0)
+    {
+      block_q.push_back(id);
+      std::cout << "match pairs: debug 7b" <<" ,id:"<<id << std::endl;
+    }
+  }
+  std::cout << "match pairs: debug 8"  << std::endl;
+  match_vector_into_pairs(block_q,block_pairs);
+  std::cout << "match pairs: debug 9"  << std::endl;
+  //write the pairs into fillin_matrix along the position_q
+  int filled_num = 0;
+  std::cout << "match pairs: debug 10"  << std::endl;
+  for(int i = 0;i < block_pairs.size();++i)
+  {
+    //find out the top element in position q
+    std::cout << "match pairs: debug 11"  << std::endl;
+    pair<int,int> pos;
+    pos = position_q[0].first;
+    //you may ask what if we have odd number of positions and odd number of blocks
+    //that's the reason why I allocate the second element firstly
+    //if we have odd number of blocks, the second element is dummy (-2)
+    //and the first element will share the same position and cover the dummy
+    fillin_matrix[shape.x - 1 - pos.first][shape.y - 1 - pos.second] = block_pairs[i].second;
+    fillin_matrix[pos.first][pos.second] = block_pairs[i].first;
+    //find out the mirror pos in position_q with 4 steps
+    position_q.erase(position_q.begin());
+    if(shape.x - 1 - pos.first != pos.first and shape.y-1-pos.second != pos.second)
+    {
+      std::cout << "match pairs: debug 12"  << std::endl;
+      for(int j = 0;j < position_q.size();++j)
+      {
+        std::cout << "match pairs: debug 13"  << std::endl;
+        if(position_q[j].first.first == shape.x - 1 - pos.first and position_q[j].first.second == shape.y - 1 - pos.second )
+        {
+          position_q.erase(position_q.begin()+j);
+          break;
+        }
+      }
+    }
+  }
+  //deal with the remainder blocks
+  block_pairs.clear();
+  std::cout << "match pairs: debug 14"  << std::endl;
+  for(int i = 0;i < CC.blocks.size();++i)
+  {
+    std::cout << "match pairs: debug 15"  << std::endl;
+    int id = CC.blocks[i];
+    vector<pair<int,int>> temp;
+    temp.clear();
+    for(int j = 0;j+1 < Blocks[id].spiltBlock.size();j = j+2)
+    {
+      std::cout << "match pairs: debug 16"  << std::endl;
+      pair<int,int> cur_pair;
+      cur_pair.first = Blocks[id].spiltBlock[j];
+      cur_pair.second = Blocks[id].spiltBlock[j+1];
+      temp.push_back(cur_pair);
+    }
+    if(Blocks[id].spiltBlock.size()%2==1)
+    //match the last piece of Standard cell and the center piece of standard cell into one pair
+    {
+      pair<int,int> cur_pair;
+      cur_pair.first = Blocks[id].spiltBlock[Blocks[id].spiltBlock.size()-1];
+      cur_pair.second = id;
+      temp.push_back(cur_pair);
+    }
+    std::cout << "match pairs: debug 16a"  <<" "<<block_pairs.size()<<" "<<temp.size() << std::endl;
+    merge_two_vectors(block_pairs,temp);
+    std::cout << "match pairs: debug 16b"  <<" "<<block_pairs.size()<<" "<<temp.size() << std::endl;
+  }
+
+  //allocate the position
+  for(int i = 0;i < block_pairs.size();++i)
+  {
+    //find out the top element in position q
+    std::cout << "match pairs: debug 17"  << std::endl;
+    pair<int,int> pos;
+    pos = position_q[0].first;
+    fillin_matrix[shape.x - 1 - pos.first][shape.y - 1 - pos.second] = block_pairs[i].second;
+    fillin_matrix[pos.first][pos.second] = block_pairs[i].first;
+    //find out the mirror pos in position_q with 4 steps
+    position_q.erase(position_q.begin());
+    if(shape.x - 1 - pos.first != pos.first and shape.y-1-pos.second != pos.second)
+    {
+      for(int j = 0;j < position_q.size();++j)
+      {
+        std::cout << "match pairs: debug 18"  << std::endl;
+        if(position_q[j].first.first == shape.x - 1 - pos.first and position_q[j].first.second == shape.y - 1 - pos.second )
+        {
+          position_q.erase(position_q.begin()+j);
+          break;
+        }
+      }
+    }
+  }
+  CC.fillin_matrix.swap(fillin_matrix);
+  for(int i = 0;i < shape.x;++i)
+  {
+    for(int j = 0;j< shape.y;++j)
+    {
+      std::cout<<CC.fillin_matrix[i][j]<<" ";
+    }
+    std::cout<<std::endl;
+  }
+  
+
+}
+void Placement::merge_two_vectors(vector<pair<int,int>> &v1,vector<pair<int,int>> &v2)
+{
+  std::cout << "merge 2 vectors: debug 0a"  << std::endl;
+  vector<pair<int,int>> A,B;
+  std::cout << "merge 2 vectors: debug 0b"  << std::endl;
+  if(v1.size()>v2.size())
+  {
+    A.swap(v1);
+    B.swap(v2);
+  }
+  else
+  {
+    A.swap(v2);
+    B.swap(v1);
+  }
+  std::cout << "merge 2 vectors: debug 1"  << std::endl;
+  //calculate the period
+  int period, sizeA,sizeB,pos;
+  sizeA = A.size();
+  sizeB = B.size();
+  pos = 0;
+  if(sizeB != 0)
+  {
+    period = sizeA / sizeB + 1;
+    // pos = 0;
+  }
+  
+  std::cout << "merge 2 vectors: debug 2"  << std::endl;
+  for(int i = 0;i < B.size();++i)
+  {
+    std::cout << "merge 2 vectors: debug 3"  << std::endl;
+    A.insert(A.begin()+pos,B[i]);
+    pos += period;
+    std::cout << "merge 2 vectors: debug 4"  << std::endl;
+  }
+  //save the result into v1
+  v1.swap(A);
+  v2.swap(B);
+  std::cout << "merge 2 vectors: debug 5"  << std::endl;
+}
+void Placement::match_vector_into_pairs(vector<int> &q, vector<pair<int,int>> &pairs)
+{
+  pairs.clear();
+  int i = 0;
+  if(q.size()%2 == 1)
+  {
+    pair<int,int> temp;
+    temp.first = q[0];
+    temp.second = -2;//-2 means dummy ;-1 means empty;>0 means occupy
+    pairs.push_back(temp);
+    ++i;
+  }
+  for(;i+1<q.size();i=i+2)
+  {
+    pair<int,int> temp;
+    temp.first = q[i];
+    temp.second = q[i+1];//-2 means dummy ;-1 means empty;>0 means occupy
+    pairs.push_back(temp);
+  }
+}
+bool Placement::comp_position(pair<pair<int,int>,int> p1,pair<pair<int,int>,int> p2)
+{
+  return p1.second < p2.second;
+}
 void Placement::restore_MS()
 {
   for(int i = 0;i < originalBlockCNT;++i)

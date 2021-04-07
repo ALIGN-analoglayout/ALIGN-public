@@ -117,23 +117,27 @@ public:
     void force_order(vector<float> &vc_x,vector<float> &vl_x,vector<float> &vc_y,vector<float> &vl_y);
     static bool comp_x(Ppoint_F c1, Ppoint_F c2);
     static bool comp_y(Ppoint_F c1, Ppoint_F c2);
+    static bool comp_position(pair<pair<int,int>,int> p1,pair<pair<int,int>,int> p2);
     void writeback(PnRDB::hierNode &current_node);
     bool symCheck(float tol);
     void splitNode_MS(float uniHeight, float uniWidth);
     void addNet_for_one_split_Blocks(int blockID,Ppoint_I num);
     void update_netlist_after_split_MS();
+    void match_vector_into_pairs(vector<int> &q, vector<pair<int,int>> &pairs);
     Ppoint_F find_uni_cell();
     void readCC();
     void addNet_after_split_Blocks(int tol_diff);//tol diff is the maximum difference of abs(shape.x - shape.y)
     Ppoint_I determineShape(int cellNum,int tol_diff);
-    void addNet_commonCentroid(commonCentroid CC,int cell_num);
+    void addNet_commonCentroid(commonCentroid &CC,int cell_num);
     void restore_MS();
+    void merge_two_vectors(vector<pair<int,int>> &v1,vector<pair<int,int>> &v2);//merge v1,v2 into v1
     //donghao end
 
     float Cal_Overlap();
     void Pull_back_vector(vector<float> &temp_vector, bool x_or_y);
     void Initilize_lambda();
     void Initilize_sym_beta();
+    void match_pairs(commonCentroid &CC, int dummyNum);
 
 };
 #endif
