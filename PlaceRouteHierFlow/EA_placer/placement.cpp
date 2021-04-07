@@ -1966,10 +1966,11 @@ void Placement::addNet_for_one_split_Blocks(int blockID, Ppoint_I num)
       {
         std::cout << "add net for one splited blocks: debug 11" << std::endl;
         temp2.index = netID;
-        temp1.connected_block.push_back(ID_array[i][j]);
-        temp1.connected_block.push_back(ID_array[i][j + 1]);
+        temp2.connected_block.push_back(ID_array[i][j]);
+        temp2.connected_block.push_back(ID_array[i][j + 1]);
         Blocks[ID_array[i][j]].connected_net.push_back(netID);
         Blocks[ID_array[i][j + 1]].connected_net.push_back(netID);
+        Nets.push_back(temp2);
         ++netID;
       }
     }
