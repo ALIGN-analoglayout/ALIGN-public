@@ -16,17 +16,17 @@ def db():
 
 @pytest.mark.skipif(z3 is None, reason="requires z3")
 def test_Order_input_sanitation(solver):
-    x = constraint.Order(direction='left->right', instances=['M1', 'M2'])
-    x = constraint.Order(direction='left->right', instances=['M1', 'M2', 'M3'])
+    x = constraint.Order(direction='left_to_right', instances=['M1', 'M2'])
+    x = constraint.Order(direction='left_to_right', instances=['M1', 'M2', 'M3'])
     with pytest.raises(Exception):
         x = constraint.Order(direction='lefta->rightb', instances=['M1', 'M2', 'M3'])
 
 @pytest.mark.skipif(z3 is None, reason="requires z3")
 def test_Order_nblock_checking(solver):
-    x = constraint.Order(direction='left->right', instances=[])
+    x = constraint.Order(direction='left_to_right', instances=[])
     with pytest.raises(AssertionError):
         x.check()
-    x = constraint.Order(direction='left->right', instances=['M1'])
+    x = constraint.Order(direction='left_to_right', instances=['M1'])
     with pytest.raises(AssertionError):
         x.check()
 
@@ -38,48 +38,51 @@ def test_Order_z3_checking(solver):
     Please use ConstraintDB to manage constraints
     (See test_ConstraintDB_checking() for example)
     '''
-    x = constraint.Order(direction='left->right', instances=['M1', 'M2', 'M3'])
+    x = constraint.Order(direction='left_to_right', instances=['M1', 'M2', 'M3'])
     solver.append(*x.check())
     assert solver.check() == z3.sat
-    x = constraint.Order(direction='left->right', instances=['M4', 'M5'])
+    x = constraint.Order(direction='left_to_right', instances=['M4', 'M5'])
     solver.append(*x.check())
     assert solver.check() == z3.sat
-    x = constraint.Order(direction='left->right', instances=['M3', 'M2'])
+    x = constraint.Order(direction='left_to_right', instances=['M3', 'M2'])
     solver.append(*x.check())
     with pytest.raises(AssertionError):
         assert solver.check() == z3.sat
 
 @pytest.mark.skipif(z3 is None, reason="requires z3")
-def test_AlignHorizontal_input_sanitation(solver):
-    x = constraint.AlignHorizontal(instances=['M1', 'M2'], line='top')
-    x = constraint.AlignHorizontal(instances=['M1', 'M2', 'M3'], line='top')
+def test_AlignInOrder_input_sanitation(solver):
+    x = constraint.AlignInOrder(instances=['M1', 'M2'], line='top')
+    x = constraint.AlignInOrder(instances=['M1', 'M2', 'M3'], line='top')
     with pytest.raises(Exception):
-        x = constraint.AlignHorizontal(instances=['M1', 'M2', 'M3'], line='garbage')
+        x = constraint.AlignInOrder(instances=['M1', 'M2', 'M3'], line='garbage')
 
 @pytest.mark.skipif(z3 is None, reason="requires z3")
-def test_AlignHorizontal_nblock_checking(solver):
-    x = constraint.AlignHorizontal(instances=[], line='top')
+def test_AlignInOrder_nblock_checking(solver):
+    x = constraint.AlignInOrder(instances=[], line='top')
     with pytest.raises(AssertionError):
         x.check()
-    x = constraint.AlignHorizontal(instances=['M1'], line='top')
+    x = constraint.AlignInOrder(instances=['M1'], line='top')
     with pytest.raises(AssertionError):
         x.check()
 
 @pytest.mark.skipif(z3 is None, reason="requires z3")
-def test_AlignHorizontal_order_checking(solver):
+def test_AlignInOrder_order_checking(solver):
     '''
     This is just a unittest of generated constraints
 
     Please use ConstraintDB to manage constraints
     (See test_ConstraintDB_checking() for example)
     '''
-    x = constraint.AlignHorizontal(instances=['M1', 'M2', 'M3'])
+    x = constraint.AlignInOrder(instances=['M1', 'M2', 'M3'], direction='horizontal')
+    print(x)
     solver.append(*x.check())
     assert solver.check() == z3.sat
-    x = constraint.AlignHorizontal(instances=['M4', 'M5'], line='bottom')
+    x = constraint.AlignInOrder(instances=['M4', 'M5'], line='bottom')
+    print(x)
     solver.append(*x.check())
     assert solver.check() == z3.sat
-    x = constraint.AlignHorizontal(instances=['M3', 'M2'], line='bottom')
+    x = constraint.AlignInOrder(instances=['M3', 'M2'], line='bottom')
+    print(x)
     solver.append(*x.check())
     with pytest.raises(AssertionError):
         assert solver.check() == z3.sat
@@ -90,10 +93,10 @@ def test_ConstraintDB_inputapi(db):
 
 @pytest.mark.skipif(z3 is None, reason="requires z3")
 def test_ConstraintDB_checking(db):
-    db.append(constraint.Order(direction='left->right', instances=['M1', 'M2', 'M3']))
-    db.append(constraint.Order(direction='left->right', instances=['M4', 'M5']))
+    db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M2', 'M3']))
+    db.append(constraint.Order(direction='left_to_right', instances=['M4', 'M5']))
     with pytest.raises(AssertionError):
-        db.append(constraint.Order(direction='left->right', instances=['M3', 'M2']))
+        db.append(constraint.Order(direction='left_to_right', instances=['M3', 'M2']))
 
 @pytest.mark.skipif(z3 is None, reason="requires z3")
 def test_ConstraintDB_incremental_checking(db):
@@ -103,25 +106,25 @@ def test_ConstraintDB_incremental_checking(db):
     is an overhead so use sparingly
     '''
     # Experiment 1 : Success
-    db.append(constraint.Order(direction='left->right', instances=['M1', 'M2', 'M3']))
+    db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M2', 'M3']))
     db.checkpoint()
     # Experiment 2 : Failure
     with pytest.raises(AssertionError):
-        db.append(constraint.Order(direction='left->right', instances=['M3', 'M2']))
+        db.append(constraint.Order(direction='left_to_right', instances=['M3', 'M2']))
     db.revert()
     # Experiment 3 : Success
-    db.append(constraint.Order(direction='left->right', instances=['M4', 'M5']))
+    db.append(constraint.Order(direction='left_to_right', instances=['M4', 'M5']))
     db.checkpoint()
     # Experiment 4: Failure
     with pytest.raises(AssertionError):
-        db.append(constraint.Order(direction='left->right', instances=['M3', 'M2']))
+        db.append(constraint.Order(direction='left_to_right', instances=['M3', 'M2']))
     db.revert()
     # Experiment 5: Success
-    db.append(constraint.Order(direction='left->right', instances=['M2', 'M5']))
+    db.append(constraint.Order(direction='left_to_right', instances=['M2', 'M5']))
     # Experiments Completed ! Final Constraints:
-    # constraint.Order(direction='left->right', instances=['M1', 'M2', 'M3'])
-    # constraint.Order(direction='left->right', instances=['M4', 'M5'])
-    # constraint.Order(direction='left->right', instances=['M2', 'M5'])
+    # constraint.Order(direction='left_to_right', instances=['M1', 'M2', 'M3'])
+    # constraint.Order(direction='left_to_right', instances=['M4', 'M5'])
+    # constraint.Order(direction='left_to_right', instances=['M2', 'M5'])
 
 def test_ConstraintDB_nonincremental_revert(db):
     '''
@@ -129,11 +132,11 @@ def test_ConstraintDB_nonincremental_revert(db):
     checkpoint() by name, needing to unroll multiple
     checkpoints can indicate suboptimal compiler design
     '''
-    db.append(constraint.Order(direction='left->right', instances=['M1', 'M2']))
+    db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M2']))
     idx = db.checkpoint()
-    db.append(constraint.Order(direction='left->right', instances=['M1', 'M3']))
+    db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M3']))
     db.checkpoint()
-    db.append(constraint.Order(direction='left->right', instances=['M2', 'M3']))
+    db.append(constraint.Order(direction='left_to_right', instances=['M2', 'M3']))
     db.checkpoint()
     db.revert(idx)
     assert len(db) == 1
@@ -147,5 +150,5 @@ def test_ConstraintDB_permissive():
     NOT RECOMMENDED !! DO NOT DO THIS !!!
     '''
     db = constraint.ConstraintDB(validation=False)
-    db.append(constraint.Order(direction='left->right', instances=['M1', 'M2']))
-    db.append(constraint.Order(direction='left->right', instances=['M2', 'M1']))
+    db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M2']))
+    db.append(constraint.Order(direction='left_to_right', instances=['M2', 'M1']))

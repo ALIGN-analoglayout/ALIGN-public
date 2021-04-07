@@ -82,12 +82,13 @@ except:
 # Pass through directly from pydantic
 from pydantic import \
     validator, \
+    root_validator, \
     validate_arguments, \
     PrivateAttr
 
 __all__ = [
     'BaseModel', 'List', 'Dict',
-    'validator', 'validate_arguments',
+    'validator', 'root_validator', 'validate_arguments',
     'Optional', 'Union',
     'NamedTuple', 'Literal',
     'ClassVar', 'PrivateAttr'

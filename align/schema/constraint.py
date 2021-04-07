@@ -62,15 +62,16 @@ class Order(PlacementConstraint):
     All `instances` will be ordered with respect to each other
 
     The following `direction` values are supported:
-    > `None`
+    > `None` : default (`'horizontal'` or `'vertical'`)
 
-    > `'horizontal'`
-    > `'vertical'`
+    > `'horizontal'`: left to right or vice-versa
     
-    > `'left->right'`
-    > `'right->left'`
-    > `'bottom->top'`
-    > `'top->bottom'`
+    > `'vertical'`: bottom to top or vice-versa
+    
+    > `'left_to_right'`
+    > `'right_to_left'`
+    > `'bottom_to_top'`
+    > `'top_to_bottom'`
 
     If `abut` is `True`:
     > adjoining instances will touch
@@ -78,8 +79,8 @@ class Order(PlacementConstraint):
     instances : List[str]
     direction: Optional[Literal[
         'horizontal', 'vertical',
-        'left->right', 'right->left',
-        'bottom->top', 'top->bottom'
+        'left_to_right', 'right_to_left',
+        'bottom_to_top', 'top_to_bottom'
     ]]
     abut: Optional[bool] = False
 
@@ -93,13 +94,13 @@ class Order(PlacementConstraint):
         assert len(self.instances) >= 2
         bvars = self._get_bbox_vars(self.instances)
         for b1, b2 in itertools.pairwise(bvars):
-            if self.direction == 'left->right':
+            if self.direction == 'left_to_right':
                 constraints.append(cc(b1, b2, 'x'))
-            elif self.direction == 'right->left':
+            elif self.direction == 'right_to_left':
                 constraints.append(cc(b2, b1, 'x'))
-            elif self.direction == 'bottom->top':
+            elif self.direction == 'bottom_to_top':
                 constraints.append(cc(b1, b2, 'y'))
-            elif self.direction == 'top->bottom':
+            elif self.direction == 'top_to_bottom':
                 constraints.append(cc(b2, b1, 'y'))
             if self.direction == 'horizontal':
                 constraints.append(
@@ -126,67 +127,126 @@ class Align(PlacementConstraint):
     All `instances` will be aligned along the specified `line`
 
     The following `line` values are currently supported:
-    > `'top'`
-    > `'bottom'`
-    > `'middle'`
-    
-    > `'left'`
-    > `'right'`
-    > `'center'`
+    > `None` : default (`'h_any'` or `'v_any'`)
 
+    > `'h_any'`: top, bottom or anything in between
+
+    > `'v_any'`: left, right or anything in between
+    
+    > `'h_top'`
+    > `'h_bottom'`
+    > `'h_center'`
+    
+    > `'v_left'`
+    > `'v_right'`
+    > `'v_center'`
     '''
     instances : List[str]
-    line : Literal[
-        'top', 'bottom', 'middle',
-        'left', 'right', 'center'
-    ]
+    line : Optional[Literal[
+        'h_any', 'h_top', 'h_bottom', 'h_center',
+        'v_any', 'v_left', 'v_right', 'v_center'
+    ]]
 
     def check(self):
         constraints = super().check()
         assert len(self.instances) >= 2
         bvars = self._get_bbox_vars(self.instances)
         for b1, b2 in itertools.pairwise(bvars):
-            if self.line == 'top':
+            if self.line == 'h_top':
                 constraints.append(b1.ury == b2.ury)
-            elif self.line == 'bottom':
+            elif self.line == 'h_bottom':
                 constraints.append(b1.lly == b2.lly)
-            elif self.line == 'left':
-                constraints.append(b1.llx == b2.llx)
-            elif self.line == 'right':
-                constraints.append(b1.urx == b2.urx)
-            elif self.line == 'middle':
+            elif self.line == 'h_center':
                 constraints.append(
                     (b1.lly + b1.ury) / 2 == (b2.lly + b2.ury) / 2)
-            elif self.line == 'center':
+            elif self.line == 'h_any':
+                constraints.append(
+                    z3.Or( # We don't know which bbox is higher yet
+                        z3.And(b1.lly >= b2.lly, b1.ury <= b2.ury),
+                        z3.And(b2.lly >= b1.lly, b2.ury <= b1.ury)
+                    )
+                )
+            elif self.line == 'v_left':
+                constraints.append(b1.llx == b2.llx)
+            elif self.line == 'v_right':
+                constraints.append(b1.urx == b2.urx)
+            elif self.line == 'v_center':
                 constraints.append(
                     (b1.llx + b1.urx) / 2 == (b2.llx + b2.urx) / 2)
+            elif self.line == 'v_any':
+                constraints.append(
+                    z3.Or( # We don't know which bbox is wider yet
+                        z3.And(b1.urx <= b2.urx, b1.llx >= b2.llx),
+                        z3.And(b2.urx <= b1.urx, b2.llx >= b1.llx)
+                    )
+                )
+            else:
+                constraints.append(
+                    z3.Or( # h_any OR v_any
+                        z3.And(b1.urx <= b2.urx, b1.llx >= b2.llx),
+                        z3.And(b2.urx <= b1.urx, b2.llx >= b1.llx),
+                        z3.And(b1.lly >= b2.lly, b1.ury <= b2.ury),
+                        z3.And(b2.lly >= b1.lly, b2.ury <= b1.ury)
+                    )
+                )
         return constraints
 
-# TODO: Write a helper utility that allows custom
-#       constraints to be added to ConstraintDB
-#       Sample complex constraint below
-# NOTE: This may even happen automatically if we
-#       use List from .types as baseclass for
-#       ConstraintDB
-
-class AlignHorizontal(Order, Align):
+# You may chain constraints together for more complex constraints by
+#     1) Assigning default values to certain attributes
+#     2) Using custom validators to modify attribute values
+# Note: Compositional check() is automatically constructed if
+#     every check() in mro starts with `constraints = super().check()`.
+#     (mro is Order, Align, ConstraintBase in this example)
+# Note: If you need to specialize check(), you do have the option 
+#     to create a custom `check()` in this class. It shouldn't be
+#     needed unless you are adding new semantics
+class AlignInOrder(Order, Align):
     '''
-    Chain simple constraints together for more complex constraints by
-        assigning default values to certain attributes
-    
-    Note: Compositional check() is automatically constructed if
-        every check() in mro starts with `constraints = super().check()`.
-        (mro is Order, Align, ConstraintBase in this example)
-    Note: If you need to specialize check(), you do have the option 
-        to create a custom `check()` in this class. It shouldn't be
-        needed unless you are adding new semantics
+    Align `instances` in order, along the `direction`, on the `line`
+
+    > `direction == 'horizontal'` => left_to_right
+
+    > `direction == 'vertical'`   => bottom_to_top
     '''
     instances : List[str]
-    line : Optional[Literal['top', 'bottom']]
-    direction: Literal['horizontal', 'left->right', 'right->left'] = 'left->right'
+    direction: Optional[Literal['horizontal', 'vertical']]
+    line : Optional[Literal[
+        'top', 'bottom',
+        'left', 'right',
+        'center'
+    ]]
     abut: Optional[bool] = False
 
-ConstraintType=Union[Order, Align, AlignHorizontal]
+    @types.root_validator
+    def _cast_constraints_to_base_types(cls, values):
+        # Process unambiguous line values
+        if values['line'] in ['bottom', 'top']:
+            if values['direction'] is None:
+                values['direction'] = 'horizontal'
+            else:
+                assert values['direction'] == 'horizontal', \
+                    f'direction is horizontal if line is bottom or top'
+            values['line'] = f"h_{values['line']}"
+        elif values['line'] in ['left', 'right']:
+            if values['direction'] is None:
+                values['direction'] = 'vertical'
+            else:
+                assert values['direction'] == 'vertical', \
+                    f'direction is vertical if line is left or right'
+            values['line'] = f"v_{values['line']}"
+        # Center needs both line & direction
+        elif values['line'] == 'center':
+            assert values['direction'], \
+                'direction must be specified if line == center'
+            values['line'] = f"{values['direction'][0]}_{values['line']}"
+        # Map horizontal, vertical direction to left_to_right & bottom_to_top
+        if values['direction'] == 'horizontal':
+            values['direction'] = 'left_to_right'
+        elif values['direction'] == 'vertical':
+            values['direction'] = 'bottom_to_top'
+        return values
+
+ConstraintType=Union[Order, Align, AlignInOrder]
 
 class ConstraintDB(types.BaseModel):
 

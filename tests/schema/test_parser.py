@@ -38,11 +38,11 @@ def setup_annotation():
 * This is one awesome diffamp
 
 * Subcircuit constraints can be directly specified here
-* @: Order(instances=['R2', 'M1'], direction='left->right')
-* @: Order(instances=['M1', 'M2'], direction='left->right')
+* @: Order(instances=['R2', 'M1'], direction='left_to_right')
+* @: Order(instances=['M1', 'M2'], direction='left_to_right')
 
 R1 vcc outplus 1e4;  Or even here! Amazing !
-R2 vcc outminus 1e4; @: Order(instances=['R1', 'R2'], direction='left->right')
+R2 vcc outminus 1e4; @: Order(instances=['R1', 'R2'], direction='left_to_right')
 M1 outplus inplus src 0 NMOS   l=0.014u nfin=2
 M2 outminus inminus src 0 NMOS l=0.014u nfin=2
 
