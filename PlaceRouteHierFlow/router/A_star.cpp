@@ -826,6 +826,8 @@ bool A_star::parallel_routing(Grid& grid, int current_node, int next_node, int l
      //assert(0);
      logger->debug("L shape connection 1");
      if(grid.vertices_total[current_node].metal!=grid.vertices_total[next_node].metal){
+         //std::cout<<"current_node "<<grid.vertices_total[current_node].metal<<" "<<grid.vertices_total[current_node].x<<" "<<grid.vertices_total[current_node].y<<std::endl;
+         //std::cout<<"next node "<<grid.vertices_total[next_node].metal<<" "<<grid.vertices_total[next_node].x<<" "<<grid.vertices_total[next_node].y<<std::endl;
         if(!Extention_check_prime(grid, current_node, next_node, src_index)){
            return false;
          }
@@ -1288,7 +1290,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left
 
           int dis = grid.vertices_total[candidate_node[i]].Cost + M_dis + sym_factor*sym_cost;
           grid.vertices_total[candidate_node[i]].parent = current_node;
-          //grid.vertices_total[candidate_node[i]].trace_back_node = current_node;
+          grid.vertices_total[candidate_node[i]].trace_back_node = current_node;
           temp_pair.first = dis;
           temp_pair.second = candidate_node[i];
           L_list.insert(temp_pair);
@@ -1372,6 +1374,7 @@ int A_star::Find_Symmetry_cost(Grid& grid, int current_node, RouterDB::Metal &te
   return metal_cost+length_cost;
 };
 
+
 std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up, int right_down){
 
   auto logger = spdlog::default_logger()->clone("router.A_star.A_star_algorithm");
@@ -1408,7 +1411,6 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
   int current_node = -1;
   bool dest_found = 0;
 
-
   while(!L_list.empty() and !found){
 
     std::set<std::pair<int,int>, RouterDB::pairComp>::iterator it;
@@ -1422,9 +1424,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
 
     //judge whether dest found Q2// judge whether dest works
     if(dest_index.find(current_node)!=dest_index.end()){
-
        bool extend = Pre_trace_back(grid, current_node, left_up, right_down, src_index,dest_index); //add pre_trace_back and extendtion check here?
-    
        if(extend){
          found=1;
        }
@@ -1434,6 +1434,10 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
     //close_set.insert(current_node);
 
     
+    bool extend = Pre_trace_back(grid, current_node, left_up, right_down, src_index,dest_index);
+    if(!extend){
+       continue;
+    }
 
     //found the candidates nodes
     std::vector<int> candidate_node;
@@ -1443,7 +1447,6 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
        continue;
       }
 
-   
     std::vector<int> temp_candidate_node;
     std::vector<int> temp_candidate_cost;
     for(int i=0;i<candidate_node.size();i++){
@@ -1480,7 +1483,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
           grid.vertices_total[candidate_node[i]].Cost = temp_cost;
           int dis = grid.vertices_total[candidate_node[i]].Cost + M_dis;
           grid.vertices_total[candidate_node[i]].parent = current_node;
-          //grid.vertices_total[candidate_node[i]].trace_back_node = current_node;
+          grid.vertices_total[candidate_node[i]].trace_back_node = current_node;
           temp_pair.first = dis;
           L_list.insert(temp_pair);
 
@@ -1496,7 +1499,6 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
 
   }
 
-  
   std::vector<std::vector<int> > temp_path; //Q4 return sheilding and parallel path?  sheild and parallel should be recovered in outer loop???
   if(found==0){
      logger->debug("A_star fails to find a feasible path");
@@ -1507,7 +1509,6 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
     }
    refreshGrid(grid);
 
-   
    return temp_path;
     
 };
@@ -1656,12 +1657,9 @@ bool A_star::Pre_trace_back(Grid& grid, int current_node, int left, int right, s
 
   auto logger = spdlog::default_logger()->clone("router.A_star.Pre_trace_back");
 
-
   std::vector<int> temp_path = Trace_Back_Path_parent(grid, current_node, src_index);
 
-
   std::vector<std::vector<int> > Node_Path(left+right+1);
-
 
   if(src_index.find(current_node)!=src_index.end()){
 
@@ -1669,37 +1667,35 @@ bool A_star::Pre_trace_back(Grid& grid, int current_node, int left, int right, s
 
   }
 
-  
   for(int i=0;i<temp_path.size() - 1; i++){
 
     std::vector<std::vector<int> > node_L_path;
     int cost = 0;
-    parallel_routing(grid, temp_path[i], temp_path[i+1], left, right, src_index, dest_index, node_L_path, cost);
+    bool parallel = parallel_routing(grid, temp_path[i], temp_path[i+1], left, right, src_index, dest_index, node_L_path, cost);
+    if(parallel){
     for(int j=0;j<Node_Path.size();j++){
-
-       //if(node_L_path.size()==Node_Path.size())
+       //iff(node_L_path.size()==Node_Path.size())
        Node_Path[j].insert(Node_Path[j].end(),node_L_path[j].begin(),node_L_path[j].end());
 
     }
+    }else{
+      return false;
+    }
 
   }
-
 
 
   logger->debug("Pre trace 1");
   rm_cycle_path(Node_Path);
   logger->debug("Pre trace 1");
 
-
-
+  
   lable_father(grid, Node_Path);
   logger->debug("Pre trace 1");
-
 
   //bool extend = 1;
   logger->debug("Check extention 1");
   bool extend = Check_Path_Extension(grid, Node_Path, src_index);
-
 
   logger->debug("Check extention 2");
   return extend;
