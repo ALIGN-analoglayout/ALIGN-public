@@ -65,7 +65,7 @@ class Order(PlacementConstraint):
     > `None` : default (`'horizontal'` or `'vertical'`)
 
     > `'horizontal'`: left to right or vice-versa
-    
+
     > `'vertical'`: bottom to top or vice-versa
     
     > `'left_to_right'`
@@ -217,7 +217,7 @@ class AlignInOrder(Order, Align):
     ]]
     abut: Optional[bool] = False
 
-    @types.root_validator
+    @types.root_validator(allow_reuse=True)
     def _cast_constraints_to_base_types(cls, values):
         # Process unambiguous line values
         if values['line'] in ['bottom', 'top']:
@@ -248,13 +248,11 @@ class AlignInOrder(Order, Align):
 
 ConstraintType=Union[Order, Align, AlignInOrder]
 
-class ConstraintDB(types.BaseModel):
-
-    __root__ : List[ConstraintType]
+class ConstraintDB(types.List[ConstraintType]):
 
     @types.validate_arguments
     def append(self, constraint: ConstraintType):
-        self.__root__.append(constraint)
+        super().append(constraint)
         if self._validation:
             self._solver.append(*constraint.check())
             assert self._solver.check() == z3.sat
@@ -276,21 +274,12 @@ class ConstraintDB(types.BaseModel):
     _commits = types.PrivateAttr()
     _validation = types.PrivateAttr(default_factory=lambda: z3 is not None)
 
-    def __iter__(self):
-        return iter(self.__root__)
-
-    def __getitem__(self, item):
-        return self.__root__[item]
-
-    def __len__(self):
-        return len(self.__root__)
-
     def _gen_commit_id(self, nchar=8):
         id_ = ''.join(random.choices(string.ascii_uppercase + string.digits, k=nchar))
         return self._gen_commit_id(nchar) if id_ in self._commits else id_
 
     def checkpoint(self):
-        self._commits[self._gen_commit_id()] = len(self.__root__)
+        self._commits[self._gen_commit_id()] = len(self)
         if self._validation:
             self._solver.push()
         return next(reversed(self._commits))
@@ -299,7 +288,7 @@ class ConstraintDB(types.BaseModel):
         if self._validation:
             self._solver.pop()
         _, length = self._commits.popitem()
-        del self.__root__[length:]
+        del self[length:]
 
     def revert(self, name=None):
         assert len(self._commits) > 0, 'Top of scope. Nothing to revert'

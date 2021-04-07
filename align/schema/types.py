@@ -16,13 +16,14 @@ class List(pydantic.generics.GenericModel, typing.Generic[DataT]):
     __root__: typing.Sequence[DataT]
 
     class Config:
+        validate_assignment = True
+        extra = 'forbid'
         copy_on_model_validation = False
-
-    @pydantic.validate_arguments
+        allow_mutation = False
+        
     def append(self, data: DataT):
         return self.__root__.append(data)
 
-    @pydantic.validate_arguments
     def remove(self, data: DataT):
         return self.__root__.remove(data)
 
@@ -45,7 +46,10 @@ class Dict(pydantic.generics.GenericModel, typing.Generic[KeyT,DataT]):
     __root__: typing.Mapping[KeyT, DataT]
 
     class Config:
+        validate_assignment = True
+        extra = 'forbid'
         copy_on_model_validation = False
+        allow_mutation = False
 
     def items(self):
         return self.__root__.items()

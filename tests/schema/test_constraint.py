@@ -74,22 +74,23 @@ def test_AlignInOrder_order_checking(solver):
     (See test_ConstraintDB_checking() for example)
     '''
     x = constraint.AlignInOrder(instances=['M1', 'M2', 'M3'], direction='horizontal')
-    print(x)
     solver.append(*x.check())
     assert solver.check() == z3.sat
     x = constraint.AlignInOrder(instances=['M4', 'M5'], line='bottom')
-    print(x)
     solver.append(*x.check())
     assert solver.check() == z3.sat
     x = constraint.AlignInOrder(instances=['M3', 'M2'], line='bottom')
-    print(x)
     solver.append(*x.check())
     with pytest.raises(AssertionError):
         assert solver.check() == z3.sat
 
 def test_ConstraintDB_inputapi(db):
+    class Garbage(constraint.PlacementConstraint):
+        test: str = 'hello'
+        def check(self):
+            pass
     with pytest.raises(Exception):
-        db.append('garbage')
+        db.append(Garbage())
 
 @pytest.mark.skipif(z3 is None, reason="requires z3")
 def test_ConstraintDB_checking(db):
