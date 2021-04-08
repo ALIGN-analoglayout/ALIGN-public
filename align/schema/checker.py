@@ -1,8 +1,5 @@
-import collections
-from . import types
 import abc
-import random
-import string
+import collections
 
 import logging
 logger = logging.getLogger(__name__)
@@ -10,58 +7,146 @@ logger = logging.getLogger(__name__)
 try:
     import z3
 except:
+    logger.warning("Could not import z3. Z3Checker disabled.")
     z3 = None
-    logger.warning("Could not import z3. ConstraintDB will not look for spec inconsistency.")
 
 class AbstractChecker(abc.ABC):
     @abc.abstractmethod
-    def append(self, constraint):
+    def append(self, formula):
+        '''
+        Append formula to checker.
+
+        Note: Please use bbox variables to create formulae
+              Otherwise you will need to manage types
+              yourself
+        '''
         pass
 
     @abc.abstractmethod
-    def __init__(self, constraint):
+    def checkpoint(self):
+        '''
+        Checkpoint current state of solver
+
+        Note: We assume incremental solving here
+              May need to revisit if we have to 
+              rebuild solution from scratch
+        '''
+        pass
+
+    @abc.abstractmethod
+    def revert(self):
+        '''
+        Revert to last checkpoint
+
+        Note: We assume incremental solving here
+              May need to revisit if we have to 
+              rebuild solution from scratch
+        '''
+        pass
+
+    @abc.abstractmethod
+    def bbox(self, *instances):
+        '''
+        Helper utility to generate bbox variables
+
+        This function can be used in two ways:
+        1) Get all bboxes for a list set of instances:
+           (Useful for constraints that accept lists)
+            l_bbox = self._z3_bbox_variables(instances)
+        2) Choose which instances to get bbox vars for:
+           (Useful for pairwise constraints)
+            bbox1, bbox2 = self._z3_bbox_variables(box1, box2)
+        '''
+        pass
+
+    @abc.abstractmethod
+    def And(self, *expressions):
+        '''
+        Logical `And` of all arguments
+
+        Note: arguments are assumed to be
+              boolean expressions
+        '''
+        pass
+
+    @abc.abstractmethod
+    def Or(self, *expressions):
+        '''
+        Logical `Or` of all arguments
+
+        Note: arguments are assumed to be
+              boolean expressions
+        '''
+        pass
+
+    @abc.abstractmethod
+    def Or(self, *expressions):
+        '''
+        Logical `Not` of all arguments
+
+        Note: argument is assumed to be
+              a boolean expression
+        '''
+        pass
+
+    @abc.abstractmethod
+    def Implies(self, expr1, expr2):
+        '''
+        expr1 => expr2
+
+        Note: both arguments are assumed
+              to be boolean expressions
+        '''
+        pass
+
+    @property
+    @abc.abstractmethod
+    def enabled(self):
         pass
 
 class Z3Checker(AbstractChecker):
 
-    def append(self, constraint):
-        if self._validation:
-            self._solver.append(*constraint.check())
-            assert self._solver.check() == z3.sat
+    enabled = z3 is not None
 
     def __init__(self):
-        self._commits = collections.OrderedDict()
-        self._validation = z3 is not None
-        if self._validation:
-            self._solver = z3.Solver()
+        self._solver = z3.Solver()
 
-    def _gen_commit_id(self, nchar=8):
-        id_ = ''.join(random.choices(string.ascii_uppercase + string.digits, k=nchar))
-        return self._gen_commit_id(nchar) if id_ in self._commits else id_
+    def append(self, formula):
+        self._solver.append(formula)
+        assert self._solver.check() == z3.sat
 
     def checkpoint(self):
-        self._commits[self._gen_commit_id()] = len(self)
-        if self._validation:
-            self._solver.push()
-        return next(reversed(self._commits))
+        self._solver.push()
 
-    def _revert(self):
-        if self._validation:
-            self._solver.pop()
-        _, length = self._commits.popitem()
-        del self[length:]
+    def revert(self):
+        self._solver.pop()
 
-    def revert(self, name=None):
-        assert len(self._commits) > 0, 'Top of scope. Nothing to revert'
-        if name is None or name == next(reversed(self._commits)):
-            self._revert()
-        else:
-            assert name in self._commits
-            self._revert()
-            self.revert(name)
+    @staticmethod
+    def bbox(*instances):
+        if len(instances) == 1 and not hasattr(instances[0], 'check'):
+            instances = instances[0]
+        return [Z3Checker._generate_var(
+                    'Bbox',
+                    llx = f'{instance}_llx',
+                    lly = f'{instance}_lly',
+                    urx = f'{instance}_urx',
+                    ury = f'{instance}_ury') \
+                for instance in instances]
 
-    @classmethod
-    def GenerateVar(cls, name, **fields):
+    @staticmethod
+    def Or(*expressions):
+        return z3.Or(*expressions)
+
+    @staticmethod
+    def And(*expressions):
+        return z3.And(*expressions)
+
+    @staticmethod
+    def Implies(expr1, expr2):
+        return z3.Implies(expr1, expr2)
+
+    @staticmethod
+    def _generate_var(name, **fields):
         if fields:
             return collections.namedtuple(
                 name,

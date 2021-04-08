@@ -9,12 +9,6 @@ from .checker import Z3Checker
 import logging
 logger = logging.getLogger(__name__)
 
-try:
-    import z3
-except:
-    z3 = None
-    logger.warning("Could not import z3. ConstraintDB will not look for spec inconsistency.")
-
 pattern = re.compile(r'(?<!^)(?=[A-Z])')
 class ConstraintBase(types.BaseModel, abc.ABC):
 
@@ -26,52 +20,29 @@ class ConstraintBase(types.BaseModel, abc.ABC):
         super().__init__(*args, **kwargs)
 
     @abc.abstractmethod
-    def check(self):
+    def check(self, checker):
         '''
         Abstract Method for built in self-checks
           Every class that inherits from ConstraintBase
           MUST implement this function. Please check minimum
           number of arguments at the very least
         '''
-        return []
+        pass
 
 class PlacementConstraint(ConstraintBase):
 
     @abc.abstractmethod
-    def check(self):
+    def check(self, checker):
         '''
         Initialize empty constraint list &
         return list of z3 constraints associated
         each bbox at least
         '''
-        constraints = super().check()
         assert len(self.instances) >= 1
-        bvars = self._get_bbox_vars(self.instances)
+        bvars = checker.bbox(self.instances)
         for b in bvars:
-            constraints.append(b.llx < b.urx)
-            constraints.append(b.lly < b.ury)
-        return constraints
-
-    @staticmethod
-    def _get_bbox_vars(*instances):
-        '''
-        This function can be used in two ways:
-        1) Get all bboxes for a list set of instances:
-           (Useful for constraints that accept lists)
-            l_bbox = self._z3_bbox_variables(instances)
-        2) Choose which instances to get bbox vars for:
-           (Useful for pairwise constraints)
-            bbox1, bbox2 = self._z3_bbox_variables(box1, box2)
-        '''
-        if len(instances) == 1 and isinstance(instances[0], List):
-            instances = instances[0]
-        return [ConstraintDB.GenerateVar(
-                    'Bbox',
-                    llx = f'{instance}_llx',
-                    lly = f'{instance}_lly',
-                    urx = f'{instance}_urx',
-                    ury = f'{instance}_ury') \
-                for instance in instances]
+            checker.append(b.llx < b.urx)
+            checker.append(b.lly < b.ury)
 
 class Order(PlacementConstraint):
     '''
@@ -100,43 +71,41 @@ class Order(PlacementConstraint):
     ]]
     abut: Optional[bool] = False
 
-    def check(self):
+    def check(self, checker):
+        assert len(self.instances) >= 2
         def cc(b1, b2, c='x'): # Create coordinate constraint
             if self.abut:
                 return getattr(b1, f'ur{c}') == getattr(b2, f'll{c}')
             else:
                 return getattr(b1, f'ur{c}') <= getattr(b2, f'll{c}')
-        constraints = super().check()
-        assert len(self.instances) >= 2
-        bvars = self._get_bbox_vars(self.instances)
+        super().check(checker)
+        bvars = checker.bbox(self.instances)
         for b1, b2 in itertools.pairwise(bvars):
             if self.direction == 'left_to_right':
-                constraints.append(cc(b1, b2, 'x'))
+                checker.append(cc(b1, b2, 'x'))
             elif self.direction == 'right_to_left':
-                constraints.append(cc(b2, b1, 'x'))
+                checker.append(cc(b2, b1, 'x'))
             elif self.direction == 'bottom_to_top':
-                constraints.append(cc(b1, b2, 'y'))
+                checker.append(cc(b1, b2, 'y'))
             elif self.direction == 'top_to_bottom':
-                constraints.append(cc(b2, b1, 'y'))
+                checker.append(cc(b2, b1, 'y'))
             if self.direction == 'horizontal':
-                constraints.append(
-                    z3.Or(
+                checker.append(
+                    checker.Or(
                         cc(b1, b2, 'x'),
                         cc(b2, b1, 'x')))
             elif self.direction == 'vertical':
-                constraints.append(
-                    z3.Or(
+                checker.append(
+                    checker.Or(
                         cc(b1, b2, 'y'),
                         cc(b2, b1, 'y')))
             else:
-                constraints.append(
-                    z3.Or(
+                checker.append(
+                    checker.Or(
                         cc(b1, b2, 'x'),
                         cc(b2, b1, 'x'),
                         cc(b1, b2, 'y'),
                         cc(b2, b1, 'y')))
-
-        return constraints
 
 class Align(PlacementConstraint):
     '''
@@ -163,49 +132,48 @@ class Align(PlacementConstraint):
         'v_any', 'v_left', 'v_right', 'v_center'
     ]]
 
-    def check(self):
-        constraints = super().check()
+    def check(self, checker):
+        super().check(checker)
         assert len(self.instances) >= 2
-        bvars = self._get_bbox_vars(self.instances)
+        bvars = checker.bbox(self.instances)
         for b1, b2 in itertools.pairwise(bvars):
             if self.line == 'h_top':
-                constraints.append(b1.ury == b2.ury)
+                checker.append(b1.ury == b2.ury)
             elif self.line == 'h_bottom':
-                constraints.append(b1.lly == b2.lly)
+                checker.append(b1.lly == b2.lly)
             elif self.line == 'h_center':
-                constraints.append(
+                checker.append(
                     (b1.lly + b1.ury) / 2 == (b2.lly + b2.ury) / 2)
             elif self.line == 'h_any':
-                constraints.append(
-                    z3.Or( # We don't know which bbox is higher yet
-                        z3.And(b1.lly >= b2.lly, b1.ury <= b2.ury),
-                        z3.And(b2.lly >= b1.lly, b2.ury <= b1.ury)
+                checker.append(
+                    checker.Or( # We don't know which bbox is higher yet
+                        checker.And(b1.lly >= b2.lly, b1.ury <= b2.ury),
+                        checker.And(b2.lly >= b1.lly, b2.ury <= b1.ury)
                     )
                 )
             elif self.line == 'v_left':
-                constraints.append(b1.llx == b2.llx)
+                checker.append(b1.llx == b2.llx)
             elif self.line == 'v_right':
-                constraints.append(b1.urx == b2.urx)
+                checker.append(b1.urx == b2.urx)
             elif self.line == 'v_center':
-                constraints.append(
+                checker.append(
                     (b1.llx + b1.urx) / 2 == (b2.llx + b2.urx) / 2)
             elif self.line == 'v_any':
-                constraints.append(
-                    z3.Or( # We don't know which bbox is wider yet
-                        z3.And(b1.urx <= b2.urx, b1.llx >= b2.llx),
-                        z3.And(b2.urx <= b1.urx, b2.llx >= b1.llx)
+                checker.append(
+                    checker.Or( # We don't know which bbox is wider yet
+                        checker.And(b1.urx <= b2.urx, b1.llx >= b2.llx),
+                        checker.And(b2.urx <= b1.urx, b2.llx >= b1.llx)
                     )
                 )
             else:
-                constraints.append(
-                    z3.Or( # h_any OR v_any
-                        z3.And(b1.urx <= b2.urx, b1.llx >= b2.llx),
-                        z3.And(b2.urx <= b1.urx, b2.llx >= b1.llx),
-                        z3.And(b1.lly >= b2.lly, b1.ury <= b2.ury),
-                        z3.And(b2.lly >= b1.lly, b2.ury <= b1.ury)
+                checker.append(
+                    checker.Or( # h_any OR v_any
+                        checker.And(b1.urx <= b2.urx, b1.llx >= b2.llx),
+                        checker.And(b2.urx <= b1.urx, b2.llx >= b1.llx),
+                        checker.And(b1.lly >= b2.lly, b1.ury <= b2.ury),
+                        checker.And(b2.lly >= b1.lly, b2.ury <= b1.ury)
                     )
                 )
-        return constraints
 
 # You may chain constraints together for more complex constraints by
 #     1) Assigning default values to certain attributes
@@ -264,20 +232,30 @@ class AlignInOrder(Order, Align):
 
 ConstraintType=Union[Order, Align, AlignInOrder]
 
-class ConstraintDB(types.List[ConstraintType], Z3Checker):
+class ConstraintDB(types.List[ConstraintType]):
 
     #
     # Private attribute affecting class behavior
     #
-    _solver = types.PrivateAttr()
-    _commits = types.PrivateAttr()
-    _validation = types.PrivateAttr()
+    _checker = types.PrivateAttr()
 
     @types.validate_arguments
     def append(self, constraint: ConstraintType):
+        constraint.check(self._checker)
         super().append(constraint)
-        Z3Checker.append(self, constraint)
 
-    def __init__(self, validation=None):
+    def __init__(self):
         super().__init__(__root__=[])
-        Z3Checker.__init__(self)
+        self._checker = Z3Checker()
+        if not self._checker.enabled:
+            self._checker = None
+
+    def checkpoint(self):
+        if self._checker:
+            self._checker.checkpoint()
+        return super().checkpoint()
+
+    def _revert(self):
+        if self._checker:
+            self._checker.revert()
+        super()._revert()
