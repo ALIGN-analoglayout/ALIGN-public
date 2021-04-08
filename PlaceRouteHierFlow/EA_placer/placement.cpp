@@ -136,9 +136,9 @@ Placement::Placement(PnRDB::hierNode &current_node)
   Unify_blocks(area, scale_factor);
   Ppoint_F uni_cell_Dpoint = find_uni_cell();
   readCC();
-  splitNode_MS(uni_cell_Dpoint.x, uni_cell_Dpoint.y);
+  splitNode_MS(uni_cell_Dpoint.y, uni_cell_Dpoint.x);
   int tol_diff = 3;
-  addNet_after_split_Blocks(tol_diff);
+  addNet_after_split_Blocks(tol_diff,uni_cell_Dpoint.y, uni_cell_Dpoint.x);
   //read alignment constrains
   read_alignment(current_node);
   read_order(current_node);
@@ -323,15 +323,18 @@ void Placement::Initilize_Placement()
 
   for (unsigned int i = 0; i < originalBlockCNT; ++i)
   {
-    Blocks[i].Cpoint.x = 0.5 + (float)(rand() % 300) / 1000;
-    Blocks[i].Cpoint.y = 0.5 + (float)(rand() % 300) / 1000;
+    Blocks[i].Cpoint.x = 0.5 + (float)(rand() % 100) / 1000;
+    Blocks[i].Cpoint.y = 0.5 + (float)(rand() % 100) / 1000;
   }
   for (int i = originalBlockCNT; i < Blocks.size(); ++i)
   {
     int id = Blocks[i].splitedsource;
-    Blocks[i].Cpoint.x = Blocks[id].Cpoint.x + (float)(rand() % 100) / 1000;
-    Blocks[i].Cpoint.y = Blocks[id].Cpoint.y + (float)(rand() % 100) / 1000;
+    // Blocks[i].Cpoint.x = Blocks[id].Cpoint.x + (float)(rand() % 100) / 1000;
+    // Blocks[i].Cpoint.y = Blocks[id].Cpoint.y + (float)(rand() % 100) / 1000;
+    Blocks[i].Cpoint.x = 0.5 + (float)(rand() % 100) / 1000;
+    Blocks[i].Cpoint.y = 0.5 + (float)(rand() % 100) / 1000;
   }
+  refine_CC();
 }
 
 void Placement::Update_Bin_Density()
@@ -424,9 +427,9 @@ void Placement::Cal_Eforce_Block(int block_id)
       }
     }
   }
-#ifdef DEBUG
+// #ifdef DEBUG
   std::cout << "blocks gradient " << Blocks[block_id].Eforce.x << " " << Blocks[block_id].Eforce.y << std::endl;
-#endif
+// #endif
 }
 
 float Placement::Cal_HPWL()
@@ -537,6 +540,54 @@ void Placement::PlotPlacement(int index)
 }
 
 //WA model
+// void Placement::Cal_WA_Net_Force()
+// {
+
+//   for (unsigned int i = 0; i < Nets.size(); ++i)
+//   {
+
+//     Nets[i].PSumNetforce.x = LSE_Net_SUM_P(i, 1);
+//     Nets[i].PSumNetforce.y = LSE_Net_SUM_P(i, 0);
+//     Nets[i].NSumNetforce.x = LSE_Net_SUM_N(i, 1);
+//     Nets[i].NSumNetforce.y = LSE_Net_SUM_N(i, 0);
+
+//     Nets[i].PSumNetforce_WA.x = WA_Net_SUM_P(i, 1);
+//     Nets[i].PSumNetforce_WA.y = WA_Net_SUM_P(i, 0);
+//     Nets[i].NSumNetforce_WA.x = WA_Net_SUM_N(i, 1);
+//     Nets[i].NSumNetforce_WA.y = WA_Net_SUM_N(i, 0);
+//   }
+
+//   for (unsigned int i = 0; i < Blocks.size(); ++i)
+//   {
+
+//     Blocks[i].Net_block_force_P.x = LSE_block_P(i, 1);
+//     Blocks[i].Net_block_force_P.y = LSE_block_P(i, 0);
+//     Blocks[i].Net_block_force_N.x = LSE_block_N(i, 1);
+//     Blocks[i].Net_block_force_N.y = LSE_block_N(i, 0);
+//   }
+
+//   for (unsigned int i = 0; i < Blocks.size(); ++i)
+//   {
+//     Blocks[i].Netforce.x = 0;
+//     Blocks[i].Netforce.y = 0;
+//     for (unsigned int j = 0; j < Blocks[i].connected_net.size(); j++)
+//     {
+//       int net_index = Blocks[i].connected_net[j];
+
+//       Ppoint_F PSumNetforce = Nets[net_index].PSumNetforce;
+//       Ppoint_F NSumNetforce = Nets[net_index].NSumNetforce;
+//       Ppoint_F PSumNetforce_WA = Nets[net_index].PSumNetforce_WA;
+//       Ppoint_F NSumNetforce_WA = Nets[net_index].NSumNetforce_WA;
+//       float x_positive = ((1 + Blocks[i].Cpoint.x / gammar) * Blocks[i].Net_block_force_P.x * PSumNetforce.x - Blocks[i].Net_block_force_P.x * PSumNetforce_WA.x) / (PSumNetforce.x * PSumNetforce.x);
+//       float x_nagative = ((1 + Blocks[i].Cpoint.x / gammar) * Blocks[i].Net_block_force_N.x * NSumNetforce.x - Blocks[i].Net_block_force_N.x * NSumNetforce_WA.x) / (NSumNetforce.x * NSumNetforce.x);
+//       float y_positive = ((1 + Blocks[i].Cpoint.y / gammar) * Blocks[i].Net_block_force_P.y * PSumNetforce.y - Blocks[i].Net_block_force_P.y * PSumNetforce_WA.y) / (PSumNetforce.y * PSumNetforce.y);
+//       float y_nagative = ((1 + Blocks[i].Cpoint.y / gammar) * Blocks[i].Net_block_force_N.y * NSumNetforce.y - Blocks[i].Net_block_force_N.y * NSumNetforce_WA.y) / (NSumNetforce.y * NSumNetforce.y);
+//       Blocks[i].Netforce.x += x_positive - x_nagative;
+//       Blocks[i].Netforce.y += y_positive - y_nagative;
+//     }
+//   }
+// }
+
 void Placement::Cal_WA_Net_Force()
 {
 
@@ -552,6 +603,8 @@ void Placement::Cal_WA_Net_Force()
     Nets[i].PSumNetforce_WA.y = WA_Net_SUM_P(i, 0);
     Nets[i].NSumNetforce_WA.x = WA_Net_SUM_N(i, 1);
     Nets[i].NSumNetforce_WA.y = WA_Net_SUM_N(i, 0);
+
+    std::cout<<"net sum "<<i<<" "<<Nets[i].PSumNetforce.x<<" "<<Nets[i].PSumNetforce.y<<" "<<Nets[i].NSumNetforce.x<<" "<<Nets[i].NSumNetforce.y<<" "<<Nets[i].PSumNetforce_WA.x<<" "<<Nets[i].PSumNetforce_WA.y<<" "<<Nets[i].NSumNetforce_WA.x<<" "<<Nets[i].NSumNetforce_WA.y<<std::endl;
   }
 
   for (unsigned int i = 0; i < Blocks.size(); ++i)
@@ -561,12 +614,15 @@ void Placement::Cal_WA_Net_Force()
     Blocks[i].Net_block_force_P.y = LSE_block_P(i, 0);
     Blocks[i].Net_block_force_N.x = LSE_block_N(i, 1);
     Blocks[i].Net_block_force_N.y = LSE_block_N(i, 0);
+    std::cout<<"block single net force "<<Blocks[i].Net_block_force_P.x<<" "<<Blocks[i].Net_block_force_P.y<<" "<<Blocks[i].Net_block_force_N.x<<" "<<Blocks[i].Net_block_force_N.y<<std::endl;
+
   }
 
   for (unsigned int i = 0; i < Blocks.size(); ++i)
   {
     Blocks[i].Netforce.x = 0;
     Blocks[i].Netforce.y = 0;
+    std::cout<<"block "<<i<<std::endl;
     for (unsigned int j = 0; j < Blocks[i].connected_net.size(); j++)
     {
       int net_index = Blocks[i].connected_net[j];
@@ -575,14 +631,19 @@ void Placement::Cal_WA_Net_Force()
       Ppoint_F NSumNetforce = Nets[net_index].NSumNetforce;
       Ppoint_F PSumNetforce_WA = Nets[net_index].PSumNetforce_WA;
       Ppoint_F NSumNetforce_WA = Nets[net_index].NSumNetforce_WA;
+      std::cout<<"block info "<<i<<" net index "<<net_index<<" "<<Nets[net_index].PSumNetforce.x<<" "<<Nets[net_index].PSumNetforce.y<<" "<<Nets[net_index].NSumNetforce.x<<" "<<Nets[net_index].NSumNetforce.y<<" "<<Nets[net_index].PSumNetforce_WA.x<<" "<<Nets[net_index].PSumNetforce_WA.y<<" "<<Nets[net_index].NSumNetforce_WA.x<<" "<<Nets[net_index].NSumNetforce_WA.y<<std::endl;
+
       float x_positive = ((1 + Blocks[i].Cpoint.x / gammar) * Blocks[i].Net_block_force_P.x * PSumNetforce.x - Blocks[i].Net_block_force_P.x * PSumNetforce_WA.x) / (PSumNetforce.x * PSumNetforce.x);
       float x_nagative = ((1 + Blocks[i].Cpoint.x / gammar) * Blocks[i].Net_block_force_N.x * NSumNetforce.x - Blocks[i].Net_block_force_N.x * NSumNetforce_WA.x) / (NSumNetforce.x * NSumNetforce.x);
       float y_positive = ((1 + Blocks[i].Cpoint.y / gammar) * Blocks[i].Net_block_force_P.y * PSumNetforce.y - Blocks[i].Net_block_force_P.y * PSumNetforce_WA.y) / (PSumNetforce.y * PSumNetforce.y);
       float y_nagative = ((1 + Blocks[i].Cpoint.y / gammar) * Blocks[i].Net_block_force_N.y * NSumNetforce.y - Blocks[i].Net_block_force_N.y * NSumNetforce_WA.y) / (NSumNetforce.y * NSumNetforce.y);
       Blocks[i].Netforce.x += x_positive - x_nagative;
       Blocks[i].Netforce.y += y_positive - y_nagative;
+      
     }
+    std::cout<<"block net force "<<i<<" force "<<Blocks[i].Netforce.x<<" "<<Blocks[i].Netforce.y<<std::endl;
   }
+   
 }
 
 float Placement::WA_Net_SUM_P(int net_index, bool x_or_y)
@@ -885,7 +946,7 @@ void Placement::Cal_force()
 bool Placement::Stop_Condition(float density, float &max_density)
 {
 
-  Pull_back();
+  // Pull_back();
 
   max_density = 0.0;
   for (unsigned int i = 0; i < Bins.size(); ++i)
@@ -1104,7 +1165,7 @@ void Placement::E_Placer()
       //  force_alignment();
     }
 
-    PlotPlacement(i);
+    // PlotPlacement(i);
 
     Update_Bin_Density();
     //gradient cal
@@ -1150,12 +1211,15 @@ void Placement::E_Placer()
 #ifdef DEBUG
     std::cout << "test 3" << std::endl;
 #endif
+    Pull_back_vector(uc_x, 1);
+    Pull_back_vector(uc_y, 0);
     Feedback_Placement_Vectors(uc_x, 1);
     Feedback_Placement_Vectors(uc_y, 0);
     Pull_back_vector(vc_x, 1);
     Pull_back_vector(vl_x, 1);
     Pull_back_vector(vc_y, 0);
     Pull_back_vector(vl_y, 0);
+    PlotPlacement(i);
 //Pull_back();
 #ifdef DEBUG
     std::cout << "test 4" << std::endl;
@@ -1166,6 +1230,7 @@ void Placement::E_Placer()
   force_order(vc_x, vl_x, vc_y, vl_y);
   force_alignment(vc_x, vl_x, vc_y, vl_y);
   restore_MS();
+  refine_CC();
   PlotPlacement(count_number);
   std::cout << "iter num when stop:=" << count_number << std::endl;
 }
@@ -2056,7 +2121,7 @@ void Placement::readCC()
     }
   }
 }
-void Placement::addNet_after_split_Blocks(int tol_diff)
+void Placement::addNet_after_split_Blocks(int tol_diff,float uniHeight, float uniWidth)
 {
   //determine the shape of commonCentroid
   std::cout << "add Net after split BLocks: debug 0"  << std::endl;
@@ -2074,7 +2139,7 @@ void Placement::addNet_after_split_Blocks(int tol_diff)
     std::cout << "add Net after split BLocks: debug 3"  << std::endl;
     Ppoint_I shape = determineShape(cell_num, tol_diff);
     commonCentroids[i].shape = shape;
-    addNet_commonCentroid(commonCentroids[i],cell_num);
+    addNet_commonCentroid(commonCentroids[i],cell_num,uniHeight,uniWidth);
   }
 }
 
@@ -2104,7 +2169,7 @@ Ppoint_I Placement::determineShape(int cell_num, int tol_diff)
   return shape;
 }
 
-void Placement::addNet_commonCentroid(commonCentroid &CC, int cell_num)
+void Placement::addNet_commonCentroid(commonCentroid &CC, int cell_num,float uniHeight, float uniWidth)
 {
   std::cout << "addNet commonCentroid: debug 0"  << std::endl;
   int dummyNum = CC.shape.x * CC.shape.y - cell_num;
@@ -2139,6 +2204,24 @@ void Placement::addNet_commonCentroid(commonCentroid &CC, int cell_num)
   // }
   match_pairs(CC,dummyNum);
   // ID_array.swap(CC.fillin_matrix);
+  int BlockID = Blocks.size();
+  for(int i=0;i < CC.shape.x;++i)
+  {
+    for(int j=0;j < CC.shape.y;++j)
+    {
+      if(CC.fillin_matrix[i][j]<0)
+      {
+        block temp;
+        temp.blockname = CC.label + "dummy";
+        temp.Dpoint.x = uniWidth;
+        temp.Dpoint.y = uniHeight;
+        temp.index = BlockID;
+        Blocks.push_back(temp);
+        CC.fillin_matrix[i][j] = BlockID;
+        ++BlockID;
+      }
+    }
+  }
   //add net
   int netID = Nets.size();
   for(int i = 0;i < CC.shape.x;++i)
@@ -2271,7 +2354,7 @@ void Placement::match_pairs(commonCentroid &CC, int dummyNum)
     fillin_matrix[pos.first][pos.second] = block_pairs[i].first;
     //find out the mirror pos in position_q with 4 steps
     position_q.erase(position_q.begin());
-    if(shape.x - 1 - pos.first != pos.first and shape.y-1-pos.second != pos.second)
+    if(shape.x - 1 - pos.first != pos.first or shape.y-1-pos.second != pos.second)
     {
       std::cout << "match pairs: debug 12"  << std::endl;
       for(int j = 0;j < position_q.size();++j)
@@ -2287,16 +2370,17 @@ void Placement::match_pairs(commonCentroid &CC, int dummyNum)
   }
   //deal with the remainder blocks
   block_pairs.clear();
-  std::cout << "match pairs: debug 14"  << std::endl;
+  std::cout << "match pairs: debug 14"  <<" "<<CC.blocks.size() << std::endl;
   for(int i = 0;i < CC.blocks.size();++i)
   {
-    std::cout << "match pairs: debug 15"  << std::endl;
     int id = CC.blocks[i];
+    std::cout << "match pairs: debug 15" <<", "<<i<<" "<<Blocks[id].spiltBlock.size() << std::endl;
+    
     vector<pair<int,int>> temp;
     temp.clear();
-    for(int j = 0;j+1 < Blocks[id].spiltBlock.size();j = j+2)
+    for(int j = 0;(j+1) < (Blocks[id].spiltBlock.size());j +=2)
     {
-      std::cout << "match pairs: debug 16"  << std::endl;
+      std::cout << "match pairs: debug 16"  <<" "<<j<< std::endl;
       pair<int,int> cur_pair;
       cur_pair.first = Blocks[id].spiltBlock[j];
       cur_pair.second = Blocks[id].spiltBlock[j+1];
@@ -2311,8 +2395,16 @@ void Placement::match_pairs(commonCentroid &CC, int dummyNum)
       temp.push_back(cur_pair);
     }
     std::cout << "match pairs: debug 16a"  <<" "<<block_pairs.size()<<" "<<temp.size() << std::endl;
+    for(int j = 0;j<temp.size();++j)
+    {
+      std::cout<<"temp element:"<<temp[j].first<<" ,"<<temp[j].second<<std::endl;
+    }
     merge_two_vectors(block_pairs,temp);
     std::cout << "match pairs: debug 16b"  <<" "<<block_pairs.size()<<" "<<temp.size() << std::endl;
+    for(int j = 0;j<block_pairs.size();++j)
+    {
+      std::cout<<"block pairs element:"<<block_pairs[j].first<<" ,"<<block_pairs[j].second<<std::endl;
+    }
   }
 
   //allocate the position
@@ -2322,17 +2414,20 @@ void Placement::match_pairs(commonCentroid &CC, int dummyNum)
     std::cout << "match pairs: debug 17"  << std::endl;
     pair<int,int> pos;
     pos = position_q[0].first;
+    std::cout<<"pos"<<pos.first<<" "<<pos.second<<std::endl;
+    std::cout<<"pos mirror"<<shape.x - 1 - pos.first<<" "<<shape.y - 1 - pos.second<<std::endl;
     fillin_matrix[shape.x - 1 - pos.first][shape.y - 1 - pos.second] = block_pairs[i].second;
     fillin_matrix[pos.first][pos.second] = block_pairs[i].first;
     //find out the mirror pos in position_q with 4 steps
     position_q.erase(position_q.begin());
-    if(shape.x - 1 - pos.first != pos.first and shape.y-1-pos.second != pos.second)
+    if(shape.x - 1 - pos.first != pos.first or shape.y-1-pos.second != pos.second)
     {
       for(int j = 0;j < position_q.size();++j)
       {
         std::cout << "match pairs: debug 18"  << std::endl;
         if(position_q[j].first.first == shape.x - 1 - pos.first and position_q[j].first.second == shape.y - 1 - pos.second )
         {
+          std::cout << "match pairs: debug 19"  << std::endl;
           position_q.erase(position_q.begin()+j);
           break;
         }
@@ -2358,37 +2453,36 @@ void Placement::merge_two_vectors(vector<pair<int,int>> &v1,vector<pair<int,int>
   std::cout << "merge 2 vectors: debug 0b"  << std::endl;
   if(v1.size()>v2.size())
   {
-    A.swap(v1);
-    B.swap(v2);
+    // A.swap(v1);
+    // B.swap(v2);
   }
   else
   {
-    A.swap(v2);
-    B.swap(v1);
+    v1.swap(v2);
   }
   std::cout << "merge 2 vectors: debug 1"  << std::endl;
   //calculate the period
   int period, sizeA,sizeB,pos;
-  sizeA = A.size();
-  sizeB = B.size();
+  sizeA = v1.size();
+  sizeB = v2.size();
   pos = 0;
   if(sizeB != 0)
   {
     period = sizeA / sizeB + 1;
-    // pos = 0;
+    pos = 1;
   }
   
   std::cout << "merge 2 vectors: debug 2"  << std::endl;
-  for(int i = 0;i < B.size();++i)
+  for(int i = 0;i < v2.size();++i)
   {
     std::cout << "merge 2 vectors: debug 3"  << std::endl;
-    A.insert(A.begin()+pos,B[i]);
+    v1.insert(v1.begin()+pos,v2[i]);
     pos += period;
     std::cout << "merge 2 vectors: debug 4"  << std::endl;
   }
   //save the result into v1
-  v1.swap(A);
-  v2.swap(B);
+  // v1.swap(A);
+  // v2.swap(B);
   std::cout << "merge 2 vectors: debug 5"  << std::endl;
 }
 void Placement::match_vector_into_pairs(vector<int> &q, vector<pair<int,int>> &pairs)
@@ -2422,7 +2516,7 @@ void Placement::restore_MS()
     //restore the shape
     
     //restore the center
-    if(Blocks[i].commonCentroid == 0)
+    if(Blocks[i].commonCentroid == 0 and Blocks[i].splited == 1)
     {
       Ppoint_F split_shape = Blocks[i].split_shape;
       Blocks[i].Dpoint.x *= split_shape.x;
@@ -2441,6 +2535,85 @@ void Placement::restore_MS()
     
   }
 }
+
+void Placement::refine_CC()
+{
+  for(int i=0;i<commonCentroids.size();++i)
+  {
+    std::cout << "refine_CC: debug 0"  << std::endl;
+    Ppoint_F center;
+    int id0,id1,id2,id3;
+    Ppoint_I index0,index1;
+    if(commonCentroids[i].shape.x%2==0)
+    {
+       std::cout << "refine_CC: debug 1"  << std::endl;
+      index0.x = commonCentroids[i].shape.x/2;
+      index1.x = index0.x-1;
+      
+      // center.x = 0;
+    }
+    else
+    {
+       std::cout << "refine_CC: debug 2"  << std::endl;
+      index0.x = (commonCentroids[i].shape.x-1)/2;
+      index1.x = index0.x;
+    }
+     if(commonCentroids[i].shape.y%2==0)
+    {
+       std::cout << "refine_CC: debug 3"  << std::endl;
+      index0.y = commonCentroids[i].shape.y/2;
+      index1.y = index0.y-1;
+      
+      // center.x = 0;
+    }
+    else
+    {
+       std::cout << "refine_CC: debug 4"  << std::endl;
+      index0.y = (commonCentroids[i].shape.y-1)/2;
+      index1.y = index0.y;
+    }
+     std::cout << "refine_CC: debug 5"  << std::endl;
+    id0=commonCentroids[i].fillin_matrix[index0.x][index0.y];
+    id1=commonCentroids[i].fillin_matrix[index0.x][index1.y];
+    id2=commonCentroids[i].fillin_matrix[index1.x][index1.y];
+    id3=commonCentroids[i].fillin_matrix[index1.x][index0.y];
+     std::cout << "refine_CC: debug 6"  << std::endl;
+    center.x = Blocks[id0].Cpoint.x +Blocks[id1].Cpoint.x+Blocks[id2].Cpoint.x+Blocks[id3].Cpoint.x;
+
+    center.y = Blocks[id0].Cpoint.y +Blocks[id1].Cpoint.y+Blocks[id2].Cpoint.y+Blocks[id3].Cpoint.y;
+    center.x /=4;
+    center.y /=4;
+     std::cout << "refine_CC: debug 7"  <<commonCentroids[i].shape.x<<" "<<commonCentroids[i].shape.y<< std::endl;
+    //push every pair of element to match the center
+    for(int j = 0;j<commonCentroids[i].shape.x;++j)
+    {
+      for(int k = 0;k<commonCentroids[i].shape.y;++k)
+      {
+         std::cout << "refine_CC: debug 8"  << std::endl;
+        //find mirror pos
+        Ppoint_I pos;
+        pos.x = commonCentroids[i].shape.x -1 -j;
+        pos.y = commonCentroids[i].shape.y -1 -k;
+        Ppoint_F pair_center;
+        int temp_id0,temp_id1;
+        temp_id0 = commonCentroids[i].fillin_matrix[j][k];
+        temp_id1 = commonCentroids[i].fillin_matrix[pos.x][pos.y];
+        pair_center.x = Blocks[temp_id1].Cpoint.x + Blocks[temp_id0].Cpoint.x;
+        pair_center.y = Blocks[temp_id1].Cpoint.y + Blocks[temp_id0].Cpoint.y;
+        pair_center.x /=2;
+        pair_center.y /=2;
+        Ppoint_F offset;
+         std::cout << "refine_CC: debug 9"  << std::endl;
+        offset.x = center.x - pair_center.x;
+        offset.y = center.y - pair_center.y;
+        Blocks[temp_id0].Cpoint.x += offset.x;
+        Blocks[temp_id0].Cpoint.y += offset.y;
+        Blocks[temp_id1].Cpoint.x += offset.x;
+        Blocks[temp_id1].Cpoint.y += offset.y;
+      }
+    }
+  }
+}
 //donghao end
 
 void Placement::print_blocks_nets()
@@ -2456,6 +2629,21 @@ void Placement::print_blocks_nets()
     for (int j = 0; j < Blocks[i].connected_net.size(); ++j)
     {
       std::cout << Blocks[i].connected_net[j] << " ";
+    }
+    std::cout << std::endl;
+  }
+
+  std::cout << "print information about nets" << std::endl;
+  for (int i = 0; i < Nets.size(); ++i)
+  {
+    std::cout << "net id" << Nets[i].index;
+    // std::cout << "block position: (" << Blocks[i].Cpoint.x << ", " << Blocks[i].Cpoint.y << ")"
+    //           << "d:(" << Blocks[i].Dpoint.x << ", " << Blocks[i].Dpoint.y << ")" << std::endl;
+
+    std::cout << "connect block:";
+    for (int j = 0; j < Nets[i].connected_block.size(); ++j)
+    {
+      std::cout << Nets[i].connected_block[j] << " ";
     }
     std::cout << std::endl;
   }

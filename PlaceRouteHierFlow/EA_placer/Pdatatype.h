@@ -63,7 +63,7 @@ struct block {
     float overlap;
     vector<int> spiltBlock;
     Ppoint_F split_shape;
-    bool splited;
+    bool splited=0;
     int splitedsource;
     int commonCentroid=0;
 

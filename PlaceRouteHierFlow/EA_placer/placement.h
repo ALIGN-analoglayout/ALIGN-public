@@ -126,11 +126,12 @@ public:
     void match_vector_into_pairs(vector<int> &q, vector<pair<int,int>> &pairs);
     Ppoint_F find_uni_cell();
     void readCC();
-    void addNet_after_split_Blocks(int tol_diff);//tol diff is the maximum difference of abs(shape.x - shape.y)
+    void addNet_after_split_Blocks(int tol_diff,float uniHeight, float uniWidth);//tol diff is the maximum difference of abs(shape.x - shape.y)
     Ppoint_I determineShape(int cellNum,int tol_diff);
-    void addNet_commonCentroid(commonCentroid &CC,int cell_num);
+    void addNet_commonCentroid(commonCentroid &CC,int cell_num,float uniHeight, float uniWidth);
     void restore_MS();
     void merge_two_vectors(vector<pair<int,int>> &v1,vector<pair<int,int>> &v2);//merge v1,v2 into v1
+    void refine_CC();
     //donghao end
 
     float Cal_Overlap();
