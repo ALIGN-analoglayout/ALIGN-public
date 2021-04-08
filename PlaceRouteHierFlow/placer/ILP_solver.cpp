@@ -64,7 +64,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   //set_outputfile(lp, const_cast<char*>("/dev/null"));
 
   // set integer constraint, H_flip and V_flip can only be 0 or 1
-  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+  for (int i = 0; i < mydesign.Blocks.size(); i++) {
     set_int(lp, i * 4 + 1, TRUE);
     set_int(lp, i * 4 + 2, TRUE);
     set_int(lp, i * 4 + 3, TRUE);
@@ -130,7 +130,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   for (auto SPBlock : mydesign.SPBlocks) {
     if (SPBlock.axis_dir == placerDB::H) {
       // constraint inside one pair
-      for (unsigned int i = 0; i < SPBlock.sympair.size(); i++) {
+      for (int i = 0; i < SPBlock.sympair.size(); i++) {
         int first_id = SPBlock.sympair[i].first, second_id = SPBlock.sympair[i].second;
         // each pair has opposite V flip
         {
@@ -149,7 +149,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
       }
 
       // constraint between two pairs
-      for (unsigned int i = 0; i < SPBlock.sympair.size(); i++) {
+      for (int i = 0; i < SPBlock.sympair.size(); i++) {
         int i_first_id = SPBlock.sympair[i].first, i_second_id = SPBlock.sympair[i].second;
         int i_first_y_center = mydesign.Blocks[i_first_id][curr_sp.selected[i_first_id]].height / 4;
         int i_second_y_center = mydesign.Blocks[i_second_id][curr_sp.selected[i_second_id]].height / 4;
@@ -166,7 +166,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
       }
 
       // constraint between a pair and a selfsym
-      for (unsigned int i = 0; i < SPBlock.sympair.size(); i++) {
+      for (int i = 0; i < SPBlock.sympair.size(); i++) {
         int i_first_id = SPBlock.sympair[i].first, i_second_id = SPBlock.sympair[i].second;
         int i_first_y_center = mydesign.Blocks[i_first_id][curr_sp.selected[i_first_id]].height / 4;
         int i_second_y_center = mydesign.Blocks[i_second_id][curr_sp.selected[i_second_id]].height / 4;
@@ -182,7 +182,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
       }
 
       // constraint between two selfsyms
-      for (unsigned int i = 0; i < SPBlock.selfsym.size(); i++) {
+      for (int i = 0; i < SPBlock.selfsym.size(); i++) {
         int i_id = SPBlock.selfsym[i].first;
         int i_y_center = mydesign.Blocks[i_id][curr_sp.selected[i_id]].height / 2;
         for (unsigned int j = i + 1; j < SPBlock.selfsym.size(); j++) {
@@ -198,7 +198,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     } else {
       // axis_dir==V
       // constraint inside one pair
-      for (unsigned int i = 0; i < SPBlock.sympair.size(); i++) {
+      for (int i = 0; i < SPBlock.sympair.size(); i++) {
         int first_id = SPBlock.sympair[i].first, second_id = SPBlock.sympair[i].second;
         // each pair has opposite H flip
         {
@@ -217,7 +217,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
       }
 
       // constraint between two pairs
-      for (unsigned int i = 0; i < SPBlock.sympair.size(); i++) {
+      for (int i = 0; i < SPBlock.sympair.size(); i++) {
         int i_first_id = SPBlock.sympair[i].first, i_second_id = SPBlock.sympair[i].second;
         int i_first_x_center = mydesign.Blocks[i_first_id][curr_sp.selected[i_first_id]].width / 4;
         int i_second_x_center = mydesign.Blocks[i_second_id][curr_sp.selected[i_second_id]].width / 4;
@@ -234,7 +234,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
       }
 
       // constraint between a pair and a selfsym
-      for (unsigned int i = 0; i < SPBlock.sympair.size(); i++) {
+      for (int i = 0; i < SPBlock.sympair.size(); i++) {
         int i_first_id = SPBlock.sympair[i].first, i_second_id = SPBlock.sympair[i].second;
         int i_first_x_center = mydesign.Blocks[i_first_id][curr_sp.selected[i_first_id]].width / 4;
         int i_second_x_center = mydesign.Blocks[i_second_id][curr_sp.selected[i_second_id]].width / 4;
@@ -250,7 +250,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
       }
 
       // constraint between two selfsyms
-      for (unsigned int i = 0; i < SPBlock.selfsym.size(); i++) {
+      for (int i = 0; i < SPBlock.selfsym.size(); i++) {
         int i_id = SPBlock.selfsym[i].first;
         int i_x_center = mydesign.Blocks[i_id][curr_sp.selected[i_id]].width / 2;
         for (unsigned int j = i + 1; j < SPBlock.selfsym.size(); j++) {
@@ -290,7 +290,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     ConstGraph const_graph;
 
     // add HPWL in cost
-    for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
+    for (int i = 0; i < mydesign.Nets.size(); i++) {
       vector<pair<int, int>> blockids;
       for (unsigned int j = 0; j < mydesign.Nets[i].connected.size(); j++) {
         if (mydesign.Nets[i].connected[j].type == placerDB::Block &&
@@ -395,7 +395,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   }
   int x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
   int y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
-  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+  for (int i = 0; i < mydesign.Blocks.size(); i++) {
     Blocks[i].x = var[i * 4];
     Blocks[i].y = var[i * 4 + 1];
     roundup(Blocks[i].x, x_pitch);
@@ -405,7 +405,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   }
 
   // calculate LL and UR
-  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+  for (int i = 0; i < mydesign.Blocks.size(); i++) {
     LL.x = std::min(LL.x, Blocks[i].x);
     LL.y = std::min(LL.y, Blocks[i].y);
     UR.x = std::max(UR.x, Blocks[i].x + mydesign.Blocks[i][curr_sp.selected[i]].width);
@@ -473,7 +473,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     std::vector<double> temp_feature = Calculate_Center_Point_feature(center_points);
     feature_value.push_back(temp_feature);
     double temp_sum = 0;
-    for (unsigned int j = 0; j < neti.connected.size(); j++) temp_sum += neti.connected[j].alpha * temp_feature[j];
+    for (int j = 0; j < neti.connected.size(); j++) temp_sum += neti.connected[j].alpha * temp_feature[j];
     temp_sum = std::max(temp_sum - neti.upperBound, double(0));
     linear_const += temp_sum;
   }
@@ -483,11 +483,11 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   for (auto constrainti : mydesign.ML_Constraints) {
     double temp_sum = 0;
     for (auto constraintj : constrainti.Multi_linearConst) {
-      for (unsigned int k = 0; k < constraintj.pins.size(); k++) {
+      for (int k = 0; k < constraintj.pins.size(); k++) {
         int index_i = 0;
         int index_j = 0;
-        for (unsigned int m = 0; m < mydesign.Nets.size(); m++) {
-          for (unsigned int n = 0; n < mydesign.Nets[m].connected.size(); n++) {
+        for (int m = 0; m < mydesign.Nets.size(); m++) {
+          for (int n = 0; n < mydesign.Nets[m].connected.size(); n++) {
             if (mydesign.Nets[m].connected[n].iter2 == constraintj.pins[k].first && mydesign.Nets[m].connected[n].iter == constraintj.pins[k].second) {
               index_i = m;
               index_j = n;
@@ -532,7 +532,7 @@ void ILP_solver::WritePlacement(design& mydesign, SeqPair& curr_sp, string outfi
   // cout << "Placer-Info: write placement" << endl;
   fout << "# TAMU blocks 1.0" << endl << endl;
   fout << "DIE {" << LL.x << ", " << LL.y << "} {" << UR.x << "," << UR.y << "}" << endl << endl;
-  for (unsigned int i = 0; i < mydesign.Blocks.size(); ++i) {
+  for (int i = 0; i < mydesign.Blocks.size(); ++i) {
     string ort;
     if (!Blocks[i].H_flip && !Blocks[i].V_flip) {
       ort = "N";
@@ -583,7 +583,7 @@ void ILP_solver::PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfil
   fout << "\nset xrange [" << -range << ":" << range << "]" << endl;
   fout << "\nset yrange [" << 0 - bias << ":" << range << "]" << endl;
   // set labels for blocks
-  for (unsigned int i = 0; i < mydesign.Blocks.size(); ++i) {
+  for (int i = 0; i < mydesign.Blocks.size(); ++i) {
     placerDB::point tp;
     tp.x = Blocks[i].x + mydesign.Blocks[i][curr_sp.selected[i]].width / 2;
     tp.y = Blocks[i].y + mydesign.Blocks[i][curr_sp.selected[i]].height / 2;
@@ -717,10 +717,10 @@ std::vector<double> ILP_solver::Calculate_Center_Point_feature(std::vector<std::
   std::vector<double> feature;
   double sum_x;
   double sum_y;
-  for (unsigned int i = 0; i < temp_contact.size(); i++) {
+  for (int i = 0; i < temp_contact.size(); i++) {
     sum_x = 0;
     sum_y = 0;
-    for (unsigned int j = 0; j < temp_contact[i].size(); j++) {
+    for (int j = 0; j < temp_contact[i].size(); j++) {
       sum_x = sum_x + (double)temp_contact[i][j].x;
       sum_y = sum_y + (double)temp_contact[i][j].y;
     }
@@ -732,13 +732,13 @@ std::vector<double> ILP_solver::Calculate_Center_Point_feature(std::vector<std::
 
   sum_x = 0;
   sum_y = 0;
-  for (unsigned int i = 0; i < temp_x.size(); i++) {
+  for (int i = 0; i < temp_x.size(); i++) {
     sum_x = sum_x + temp_x[i];
     sum_y = sum_y + temp_y[i];
   }
   double center_x = sum_x / (double)temp_x.size();
   double center_y = sum_y / (double)temp_y.size();
-  for (unsigned int i = 0; i < temp_x.size(); i++) {
+  for (int i = 0; i < temp_x.size(); i++) {
     feature.push_back(abs(center_x - (double)temp_x[i]) + abs(center_y - (double)temp_y[i]));
   }
   return feature;
@@ -755,7 +755,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign, SeqPair& curr_sp) {
   vector<placerDB::point> pos_pin;
   std::set<int> solved_terminals;
   // for each terminal
-  for (unsigned int i = 0; i < mydesign.Terminals.size(); i++) {
+  for (int i = 0; i < mydesign.Terminals.size(); i++) {
     if (solved_terminals.find(i) != solved_terminals.end()) continue;
     solved_terminals.insert(i);
     int netIdx = mydesign.Terminals.at(i).netIter;
@@ -963,7 +963,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign, SeqPair& curr_sp) {
       }
     } else {  // not in symmetry group
       int tar = -1;
-      for (unsigned int j = 0; j < mydesign.Port_Location.size(); j++) {
+      for (int j = 0; j < mydesign.Port_Location.size(); j++) {
         if (mydesign.Port_Location.at(j).tid == (int)i) {
           tar = j;
           break;
@@ -988,7 +988,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign, SeqPair& curr_sp) {
         }
         int shot = -1;
         int distTerm = INT_MAX;
-        for (unsigned int k = 0; k < pos.size(); k++) {
+        for (int k = 0; k < pos.size(); k++) {
           p = pos.at(k);
           // Bmark {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT};
           switch (mydesign.Port_Location.at(tar).pos) {
@@ -1391,7 +1391,7 @@ void ILP_solver::UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& nod
     temp_pin.type = node.Terminals.at(i).type;
     temp_pin.netIter = node.Terminals.at(i).netIter;
     temp_pin.pinContacts = node.Terminals.at(i).termContacts;
-    for (unsigned int j = 0; j < temp_pin.pinContacts.size(); j++) temp_pin.pinContacts[j].metal = drcInfo.Metal_info[0].name;
+    for (int j = 0; j < temp_pin.pinContacts.size(); j++) temp_pin.pinContacts[j].metal = drcInfo.Metal_info[0].name;
     temp_pin.name = node.Terminals.at(i).name;
     temp_pin.type = node.Terminals.at(i).type;
     node.blockPins.push_back(temp_pin);
