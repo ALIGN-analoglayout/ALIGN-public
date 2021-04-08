@@ -36,7 +36,7 @@ def test_ConstraintDB_inputapi(db):
     with pytest.raises(Exception):
         db.append(Garbage())
 
-@pytest.mark.skipif(not Z3Checker.enabled, reason="requires z3")
+@pytest.mark.skipif(not Z3Checker.enabled, reason="Couldn't import Z3")
 def test_Order_smt_checking(checker):
     x = constraint.Order(direction='left_to_right', instances=['M1', 'M2', 'M3'])
     x.check(checker)
@@ -46,7 +46,7 @@ def test_Order_smt_checking(checker):
     with pytest.raises(AssertionError):
         x.check(checker)
 
-@pytest.mark.skipif(not Z3Checker.enabled, reason="test requires z3")
+@pytest.mark.skipif(not Z3Checker.enabled, reason="Couldn't import Z3")
 def test_Order_db_append(db):
     db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M2', 'M3']))
     db.append(constraint.Order(direction='left_to_right', instances=['M4', 'M5']))
@@ -59,14 +59,14 @@ def test_AlignInOrder_input_sanitation():
     with pytest.raises(Exception):
         x = constraint.AlignInOrder(instances=['M1', 'M2', 'M3'], line='garbage')
 
-@pytest.mark.skipif(not Z3Checker.enabled, reason="test requires z3")
+@pytest.mark.skipif(not Z3Checker.enabled, reason="Couldn't import Z3")
 def test_AlignInOrder_smt_checking(db):
     db.append(constraint.AlignInOrder(instances=['M1', 'M2', 'M3'], direction='horizontal'))
     db.append(constraint.AlignInOrder(instances=['M4', 'M5'], line='bottom'))
     with pytest.raises(AssertionError):
         db.append(constraint.AlignInOrder(instances=['M3', 'M2'], line='bottom'))
 
-@pytest.mark.skipif(not Z3Checker.enabled, reason="test requires z3")
+@pytest.mark.skipif(not Z3Checker.enabled, reason="Couldn't import Z3")
 def test_ConstraintDB_incremental_checking(db):
     '''
     ConstraintDB can be used to run experiments

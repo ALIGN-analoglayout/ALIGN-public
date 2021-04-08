@@ -233,18 +233,18 @@ class ConstraintDB(types.List[ConstraintType]):
     #
     # Private attribute affecting class behavior
     #
-    _checker = types.PrivateAttr()
+    _checker = types.PrivateAttr(None)
 
     @types.validate_arguments
     def append(self, constraint: ConstraintType):
-        constraint.check(self._checker)
+        if self._checker:
+            constraint.check(self._checker)
         super().append(constraint)
 
     def __init__(self):
         super().__init__(__root__=[])
-        self._checker = Z3Checker()
-        if not self._checker.enabled:
-            self._checker = None
+        if Z3Checker.enabled:
+            self._checker = Z3Checker()
 
     def checkpoint(self):
         if self._checker:
