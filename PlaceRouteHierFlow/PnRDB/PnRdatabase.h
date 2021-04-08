@@ -42,11 +42,8 @@ using namespace nlohmann;
 class PnRdatabase;
 
 class ReadVerilogHelper {
-
-
-    PnRDB::hierNode temp_node,clear_node;
+    PnRDB::hierNode temp_node;
     PnRDB::hierNode Supply_node;
-
     PnRdatabase& db;
 
 public:
@@ -61,8 +58,6 @@ public:
 
     ReadVerilogHelper( PnRdatabase& db_in) : db(db_in) {}
 
-    void operator()(istream& fin, const string& fpath, const string& topcell);
-
     void parse_module( Lexer& l, bool celldefine_mode=false);
 
     void parse_top( istream& fin);
@@ -71,7 +66,6 @@ public:
 
     int process_connection( int iter, const string& net_name,
 			    unordered_map<string,int>& net_map);
-    void semantic( const string& fpath, const string& topcell);
 };
 
 
@@ -112,6 +106,8 @@ class PnRdatabase
     long int get_number(string str);
 
     void ReadPDKJSON(string drfile);
+    void semantic( const string& fpath, const string& topcell, PnRDB::hierNode& Supply_node);
+
 
     deque<int> TraverseHierTree(); // traverse hierarchical tree in topological order
 
