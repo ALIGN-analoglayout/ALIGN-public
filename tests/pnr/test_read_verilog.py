@@ -58,3 +58,25 @@ def test_B():
     
     # remove header and trailing spaces
     assert [ line.rstrip(' ') for line in vstr.split('\n')[4:]] == vvstr.split('\n')
+
+def test_C():
+    DB = PnR.PnRdatabase()
+
+    d = mydir / "current_mirror_ota_inputs"
+
+    DB.ReadPDKJSON( str( d / "layers.json"))
+
+    DB.ReadLEF( str( d / "current_mirror_ota.lef"))
+    DB.ReadMap( str( d), "current_mirror_ota.map")
+
+
+    with open( d / "current_mirror_ota.verilog.json", "rt") as fp:
+        j = json.load( fp)
+
+    with open( d / "current_mirror_ota.verilog.v", "wt") as fp:
+        write_verilog( j, fp)
+
+
+    DB.ReadVerilog( str(d), "current_mirror_ota.verilog.v", "current_mirror_ota")
+
+    
