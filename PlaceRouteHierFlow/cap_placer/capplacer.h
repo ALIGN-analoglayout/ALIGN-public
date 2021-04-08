@@ -16,7 +16,11 @@
 #include <string>
 #include <stdlib.h>
 #include <math.h>
-#include <unistd.h>
+#ifdef WINDOWS
+#include <Windows.h> // getcwd
+#else
+#include <unistd.h> // getcwd
+#endif
 #include <iostream>
 #include <fstream>
 #include <sstream>

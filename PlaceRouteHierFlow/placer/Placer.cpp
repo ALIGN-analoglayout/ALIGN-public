@@ -33,7 +33,7 @@ bool Placer::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, ConstGrap
     // 1. Check feasible sequence pair and perturbate seqeucen pair
     int intCount=0;
     bool spCheck;
-    while( (spCheck=curr_sp.FastInitialScan(mydesign)) and intCount<COUNT_LIMIT ) {
+    while( (spCheck=curr_sp.FastInitialScan(mydesign)) && intCount<COUNT_LIMIT ) {
       curr_sp.PerturbationNew(mydesign);
       //cout<<"intCount "<<intCount<<endl;
       intCount++;
@@ -301,7 +301,7 @@ void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& cur
         if( td[id].thread_succeed) {trial_cost=td[id].thread_trial_cost; good_idx=id; break;}
       }
       for( ; id < NUM_THREADS; id++ ) {
-        if( td[id].thread_succeed and td[id].thread_trial_cost<trial_cost) {
+        if( td[id].thread_succeed && td[id].thread_trial_cost<trial_cost) {
           trial_cost=td[id].thread_trial_cost; good_idx=id;
         }
       }
@@ -426,7 +426,7 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
         if( td[id].thread_succeed) {trial_cost=td[id].thread_trial_cost; good_idx=id; break;}
       }
       for( ; id < NUM_THREADS; id++ ) {
-        if( td[id].thread_succeed and td[id].thread_trial_cost<trial_cost) {
+        if( td[id].thread_succeed && td[id].thread_trial_cost<trial_cost) {
           trial_cost=td[id].thread_trial_cost; good_idx=id;
         }
       }
@@ -546,7 +546,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   int update_index = 0;
   int T_index = 0;
   float per = 0.1;
-  int updateThrd = 100;
+  //int updateThrd = 100;
   float total_update_number = log(T_MIN / T_INT) / log(ALPHA);
   while (T > T_MIN) {
     int i = 1;
@@ -588,7 +588,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
         }
       }
       for (; id < NUM_THREADS; id++) {
-        if (td[id].thread_succeed and td[id].thread_trial_cost < trial_cost) {
+        if (td[id].thread_succeed && td[id].thread_trial_cost < trial_cost) {
           trial_cost = td[id].thread_trial_cost;
           good_idx = id;
         }
@@ -775,7 +775,7 @@ void Placer::PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, 
     nodeVec.resize(nodeSize);
   }
   int idx=0;
-  for(std::map<double, SeqPair>::iterator it=spVec.begin(); it!=spVec.end() and idx<nodeSize; ++it, ++idx) {
+  for(std::map<double, SeqPair>::iterator it=spVec.begin(); it!=spVec.end() && idx<nodeSize; ++it, ++idx) {
     //std::cout<<"Placer-Info: cost "<<it->first<<std::endl;
     ConstGraph vec_sol(designData, it->second, mode);
     vec_sol.ConstraintGraph(designData, it->second);
@@ -832,7 +832,7 @@ void Placer::PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
   }
   logger->debug("Placer-Info: after 1st SA size {0}",spVec.size());
   int idx=0;
-  for(std::map<double, SeqPair>::iterator it=spVec.begin(); it!=spVec.end() and idx<nodeSize; ++it, ++idx) {
+  for(std::map<double, SeqPair>::iterator it=spVec.begin(); it!=spVec.end() && idx<nodeSize; ++it, ++idx) {
     logger->debug("Placer-Info: second round SA {0}",idx);
     // Full design
     designData_full.PrintDesign();
@@ -893,7 +893,7 @@ void Placer::PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
   logger->debug("Placer-Info: complete mixed-size placement - phase I SA");
   logger->debug("Placer-Info: start mixed-size placement - phase II AP");
   int idx=0;
-  for(std::map<double, SeqPair>::iterator it=spVec.begin(); it!=spVec.end() and idx<nodeSize; ++it, ++idx) {
+  for(std::map<double, SeqPair>::iterator it=spVec.begin(); it!=spVec.end() && idx<nodeSize; ++it, ++idx) {
     ConstGraph vec_sol(designData, it->second, bias_mode);
     vec_sol.ConstraintGraph(designData, it->second);
     vec_sol.FastInitialScan();
@@ -987,7 +987,7 @@ void Placer::PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
 //        if( td[id].thread_succeed) {trial_cost=td[id].thread_trial_cost; good_idx=id; break;}
 //      }
 //      for( ; id < NUM_THREADS; id++ ) {
-//        if( td[id].thread_succeed and td[id].thread_trial_cost<trial_cost) {
+//        if( td[id].thread_succeed && td[id].thread_trial_cost<trial_cost) {
 //          trial_cost=td[id].thread_trial_cost; good_idx=id;
 //        }
 //      }
