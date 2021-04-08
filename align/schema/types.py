@@ -1,5 +1,8 @@
 import pydantic.generics
 import typing
+import collections
+import random
+import string
 
 class BaseModel(pydantic.BaseModel):
 
@@ -15,14 +18,17 @@ DataT = typing.TypeVar('DataT')
 class List(pydantic.generics.GenericModel, typing.Generic[DataT]):
     __root__: typing.Sequence[DataT]
 
-    class Config:
-        copy_on_model_validation = False
+    _commits = pydantic.PrivateAttr()
 
-    @pydantic.validate_arguments
+    class Config:
+        validate_assignment = True
+        extra = 'forbid'
+        copy_on_model_validation = False
+        allow_mutation = False
+        
     def append(self, data: DataT):
         return self.__root__.append(data)
 
-    @pydantic.validate_arguments
     def remove(self, data: DataT):
         return self.__root__.remove(data)
 
@@ -41,11 +47,39 @@ class List(pydantic.generics.GenericModel, typing.Generic[DataT]):
     def __eq__(self, other):
         return self.__root__ == other
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._commits = collections.OrderedDict()
+
+    def _gen_commit_id(self, nchar=8):
+        id_ = ''.join(random.choices(string.ascii_uppercase + string.digits, k=nchar))
+        return self._gen_commit_id(nchar) if id_ in self._commits else id_
+
+    def checkpoint(self):
+        self._commits[self._gen_commit_id()] = len(self)
+        return next(reversed(self._commits))
+
+    def _revert(self):
+        _, length = self._commits.popitem()
+        del self[length:]
+
+    def revert(self, name=None):
+        assert len(self._commits) > 0, 'Top of scope. Nothing to revert'
+        if name is None or name == next(reversed(self._commits)):
+            self._revert()
+        else:
+            assert name in self._commits
+            self._revert()
+            self.revert(name)
+
 class Dict(pydantic.generics.GenericModel, typing.Generic[KeyT,DataT]):
     __root__: typing.Mapping[KeyT, DataT]
 
     class Config:
+        validate_assignment = True
+        extra = 'forbid'
         copy_on_model_validation = False
+        allow_mutation = False
 
     def items(self):
         return self.__root__.items()
@@ -82,12 +116,13 @@ except:
 # Pass through directly from pydantic
 from pydantic import \
     validator, \
+    root_validator, \
     validate_arguments, \
     PrivateAttr
 
 __all__ = [
     'BaseModel', 'List', 'Dict',
-    'validator', 'validate_arguments',
+    'validator', 'root_validator', 'validate_arguments',
     'Optional', 'Union',
     'NamedTuple', 'Literal',
     'ClassVar', 'PrivateAttr'
