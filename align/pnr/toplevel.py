@@ -158,10 +158,8 @@ def route_top_down( DB, drcInfo,
 def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     DB = PnR.PnRdatabase()
 
-    if drname.endswith('.json'):
-        DB.ReadPDKJSON( path + '/' + drname)
-    else:
-        assert False, drname
+    assert drname.endswith('.json'), drname
+    DB.ReadPDKJSON( path + '/' + drname)
 
     DB.ReadLEF( path + '/' + lefname)
     DB.ReadMap( path, mapname)
