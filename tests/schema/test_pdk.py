@@ -126,3 +126,43 @@ def test_two():
     )
     with pytest.raises(Exception):
         pdk = PDK(name= "Mock", layers={'M1': m1, 'M2': m2, 'V1': v1})
+
+
+def test_three():
+    m1 = LayerMetal(
+        name="M1",
+        gds_layer_number=1,
+        direction="v",
+        min_length=1000,
+        min_end_to_end=400,
+        offset=0,
+        width=[600],
+        space=[400],
+        stop_pitch=1000,
+        stop_point=200,
+        stop_offset=0
+        )
+    m2 = LayerMetal(
+        name="M2",
+        gds_layer_number=2,
+        direction="h",
+        min_length=500,
+        min_end_to_end=300,
+        offset=0,
+        width=[400, 500, 500, 600, 600, 500, 500],
+        space=[300, 300, 400, 400, 400, 300, 300],
+        stop_pitch=1000,
+        stop_point=350,
+        stop_offset=0
+        )
+    v1 = LayerVia(
+        name="V1",
+        gds_layer_number=21,
+        stack=['M1', 'M2'],
+        width_x=600,
+        width_y=500,
+        space_x=100,
+        space_y=100
+        )
+    pdk = PDK(name= "Mock", layers={'M1': m1, 'M2': m2, 'V1': v1})
+    pdk.generate_adr_collaterals(my_dir, 4, 8)
