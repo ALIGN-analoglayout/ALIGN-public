@@ -129,14 +129,14 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
   shift.y = - southwest.y + offset.height;
   
   //recalculate lower left coordinates of stored points
-  for (int i_ll = 0; i_ll < stored_point_ll.size(); i_ll++) 
+  for (unsigned int i_ll = 0; i_ll < stored_point_ll.size(); i_ll++) 
   {
     stored_point_ll[i_ll].x = stored_point_ll[i_ll].x - southwest.x;
     stored_point_ll[i_ll].y = stored_point_ll[i_ll].y - southwest.y;
   }
 
   //calculate upper right coordinates of stored points
-  for (int i_ur = 0; i_ur < stored_point_ll.size(); i_ur++) 
+  for (unsigned int i_ur = 0; i_ur < stored_point_ll.size(); i_ur++) 
   {
     temp_point.x = stored_point_ll[i_ur].x + pcell_size.width;
     temp_point.y = stored_point_ll[i_ur].y + pcell_size.height;
@@ -144,7 +144,7 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
   }
 
   //calculate lower left coordinates of stored points's pin
-  for (int ip_ll = 0; ip_ll < stored_point_ll.size(); ip_ll++) 
+  for (unsigned int ip_ll = 0; ip_ll < stored_point_ll.size(); ip_ll++) 
   {
     temp_point.x = stored_point_ll[ip_ll].x + offset.width;
     temp_point.y = stored_point_ll[ip_ll].y + offset.height;
@@ -152,7 +152,7 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
   }
 
   //calculate upper right coordinates of stored points's pin
-  for (int ip_ur = 0; ip_ur < stored_point_ll.size(); ip_ur++) 
+  for (unsigned int ip_ur = 0; ip_ur < stored_point_ll.size(); ip_ur++) 
   {
     temp_point.x = stored_pin_ll[ip_ur].x + pcell_metal_size.width;
     temp_point.y = stored_pin_ll[ip_ur].y + pcell_metal_size.height;
@@ -161,7 +161,7 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
 
   //Print stored guard ring primitive cells coordinates(lower left & upper right)
   logger->debug( "The stored points are:"); 
-  for (int i_print = 0; i_print < stored_point_ll.size(); i_print++)
+  for (unsigned int i_print = 0; i_print < stored_point_ll.size(); i_print++)
   {
     logger->debug("lower left: {0}, {1} upper right: {2}, {3}" , stored_point_ll[i_print].x , stored_point_ll[i_print].y , stored_point_ur[i_print].x , stored_point_ur[i_print].y );
   }
@@ -184,7 +184,7 @@ void GuardRing::storegrhierNode(PnRDB::hierNode &node){
   PnRDB::pin temp_pin;
   PnRDB::connectNode temp_connectNode;
   PnRDB::block temp_block;
-  for (int i_store = 0; i_store < stored_point_ll.size(); i_store++) 
+  for (unsigned int i_store = 0; i_store < stored_point_ll.size(); i_store++) 
   {
     temp_gr.LL.x = stored_point_ll[i_store].x;
     temp_gr.LL.y = stored_point_ll[i_store].y;
@@ -241,12 +241,12 @@ PnRDB::hierNode GuardRing::movehierNode(PnRDB::hierNode &node){
   // Blocks
   movevecblockcomplex(node.Blocks);
   //Nets
-  for (int i_nets = 0; i_nets < node.Nets.size(); i_nets++) 
+  for (unsigned int i_nets = 0; i_nets < node.Nets.size(); i_nets++) 
   {
     movenet(node.Nets[i_nets]);
   }
   //Terminals
-  for (int i_ter = 0; i_ter < node.Terminals.size(); i_ter++) 
+  for (unsigned int i_ter = 0; i_ter < node.Terminals.size(); i_ter++) 
   {
     moveterminal(node.Terminals[i_ter]);
   }
@@ -259,14 +259,14 @@ PnRDB::hierNode GuardRing::movehierNode(PnRDB::hierNode &node){
   //interVias
   movevecvia(node.interVias);
   //PnRAS
-  for (int i_pnras = 0; i_pnras < node.PnRAS.size(); i_pnras++) 
+  for (unsigned int i_pnras = 0; i_pnras < node.PnRAS.size(); i_pnras++) 
   {
     movevecblockcomplex(node.PnRAS[i_pnras].Blocks);
-    for (int i_net = 0; i_net < node.PnRAS[i_pnras].Nets.size(); i_net++) 
+    for (unsigned int i_net = 0; i_net < node.PnRAS[i_pnras].Nets.size(); i_net++) 
     {
     movenet(node.PnRAS[i_pnras].Nets[i_net]);
     }
-    for (int i_terminal = 0; i_terminal < node.PnRAS[i_pnras].Terminals.size(); i_terminal++) 
+    for (unsigned int i_terminal = 0; i_terminal < node.PnRAS[i_pnras].Terminals.size(); i_terminal++) 
     {
     moveterminal(node.PnRAS[i_pnras].Terminals[i_terminal]);
     }
@@ -274,7 +274,7 @@ PnRDB::hierNode GuardRing::movehierNode(PnRDB::hierNode &node){
     movepoint(node.PnRAS[i_pnras].UR);
   }
   //SNets
-  for (int i_snets = 0; i_snets < node.SNets.size(); i_snets++) 
+  for (unsigned int i_snets = 0; i_snets < node.SNets.size(); i_snets++) 
   {
     movenet(node.SNets[i_snets].net1);
     movenet(node.SNets[i_snets].net2);
@@ -322,7 +322,7 @@ void GuardRing::movenet(PnRDB::net &net){
   moveveccontact(net.interVias);
   movevecmetal(net.path_metal);
   movevecvia(net.path_via);
-  for (int i_cc = 0; i_cc < net.connectedContact.size(); i_cc++) 
+  for (unsigned int i_cc = 0; i_cc < net.connectedContact.size(); i_cc++) 
   {
     movecontact(net.connectedContact[i_cc].conTact);
   }
@@ -330,7 +330,7 @@ void GuardRing::movenet(PnRDB::net &net){
 
 //move datatype metal
 void GuardRing::movemetal(PnRDB::Metal &metal){
-  for (int i_lp = 0; i_lp < metal.LinePoint.size(); i_lp++) 
+  for (unsigned int i_lp = 0; i_lp < metal.LinePoint.size(); i_lp++) 
   {
     movepoint(metal.LinePoint[i_lp]);
   }
@@ -360,7 +360,7 @@ void GuardRing::movepowernet(PnRDB::PowerNet &powernet){
 
 //move datatype vector<contact>
 void GuardRing::moveveccontact(std::vector<PnRDB::contact> &contactvector){
-  for (int i_veccon = 0; i_veccon < contactvector.size(); i_veccon++) 
+  for (unsigned int i_veccon = 0; i_veccon < contactvector.size(); i_veccon++) 
   {
     movecontact(contactvector[i_veccon]);
   }
@@ -368,7 +368,7 @@ void GuardRing::moveveccontact(std::vector<PnRDB::contact> &contactvector){
 
 //move datatype vector<via>
 void GuardRing::movevecvia(std::vector<PnRDB::Via> &vecvia){
-  for (int i_vecvia = 0; i_vecvia < vecvia.size(); i_vecvia++) 
+  for (unsigned int i_vecvia = 0; i_vecvia < vecvia.size(); i_vecvia++) 
   {
     movevia(vecvia[i_vecvia]);
   }
@@ -376,7 +376,7 @@ void GuardRing::movevecvia(std::vector<PnRDB::Via> &vecvia){
 
 //move datatype vector<pin>
 void GuardRing::movevecpin(std::vector<PnRDB::pin> &vecpin){
-  for (int i_vecpin = 0; i_vecpin < vecpin.size(); i_vecpin++) 
+  for (unsigned int i_vecpin = 0; i_vecpin < vecpin.size(); i_vecpin++) 
   {
     movepin(vecpin[i_vecpin]);
   }
@@ -384,7 +384,7 @@ void GuardRing::movevecpin(std::vector<PnRDB::pin> &vecpin){
 
 //move datatype vector<powernet>
 void GuardRing::movevecpowernet(std::vector<PnRDB::PowerNet> &vecpowernet){
-  for (int i_vecpow = 0; i_vecpow < vecpowernet.size(); i_vecpow++) 
+  for (unsigned int i_vecpow = 0; i_vecpow < vecpowernet.size(); i_vecpow++) 
   {
     movepowernet(vecpowernet[i_vecpow]);
   }
@@ -392,7 +392,7 @@ void GuardRing::movevecpowernet(std::vector<PnRDB::PowerNet> &vecpowernet){
 
 //move datatype vector<metal>
 void GuardRing::movevecmetal(std::vector<PnRDB::Metal> &vecmetal){
-  for (int i_vecmet = 0; i_vecmet < vecmetal.size(); i_vecmet++) 
+  for (unsigned int i_vecmet = 0; i_vecmet < vecmetal.size(); i_vecmet++) 
   {
     movemetal(vecmetal[i_vecmet]);
   }
@@ -400,9 +400,9 @@ void GuardRing::movevecmetal(std::vector<PnRDB::Metal> &vecmetal){
 
 //move datatype vector<blockcomplex>
 void GuardRing::movevecblockcomplex(std::vector<PnRDB::blockComplex> &vecbc){
-  for (int i_vecbc = 0; i_vecbc < vecbc.size(); i_vecbc++) 
+  for (unsigned int i_vecbc = 0; i_vecbc < vecbc.size(); i_vecbc++) 
   {
-    for (int j_inst = 0; j_inst < vecbc[i_vecbc].instance.size(); j_inst++) 
+    for (unsigned int j_inst = 0; j_inst < vecbc[i_vecbc].instance.size(); j_inst++) 
     {
       moveblock(vecbc[i_vecbc].instance[j_inst]);
     }
@@ -438,7 +438,7 @@ void GuardRing::gnuplot(){
   fout<<"\nset yrange ["<<wcell_ll.y-4*pcell_size.height<<":"<<wcell_ur.y+4*pcell_size.height<<"]"<<std::endl;
 
   //set label for Pcells
-  for(int i=0; i<stored_point_ll.size(); i++)
+  for(unsigned int i=0; i<stored_point_ll.size(); i++)
   {
 	  fout<<"\nset label \"" << i <<"\" at "<<(stored_point_ll[i].x + stored_point_ur[i].x)/2<<","<<(stored_point_ll[i].y + stored_point_ur[i].y)/2<<" center "<<std::endl;
   }
@@ -446,7 +446,7 @@ void GuardRing::gnuplot(){
 	fout<<"\nset label \""<<"Wrapped Cell"<<"\" at "<< (wcell_ll.x + wcell_ur.x)/2 <<","<< (wcell_ll.y + wcell_ur.y)/2 <<" center "<<std::endl;
 
   //plot blocks
-  for(int i=0; i<stored_point_ll.size(); i++)
+  for(unsigned int i=0; i<stored_point_ll.size(); i++)
   {
     fout<<"\nset object \"" << i+1 << "\" rectangle from "<<stored_point_ll[i].x <<"," <<stored_point_ll[i].y<<" to "<<stored_point_ur[i].x << ","<<stored_point_ur[i].y<<" back"<<std::endl;
   }

@@ -287,7 +287,7 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
         }
         node.SPBlocks.push_back(temp_SymmPairBlock);
       } else if (constraint["const_name"] == "Ordering") {
-        PnRDB::Smark axis_dir = PnRDB::V;
+        //PnRDB::Smark axis_dir = PnRDB::V;
         pair<vector<int>, PnRDB::Smark> temp_order;
         if (constraint["direction"] == "H") {
           temp_order.second = PnRDB::H;
@@ -929,7 +929,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
 
         node.SPBlocks.push_back(temp_SymmPairBlock);
       }else if (temp[0].compare("Ordering")==0) {
-        PnRDB::Smark axis_dir = PnRDB::V;
+        //PnRDB::Smark axis_dir = PnRDB::V;
         pair<vector<int>, PnRDB::Smark> temp_order;
         for (unsigned int i = 2; i < temp.size(); i = i + 2) {
           string word = temp[i];
@@ -1226,9 +1226,9 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
            if(node.Nets[i].name == temp_LinearConst.net_name){
              for(int j=0;j<node.Nets[i].connected.size();j++){
                 for(int k=0;k<temp_LinearConst.pins.size();k++){
-                  if(node.Nets[i].connected[j].type == PnRDB::Block and node.Nets[i].connected[j].iter == temp_LinearConst.pins[k].first and node.Nets[i].connected[j].iter2 == temp_LinearConst.pins[k].second){
+                  if(node.Nets[i].connected[j].type == PnRDB::Block && node.Nets[i].connected[j].iter == temp_LinearConst.pins[k].first && node.Nets[i].connected[j].iter2 == temp_LinearConst.pins[k].second){
                     node.Nets[i].connected[j].alpha = temp_LinearConst.alpha[k];
-                  }else if(node.Nets[i].connected[j].type == PnRDB::Terminal and temp_LinearConst.pins[k].first==-1 and node.Nets[i].connected[j].iter2 == temp_LinearConst.pins[k].second){
+                  }else if(node.Nets[i].connected[j].type == PnRDB::Terminal && temp_LinearConst.pins[k].first==-1 && node.Nets[i].connected[j].iter2 == temp_LinearConst.pins[k].second){
                     node.Nets[i].connected[j].alpha = temp_LinearConst.alpha[k];
                   }
                  }
@@ -1240,7 +1240,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
       }else if(temp[0].compare("Multi_LinearConst")==0){
         //std::cout<<"Enter ML Linear Const"<<std::endl;
         PnRDB::Multi_LinearConst temp_Multi_LinearConst;
-        for(int i=2;i<temp.size()-3;i=i+2){
+        for(unsigned int i=2;i<temp.size()-3;i=i+2){
            PnRDB::LinearConst temp_LinearConst;
 
            string word=temp[i];
@@ -1248,7 +1248,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
            word=word.substr(0, word.length()-1);
            tempsec=StringSplitbyChar(word, ',');
            
-           for(int p=1;p<tempsec.size();p++){
+           for(unsigned int p=1;p<tempsec.size();p++){
               std::pair<int,int> temp_pin;
               vector<string> pins;
               pins = StringSplitbyChar(tempsec[p], '/');
