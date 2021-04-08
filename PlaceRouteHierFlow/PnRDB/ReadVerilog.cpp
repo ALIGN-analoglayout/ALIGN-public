@@ -33,7 +33,7 @@ bool PnRdatabase::ReadVerilog(const string& fpath, const string& vname, const st
 
 }
 
-void PnRdatabase::semantic( const string& fpath, const string& topcell)
+void PnRdatabase::semantic( const string& fpath, const string& topcell, PnRDB::hierNode& Supply_node)
 {
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.semantic");
 
@@ -414,7 +414,7 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
   }
 
   if ( !celldefine_mode) {
-      hierTree.push_back(temp_node);
+      db.hierTree.push_back(temp_node);
   }
   temp_node = PnRDB::hierNode();
 

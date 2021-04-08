@@ -241,7 +241,6 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
       }
       myfile.close();
       //int rc = system(string_steiner.c_str());
-      assert( rc == 0);
       //system("/bin/cat vals >> all_vals");
       //system("/bin/cat output.txt >> all_output.txt");
       input.open("vals");
