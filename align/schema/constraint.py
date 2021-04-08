@@ -39,10 +39,6 @@ class PlacementConstraint(ConstraintBase):
         each bbox at least
         '''
         assert len(self.instances) >= 1
-        bvars = checker.bbox(self.instances)
-        for b in bvars:
-            checker.append(b.llx < b.urx)
-            checker.append(b.lly < b.ury)
 
 class Order(PlacementConstraint):
     '''
@@ -79,7 +75,7 @@ class Order(PlacementConstraint):
             else:
                 return getattr(b1, f'ur{c}') <= getattr(b2, f'll{c}')
         super().check(checker)
-        bvars = checker.bbox(self.instances)
+        bvars = checker.iter_bbox_vars(self.instances)
         for b1, b2 in itertools.pairwise(bvars):
             if self.direction == 'left_to_right':
                 checker.append(cc(b1, b2, 'x'))
@@ -135,7 +131,7 @@ class Align(PlacementConstraint):
     def check(self, checker):
         super().check(checker)
         assert len(self.instances) >= 2
-        bvars = checker.bbox(self.instances)
+        bvars = checker.iter_bbox_vars(self.instances)
         for b1, b2 in itertools.pairwise(bvars):
             if self.line == 'h_top':
                 checker.append(b1.ury == b2.ury)

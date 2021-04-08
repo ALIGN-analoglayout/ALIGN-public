@@ -45,19 +45,23 @@ class AbstractChecker(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def bbox(self, *instances):
+    def bbox_vars(self, name):
         '''
-        Helper utility to generate bbox variables
-
-        This function can be used in two ways:
-        1) Get all bboxes for a list set of instances:
-           (Useful for constraints that accept lists)
-            l_bbox = self._z3_bbox_variables(instances)
-        2) Choose which instances to get bbox vars for:
-           (Useful for pairwise constraints)
-            bbox1, bbox2 = self._z3_bbox_variables(box1, box2)
+        Generate a single namedtuple containing
+        appropriate checker variables for
+        placement constraints
         '''
         pass
+
+    def iter_bbox_vars(self, names):
+        '''
+        Helper utility to generate multiple bbox variables
+
+        The output should be an iterator that allows you
+        to loop over bboxes (use `yield` when possible)
+        '''
+        for name in names:
+            yield self.bbox_vars(name)
 
     @abc.abstractmethod
     def And(self, *expressions):
@@ -99,16 +103,12 @@ class AbstractChecker(abc.ABC):
         '''
         pass
 
-    @property
-    @abc.abstractmethod
-    def enabled(self):
-        pass
-
 class Z3Checker(AbstractChecker):
 
     enabled = z3 is not None
 
     def __init__(self):
+        self._bbox_cache = {}
         self._solver = z3.Solver()
 
     def append(self, formula):
@@ -121,17 +121,32 @@ class Z3Checker(AbstractChecker):
     def revert(self):
         self._solver.pop()
 
-    @staticmethod
-    def bbox(*instances):
-        if len(instances) == 1 and not hasattr(instances[0], 'check'):
-            instances = instances[0]
-        return [Z3Checker._generate_var(
-                    'Bbox',
-                    llx = f'{instance}_llx',
-                    lly = f'{instance}_lly',
-                    urx = f'{instance}_urx',
-                    ury = f'{instance}_ury') \
-                for instance in instances]
+    def bbox_vars(self, name):
+        # bbox was previously generated
+        if name in self._bbox_cache:
+            return self._bbox_cache[name]
+        # generate new bbox
+        b = self._generate_var(
+            'Bbox',
+            llx = f'{name}_llx',
+            lly = f'{name}_lly',
+            urx = f'{name}_urx',
+            ury = f'{name}_ury')
+        # width / height cannot be 0
+        self.append(b.llx < b.urx)
+        self.append(b.lly < b.ury)
+        # Do not overlap with other bboxes
+        for b2 in self._bbox_cache.values():
+            self.append(
+                self.Or(
+                    b.urx <= b2.llx,
+                    b2.urx <= b.llx,
+                    b.ury <= b2.lly,
+                    b2.ury <= b.lly,
+                )
+            )
+        self._bbox_cache[name] = b
+        return b
 
     @staticmethod
     def Or(*expressions):
