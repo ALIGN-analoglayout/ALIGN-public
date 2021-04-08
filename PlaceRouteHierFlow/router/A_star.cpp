@@ -208,40 +208,40 @@ bool A_star::found_near_node(int current_node, Grid &grid, std::vector<int> &can
 
     if(north_found){
        for(int i=0;i<(int)north_node.size();i++){
-         if(grid.vertices_total[current_node].parent!=north_node[i])
+         //if(grid.vertices_total[current_node].parent!=north_node[i])
          candidate_node.push_back(north_node[i]);
        }
       }
     if(south_found){
        for(int i=0;i<(int)south_node.size();i++){
-         if(grid.vertices_total[current_node].parent!=south_node[i])
+         //if(grid.vertices_total[current_node].parent!=south_node[i])
          candidate_node.push_back(south_node[i]);
        }
       }
     if(west_found){
        for(int i=0;i<(int)west_node.size();i++){
-         if(grid.vertices_total[current_node].parent!=west_node[i])
+         //if(grid.vertices_total[current_node].parent!=west_node[i])
          candidate_node.push_back(west_node[i]);
        }
       }
 
     if(east_found){
        for(int i=0;i<(int)east_node.size();i++){
-         if(grid.vertices_total[current_node].parent!=east_node[i])
+         //if(grid.vertices_total[current_node].parent!=east_node[i])
          candidate_node.push_back(east_node[i]);
        }
       }
 
     if(up_found){
        for(int i=0;i<(int)up_node.size();i++){
-         if(grid.vertices_total[current_node].parent!=up_node[i])
+         //if(grid.vertices_total[current_node].parent!=up_node[i])
          candidate_node.push_back(up_node[i]);
        }
       }
 
     if(down_found){
        for(int i=0;i<(int)down_node.size();i++){
-         if(grid.vertices_total[current_node].parent!=down_node[i])
+         //if(grid.vertices_total[current_node].parent!=down_node[i])
          candidate_node.push_back(down_node[i]);
        }
       }
@@ -1229,7 +1229,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left
     //found the candidates nodes
     std::vector<int> candidate_node;
     bool near_node_exist =found_near_node(current_node, grid, candidate_node);
-    //erase_candidate_node(close_set, candidate_node);
+    erase_candidate_node(close_set, candidate_node);
     if(!near_node_exist){
        continue;
       }
@@ -1261,7 +1261,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left
 
        int M_dis = Manhattan_distan(candidate_node[i], grid);
        int temp_cost = grid.vertices_total[current_node].Cost + abs(grid.vertices_total[current_node].x - grid.vertices_total[candidate_node[i]].x) + abs(grid.vertices_total[current_node].y - grid.vertices_total[candidate_node[i]].y) + via_expand_effort*abs(grid.vertices_total[candidate_node[i]].metal-grid.vertices_total[current_node].metal)+temp_candidate_cost[i];
-       //if(temp_cost < grid.vertices_total[candidate_node[i]].Cost ){
+       if(temp_cost < grid.vertices_total[candidate_node[i]].Cost ){
 
           int sym_cost = Find_Symmetry_Cost(grid,candidate_node[i],sym_path);
           //std::cout<<"sym cost "<<sym_cost<<" sym path size "<<sym_path.size()<<std::endl;
@@ -1283,7 +1283,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left
           temp_pair.second = candidate_node[i];
           L_list.insert(temp_pair);
 
-         //}
+         }
       
        }
 
@@ -1417,7 +1417,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
     //found the candidates nodes
     std::vector<int> candidate_node;
     bool near_node_exist =found_near_node(current_node, grid, candidate_node);
-    //erase_candidate_node(close_set, candidate_node);
+    erase_candidate_node(close_set, candidate_node);
     if(!near_node_exist){
        continue;
       }
@@ -1448,7 +1448,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
 
        int M_dis = Manhattan_distan(candidate_node[i], grid);
        int temp_cost = grid.vertices_total[current_node].Cost + abs(grid.vertices_total[current_node].x - grid.vertices_total[candidate_node[i]].x) + abs(grid.vertices_total[current_node].y - grid.vertices_total[candidate_node[i]].y) + via_expand_effort*abs(grid.vertices_total[candidate_node[i]].metal-grid.vertices_total[current_node].metal)+temp_candidate_cost[i];
-       //if(temp_cost < grid.vertices_total[candidate_node[i]].Cost ){
+       if(temp_cost < grid.vertices_total[candidate_node[i]].Cost ){
           temp_pair.first = grid.vertices_total[candidate_node[i]].Cost + M_dis;
           temp_pair.second = candidate_node[i];
           if(L_list.find(temp_pair)!=L_list.end()){
@@ -1462,7 +1462,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
           temp_pair.first = dis;
           L_list.insert(temp_pair);
 
-         //}
+         }
       
        }
 
