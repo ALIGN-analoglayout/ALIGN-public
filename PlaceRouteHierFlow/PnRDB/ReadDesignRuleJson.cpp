@@ -254,8 +254,8 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
              temp_viamodel.LowerIdx = vs.lower_metal_index;
              temp_viamodel.UpperIdx = vs.upper_metal_index;
 
-	     const string& lm_name = DRC_info.Metal_info.at(temp_viamodel.LowerIdx).name;
-	     const string& um_name = DRC_info.Metal_info.at(temp_viamodel.UpperIdx).name;
+	     //const string& lm_name = DRC_info.Metal_info.at(temp_viamodel.LowerIdx).name;
+	     //const string& um_name = DRC_info.Metal_info.at(temp_viamodel.UpperIdx).name;
 
 	     //cout << "Via " << temp_viamodel.name << " ViaIndex " << temp_viamodel.ViaIdx << " LowerIdx " << temp_viamodel.LowerIdx << " (" << lm_name << ") UpperIdx " << temp_viamodel.UpperIdx << " (" << um_name << ")" << endl;
 
