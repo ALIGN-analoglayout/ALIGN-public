@@ -1,66 +1,72 @@
 import pytest
 from align.schema import constraint
-
-try:
-    import z3
-except:
-    z3 = None
-
-@pytest.fixture
-def solver():
-    return z3.Solver()
+from align.schema.checker import Z3Checker
 
 @pytest.fixture
 def db():
     return constraint.ConstraintDB()
 
-@pytest.mark.skipif(z3 is None, reason="requires z3")
-def test_AlignHorizontal_input_sanitation(solver):
-    x = constraint.AlignHorizontal(blocks=['M1', 'M2'], alignment='top')
-    x = constraint.AlignHorizontal(blocks=['M1', 'M2', 'M3'], alignment='top')
+@pytest.fixture
+def checker():
+    return Z3Checker()
+
+def test_Order_input_sanitation():
+    x = constraint.Order(direction='left_to_right', instances=['M1', 'M2'])
+    x = constraint.Order(direction='left_to_right', instances=['M1', 'M2', 'M3'])
     with pytest.raises(Exception):
-        x = constraint.AlignHorizontal(blocks=['M1', 'M2', 'M3'], alignment='garbage')
+        x = constraint.Order(direction='lefta_to_rightb', instances=['M1', 'M2', 'M3'])
 
-@pytest.mark.skipif(z3 is None, reason="requires z3")
-def test_AlignHorizontal_nblock_checking(solver):
-    x = constraint.AlignHorizontal(blocks=[], alignment='top')
-    with pytest.raises(AssertionError):
-        x.check()
-    x = constraint.AlignHorizontal(blocks=['M1'], alignment='top')
-    with pytest.raises(AssertionError):
-        x.check()
+def test_Order_constraintname():
+    x = constraint.Order(direction='left_to_right', instances=['M1', 'M2'])
+    assert x.constraint == 'order'
 
-@pytest.mark.skipif(z3 is None, reason="requires z3")
-def test_AlignHorizontal_order_checking(solver):
-    '''
-    This is just a unittest of generated constraints
-
-    Please use ConstraintDB to manage constraints
-    (See test_ConstraintDB_checking() for example)
-    '''
-    x = constraint.AlignHorizontal(blocks=['M1', 'M2', 'M3'])
-    solver.append(*x.check())
-    assert solver.check() == z3.sat
-    x = constraint.AlignHorizontal(blocks=['M4', 'M5'], alignment='bottom')
-    solver.append(*x.check())
-    assert solver.check() == z3.sat
-    x = constraint.AlignHorizontal(blocks=['M3', 'M2'], alignment='bottom')
-    solver.append(*x.check())
+def test_Order_nblock_checking():
+    x = constraint.Order(direction='left_to_right', instances=[])
     with pytest.raises(AssertionError):
-        assert solver.check() == z3.sat
+        x.check(None)
+    x = constraint.Order(direction='left_to_right', instances=['M1'])
+    with pytest.raises(AssertionError):
+        x.check(None)
 
 def test_ConstraintDB_inputapi(db):
+    class Garbage(constraint.PlacementConstraint):
+        test: str = 'hello'
+        def check(self):
+            pass
     with pytest.raises(Exception):
-        db.append('garbage')
+        db.append(Garbage())
 
-@pytest.mark.skipif(z3 is None, reason="requires z3")
-def test_ConstraintDB_checking(db):
-    db.append(constraint.AlignHorizontal(blocks=['M1', 'M2', 'M3']))
-    db.append(constraint.AlignHorizontal(blocks=['M4', 'M5'], alignment='bottom'))
+@pytest.mark.skipif(not Z3Checker.enabled, reason="Couldn't import Z3")
+def test_Order_smt_checking(checker):
+    x = constraint.Order(direction='left_to_right', instances=['M1', 'M2', 'M3'])
+    x.check(checker)
+    x = constraint.Order(direction='left_to_right', instances=['M4', 'M5'])
+    x.check(checker)
+    x = constraint.Order(direction='left_to_right', instances=['M3', 'M2'])
     with pytest.raises(AssertionError):
-        db.append(constraint.AlignHorizontal(blocks=['M3', 'M2'], alignment='bottom'))
+        x.check(checker)
 
-@pytest.mark.skipif(z3 is None, reason="requires z3")
+@pytest.mark.skipif(not Z3Checker.enabled, reason="Couldn't import Z3")
+def test_Order_db_append(db):
+    db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M2', 'M3']))
+    db.append(constraint.Order(direction='left_to_right', instances=['M4', 'M5']))
+    with pytest.raises(AssertionError):
+        db.append(constraint.Order(direction='left_to_right', instances=['M3', 'M2']))
+
+def test_AlignInOrder_input_sanitation():
+    x = constraint.AlignInOrder(instances=['M1', 'M2'], line='top')
+    x = constraint.AlignInOrder(instances=['M1', 'M2', 'M3'], line='top')
+    with pytest.raises(Exception):
+        x = constraint.AlignInOrder(instances=['M1', 'M2', 'M3'], line='garbage')
+
+@pytest.mark.skipif(not Z3Checker.enabled, reason="Couldn't import Z3")
+def test_AlignInOrder_smt_checking(db):
+    db.append(constraint.AlignInOrder(instances=['M1', 'M2', 'M3'], direction='horizontal'))
+    db.append(constraint.AlignInOrder(instances=['M4', 'M5'], line='bottom'))
+    with pytest.raises(AssertionError):
+        db.append(constraint.AlignInOrder(instances=['M3', 'M2'], line='bottom'))
+
+@pytest.mark.skipif(not Z3Checker.enabled, reason="Couldn't import Z3")
 def test_ConstraintDB_incremental_checking(db):
     '''
     ConstraintDB can be used to run experiments
@@ -68,25 +74,25 @@ def test_ConstraintDB_incremental_checking(db):
     is an overhead so use sparingly
     '''
     # Experiment 1 : Success
-    db.append(constraint.AlignHorizontal(blocks=['M1', 'M2', 'M3']))
+    db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M2', 'M3']))
     db.checkpoint()
     # Experiment 2 : Failure
     with pytest.raises(AssertionError):
-        db.append(constraint.AlignHorizontal(blocks=['M3', 'M2'], alignment='bottom'))
+        db.append(constraint.Order(direction='left_to_right', instances=['M3', 'M2']))
     db.revert()
     # Experiment 3 : Success
-    db.append(constraint.AlignHorizontal(blocks=['M4', 'M5'], alignment='bottom'))
+    db.append(constraint.Order(direction='left_to_right', instances=['M4', 'M5']))
     db.checkpoint()
     # Experiment 4: Failure
     with pytest.raises(AssertionError):
-        db.append(constraint.AlignHorizontal(blocks=['M3', 'M2'], alignment='bottom'))
+        db.append(constraint.Order(direction='left_to_right', instances=['M3', 'M2']))
     db.revert()
     # Experiment 5: Success
-    db.append(constraint.AlignHorizontal(blocks=['M2', 'M5']))
+    db.append(constraint.Order(direction='left_to_right', instances=['M2', 'M5']))
     # Experiments Completed ! Final Constraints:
-    # constraint.AlignHorizontal(blocks=['M1', 'M2', 'M3'])
-    # constraint.AlignHorizontal(blocks=['M4', 'M5'], alignment='bottom')
-    # constraint.AlignHorizontal(blocks=['M2', 'M5'])
+    # constraint.Order(direction='left_to_right', instances=['M1', 'M2', 'M3'])
+    # constraint.Order(direction='left_to_right', instances=['M4', 'M5'])
+    # constraint.Order(direction='left_to_right', instances=['M2', 'M5'])
 
 def test_ConstraintDB_nonincremental_revert(db):
     '''
@@ -94,23 +100,14 @@ def test_ConstraintDB_nonincremental_revert(db):
     checkpoint() by name, needing to unroll multiple
     checkpoints can indicate suboptimal compiler design
     '''
-    db.append(constraint.AlignHorizontal(blocks=['M1', 'M2']))
+    db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M2']))
     idx = db.checkpoint()
-    db.append(constraint.AlignHorizontal(blocks=['M1', 'M3']))
+    db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M3']))
     db.checkpoint()
-    db.append(constraint.AlignHorizontal(blocks=['M2', 'M3']))
+    db.append(constraint.Order(direction='left_to_right', instances=['M2', 'M3']))
     db.checkpoint()
     db.revert(idx)
     assert len(db) == 1
     assert len(db._commits) == 0
-    if db._validation:
-        assert 'M3' not in str(db._solver)
-
-def test_ConstraintDB_permissive():
-    '''
-    Check that it is possible to turn validation OFF
-    NOT RECOMMENDED !! DO NOT DO THIS !!!
-    '''
-    db = constraint.ConstraintDB(validation=False)
-    db.append(constraint.AlignHorizontal(blocks=['M1', 'M2']))
-    db.append(constraint.AlignHorizontal(blocks=['M2', 'M1']))
+    if db._checker:
+        assert 'M3' not in str(db._checker._solver)

@@ -16,7 +16,11 @@
 #include <utility> // pair, make_pair
 #include <algorithm>
 #include <sstream>
-#include <unistd.h>
+#ifdef WINDOWS
+#include <Windows.h> // getcwd
+#else
+#include <unistd.h> // getcwd
+#endif
 #include <set>
 #include "datatype.h"
 #include "readfile.h"
