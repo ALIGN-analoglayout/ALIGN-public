@@ -2,8 +2,7 @@
     "modules" : [
 	{
 	    "name": "current_mirror_ota",
-	    "parameters": ["id", "vbiasnd", "vinn", "vinp", "voutp"]
-
+	    "parameters": ["id", "vbiasnd", "vinn", "vinp", "voutp"],
 	    "instances": [
 		{
 		    "template_name": "DCL_PMOS_nfin60_n12_X5_Y1_RVT",

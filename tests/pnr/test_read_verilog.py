@@ -16,3 +16,37 @@ def test_A():
     DB.ReadMap( str( d), "current_mirror_ota.map")
 
     DB.ReadVerilog( str(d), "current_mirror_ota.v", "current_mirror_ota")
+
+    for module in j['modules']:
+        print( f"module {module['name']} ( {', '.join( module['parameters'])} );", file=ofp) 
+        print( f"input {', '.join( module['parameters'])};", file=ofp) 
+        print( file=ofp)
+        for instance in module['instances']:
+            pl = ', '.join( f".{fa['formal']}({fa['actual']})" for fa in instance['fa_map'])
+            print( f"{instance['template_name']} {instance['instance_name']} ( {pl} );", file=ofp)
+
+        print( file=ofp)
+        print( 'endmodule', file=ofp)
+        
+    if 'celldefines' in j:
+        print( file=ofp)
+        print( "`celldefine", file=ofp)
+        for cd in j['celldefines']:
+            txt = f'''\
+module {cd['name']};
+supply0 {cd['supply0']};
+supply1 {cd['supply1']};
+endmodule'''
+            print( txt, file=ofp)
+        print( "`endcelldefine", file=ofp)
+
+def test_B():
+    d = mydir / "current_mirror_ota_inputs"
+
+    with open( d / "current_mirror_ota.verilog.json", "rt") as fp:
+        j = json.load( fp)
+
+    with open( d / "current_mirror_ota.verilog.verilog", "wt") as fp:
+        write_verilog( j, fp)
+
+    
