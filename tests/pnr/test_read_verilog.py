@@ -1,5 +1,6 @@
 import json
 import pathlib
+import io
 
 from align import PnR
 
@@ -16,6 +17,8 @@ def test_A():
     DB.ReadMap( str( d), "current_mirror_ota.map")
 
     DB.ReadVerilog( str(d), "current_mirror_ota.v", "current_mirror_ota")
+
+def write_verilog( j, ofp):
 
     for module in j['modules']:
         print( f"module {module['name']} ( {', '.join( module['parameters'])} );", file=ofp) 
@@ -46,7 +49,12 @@ def test_B():
     with open( d / "current_mirror_ota.verilog.json", "rt") as fp:
         j = json.load( fp)
 
-    with open( d / "current_mirror_ota.verilog.verilog", "wt") as fp:
-        write_verilog( j, fp)
+    with open( d / "current_mirror_ota.v", "rt") as fp:
+        vstr = fp.read()
 
+    with io.StringIO() as fp:
+        write_verilog( j, fp)
+        vvstr = fp.getvalue()
     
+    # remove header and trailing spaces
+    assert [ line.rstrip(' ') for line in vstr.split('\n')[4:]] == vvstr.split('\n')
