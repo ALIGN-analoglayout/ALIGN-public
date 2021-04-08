@@ -122,7 +122,7 @@ class PDK(BaseModel):
         assert layer.name not in self.layers
         self.layers[layer.name] = layer
 
-    def generate_adr_collaterals(self, write_path: pathlib.Path, x_pitch: int, x_grid: int, y_pitch: int, y_grid: int):
+    def generate_adr_collaterals(self, write_path: pathlib.Path, x_pitch: int, x_grid: int, y_pitch: int, y_grid: int, region: List[int]):
 
         with open(write_path/"adr_forbidden_patterns.txt", "wt") as fp:
             # TODO: Write rules for horizontal and vertical via spacing
@@ -147,6 +147,17 @@ class PDK(BaseModel):
                     if layer.color is not None and len(layer.color) > 0:
                         line += f' colors={",".join(str(i) for i in layer.color)}'
                     line += " stops=%s" % (",".join( str(i) for i in [layer.stop_pitch - 2*layer.stop_point, 2*layer.stop_point]))
+                    line += '\n'
+                    fp.write(line)
+
+        # Single metal template instance. Generalize to multiple as needed in the future.
+        with open(write_path/"adr_metal_templates_instances.txt", "wt") as fp:
+            for name, layer in self.layers.items():
+                if isinstance(layer, LayerMetal):
+                    line  = f'MetalTemplateInstance template={name}_template_0'
+                    line += f' pgdoffset_abs={layer.offset}'
+                    line += f' ogdoffset_abs={layer.stop_point}'
+                    line += f' region={":".join(str(i) for i in region)}'
                     line += '\n'
                     fp.write(line)
 

@@ -165,4 +165,4 @@ def test_three():
         space_y=100
         )
     pdk = PDK(name= "Mock", layers={'M1': m1, 'M2': m2, 'V1': v1})
-    pdk.generate_adr_collaterals(my_dir, 1080, 4, 900, 7)
+    pdk.generate_adr_collaterals(my_dir, 1080, 4, 900, 7, [0, 0, 10*1080, 10*900])
