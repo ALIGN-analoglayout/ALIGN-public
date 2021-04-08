@@ -100,7 +100,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
     # Generate file name inputs
     map_file = f'{subckt}.map'
     lef_file = f'{subckt}.lef'
-    lef_file_wotap = f'{subckt}.lef.wotap'
+    ##lef_file_wotap = f'{subckt}.lef.wotap'
     verilog_file = f'{subckt}.v'
     pdk_file = 'layers.json'
 
@@ -115,12 +115,18 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
             elif file_.suffix == '.lef' and file_.stem != subckt:
                 logger.debug(f"found lef files {file_}")
                 lp.write(file_.read_text())
+        for file_ in (primitive_dir / 'wo_tap').iterdir():
+            if file_.suffix == '.lef' and file_.stem != subckt:
+                logger.debug(f"found lef files {file_}")
+                lp.write(file_.read_text())
 
+    """
     with (input_dir / lef_file_wotap).open(mode='wt') as lpwot:
         for file_ in (primitive_dir / 'wo_tap').iterdir():
             if file_.suffix == '.lef' and file_.stem != subckt:
                 logger.debug(f"found lef files {file_}")
                 lpwot.write(file_.read_text())
+    """
 
     #
     # TODO: Copying is bad ! Consider rewriting C++ code to accept fully qualified paths
