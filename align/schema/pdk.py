@@ -122,8 +122,7 @@ class PDK(BaseModel):
         assert layer.name not in self.layers
         self.layers[layer.name] = layer
 
-
-    def generate_adr_collaterals(self, write_path: pathlib.Path, x_grid: int, y_grid: int):
+    def generate_adr_collaterals(self, write_path: pathlib.Path, x_pitch: int, x_grid: int, y_pitch: int, y_grid: int):
 
         with open(write_path/"adr_forbidden_patterns.txt", "wt") as fp:
             # TODO: Write rules for horizontal and vertical via spacing
@@ -179,5 +178,62 @@ class PDK(BaseModel):
             fp.write(f'\n')
 
         with open(write_path/"adr_layers.txt", "wt") as fp:
-            # TODO: Write out layers. write poly and diff if not exists using M1 and M2.
+
+            # Dummy layer required for global grid
+            line  = f'Layer name=diffusion pgd=hor level=0 {{\n'
+            line += f'  Type value=diffusion\n'
+            line += f'  Technology pitch={y_pitch}\n'
+            line += f'}}\n'
+            fp.write(line)
+
+            # Dummy layer required for global grid
+            line  = f'Layer name=wirepoly pgd=ver level=1 {{\n'
+            line += f'  Type value=wire\n'
+            line += f'  Type value=poly\n'
+            line += f'  Technology pitch={x_pitch}\n'
+            line += f'}}\n'
+            fp.write(line)
+
+            # identify electrical connectivity
+            connected_layers = dict()
+            for name, layer in self.layers.items():
+                if isinstance(layer, LayerVia):
+                    ml = layer.stack[0]
+                    mh = layer.stack[1]
+                    connected_layers[name] = [ml, mh]
+                    if ml not in connected_layers:
+                        connected_layers[ml] = []
+                    connected_layers[ml].append(name)
+                    if mh not in connected_layers:
+                        connected_layers[mh] = []
+                    connected_layers[mh].append(name)
+
+            level = 2
+
+            for i in range(0, 99):
+                name = f'M{i}'
+                if name in self.layers:
+                    layer = self.layers[name]
+
+                    pgd = 'ver' if layer.direction == 'v' else 'hor'
+
+                    line  = f'Layer name={name} pgd={pgd} level={level} {{\n'
+                    line += f'  Type value=wire\n'
+                    line += f'  Type value=metal\n'
+                    for l in connected_layers[name]:
+                        line += f'  ElectricallyConnected layer={l}\n'
+                    line += f'}}\n'
+                    fp.write(line)
+                    level +=1
+
+                name = f'V{i}'
+                if name in self.layers:
+                    line  = f'Layer name={name} level={level} {{\n'
+                    line += f'  Type value=via\n'
+                    for l in connected_layers[name]:
+                        line += f'  ElectricallyConnected layer={l}\n'
+                    line += f'}}\n'
+                    fp.write(line)
+                    level +=1
+
             fp.write(f'\n')
