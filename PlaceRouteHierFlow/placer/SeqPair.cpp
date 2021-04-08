@@ -778,27 +778,34 @@ void SeqPair::KeepOrdering(design& caseNL) {
     neg_order[i] = negPair[neg_idx[i]];
   }
   bool pos_keep_order = true, neg_keep_order = true;
+  //unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+  //std::default_random_engine e(seed);
   // generate a pos order
   do {
+	  int first_it, second_it;
     pos_keep_order = true;
     for (auto order : caseNL.Ordering_Constraints) {
-      if (find(pos_order.begin(), pos_order.end(), order.first.first) - find(pos_order.begin(), pos_order.end(), order.first.second) > 0) {
+		  first_it = find(pos_order.begin(), pos_order.end(), order.first.first)- pos_order.begin();
+		  second_it = find(pos_order.begin(), pos_order.end(), order.first.second)- pos_order.begin();
+      if (first_it - second_it > 0) {
         pos_keep_order = false;
         break;
       }
     }
     if (!pos_keep_order) {
-      unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-      std::default_random_engine e(seed);
-      shuffle(pos_order.begin(), pos_order.end(), e);
+	    swap(pos_order.at(first_it), pos_order.at(second_it));
+      //shuffle(pos_order.begin(), pos_order.end(), e);
     }
 
   } while (!pos_keep_order);
   // generate a neg order
   do {
+	  int first_it, second_it;
     neg_keep_order = true;
     for (auto order : caseNL.Ordering_Constraints) {
-      if (find(neg_order.begin(), neg_order.end(), order.first.first) - find(neg_order.begin(), neg_order.end(), order.first.second) < 0) {
+		  first_it = find(neg_order.begin(), neg_order.end(), order.first.first) - neg_order.begin();
+		  second_it = find(neg_order.begin(), neg_order.end(), order.first.second) - neg_order.begin();
+	    if (first_it - second_it < 0) {
         if (order.second == placerDB::V) {
           neg_keep_order = false;
           break;
@@ -809,9 +816,8 @@ void SeqPair::KeepOrdering(design& caseNL) {
       }
     }
     if (!neg_keep_order) {
-      unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-      std::default_random_engine e(seed);
-      shuffle(neg_order.begin(), neg_order.end(), e);
+	    swap(neg_order.at(first_it), neg_order.at(second_it));
+      //shuffle(neg_order.begin(), neg_order.end(), e);
     }
   } while (!neg_keep_order);
   //write order back to pospair and negpair
