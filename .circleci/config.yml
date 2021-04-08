@@ -16,7 +16,7 @@ jobs:
         # https://github.com/pypa/manylinux
         description: "PEP600 compatible platform name"
         type: string
-        default: "manylinux2010_x86_64"
+        default: "quay.io/pypa/manylinux_2_24_x86_64"
 
     docker:
       - image: <<parameters.platform>>
@@ -166,22 +166,20 @@ workflows:
       - build-test-cktgen
       - build-test-coverage
       - build-wheel:
-          name: "build-wheel-<<matrix.platform>>"
+          name: "build-cp38-wheel"
           matrix:
+            alias: build-wheel-cp38-manylinux_2_24
             parameters:
               platform:
-                - "skhep/manylinuxgcc-x86_64"          # PEP 513
-                - "quay.io/pypa/manylinux2010_x86_64"  # PEP 571
-                - "quay.io/pypa/manylinux2014_x86_64"  # PEP 599
                 - "quay.io/pypa/manylinux_2_24_x86_64" # PEP 600
-      - publish-wheel:
           requires:
-            - build-wheel
+            - build-test-coverage
       - test-integration:
-          name: "test-integration-<<matrix.platform>>-<<matrix.pdk>>(<<matrix.design>>)"
+          name: "test-integration-cp38-<<matrix.pdk>>(<<matrix.design>>)"
           requires:
-            - build-wheel
+            - build-wheel-cp38-manylinux_2_24
           matrix:
+            alias: test-integration-cp38-manylinux_2_24
             parameters:
               platform:
                 - "python:3.8"
@@ -192,3 +190,27 @@ workflows:
                 - "Sanitized"
                 - "vco_dtype"
                 - "not BUFFER and not ota and not Sanitized and not vco_dtype and not powertrain and not SAR and not DLL and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD"
+      - build-wheel:
+          name: "build-wheel-<<matrix.platform>>"
+          filters:
+            branches:
+              only:
+                - master
+          matrix:
+            alias: build-wheel-all
+            parameters:
+              platform:
+                - "skhep/manylinuxgcc-x86_64"          # PEP 513
+                - "quay.io/pypa/manylinux2010_x86_64"  # PEP 571
+                - "quay.io/pypa/manylinux2014_x86_64"  # PEP 599
+                - "quay.io/pypa/manylinux_2_24_x86_64" # PEP 600
+          requires:
+            - test-integration-cp38-manylinux_2_24
+      - publish-wheel:
+          filters:
+            branches:
+              only:
+                - master
+          requires:
+            - build-wheel-all
+
