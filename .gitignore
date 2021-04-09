@@ -83,3 +83,4 @@ tests/cell_fabric/Foo*.cir
 !tests/gdsconv/only_paths.*
 !Viewer/INPUT/mydesign_dr_globalrouting.json
 !Viewer/larger_example/mydesign_dr_globalrouting.json
+!tests/pnr/current_mirror_ota_inputs/current_mirror_ota.verilog.json
