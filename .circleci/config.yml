@@ -183,7 +183,23 @@ workflows:
               python-tags:
                 - "cp37-cp37m" # Python 3.7
       - test-integration:
-          name: "test-integration-cp38-<<matrix.pdk>>(<<matrix.design>>)"
+          name: "test-integration-cp38-minimal"
+          requires:
+            - build-wheel-cp38-manylinux_2_24
+          filters:
+            branches:
+              ignore:
+                - master
+          matrix:
+            parameters:
+              platform:
+                - "python:3.8"
+              pdk:
+                - "Finfet"
+              design:
+                - "adder or switched_capacitor_filter or high_speed_comparator or telescopic_ota"
+      - test-integration:
+          name: "test-integration-cp38-<<matrix.pdk>>"
           requires:
             - build-wheel-cp38-manylinux_2_24
           filters:
@@ -198,8 +214,7 @@ workflows:
               pdk:
                 - "Finfet"
               design:
-                - "BUFFER or ota or powertrain or Sanitized or vco_dtype"
-                - "not BUFFER and not ota and not Sanitized and not vco_dtype and not powertrain and not SAR and not DLL and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD"
+                - "not SAR and not DLL and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD"
       - build-wheel:
           name: "build-wheel-<<matrix.platform>>"
           requires:
