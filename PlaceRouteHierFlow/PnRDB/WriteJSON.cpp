@@ -143,7 +143,7 @@ JSONReaderWrite_subcells (string GDSData, long int& rndnum,
     ury.push_back(TJ_ury);
 };
 
-
+/**
 static void
 JSONLabelTerminals(PnRDB::hierNode& node, const PnRDB::Drc_info& drc_info, json& elmAry, double unit)
 {
@@ -204,7 +204,7 @@ JSONLabelTerminals(PnRDB::hierNode& node, const PnRDB::Drc_info& drc_info, json&
 	    }
 	}
     }
-}
+}**/
 
 void
 assignBoxPoints (int* x, int*y, struct PnRDB::bbox b, double unit) {
@@ -248,7 +248,7 @@ addMetalBoundaries (json& jsonElements, struct PnRDB::Metal& metal, const PnRDB:
     int x[5], y[5];
     assignBoxPoints (x, y, metal.MetalRect.placedBox, unit);
 
-    if (metal.LinePoint[0].x != metal.LinePoint[1].x or
+    if (metal.LinePoint[0].x != metal.LinePoint[1].x ||
 	metal.LinePoint[0].y != metal.LinePoint[1].y) {
 	json bound0;
 	bound0["type"] = "boundary";
@@ -459,7 +459,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 
     int x[5], y[5];
     int write_blockPins_name = 0;
-    if (write_blockPins_name and node.isTop ==1){
+    if (write_blockPins_name && node.isTop ==1){
 	for (unsigned int i = 0; i < node.blockPins.size(); i++) {
 	    int write = 0;
             logger->debug("Write blockPins info {0}",node.blockPins[i].name);

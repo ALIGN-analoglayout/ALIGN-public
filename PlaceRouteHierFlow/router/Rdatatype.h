@@ -408,6 +408,18 @@ struct pointSetComp{
   }
 };
 
+struct pointSetComp2{
+  bool operator() (const std::pair<int, RouterDB::point>& lhs, const std::pair<int, RouterDB::point>& rhs) const{
+  if(lhs.second.y==rhs.second.y) {
+      return lhs.second.x < rhs.second.x;
+    }
+    else
+    {
+      return lhs.second.y < rhs.second.y;
+    }
+  }
+};
+
 struct tileComp {
   bool operator() (const tile& lhs, const tile& rhs) const
   {
@@ -440,7 +452,8 @@ struct SinkDataComp {
               } else {
                 return lhs.coord[1].x < rhs.coord[1].x;
               }
-            }
+            } else
+              return lhs.coord[0].x < rhs.coord[0].x;
           } else {
             return lhs.metalIdx<rhs.metalIdx;
           }

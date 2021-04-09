@@ -1,15 +1,16 @@
-from typing import List, Union, Dict, Optional, Tuple
 from pydantic import validator, ValidationError, Field
-from . import types
+from .types import BaseModel, Union, Optional, Literal, List
+from typing import Dict
+import pathlib
 
 
-class ParasiticValues(types.BaseModel):
+class ParasiticValues(BaseModel):
     mean: int = 0
     min: int = 0
     max: int = 0
 
 
-class Layer(types.BaseModel):
+class Layer(BaseModel):
     name: str
     gds_layer_number: int
     gds_data_type: Optional[Dict[str, int]] = Field(default_factory=lambda: {"draw": 0})
@@ -17,7 +18,7 @@ class Layer(types.BaseModel):
 
 class LayerMetal(Layer):
 
-    direction: str
+    direction: Literal['h', 'v']
 
     min_length: int
     max_length: Optional[int]
@@ -36,50 +37,40 @@ class LayerMetal(Layer):
     unit_r: Optional[Dict[int, ParasiticValues]]
     unit_cc: Optional[Dict[int, ParasiticValues]]
 
-    @validator('direction')
-    def _validate_direction(cls, v):
-        if v not in ['h', 'v']:
-            raise ValueError('Direction value should be h or v')
-        return v
-
     @validator('name')
     def _validate_name(cls, v):
-        if not v.startswith('M'):
-            raise ValueError('Metal layer name should start with M')
+        assert v.startswith('M'), f'Metal layer name {v} should start with M'
         return v
 
-    @validator('min_length', 'min_end_to_end', 'width', 'space',
-               'stop_pitch', 'stop_point')
+    @validator('min_length', 'min_end_to_end', 'width', 'space', 'stop_pitch', 'stop_point')
     def _validate_positive(cls, v):
-        if type(v) is list:
-            if min(v) <= 0:
-                raise ValueError('Values should be positive')
+        if isinstance(v, List):
+            assert min(v) > 0, f'Values {v} should be positive'
         else:
-            if v <= 0:
-                raise ValueError('Value should be positive')
+            assert v > 0, f'Value {v} should be positive'
         return v
 
     @validator('stop_offset')
     def _validate_non_negative(cls, v):
-        if type(v) is list:
-            if min(v) < 0:
-                raise ValueError('Values should be non-negative')
+        if isinstance(v, List):
+            assert min(v) >= 0, f'Values {v} should be non-negative'
         else:
-            if v < 0:
-                raise ValueError('Value should be non-negative')
+            assert v >= 0, f'Value {v} should be positive'
         return v
 
     @validator('space')
     def _validate_width(cls, v, values):
-        if type(v) is list:
-            if len(v) != len(values['width']):
-                raise ValueError('Width and space length should match')
+        if isinstance(v, List):
+            assert len(v) == len(values['width']), f'width and space length should match'
         return v
 
 
 class LayerVia(Layer):
 
-    stack: Tuple[str, str]
+    class Config:
+        allow_mutation = True
+
+    stack: List[str]
 
     width_x: int
     width_y: int
@@ -87,33 +78,173 @@ class LayerVia(Layer):
     space_x: int
     space_y: int
 
-    layer1_width: Optional[int]
-    enc_layer1_x: Optional[int] = 0
-    enc_layer1_y: Optional[int] = 0
+    layer_l_width: Optional[List[int]] = None
+    layer_l_enc_x: Optional[int] = 0
+    layer_l_enc_y: Optional[int] = 0
 
-    layer2_width: Optional[int]
-    enc_layer2_x: Optional[int] = 0
-    enc_layer2_y: Optional[int] = 0
+    layer_h_width: Optional[List[int]] = None
+    layer_h_enc_x: Optional[int] = 0
+    layer_h_enc_y: Optional[int] = 0
 
     unit_r: Optional[Dict[int, ParasiticValues]]
 
+    @validator('stack')
+    def _validate_stack(cls, v):
+        assert len(v) == 2
+        return v
 
-class LayerViaSet(Layer):
 
-    default_via: LayerVia
-    via_list: Optional[List[LayerVia]]
+class PDK(BaseModel):
 
+    class Config:
+        allow_mutation = True
 
-class PDK(types.BaseModel):
     name: str
-    layers: Dict[str, Union[LayerMetal, LayerViaSet]] = Field(default_factory=lambda: {})
+    layers: Dict[str, Union[LayerMetal, LayerVia]] = Field(default_factory=lambda: {})
     scale_factor: int = 1
+
+    @validator('layers')
+    def _validate_via(cls, layers):
+        for key, via in layers.items():
+            if isinstance(via, LayerVia):
+                ml, mh = via.stack
+                assert ml in layers, f'Lower layer {ml} not found for {key} {layers.keys()}'
+                assert mh in layers, f'Higher layer {mh} not found for {key}'
+                assert layers[ml].direction != layers[mh].direction, f'Lower and higher layer directions are not orthogonal'
+
+                if via.layer_l_width is None:
+                    via.layer_l_width = layers[ml].width.copy()
+                if via.layer_h_width is None:
+                    via.layer_h_width = layers[mh].width.copy()
+        return layers
 
     def add_layer(self, layer):
         assert layer.name not in self.layers
         self.layers[layer.name] = layer
 
-    @validator('layers')
-    def _validate_stack_exists(cls, v):
-        # TODO: For each via, check metal stack exists and metals are in orthogonal direction
-        return v
+    def generate_adr_collaterals(self, write_path: pathlib.Path, x_pitch: int, x_grid: int, y_pitch: int, y_grid: int, region: List[int]):
+
+        with open(write_path/"adr_forbidden_patterns.txt", "wt") as fp:
+            # TODO: Write rules for horizontal and vertical via spacing
+            fp.write(f'\n')
+
+        with open(write_path/"adr_options.txt", "wt") as fp:
+            fp.write(f'Option name=gr_region_width_in_poly_pitches value={x_grid}\n')
+            fp.write(f'Option name=gr_region_height_in_diff_pitches value={y_grid}\n')
+
+        with open(write_path/"adr_design_rules.txt", "wt") as fp:
+            for name, layer in self.layers.items():
+                if isinstance(layer, LayerMetal):
+                    fp.write(f'Rule name={name}_minete type=minete value={layer.min_end_to_end} layer={name}\n')
+                    fp.write(f'Rule name={name}_minlength type=minlength value={layer.min_length} layer={name}\n')
+
+        with open(write_path/"adr_metal_templates.txt", "wt") as fp:
+            for name, layer in self.layers.items():
+                if isinstance(layer, LayerMetal):
+                    line = f'MetalTemplate layer={name} name={name}_template_0'
+                    line += f' widths={",".join(str(i) for i in layer.width)}'
+                    line += f' spaces={",".join(str(i) for i in layer.space)}'
+                    if layer.color is not None and len(layer.color) > 0:
+                        line += f' colors={",".join(str(i) for i in layer.color)}'
+                    line += " stops=%s" % (",".join( str(i) for i in [layer.stop_pitch - 2*layer.stop_point, 2*layer.stop_point]))
+                    line += '\n'
+                    fp.write(line)
+
+        # Single metal template instance. Generalize to multiple as needed in the future.
+        with open(write_path/"adr_metal_templates_instances.txt", "wt") as fp:
+            for name, layer in self.layers.items():
+                if isinstance(layer, LayerMetal):
+                    line  = f'MetalTemplateInstance template={name}_template_0'
+                    line += f' pgdoffset_abs={layer.offset}'
+                    line += f' ogdoffset_abs={layer.stop_point}'
+                    line += f' region={":".join(str(i) for i in region)}'
+                    line += '\n'
+                    fp.write(line)
+
+        def _via_string(via: LayerVia):
+
+            via_str =  f'Generator name={via.name}_{via.width_x}_{via.width_y} {{ \n'
+            via_str += f'  Layer1 value={via.stack[0]} {{\n'
+            via_str += f'    x_coverage value={via.layer_l_enc_x}\n'
+            via_str += f'    y_coverage value={via.layer_l_enc_y}\n'
+            via_str += f'    widths value={",".join(str(i) for i in via.layer_l_width)}\n'
+            via_str += f'  }}\n'
+            via_str += f'  Layer2 value={via.stack[1]} {{\n'
+            via_str += f'    x_coverage value={via.layer_h_enc_x}\n'
+            via_str += f'    y_coverage value={via.layer_h_enc_y}\n'
+            via_str += f'    widths value={",".join(str(i) for i in via.layer_h_width)}\n'
+            via_str += f'  }}\n'
+            via_str += f'  CutWidth value={via.width_x}\n'
+            via_str += f'  CutHeight value={via.width_y}\n'
+            via_str += f'  cutlayer value={via.name}\n'
+            via_str += f'}}\n'
+
+            return via_str
+
+        with open(write_path/"adr_via_generators.txt", "wt") as fp:
+            for name, layer in self.layers.items():
+                if isinstance(layer, LayerVia):
+                    via_str = _via_string(layer)
+                    fp.write(via_str)
+            fp.write(f'\n')
+
+        with open(write_path/"adr_layers.txt", "wt") as fp:
+
+            # Dummy layer required for global grid
+            line  = f'Layer name=diffusion pgd=hor level=0 {{\n'
+            line += f'  Type value=diffusion\n'
+            line += f'  Technology pitch={y_pitch}\n'
+            line += f'}}\n'
+            fp.write(line)
+
+            # Dummy layer required for global grid
+            line  = f'Layer name=wirepoly pgd=ver level=1 {{\n'
+            line += f'  Type value=wire\n'
+            line += f'  Type value=poly\n'
+            line += f'  Technology pitch={x_pitch}\n'
+            line += f'}}\n'
+            fp.write(line)
+
+            # identify electrical connectivity
+            connected_layers = dict()
+            for name, layer in self.layers.items():
+                if isinstance(layer, LayerVia):
+                    ml = layer.stack[0]
+                    mh = layer.stack[1]
+                    connected_layers[name] = [ml, mh]
+                    if ml not in connected_layers:
+                        connected_layers[ml] = []
+                    connected_layers[ml].append(name)
+                    if mh not in connected_layers:
+                        connected_layers[mh] = []
+                    connected_layers[mh].append(name)
+
+            level = 2
+
+            for i in range(0, 99):
+                name = f'M{i}'
+                if name in self.layers:
+                    layer = self.layers[name]
+
+                    pgd = 'ver' if layer.direction == 'v' else 'hor'
+
+                    line  = f'Layer name={name} pgd={pgd} level={level} {{\n'
+                    line += f'  Type value=wire\n'
+                    line += f'  Type value=metal\n'
+                    for l in connected_layers[name]:
+                        line += f'  ElectricallyConnected layer={l}\n'
+                    line += f'}}\n'
+                    fp.write(line)
+                    level +=1
+
+                name = f'V{i}'
+                if name in self.layers:
+                    line  = f'Layer name={name} level={level} {{\n'
+                    line += f'  Type value=via\n'
+                    for l in connected_layers[name]:
+                        line += f'  ElectricallyConnected layer={l}\n'
+                    line += f'}}\n'
+                    fp.write(line)
+                    level +=1
+
+            fp.write(f'\n')

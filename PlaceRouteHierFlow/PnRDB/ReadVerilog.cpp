@@ -9,6 +9,8 @@ bool PnRdatabase::ReadVerilog(const string& fpath, const string& vname, const st
 
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.ReadVerilog");
 
+  ReadVerilogHelper rvh(*this);
+
   string verilogfile=fpath+"/"+vname;
   logger->info("PnRDB-Info: reading Verilog file {0}",verilogfile);
 
@@ -17,124 +19,101 @@ bool PnRdatabase::ReadVerilog(const string& fpath, const string& vname, const st
   try {
     fin.open(verilogfile.c_str());
   } catch(ifstream::failure& e) {
-      logger->error("PnRDB-Error: failed to open Verilog file {0}",verilogfile);
+      logger->error("Failed to open Verilog file {0}",verilogfile);
       return false;
   }
 
-  try {
-      ReadVerilogHelper rvh(*this);
-      rvh( fin, fpath, topcell);
-  } catch(ifstream::failure e) {
-      fin.close();
-      logger->error("PnRDB-Error: fail to read Verilog file ");
-      return false;
-  }
+  rvh.parse_top( fin);
 
-  try {
-      fin.close();
-  } catch(ifstream::failure e) {
-      logger->error("PnRDB-Error: fail to close Verilog file ");
-      return false;
-  }
+  fin.close();
+
+  semantic( fpath, topcell, rvh.get_Supply_node());
 
   return true;
 
 }
 
-void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
+void PnRdatabase::semantic( const string& fpath, const string& topcell, PnRDB::hierNode& Supply_node)
 {
-  auto logger = spdlog::default_logger()->clone("PnRDB.ReadVerilogHelper.semantic");
+  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.semantic");
 
-    for(unsigned int i=0;i<db.hierTree.size();i++){
+    for(unsigned int i=0;i<hierTree.size();i++){
 
-	auto &curr_node = db.hierTree[i];
+	auto &curr_node = hierTree[i];
 
-	{
-	    if(db.DRC_info.Metal_info.size() < 2) {logger->warn("PnRDB-Error: too few metal layers");}
-        /**if(db.DRC_info.Metal_info[0].direct==1) { //horizontal
-            curr_node.bias_Vgraph=db.DRC_info.Metal_info[0].grid_unit_y;
-        } else {
-            curr_node.bias_Hgraph=db.DRC_info.Metal_info[0].grid_unit_x;
-        }
-        if(db.DRC_info.Metal_info[1].direct==1) { //horizontal
-            curr_node.bias_Vgraph=db.DRC_info.Metal_info[1].grid_unit_y;
-        } else {
-            curr_node.bias_Hgraph=db.DRC_info.Metal_info[1].grid_unit_x;
-        }**/
-        curr_node.bias_Vgraph = db.DRC_info.Design_info.Vspace;
-        curr_node.bias_Hgraph = db.DRC_info.Design_info.Hspace;
+        curr_node.bias_Vgraph = DRC_info.Design_info.Vspace;
+        curr_node.bias_Hgraph = DRC_info.Design_info.Hspace;
         // added one nodes to the class
-        if (db.ReadConstraint_Json(curr_node, fpath, "const.json")) {
+        if (ReadConstraint_Json(curr_node, fpath, "const.json")) {
             logger->info("Finished reading contraint json file");
-        } else if (db.ReadConstraint(curr_node, fpath, "const")) {
+        } else if (ReadConstraint(curr_node, fpath, "const")) {
             logger->info("Finished reading contraint file");
         } else {
             logger->warn("PnRDB-Warn: fail to read constraint file of module {0}", curr_node.name);
         }
     }
-    }
 
 
     //update hier tree here for the class Nodes.
     //inistial 
-    for(unsigned int i=0;i<db.hierTree.size();i++){
-        for(unsigned int j=0;j<db.hierTree[i].Blocks.size();j++){
-            db.hierTree[i].Blocks[j].child = -1;
+    for(unsigned int i=0;i<hierTree.size();i++){
+        for(unsigned int j=0;j<hierTree[i].Blocks.size();j++){
+            hierTree[i].Blocks[j].child = -1;
 	}
     }
 		
     //update hier tree here for the class Nodes.
-    for(unsigned int i=0;i<db.hierTree.size();i++){
-        for(unsigned int j=0;j<db.hierTree.size();j++){
-            for(unsigned int k=0;k<db.hierTree[j].Blocks.size();k++)
-                if(db.hierTree[j].Blocks[k].instance.back().master.compare(db.hierTree[i].name)==0){
-                   db.hierTree[j].Blocks[k].child = i;
+    for(unsigned int i=0;i<hierTree.size();i++){
+        for(unsigned int j=0;j<hierTree.size();j++){
+            for(unsigned int k=0;k<hierTree[j].Blocks.size();k++)
+                if(hierTree[j].Blocks[k].instance.back().master.compare(hierTree[i].name)==0){
+                   hierTree[j].Blocks[k].child = i;
                    int parent_found = 0;
-                   for(unsigned int p=0;p<db.hierTree[i].parent.size();p++){
-		     if(db.hierTree[i].parent[p] == (int)j){parent_found=1;} 
+                   for(unsigned int p=0;p<hierTree[i].parent.size();p++){
+		     if(hierTree[i].parent[p] == (int)j){parent_found=1;} 
 		   }
-                   if(parent_found==0){db.hierTree[i].parent.push_back(j);}                   
+                   if(parent_found==0){hierTree[i].parent.push_back(j);}                   
                   }
             }
-        if(db.hierTree[i].name.compare(topcell)==0){
-           db.topidx =i;
-           db.hierTree[i].isTop = 1;
+        if(hierTree[i].name.compare(topcell)==0){
+           topidx =i;
+           hierTree[i].isTop = 1;
           }
                 //update terminal information
-        for(unsigned int l=0;l<db.hierTree[i].Nets.size();l++){
-            for(unsigned int m=0;m<db.hierTree[i].Terminals.size();m++){
-                if(db.hierTree[i].Nets[l].name.compare(db.hierTree[i].Terminals[m].name)==0){
-                   db.hierTree[i].Nets[l].degree++;
+        for(unsigned int l=0;l<hierTree[i].Nets.size();l++){
+            for(unsigned int m=0;m<hierTree[i].Terminals.size();m++){
+                if(hierTree[i].Nets[l].name.compare(hierTree[i].Terminals[m].name)==0){
+                   hierTree[i].Nets[l].degree++;
 		   {
 		       PnRDB::connectNode temp_connectNode;
 		       temp_connectNode.type = PnRDB::Terminal;
 		       temp_connectNode.iter = m;
 		       temp_connectNode.iter2 = -1;
-		       db.hierTree[i].Nets[l].connected.push_back(temp_connectNode);
+		       hierTree[i].Nets[l].connected.push_back(temp_connectNode);
 		   }
-                   db.hierTree[i].Nets[l].sink2Terminal = 1;
-                   db.hierTree[i].Terminals[m].netIter = l;
+                   hierTree[i].Nets[l].sink2Terminal = 1;
+                   hierTree[i].Terminals[m].netIter = l;
                    }
                 }
             }
       }
 		
-    for(unsigned int i=0;i<db.hierTree.size();i++){
-        for(unsigned int j=0;j<db.hierTree[i].Blocks.size();j++){
-            if(db.hierTree[i].Blocks[j].child==-1){
-               db.hierTree[i].Blocks[j].instance.back().isLeaf=1;
+    for(unsigned int i=0;i<hierTree.size();i++){
+        for(unsigned int j=0;j<hierTree[i].Blocks.size();j++){
+            if(hierTree[i].Blocks[j].child==-1){
+               hierTree[i].Blocks[j].instance.back().isLeaf=1;
                }
         else{
-             db.hierTree[i].Blocks[j].instance.back().isLeaf=0;
+             hierTree[i].Blocks[j].instance.back().isLeaf=0;
              }
            }
        }
 
   logger->debug("Middle");
     //mergeLEFandGDS
-    for(unsigned int i=0;i<db.hierTree.size();i++){
-    //cout<<"db.hierTree node "<<i<<endl;
-    if(!db.MergeLEFMapData(db.hierTree[i])){logger->error("PnRDB-Error: fail to mergeLEFMapData of module {0}",db.hierTree[i].name);
+    for(unsigned int i=0;i<hierTree.size();i++){
+    //cout<<"hierTree node "<<i<<endl;
+    if(!MergeLEFMapData(hierTree[i])){logger->error("PnRDB-Error: fail to mergeLEFMapData of module {0}",hierTree[i].name);
       }else{
       logger->debug("Finished merge lef data");
       }
@@ -151,19 +130,19 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
         }else{
          power =1;
         }
-      for(unsigned int j=0;j<db.hierTree.size();j++){
+      for(unsigned int j=0;j<hierTree.size();j++){
            std::vector<PnRDB::net> temp_net;
            bool powernet_found = 0;
-           for(unsigned int k=0;k<db.hierTree[j].Nets.size();k++){
-               if(db.hierTree[j].Nets[k].name == supply_name_full or db.hierTree[j].Nets[k].name == supply_name){
+           for(unsigned int k=0;k<hierTree[j].Nets.size();k++){
+               if(hierTree[j].Nets[k].name == supply_name_full || hierTree[j].Nets[k].name == supply_name){
                    powernet_found = 1;
                    PnRDB::PowerNet temp_PowerNet;
-                   temp_PowerNet.name = db.hierTree[j].Nets[k].name;
+                   temp_PowerNet.name = hierTree[j].Nets[k].name;
                    temp_PowerNet.power = power;
-                   temp_PowerNet.connected = db.hierTree[j].Nets[k].connected;
-                   db.hierTree[j].PowerNets.push_back(temp_PowerNet);
+                   temp_PowerNet.connected = hierTree[j].Nets[k].connected;
+                   hierTree[j].PowerNets.push_back(temp_PowerNet);
                  }else{
-                   temp_net.push_back(db.hierTree[j].Nets[k]);
+                   temp_net.push_back(hierTree[j].Nets[k]);
                  }
               }
 
@@ -171,42 +150,42 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
               PnRDB::PowerNet temp_PowerNet;
               temp_PowerNet.name = supply_name;
               temp_PowerNet.power = power;
-              db.hierTree[j].PowerNets.push_back(temp_PowerNet);
+              hierTree[j].PowerNets.push_back(temp_PowerNet);
             }
 
-            db.hierTree[j].Nets = temp_net;
+            hierTree[j].Nets = temp_net;
          }
      }
 
   //update pins & terminal connection iternet
-  for(unsigned int i=0;i<db.hierTree.size();i++){
-      for(unsigned int j=0;j<db.hierTree[i].Nets.size();j++){
-           for(unsigned int k=0;k<db.hierTree[i].Nets[j].connected.size();k++){
-                if(db.hierTree[i].Nets[j].connected[k].type == PnRDB::Block){
-                        for(unsigned int m=0;m<db.hierTree[i].Blocks[db.hierTree[i].Nets[j].connected[k].iter2].instance.size();++m) {
-                            db.hierTree[i].Blocks[db.hierTree[i].Nets[j].connected[k].iter2].instance.at(m).blockPins[db.hierTree[i].Nets[j].connected[k].iter].netIter = j;
+  for(unsigned int i=0;i<hierTree.size();i++){
+      for(unsigned int j=0;j<hierTree[i].Nets.size();j++){
+           for(unsigned int k=0;k<hierTree[i].Nets[j].connected.size();k++){
+                if(hierTree[i].Nets[j].connected[k].type == PnRDB::Block){
+                        for(unsigned int m=0;m<hierTree[i].Blocks[hierTree[i].Nets[j].connected[k].iter2].instance.size();++m) {
+                            hierTree[i].Blocks[hierTree[i].Nets[j].connected[k].iter2].instance.at(m).blockPins[hierTree[i].Nets[j].connected[k].iter].netIter = j;
                         } // [RA] need confirmation -wbxu
                   }else{
-db.hierTree[i].Terminals[db.hierTree[i].Nets[j].connected[k].iter].netIter = j;
+hierTree[i].Terminals[hierTree[i].Nets[j].connected[k].iter].netIter = j;
                   }
               }
          }
        
-      for(unsigned int j=0;j<db.hierTree[i].PowerNets.size();j++){
+      for(unsigned int j=0;j<hierTree[i].PowerNets.size();j++){
 
-           for(unsigned int k=0;k<db.hierTree[i].PowerNets[j].connected.size();k++){
-                if(db.hierTree[i].PowerNets[j].connected[k].type == PnRDB::Block){
-                    for(unsigned int m=0;m<db.hierTree[i].Blocks[db.hierTree[i].PowerNets[j].connected[k].iter2].instance.size();++m) {
-                    db.hierTree[i].Blocks[db.hierTree[i].PowerNets[j].connected[k].iter2].instance.at(m).blockPins[db.hierTree[i].PowerNets[j].connected[k].iter].netIter = -1; 
+           for(unsigned int k=0;k<hierTree[i].PowerNets[j].connected.size();k++){
+                if(hierTree[i].PowerNets[j].connected[k].type == PnRDB::Block){
+                    for(unsigned int m=0;m<hierTree[i].Blocks[hierTree[i].PowerNets[j].connected[k].iter2].instance.size();++m) {
+                    hierTree[i].Blocks[hierTree[i].PowerNets[j].connected[k].iter2].instance.at(m).blockPins[hierTree[i].PowerNets[j].connected[k].iter].netIter = -1; 
                     }  // [RA] need confirmation - wbxu
-                    db.hierTree[i].PowerNets[j].Pins.push_back(db.hierTree[i].Blocks[db.hierTree[i].PowerNets[j].connected[k].iter2].instance.back().blockPins[db.hierTree[i].PowerNets[j].connected[k].iter]); // [AR] need modification -wbxu
+                    hierTree[i].PowerNets[j].Pins.push_back(hierTree[i].Blocks[hierTree[i].PowerNets[j].connected[k].iter2].instance.back().blockPins[hierTree[i].PowerNets[j].connected[k].iter]); // [AR] need modification -wbxu
                   }else{
-                    db.hierTree[i].Terminals[db.hierTree[i].PowerNets[j].connected[k].iter].netIter = -1;
+                    hierTree[i].Terminals[hierTree[i].PowerNets[j].connected[k].iter].netIter = -1;
                     PnRDB::pin temp_pin;
-                    temp_pin.name = db.hierTree[i].Terminals[db.hierTree[i].PowerNets[j].connected[k].iter].name;
+                    temp_pin.name = hierTree[i].Terminals[hierTree[i].PowerNets[j].connected[k].iter].name;
                     temp_pin.netIter = -1;
-                    temp_pin.pinContacts = db.hierTree[i].Terminals[db.hierTree[i].PowerNets[j].connected[k].iter].termContacts;
-                    db.hierTree[i].PowerNets[j].Pins.push_back(temp_pin);
+                    temp_pin.pinContacts = hierTree[i].Terminals[hierTree[i].PowerNets[j].connected[k].iter].termContacts;
+                    hierTree[i].PowerNets[j].Pins.push_back(temp_pin);
                   }
               }
 
@@ -214,45 +193,45 @@ db.hierTree[i].Terminals[db.hierTree[i].Nets[j].connected[k].iter].netIter = j;
 
   //adjust symmetry net iter
 
-  for(unsigned int i=0;i<db.hierTree.size();i++){
-     for(unsigned int j=0;j<db.hierTree[i].SNets.size();j++){
+  for(unsigned int i=0;i<hierTree.size();i++){
+     for(unsigned int j=0;j<hierTree[i].SNets.size();j++){
         int iter1=-1;
         int iter2=-1;
-        for(unsigned int k=0;k<db.hierTree[i].Nets.size();k++){
-           if(db.hierTree[i].Nets[k].name==db.hierTree[i].SNets[j].net1.name){
+        for(unsigned int k=0;k<hierTree[i].Nets.size();k++){
+           if(hierTree[i].Nets[k].name==hierTree[i].SNets[j].net1.name){
                iter1 = k;
                break;
              }
         }
-        for(unsigned int k=0;k<db.hierTree[i].Nets.size();k++){
-           if(db.hierTree[i].Nets[k].name==db.hierTree[i].SNets[j].net2.name){
+        for(unsigned int k=0;k<hierTree[i].Nets.size();k++){
+           if(hierTree[i].Nets[k].name==hierTree[i].SNets[j].net2.name){
                iter2 = k;
                break;
              }
         }
-        db.hierTree[i].Nets[iter1].symCounterpart=iter2;
-        db.hierTree[i].Nets[iter2].symCounterpart=iter1; 
+        hierTree[i].Nets[iter1].symCounterpart=iter2;
+        hierTree[i].Nets[iter2].symCounterpart=iter1; 
      }
   }
 
 //Add LinearConst here
 
-      for(unsigned int j=0;j<db.hierTree[i].L_Constraints.size();j++){
+      for(unsigned int j=0;j<hierTree[i].L_Constraints.size();j++){
 
-        PnRDB::LinearConst temp_LinearConst = db.hierTree[i].L_Constraints[j];
+        PnRDB::LinearConst temp_LinearConst = hierTree[i].L_Constraints[j];
 
-        for(int k=0;k<db.hierTree[i].Nets.size();k++){
-           if(db.hierTree[i].Nets[k].name == temp_LinearConst.net_name){
-             db.hierTree[i].Nets[k].upperBound = temp_LinearConst.upperBound;
-             for(int h=0;h<db.hierTree[i].Nets[k].connected.size();h++){
-                logger->debug("Connected {0} {1} {2}",db.hierTree[i].Nets[k].connected[h].type,db.hierTree[i].Nets[k].connected[h].iter,db.hierTree[i].Nets[k].connected[h].iter2);
-                for(int l=0;l<temp_LinearConst.pins.size();l++){
+        for(unsigned int k=0;k<hierTree[i].Nets.size();k++){
+           if(hierTree[i].Nets[k].name == temp_LinearConst.net_name){
+             hierTree[i].Nets[k].upperBound = temp_LinearConst.upperBound;
+             for(unsigned int h=0;h<hierTree[i].Nets[k].connected.size();h++){
+                logger->debug("Connected {0} {1} {2}",hierTree[i].Nets[k].connected[h].type,hierTree[i].Nets[k].connected[h].iter,hierTree[i].Nets[k].connected[h].iter2);
+                for(unsigned int l=0;l<temp_LinearConst.pins.size();l++){
                   logger->debug("LinearConst cont {0} {1} {2}",temp_LinearConst.pins[l].first,temp_LinearConst.pins[l].second,temp_LinearConst.alpha[l]);
-                  if(db.hierTree[i].Nets[k].connected[h].type == PnRDB::Block and db.hierTree[i].Nets[k].connected[h].iter2 == temp_LinearConst.pins[l].first and db.hierTree[i].Nets[k].connected[h].iter == temp_LinearConst.pins[l].second){
+                  if(hierTree[i].Nets[k].connected[h].type == PnRDB::Block && hierTree[i].Nets[k].connected[h].iter2 == temp_LinearConst.pins[l].first && hierTree[i].Nets[k].connected[h].iter == temp_LinearConst.pins[l].second){
                     logger->debug("LinearConst alpha {0}",temp_LinearConst.alpha[l]);
-                    db.hierTree[i].Nets[k].connected[h].alpha = temp_LinearConst.alpha[l];
-                  }else if(db.hierTree[i].Nets[k].connected[h].type == PnRDB::Terminal and temp_LinearConst.pins[l].first==-1 and db.hierTree[i].Nets[k].connected[h].iter == temp_LinearConst.pins[l].second){
-                    db.hierTree[i].Nets[k].connected[h].alpha = temp_LinearConst.alpha[l];
+                    hierTree[i].Nets[k].connected[h].alpha = temp_LinearConst.alpha[l];
+                  }else if(hierTree[i].Nets[k].connected[h].type == PnRDB::Terminal && temp_LinearConst.pins[l].first==-1 && hierTree[i].Nets[k].connected[h].iter == temp_LinearConst.pins[l].second){
+                    hierTree[i].Nets[k].connected[h].alpha = temp_LinearConst.alpha[l];
                     logger->debug("LinearConst alpha {0}",temp_LinearConst.alpha[l]);
                   }
                  }
@@ -261,17 +240,17 @@ db.hierTree[i].Terminals[db.hierTree[i].Nets[j].connected[k].iter].netIter = j;
         }
       }
 
-      for(unsigned int j=0;j<db.hierTree[i].L_Constraints.size();j++){
+      for(unsigned int j=0;j<hierTree[i].L_Constraints.size();j++){
 
-          for(unsigned int k=0;k<db.hierTree[i].L_Constraints[j].alpha.size();k++){
-              logger->debug("LinearConst info {0} {1} ",db.hierTree[i].L_Constraints[j].net_name,db.hierTree[i].L_Constraints[j].alpha[k]);
+          for(unsigned int k=0;k<hierTree[i].L_Constraints[j].alpha.size();k++){
+              logger->debug("LinearConst info {0} {1} ",hierTree[i].L_Constraints[j].net_name,hierTree[i].L_Constraints[j].alpha[k]);
            }
 
       }
 
-      for(unsigned int j=0;j<db.hierTree[i].Nets.size();j++){
-         for(unsigned int k =0;k<db.hierTree[i].Nets[j].connected.size();k++){
-            logger->debug("Assign Linear {0} {1} ",db.hierTree[i].Nets[j].upperBound,db.hierTree[i].Nets[j].connected[k].alpha);
+      for(unsigned int j=0;j<hierTree[i].Nets.size();j++){
+         for(unsigned int k =0;k<hierTree[i].Nets[j].connected.size();k++){
+            logger->debug("Assign Linear {0} {1} ",hierTree[i].Nets[j].upperBound,hierTree[i].Nets[j].connected[k].alpha);
          }
       }
 
@@ -437,7 +416,7 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
   if ( !celldefine_mode) {
       db.hierTree.push_back(temp_node);
   }
-  temp_node = clear_node;
+  temp_node = PnRDB::hierNode();
 
 }
 
@@ -470,18 +449,6 @@ void ReadVerilogHelper::parse_top( istream& fin)
 
 }
 
-
-void ReadVerilogHelper::operator()(istream& fin, const string& fpath, const string& topcell)
-{
-
-    auto logger = spdlog::default_logger()->clone("PnRDB.ReadVerilogHelper.operator()");
-
-    // Swap in the new parser
-    parse_top( fin);
-    semantic( fpath, topcell);
-    logger->info("End of reading verilog");
-}
-
 bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
 
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.MergeLEFMapData");
@@ -493,7 +460,7 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
     string master=node.Blocks[i].instance.back().master;
     if(lefData.find(master)==lefData.end()) {
 	// LEF is missing; Ok if a cap or if not a leaf
-	if(master.find("Cap")!=std::string::npos or
+	if(master.find("Cap")!=std::string::npos ||
 	   master.find("cap")!=std::string::npos) continue;
 	if(node.Blocks[i].instance.back().isLeaf) {
 	    logger->error("PnRDB-Error: the key does not exist in map: {0}",master);

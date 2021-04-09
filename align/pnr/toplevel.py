@@ -14,14 +14,14 @@ TransformType = PnR.TransformType
 
 def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, adr_mode, *, PDN_mode, pdk):
     NEW_GLOBAL_ROUTER = True
-    h_skip_factor = 5;
-    v_skip_factor = 5;
+    h_skip_factor = 7
+    v_skip_factor = 8
 
     #logger.info( f"SMB {list(pdk['design_info'].keys())}")
     logger.info( f"SMB {list(pdk.keys())}")
 
-    signal_routing_metal_l = 0;
-    signal_routing_metal_u = 8;
+    signal_routing_metal_l = 0
+    signal_routing_metal_u = 4
 
     curr_route = PnR.Router()
 
@@ -67,10 +67,11 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
         current_node.gdsFile = current_node_copy.gdsFile
 
     if current_node.isTop:
-        power_grid_metal_l = 5
-        power_grid_metal_u = 6
+        power_grid_metal_l = 4
+        power_grid_metal_u = 5
+
         power_routing_metal_l = 0
-        power_routing_metal_u = 6
+        power_routing_metal_u = 5
 
         # Power Grid Simulation
         if PDN_mode:
@@ -230,6 +231,19 @@ def analyze_hN( tag, hN, beforeAddingBlockPins=False):
             logger.info( f'    inst.name={inst.name} inst.master={inst.master} len(inst.dummy_power_pin)={len(inst.dummy_power_pin)}')
 
 
+def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
+    DB = PnR.PnRdatabase()
+
+    assert drname.endswith('.json'), drname
+    DB.ReadPDKJSON( path + '/' + drname)
+
+    DB.ReadLEF( path + '/' + lefname)
+    DB.ReadMap( path, mapname)
+    DB.ReadVerilog( path, vname, topcell)
+
+    return DB
+
+
 def toplevel(args, *, PDN_mode=False, pdk=None, render_placements=False):
 
     assert len(args) == 9
@@ -248,7 +262,8 @@ def toplevel(args, *, PDN_mode=False, pdk=None, render_placements=False):
 
     pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
 
-    DB = PnR.PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile)
+    #DB = PnR.PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile)
+    DB = PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile)
     drcInfo = DB.getDrc_info()
     lefData = DB.checkoutSingleLEF()
 
@@ -282,6 +297,7 @@ def toplevel(args, *, PDN_mode=False, pdk=None, render_placements=False):
             DB.CheckinHierNode(idx, node)
 
         DB.hierTree[idx].numPlacement = actualNumLayout
+
         #analyze_hN( 'End', current_node, False)
 
     if render_placements:

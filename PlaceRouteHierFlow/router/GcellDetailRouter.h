@@ -15,7 +15,11 @@
 #include <cstdlib> // system
 #include <iterator>
 #include <cctype>
+#ifdef WINDOWS
+#include <Windows.h> // getcwd
+#else
 #include <unistd.h> // getcwd
+#endif
 #include <map>
 #include <set>
 #include <utility>//std::pair, make_pair
@@ -163,10 +167,10 @@ class GcellDetailRouter : public GcellGlobalRouter{
     void Symmetry_Routing(int sym_flag, int i, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net);
     void InsertInternalVia(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, std::vector<RouterDB::Block> &Blocks);
     void InsertRoutingVia(A_star &a_star, Grid &grid, std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via);
-    void AddViaSpacing(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid &grid);
+    void AddViaSpacing(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid &grid, RouterDB::point LL, RouterDB::point UR);
     void AddViaEnclosure(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid &grid,
                          std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x,
-                         std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net);
+                         std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net, RouterDB::point LL, RouterDB::point UR);
     void AddViaEnclosure_old(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid &grid,
                          std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x,
                          std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net);

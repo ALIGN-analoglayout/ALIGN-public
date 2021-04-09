@@ -39,9 +39,6 @@ devmode = 'develop' in sys.argv
 if devmode and '--build-type' not in sys.argv:
     sys.argv.extend(["--build-type", "Debug"])
 
-cmake_args.append('-DCMAKE_BUILD_TYPE:STRING=Debug')
-
-
 setup(name='align',
       version=version,
       description='Analog Layout Synthesis Package',
@@ -54,7 +51,12 @@ setup(name='align',
       packages = \
           find_packages(include=['align', 'align.*']) \
         + (['tests'] if devmode else []),
-      package_data={'align': ['config/*']},
+      package_data={
+          'align': [
+              'config/*',
+              'pdk/finfet/*.json'
+          ]
+      },
       cmake_args = cmake_args,
       cmake_process_manifest_hook=align_manifest_filter,
       scripts=[

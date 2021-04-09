@@ -10,23 +10,23 @@ def test_one():
 {
     "constraints": [
       {
-        "constraint_name": "alignment",
+        "constraint": "alignment",
         "instances": ["i0"],
         "direction": "horizontal",
         "edge": "bottom"
       },
       {
-        "constraint_name": "generator",
+        "constraint": "generator",
         "instances": ["i1", "i2"],
         "style": "cc"
       },
       {
-        "constraint_name": "orientation",
+        "constraint": "orientation",
         "instances": ["i2"],
         "flip_y": true
       },
       {
-        "constraint_name": "boundary",
+        "constraint": "boundary",
         "subcircuits": ["subcircuit_a"],
         "aspect_ratio_min": 0.3,
         "aspect_ratio_max": 0.6
@@ -43,13 +43,13 @@ def test_two():
 {
     "constraints": [
       {
-        "constraint_name": "alignment",
+        "constraint": "alignment",
         "instances": ["i0, i1"],
         "direction": "horizontal",
         "edge": "nowhere"
       },
       {
-        "constraint_name": "orientation",
+        "constraint": "orientation",
         "instances": ["i1"],
         "flip_y": true
       }

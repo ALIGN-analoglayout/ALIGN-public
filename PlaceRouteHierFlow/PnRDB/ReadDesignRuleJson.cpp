@@ -254,8 +254,8 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
              temp_viamodel.LowerIdx = vs.lower_metal_index;
              temp_viamodel.UpperIdx = vs.upper_metal_index;
 
-	     const string& lm_name = DRC_info.Metal_info.at(temp_viamodel.LowerIdx).name;
-	     const string& um_name = DRC_info.Metal_info.at(temp_viamodel.UpperIdx).name;
+	     //const string& lm_name = DRC_info.Metal_info.at(temp_viamodel.LowerIdx).name;
+	     //const string& um_name = DRC_info.Metal_info.at(temp_viamodel.UpperIdx).name;
 
 	     //cout << "Via " << temp_viamodel.name << " ViaIndex " << temp_viamodel.ViaIdx << " LowerIdx " << temp_viamodel.LowerIdx << " (" << lm_name << ") UpperIdx " << temp_viamodel.UpperIdx << " (" << um_name << ")" << endl;
 
@@ -392,6 +392,14 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
           DRC_info.Design_info.Vspace = design_info["Vspace"];
           DRC_info.Design_info.Hspace *= times;
           DRC_info.Design_info.Vspace *= times;
+          DRC_info.Design_info.signal_routing_metal_l = DRC_info.Metalmap[design_info["bottom_signal_routing_layer"]];
+          DRC_info.Design_info.signal_routing_metal_u = DRC_info.Metalmap[design_info["top_signal_routing_layer"]];
+          DRC_info.Design_info.power_grid_metal_l = DRC_info.Metalmap[design_info["top_power_routing_layer"]]-1;
+          DRC_info.Design_info.power_grid_metal_u = DRC_info.Metalmap[design_info["top_power_routing_layer"]];
+          DRC_info.Design_info.power_routing_metal_l = DRC_info.Metalmap[design_info["bottom_power_routing_layer"]];
+          DRC_info.Design_info.power_routing_metal_u = DRC_info.Metalmap[design_info["top_power_routing_layer"]];
+          std::cout<<"design info "<<DRC_info.Design_info.signal_routing_metal_l<<" "<<DRC_info.Design_info.signal_routing_metal_u<<" "<<DRC_info.Design_info.power_grid_metal_l<<" "<<DRC_info.Design_info.power_grid_metal_u<<" "<<DRC_info.Design_info.power_routing_metal_l<<" "<<DRC_info.Design_info.power_routing_metal_u<<std::endl;
+
         }
     }
 }
