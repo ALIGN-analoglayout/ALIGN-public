@@ -41,7 +41,7 @@ token_re_map = {
     'NLCOMMENT': r'(^|[\n\r])+\*[^\n\r]*',
     'COMMENT': fr'(^|\s)*{commentchars}[^\n\r]*',
     'CONTINUE': r'(^|[\n\r])+\+',
-    'NEWL': r'\s*[\n\r]+',
+    'NEWL': r'[\n\r]+',
     'EQUALS': r'\s*=\s*',
     'EXPR': fr"""(?P<quote>['"]){exprcontent}(?P=quote)|({{){exprcontent}(}})""",
     'NUMBER': numericval + fr'(?=\s|\Z|{commentchars})',
@@ -117,7 +117,6 @@ class SpiceParser:
     @staticmethod
     def _cast(val, ty='NUMBER'):
         if ty == 'EXPR':
-            # TODO: This needs to be handled better
             return val[1:-1]
         elif ty == 'NAME':
             return val
@@ -131,13 +130,18 @@ class SpiceParser:
 
     def _process_instance(self, name, args, kwargs):
         defaults = {'C': 'CAP', 'R': 'RES', 'L': 'IND'}
+        print(f"cell name: {name}, args {args} kwargs {kwargs}")
         if any(name.startswith(x) for x in ('C', 'R', 'L')):
             model = defaults[name[0]]
-            kwargs['VALUE'] = args.pop()
+            if not kwargs: 
+                kwargs['VALUE'] = args.pop()
+            else:
+                model = args.pop()
         elif any(name.startswith(x) for x in ('M', 'X')):
             model = args.pop()
         else:
             raise NotImplementedError(name, args, kwargs, "is not yet recognized by parser")
+        print(f" model {model} cell name: {name}, args {args} kwargs {kwargs}")
 
         assert model in self.library, (model, name, args, kwargs)
         assert len(args) == len(self.library[model].pins), \
