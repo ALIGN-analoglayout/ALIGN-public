@@ -26,6 +26,9 @@ root.addHandler(handler)
 
 logger = logging.getLogger(__name__)
 
-logger.info('Running C++ toplevel(args)')
+def cmdline( argv):
+    logger.info('Running C++ toplevel(args)')
+    toplevel.toplevel( argv)
 
-toplevel.toplevel( sys.argv)
+if __name__ == "__main__":
+    cmdline( sys.argv)
