@@ -17,8 +17,7 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
     h_skip_factor = 7
     v_skip_factor = 8
 
-    #logger.info( f"SMB {list(pdk['design_info'].keys())}")
-    logger.info( f"SMB {list(pdk.keys())}")
+    logger.debug( f"SMB {list(pdk.keys())}")
 
     signal_routing_metal_l = 0
     signal_routing_metal_u = 4
