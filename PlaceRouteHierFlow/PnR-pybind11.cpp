@@ -17,7 +17,7 @@ using namespace pybind11::literals;
 #include "guard_ring/GuardRingIfc.h"
 #include "router/Router.h"
 #include "MNA/MNASimulationIfc.h"
-#include "toplevel.h"
+//#include "toplevel.h"
 
 using namespace PnRDB;
 using std::string;
@@ -461,9 +461,11 @@ PYBIND11_MODULE(PnR, m) {
     .def( py::init<>())
     .def( "RouteWork", &Router::RouteWork);
 
+  /*
   m.def("save_state", &save_state, "helper function to save_state");
   m.def("route_single_variant", &route_single_variant, "helper function to route a single variant");
   m.def("route_top_down", &route_top_down, "helper function to perform top-down routing");
 
   m.def("toplevel", &toplevel, py::return_value_policy::take_ownership, "helper function to perform the whole C++ flow");
+  */
 };
