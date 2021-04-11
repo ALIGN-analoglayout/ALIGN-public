@@ -16,7 +16,11 @@
 #include <utility> // pair, make_pair
 #include <algorithm>
 #include <sstream>
-#include <unistd.h>
+#ifdef WINDOWS
+#include <Windows.h> // getcwd
+#else
+#include <unistd.h> // getcwd
+#endif
 #include <set>
 #include "datatype.h"
 #include "readfile.h"
@@ -42,11 +46,8 @@ using namespace nlohmann;
 class PnRdatabase;
 
 class ReadVerilogHelper {
-
-
-    PnRDB::hierNode temp_node,clear_node;
+    PnRDB::hierNode temp_node;
     PnRDB::hierNode Supply_node;
-
     PnRdatabase& db;
 
 public:
@@ -61,8 +62,6 @@ public:
 
     ReadVerilogHelper( PnRdatabase& db_in) : db(db_in) {}
 
-    void operator()(istream& fin, const string& fpath, const string& topcell);
-
     void parse_module( Lexer& l, bool celldefine_mode=false);
 
     void parse_top( istream& fin);
@@ -71,7 +70,6 @@ public:
 
     int process_connection( int iter, const string& net_name,
 			    unordered_map<string,int>& net_map);
-    void semantic( const string& fpath, const string& topcell);
 };
 
 
@@ -88,7 +86,8 @@ class PnRdatabase
     void UpdateHierNodeParent(int nodeID); // update parent node of current node
     void TraverseDFS(deque<int>& Q, vector<string>& color, int idx); // DFS subfunc to traverse hierarchical tree 
 
-    void ReadPDKJSON(string drfile);
+ public: 
+
 
     // Not implemented
     PnRdatabase(const PnRdatabase& other); // copy constructor
@@ -111,7 +110,12 @@ class PnRdatabase
 
     long int get_number(string str);
 
+    void ReadPDKJSON(string drfile);
+    void semantic( const string& fpath, const string& topcell, PnRDB::hierNode& Supply_node);
+
+
     deque<int> TraverseHierTree(); // traverse hierarchical tree in topological order
+
     PnRDB::hierNode CheckoutHierNode(int nodeID); // check out data of specific hierarchical node
     std::vector<PnRDB::hierNode> CheckoutHierNodeVec(int nodeID);//checkout nodeVec, which consists of different placement
     void AppendToHierTree( const PnRDB::hierNode& updatedNode); // append node to end of hierTree
@@ -151,7 +155,6 @@ class PnRdatabase
     PnRDB::Omark RelOrt2AbsOrt(PnRDB::Omark current_node_ort, PnRDB::Omark childnode_ort);
     void ExtractPinsToPowerPins(PnRDB::hierNode &updatedNode);
 
-    void ReadVerilog(istream &inps, const string &fpath, const string &topcell);
     bool ReadVerilog(const string &fpath, const string &vname, const string &topcell);
 
     bool ReadLEF(const string& leffile, bool wtap = true); // read building block data from LEF file

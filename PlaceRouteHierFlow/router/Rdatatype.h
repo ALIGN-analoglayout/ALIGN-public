@@ -452,7 +452,8 @@ struct SinkDataComp {
               } else {
                 return lhs.coord[1].x < rhs.coord[1].x;
               }
-            }
+            } else
+              return lhs.coord[0].x < rhs.coord[0].x;
           } else {
             return lhs.metalIdx<rhs.metalIdx;
           }

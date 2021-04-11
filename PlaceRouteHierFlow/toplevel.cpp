@@ -250,7 +250,7 @@ int route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::bbox 
     PnRDB::bbox childnode_box( inst.placedBox.LL, inst.placedBox.UR);
     // 4.complete all children of current_node recursively
     int new_childnode_idx = 0;
-    for (unsigned int lidx = 0; lidx < DB.hierTree[child_idx].numPlacement; lidx++) {
+    for (int lidx = 0; lidx < DB.hierTree[child_idx].numPlacement; lidx++) {
       new_childnode_idx = route_top_down(DB, drcInfo, childnode_box, childnode_orient, child_idx, lidx, opath, binary_directory,
                      skip_saving_state, adr_mode);
     }
@@ -295,7 +295,7 @@ std::unique_ptr<PnRdatabase> toplevel( const std::vector<std::string>& argv) {
   // And generates 69MB in files
   bool skip_saving_state = getenv( "PNRDB_SAVE_STATE") == NULL;
   bool adr_mode = getenv( "PNRDB_ADR_MODE") != NULL;
-  bool multi_thread = getenv( "PNRDB_multi_thread") != NULL;;  // run multi layouts in multi threads
+  //bool multi_thread = getenv( "PNRDB_multi_thread") != NULL;;  // run multi layouts in multi threads
   //bool multi_thread = false;  // run multi layouts in multi threads
 
   string opath="./Results/";
@@ -384,11 +384,11 @@ std::unique_ptr<PnRdatabase> toplevel( const std::vector<std::string>& argv) {
   }
   DB.WritePlacement(opath + DB.hierTree[TraverseOrder.back()].name + ".placement");
 
-  int new_topnode_idx = 0;
-  for (unsigned int lidx = 0; lidx < DB.hierTree[TraverseOrder.back()].numPlacement; lidx++) {
+  //int new_topnode_idx = 0;
+  for (int lidx = 0; lidx < DB.hierTree[TraverseOrder.back()].numPlacement; lidx++) {
     auto &ct = DB.hierTree[TraverseOrder.back()];
     PnRDB::bbox bb( PnRDB::point(0, 0), PnRDB::point(ct.PnRAS[0].width, ct.PnRAS[0].height));
-    new_topnode_idx = route_top_down(
+    route_top_down(
         DB, drcInfo,
 	bb, PnRDB::N,
 	TraverseOrder.back(), lidx, opath, binary_directory, skip_saving_state, adr_mode);

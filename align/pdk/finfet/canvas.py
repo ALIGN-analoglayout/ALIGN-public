@@ -4,7 +4,7 @@ import logging
 from align.cell_fabric.canvas import Canvas
 from align.cell_fabric import Wire, Via, Region
 from align.cell_fabric import CenterLineGrid, EnclosureGrid, SingleGrid
-from align.schema.pdk import LayerMetal, LayerVia, LayerViaSet, PDK
+from align.schema.pdk import LayerMetal, LayerVia, PDK
 from align.cell_fabric import Pdk
 
 logger = logging.getLogger(__name__)
@@ -29,10 +29,10 @@ class CanvasPDK(Canvas):
     def _add_generators(self):
         # This PDK only has metal stack
         for layer_name, layer in self.pdk_v2.layers.items():
-            if layer_name.startswith('M'):
+            if isinstance(layer, LayerMetal):
                 self._add_metal_generator(layer)
-            elif layer_name.startswith('V'):
-                self._add_via_generator(layer.default_via)
+            elif isinstance(layer, LayerVia):
+                self._add_via_generator(layer)
 
         v_grid_pitch = sum(self.pdk_v2.layers['M1'].width) + sum(self.pdk_v2.layers['M1'].space)
         h_grid_pitch = sum(self.pdk_v2.layers['M2'].width) + sum(self.pdk_v2.layers['M2'].space)
@@ -127,36 +127,11 @@ class CanvasPDK(Canvas):
             min_length=2160, min_end_to_end=1080,
             offset=0, width=[400], space=[500], stop_pitch=1080, stop_point=540, stop_offset=0,
         )
-        v1 = LayerViaSet(name="V1", gds_layer_number=21, default_via=LayerVia(
-            name="V1",
-            gds_layer_number=21,
-            stack=('M1', 'M2'),
-            width_x=600, width_y=400, space_x=600, space_y=300,
-        ))
-        v2 = LayerViaSet(name="V2", gds_layer_number=22, default_via=LayerVia(
-            name="V2",
-            gds_layer_number=22,
-            stack=('M2', 'M3'),
-            width_x=600, width_y=400, space_x=300, space_y=600,
-        ))
-        v3 = LayerViaSet(name="V3", gds_layer_number=23, default_via=LayerVia(
-            name="V3",
-            gds_layer_number=23,
-            stack=('M3', 'M4'),
-            width_x=600, width_y=400, space_x=600, space_y=300,
-        ))
-        v4 = LayerViaSet(name="V4", gds_layer_number=24, default_via=LayerVia(
-            name="V4",
-            gds_layer_number=24,
-            stack=('M4', 'M5'),
-            width_x=600, width_y=400, space_x=300, space_y=600,
-        ))
-        v5 = LayerViaSet(name="V5", gds_layer_number=25, default_via=LayerVia(
-            name="V5",
-            gds_layer_number=24,
-            stack=('M5', 'M6'),
-            width_x=600, width_y=400, space_x=600, space_y=300,
-        ))
+        v1 = LayerVia(name="V1", gds_layer_number=21, stack=('M1', 'M2'), width_x=600, width_y=400, space_x=600, space_y=300)
+        v2 = LayerVia(name="V2", gds_layer_number=22, stack=('M2', 'M3'), width_x=600, width_y=400, space_x=300, space_y=600)
+        v3 = LayerVia(name="V3", gds_layer_number=23, stack=('M3', 'M4'), width_x=600, width_y=400, space_x=600, space_y=300)
+        v4 = LayerVia(name="V4", gds_layer_number=24, stack=('M4', 'M5'), width_x=600, width_y=400, space_x=300, space_y=600)
+        v5 = LayerVia(name="V5", gds_layer_number=24, stack=('M5', 'M6'), width_x=600, width_y=400, space_x=600, space_y=300)
 
         self.pdk_v2 = PDK(name=
                        """Mock FinFET technology with non-uniform metal grids. \
