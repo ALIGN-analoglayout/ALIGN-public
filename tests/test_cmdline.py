@@ -6,8 +6,7 @@ import shutil
 
 examples = ['inverter_v1',
             'buffer',
-            'five_transistor_ota',
-            'adder']
+            'five_transistor_ota']
 
 ALIGN_HOME = pathlib.Path(__file__).resolve().parent.parent
 
