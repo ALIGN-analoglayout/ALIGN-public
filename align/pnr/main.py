@@ -95,12 +95,14 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
     working_dir.mkdir(exist_ok=True)
     input_dir = working_dir / 'inputs'
     input_dir.mkdir(exist_ok=True)
+    input_dir_wotap = working_dir / 'inputs' / 'wo_tap' 
+    input_dir_wotap.mkdir(exist_ok=True)
     results_dir = working_dir / 'Results'
 
     # Generate file name inputs
     map_file = f'{subckt}.map'
     lef_file = f'{subckt}.lef'
-    ##lef_file_wotap = f'{subckt}.lef.wotap'
+    lef_file_wotap = f'{subckt}.wotap.lef'
     verilog_file = f'{subckt}.v'
     pdk_file = 'layers.json'
 
@@ -115,18 +117,17 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
             elif file_.suffix == '.lef' and file_.stem != subckt:
                 logger.debug(f"found lef files {file_}")
                 lp.write(file_.read_text())
-        for file_ in (primitive_dir / 'wo_tap').iterdir():
-            if file_.suffix == '.lef' and file_.stem != subckt:
-                logger.debug(f"found lef files {file_}")
-                lp.write(file_.read_text())
+#        for file_ in (primitive_dir / 'wo_tap').iterdir():
+#            if file_.suffix == '.lef' and file_.stem != subckt:
+#                logger.debug(f"found lef files {file_}")
+#                lp.write(file_.read_text())
+#
 
-    """
     with (input_dir / lef_file_wotap).open(mode='wt') as lpwot:
         for file_ in (primitive_dir / 'wo_tap').iterdir():
             if file_.suffix == '.lef' and file_.stem != subckt:
                 logger.debug(f"found lef files {file_}")
                 lpwot.write(file_.read_text())
-    """
 
     #
     # TODO: Copying is bad ! Consider rewriting C++ code to accept fully qualified paths
@@ -145,6 +146,10 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
     for file_ in primitive_dir.iterdir():
         if file_.suffixes == ['.gds', '.json'] or file_.suffixes == ['.json']:
             (input_dir / file_.name).write_text(file_.read_text())
+    # Copy primitives without tap to inputs/wo_tap/ directory
+    for file_ in (primitive_dir / 'wo_tap').iterdir():
+        if file_.suffixes == ['.gds', '.json'] or file_.suffixes == ['.json']:
+            (input_dir_wotap / file_.name).write_text(file_.read_text())
 
     # Run pnr_compiler
     cmd = [str(x) for x in ('align.PnR', input_dir, lef_file, verilog_file, map_file, pdk_file, subckt, nvariants, effort)]

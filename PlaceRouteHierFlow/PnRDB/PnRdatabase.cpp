@@ -46,7 +46,7 @@ PnRdatabase::PnRdatabase(string path, string topcell, string vname, string lefna
   this->ReadLEF(path+"/"+lefname);
   auto ptr = getenv("LEF_WO_TAP");
   if (ptr != nullptr) {
-    this->ReadLEF(string(ptr));
+    this->ReadLEF(string(ptr), false);
   }
   this->ReadMap(path, mapname);
   this->ReadVerilog(path, vname, topcell);
@@ -254,7 +254,7 @@ bool PnRdatabase::ReadMap(string fpath, string mapname) {
       temp = split_by_spaces_yg(def);
       if(temp.size()>=2) {
         gdsData.insert( std::pair<string,string>(temp[0],fpath+"/"+temp[1]) );
-        _gdsDataWoTap.insert( std::make_pair(temp[0], fpath + "/" + temp[1] + ".wotap") );
+        _gdsDataWoTap.insert( std::make_pair(temp[0], fpath + "/wo_tap/" + temp[1]) );
       }
     }
     fin.close();

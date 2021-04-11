@@ -489,58 +489,62 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
   bool missing_lef_file = 0;
 
   logger->info("PnRdatabase-Info:: merge LEF/map data");
-  for(unsigned int i=0;i<node.Blocks.size();i++){
-    string master=node.Blocks[i].instance.back().master;
-    if(lefData.find(master)==lefData.end()) {
-	// LEF is missing; Ok if a cap or if not a leaf
-	if(master.find("Cap")!=std::string::npos or
-	   master.find("cap")!=std::string::npos) continue;
-	if(node.Blocks[i].instance.back().isLeaf) {
-	    logger->error("PnRDB-Error: the key does not exist in map: {0}",master);
-	    missing_lef_file = 1;
-	}
-	continue;
-    }
-    
-    //cout<<node.Blocks[i].instance.back().name<<" "<<master<<endl;
-	const auto& lefMaster = lefData[master];
-	for(unsigned int w=0;w<lefMaster.size();++w) {
-		if(node.Blocks[i].instNum>0) { node.Blocks[i].instance.push_back( node.Blocks[i].instance.back() ); }
-		node.Blocks[i].instNum++;
-		const auto& lefAtW = lefMaster.at(w);
-		node.Blocks[i].instance.back().width=lefAtW.width;
-		node.Blocks[i].instance.back().height=lefAtW.height;
-		node.Blocks[i].instance.back().lefmaster=lefAtW.name;
-		node.Blocks[i].instance.back().originBox.LL.x=0;
-		node.Blocks[i].instance.back().originBox.LL.y=0;
-		node.Blocks[i].instance.back().originBox.UR.x=lefAtW.width;
-		node.Blocks[i].instance.back().originBox.UR.y=lefAtW.height;
-		node.Blocks[i].instance.back().originCenter.x=lefAtW.width/2;
-		node.Blocks[i].instance.back().originCenter.y=lefAtW.height/2;
+  for (auto& wtap : {true, false}) {
+	  auto& lefD = wtap ? lefData : _lefDataWoTap;
+	  for(unsigned int i=0;i<node.Blocks.size();i++){
+		  string master=node.Blocks[i].instance.back().master;
+		  if(lefD.find(master)==lefD.end()) {
+			  // LEF is missing; Ok if a cap or if not a leaf
+			  if (wtap) {
+				  if(master.find("Cap")!=std::string::npos or
+						  master.find("cap")!=std::string::npos) continue;
+				  if(node.Blocks[i].instance.back().isLeaf) {
+					  logger->error("PnRDB-Error: the key does not exist in map: {0}",master);
+					  missing_lef_file = 1;
+				  }
+			  }
+			  continue;
+		  }
 
-		for(unsigned int j=0;j<lefAtW.macroPins.size();j++){
-			bool found = 0;
-			for(unsigned int k=0;k<node.Blocks[i].instance.back().blockPins.size();k++){
-				if(lefAtW.macroPins[j].name.compare(node.Blocks[i].instance.back().blockPins[k].name)==0){
-					node.Blocks[i].instance.back().blockPins[k].type = lefAtW.macroPins[j].type;
-					node.Blocks[i].instance.back().blockPins[k].pinContacts = lefAtW.macroPins[j].pinContacts;
-					node.Blocks[i].instance.back().blockPins[k].use = lefAtW.macroPins[j].use;
-					found = 1;
-				}
-			}
-			if(found == 0){
-				node.Blocks[i].instance.back().blockPins.push_back(lefAtW.macroPins[j]);
-			}
-		}
+		  //cout<<node.Blocks[i].instance.back().name<<" "<<master<<endl;
+		  const auto& lefMaster = lefD[master];
+		  for(unsigned int w=0;w<lefMaster.size();++w) {
+			  if(node.Blocks[i].instNum>0) { node.Blocks[i].instance.push_back( node.Blocks[i].instance.back() ); }
+			  node.Blocks[i].instNum++;
+			  const auto& lefAtW = lefMaster.at(w);
+			  node.Blocks[i].instance.back().width=lefAtW.width;
+			  node.Blocks[i].instance.back().height=lefAtW.height;
+			  node.Blocks[i].instance.back().lefmaster=lefAtW.name;
+			  node.Blocks[i].instance.back().originBox.LL.x=0;
+			  node.Blocks[i].instance.back().originBox.LL.y=0;
+			  node.Blocks[i].instance.back().originBox.UR.x=lefAtW.width;
+			  node.Blocks[i].instance.back().originBox.UR.y=lefAtW.height;
+			  node.Blocks[i].instance.back().originCenter.x=lefAtW.width/2;
+			  node.Blocks[i].instance.back().originCenter.y=lefAtW.height/2;
 
-		node.Blocks[i].instance.back().interMetals = lefAtW.interMetals;
-		node.Blocks[i].instance.back().interVias = lefAtW.interVias;
-		node.Blocks[i].instance.back()._tapVias = lefAtW._tapVias;
-		node.Blocks[i].instance.back()._activeVias = lefAtW._activeVias;
-		node.Blocks[i].instance.back().gdsFile = gdsData[lefAtW.name];
-		//cout<<"xxx "<<node.Blocks[i].instance.back().gdsFile<<endl;
-	}
+			  for(unsigned int j=0;j<lefAtW.macroPins.size();j++){
+				  bool found = 0;
+				  for(unsigned int k=0;k<node.Blocks[i].instance.back().blockPins.size();k++){
+					  if(lefAtW.macroPins[j].name.compare(node.Blocks[i].instance.back().blockPins[k].name)==0){
+						  node.Blocks[i].instance.back().blockPins[k].type = lefAtW.macroPins[j].type;
+						  node.Blocks[i].instance.back().blockPins[k].pinContacts = lefAtW.macroPins[j].pinContacts;
+						  node.Blocks[i].instance.back().blockPins[k].use = lefAtW.macroPins[j].use;
+						  found = 1;
+					  }
+				  }
+				  if(found == 0){
+					  node.Blocks[i].instance.back().blockPins.push_back(lefAtW.macroPins[j]);
+				  }
+			  }
 
+			  node.Blocks[i].instance.back().interMetals = lefAtW.interMetals;
+			  node.Blocks[i].instance.back().interVias = lefAtW.interVias;
+			  node.Blocks[i].instance.back()._tapVias = lefAtW._tapVias;
+			  node.Blocks[i].instance.back()._activeVias = lefAtW._activeVias;
+			  node.Blocks[i].instance.back().gdsFile = wtap ? gdsData[lefAtW.name] : _gdsDataWoTap[lefAtW.name];
+			  //cout<<"xxx "<<node.Blocks[i].instance.back().gdsFile<<endl;
+		  }
+	  }
   }
 
   assert( !missing_lef_file);
