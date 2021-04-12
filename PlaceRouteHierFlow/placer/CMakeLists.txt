@@ -7,7 +7,9 @@ set(headers
      ConstGraph.h
      Pdatatype.h
      PlacerIfc.h
-     SeqPair.h)
+     SeqPair.h
+     TapRemoval.h
+	  )
 
 set(sources
      Aplace.cpp
@@ -17,7 +19,9 @@ set(sources
      ConstGraph.cpp
      Placer.cpp
      Preadfile.cpp
-     design.cpp)
+     design.cpp
+     TapRemoval.cpp
+	)
 
 add_library(placer STATIC ${sources} ${headers})
 

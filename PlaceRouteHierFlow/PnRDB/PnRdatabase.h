@@ -199,7 +199,6 @@ class PnRdatabase
     void WriteLef(const PnRDB::hierNode &node, const string &file, const string &opath) const;
     void Write_Router_Report(PnRDB::hierNode &node, const string &opath);
     void WritePlacement(string outfile);
-    void RemoveRedundantTaps(std::vector<PnRDB::hierNode>& nodeVec);
     void extend_pin_function();
     void extend_pins(PnRDB::block &temp_block);
     void extend_pin(PnRDB::pin &temp_pin, int width, int height);

@@ -358,9 +358,6 @@ std::unique_ptr<PnRdatabase> toplevel( const std::vector<std::string>& argv) {
     PlacerIfc curr_plc(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
     std::vector<PnRDB::hierNode>& nodeVec(curr_plc.get());
 
-	// Tap removal
-	DB.RemoveRedundantTaps(nodeVec);
-
     logger->debug("Checkpoint: generated {0} palcements",nodeVec.size());
     //insert guard ring
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {

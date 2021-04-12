@@ -36,6 +36,7 @@ using std::vector;
 
 class ILP_solver {
   private:
+	  friend TapRemoval;
   struct Block {
     int x = 0, y = 0;         // LL of each block
     int H_flip = 0, V_flip = 0;  // flip along V axis and H axis

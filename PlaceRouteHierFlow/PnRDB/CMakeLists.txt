@@ -3,7 +3,6 @@ set(headers
      PnRdatabase.h
      datatype.h
      readfile.h
-     TapRemoval.h
 )
 
 set(sources
@@ -18,7 +17,6 @@ set(sources
      Print.cpp
      ReadLEF.cpp
      PnRDBJSON.cpp
-     TapRemoval.cpp
 )
 
 add_library(PnRDB STATIC ${sources} ${headers})

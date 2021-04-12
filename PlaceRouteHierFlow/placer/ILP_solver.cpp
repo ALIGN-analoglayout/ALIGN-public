@@ -1,5 +1,4 @@
 #include "ILP_solver.h"
-#include "../PnRDB/TapRemoval.h"
 
 ILP_solver::ILP_solver() {}
 
@@ -50,8 +49,6 @@ void ILP_solver::lpsolve_logger(lprec* lp, void* userhandle, char* buf) {
   if (*buf != '\0') logger->debug("Placer lpsolve: {0}", buf);
 }
 
-string PrimitiveDir("");
-TapRemoval tapRemover(PrimitiveDir, PrimitiveDir + "/wo_tap/", 50000);
 
 double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
@@ -409,7 +406,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   }
 
   // calculate LL and UR
-  PrimitiveData::PlMap plmap;
+  /*PrimitiveData::PlMap plmap;
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
     LL.x = std::min(LL.x, Blocks[i].x);
     LL.y = std::min(LL.y, Blocks[i].y);
@@ -421,9 +418,9 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
       plmap[instName]._primName = master;
       plmap[instName]._ll = geom::Point(Blocks[i].x * 5, Blocks[i].y * 5);
     }
-  }
-  tapRemover.rebuildInstances(plmap);
-  auto delArea = tapRemover.deltaArea();
+  }*/
+  //tapRemover.rebuildInstances(plmap);
+  //auto delArea = tapRemover.deltaArea();
   //logger->info("maximum delta area from tap removal : {0}", delArea);
   // calculate area
   area = double(UR.x - LL.x) * double(UR.y - LL.y);

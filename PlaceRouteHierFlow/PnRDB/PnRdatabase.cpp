@@ -9,7 +9,6 @@ using namespace nlohmann;
 
 #include "spdlog/spdlog.h"
 
-#include "TapRemoval.h"
 static bool EndsWith( const string& str, const string& pat)
 {
   return std::mismatch( str.rbegin(), str.rend(), pat.rbegin(), pat.rend()).second == pat.rend();
@@ -2093,20 +2092,4 @@ void PnRdatabase::WritePlacement(string outfile) {
     fout << "endmodule" << endl << endl;
   }
   fout.close();
-}
-
-void PnRdatabase::RemoveRedundantTaps(std::vector<PnRDB::hierNode>& nodeVec) {
-
-  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.RemoveRedundantTaps");
-
-  if (nodeVec.empty()) return;
-  logger->info( "PnRDB-Info: Removing redundant taps for cell {0}", nodeVec.back().name);
-  string pdir, pdirWOTap;
-  pdir = "../2_primitives";
-  pdirWOTap = "../2_primitives/wo_tap";
-  unsigned dist = 120000;
-
-  TapRemoval tr(pdir, pdirWOTap, nodeVec, dist);
-  logger->info("delta area : {0}", tr.deltaArea());
-
 }

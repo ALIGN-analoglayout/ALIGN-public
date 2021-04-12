@@ -10,9 +10,13 @@
 #include <stdlib.h>
 #include <climits>
 #include <utility> // pair, make_pair
+#include <memory>
 #include "Pdatatype.h"
 #include "../PnRDB/readfile.h"
 #include "../PnRDB/datatype.h"
+
+#include "TapRemoval.h"
+
 using std::vector;
 using std::string;
 using std::iostream;
@@ -160,6 +164,8 @@ class design
     int bias_Hgraph;
     int bias_Vgraph;
     bool mixFlag;
+	 std::shared_ptr<TapRemoval> _tapRemover;
+
     void readRandConstFile(string random_const_file);
     //above is added by yg
 

@@ -22,6 +22,7 @@ design::design(design& other, int mode) {
   // small blocks will be filtered out
   // Limitation: currently we ignore terminals when placer works on big macros only
   //cout<<"Test: design mode "<<mode<<endl;
+  this->_tapRemover = other._tapRemover;
   if(mode==1) {
     this->mixFlag=false;
     other.mixFlag=true;
@@ -333,226 +334,214 @@ design::design(design& other, int mode) {
 
 design::design(PnRDB::hierNode& node) {
 
-  auto logger = spdlog::default_logger()->clone("placer.design.design");
+	auto logger = spdlog::default_logger()->clone("placer.design.design");
 
-  bias_Vgraph=node.bias_Vgraph; // from node
-  bias_Hgraph=node.bias_Hgraph; // from node
-  Aspect_Ratio_weight = node.Aspect_Ratio_weight;
-  memcpy(Aspect_Ratio, node.Aspect_Ratio, sizeof(node.Aspect_Ratio));
-  mixFlag = false;
-  double averageWL=0;
-  double macroThreshold=0.5; // threshold to filter out small blocks
-  // Add blocks
-  for(vector<PnRDB::blockComplex>::iterator it=node.Blocks.begin(); it!=node.Blocks.end(); ++it) {
-    this->Blocks.resize(this->Blocks.size()+1);
-    int WL=0;
-    for(int bb=0;bb<it->instNum;++bb) {
-      block tmpblock;
-      tmpblock.name=(it->instance).at(bb).name;
-      tmpblock.wtap = (it->instance).at(bb).HasTap();
-      //cout<<tmpblock.name<<endl;
-      /*
-      for(vector<PnRDB::point>::iterator pit=(it->instance).at(bb).originBox.polygon.begin(); pit!=(it->instance).at(bb).originBox.polygon.end();++pit) {
-        placerDB::point tmppoint={pit->x, pit->y};
-        tmpblock.boundary.polygon.push_back(tmppoint);
-      }
-      */
-      const auto& pit = (it->instance).at(bb).originBox;
-      tmpblock.boundary.polygon.push_back( {pit.LL.x,pit.LL.y});
-      tmpblock.boundary.polygon.push_back( {pit.LL.x,pit.UR.y});
-      tmpblock.boundary.polygon.push_back( {pit.UR.x,pit.UR.y});
-      tmpblock.boundary.polygon.push_back( {pit.UR.x,pit.LL.y});
+	bias_Vgraph=node.bias_Vgraph; // from node
+	bias_Hgraph=node.bias_Hgraph; // from node
+	Aspect_Ratio_weight = node.Aspect_Ratio_weight;
+	memcpy(Aspect_Ratio, node.Aspect_Ratio, sizeof(node.Aspect_Ratio));
+	mixFlag = false;
+	double averageWL=0;
+	double macroThreshold=0.5; // threshold to filter out small blocks
+	// Add blocks
+	_tapRemover = std::make_shared<TapRemoval>(node);
+	for(vector<PnRDB::blockComplex>::iterator it=node.Blocks.begin(); it!=node.Blocks.end(); ++it) {
+		this->Blocks.resize(this->Blocks.size()+1);
+		int WL=0;
+		for(int bb=0;bb<it->instNum;++bb) {
+			block tmpblock;
+			tmpblock.name=(it->instance).at(bb).name;
+			tmpblock.wtap = (it->instance).at(bb).HasTap();
+			const auto& pit = (it->instance).at(bb).originBox;
+			tmpblock.boundary.polygon.push_back( {pit.LL.x,pit.LL.y});
+			tmpblock.boundary.polygon.push_back( {pit.LL.x,pit.UR.y});
+			tmpblock.boundary.polygon.push_back( {pit.UR.x,pit.UR.y});
+			tmpblock.boundary.polygon.push_back( {pit.UR.x,pit.LL.y});
 
-      tmpblock.master=(it->instance).at(bb).master;
-      tmpblock.type=(it->instance).at(bb).type;
-      tmpblock.width=(it->instance).at(bb).width;
-      tmpblock.height=(it->instance).at(bb).height;
-      //cout<<tmpblock.height<<endl;
-      // [wbxu] Following lines have be updated to support multi contacts
-      for(vector<PnRDB::pin>::iterator pit=(it->instance).at(bb).blockPins.begin(); pit!=(it->instance).at(bb).blockPins.end(); ++pit) {
-        block::pin tmppin;
-        placerDB::point tpoint;
-        tmppin.name=pit->name;
-        tmppin.type=pit->type;
-        tmppin.netIter=pit->netIter;
-        //cout<<tmppin.name<<endl;
-        for(vector<PnRDB::contact>::iterator cit=pit->pinContacts.begin();cit!=pit->pinContacts.end();++cit) {
-          tpoint={ cit->originCenter.x, cit->originCenter.y };
-          tmppin.center.push_back(tpoint);
-          tmppin.boundary.resize(tmppin.boundary.size()+1);
-	  /*
-          for(vector<PnRDB::point>::iterator qit=cit->originBox.polygon.begin(); qit!=cit->originBox.polygon.end(); ++qit) {
-            tpoint={qit->x, qit->y};
-            tmppin.boundary.back().polygon.push_back(tpoint);
-          }
-	  */
-	  const auto& qit=cit->originBox;
-	  tmppin.boundary.back().polygon.push_back( {qit.LL.x,qit.LL.y});
-	  tmppin.boundary.back().polygon.push_back( {qit.LL.x,qit.UR.y});
-	  tmppin.boundary.back().polygon.push_back( {qit.UR.x,qit.UR.y});
-	  tmppin.boundary.back().polygon.push_back( {qit.UR.x,qit.LL.y});
-        }
-        tmpblock.blockPins.push_back(tmppin);
-      }
-      this->Blocks.back().push_back(tmpblock);
-      if(WL<tmpblock.height+tmpblock.width) { WL=tmpblock.height+tmpblock.width; }
-    }
-    //it->instance.
-    averageWL+=WL;
-    //averageWL+=(this->Blocks.back().width+this->Blocks.back().height);
-  }
-  averageWL/=this->Blocks.size();
-  averageWL*=macroThreshold;
-  for(std::vector<std::vector<block> >::iterator oit=this->Blocks.begin(); oit!=this->Blocks.end(); ++oit) {
-    int WL=0;
-    for(std::vector<block>::iterator it=oit->begin(); it!=oit->end(); ++it) {
-      if(it->width+it->height>WL) {WL=it->width+it->height;}
-    }
-    for(std::vector<block>::iterator it=oit->begin(); it!=oit->end(); ++it) {
-      if(WL<averageWL) {it->bigMacro=false;}
-      else {it->bigMacro=true;}
-    }
-  }
-  // Add terminals
-  for(vector<PnRDB::terminal>::iterator it=node.Terminals.begin();it!=node.Terminals.end();++it) {
-    terminal tmpter;
-    tmpter.name=it->name;
-    tmpter.netIter=it->netIter;
-    this->Terminals.push_back(tmpter);
-  }
-  // Add nets
-  for(vector<PnRDB::net>::iterator it=node.Nets.begin();it!=node.Nets.end();++it) {
-    placerDB::net tmpnet;
-    tmpnet.name=it->name;
-    tmpnet.priority=it->priority;
-    tmpnet.weight=1;
-    tmpnet.upperBound = it->upperBound;
-    tmpnet.lowerBound = it->lowerBound;
-    for(vector<PnRDB::connectNode>::iterator nit=it->connected.begin(); nit!=it->connected.end(); ++nit) {
-      placerDB::NType tmptype = placerDB::Block;
-      if (nit->type==PnRDB::Block) {tmptype=placerDB::Block;}
-      else if (nit->type==PnRDB::Terminal) {tmptype=placerDB::Terminal;}
-      else {logger->error("Placer-Error: incorrect connected node type"); assert(0);}
-      placerDB::Node tmpnode={tmptype, nit->iter, nit->iter2, nit->alpha};
-      tmpnet.connected.push_back(tmpnode);
-    }
-    this->Nets.push_back(tmpnet);
-  }
+			tmpblock.master=(it->instance).at(bb).master;
+			tmpblock.type=(it->instance).at(bb).type;
+			tmpblock.width=(it->instance).at(bb).width;
+			tmpblock.height=(it->instance).at(bb).height;
+			//cout<<tmpblock.height<<endl;
+			// [wbxu] Following lines have be updated to support multi contacts
+			for(vector<PnRDB::pin>::iterator pit=(it->instance).at(bb).blockPins.begin(); pit!=(it->instance).at(bb).blockPins.end(); ++pit) {
+				block::pin tmppin;
+				placerDB::point tpoint;
+				tmppin.name=pit->name;
+				tmppin.type=pit->type;
+				tmppin.netIter=pit->netIter;
+				//cout<<tmppin.name<<endl;
+				for(vector<PnRDB::contact>::iterator cit=pit->pinContacts.begin();cit!=pit->pinContacts.end();++cit) {
+					tpoint={ cit->originCenter.x, cit->originCenter.y };
+					tmppin.center.push_back(tpoint);
+					tmppin.boundary.resize(tmppin.boundary.size()+1);
+					const auto& qit=cit->originBox;
+					tmppin.boundary.back().polygon.push_back( {qit.LL.x,qit.LL.y});
+					tmppin.boundary.back().polygon.push_back( {qit.LL.x,qit.UR.y});
+					tmppin.boundary.back().polygon.push_back( {qit.UR.x,qit.UR.y});
+					tmppin.boundary.back().polygon.push_back( {qit.UR.x,qit.LL.y});
+				}
+				tmpblock.blockPins.push_back(tmppin);
+			}
+			this->Blocks.back().push_back(tmpblock);
+			if(WL<tmpblock.height+tmpblock.width) { WL=tmpblock.height+tmpblock.width; }
+		}
+		//it->instance.
+		averageWL+=WL;
+		//averageWL+=(this->Blocks.back().width+this->Blocks.back().height);
+	}
+	averageWL/=this->Blocks.size();
+	averageWL*=macroThreshold;
+	for(std::vector<std::vector<block> >::iterator oit=this->Blocks.begin(); oit!=this->Blocks.end(); ++oit) {
+		int WL=0;
+		for(std::vector<block>::iterator it=oit->begin(); it!=oit->end(); ++it) {
+			if(it->width+it->height>WL) {WL=it->width+it->height;}
+		}
+		for(std::vector<block>::iterator it=oit->begin(); it!=oit->end(); ++it) {
+			if(WL<averageWL) {it->bigMacro=false;}
+			else {it->bigMacro=true;}
+		}
+	}
+	// Add terminals
+	for(vector<PnRDB::terminal>::iterator it=node.Terminals.begin();it!=node.Terminals.end();++it) {
+		terminal tmpter;
+		tmpter.name=it->name;
+		tmpter.netIter=it->netIter;
+		this->Terminals.push_back(tmpter);
+	}
+	// Add nets
+	for(vector<PnRDB::net>::iterator it=node.Nets.begin();it!=node.Nets.end();++it) {
+		placerDB::net tmpnet;
+		tmpnet.name=it->name;
+		tmpnet.priority=it->priority;
+		tmpnet.weight=1;
+		tmpnet.upperBound = it->upperBound;
+		tmpnet.lowerBound = it->lowerBound;
+		for(vector<PnRDB::connectNode>::iterator nit=it->connected.begin(); nit!=it->connected.end(); ++nit) {
+			placerDB::NType tmptype = placerDB::Block;
+			if (nit->type==PnRDB::Block) {tmptype=placerDB::Block;}
+			else if (nit->type==PnRDB::Terminal) {tmptype=placerDB::Terminal;}
+			else {logger->error("Placer-Error: incorrect connected node type"); assert(0);}
+			placerDB::Node tmpnode={tmptype, nit->iter, nit->iter2, nit->alpha};
+			tmpnet.connected.push_back(tmpnode);
+		}
+		this->Nets.push_back(tmpnet);
+	}
 
-  this->ML_Constraints = node.ML_Constraints;
-  for (auto order: node.Ordering_Constraints) {
-    for (unsigned int i = 0; i < order.first.size() - 1;i++){
-      Ordering_Constraints.push_back(make_pair(make_pair(order.first[i], order.first[i+1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
-    }
-  }
+	this->ML_Constraints = node.ML_Constraints;
+	for (auto order: node.Ordering_Constraints) {
+		for (unsigned int i = 0; i < order.first.size() - 1;i++){
+			Ordering_Constraints.push_back(make_pair(make_pair(order.first[i], order.first[i+1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
+		}
+	}
 
-  // Add symmetry block constraint, axis direction is determined by user
-  for(vector<PnRDB::SymmPairBlock>::iterator it=node.SPBlocks.begin(); it!=node.SPBlocks.end();++it) {
-    this->SPBlocks.resize(SPBlocks.size()+1);
-    //vector< pair<int,int> > sympair;
-    //vector< pair<int,placerDB::Smark> > selfsym;
-    for(vector< pair<int,int> >::iterator sit=it->sympair.begin();sit!=it->sympair.end();++sit) {
-      this->SPBlocks.back().sympair.push_back(make_pair(sit->first, sit->second));
-    }
-    for(vector< pair<int,PnRDB::Smark> >::iterator sit=it->selfsym.begin();sit!=it->selfsym.end();++sit ) {
-      placerDB::Smark axis;
-      if(sit->second==PnRDB::H) {axis=placerDB::H;}
-      else if (sit->second==PnRDB::V) {axis=placerDB::V;}
-      else {logger->debug("Placer-Error: incorrect Smark"); continue;}
-      this->SPBlocks.back().selfsym.push_back(make_pair(sit->first, axis));
-    }
-    //added by YG: 10/22/2020
-    if(it->axis_dir==PnRDB::H) {this->SPBlocks.back().axis_dir=placerDB::H;}
-    else if(it->axis_dir==PnRDB::V) {this->SPBlocks.back().axis_dir=placerDB::V;}
-    //end add
-  }
-  // Add symmetry net constraints
-  for(vector<PnRDB::SymmNet>::iterator it=node.SNets.begin();it!=node.SNets.end();++it) {
-    placerDB::net tmpnet1,tmpnet2;
-    tmpnet1.name=it->net1.name;
-    //tmpnet1.priority=it->net1.priority;
-    for(vector<PnRDB::connectNode>::iterator nit=it->net1.connected.begin(); nit!=it->net1.connected.end(); ++nit) {
-      placerDB::NType tmptype = placerDB::Block;
-      if (nit->type==PnRDB::Block) {tmptype=placerDB::Block;}
-      else if (nit->type==PnRDB::Terminal) {tmptype=placerDB::Terminal;}
-      else {logger->error("Placer-Error: incorrect connected node type"); assert(0);}
-      placerDB::Node tmpnode={tmptype, nit->iter, nit->iter2};
-      tmpnet1.connected.push_back(tmpnode);
-    }
-    tmpnet2.name=it->net2.name;
-    //tmpnet2.priority=it->net2.priority;
-    for(vector<PnRDB::connectNode>::iterator nit=it->net2.connected.begin(); nit!=it->net2.connected.end(); ++nit) {
-      placerDB::NType tmptype = placerDB::Block;
-      if (nit->type==PnRDB::Block) {tmptype=placerDB::Block;}
-      else if (nit->type==PnRDB::Terminal) {tmptype=placerDB::Terminal;}
-      else {logger->error("Placer-Error: incorrect connected node type"); assert(0);}
-      placerDB::Node tmpnode={tmptype, nit->iter, nit->iter2};
-      tmpnet2.connected.push_back(tmpnode);
-    }
-    SymmNet tmpsnet;
-    tmpsnet.net1=tmpnet1; tmpsnet.net2=tmpnet2;
-    if(it->axis_dir==PnRDB::H) {tmpsnet.axis_dir=placerDB::H;}
-    else if(it->axis_dir==PnRDB::V) {tmpsnet.axis_dir=placerDB::V;}
+	// Add symmetry block constraint, axis direction is determined by user
+	for(vector<PnRDB::SymmPairBlock>::iterator it=node.SPBlocks.begin(); it!=node.SPBlocks.end();++it) {
+		this->SPBlocks.resize(SPBlocks.size()+1);
+		//vector< pair<int,int> > sympair;
+		//vector< pair<int,placerDB::Smark> > selfsym;
+		for(vector< pair<int,int> >::iterator sit=it->sympair.begin();sit!=it->sympair.end();++sit) {
+			this->SPBlocks.back().sympair.push_back(make_pair(sit->first, sit->second));
+		}
+		for(vector< pair<int,PnRDB::Smark> >::iterator sit=it->selfsym.begin();sit!=it->selfsym.end();++sit ) {
+			placerDB::Smark axis;
+			if(sit->second==PnRDB::H) {axis=placerDB::H;}
+			else if (sit->second==PnRDB::V) {axis=placerDB::V;}
+			else {logger->debug("Placer-Error: incorrect Smark"); continue;}
+			this->SPBlocks.back().selfsym.push_back(make_pair(sit->first, axis));
+		}
+		//added by YG: 10/22/2020
+		if(it->axis_dir==PnRDB::H) {this->SPBlocks.back().axis_dir=placerDB::H;}
+		else if(it->axis_dir==PnRDB::V) {this->SPBlocks.back().axis_dir=placerDB::V;}
+		//end add
+	}
+	// Add symmetry net constraints
+	for(vector<PnRDB::SymmNet>::iterator it=node.SNets.begin();it!=node.SNets.end();++it) {
+		placerDB::net tmpnet1,tmpnet2;
+		tmpnet1.name=it->net1.name;
+		//tmpnet1.priority=it->net1.priority;
+		for(vector<PnRDB::connectNode>::iterator nit=it->net1.connected.begin(); nit!=it->net1.connected.end(); ++nit) {
+			placerDB::NType tmptype = placerDB::Block;
+			if (nit->type==PnRDB::Block) {tmptype=placerDB::Block;}
+			else if (nit->type==PnRDB::Terminal) {tmptype=placerDB::Terminal;}
+			else {logger->error("Placer-Error: incorrect connected node type"); assert(0);}
+			placerDB::Node tmpnode={tmptype, nit->iter, nit->iter2};
+			tmpnet1.connected.push_back(tmpnode);
+		}
+		tmpnet2.name=it->net2.name;
+		//tmpnet2.priority=it->net2.priority;
+		for(vector<PnRDB::connectNode>::iterator nit=it->net2.connected.begin(); nit!=it->net2.connected.end(); ++nit) {
+			placerDB::NType tmptype = placerDB::Block;
+			if (nit->type==PnRDB::Block) {tmptype=placerDB::Block;}
+			else if (nit->type==PnRDB::Terminal) {tmptype=placerDB::Terminal;}
+			else {logger->error("Placer-Error: incorrect connected node type"); assert(0);}
+			placerDB::Node tmpnode={tmptype, nit->iter, nit->iter2};
+			tmpnet2.connected.push_back(tmpnode);
+		}
+		SymmNet tmpsnet;
+		tmpsnet.net1=tmpnet1; tmpsnet.net2=tmpnet2;
+		if(it->axis_dir==PnRDB::H) {tmpsnet.axis_dir=placerDB::H;}
+		else if(it->axis_dir==PnRDB::V) {tmpsnet.axis_dir=placerDB::V;}
 
-    this->SNets.push_back(tmpsnet);
-    //cout<<"# " <<this->SNets.size()<<endl;
-  }
-  // Add preplace block constraint
-  for(vector<PnRDB::Preplace>::iterator it=node.Preplace_blocks.begin(); it!=node.Preplace_blocks.end(); ++it) {
-    this->Preplace_blocks.resize(this->Preplace_blocks.size()+1);
-    this->Preplace_blocks.back().blockid1=it->blockid1;
-    this->Preplace_blocks.back().blockid2=it->blockid2;
-    this->Preplace_blocks.back().conner=it->conner;
-    this->Preplace_blocks.back().distance=it->distance;
-    this->Preplace_blocks.back().horizon=it->horizon;
-  }
-  // Add aligned block constraint
-  for(vector<PnRDB::Alignment>::iterator it=node.Alignment_blocks.begin();it!=node.Alignment_blocks.end();++it) {
-    this->Alignment_blocks.resize(this->Alignment_blocks.size()+1);
-    this->Alignment_blocks.back().blockid1=it->blockid1;
-    this->Alignment_blocks.back().blockid2=it->blockid2;
-    this->Alignment_blocks.back().distance=it->distance;
-    this->Alignment_blocks.back().horizon=it->horizon;
-  }
-  // Add abutted block constraint
-  for(vector<PnRDB::Abument>::iterator it=node.Abument_blocks.begin();it!=node.Abument_blocks.end();++it) {
-    this->Abument_blocks.resize(this->Abument_blocks.size()+1);
-    this->Abument_blocks.back().blockid1=it->blockid1;
-    this->Abument_blocks.back().blockid2=it->blockid2;
-    this->Abument_blocks.back().distance=it->distance;
-    this->Abument_blocks.back().horizon=it->horizon;
-  }
-  // Add matched block constraint
-  for(vector<PnRDB::MatchBlock>::iterator it=node.Match_blocks.begin();it!=node.Match_blocks.end();++it) {
-    this->Match_blocks.resize(this->Match_blocks.size()+1);
-    this->Match_blocks.back().blockid1=it->blockid1;
-    this->Match_blocks.back().blockid2=it->blockid2;
-  }
-  // Add align block constraint
-  for(vector<PnRDB::AlignBlock>::iterator it=node.Align_blocks.begin();it!=node.Align_blocks.end();++it) {
-    this->Align_blocks.resize(this->Align_blocks.size()+1);
-    this->Align_blocks.back().horizon=it->horizon;
-    for(std::vector<int>::iterator it2=it->blocks.begin();it2!=it->blocks.end();++it2) {
-      this->Align_blocks.back().blocks.push_back(*it2);
-    }
-  }
-  // Add port location constraint
-  for(vector<PnRDB::PortPos>::iterator it=node.Port_Location.begin();it!=node.Port_Location.end();++it) {
-    this->Port_Location.resize(this->Port_Location.size()+1);
-    this->Port_Location.back().tid=it->tid;
-    this->Port_Location.back().pos=placerDB::Bmark(it->pos);
-  }
-  constructSymmGroup();
-  PrintDesign();
-  //std::cout<<"Leaving design2\n";
-  hasAsymBlock=checkAsymmetricBlockExist();
-  //std::cout<<"Leaving design\n";
-  hasSymGroup=(not SBlocks.empty());
-  noBlock4Move=GetSizeBlock4Move(1);
-  noAsymBlock4Move=GetSizeAsymBlock4Move(1);
-  noSymGroup4FullMove=GetSizeSymGroup4FullMove(1);
-  noSymGroup4PartMove=noSymGroup4FullMove;
-  //std::cout<<"Leaving design\n";
+		this->SNets.push_back(tmpsnet);
+		//cout<<"# " <<this->SNets.size()<<endl;
+	}
+	// Add preplace block constraint
+	for(vector<PnRDB::Preplace>::iterator it=node.Preplace_blocks.begin(); it!=node.Preplace_blocks.end(); ++it) {
+		this->Preplace_blocks.resize(this->Preplace_blocks.size()+1);
+		this->Preplace_blocks.back().blockid1=it->blockid1;
+		this->Preplace_blocks.back().blockid2=it->blockid2;
+		this->Preplace_blocks.back().conner=it->conner;
+		this->Preplace_blocks.back().distance=it->distance;
+		this->Preplace_blocks.back().horizon=it->horizon;
+	}
+	// Add aligned block constraint
+	for(vector<PnRDB::Alignment>::iterator it=node.Alignment_blocks.begin();it!=node.Alignment_blocks.end();++it) {
+		this->Alignment_blocks.resize(this->Alignment_blocks.size()+1);
+		this->Alignment_blocks.back().blockid1=it->blockid1;
+		this->Alignment_blocks.back().blockid2=it->blockid2;
+		this->Alignment_blocks.back().distance=it->distance;
+		this->Alignment_blocks.back().horizon=it->horizon;
+	}
+	// Add abutted block constraint
+	for(vector<PnRDB::Abument>::iterator it=node.Abument_blocks.begin();it!=node.Abument_blocks.end();++it) {
+		this->Abument_blocks.resize(this->Abument_blocks.size()+1);
+		this->Abument_blocks.back().blockid1=it->blockid1;
+		this->Abument_blocks.back().blockid2=it->blockid2;
+		this->Abument_blocks.back().distance=it->distance;
+		this->Abument_blocks.back().horizon=it->horizon;
+	}
+	// Add matched block constraint
+	for(vector<PnRDB::MatchBlock>::iterator it=node.Match_blocks.begin();it!=node.Match_blocks.end();++it) {
+		this->Match_blocks.resize(this->Match_blocks.size()+1);
+		this->Match_blocks.back().blockid1=it->blockid1;
+		this->Match_blocks.back().blockid2=it->blockid2;
+	}
+	// Add align block constraint
+	for(vector<PnRDB::AlignBlock>::iterator it=node.Align_blocks.begin();it!=node.Align_blocks.end();++it) {
+		this->Align_blocks.resize(this->Align_blocks.size()+1);
+		this->Align_blocks.back().horizon=it->horizon;
+		for(std::vector<int>::iterator it2=it->blocks.begin();it2!=it->blocks.end();++it2) {
+			this->Align_blocks.back().blocks.push_back(*it2);
+		}
+	}
+	// Add port location constraint
+	for(vector<PnRDB::PortPos>::iterator it=node.Port_Location.begin();it!=node.Port_Location.end();++it) {
+		this->Port_Location.resize(this->Port_Location.size()+1);
+		this->Port_Location.back().tid=it->tid;
+		this->Port_Location.back().pos=placerDB::Bmark(it->pos);
+	}
+	constructSymmGroup();
+	PrintDesign();
+	//std::cout<<"Leaving design2\n";
+	hasAsymBlock=checkAsymmetricBlockExist();
+	//std::cout<<"Leaving design\n";
+	hasSymGroup=(not SBlocks.empty());
+	noBlock4Move=GetSizeBlock4Move(1);
+	noAsymBlock4Move=GetSizeAsymBlock4Move(1);
+	noSymGroup4FullMove=GetSizeSymGroup4FullMove(1);
+	noSymGroup4PartMove=noSymGroup4FullMove;
+	//std::cout<<"Leaving design\n";
 }
 
 int design::GetSizeBlock4Move(int mode) {
@@ -1249,6 +1238,7 @@ design::design(const design& other):Port_Location(other.Port_Location) {
   this->noAsymBlock4Move=other.noAsymBlock4Move;
   this->noSymGroup4PartMove=other.noSymGroup4PartMove;
   this->noSymGroup4FullMove=other.noSymGroup4FullMove;
+  this->_tapRemover=other._tapRemover;
   //this->Port_Location=other.Port_Location;
 }
 
@@ -1272,6 +1262,7 @@ design& design::operator= (const design& other) {
   this->noSymGroup4PartMove=other.noSymGroup4PartMove;
   this->noSymGroup4FullMove=other.noSymGroup4FullMove;
   this->Port_Location=other.Port_Location;
+  this->_tapRemover=other._tapRemover;
   return *this;
 }
 
