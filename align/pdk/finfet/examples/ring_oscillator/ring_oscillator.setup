@@ -1,0 +1,4 @@
+POWER = vccx
+GND = vssx
+CLOCK = 
+DIGITAL =

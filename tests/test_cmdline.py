@@ -6,15 +6,12 @@ import shutil
 
 examples = [('inverter_v1',1,False),
             ('buffer',1,False),
-            #Don't run the same block twice (concurrency errors)
-            #('five_transistor_ota',1,False),
+            ('five_transistor_ota',1,False),
             ('five_transistor_ota',2,False),
-            ('cascode_current_mirror_ota',1,False),
             #Hierarchical block fail with num_placements > 1
             #('cascode_current_mirror_ota',2,False),
-            ('telescopic_ota',1,True),
-            ('high_speed_comparator',1,True),
-            ('adder',1,False)]
+            #Test PDN_mode
+            ('telescopic_ota',1,True)]
 
 ALIGN_HOME = pathlib.Path(__file__).resolve().parent.parent
 
@@ -39,7 +36,7 @@ def test_cmdline(design,num_placements,PDN_mode):
     run_dir.mkdir(parents=True, exist_ok=False)
     os.chdir(run_dir)
 
-    design_dir = ALIGN_HOME / 'examples' / design
+    design_dir = ALIGN_HOME / 'examples' / f'{design}_{num_placements}_{1 if PND_mode else 0}'
     pdk_dir = ALIGN_HOME / 'pdks' / 'FinFET14nm_Mock_PDK'
     args = [str(design_dir), '-f', str(design_dir / f"{design}.sp"), '-s', design, '-p', str(pdk_dir), '-flat',  str(0), '--check', '-v', 'INFO', '-l', 'INFO', '-n', str(num_placements)]
     if PDN_mode:
