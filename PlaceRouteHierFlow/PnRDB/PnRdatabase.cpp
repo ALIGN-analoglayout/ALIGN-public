@@ -175,9 +175,8 @@ void PnRdatabase::Write_Power_Mesh_Conf(std::string outputfile){
   std::ofstream PMCfile;
   PMCfile.open(outputfile);
 
-
   for(unsigned int i=0;i<DRC_info.Metal_info.size();i++){
-    PMCfile<<(double) (rand()%5+1)/10<<" "; //power density change from 0.1 to 0.5
+    PMCfile<<(double) /*(rand()%5+1)*/4/10<<" "; //power density change from 0.1 to 0.5
   }
   PMCfile<<std::endl;  
 
@@ -1924,9 +1923,13 @@ void PnRdatabase::AddingPowerPins(PnRDB::hierNode &node){
        
        for(unsigned int j=0;j<node.PowerNets[i].dummy_connected.size();j++){
             int iter2 = node.PowerNets[i].dummy_connected[j].iter2;
+	    assert ( 0 <= iter2 && iter2 < node.Blocks.size());
+
             int iter = node.PowerNets[i].dummy_connected[j].iter;
+
             for(unsigned int k=0;k<node.Blocks[iter2].instance.size();k++){
                  PnRDB::pin temp_pin;
+		 assert( 0 <= iter && iter < node.Blocks[iter2].instance[k].dummy_power_pin.size());
                  temp_pin = node.Blocks[iter2].instance[k].dummy_power_pin[iter];
                  temp_pin.netIter = -2;
                  node.PowerNets[i].dummy_connected[j].iter = int(node.Blocks[iter2].instance[k].blockPins.size());

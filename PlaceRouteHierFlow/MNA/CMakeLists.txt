@@ -1,9 +1,11 @@
 set(headers
+     MNASimulationIfc.h
      MNASimulation.h
      Mdatatype.h
 )
 
 set(sources
+     MNASimulationIfc.cpp
      MNASimulation.cpp
 )
 

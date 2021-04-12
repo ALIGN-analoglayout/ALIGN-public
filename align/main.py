@@ -12,7 +12,7 @@ from .utils.logging import reconfigure_loglevels
 import logging
 logger = logging.getLogger(__name__)
 
-def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, check=False, extract=False, log_level=None, verbosity=None, generate=False, python_gds_json=True, regression=False, uniform_height=False, render_placements=False):
+def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, check=False, extract=False, log_level=None, verbosity=None, generate=False, python_gds_json=True, regression=False, uniform_height=False, render_placements=False, PDN_mode=False):
 
     reconfigure_loglevels(file_level=log_level, console_level=verbosity)
 
@@ -74,9 +74,10 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
             logger.debug(f"Generating primitive: {block_name}")
             generate_primitive(block_name, **block_args, pdkdir=pdk_dir, outputdir=primitive_dir)
         # Copy over necessary collateral & run PNR tool
-        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, nvariants=nvariants, effort=effort, check=check, extract=extract, gds_json=python_gds_json, render_placements=render_placements)
+        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, nvariants=nvariants, effort=effort, check=check, extract=extract, gds_json=python_gds_json, render_placements=render_placements, PDN_mode=PDN_mode)
         results.append( (netlist, variants))
         assert len(variants) >= 1, f"No layouts were generated for {netlist}. Cannot proceed further. See LOG/align.log for last error."
+
         # Generate necessary output collateral into current directory
         for variant, filemap in variants.items():
             convert_GDSjson_GDS(filemap['gdsjson'], working_dir / f'{variant}.gds')
@@ -87,7 +88,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
                             pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/f'{variant}.json')
 
             if 'python_gds_json' in filemap:
-                convert_GDSjson_GDS(filemap['python_gds_json'], working_dir / f'{variant}.python.gds')                
+                convert_GDSjson_GDS(filemap['python_gds_json'], working_dir / f'{variant}.python.gds')
                 print("Use KLayout to visualize the python generated GDS:",working_dir / f'{variant}.python.gds')
 
 
@@ -95,6 +96,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
             if check:
                 if filemap['errors'] > 0:
                     (working_dir / filemap['errfile'].name).write_text(filemap['errfile'].read_text())
+
             if extract:
                 (working_dir / filemap['cir'].name).write_text(filemap['cir'].read_text())
             # Generate PNG
