@@ -4,8 +4,8 @@ if (NOT TARGET Boost::boost)
   message(STATUS "Boost not found on host system. Downloading headers.")
   FetchContent_Declare(
     boost
-    URL https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.tar.bz2
-    URL_HASH SHA256=953db31e016db7bb207f11432bef7df100516eeb746843fa0486a222e3fd49cb
+    GIT_REPOSITORY https://github.com/boostorg/boost.git
+    GIT_TAG b7b1371294b4bdfc8d85e49236ebced114bc1d8f # boost-1.75.0
   )
   FetchContent_GetProperties(boost)
   if(NOT boost_POPULATED)
