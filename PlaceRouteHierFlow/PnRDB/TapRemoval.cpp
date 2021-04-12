@@ -1,7 +1,6 @@
 #include <set>
 #include <sstream>
 #include <iterator>
-#include <filesystem>
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include "spdlog/spdlog.h"
@@ -367,25 +366,9 @@ ConstNodes Graph::dominatingSet() const
 
 }
 
-namespace fs = std::filesystem;
-
 void TapRemoval::readPrimitives(PrimitiveData::Primitives& primitives, const string& pdir)
 {
 	map<string, string> primFiles;
-	fs::path p(pdir);
-	try {
-		if (fs::exists(p) && fs::is_directory(p)) {
-			for (auto&& x : fs::directory_iterator(p)) {
-				string str = x.path().filename().string(); 
-				auto ind = str.find(".json");
-				if (str.find(".json") != string::npos && str.find(".debug.json") == string::npos && str.find(".gds.json") == string::npos) {
-					primFiles[str.substr(0, ind)] = pdir + "/" + str;
-				}
-			}
-		}
-	} catch (const fs::filesystem_error& ex) {
-		//cout << ex.what() << '\n';
-	}
 	if (!primFiles.empty()) PrimitiveData::readJSONPrimitives(primitives, primFiles);
 }
 

@@ -161,7 +161,10 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     assert drname.endswith('.json'), drname
     DB.ReadPDKJSON( path + '/' + drname)
 
-    DB.ReadLEF( path + '/' + lefname)
+    DB.ReadLEF( path + '/' + lefname, True)
+    leftopname = lefname.rsplit('.lef', 1)[0]
+    if pathlib.Path(path + '/' + leftopname + '.wotap.lef').is_file():
+        DB.ReadLEF( path + '/' + leftopname + '.wotap.lef', False)
     DB.ReadMap( path, mapname)
     DB.ReadVerilog( path, vname, topcell)
 

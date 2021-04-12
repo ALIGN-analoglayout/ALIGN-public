@@ -59,5 +59,5 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
           Boost::boost
           GTest::gtest
           GTest::gtest_main
-		  stdc++fs)
+		  )
 endif()

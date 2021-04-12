@@ -438,25 +438,10 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 		for (unsigned int i = 0; i < node.GuardRings.size(); i++) 
 			uniGDSset.insert(node.GuardRings[i].gdsFile);
 
-
-		auto woTapGDSMapFile = getenv("TAP_GDS_MAP");
-		map<string, string> gdsMap;
-		if (woTapGDSMapFile) {
-			string tmp1, tmp2;
-			ifstream mapfile(woTapGDSMapFile);
-			while (mapfile) {
-				mapfile >> tmp1 >> tmp2;
-				gdsMap[tmp1] = tmp2;
-			}
-		}
 		//cout<<"start wrting sub-blocks"<<endl;
 		for (std::set<string>::iterator it=uniGDSset.begin();it!=uniGDSset.end();++it) {
 			json j;
-			auto itGDS = gdsMap.find(*it);
-			if (itGDS != gdsMap.end()) {
-				logger->info("replacing {0} with {1}", *it, itGDS->second);
-			}
-			JSONReaderWrite_subcells ((itGDS != gdsMap.end()) ? itGDS->second : *it, rndnum, strBlocks, llx,lly,urx,ury, j);
+			JSONReaderWrite_subcells (*it, rndnum, strBlocks, llx,lly,urx,ury, j);
 			for (json::iterator str = j.begin(); str != j.end(); ++str)
 				jsonStrAry.push_back (*str);
 			strBlocks_Top.push_back(strBlocks.back());

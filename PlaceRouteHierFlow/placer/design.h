@@ -62,6 +62,7 @@ class design
       };
       bool bigMacro=true;
       int mapIdx=-1;
+      bool wtap = true;
       vector<pin> blockPins;
     };
 

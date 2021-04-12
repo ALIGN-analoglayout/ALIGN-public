@@ -349,6 +349,7 @@ design::design(PnRDB::hierNode& node) {
     for(int bb=0;bb<it->instNum;++bb) {
       block tmpblock;
       tmpblock.name=(it->instance).at(bb).name;
+      tmpblock.wtap = (it->instance).at(bb).HasTap();
       //cout<<tmpblock.name<<endl;
       /*
       for(vector<PnRDB::point>::iterator pit=(it->instance).at(bb).originBox.polygon.begin(); pit!=(it->instance).at(bb).originBox.polygon.end();++pit) {
@@ -1315,25 +1316,25 @@ void design::PrintBlocks() {
 
   auto logger = spdlog::default_logger()->clone("placer.design.PrintBlocks");
 
-  logger->info("=== Blocks ===");
+  logger->debug("=== Blocks ===");
   for(std::vector<std::vector<block> >::iterator oit=Blocks.begin(); oit!=Blocks.end(); ++oit) {
-    logger->info("Block idx {0}",oit-Blocks.begin());
+    logger->debug("Block idx {0}",oit-Blocks.begin());
     for(vector<block>::iterator it=oit->begin(); it!=oit->end(); ++it) {
-      logger->info("Choice {0} Name {1} SBidx {2} counterpart {3} macro {4} mapIdx {5}",it-oit->begin(),(*it).name,it->SBidx,it->counterpart,it->bigMacro,it->mapIdx);
-      logger->info("type {0} width {1} heigt {2} bbox",(*it).type,(*it).width,(*it).height);
+      logger->debug("Choice {0} Name {1} SBidx {2} counterpart {3} macro {4} mapIdx {5}",it-oit->begin(),(*it).name,it->SBidx,it->counterpart,it->bigMacro,it->mapIdx);
+      logger->debug("type {0} width {1} heigt {2} bbox",(*it).type,(*it).width,(*it).height);
       for(vector<placerDB::point>::iterator it2=(*it).boundary.polygon.begin(); it2!=(*it).boundary.polygon.end(); ++it2 ) {
-        logger->info("{0} {1}",(*it2).x,(*it2).y);
+        logger->debug("{0} {1}",(*it2).x,(*it2).y);
       }
       //cout<<endl;
       for(vector<block::pin>::iterator it3=it->blockPins.begin(); it3!=it->blockPins.end(); ++it3) {
-        logger->info("Pin {0} net {1} center",it3->name,it3->netIter);
+        logger->debug("Pin {0} net {1} center",it3->name,it3->netIter);
         for(vector<placerDB::point>::iterator it4=it3->center.begin();it4!=it3->center.end();++it4) {
-          logger->info("{0} {1}",it4->x,it4->y);
+          logger->debug("{0} {1}",it4->x,it4->y);
         }
-        logger->info("bbox");
+        logger->debug("bbox");
         for(vector<placerDB::bbox>::iterator it5=it3->boundary.begin();it5!=it3->boundary.end();++it5) {
           for(vector<placerDB::point>::iterator it4=it5->polygon.begin(); it4!=it5->polygon.end(); ++it4) {
-            logger->info("{0} {1}",it4->x,it4->y);
+            logger->debug("{0} {1}",it4->x,it4->y);
           }
         }
       }

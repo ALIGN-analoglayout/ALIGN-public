@@ -2102,12 +2102,9 @@ void PnRdatabase::RemoveRedundantTaps(std::vector<PnRDB::hierNode>& nodeVec) {
   if (nodeVec.empty()) return;
   logger->info( "PnRDB-Info: Removing redundant taps for cell {0}", nodeVec.back().name);
   string pdir, pdirWOTap;
-  auto ptr = getenv("PRIMITIVE_DIR");
-  pdir = (ptr != nullptr) ? ptr : "../2_primitives";
-  ptr = getenv("PRIMITIVE_DIR_WO_TAP");
-  pdirWOTap = (ptr != nullptr) ? ptr : "../2_primitives/wo_tap";
-  ptr = getenv("TAP_DISTANCE");
-  unsigned dist = (ptr != nullptr) ? atoi(ptr) : 50000;
+  pdir = "../2_primitives";
+  pdirWOTap = "../2_primitives/wo_tap";
+  unsigned dist = 120000;
 
   TapRemoval tr(pdir, pdirWOTap, nodeVec, dist);
   logger->info("delta area : {0}", tr.deltaArea());

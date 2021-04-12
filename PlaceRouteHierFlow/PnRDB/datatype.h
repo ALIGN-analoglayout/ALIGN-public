@@ -311,6 +311,7 @@ struct block {
   vector<pin> dummy_power_pin; //power pins below to this block, but needs updated hierachy
   vector<GuardRing> GuardRings;
   vector<PnRDB::bbox> _tapVias, _activeVias;
+  bool HasTap() const { return _activeVias.empty() ||  !_tapVias.empty() ; }
 }; // structure of block
 
 struct terminal {

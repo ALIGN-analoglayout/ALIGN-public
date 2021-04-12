@@ -741,6 +741,8 @@ placerDB::Smark SeqPair::GetSymmBlockAxis(int SBidx) {
   return symAxis.at(SBidx);
 }
 
+static const bool useTapOnly = getenv("USE_WO_TAP") == nullptr || !std::atoi(getenv("USE_WO_TAP"));
+
 bool SeqPair::ChangeSelectedBlock(design& caseNL) {
   auto logger = spdlog::default_logger()->clone("placer.SeqPair.ChangeSelectedBlock");
   int anode=rand() % caseNL.GetSizeofBlocks();
@@ -754,6 +756,12 @@ bool SeqPair::ChangeSelectedBlock(design& caseNL) {
     return false;
   }
   int newsel=rand() % caseNL.Blocks.at(anode).size();
+  int fail(0), cnt(20);
+  if (useTapOnly) {
+    while (!caseNL.Blocks.at(anode).at(newsel).wtap && fail++ < cnt) {
+      newsel=rand() % caseNL.Blocks.at(anode).size();
+    }
+  }
   selected.at(anode)=newsel;
   if(caseNL.GetBlockCounterpart(anode)!=-1) { selected.at( caseNL.GetBlockCounterpart(anode) )=newsel;}
   return true;

@@ -27,6 +27,5 @@ target_link_libraries(
      PnRDB PRIVATE
      nlohmann_json::nlohmann_json
      spdlog::spdlog
-	 stdc++fs
 )
 target_code_coverage(PnRDB)

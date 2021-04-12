@@ -50,7 +50,7 @@ void ILP_solver::lpsolve_logger(lprec* lp, void* userhandle, char* buf) {
   if (*buf != '\0') logger->debug("Placer lpsolve: {0}", buf);
 }
 
-string PrimitiveDir(getenv("TR_PRIMITIVE_DIR") != nullptr ? string(getenv("TR_PRIMITIVE_DIR")) : "");
+string PrimitiveDir("");
 TapRemoval tapRemover(PrimitiveDir, PrimitiveDir + "/wo_tap/", 50000);
 
 double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
@@ -424,7 +424,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   }
   tapRemover.rebuildInstances(plmap);
   auto delArea = tapRemover.deltaArea();
-  logger->info("maximum delta area from tap removal : {0}", delArea);
+  //logger->info("maximum delta area from tap removal : {0}", delArea);
   // calculate area
   area = double(UR.x - LL.x) * double(UR.y - LL.y);
   // calculate dead area
