@@ -14,12 +14,15 @@ namespace geom {
 
 using namespace std;
 
+class Transform;
+
 class Point {
 	private:
 		int _x, _y;
 	public:
 		Point(int x = INT_MAX, int y = INT_MAX) : _x(x), _y(y) {}
 		Point(const Point& p) : _x(p._x), _y(p._y) {}
+    Point(const PnRDB::point& p) : _x(p.x), _y(p.y) {}
 		const int& x() const { return _x; }
 		const int& y() const { return _y; }
 		int& x() { return _x; }
@@ -27,31 +30,31 @@ class Point {
 		void scale(int t) { _x *= t; _y *= t; }
 		void translate(int x, int y) { _x += x; _y += y; }
 		void translate(int c) { _x += c; _y += c; }
+		void translate(const Point& p) { _x += p.x(); _y += p.y(); }
 		string toString() const { return to_string(_x) + "," + to_string(_y); }
+    Point transform(const Transform& tr, const int width, const int height) const;
 };
 
-class Rect
-{
+class Transform {
+  private:
+    Point _origin;
+    unsigned _hflip : 1;
+    unsigned _vflip : 1;
+
+  public:
+    Transform(const Point& o, const int hf, const int vf) :
+      _origin(o), _hflip(hf == 0 ? 0 : 1), _vflip(vf == 0 ? 0 : 1) {}
+    const Point& origin() const { return _origin; }
+    bool hflip() const { return _hflip; }
+    bool vflip() const { return _vflip; }
+};
+
+class Rect {
 	private:
 		Point _ll, _ur;
 		int _index;
 
 	public:
-		Rect(const Point& ll, const Point& ur) : _ll(ll), _ur(ur) {}
-		Rect(int x1 = INT_MAX, int y1 = INT_MAX, int x2 = -INT_MAX, int y2 = -INT_MAX, int index = -1) : _ll(x1, y1), _ur(x2, y2), _index(index)
-		{
-			if (x1 != INT_MAX) fix();
-		}
-		void set(int x1 = INT_MAX, int y1 = INT_MAX, int x2 = -INT_MAX, int y2 = -INT_MAX)
-		{
-			_ll.x() = x1; _ll.y() = y1; _ur.x() = x2; _ur.y() = y2;
-			if (x1 != INT_MAX) fix();
-		}
-		void fix()
-		{
-			if (xmin() > xmax()) std::swap(xmin(), xmax());
-			if (ymin() > ymax()) std::swap(ymin(), ymax());
-		}
 		const int& xmin() const { return _ll.x(); }
 		const int& ymin() const { return _ll.y(); }
 		const int& xmax() const { return _ur.x(); }
@@ -60,6 +63,22 @@ class Rect
 		int& ymin() { return _ll.y(); }
 		int& xmax() { return _ur.x(); }
 		int& ymax() { return _ur.y(); }
+		void fix()
+		{
+			if (xmin() > xmax()) std::swap(xmin(), xmax());
+			if (ymin() > ymax()) std::swap(ymin(), ymax());
+		}
+		Rect(const Point& ll, const Point& ur) : _ll(ll), _ur(ur) { fix(); }
+		Rect(int x1 = INT_MAX, int y1 = INT_MAX, int x2 = -INT_MAX, int y2 = -INT_MAX, int index = -1) : _ll(x1, y1), _ur(x2, y2), _index(index)
+		{
+			if (x1 != INT_MAX) fix();
+		}
+    Rect(const PnRDB::bbox& box) : _ll(box.LL), _ur(box.UR) {}
+		void set(int x1 = INT_MAX, int y1 = INT_MAX, int x2 = -INT_MAX, int y2 = -INT_MAX)
+		{
+			_ll.x() = x1; _ll.y() = y1; _ur.x() = x2; _ur.y() = y2;
+			if (x1 != INT_MAX) fix();
+		}
 
 		bool valid() const { return _ll.x() <= _ur.x() && _ll.y() <= _ur.y(); }
 
@@ -111,10 +130,10 @@ class Rect
 			return move(r);
 		}
 
+    Rect transform(const Transform& tr, const int width, const int height) const;
+
 		long area() const { return ((long)width()) * height(); }
 		string toString() const { return _ll.toString() + " -- " + _ur.toString(); }
-
-
 };
 
 typedef vector<Rect> Rects;
@@ -127,9 +146,10 @@ typedef vector<Rect> Rects;
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace PrimitiveData {
 
-using Rect = geom::Rect;
-using Rects = geom::Rects;
-using Point = geom::Point;
+using geom::Rect;
+using geom::Rects;
+using geom::Point;
+using geom::Transform;
 
 using namespace std;
 using LayerRects = map<string, Rects>;
@@ -163,6 +183,8 @@ class Primitive
 		void addLayerRects(const string& layer, const Rect& r) { _lr[layer].push_back(r); }
 
 		long area() const { return _bbox.area(); }
+    int width() const { return _bbox.width(); }
+    int height() const { return _bbox.height(); }
 		void build();
 
 		~Primitive()
@@ -181,29 +203,25 @@ class Primitive
 		const Rects& getTaps() const { return _taps; }
 		const Rects& getRows() const { return _rows; }
 };
-using Primitives = map<string, Primitive*>;
+using Primitives = map<string, vector<Primitive*> >;
 
 struct PlInfo {
 	string _primName;
-	Point _ll;
-	unsigned _hflip : 1;
-	unsigned _vflip : 1;
+  Transform _tr;
 	PlInfo(const string& name, const geom::Point& ll, int hf, int vf) :
-		_primName(name), _ll(ll),
-		_hflip(hf == 0 ? 0 : 1), _vflip(vf == 0 ? 0 : 1) {}
+		_primName(name), _tr(ll, hf, vf) {}
 };
 typedef map<pair<string, unsigned>, PlInfo> PlMap;
 
 class Instance
 {
 	private:
-		const Primitive* _prim;
+		const Primitive *_prim, *_primWoTap;
 		string _name;
-		Point _origin;
 		Rects _taps, _rows;
 
 	public:
-		Instance(const Primitive* prim, const string& name, const Point& origin);
+		Instance(const Primitive* prim, const Primitive* primWoTap, const string& name, const Transform& tr);
 		~Instance()
 		{
 			/*cout << _name << ' ' << _prim->name() << ' ' << _origin.toString() << endl;
@@ -217,12 +235,14 @@ class Instance
 			}*/
 		}
 
-		const Primitive* primitive() const { return _prim; }
+    long deltaArea() const { return (_prim != nullptr && _primWoTap != nullptr) ? (_prim->area() - _primWoTap->area()) : 0; }
 
 		const string& name() const { return _name; }
 
 		const Rects& getTaps() const { return _taps; }
 		const Rects& getRows() const { return _rows; }
+
+    void print() const;
 };
 typedef vector<Instance*> Instances;
 
@@ -330,13 +350,13 @@ class TapRemoval {
 		unsigned _dist;
 		DomSetGraph::Graph *_graph;
 		PrimitiveData::Instances _instances;
-		PrimitiveData::Primitives _primitives, _primitivesWOTap;
+		PrimitiveData::Primitives _primitives, _primitivesWoTap;
+    std::map<std::string, PrimitiveData::Instance*> _instMap;
 
 		void buildGraph();
 	public:
 		TapRemoval(const PnRDB::hierNode& node, const unsigned dist);
 		~TapRemoval();
-		void readPrimitives(PrimitiveData::Primitives& primitives, const string& pdir);
 		//void createInstances(const PrimitiveData::PlMap& plmap);
 		long deltaArea() const;
 		void rebuildInstances(const PrimitiveData::PlMap& plmap);

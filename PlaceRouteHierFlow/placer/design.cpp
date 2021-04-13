@@ -333,7 +333,7 @@ design::design(design& other, int mode) {
 }
 
 
-unsigned trDist = (getenv("TR_DIST_UU") != nullptr) ? std::atof(getenv("TR_DIST_UU")) * 4000 : 50000;
+unsigned trDist = (getenv("TR_DIST_UU") != nullptr) ? std::atof(getenv("TR_DIST_UU")) * 4000 : 20000;
 design::design(PnRDB::hierNode& node) {
 
 	auto logger = spdlog::default_logger()->clone("placer.design.design");

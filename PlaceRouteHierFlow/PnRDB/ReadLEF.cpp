@@ -126,7 +126,7 @@ bool PnRdatabase::ReadLEF(const string& leffile, bool wtap) {
           for (auto& v : macroIns._tapVias) {
             logger->info("tap row : {0} {1} {2} {3}", v.LL.x, v.LL.y, v.UR.x, v.UR.y);
           }
-          for (auto& v : macroIns._tapVias) {
+          for (auto& v : macroIns._activeVias) {
             logger->info("active row : {0} {1} {2} {3}", v.LL.x, v.LL.y, v.UR.x, v.UR.y);
           }
           auto& lefD = wtap ? lefData : _lefDataWoTap;

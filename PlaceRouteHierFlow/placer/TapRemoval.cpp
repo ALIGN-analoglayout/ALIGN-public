@@ -29,137 +29,106 @@ static Strings splitString(const std::string& s)
 	return move(strs);
 }
 
+
+namespace geom {
+
+Point Point::transform(const Transform& tr, const int width, const int height) const
+{
+  Point p(_x, _y);
+  if (tr.hflip()) p._x = width - p._x;
+  if (tr.vflip()) p._y = height - p._y;
+  p.translate(tr.origin());
+  return p;
+}
+
+Rect Rect::transform(const Transform& tr, const int width, const int height) const
+{
+  return Rect(_ll.transform(tr, width, height), _ur.transform(tr, width, height));
+}
+
+}
+
 namespace PrimitiveData {
 
 int Primitive::_globIndex = -1;
 
 void Primitive::build()
 {
-	map<string, RTree> layerTree;
-	for (auto& idx : _lr) {
-		auto& tr = layerTree[idx.first];
-		for (unsigned i = 0; i < idx.second.size(); ++i) {
-			bgBox b(bgPt(idx.second[i].xmin(), idx.second[i].ymin()), bgPt(idx.second[i].xmax(), idx.second[i].ymax()));
-			tr.insert(bgVal(b, i));
-		}
-	}
-	map<pair<int, int>, Rect> verMap, horMap;
-	for (auto& t : _taps) {
-		verMap[make_pair(t.ymin(), t.ymax())].merge(t);
-		horMap[make_pair(t.xmin(), t.xmax())].merge(t);
-	}
-    bool verTap(true);
-    for (auto& idx : verMap) {
-        auto& val = idx.second;
-        if (layerTree.find("Poly") != layerTree.end()) {
-            auto& lt = layerTree["Poly"];
-			vector<bgVal> overlapRects;
-			auto count = lt.query(bgi::intersects(bgBox(bgPt(val.xmin(), val.ymin()), bgPt(val.xmax(), val.ymax()))) 
-					&& bgi::satisfies([&overlapRects](bgVal const& v) { return overlapRects.empty(); }),
-					back_inserter(overlapRects));
-            if (count) {
-                verTap = false;
-				break;
-			}
-		}
-	}
-	_taps.clear();
-	for (auto& idx : verTap ? verMap : horMap) {
-		_taps.push_back(idx.second);
-	}
-	if (_lr.find("Active") != _lr.end()) {
-		for (auto& r : _lr["Active"]) {
-			if (layerTree.find("Poly") != layerTree.end()) {
-				auto& lt = layerTree["Poly"];
-				vector<bgVal> overlapRects;
-				auto count = lt.query(bgi::intersects(bgBox(bgPt(r.xmin(), r.ymin()), bgPt(r.xmax(), r.ymax())))
-						&& bgi::satisfies([&overlapRects](bgVal const& v) { return overlapRects.empty(); }),
-						back_inserter(overlapRects));
-				if (count) {
-					_rows.push_back(r);
-				}
-			}
-		}
-	}
-	_lr.clear();
+  map<string, RTree> layerTree;
+  for (auto& idx : _lr) {
+    auto& tr = layerTree[idx.first];
+    for (unsigned i = 0; i < idx.second.size(); ++i) {
+      bgBox b(bgPt(idx.second[i].xmin(), idx.second[i].ymin()), bgPt(idx.second[i].xmax(), idx.second[i].ymax()));
+      tr.insert(bgVal(b, i));
+    }
+  }
+  map<pair<int, int>, Rect> verMap, horMap;
+  for (auto& t : _taps) {
+    verMap[make_pair(t.ymin(), t.ymax())].merge(t);
+    horMap[make_pair(t.xmin(), t.xmax())].merge(t);
+  }
+  bool verTap(true);
+  for (auto& idx : verMap) {
+    auto& val = idx.second;
+    if (layerTree.find("Poly") != layerTree.end()) {
+      auto& lt = layerTree["Poly"];
+      vector<bgVal> overlapRects;
+      auto count = lt.query(bgi::intersects(bgBox(bgPt(val.xmin(), val.ymin()), bgPt(val.xmax(), val.ymax()))) 
+          && bgi::satisfies([&overlapRects](bgVal const& v) { return overlapRects.empty(); }),
+          back_inserter(overlapRects));
+      if (count) {
+        verTap = false;
+        break;
+      }
+    }
+  }
+  _taps.clear();
+  for (auto& idx : verTap ? verMap : horMap) {
+    _taps.push_back(idx.second);
+  }
+  if (_lr.find("Active") != _lr.end()) {
+    for (auto& r : _lr["Active"]) {
+      if (layerTree.find("Poly") != layerTree.end()) {
+        auto& lt = layerTree["Poly"];
+        vector<bgVal> overlapRects;
+        auto count = lt.query(bgi::intersects(bgBox(bgPt(r.xmin(), r.ymin()), bgPt(r.xmax(), r.ymax())))
+            && bgi::satisfies([&overlapRects](bgVal const& v) { return overlapRects.empty(); }),
+            back_inserter(overlapRects));
+        if (count) {
+          _rows.push_back(r);
+        }
+      }
+    }
+  }
+  _lr.clear();
 }
 
-typedef map<string, Instance*> InstanceMap;
-InstanceMap instMap;
 
-Instance::Instance(const Primitive* prim, const string& name, const Point& origin) :
-_prim(prim), _name(name), _origin(origin)
+Instance::Instance(const Primitive* prim, const Primitive* primWoTap, const string& name, const Transform& tr) :
+_prim(prim), _primWoTap(primWoTap), _name(name)
 {
 	if (_prim) {
 		for (const auto& t : _prim->getTaps()) {
-			_taps.push_back(t.translate(_origin));
+			_taps.push_back(t.transform(tr, _prim->width(), _prim->height()));
 		}
 		for (const auto& r : _prim->getRows()) {
-			_rows.push_back(r.translate(_origin));
+			_rows.push_back(r.transform(tr, _prim->width(), _prim->height()));
 		}
 	}
 }
 
-//using json = nlohmann::json;
-void readPrimitivesFromJSON(Primitives& primitives, const string& pn, const string& fn)
+void Instance::print() const
 {
-/*
-	if (fn.empty()) return;
-	ifstream fs(fn);
-
-	if (fs) {
-		json j;
-		fs >> j;
-		Rect bbox;
-		if (j.find("bbox") != j.end()) {
-			auto& b = j["bbox"];
-			bbox.set(b[0], b[1], b[2], b[3]);
-		}
-		Primitive *p(nullptr);
-		if (primitives.find(pn) == primitives.end()) {
-			p = new Primitive(pn, bbox);
-			primitives[pn] = p;
-			if (j.find("terminals") != j.end()) {
-				json& arr = j["terminals"];
-				for (auto it = arr.begin(); it != arr.end(); ++it) {
-					auto& t = *it;
-					string layer = t["layer"];
-					if (t.find("rect") != t.end()) {
-						auto& r = t["rect"];
-						if (t["pin"] == "B") {
-							p->addTap(r[0], r[1], r[2], r[3]);
-						}
-						p->addLayerRects(layer, Rect(r[0], r[1], r[2], r[3]));
-					}
-				}
-			}
-			p->build();
-		}
-	}
-*/
-}
-
-void readJSONPrimitives(Primitives& primitives, const map<string, string>& primFiles)
-{
-	for (auto& it : primFiles) {
-		readPrimitivesFromJSON(primitives, it.first, it.second);
-	}
-	//cout << "# Primitives : " << primitives.size() << endl;
-}
-
-void createInstances(Instances& insts, const Primitives& primitives, const PlMap& plmap)
-{
-	for (auto& it : plmap) {
-		auto primIt = primitives.find(it.second._primName);
-		//cout << "# instance " << it.first << " of " << it.second._primName << endl;
-		const Primitive* prim(nullptr);
-		if (primIt != primitives.end()) prim = primIt->second;
-		if (prim != nullptr) {
-			insts.push_back(new Instance(prim, it.first.first, it.second._ll));
-			instMap[it.first.first] = *insts.rbegin();
-		}
-	}
-	//cout << "# Instances : " << insts.size() << endl;
+	auto logger = spdlog::default_logger()->clone("placer.Instance.print");
+  logger->info("{0} {1} {2}", _name, _prim->name(), _primWoTap->name());
+  logger->info("taps : ");
+  for (auto& t : _taps) {
+    logger->info("{0}", t.toString());
+  }
+  logger->info("rows : ");
+  for (auto& r : _rows) {
+    logger->info("{0}", r.toString());
+  }
 }
 
 }
@@ -349,12 +318,6 @@ ConstNodes Graph::dominatingSet() const
 
 }
 
-void TapRemoval::readPrimitives(PrimitiveData::Primitives& primitives, const string& pdir)
-{
-	map<string, string> primFiles;
-	if (!primFiles.empty()) PrimitiveData::readJSONPrimitives(primitives, primFiles);
-}
-
 void TapRemoval::buildGraph()
 {
 	RTree rtree;
@@ -395,8 +358,37 @@ void TapRemoval::buildGraph()
 
 }
 
-TapRemoval::TapRemoval(const PnRDB::hierNode& node, const unsigned dist) : _dist(dist)
+TapRemoval::TapRemoval(const PnRDB::hierNode& node, const unsigned dist) : _dist(dist), _graph(nullptr)
 {
+  auto logger = spdlog::default_logger()->clone("placer.TapRemoval.TapRemoval");
+  for (unsigned i = 0; i < node.Blocks.size(); ++i) {
+    if (node.Blocks[i].instance.empty()) continue;
+    const auto& master=node.Blocks[i].instance.back().master;
+    for (unsigned j = 0; j < node.Blocks[i].instance.size(); ++j) {
+      const auto& n = node.Blocks[i].instance[j];
+      PrimitiveData::Primitive *p(nullptr);
+      p = new PrimitiveData::Primitive(master, geom::Rect(node.Blocks[i].instance[j].originBox));
+
+      for (const auto& t : n._tapVias) p->addTap(geom::Rect(t));
+      for (const auto& t : n._activeVias) p->addRow(geom::Rect(t));
+
+      if (!n._tapVias.empty()) {
+        _primitives[master].push_back(p);
+      } else {
+        _primitivesWoTap[master].push_back(p);
+      }
+    }
+    if (_primitives[master].size() != _primitivesWoTap[master].size()) {
+      for (auto wtap : {true, false}) {
+        auto& t = wtap ? _primitives[master] : _primitivesWoTap[master];
+        for (auto& x : t) delete x;
+        t.clear();
+      }
+      logger->info("removing primitive {0}", master);
+      _primitives.erase(master);
+      _primitivesWoTap.erase(master);
+    }
+  }
 }
 
 TapRemoval::~TapRemoval()
@@ -405,8 +397,11 @@ TapRemoval::~TapRemoval()
 	_instances.clear();
 
 	for (auto wtap : {true, false}) {
-		auto& t = wtap ? _primitives : _primitivesWOTap;
-		for (auto& x : t) delete x.second;
+		auto& t = wtap ? _primitives : _primitivesWoTap;
+		for (auto& x : t) {
+      for (auto& p : x.second) delete p;
+      x.second.clear();
+    }
 		t.clear();
 	}
 
@@ -416,12 +411,12 @@ TapRemoval::~TapRemoval()
 
 long TapRemoval::deltaArea() const
 {
-	//auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.deltaArea");
+	auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.deltaArea");
 	long deltaarea(0);
 	if (_graph == nullptr || _dist == 0) return deltaarea;
 	auto nodes = _graph->dominatingSet();
 
-	//logger->info("Found {0} nodes in dominating set", nodes.size());
+	//logger->info("Found {0} nodes in dominating set {1}", nodes.size(), _dist);
 
 	//for (auto& it : _instances) {
 	//	deltaarea += it->primitive()->area();
@@ -432,14 +427,9 @@ long TapRemoval::deltaArea() const
 		auto pos = n->name().rfind("__tap_");
 		if (pos != string::npos) name = n->name().substr(0, pos);
 		if (!name.empty()) {
-			auto it = PrimitiveData::instMap.find(name);
-			if (it != PrimitiveData::instMap.end()) {
-				auto itWO = _primitivesWOTap.find(it->second->primitive()->name());
-				//logger->info("Remove tap for cell {0}", it->second->name());
-				if (itWO != _primitivesWOTap.end()) {
-					auto delarea = it->second->primitive()->area() - itWO->second->area();
-					deltaarea += delarea;
-				}
+			auto it = _instMap.find(name);
+			if (it != _instMap.end()) {
+        deltaarea += it->second->deltaArea();
 			}
 		}
 	}
@@ -449,7 +439,6 @@ long TapRemoval::deltaArea() const
 
 void TapRemoval::rebuildInstances(const PrimitiveData::PlMap& plmap) {
 //	auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.rebuildInstances");
-//
 //	for (auto& p : plmap) {
 //		logger->info("plmap {0} {1} {2} {3}", p.first, p.second._primName, p.second._ll.x(), p.second._ll.y());
 //	}
@@ -459,10 +448,22 @@ void TapRemoval::rebuildInstances(const PrimitiveData::PlMap& plmap) {
 	}
 	_instances.clear();
 
-	PrimitiveData::createInstances(_instances, _primitives, plmap);
+	for (auto& it : plmap) {
+		auto primIt = _primitives.find(it.second._primName);
+		auto primWoTapIt = _primitivesWoTap.find(it.second._primName);
+		const PrimitiveData::Primitive *prim(nullptr), *primWoTap(nullptr);
+    const auto& index = it.first.second;
+		if (primIt != _primitives.end() && index < primIt->second.size()) prim = primIt->second[index];
+		if (primWoTapIt != _primitivesWoTap.end() && index < primWoTapIt->second.size()) primWoTap = primWoTapIt->second[index];
+		if (prim != nullptr && primWoTap != nullptr) {
+      auto inst = new PrimitiveData::Instance(prim, primWoTap, it.first.first, it.second._tr);
+			_instances.push_back(inst);
+      _instMap[it.first.first] = inst;
+      //inst->print();
+		}
+	}
 	delete _graph;
 	_graph = new DomSetGraph::Graph;
-
 	buildGraph();
 
 }
