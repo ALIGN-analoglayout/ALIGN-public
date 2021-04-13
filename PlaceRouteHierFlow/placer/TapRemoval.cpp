@@ -1,5 +1,4 @@
 #include "TapRemoval.h"
-#include <set>
 #include <sstream>
 #include <iterator>
 #include <fstream>
@@ -50,8 +49,6 @@ Rect Rect::transform(const Transform& tr, const int width, const int height) con
 
 namespace PrimitiveData {
 
-int Primitive::_globIndex = -1;
-
 void Primitive::build()
 {
   map<string, RTree> layerTree;
@@ -95,7 +92,7 @@ void Primitive::build()
             && bgi::satisfies([&overlapRects](bgVal const& v) { return overlapRects.empty(); }),
             back_inserter(overlapRects));
         if (count) {
-          _rows.push_back(r);
+          _actives.push_back(r);
         }
       }
     }
@@ -105,15 +102,16 @@ void Primitive::build()
 
 
 Instance::Instance(const Primitive* prim, const Primitive* primWoTap, const string& name, const Transform& tr) :
-_prim(prim), _primWoTap(primWoTap), _name(name)
+_prim(prim), _primWoTap(primWoTap), _name(name), _bbox(Rect())
 {
 	if (_prim) {
 		for (const auto& t : _prim->getTaps()) {
 			_taps.push_back(t.transform(tr, _prim->width(), _prim->height()));
 		}
-		for (const auto& r : _prim->getRows()) {
-			_rows.push_back(r.transform(tr, _prim->width(), _prim->height()));
+		for (const auto& r : _prim->getActives()) {
+			_actives.push_back(r.transform(tr, _prim->width(), _prim->height()));
 		}
+    _bbox = _prim->bbox().transform(tr, _prim->width(), _prim->height());
 	}
 }
 
@@ -125,8 +123,8 @@ void Instance::print() const
   for (auto& t : _taps) {
     logger->info("{0}", t.toString());
   }
-  logger->info("rows : ");
-  for (auto& r : _rows) {
+  logger->info("actives : ");
+  for (auto& r : _actives) {
     logger->info("{0}", r.toString());
   }
 }
@@ -156,10 +154,10 @@ Graph::~Graph()
 	_nodeMap.clear();
 }
 
-void Graph::addNode(const string& name, const NodeType& nt)
+void Graph::addNode(const string& name, const NodeType& nt, const long& da)
 {
 	if (_nodeMap.find(name) != _nodeMap.end()) return;
-	Node *n = new Node(name, nt);
+	Node *n = new Node(name, nt, da);
 	_nodes.push_back(n);
 	_nodeMap[name] = n;
 }
@@ -171,6 +169,8 @@ void Graph::addEdge(const string& un, const string& vn, const string& name)
 	it = _nodeMap.find(vn);
 	Node* v = (it != _nodeMap.end()) ? it->second : nullptr;
 	if (u != nullptr && v != nullptr) {
+    if (_edgeMap.find(make_pair(u, v)) != _edgeMap.end() ||
+          _edgeMap.find(make_pair(v, u)) != _edgeMap.end()) return;
 		Edge *e = new Edge(u, v, name);
 		_edges.push_back(e);
 		u->addEdge(e);
@@ -238,19 +238,20 @@ void Graph::parseGraph(const string& fn)
 	ifs.close();
 }
 
-ConstNodes Graph::dominatingSet() const
+NodeSet Graph::dominatingSet() const
 {
 	//auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.dominatingSet");
-	set<const Node*> whiteNodes, dom;
-	size_t tapNodes(0), rowNodes(0), isoRow(0);
+	NodeSet whiteNodes, dom;
+	size_t tapNodes(0), activeNodes(0), isoActive(0);
 	ConstNodes domNodes;
 	for (auto& n : _nodes) {
+    //logger->info("node : {0}", n->name());
 		bool foundTap(false);
 		if (n->nodeType() == NodeType::Tap) {
 			foundTap = true;
 			++tapNodes;
 		} else {
-			++rowNodes;
+			++activeNodes;
 			for (auto& e : n->edges()) {
 				const Node* nbr = (e->v() == n) ? e->u() : e->v();
 				if (nbr && nbr->nodeType() == NodeType::Tap) {
@@ -262,60 +263,63 @@ ConstNodes Graph::dominatingSet() const
 		if (foundTap) {
 			whiteNodes.insert(n);
 			n->setColor(NodeColor::White);
-		} else ++isoRow;
+		} else ++isoActive;
+    //logger->info("num edges {0}", n->edges().size());
+    //for (auto& e : n->edges()) {
+    //  logger->info("edge : {0} {1} {2}", e->name(), e->u()->name(), e->v()->name());
+    //}
 	}
-	//logger->info("tap nodes : {0} row nodes : {1} {2}", tapNodes, rowNodes, isoRow); 
+	//logger->info("tap nodes : {0} active nodes : {1} {2}", tapNodes, activeNodes, isoActive); 
 	
 
-	while (!whiteNodes.empty()) {
-		//logger->info("white nodes : {0}", whiteNodes.size());
-		for (auto& n : _nodes) {
-			unsigned span(0);
-			if (whiteNodes.find(n) != whiteNodes.end()) ++span;
-			for (auto& e : n->edges()) {
-				if (e->u() == n && whiteNodes.find(e->v()) != whiteNodes.end()) {
-					++span;
-				}
-				if (e->v() == n && whiteNodes.find(e->u()) != whiteNodes.end()) {
-					++span;
-				}
-			}
-			n->setSpan(span);
-		}
-		Nodes maxNbrWhites;
-		unsigned maxW(0);
-		for (auto& n : _nodes) {
-			if (n->nodeType() != NodeType::Tap) continue;
-			if (maxW < n->span()) {
-				maxNbrWhites.clear();
-				maxNbrWhites.push_back(n);
-				maxW = n->span();
-			} else if (maxW == n->span()) {
-				maxNbrWhites.push_back(n);
-			}
-		}
+  while (!whiteNodes.empty()) {
+    //logger->info("white nodes : {0}", whiteNodes.size());
+    for (auto& n : _nodes) {
+      unsigned span(0);
+      if (whiteNodes.find(n) != whiteNodes.end()) ++span;
+      for (auto& e : n->edges()) {
+        if (e->u() == n && whiteNodes.find(e->v()) != whiteNodes.end()) {
+          ++span;
+        }
+        if (e->v() == n && whiteNodes.find(e->u()) != whiteNodes.end()) {
+          ++span;
+        }
+      }
+      n->setSpan(span);
+    }
+    unsigned maxW(0);
+    for (auto& n : _nodes) {
+      if (n->nodeType() != NodeType::Tap) continue;
+      if (maxW < n->span()) {
+        maxW = n->span();
+      }
+    }
+    NodeSet maxNbrWhites;
+    for (auto& n : _nodes) {
+      if (n->span() == maxW) {
+        maxNbrWhites.insert(n);
+      }
+    }
 
-		for (auto& n : maxNbrWhites) {
-			n->setColor(NodeColor::Black);
-			for (auto& e : n->edges()) {
-				const Node* nbr = (e->v() == n) ? e->u() : e->v();
-				if (nbr->nodeColor() != NodeColor::Black) {
-					const_cast<Node*>(nbr)->setColor(NodeColor::Gray);
-				}
-			}
-			dom.insert(n);
-		}
+    for (auto& n : maxNbrWhites) {
+      if (NodeColor::White == n->nodeColor()) dom.insert(n);
+      const_cast<Node*>(n)->setColor(NodeColor::Black);
+      for (auto& e : n->edges()) {
+        const Node* nbr = (e->v() == n) ? e->u() : e->v();
+        if (NodeColor::Black != nbr->nodeColor()) {
+          const_cast<Node*>(nbr)->setColor(NodeColor::Gray);
+        }
+      }
+    }
 
-		for (auto& n : _nodes) {
-			if (n->nodeColor() != NodeColor::White) whiteNodes.erase(n);
-		}
-	}
+    for (auto& n : _nodes) {
+      if (n->nodeColor() != NodeColor::White) whiteNodes.erase(n);
+    }
+  }
 
-	for (auto& n : dom) domNodes.push_back(n);
-
-	return move(domNodes);
+  //logger->info("dom size : {0}", dom.size());
+	return dom;
 }
-
 }
 
 void TapRemoval::buildGraph()
@@ -330,13 +334,13 @@ void TapRemoval::buildGraph()
 			rtree.insert(bgVal(b, _graph->nodes().size()));
 			string nodeName(inst->name() + "__tap_" + to_string(i));
 			allTaps[nodeName] = taps[i];
-			_graph->addNode(nodeName, DomSetGraph::NodeType::Tap);
+			_graph->addNode(nodeName, DomSetGraph::NodeType::Tap, inst->deltaArea());
 		}
-		auto& rows = inst->getRows();
-		for (unsigned i = 0; i < rows.size(); ++i) {
-			bgBox b(bgPt(rows[i].xmin(), rows[i].ymin()), bgPt(rows[i].xmax(), rows[i].ymax()));
+		auto& actives = inst->getActives();
+		for (unsigned i = 0; i < actives.size(); ++i) {
+			bgBox b(bgPt(actives[i].xmin(), actives[i].ymin()), bgPt(actives[i].xmax(), actives[i].ymax()));
 			rtree.insert(bgVal(b, _graph->nodes().size()));
-			_graph->addNode(inst->name() + "__row_" + to_string(i), DomSetGraph::NodeType::Active);
+			_graph->addNode(inst->name() + "__active_" + to_string(i), DomSetGraph::NodeType::Active, inst->deltaArea());
 		}
 	}
 
@@ -358,9 +362,9 @@ void TapRemoval::buildGraph()
 
 }
 
-TapRemoval::TapRemoval(const PnRDB::hierNode& node, const unsigned dist) : _dist(dist), _graph(nullptr)
+TapRemoval::TapRemoval(const PnRDB::hierNode& node, const unsigned dist) : _dist(dist), _name(node.name), _graph(nullptr)
 {
-  auto logger = spdlog::default_logger()->clone("placer.TapRemoval.TapRemoval");
+  //auto logger = spdlog::default_logger()->clone("placer.TapRemoval.TapRemoval");
   for (unsigned i = 0; i < node.Blocks.size(); ++i) {
     if (node.Blocks[i].instance.empty()) continue;
     const auto& master=node.Blocks[i].instance.back().master;
@@ -370,7 +374,7 @@ TapRemoval::TapRemoval(const PnRDB::hierNode& node, const unsigned dist) : _dist
       p = new PrimitiveData::Primitive(master, geom::Rect(node.Blocks[i].instance[j].originBox));
 
       for (const auto& t : n._tapVias) p->addTap(geom::Rect(t));
-      for (const auto& t : n._activeVias) p->addRow(geom::Rect(t));
+      for (const auto& t : n._activeVias) p->addActive(geom::Rect(t));
 
       if (!n._tapVias.empty()) {
         _primitives[master].push_back(p);
@@ -384,7 +388,7 @@ TapRemoval::TapRemoval(const PnRDB::hierNode& node, const unsigned dist) : _dist
         for (auto& x : t) delete x;
         t.clear();
       }
-      logger->info("removing primitive {0}", master);
+      //logger->info("removing primitive {0}", master);
       _primitives.erase(master);
       _primitivesWoTap.erase(master);
     }
@@ -411,7 +415,7 @@ TapRemoval::~TapRemoval()
 
 long TapRemoval::deltaArea() const
 {
-	auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.deltaArea");
+	//auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.deltaArea");
 	long deltaarea(0);
 	if (_graph == nullptr || _dist == 0) return deltaarea;
 	auto nodes = _graph->dominatingSet();
@@ -422,17 +426,23 @@ long TapRemoval::deltaArea() const
 	//	deltaarea += it->primitive()->area();
 	//}
 
+  std::set<std::string> names;
+
 	for (auto& n : nodes) {
 		string name;
 		auto pos = n->name().rfind("__tap_");
 		if (pos != string::npos) name = n->name().substr(0, pos);
+		//logger->info("{0}", name);
 		if (!name.empty()) {
-			auto it = _instMap.find(name);
-			if (it != _instMap.end()) {
-        deltaarea += it->second->deltaArea();
-			}
-		}
-	}
+      names.insert(name);
+    }
+  }
+  for (const auto& b : _instances) {
+    if (names.find(b->name()) != names.end()) continue;
+    deltaarea += b->deltaArea();
+  }
+
+  plot(_name + "_TR_" + std::to_string(deltaarea) + ".plt");
 	return deltaarea;
 }
 
@@ -466,4 +476,59 @@ void TapRemoval::rebuildInstances(const PrimitiveData::PlMap& plmap) {
 	_graph = new DomSetGraph::Graph;
 	buildGraph();
 
+}
+
+void TapRemoval::plot(const string& pltfile) const
+{
+  ofstream ofs(pltfile);
+  if (ofs.is_open()) {
+    ofs << "set title #Blocks = " << _instances.size() << " #primitives = " << _primitives.size() << "\n";
+    ofs << "set nokey" << endl;
+
+    // boundinf box of chip
+    geom::Rect bbox;
+    for (const auto& b : _instances) {
+      bbox.merge(b->bbox());
+    }
+    ofs << "\nset xrange [" << bbox.xmin() - 1 << ":" << bbox.xmax() + 1 << "]" << endl;
+    ofs << "\nset yrange [" << bbox.ymin() - 1 << ":" << bbox.ymax() + 1 << "]" << endl;
+
+    for (const auto& b : _instances) {
+      ofs << "\nset label \"" << b->name() << "\" at " << b->bbox().xcenter() << " , " << b->bbox().ycenter() << " center " << "\n";
+      for (const auto& t : b->getTaps()) {
+        ofs << "\nset label \"tap\" at " << t.xcenter() << " , " << t.ycenter() << "\n";
+      }
+      for (const auto& t : b->getActives()) {
+        ofs << "\nset label \"active\" at " << t.xcenter() << " , " << t.ycenter() << "\n";
+      }
+    }
+
+    // plot blocks
+    ofs << "\np[:][:] \'-\' w l ls 1, \'-\' w l ls 2, \'-\' w l ls 3 \n\n" ;
+    for (const auto& b : _instances) {
+      const auto& t = b->bbox();
+      ofs << "\t" << t.xmin() << ' ' << t.ymin() << "\n";
+      ofs << "\t" << t.xmax() << ' ' << t.ymin() << "\n";
+      ofs << "\t" << t.xmax() << ' ' << t.ymax() << "\n";
+      ofs << "\t" << t.xmin() << ' ' << t.ymax() << "\n";
+      ofs << "\t" << t.xmin() << ' ' << t.ymin() << "\n\n";
+    }
+    ofs << "EOF\n\n";
+
+    for (auto tap : {true, false}) {
+      for (const auto& b : _instances) {
+        for (const auto& t : (tap ? b->getTaps() : b->getActives())) {
+          ofs << "\t" << t.xmin() << ' ' << t.ymin() << "\n";
+          ofs << "\t" << t.xmax() << ' ' << t.ymin() << "\n";
+          ofs << "\t" << t.xmax() << ' ' << t.ymax() << "\n";
+          ofs << "\t" << t.xmin() << ' ' << t.ymax() << "\n";
+          ofs << "\t" << t.xmin() << ' ' << t.ymin() << "\n\n";
+        }
+      }
+      ofs << "EOF\n\n";
+    }
+
+    ofs << endl << "pause -1 \'Press any key\'";
+    ofs.close();
+  }
 }
