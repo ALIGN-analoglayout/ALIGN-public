@@ -2075,11 +2075,9 @@ void PnRdatabase::attach_constraint_files( const string& fpath)
 
 }
 
-
-void PnRdatabase::semantic( const string& fpath, const string& topcell, PnRDB::hierNode& Supply_node)
+void PnRdatabase::semantic0( const string& topcell)
 {
-    auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.semantic");
-
+  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.semantic0");
     //update hier tree here for the class Nodes.
     //initialize
     for(unsigned int i=0;i<hierTree.size();i++){
@@ -2139,49 +2137,68 @@ void PnRdatabase::semantic( const string& fpath, const string& topcell, PnRDB::h
     //mergeLEFandGDS
     for(unsigned int i=0;i<hierTree.size();i++){
     //cout<<"hierTree node "<<i<<endl;
-    if(!MergeLEFMapData(hierTree[i])){logger->error("PnRDB-Error: fail to mergeLEFMapData of module {0}",hierTree[i].name);
+    if(!MergeLEFMapData(hierTree[i])){logger->error("Failed to mergeLEFMapData of module {0}",hierTree[i].name);
       }else{
       logger->debug("Finished merge lef data");
       }
       }
+
+}
+
+
+void PnRdatabase::semantic1( const vector<pair<string,string> >& global_signals)
+{
+  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.semantic1");
+
+
   // wbxu: following lines need modifications to reflect changes of block instance vector
   //update powernets information
   logger->debug("Middle");
-  for(unsigned int i=0;i<Supply_node.Blocks.size();i++){
-      std::string supply_name_full = Supply_node.name+"."+Supply_node.Blocks[i].instance.back().name;
-      std::string supply_name = Supply_node.Blocks[i].instance.back().name;
-      int power;
-      if(Supply_node.Blocks[i].instance.back().master == "supply0"){
-         power = 0;
-        }else{
-         power =1;
-        }
-      for(unsigned int j=0;j<hierTree.size();j++){
-           std::vector<PnRDB::net> temp_net;
-           bool powernet_found = 0;
-           for(unsigned int k=0;k<hierTree[j].Nets.size();k++){
-               if(hierTree[j].Nets[k].name == supply_name_full || hierTree[j].Nets[k].name == supply_name){
-                   powernet_found = 1;
-                   PnRDB::PowerNet temp_PowerNet;
-                   temp_PowerNet.name = hierTree[j].Nets[k].name;
-                   temp_PowerNet.power = power;
-                   temp_PowerNet.connected = hierTree[j].Nets[k].connected;
-                   hierTree[j].PowerNets.push_back(temp_PowerNet);
-                 }else{
-                   temp_net.push_back(hierTree[j].Nets[k]);
-                 }
-              }
 
-            if(powernet_found==0){
-              PnRDB::PowerNet temp_PowerNet;
-              temp_PowerNet.name = supply_name;
-              temp_PowerNet.power = power;
-              hierTree[j].PowerNets.push_back(temp_PowerNet);
-            }
+  const std::string supply_node_name = "global_power";
 
-            hierTree[j].Nets = temp_net;
-         }
-     }
+  for(unsigned int i=0;i<global_signals.size();i++){
+    std::string supply_name_full = supply_node_name + "." + global_signals[i].second;
+    std::string supply_name = global_signals[i].second;
+    int power;
+    if(global_signals[i].first == "supply0"){
+      power = 0;
+    }else{
+      power =1;
+    }
+    for(unsigned int j=0;j<hierTree.size();j++){
+      std::vector<PnRDB::net> temp_net;
+      bool powernet_found = 0;
+      for(unsigned int k=0;k<hierTree[j].Nets.size();k++){
+	if(hierTree[j].Nets[k].name == supply_name_full || hierTree[j].Nets[k].name == supply_name){
+	  powernet_found = 1;
+	  PnRDB::PowerNet temp_PowerNet;
+	  temp_PowerNet.name = hierTree[j].Nets[k].name;
+	  temp_PowerNet.power = power;
+	  temp_PowerNet.connected = hierTree[j].Nets[k].connected;
+	  hierTree[j].PowerNets.push_back(temp_PowerNet);
+	}else{
+	  temp_net.push_back(hierTree[j].Nets[k]);
+	}
+      }
+
+      if(powernet_found==0){
+	PnRDB::PowerNet temp_PowerNet;
+	temp_PowerNet.name = supply_name;
+	temp_PowerNet.power = power;
+	hierTree[j].PowerNets.push_back(temp_PowerNet);
+      }
+
+      hierTree[j].Nets = temp_net;
+    }
+  }
+
+}
+
+
+void PnRdatabase::semantic2()
+{
+    auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.semantic2");
 
   //update pins & terminal connection iternet
   for(unsigned int i=0;i<hierTree.size();i++){
@@ -2283,4 +2300,69 @@ hierTree[i].Terminals[hierTree[i].Nets[j].connected[k].iter].netIter = j;
       
 
   }
+}
+
+
+bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
+
+  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.MergeLEFMapData");
+
+  bool missing_lef_file = 0;
+
+  logger->info("merge LEF/map data on node {0}", node.name);
+  for(unsigned int i=0;i<node.Blocks.size();i++){
+    const string& master=node.Blocks[i].instance.back().master;
+    if(lefData.find(master)==lefData.end()) {
+	// LEF is missing; Ok if a cap or if not a leaf
+	if(master.find("Cap")!=std::string::npos ||
+	   master.find("cap")!=std::string::npos) continue;
+	if(node.Blocks[i].instance.back().isLeaf) {
+	    logger->error("The key does not exist in map: {0}",master);
+	    missing_lef_file = 1;
+	}
+	continue;
+    }
+    
+    //cout<<node.Blocks[i].instance.back().name<<" "<<master<<endl;
+    for(unsigned int w=0;w<lefData[master].size();++w) {
+      if(node.Blocks[i].instNum>0) { node.Blocks[i].instance.push_back( node.Blocks[i].instance.back() ); }
+      node.Blocks[i].instNum++;
+      node.Blocks[i].instance.back().width=lefData[master].at(w).width;
+      node.Blocks[i].instance.back().height=lefData[master].at(w).height;
+      node.Blocks[i].instance.back().lefmaster=lefData[master].at(w).name;
+      node.Blocks[i].instance.back().originBox.LL.x=0;
+      node.Blocks[i].instance.back().originBox.LL.y=0;
+      node.Blocks[i].instance.back().originBox.UR.x=lefData[master].at(w).width;
+      node.Blocks[i].instance.back().originBox.UR.y=lefData[master].at(w).height;
+      node.Blocks[i].instance.back().originCenter.x=lefData[master].at(w).width/2;
+      node.Blocks[i].instance.back().originCenter.y=lefData[master].at(w).height/2;
+
+      for(unsigned int j=0;j<lefData[master].at(w).macroPins.size();j++){
+        bool found = 0;
+        for(unsigned int k=0;k<node.Blocks[i].instance.back().blockPins.size();k++){
+          if(lefData[master].at(w).macroPins[j].name.compare(node.Blocks[i].instance.back().blockPins[k].name)==0){
+            node.Blocks[i].instance.back().blockPins[k].type = lefData[master].at(w).macroPins[j].type;
+            node.Blocks[i].instance.back().blockPins[k].pinContacts = lefData[master].at(w).macroPins[j].pinContacts;
+            node.Blocks[i].instance.back().blockPins[k].use = lefData[master].at(w).macroPins[j].use;
+            found = 1;
+            }
+        }
+        if(found == 0){
+          node.Blocks[i].instance.back().blockPins.push_back(lefData[master].at(w).macroPins[j]);
+        }
+      }
+
+      node.Blocks[i].instance.back().interMetals = lefData[master].at(w).interMetals;
+      node.Blocks[i].instance.back().interVias = lefData[master].at(w).interVias;
+      node.Blocks[i].instance.back().gdsFile=gdsData[lefData[master].at(w).name];
+  //cout<<"xxx "<<node.Blocks[i].instance.back().gdsFile<<endl;
+    }
+
+
+  }
+
+  assert( !missing_lef_file);
+
+  return 1;
+  
 }

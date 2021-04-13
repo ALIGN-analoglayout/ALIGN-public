@@ -16,7 +16,7 @@ def test_A():
     DB.ReadLEF( str( d / "current_mirror_ota.lef"))
     DB.ReadMap( str( d), "current_mirror_ota.map")
 
-    DB.ReadVerilog( str(d), "current_mirror_ota.v", "current_mirror_ota")
+    assert DB.ReadVerilog( str(d), "current_mirror_ota.v", "current_mirror_ota")
 
 def write_verilog( j, ofp):
 
@@ -31,16 +31,14 @@ def write_verilog( j, ofp):
         print( file=ofp)
         print( 'endmodule', file=ofp)
         
-    if 'celldefines' in j:
+    if 'global_signals' in j:
+        d = { s['formal'] : s['actual'] for s in j['global_signals']}
         print( file=ofp)
         print( "`celldefine", file=ofp)
-        for cd in j['celldefines']:
-            txt = f'''\
-module {cd['name']};
-supply0 {cd['supply0']};
-supply1 {cd['supply1']};
-endmodule'''
-            print( txt, file=ofp)
+        print( "module global_power;", file=ofp)
+        for k,v in d.items():
+            print( f'{k} {v};', file=ofp)
+        print( "endmodule", file=ofp)
         print( "`endcelldefine", file=ofp)
 
 verilog_json = """\
@@ -117,11 +115,14 @@ verilog_json = """\
 	    ]
 	}
     ],
-    "celldefines": [
-	{
-	    "name": "global_power",
-	    "supply0": "vss",
-	    "supply1": "vdd"
+    "global_signals": [
+        {
+            "formal": "supply0",
+            "actual": "vss"
+        },
+        {
+            "formal": "supply1",         
+	    "actual": "vdd"
 	}
     ]
 }

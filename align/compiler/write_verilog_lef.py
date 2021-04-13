@@ -110,7 +110,7 @@ class WriteVerilog:
             return 0
 
 class WriteSpice:
-    """ write hierarchical verilog file """
+    """ write hierarchical spice file """
 
     def __init__(self, circuit_graph, circuit_name, inout_pin_names,subckt_dict, lib_names):
         self.circuit_graph = circuit_graph

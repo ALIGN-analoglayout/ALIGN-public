@@ -3,7 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-
+#include <cassert>
 
 bool PnRdatabase::ReadVerilog(const string& fpath, const string& vname, const string& topcell) {
 
@@ -12,7 +12,7 @@ bool PnRdatabase::ReadVerilog(const string& fpath, const string& vname, const st
   ReadVerilogHelper rvh(*this);
 
   string verilogfile=fpath+"/"+vname;
-  logger->info("PnRDB-Info: reading Verilog file {0}",verilogfile);
+  logger->info("Reading Verilog file {0}",verilogfile);
 
   ifstream fin;
   fin.exceptions(ifstream::failbit | ifstream::badbit);
@@ -28,7 +28,9 @@ bool PnRdatabase::ReadVerilog(const string& fpath, const string& vname, const st
   fin.close();
 
   attach_constraint_files( fpath);
-  semantic( fpath, topcell, rvh.get_Supply_node());
+  semantic0( topcell);
+  semantic1( rvh.get_global_signals());
+  semantic2();
 
   return true;
 
@@ -88,8 +90,7 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
       temp_node.name = l.last_token.value;
       temp_node.isCompleted = 0;
   } else {
-      Supply_node.name = l.last_token.value;
-      Supply_node.isCompleted = 0;
+    assert( string(l.last_token.value) == string("global_power"));
   }
 
   if ( l.have( TokenType::LPAREN)) {
@@ -132,11 +133,7 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
 	      do {
   		  l.mustbe( TokenType::NAME);
 		  string temp_name = l.last_token.value;
-		  PnRDB::blockComplex temp_blockComplex;
-		  temp_blockComplex.instance.resize(1);
-		  temp_blockComplex.instance.back().master = direction_tag;
-		  temp_blockComplex.instance.back().name = temp_name;
-		  Supply_node.Blocks.push_back(temp_blockComplex);
+		  global_signals.push_back( std::make_pair( direction_tag, l.last_token.value));
 	      } while ( l.have( static_cast<TokenType>( ',')));
 	      l.mustbe( TokenType::SEMICOLON);  
 	  }
@@ -225,67 +222,4 @@ void ReadVerilogHelper::parse_top( istream& fin)
 
 }
 
-bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
-
-  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.MergeLEFMapData");
-
-  bool missing_lef_file = 0;
-
-  logger->info("PnRdatabase-Info:: merge LEF/map data");
-  for(unsigned int i=0;i<node.Blocks.size();i++){
-    string master=node.Blocks[i].instance.back().master;
-    if(lefData.find(master)==lefData.end()) {
-	// LEF is missing; Ok if a cap or if not a leaf
-	if(master.find("Cap")!=std::string::npos ||
-	   master.find("cap")!=std::string::npos) continue;
-	if(node.Blocks[i].instance.back().isLeaf) {
-	    logger->error("PnRDB-Error: the key does not exist in map: {0}",master);
-	    missing_lef_file = 1;
-	}
-	continue;
-    }
-    
-    //cout<<node.Blocks[i].instance.back().name<<" "<<master<<endl;
-    for(unsigned int w=0;w<lefData[master].size();++w) {
-      if(node.Blocks[i].instNum>0) { node.Blocks[i].instance.push_back( node.Blocks[i].instance.back() ); }
-      node.Blocks[i].instNum++;
-      node.Blocks[i].instance.back().width=lefData[master].at(w).width;
-      node.Blocks[i].instance.back().height=lefData[master].at(w).height;
-      node.Blocks[i].instance.back().lefmaster=lefData[master].at(w).name;
-      node.Blocks[i].instance.back().originBox.LL.x=0;
-      node.Blocks[i].instance.back().originBox.LL.y=0;
-      node.Blocks[i].instance.back().originBox.UR.x=lefData[master].at(w).width;
-      node.Blocks[i].instance.back().originBox.UR.y=lefData[master].at(w).height;
-      node.Blocks[i].instance.back().originCenter.x=lefData[master].at(w).width/2;
-      node.Blocks[i].instance.back().originCenter.y=lefData[master].at(w).height/2;
-
-      for(unsigned int j=0;j<lefData[master].at(w).macroPins.size();j++){
-        bool found = 0;
-        for(unsigned int k=0;k<node.Blocks[i].instance.back().blockPins.size();k++){
-          if(lefData[master].at(w).macroPins[j].name.compare(node.Blocks[i].instance.back().blockPins[k].name)==0){
-            node.Blocks[i].instance.back().blockPins[k].type = lefData[master].at(w).macroPins[j].type;
-            node.Blocks[i].instance.back().blockPins[k].pinContacts = lefData[master].at(w).macroPins[j].pinContacts;
-            node.Blocks[i].instance.back().blockPins[k].use = lefData[master].at(w).macroPins[j].use;
-            found = 1;
-            }
-        }
-        if(found == 0){
-          node.Blocks[i].instance.back().blockPins.push_back(lefData[master].at(w).macroPins[j]);
-        }
-      }
-
-      node.Blocks[i].instance.back().interMetals = lefData[master].at(w).interMetals;
-      node.Blocks[i].instance.back().interVias = lefData[master].at(w).interVias;
-      node.Blocks[i].instance.back().gdsFile=gdsData[lefData[master].at(w).name];
-  //cout<<"xxx "<<node.Blocks[i].instance.back().gdsFile<<endl;
-    }
-
-
-  }
-
-  assert( !missing_lef_file);
-
-  return 1;
-  
-}
 

@@ -47,7 +47,7 @@ class PnRdatabase;
 
 class ReadVerilogHelper {
     PnRDB::hierNode temp_node;
-    PnRDB::hierNode Supply_node;
+    vector<pair<string,string> > global_signals;
     PnRdatabase& db;
 
 public:
@@ -56,8 +56,8 @@ public:
       return db;
     }
 
-    PnRDB::hierNode& get_Supply_node() {
-      return Supply_node;
+    const vector<pair<string,string> >& get_global_signals() const {
+      return global_signals;
     }
 
     ReadVerilogHelper( PnRdatabase& db_in) : db(db_in) {}
@@ -110,7 +110,9 @@ class PnRdatabase
     long int get_number(string str);
 
     void ReadPDKJSON(string drfile);
-    void semantic( const string& fpath, const string& topcell, PnRDB::hierNode& Supply_node);
+    void semantic0( const string& topcell);
+    void semantic1( const vector<pair<string,string> >& global_signals);
+    void semantic2();
     void attach_constraint_files( const string& fpath);
 
     deque<int> TraverseHierTree(); // traverse hierarchical tree in topological order
