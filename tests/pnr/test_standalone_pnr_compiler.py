@@ -7,7 +7,7 @@ from align.pnr import pnr_compiler
 
 mydir = pathlib.Path(__file__).resolve().parent
 
-@pytest.mark.skip #Causing trouble in CI so skipping for now
+#@pytest.mark.skip #Causing trouble in CI so skipping for now
 def test_A():
     
     nm = 'current_mirror_ota'
