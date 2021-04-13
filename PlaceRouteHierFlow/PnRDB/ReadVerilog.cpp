@@ -85,12 +85,14 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
   unordered_map<string,int> terminal_map; // terminal_name to terminal_index
   unordered_map<string,int> net_map; // net_name to net_index
 
+  string global_module_name;
+
   l.mustbe( TokenType::NAME);
   if ( !celldefine_mode) {
       temp_node.name = l.last_token.value;
       temp_node.isCompleted = 0;
   } else {
-    assert( string(l.last_token.value) == string("global_power"));
+      global_module_name = l.last_token.value;
   }
 
   if ( l.have( TokenType::LPAREN)) {
@@ -133,7 +135,7 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
 	      do {
   		  l.mustbe( TokenType::NAME);
 		  string temp_name = l.last_token.value;
-		  global_signals.push_back( std::make_pair( direction_tag, l.last_token.value));
+		  global_signals.push_back( std::make_tuple( global_module_name, direction_tag, l.last_token.value));
 	      } while ( l.have( static_cast<TokenType>( ',')));
 	      l.mustbe( TokenType::SEMICOLON);  
 	  }

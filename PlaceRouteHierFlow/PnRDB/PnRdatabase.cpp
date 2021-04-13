@@ -2146,7 +2146,7 @@ void PnRdatabase::semantic0( const string& topcell)
 }
 
 
-void PnRdatabase::semantic1( const vector<pair<string,string> >& global_signals)
+void PnRdatabase::semantic1( const vector<tuple<string,string,string> >& global_signals)
 {
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.semantic1");
 
@@ -2157,14 +2157,17 @@ void PnRdatabase::semantic1( const vector<pair<string,string> >& global_signals)
 
   const std::string supply_node_name = "global_power";
 
-  for(unsigned int i=0;i<global_signals.size();i++){
-    std::string supply_name_full = supply_node_name + "." + global_signals[i].second;
-    std::string supply_name = global_signals[i].second;
+  for(auto p = global_signals.begin(); p != global_signals.end(); ++p) {
+    std::string supply_name = std::get<1>(*p);
+    std::string supply_name_full = std::get<0>(*p) + "." + supply_name;
+
     int power;
-    if(global_signals[i].first == "supply0"){
+    if        (std::get<1>(*p) == "supply0"){
       power = 0;
-    }else{
-      power =1;
+    } else if (std::get<1>(*p) == "supply1"){
+      power = 1;
+    } else {
+      assert(0);
     }
     for(unsigned int j=0;j<hierTree.size();j++){
       std::vector<PnRDB::net> temp_net;

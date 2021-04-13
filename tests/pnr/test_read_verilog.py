@@ -32,12 +32,17 @@ def write_verilog( j, ofp):
         print( 'endmodule', file=ofp)
         
     if 'global_signals' in j:
-        d = { s['formal'] : s['actual'] for s in j['global_signals']}
+        prefixes = set()
+        for s in j['global_signals']:
+            prefixes.add( s['prefix'])
+        assert 1 == len(prefixes)
+        prefix = list(prefixes)[0]
         print( file=ofp)
         print( "`celldefine", file=ofp)
-        print( "module global_power;", file=ofp)
-        for k,v in d.items():
-            print( f'{k} {v};', file=ofp)
+        print( f"module {prefix};", file=ofp)
+        for s in j['global_signals']:
+            formal, actual = s['formal'], s['actual']
+            print( f'{formal} {actual};', file=ofp)
         print( "endmodule", file=ofp)
         print( "`endcelldefine", file=ofp)
 
@@ -117,10 +122,12 @@ verilog_json = """\
     ],
     "global_signals": [
         {
+            "prefix": "global_power",
             "formal": "supply0",
             "actual": "vss"
         },
         {
+            "prefix": "global_power",         
             "formal": "supply1",         
 	    "actual": "vdd"
 	}
