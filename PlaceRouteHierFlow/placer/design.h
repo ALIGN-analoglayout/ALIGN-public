@@ -164,7 +164,7 @@ class design
     int bias_Hgraph;
     int bias_Vgraph;
     bool mixFlag;
-	 std::shared_ptr<TapRemoval> _tapRemover;
+    std::shared_ptr<TapRemoval> _tapRemover;
 
     void readRandConstFile(string random_const_file);
     //above is added by yg
@@ -252,6 +252,9 @@ class design
     PnRDB::bbox GetPlacedBlockInterMetalAbsBox(int blockid, placerDB::Omark ort, PnRDB::bbox& originBox, placerDB::point LL, int sel); 
     PnRDB::point GetPlacedBlockInterMetalAbsPoint(int blockid, placerDB::Omark ort, PnRDB::point& originP, placerDB::point LL, int sel);
     PnRDB::point GetPlacedBlockInterMetalRelPoint(int blockid, placerDB::Omark ort, PnRDB::point& originP, int sel);
+
+    void RebuildTapInstances(const PrimitiveData::PlMap& plmap) {if (_tapRemover) _tapRemover->rebuildInstances(plmap); }
+    long TapDeltaArea() const { return _tapRemover ?  _tapRemover->deltaArea() : 0.; }
 };
 
 #endif

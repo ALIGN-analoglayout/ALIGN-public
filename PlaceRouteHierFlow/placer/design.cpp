@@ -332,6 +332,8 @@ design::design(design& other, int mode) {
   }
 }
 
+
+unsigned trDist = (getenv("TR_DIST_UU") != nullptr) ? std::atof(getenv("TR_DIST_UU")) * 4000 : 50000;
 design::design(PnRDB::hierNode& node) {
 
 	auto logger = spdlog::default_logger()->clone("placer.design.design");
@@ -344,7 +346,7 @@ design::design(PnRDB::hierNode& node) {
 	double averageWL=0;
 	double macroThreshold=0.5; // threshold to filter out small blocks
 	// Add blocks
-	_tapRemover = std::make_shared<TapRemoval>(node);
+	_tapRemover = std::make_shared<TapRemoval>(node, trDist);
 	for(vector<PnRDB::blockComplex>::iterator it=node.Blocks.begin(); it!=node.Blocks.end(); ++it) {
 		this->Blocks.resize(this->Blocks.size()+1);
 		int WL=0;

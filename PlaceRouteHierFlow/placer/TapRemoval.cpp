@@ -155,8 +155,8 @@ void createInstances(Instances& insts, const Primitives& primitives, const PlMap
 		const Primitive* prim(nullptr);
 		if (primIt != primitives.end()) prim = primIt->second;
 		if (prim != nullptr) {
-			insts.push_back(new Instance(prim, it.first, it.second._ll));
-			instMap[it.first] = *insts.rbegin();
+			insts.push_back(new Instance(prim, it.first.first, it.second._ll));
+			instMap[it.first.first] = *insts.rbegin();
 		}
 	}
 	//cout << "# Instances : " << insts.size() << endl;
@@ -355,26 +355,7 @@ void TapRemoval::readPrimitives(PrimitiveData::Primitives& primitives, const str
 	if (!primFiles.empty()) PrimitiveData::readJSONPrimitives(primitives, primFiles);
 }
 
-void TapRemoval::createInstances(const ILP_solver& solver, PnRDB::hierNode &node)
-{
-	//auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.createInstances");
-	if (_primitives.empty()) return;
-	PrimitiveData::PlMap plmap;
-	for (unsigned i = 0; i < node.Blocks.size(); ++i) {
-		//logger->info("print : {0} {1}", node.Blocks[i].instance.size(), node.Blocks[i].selectedInstance);
-		auto& index = node.Blocks[i].selectedInstance;
-		if (index >= node.Blocks[i].instance.size()) continue;
-		auto& block = node.Blocks[i].instance[index];
-		if (block.master.find("PMOS") == string::npos && _primitives.find(block.master) != _primitives.end()) {
-			plmap.insert(std::make_pair(block.name, PlInfo(block.master,
-							geom::Point(block.placedBox.LL.x, block.placedBox.LL.y), 
-							index, solver.Blocks[i].H_flip, solver.Blocks[i].V_flip)));
-		}
-	}
-	PrimitiveData::createInstances(_instances, _primitives, plmap);
-}
-
-void TapRemoval::buildGraph(const unsigned dist)
+void TapRemoval::buildGraph()
 {
 	RTree rtree;
 	map<string, geom::Rect> allTaps;
@@ -399,7 +380,7 @@ void TapRemoval::buildGraph(const unsigned dist)
 	//cout << allTaps.size() << endl;
 
 	for (auto& it : allTaps) {
-		auto r = it.second.bloated(dist);
+		auto r = it.second.bloated(_dist);
 		bgBox box(bgPt(r.xmin(), r.ymin()), bgPt(r.xmax(), r.ymax()));
 		vector<bgVal> overlapRects;
 		rtree.query(bgi::covered_by(box), back_inserter(overlapRects));
@@ -414,7 +395,7 @@ void TapRemoval::buildGraph(const unsigned dist)
 
 }
 
-TapRemoval::TapRemoval(const PnRDB::hierNode& node)
+TapRemoval::TapRemoval(const PnRDB::hierNode& node, const unsigned dist) : _dist(dist)
 {
 }
 
@@ -437,7 +418,7 @@ long TapRemoval::deltaArea() const
 {
 	//auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.deltaArea");
 	long deltaarea(0);
-	if (_graph == nullptr) return deltaarea;
+	if (_graph == nullptr || _dist == 0) return deltaarea;
 	auto nodes = _graph->dominatingSet();
 
 	//logger->info("Found {0} nodes in dominating set", nodes.size());
@@ -482,6 +463,6 @@ void TapRemoval::rebuildInstances(const PrimitiveData::PlMap& plmap) {
 	delete _graph;
 	_graph = new DomSetGraph::Graph;
 
-	buildGraph(_dist);
+	buildGraph();
 
 }

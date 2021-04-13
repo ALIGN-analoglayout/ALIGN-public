@@ -406,21 +406,25 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   }
 
   // calculate LL and UR
-  /*PrimitiveData::PlMap plmap;
+  PrimitiveData::PlMap plmap;
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
+    const auto& index = curr_sp.selected[i];
     LL.x = std::min(LL.x, Blocks[i].x);
     LL.y = std::min(LL.y, Blocks[i].y);
-    UR.x = std::max(UR.x, Blocks[i].x + mydesign.Blocks[i][curr_sp.selected[i]].width);
-    UR.y = std::max(UR.y, Blocks[i].y + mydesign.Blocks[i][curr_sp.selected[i]].height);
-    const auto& master = mydesign.Blocks[i][curr_sp.selected[i]].master;
-    const auto& instName = mydesign.Blocks[i][curr_sp.selected[i]].name;
-    if (master.find("PMOS") == string::npos && tapRemover.containsPrimitive(master)) {
-      plmap[instName]._primName = master;
-      plmap[instName]._ll = geom::Point(Blocks[i].x * 5, Blocks[i].y * 5);
+    UR.x = std::max(UR.x, Blocks[i].x + mydesign.Blocks[i][index].width);
+    UR.y = std::max(UR.y, Blocks[i].y + mydesign.Blocks[i][index].height);
+
+    const auto& master = mydesign.Blocks[i][index].master;
+    const auto& instName = mydesign.Blocks[i][index].name;
+    if (master.find("PMOS") == string::npos) {
+      plmap.insert(std::make_pair(std::make_pair(instName, static_cast<unsigned>(index)),
+            PrimitiveData::PlInfo(master,
+              geom::Point(Blocks[i].x, Blocks[i].y),
+              Blocks[i].H_flip, Blocks[i].V_flip)));
     }
-  }*/
-  //tapRemover.rebuildInstances(plmap);
-  //auto delArea = tapRemover.deltaArea();
+  }
+  mydesign.RebuildTapInstances(plmap);
+  auto delArea = mydesign.TapDeltaArea();
   //logger->info("maximum delta area from tap removal : {0}", delArea);
   // calculate area
   area = double(UR.x - LL.x) * double(UR.y - LL.y);

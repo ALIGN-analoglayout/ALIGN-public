@@ -185,15 +185,14 @@ using Primitives = map<string, Primitive*>;
 
 struct PlInfo {
 	string _primName;
-	Point _ur;
-	int _index;
+	Point _ll;
 	unsigned _hflip : 1;
 	unsigned _vflip : 1;
-	PlInfo(const string& name, const geom::Point& ll, const int& index, ) :
-		_primName(name), _ll(ll), _index(index),
+	PlInfo(const string& name, const geom::Point& ll, int hf, int vf) :
+		_primName(name), _ll(ll),
 		_hflip(hf == 0 ? 0 : 1), _vflip(vf == 0 ? 0 : 1) {}
 };
-typedef map<string, PlInfo> PlMap;
+typedef map<pair<string, unsigned>, PlInfo> PlMap;
 
 class Instance
 {
@@ -328,18 +327,17 @@ class Graph {
 
 class TapRemoval {
 	private:
-		DomSetGraph::Graph *_graph;
 		unsigned _dist;
+		DomSetGraph::Graph *_graph;
 		PrimitiveData::Instances _instances;
 		PrimitiveData::Primitives _primitives, _primitivesWOTap;
+
+		void buildGraph();
 	public:
-		TapRemoval(const PnRDB::hierNode& node);
-		TapRemoval(const string& pdir, const string& pdirWOTap, std::vector<PnRDB::hierNode> &nodeVec, const unsigned dist);
-		TapRemoval(const string& pdir, const string& pdirWOTap, const unsigned dist);
+		TapRemoval(const PnRDB::hierNode& node, const unsigned dist);
 		~TapRemoval();
 		void readPrimitives(PrimitiveData::Primitives& primitives, const string& pdir);
-		void createInstances(PnRDB::hierNode &node);
-		void buildGraph(const unsigned dist);
+		//void createInstances(const PrimitiveData::PlMap& plmap);
 		long deltaArea() const;
 		void rebuildInstances(const PrimitiveData::PlMap& plmap);
 		bool containsPrimitive(const string& prim) const { return _primitives.find(prim) != _primitives.end(); }
