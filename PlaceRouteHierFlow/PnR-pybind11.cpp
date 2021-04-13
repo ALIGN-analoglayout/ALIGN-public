@@ -407,6 +407,7 @@ PYBIND11_MODULE(PnR, m) {
   py::class_<PnRdatabase>( m, "PnRdatabase")
     .def( py::init<string, string, string, string, string, string>())
     .def( py::init<>())
+    .def( "attach_constraint_files", &PnRdatabase::attach_constraint_files)
     .def( "semantic", &PnRdatabase::semantic)
     .def( "TraverseHierTree", &PnRdatabase::TraverseHierTree)
     .def( "CheckoutHierNode", &PnRdatabase::CheckoutHierNode)

@@ -168,7 +168,7 @@ void PnRdatabase::Write_Current_Workload(PnRDB::hierNode &node, double total_cur
   }
   currentfile.close();
 
-};
+}
 
 void PnRdatabase::Write_Power_Mesh_Conf(std::string outputfile){
 
@@ -186,7 +186,7 @@ void PnRdatabase::Write_Power_Mesh_Conf(std::string outputfile){
   PMCfile<<std::endl;
 
   PMCfile.close();
-};
+}
 
 void PnRdatabase::TraverseDFS(deque<int>& Q, vector<string>& color, int idx) {
   color[idx]="gray";
@@ -278,7 +278,7 @@ void PnRdatabase::updatePowerPins(PnRDB::pin& temp_pin){
       updateContact( temp_pin.pinVias[i].LowerMetalRect);
   }
 
-};
+}
 
 void PnRdatabase::TransformNode(PnRDB::hierNode& updatedNode, PnRDB::point translate, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
   /*
@@ -616,13 +616,13 @@ void PnRdatabase::TransformPoint(PnRDB::point& p, PnRDB::point translate, int wi
 void PnRdatabase::TransformMetal(PnRDB::Metal& metal, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type){
   TransformPoints(metal.LinePoint, translate, width, height, ort, transform_type);
   TransformContact(metal.MetalRect, translate, width, height, ort, transform_type);
-};
+}
 
 void PnRdatabase::TransformMetals(std::vector<PnRDB::Metal>& metals, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type){
   for (std::vector<PnRDB::Metal>::iterator mit = metals.begin(); mit != metals.end(); ++mit) {
     TransformMetal(*mit, translate, width, height, ort, transform_type);
   }
-};
+}
 
 void PnRdatabase::TransformNet(PnRDB::net& net, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
   TransformMetals(net.path_metal, translate, width, height, ort, transform_type);
@@ -1940,7 +1940,7 @@ void PnRdatabase::AddingPowerPins(PnRDB::hierNode &node){
      }
 
    
-};
+}
 
 // [RA] need confirmation -wbxu
 void PnRdatabase::Extract_RemovePowerPins(PnRDB::hierNode &node){
@@ -2022,7 +2022,7 @@ void PnRdatabase::Extract_RemovePowerPins(PnRDB::hierNode &node){
      }
 
 
-};
+}
 
 void PnRdatabase::Write_Router_Report(PnRDB::hierNode &node, const string& opath){
 
@@ -2051,6 +2051,236 @@ void PnRdatabase::Write_Router_Report(PnRDB::hierNode &node, const string& opath
 
   router_report.close();
 
-};
+}
+
+void PnRdatabase::attach_constraint_files( const string& fpath)
+{
+    auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.attach_constraint_files");
+
+    for(unsigned int i=0;i<hierTree.size();i++){
+
+	auto &curr_node = hierTree[i];
+
+        curr_node.bias_Vgraph = DRC_info.Design_info.Vspace;
+        curr_node.bias_Hgraph = DRC_info.Design_info.Hspace;
+        // added one nodes to the class
+        if (ReadConstraint_Json(curr_node, fpath, "const.json")) {
+            logger->info("Finished reading contraint json file {0}.const.json", curr_node.name);
+        } else if (ReadConstraint(curr_node, fpath, "const")) {
+            logger->info("Finished reading contraint file {0}.const", curr_node.name);
+        } else {
+            logger->warn("No constraint file for module {0}", curr_node.name);
+        }
+    }
+
+}
 
 
+void PnRdatabase::semantic( const string& fpath, const string& topcell, PnRDB::hierNode& Supply_node)
+{
+    auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.semantic");
+
+    //update hier tree here for the class Nodes.
+    //initialize
+    for(unsigned int i=0;i<hierTree.size();i++){
+        for(unsigned int j=0;j<hierTree[i].Blocks.size();j++){
+            hierTree[i].Blocks[j].child = -1;
+	}
+    }
+		
+    //update hier tree here for the class Nodes.
+    for(unsigned int i=0;i<hierTree.size();i++){
+        for(unsigned int j=0;j<hierTree.size();j++){
+            for(unsigned int k=0;k<hierTree[j].Blocks.size();k++)
+                if(hierTree[j].Blocks[k].instance.back().master.compare(hierTree[i].name)==0){
+                   hierTree[j].Blocks[k].child = i;
+                   int parent_found = 0;
+                   for(unsigned int p=0;p<hierTree[i].parent.size();p++){
+		     if(hierTree[i].parent[p] == (int)j){parent_found=1;} 
+		   }
+                   if(parent_found==0){hierTree[i].parent.push_back(j);}                   
+                  }
+            }
+        if(hierTree[i].name.compare(topcell)==0){
+           topidx =i;
+           hierTree[i].isTop = 1;
+          }
+                //update terminal information
+        for(unsigned int l=0;l<hierTree[i].Nets.size();l++){
+            for(unsigned int m=0;m<hierTree[i].Terminals.size();m++){
+                if(hierTree[i].Nets[l].name.compare(hierTree[i].Terminals[m].name)==0){
+                   hierTree[i].Nets[l].degree++;
+		   {
+		       PnRDB::connectNode temp_connectNode;
+		       temp_connectNode.type = PnRDB::Terminal;
+		       temp_connectNode.iter = m;
+		       temp_connectNode.iter2 = -1;
+		       hierTree[i].Nets[l].connected.push_back(temp_connectNode);
+		   }
+                   hierTree[i].Nets[l].sink2Terminal = 1;
+                   hierTree[i].Terminals[m].netIter = l;
+                   }
+                }
+            }
+      }
+		
+    for(unsigned int i=0;i<hierTree.size();i++){
+        for(unsigned int j=0;j<hierTree[i].Blocks.size();j++){
+            if(hierTree[i].Blocks[j].child==-1){
+               hierTree[i].Blocks[j].instance.back().isLeaf=1;
+               }
+        else{
+             hierTree[i].Blocks[j].instance.back().isLeaf=0;
+             }
+           }
+       }
+
+  logger->debug("Middle");
+    //mergeLEFandGDS
+    for(unsigned int i=0;i<hierTree.size();i++){
+    //cout<<"hierTree node "<<i<<endl;
+    if(!MergeLEFMapData(hierTree[i])){logger->error("PnRDB-Error: fail to mergeLEFMapData of module {0}",hierTree[i].name);
+      }else{
+      logger->debug("Finished merge lef data");
+      }
+      }
+  // wbxu: following lines need modifications to reflect changes of block instance vector
+  //update powernets information
+  logger->debug("Middle");
+  for(unsigned int i=0;i<Supply_node.Blocks.size();i++){
+      std::string supply_name_full = Supply_node.name+"."+Supply_node.Blocks[i].instance.back().name;
+      std::string supply_name = Supply_node.Blocks[i].instance.back().name;
+      int power;
+      if(Supply_node.Blocks[i].instance.back().master == "supply0"){
+         power = 0;
+        }else{
+         power =1;
+        }
+      for(unsigned int j=0;j<hierTree.size();j++){
+           std::vector<PnRDB::net> temp_net;
+           bool powernet_found = 0;
+           for(unsigned int k=0;k<hierTree[j].Nets.size();k++){
+               if(hierTree[j].Nets[k].name == supply_name_full || hierTree[j].Nets[k].name == supply_name){
+                   powernet_found = 1;
+                   PnRDB::PowerNet temp_PowerNet;
+                   temp_PowerNet.name = hierTree[j].Nets[k].name;
+                   temp_PowerNet.power = power;
+                   temp_PowerNet.connected = hierTree[j].Nets[k].connected;
+                   hierTree[j].PowerNets.push_back(temp_PowerNet);
+                 }else{
+                   temp_net.push_back(hierTree[j].Nets[k]);
+                 }
+              }
+
+            if(powernet_found==0){
+              PnRDB::PowerNet temp_PowerNet;
+              temp_PowerNet.name = supply_name;
+              temp_PowerNet.power = power;
+              hierTree[j].PowerNets.push_back(temp_PowerNet);
+            }
+
+            hierTree[j].Nets = temp_net;
+         }
+     }
+
+  //update pins & terminal connection iternet
+  for(unsigned int i=0;i<hierTree.size();i++){
+      for(unsigned int j=0;j<hierTree[i].Nets.size();j++){
+           for(unsigned int k=0;k<hierTree[i].Nets[j].connected.size();k++){
+                if(hierTree[i].Nets[j].connected[k].type == PnRDB::Block){
+                        for(unsigned int m=0;m<hierTree[i].Blocks[hierTree[i].Nets[j].connected[k].iter2].instance.size();++m) {
+                            hierTree[i].Blocks[hierTree[i].Nets[j].connected[k].iter2].instance.at(m).blockPins[hierTree[i].Nets[j].connected[k].iter].netIter = j;
+                        } // [RA] need confirmation -wbxu
+                  }else{
+hierTree[i].Terminals[hierTree[i].Nets[j].connected[k].iter].netIter = j;
+                  }
+              }
+         }
+       
+      for(unsigned int j=0;j<hierTree[i].PowerNets.size();j++){
+
+           for(unsigned int k=0;k<hierTree[i].PowerNets[j].connected.size();k++){
+                if(hierTree[i].PowerNets[j].connected[k].type == PnRDB::Block){
+                    for(unsigned int m=0;m<hierTree[i].Blocks[hierTree[i].PowerNets[j].connected[k].iter2].instance.size();++m) {
+                    hierTree[i].Blocks[hierTree[i].PowerNets[j].connected[k].iter2].instance.at(m).blockPins[hierTree[i].PowerNets[j].connected[k].iter].netIter = -1; 
+                    }  // [RA] need confirmation - wbxu
+                    hierTree[i].PowerNets[j].Pins.push_back(hierTree[i].Blocks[hierTree[i].PowerNets[j].connected[k].iter2].instance.back().blockPins[hierTree[i].PowerNets[j].connected[k].iter]); // [AR] need modification -wbxu
+                  }else{
+                    hierTree[i].Terminals[hierTree[i].PowerNets[j].connected[k].iter].netIter = -1;
+                    PnRDB::pin temp_pin;
+                    temp_pin.name = hierTree[i].Terminals[hierTree[i].PowerNets[j].connected[k].iter].name;
+                    temp_pin.netIter = -1;
+                    temp_pin.pinContacts = hierTree[i].Terminals[hierTree[i].PowerNets[j].connected[k].iter].termContacts;
+                    hierTree[i].PowerNets[j].Pins.push_back(temp_pin);
+                  }
+              }
+
+      }
+
+  //adjust symmetry net iter
+
+  for(unsigned int i=0;i<hierTree.size();i++){
+     for(unsigned int j=0;j<hierTree[i].SNets.size();j++){
+        int iter1=-1;
+        int iter2=-1;
+        for(unsigned int k=0;k<hierTree[i].Nets.size();k++){
+           if(hierTree[i].Nets[k].name==hierTree[i].SNets[j].net1.name){
+               iter1 = k;
+               break;
+             }
+        }
+        for(unsigned int k=0;k<hierTree[i].Nets.size();k++){
+           if(hierTree[i].Nets[k].name==hierTree[i].SNets[j].net2.name){
+               iter2 = k;
+               break;
+             }
+        }
+        hierTree[i].Nets[iter1].symCounterpart=iter2;
+        hierTree[i].Nets[iter2].symCounterpart=iter1; 
+     }
+  }
+
+//Add LinearConst here
+
+      for(unsigned int j=0;j<hierTree[i].L_Constraints.size();j++){
+
+        PnRDB::LinearConst temp_LinearConst = hierTree[i].L_Constraints[j];
+
+        for(unsigned int k=0;k<hierTree[i].Nets.size();k++){
+           if(hierTree[i].Nets[k].name == temp_LinearConst.net_name){
+             hierTree[i].Nets[k].upperBound = temp_LinearConst.upperBound;
+             for(unsigned int h=0;h<hierTree[i].Nets[k].connected.size();h++){
+                logger->debug("Connected {0} {1} {2}",hierTree[i].Nets[k].connected[h].type,hierTree[i].Nets[k].connected[h].iter,hierTree[i].Nets[k].connected[h].iter2);
+                for(unsigned int l=0;l<temp_LinearConst.pins.size();l++){
+                  logger->debug("LinearConst cont {0} {1} {2}",temp_LinearConst.pins[l].first,temp_LinearConst.pins[l].second,temp_LinearConst.alpha[l]);
+                  if(hierTree[i].Nets[k].connected[h].type == PnRDB::Block && hierTree[i].Nets[k].connected[h].iter2 == temp_LinearConst.pins[l].first && hierTree[i].Nets[k].connected[h].iter == temp_LinearConst.pins[l].second){
+                    logger->debug("LinearConst alpha {0}",temp_LinearConst.alpha[l]);
+                    hierTree[i].Nets[k].connected[h].alpha = temp_LinearConst.alpha[l];
+                  }else if(hierTree[i].Nets[k].connected[h].type == PnRDB::Terminal && temp_LinearConst.pins[l].first==-1 && hierTree[i].Nets[k].connected[h].iter == temp_LinearConst.pins[l].second){
+                    hierTree[i].Nets[k].connected[h].alpha = temp_LinearConst.alpha[l];
+                    logger->debug("LinearConst alpha {0}",temp_LinearConst.alpha[l]);
+                  }
+                 }
+             }
+           }
+        }
+      }
+
+      for(unsigned int j=0;j<hierTree[i].L_Constraints.size();j++){
+
+          for(unsigned int k=0;k<hierTree[i].L_Constraints[j].alpha.size();k++){
+              logger->debug("LinearConst info {0} {1} ",hierTree[i].L_Constraints[j].net_name,hierTree[i].L_Constraints[j].alpha[k]);
+           }
+
+      }
+
+      for(unsigned int j=0;j<hierTree[i].Nets.size();j++){
+         for(unsigned int k =0;k<hierTree[i].Nets[j].connected.size();k++){
+            logger->debug("Assign Linear {0} {1} ",hierTree[i].Nets[j].upperBound,hierTree[i].Nets[j].connected[k].alpha);
+         }
+      }
+
+      
+
+  }
+}

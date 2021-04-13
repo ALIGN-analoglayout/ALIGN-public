@@ -111,7 +111,7 @@ class PnRdatabase
 
     void ReadPDKJSON(string drfile);
     void semantic( const string& fpath, const string& topcell, PnRDB::hierNode& Supply_node);
-
+    void attach_constraint_files( const string& fpath);
 
     deque<int> TraverseHierTree(); // traverse hierarchical tree in topological order
 
