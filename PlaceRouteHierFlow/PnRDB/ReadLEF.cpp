@@ -125,12 +125,12 @@ bool PnRdatabase::ReadLEF(const string& leffile, bool wtap) {
           }
           MergeVias(macroIns._tapVias);
           MergeVias(macroIns._activeVias);
-          for (auto& v : macroIns._tapVias) {
-            logger->info("{0} tap row : {1} {2} {3} {4}", macroIns.master, v.LL.x, v.LL.y, v.UR.x, v.UR.y);
-          }
-          for (auto& v : macroIns._activeVias) {
-            logger->info("active row : {0} {1} {2} {3} {4}", v.LL.x, v.LL.y, v.UR.x, v.UR.y, macroIns.master);
-          }
+          //for (auto& v : macroIns._tapVias) {
+          //  logger->debug("{0} tap row : {1} {2} {3} {4}", macroIns.master, v.LL.x, v.LL.y, v.UR.x, v.UR.y);
+          //}
+          //for (auto& v : macroIns._activeVias) {
+          //  logger->debug("active row : {0} {1} {2} {3} {4}", v.LL.x, v.LL.y, v.UR.x, v.UR.y, macroIns.master);
+          //}
           auto& lefD = wtap ? lefData : _lefDataWoTap;
           if (lefD.find(macroIns.master) == lefD.end()) {
             std::vector<PnRDB::lefMacro> lefV;

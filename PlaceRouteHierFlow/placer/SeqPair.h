@@ -33,7 +33,7 @@ class SeqPair
     vector<int> negPair;
     vector<placerDB::Omark> orient;
     vector<placerDB::Smark> symAxis;
-    vector<int> selected;
+    vector<int> selected, selectedCopy;
     vector<int> FindShortSeq(design& caseNL, vector<int>& seq, int idx);
     int GetVertexIndexinSeq(vector<int>& seq, int v);
     bool MoveAsymmetricBlockUnit(design& caseNL, vector<int>& seq, int anode);
@@ -80,6 +80,8 @@ class SeqPair
     int GetBlockSelected(int blockNo);
     bool ChangeSelectedBlock(design& caseNL);
     void KeepOrdering(design& caseNL);
+    void BackupSelected() { selectedCopy = selected; }
+    void RestoreSelected() { if (!selectedCopy.empty()) std::swap(selected, selectedCopy); }
 };
 
 #endif

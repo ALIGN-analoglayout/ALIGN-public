@@ -7,6 +7,7 @@ SeqPair::SeqPair() {
   this->orient.clear();
   this->symAxis.clear();
   this->selected.clear();
+  this->selectedCopy.clear();
 }
 
 //SeqPair::SeqPair(int blockSize) {
@@ -37,6 +38,7 @@ SeqPair::SeqPair(const SeqPair& sp) {
   this->orient=sp.orient;
   this->symAxis=sp.symAxis;
   this->selected=sp.selected;
+  this->selectedCopy=sp.selectedCopy;
 }
 
 SeqPair::SeqPair(design& originNL, design& reducedNL, SeqPair& reducedSP) {
@@ -508,6 +510,7 @@ SeqPair& SeqPair::operator=(const SeqPair& sp) {
   this->orient=sp.orient;
   this->symAxis=sp.symAxis;
   this->selected=sp.selected;
+  this->selectedCopy=sp.selectedCopy;
   return *this;
 }
 
@@ -533,9 +536,13 @@ void SeqPair::PrintSeqPair() {
     if(symAxis.at(i)==0) {logger->debug("H ");
     } else {logger->debug("V ");}
   }
-  logger->debug("Selected: ");
+  logger->info("Selected: ");
   for(int i=0;i<(int)selected.size();++i) {
-    logger->debug("{0}",selected.at(i));
+    logger->info("{0}",selected.at(i));
+  }
+  logger->info("SelectedCopy: ");
+  for(int i=0;i<(int)selectedCopy.size();++i) {
+    logger->info("{0}",selectedCopy.at(i));
   }
   //cout<<endl;
 }
@@ -741,7 +748,7 @@ placerDB::Smark SeqPair::GetSymmBlockAxis(int SBidx) {
   return symAxis.at(SBidx);
 }
 
-static const bool useWTapOnly = (getenv("USE_WO_TAP") == nullptr) || !std::atoi(getenv("USE_WO_TAP"));
+//static const bool useWTapOnly = (getenv("USE_WO_TAP") == nullptr) || !std::atoi(getenv("USE_WO_TAP"));
 
 bool SeqPair::ChangeSelectedBlock(design& caseNL) {
   auto logger = spdlog::default_logger()->clone("placer.SeqPair.ChangeSelectedBlock");
@@ -757,11 +764,11 @@ bool SeqPair::ChangeSelectedBlock(design& caseNL) {
   }
   int newsel=rand() % caseNL.Blocks.at(anode).size();
   int fail(0), cnt(20);
-  if (useWTapOnly) {
-    while (!caseNL.Blocks.at(anode).at(newsel).wtap && fail++ < cnt) {
-      newsel=rand() % caseNL.Blocks.at(anode).size();
-    }
+  //if (useWTapOnly) {
+  while (!caseNL.Blocks.at(anode).at(newsel).wtap && fail++ < cnt) {
+    newsel=rand() % caseNL.Blocks.at(anode).size();
   }
+  //}
   selected.at(anode)=newsel;
   if(caseNL.GetBlockCounterpart(anode)!=-1) { selected.at( caseNL.GetBlockCounterpart(anode) )=newsel;}
   return true;

@@ -72,7 +72,7 @@ class Rect {
       if (ymin() > ymax()) std::swap(ymin(), ymax());
     }
     Rect(const Point& ll, const Point& ur) : _ll(ll), _ur(ur) { fix(); }
-    Rect(const int x1 = INT_MAX, const int y1 = INT_MAX, const int x2 = -INT_MAX, const int y2 = -INT_MAX, const int index = -1) : _ll(x1, y1), _ur(x2, y2)
+    Rect(const int x1 = INT_MAX, const int y1 = INT_MAX, const int x2 = -INT_MAX, const int y2 = -INT_MAX) : _ll(x1, y1), _ur(x2, y2)
     {
       if (x1 != INT_MAX) fix();
     }
@@ -222,9 +222,10 @@ class Instance
     string _name;
     Rects _taps, _actives;
     Rect _bbox;
+    const int _woTapIndex;
 
   public:
-    Instance(const Primitive* prim, const Primitive* primWoTap, const string& name, const Transform& tr);
+    Instance(const Primitive* prim, const Primitive* primWoTap, const string& name, const Transform& tr, const int& wtIndex);
     ~Instance()
     {
       /*cout << _name << ' ' << _prim->name() << ' ' << _origin.toString() << endl;
@@ -245,6 +246,7 @@ class Instance
     const Rects& getTaps() const { return _taps; }
     const Rects& getActives() const { return _actives; }
     const Rect& bbox() const { return _bbox; }
+    const int index() const { return _woTapIndex; }
 
     void print() const;
 };
@@ -377,7 +379,7 @@ class TapRemoval {
     TapRemoval(const PnRDB::hierNode& node, const unsigned dist);
     ~TapRemoval();
     //void createInstances(const PrimitiveData::PlMap& plmap);
-    long deltaArea() const;
+    long deltaArea(std::map<std::string, int>* swappedIndices = nullptr) const;
     void rebuildInstances(const PrimitiveData::PlMap& plmap);
     bool containsPrimitive(const string& prim) const { return _primitives.find(prim) != _primitives.end(); }
 

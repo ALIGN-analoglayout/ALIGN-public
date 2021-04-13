@@ -101,8 +101,8 @@ void Primitive::build()
 }
 
 
-Instance::Instance(const Primitive* prim, const Primitive* primWoTap, const string& name, const Transform& tr) :
-_prim(prim), _primWoTap(primWoTap), _name(name), _bbox(Rect())
+Instance::Instance(const Primitive* prim, const Primitive* primWoTap, const string& name, const Transform& tr, const int& ind) :
+_prim(prim), _primWoTap(primWoTap), _name(name), _bbox(Rect()), _woTapIndex(ind)
 {
 	if (_prim) {
 		for (const auto& t : _prim->getTaps()) {
@@ -413,7 +413,7 @@ TapRemoval::~TapRemoval()
 	_graph = nullptr;
 }
 
-long TapRemoval::deltaArea() const
+long TapRemoval::deltaArea(map<string, int>* swappedIndices) const
 {
 	//auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.deltaArea");
 	long deltaarea(0);
@@ -437,8 +437,10 @@ long TapRemoval::deltaArea() const
       names.insert(name);
     }
   }
+  if (swappedIndices != nullptr) swappedIndices->clear();
   for (const auto& b : _instances) {
     if (names.find(b->name()) != names.end()) continue;
+    if (swappedIndices != nullptr) swappedIndices->insert(make_pair(b->name(), b->index()));
     deltaarea += b->deltaArea();
   }
 
@@ -466,7 +468,7 @@ void TapRemoval::rebuildInstances(const PrimitiveData::PlMap& plmap) {
 		if (primIt != _primitives.end() && index < primIt->second.size()) prim = primIt->second[index];
 		if (primWoTapIt != _primitivesWoTap.end() && index < primWoTapIt->second.size()) primWoTap = primWoTapIt->second[index];
 		if (prim != nullptr && primWoTap != nullptr) {
-      auto inst = new PrimitiveData::Instance(prim, primWoTap, it.first.first, it.second._tr);
+      auto inst = new PrimitiveData::Instance(prim, primWoTap, it.first.first, it.second._tr, static_cast<int>(index + primIt->second.size()));
 			_instances.push_back(inst);
       _instMap[it.first.first] = inst;
       //inst->print();

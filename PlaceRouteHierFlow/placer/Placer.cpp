@@ -703,6 +703,7 @@ void Placer::ReshapeSeqPairMap(std::map<double, std::pair<SeqPair, ILP_solver>>&
 
 void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo){
   int nodeSize=nodeVec.size();
+  auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementRegularAspectRatio_ILP");
   //cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
   #ifdef RFLAG
   //cout<<"Placer-Info: run in random mode..."<<endl;
@@ -738,6 +739,10 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
     //designData.PrintDesign();
     //it->second.PrintSeqPair();
     //std::cout<<"write design "<<idx<<std::endl;
+    logger->info("{0}", nodeVec.back().name);
+    for (auto& b : nodeVec.back().Blocks) logger->info("{0}", b.instance.back().name);
+    it->second.first.RestoreSelected();
+    it->second.first.PrintSeqPair();
     it->second.second.updateTerminalCenter(designData, it->second.first);
     it->second.second.WritePlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".pl");
     it->second.second.PlotPlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".plt");

@@ -43,9 +43,12 @@ PnRdatabase::PnRdatabase(string path, string topcell, string vname, string lefna
   }
 
   this->ReadLEF(path+"/"+lefname);
-  auto ptr = getenv("LEF_WO_TAP");
-  if (ptr != nullptr) {
-    this->ReadLEF(string(ptr), false);
+  
+  auto pos = lefname.rfind(".lef");
+  if (pos != std::string::npos) {
+    auto lefN(lefname);
+    lefN.replace(pos, 4, ".wotap.lef");
+    this->ReadLEF(lefN, false);
   }
   this->ReadMap(path, mapname);
   this->ReadVerilog(path, vname, topcell);
