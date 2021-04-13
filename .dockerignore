@@ -82,6 +82,7 @@ tests/cell_fabric/Foo*.cir
 !tests/compiler/test_results/test_cap.const.json
 !tests/compiler/test_circuits/high_speed_comparator_*/high_speed_comparator.const.json
 !tests/compiler/test_results/high_speed_comparator_*.const.json
+!tests/pnr/current_mirror_ota_inputs/*.json
 !tests/gdsconv/file.*
 !tests/gdsconv/only_paths.*
 !Viewer/INPUT/mydesign_dr_globalrouting.json

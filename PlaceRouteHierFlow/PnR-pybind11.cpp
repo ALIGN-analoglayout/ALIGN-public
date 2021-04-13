@@ -16,7 +16,8 @@ using namespace pybind11::literals;
 #include "placer/PlacerIfc.h"
 #include "guard_ring/GuardRingIfc.h"
 #include "router/Router.h"
-#include "toplevel.h"
+#include "MNA/MNASimulationIfc.h"
+//#include "toplevel.h"
 
 using namespace PnRDB;
 using std::string;
@@ -433,6 +434,9 @@ PYBIND11_MODULE(PnR, m) {
     .def( "WriteLef", &PnRdatabase::WriteLef)
     .def( "Write_Router_Report", &PnRdatabase::Write_Router_Report)
     .def( "WriteGcellGlobalRoute", &PnRdatabase::WriteGcellGlobalRoute)
+    .def( "Write_Current_Workload", &PnRdatabase::Write_Current_Workload)
+    .def( "Write_Power_Mesh_Conf", &PnRdatabase::Write_Power_Mesh_Conf)
+
     .def_readwrite("hierTree", &PnRdatabase::hierTree)
     .def_readwrite("topidx", &PnRdatabase::topidx)
   ;
@@ -448,15 +452,20 @@ PYBIND11_MODULE(PnR, m) {
   py::class_<GuardRingIfc>( m, "GuardRingIfc")
     .def( py::init<hierNode&, const map<string, lefMacro>&, const Drc_info&>());
 
+  py::class_<MNASimulationIfc>( m, "MNASimulationIfc")
+    .def( py::init<hierNode&, Drc_info&, string&, string&, string&>())
+    .def( "Return_Worst_Voltage", &MNASimulationIfc::Return_Worst_Voltage)
+    .def( "Clear_Power_Grid", &MNASimulationIfc::Clear_Power_Grid);
+
   py::class_<Router>( m, "Router")
     .def( py::init<>())
     .def( "RouteWork", &Router::RouteWork);
 
-
-
+  /*
   m.def("save_state", &save_state, "helper function to save_state");
   m.def("route_single_variant", &route_single_variant, "helper function to route a single variant");
   m.def("route_top_down", &route_top_down, "helper function to perform top-down routing");
 
   m.def("toplevel", &toplevel, py::return_value_policy::take_ownership, "helper function to perform the whole C++ flow");
+  */
 };

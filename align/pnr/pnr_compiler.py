@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-import sys, os
-sys.setdlopenflags(os.RTLD_GLOBAL|os.RTLD_LAZY)
-
 import logging
 import colorlog
+import sys
+
+from align.pnr import toplevel
 
 #level = logging.DEBUG
 level = logging.INFO
@@ -24,10 +24,11 @@ else:
 handler.setFormatter(formatter)
 root.addHandler(handler)
 
-import PnR
-
 logger = logging.getLogger(__name__)
 
-logger.info('Running C++ toplevel(args)')
+def cmdline( argv):
+    logger.info('Running C++ toplevel(args)')
+    toplevel.toplevel( argv)
 
-PnR.toplevel( sys.argv)
+if __name__ == "__main__":
+    cmdline( sys.argv)
