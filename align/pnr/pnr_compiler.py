@@ -22,7 +22,7 @@ if False:
 else:
     formatter = colorlog.ColoredFormatter('%(log_color)s ' + fmt, datefmt=datefmt)
 handler.setFormatter(formatter)
-root.addHandler(handler)
+#root.addHandler(handler)
 
 logger = logging.getLogger(__name__)
 
