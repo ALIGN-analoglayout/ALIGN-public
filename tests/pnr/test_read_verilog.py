@@ -3,6 +3,7 @@ import pathlib
 import io
 
 from align import PnR
+from align.pnr.toplevel import ReadVerilogJson
 
 mydir = pathlib.Path(__file__).resolve().parent
 
@@ -169,5 +170,25 @@ def test_C():
 
 
     DB.ReadVerilog( str(d), "current_mirror_ota.verilog.v", "current_mirror_ota")
+
+def test_C():
+    DB = PnR.PnRdatabase()
+
+    d = mydir / "current_mirror_ota_inputs"
+
+    DB.ReadPDKJSON( str( d / "layers.json"))
+
+    DB.ReadLEF( str( d / "current_mirror_ota.lef"))
+    DB.ReadMap( str( d), "current_mirror_ota.map")
+
+    with io.StringIO( verilog_json) as fp:
+        j = json.load( fp)
+
+    global_signals = ReadVerilogJson( DB, j)
+
+    DB.attach_constraint_files( str(d))
+    DB.semantic0( "current_mirror_ota")
+    DB.semantic1( global_signals)
+    DB.semantic2()
 
     

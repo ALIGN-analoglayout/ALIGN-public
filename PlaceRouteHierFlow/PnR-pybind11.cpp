@@ -105,7 +105,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("west", &tile::west)
     .def_readwrite("down", &tile::down)
     .def_readwrite("up", &tile::up);
-  py::class_<connectNode>( m, "connetNode")
+  py::class_<connectNode>( m, "connectNode")
     .def( py::init<>())
     .def_readwrite("type", &connectNode::type)
     .def_readwrite("iter", &connectNode::iter)
