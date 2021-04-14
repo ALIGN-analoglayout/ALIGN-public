@@ -6,6 +6,8 @@ from itertools import chain
 from .. import PnR
 from .render_placement import dump_blocks
 
+from os import getenv
+
 logger = logging.getLogger(__name__)
 
 NType = PnR.NType
@@ -322,9 +324,12 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     DB.ReadPDKJSON( path + '/' + drname)
 
     DB.ReadLEF( path + '/' + lefname, True)
-    leftopname = lefname.rsplit('.lef', 1)[0]
-    if pathlib.Path(path + '/' + leftopname + '.wotap.lef').is_file():
-        DB.ReadLEF( path + '/' + leftopname + '.wotap.lef', False)
+    remove_taps = int(getenv('TAP_REMOVAL', 1))
+    print(f"tap removal {remove_taps}")
+    if remove_taps != 0 :
+        leftopname = lefname.rsplit('.lef', 1)[0]
+        if pathlib.Path(path + '/' + leftopname + '.wotap.lef').is_file():
+            DB.ReadLEF( path + '/' + leftopname + '.wotap.lef', False)
     DB.ReadMap( path, mapname)
 
     if vname.endswith(".verilog.json"):
