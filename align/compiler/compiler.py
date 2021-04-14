@@ -150,7 +150,11 @@ def compiler_output(input_ckt, lib_names , hier_graph_dict, design_name:str, res
         result_dir.mkdir()
     logger.debug(f"Writing results in dir: {result_dir} {hier_graph_dict}")
     input_dir = input_ckt.parents[0]
+
     VERILOG_FP = open(result_dir / f'{design_name}.v', 'w')
+    verilog_tbl = {}
+    verilog_tbl['modules'] = []
+    verilog_tbl['global_signals'] = []
 
     ## File pointer for spice generator
     #SP_FP = open(result_dir / (design_name + '_blocks.sp'), 'w')
@@ -254,10 +258,17 @@ def compiler_output(input_ckt, lib_names , hier_graph_dict, design_name:str, res
                 with open(json_const_file, 'w') as outfile:
                     json.dump(const, outfile, indent=4)
             wv.print_module(VERILOG_FP)
+            verilog_tbl['modules'].append( wv.gen_dict())
     if len(POWER_PINS)>0:
         print_globals(VERILOG_FP,POWER_PINS)
+        for i, nm in enumerate(POWER_PINS):
+            verilog_tbl['global_signals'].append( ('global_power', f'supply{i}', nm))
+
+    with (result_dir / f'{design_name}.verilog.json').open( 'wt') as fp:
+        json.dump( verilog_tbl, fp=fp, indent=2)
 
     logger.info("Topology identification done !!!")
     logger.info(f"OUTPUT verilog netlist at: {result_dir}/{design_name}.v")
+    logger.info(f"OUTPUT verilog json netlist at: {result_dir}/{design_name}.verilog.json")
     logger.info(f"OUTPUT const file at: {result_dir}/{design_name}.const.json")
     return primitives

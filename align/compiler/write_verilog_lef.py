@@ -27,6 +27,87 @@ class WriteVerilog:
         self.power_pins=power_pins
         self.subckt_dict = subckt_dict
 
+    def gen_dict( self):
+        d = {}
+        d['name'] = self.circuit_name
+        d['parameters'] = self.pins
+
+        d['instances'] = []
+
+        for node, attr in self.circuit_graph.nodes(data=True):
+
+
+            if 'source' in attr['inst_type']:
+                logger.debug(f"Skipping source nodes : {node}")
+                continue
+            if 'net' not in attr['inst_type']:
+                logger.debug(f"Writing node: {node} {attr}")
+
+                instance = {}
+
+                instance['template_name'] = attr['inst_type']
+                instance['instance_name'] = node
+
+                ports = []
+                nets = []
+                if "ports_match" in attr:
+                    logger.debug(f'Nets connected to ports: {attr["ports_match"]}')
+                    for key, value in attr["ports_match"].items():
+                        ports.append(key)
+                        nets.append(value)
+                    if 'Switch_NMOS_G' in attr['inst_type']:
+                        ports.append('B')
+                        nets.append(nets[1])
+                    elif 'Switch_PMOS_G' in attr['inst_type']:
+                        ports.append('B')
+                        nets.append(nets[1])
+                elif "connection" in attr and attr["connection"]:
+                    for key, value in attr["connection"].items():
+                        if attr['inst_type'] in self.subckt_dict and key in self.subckt_dict[attr['inst_type']]['ports']:
+                            ports.append(key)
+                            nets.append(value)
+                else:
+                    logger.error(f"No connectivity info found : {', '.join(attr['ports'])}")
+                    ports = attr["ports"]
+                    nets = list(self.circuit_graph.neighbors(node))
+
+                instance['fa_map'] = self.gen_dict_fa(ports, nets)
+                if not instance['fa_map']:
+                    logger.warning(f"Unconnected module, only power/gnd conenction found {node}")
+
+                d['instances'].append( instance)
+
+        return d
+
+    def gen_dict_fa(self, a, b):
+        if len(a) == len(b):
+            mapped_pins = []
+            for ai, bi in zip(a, b):
+                if ai not in self.power_pins:
+                    mapped_pins.append( { "formal" : ai, "actual" : bi})
+            return list(sorted(mapped_pins,key=lambda x:x['formal']))
+        elif len(set(a)) == len(set(b)):
+            if len(a) > len(b):
+                mapped_pins = []
+                check_short = []
+                no_of_short = 0
+                for i in range(len(a)):
+                    if a[i] in check_short:
+                        mapped_pins.append(mapped_pins[check_short.index(a[i])])
+                        no_of_short += 1
+                    else:
+                        mapped_pins.append( { "formal" : a[i], "actual": b[i - no_of_short]})
+                        check_short.append(a[i])
+                    if a[i] in self.power_pins:
+                        mapped_pins= mapped_pins[:-1]
+
+                return list(sorted(mapped_pins,key=lambda x:x['formal']))
+
+        else:
+            logger.error( f"unmatched ports found: {a} {b}")
+            assert False
+
+
     def print_module(self, fp):
         logger.debug(f"Writing module : {self.circuit_name}")
         fp.write("\nmodule " + self.circuit_name + " ( ")
