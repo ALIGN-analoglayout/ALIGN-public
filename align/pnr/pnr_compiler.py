@@ -1,19 +1,14 @@
 #!/usr/bin/env python
 
-import logging
 import sys
 
 from align.pnr import toplevel
+from align.utils.logging import reconfigure_loglevels
 
-level = logging.INFO
-root = logging.getLogger()
-root.setLevel(level)
-
+import logging
 logger = logging.getLogger(__name__)
 
 def cmdline( argv):
-    logger.info('Running C++ toplevel(args)')
+    reconfigure_loglevels( file_level='INFO', console_level='INFO')
+    logger.info('Running pnr_compiler using the Python-interface...')
     toplevel.toplevel( argv)
-
-if __name__ == "__main__":
-    cmdline( sys.argv)

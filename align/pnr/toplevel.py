@@ -231,6 +231,90 @@ def analyze_hN( tag, hN, beforeAddingBlockPins=False):
             logger.info( f'    inst.name={inst.name} inst.master={inst.master} len(inst.dummy_power_pin)={len(inst.dummy_power_pin)}')
 
 
+def ReadVerilogJson( DB, j):
+    hierTree = []
+
+    for module in j['modules']:
+
+        temp_node = PnR.hierNode()
+        temp_node.name = module['name']
+        temp_node.isCompleted = 0
+
+        Terminals = []
+        for parameter in module['parameters']:
+            temp_terminal = PnR.terminal()
+            temp_terminal.name = parameter
+            temp_terminal.type = 'input' # All nets are inputs, we don't use this for anything do we?
+            Terminals.append( temp_terminal)
+        temp_node.Terminals = Terminals
+
+        terminal_map = { term.name : term for term in temp_node.Terminals}
+        net_map = {}
+
+        Blocks = []
+        Nets = []
+
+        Connecteds = []
+
+        for instance in module['instances']:
+            temp_blockComplex = PnR.blockComplex()
+            current_instance = PnR.block()
+
+            current_instance.master = instance['template_name']
+            current_instance.name = instance['instance_name']
+
+            blockPins = []
+
+            def process_connection( iter, net_name):
+                net_index = 0
+                if net_name in net_map:
+                    net_index = net_map[net_name]
+                else:
+                    net_index = len(Nets)
+                    Nets.append( PnR.net())
+                    Connecteds.append( [])
+                    Nets[-1].name = net_name
+                    
+                    net_map[net_name] = net_index
+
+                # Use a python list of list to workaround not being able to append to a C++ vector
+                Connecteds[net_index].append( PnR.connectNode())
+                Connecteds[net_index][-1].type = PnR.Block
+                Connecteds[net_index][-1].iter = iter
+                Connecteds[net_index][-1].iter2 = len(Blocks)
+
+                return net_index
+
+
+            for i,fa in enumerate(instance['fa_map']):
+                temp_pin = PnR.pin()
+                temp_pin.name = fa['formal']
+                net_name = fa['actual']
+                temp_pin.netIter = process_connection( i, net_name)
+                blockPins.append( temp_pin)
+                
+            current_instance.blockPins = blockPins
+            temp_blockComplex.instance = [ current_instance ]
+            Blocks.append( temp_blockComplex)
+
+        for net,connected in zip(Nets,Connecteds):
+            net.connected = connected
+            net.degree = len(connected)
+
+        temp_node.Blocks = Blocks
+        temp_node.Nets = Nets
+
+        hierTree.append( temp_node)
+
+    DB.hierTree = hierTree
+
+    global_signals = []
+    for global_signal in j['global_signals']:
+        global_signals.append( (global_signal['prefix'], global_signal['formal'], global_signal['actual']))
+
+    return global_signals
+
+
 def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     DB = PnR.PnRdatabase()
 
@@ -239,10 +323,19 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
 
     DB.ReadLEF( path + '/' + lefname)
     DB.ReadMap( path, mapname)
-    DB.ReadVerilog( path, vname, topcell)
+
+    if vname.endswith(".verilog.json"):
+        with (pathlib.Path(path) / vname).open( "rt") as fp:
+            j = json.load( fp)
+        global_signals = ReadVerilogJson( DB, j)
+        DB.attach_constraint_files( path)
+        DB.semantic0( topcell)
+        DB.semantic1( global_signals)
+        DB.semantic2()
+    else:
+        DB.ReadVerilog( path, vname, topcell)
 
     return DB
-
 
 def toplevel(args, *, PDN_mode=False, pdk=None, render_placements=False):
 
