@@ -151,12 +151,8 @@ def compiler_output(input_ckt, lib_names , hier_graph_dict, design_name:str, res
     logger.debug(f"Writing results in dir: {result_dir} {hier_graph_dict}")
     input_dir = input_ckt.parents[0]
 
-    verilog_tbl = {}
-    verilog_tbl['modules'] = []
-    verilog_tbl['global_signals'] = []
+    verilog_tbl = { 'modules': [], 'global_signals': []}
 
-    ## File pointer for spice generator
-    #SP_FP = open(result_dir / (design_name + '_blocks.sp'), 'w')
     design_setup = read_setup(input_dir / (design_name + '.setup'))
     try:
         POWER_PINS = [design_setup['GND'][0],design_setup['POWER'][0]]

@@ -119,7 +119,7 @@ def write_verilog( j, ofp):
         print( file=ofp)
         print( 'endmodule', file=ofp)
         
-    if 'global_signals' in j:
+    if 'global_signals' in j and j['global_signals']:
         prefixes = set()
         for s in j['global_signals']:
             prefixes.add( s['prefix'])
