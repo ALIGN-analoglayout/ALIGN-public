@@ -262,7 +262,7 @@ def compiler_output(input_ckt, lib_names , hier_graph_dict, design_name:str, res
     if len(POWER_PINS)>0:
         print_globals(VERILOG_FP,POWER_PINS)
         for i, nm in enumerate(POWER_PINS):
-            verilog_tbl['global_signals'].append( ('global_power', f'supply{i}', nm))
+            verilog_tbl['global_signals'].append( { 'prefix' :'global_power', 'formal' : f'supply{i}', 'actual' : nm})
 
     with (result_dir / f'{design_name}.verilog.json').open( 'wt') as fp:
         json.dump( verilog_tbl, fp=fp, indent=2)

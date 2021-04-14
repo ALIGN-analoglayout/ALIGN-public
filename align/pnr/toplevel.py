@@ -323,7 +323,17 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
 
     DB.ReadLEF( path + '/' + lefname)
     DB.ReadMap( path, mapname)
-    DB.ReadVerilog( path, vname, topcell)
+
+    if vname.endswith(".verilog.json"):
+        with (pathlib.Path(path) / vname).open( "rt") as fp:
+            j = json.load( fp)
+        global_signals = ReadVerilogJson( DB, j)
+        DB.attach_constraint_files( path)
+        DB.semantic0( topcell)
+        DB.semantic1( global_signals)
+        DB.semantic2()
+    else:
+        DB.ReadVerilog( path, vname, topcell)
 
     return DB
 
@@ -341,7 +351,7 @@ def PnRdatabaseJson( path, topcell, vname, lefname, mapname, drname):
 
     global_signals = ReadVerilogJson( DB, j)
 
-    DB.attach_constraint_files( fpath)
+    DB.attach_constraint_files( path)
     DB.semantic0( topcell)
     DB.semantic1( global_signals)
     DB.semantic2()
