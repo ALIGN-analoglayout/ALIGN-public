@@ -337,28 +337,6 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
 
     return DB
 
-def PnRdatabaseJson( path, topcell, vname, lefname, mapname, drname):
-    DB = PnR.PnRdatabase()
-
-    assert drname.endswith('.json'), drname
-    DB.ReadPDKJSON( path + '/' + drname)
-
-    DB.ReadLEF( path + '/' + lefname)
-    DB.ReadMap( path, mapname)
-
-    with (pathlib.Path(path) / vname).open( "rt") as fp:
-        j = json.load( fp)
-
-    global_signals = ReadVerilogJson( DB, j)
-
-    DB.attach_constraint_files( path)
-    DB.semantic0( topcell)
-    DB.semantic1( global_signals)
-    DB.semantic2()
-
-    return DB
-
-
 def toplevel(args, *, PDN_mode=False, pdk=None, render_placements=False):
 
     assert len(args) == 9

@@ -12,7 +12,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-
 class WriteVerilog:
     """ write hierarchical verilog file """
 
@@ -107,88 +106,34 @@ class WriteVerilog:
             logger.error( f"unmatched ports found: {a} {b}")
             assert False
 
+def write_verilog( j, ofp):
 
-    def print_module(self, fp):
-        logger.debug(f"Writing module : {self.circuit_name}")
-        fp.write("\nmodule " + self.circuit_name + " ( ")
-        fp.write(', '.join(self.pins))
-        fp.write(" ); ")
+    for module in j['modules']:
+        print( f"module {module['name']} ( {', '.join( module['parameters'])} );", file=ofp) 
+        print( f"input {', '.join( module['parameters'])};", file=ofp) 
+        print( file=ofp)
+        for instance in module['instances']:
+            pl = ', '.join( f".{fa['formal']}({fa['actual']})" for fa in instance['fa_map'])
+            print( f"{instance['template_name']} {instance['instance_name']} ( {pl} );", file=ofp)
 
-        if self.inout_pins:
-            logger.debug(f"Writing ports : {', '.join(self.inout_pins)}")
-            fp.write("\ninput ")
-            fp.write(', '.join(self.pins))
-            fp.write(";\n")
+        print( file=ofp)
+        print( 'endmodule', file=ofp)
+        
+    if 'global_signals' in j:
+        prefixes = set()
+        for s in j['global_signals']:
+            prefixes.add( s['prefix'])
+        assert 1 == len(prefixes)
+        prefix = list(prefixes)[0]
+        print( file=ofp)
+        print( "`celldefine", file=ofp)
+        print( f"module {prefix};", file=ofp)
+        for s in j['global_signals']:
+            formal, actual = s['formal'], s['actual']
+            print( f'{formal} {actual};', file=ofp)
+        print( "endmodule", file=ofp)
+        print( "`endcelldefine", file=ofp)
 
-        for node, attr in self.circuit_graph.nodes(data=True):
-            if 'source' in attr['inst_type']:
-                logger.debug(f"Skipping source nodes : {node}")
-                continue
-            if 'net' not in attr['inst_type']:
-                logger.debug(f"Writing node: {node} {attr}")
-                fp.write("\n" + attr['inst_type'] + " " + node + ' ( ')
-                ports = []
-                nets = []
-                if "ports_match" in attr:
-                    logger.debug(f'Nets connected to ports: {attr["ports_match"]}')
-                    for key, value in attr["ports_match"].items():
-                        ports.append(key)
-                        nets.append(value)
-                    if 'Switch_NMOS_G' in attr['inst_type']:
-                        ports.append('B')
-                        nets.append(nets[1])
-                    elif 'Switch_PMOS_G' in attr['inst_type']:
-                        ports.append('B')
-                        nets.append(nets[1])
-                elif "connection" in attr and attr["connection"]:
-                    for key, value in attr["connection"].items():
-                        if attr['inst_type'] in self.subckt_dict and key in self.subckt_dict[attr['inst_type']]['ports']:
-                            ports.append(key)
-                            nets.append(value)
-                else:
-                    logger.error(f"No connectivity info found : {', '.join(attr['ports'])}")
-                    ports = attr["ports"]
-                    nets = list(self.circuit_graph.neighbors(node))
-
-                mapped_pins = self.map_pins(ports, nets)
-                if mapped_pins:
-                    fp.write(', '.join(mapped_pins))
-                    fp.write(' ); ')
-                else:
-                    fp.write(' ); ')
-                    logger.warning(f"Unconnected module, only power/gnd conenction found {node}")
-
-        fp.write("\n\nendmodule\n")
-
-    def map_pins(self, a, b):
-        if len(a) == len(b):
-            mapped_pins = []
-            for ai, bi in sorted(zip(a, b),key=lambda x:x[0]):
-                if ai not in self.power_pins:
-                    mapped_pins.append("." + ai + "(" + bi + ")")
-
-            return sorted(mapped_pins)
-        elif len(set(a)) == len(set(b)):
-            if len(a) > len(b):
-                mapped_pins = []
-                check_short = []
-                no_of_short = 0
-                for i in range(len(a)):
-                    if a[i] in check_short:
-                        mapped_pins.append(mapped_pins[check_short.index(a[i])])
-                        no_of_short += 1
-                    else:
-                        mapped_pins.append("." + a[i] + "(" +
-                                           b[i - no_of_short] + ")")
-                        check_short.append(a[i])
-                    if a[i] in self.power_pins:
-                        mapped_pins= mapped_pins[:-1]
-
-                return sorted(mapped_pins)
-
-        else:
-            logger.debug("unmatched ports found")
-            return 0
 
 class WriteSpice:
     """ write hierarchical spice file """
@@ -259,23 +204,6 @@ def concat_values(values):
     for key,value in values.items():
         merged_values = merged_values+' '+key+'='+str(value).replace('.0','')
     return merged_values
-
-
-def print_globals(fp, power):
-    """ Write global variables"""
-    fp.write("\n`celldefine")
-    fp.write("\nmodule global_power;")
-    for i in range(len(power)):
-        fp.write("\nsupply" + str(i) + " " + power[i] + ";")
-
-    fp.write("\nendmodule")
-    fp.write("\n`endcelldefine\n")
-    fp.close()
-
-def print_header(fp, filename):
-    """ Write Verilog header"""
-    fp.write("//Verilog block level netlist file for " + filename)
-    fp.write("\n//Generated by UMN for ALIGN project \n\n")
 
 def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:dict, uniform_height=False):
     """ Return commands to generate parameterized lef"""

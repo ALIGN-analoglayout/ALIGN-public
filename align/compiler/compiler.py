@@ -8,7 +8,7 @@ from .preprocess import define_SD, preprocess_stack_parallel, remove_pg_pins
 from .create_database import CreateDatabase
 from .match_graph import Annotate
 from .read_setup import read_setup
-from .write_verilog_lef import WriteVerilog, print_globals,print_header,generate_lef
+from .write_verilog_lef import write_verilog, WriteVerilog,generate_lef
 from .common_centroid_cap_constraint import WriteCap
 from .write_constraint import WriteConst
 from .read_lef import read_lef
@@ -151,14 +151,12 @@ def compiler_output(input_ckt, lib_names , hier_graph_dict, design_name:str, res
     logger.debug(f"Writing results in dir: {result_dir} {hier_graph_dict}")
     input_dir = input_ckt.parents[0]
 
-    VERILOG_FP = open(result_dir / f'{design_name}.v', 'w')
     verilog_tbl = {}
     verilog_tbl['modules'] = []
     verilog_tbl['global_signals'] = []
 
     ## File pointer for spice generator
     #SP_FP = open(result_dir / (design_name + '_blocks.sp'), 'w')
-    print_header(VERILOG_FP, design_name)
     design_setup = read_setup(input_dir / (design_name + '.setup'))
     try:
         POWER_PINS = [design_setup['GND'][0],design_setup['POWER'][0]]
@@ -257,18 +255,19 @@ def compiler_output(input_ckt, lib_names , hier_graph_dict, design_name:str, res
                 json_const_file = result_dir / (name + '.const.json')
                 with open(json_const_file, 'w') as outfile:
                     json.dump(const, outfile, indent=4)
-            wv.print_module(VERILOG_FP)
             verilog_tbl['modules'].append( wv.gen_dict())
     if len(POWER_PINS)>0:
-        print_globals(VERILOG_FP,POWER_PINS)
         for i, nm in enumerate(POWER_PINS):
             verilog_tbl['global_signals'].append( { 'prefix' :'global_power', 'formal' : f'supply{i}', 'actual' : nm})
 
     with (result_dir / f'{design_name}.verilog.json').open( 'wt') as fp:
         json.dump( verilog_tbl, fp=fp, indent=2)
 
+    with (result_dir / f'{design_name}.v').open( 'wt') as fp:
+        write_verilog( verilog_tbl, fp)
+
     logger.info("Topology identification done !!!")
-    logger.info(f"OUTPUT verilog netlist at: {result_dir}/{design_name}.v")
     logger.info(f"OUTPUT verilog json netlist at: {result_dir}/{design_name}.verilog.json")
+    logger.info(f"OUTPUT verilog netlist at: {result_dir}/{design_name}.v")
     logger.info(f"OUTPUT const file at: {result_dir}/{design_name}.const.json")
     return primitives
