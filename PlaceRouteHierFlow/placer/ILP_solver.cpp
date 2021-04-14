@@ -446,7 +446,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
           auto it = swappedIndices.find(mydesign.Blocks[i][index].name);
           if (it != swappedIndices.end()) index = it->second;
         }
-        logger->info("maximum delta area from tap removal : {0} {1}", delArea, swappedIndices.size());
+        //logger->info("maximum delta area from tap removal : {0} {1}", delArea, swappedIndices.size());
       } 
     } else {
       curr_sp.RestoreSelected();
@@ -1417,6 +1417,13 @@ void ILP_solver::UpdateBlockinHierNode(design& mydesign, placerDB::Omark ort, Pn
     iv.UpperMetalRect.placedCenter = mydesign.GetPlacedBlockInterMetalAbsPoint(i, ort, iv.UpperMetalRect.originCenter, LL, sel);
     iv.LowerMetalRect.placedCenter = mydesign.GetPlacedBlockInterMetalAbsPoint(i, ort, iv.LowerMetalRect.originCenter, LL, sel);
     iv.ViaRect.placedCenter = mydesign.GetPlacedBlockInterMetalAbsPoint(i, ort, iv.ViaRect.originCenter, LL, sel);
+  }
+
+  for (auto& t : node.Blocks.at(i).instance.at(sel)._tapVias) {
+    t = mydesign.GetPlacedBlockInterMetalAbsBox(i, ort, t, LL, sel);
+  }
+  for (auto& t : node.Blocks.at(i).instance.at(sel)._activeVias) {
+    t = mydesign.GetPlacedBlockInterMetalAbsBox(i, ort, t, LL, sel);
   }
 }
 

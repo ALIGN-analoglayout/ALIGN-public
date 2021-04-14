@@ -248,6 +248,8 @@ class Instance
     const Rect& bbox() const { return _bbox; }
     const int index() const { return _woTapIndex; }
 
+    bool isBlack() const { return _prim != nullptr && _primWoTap == nullptr; }
+
     void print() const;
 };
 typedef vector<Instance*> Instances;
@@ -290,9 +292,10 @@ class Node {
     unsigned _span;
     NodeColor _nc;
     long _deltaarea;
+    bool _black;
 
   public:
-    Node(const string& name, const NodeType nt = NodeType::Tap, const long& deltaarea = 0) : _name(name), _nt(nt), _span(0), _nc(NodeColor::White), _deltaarea(deltaarea) {}
+    Node(const string& name, const NodeType nt = NodeType::Tap, const long& deltaarea = 0, const bool& isb = false) : _name(name), _nt(nt), _span(0), _nc(NodeColor::White), _deltaarea(deltaarea), _black(isb) {}
     const NodeType& nodeType() const { return _nt; }
     NodeType& nodeType() { return _nt; }
 
@@ -311,6 +314,7 @@ class Node {
     const NodeColor& nodeColor() const { return _nc; }
 
     const long& deltaArea() const { return _deltaarea; }
+    bool isBlack() const { return _black; }
 };
 
 struct NodeComp {
@@ -348,7 +352,7 @@ class Graph {
     Graph();
     ~Graph();
 
-    void addNode(const string& name, const NodeType& nt, const long& da = 0);
+    void addNode(const string& name, const NodeType& nt, const long& da = 0, const bool isb = false);
     void addEdge(const string& u, const string& v, const string& name = "");
 
     const Edge* findEdge(const string& u, const string& v) const;
@@ -383,7 +387,7 @@ class TapRemoval {
     void rebuildInstances(const PrimitiveData::PlMap& plmap);
     bool containsPrimitive(const string& prim) const { return _primitives.find(prim) != _primitives.end(); }
 
-    void plot(const string& pltfile) const;
+    void plot(const string& pltfile, const map<string, int>* swappedIndices = nullptr) const;
 
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
