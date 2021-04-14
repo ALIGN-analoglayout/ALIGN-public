@@ -4,6 +4,7 @@ import io
 
 from align import PnR
 from align.pnr.toplevel import ReadVerilogJson, analyze_hN
+from align.compiler.write_verilog_lef import write_verilog
 
 mydir = pathlib.Path(__file__).resolve().parent
 
@@ -22,128 +23,10 @@ def test_A():
     for hN in DB.hierTree:
         analyze_hN( "verilog", hN)
 
-
-def write_verilog( j, ofp):
-
-    for module in j['modules']:
-        print( f"module {module['name']} ( {', '.join( module['parameters'])} );", file=ofp) 
-        print( f"input {', '.join( module['parameters'])};", file=ofp) 
-        print( file=ofp)
-        for instance in module['instances']:
-            pl = ', '.join( f".{fa['formal']}({fa['actual']})" for fa in instance['fa_map'])
-            print( f"{instance['template_name']} {instance['instance_name']} ( {pl} );", file=ofp)
-
-        print( file=ofp)
-        print( 'endmodule', file=ofp)
-        
-    if 'global_signals' in j:
-        prefixes = set()
-        for s in j['global_signals']:
-            prefixes.add( s['prefix'])
-        assert 1 == len(prefixes)
-        prefix = list(prefixes)[0]
-        print( file=ofp)
-        print( "`celldefine", file=ofp)
-        print( f"module {prefix};", file=ofp)
-        for s in j['global_signals']:
-            formal, actual = s['formal'], s['actual']
-            print( f'{formal} {actual};', file=ofp)
-        print( "endmodule", file=ofp)
-        print( "`endcelldefine", file=ofp)
-
-verilog_json = """\
-{
-    "modules" : [
-	{
-	    "name": "current_mirror_ota",
-	    "parameters": ["id", "vbiasnd", "vinn", "vinp", "voutp"],
-	    "instances": [
-		{
-		    "template_name": "DCL_PMOS_nfin60_n12_X5_Y1_RVT",
-		    "instance_name": "m21",
-		    "fa_map": [
-			{ "formal": "D", "actual": "net16"},
-			{ "formal": "S", "actual": "vdd"}
-		    ]
-		},
-		{
-		    "template_name": "Switch_PMOS_nfin240_n12_X5_Y4_ST2_RVT",
-		    "instance_name": "m20s",
-		    "fa_map": [
-			{ "formal": "D", "actual": "vbiasnd"},
-			{ "formal": "G", "actual": "net16"},
-			{ "formal": "S", "actual": "vdd"}
-		    ]
-		},
-		{
-		    "template_name": "DCL_PMOS_nfin60_n12_X5_Y1_RVT",
-		    "instance_name": "m19",
-		    "fa_map": [
-			{ "formal": "D", "actual": "net27"},
-			{ "formal": "S", "actual": "vdd"}
-		    ]
-		},
-		{
-		    "template_name": "Switch_PMOS_nfin240_n12_X5_Y4_ST2_RVT",
-		    "instance_name": "m18s",
-		    "fa_map": [
-			{ "formal": "D", "actual": "voutp"},
-			{ "formal": "G", "actual": "net27"},
-			{ "formal": "S", "actual": "vdd"}
-		    ]
-		},
-		{
-		    "template_name": "SCM_NMOS_nfin10_n12_X1_Y1_RVT",
-		    "instance_name": "m14_m16",
-		    "fa_map": [
-			{ "formal": "DA", "actual": "id"},
-			{ "formal": "DB", "actual": "net24"},
-			{ "formal": "S", "actual": "vss"}
-		    ]
-		},
-		{
-		    "template_name": "SCM_NMOS_nfin24_n12_X2_Y1_RVT",
-		    "instance_name": "m11_m10",
-		    "fa_map": [
-			{ "formal": "DA", "actual": "vbiasnd"},
-			{ "formal": "DB", "actual": "voutp"},
-			{ "formal": "S", "actual": "vss"}
-		    ]
-		},
-		{
-		    "template_name": "DP_NMOS_B_nfin28_n12_X3_Y1_RVT",
-		    "instance_name": "m17_m15",
-		    "fa_map": [
-			{ "formal": "B", "actual": "vss"},
-			{ "formal": "DA", "actual": "net16"},
-			{ "formal": "DB", "actual": "net27"},
-			{ "formal": "GA", "actual": "vinn"},
-			{ "formal": "GB", "actual": "vinp"},
-			{ "formal": "S", "actual": "net24"}
-		    ]
-		}
-	    ]
-	}
-    ],
-    "global_signals": [
-        {
-            "prefix": "global_power",
-            "formal": "supply0",
-            "actual": "vss"
-        },
-        {
-            "prefix": "global_power",         
-            "formal": "supply1",         
-	    "actual": "vdd"
-	}
-    ]
-}
-"""
-
 def test_B():
     d = mydir / "current_mirror_ota_inputs"
 
-    with io.StringIO( verilog_json) as fp:
+    with open( d / "current_mirror_ota.verilog.json", "rt") as fp:
         j = json.load( fp)
 
     with open( d / "current_mirror_ota.v", "rt") as fp:
@@ -166,7 +49,7 @@ def test_C():
     DB.ReadLEF( str( d / "current_mirror_ota.lef"))
     DB.ReadMap( str( d), "current_mirror_ota.map")
 
-    with io.StringIO( verilog_json) as fp:
+    with open( d / "current_mirror_ota.verilog.json", "rt") as fp:
         j = json.load( fp)
 
     with open( d / "current_mirror_ota.verilog.v", "wt") as fp:
@@ -189,7 +72,7 @@ def test_D():
     DB.ReadLEF( str( d / "current_mirror_ota.lef"))
     DB.ReadMap( str( d), "current_mirror_ota.map")
 
-    with io.StringIO( verilog_json) as fp:
+    with open( d / "current_mirror_ota.verilog.json", "rt") as fp:
         j = json.load( fp)
 
     global_signals = ReadVerilogJson( DB, j)
