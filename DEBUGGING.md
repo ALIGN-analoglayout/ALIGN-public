@@ -48,10 +48,10 @@ cat > .vscode/launch.json << EOF
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "/home/smburns/DARPA/ALIGN-public/align-venv/bin/python",
+            "program": "${workspaceFolder}/../../align-venv/bin/python",
             "args": [
-                "/home/smburns/DARPA/ALIGN-public/align-venv/bin/schematic2layout.py",
-                "/home/smburns/DARPA/ALIGN-public/examples/cascode_current_mirror_ota",
+                "${workspaceFolder}/../../align-venv/bin/schematic2layout.py",
+                "${workspaceFolder}/../../examples/cascode_current_mirror_ota",
                 "-c",
                 "-n",
                 "2"

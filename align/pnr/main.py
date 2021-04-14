@@ -14,21 +14,12 @@ from collections import deque
 from ..cell_fabric.pdk import Pdk
 from .render_placement import dump_blocks
 
-from .db import hierNode
 from .checkers import gen_viewer_json, gen_transformation
 from ..cell_fabric import gen_gds_json, transformation
 from .. import PnR
 from .toplevel import toplevel
 
 logger = logging.getLogger(__name__)
-
-
-def _generate_json_from_json(*, dbfile, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False, input_dir=None, toplevel=True, gds_json=True):
-
-    with open(dbfile, "rt") as fp:
-        hN = hierNode(json.load(fp))
-
-    return _generate_json_from_hN(hN=hN, variant=variant, primitive_dir=primitive_dir, pdk_dir=pdk_dir, output_dir=output_dir, check=check, extract=extract, input_dir=input_dir, toplevel=toplevel, gds_json=gds_json)
 
 
 def _generate_json_from_hN(*, hN, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False, input_dir=None, toplevel=True, gds_json=True):
