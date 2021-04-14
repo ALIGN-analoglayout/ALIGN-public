@@ -3,7 +3,7 @@ import pathlib
 import io
 
 from align import PnR
-from align.pnr.toplevel import ReadVerilogJson
+from align.pnr.toplevel import ReadVerilogJson, analyze_hN
 
 mydir = pathlib.Path(__file__).resolve().parent
 
@@ -18,6 +18,10 @@ def test_A():
     DB.ReadMap( str( d), "current_mirror_ota.map")
 
     assert DB.ReadVerilog( str(d), "current_mirror_ota.v", "current_mirror_ota")
+
+    for hN in DB.hierTree:
+        analyze_hN( "verilog", hN)
+
 
 def write_verilog( j, ofp):
 
@@ -171,7 +175,11 @@ def test_C():
 
     DB.ReadVerilog( str(d), "current_mirror_ota.verilog.v", "current_mirror_ota")
 
-def test_C():
+    for hN in DB.hierTree:
+        analyze_hN( "verilogJsonVerilog", hN)
+
+
+def test_D():
     DB = PnR.PnRdatabase()
 
     d = mydir / "current_mirror_ota_inputs"
@@ -191,4 +199,6 @@ def test_C():
     DB.semantic1( global_signals)
     DB.semantic2()
 
+    for hN in DB.hierTree:
+        analyze_hN( "verilogJson", hN)
     

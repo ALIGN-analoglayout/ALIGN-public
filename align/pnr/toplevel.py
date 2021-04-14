@@ -254,6 +254,8 @@ def ReadVerilogJson( DB, j):
         Blocks = []
         Nets = []
 
+        Connecteds = []
+
         for instance in module['instances']:
             temp_blockComplex = PnR.blockComplex()
             current_instance = PnR.block()
@@ -270,21 +272,16 @@ def ReadVerilogJson( DB, j):
                 else:
                     net_index = len(Nets)
                     Nets.append( PnR.net())
+                    Connecteds.append( [])
                     Nets[-1].name = net_name
-                    Nets[-1].degree = 0
                     
                     net_map[net_name] = net_index
 
-                # this is a quadratic algorithm with the copying; should keep a separate Python data structure
-                connected = Nets[net_index].connected
-                connected.append( PnR.connectNode())
-
-                connected[-1].type = PnR.Block
-                connected[-1].iter = iter
-                connected[-1].iter2 = len(Blocks)
-
-                Nets[net_index].connected = connected
-                Nets[net_index].degree = len(connected)
+                # Use a python list of list to workaround not being able to append to a C++ vector
+                Connecteds[net_index].append( PnR.connectNode())
+                Connecteds[net_index][-1].type = PnR.Block
+                Connecteds[net_index][-1].iter = iter
+                Connecteds[net_index][-1].iter2 = len(Blocks)
 
                 return net_index
 
@@ -299,6 +296,10 @@ def ReadVerilogJson( DB, j):
             current_instance.blockPins = blockPins
             temp_blockComplex.instance = [ current_instance ]
             Blocks.append( temp_blockComplex)
+
+        for net,connected in zip(Nets,Connecteds):
+            net.connected = connected
+            net.degree = len(connected)
 
         temp_node.Blocks = Blocks
         temp_node.Nets = Nets
