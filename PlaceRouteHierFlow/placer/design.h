@@ -253,6 +253,7 @@ class design
     PnRDB::point GetPlacedBlockInterMetalAbsPoint(int blockid, placerDB::Omark ort, PnRDB::point& originP, placerDB::point LL, int sel);
     PnRDB::point GetPlacedBlockInterMetalRelPoint(int blockid, placerDB::Omark ort, PnRDB::point& originP, int sel);
 
+    bool RemoveTaps() const { return (_tapRemover) ? _tapRemover->valid() : false; }
     void RebuildTapInstances(const PrimitiveData::PlMap& plmap) {if (_tapRemover) _tapRemover->rebuildInstances(plmap); }
     long TapDeltaArea(map<string, int>* swappedIndices) const { return _tapRemover ?  _tapRemover->deltaArea(swappedIndices) : 0.; }
 };

@@ -61,6 +61,7 @@ setup(name='align',
       cmake_process_manifest_hook=align_manifest_filter,
       scripts=[
           'bin/schematic2layout.py',
+          'bin/pnr_compiler.py',
           'bin/gds2png.sh'
       ],
       install_requires=[

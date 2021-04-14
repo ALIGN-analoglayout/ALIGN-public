@@ -5,6 +5,7 @@
 #include <map>
 #include <unordered_map>
 #include <vector>
+#include <tuple>
 #include <queue>
 #include <string>
 #include <limits.h>
@@ -36,6 +37,7 @@ using std::string;
 using std::cout;
 using std::endl;
 using std::pair;
+using std::tuple;
 using std::cerr;
 using std::ifstream;
 using std::istream;
@@ -47,7 +49,7 @@ class PnRdatabase;
 
 class ReadVerilogHelper {
     PnRDB::hierNode temp_node;
-    PnRDB::hierNode Supply_node;
+    vector<tuple<string,string,string> > global_signals;
     PnRdatabase& db;
 
 public:
@@ -56,8 +58,8 @@ public:
       return db;
     }
 
-    PnRDB::hierNode& get_Supply_node() {
-      return Supply_node;
+    const vector<tuple<string,string,string> >& get_global_signals() const {
+      return global_signals;
     }
 
     ReadVerilogHelper( PnRdatabase& db_in) : db(db_in) {}
@@ -87,8 +89,6 @@ class PnRdatabase
     void TraverseDFS(deque<int>& Q, vector<string>& color, int idx); // DFS subfunc to traverse hierarchical tree 
 
  public: 
-
-
     // Not implemented
     PnRdatabase(const PnRdatabase& other); // copy constructor
     PnRdatabase& operator= (const PnRdatabase& other); // copy assignment function
@@ -111,8 +111,10 @@ class PnRdatabase
     long int get_number(string str);
 
     void ReadPDKJSON(string drfile);
-    void semantic( const string& fpath, const string& topcell, PnRDB::hierNode& Supply_node);
-
+    void semantic0( const string& topcell);
+    void semantic1( const vector<tuple<string,string,string> >& global_signals);
+    void semantic2();
+    void attach_constraint_files( const string& fpath);
 
     deque<int> TraverseHierTree(); // traverse hierarchical tree in topological order
 

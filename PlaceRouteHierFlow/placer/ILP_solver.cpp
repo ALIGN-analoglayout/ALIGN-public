@@ -66,6 +66,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   // each block has 4 vars, x, y, H_flip, V_flip;
   unsigned int N_var = mydesign.Blocks.size() * 4 + mydesign.Nets.size() * 2;
   for (bool wtap : {true, false}) {
+    if (!wtap && !mydesign.RemoveTaps()) continue;
     // i*4+1: x
     // i*4+2:y
     // i*4+3:H_flip
@@ -416,7 +417,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
       Blocks[i].V_flip = var[i * 4 + 3];
     }
 
-    if (wtap) {
+    if (wtap && mydesign.RemoveTaps()) {
       // calculate LL and UR
       PrimitiveData::PlMap plmap;
       for (int i = 0; i < mydesign.Blocks.size(); i++) {
@@ -450,6 +451,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
       } 
     } else {
       curr_sp.RestoreSelected();
+      break;
     }
   }
   // calculate area
