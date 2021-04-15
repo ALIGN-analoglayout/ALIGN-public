@@ -80,6 +80,7 @@ class SeqPair
     int GetBlockSelected(int blockNo);
     bool ChangeSelectedBlock(design& caseNL);
     void KeepOrdering(design& caseNL);
+    int return_sequence_pair_number(){return posPair.size();};
 };
 
 #endif

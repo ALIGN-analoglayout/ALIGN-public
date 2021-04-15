@@ -548,7 +548,9 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   float per = 0.1;
   //int updateThrd = 100;
   float total_update_number = log(T_MIN / T_INT) / log(ALPHA);
-  while (T > T_MIN) {
+  int number_sequence_pair = curr_sp.return_sequence_pair_number();
+  int update_bound = total_update_number*((float)number_sequence_pair/100.0);
+  while (T > T_MIN and update_index<=update_bound) {
     int i = 1;
     int MAX_Iter = 1;
     if (effort == 0) {
