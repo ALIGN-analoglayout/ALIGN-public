@@ -180,7 +180,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
         variants = collections.defaultdict(collections.defaultdict)
         for lidx, (topidx, _) in enumerate(possible_final_circuits[1:]):
 
-            order = [(i, DB.CheckoutHierNode(i).name)
+            order = [(i, DB.CheckoutHierNode(i, -1).name)
                      for i in TraverseHierTree(topidx)]
             assert order[-1][1] == subckt, f"Last in topological order should be the subckt {subckt} {order}"
 
@@ -195,7 +195,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
                 logger.info(
                     f'Processing top-down generated blocks {DB.hierTree[idx].numPlacement}: idx={idx} nm={nm} variant_name={variant_name}')
 
-                hN = DB.CheckoutHierNode(idx)
+                hN = DB.CheckoutHierNode(idx, -1)
 
                 _generate_json_from_hN(hN=hN,
                                        variant=variant_name,
@@ -217,7 +217,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
             logger.info(
                 f'Processing top-down generated blocks: lidx={lidx} topidx={topidx} nm={nm} variant={variant}')
 
-            hN = DB.CheckoutHierNode(idx)
+            hN = DB.CheckoutHierNode(idx, -1)
 
             variants[variant].update(
                 _generate_json_from_hN(hN=hN,

@@ -136,7 +136,7 @@ def route_top_down( DB, drcInfo,
                     current_node_ort, idx, lidx,
                     opath, binary_directory, adr_mode, *, PDN_mode, pdk):
 
-    current_node = DB.CheckoutHierNode(idx) # Make a copy
+    current_node = DB.CheckoutHierNode(idx, lidx) # Make a copy
     i_copy = DB.hierTree[idx].n_copy
 
     logger.debug( f'Start of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy}')
@@ -365,7 +365,7 @@ def toplevel(args, *, PDN_mode=False, pdk=None, render_placements=False):
     for idx in TraverseOrder:
         logger.info(f'Topo order: {idx} {DB.hierTree[idx].name}')
 
-        current_node = DB.CheckoutHierNode(idx)
+        current_node = DB.CheckoutHierNode(idx, -1)
         #analyze_hN( 'Start', current_node, True)
 
         DB.AddingPowerPins(current_node)

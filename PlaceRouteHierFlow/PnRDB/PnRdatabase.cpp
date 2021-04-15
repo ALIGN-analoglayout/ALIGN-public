@@ -199,7 +199,17 @@ void PnRdatabase::TraverseDFS(deque<int>& Q, vector<string>& color, int idx) {
   Q.push_back(idx);
 }
 
-PnRDB::hierNode PnRdatabase::CheckoutHierNode(int nodeID) {
+PnRDB::hierNode PnRdatabase::CheckoutHierNode(int nodeID, int lidx) {
+  if (lidx >= 0 && hierTree.at(nodeID).PnRAS.size() > 0) {
+    hierTree.at(nodeID).gdsFile = hierTree.at(nodeID).PnRAS[lidx].gdsFile;
+    hierTree.at(nodeID).width = hierTree.at(nodeID).PnRAS[lidx].width;
+    hierTree.at(nodeID).height = hierTree.at(nodeID).PnRAS[lidx].height;
+    hierTree.at(nodeID).Blocks = hierTree.at(nodeID).PnRAS[lidx].Blocks;
+    hierTree.at(nodeID).Terminals = hierTree.at(nodeID).PnRAS[lidx].Terminals;
+    hierTree.at(nodeID).Nets = hierTree.at(nodeID).PnRAS[lidx].Nets;
+    hierTree.at(nodeID).LL = hierTree.at(nodeID).PnRAS[lidx].LL;
+    hierTree.at(nodeID).UR = hierTree.at(nodeID).PnRAS[lidx].UR;
+  }
   return hierTree.at(nodeID);
 }
 
