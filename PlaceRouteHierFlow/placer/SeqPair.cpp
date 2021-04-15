@@ -536,13 +536,13 @@ void SeqPair::PrintSeqPair() {
     if(symAxis.at(i)==0) {logger->debug("H ");
     } else {logger->debug("V ");}
   }
-  logger->info("Selected: ");
+  logger->debug("Selected: ");
   for(int i=0;i<(int)selected.size();++i) {
-    logger->info("{0}",selected.at(i));
+    logger->debug("{0}",selected.at(i));
   }
-  logger->info("SelectedCopy: ");
+  logger->debug("SelectedCopy: ");
   for(int i=0;i<(int)selectedCopy.size();++i) {
-    logger->info("{0}",selectedCopy.at(i));
+    logger->debug("{0}",selectedCopy.at(i));
   }
   //cout<<endl;
 }

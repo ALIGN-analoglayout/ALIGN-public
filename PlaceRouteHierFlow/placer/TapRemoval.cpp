@@ -471,7 +471,7 @@ long TapRemoval::deltaArea(map<string, int>* swappedIndices) const
     deltaarea += b->deltaArea();
   }
 
-  plot(_name + "_TR_" + std::to_string(deltaarea) + ".plt", swappedIndices);
+  //plot(_name + "_TR_" + std::to_string(deltaarea) + ".plt", swappedIndices);
   return deltaarea;
 }
 

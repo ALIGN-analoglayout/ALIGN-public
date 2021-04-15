@@ -739,8 +739,8 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
     //designData.PrintDesign();
     //it->second.PrintSeqPair();
     //std::cout<<"write design "<<idx<<std::endl;
-    logger->info("{0}", nodeVec.back().name);
-    for (auto& b : nodeVec.back().Blocks) logger->info("{0}", b.instance.back().name);
+    //logger->info("{0}", nodeVec.back().name);
+    //for (auto& b : nodeVec.back().Blocks) logger->info("{0}", b.instance.back().name);
     it->second.first.RestoreSelected();
     it->second.first.PrintSeqPair();
     it->second.second.updateTerminalCenter(designData, it->second.first);
