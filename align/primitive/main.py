@@ -29,7 +29,6 @@ def get_parameters(primitive, parameters, nfin):
         parameters = {}
     if 'model' not in parameters:
         parameters['model'] = 'NMOS' if 'NMOS' in primitive else 'PMOS'
-    parameters['nfin'] = nfin
     return parameters
 
 # TODO: Pass cell_pin and pattern to this function to begin with
