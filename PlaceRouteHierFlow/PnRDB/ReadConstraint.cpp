@@ -78,7 +78,7 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
         node.Nets.at(iter1).axis_dir = constraint["axis_dir"] == "H" ? PnRDB::H : PnRDB::V;
         node.Nets.at(iter1).iter2SNetLsit = node.SNets.size();
         node.Nets.at(iter2).symCounterpart = iter1;
-        std::cout<<"Reading Const symCounterpart"<<iter1<<"@"<<iter2<<" "<<iter2<<"@"<<iter1<<std::endl;
+        //std::cout<<"Reading Const symCounterpart"<<iter1<<"@"<<iter2<<" "<<iter2<<"@"<<iter1<<std::endl;
         node.Nets.at(iter2).axis_dir = constraint["axis_dir"] == "H" ? PnRDB::H : PnRDB::V;
         node.Nets.at(iter2).iter2SNetLsit = node.SNets.size();
         node.SNets.resize(node.SNets.size() + 1);
