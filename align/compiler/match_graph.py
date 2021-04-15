@@ -281,7 +281,7 @@ class Annotate:
             remove_nodes (list): nodes which are being removed
         """
 
-        def _list_repace(lst, old_value, new_value):
+        def _list_replace(lst, old_value, new_value):
             for i, value in enumerate(lst):
                 if value == old_value:
                     lst[i] = new_value
@@ -294,7 +294,7 @@ class Annotate:
                     logger.debug(f"checking blocks in the constraint:{const['blocks']} {set(remove_nodes)}")
                     if set(const['blocks']) & set(remove_nodes):
                         for block in remove_nodes:
-                            _list_repace(const['blocks'], block, new_inst)
+                            _list_replace(const['blocks'], block, new_inst)
                         logger.debug(f"updated blocks in the constraint:{const}")
             #Removing single instances of blocks
             self.hier_graph_dict[name]["const"]["constraints"] = [const for const in const_list \
