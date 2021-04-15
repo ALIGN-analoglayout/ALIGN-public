@@ -61,17 +61,17 @@
             "blocks": [
                 "mp9",
                 "mp7",
+                "mn1_mn2",
                 "mp8",
-                "mp10",
-                "mn1_mn2"
+                "mp10"
             ]
         },
         {
             "const_name": "AlignBlock",
             "direction": "H",
             "blocks": [
-                "mp5_mp6",
                 "mp11_mn13",
+                "mp5_mp6",
                 "mp12_mn14"
             ]
         },
