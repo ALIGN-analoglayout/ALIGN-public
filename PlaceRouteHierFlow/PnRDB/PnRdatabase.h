@@ -107,8 +107,6 @@ class PnRdatabase
     int get_unitScale() const { return unitScale; }
     int get_maxNode() const { return maxNode; }
 
-    long int get_number(string str);
-
     void ReadPDKJSON(string drfile);
     void semantic0( const string& topcell);
     void semantic1( const vector<tuple<string,string,string> >& global_signals);
@@ -163,8 +161,6 @@ class PnRdatabase
     void ReadConstraint_Json(PnRDB::hierNode &node, const string& jsonStr);
     bool MergeLEFMapData(PnRDB::hierNode &node);
     void PrintHierTree();
-    void ReadDesignRule(string drfile);         //  read design rule data from design rule file
-    void HardDesignRule();                      // hard-code design rules
 
     PnRDB::designRule getDesignRule() const { return drData; }
     PnRDB::Drc_info getDrc_info() const { return DRC_info; }

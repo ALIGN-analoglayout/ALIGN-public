@@ -4,27 +4,29 @@ import io
 
 from align import PnR
 from align.pnr.toplevel import ReadVerilogJson, analyze_hN
-from align.pnr.build_pnr_model import _attach_constraint_files
+from align.pnr.build_pnr_model import PnRdatabase, _attach_constraint_files
 from align.compiler.write_verilog_lef import write_verilog
 
 mydir = pathlib.Path(__file__).resolve().parent
 
-def test_A():
-    DB = PnR.PnRdatabase()
-
+def test_verilog_input():
     d = mydir / "current_mirror_ota_inputs"
 
-    DB.ReadPDKJSON( str( d / "layers.json"))
-
-    DB.ReadLEF( str( d / "current_mirror_ota.lef"))
-    DB.ReadMap( str( d), "current_mirror_ota.map")
-
-    assert DB.ReadVerilog( str(d), "current_mirror_ota.v", "current_mirror_ota")
+    DB = PnRdatabase( str(d), "current_mirror_ota", "current_mirror_ota.v", "current_mirror_ota.lef", "current_mirror_ota.map", "layers.json")
 
     for hN in DB.hierTree:
         analyze_hN( "verilog", hN)
 
-def test_B():
+def test_verilog_json_input():
+    d = mydir / "current_mirror_ota_inputs"
+
+    DB = PnRdatabase( str(d), "current_mirror_ota", "current_mirror_ota.verilog.json", "current_mirror_ota.lef", "current_mirror_ota.map", "layers.json")
+
+    for hN in DB.hierTree:
+        analyze_hN( "verilogJson", hN)
+
+
+def test_diff_verilog_and_verilog_json():
     d = mydir / "current_mirror_ota_inputs"
 
     with open( d / "current_mirror_ota.verilog.json", "rt") as fp:
@@ -40,49 +42,4 @@ def test_B():
     # remove header and trailing spaces
     assert [ line.rstrip(' ') for line in vstr.split('\n')[4:]] == vvstr.split('\n')
 
-def test_C():
-    DB = PnR.PnRdatabase()
-
-    d = mydir / "current_mirror_ota_inputs"
-
-    DB.ReadPDKJSON( str( d / "layers.json"))
-
-    DB.ReadLEF( str( d / "current_mirror_ota.lef"))
-    DB.ReadMap( str( d), "current_mirror_ota.map")
-
-    with open( d / "current_mirror_ota.verilog.json", "rt") as fp:
-        j = json.load( fp)
-
-    with open( d / "current_mirror_ota.verilog.v", "wt") as fp:
-        write_verilog( j, fp)
-
-
-    DB.ReadVerilog( str(d), "current_mirror_ota.verilog.v", "current_mirror_ota")
-
-    for hN in DB.hierTree:
-        analyze_hN( "verilogJsonVerilog", hN)
-
-
-def test_D():
-    DB = PnR.PnRdatabase()
-
-    d = mydir / "current_mirror_ota_inputs"
-
-    DB.ReadPDKJSON( str( d / "layers.json"))
-
-    DB.ReadLEF( str( d / "current_mirror_ota.lef"))
-    DB.ReadMap( str( d), "current_mirror_ota.map")
-
-    with open( d / "current_mirror_ota.verilog.json", "rt") as fp:
-        j = json.load( fp)
-
-    global_signals = ReadVerilogJson( DB, j)
-
-    _attach_constraint_files( DB, str(d))
-    DB.semantic0( "current_mirror_ota")
-    DB.semantic1( global_signals)
-    DB.semantic2()
-
-    for hN in DB.hierTree:
-        analyze_hN( "verilogJson", hN)
     
