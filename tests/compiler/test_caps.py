@@ -10,9 +10,9 @@ def test_cap():
     gen_const_path = mydir.parent / 'Results' / 'test_cap.const.json'
     gold_const_path = mydir.parent / 'test_results' / 'test_cap.const.json'
 
-    updated_ckt, library = compiler(test_path, "test_cap", pdk_path)
+    updated_ckt = compiler(test_path, "test_cap", pdk_path)
     assert 'test_cap' in updated_ckt
-    primitives = compiler_output(test_path, library, updated_ckt, 'test_cap', pathlib.Path(__file__).parent / 'Results', pdk_path)
+    primitives = compiler_output(test_path, updated_ckt, 'test_cap', pathlib.Path(__file__).parent / 'Results', pdk_path)
     assert 'Cap_12f' in primitives.keys()
     with open(gen_const_path, "r") as const_fp:
         gen_const = json.load(const_fp)["constraints"]

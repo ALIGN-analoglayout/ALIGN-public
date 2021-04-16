@@ -19,10 +19,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 def generate_hierarchy(netlist, subckt, output_dir, flatten_heirarchy, pdk_dir, uniform_height):
-    hier_graph_dict,library = compiler(netlist, subckt, pdk_dir, flatten_heirarchy)
-    return compiler_output(netlist, library, hier_graph_dict, subckt, output_dir, pdk_dir, uniform_height)
+    hier_graph_dict = compiler(netlist, subckt, pdk_dir, flatten_heirarchy)
+    return compiler_output(netlist, hier_graph_dict, subckt, output_dir, pdk_dir, uniform_height)
 
-def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path,flat=0,Debug=False):
+def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, flat=0, Debug=False):
     """
     Reads input spice file, converts to a graph format and create hierarchies in the graph
 
@@ -48,6 +48,9 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path,flat=
     logger.info("Starting topology identification...")
     input_dir = input_ckt.parents[0]
     logger.debug(f"Reading subckt {input_ckt}")
+    #
+    # TODO: flatten should be separate pass
+    #
     sp = SpiceParser(input_ckt, design_name, flat)
     circuit_graphs = sp.sp_parser()
     assert circuit_graphs !=None  , f"No subcircuit with name {design_name} found in spice {input_ckt}"
@@ -86,6 +89,10 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path,flat=
 
     logger.debug("START preprocessing")
     stacked_subcircuit=[]
+
+    #
+    # TODO: Re-implement stacked transistor detection using new passes
+    #
     for circuit_name, circuit in hier_graph_dict.items():
         logger.debug(f"preprocessing circuit name: {circuit_name}")
         G1 = circuit["graph"]
@@ -96,7 +103,9 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path,flat=
         if circuit_name in hier_graph_dict.keys() and circuit_name is not design_name:
             logger.debug(f"removing stacked subcircuit {circuit_name}")
             del hier_graph_dict[circuit_name]
-    #remove pg_pins requirement by pnr
+    #
+    # TODO: pg_pins should be marked using constraints. Not manipulating netlist
+    #
     logger.debug("Modifying pg pins in design for PnR")
     pg_pins = design_setup['POWER']+design_setup['GND']
     remove_pg_pins(hier_graph_dict,design_name, pg_pins)
@@ -108,11 +117,11 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path,flat=
                 logger.debug(node)
 
     annotate = Annotate(hier_graph_dict, design_setup, library, all_lef)
-    lib_names = annotate.annotate()
+    annotate.annotate()
 
-    return hier_graph_dict, lib_names
+    return hier_graph_dict
 
-def compiler_output(input_ckt, lib_names , hier_graph_dict, design_name:str, result_dir:pathlib.Path, pdk_dir:pathlib.Path, uniform_height=False):
+def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:pathlib.Path, pdk_dir:pathlib.Path, uniform_height=False):
     """
     search for constraints and write output in verilog format
     Parameters
