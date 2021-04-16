@@ -38,5 +38,5 @@ def test_group_block_hsc(test_compiler_hsc):
     with open(gen_const_path, "r") as const_fp:
         gen_const = json.load(const_fp)
     with open(gold_const_path, "r") as const_fp:
-            gold_const = json.load(const_fp)
+        gold_const = json.load(const_fp)
     assert gold_const == gen_const
