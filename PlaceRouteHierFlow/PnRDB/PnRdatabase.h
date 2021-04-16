@@ -117,7 +117,7 @@ class PnRdatabase
 
     deque<int> TraverseHierTree(); // traverse hierarchical tree in topological order
 
-    PnRDB::hierNode CheckoutHierNode(int nodeID, int lidx = -1); // check out data of specific hierarchical node
+    PnRDB::hierNode CheckoutHierNode(int nodeID, int sel = -1); // check out data of specific hierarchical node
     std::vector<PnRDB::hierNode> CheckoutHierNodeVec(int nodeID);//checkout nodeVec, which consists of different placement
     void AppendToHierTree( const PnRDB::hierNode& updatedNode); // append node to end of hierTree
     void SetParentInHierTree( int idx, int pidx, int parent_id); // set parent: hierTree[idx].parent[pidx] = parent_id

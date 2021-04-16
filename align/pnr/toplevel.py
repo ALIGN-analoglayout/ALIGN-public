@@ -404,11 +404,12 @@ def toplevel(args, *, PDN_mode=False, pdk=None, render_placements=False):
     assert len(DB.hierTree[last].PnRAS) == DB.hierTree[last].numPlacement
 
     for lidx in range(DB.hierTree[last].numPlacement):
+        sel = lidx
         new_topnode_idx = route_top_down( DB, drcInfo,
                                           PnR.bbox( PnR.point(0,0),
                                                     PnR.point(DB.hierTree[last].PnRAS[lidx].width,
                                                               DB.hierTree[last].PnRAS[lidx].height)),
-                                          Omark.N, last, lidx, lidx,
+                                          Omark.N, last, lidx, sel,
                                           opath, binary_directory, adr_mode, PDN_mode=PDN_mode, pdk=pdk)
         new_topnode_indices.append(new_topnode_idx)
 
