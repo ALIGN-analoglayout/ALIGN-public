@@ -2,6 +2,7 @@
 import logging
 import pathlib
 import json
+import re
 from itertools import chain
 
 from .. import PnR
@@ -143,6 +144,18 @@ def ReadVerilogJson( DB, j):
 
     return global_signals
 
+def _ReadMap( path, mapname):
+    d = pathlib.Path(path)
+    p = re.compile( r'^(\S+)\s+(\S+)\s*$')
+    tbl = {}
+    with (d / mapname).open( "rt") as fp:
+        for line in fp:
+            line = line.rstrip('\n')
+            m = p.match(line)
+            assert m
+            k, v = m.groups()
+            tbl[k] = str(d / v)
+    return tbl
 
 def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     DB = PnR.PnRdatabase()
@@ -151,7 +164,7 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     DB.ReadPDKJSON( path + '/' + drname)
 
     DB.ReadLEF( path + '/' + lefname)
-    DB.ReadMap( path, mapname)
+    DB.gdsData = _ReadMap( path, mapname)
 
     if vname.endswith(".verilog.json"):
         with (pathlib.Path(path) / vname).open( "rt") as fp:

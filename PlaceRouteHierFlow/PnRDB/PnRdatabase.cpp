@@ -2158,7 +2158,7 @@ void PnRdatabase::semantic1( const vector<tuple<string,string,string> >& global_
   const std::string supply_node_name = "global_power";
 
   for(auto p = global_signals.begin(); p != global_signals.end(); ++p) {
-    std::string supply_name = std::get<1>(*p);
+    std::string supply_name = std::get<2>(*p);
     std::string supply_name_full = std::get<0>(*p) + "." + supply_name;
 
     int power;

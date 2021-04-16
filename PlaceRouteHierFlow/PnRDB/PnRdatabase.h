@@ -81,7 +81,9 @@ class PnRdatabase
     int maxNode;
     int unitScale;
     map<string, vector<PnRDB::lefMacro> > lefData;  //map from Macro name to Macro Instance
+  public:
     map<string, string> gdsData; //map from gds name to gds file
+  private:
     PnRDB::designRule drData;
 
     void UpdateHierNodeParent(int nodeID); // update parent node of current node
