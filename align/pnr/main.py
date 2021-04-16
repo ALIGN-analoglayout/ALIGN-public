@@ -189,7 +189,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
             for idx, nm in order[:-1]:
                 n_copy = DB.hierTree[idx].n_copy
                 #assert 1 == DB.hierTree[idx].numPlacement
-                i_placement = 0
+                i_placement = lidx
 
                 variant_name = f'{nm}_{n_copy}_{i_placement}'
                 logger.info(
