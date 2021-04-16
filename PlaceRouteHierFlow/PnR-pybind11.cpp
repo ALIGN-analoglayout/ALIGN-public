@@ -442,8 +442,6 @@ PYBIND11_MODULE(PnR, m) {
     .def( "Write_Current_Workload", &PnRdatabase::Write_Current_Workload)
     .def( "Write_Power_Mesh_Conf", &PnRdatabase::Write_Power_Mesh_Conf)
     .def( "ReadConstraint_Json", &PnRdatabase::ReadConstraint_Json)
-    .def( "ReadConstraint", &PnRdatabase::ReadConstraint)
-
     .def_readwrite("hierTree", &PnRdatabase::hierTree)
     .def_readwrite("topidx", &PnRdatabase::topidx)
     .def_readwrite("gdsData", &PnRdatabase::gdsData)

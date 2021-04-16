@@ -11,9 +11,7 @@ examples = [('inverter_v1',1,False),
             #Hierarchical block fail with num_placements > 1
             #('cascode_current_mirror_ota',2,False),
             #Test PDN_mode
-            ('telescopic_ota',1,True),
-            #Power pin corner case
-            ('high_speed_comparator',1,False)]
+            ('telescopic_ota',1,True)]
 
 ALIGN_HOME = pathlib.Path(__file__).resolve().parent.parent
 

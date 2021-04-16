@@ -157,7 +157,6 @@ class PnRdatabase
     bool ReadLEF(string leffile); // read building block data from LEF file
     void PrintLEFData();          // print LEF data for debugging
     map<string, vector<PnRDB::lefMacro>> checkoutlef() { return lefData; };
-    bool ReadConstraint(PnRDB::hierNode &node, string fpath, string suffix);
     void ReadConstraint_Json(PnRDB::hierNode &node, const string& jsonStr);
     bool MergeLEFMapData(PnRDB::hierNode &node);
     void PrintHierTree();
