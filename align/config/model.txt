@@ -7,3 +7,6 @@
 .model resistor res res=1
 .model capacitor cap cap=1
 .model inductor ind ind=1
+.model nmos_vtl nmos l=1 w=1 nfin=1 nf=1
+.model pmos_vtl pmos l=1 w=1 nfin=1 nf=1
+

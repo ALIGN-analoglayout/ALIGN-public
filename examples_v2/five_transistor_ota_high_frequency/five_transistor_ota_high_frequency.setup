@@ -1,0 +1,4 @@
+POWER = vdd_ota
+GND = vss_ota
+CLOCK = 
+DIGITAL = 

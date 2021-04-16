@@ -1,0 +1,5 @@
+POWER = vcc_nom
+GND = vss_x
+CLOCK =
+DIGITAL =
+

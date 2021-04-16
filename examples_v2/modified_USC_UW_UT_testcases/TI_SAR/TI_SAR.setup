@@ -1,0 +1,4 @@
+POWER = VDD 
+GND = VSS
+CLOCK = CLKC CLKS CLK_DIV<0> CLK_DIV<1> CLK_DIV<2> CLK_DIV<3>
+DIGITAL = NAND2 DFF_reset Buffer Latch DAC_ctrl_logic DFF async_logic NOR3 SAR_logic Buffer_delay DFF_set clk_gen_TI

@@ -1,0 +1,5 @@
+Multi_Connection ( {vout_ota} , {3} )
+Multi_Connection ( {net19} , {3} )
+Multi_Connection ( {net017} , {5} )
+Multi_Connection ( {vss_ota} , {5} )
+Multi_Connection ( {vdd_ota} , {5} )

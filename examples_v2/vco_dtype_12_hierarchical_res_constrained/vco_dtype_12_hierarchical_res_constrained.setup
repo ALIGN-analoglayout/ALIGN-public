@@ -1,0 +1,4 @@
+POWER = VDD
+GND = VSS
+CLOCK = 
+DIGITAL =  VCO_type2_65 vco_buffer_amp vco_res diff2sing_v1 vco_dtype_12_hierarchical_res_constrained

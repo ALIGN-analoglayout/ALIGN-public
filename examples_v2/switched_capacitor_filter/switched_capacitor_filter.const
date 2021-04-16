@@ -1,0 +1,2 @@
+GroupCaps -blocks [c1,c3] -name c1_c3 -unit_cap Cap_12f -num_units [3, 5] -dummy False
+GroupCaps -blocks [c7,c6] -name c7_c6 -unit_cap Cap_12f -num_units [3, 5] -dummy False

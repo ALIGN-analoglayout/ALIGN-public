@@ -130,7 +130,6 @@ class SpiceParser:
 
     def _process_instance(self, name, args, kwargs):
         defaults = {'C': 'CAP', 'R': 'RES', 'L': 'IND'}
-        print(f"cell name: {name}, args {args} kwargs {kwargs}")
         if any(name.startswith(x) for x in ('C', 'R', 'L')):
             model = defaults[name[0]]
             if not kwargs: 
@@ -141,7 +140,6 @@ class SpiceParser:
             model = args.pop()
         else:
             raise NotImplementedError(name, args, kwargs, "is not yet recognized by parser")
-        print(f" model {model} cell name: {name}, args {args} kwargs {kwargs}")
 
         assert model in self.library, (model, name, args, kwargs)
         assert len(args) == len(self.library[model].pins), \

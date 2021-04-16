@@ -1,0 +1,4 @@
+POWER = vdd
+GND = gnd 
+CLOCK = clk clkn
+DIGITAL = INVD0BWP
