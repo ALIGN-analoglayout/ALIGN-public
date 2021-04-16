@@ -45,75 +45,8 @@ PnRdatabase::PnRdatabase(string path, string topcell, string vname, string lefna
   this->ReadLEF(path+"/"+lefname);
   this->ReadMap(path, mapname);
   this->ReadVerilog(path, vname, topcell);
-  //this->extend_pin_function();
 
   logger->info( "PnRDB-Info: complete reading");
-}
-
-void PnRdatabase::extend_pin_function(){
-
-  for(unsigned int i=0;i<hierTree.size();++i){
-
-     for(unsigned int j=0;j<hierTree[i].Blocks.size();j++){
-
-          for(unsigned int k=0;k<hierTree[i].Blocks[j].instance.size();k++){
-
-                extend_pins(hierTree[i].Blocks[j].instance[k]);
-             }
-
-        }
-  }
-
-}
-
-void PnRdatabase::extend_pins(PnRDB::block &temp_block){
- 
-  //only extend for leafblock
-  if(temp_block.isLeaf){
-
-      for(unsigned int i=0;i<temp_block.blockPins.size();i++){
-         
-         //extend pins 
-         extend_pin(temp_block.blockPins[i],temp_block.width,temp_block.height);
-         //put the extended pins into internal metals
-         for(unsigned int j=0;j<temp_block.blockPins[i].pinContacts.size();j++){
-            temp_block.interMetals.push_back(temp_block.blockPins[i].pinContacts[j]);
-         }
-
-      }
-
-    }
-
-}
-
-
-void PnRdatabase::extend_pin(PnRDB::pin &temp_pin, int width, int height){
-
-  int h_margin = 4;
-  int v_margin = 4;
-
-  //extend pin
-  for(unsigned int i=0;i<temp_pin.pinContacts.size();i++){
-
-      int metal_index = DRC_info.Metalmap[temp_pin.pinContacts[i].metal];
- 
-      if(DRC_info.Metal_info[metal_index].direct==1){//h
-
-          temp_pin.pinContacts[i].originBox.LL.x = 0+h_margin;
-          temp_pin.pinContacts[i].originBox.UR.x = width-h_margin;
-          temp_pin.pinContacts[i].originCenter.x = width/2;
-          
-        }else{
-
-          temp_pin.pinContacts[i].originBox.LL.y = 0+v_margin;
-          temp_pin.pinContacts[i].originBox.UR.y = height-v_margin;
-          temp_pin.pinContacts[i].originCenter.y = height/2;
-
-        }
-  }
-
-  //might need to add the pin into internal metal
-
 }
 
 deque<int> PnRdatabase::TraverseHierTree() {
