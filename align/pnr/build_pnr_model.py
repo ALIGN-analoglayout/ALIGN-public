@@ -157,6 +157,24 @@ def _ReadMap( path, mapname):
             tbl[k] = str(d / v)
     return tbl
 
+def _attach_constraint_files( DB, fpath):
+    d = pathlib.Path(fpath)
+
+    for curr_node in DB.hierTree:
+        curr_node.bias_Vgraph = DB.getDrc_info().Design_info.Vspace
+        curr_node.bias_Hgraph = DB.getDrc_info().Design_info.Hspace
+
+        fp = d / f"{curr_node.name}.const.json"
+        if fp.exists():
+            with fp.open( "rt") as fp:
+                jsonStr = fp.read()
+            DB.ReadConstraint_Json( curr_node, jsonStr)
+            logger.info(f"Finished reading contraint json file {curr_node.name}.const.json")
+        elif DB.ReadConstraint( curr_node, fpath, "const"):
+            logger.info(f"Finished reading contraint file {curr_node.name}.const")
+        else:
+            logger.warn(f"No constraint file for module {curr_node.name}")
+                
 def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     DB = PnR.PnRdatabase()
 
@@ -170,11 +188,12 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
         with (pathlib.Path(path) / vname).open( "rt") as fp:
             j = json.load( fp)
         global_signals = ReadVerilogJson( DB, j)
-        DB.attach_constraint_files( path)
-        DB.semantic0( topcell)
-        DB.semantic1( global_signals)
-        DB.semantic2()
     else:
-        DB.ReadVerilog( path, vname, topcell)
+        global_signals = DB.ReadVerilog( path, vname, topcell)
+
+    _attach_constraint_files( DB, path)
+    DB.semantic0( topcell)
+    DB.semantic1( global_signals)
+    DB.semantic2()
 
     return DB

@@ -5,11 +5,9 @@
 #include <iomanip>
 
 using namespace nlohmann;
-bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, string suffix) {
-  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.ReadConstraint_Json");
-  ifstream jsonFile(fpath + "/" + node.name + "." + suffix);
-  if (jsonFile.is_open()) {
-    json jedb = json::parse(jsonFile);
+void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonStr) {
+    auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.ReadConstraint_Json");
+    json jedb = json::parse(jsonStr);
     json constraints = jedb["constraints"];
     for (auto constraint : constraints) {
       if (constraint["const_name"] == "SymmNet") {
@@ -576,9 +574,6 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
         node.C_Constraints.push_back(temp_c_const);
       }
     }
-    return true;
-  }
-  return false;
 }
 
 bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suffix) {

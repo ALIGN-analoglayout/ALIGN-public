@@ -5,7 +5,7 @@
 #include <iomanip>
 #include <cassert>
 
-bool PnRdatabase::ReadVerilog(const string& fpath, const string& vname, const string& topcell) {
+vector<tuple<string,string,string> > PnRdatabase::ReadVerilog(const string& fpath, const string& vname, const string& topcell) {
 
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.ReadVerilog");
 
@@ -20,19 +20,14 @@ bool PnRdatabase::ReadVerilog(const string& fpath, const string& vname, const st
     fin.open(verilogfile.c_str());
   } catch(ifstream::failure& e) {
       logger->error("Failed to open Verilog file {0}",verilogfile);
-      return false;
+      return vector<tuple<string,string,string> >();
   }
 
   rvh.parse_top( fin);
 
   fin.close();
 
-  attach_constraint_files( fpath);
-  semantic0( topcell);
-  semantic1( rvh.get_global_signals());
-  semantic2();
-
-  return true;
+  return rvh.get_global_signals();
 
 }
 

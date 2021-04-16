@@ -167,14 +167,20 @@ def route_top_down( DB, drcInfo,
     if not current_node.isTop:
         DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Backward)
 
-    logger.debug( f'Before DB.AppendToHierTree len(DB.hierTree)={len(DB.hierTree)}')
+    hierTree_len = len(DB.hierTree)
+    # Make sure the length of hierTree increased by one; this won't happend if you did the commented out line below
+    #DB.hierTree.append( current_node)
+    # It would if you did commented out line below but this requires a bunch of copying
+    #DB.hierTree = DB.hierTree + [current_node]
+    # Instead we added a custom method to do this
     DB.AppendToHierTree(current_node)
-    logger.debug( f'After DB.AppendToHierTree len(DB.hierTree)={len(DB.hierTree)}')
+    assert len(DB.hierTree) == 1+hierTree_len
     new_currentnode_idx = len(DB.hierTree) - 1
 
     for bit,blk in enumerate(current_node.Blocks):
         if blk.child == -1: continue
-        DB.SetParentInHierTree( blk.child, 0, new_currentnode_idx)
+        # Set the whole array, not parent[0]; otherwise the python temporary is updated
+        DB.hierTree[blk.child].parent = [ new_currentnode_idx ]
         logger.debug( f'Set parent of {blk.child} to {new_currentnode_idx} => DB.hierTree[blk.child].parent[0]={DB.hierTree[blk.child].parent[0]}')
 
     logger.debug( f'End of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy} new_currentnode_idx {new_currentnode_idx}')

@@ -344,6 +344,11 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("UpperRect", &ViaModel::UpperRect)
     .def_readwrite("R", &ViaModel::R);
 
+  py::class_<design_info>( m, "design_info")
+    .def( py::init<>())
+    .def_readwrite("Hspace", &design_info::Hspace)
+    .def_readwrite("Vspace", &design_info::Vspace);
+
   py::class_<Drc_info>( m, "Drc_info")
     .def( py::init<>())
     .def_readwrite("MaxLayer", &Drc_info::MaxLayer)
@@ -357,6 +362,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("MaskID_Via", &Drc_info::MaskID_Via)
     .def_readwrite("top_boundary", &Drc_info::top_boundary)
     .def_readwrite("Guardring_info", &Drc_info::Guardring_info)
+    .def_readwrite("Design_info", &Drc_info::Design_info)
   ;
 
   py::enum_<NType>(m,"NType")
@@ -405,9 +411,7 @@ PYBIND11_MODULE(PnR, m) {
     .def( "parse_top", &ReadVerilogHelper::parse_top);
 
   py::class_<PnRdatabase>( m, "PnRdatabase")
-    .def( py::init<string, string, string, string, string, string>())
     .def( py::init<>())
-    .def( "attach_constraint_files", &PnRdatabase::attach_constraint_files)
     .def( "semantic0", &PnRdatabase::semantic0)
     .def( "semantic1", &PnRdatabase::semantic1)
     .def( "semantic2", &PnRdatabase::semantic2)
@@ -418,7 +422,6 @@ PYBIND11_MODULE(PnR, m) {
     .def( "PrintHierTree", &PnRdatabase::PrintHierTree)
     .def( "ReadPDKJSON", &PnRdatabase::ReadPDKJSON)
     .def( "ReadLEF", &PnRdatabase::ReadLEF)
-    .def( "ReadMap", &PnRdatabase::ReadMap)
     .def( "ReadVerilog", &PnRdatabase::ReadVerilog)
     .def( "ReadDBJSON", &PnRdatabase::ReadDBJSON)
     .def( "WriteDBJSON", &PnRdatabase::WriteDBJSON)
@@ -432,13 +435,14 @@ PYBIND11_MODULE(PnR, m) {
     .def( "ExtractPinsToPowerPins", &PnRdatabase::ExtractPinsToPowerPins)
     .def( "CheckinChildnodetoBlock", &PnRdatabase::CheckinChildnodetoBlock)
     .def( "AppendToHierTree", &PnRdatabase::AppendToHierTree)
-    .def( "SetParentInHierTree", &PnRdatabase::SetParentInHierTree)
     .def( "WriteJSON", &PnRdatabase::WriteJSON)
     .def( "WriteLef", &PnRdatabase::WriteLef)
     .def( "Write_Router_Report", &PnRdatabase::Write_Router_Report)
     .def( "WriteGcellGlobalRoute", &PnRdatabase::WriteGcellGlobalRoute)
     .def( "Write_Current_Workload", &PnRdatabase::Write_Current_Workload)
     .def( "Write_Power_Mesh_Conf", &PnRdatabase::Write_Power_Mesh_Conf)
+    .def( "ReadConstraint_Json", &PnRdatabase::ReadConstraint_Json)
+    .def( "ReadConstraint", &PnRdatabase::ReadConstraint)
 
     .def_readwrite("hierTree", &PnRdatabase::hierTree)
     .def_readwrite("topidx", &PnRdatabase::topidx)

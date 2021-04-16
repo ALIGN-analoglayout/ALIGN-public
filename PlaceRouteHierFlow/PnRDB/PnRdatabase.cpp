@@ -19,36 +19,6 @@ PnRdatabase::~PnRdatabase() {
   logger->info( "Deconstructing PnRdatabase");
 }
 
-PnRdatabase::PnRdatabase(string path, string topcell, string vname, string lefname, string mapname, string drname) {
-
-  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.PnRdatabase");
-
-  unitScale=2000;
-  maxNode=0;
-
-  logger->info( "PnRDB-Info: reading data from path ");
-
-  if( drname == "HardDesignRules") {
-      this->HardDesignRule();
-      logger->info( "PnRDB-Info: default PDK");
-  } else if( EndsWith( drname, ".rul")) {
-      this->ReadDesignRule(path+"/"+drname);
-      logger->info( "PnRDB-Info: read PDK via {0}", drname);
-  } else if( EndsWith( drname, ".json")) {
-      this->ReadPDKJSON(path+"/"+drname);
-      logger->info( "PnRDB-Info: read PDK via {0}", drname);
-  } else {
-      logger->critical( "PnRDB-Error: unknown name for read PDK (HardDesignRules, *.rul, *.json): {0}", drname);
-      assert(0);
-  }
-
-  this->ReadLEF(path+"/"+lefname);
-  this->ReadMap(path, mapname);
-  this->ReadVerilog(path, vname, topcell);
-
-  logger->info( "PnRDB-Info: complete reading");
-}
-
 deque<int> PnRdatabase::TraverseHierTree() {
   deque<int> Q;
   vector<string> color(hierTree.size(), "white");
@@ -140,11 +110,6 @@ void PnRdatabase::AppendToHierTree(const PnRDB::hierNode& hN) {
   hierTree.push_back( hN);
 }
 
-void PnRdatabase::SetParentInHierTree( int idx, int pidx, int parent_id) {
-  assert( 0 <= pidx && pidx < int(hierTree[idx].parent.size()));
-  hierTree[idx].parent[pidx] = parent_id;
-}
-
 std::vector<PnRDB::hierNode> PnRdatabase::CheckoutHierNodeVec(int nodeID){
   std::vector<PnRDB::hierNode> nodeVec(hierTree[nodeID].PnRAS.size());
   for (unsigned int lidx = 0; lidx < hierTree[nodeID].PnRAS.size(); lidx++)
@@ -161,34 +126,6 @@ std::vector<PnRDB::hierNode> PnRdatabase::CheckoutHierNodeVec(int nodeID){
     nodeVec[lidx].UR = current_node.PnRAS[lidx].UR;
   }
   return nodeVec;
-}
-
-bool PnRdatabase::ReadMap(string fpath, string mapname) {
-
-  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.ReadMap");
-
-  logger->info("PnRDB-Info: reading map file {0}/{1}",fpath,mapname);
-  ifstream fin;
-  string def;
-  string mapfile=fpath+"/"+mapname;
-  vector<string> temp;
-  fin.exceptions(ifstream::failbit | ifstream::badbit);
-  try {
-    fin.open(mapfile.c_str());
-    while(fin.peek()!=EOF) {
-      getline(fin, def);
-      if(def.compare("")==0) {continue;}
-      temp = split_by_spaces_yg(def);
-      if(int(temp.size())>=2) {
-        gdsData.insert( std::pair<string,string>(temp[0],fpath+"/"+temp[1]) );
-      }
-    }
-    fin.close();
-    return true; 
-  } catch(ifstream::failure& e) {
-    logger->error("PnRDB-Error: fail to read map file ");
-  }
-  return false;
 }
 
 static void updateContact( PnRDB::contact& c)
@@ -1983,28 +1920,6 @@ void PnRdatabase::Write_Router_Report(PnRDB::hierNode &node, const string& opath
     }
 
   router_report.close();
-
-}
-
-void PnRdatabase::attach_constraint_files( const string& fpath)
-{
-    auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.attach_constraint_files");
-
-    for(unsigned int i=0;i<hierTree.size();i++){
-
-	auto &curr_node = hierTree[i];
-
-        curr_node.bias_Vgraph = DRC_info.Design_info.Vspace;
-        curr_node.bias_Hgraph = DRC_info.Design_info.Hspace;
-        // added one nodes to the class
-        if (ReadConstraint_Json(curr_node, fpath, "const.json")) {
-            logger->info("Finished reading contraint json file {0}.const.json", curr_node.name);
-        } else if (ReadConstraint(curr_node, fpath, "const")) {
-            logger->info("Finished reading contraint file {0}.const", curr_node.name);
-        } else {
-            logger->warn("No constraint file for module {0}", curr_node.name);
-        }
-    }
 
 }
 
