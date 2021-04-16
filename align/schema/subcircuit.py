@@ -1,4 +1,4 @@
-from .types import Optional, List
+from .types import Optional, List, Dict
 
 from . import types
 
@@ -9,8 +9,12 @@ from .constraint import ConstraintDB
 
 class SubCircuit(Model):
 
+    name : str                 # Model Name
+    pins : Optional[List[str]] # List of pin names (derived from base if base exists)
+    parameters : Optional[Dict[str, str]]   # Parameter Name: Value mapping (inherits & adds to base if needed)
     elements: List[Instance]
     constraints: ConstraintDB
+    prefix : str = 'X'         # Instance name prefix, optional
 
     @types.validate_arguments
     def add(self, instance: Instance):
