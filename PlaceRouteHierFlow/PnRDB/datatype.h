@@ -336,6 +336,7 @@ struct layoutAS {
   vector<terminal> Terminals;
   point LL;
   point UR;
+  vector<PowerNet> PowerNets;
   //vector<pin> blockPins;
   //vector<contact> interMetals;
   //vector<Via> interVias;
