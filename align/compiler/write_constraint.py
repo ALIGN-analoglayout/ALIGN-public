@@ -253,8 +253,7 @@ def FindSymmetry(graph, ports:list, ports_weight:dict, stop_points:list):
 
     """
     all_match_pairs={}
-
-    non_power_ports=sorted(set(sorted(ports))-set(stop_points))
+    non_power_ports = sorted(set(sorted(ports)) - set(stop_points))
     logger.debug(f"sorted ports: {non_power_ports}")
     for port1,port2 in combinations_with_replacement(non_power_ports,2):
         traversed =stop_points.copy()
@@ -276,7 +275,7 @@ def FindConst(graph, name, ports, ports_weight, input_const, stop_points=None):
         stop_points=[]
     if 'array_hier' in name:
         return
-    all_match_pairs=FindSymmetry(graph.copy(), ports, ports_weight, stop_points)
+    all_match_pairs = FindSymmetry(graph.copy(), ports, ports_weight, stop_points)
     all_match_pairs={k: v for k, v in all_match_pairs.items() if len(v)>1}
     logger.debug(f"all symmetry matching pairs {pprint.pformat(all_match_pairs, indent=4)}")
     written_symmetries = ''
@@ -317,11 +316,11 @@ def FindConst(graph, name, ports, ports_weight, input_const, stop_points=None):
     for key in new_hier_keys:
         del all_match_pairs[key]
 
-    all_pairs=sorted(all_match_pairs.values(), key=lambda k: len ([k1 for k1,v1 in k.items() if k1!=v1]), reverse=True)
+    all_pairs = sorted(all_match_pairs.values(), key=lambda k: len([k1 for k1, v1 in k.items() if k1 != v1]), reverse=True)
     logger.debug(f"all symmtry matching pairs {pprint.pformat(all_pairs, indent=4)}")
     for pairs in all_pairs:
         pairsj = []
-        pairs=sorted(pairs.items(),key=lambda k: k[0])
+        pairs = sorted(pairs.items(), key=lambda k: k[0])
         logger.debug(f"All symmblock pairs {pairs}")
         logger.debug(f"All written symmetric blocks {written_symmetries}")
         for key, value in pairs:
