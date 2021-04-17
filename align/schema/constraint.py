@@ -30,8 +30,8 @@ class HardConstraint(SoftConstraint, abc.ABC):
         '''
         Abstract Method for built in self-checks
           Every class that inherits from HardConstraint
-          MUST implement this function. Please check minimum
-          number of arguments at the very least
+          MUST implement this function. Please check
+          minimum number of arguments at the very least
         '''
         pass
 
@@ -50,7 +50,10 @@ class PlacementConstraint(HardConstraint):
 
 class Order(PlacementConstraint):
     '''
-    All `instances` will be ordered with respect to each other
+    All `instances` will be ordered along `direction`
+
+    WARNING: `Order` does not imply aligment / overlap
+    of any sort (See `Align`)
 
     The following `direction` values are supported:
     > `None` : default (`'horizontal'` or `'vertical'`)
@@ -115,7 +118,11 @@ class Order(PlacementConstraint):
 
 class Align(PlacementConstraint):
     '''
-    All `instances` will be aligned along the specified `line`
+    `instances` will be aligned along `line`. Could be
+    strict or relaxed depending on value of `line`
+
+    WARNING: `Align` does not imply ordering of any sort
+    (See `Order`)
 
     The following `line` values are currently supported:
     > `None` : default (`'h_any'` or `'v_any'`)
@@ -182,10 +189,23 @@ class Align(PlacementConstraint):
                 )
 
 
-class BoundInBox(HardConstraint):
+class Enclose(HardConstraint):
     ''' 
-    Define a bounding box that must fit
-    all instances in `instances`
+    Enclose `instances` within a flexible bounding box
+    with `min_` & `max_` bounds
+
+    Note: Specifying any one of the following variables
+    makes it a valid constraint but you may wish to 
+    specify more than one for practical purposes
+
+    > `min_height`
+    > `max_height`
+
+    > `min_width`
+    > `max_width`
+
+    > `min_aspect_ratio`
+    > `max_aspect_ratio`
     '''
     instances: List[str]
     min_height: Optional[int]
@@ -251,8 +271,11 @@ class BoundInBox(HardConstraint):
 
 class Spread(PlacementConstraint):
     '''
-    Set Minimum Spacing along `direction` for blocks
-    that overlap in the orthogonal direction
+    Spread `instances` by forcing minimum spacing along 
+    `direction` if two blocks overlap in other direction
+
+    WARNING: This constraint checks for overlap but
+    doesn't enforce it (See `Align`)
 
     The following `direction` values are supported:
     > `None` : default (`'horizontal'` or `'vertical'`)
@@ -317,7 +340,10 @@ class Spread(PlacementConstraint):
 
 class AlignInOrder(Order, Align):
     '''
-    Align `instances` in order, along the `direction`, on the `line`
+    Align `instances` on `line` ordered along `direction`
+
+    Note: This is a user-convenience constraint. Same
+    effect can be realized using `Order` & `Align`
 
     > `direction == 'horizontal'` => left_to_right
 
@@ -361,10 +387,24 @@ class AlignInOrder(Order, Align):
             values['direction'] = 'bottom_to_top'
         return values
 
-class SymmetricBlocks(SoftConstraint):
+
+class PlaceSymmetric(PlacementConstraint):
+    # TODO: Finish implementing this. Not registered to
+    #       ConstraintDB yet
     ''' 
-    TODO: Make Hard constraint
-          Validate using chain of Align statements
+    Place instance / pair of `instances` symmetrically 
+    around line of symmetry along `direction`
+
+    Note: This is a user-convenience constraint. Same
+    effect can be realized using `Align` & `Group`
+
+    For example:
+    `instances` = [['1'], ['4', '5'], ['2', '3'], ['6']],
+    `direction` = 'vertical'
+       1   |  5 4  |   6   |  4 5  |   1   |  5 4
+      4 5  |   1   |  5 4  |   6   |   6   |   1
+      2 3  |  2 3  |  3 2  |   1   |  5 4  |   6
+       6   |   6   |   1   |  2 3  |  2 3  |  3 2
     '''
     instances: List[List[str]]
     direction: Optional[Literal['horizontal', 'vertical']]
@@ -375,10 +415,6 @@ class SymmetricBlocks(SoftConstraint):
         Y = Align(4, 5, 'h_center')
         Align(1, X, Y, 6, 'center')
 
-         1
-        4 5
-        2 3
-         6
         '''
         assert len(self.instances) >= 1
         assert all(isinstance(x, List) for x in self.instances)
@@ -391,12 +427,16 @@ class OrderBlocks(SoftConstraint):
     instances: List[str]
     direction: Optional[Literal['H', 'V']]
 
+
 class MatchBlocks(SoftConstraint):
     '''
-    TODO: Can be replicated by BoundInBox??
+    TODO: Can be replicated by Enclose??
     '''
     instances: List[str]
 
+class SymmetricBlocks(SoftConstraint):
+    instances: List[List[str]]
+    direction: Optional[Literal['horizontal', 'vertical']]
 
 class BlockDistance(SoftConstraint):
     '''
@@ -424,7 +464,7 @@ class HorizontalDistance(SoftConstraint):
 
 class AspectRatio(SoftConstraint):
     '''
-    TODO: Replace with BoundInBox
+    TODO: Replace with Enclose
     '''
     ratio_low: Optional[float]
     ratio_high: Optional[float]
@@ -438,6 +478,7 @@ class AspectRatio(SoftConstraint):
         else:
             values['ratio_low'] = 1 / values['ratio_high']
         return values
+
 
 class GroupBlocks(SoftConstraint):
     ''' Force heirarchy creation '''
@@ -459,6 +500,7 @@ class SymmetricNets(SoftConstraint):
     net2: str
     pins1: List
     pins2: List
+
 
 class MultiConnection(SoftConstraint):
     net: str
@@ -486,15 +528,15 @@ class PortLocation(SoftConstraint):
 
 ConstraintType = Union[
     # ALIGN Internal DSL
-    Order, Align, Spread,
-    BoundInBox,
-    # Soner's desired user constraints
+    Order, Align,
+    Enclose, Spread,
+    # Additional helper constraints
     AlignInOrder,
-    SymmetricBlocks,
     # Current Align constraints
     # Consider removing redundant ones
     OrderBlocks,
     MatchBlocks,
+    SymmetricBlocks,
     BlockDistance,
     VerticalDistance,
     HorizontalDistance,
