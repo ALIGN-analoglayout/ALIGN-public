@@ -196,9 +196,9 @@ class Annotate:
                     and 'blocks' in const.keys() and isinstance(const["blocks"],list) \
                     and set(const['blocks']).issubset(set(G1.nodes)): 
                     logger.debug(f"Grouping CC caps {const}")
-                    ctype = 'Cap_cc_' + "_".join([str(x) for x in const["size"]])
+                    ctype = 'Cap_cc_' + "_".join([str(x) for x in const["num_units"]])
                     if len(set(const['blocks'])) > 1:
-                        merge_caps(G1,ctype,const["blocks"],const["cap_name"])
+                        merge_caps(G1,ctype,const["blocks"],const["name"])
 
                 
     def _update_sym_const(self,name,G1,remove_nodes,new_inst):

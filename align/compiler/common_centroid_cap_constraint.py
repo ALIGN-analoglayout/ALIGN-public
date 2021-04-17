@@ -37,7 +37,7 @@ def CapConst(graph,name,unit_size_cap,input_const,merge_caps):
         all_const = input_const["constraints"]
         for const in input_const["constraints"]:
             if const["const_name"] == 'GroupCaps':
-                available_cap_const.append(const["cap_name"])
+                available_cap_const.append(const["name"])
     else:
         input_const = {}
         all_const = []
