@@ -16,6 +16,8 @@ def test_cap():
     assert 'Cap_12f' in primitives.keys()
     with open(gen_const_path, "r") as const_fp:
         gen_const = json.load(const_fp)["constraints"]
+        gen_const.sort(key=lambda item: item.get("const_name")) 
     with open(gold_const_path, "r") as const_fp:
         gold_const = json.load(const_fp)["constraints"]
-    assert gold_const.sort(key=lambda item: item.get("const_name")) == gen_const.sort(key=lambda item: item.get("const_name")) 
+        gold_const.sort(key=lambda item: item.get("const_name"))
+    assert gold_const == gen_const

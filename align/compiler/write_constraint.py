@@ -321,8 +321,8 @@ def FindConst(graph, name, ports, ports_weight, input_const, stop_points=None):
     for pairs in all_pairs:
         pairsj = []
         pairs = sorted(pairs.items(), key=lambda k: k[0])
-        logger.debug(f"All symmblock pairs {pairs}")
-        logger.debug(f"All written symmetric blocks {written_symmetries}")
+        logger.debug(f"All symmblock pairs: {pairs}")
+        logger.debug(f"All written symmetric blocks: {written_symmetries}")
         for key, value in pairs:
             #print("key,value,hier",key,value,new_hier_keys)
             if key in stop_points:
@@ -365,7 +365,8 @@ def FindConst(graph, name, ports, ports_weight, input_const, stop_points=None):
                     logger.debug(f"TBF:skipping self symmetry for single transistor {key} {value}")
                 else:
                     pairsj.append([key])
-        if len(pairsj) > 1 or (len(pairsj) > 0 and len(pairsj) == 2):
+        logger.debug(f"filterd symmetry pairs: {pairsj}")
+        if len(pairsj) > 1 or (len(pairsj) > 0 and len(pairsj[0]) == 2):
             symmBlock = {'const_name': "SymmetricBlocks", "direction": "V", "pairs": pairsj}
             written_symmetries += ',' + ','.join(','.join(a) for a in pairsj)
             all_const.append(symmBlock)

@@ -69,7 +69,7 @@ def CapConst(graph,name,unit_size_cap,input_const,merge_caps):
                         "name": node,
                         "num_units": n_cap,
                         "unit_cap": unit_block_name,
-                        "dummy": True
+                        "dummy": False
                         }
 
             logger.debug(f"Cap constraint {cap_const}")

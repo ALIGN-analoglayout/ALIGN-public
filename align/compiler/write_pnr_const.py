@@ -78,7 +78,10 @@ class ConstraintWriter:
                 const["unit_capacitor"] = const.pop("unit_cap")
                 const["size"] = const.pop("num_units")
                 const["nodummy"] = not const["dummy"]
+                const["cap_r"] = -1
+                const["cap_s"] = -1
                 del const["dummy"]
+                del const["blocks"]
             elif const["const_name"] == 'AlignBlocks':
                 const["const_name"] = 'AlignBlock'
             elif const["const_name"] == 'SymmetricNets':
