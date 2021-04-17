@@ -8,9 +8,7 @@ set(headers
 set(sources
      readfile.cpp
      PnRdatabase.cpp
-     ReadDesignRule.cpp
      ReadDesignRuleJson.cpp
-     HardDesignRule.cpp
      WriteJSON.cpp
      ReadVerilog.cpp
      ReadConstraint.cpp

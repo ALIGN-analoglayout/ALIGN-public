@@ -22,10 +22,10 @@ from .toplevel import toplevel
 logger = logging.getLogger(__name__)
 
 
-def _generate_json_from_hN(*, hN, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False, input_dir=None, toplevel=True, gds_json=True):
+def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False, input_dir=None, toplevel=True, gds_json=True):
 
     logger.debug(
-        f"_generate_json_from_hN: {hN} {variant} {primitive_dir} {pdk_dir} {output_dir} {check} {extract} {input_dir} {toplevel} {gds_json}")
+        f"_generate_json: {hN} {variant} {primitive_dir} {pdk_dir} {output_dir} {check} {extract} {input_dir} {toplevel} {gds_json}")
 
     ret = {}
 
@@ -197,16 +197,16 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
 
                 hN = DB.CheckoutHierNode(idx, -1)
 
-                _generate_json_from_hN(hN=hN,
-                                       variant=variant_name,
-                                       pdk_dir=pdk_dir,
-                                       primitive_dir=input_dir,
-                                       input_dir=working_dir,
-                                       output_dir=working_dir,
-                                       check=check,
-                                       extract=extract,
-                                       gds_json=gds_json,
-                                       toplevel=False)
+                _generate_json(hN=hN,
+                               variant=variant_name,
+                               pdk_dir=pdk_dir,
+                               primitive_dir=input_dir,
+                               input_dir=working_dir,
+                               output_dir=working_dir,
+                               check=check,
+                               extract=extract,
+                               gds_json=gds_json,
+                               toplevel=False)
 
             # toplevel
             (idx, nm) = order[-1]
@@ -220,16 +220,16 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
             hN = DB.CheckoutHierNode(idx, -1)
 
             variants[variant].update(
-                _generate_json_from_hN(hN=hN,
-                                       variant=variant,
-                                       pdk_dir=pdk_dir,
-                                       primitive_dir=input_dir,
-                                       input_dir=working_dir,
-                                       output_dir=working_dir,
-                                       check=check,
-                                       extract=extract,
-                                       gds_json=gds_json,
-                                       toplevel=True))
+                _generate_json(hN=hN,
+                               variant=variant,
+                               pdk_dir=pdk_dir,
+                               primitive_dir=input_dir,
+                               input_dir=working_dir,
+                               output_dir=working_dir,
+                               check=check,
+                               extract=extract,
+                               gds_json=gds_json,
+                               toplevel=True))
 
             for tag, suffix in [('lef', '.lef'), ('gdsjson', '.gds.json')]:
                 path = results_dir / (variant + suffix)
