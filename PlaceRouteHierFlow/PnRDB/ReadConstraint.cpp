@@ -4,6 +4,29 @@
 #include <fstream>
 #include <iomanip>
 
+/*
+
+Need to include code like this below (from the old constraint format):
+
+      } else if(temp[0].compare("GuardRing")==0) {
+        PnRDB::Guardring_Const temp_Guardring_Const;
+        string word=temp[2];
+        word=word.substr(1);
+        word=word.substr(0, word.length()-1);
+        temp_Guardring_Const.block_name = word;
+        word = temp[4];
+        word=word.substr(1);
+        word=word.substr(0, word.length()-1);
+        temp_Guardring_Const.guard_ring_perimitives = word;
+        word=temp[6];
+        word=word.substr(1);
+        word=word.substr(0, word.length()-1);
+        temp_Guardring_Const.global_pin = word;
+        node.Guardring_Consts.push_back(temp_Guardring_Const);
+
+ */
+
+
 using namespace nlohmann;
 void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonStr) {
     auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.ReadConstraint_Json");
