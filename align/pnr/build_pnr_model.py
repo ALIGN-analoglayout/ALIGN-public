@@ -173,13 +173,22 @@ def _attach_constraint_files( DB, fpath):
         else:
             logger.warn(f"No constraint file for module {curr_node.name}")
                 
+def _ReadLEF( DB, path, lefname):
+    p = pathlib.Path(path) / lefname
+    if p.exists():
+        with p.open( "rt") as fp:
+            s = fp.read()
+            DB.ReadLEFFromString( s)
+    else:
+        logger.warn(f"LEF file {p} doesn't exist.")
+
 def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     DB = PnR.PnRdatabase()
 
     assert drname.endswith('.json'), drname
     DB.ReadPDKJSON( path + '/' + drname)
 
-    DB.ReadLEF( path + '/' + lefname)
+    _ReadLEF( DB, path, lefname)
     DB.gdsData = _ReadMap( path, mapname)
 
     if vname.endswith(".verilog.json"):
