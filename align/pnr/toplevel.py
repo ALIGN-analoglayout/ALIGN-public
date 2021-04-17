@@ -188,6 +188,68 @@ def route_top_down( DB, drcInfo,
     return new_currentnode_idx
 
 
+def place( *, DB, opath, fpath, numLayout, effort, idx):
+    logger.info(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
+
+    current_node = DB.CheckoutHierNode(idx)
+    #analyze_hN( 'Start', current_node, True)
+
+    DB.AddingPowerPins(current_node)
+    #analyze_hN( 'After adding power pins', current_node, False)
+
+    PRC = PnR.Placer_Router_Cap_Ifc(opath,fpath,current_node,DB.getDrc_info(),DB.checkoutSingleLEF(),1,6)
+
+    curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, DB.getDrc_info())
+
+    actualNumLayout = curr_plc.getNodeVecSize()
+
+    if actualNumLayout != numLayout:
+        logger.warning( f'Placer did not provide numLayout ({numLayout} > {actualNumLayout}) layouts')
+
+    for lidx in range(actualNumLayout):
+        node = curr_plc.getNode(lidx)
+        if node.Guardring_Consts:
+            PnR.GuardRingIfc( node, DB.checkoutSingleLEF(), DB.getDrc_info())
+        #analyze_hN( f'After placement {lidx}', node, False)
+        DB.Extract_RemovePowerPins(node)
+        #analyze_hN( f'After remove power pins {lidx}', node, True)
+        DB.CheckinHierNode(idx, node)
+
+    DB.hierTree[idx].numPlacement = actualNumLayout
+
+    #analyze_hN( 'End', current_node, False)
+
+
+def route( *, DB, idx, opath, binary_directory, adr_mode, PDN_mode, pdk):
+    logger.info(f'Starting top-down routing on {DB.hierTree[idx].name} {idx}')
+
+    new_topnode_indices = []
+
+    assert len(DB.hierTree[idx].PnRAS) == DB.hierTree[idx].numPlacement
+
+    for lidx in range(DB.hierTree[idx].numPlacement):
+        new_topnode_idx = route_top_down( DB, DB.getDrc_info(),
+                                          PnR.bbox( PnR.point(0,0),
+                                                    PnR.point(DB.hierTree[idx].PnRAS[lidx].width,
+                                                              DB.hierTree[idx].PnRAS[lidx].height)),
+                                          Omark.N, idx, lidx,
+                                          opath, binary_directory, adr_mode, PDN_mode=PDN_mode, pdk=pdk)
+        new_topnode_indices.append(new_topnode_idx)
+
+def place_and_route( *, DB, opath, fpath, numLayout, effort, binary_directory, adr_mode, PDN_mode, pdk, render_placements):
+    TraverseOrder = DB.TraverseHierTree()
+
+    for idx in TraverseOrder:
+        place( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx)
+
+    if render_placements:
+        dump_blocks( DB.hierTree[TraverseOrder[-1]], DB, leaves_only=False)
+
+    idx = TraverseOrder[-1]
+
+    route( DB=DB, idx=idx, opath=opath, binary_directory=binary_directory, adr_mode=adr_mode, PDN_mode=PDN_mode, pdk=pdk)
+
+
 
 def toplevel(args, *, PDN_mode=False, pdk=None, render_placements=False):
 
@@ -207,61 +269,8 @@ def toplevel(args, *, PDN_mode=False, pdk=None, render_placements=False):
 
     pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
 
-    #DB = PnR.PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile)
     DB = PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile)
-    drcInfo = DB.getDrc_info()
-    lefData = DB.checkoutSingleLEF()
 
-    TraverseOrder = DB.TraverseHierTree()
-
-    for idx in TraverseOrder:
-        logger.info(f'Topo order: {idx} {DB.hierTree[idx].name}')
-
-        current_node = DB.CheckoutHierNode(idx)
-        #analyze_hN( 'Start', current_node, True)
-
-        DB.AddingPowerPins(current_node)
-        #analyze_hN( 'After adding power pins', current_node, False)
-
-        PRC = PnR.Placer_Router_Cap_Ifc(opath,fpath,current_node,drcInfo,lefData,1,6)
-
-        curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, drcInfo)
-
-        actualNumLayout = curr_plc.getNodeVecSize()
-        
-        if actualNumLayout != numLayout:
-            logger.warning( f'Placer did not provide numLayout ({numLayout} > {actualNumLayout}) layouts')
-
-        for lidx in range(actualNumLayout):
-            node = curr_plc.getNode(lidx)
-            if node.Guardring_Consts:
-                PnR.GuardRingIfc( node, lefData, drcInfo)
-            #analyze_hN( f'After placement {lidx}', node, False)
-            DB.Extract_RemovePowerPins(node)
-            #analyze_hN( f'After remove power pins {lidx}', node, True)
-            DB.CheckinHierNode(idx, node)
-
-        DB.hierTree[idx].numPlacement = actualNumLayout
-
-        #analyze_hN( 'End', current_node, False)
-
-    if render_placements:
-        dump_blocks( DB.hierTree[TraverseOrder[-1]], DB, leaves_only=False)
-
-    logger.debug(f'Starting top-down routing')
-
-    last = TraverseOrder[-1]
-    new_topnode_indices = []
-
-    assert len(DB.hierTree[last].PnRAS) == DB.hierTree[last].numPlacement
-
-    for lidx in range(DB.hierTree[last].numPlacement):
-        new_topnode_idx = route_top_down( DB, drcInfo,
-                                          PnR.bbox( PnR.point(0,0),
-                                                    PnR.point(DB.hierTree[last].PnRAS[lidx].width,
-                                                              DB.hierTree[last].PnRAS[lidx].height)),
-                                          Omark.N, last, lidx,
-                                          opath, binary_directory, adr_mode, PDN_mode=PDN_mode, pdk=pdk)
-        new_topnode_indices.append(new_topnode_idx)
+    place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, binary_directory=binary_directory, adr_mode=adr_mode, PDN_mode=PDN_mode, pdk=pdk, render_placements=render_placements)
 
     return DB
