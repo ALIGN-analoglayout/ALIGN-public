@@ -36,7 +36,9 @@ def test_group_block_hsc(test_compiler_hsc):
     gen_const_path = result_path / 'high_speed_comparator.const.json'
     gold_const_path = out_path / 'test_results' / (dir_name + '.const.json')
     with open(gen_const_path, "r") as const_fp:
-        gen_const = json.load(const_fp)
+        const = json.load(const_fp)
+        gen_const = const["constraints"]
     with open(gold_const_path, "r") as const_fp:
-        gold_const = json.load(const_fp)
-    assert gold_const == gen_const
+        const = json.load(const_fp)
+        gold_const = const["constraints"]
+    assert gold_const.sort(key=lambda item: item.get("const_name")) == gen_const.sort(key=lambda item: item.get("const_name")) 

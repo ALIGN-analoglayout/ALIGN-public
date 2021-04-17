@@ -9,8 +9,9 @@ from .create_database import CreateDatabase
 from .match_graph import Annotate
 from .read_setup import read_setup
 from .write_verilog_lef import write_verilog, WriteVerilog,generate_lef
-from .common_centroid_cap_constraint import WriteCap
-from .write_constraint import WriteConst
+from .common_centroid_cap_constraint import CapConst
+from .write_constraint import FindConst
+from .write_pnr_const import ConstraintWriter
 from .read_lef import read_lef
 from .user_const import ConstraintParser
 
@@ -245,12 +246,14 @@ def compiler_output(input_ckt, lib_names , hier_graph_dict, design_name:str, res
                 logger.debug(f"call constraint generator writer for block: {name} {const}")
                 stop_points = design_setup['POWER'] + design_setup['GND'] + design_setup['CLOCK']
                 if name not in design_setup['NO_CONST']:
-                    const = WriteConst(graph, name, inoutpin, member["ports_weight"], const, stop_points)
-                const = WriteCap(graph, name, design_config["unit_size_cap"], const, design_setup['MERGE_SYMM_CAPS'])
+                    const = FindConst(graph, name, inoutpin, member["ports_weight"], const, stop_points)
+                const = CapConst(graph, name, design_config["unit_size_cap"], const, design_setup['MERGE_SYMM_CAPS'])
             if const and 'constraints' in const and len(const["constraints"]) > 0:
+                pnr_const_format = ConstraintWriter(pdk_dir)
+                new_const = pnr_const_format.map_valid_const(const)
                 json_const_file = result_dir / (name + '.const.json')
                 with open(json_const_file, 'w') as outfile:
-                    json.dump(const, outfile, indent=4)
+                    json.dump(new_const, outfile, indent=4)
             verilog_tbl['modules'].append( wv.gen_dict())
     if len(POWER_PINS)>0:
         for i, nm in enumerate(POWER_PINS):
