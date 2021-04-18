@@ -266,7 +266,6 @@ def FindSymmetry(graph, ports:list, ports_weight:dict, stop_points:list):
     return all_match_pairs
 
 def FindConst(graph, name, ports, ports_weight, input_const, stop_points=None):
-    # json_const_file = input_dir / (name + '.const.json')
     logger.debug(f"Searching constraints for block {name}")
     logger.debug(f"ports weight: {ports_weight} stop_points : {stop_points}")
 

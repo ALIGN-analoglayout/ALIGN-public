@@ -33,8 +33,8 @@ def test_group_block_hsc(test_compiler_hsc):
     result_path = out_path / 'Results'/ dir_name
     pdk_path = pathlib.Path(__file__).parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK'
     compiler_output(test_path, updated_ckt, 'high_speed_comparator', result_path, pdk_path)
-    gen_const_path = result_path / 'high_speed_comparator.const.json'
-    gold_const_path = out_path / 'test_results' / (dir_name + '.const.json')
+    gen_const_path = result_path / 'high_speed_comparator.pnr.const.json'
+    gold_const_path = out_path / 'test_results' / (dir_name + '.pnr.const.json')
     with open(gen_const_path, "r") as const_fp:
         gen_const = json.load(const_fp)["constraints"]
         gen_const.sort(key=lambda item: item.get("const_name")) 

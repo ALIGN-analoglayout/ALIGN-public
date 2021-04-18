@@ -121,7 +121,7 @@ Using JSON format as input:
 	If both formats are provided as input, only JSON format will be read for that hierarchy
 
 	* Format (cmd): ``CreateAlias -blocks [B1,B2,B3] -name alias1``
-	* Format (JSON): ``{"const_name":"CreateAlias", "blocks": ["B1","B2","B3"], "name"  : "alias1"}``
+	* Format (JSON): ``{"constraint":"CreateAlias", "blocks": ["B1","B2","B3"], "name"  : "alias1"}``
 
 Example constraints (command-line interface)
 ---------------------------------------------
@@ -141,33 +141,31 @@ Example constraints (JSON format)
 .. code-block:: python3
 
 	#filename: high_speed_comparator.const.json
-	{
-	"constraints":[
-		{   "const_name":"HorizontalDistance",
+	[
+		{   "constraint":"HorizontalDistance",
 			"abs_distance":0
 		},
-		{   "const_name":"VerticalDistance",
+		{   "constraint":"VerticalDistance",
 			"abs_distance":0
 		},
-		{   "const_name": "GroupBlocks",
+		{   "constraint": "GroupBlocks",
 			"blocks": ["mmn0", "mmn1"],
 			"name": "diffpair"
 		},
-		{   "const_name":"GroupBlocks",
+		{   "constraint":"GroupBlocks",
 			"blocks": ["mmn4", "mmn3"],
 			"name": "ccn"
 		},
-		{   "const_name": "GroupBlocks",
+		{   "constraint": "GroupBlocks",
 			"blocks": ["mmp1", "mmp0"],
 			"name": "ccp"
 		},
-		{   "const_name": "SymmetricBlocks",
+		{   "constraint": "SymmetricBlocks",
 			"direction" : "V",
 			"pairs": [["mmn2"], ["diffpair"], ["ccn"], ["ccp"]]
 		},
-		{   "const_name": "OrderBlocks",
+		{   "constraint": "OrderBlocks",
 			"blocks": ["mmn2", "diffpair", "ccn", "ccp"],
 			"direction": "V"
 		}
-		]
-	}
+	]

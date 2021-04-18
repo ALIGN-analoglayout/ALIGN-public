@@ -9,6 +9,9 @@ import pathlib
 import pprint
 import json
 import logging
+import pydantic
+from ..schema import constraint
+from typing import List
 
 logger = logging.getLogger(__name__)
 pp = pprint.PrettyPrinter(indent=4)
@@ -35,9 +38,9 @@ class ConstraintParser:
         fp_json = self.input_dir / (design_name+'.const.json')
         if fp_json.is_file():
             logger.info(f"JSON input const file for block {design_name} {fp_json}")
-            f = open(fp_json, "r")
-            self.block_const = json.load(f)
+            self.block_const = constraint.ConstraintDB.parse_file(fp_json)
         elif fp.is_file():
+            # assert False, fp.read_text()
             logger.info(f"CMD-line input const file for block {design_name}")
             all_const = []
             f = open(fp, "r")
@@ -62,7 +65,12 @@ class ConstraintParser:
         # self._map_valid_const()
         return self.block_const
             
-    
+    def cmdline_parser(self):
+        parser = argparse.ArgumentParser(prog='constraint')
+        for constraint in constraint.__all__:
+            print(constraint)
+        assert False
+
     def _translate_valid_const(self,const:dict):
         """
         Read line parameters as dictionary element
@@ -78,7 +86,7 @@ class ConstraintParser:
             modified dictionary.
     
         """
-        
+        self.cmdline_parser()
         logger.debug(f"checking constraint {const}")
         if const["const_name"] not in self.valid_const:
             logger.warning(f"ignoring invalid constraint {const} ")

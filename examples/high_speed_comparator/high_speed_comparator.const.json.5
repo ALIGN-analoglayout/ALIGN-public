@@ -1,31 +1,29 @@
-{
-    "constraints":[
-        {"const_name":"HorizontalDistance", "abs_distance":0},
-        {"const_name":"VerticalDistance",   "abs_distance":0},
-        {"const_name": "GroupBlocks", "blocks": ["mn1", "mn2"],   "name": "dp"},
-        {"const_name":"GroupBlocks",  "blocks": ["mn3", "mn4"],   "name": "ccn"},
-        {"const_name": "GroupBlocks", "blocks": ["mp5", "mp6"],   "name": "ccp"},
-        {"const_name": "GroupBlocks", "blocks": ["mp11", "mn13"], "name": "inv_n"},
-        {"const_name": "GroupBlocks", "blocks": ["mp12", "mn14"], "name": "inv_p"},
-        {"const_name": "SymmetricBlocks",
-            "direction" : "V",
-            "pairs": [["mn0"], ["dp"], ["ccn"], ["ccp"], ["mp7", "mp8"], ["mp9", "mp10"], ["inv_n", "inv_p"]]
-        },
-        {"const_name": "OrderBlocks",
-            "direction" : "V",
-            "blocks": ["mn0", "dp", "ccn", "ccp"]
-        },
-        {"const_name": "AlignBlocks",
-            "direction" : "H",
-            "blocks": ["mp9", "mp7", "dp", "mp8", "mp10"]
-        },
-        {"const_name": "AlignBlocks",
-            "direction" : "H",
-            "blocks": ["inv_n", "ccp", "inv_p"]
-        },
-        {"const_name": "MultiConnection",
-            "nets": ["vcom"],
-            "multiplier": "3"
-        }
-    ]
-}
+[
+    {"constraint":"HorizontalDistance", "abs_distance":0},
+    {"constraint":"VerticalDistance",   "abs_distance":0},
+    {"constraint": "GroupBlocks", "blocks": ["mn1", "mn2"],   "name": "dp"},
+    {"constraint":"GroupBlocks",  "blocks": ["mn3", "mn4"],   "name": "ccn"},
+    {"constraint": "GroupBlocks", "blocks": ["mp5", "mp6"],   "name": "ccp"},
+    {"constraint": "GroupBlocks", "blocks": ["mp11", "mn13"], "name": "inv_n"},
+    {"constraint": "GroupBlocks", "blocks": ["mp12", "mn14"], "name": "inv_p"},
+    {"constraint": "SymmetricBlocks",
+        "direction" : "V",
+        "pairs": [["mn0"], ["dp"], ["ccn"], ["ccp"], ["mp7", "mp8"], ["mp9", "mp10"], ["inv_n", "inv_p"]]
+    },
+    {"constraint": "OrderBlocks",
+        "direction" : "V",
+        "blocks": ["mn0", "dp", "ccn", "ccp"]
+    },
+    {"constraint": "AlignBlocks",
+        "direction" : "H",
+        "blocks": ["mp9", "mp7", "dp", "mp8", "mp10"]
+    },
+    {"constraint": "AlignBlocks",
+        "direction" : "H",
+        "blocks": ["inv_n", "ccp", "inv_p"]
+    },
+    {"constraint": "MultiConnection",
+        "nets": ["vcom"],
+        "multiplier": "3"
+    }
+]

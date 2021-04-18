@@ -17,9 +17,13 @@ class SoftConstraint(types.BaseModel):
     constraint: str
 
     def __init__(self, *args, **kwargs):
-        if 'constraint' not in kwargs:
-            kwargs['constraint'] = pattern.sub(
-                '_', self.__class__.__name__).lower()
+        constraint = pattern.sub(
+            '_', self.__class__.__name__).lower()
+        if 'constraint' not in kwargs or kwargs['constraint'] == self.__class__.__name__:
+            kwargs['constraint'] = constraint
+        else:
+            assert constraint == kwargs[
+                'constraint'], f'Unexpected `constraint` {kwargs["constraint"]} (expected {constraint})'
         super().__init__(*args, **kwargs)
 
 
@@ -189,7 +193,7 @@ class Align(PlacementConstraint):
                 )
 
 
-class Enclose(HardConstraint):
+class Enclose(PlacementConstraint):
     ''' 
     Enclose `instances` within a flexible bounding box
     with `min_` & `max_` bounds
@@ -420,46 +424,98 @@ class PlaceSymmetric(PlacementConstraint):
         assert all(isinstance(x, List) for x in self.instances)
 
 
+class CreateAlias(SoftConstraint):
+    blocks: List[str]
+    name: str
+
+
+class GroupBlocks(SoftConstraint):
+    ''' Force heirarchy creation '''
+    name: str
+    blocks: List[str]
+    style: Optional[Literal["tbd_interdigitated", "tbd_common_centroid"]]
+
+
 class OrderBlocks(SoftConstraint):
     '''
     TODO: Replace this with just Order
     '''
-    instances: List[str]
-    direction: Optional[Literal['H', 'V']]
+    blocks: List[str]
+    name: Optional[str]
+    direction: Literal['H', 'V']
 
 
 class MatchBlocks(SoftConstraint):
     '''
     TODO: Can be replicated by Enclose??
     '''
-    instances: List[str]
+    blocks: List[str]
+
 
 class SymmetricBlocks(SoftConstraint):
-    instances: List[List[str]]
-    direction: Optional[Literal['horizontal', 'vertical']]
+    pairs: List[List[str]]
+    direction: Literal['H', 'V']
+
 
 class BlockDistance(SoftConstraint):
     '''
     TODO: Replace with Spread
     '''
-    direction: None = None
-    distance: int
+    abs_distance: int
 
 
 class VerticalDistance(SoftConstraint):
     '''
     TODO: Replace with Spread
     '''
-    direction: Literal['vertical'] = 'vertical'
-    distance: int
+    abs_distance: int
 
 
 class HorizontalDistance(SoftConstraint):
     '''
     TODO: Replace with Spread
     '''
-    direction: Literal['horizontal'] = 'horizontal'
-    distance: int
+    abs_distance: int
+
+
+class GroupCaps(SoftConstraint):
+    ''' Common Centroid Cap '''
+    name: str  # subcircuit name
+    blocks: List[str]
+    unit_cap: str  # cap value in fF
+    num_units: List
+    dummy: bool  # whether to fill in dummies
+
+
+class AlignBlocks(SoftConstraint):
+    '''
+    TODO: Replace this with just Order
+    '''
+    blocks: List[str]
+    direction: Literal['H', 'V']
+
+
+class NetConst(SoftConstraint):
+    nets: List[str]
+    shield: str
+    criticality: int
+
+
+class PortLocation(SoftConstraint):
+    '''T (top), L (left), C (center), R (right), B (bottom)'''
+    ports: List
+    location: Literal['TL', 'TC', 'TR',
+                      'RT', 'RC', 'RB',
+                      'BL', 'BC', 'BR',
+                      'LB', 'LC', 'LT']
+
+
+class SymmetricNets(SoftConstraint):
+    net1: str
+    net2: str
+    pins1: Optional[List]
+    pins2: Optional[List]
+    direction: Literal['H', 'V']
 
 
 class AspectRatio(SoftConstraint):
@@ -468,6 +524,7 @@ class AspectRatio(SoftConstraint):
     '''
     ratio_low: Optional[float]
     ratio_high: Optional[float]
+    weight: int
 
     @types.root_validator(allow_reuse=True)
     def cast_aspect_ratio_spec(cls, values):
@@ -480,50 +537,9 @@ class AspectRatio(SoftConstraint):
         return values
 
 
-class GroupBlocks(SoftConstraint):
-    ''' Force heirarchy creation '''
-    name: str  # subcircuit name
-    instances: List[str]
-
-
-class GroupCaps(SoftConstraint):
-    ''' Common Centroid Cap '''
-    name: str  # subcircuit name
-    instances: List[str]
-    unit_cap: float  # cap value in fF
-    dummy: bool  # whether to fill in dummies
-
-
-class SymmetricNets(SoftConstraint):
-    direction: Literal['H', 'V']
-    net1: str
-    net2: str
-    pins1: List
-    pins2: List
-
-
 class MultiConnection(SoftConstraint):
     net: str
     multiplier: int
-
-
-class ShieldNet(SoftConstraint):
-    name: str
-    shield: str
-
-
-class CritNet(SoftConstraint):
-    name: str
-    criticality: int
-
-
-class PortLocation(SoftConstraint):
-    '''T (top), L (left), C (center), R (right), B (bottom)'''
-    name: str
-    location: Literal['TL', 'TC', 'TR',
-                      'RT', 'RC', 'RB',
-                      'BL', 'BC', 'BR',
-                      'LB', 'LC', 'LT']
 
 
 ConstraintType = Union[
@@ -534,20 +550,21 @@ ConstraintType = Union[
     AlignInOrder,
     # Current Align constraints
     # Consider removing redundant ones
+    CreateAlias,
+    GroupBlocks,
     OrderBlocks,
     MatchBlocks,
-    SymmetricBlocks,
     BlockDistance,
-    VerticalDistance,
     HorizontalDistance,
-    AspectRatio,
-    GroupBlocks,
+    VerticalDistance,
+    SymmetricBlocks,
     GroupCaps,
+    AlignBlocks,
+    NetConst,
+    PortLocation,
     SymmetricNets,
-    MultiConnection,
-    ShieldNet,
-    CritNet,
-    PortLocation
+    AspectRatio,
+    MultiConnection
 ]
 
 
@@ -564,8 +581,10 @@ class ConstraintDB(types.List[ConstraintType]):
             constraint.check(self._checker)
         super().append(constraint)
 
-    def __init__(self):
-        super().__init__(__root__=[])
+    def __init__(self, *args, **kwargs):
+        if len(args) == 0 and '__root__' not in kwargs:
+            kwargs['__root__'] = []
+        super().__init__(*args, **kwargs)
         if Z3Checker.enabled:
             self._checker = Z3Checker()
 

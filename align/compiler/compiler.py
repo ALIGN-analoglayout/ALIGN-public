@@ -260,7 +260,7 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
             if const and 'constraints' in const and len(const["constraints"]) > 0:
                 pnr_const_format = ConstraintWriter(pdk_dir)
                 new_const = pnr_const_format.map_valid_const(const)
-                json_const_file = result_dir / (name + '.const.json')
+                json_const_file = result_dir / (name + '.pnr.const.json')
                 with open(json_const_file, 'w') as outfile:
                     json.dump(new_const, outfile, indent=4)
             verilog_tbl['modules'].append( wv.gen_dict())
@@ -277,5 +277,5 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
     logger.info("Topology identification done !!!")
     logger.info(f"OUTPUT verilog json netlist at: {result_dir}/{design_name}.verilog.json")
     logger.info(f"OUTPUT verilog netlist at: {result_dir}/{design_name}.v")
-    logger.info(f"OUTPUT const file at: {result_dir}/{design_name}.const.json")
+    logger.info(f"OUTPUT const file at: {result_dir}/{design_name}.pnr.const.json")
     return primitives
