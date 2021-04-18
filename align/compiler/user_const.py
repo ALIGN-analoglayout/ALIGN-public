@@ -33,14 +33,15 @@ class ConstraintParser:
         Reads user defined constraints and create a dictionary for each hierarchy
   
         """
-        self.block_const = {}
+        self.block_const = constraint.ConstraintDB()
         fp = self.input_dir / (design_name+'.const')
         fp_json = self.input_dir / (design_name+'.const.json')
         if fp_json.is_file():
             logger.info(f"JSON input const file for block {design_name} {fp_json}")
             self.block_const = constraint.ConstraintDB.parse_file(fp_json)
         elif fp.is_file():
-            # assert False, fp.read_text()
+            raise NotImplementedError('Command-line interface has not been upgraded. Please use json constraints')
+            # TODO: Reimplement using pydantic-cli if you really want this
             logger.info(f"CMD-line input const file for block {design_name}")
             all_const = []
             f = open(fp, "r")
@@ -61,8 +62,6 @@ class ConstraintParser:
             self.block_const['constraints'] = all_const
         else:
             logger.info(f"No user constraints found for block {design_name} in path {self.input_dir}")
-            return None
-        # self._map_valid_const()
         return self.block_const
             
     def cmdline_parser(self):

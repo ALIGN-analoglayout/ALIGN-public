@@ -171,7 +171,7 @@ def _attach_constraint_files( DB, fpath):
             DB.ReadConstraint_Json( curr_node, jsonStr)
             logger.info(f"Finished reading contraint json file {curr_node.name}.pnr.const.json")
         else:
-            logger.warn(f"No constraint file for module {curr_node.name}")
+            logger.warning(f"No constraint file for module {curr_node.name}")
                 
 def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     DB = PnR.PnRdatabase()

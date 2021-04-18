@@ -222,7 +222,7 @@ class Enclose(PlacementConstraint):
     @types.root_validator(allow_reuse=True)
     def bound_in_box_optional_fields(cls, values):
         assert any(
-            getattr(values, x)
+            getattr(values, x, None)
             for x in (
                 'min_height',
                 'max_height',
@@ -538,7 +538,7 @@ class AspectRatio(SoftConstraint):
 
 
 class MultiConnection(SoftConstraint):
-    net: str
+    nets: List[str]
     multiplier: int
 
 
@@ -575,18 +575,27 @@ class ConstraintDB(types.List[ConstraintType]):
     #
     _checker = types.PrivateAttr(None)
 
+    def _check(self, constraint):
+        if self._checker and hasattr(constraint, 'check'):
+            constraint.check(self._checker)
+
     @types.validate_arguments
     def append(self, constraint: ConstraintType):
-        if self._checker:
-            constraint.check(self._checker)
+        self._check(constraint)
         super().append(constraint)
 
     def __init__(self, *args, **kwargs):
         if len(args) == 0 and '__root__' not in kwargs:
             kwargs['__root__'] = []
+        elif len(args) == 1:
+            kwargs['__root__'] = args[0]
+            args = tuple()
         super().__init__(*args, **kwargs)
         if Z3Checker.enabled:
             self._checker = Z3Checker()
+            for constraint in self.__root__:
+                self._check(constraint)
+
 
     def checkpoint(self):
         if self._checker:

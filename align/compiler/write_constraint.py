@@ -11,6 +11,7 @@ import logging
 from .create_array_hierarchy import create_hierarchy
 from .util import compare_two_nodes
 import json
+from ..schema import constraint
 
 logger = logging.getLogger(__name__)
 
@@ -268,7 +269,7 @@ def FindSymmetry(graph, ports:list, ports_weight:dict, stop_points:list):
 def FindConst(graph, name, ports, ports_weight, input_const, stop_points=None):
     logger.debug(f"Searching constraints for block {name}")
     logger.debug(f"ports weight: {ports_weight} stop_points : {stop_points}")
-
+    output_const = constraint.ConstraintDB()
     # Read contents of input constraint file
     if stop_points==None:
         stop_points=[]
@@ -278,22 +279,23 @@ def FindConst(graph, name, ports, ports_weight, input_const, stop_points=None):
     all_match_pairs={k: v for k, v in all_match_pairs.items() if len(v)>1}
     logger.debug(f"all symmetry matching pairs {pprint.pformat(all_match_pairs, indent=4)}")
     written_symmetries = ''
-    if input_const:
-        logger.debug(f"input const {input_const}")
-        all_const = input_const["constraints"]
-        for const in all_const:
-            if const["const_name"] == "SymmetricNets":
-                SymmetricNets = const['net1'] + ',' + const['net2']
-                written_symmetries += SymmetricNets
-                if 'pins1' not in const:
-                    logger.debug(f"adding pins to user symmnet constraint {const}")
-                    pairs, s1, s2 = symmnet_device_pairs(graph, const['net1'],  const['net2'], written_symmetries)
-                    const["pins1"] = s1
-                    const["pins2"] = s2
-
-    else:
-        input_const = {}
-        all_const = []
+    logger.debug(f"input const {input_const}")
+    for const in input_const:
+        if isinstance(const, constraint.SymmetricNets):
+            SymmetricNets = const.net1 + ',' + const.net2
+            written_symmetries += SymmetricNets
+            if not getattr(const, 'pins1', None):
+                logger.debug(f"adding pins to user symmnet constraint {const}")
+                pairs, s1, s2 = symmnet_device_pairs(graph, const.net1,  const.net2, written_symmetries)
+                output_const.append(constraint.SymmetricNets(
+                    direction=const.direction,
+                    net1=const.net1,
+                    net2=const.net2,
+                    pins1=s1,
+                    pins2=s2
+                ))
+                continue
+        output_const.append(const)
 
     ## ALIGN block constraints
     align_const_keys =[key for key,value in all_match_pairs.items() if isinstance(value,list)]
@@ -305,12 +307,9 @@ def FindConst(graph, name, ports, ports_weight, input_const, stop_points=None):
         h_blocks=[ele for ele in array if ele in graph and ele not in check_duplicate]
         if len(h_blocks)>0:
             check_duplicate+=h_blocks
-            const = {"const_name":"AlignBlock",
-            "direction":"H",
-            "blocks":h_blocks}
-            all_const.append(const)
+            output_const.append(constraint.AlignBlock(direction='H', blocks=h_blocks))
         del all_match_pairs[key]
-    logger.debug(f"AlignBlock const update {all_const}")
+    logger.debug(f"AlignBlock const update {output_const}")
     new_hier_keys =  [key for key,value in all_match_pairs.items() if "name" in value.keys()]
     for key in new_hier_keys:
         del all_match_pairs[key]
@@ -346,8 +345,13 @@ def FindConst(graph, name, ports, ports_weight, input_const, stop_points=None):
                         symmNet = ',' + key + ',' + ','.join(pairs.keys()) + \
                                 ',' + value + ',' + ','.join(pairs.values())
                         written_symmetries += symmNet
-                        symmNetj = {"const_name": "SymmetricNets", "direction": "V", "net1": key, "net2": value, "pins1": s1, "pins2": s2}
-                        all_const.append(symmNetj)
+                        symmNetj = constraint.SymmetricNets(
+                            direction = "V",
+                            net1=key,
+                            net2=value,
+                            pins1=s1,
+                            pins2=s2)
+                        output_const.append(symmNetj)
                         logger.debug(f"adding symmetries: {symmNetj}")
                     else:
                         logger.debug(f"skipping symmetry between large fanout nets {key} {value} {pairs}")
@@ -366,14 +370,13 @@ def FindConst(graph, name, ports, ports_weight, input_const, stop_points=None):
                     pairsj.append([key])
         logger.debug(f"filterd symmetry pairs: {pairsj}")
         if len(pairsj) > 1 or (len(pairsj) > 0 and len(pairsj[0]) == 2):
-            symmBlock = {'const_name': "SymmetricBlocks", "direction": "V", "pairs": pairsj}
+            symmBlock = constraint.SymmetricBlocks(direction='V',pairs=pairsj)
             written_symmetries += ',' + ','.join(','.join(a) for a in pairsj)
-            all_const.append(symmBlock)
+            output_const.append(symmBlock)
             logger.debug(f"one axis of written symmetries: {symmBlock}")
 
-    input_const["constraints"] = all_const
-    logger.debug(f"Identified constraints of {name} are {input_const}")
-    return input_const
+    logger.debug(f"Identified constraints of {name} are {output_const}")
+    return output_const
 
 def symmnet_device_pairs(G, net_A, net_B,existing_symmetry_blocks):
     """

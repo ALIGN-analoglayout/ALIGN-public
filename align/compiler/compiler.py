@@ -14,6 +14,7 @@ from .write_constraint import FindConst
 from .write_pnr_const import ConstraintWriter
 from .read_lef import read_lef
 from .user_const import ConstraintParser
+from ..schema import constraint
 
 import logging
 logger = logging.getLogger(__name__)
@@ -86,7 +87,6 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, flat
     const_parse = ConstraintParser(pdk_dir, input_dir)
     create_data = CreateDatabase(circuit["graph"], const_parse)
     hier_graph_dict = create_data.read_inputs(circuit["name"])
-
     logger.debug("START preprocessing")
     stacked_subcircuit=[]
 
@@ -225,9 +225,7 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
     logger.debug(f"All available cell generator with updates: {all_lef}")
     for name,member in hier_graph_dict.items():
         graph = member["graph"]
-        if not 'const' in member:
-            member["const"] = None
-        const = member["const"]
+        constraints = member["constraints"]
         logger.debug(f"Found module: {name} {graph.nodes()}")
         inoutpin = []
         floating_ports=[]
@@ -252,14 +250,14 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
 
             ##Removing constraints to fix cascoded cmc
             if name not in design_setup['DIGITAL']:
-                logger.debug(f"call constraint generator writer for block: {name} {const}")
+                logger.debug(f"call constraint generator writer for block: {name}")
                 stop_points = design_setup['POWER'] + design_setup['GND'] + design_setup['CLOCK']
                 if name not in design_setup['NO_CONST']:
-                    const = FindConst(graph, name, inoutpin, member["ports_weight"], const, stop_points)
-                const = CapConst(graph, name, design_config["unit_size_cap"], const, design_setup['MERGE_SYMM_CAPS'])
-            if const and 'constraints' in const and len(const["constraints"]) > 0:
+                    constraints = FindConst(graph, name, inoutpin, member["ports_weight"], constraints, stop_points)
+                constraints = CapConst(graph, name, design_config["unit_size_cap"], constraints, design_setup['MERGE_SYMM_CAPS'])
+            if constraints and len(constraints) > 0:
                 pnr_const_format = ConstraintWriter(pdk_dir)
-                new_const = pnr_const_format.map_valid_const(const)
+                new_const = pnr_const_format.map_valid_const(constraints)
                 json_const_file = result_dir / (name + '.pnr.const.json')
                 with open(json_const_file, 'w') as outfile:
                     json.dump(new_const, outfile, indent=4)

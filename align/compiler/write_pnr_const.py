@@ -24,16 +24,21 @@ class ConstraintWriter:
             pdk_info = json.load(fp)
             self.valid_const = pdk_info["valid_constraints"]
 
-    def map_valid_const(self,block_const):
+    def map_valid_const(self,all_const):
         """
         Maps input format to pnr format
 
         """
-        all_const = block_const["constraints"]
         logger.info(f"input constraints {all_const}")
         #Start mapping
-        added_const=[]
-        for const in all_const:
+        pnr_const=[]
+        for input_const in all_const:
+            const = input_const.dict(
+                exclude={'constraint'},
+                exclude_unset=True)
+            const['const_name'] = input_const.__class__.__name__
+            if not const['const_name'] in ('NetConst', 'PortLocation', 'MultiConnection'):
+                pnr_const.append(const)
             if const["const_name"] == 'OrderBlocks':
                 const["const_name"] = 'Ordering'
             elif const["const_name"] == 'MatchBlocks':
@@ -77,6 +82,9 @@ class ConstraintWriter:
                 const["cap_name"] = const.pop("name")
                 const["unit_capacitor"] = const.pop("unit_cap")
                 const["size"] = const.pop("num_units")
+                # TODO: Feels hackish. Please review
+                if len(const["size"]) == 1:
+                    const["size"] = const["size"][0]
                 const["nodummy"] = not const["dummy"]
                 const["cap_r"] = -1
                 const["cap_s"] = -1
@@ -108,7 +116,7 @@ class ConstraintWriter:
                         "location" : const["location"],
                         "terminal_name" : port
                     }
-                    added_const.append(extra)
+                    pnr_const.append(extra)
             elif const["const_name"] == 'MultiConnection':
                 for net in const["nets"]:
                     extra = {
@@ -116,7 +124,7 @@ class ConstraintWriter:
                         "multi_number" : int(const["multiplier"]),
                         "net_name" : net
                     }
-                    added_const.append(extra)
+                    pnr_const.append(extra)
             elif const["const_name"] == 'NetConst':
                 for net in const["nets"]:
                     if 'shield' in const and 'criticality' in const and not const['shield'] =="None":
@@ -125,20 +133,20 @@ class ConstraintWriter:
                             "net_name" : net,
                             "shield_net" : const["shield"]
                             }
-                        added_const.append(extra)
+                        pnr_const.append(extra)
                         extra = {
                             "const_name" : 'CritNet',
                             "net_name" : net,
                             "priority" : const["criticality"]
                             }
-                        added_const.append(extra)
+                        pnr_const.append(extra)
                     elif 'shield' in const and not const['shield'] =="None":
                         extra = {
                             "const_name" : 'ShieldNet',
                             "net_name" : net,
                             "shield_net" : const["shield"]
                             }
-                        added_const.append(extra)
+                        pnr_const.append(extra)
     
                     elif 'criticality' in const and const['shield'] =="None":
                         extra = {
@@ -146,13 +154,9 @@ class ConstraintWriter:
                             "net_name" : net,
                             "priority" : const["criticality"]
                             }
-                        added_const.append(extra)
-        block_const["constraints"] = [i for i in all_const if not i['const_name'] == 'NetConst' \
-                                            and not i['const_name'] == 'PortLocation'\
-                                            and not  i['const_name'] == 'MultiConnection']
-        block_const["constraints"].extend(added_const)
-        logger.info(f"Const mapped to PnR const format {block_const['constraints']}")
-        return block_const
+                        pnr_const.append(extra)
+        logger.info(f"Const mapped to PnR const format {pnr_const}")
+        return {'constraints': pnr_const}
 
     def _check_type(self,data,arg):
         if isinstance(arg,list):
