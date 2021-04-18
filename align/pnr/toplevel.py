@@ -251,25 +251,23 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, binary_directory, a
 
 
 
-def toplevel(args, *, PDN_mode=False, pdk=None, render_placements=False):
+def toplevel(args, *, PDN_mode=False, pdk=None, render_placements=False, adr_mode=False):
 
     assert len(args) == 9
 
-    adr_mode = False
-
-    opath = './Results/'
     fpath,lfile,vfile,mfile,dfile,topcell = args[1:7]
     numLayout,effort = [ int(x) for x in args[7:9]]
 
     if fpath[-1] == '/': fpath = fpath[:-1]
-    if opath[-1] != '/': opath += '/'
+
+    DB = PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile)
 
     # find directory that args[0] sits in
     binary_directory = str(pathlib.Path(args[0]).parent)
 
+    # Need the trailing /
+    opath = './Results/'
     pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
-
-    DB = PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile)
 
     place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, binary_directory=binary_directory, adr_mode=adr_mode, PDN_mode=PDN_mode, pdk=pdk, render_placements=render_placements)
 

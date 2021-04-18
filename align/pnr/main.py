@@ -146,7 +146,6 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
     current_working_dir = os.getcwd()
     os.chdir(working_dir)
     DB = toplevel(cmd, PDN_mode=PDN_mode, pdk=pdk, render_placements=render_placements)
-    #DB = PnR.toplevel(cmd)
     os.chdir(current_working_dir)
 
     # Copy generated (Cap) jsons from results_dir to working_dir
@@ -159,29 +158,25 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
     if check or extract or gds_json:
 
         def TraverseHierTree(topidx):
-            """Find topoorder of routing copies: (start from last node)"""
+            """Find topoorder of routing copies: (start from topidx)"""
             q = []
             visited = set()
-
             def TraverseDFS(idx):
                 visited.add(idx)
                 for bit in DB.hierTree[idx].Blocks:
                     if bit.child != -1 and bit.child not in visited:
                         TraverseDFS(bit.child)
                 q.append(idx)
-            # This isn't correct unless there is only one top level node
             TraverseDFS(topidx)
             return q
 
-        possible_final_circuits = [(i, hN) for i, hN in enumerate(
-            DB.hierTree) if hN.name == subckt]
+        possible_final_circuits = [(i, hN) for i, hN in enumerate(DB.hierTree) if hN.name == subckt]
         assert len(possible_final_circuits) > 1
 
         variants = collections.defaultdict(collections.defaultdict)
         for lidx, (topidx, _) in enumerate(possible_final_circuits[1:]):
 
-            order = [(i, DB.CheckoutHierNode(i).name)
-                     for i in TraverseHierTree(topidx)]
+            order = [(i, DB.CheckoutHierNode(i).name) for i in TraverseHierTree(topidx)]
             assert order[-1][1] == subckt, f"Last in topological order should be the subckt {subckt} {order}"
 
             logger.info(f'order={order}')
@@ -192,12 +187,9 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
                 i_placement = 0
 
                 variant_name = f'{nm}_{n_copy}_{i_placement}'
-                logger.info(
-                    f'Processing top-down generated blocks {DB.hierTree[idx].numPlacement}: idx={idx} nm={nm} variant_name={variant_name}')
+                logger.info( f'Processing top-down generated blocks {DB.hierTree[idx].numPlacement}: idx={idx} nm={nm} variant_name={variant_name}')
 
-                hN = DB.CheckoutHierNode(idx)
-
-                _generate_json(hN=hN,
+                _generate_json(hN=DB.CheckoutHierNode(idx),
                                variant=variant_name,
                                pdk_dir=pdk_dir,
                                primitive_dir=input_dir,
@@ -214,13 +206,10 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
 
             variant = f'{nm}_{lidx}'
 
-            logger.info(
-                f'Processing top-down generated blocks: lidx={lidx} topidx={topidx} nm={nm} variant={variant}')
-
-            hN = DB.CheckoutHierNode(idx)
+            logger.info( f'Processing top-down generated blocks: lidx={lidx} topidx={topidx} nm={nm} variant={variant}')
 
             variants[variant].update(
-                _generate_json(hN=hN,
+                _generate_json(hN=DB.CheckoutHierNode(idx),
                                variant=variant,
                                pdk_dir=pdk_dir,
                                primitive_dir=input_dir,
