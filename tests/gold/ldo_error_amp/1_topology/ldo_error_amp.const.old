@@ -1,4 +1,0 @@
-// ALIGN generated automatic constraints
-SymmBlock ( {mn23_mn22} , {mmp33_mmp30_mmp29} , {mmn42} , {mp34_mp28_mp22} , {mn38_mn39_mn37_mn20} )
-SymmBlock ( {mmp5} , {mp41_mp4} )
-SymmBlock ( {mn41,mn56} )
