@@ -15,25 +15,30 @@ pp = pprint.PrettyPrinter(indent=4)
 
 class ConstraintWriter:
     def __init__(self, pdk_dir: pathlib.Path):
-        self.known_types = {
-            'int':int,
-            'str':str,
-            'list':list
-            }
-        with open(pdk_dir / 'layers.json',"rt") as fp:
-            pdk_info = json.load(fp)
-            self.valid_const = pdk_info["valid_constraints"]
+        pass
 
-    def map_valid_const(self,block_const):
+    def map_valid_const(self,all_const):
         """
         Maps input format to pnr format
 
         """
-        all_const = block_const["constraints"]
         logger.info(f"input constraints {all_const}")
         #Start mapping
-        added_const=[]
-        for const in all_const:
+        pnr_const=[]
+        for input_const in all_const:
+            # Create dict for PnR constraint
+            # and handle common field aliasing
+            const = input_const.dict(
+                exclude={'constraint'},
+                exclude_unset=True)
+            const['const_name'] = input_const.__class__.__name__
+            if 'instances' in const:
+                const['blocks'] = const['instances']
+                del const['instances']
+            # Add dict to PnR constraint list
+            if not const['const_name'] in ('NetConst', 'PortLocation', 'MultiConnection'):
+                pnr_const.append(const)
+            # Constraint-specific field transformations
             if const["const_name"] == 'OrderBlocks':
                 const["const_name"] = 'Ordering'
             elif const["const_name"] == 'MatchBlocks':
@@ -108,7 +113,7 @@ class ConstraintWriter:
                         "location" : const["location"],
                         "terminal_name" : port
                     }
-                    added_const.append(extra)
+                    pnr_const.append(extra)
             elif const["const_name"] == 'MultiConnection':
                 for net in const["nets"]:
                     extra = {
@@ -116,7 +121,7 @@ class ConstraintWriter:
                         "multi_number" : int(const["multiplier"]),
                         "net_name" : net
                     }
-                    added_const.append(extra)
+                    pnr_const.append(extra)
             elif const["const_name"] == 'NetConst':
                 for net in const["nets"]:
                     if 'shield' in const and 'criticality' in const and not const['shield'] =="None":
@@ -125,20 +130,20 @@ class ConstraintWriter:
                             "net_name" : net,
                             "shield_net" : const["shield"]
                             }
-                        added_const.append(extra)
+                        pnr_const.append(extra)
                         extra = {
                             "const_name" : 'CritNet',
                             "net_name" : net,
                             "priority" : const["criticality"]
                             }
-                        added_const.append(extra)
+                        pnr_const.append(extra)
                     elif 'shield' in const and not const['shield'] =="None":
                         extra = {
                             "const_name" : 'ShieldNet',
                             "net_name" : net,
                             "shield_net" : const["shield"]
                             }
-                        added_const.append(extra)
+                        pnr_const.append(extra)
     
                     elif 'criticality' in const and const['shield'] =="None":
                         extra = {
@@ -146,23 +151,10 @@ class ConstraintWriter:
                             "net_name" : net,
                             "priority" : const["criticality"]
                             }
-                        added_const.append(extra)
-        block_const["constraints"] = [i for i in all_const if not i['const_name'] == 'NetConst' \
-                                            and not i['const_name'] == 'PortLocation'\
-                                            and not  i['const_name'] == 'MultiConnection']
-        block_const["constraints"].extend(added_const)
-        logger.info(f"Const mapped to PnR const format {block_const['constraints']}")
-        return block_const
+                        pnr_const.append(extra)
+        logger.info(f"Const mapped to PnR const format {pnr_const}")
+        return {'constraints': pnr_const}
 
-    def _check_type(self,data,arg):
-        if isinstance(arg,list):
-            assert data in arg
-        elif arg in self.known_types:
-            data_type = self.known_types[arg]
-            assert isinstance(data, data_type), f"{type(data)},{data_type}"
-        else:
-            logger.warning(f"wrong data type in constraint: {data}, valid types are: {arg}" )            
-        
 
     def _map_pins(self,pins:list):
         blocks=[]

@@ -12,9 +12,11 @@ from .merge_nodes import merge_nodes
 from .write_constraint import symmnet_device_pairs	
 import logging
 import json
+from ..schema import constraint
+
 logger = logging.getLogger(__name__)
 
-def CapConst(graph,name,unit_size_cap,input_const,merge_caps):
+def CapConst(graph,name,unit_size_cap,all_const,merge_caps):
     """
     Reads input graph and generates constraints for capacitors
     The constraints are defined such that caps are designed using a unit cap.
@@ -33,14 +35,9 @@ def CapConst(graph,name,unit_size_cap,input_const,merge_caps):
     """
 
     available_cap_const = []
-    if input_const and 'constraints' in input_const:
-        all_const = input_const["constraints"]
-        for const in input_const["constraints"]:
-            if const["const_name"] == 'GroupCaps':
-                available_cap_const.append(const["name"])
-    else:
-        input_const = {}
-        all_const = []
+    for const in all_const:
+        if isinstance(const, constraint.GroupCaps):
+            available_cap_const.append(const.name)
 
     logger.debug(f"Searching cap constraints for block {name}, input const: {all_const}")
     if merge_caps:
@@ -58,27 +55,25 @@ def CapConst(graph,name,unit_size_cap,input_const,merge_caps):
             if node in cc_cap_size:
                 n_cap=cc_cap_size[node]
             else:
-                n_cap = ceil(size/unit_size_cap)
+                n_cap = [ceil(size/unit_size_cap)]
             if not isinstance(n_cap,list) and n_cap > 128:
                 unit_block_name = 'Cap_' + str(int(round(size,1))) + 'f'
-                n_cap = 1
+                n_cap = [1]
             else:
                 unit_block_name = 'Cap_' + str(unit_size_cap) + 'f'
-            cap_const = {"const_name": "GroupCaps",
-                        "blocks": [node],
-                        "name": node,
-                        "num_units": n_cap,
-                        "unit_cap": unit_block_name,
-                        "dummy": False
-                        }
-
+            cap_const = constraint.GroupCaps(
+                        instances = [node],
+                        name = node,
+                        num_units = n_cap,
+                        unit_cap = unit_block_name,
+                        dummy = False
+                        )
             logger.debug(f"Cap constraint {cap_const}")
             all_const.append(cap_const)
             available_cap_const.append(node)
-    input_const["constraints"] = all_const
-    logger.debug(f"Identified cap constraints of {name} are {input_const}")
+    logger.debug(f"Identified cap constraints of {name} are {all_const}")
 
-    return input_const
+    return all_const
 
 def merge_symmetric_caps(all_const, graph, unit_size_cap, available_cap_const):
     """
@@ -95,9 +90,9 @@ def merge_symmetric_caps(all_const, graph, unit_size_cap, available_cap_const):
     """
     cap_array={}
     for const in all_const:
-        if const["const_name"]== "SymmetricBlocks":
-            b = [p for p in const["pairs"] if len(p) == 2]
-            for pair in const["pairs"]:
+        if isinstance(const, constraint.SymmetricBlocks):
+            b = [p for p in const.pairs if len(p) == 2]
+            for pair in const.pairs:
                 if len(pair) == 2:
                     inst = pair[0]
                     if inst in graph and graph.nodes[inst]['inst_type'].lower().startswith('cap') \
@@ -130,23 +125,27 @@ def merge_symmetric_caps(all_const, graph, unit_size_cap, available_cap_const):
                 merge_caps(graph, ctype, cc_caps, cc_cap)
                 cc_cap_size[cc_cap] = n_cap
     # updating any symmnet constraint 	
-    for id, const in enumerate(all_const):
-        if const["const_name"] == "SymmetricNets":
-            print(const)
-            net1 = const['net1']	
-            net2 = const['net2']
+    for index, const in enumerate(all_const):
+        if isinstance(const, constraint.SymmetricNets):
+            net1 = const.net1
+            net2 = const.net2
             existing = ""
             logger.debug(f"updating symmnet constraint {const}")
-            removed_blocks1 = [pin.split('/')[0]  for pin in const['pins1'] if net1 in graph.nodes() \
+            removed_blocks1 = [pin.split('/')[0]  for pin in const.pins1 if net1 in graph.nodes() \
                 and pin.split('/')[0] not in graph.nodes()]	
-            removed_blocks2 = [pin.split('/')[0]  for pin in const['pins2'] if net2 in graph.nodes() \
+            removed_blocks2 = [pin.split('/')[0]  for pin in const.pins2 if net2 in graph.nodes() \
                 and pin.split('/')[0] not in graph.nodes()]	
             removed_blocks = removed_blocks1 + removed_blocks2
             if removed_blocks:	
                 pairs, s1, s2 = symmnet_device_pairs(graph, net1, net2, existing)	
                 if pairs:	
-                    symmNetj = {"const_name": "SymmetricNets", "direction": "V", "net1": net1, "net2": net2, "pins1": s1, "pins2": s2}
-                    all_const[id] =symmNetj	
+                    symmNetj = constraint.SymmetricNets(
+                        direction = "V", 
+                        net1 = net1,
+                        net2 = net2,
+                        pins1 = s1,
+                        pins2 = s2)
+                    all_const[index] =symmNetj	
                 else:	
                     logger.debug("skipped symmnet on net1 {net1} and net2 {}")
     return cc_cap_size
