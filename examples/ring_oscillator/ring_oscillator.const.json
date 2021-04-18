@@ -1,10 +1,8 @@
-{
-    "constraints":[
-        {"const_name":"HorizontalDistance", "abs_distance":0},
-        {"const_name":"VerticalDistance",   "abs_distance":0},
-        {"const_name": "OrderBlocks",
-            "blocks": ["xi0", "xi1", "xi2", "xi3", "xi4"],
-            "direction": "H"
-        }
-    ]
-}
+[
+    {"constraint":"HorizontalDistance", "abs_distance":0},
+    {"constraint":"VerticalDistance",   "abs_distance":0},
+    {"constraint": "OrderBlocks",
+        "blocks": ["xi0", "xi1", "xi2", "xi3", "xi4"],
+        "direction": "H"
+    }
+]

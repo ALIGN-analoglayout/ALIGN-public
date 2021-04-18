@@ -9,6 +9,7 @@ from collections import Counter
 from itertools import combinations
 from .merge_nodes import merge_nodes
 from .util import compare_two_nodes
+from ..schema import constraint
 
 import logging
 logger = logging.getLogger(__name__)
@@ -195,6 +196,7 @@ def create_hierarchy(graph,node:str,traversed:list,ports_weight:dict):
                         "ports": list(matched_ports.keys()),
                         "ports_match": matched_ports,
                         "ports_weight": h_ports_weight,
+                        "constraints": constraint.ConstraintDB(),
                         "size": len(subgraph.nodes())
                     }
         return hier_of_node

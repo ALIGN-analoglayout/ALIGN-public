@@ -269,12 +269,12 @@ def FindSymmetry(graph, ports:list, ports_weight:dict, stop_points:list):
 def FindConst(graph, name, ports, ports_weight, input_const, stop_points=None):
     logger.debug(f"Searching constraints for block {name}")
     logger.debug(f"ports weight: {ports_weight} stop_points : {stop_points}")
-    output_const = constraint.ConstraintDB()
     # Read contents of input constraint file
     if stop_points==None:
         stop_points=[]
     if 'array_hier' in name:
-        return
+        return input_const
+    output_const = constraint.ConstraintDB()
     all_match_pairs = FindSymmetry(graph.copy(), ports, ports_weight, stop_points)
     all_match_pairs={k: v for k, v in all_match_pairs.items() if len(v)>1}
     logger.debug(f"all symmetry matching pairs {pprint.pformat(all_match_pairs, indent=4)}")

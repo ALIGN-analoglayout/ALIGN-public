@@ -364,6 +364,7 @@ class AlignInOrder(Order, Align):
 
     @types.root_validator(allow_reuse=True)
     def _cast_constraints_to_base_types(cls, values):
+        assert 'line' in values and 'direction' in values
         # Process unambiguous line values
         if values['line'] in ['bottom', 'top']:
             if values['direction'] is None:
