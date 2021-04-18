@@ -8,7 +8,7 @@ def test_cap():
     pdk_path = mydir.parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK' 
     test_path = mydir.parent / 'test_circuits' / 'test_cap.sp'
     gen_const_path = mydir.parent / 'Results' / 'test_cap.pnr.const.json'
-    gold_const_path = mydir.parent / 'test_results' / 'test_cap_out.pnr.const.json'
+    gold_const_path = mydir.parent / 'test_results' / 'test_cap.pnr.const-freeze.json'
 
     updated_ckt = compiler(test_path, "test_cap", pdk_path)
     assert 'test_cap' in updated_ckt
