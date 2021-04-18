@@ -95,9 +95,16 @@ struct SymmPairBlock {
 
 struct commonCentroid
 {
-  vector<int> blocks;
-  string label;
-  Ppoint_I shape;
-  vector< vector< int > >fillin_matrix;
+  vector<int> blocks;//original block id,
+  string label;//e.g.,c1/c2
+  Ppoint_I shape;//shape of fillin_matrix
+  vector< vector< int > >fillin_matrix;//store the relative position -1:dummy
+
+  vector<vector<pair<int,int>>> pos;//pos of 
+
+  vector<pair<int,int>> pairs;//match the splited small parts into pairs
+
+  int orient;
+  //optional groups
 };
 #endif

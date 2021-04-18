@@ -356,6 +356,7 @@ struct hierNode {
   bool isCompleted=false;
   bool isTop=false;
   bool isIntelGcellGlobalRouter=false;
+  bool isFirstILP=false;//donghao add
   int width=0;
   int height=0;
   point LL;                 // hiernode absolute LL in topnode coordinate

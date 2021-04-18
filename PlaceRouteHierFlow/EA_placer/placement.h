@@ -131,7 +131,13 @@ public:
     void addNet_commonCentroid(commonCentroid &CC,int cell_num,float uniHeight, float uniWidth);
     void restore_MS();
     void merge_two_vectors(vector<pair<int,int>> &v1,vector<pair<int,int>> &v2);//merge v1,v2 into v1
-    void refine_CC();
+    void refine_CC();//need to change
+
+    void update_hiernode(PnRDB::hierNode &current_node, Ppoint_F uni_cell_Dpoint);
+
+    void split_net();
+
+    void merge_placement(PnRDB::hierNode &current_node);
     //donghao end
 
     float Cal_Overlap();

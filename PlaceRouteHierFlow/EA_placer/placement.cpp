@@ -2961,3 +2961,94 @@ bool Placement::symCheck(float tol)
   std::cout << "tot_symmetric bias = " << tot_bias << std::endl;
   return tot_bias > tol;
 }
+
+
+void Placement::update_hiernode(PnRDB::hierNode &current_node, Ppoint_F uni_cell_Dpoint)
+{
+  //update blocks
+  Ppoint_I uni_cell_shape;
+  uni_cell_shape.x = (int)(est_Size.x*uni_cell_Dpoint.x);
+  uni_cell_shape.y = (int)(est_Size.y*uni_cell_Dpoint.y);
+  for(int i = originalBlockCNT;i<Blocks.size();++i)
+  {
+    //add blockcomplex
+    PnRDB::block tempBlock;
+    tempBlock.name = "standardcell";
+    tempBlock.orient = PnRDB::N;
+    tempBlock.height = uni_cell_shape.y;
+    tempBlock.width = uni_cell_shape.x;
+
+    PnRDB::blockComplex tempBlockComplex;
+    tempBlockComplex.instNum=1;
+    tempBlockComplex.instance.push_back(tempBlock);
+    current_node.Blocks.push_back(tempBlockComplex);
+  }
+  //update netlist
+  for(int i = originalNetCNT;i<Nets.size();++i)
+  {
+    PnRDB::net tempNet;
+    for(int j = 0;j < Nets[i].connected_block.size();++j)
+    {
+      PnRDB::connectNode tempNode;
+      tempNode.iter2 = Nets[i].connected_block[j];
+      tempNode.type = PnRDB::Block;
+      tempNode.iter = 1;
+      tempNet.connected.push_back(tempNode);
+    }
+    current_node.Nets.push_back(tempNet);
+  }
+  //update ordering and alignment 
+  // set a flag?
+  current_node.isFirstILP = true;
+}
+
+void Placement::split_net()
+{
+  for(int i=0;i<originalNetCNT;++i)
+  {
+    vector<int> chosen_block;
+    float weight=1;
+    for(int j=0;j< Nets[i].connected_block.size();++j)
+    {
+      int id = Nets[i].connected_block[j];
+      chosen_block.push_back(0);
+      weight /= (float)(Blocks[id].spiltBlock.size()+1);
+    }
+    int id0 = Nets[i].connected_block[0];
+    Nets[i].weight=0;
+    while(chosen_block[0]<=Blocks[id0].spiltBlock.size())
+    {
+      net tempNet;
+      tempNet.index = Nets.size();
+      for(int j = 0;j < Nets[i].connected_block.size();++j)
+      {
+        int id = Nets[i].connected_block[j];
+        int chosenID;
+        if(chosen_block[j] < Blocks[id].spiltBlock.size())
+        {
+          chosenID = Blocks[id].spiltBlock[chosen_block[j]];
+        }
+        else
+        {
+          chosenID = id;
+        }
+        tempNet.connected_block.push_back(chosenID);
+        Blocks[chosenID].connected_net.push_back(tempNet.index);
+      }
+      tempNet.weight = weight;
+      Nets.push_back(tempNet);
+
+      //update chosen block vector
+      chosen_block[chosen_block.size()-1]+=1;
+      for(int j = Nets[i].connected_block.size()-1;j >=0;--j)
+      {
+        int id = Nets[i].connected_block[j];
+        if(chosen_block[j]>Blocks[id].spiltBlock.size() and j>0)
+        {
+          chosen_block[j]=0;
+          chosen_block[j-1]+=1;
+        }
+      }
+    }
+  }
+}
