@@ -2,7 +2,7 @@
     {
         "constraint": "GroupCaps",
         "name": "c1_c3",
-        "blocks": ["c1", "c3"],
+        "instances": ["c1", "c3"],
         "unit_cap": "Cap_12f",
         "num_units": [3, 5],
         "dummy": false
@@ -10,7 +10,7 @@
     {
         "constraint": "GroupCaps",
         "name": "c7_c6",
-        "blocks": ["c7","c6"],
+        "instances": ["c7","c6"],
         "unit_cap": "Cap_12f",
         "num_units": [3, 5],
         "dummy": false

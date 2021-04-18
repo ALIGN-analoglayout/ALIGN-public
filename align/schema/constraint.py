@@ -276,7 +276,7 @@ class Enclose(PlacementConstraint):
 class Spread(PlacementConstraint):
     '''
     Spread `instances` by forcing minimum spacing along 
-    `direction` if two blocks overlap in other direction
+    `direction` if two instances overlap in other direction
 
     WARNING: This constraint checks for overlap but
     doesn't enforce it (See `Align`)
@@ -426,14 +426,14 @@ class PlaceSymmetric(PlacementConstraint):
 
 
 class CreateAlias(SoftConstraint):
-    blocks: List[str]
+    instances: List[str]
     name: str
 
 
 class GroupBlocks(SoftConstraint):
     ''' Force heirarchy creation '''
     name: str
-    blocks: List[str]
+    instances: List[str]
     style: Optional[Literal["tbd_interdigitated", "tbd_common_centroid"]]
 
 
@@ -441,7 +441,7 @@ class OrderBlocks(SoftConstraint):
     '''
     TODO: Replace this with just Order
     '''
-    blocks: List[str]
+    instances: List[str]
     name: Optional[str]
     direction: Literal['H', 'V']
 
@@ -450,7 +450,7 @@ class MatchBlocks(SoftConstraint):
     '''
     TODO: Can be replicated by Enclose??
     '''
-    blocks: List[str]
+    instances: List[str]
 
 
 class SymmetricBlocks(SoftConstraint):
@@ -482,7 +482,7 @@ class HorizontalDistance(SoftConstraint):
 class GroupCaps(SoftConstraint):
     ''' Common Centroid Cap '''
     name: str  # subcircuit name
-    blocks: List[str]
+    instances: List[str]
     unit_cap: str  # cap value in fF
     num_units: List
     dummy: bool  # whether to fill in dummies
@@ -492,7 +492,7 @@ class AlignBlocks(SoftConstraint):
     '''
     TODO: Replace this with just Order
     '''
-    blocks: List[str]
+    instances: List[str]
     direction: Literal['H', 'V']
 
 

@@ -2,7 +2,7 @@
     {"constraint":"HorizontalDistance", "abs_distance":0},
     {"constraint":"VerticalDistance",   "abs_distance":0},
     {"constraint": "OrderBlocks",
-        "blocks": ["mp0", "mn0"],
+        "instances": ["mp0", "mn0"],
         "direction": "V"
     }
 ]

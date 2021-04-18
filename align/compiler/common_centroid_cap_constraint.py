@@ -62,7 +62,7 @@ def CapConst(graph,name,unit_size_cap,all_const,merge_caps):
             else:
                 unit_block_name = 'Cap_' + str(unit_size_cap) + 'f'
             cap_const = constraint.GroupCaps(
-                        blocks = [node],
+                        instances = [node],
                         name = node,
                         # TODO: Feels Hackish. Please review
                         num_units = n_cap if isinstance(n_cap, list) else [n_cap],

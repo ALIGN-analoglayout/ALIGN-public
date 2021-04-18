@@ -307,7 +307,7 @@ def FindConst(graph, name, ports, ports_weight, input_const, stop_points=None):
         h_blocks=[ele for ele in array if ele in graph and ele not in check_duplicate]
         if len(h_blocks)>0:
             check_duplicate+=h_blocks
-            output_const.append(constraint.AlignBlock(direction='H', blocks=h_blocks))
+            output_const.append(constraint.AlignBlock(direction='H', instances=h_blocks))
         del all_match_pairs[key]
     logger.debug(f"AlignBlock const update {output_const}")
     new_hier_keys =  [key for key,value in all_match_pairs.items() if "name" in value.keys()]
@@ -320,7 +320,7 @@ def FindConst(graph, name, ports, ports_weight, input_const, stop_points=None):
         pairsj = []
         pairs = sorted(pairs.items(), key=lambda k: k[0])
         logger.debug(f"All symmblock pairs: {pairs}")
-        logger.debug(f"All written symmetric blocks: {written_symmetries}")
+        logger.debug(f"All written symmetric instances: {written_symmetries}")
         for key, value in pairs:
             #print("key,value,hier",key,value,new_hier_keys)
             if key in stop_points:
@@ -407,10 +407,10 @@ def symmnet_device_pairs(G, net_A, net_B,existing_symmetry_blocks):
                     logger.debug(f"skipping symmetry due to multiple possible matching of net {net_B} nbr {ele_B} to {pairs.values()} ")
                     return [None,None,None]
                 elif blockA+',' in existing_symmetry_blocks and blockA + ',' + blockB not in existing_symmetry_blocks:
-                    logger.debug(f"unsymmetrical blocks {blockA} and {blockB}")   
+                    logger.debug(f"unsymmetrical instances {blockA} and {blockB}")   
                     continue
                 elif blockB+',' in existing_symmetry_blocks and blockA + ',' + blockB not in existing_symmetry_blocks:
-                    logger.debug(f"unsymmetrical blocks {blockA} and {blockB}")   
+                    logger.debug(f"unsymmetrical instances {blockA} and {blockB}")   
                     continue
                 else:
                     pairs[ele_A.split('/')[0]] = ele_B.split('/')[0]
