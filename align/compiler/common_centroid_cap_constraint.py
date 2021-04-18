@@ -55,17 +55,16 @@ def CapConst(graph,name,unit_size_cap,all_const,merge_caps):
             if node in cc_cap_size:
                 n_cap=cc_cap_size[node]
             else:
-                n_cap = ceil(size/unit_size_cap)
+                n_cap = [ceil(size/unit_size_cap)]
             if not isinstance(n_cap,list) and n_cap > 128:
                 unit_block_name = 'Cap_' + str(int(round(size,1))) + 'f'
-                n_cap = 1
+                n_cap = [1]
             else:
                 unit_block_name = 'Cap_' + str(unit_size_cap) + 'f'
             cap_const = constraint.GroupCaps(
                         instances = [node],
                         name = node,
-                        # TODO: Feels Hackish. Please review
-                        num_units = n_cap if isinstance(n_cap, list) else [n_cap],
+                        num_units = n_cap,
                         unit_cap = unit_block_name,
                         dummy = False
                         )

@@ -82,9 +82,6 @@ class ConstraintWriter:
                 const["cap_name"] = const.pop("name")
                 const["unit_capacitor"] = const.pop("unit_cap")
                 const["size"] = const.pop("num_units")
-                # TODO: Feels hackish. Please review
-                if len(const["size"]) == 1:
-                    const["size"] = const["size"][0]
                 const["nodummy"] = not const["dummy"]
                 const["cap_r"] = -1
                 const["cap_s"] = -1

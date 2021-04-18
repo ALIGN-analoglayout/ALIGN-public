@@ -47,7 +47,7 @@
         {
             "const_name": "CC",
             "cap_name": "c0",
-            "size": 5,
+            "size": [5],
             "unit_capacitor": "Cap_12f",
             "nodummy": true,
             "cap_r": -1,
