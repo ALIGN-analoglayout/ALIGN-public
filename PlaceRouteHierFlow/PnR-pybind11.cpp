@@ -253,7 +253,7 @@ PYBIND11_MODULE(PnR, m) {
   py::class_<Guardring_Const>( m, "Guardring_Const")
     .def( py::init<>())
     .def_readwrite("block_name", &Guardring_Const::block_name)
-    .def_readwrite("guard_ring_perimitives", &Guardring_Const::guard_ring_perimitives)
+    .def_readwrite("guard_ring_primitives", &Guardring_Const::guard_ring_primitives)
     .def_readwrite("global_pin", &Guardring_Const::global_pin)
     ;
   py::class_<SymmNet>( m, "SymmNet")
