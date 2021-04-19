@@ -144,7 +144,7 @@ def ReadVerilogJson( DB, j):
 
     return global_signals
 
-def _ReadMap( path, mapname):
+def _ReadMap( path, mapname, wtap):
     d = pathlib.Path(path)
     p = re.compile( r'^(\S+)\s+(\S+)\s*$')
     tbl = {}
@@ -154,7 +154,10 @@ def _ReadMap( path, mapname):
             m = p.match(line)
             assert m
             k, v = m.groups()
-            tbl[k] = str(d / v)
+            if wtap :
+                tbl[k] = str(d / v)
+            else :
+                tbl[k] = str(d / 'wo_tap' / v)
     return tbl
 
 def _attach_constraint_files( DB, fpath):
@@ -179,8 +182,13 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     assert drname.endswith('.json'), drname
     DB.ReadPDKJSON( path + '/' + drname)
 
-    DB.ReadLEF( path + '/' + lefname)
-    DB.gdsData = _ReadMap( path, mapname)
+    DB.ReadLEF( path + '/' + lefname, True)
+    leftopname = lefname.rsplit('.lef', 1)[0]
+    if pathlib.Path(path + '/' + leftopname + '.wotap.lef').is_file():
+        DB.ReadLEF( path + '/' + leftopname + '.wotap.lef', False)
+    DB.gdsData = _ReadMap( path, mapname, True)
+    if pathlib.Path(path + '/wo_tap' ).is_dir():
+        DB._gdsDataWoTap = _ReadMap( path, mapname, False)
 
     if vname.endswith(".verilog.json"):
         with (pathlib.Path(path) / vname).open( "rt") as fp:

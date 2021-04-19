@@ -445,6 +445,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("hierTree", &PnRdatabase::hierTree)
     .def_readwrite("topidx", &PnRdatabase::topidx)
     .def_readwrite("gdsData", &PnRdatabase::gdsData)
+    .def_readwrite("_gdsDataWoTap", &PnRdatabase::_gdsDataWoTap)
   ;
 
   py::class_<Placer_Router_Cap_Ifc>( m, "Placer_Router_Cap_Ifc")
