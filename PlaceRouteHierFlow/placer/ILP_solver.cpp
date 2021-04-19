@@ -417,16 +417,16 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
       Blocks[i].V_flip = var[i * 4 + 3];
     }
 
-    if (wtap && mydesign.RemoveTaps()) {
+    PrimitiveData::PlMap plmap;
+    bool removeTaps(wtap && mydesign.RemoveTaps());
+    for (int i = 0; i < mydesign.Blocks.size(); i++) {
+      const auto& index = curr_sp.selected[i];
       // calculate LL and UR
-      PrimitiveData::PlMap plmap;
-      for (int i = 0; i < mydesign.Blocks.size(); i++) {
-        const auto& index = curr_sp.selected[i];
-        LL.x = std::min(LL.x, Blocks[i].x);
-        LL.y = std::min(LL.y, Blocks[i].y);
-        UR.x = std::max(UR.x, Blocks[i].x + mydesign.Blocks[i][index].width);
-        UR.y = std::max(UR.y, Blocks[i].y + mydesign.Blocks[i][index].height);
-
+      LL.x = std::min(LL.x, Blocks[i].x);
+      LL.y = std::min(LL.y, Blocks[i].y);
+      UR.x = std::max(UR.x, Blocks[i].x + mydesign.Blocks[i][index].width);
+      UR.y = std::max(UR.y, Blocks[i].y + mydesign.Blocks[i][index].height);
+      if (removeTaps) {
         const auto& master = mydesign.Blocks[i][index].master;
         const auto& instName = mydesign.Blocks[i][index].name;
         if (master.find("PMOS") == string::npos) {
@@ -436,22 +436,24 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
                   Blocks[i].H_flip, Blocks[i].V_flip)));
         }
       }
-      mydesign.RebuildTapInstances(plmap);
-      map<string, int> swappedIndices;
-      auto delArea = mydesign.TapDeltaArea(&swappedIndices);
-      //SaveRestore<vector<int> > srSelected(curr_sp.selected);
-      if (!swappedIndices.empty()) {
-        curr_sp.BackupSelected();
-        for (int i = 0; i < mydesign.Blocks.size(); i++) {
-          auto& index = curr_sp.selected[i];
-          auto it = swappedIndices.find(mydesign.Blocks[i][index].name);
-          if (it != swappedIndices.end()) index = it->second;
-        }
-        //logger->info("maximum delta area from tap removal : {0} {1}", delArea, swappedIndices.size());
-      } 
-    } else {
+      if (removeTaps) {
+        mydesign.RebuildTapInstances(plmap);
+        map<string, int> swappedIndices;
+        auto delArea = mydesign.TapDeltaArea(&swappedIndices);
+        //SaveRestore<vector<int> > srSelected(curr_sp.selected);
+        if (!swappedIndices.empty()) {
+          curr_sp.BackupSelected();
+          for (int i = 0; i < mydesign.Blocks.size(); i++) {
+            auto& index = curr_sp.selected[i];
+            auto it = swappedIndices.find(mydesign.Blocks[i][index].name);
+            if (it != swappedIndices.end()) index = it->second;
+          }
+          //logger->info("maximum delta area from tap removal : {0} {1}", delArea, swappedIndices.size());
+        } 
+      }
+    }
+    if (!wtap) {
       curr_sp.RestoreSelected();
-      break;
     }
   }
   // calculate area

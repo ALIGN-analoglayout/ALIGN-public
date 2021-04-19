@@ -353,7 +353,7 @@ design::design(PnRDB::hierNode& node) {
     for(int bb=0;bb<it->instNum;++bb) {
       block tmpblock;
       tmpblock.name=(it->instance).at(bb).name;
-      tmpblock.wtap = (it->instance).at(bb).HasTap();
+      tmpblock.wtap = RemoveTaps() ? (it->instance).at(bb).HasTap() : true;
       const auto& pit = (it->instance).at(bb).originBox;
       tmpblock.boundary.polygon.push_back( {pit.LL.x,pit.LL.y});
       tmpblock.boundary.polygon.push_back( {pit.LL.x,pit.UR.y});

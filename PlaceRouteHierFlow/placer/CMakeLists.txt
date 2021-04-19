@@ -8,8 +8,7 @@ set(headers
      Pdatatype.h
      PlacerIfc.h
      SeqPair.h
-     TapRemoval.h
-	  )
+     TapRemoval.h)
 
 set(sources
      Aplace.cpp
@@ -20,8 +19,7 @@ set(sources
      Placer.cpp
      Preadfile.cpp
      design.cpp
-     TapRemoval.cpp
-	)
+     TapRemoval.cpp)
 
 add_library(placer STATIC ${sources} ${headers})
 

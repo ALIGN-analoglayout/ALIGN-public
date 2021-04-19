@@ -7,8 +7,6 @@ from .. import PnR
 from .render_placement import dump_blocks
 from .build_pnr_model import *
 
-from os import getenv
-
 logger = logging.getLogger(__name__)
 
 NType = PnR.NType

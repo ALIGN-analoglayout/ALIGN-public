@@ -375,7 +375,6 @@ void TapRemoval::buildGraph()
 TapRemoval::TapRemoval(const PnRDB::hierNode& node, const unsigned dist) : _dist(dist), _name(node.name), _graph(nullptr)
 {
   auto logger = spdlog::default_logger()->clone("placer.TapRemoval.TapRemoval");
-  bool noTap(true);
   for (unsigned i = 0; i < node.Blocks.size(); ++i) {
     if (node.Blocks[i].instance.empty()) continue;
     const auto& master=node.Blocks[i].instance.back().master;
@@ -391,7 +390,6 @@ TapRemoval::TapRemoval(const PnRDB::hierNode& node, const unsigned dist) : _dist
         _primitives[master].push_back(p);
       } else {
         _primitivesWoTap[master].push_back(p);
-        noTap = false;
       }
     }
     if (!_primitivesWoTap[master].empty() && _primitives[master].size() != _primitivesWoTap[master].size()) {
@@ -406,7 +404,7 @@ TapRemoval::TapRemoval(const PnRDB::hierNode& node, const unsigned dist) : _dist
     }
   }
   //logger->info("node : {0} {1} {2}", node.name, _primitives.size(), _primitivesWoTap.size());
-  if (noTap) {
+  if (_primitivesWoTap.empty() || _primitives.empty()) {
     //logger->info("clearing all primitves since no tapless variant found for any primitive");
     for (auto wtap : {true, false}) {
       auto& t = wtap ? _primitives : _primitivesWoTap;

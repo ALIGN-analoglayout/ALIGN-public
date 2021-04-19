@@ -382,7 +382,7 @@ class TapRemoval {
   public:
     TapRemoval(const PnRDB::hierNode& node, const unsigned dist);
     ~TapRemoval();
-    bool valid() const { return !_primitives.empty(); }
+    bool valid() const { return !_primitives.empty() && !_primitivesWoTap.empty(); }
     //void createInstances(const PrimitiveData::PlMap& plmap);
     long deltaArea(std::map<std::string, int>* swappedIndices = nullptr) const;
     void rebuildInstances(const PrimitiveData::PlMap& plmap);

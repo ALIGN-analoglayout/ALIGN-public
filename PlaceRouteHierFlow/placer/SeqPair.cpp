@@ -765,8 +765,10 @@ bool SeqPair::ChangeSelectedBlock(design& caseNL) {
   int newsel=rand() % caseNL.Blocks.at(anode).size();
   int fail(0), cnt(20);
   //if (useWTapOnly) {
-  while (!caseNL.Blocks.at(anode).at(newsel).wtap && fail++ < cnt) {
-    newsel=rand() % caseNL.Blocks.at(anode).size();
+  if (caseNL.RemoveTaps()) {
+    while (!caseNL.Blocks.at(anode).at(newsel).wtap && fail++ < cnt) {
+      newsel=rand() % caseNL.Blocks.at(anode).size();
+    }
   }
   //}
   selected.at(anode)=newsel;
