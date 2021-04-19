@@ -14,7 +14,6 @@ Omark = PnR.Omark
 TransformType = PnR.TransformType
 
 def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, adr_mode, *, PDN_mode, pdk):
-    NEW_GLOBAL_ROUTER = True
     h_skip_factor = 7
     v_skip_factor = 8
 
@@ -29,34 +28,22 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
     def RouteWork( mode, current_node, *, metal_l=signal_routing_metal_l, metal_u=signal_routing_metal_u, fn=''):
         curr_route.RouteWork( mode, current_node, drcInfo,
                               metal_l, metal_u,
-                              binary_directory, h_skip_factor, v_skip_factor, fn)
+                              h_skip_factor, v_skip_factor, fn)
 
-    if NEW_GLOBAL_ROUTER:
-        RouteWork( 6 if adr_mode else 4, current_node)
+    RouteWork( 6 if adr_mode else 4, current_node)
 
-        logger.debug( "Start WriteGcellGlobalRoute")
-        if current_node.isTop:
-            DB.WriteGcellGlobalRoute(current_node, f'{current_node.name}_GcellGlobalRoute_{lidx}.json', opath)
-        else:
-            current_node_copy = PnR.hierNode(current_node)
-            DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, TransformType.Backward)
-            DB.WriteGcellGlobalRoute(
-                current_node_copy,
-                f'{current_node_copy.name}_GcellGlobalRoute_{current_node_copy.n_copy}_{lidx}.json', opath)
-        logger.debug("End WriteGcellGlobalRoute" )
-
-        RouteWork( 5, current_node)
+    logger.debug( "Start WriteGcellGlobalRoute")
+    if current_node.isTop:
+        DB.WriteGcellGlobalRoute(current_node, f'{current_node.name}_GcellGlobalRoute_{lidx}.json', opath)
     else:
-        # Global Routing (old version)
-        RouteWork(0, current_node)
+        current_node_copy = PnR.hierNode(current_node)
+        DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, TransformType.Backward)
+        DB.WriteGcellGlobalRoute(
+            current_node_copy,
+            f'{current_node_copy.name}_GcellGlobalRoute_{current_node_copy.n_copy}_{lidx}.json', opath)
+    logger.debug("End WriteGcellGlobalRoute" )
 
-        DB.WriteJSON(current_node, True, True, False, False, f'{current_node.name}_GR_{lidx}', drcInfo, opath)
-
-        # The following line is used to write global route results for Intel router (only for old version)
-        DB.WriteGlobalRoute(current_node, f'{current_node.name}_GlobalRoute_{lidx}.json', opath)
-
-        # Detail Routing
-        RouteWork( 1, current_node)
+    RouteWork( 5, current_node)
 
     if current_node.isTop:
         DB.WriteJSON(current_node, True, True, False, False, f'{current_node.name}_DR_{lidx}', drcInfo, opath)
