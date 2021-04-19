@@ -102,7 +102,18 @@ void PnRdatabase::TraverseDFS(deque<int>& Q, vector<string>& color, int idx) {
   Q.push_back(idx);
 }
 
-PnRDB::hierNode PnRdatabase::CheckoutHierNode(int nodeID) {
+PnRDB::hierNode PnRdatabase::CheckoutHierNode(int nodeID, int sel) {
+  if (sel >= 0 && hierTree.at(nodeID).PnRAS.size() > 0) {
+    hierTree.at(nodeID).gdsFile = hierTree.at(nodeID).PnRAS[sel].gdsFile;
+    hierTree.at(nodeID).width = hierTree.at(nodeID).PnRAS[sel].width;
+    hierTree.at(nodeID).height = hierTree.at(nodeID).PnRAS[sel].height;
+    hierTree.at(nodeID).Blocks = hierTree.at(nodeID).PnRAS[sel].Blocks;
+    hierTree.at(nodeID).Terminals = hierTree.at(nodeID).PnRAS[sel].Terminals;
+    hierTree.at(nodeID).Nets = hierTree.at(nodeID).PnRAS[sel].Nets;
+    hierTree.at(nodeID).LL = hierTree.at(nodeID).PnRAS[sel].LL;
+    hierTree.at(nodeID).UR = hierTree.at(nodeID).PnRAS[sel].UR;
+    hierTree.at(nodeID).PowerNets = hierTree.at(nodeID).PnRAS[sel].PowerNets;
+  }
   return hierTree.at(nodeID);
 }
 
@@ -827,6 +838,7 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
            }
          }
      }
+   hierTree[nodeID].PnRAS.back().PowerNets=updatedNode.PowerNets;
    logger->debug("node ID {0}",nodeID);
    logger->debug("hierTree power net size {0}",hierTree[nodeID].PowerNets.size());
    logger->debug("updatedNode power net size {0}",updatedNode.PowerNets.size());
@@ -961,25 +973,27 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
        auto& lhs = parent_node.Blocks[j];
        auto& b = lhs.instance.back();
        if(b.master.compare(updatedNode.name)==0){
-         for(unsigned int k = 0; k<updatedNode.PowerNets.size();k++){
+         b.dummy_power_pin.clear();          
+          for(unsigned int k = 0; k<updatedNode.PowerNets.size();k++){
             int found = 0;
             for(unsigned int l =0;l<b.PowerNets.size();l++){
                if(updatedNode.PowerNets[k].name == b.PowerNets[l].name){
                  found = 1;
+                 b.PowerNets[l].dummy_connected.clear();
                  for(unsigned int p=0;p<updatedNode.PowerNets[k].Pins.size();p++){
-                    PnRDB::connectNode temp_connectNode;
-                    temp_connectNode.iter2 = j;
-                    temp_connectNode.iter = b.dummy_power_pin.size();
-                    //here is the problem
-                    b.PowerNets[l].dummy_connected.push_back(temp_connectNode);
-                    //parent_node.PowerNets[l].dummy_connected.push_back(temp_connectNode);
-                    //need move the dummy_connected into block level
-                    PnRDB::pin temp_pin;
-                    temp_pin=updatedNode.PowerNets[k].Pins[p];
-                    updatePowerPins(temp_pin);
-                    b.dummy_power_pin.push_back(temp_pin);
+                   PnRDB::connectNode temp_connectNode;
+                   temp_connectNode.iter2 = j;
+                   temp_connectNode.iter = b.dummy_power_pin.size();
+                   //here is the problem
+                   b.PowerNets[l].dummy_connected.push_back(temp_connectNode);
+                   //parent_node.PowerNets[l].dummy_connected.push_back(temp_connectNode);
+                   //need move the dummy_connected into block level
+                   PnRDB::pin temp_pin;
+                   temp_pin=updatedNode.PowerNets[k].Pins[p];
+                   updatePowerPins(temp_pin);
+                   b.dummy_power_pin.push_back(temp_pin);
                  }
-                 
+
                }
             }
 
@@ -1038,7 +1052,7 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
             }
          }
       }
-
+      
       logger->debug("End update power pin in parent");
 
 
