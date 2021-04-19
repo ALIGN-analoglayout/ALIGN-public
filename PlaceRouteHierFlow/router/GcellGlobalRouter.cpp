@@ -468,7 +468,7 @@ void GcellGlobalRouter::PlaceTerminal(){
 
 };
 
-GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int Lmetal, int Hmetal, const std::string &binaryDIR){
+GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int Lmetal, int Hmetal){
   auto logger = spdlog::default_logger()->clone("router.GcellGlobalRouter.GcellGlobalRouter");
 
   terminal_routing = 0;
