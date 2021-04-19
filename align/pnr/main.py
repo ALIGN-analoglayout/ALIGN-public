@@ -89,6 +89,34 @@ def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, check=Fal
     return ret
 
 
+def gen_leaf_cell_info( verilog_d, primitive_dir):
+    
+    non_leaves = set()
+    templates_called_in_an_instance = set()
+
+    for module in verilog_d['modules']:
+        non_leaves.add( module['name'])
+        for instance in module['instances']:
+            templates_called_in_an_instance.add( instance['template_name'])
+
+    leaves = templates_called_in_an_instance.difference( non_leaves)
+
+    logger.info( f'non_leaves: {non_leaves} leaves: {leaves}')
+
+    # Check if collateral files exist
+    leaf_collateral = {}
+    for leaf in leaves:
+        files = {}
+        for suffix in ['.lef', '.json', '.gds.json']:
+            fn = primitive_dir / f'{leaf}{suffix}'
+            if fn.is_file():
+                files[suffix] = str(fn)
+            else:
+                logger.error( f'Collateral {suffix} for leaf {leaf} not found in {primitive_dir}')
+        leaf_collateral[leaf] = files
+
+    return leaf_collateral
+
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nvariants=1, effort=0, check=False, extract=False, gds_json=False, render_placements=False, PDN_mode=False):
 
     pdk = Pdk().load(pdk_dir / 'layers.json')
@@ -108,6 +136,11 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
     #verilog_file = f'{subckt}.v'
     verilog_file = f'{subckt}.verilog.json'
     pdk_file = 'layers.json'
+
+    with (topology_dir / verilog_file).open( "rt") as fp:
+        verilog_d = json.load( fp)
+    leaf_collateral = gen_leaf_cell_info( verilog_d, primitive_dir)
+    logger.info( f'leaf_collateral: {leaf_collateral}')
 
     # Generate .map & .lef inputs for PnR
     with (input_dir / map_file).open(mode='wt') as mp, \
@@ -138,6 +171,8 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
     for file_ in primitive_dir.iterdir():
         if file_.suffixes == ['.gds', '.json'] or file_.suffixes == ['.json']:
             (input_dir / file_.name).write_text(file_.read_text())
+
+
 
     # Run pnr_compiler
     cmd = [str(x) for x in ('align.PnR', input_dir, lef_file,
