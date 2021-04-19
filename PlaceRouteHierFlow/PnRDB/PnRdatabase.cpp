@@ -736,340 +736,260 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
   hierTree[nodeID].GuardRings = updatedNode.GuardRings;
   // update current node information
   for(unsigned int i=0;i<hierTree[nodeID].Blocks.size();i++){
-	  int sel=updatedNode.Blocks[i].selectedInstance;
-	  logger->debug("Block {0} select {1} ",i,sel);
-	  if(sel<0 || sel>=updatedNode.Blocks[i].instNum) {logger->error("PnRDB-Error: unselected block {0}",i);continue;}
-	  //std::cout<<"dB "<<hierTree[nodeID].Blocks[i].instNum<<std::endl;
-	  if(hierTree[nodeID].Blocks[i].instNum<updatedNode.Blocks[i].instNum) { // for capacitor, new data in place and route
-		  hierTree[nodeID].Blocks[i].instance.clear();
-		  hierTree[nodeID].Blocks[i].instance=updatedNode.Blocks[i].instance;
-		  hierTree[nodeID].Blocks[i].instNum=updatedNode.Blocks[i].instNum;
-	  }
-	  hierTree[nodeID].Blocks[i].selectedInstance=sel;
-	  for(int w=0;w<updatedNode.Blocks[i].instNum;++w) {
-		  auto& lhs = hierTree[nodeID].Blocks[i].instance.at(w);
-		  auto& rhs = updatedNode.Blocks[i].instance.at(w);
+    int sel=updatedNode.Blocks[i].selectedInstance;
+    logger->debug("Block {0} select {1} ",i,sel);
+    if(sel<0 || sel>=updatedNode.Blocks[i].instNum) {logger->error("PnRDB-Error: unselected block {0}",i);continue;}
+    //std::cout<<"dB "<<hierTree[nodeID].Blocks[i].instNum<<std::endl;
+    if(hierTree[nodeID].Blocks[i].instNum<updatedNode.Blocks[i].instNum) { // for capacitor, new data in place and route
+      hierTree[nodeID].Blocks[i].instance.clear();
+      hierTree[nodeID].Blocks[i].instance=updatedNode.Blocks[i].instance;
+      hierTree[nodeID].Blocks[i].instNum=updatedNode.Blocks[i].instNum;
+    }
+    hierTree[nodeID].Blocks[i].selectedInstance=sel;
+    for(int w=0;w<updatedNode.Blocks[i].instNum;++w) {
+      auto& lhs = hierTree[nodeID].Blocks[i].instance.at(w);
+      auto& rhs = updatedNode.Blocks[i].instance.at(w);
 
-		  //std::cout<<"\tchoice "<<w<<std::endl;
-		  //lhs.name = rhs.name;
-		  lhs.orient = rhs.orient;
+      //std::cout<<"\tchoice "<<w<<std::endl;
+      //lhs.name = rhs.name;
+      lhs.orient = rhs.orient;
 
-		  lhs.placedBox = rhs.placedBox;
+      lhs.placedBox = rhs.placedBox;
 
-		  lhs.placedCenter = rhs.placedCenter;
+      lhs.placedCenter = rhs.placedCenter;
 
-		  for(unsigned int j=0;j<lhs.blockPins.size();j++){
-			  for(unsigned int k=0;k<lhs.blockPins[j].pinContacts.size();k++){
-				  lhs.blockPins[j].pinContacts[k]= rhs.blockPins[j].pinContacts[k];
-			  }
-			  for(unsigned int k=0;k<lhs.blockPins[j].pinVias.size();k++){
-				  lhs.blockPins[j].pinVias[k]= rhs.blockPins[j].pinVias[k];
-			  }  
-		  }
+      for(unsigned int j=0;j<lhs.blockPins.size();j++){
+        for(unsigned int k=0;k<lhs.blockPins[j].pinContacts.size();k++){
+          lhs.blockPins[j].pinContacts[k]= rhs.blockPins[j].pinContacts[k];
+        }
+        for(unsigned int k=0;k<lhs.blockPins[j].pinVias.size();k++){
+          lhs.blockPins[j].pinVias[k]= rhs.blockPins[j].pinVias[k];
+        }  
+      }
 
-		  for(unsigned int j=0;j<lhs.interMetals.size();j++){
-			  lhs.interMetals[j]= rhs.interMetals[j];
-		  }
+      for(unsigned int j=0;j<lhs.interMetals.size();j++){
+        lhs.interMetals[j]= rhs.interMetals[j];
+      }
 
-		  for(unsigned int j=0;j<lhs.interVias.size();j++){
-			  lhs.interVias[j]= rhs.interVias[j];
-		  }
-		  for (unsigned int j = 0; j < lhs._tapVias.size(); ++j) {
-			  lhs._tapVias[j] = rhs._tapVias[j];
-		  }
-		  for (unsigned int j = 0; j < lhs._activeVias.size(); ++j) {
-			  lhs._activeVias[j] = rhs._activeVias[j];
-		  }
-	  }
+      for(unsigned int j=0;j<lhs.interVias.size();j++){
+        lhs.interVias[j]= rhs.interVias[j];
+      }
+      for (unsigned int j = 0; j < lhs._tapVias.size(); ++j) {
+        lhs._tapVias[j] = rhs._tapVias[j];
+      }
+      for (unsigned int j = 0; j < lhs._activeVias.size(); ++j) {
+        lhs._activeVias[j] = rhs._activeVias[j];
+      }
+    }
 
   }
 
   hierTree[nodeID].router_report = updatedNode.router_report; //update router information
 
   //update terminals information when the node is top level
-    //if(updatedNode.isTop==1)
-    if(1){	 
-       for(unsigned int i=0;i<hierTree[nodeID].Terminals.size();i++){
-            hierTree[nodeID].Terminals[i].termContacts.clear();
-           for(unsigned int j=0;j<updatedNode.Terminals[i].termContacts.size();j++){ //this line $$$$yaguang$$$$$
-               hierTree[nodeID].Terminals[i].termContacts.push_back( updatedNode.Terminals[i].termContacts[j]  );
-               //hierTree[nodeID].Terminals[i].termContacts[j].placedBox= updatedNode.Terminals[i].termContacts[j].placedBox;
-	       //hierTree[nodeID].Terminals[i].termContacts[j].placedCenter= updatedNode.Terminals[i].termContacts[j].placedCenter;
-               }
-         }
-       }
-  
-    unordered_map<string,int> updatedNode_net_map;
-    for(unsigned int j=0;j<updatedNode.Nets.size();j++){
-	const auto& net = updatedNode.Nets[j];
-	assert( updatedNode_net_map.find( net.name) == updatedNode_net_map.end());
-	updatedNode_net_map[net.name] = j;
+  //if(updatedNode.isTop==1)
+  if(1){	 
+    for(unsigned int i=0;i<hierTree[nodeID].Terminals.size();i++){
+      hierTree[nodeID].Terminals[i].termContacts.clear();
+      for(unsigned int j=0;j<updatedNode.Terminals[i].termContacts.size();j++){ //this line $$$$yaguang$$$$$
+        hierTree[nodeID].Terminals[i].termContacts.push_back( updatedNode.Terminals[i].termContacts[j]  );
+        //hierTree[nodeID].Terminals[i].termContacts[j].placedBox= updatedNode.Terminals[i].termContacts[j].placedBox;
+        //hierTree[nodeID].Terminals[i].termContacts[j].placedCenter= updatedNode.Terminals[i].termContacts[j].placedCenter;
+      }
     }
-
-    for(unsigned int i=0;i<hierTree[nodeID].Nets.size();i++){
-	auto& net = hierTree[nodeID].Nets[i];
-	unordered_map<string,int>::const_iterator cit = updatedNode_net_map.find( net.name);
-	if ( cit != updatedNode_net_map.end()) {
-	    auto& net2 = updatedNode.Nets[cit->second];
-	    net.path_metal = net2.path_metal;
-	    net.path_via = net2.path_via;
-      net.axis_coor = net2.axis_coor;
   }
-    }
 
-    /*
-  //update net information//////
+  unordered_map<string,int> updatedNode_net_map;
+  for(unsigned int j=0;j<updatedNode.Nets.size();j++){
+    const auto& net = updatedNode.Nets[j];
+    assert( updatedNode_net_map.find( net.name) == updatedNode_net_map.end());
+    updatedNode_net_map[net.name] = j;
+  }
+
   for(unsigned int i=0;i<hierTree[nodeID].Nets.size();i++){
-     for(unsigned int j=0;j<updatedNode.Nets.size();j++){
-          if(hierTree[nodeID].Nets[i].name ==updatedNode.Nets[j].name){
-               hierTree[nodeID].Nets[i].path_metal = updatedNode.Nets[j].path_metal;
-               hierTree[nodeID].Nets[i].path_via = updatedNode.Nets[j].path_via;
-               break;
-            }
-        }
-     }
-    */
+    auto& net = hierTree[nodeID].Nets[i];
+    unordered_map<string,int>::const_iterator cit = updatedNode_net_map.find( net.name);
+    if ( cit != updatedNode_net_map.end()) {
+      auto& net2 = updatedNode.Nets[cit->second];
+      net.path_metal = net2.path_metal;
+      net.path_via = net2.path_via;
+      net.axis_coor = net2.axis_coor;
+    }
+  }
 
   logger->debug("update power net");
   //update PowerNet information//////
   logger->debug("hierTree power net size {0}",hierTree[nodeID].PowerNets.size());
   logger->debug("updatedNode power net size {0}",updatedNode.PowerNets.size());
   for(unsigned int i=0;i<hierTree[nodeID].PowerNets.size();i++){
-     for(unsigned int j=0;j<updatedNode.PowerNets.size();j++){
-         if(hierTree[nodeID].PowerNets[i].name == updatedNode.PowerNets[j].name){
-               hierTree[nodeID].PowerNets[i].path_metal = updatedNode.PowerNets[j].path_metal;
-               hierTree[nodeID].PowerNets[i].path_via = updatedNode.PowerNets[j].path_via;
-               hierTree[nodeID].PowerNets[i].connected = updatedNode.PowerNets[j].connected;
-               hierTree[nodeID].PowerNets[i].dummy_connected = updatedNode.PowerNets[j].dummy_connected;
-               hierTree[nodeID].PowerNets[i].Pins = updatedNode.PowerNets[j].Pins;
-               break;
-           }
-         }
-     }
-   hierTree[nodeID].PnRAS.back().PowerNets=updatedNode.PowerNets;
-   logger->debug("node ID {0}",nodeID);
-   logger->debug("hierTree power net size {0}",hierTree[nodeID].PowerNets.size());
-   logger->debug("updatedNode power net size {0}",updatedNode.PowerNets.size());
+    for(unsigned int j=0;j<updatedNode.PowerNets.size();j++){
+      if(hierTree[nodeID].PowerNets[i].name == updatedNode.PowerNets[j].name){
+        hierTree[nodeID].PowerNets[i].path_metal = updatedNode.PowerNets[j].path_metal;
+        hierTree[nodeID].PowerNets[i].path_via = updatedNode.PowerNets[j].path_via;
+        hierTree[nodeID].PowerNets[i].connected = updatedNode.PowerNets[j].connected;
+        hierTree[nodeID].PowerNets[i].dummy_connected = updatedNode.PowerNets[j].dummy_connected;
+        hierTree[nodeID].PowerNets[i].Pins = updatedNode.PowerNets[j].Pins;
+        break;
+      }
+    }
+  }
+  hierTree[nodeID].PnRAS.back().PowerNets=updatedNode.PowerNets;
+  logger->debug("node ID {0}",nodeID);
+  logger->debug("hierTree power net size {0}",hierTree[nodeID].PowerNets.size());
+  logger->debug("updatedNode power net size {0}",updatedNode.PowerNets.size());
 
-   hierTree[nodeID].blockPins=updatedNode.blockPins;
-   hierTree[nodeID].interMetals=updatedNode.interMetals;
-   hierTree[nodeID].interVias=updatedNode.interVias;
+  hierTree[nodeID].blockPins=updatedNode.blockPins;
+  hierTree[nodeID].interMetals=updatedNode.interMetals;
+  hierTree[nodeID].interVias=updatedNode.interVias;
 
   //update father imformation//////
-    logger->debug("Update parent");
-    for(unsigned int i=0;i<hierTree[nodeID].parent.size();i++){
+  logger->debug("Update parent");
+  for(unsigned int i=0;i<hierTree[nodeID].parent.size();i++){
 
-     logger->debug("Start update blocks in parent");
-     //update father blocks information
-     auto& parent_node = hierTree[hierTree[nodeID].parent[i]];
+    logger->debug("Start update blocks in parent");
+    //update father blocks information
+    auto& parent_node = hierTree[hierTree[nodeID].parent[i]];
 
-     //there will be a bug for multi-aspect ratio Yaguang 1/1/2020
-     logger->debug("Update router report for parent");
-     for(unsigned int j=0;j<updatedNode.router_report.size();j++){
-          parent_node.router_report.push_back(updatedNode.router_report[j]);
-        }
-     logger->debug("End Update router report for parent");
-
-     for(unsigned int j=0;j<parent_node.Blocks.size();j++){
-
-	 auto& lhs = parent_node.Blocks[j];
-	 auto& prelim_b = lhs.instance.back();
-
-	 if( prelim_b.master == updatedNode.name) {
-          if(lhs.instNum>0) {
-	    lhs.instance.push_back( prelim_b);
-          }
-
-	  auto& b = lhs.instance.back();
-
-          lhs.instNum++;
-          b.gdsFile = updatedNode.gdsFile;
-          //update terminal to pin information
-          
-          for(unsigned int p=0;p<b.blockPins.size();p++){
-              for(unsigned int q=0;q<updatedNode.blockPins.size();q++){
-                  if(b.blockPins[p].name == updatedNode.blockPins[q].name){                     
-		    //		      b.blockPins[p].pinContacts.clear();
-		      b.blockPins[p].pinContacts = updatedNode.blockPins[q].pinContacts;
-		      //		      b.blockPins[p].pinVias.clear();
-		      b.blockPins[p].pinVias = updatedNode.blockPins[q].pinVias;
-		      break;     
-		  }
-	      }
-          }
-          
-	  //          b.interMetals.clear();
-          b.interMetals = updatedNode.interMetals;
-          
-	  //          b.interVias.clear();
-          b.interVias = updatedNode.interVias;
-
-          b.width=updatedNode.width;
-          b.height=updatedNode.height;
-          b.originCenter.x = updatedNode.width/2;
-          b.originCenter.y = updatedNode.height/2;
-          b.originBox.LL.x = 0;
-          b.originBox.LL.y = 0;
-          b.originBox.UR.x = updatedNode.width;
-          b.originBox.UR.y = updatedNode.height;
-          }
-        }
-
-/*
-    std::cout<<"Start Update power pin in parent"<<std::endl;
-     //update power pin information
-
-     for(unsigned int j=0;j<parent_node.Blocks.size();j++){
-	 auto& lhs = parent_node.Blocks[j];
-	 auto& b = lhs.instance.back();
-
-          if(b.master.compare(updatedNode.name)==0){
-             for(unsigned int k = 0; k<updatedNode.PowerNets.size();k++){
-                  int found = 0;
-                  
-                  for(unsigned int l =0;l<parent_node.PowerNets.size();l++){
-                       if(updatedNode.PowerNets[k].name == parent_node.PowerNets[l].name){
-                            found = 1;
-
-                            //parent_node.PowerNets[l].dummy_connected.clear();
-                            //there will be a bug, if not clear() for multi aspect ratio *** BUG*** Yaguang, 1/1/2020
-
-                            for(unsigned int p=0;p<updatedNode.PowerNets[k].Pins.size();p++){
-                                  PnRDB::connectNode temp_connectNode;
-                                  temp_connectNode.iter2 = j;
-                                  temp_connectNode.iter = b.dummy_power_pin.size();
-                                  parent_node.PowerNets[l].dummy_connected.push_back(temp_connectNode);
-                                  PnRDB::pin temp_pin;
-                                  temp_pin=updatedNode.PowerNets[k].Pins[p];
-                                  
-                                  updatePowerPins(temp_pin);
-
-                                  b.dummy_power_pin.push_back(temp_pin);
-                               }
-                         }
-                     }
-                  if(found ==0){
-                      PnRDB::PowerNet temp_PowerNet;
-                      temp_PowerNet = updatedNode.PowerNets[k];
-                      temp_PowerNet.connected.clear();
-                      temp_PowerNet.dummy_connected.clear();
-                      temp_PowerNet.Pins.clear();
-                      
-                      for(unsigned int p=0;p<updatedNode.PowerNets[k].Pins.size();p++){
-                             PnRDB::pin temp_pin;
-                             PnRDB::connectNode temp_connectNode;
-                             temp_connectNode.iter2 = j;
-                             temp_connectNode.iter = b.dummy_power_pin.size();
-                             temp_pin = updatedNode.PowerNets[k].Pins[p];
-                             updatePowerPins(temp_pin);
-                             b.dummy_power_pin.push_back(temp_pin);
-                             temp_PowerNet.dummy_connected.push_back(temp_connectNode);
-                          }
-                      
-                      parent_node.PowerNets.push_back(temp_PowerNet);
-                    }
-                }             
-            }
-        }
-     std::cout<<"End update power pin in parent"<<std::endl;
-*/
-
-    logger->debug("Start Update power pin in parent");
-     //update power pin information
+    //there will be a bug for multi-aspect ratio Yaguang 1/1/2020
+    logger->debug("Update router report for parent");
+    for(unsigned int j=0;j<updatedNode.router_report.size();j++){
+      parent_node.router_report.push_back(updatedNode.router_report[j]);
+    }
+    logger->debug("End Update router report for parent");
 
     for(unsigned int j=0;j<parent_node.Blocks.size();j++){
-       auto& lhs = parent_node.Blocks[j];
-       auto& b = lhs.instance.back();
-       if(b.master.compare(updatedNode.name)==0){
-         b.dummy_power_pin.clear();          
-          for(unsigned int k = 0; k<updatedNode.PowerNets.size();k++){
-            int found = 0;
-            for(unsigned int l =0;l<b.PowerNets.size();l++){
-               if(updatedNode.PowerNets[k].name == b.PowerNets[l].name){
-                 found = 1;
-                 b.PowerNets[l].dummy_connected.clear();
-                 for(unsigned int p=0;p<updatedNode.PowerNets[k].Pins.size();p++){
-                   PnRDB::connectNode temp_connectNode;
-                   temp_connectNode.iter2 = j;
-                   temp_connectNode.iter = b.dummy_power_pin.size();
-                   //here is the problem
-                   b.PowerNets[l].dummy_connected.push_back(temp_connectNode);
-                   //parent_node.PowerNets[l].dummy_connected.push_back(temp_connectNode);
-                   //need move the dummy_connected into block level
-                   PnRDB::pin temp_pin;
-                   temp_pin=updatedNode.PowerNets[k].Pins[p];
-                   updatePowerPins(temp_pin);
-                   b.dummy_power_pin.push_back(temp_pin);
-                 }
 
-               }
+      auto& lhs = parent_node.Blocks[j];
+      auto& prelim_b = lhs.instance.back();
+
+      if( prelim_b.master == updatedNode.name) {
+        if(lhs.instNum>0) {
+          lhs.instance.push_back( prelim_b);
+        }
+
+        auto& b = lhs.instance.back();
+
+        lhs.instNum++;
+        b.gdsFile = updatedNode.gdsFile;
+        //update terminal to pin information
+
+        for(unsigned int p=0;p<b.blockPins.size();p++){
+          for(unsigned int q=0;q<updatedNode.blockPins.size();q++){
+            if(b.blockPins[p].name == updatedNode.blockPins[q].name){                     
+              //		      b.blockPins[p].pinContacts.clear();
+              b.blockPins[p].pinContacts = updatedNode.blockPins[q].pinContacts;
+              //		      b.blockPins[p].pinVias.clear();
+              b.blockPins[p].pinVias = updatedNode.blockPins[q].pinVias;
+              break;     
             }
+          }
+        }
 
-            if(found ==0){
-               PnRDB::PowerNet temp_PowerNet;
-               temp_PowerNet = updatedNode.PowerNets[k];
-               temp_PowerNet.connected.clear();
-               temp_PowerNet.dummy_connected.clear();
-               temp_PowerNet.Pins.clear();
-                      
-               for(unsigned int p=0;p<updatedNode.PowerNets[k].Pins.size();p++){
-                   PnRDB::pin temp_pin;
-                   PnRDB::connectNode temp_connectNode;
-                   temp_connectNode.iter2 = j;
-                   temp_connectNode.iter = b.dummy_power_pin.size();
-                   temp_pin = updatedNode.PowerNets[k].Pins[p];
-                   updatePowerPins(temp_pin);
-                   b.dummy_power_pin.push_back(temp_pin);
-                   //here is the problem too
-                   temp_PowerNet.dummy_connected.push_back(temp_connectNode);
-                   //temp_PowerNet.dummy_connected.push_back(temp_connectNode);
-                   //here is the problem too
-                   }                     
-                b.PowerNets.push_back(temp_PowerNet);
-               }                      
-           }
-         }
+        b.interMetals = updatedNode.interMetals;
+        b.interVias = updatedNode.interVias;
+        b._tapVias = updatedNode._tapVias;
+        b._activeVias = updatedNode._activeVias;
+
+        b.width=updatedNode.width;
+        b.height=updatedNode.height;
+        b.originCenter.x = updatedNode.width/2;
+        b.originCenter.y = updatedNode.height/2;
+        b.originBox.LL.x = 0;
+        b.originBox.LL.y = 0;
+        b.originBox.UR.x = updatedNode.width;
+        b.originBox.UR.y = updatedNode.height;
       }
+    }
 
-      logger->debug("Extract dummy power connection into parent");
+    logger->debug("Start Update power pin in parent");
+    //update power pin information
 
-      for(unsigned int k = 0; k<parent_node.PowerNets.size();k++){
-         parent_node.PowerNets[k].dummy_connected.clear();
-      }
+    for(unsigned int j=0;j<parent_node.Blocks.size();j++){
+      auto& lhs = parent_node.Blocks[j];
+      auto& b = lhs.instance.back();
+      if(b.master.compare(updatedNode.name)==0){
+        b.dummy_power_pin.clear();          
+        for(unsigned int k = 0; k<updatedNode.PowerNets.size();k++){
+          int found = 0;
+          for(unsigned int l =0;l<b.PowerNets.size();l++){
+            if(updatedNode.PowerNets[k].name == b.PowerNets[l].name){
+              found = 1;
+              b.PowerNets[l].dummy_connected.clear();
+              for(unsigned int p=0;p<updatedNode.PowerNets[k].Pins.size();p++){
+                PnRDB::connectNode temp_connectNode;
+                temp_connectNode.iter2 = j;
+                temp_connectNode.iter = b.dummy_power_pin.size();
+                //here is the problem
+                b.PowerNets[l].dummy_connected.push_back(temp_connectNode);
+                //parent_node.PowerNets[l].dummy_connected.push_back(temp_connectNode);
+                //need move the dummy_connected into block level
+                PnRDB::pin temp_pin;
+                temp_pin=updatedNode.PowerNets[k].Pins[p];
+                updatePowerPins(temp_pin);
+                b.dummy_power_pin.push_back(temp_pin);
+              }
 
-      for(unsigned int j=0;j<parent_node.Blocks.size();j++){
-         auto& lhs = parent_node.Blocks[j];
-         auto& b = lhs.instance.back();
-         for(unsigned int l =0;l<b.PowerNets.size();l++){
-            int found = 0;
-            for(unsigned int k = 0; k<parent_node.PowerNets.size();k++){
-               if(b.PowerNets[l].name==parent_node.PowerNets[k].name){
-                  found = 1;
-                  for(unsigned int h = 0;h < b.PowerNets[l].dummy_connected.size();h++){
-                      parent_node.PowerNets[k].dummy_connected.push_back(b.PowerNets[l].dummy_connected[h]);
-                     }
-                 }
             }
-            if(found ==0){
-               PnRDB::PowerNet temp_PowerNet;
-               temp_PowerNet = b.PowerNets[l];
-               temp_PowerNet.connected.clear();
-               //temp_PowerNet.dummy_connected.clear();
-               temp_PowerNet.Pins.clear();
-               parent_node.PowerNets.push_back(temp_PowerNet);
-            }
-         }
+          }
+
+          if(found ==0){
+            PnRDB::PowerNet temp_PowerNet;
+            temp_PowerNet = updatedNode.PowerNets[k];
+            temp_PowerNet.connected.clear();
+            temp_PowerNet.dummy_connected.clear();
+            temp_PowerNet.Pins.clear();
+
+            for(unsigned int p=0;p<updatedNode.PowerNets[k].Pins.size();p++){
+              PnRDB::pin temp_pin;
+              PnRDB::connectNode temp_connectNode;
+              temp_connectNode.iter2 = j;
+              temp_connectNode.iter = b.dummy_power_pin.size();
+              temp_pin = updatedNode.PowerNets[k].Pins[p];
+              updatePowerPins(temp_pin);
+              b.dummy_power_pin.push_back(temp_pin);
+              //here is the problem too
+              temp_PowerNet.dummy_connected.push_back(temp_connectNode);
+              //temp_PowerNet.dummy_connected.push_back(temp_connectNode);
+              //here is the problem too
+            }                     
+            b.PowerNets.push_back(temp_PowerNet);
+          }                      
+        }
       }
-      
-      logger->debug("End update power pin in parent");
+    }
 
+    logger->debug("Extract dummy power connection into parent");
 
-     }
+    for(unsigned int k = 0; k<parent_node.PowerNets.size();k++){
+      parent_node.PowerNets[k].dummy_connected.clear();
+    }
 
+    for(unsigned int j=0;j<parent_node.Blocks.size();j++){
+      auto& lhs = parent_node.Blocks[j];
+      auto& b = lhs.instance.back();
+      for(unsigned int l =0;l<b.PowerNets.size();l++){
+        int found = 0;
+        for(unsigned int k = 0; k<parent_node.PowerNets.size();k++){
+          if(b.PowerNets[l].name==parent_node.PowerNets[k].name){
+            found = 1;
+            for(unsigned int h = 0;h < b.PowerNets[l].dummy_connected.size();h++){
+              parent_node.PowerNets[k].dummy_connected.push_back(b.PowerNets[l].dummy_connected[h]);
+            }
+          }
+        }
+        if(found ==0){
+          PnRDB::PowerNet temp_PowerNet;
+          temp_PowerNet = b.PowerNets[l];
+          temp_PowerNet.connected.clear();
+          //temp_PowerNet.dummy_connected.clear();
+          temp_PowerNet.Pins.clear();
+          parent_node.PowerNets.push_back(temp_PowerNet);
+        }
+      }
+    }
+    logger->debug("End update power pin in parent");
+  }
   logger->debug("End update blocks in parent");
-  
-
-
 }
 
 void PnRdatabase::WriteLef(const PnRDB::hierNode &node, const string& file, const string& opath) const {

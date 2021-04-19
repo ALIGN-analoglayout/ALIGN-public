@@ -244,7 +244,7 @@ NodeSet Graph::dominatingSet() const
   NodeSet whiteNodes, dom;
   size_t isoActive(0);
   for (auto& n : _nodes) {
-    //logger->info("node : {0} {1}", n->name(), n->isBlack());
+    logger->info("node : {0} {1}", n->name(), n->isBlack());
     if (n->isBlack()) {
       dom.insert(n);
       const_cast<Node*>(n)->setColor(NodeColor::Black);
@@ -276,7 +276,7 @@ NodeSet Graph::dominatingSet() const
     } else ++isoActive;
     //logger->info("num edges {0}", n->edges().size());
     //for (auto& e : n->edges()) {
-    //  logger->info("edge : {0} {1} {2}", e->name(), e->u()->name(), e->v()->name());
+    ////logger->info("edge : {0} {1} {2}", e->name(), e->u()->name(), e->v()->name());
     //}
   }
 
@@ -386,6 +386,8 @@ TapRemoval::TapRemoval(const PnRDB::hierNode& node, const unsigned dist) : _dist
       for (const auto& t : n._tapVias) p->addTap(geom::Rect(t));
       for (const auto& t : n._activeVias) p->addActive(geom::Rect(t));
 
+      //logger->info("master : {0} {1} {2}", master, n._tapVias.size(), n._activeVias.size());
+
       if (!n._tapVias.empty()) {
         _primitives[master].push_back(p);
       } else {
@@ -476,10 +478,10 @@ long TapRemoval::deltaArea(map<string, int>* swappedIndices) const
 
 void TapRemoval::rebuildInstances(const PrimitiveData::PlMap& plmap)
 {
-//  auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.rebuildInstances");
-//  for (auto& p : plmap) {
-//    logger->info("plmap {0} {1} {2} {3}", p.first, p.second._primName, p.second._ll.x(), p.second._ll.y());
-//  }
+  //auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.rebuildInstances");
+  //for (auto& p : plmap) {
+  //  logger->info("plmap {0} {1} {2} {3}\n", p.first.first, p.second._primName, p.second._tr.origin().x(), p.second._tr.origin().y());
+  //}
   
   for (auto& x : _instances) {
     delete x;
@@ -493,8 +495,11 @@ void TapRemoval::rebuildInstances(const PrimitiveData::PlMap& plmap)
     const auto& index = it.first.second;
     if (primIt != _primitives.end() && index < primIt->second.size()) prim = primIt->second[index];
     if (primWoTapIt != _primitivesWoTap.end() && index < primWoTapIt->second.size()) primWoTap = primWoTapIt->second[index];
-    if (prim != nullptr && (_primitivesWoTap.empty() || primWoTap != nullptr)) {
-      auto inst = new PrimitiveData::Instance(prim, primWoTap, it.first.first, it.second._tr, static_cast<int>(index + primIt->second.size()));
+    //logger->info("adding {0} {1}", prim ? prim->name() : "", primWoTap ? primWoTap->name() : "");
+    if (prim != nullptr) {
+      //logger->info("adding {0} {1}", prim->name(), primWoTap ? primWoTap->name() : "");
+      auto inst = new PrimitiveData::Instance(prim, primWoTap, it.first.first, it.second._tr,
+          primWoTap != nullptr ? static_cast<int>(index + primIt->second.size()) : static_cast<int>(index));
       _instances.push_back(inst);
       _instMap[it.first.first] = inst;
       //inst->print();

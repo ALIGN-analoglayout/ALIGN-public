@@ -122,6 +122,10 @@ def json_lef(input_json, out_lef, cell_pin, bodyswitch, blockM, p):
         fp.write("  OBS\n")
         cap_layers = ['M1', 'M2', 'M3']
         for obj in j['terminals']:
+            if ('layer' in obj and obj['layer'] == "Nwell") :
+                fp.write("    LAYER %s ;\n" % obj['layer'])
+                fp.write("      RECT %s %s %s %s ;\n" %
+                         tuple([s(x) for x in obj['rect']]))
             if ('terminal' in obj and ("B" in obj['terminal'] or "G" in obj['terminal'])) and obj['layer'] == "V0":
                 if ("B" in obj['terminal']):
                     fp.write("    LAYER %s ;\n" % "V0_tap")

@@ -429,12 +429,10 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
       if (removeTaps) {
         const auto& master = mydesign.Blocks[i][index].master;
         const auto& instName = mydesign.Blocks[i][index].name;
-        if (master.find("PMOS") == string::npos) {
-          plmap.insert(std::make_pair(std::make_pair(instName, static_cast<unsigned>(index)),
-                PrimitiveData::PlInfo(master,
-                  geom::Point(Blocks[i].x, Blocks[i].y),
-                  Blocks[i].H_flip, Blocks[i].V_flip)));
-        }
+        plmap.insert(std::make_pair(std::make_pair(instName, static_cast<unsigned>(index)),
+              PrimitiveData::PlInfo(master,
+                geom::Point(Blocks[i].x, Blocks[i].y),
+                Blocks[i].H_flip, Blocks[i].V_flip)));
       }
       if (removeTaps) {
         mydesign.RebuildTapInstances(plmap);
@@ -446,7 +444,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
           for (int i = 0; i < mydesign.Blocks.size(); i++) {
             auto& index = curr_sp.selected[i];
             auto it = swappedIndices.find(mydesign.Blocks[i][index].name);
-            if (it != swappedIndices.end()) index = it->second;
+            if (it != swappedIndices.end() && index != it->second) index = it->second;
           }
           //logger->info("maximum delta area from tap removal : {0} {1}", delArea, swappedIndices.size());
         } 
@@ -1423,11 +1421,11 @@ void ILP_solver::UpdateBlockinHierNode(design& mydesign, placerDB::Omark ort, Pn
     iv.ViaRect.placedCenter = mydesign.GetPlacedBlockInterMetalAbsPoint(i, ort, iv.ViaRect.originCenter, LL, sel);
   }
 
-  for (auto& t : node.Blocks.at(i).instance.at(sel)._tapVias) {
-    t = mydesign.GetPlacedBlockInterMetalAbsBox(i, ort, t, LL, sel);
+  for (auto& t : nd._tapVias) {
+    node._tapVias.push_back(mydesign.GetPlacedBlockInterMetalAbsBox(i, ort, t, LL, sel));
   }
-  for (auto& t : node.Blocks.at(i).instance.at(sel)._activeVias) {
-    t = mydesign.GetPlacedBlockInterMetalAbsBox(i, ort, t, LL, sel);
+  for (auto& t : nd._activeVias) {
+    node._activeVias.push_back(mydesign.GetPlacedBlockInterMetalAbsBox(i, ort, t, LL, sel));
   }
 }
 

@@ -417,6 +417,7 @@ struct hierNode {
   double Aspect_Ratio[2] = {0, 100};
   vector<Router_report> router_report;
   vector<Multi_connection> Multi_connections;
+  vector<PnRDB::bbox> _tapVias, _activeVias;
 
 }; // structure of vertex in heirarchical tree
 
