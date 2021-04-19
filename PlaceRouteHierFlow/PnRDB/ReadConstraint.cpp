@@ -4,8 +4,6 @@
 #include <fstream>
 #include <iomanip>
 
-
-
 using namespace nlohmann;
 void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonStr) {
     auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.ReadConstraint_Json");
@@ -574,8 +572,8 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
           temp_c_const.C.push_back(pair["C"]);
         }
         node.C_Constraints.push_back(temp_c_const);
-      } else if (constraint["const_name"] == "GuardRing") {
-        PnRDB::Guardring_Const temp_Guardring_Const;
+      //} else if (constraint["const_name"] == "GuardRing") {
+        //PnRDB::Guardring_Const temp_Guardring_Const;
         //temp_Guardring_Const.block_name = constraint["block_name"];
         //temp_Guardring_Const.guard_ring_perimitives = constraint["guard_ring_perimitives"];
         //temp_Guardring_Const.global_pin = constraint["global_pin"];
