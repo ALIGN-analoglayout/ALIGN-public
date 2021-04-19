@@ -484,7 +484,7 @@ struct CCCap {
 
 struct Guardring_Const {
   string block_name;
-  string guard_ring_perimitives;
+  string guard_ring_primitives;
   string global_pin;
 };
 
