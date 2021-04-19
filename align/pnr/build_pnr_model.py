@@ -164,14 +164,14 @@ def _attach_constraint_files( DB, fpath):
         curr_node.bias_Vgraph = DB.getDrc_info().Design_info.Vspace
         curr_node.bias_Hgraph = DB.getDrc_info().Design_info.Hspace
 
-        fp = d / f"{curr_node.name}.const.json"
+        fp = d / f"{curr_node.name}.pnr.const.json"
         if fp.exists():
             with fp.open( "rt") as fp:
                 jsonStr = fp.read()
             DB.ReadConstraint_Json( curr_node, jsonStr)
-            logger.info(f"Finished reading contraint json file {curr_node.name}.const.json")
+            logger.info(f"Finished reading contraint json file {curr_node.name}.pnr.const.json")
         else:
-            logger.warn(f"No constraint file for module {curr_node.name}")
+            logger.warning(f"No constraint file for module {curr_node.name}")
                 
 def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     DB = PnR.PnRdatabase()

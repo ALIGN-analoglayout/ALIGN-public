@@ -754,12 +754,12 @@ void GcellDetailRouter::create_detailrouter(){
     std::vector<RouterDB::Metal> symmetry_path;
     if(Nets[i].symCounterpart!=-1 && Nets[i].symCounterpart<int(Nets.size())){
       symmetry_path = Nets[Nets[i].symCounterpart].path_metal;
-      std::cout<<"symmetry_path size "<< symmetry_path.size() <<std::endl;
+      logger->debug("symmetry_path size {0}", symmetry_path.size());
       Topology_extraction(symmetry_path);
-      std::cout<<"sym net index "<<i<<" sym part"<<Nets[i].symCounterpart<<" sym axis "<<Nets[i].sym_H<<" sym center "<<Nets[i].center<<std::endl;
-      //Q: HV_symmetry, center?
+      logger->debug("sym net index {0} sym part {1} sym axis {2} sym center {3}", i, Nets[i].symCounterpart, Nets[i].sym_H, Nets[i].center);
+      // Q: HV_symmetry, center?
       Mirror_Topology(symmetry_path,Nets[i].sym_H,Nets[i].center);
-      std::cout<<"symmetry_path size "<< symmetry_path.size() <<std::endl;
+      logger->debug("symmetry_path size {0}", symmetry_path.size());
     }
 
     for(int multi_index=0;multi_index<multi_number;multi_index++){

@@ -9,19 +9,21 @@ from .create_database import CreateDatabase
 from .match_graph import Annotate
 from .read_setup import read_setup
 from .write_verilog_lef import write_verilog, WriteVerilog,generate_lef
-from .common_centroid_cap_constraint import WriteCap
-from .write_constraint import WriteConst
+from .common_centroid_cap_constraint import CapConst
+from .write_constraint import FindConst
+from .write_pnr_const import ConstraintWriter
 from .read_lef import read_lef
 from .user_const import ConstraintParser
+from ..schema import constraint
 
 import logging
 logger = logging.getLogger(__name__)
 
 def generate_hierarchy(netlist, subckt, output_dir, flatten_heirarchy, pdk_dir, uniform_height):
-    hier_graph_dict,library = compiler(netlist, subckt, pdk_dir, flatten_heirarchy)
-    return compiler_output(netlist, library, hier_graph_dict, subckt, output_dir, pdk_dir, uniform_height)
+    hier_graph_dict = compiler(netlist, subckt, pdk_dir, flatten_heirarchy)
+    return compiler_output(netlist, hier_graph_dict, subckt, output_dir, pdk_dir, uniform_height)
 
-def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path,flat=0,Debug=False):
+def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, flat=0, Debug=False):
     """
     Reads input spice file, converts to a graph format and create hierarchies in the graph
 
@@ -47,6 +49,9 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path,flat=
     logger.info("Starting topology identification...")
     input_dir = input_ckt.parents[0]
     logger.debug(f"Reading subckt {input_ckt}")
+    #
+    # TODO: flatten should be separate pass
+    #
     sp = SpiceParser(input_ckt, design_name, flat)
     circuit_graphs = sp.sp_parser()
     assert circuit_graphs !=None  , f"No subcircuit with name {design_name} found in spice {input_ckt}"
@@ -82,9 +87,12 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path,flat=
     const_parse = ConstraintParser(pdk_dir, input_dir)
     create_data = CreateDatabase(circuit["graph"], const_parse)
     hier_graph_dict = create_data.read_inputs(circuit["name"])
-
     logger.debug("START preprocessing")
     stacked_subcircuit=[]
+
+    #
+    # TODO: Re-implement stacked transistor detection using new passes
+    #
     for circuit_name, circuit in hier_graph_dict.items():
         logger.debug(f"preprocessing circuit name: {circuit_name}")
         G1 = circuit["graph"]
@@ -95,7 +103,9 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path,flat=
         if circuit_name in hier_graph_dict.keys() and circuit_name is not design_name:
             logger.debug(f"removing stacked subcircuit {circuit_name}")
             del hier_graph_dict[circuit_name]
-    #remove pg_pins requirement by pnr
+    #
+    # TODO: pg_pins should be marked using constraints. Not manipulating netlist
+    #
     logger.debug("Modifying pg pins in design for PnR")
     pg_pins = design_setup['POWER']+design_setup['GND']
     remove_pg_pins(hier_graph_dict,design_name, pg_pins)
@@ -107,11 +117,11 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path,flat=
                 logger.debug(node)
 
     annotate = Annotate(hier_graph_dict, design_setup, library, all_lef)
-    lib_names = annotate.annotate()
+    annotate.annotate()
 
-    return hier_graph_dict, lib_names
+    return hier_graph_dict
 
-def compiler_output(input_ckt, lib_names , hier_graph_dict, design_name:str, result_dir:pathlib.Path, pdk_dir:pathlib.Path, uniform_height=False):
+def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:pathlib.Path, pdk_dir:pathlib.Path, uniform_height=False):
     """
     search for constraints and write output in verilog format
     Parameters
@@ -215,9 +225,7 @@ def compiler_output(input_ckt, lib_names , hier_graph_dict, design_name:str, res
     logger.debug(f"All available cell generator with updates: {all_lef}")
     for name,member in hier_graph_dict.items():
         graph = member["graph"]
-        if not 'const' in member:
-            member["const"] = None
-        const = member["const"]
+        constraints = member["constraints"]
         logger.debug(f"Found module: {name} {graph.nodes()}")
         inoutpin = []
         floating_ports=[]
@@ -242,15 +250,17 @@ def compiler_output(input_ckt, lib_names , hier_graph_dict, design_name:str, res
 
             ##Removing constraints to fix cascoded cmc
             if name not in design_setup['DIGITAL']:
-                logger.debug(f"call constraint generator writer for block: {name} {const}")
+                logger.debug(f"call constraint generator writer for block: {name}")
                 stop_points = design_setup['POWER'] + design_setup['GND'] + design_setup['CLOCK']
                 if name not in design_setup['NO_CONST']:
-                    const = WriteConst(graph, name, inoutpin, member["ports_weight"], const, stop_points)
-                const = WriteCap(graph, name, design_config["unit_size_cap"], const, design_setup['MERGE_SYMM_CAPS'])
-            if const and 'constraints' in const and len(const["constraints"]) > 0:
-                json_const_file = result_dir / (name + '.const.json')
+                    constraints = FindConst(graph, name, inoutpin, member["ports_weight"], constraints, stop_points)
+                constraints = CapConst(graph, name, design_config["unit_size_cap"], constraints, design_setup['MERGE_SYMM_CAPS'])
+            if constraints and len(constraints) > 0:
+                pnr_const_format = ConstraintWriter(pdk_dir)
+                new_const = pnr_const_format.map_valid_const(constraints)
+                json_const_file = result_dir / (name + '.pnr.const.json')
                 with open(json_const_file, 'w') as outfile:
-                    json.dump(const, outfile, indent=4)
+                    json.dump(new_const, outfile, indent=4)
             verilog_tbl['modules'].append( wv.gen_dict())
     if len(POWER_PINS)>0:
         for i, nm in enumerate(POWER_PINS):
@@ -265,5 +275,5 @@ def compiler_output(input_ckt, lib_names , hier_graph_dict, design_name:str, res
     logger.info("Topology identification done !!!")
     logger.info(f"OUTPUT verilog json netlist at: {result_dir}/{design_name}.verilog.json")
     logger.info(f"OUTPUT verilog netlist at: {result_dir}/{design_name}.v")
-    logger.info(f"OUTPUT const file at: {result_dir}/{design_name}.const.json")
+    logger.info(f"OUTPUT const file at: {result_dir}/{design_name}.pnr.const.json")
     return primitives

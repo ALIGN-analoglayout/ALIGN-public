@@ -134,10 +134,10 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
 
 def route_top_down( DB, drcInfo,
                     bounding_box,
-                    current_node_ort, idx, lidx,
+                    current_node_ort, idx, lidx, sel,
                     opath, binary_directory, adr_mode, *, PDN_mode, pdk):
 
-    current_node = DB.CheckoutHierNode(idx) # Make a copy
+    current_node = DB.CheckoutHierNode(idx, sel) # Make a copy
     i_copy = DB.hierTree[idx].n_copy
 
     logger.debug( f'Start of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy}')
@@ -157,7 +157,7 @@ def route_top_down( DB, drcInfo,
         childnode_orient = DB.RelOrt2AbsOrt( current_node_ort, inst.orient)
         child_node_name = DB.hierTree[child_idx].name
         childnode_bbox = PnR.bbox( inst.placedBox.LL, inst.placedBox.UR)
-        new_childnode_idx = route_top_down(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, 0, opath, binary_directory, adr_mode, PDN_mode=PDN_mode, pdk=pdk)
+        new_childnode_idx = route_top_down(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, lidx, blk.selectedInstance, opath, binary_directory, adr_mode, PDN_mode=PDN_mode, pdk=pdk)
         DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_childnode_idx])
         current_node.Blocks[bit].child = new_childnode_idx
 
@@ -217,7 +217,7 @@ def toplevel(args, *, PDN_mode=False, pdk=None, render_placements=False):
     for idx in TraverseOrder:
         logger.info(f'Topo order: {idx} {DB.hierTree[idx].name}')
 
-        current_node = DB.CheckoutHierNode(idx)
+        current_node = DB.CheckoutHierNode(idx, -1)
         #analyze_hN( 'Start', current_node, True)
 
         DB.AddingPowerPins(current_node)
@@ -256,11 +256,12 @@ def toplevel(args, *, PDN_mode=False, pdk=None, render_placements=False):
     assert len(DB.hierTree[last].PnRAS) == DB.hierTree[last].numPlacement
 
     for lidx in range(DB.hierTree[last].numPlacement):
+        sel = lidx
         new_topnode_idx = route_top_down( DB, drcInfo,
                                           PnR.bbox( PnR.point(0,0),
                                                     PnR.point(DB.hierTree[last].PnRAS[lidx].width,
                                                               DB.hierTree[last].PnRAS[lidx].height)),
-                                          Omark.N, last, lidx,
+                                          Omark.N, last, lidx, sel,
                                           opath, binary_directory, adr_mode, PDN_mode=PDN_mode, pdk=pdk)
         new_topnode_indices.append(new_topnode_idx)
 

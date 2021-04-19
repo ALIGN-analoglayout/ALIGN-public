@@ -9,7 +9,7 @@ examples = [('inverter_v1',1,False),
             ('five_transistor_ota',1,False),
             ('five_transistor_ota',2,False),
             #Hierarchical block fail with num_placements > 1
-            #('cascode_current_mirror_ota',2,False),
+            ('cascode_current_mirror_ota',2,False),
             #Test PDN_mode
             ('telescopic_ota',1,True)]
 
