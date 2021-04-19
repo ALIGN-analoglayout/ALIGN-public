@@ -13,7 +13,7 @@ NType = PnR.NType
 Omark = PnR.Omark
 TransformType = PnR.TransformType
 
-def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, adr_mode, *, PDN_mode, pdk):
+def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, PDN_mode, pdk):
     h_skip_factor = 7
     v_skip_factor = 8
 
@@ -122,7 +122,7 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
 def route_top_down( DB, drcInfo,
                     bounding_box,
                     current_node_ort, idx, lidx, sel,
-                    opath, binary_directory, adr_mode, *, PDN_mode, pdk):
+                    opath, adr_mode, *, PDN_mode, pdk):
 
     current_node = DB.CheckoutHierNode(idx, sel) # Make a copy
     i_copy = DB.hierTree[idx].n_copy
@@ -144,12 +144,12 @@ def route_top_down( DB, drcInfo,
         childnode_orient = DB.RelOrt2AbsOrt( current_node_ort, inst.orient)
         child_node_name = DB.hierTree[child_idx].name
         childnode_bbox = PnR.bbox( inst.placedBox.LL, inst.placedBox.UR)
-        new_childnode_idx = route_top_down(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, lidx, blk.selectedInstance, opath, binary_directory, adr_mode, PDN_mode=PDN_mode, pdk=pdk)
+        new_childnode_idx = route_top_down(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, lidx, blk.selectedInstance, opath, adr_mode, PDN_mode=PDN_mode, pdk=pdk)
         DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_childnode_idx])
         current_node.Blocks[bit].child = new_childnode_idx
 
     DB.ExtractPinsToPowerPins(current_node)
-    route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, adr_mode, PDN_mode=PDN_mode, pdk=pdk)
+    route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, PDN_mode=PDN_mode, pdk=pdk)
 
     if not current_node.isTop:
         DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Backward)
@@ -207,7 +207,7 @@ def place( *, DB, opath, fpath, numLayout, effort, idx):
     #analyze_hN( 'End', current_node, False)
 
 
-def route( *, DB, idx, opath, binary_directory, adr_mode, PDN_mode, pdk):
+def route( *, DB, idx, opath, adr_mode, PDN_mode, pdk):
     logger.info(f'Starting top-down routing on {DB.hierTree[idx].name} {idx}')
 
     new_topnode_indices = []
@@ -221,10 +221,10 @@ def route( *, DB, idx, opath, binary_directory, adr_mode, PDN_mode, pdk):
                                                     PnR.point(DB.hierTree[idx].PnRAS[lidx].width,
                                                               DB.hierTree[idx].PnRAS[lidx].height)),
                                           Omark.N, idx, lidx, sel,
-                                          opath, binary_directory, adr_mode, PDN_mode=PDN_mode, pdk=pdk)
+                                          opath, adr_mode, PDN_mode=PDN_mode, pdk=pdk)
         new_topnode_indices.append(new_topnode_idx)
 
-def place_and_route( *, DB, opath, fpath, numLayout, effort, binary_directory, adr_mode, PDN_mode, pdk, render_placements):
+def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, pdk, render_placements):
     TraverseOrder = DB.TraverseHierTree()
 
     for idx in TraverseOrder:
@@ -237,7 +237,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, binary_directory, a
             hN = DB.CheckoutHierNode( idx, sel)
             dump_blocks( hN, DB, leaves_only=False)
 
-    route( DB=DB, idx=idx, opath=opath, binary_directory=binary_directory, adr_mode=adr_mode, PDN_mode=PDN_mode, pdk=pdk)
+    route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, pdk=pdk)
 
 def toplevel(args, *, PDN_mode=False, pdk=None, render_placements=False, adr_mode=False):
 
@@ -250,13 +250,10 @@ def toplevel(args, *, PDN_mode=False, pdk=None, render_placements=False, adr_mod
 
     DB = PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile)
 
-    # find directory that args[0] sits in
-    binary_directory = str(pathlib.Path(args[0]).parent)
-
     # Need the trailing /
     opath = './Results/'
     pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
 
-    place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, binary_directory=binary_directory, adr_mode=adr_mode, PDN_mode=PDN_mode, pdk=pdk, render_placements=render_placements)
+    place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, pdk=pdk, render_placements=render_placements)
 
     return DB
