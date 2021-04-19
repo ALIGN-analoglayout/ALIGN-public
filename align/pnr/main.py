@@ -222,9 +222,6 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
                 i_placement = lidx
 
                 variant_name = f'{nm}_{n_copy}_{i_placement}'
-
-                logger.info( f'Processing top-down generated blocks {DB.hierTree[idx].numPlacement}: idx={idx} nm={nm} variant_name={variant_name}')
-
                 _generate_json(hN=DB.hierTree[idx],
                                variant=variant_name,
                                pdk_dir=pdk_dir,
