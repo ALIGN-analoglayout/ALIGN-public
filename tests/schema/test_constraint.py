@@ -1,4 +1,5 @@
 import pytest
+import pathlib
 from align.schema import constraint
 from align.schema.checker import Z3Checker
 
@@ -111,3 +112,11 @@ def test_ConstraintDB_nonincremental_revert(db):
     assert len(db._commits) == 0
     if db._checker:
         assert 'M3' not in str(db._checker._solver)
+
+def test_ConstraintDB_json(db):
+    db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M2']))
+    db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M3']))
+    fp = pathlib.Path(__file__).parent / 'const.json'
+    fp.write_text(db.json())
+    newdb = constraint.ConstraintDB.parse_file(fp)
+    assert db == newdb
