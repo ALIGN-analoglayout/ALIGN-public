@@ -1,8 +1,9 @@
 import pathlib
 
 from align.compiler.write_verilog_lef import write_verilog, WriteVerilog, generate_lef
-from align.compiler.write_constraint import WriteConst
-from align.compiler.common_centroid_cap_constraint import WriteCap
+from align.compiler.write_constraint import FindConst
+from align.schema.constraint import ConstraintDB
+from align.compiler.common_centroid_cap_constraint import CapConst
 from test_current_parser import test_match_ota
 
 def test_verilog_writer():
@@ -32,8 +33,8 @@ def test_verilog_writer():
         if name in available_cell_generator or name.split('_type')[0] in available_cell_generator:
             pass
         else:
-            const=WriteConst(subckt["graph"], name, subckt['ports'],subckt['ports_weight'],None,['vdd!'])
-            WriteCap(subckt["graph"], name,  design_config["unit_size_cap"],const,True)
+            const = FindConst(subckt["graph"], name, subckt['ports'], subckt['ports_weight'], ConstraintDB(), ['vdd!'])
+            const = CapConst(subckt["graph"], name, design_config["unit_size_cap"], const, True)
 
     with (result_dir / 'ota.v').open( 'wt') as fp:
         write_verilog( verilog_tbl, fp)

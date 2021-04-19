@@ -19,110 +19,6 @@ PnRdatabase::~PnRdatabase() {
   logger->info( "Deconstructing PnRdatabase");
 }
 
-PnRdatabase::PnRdatabase(string path, string topcell, string vname, string lefname, string mapname, string drname) {
-
-  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.PnRdatabase");
-
-  unitScale=2000;
-  maxNode=0;
-
-  logger->info( "PnRDB-Info: reading data from path ");
-
-  if( drname == "HardDesignRules") {
-      this->HardDesignRule();
-      logger->info( "PnRDB-Info: default PDK");
-  } else if( EndsWith( drname, ".rul")) {
-      this->ReadDesignRule(path+"/"+drname);
-      logger->info( "PnRDB-Info: read PDK via {0}", drname);
-  } else if( EndsWith( drname, ".json")) {
-      this->ReadPDKJSON(path+"/"+drname);
-      logger->info( "PnRDB-Info: read PDK via {0}", drname);
-  } else {
-      logger->critical( "PnRDB-Error: unknown name for read PDK (HardDesignRules, *.rul, *.json): {0}", drname);
-      assert(0);
-  }
-
-  this->ReadLEF(path+"/"+lefname);
-  
-  auto pos = lefname.rfind(".lef");
-  if (pos != std::string::npos) {
-    auto lefN(lefname);
-    lefN.replace(pos, 4, ".wotap.lef");
-    this->ReadLEF(lefN, false);
-  }
-  this->ReadMap(path, mapname);
-  this->ReadVerilog(path, vname, topcell);
-  //this->extend_pin_function();
-
-  logger->info( "PnRDB-Info: complete reading");
-}
-
-void PnRdatabase::extend_pin_function(){
-
-  for(unsigned int i=0;i<hierTree.size();++i){
-
-     for(unsigned int j=0;j<hierTree[i].Blocks.size();j++){
-
-          for(unsigned int k=0;k<hierTree[i].Blocks[j].instance.size();k++){
-
-                extend_pins(hierTree[i].Blocks[j].instance[k]);
-             }
-
-        }
-  }
-
-}
-
-void PnRdatabase::extend_pins(PnRDB::block &temp_block){
- 
-  //only extend for leafblock
-  if(temp_block.isLeaf){
-
-      for(unsigned int i=0;i<temp_block.blockPins.size();i++){
-         
-         //extend pins 
-         extend_pin(temp_block.blockPins[i],temp_block.width,temp_block.height);
-         //put the extended pins into internal metals
-         for(unsigned int j=0;j<temp_block.blockPins[i].pinContacts.size();j++){
-            temp_block.interMetals.push_back(temp_block.blockPins[i].pinContacts[j]);
-         }
-
-      }
-
-    }
-
-}
-
-
-void PnRdatabase::extend_pin(PnRDB::pin &temp_pin, int width, int height){
-
-  int h_margin = 4;
-  int v_margin = 4;
-
-  //extend pin
-  for(unsigned int i=0;i<temp_pin.pinContacts.size();i++){
-
-      int metal_index = DRC_info.Metalmap[temp_pin.pinContacts[i].metal];
- 
-      if(DRC_info.Metal_info[metal_index].direct==1){//h
-
-          temp_pin.pinContacts[i].originBox.LL.x = 0+h_margin;
-          temp_pin.pinContacts[i].originBox.UR.x = width-h_margin;
-          temp_pin.pinContacts[i].originCenter.x = width/2;
-          
-        }else{
-
-          temp_pin.pinContacts[i].originBox.LL.y = 0+v_margin;
-          temp_pin.pinContacts[i].originBox.UR.y = height-v_margin;
-          temp_pin.pinContacts[i].originCenter.y = height/2;
-
-        }
-  }
-
-  //might need to add the pin into internal metal
-
-}
-
 deque<int> PnRdatabase::TraverseHierTree() {
   deque<int> Q;
   vector<string> color(hierTree.size(), "white");
@@ -206,17 +102,23 @@ void PnRdatabase::TraverseDFS(deque<int>& Q, vector<string>& color, int idx) {
   Q.push_back(idx);
 }
 
-PnRDB::hierNode PnRdatabase::CheckoutHierNode(int nodeID) {
+PnRDB::hierNode PnRdatabase::CheckoutHierNode(int nodeID, int sel) {
+  if (sel >= 0 && hierTree.at(nodeID).PnRAS.size() > 0) {
+    hierTree.at(nodeID).gdsFile = hierTree.at(nodeID).PnRAS[sel].gdsFile;
+    hierTree.at(nodeID).width = hierTree.at(nodeID).PnRAS[sel].width;
+    hierTree.at(nodeID).height = hierTree.at(nodeID).PnRAS[sel].height;
+    hierTree.at(nodeID).Blocks = hierTree.at(nodeID).PnRAS[sel].Blocks;
+    hierTree.at(nodeID).Terminals = hierTree.at(nodeID).PnRAS[sel].Terminals;
+    hierTree.at(nodeID).Nets = hierTree.at(nodeID).PnRAS[sel].Nets;
+    hierTree.at(nodeID).LL = hierTree.at(nodeID).PnRAS[sel].LL;
+    hierTree.at(nodeID).UR = hierTree.at(nodeID).PnRAS[sel].UR;
+    hierTree.at(nodeID).PowerNets = hierTree.at(nodeID).PnRAS[sel].PowerNets;
+  }
   return hierTree.at(nodeID);
 }
 
 void PnRdatabase::AppendToHierTree(const PnRDB::hierNode& hN) {
   hierTree.push_back( hN);
-}
-
-void PnRdatabase::SetParentInHierTree( int idx, int pidx, int parent_id) {
-  assert( 0 <= pidx && pidx < int(hierTree[idx].parent.size()));
-  hierTree[idx].parent[pidx] = parent_id;
 }
 
 std::vector<PnRDB::hierNode> PnRdatabase::CheckoutHierNodeVec(int nodeID){
@@ -235,35 +137,6 @@ std::vector<PnRDB::hierNode> PnRdatabase::CheckoutHierNodeVec(int nodeID){
     nodeVec[lidx].UR = current_node.PnRAS[lidx].UR;
   }
   return nodeVec;
-}
-
-bool PnRdatabase::ReadMap(string fpath, string mapname) {
-
-  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.ReadMap");
-
-  logger->info("PnRDB-Info: reading map file {0}/{1}",fpath,mapname);
-  ifstream fin;
-  string def;
-  string mapfile=fpath+"/"+mapname;
-  vector<string> temp;
-  fin.exceptions(ifstream::failbit | ifstream::badbit);
-  try {
-    fin.open(mapfile.c_str());
-    while(fin.peek()!=EOF) {
-      getline(fin, def);
-      if(def.compare("")==0) {continue;}
-      temp = split_by_spaces_yg(def);
-      if(int(temp.size())>=2) {
-        gdsData.insert( std::pair<string,string>(temp[0],fpath+"/"+temp[1]) );
-        _gdsDataWoTap.insert( std::make_pair(temp[0], fpath + "/wo_tap/" + temp[1]) );
-      }
-    }
-    fin.close();
-    return true; 
-  } catch(ifstream::failure& e) {
-    logger->error("PnRDB-Error: fail to read map file ");
-  }
-  return false;
 }
 
 static void updateContact( PnRDB::contact& c)
@@ -973,6 +846,7 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
            }
          }
      }
+   hierTree[nodeID].PnRAS.back().PowerNets=updatedNode.PowerNets;
    logger->debug("node ID {0}",nodeID);
    logger->debug("hierTree power net size {0}",hierTree[nodeID].PowerNets.size());
    logger->debug("updatedNode power net size {0}",updatedNode.PowerNets.size());
@@ -1107,25 +981,27 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
        auto& lhs = parent_node.Blocks[j];
        auto& b = lhs.instance.back();
        if(b.master.compare(updatedNode.name)==0){
-         for(unsigned int k = 0; k<updatedNode.PowerNets.size();k++){
+         b.dummy_power_pin.clear();          
+          for(unsigned int k = 0; k<updatedNode.PowerNets.size();k++){
             int found = 0;
             for(unsigned int l =0;l<b.PowerNets.size();l++){
                if(updatedNode.PowerNets[k].name == b.PowerNets[l].name){
                  found = 1;
+                 b.PowerNets[l].dummy_connected.clear();
                  for(unsigned int p=0;p<updatedNode.PowerNets[k].Pins.size();p++){
-                    PnRDB::connectNode temp_connectNode;
-                    temp_connectNode.iter2 = j;
-                    temp_connectNode.iter = b.dummy_power_pin.size();
-                    //here is the problem
-                    b.PowerNets[l].dummy_connected.push_back(temp_connectNode);
-                    //parent_node.PowerNets[l].dummy_connected.push_back(temp_connectNode);
-                    //need move the dummy_connected into block level
-                    PnRDB::pin temp_pin;
-                    temp_pin=updatedNode.PowerNets[k].Pins[p];
-                    updatePowerPins(temp_pin);
-                    b.dummy_power_pin.push_back(temp_pin);
+                   PnRDB::connectNode temp_connectNode;
+                   temp_connectNode.iter2 = j;
+                   temp_connectNode.iter = b.dummy_power_pin.size();
+                   //here is the problem
+                   b.PowerNets[l].dummy_connected.push_back(temp_connectNode);
+                   //parent_node.PowerNets[l].dummy_connected.push_back(temp_connectNode);
+                   //need move the dummy_connected into block level
+                   PnRDB::pin temp_pin;
+                   temp_pin=updatedNode.PowerNets[k].Pins[p];
+                   updatePowerPins(temp_pin);
+                   b.dummy_power_pin.push_back(temp_pin);
                  }
-                 
+
                }
             }
 
@@ -1184,7 +1060,7 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
             }
          }
       }
-
+      
       logger->debug("End update power pin in parent");
 
 
@@ -2069,28 +1945,6 @@ void PnRdatabase::Write_Router_Report(PnRDB::hierNode &node, const string& opath
 
 }
 
-void PnRdatabase::attach_constraint_files( const string& fpath)
-{
-    auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.attach_constraint_files");
-
-    for(unsigned int i=0;i<hierTree.size();i++){
-
-	auto &curr_node = hierTree[i];
-
-        curr_node.bias_Vgraph = DRC_info.Design_info.Vspace;
-        curr_node.bias_Hgraph = DRC_info.Design_info.Hspace;
-        // added one nodes to the class
-        if (ReadConstraint_Json(curr_node, fpath, "const.json")) {
-            logger->info("Finished reading contraint json file {0}.const.json", curr_node.name);
-        } else if (ReadConstraint(curr_node, fpath, "const")) {
-            logger->info("Finished reading contraint file {0}.const", curr_node.name);
-        } else {
-            logger->warn("No constraint file for module {0}", curr_node.name);
-        }
-    }
-
-}
-
 void PnRdatabase::semantic0( const string& topcell)
 {
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.semantic0");
@@ -2175,7 +2029,7 @@ void PnRdatabase::semantic1( const vector<tuple<string,string,string> >& global_
   const std::string supply_node_name = "global_power";
 
   for(auto p = global_signals.begin(); p != global_signals.end(); ++p) {
-    std::string supply_name = std::get<1>(*p);
+    std::string supply_name = std::get<2>(*p);
     std::string supply_name_full = std::get<0>(*p) + "." + supply_name;
 
     int power;

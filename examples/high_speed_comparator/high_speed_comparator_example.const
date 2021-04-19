@@ -1,8 +1,0 @@
-// ALIGN generated automatic constraints
-HorizontalDistance -abs_distance 0
-VerticalDistance -abs_distance 0
-GroupBlocks -blocks [mmn0,mmn1] -name diffpair
-GroupBlocks -blocks [mmn4,mmn3] -name ccn
-GroupBlocks -blocks [mmp1,mmp0] -name ccp
-SymmetricBlocks -pairs [[mmn2], [diffpair] , [ccn] , [ccp]] -direction V
-OrderBlocks -blocks [mmn2, diffpair, ccn, ccp] -direction V

@@ -2,41 +2,41 @@ How to add your own constraints
 ===========================================================
 
 The ALIGN flow generates symmetry constraints automatically but users can add their own constraint for better control.
-Here, are the list of constraints used in align. These constraints are applied on the blocks (instances of NMOS/PMOS/Resistor/Capacitor/Subcircuit) or on nets.
+Here, are the list of constraints used in align. These constraints are applied on the instances (instances of NMOS/PMOS/Resistor/Capacitor/Subcircuit) or on nets.
 These constraints need to be defined seperately for each of the hierachies with name ``<hier name>.const``, defined in the schematic.
 
 Constraint options
 --------------------
 
 * CreateAlias:
-	Defines an alias for group of blocks. These aliases can be later used in the const file in place of list of blocks or nets.
+	Defines an alias for group of instances. These aliases can be later used in the const file in place of list of instances or nets.
 
-	* Example: ``CreateAlias -blocks [B1,B2,B3] -name alias1``
+	* Example: ``CreateAlias -instances [B1,B2,B3] -name alias1``
 
 * GroupBlocks:
-	We can create extra hierarchies in the design by grouping blocks. This helps in bringing the blocks closer. 
+	We can create extra hierarchies in the design by grouping instances. This helps in bringing the instances closer. 
 	We are planning to implement placement type, such as common-centroid, interdigitated for these hierarchies.
 
-	* Format: ``GroupBlocks -blocks <list of blocks> -name <name of the group>``
-	* Example1: ``GroupBlocks -blocks [B1,B2,B3] -name group1``
-	* Example2: ``GroupBlocks -blocks alias1 -name group1``
+	* Format: ``GroupBlocks -instances <list of instances> -name <name of the group>``
+	* Example1: ``GroupBlocks -instances [B1,B2,B3] -name group1``
+	* Example2: ``GroupBlocks -instances alias1 -name group1``
 
 * OrderBlocks:
-	Pleaces the blocks in the specified order.
+	Pleaces the instances in the specified order.
 
-	* Format: ``OrderBlocks -blocks <list of blocks> -direction H/V``
-	* Example: ``OrderBlocks -blocks alias1 -direction H``
+	* Format: ``OrderBlocks -instances <list of instances> -direction H/V``
+	* Example: ``OrderBlocks -instances alias1 -direction H``
 
 	.. image:: images/OrderBlocks.PNG
 
 * MatchBlocks:
-	Assigns two blocks as close as possible.
+	Assigns two instances as close as possible.
 
-	* Format: ``MatchBlocks -blocks <list of two blocks>``
-	* Example: ``MatchBlocks -blocks [B1,B2]``
+	* Format: ``MatchBlocks -instances <list of two instances>``
+	* Example: ``MatchBlocks -instances [B1,B2]``
 
 * HorizontalDistance: 
-	Set the minimum horizontal distance between all blocks in the hierarchy.
+	Set the minimum horizontal distance between all instances in the hierarchy.
 
 	* Format: ``HorizontalDistance -abs_distance <in nanometers>``
 	* Example: ``HorizontalDistance -abs_distance 108``
@@ -44,7 +44,7 @@ Constraint options
 	.. image:: images/HorizontalDistance.PNG
 
 * VerticalDistance: 
-	Set the minimum vertical distance between all blocks in the hierarchy.
+	Set the minimum vertical distance between all instances in the hierarchy.
 
 	* Format: ``VerticalDistance -abs_distance <in nanometers>``
 	* Example: ``VerticalDistance -abs_distance 108``
@@ -52,7 +52,7 @@ Constraint options
 	.. image:: images/VerticalDistance.PNG
 
 * BlockDistance: 
-	Set the minimum vertical and horizontal distance between all blocks in the hierarchy.
+	Set the minimum vertical and horizontal distance between all instances in the hierarchy.
 
 	* Format: ``BlockDistance -abs_distance <in nanometers>``
 	* Example: ``BlockDistance -abs_distance 108``
@@ -76,18 +76,18 @@ Constraint options
 	.. image:: images/SymmetricBlocks.PNG
 
 * AlignBlocks:
-	Aligns blocks horizontally or vertically.
+	Aligns instances horizontally or vertically.
 
-	* Format: ``AlignBlocks -blocks <list of blocks> -direction H/V``
-	* Example: ``AlignBlocks -blocks -alias1 -direction V``
+	* Format: ``AlignBlocks -instances <list of instances> -direction H/V``
+	* Example: ``AlignBlocks -instances -alias1 -direction V``
 
 	.. image:: images/AlignBlocks.PNG
 
 * GroupCaps:
 	Common centroid capacitor placement and routing. Adds an extra level of hierarchy for the group of capacitors.
 
-	* Format: ``GroupCaps -blocks <list of blocks> -name (optional) <name of cap hierarchy> -unit_cap <unit capacitor name" -num_units <list of units of each capacitor> -dummy True/False``
-	* Example: ``GroupCaps -blocks [c1,c2,c3] -name c1_c2_c3 -unit_cap Cap_12f -num_units [1,2,4] -dummy False``
+	* Format: ``GroupCaps -instances <list of instances> -name (optional) <name of cap hierarchy> -unit_cap <unit capacitor name" -num_units <list of units of each capacitor> -dummy True/False``
+	* Example: ``GroupCaps -instances [c1,c2,c3] -name c1_c2_c3 -unit_cap Cap_12f -num_units [1,2,4] -dummy False``
 
 * NetConst:
 	Adds constraints on each of the nets in the list.
@@ -120,8 +120,8 @@ Using JSON format as input:
 	ALIGN can also take JSON format input of the constraints. There is direct translation from cmdline format to JSON format. The file names for these JSON constraints should be ``<hier name>.const.json``.
 	If both formats are provided as input, only JSON format will be read for that hierarchy
 
-	* Format (cmd): ``CreateAlias -blocks [B1,B2,B3] -name alias1``
-	* Format (JSON): ``{"const_name":"CreateAlias", "blocks": ["B1","B2","B3"], "name"  : "alias1"}``
+	* Format (cmd): ``CreateAlias -instances [B1,B2,B3] -name alias1``
+	* Format (JSON): ``{"constraint":"CreateAlias", "instances": ["B1","B2","B3"], "name"  : "alias1"}``
 
 Example constraints (command-line interface)
 ---------------------------------------------
@@ -130,44 +130,42 @@ Example constraints (command-line interface)
 	#filename: high_speed_comparator.const
 	HorizontalDistance -abs_distance 0
 	VerticalDistance -abs_distance 0
-	GroupBlocks -blocks [mmn0,mmn1] -name diffpair
-	GroupBlocks -blocks [mmn4,mmn3] -name ccn
-	GroupBlocks -blocks [mmp1,mmp0] -name ccp
+	GroupBlocks -instances [mmn0,mmn1] -name diffpair
+	GroupBlocks -instances [mmn4,mmn3] -name ccn
+	GroupBlocks -instances [mmp1,mmp0] -name ccp
 	SymmetricBlocks -pairs [[mmn2], [diffpair] , [ccn] , [ccp]] -direction V
-	OrderBlocks -blocks [mmn2, diffpair, ccn, ccp] -direction V
+	OrderBlocks -instances [mmn2, diffpair, ccn, ccp] -direction V
 
 Example constraints (JSON format)
 -----------------------------------
 .. code-block:: python3
 
 	#filename: high_speed_comparator.const.json
-	{
-	"constraints":[
-		{   "const_name":"HorizontalDistance",
+	[
+		{   "constraint":"HorizontalDistance",
 			"abs_distance":0
 		},
-		{   "const_name":"VerticalDistance",
+		{   "constraint":"VerticalDistance",
 			"abs_distance":0
 		},
-		{   "const_name": "GroupBlocks",
-			"blocks": ["mmn0", "mmn1"],
+		{   "constraint": "GroupBlocks",
+			"instances": ["mmn0", "mmn1"],
 			"name": "diffpair"
 		},
-		{   "const_name":"GroupBlocks",
-			"blocks": ["mmn4", "mmn3"],
+		{   "constraint":"GroupBlocks",
+			"instances": ["mmn4", "mmn3"],
 			"name": "ccn"
 		},
-		{   "const_name": "GroupBlocks",
-			"blocks": ["mmp1", "mmp0"],
+		{   "constraint": "GroupBlocks",
+			"instances": ["mmp1", "mmp0"],
 			"name": "ccp"
 		},
-		{   "const_name": "SymmetricBlocks",
+		{   "constraint": "SymmetricBlocks",
 			"direction" : "V",
 			"pairs": [["mmn2"], ["diffpair"], ["ccn"], ["ccp"]]
 		},
-		{   "const_name": "OrderBlocks",
-			"blocks": ["mmn2", "diffpair", "ccn", "ccp"],
+		{   "constraint": "OrderBlocks",
+			"instances": ["mmn2", "diffpair", "ccn", "ccp"],
 			"direction": "V"
 		}
-		]
-	}
+	]

@@ -22,10 +22,10 @@ from .toplevel import toplevel
 logger = logging.getLogger(__name__)
 
 
-def _generate_json_from_hN(*, hN, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False, input_dir=None, toplevel=True, gds_json=True):
+def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False, input_dir=None, toplevel=True, gds_json=True):
 
     logger.debug(
-        f"_generate_json_from_hN: {hN} {variant} {primitive_dir} {pdk_dir} {output_dir} {check} {extract} {input_dir} {toplevel} {gds_json}")
+        f"_generate_json: {hN} {variant} {primitive_dir} {pdk_dir} {output_dir} {check} {extract} {input_dir} {toplevel} {gds_json}")
 
     ret = {}
 
@@ -198,7 +198,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
         variants = collections.defaultdict(collections.defaultdict)
         for lidx, (topidx, _) in enumerate(possible_final_circuits[1:]):
 
-            order = [(i, DB.CheckoutHierNode(i).name)
+            order = [(i, DB.CheckoutHierNode(i, -1).name)
                      for i in TraverseHierTree(topidx)]
             assert order[-1][1] == subckt, f"Last in topological order should be the subckt {subckt} {order}"
 
@@ -207,24 +207,24 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
             for idx, nm in order[:-1]:
                 n_copy = DB.hierTree[idx].n_copy
                 #assert 1 == DB.hierTree[idx].numPlacement
-                i_placement = 0
+                i_placement = lidx
 
                 variant_name = f'{nm}_{n_copy}_{i_placement}'
                 logger.info(
                     f'Processing top-down generated blocks {DB.hierTree[idx].numPlacement}: idx={idx} nm={nm} variant_name={variant_name}')
 
-                hN = DB.CheckoutHierNode(idx)
+                hN = DB.CheckoutHierNode(idx, -1)
 
-                _generate_json_from_hN(hN=hN,
-                                       variant=variant_name,
-                                       pdk_dir=pdk_dir,
-                                       primitive_dir=input_dir,
-                                       input_dir=working_dir,
-                                       output_dir=working_dir,
-                                       check=check,
-                                       extract=extract,
-                                       gds_json=gds_json,
-                                       toplevel=False)
+                _generate_json(hN=hN,
+                               variant=variant_name,
+                               pdk_dir=pdk_dir,
+                               primitive_dir=input_dir,
+                               input_dir=working_dir,
+                               output_dir=working_dir,
+                               check=check,
+                               extract=extract,
+                               gds_json=gds_json,
+                               toplevel=False)
 
             # toplevel
             (idx, nm) = order[-1]
@@ -235,19 +235,19 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
             logger.info(
                 f'Processing top-down generated blocks: lidx={lidx} topidx={topidx} nm={nm} variant={variant}')
 
-            hN = DB.CheckoutHierNode(idx)
+            hN = DB.CheckoutHierNode(idx, -1)
 
             variants[variant].update(
-                _generate_json_from_hN(hN=hN,
-                                       variant=variant,
-                                       pdk_dir=pdk_dir,
-                                       primitive_dir=input_dir,
-                                       input_dir=working_dir,
-                                       output_dir=working_dir,
-                                       check=check,
-                                       extract=extract,
-                                       gds_json=gds_json,
-                                       toplevel=True))
+                _generate_json(hN=hN,
+                               variant=variant,
+                               pdk_dir=pdk_dir,
+                               primitive_dir=input_dir,
+                               input_dir=working_dir,
+                               output_dir=working_dir,
+                               check=check,
+                               extract=extract,
+                               gds_json=gds_json,
+                               toplevel=True))
 
             for tag, suffix in [('lef', '.lef'), ('gdsjson', '.gds.json')]:
                 path = results_dir / (variant + suffix)

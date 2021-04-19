@@ -32,6 +32,9 @@ class List(pydantic.generics.GenericModel, typing.Generic[DataT]):
     def remove(self, data: DataT):
         return self.__root__.remove(data)
 
+    def pop(self, index=-1):
+        return self.__root__.pop(index)
+
     def __len__(self):
         return len(self.__root__)
 
@@ -40,6 +43,9 @@ class List(pydantic.generics.GenericModel, typing.Generic[DataT]):
 
     def __getitem__(self, item):
         return self.__root__[item]
+
+    def __setitem__(self, item, value):
+        self.__root__[item] = value
 
     def __delitem__(self, sliceobj):
         del self.__root__[sliceobj]
@@ -95,6 +101,9 @@ class Dict(pydantic.generics.GenericModel, typing.Generic[KeyT,DataT]):
 
     def __getitem__(self, item):
         return self.__root__[item]
+
+    def __setitem__(self, item, value):
+        self.__root__[item] = value
 
     def __eq__(self, other):
         return self.__root__ == other

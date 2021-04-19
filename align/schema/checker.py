@@ -84,9 +84,9 @@ class AbstractChecker(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def Or(self, *expressions):
+    def Not(self, expr):
         '''
-        Logical `Not` of all arguments
+        Logical `Not` of argument
 
         Note: argument is assumed to be
               a boolean expression
@@ -100,6 +100,26 @@ class AbstractChecker(abc.ABC):
 
         Note: both arguments are assumed
               to be boolean expressions
+        '''
+        pass
+
+    @abc.abstractmethod
+    def cast(expr, type_):
+        '''
+        cast `expr` to `type_`
+
+        Note: Use with care. Not all 
+              engines support all types
+        '''
+        pass
+
+    @abc.abstractmethod
+    def Abs(self, expr):
+        '''
+        Absolute value of expression
+
+        Note: argument is assumed to be
+              arithmetic expression
         '''
         pass
 
@@ -157,8 +177,23 @@ class Z3Checker(AbstractChecker):
         return z3.And(*expressions)
 
     @staticmethod
+    def Not(expr):
+        return z3.Not(expr)
+
+    @staticmethod
+    def Abs(expr):
+        return z3.If(expr >= 0, expr, expr * -1)
+
+    @staticmethod
     def Implies(expr1, expr2):
         return z3.Implies(expr1, expr2)
+
+    @staticmethod
+    def cast(expr, type_):
+        if type_ == float:
+            return z3.ToReal(expr)
+        else:
+            raise NotImplementedError
 
     @staticmethod
     def _generate_var(name, **fields):
