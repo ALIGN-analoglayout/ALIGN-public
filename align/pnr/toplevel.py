@@ -191,7 +191,7 @@ def route_top_down( DB, drcInfo,
 def place( *, DB, opath, fpath, numLayout, effort, idx):
     logger.info(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
 
-    current_node = DB.CheckoutHierNode(idx)
+    current_node = DB.CheckoutHierNode(idx,-1)
     #analyze_hN( 'Start', current_node, True)
 
     DB.AddingPowerPins(current_node)
@@ -228,11 +228,12 @@ def route( *, DB, idx, opath, binary_directory, adr_mode, PDN_mode, pdk):
     assert len(DB.hierTree[idx].PnRAS) == DB.hierTree[idx].numPlacement
 
     for lidx in range(DB.hierTree[idx].numPlacement):
+        sel = lidx
         new_topnode_idx = route_top_down( DB, DB.getDrc_info(),
                                           PnR.bbox( PnR.point(0,0),
                                                     PnR.point(DB.hierTree[idx].PnRAS[lidx].width,
                                                               DB.hierTree[idx].PnRAS[lidx].height)),
-                                          Omark.N, idx, lidx,
+                                          Omark.N, idx, lidx, sel,
                                           opath, binary_directory, adr_mode, PDN_mode=PDN_mode, pdk=pdk)
         new_topnode_indices.append(new_topnode_idx)
 
@@ -242,14 +243,14 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, binary_directory, a
     for idx in TraverseOrder:
         place( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx)
 
-    if render_placements:
-        dump_blocks( DB.hierTree[TraverseOrder[-1]], DB, leaves_only=False)
-
     idx = TraverseOrder[-1]
 
+    if render_placements:
+        for sel in range(DB.hierTree[idx].numPlacement):
+            hN = DB.CheckoutHierNode( idx, sel)
+            dump_blocks( hN, DB, leaves_only=False)
+
     route( DB=DB, idx=idx, opath=opath, binary_directory=binary_directory, adr_mode=adr_mode, PDN_mode=PDN_mode, pdk=pdk)
-
-
 
 def toplevel(args, *, PDN_mode=False, pdk=None, render_placements=False, adr_mode=False):
 
