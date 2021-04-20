@@ -1,5 +1,0 @@
-// ALIGN generated automatic constraints
-SymmBlock ( {xi1,xi2} , {xi0,xi10} )
-SymmBlock ( {xi7,xi4} )
-SymmBlock ( {xi3,xi5} )
-SymmBlock ( {xi8,xi6} )

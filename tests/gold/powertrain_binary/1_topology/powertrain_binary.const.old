@@ -1,6 +1,0 @@
-// ALIGN generated automatic constraints
-SymmBlock ( {xu_pmos_5[1],xu_pmos_5[6]} )
-SymmBlock ( {xu_pmos_4[10],xu_pmos_4[13]} )
-SymmBlock ( {xu_pmos_3[1],xu_pmos_3[3]} )
-SymmBlock ( {xu_pmos_2[1],xu_pmos_2[2]} )
-SymmBlock ( {xu_pmos_1[2],xu_pmos_1[1]} )
