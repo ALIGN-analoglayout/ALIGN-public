@@ -27,7 +27,11 @@ jobs:
       MAX_JOBS: 2 # number of vCPUs (2)
 
     steps:
-      - checkout
+      - run:
+          name: Checkout code
+          command: |
+              git clone https://github.com/ALIGN-analoglayout/ALIGN-public.git --branch ${CIRCLE_BRANCH} --single-branch
+
       - run:
           name: Build Wheel
           command: |
@@ -93,7 +97,10 @@ jobs:
       MAX_JOBS: 2
 
     steps:
-      - checkout
+      - run:
+          name: Checkout code
+          command: |
+              git clone https://github.com/ALIGN-analoglayout/ALIGN-public.git --branch ${CIRCLE_BRANCH} --single-branch
       - run:
           name: "Install coverage dependencies (lcov)"
           command: |
@@ -141,7 +148,10 @@ jobs:
       MAX_JOBS: 2
 
     steps:
-      - checkout
+      - run:
+          name: Checkout code
+          command: |
+              git clone https://github.com/ALIGN-analoglayout/ALIGN-public.git --branch ${CIRCLE_BRANCH} --single-branch
       - attach_workspace:
           at: .
       - run:
