@@ -488,14 +488,6 @@ class GroupCaps(SoftConstraint):
     dummy: bool  # whether to fill in dummies
 
 
-class AlignBlocks(SoftConstraint):
-    '''
-    TODO: Replace this with just Order
-    '''
-    instances: List[str]
-    direction: Literal['H', 'V']
-
-
 class NetConst(SoftConstraint):
     nets: List[str]
     shield: str
@@ -560,7 +552,6 @@ ConstraintType = Union[
     VerticalDistance,
     SymmetricBlocks,
     GroupCaps,
-    AlignBlocks,
     NetConst,
     PortLocation,
     SymmetricNets,

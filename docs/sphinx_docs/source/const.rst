@@ -75,11 +75,11 @@ Constraint options
 
 	.. image:: images/SymmetricBlocks.PNG
 
-* AlignBlocks:
+* Align:
 	Aligns instances horizontally or vertically.
 
-	* Format: ``AlignBlocks -instances <list of instances> -direction H/V``
-	* Example: ``AlignBlocks -instances -alias1 -direction V``
+	* Format: ``Align -instances <list of instances> -line h_bottom/v_left``
+	* Example: ``Align -instances -alias1 -line v_left``
 
 	.. image:: images/AlignBlocks.PNG
 
