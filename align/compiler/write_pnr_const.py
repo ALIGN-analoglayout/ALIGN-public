@@ -9,6 +9,7 @@ import pathlib
 import pprint
 import json
 import logging
+from ..schema import constraint
 
 logger = logging.getLogger(__name__)
 pp = pprint.PrettyPrinter(indent=4)
@@ -25,7 +26,7 @@ class ConstraintWriter:
         logger.info(f"input constraints {all_const}")
         #Start mapping
         pnr_const=[]
-        for input_const in all_const:
+        for input_const in constraint.expand_user_constraints(all_const):
             # Create dict for PnR constraint
             # and handle common field aliasing
             const = input_const.dict(
