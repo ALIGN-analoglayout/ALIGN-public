@@ -90,7 +90,7 @@ class GcellGlobalRouter : public RawRouter {
 
   public:
     GcellGlobalRouter();
-    GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int Lmetal, int Hmetal, const std::string &bianryDIR); //initial Nets & Blocks with node data, also LL, UR
+    GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int Lmetal, int Hmetal); //initial Nets & Blocks with node data, also LL, UR
 //    void UpdateLLURSD(int i, int j);// Update Source and Dest based on j-th segment of i-th net; Also LL_graph UR_graph
 //    void listSegments(); //mutlipin to two pin based on stiner tree
 //    void GetShorestPath(Graph& graph);//return the shortest path to Nets
@@ -98,7 +98,6 @@ class GcellGlobalRouter : public RawRouter {
 //    // added by wbxu
     long int get_number(string str);
     void placeTerminals(); // reuse original function: placeTerminals
-    //void listSegments(const std::string &binaryDIR); // reuse original function
     //std::vector<RouterDB::point> GetMaxMinSrcDest(std::vector<RouterDB::SinkData>& source, std::vector<RouterDB::SinkData>& dest);
     void getData(PnRDB::hierNode& node, int Lmetal, int Hmetal);
     void getDRCdata(PnRDB::Drc_info& drcData);

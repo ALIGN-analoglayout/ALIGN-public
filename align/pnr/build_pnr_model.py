@@ -176,17 +176,26 @@ def _attach_constraint_files( DB, fpath):
         else:
             logger.warning(f"No constraint file for module {curr_node.name}")
                 
+def _ReadLEF( DB, path, lefname):
+    p = pathlib.Path(path) / lefname
+    if p.exists():
+        with p.open( "rt") as fp:
+            s = fp.read()
+            DB.ReadLEFFromString( s)
+    else:
+        logger.warn(f"LEF file {p} doesn't exist.")
+
 def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     DB = PnR.PnRdatabase()
 
     assert drname.endswith('.json'), drname
     DB.ReadPDKJSON( path + '/' + drname)
 
-    DB.ReadLEF( path + '/' + lefname, True)
+    _ReadLEF( DB, path, lefname, True)
+    DB.gdsData = _ReadMap( path, mapname)
     leftopname = lefname.rsplit('.lef', 1)[0]
     if pathlib.Path(path + '/' + leftopname + '.wotap.lef').is_file():
-        DB.ReadLEF( path + '/' + leftopname + '.wotap.lef', False)
-    DB.gdsData = _ReadMap( path, mapname, True)
+        _ReadLEF(DB, path, leftopname + '.wotap.lef', False)
     if pathlib.Path(path + '/wo_tap' ).is_dir():
         DB._gdsDataWoTap = _ReadMap( path, mapname, False)
 
