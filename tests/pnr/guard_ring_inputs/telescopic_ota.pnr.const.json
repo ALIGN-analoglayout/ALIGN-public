@@ -1,0 +1,100 @@
+{
+    "constraints": [
+        {
+            "net1": {
+                "name": "net012",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "m8_m7",
+                        "pin": "SA"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "m9_m10",
+                        "pin": "DB"
+                    }
+                ]
+            },
+            "net2": {
+                "name": "net06",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "m8_m7",
+                        "pin": "SB"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "m9_m10",
+                        "pin": "DA"
+                    }
+                ]
+            },
+            "const_name": "SymmNet",
+            "axis_dir": "V"
+        },
+        {
+            "net1": {
+                "name": "net014",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "m6_m5",
+                        "pin": "SA"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "m4_m3",
+                        "pin": "DA"
+                    }
+                ]
+            },
+            "net2": {
+                "name": "net8",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "m6_m5",
+                        "pin": "SB"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "m4_m3",
+                        "pin": "DB"
+                    }
+                ]
+            },
+            "const_name": "SymmNet",
+            "axis_dir": "V"
+        },
+        {
+            "pairs": [
+                {
+                    "type": "selfsym",
+                    "block": "m4_m3"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "m6_m5"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "m8_m7"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "m9_m10"
+                }
+            ],
+            "const_name": "SymmBlock",
+            "axis_dir": "V"
+        },
+	{ 
+	    "const_name": "GuardRing",
+	    "block_name": "telescopic_ota",
+	    "guard_ring_primitives": "guard_ring",
+	    "global_pin": ""
+	}
+    ]
+}
