@@ -548,6 +548,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   float per = 0.1;
   //int updateThrd = 100;
   float total_update_number = log(T_MIN / T_INT) / log(ALPHA);
+  bool exhausted(false);
   while (T > T_MIN) {
     int i = 1;
     int MAX_Iter = 1;
@@ -665,6 +666,10 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
         ReshapeSeqPairMap(oData, nodeSize);
       }
       **/
+      if (trial_sp.EnumExhausted()) {
+        exhausted = true;
+        break;
+      }
     }
     T_index++;
     if (total_update_number * per < T_index) {
@@ -672,6 +677,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       //cout.flush();
       per = per + 0.1;
     }
+    if (exhausted) break;
     T *= ALPHA;
     // cout<<T<<endl;
   }
@@ -718,6 +724,7 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   designData.PrintDesign();
   // Initialize simulate annealing with initial solution
   SeqPair curr_sp(designData);
+  curr_sp.SetEnumerate(true);
   curr_sp.PrintSeqPair();
   ILP_solver curr_sol(designData);
   std::map<double, std::pair<SeqPair, ILP_solver>> spVec=PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo);

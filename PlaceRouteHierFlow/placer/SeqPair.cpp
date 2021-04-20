@@ -7,6 +7,16 @@ SeqPair::SeqPair() {
   this->orient.clear();
   this->symAxis.clear();
   this->selected.clear();
+  _enumIndex = std::make_pair(0, 0);
+  this->_enumerate = false;
+  this->_exhausted = false;
+  this->_maxEnum = 0;
+}
+
+void SeqPair::SetEnumerate(const bool e)
+{
+  _enumerate = e;
+  _maxEnum = Factorial(posPair.size());
 }
 
 //SeqPair::SeqPair(int blockSize) {
@@ -37,6 +47,12 @@ SeqPair::SeqPair(const SeqPair& sp) {
   this->orient=sp.orient;
   this->symAxis=sp.symAxis;
   this->selected=sp.selected;
+  this->_enumIndex = sp._enumIndex;
+  this->_enumerate = sp._enumerate;
+  this->_exhausted = sp._exhausted;
+  this->_maxEnum = sp._maxEnum;
+  this->posPairCp = sp.posPairCp;
+  this->negPairCp = sp.negPairCp;
 }
 
 SeqPair::SeqPair(design& originNL, design& reducedNL, SeqPair& reducedSP) {
@@ -48,6 +64,10 @@ SeqPair::SeqPair(design& originNL, design& reducedNL, SeqPair& reducedSP) {
   this->orient.resize( originNL.GetSizeofBlocks(),  placerDB::N  );
   this->symAxis.resize(originNL.GetSizeofSBlocks(), placerDB::V  );
   this->selected.resize(originNL.GetSizeofBlocks(), 0);
+  _enumIndex = reducedSP._enumIndex;
+  _enumerate = reducedSP._enumerate;
+  _exhausted = reducedSP._exhausted;
+  _maxEnum = reducedSP._maxEnum;
   // A. For those common symmetry groups in both original and reduced designs
   // 1. first, convert all the axis nodes of reduced design in sequence pairs
   // into axis nodes of original design
@@ -392,6 +412,10 @@ SeqPair::SeqPair(design& caseNL) {
   placerDB::Smark axis;
   orient.resize(caseNL.GetSizeofBlocks());
   selected.resize(caseNL.GetSizeofBlocks(),0);
+  _enumIndex = std::make_pair(0, 0);
+  _enumerate = false;
+  _exhausted = false;
+  _maxEnum = 0;
   for(vector<placerDB::SymmBlock>::iterator bit=caseNL.SBlocks.begin(); bit!=caseNL.SBlocks.end(); ++bit) {
     //axis = bit->axis_dir;
     //axis=placerDB::V; // initialize veritcal symmetry
@@ -503,11 +527,17 @@ SeqPair::SeqPair(design& caseNL) {
 }
 
 SeqPair& SeqPair::operator=(const SeqPair& sp) {
+  auto logger = spdlog::default_logger()->clone("placer.SeqPair.=");
   this->posPair=sp.posPair;
   this->negPair=sp.negPair;
   this->orient=sp.orient;
   this->symAxis=sp.symAxis;
   this->selected=sp.selected;
+  this->_enumIndex = sp._enumIndex;
+  this->_enumerate = sp._enumerate;
+  this->_maxEnum = sp._maxEnum;
+  this->posPairCp = sp.posPairCp;
+  this->negPairCp = sp.negPairCp;
   return *this;
 }
 
@@ -537,6 +567,7 @@ void SeqPair::PrintSeqPair() {
   for(int i=0;i<(int)selected.size();++i) {
     logger->debug("{0}",selected.at(i));
   }
+  logger->debug("Enumerate : {0} EnumIndex: {1} {2} {3}", _enumerate, _enumIndex.first, _enumIndex.second, _maxEnum);
   //cout<<endl;
 }
 
@@ -827,9 +858,69 @@ void SeqPair::KeepOrdering(design& caseNL) {
   }
 }
 
+inline size_t SeqPair::Factorial(const size_t& t) const
+{
+  if (t <= 1) return 1;
+  return t * Factorial(t - 1);
+}
+
+void SeqPair::Permute(std::vector<int>& x)
+{
+  unsigned lastIndex = x.size() - 1;
+  unsigned i = lastIndex;
+  while (i > 0 && x[i - 1] >= x[i]) {
+    i--;
+  }
+
+  if (i <= 0)
+    return;
+
+  unsigned j = lastIndex;
+  while (x[j] <= x[i - 1]) {
+    j--;
+  }
+  std::swap(x[i - 1], x[j]);
+
+  j = lastIndex;
+  while (i < j) {
+    std::swap(x[i], x[j]);
+    i++;
+    j--;
+  }
+}
+
 void SeqPair::PerturbationNew(design& caseNL) {
   /* initialize random seed: */
   //srand(time(NULL));
+  auto logger = spdlog::default_logger()->clone("placer.SeqPair.PerturbationNew");
+  if (_enumerate) {
+    if (_enumIndex.second == 0 && _enumIndex.second == 0) {
+      posPairCp = posPair;
+      negPairCp = negPair;
+      std::sort(negPairCp.begin(), negPairCp.end());
+      std::sort(posPairCp.begin(), posPairCp.end());
+    }
+    if (_enumIndex.second >= _maxEnum) {
+      _enumIndex.second = 0;
+      ++_enumIndex.first;
+      std::sort(negPairCp.begin(), negPairCp.end());
+      Permute(posPairCp);
+    } else {
+      ++_enumIndex.second;
+      Permute(negPairCp);
+    }
+    posPair = posPairCp;
+    negPair = negPairCp;
+    std::string pospair("{ "), negpair("{ ");
+    for (auto& it : posPair) pospair += (std::to_string(it) + " ");
+    for (auto& it : negPair) negpair += (std::to_string(it) + " ");
+    pospair += "}";
+    negpair += "}";
+    logger->info("seq pair {0} {1} {2} {3} {4}", pospair, negpair, _enumIndex.first, _enumIndex.second, _maxEnum);
+    if (_enumIndex.first >= _maxEnum) _exhausted = true;
+    return;
+  }
+
   bool mark=false;
   std::set<int> pool;
   // 0:ChangeSelectedBlock

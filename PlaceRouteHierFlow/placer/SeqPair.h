@@ -29,11 +29,14 @@ class SeqPair
 {
   private:
     friend class ILP_solver;
-    vector<int> posPair;
-    vector<int> negPair;
+    vector<int> posPair, posPairCp;
+    vector<int> negPair, negPairCp;
     vector<placerDB::Omark> orient;
     vector<placerDB::Smark> symAxis;
     vector<int> selected;
+    std::pair<size_t, size_t> _enumIndex; //first : pos, second : neg
+    size_t _maxEnum;
+    bool _enumerate, _exhausted;
     vector<int> FindShortSeq(design& caseNL, vector<int>& seq, int idx);
     int GetVertexIndexinSeq(vector<int>& seq, int v);
     bool MoveAsymmetricBlockUnit(design& caseNL, vector<int>& seq, int anode);
@@ -41,6 +44,8 @@ class SeqPair
     vector<int> SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, vector<int>& seq);
     void InsertCommonSBlock(design& originNL, design& reducedNL, int originIdx);
     void InsertNewSBlock(design& originNL, int originIdx);
+    void Permute(vector<int>& seqpair);
+    size_t Factorial(const size_t& t) const;
 
   public:
     SeqPair();
@@ -50,6 +55,9 @@ class SeqPair
     SeqPair(design& caseNL);
     SeqPair& operator=(const SeqPair& sp);
     SeqPair(design& originNL, design& reducedNL, SeqPair& reducedSP);
+    void SetEnumerate(const bool e);
+    const bool Enumerate() const { return _enumerate; }
+    const bool EnumExhausted() const { return _exhausted; }
     vector<int> GetBlockIndex(int blockNo);
     vector<int> GetRightBlock(int blockNo);
     vector<int> GetLeftBlock(int blockNo);
