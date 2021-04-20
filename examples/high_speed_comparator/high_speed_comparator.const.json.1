@@ -6,8 +6,8 @@
     {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"],   "name": "ccp"},
     {"constraint": "GroupBlocks", "instances": ["mp11", "mn13"], "name": "inv_n"},
     {"constraint": "GroupBlocks", "instances": ["mp12", "mn14"], "name": "inv_p"},
-    {"constraint": "OrderBlocks",
-        "direction" : "V",
+    {"constraint": "order",
+        "direction" : "top_to_bottom",
         "instances": ["mn0", "dp", "ccn", "ccp"]
     }
 ]

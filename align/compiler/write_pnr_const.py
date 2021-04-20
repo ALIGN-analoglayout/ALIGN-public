@@ -39,8 +39,17 @@ class ConstraintWriter:
             if not const['const_name'] in ('NetConst', 'PortLocation', 'MultiConnection'):
                 pnr_const.append(const)
             # Constraint-specific field transformations
-            if const["const_name"] == 'OrderBlocks':
+            if const["const_name"] == 'Order':
                 const["const_name"] = 'Ordering'
+                if 'abut' in const:
+                    assert not const["abut"], 'PnR does not support abutment yet'
+                    del const["abut"]
+                if const["direction"] in ("left_to_right", "horizontal"):
+                    const["direction"] = 'H'
+                elif const["direction"] in ("top_to_bottom", "vertical"):
+                    const["direction"] = 'V'
+                else:
+                    raise NotImplementedError(f'PnR does not support direction {const["direction"]} yet')
             elif const["const_name"] == 'MatchBlocks':
                 const["const_name"] = 'MatchBlock'
                 const['block1'] =  const['blocks'][0]

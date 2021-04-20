@@ -437,15 +437,6 @@ class GroupBlocks(SoftConstraint):
     style: Optional[Literal["tbd_interdigitated", "tbd_common_centroid"]]
 
 
-class OrderBlocks(SoftConstraint):
-    '''
-    TODO: Replace this with just Order
-    '''
-    instances: List[str]
-    name: Optional[str]
-    direction: Literal['H', 'V']
-
-
 class MatchBlocks(SoftConstraint):
     '''
     TODO: Can be replicated by Enclose??
@@ -545,7 +536,6 @@ ConstraintType = Union[
     # Consider removing redundant ones
     CreateAlias,
     GroupBlocks,
-    OrderBlocks,
     MatchBlocks,
     BlockDistance,
     HorizontalDistance,
