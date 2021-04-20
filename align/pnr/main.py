@@ -136,11 +136,19 @@ def gen_leaf_cell_info( verilog_d, topology_dir, primitive_dir):
         if len(v) > 1:
             logger.error( f'CC Capacitor with template_name {v} instantiated more than once: {dict(v)}')
 
+    # Remove generated capacitors
+    leaves = leaves.difference( set(capacitors.keys()))
+
+    # Add unit caps to leaves
+    for _, v in cap_constraints.items():
+        for _, const in v.items():
+            unit_cap = const['unit_capacitor']
+            logger.debug( f'Adding unit_cap {unit_cap} to leaves')
+            leaves.add( unit_cap)
+
     # Check if collateral files exist
     leaf_collateral = {}
     for leaf in leaves:
-        if leaf in capacitors:
-            continue
         files = {}
         for suffix in ['.lef', '.json', '.gds.json']:
             fn = primitive_dir / f'{leaf}{suffix}'
