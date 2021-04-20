@@ -138,6 +138,8 @@ public:
     void split_net();
 
     void merge_placement(PnRDB::hierNode &current_node);
+
+    void modify_symm_after_split(PnRDB::hierNode &current_node);
     //donghao end
 
     float Cal_Overlap();

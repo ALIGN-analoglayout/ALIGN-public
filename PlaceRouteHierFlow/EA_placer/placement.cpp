@@ -637,8 +637,8 @@ void Placement::Cal_WA_Net_Force()
       float x_nagative = ((1 + Blocks[i].Cpoint.x / gammar) * Blocks[i].Net_block_force_N.x * NSumNetforce.x - Blocks[i].Net_block_force_N.x * NSumNetforce_WA.x) / (NSumNetforce.x * NSumNetforce.x);
       float y_positive = ((1 + Blocks[i].Cpoint.y / gammar) * Blocks[i].Net_block_force_P.y * PSumNetforce.y - Blocks[i].Net_block_force_P.y * PSumNetforce_WA.y) / (PSumNetforce.y * PSumNetforce.y);
       float y_nagative = ((1 + Blocks[i].Cpoint.y / gammar) * Blocks[i].Net_block_force_N.y * NSumNetforce.y - Blocks[i].Net_block_force_N.y * NSumNetforce_WA.y) / (NSumNetforce.y * NSumNetforce.y);
-      Blocks[i].Netforce.x += x_positive - x_nagative;
-      Blocks[i].Netforce.y += y_positive - y_nagative;
+      Blocks[i].Netforce.x += Nets[net_index].weight*(x_positive - x_nagative);
+      Blocks[i].Netforce.y += Nets[net_index].weight*(y_positive - y_nagative);
       
     }
     std::cout<<"block net force "<<i<<" force "<<Blocks[i].Netforce.x<<" "<<Blocks[i].Netforce.y<<std::endl;
@@ -3048,6 +3048,45 @@ void Placement::split_net()
           chosen_block[j]=0;
           chosen_block[j-1]+=1;
         }
+      }
+    }
+  }
+}
+
+
+void Placement::modify_symm_after_split(PnRDB::hierNode &current_node)
+{
+  for(int i=0;i < current_node.SPBlocks.size();++i)
+  {
+    //check all pair symmtirc blocks
+    int pair_symm_num = current_node.SPBlocks[i].sympair.size();
+    for(int j = 0;j < pair_symm_num;++j)
+    {
+      int originid0 = current_node.SPBlocks[i].sympair[j].first;
+      int originid1 = current_node.SPBlocks[i].sympair[j].second;
+
+      Ppoint_F shape = Blocks[originid0].split_shape;
+      int xlen = (int)ceil(shape.x);
+      for(int k=0;k < Blocks[originid0].spiltBlock.size();++k)
+      {
+        pair<int,int> temp;
+        temp.first = Blocks[originid0].spiltBlock[k];
+        temp.second = Blocks[originid1].spiltBlock[k];
+        current_node.SPBlocks[i].sympair.push_back(temp);
+      }
+    }
+    //check all self symmtric blocks
+    int self_symm_num = current_node.SPBlocks[i].selfsym.size();
+    PnRDB::Smark dir = current_node.SPBlocks[i].axis_dir;
+    for(int j=0;j < self_symm_num;++j)
+    {
+      int id = current_node.SPBlocks[i].selfsym[j].first;
+      for(int k = 0;k < Blocks[id].spiltBlock.size();++k)
+      {
+        pair<int,PnRDB::Smark> temp;
+        temp.first = Blocks[id].spiltBlock[k];
+        temp.second = dir;
+        current_node.SPBlocks[i].selfsym.push_back(temp);
       }
     }
   }
