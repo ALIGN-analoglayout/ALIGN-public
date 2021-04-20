@@ -240,11 +240,11 @@ void Graph::parseGraph(const string& fn)
 
 NodeSet Graph::dominatingSet() const
 {
-  auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.dominatingSet");
+  //auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.dominatingSet");
   NodeSet whiteNodes, dom;
   size_t isoActive(0);
   for (auto& n : _nodes) {
-    logger->info("node : {0} {1}", n->name(), n->isBlack());
+    //logger->info("node : {0} {1}", n->name(), n->isBlack());
     if (n->isBlack()) {
       dom.insert(n);
       const_cast<Node*>(n)->setColor(NodeColor::Black);
