@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 
 #include "PnRdatabase.h"
 
@@ -19,12 +20,33 @@ static double parse_and_scale(const std::string& s, double unitScale) {
   return result;
 }
 
-bool PnRdatabase::ReadLEF(string leffile) {
-
+bool PnRdatabase::ReadLEF(const string& leffile) {
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.ReadLEF");
 
-  logger->info( "PnRDB-Info: reading LEF file {0}" , leffile);
   ifstream fin;
+  fin.exceptions(ifstream::failbit | ifstream::badbit);
+  try {
+    fin.open(leffile.c_str());
+    _ReadLEF( fin, leffile);
+    fin.close();
+    return true;
+  } catch (ifstream::failure& e) {
+    logger->error("PnRDB-Error: fail to read LEF file ");
+  }
+  return false;
+}
+
+bool PnRdatabase::ReadLEFFromString(const string& lefStr) {
+  std::istringstream is(lefStr);
+  _ReadLEF( is, "<string>");
+  return true;
+}
+
+void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
+
+  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase._ReadLEF");
+
+  logger->info( "PnRDB-Info: reading LEF file {0}" , leffile);
   string def;
   size_t found;
   vector<string> temp;
@@ -40,10 +62,8 @@ bool PnRdatabase::ReadLEF(string leffile) {
   vector<PnRDB::pin> macroPins;
   vector<PnRDB::contact> interMetals;  // metal within each MACRO
   vector<PnRDB::Via> interVias; //via within each MACRO
-  fin.exceptions(ifstream::failbit | ifstream::badbit);
   bool Metal_Flag;
-  try {
-    fin.open(leffile.c_str());
+  {
     int stage = 0;
     bool skip_the_rest_of_stage_4 = false;
     while (fin.peek() != EOF) {
@@ -231,10 +251,5 @@ bool PnRdatabase::ReadLEF(string leffile) {
         }
       }
     }
-    fin.close();
-    return true;
-  } catch (ifstream::failure& e) {
-    logger->error("PnRDB-Error: fail to read LEF file ");
   }
-  return false;
 }

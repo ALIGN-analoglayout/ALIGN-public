@@ -13,8 +13,7 @@ NType = PnR.NType
 Omark = PnR.Omark
 TransformType = PnR.TransformType
 
-def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, adr_mode, *, PDN_mode, pdk):
-    NEW_GLOBAL_ROUTER = True
+def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, PDN_mode, pdk):
     h_skip_factor = 7
     v_skip_factor = 8
 
@@ -29,34 +28,22 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
     def RouteWork( mode, current_node, *, metal_l=signal_routing_metal_l, metal_u=signal_routing_metal_u, fn=''):
         curr_route.RouteWork( mode, current_node, drcInfo,
                               metal_l, metal_u,
-                              binary_directory, h_skip_factor, v_skip_factor, fn)
+                              h_skip_factor, v_skip_factor, fn)
 
-    if NEW_GLOBAL_ROUTER:
-        RouteWork( 6 if adr_mode else 4, current_node)
+    RouteWork( 6 if adr_mode else 4, current_node)
 
-        logger.debug( "Start WriteGcellGlobalRoute")
-        if current_node.isTop:
-            DB.WriteGcellGlobalRoute(current_node, f'{current_node.name}_GcellGlobalRoute_{lidx}.json', opath)
-        else:
-            current_node_copy = PnR.hierNode(current_node)
-            DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, TransformType.Backward)
-            DB.WriteGcellGlobalRoute(
-                current_node_copy,
-                f'{current_node_copy.name}_GcellGlobalRoute_{current_node_copy.n_copy}_{lidx}.json', opath)
-        logger.debug("End WriteGcellGlobalRoute" )
-
-        RouteWork( 5, current_node)
+    logger.debug( "Start WriteGcellGlobalRoute")
+    if current_node.isTop:
+        DB.WriteGcellGlobalRoute(current_node, f'{current_node.name}_GcellGlobalRoute_{lidx}.json', opath)
     else:
-        # Global Routing (old version)
-        RouteWork(0, current_node)
+        current_node_copy = PnR.hierNode(current_node)
+        DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, TransformType.Backward)
+        DB.WriteGcellGlobalRoute(
+            current_node_copy,
+            f'{current_node_copy.name}_GcellGlobalRoute_{current_node_copy.n_copy}_{lidx}.json', opath)
+    logger.debug("End WriteGcellGlobalRoute" )
 
-        DB.WriteJSON(current_node, True, True, False, False, f'{current_node.name}_GR_{lidx}', drcInfo, opath)
-
-        # The following line is used to write global route results for Intel router (only for old version)
-        DB.WriteGlobalRoute(current_node, f'{current_node.name}_GlobalRoute_{lidx}.json', opath)
-
-        # Detail Routing
-        RouteWork( 1, current_node)
+    RouteWork( 5, current_node)
 
     if current_node.isTop:
         DB.WriteJSON(current_node, True, True, False, False, f'{current_node.name}_DR_{lidx}', drcInfo, opath)
@@ -117,31 +104,31 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directo
 
     # transform current_node into current_node coordinate
     if current_node.isTop:
-        DB.WriteJSON(current_node, True, True, True, True, f'{current_node.name}_{lidx}', drcInfo, opath)
-        DB.WriteLef(current_node, f'{current_node.name}_{lidx}.lef', opath)
+        return_name = f'{current_node.name}_{lidx}'
+        DB.WriteJSON(current_node, True, True, True, True, return_name, drcInfo, opath)
+        DB.WriteLef(current_node, f'{return_name}.lef', opath)
         DB.PrintHierNode(current_node)
     else:
         current_node_copy = PnR.hierNode(current_node)
         DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, TransformType.Backward)
-        DB.WriteJSON(current_node_copy, True, True, True, True,
-                     f'{current_node_copy.name}_{current_node_copy.n_copy}_{lidx}', drcInfo, opath)
+        return_name = f'{current_node_copy.name}_{current_node_copy.n_copy}_{lidx}'
+        DB.WriteJSON(current_node_copy, True, True, True, True, return_name, drcInfo, opath)
         current_node.gdsFile = current_node_copy.gdsFile
-        DB.WriteLef(current_node_copy,
-                    f'{current_node_copy.name}_{current_node_copy.n_copy}_{lidx}.lef', opath)
-
+        DB.WriteLef(current_node_copy, f'{return_name}.lef', opath)
         DB.PrintHierNode(current_node_copy)
+
+    return return_name
 
 
 def route_top_down( DB, drcInfo,
                     bounding_box,
                     current_node_ort, idx, lidx, sel,
-                    opath, binary_directory, adr_mode, *, PDN_mode, pdk):
+                    opath, adr_mode, *, PDN_mode, pdk, results_name_map, hierarchical_path):
 
     current_node = DB.CheckoutHierNode(idx, sel) # Make a copy
     i_copy = DB.hierTree[idx].n_copy
 
     logger.debug( f'Start of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy}')
-    
 
     DB.hierTree[idx].n_copy += 1
     current_node_name = current_node.name
@@ -157,12 +144,13 @@ def route_top_down( DB, drcInfo,
         childnode_orient = DB.RelOrt2AbsOrt( current_node_ort, inst.orient)
         child_node_name = DB.hierTree[child_idx].name
         childnode_bbox = PnR.bbox( inst.placedBox.LL, inst.placedBox.UR)
-        new_childnode_idx = route_top_down(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, lidx, blk.selectedInstance, opath, binary_directory, adr_mode, PDN_mode=PDN_mode, pdk=pdk)
+        new_childnode_idx = route_top_down(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, lidx, blk.selectedInstance, opath, adr_mode, PDN_mode=PDN_mode, pdk=pdk, results_name_map=results_name_map, hierarchical_path=hierarchical_path + (inst.name,))
         DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_childnode_idx])
         current_node.Blocks[bit].child = new_childnode_idx
 
     DB.ExtractPinsToPowerPins(current_node)
-    route_single_variant( DB, drcInfo, current_node, lidx, opath, binary_directory, adr_mode, PDN_mode=PDN_mode, pdk=pdk)
+    result_name = route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, PDN_mode=PDN_mode, pdk=pdk)
+    results_name_map[result_name] = hierarchical_path
 
     if not current_node.isTop:
         DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Backward)
@@ -188,81 +176,91 @@ def route_top_down( DB, drcInfo,
     return new_currentnode_idx
 
 
+def place( *, DB, opath, fpath, numLayout, effort, idx):
+    logger.info(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
 
-def toplevel(args, *, PDN_mode=False, pdk=None, render_placements=False):
+    current_node = DB.CheckoutHierNode(idx,-1)
+    #analyze_hN( 'Start', current_node, True)
+
+    DB.AddingPowerPins(current_node)
+    #analyze_hN( 'After adding power pins', current_node, False)
+
+    PRC = PnR.Placer_Router_Cap_Ifc(opath,fpath,current_node,DB.getDrc_info(),DB.checkoutSingleLEF(),1,6)
+
+    curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, DB.getDrc_info())
+
+    actualNumLayout = curr_plc.getNodeVecSize()
+
+    if actualNumLayout != numLayout:
+        logger.warning( f'Placer did not provide numLayout ({numLayout} > {actualNumLayout}) layouts')
+
+    for lidx in range(actualNumLayout):
+        node = curr_plc.getNode(lidx)
+        if node.Guardring_Consts:
+            PnR.GuardRingIfc( node, DB.checkoutSingleLEF(), DB.getDrc_info())
+        #analyze_hN( f'After placement {lidx}', node, False)
+        DB.Extract_RemovePowerPins(node)
+        #analyze_hN( f'After remove power pins {lidx}', node, True)
+        DB.CheckinHierNode(idx, node)
+
+    DB.hierTree[idx].numPlacement = actualNumLayout
+
+    #analyze_hN( 'End', current_node, False)
+
+
+def route( *, DB, idx, opath, adr_mode, PDN_mode, pdk):
+    logger.info(f'Starting top-down routing on {DB.hierTree[idx].name} {idx}')
+
+    new_topnode_indices = []
+
+    assert len(DB.hierTree[idx].PnRAS) == DB.hierTree[idx].numPlacement
+
+    results_name_map = {}
+
+    for lidx in range(DB.hierTree[idx].numPlacement):
+        sel = lidx
+        new_topnode_idx = route_top_down( DB, DB.getDrc_info(),
+                                          PnR.bbox( PnR.point(0,0),
+                                                    PnR.point(DB.hierTree[idx].PnRAS[lidx].width,
+                                                              DB.hierTree[idx].PnRAS[lidx].height)),
+                                          Omark.N, idx, lidx, sel,
+                                          opath, adr_mode, PDN_mode=PDN_mode, pdk=pdk, results_name_map=results_name_map, hierarchical_path=(f'{DB.hierTree[idx].name}:placement_{lidx}',))
+        new_topnode_indices.append(new_topnode_idx)
+
+    return results_name_map
+
+def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, pdk, render_placements):
+    TraverseOrder = DB.TraverseHierTree()
+
+    for idx in TraverseOrder:
+        place( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx)
+
+    idx = TraverseOrder[-1]
+
+    if render_placements:
+        for sel in range(DB.hierTree[idx].numPlacement):
+            hN = DB.CheckoutHierNode( idx, sel)
+            dump_blocks( hN, DB, leaves_only=False)
+
+    return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, pdk=pdk)
+
+def toplevel(args, *, PDN_mode=False, pdk=None, render_placements=False, adr_mode=False):
 
     assert len(args) == 9
 
-    adr_mode = False
-
-    opath = './Results/'
     fpath,lfile,vfile,mfile,dfile,topcell = args[1:7]
     numLayout,effort = [ int(x) for x in args[7:9]]
 
     if fpath[-1] == '/': fpath = fpath[:-1]
-    if opath[-1] != '/': opath += '/'
 
-    # find directory that args[0] sits in
-    binary_directory = str(pathlib.Path(args[0]).parent)
+    DB = PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile)
 
+    # Need the trailing /
+    opath = './Results/'
     pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
 
-    #DB = PnR.PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile)
-    DB = PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile)
-    drcInfo = DB.getDrc_info()
-    lefData = DB.checkoutSingleLEF()
+    results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, pdk=pdk, render_placements=render_placements)
 
-    TraverseOrder = DB.TraverseHierTree()
+    logger.info( f'results_name_map: {results_name_map}')
 
-    for idx in TraverseOrder:
-        logger.info(f'Topo order: {idx} {DB.hierTree[idx].name}')
-
-        current_node = DB.CheckoutHierNode(idx, -1)
-        #analyze_hN( 'Start', current_node, True)
-
-        DB.AddingPowerPins(current_node)
-        #analyze_hN( 'After adding power pins', current_node, False)
-
-        PRC = PnR.Placer_Router_Cap_Ifc(opath,fpath,current_node,drcInfo,lefData,1,6)
-
-        curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, drcInfo)
-
-        actualNumLayout = curr_plc.getNodeVecSize()
-        
-        if actualNumLayout != numLayout:
-            logger.warning( f'Placer did not provide numLayout ({numLayout} > {actualNumLayout}) layouts')
-
-        for lidx in range(actualNumLayout):
-            node = curr_plc.getNode(lidx)
-            if node.Guardring_Consts:
-                PnR.GuardRingIfc( node, lefData, drcInfo)
-            #analyze_hN( f'After placement {lidx}', node, False)
-            DB.Extract_RemovePowerPins(node)
-            #analyze_hN( f'After remove power pins {lidx}', node, True)
-            DB.CheckinHierNode(idx, node)
-
-        DB.hierTree[idx].numPlacement = actualNumLayout
-
-        #analyze_hN( 'End', current_node, False)
-
-    if render_placements:
-        dump_blocks( DB.hierTree[TraverseOrder[-1]], DB, leaves_only=False)
-
-    logger.debug(f'Starting top-down routing')
-
-    last = TraverseOrder[-1]
-    new_topnode_indices = []
-
-    assert len(DB.hierTree[last].PnRAS) == DB.hierTree[last].numPlacement
-
-    for lidx in range(DB.hierTree[last].numPlacement):
-        sel = lidx
-        new_topnode_idx = route_top_down( DB, drcInfo,
-                                          PnR.bbox( PnR.point(0,0),
-                                                    PnR.point(DB.hierTree[last].PnRAS[lidx].width,
-                                                              DB.hierTree[last].PnRAS[lidx].height)),
-                                          Omark.N, last, lidx, sel,
-                                          opath, binary_directory, adr_mode, PDN_mode=PDN_mode, pdk=pdk)
-        new_topnode_indices.append(new_topnode_idx)
-
-    return DB
+    return DB, results_name_map

@@ -422,6 +422,7 @@ PYBIND11_MODULE(PnR, m) {
     .def( "PrintHierTree", &PnRdatabase::PrintHierTree)
     .def( "ReadPDKJSON", &PnRdatabase::ReadPDKJSON)
     .def( "ReadLEF", &PnRdatabase::ReadLEF)
+    .def( "ReadLEFFromString", &PnRdatabase::ReadLEFFromString)
     .def( "ReadVerilog", &PnRdatabase::ReadVerilog)
     .def( "ReadDBJSON", &PnRdatabase::ReadDBJSON)
     .def( "WriteDBJSON", &PnRdatabase::WriteDBJSON)
