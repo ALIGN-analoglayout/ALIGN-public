@@ -59,6 +59,7 @@ pycharm/
 coverage-reports/
 # Include files based on ALIGN naming conventions
 !examples/**/*.const.json
+!examples/**/const.json
 !**/*-freeze.json
 !**/Process.json
 !**/layers.json

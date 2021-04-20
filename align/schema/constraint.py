@@ -404,7 +404,7 @@ class AlignInOrder(UserConstraint):
         )
         yield Order(
             instances=self.instances,
-            direction='left_to_right' if self.direction == 'horizontal' else 'bottom_to_top',
+            direction='left_to_right' if self.direction == 'horizontal' else 'top_to_bottom',
             abut=self.abut
         )
 
