@@ -2,31 +2,6 @@
 #include "spdlog/spdlog.h"
 
 
-void SeqPairEnumerator::Permute(std::vector<int>& x)
-{
-  unsigned lastIndex = x.size() - 1;
-  unsigned i = lastIndex;
-  while (i > 0 && x[i - 1] >= x[i]) {
-    i--;
-  }
-
-  if (i <= 0)
-    return;
-
-  unsigned j = lastIndex;
-  while (x[j] <= x[i - 1]) {
-    j--;
-  }
-  std::swap(x[i - 1], x[j]);
-
-  j = lastIndex;
-  while (i < j) {
-    std::swap(x[i], x[j]);
-    i++;
-    j--;
-  }
-}
-
 SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair)
 {
   _enumIndex = std::make_pair(0, 0);
@@ -43,10 +18,10 @@ void SeqPairEnumerator::Permute()
     _enumIndex.second = 0;
     ++_enumIndex.first;
     std::sort(_negPair.begin(), _negPair.end());
-    Permute(_posPair);
+    std::next_permutation(std::begin(_posPair), std::end(_posPair));
   } else {
     ++_enumIndex.second;
-    Permute(_negPair);
+    std::next_permutation(std::begin(_negPair), std::end(_negPair));
   }
   if (_enumIndex.first >= _maxEnum) _exhausted = true;
 }

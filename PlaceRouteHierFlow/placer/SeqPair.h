@@ -34,7 +34,6 @@ class SeqPairEnumerator
     std::pair<size_t, size_t> _enumIndex; //first : pos, second : neg
     size_t _maxEnum;
     unsigned _exhausted : 1;
-    void Permute(vector<int>& seqpair);
   public:
     SeqPairEnumerator(const vector<int>& pair);
     void Permute();
@@ -72,6 +71,7 @@ class SeqPair
     SeqPair(design& originNL, design& reducedNL, SeqPair& reducedSP);
     static size_t Factorial(const size_t& t);
     void SetEnumerate(const bool e);
+    bool Enumerate() const { return _seqPairEnum ? true : false; }
     const bool EnumExhausted() const { return _seqPairEnum ? _seqPairEnum->EnumExhausted() : false; }
     vector<int> GetBlockIndex(int blockNo);
     vector<int> GetRightBlock(int blockNo);

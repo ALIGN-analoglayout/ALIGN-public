@@ -633,7 +633,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
         delta_cost = trial_cost - curr_cost;
         if (delta_cost <= 0) {
           Smark = true;
-        } else {
+        } else if (!trial_sp.Enumerate()) {
           double r = (double)rand() / RAND_MAX;
           if (r < exp((-1.0 * delta_cost) / T)) {
             Smark = true;
@@ -728,6 +728,7 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   SeqPair curr_sp(designData);
   if (designData.GetSizeofBlocks() <= 7) {
     size_t totEnum = SeqPair::Factorial(designData.GetSizeofBlocks());
+    totEnum *= totEnum;
     size_t maxIter = size_t(1. * log(T_MIN/T_INT)/log(ALPHA));
     if (2 * maxIter > totEnum) {
       curr_sp.SetEnumerate(true);
