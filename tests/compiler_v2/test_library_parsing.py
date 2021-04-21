@@ -27,4 +27,3 @@ def test_basic_lib():
     parser.parse(lines)
     assert len(parser.library) == 87
     
-
