@@ -197,7 +197,7 @@ def place( *, DB, opath, fpath, numLayout, effort, idx):
     for lidx in range(actualNumLayout):
         node = curr_plc.getNode(lidx)
         if node.Guardring_Consts:
-            PnR.GuardRingIfc( node, DB.checkoutSingleLEF(), DB.getDrc_info())
+            PnR.GuardRingIfc( node, DB.checkoutSingleLEF(), DB.getDrc_info(), fpath)
         #analyze_hN( f'After placement {lidx}', node, False)
         DB.Extract_RemovePowerPins(node)
         #analyze_hN( f'After remove power pins {lidx}', node, True)
