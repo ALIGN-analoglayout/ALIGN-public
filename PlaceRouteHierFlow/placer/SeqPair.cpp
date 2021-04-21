@@ -38,6 +38,8 @@ void SeqPair::SetEnumerate(const bool e)
 {
   if (e) {
     _seqPairEnum = std::make_shared<SeqPairEnumerator>(posPair);
+    auto logger = spdlog::default_logger()->clone("placer.SeqPair.SetEnumerate");
+    logger->info("Enumerated search");
   } else {
     _seqPairEnum.reset();
   }

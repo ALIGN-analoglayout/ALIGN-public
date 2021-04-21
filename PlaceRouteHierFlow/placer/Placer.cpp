@@ -709,7 +709,6 @@ void Placer::ReshapeSeqPairMap(std::map<double, std::pair<SeqPair, ILP_solver>>&
 }
 
 void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo){
-  auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementRegularAspectRatio_ILP");
   int nodeSize=nodeVec.size();
   //cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
   #ifdef RFLAG
@@ -730,12 +729,7 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
     size_t totEnum = SeqPair::Factorial(designData.GetSizeofBlocks());
     totEnum *= totEnum;
     size_t maxIter = size_t(1. * log(T_MIN/T_INT)/log(ALPHA));
-    if (2 * maxIter > totEnum) {
-      curr_sp.SetEnumerate(true);
-      logger->info("Enumerated search");
-    } else {
-      curr_sp.SetEnumerate(false);
-    }
+    curr_sp.SetEnumerate(2 * maxIter > totEnum);
   }
   curr_sp.PrintSeqPair();
   ILP_solver curr_sol(designData);
