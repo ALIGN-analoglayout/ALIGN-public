@@ -19,9 +19,6 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
 
     signal_routing_metal_l = DB.getDrc_info().Design_info.signal_routing_metal_l
     signal_routing_metal_u = DB.getDrc_info().Design_info.signal_routing_metal_u
-    # overwrite because of routing errors
-    signal_routing_metal_l = 0
-    signal_routing_metal_u = 4
 
     curr_route = PnR.Router()
 
@@ -57,15 +54,9 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
     if current_node.isTop:
         power_grid_metal_l = DB.getDrc_info().Design_info.power_grid_metal_l
         power_grid_metal_u = DB.getDrc_info().Design_info.power_grid_metal_u
-        # overwrite because of routing errors
-        power_grid_metal_l = 4
-        power_grid_metal_u = 5
 
         power_routing_metal_l = DB.getDrc_info().Design_info.power_routing_metal_l
         power_routing_metal_u = DB.getDrc_info().Design_info.power_routing_metal_u
-        # overwrite because of routing errors
-        power_routing_metal_l = 0
-        power_routing_metal_u = 5
 
         # Power Grid Simulation
         if PDN_mode:
