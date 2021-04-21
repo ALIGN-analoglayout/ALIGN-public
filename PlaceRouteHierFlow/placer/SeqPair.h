@@ -10,6 +10,7 @@
 #include <utility>
 #include <string>
 #include <iostream>
+#include <memory>
 #include <stdlib.h>     /* srand, rand */
 #include "../PnRDB/readfile.h"
 #include "Pdatatype.h"
@@ -25,18 +26,34 @@ using std::string;
 using std::swap;
 using std::vector;
 
+
+class SeqPairEnumerator
+{
+  private:
+    vector<int> _posPair, _negPair;
+    std::pair<size_t, size_t> _enumIndex; //first : pos, second : neg
+    size_t _maxEnum;
+    unsigned _exhausted : 1;
+    void Permute(vector<int>& seqpair);
+  public:
+    SeqPairEnumerator(const vector<int>& pair);
+    void Permute();
+    const vector<int>& PosPair() const { return _posPair; }
+    const vector<int>& NegPair() const { return _negPair; }
+    const bool EnumExhausted() const { return _exhausted; }
+};
+
+
 class SeqPair 
 {
   private:
     friend class ILP_solver;
-    vector<int> posPair, posPairCp;
-    vector<int> negPair, negPairCp;
+    vector<int> posPair;
+    vector<int> negPair;
     vector<placerDB::Omark> orient;
     vector<placerDB::Smark> symAxis;
     vector<int> selected;
-    std::pair<size_t, size_t> _enumIndex; //first : pos, second : neg
-    size_t _maxEnum;
-    bool _enumerate, _exhausted;
+    std::shared_ptr<SeqPairEnumerator> _seqPairEnum;
     vector<int> FindShortSeq(design& caseNL, vector<int>& seq, int idx);
     int GetVertexIndexinSeq(vector<int>& seq, int v);
     bool MoveAsymmetricBlockUnit(design& caseNL, vector<int>& seq, int anode);
@@ -44,8 +61,6 @@ class SeqPair
     vector<int> SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, vector<int>& seq);
     void InsertCommonSBlock(design& originNL, design& reducedNL, int originIdx);
     void InsertNewSBlock(design& originNL, int originIdx);
-    void Permute(vector<int>& seqpair);
-    size_t Factorial(const size_t& t) const;
 
   public:
     SeqPair();
@@ -55,9 +70,9 @@ class SeqPair
     SeqPair(design& caseNL);
     SeqPair& operator=(const SeqPair& sp);
     SeqPair(design& originNL, design& reducedNL, SeqPair& reducedSP);
+    static size_t Factorial(const size_t& t);
     void SetEnumerate(const bool e);
-    const bool Enumerate() const { return _enumerate; }
-    const bool EnumExhausted() const { return _exhausted; }
+    const bool EnumExhausted() const { return _seqPairEnum ? _seqPairEnum->EnumExhausted() : false; }
     vector<int> GetBlockIndex(int blockNo);
     vector<int> GetRightBlock(int blockNo);
     vector<int> GetLeftBlock(int blockNo);

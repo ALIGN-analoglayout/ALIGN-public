@@ -667,6 +667,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       }
       **/
       if (trial_sp.EnumExhausted()) {
+        logger->info("Exhausted all permutations of sequence pairs");
         exhausted = true;
         break;
       }
@@ -708,6 +709,7 @@ void Placer::ReshapeSeqPairMap(std::map<double, std::pair<SeqPair, ILP_solver>>&
 }
 
 void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo){
+  auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementRegularAspectRatio_ILP");
   int nodeSize=nodeVec.size();
   //cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
   #ifdef RFLAG
@@ -724,7 +726,14 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   designData.PrintDesign();
   // Initialize simulate annealing with initial solution
   SeqPair curr_sp(designData);
-  curr_sp.SetEnumerate(true);
+  if (designData.GetSizeofBlocks() <= 7) {
+    size_t totEnum = SeqPair::Factorial(designData.GetSizeofBlocks());
+    size_t maxIter = size_t(1. * log(T_MIN/T_INT)/log(ALPHA));
+    if (2 * maxIter > totEnum) {
+      curr_sp.SetEnumerate(true);
+      logger->info("Enumerated search");
+    }
+  }
   curr_sp.PrintSeqPair();
   ILP_solver curr_sol(designData);
   std::map<double, std::pair<SeqPair, ILP_solver>> spVec=PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo);
