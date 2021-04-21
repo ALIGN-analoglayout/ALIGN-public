@@ -40,6 +40,20 @@ class HardConstraint(SoftConstraint, abc.ABC):
         pass
 
 
+class UserConstraint(SoftConstraint, abc.ABC):
+
+    @abc.abstractmethod
+    def yield_constraints(self):
+        '''
+        Abstract Method to yield low level constraints
+          Every class that inherits from UserConstraint
+          MUST implement this function. This ensures
+          clean separation of user-facing constraints
+          from PnR constraints
+        '''
+        pass
+
+
 class PlacementConstraint(HardConstraint):
 
     @abc.abstractmethod
@@ -342,7 +356,7 @@ class Spread(PlacementConstraint):
 #     needed unless you are adding new semantics
 
 
-class AlignInOrder(Order, Align):
+class AlignInOrder(UserConstraint):
     '''
     Align `instances` on `line` ordered along `direction`
 
@@ -354,43 +368,45 @@ class AlignInOrder(Order, Align):
     > `direction == 'vertical'`   => bottom_to_top
     '''
     instances: List[str]
-    direction: Optional[Literal['horizontal', 'vertical']]
-    line: Optional[Literal[
+    line: Literal[
         'top', 'bottom',
         'left', 'right',
         'center'
-    ]]
+    ] = 'bottom'
+    direction: Optional[Literal['horizontal', 'vertical']]
     abut: Optional[bool] = False
 
-    @types.root_validator(allow_reuse=True)
-    def _cast_constraints_to_base_types(cls, values):
-        assert 'line' in values and 'direction' in values
+    @types.validator('direction', allow_reuse=True, always=True)
+    def _direction_depends_on_line(cls, v, values):
         # Process unambiguous line values
         if values['line'] in ['bottom', 'top']:
-            if values['direction'] is None:
-                values['direction'] = 'horizontal'
+            if v is None:
+                v = 'horizontal'
             else:
-                assert values['direction'] == 'horizontal', \
+                assert v == 'horizontal', \
                     f'direction is horizontal if line is bottom or top'
-            values['line'] = f"h_{values['line']}"
         elif values['line'] in ['left', 'right']:
-            if values['direction'] is None:
-                values['direction'] = 'vertical'
+            if v is None:
+                v = 'vertical'
             else:
-                assert values['direction'] == 'vertical', \
+                assert v == 'vertical', \
                     f'direction is vertical if line is left or right'
-            values['line'] = f"v_{values['line']}"
         # Center needs both line & direction
         elif values['line'] == 'center':
-            assert values['direction'], \
+            assert v, \
                 'direction must be specified if line == center'
-            values['line'] = f"{values['direction'][0]}_{values['line']}"
-        # Map horizontal, vertical direction to left_to_right & bottom_to_top
-        if values['direction'] == 'horizontal':
-            values['direction'] = 'left_to_right'
-        elif values['direction'] == 'vertical':
-            values['direction'] = 'bottom_to_top'
-        return values
+        return v
+
+    def yield_constraints(self):
+        yield Align(
+            instances=self.instances,
+            line=f'{self.direction[0]}_{self.line}'
+        )
+        yield Order(
+            instances=self.instances,
+            direction='left_to_right' if self.direction == 'horizontal' else 'top_to_bottom',
+            abut=self.abut
+        )
 
 
 class PlaceSymmetric(PlacementConstraint):
@@ -437,15 +453,6 @@ class GroupBlocks(SoftConstraint):
     style: Optional[Literal["tbd_interdigitated", "tbd_common_centroid"]]
 
 
-class OrderBlocks(SoftConstraint):
-    '''
-    TODO: Replace this with just Order
-    '''
-    instances: List[str]
-    name: Optional[str]
-    direction: Literal['H', 'V']
-
-
 class MatchBlocks(SoftConstraint):
     '''
     TODO: Can be replicated by Enclose??
@@ -486,14 +493,6 @@ class GroupCaps(SoftConstraint):
     unit_cap: str  # cap value in fF
     num_units: List
     dummy: bool  # whether to fill in dummies
-
-
-class AlignBlocks(SoftConstraint):
-    '''
-    TODO: Replace this with just Order
-    '''
-    instances: List[str]
-    direction: Literal['H', 'V']
 
 
 class NetConst(SoftConstraint):
@@ -553,14 +552,12 @@ ConstraintType = Union[
     # Consider removing redundant ones
     CreateAlias,
     GroupBlocks,
-    OrderBlocks,
     MatchBlocks,
     BlockDistance,
     HorizontalDistance,
     VerticalDistance,
     SymmetricBlocks,
     GroupCaps,
-    AlignBlocks,
     NetConst,
     PortLocation,
     SymmetricNets,
@@ -580,9 +577,13 @@ class ConstraintDB(types.List[ConstraintType]):
         if self._checker and hasattr(constraint, 'check'):
             constraint.check(self._checker)
 
+    def _check_recursive(self, constraints):
+        for constraint in expand_user_constraints(constraints):
+            self._check(constraint)
+
     @types.validate_arguments
     def append(self, constraint: ConstraintType):
-        self._check(constraint)
+        self._check_recursive([constraint])
         super().append(constraint)
 
     def __init__(self, *args, **kwargs):
@@ -594,9 +595,7 @@ class ConstraintDB(types.List[ConstraintType]):
         super().__init__(*args, **kwargs)
         if Z3Checker.enabled:
             self._checker = Z3Checker()
-            for constraint in self.__root__:
-                self._check(constraint)
-
+            self._check_recursive(self.__root__)
 
     def checkpoint(self):
         if self._checker:
@@ -607,3 +606,11 @@ class ConstraintDB(types.List[ConstraintType]):
         if self._checker:
             self._checker.revert()
         super()._revert()
+
+
+def expand_user_constraints(const_list):
+    for const in const_list:
+        if hasattr(const, 'yield_constraints'):
+            yield from expand_user_constraints(const.yield_constraints())
+        else:
+            yield const
