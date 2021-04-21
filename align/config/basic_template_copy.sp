@@ -250,7 +250,7 @@ M0 S S S S NMOS w=w l=90n
 M0 S S S S PMOS w=w l=90n
 .ends Dummy1_PMOS
 
-* handled using model files now 
+* Will be handles using model files now 
 * .subckt resistor PLUS MINUS
 * RR1 PLUS MINUS resistor res=10k
 * .ends resistor
