@@ -544,8 +544,8 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
   }
   KeepOrdering(caseNL);
   bool enumerate(false);
-  if (maxIter > 0 && caseNL.GetSizeofBlocks() <= 7) {
-    size_t totEnum = SeqPair::Factorial(caseNL.GetSizeofBlocks());
+  if (maxIter > 0 && posPair.size() <= 6) {
+    size_t totEnum = SeqPair::Factorial(posPair.size());
     totEnum *= totEnum;
     if (maxIter > totEnum) {
       for (unsigned i = 0; i < caseNL.GetSizeofBlocks(); ++i) {
