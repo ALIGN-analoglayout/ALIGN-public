@@ -28,6 +28,7 @@ class design
   private:
     friend class ConstGraph;
     friend class SeqPair;
+    friend class SeqPairEnumerator;
     friend class Aplace;
     friend class Placer;
     friend class ILP_solver;

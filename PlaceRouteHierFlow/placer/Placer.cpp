@@ -724,13 +724,7 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   design designData(nodeVec.back());
   designData.PrintDesign();
   // Initialize simulate annealing with initial solution
-  SeqPair curr_sp(designData);
-  if (designData.GetSizeofBlocks() <= 7) {
-    size_t totEnum = SeqPair::Factorial(designData.GetSizeofBlocks());
-    totEnum *= totEnum;
-    size_t maxIter = size_t(1. * log(T_MIN/T_INT)/log(ALPHA));
-    curr_sp.SetEnumerate(2 * maxIter > totEnum);
-  }
+  SeqPair curr_sp(designData, size_t(1. * log(T_MIN/T_INT)/log(ALPHA)));
   curr_sp.PrintSeqPair();
   ILP_solver curr_sol(designData);
   std::map<double, std::pair<SeqPair, ILP_solver>> spVec=PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo);

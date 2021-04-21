@@ -30,16 +30,20 @@ using std::vector;
 class SeqPairEnumerator
 {
   private:
-    vector<int> _posPair, _negPair;
+    vector<int> _posPair, _negPair, _selected;
     std::pair<size_t, size_t> _enumIndex; //first : pos, second : neg
+    vector<int> _maxSelected;
     size_t _maxEnum;
+    int _maxSize;
     unsigned _exhausted : 1;
   public:
-    SeqPairEnumerator(const vector<int>& pair);
+    SeqPairEnumerator(const vector<int>& pair, design& casenl);
     void Permute();
     const vector<int>& PosPair() const { return _posPair; }
     const vector<int>& NegPair() const { return _negPair; }
+    const vector<int>& Selected() const { return _selected; }
     const bool EnumExhausted() const { return _exhausted; }
+    const bool IncrementSelected();
 };
 
 
@@ -66,11 +70,10 @@ class SeqPair
     SeqPair(int blockSize);
     SeqPair(string pos, string neg);
     SeqPair(const SeqPair& sp);
-    SeqPair(design& caseNL);
+    SeqPair(design& caseNL, const size_t maxIter = 0);
     SeqPair& operator=(const SeqPair& sp);
     SeqPair(design& originNL, design& reducedNL, SeqPair& reducedSP);
     static size_t Factorial(const size_t& t);
-    void SetEnumerate(const bool e);
     bool Enumerate() const { return _seqPairEnum ? true : false; }
     const bool EnumExhausted() const { return _seqPairEnum ? _seqPairEnum->EnumExhausted() : false; }
     vector<int> GetBlockIndex(int blockNo);
