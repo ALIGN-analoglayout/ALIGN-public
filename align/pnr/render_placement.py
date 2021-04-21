@@ -1,5 +1,8 @@
+import json
 import logging
+import copy
 import plotly.graph_objects as go
+from collections import defaultdict
 from ..cell_fabric import transformation
 
 from .. import PnR
@@ -33,6 +36,60 @@ def gen_transformation( blk):
     logger.debug( f"TRANS {blk.master} {blk.orient} {tr} {tr2} {tr3}")
     return tr3
 
+def gen_placement_verilog(hN, DB, verilog_d):
+    d = copy.deepcopy( verilog_d)
+
+    bboxes = defaultdict(list)
+    transforms = defaultdict(list)
+
+    def aux(hN, prefix_path):
+
+        r = 0, 0, hN.width, hN.height
+        bboxes[prefix_path[-1][1]].append( r)
+
+        for blk in hN.Blocks:
+            child_idx = blk.child
+            inst = blk.instance[blk.selectedInstance]
+
+            tr = gen_transformation(inst)            
+
+            new_prefix_path = prefix_path + ((inst.name,inst.master),)
+            k = new_prefix_path[-2][1], new_prefix_path[-1][0]
+            transforms[k].append( tr)
+
+            if child_idx >= 0:
+                aux(DB.hierTree[child_idx], new_prefix_path)
+
+    aux(hN, (('',hN.name),))
+
+    for k,v in transforms.items():
+        if len(set(v)) > 1:
+            logger.error( f'Different transforms for {k}: {v}')
+
+    for k,v in bboxes.items():
+        if len(set(v)) > 1:
+            logger.error( f'Different bboxes for {k}: {v}')
+
+    logger.debug( f'transforms: {transforms}')
+    logger.debug( f'bboxes: {bboxes}')
+
+    for module in d['modules']:
+        nm = module['name']
+        if nm in bboxes:
+            module['bbox'] = bboxes[nm][0]
+        else:
+            logger.error( f'No bounding box for module {nm}')
+        for instance in module['instances']:
+            k = (nm, instance['instance_name']) 
+            if k in transforms:
+                instance['transformation'] = transforms[k][0].toDict()
+            else:
+                logger.error( f'No transform for instance {k[0]} in {k[1]}')
+
+    print( json.dumps( d, indent=2))
+
+    return d
+
 def dump_blocks(hN, DB, leaves_only=False):
     logger.info(f'hN.parent={hN.parent}')
 
@@ -57,6 +114,7 @@ def dump_blocks(hN, DB, leaves_only=False):
         fig.add_trace(go.Scatter(x=x, y=y, mode='lines',
                       name=hovertext, fill="toself", showlegend=False))
 
+
     def aux(hN, prefix_path, tr):
 
         for blk in hN.Blocks:
@@ -78,6 +136,7 @@ def dump_blocks(hN, DB, leaves_only=False):
                 aux(new_hN, new_prefix_path, new_tr)
 
     aux(hN, [], transformation.Transformation())
+
 
     fig.update_yaxes(scaleanchor="x", scaleratio=1)
     fig.update_layout(title=dict(text=f'{hN.name}_{hN.n_copy}'))
