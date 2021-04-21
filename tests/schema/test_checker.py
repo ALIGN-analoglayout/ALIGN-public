@@ -1,5 +1,5 @@
 import pytest
-from align.schema.checker import Z3Checker
+from align.schema.checker import Z3Checker, CheckerError
 
 @pytest.fixture
 def checker():
@@ -9,7 +9,7 @@ def checker():
 def test_single_bbox_checking(checker):
     b1 = checker.bbox_vars('M1')
     checker.append(b1.llx < b1.urx)
-    with pytest.raises(AssertionError):
+    with pytest.raises(CheckerError):
         checker.append(b1.urx < b1.llx)
 
 @pytest.mark.skipif(not Z3Checker.enabled, reason="Couldn't import Z3")
@@ -18,5 +18,5 @@ def test_multi_bbox_checking(checker):
     checker.append(b1.llx < b1.urx)
     checker.append(b2.llx < b2.urx)
     checker.append(b2.urx <= b1.llx)
-    with pytest.raises(AssertionError):
+    with pytest.raises(CheckerError):
         checker.append(b1.urx <= b1.llx)
