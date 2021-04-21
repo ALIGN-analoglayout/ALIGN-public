@@ -1,0 +1,14 @@
+[
+    {
+        "subcircuit": "common_source",
+        "constraints": [
+            {
+                "constraint": "align_in_order",
+                "instances": ["mn0", "mp0"],
+                "direction": "horizontal",
+                "line": "bottom",
+                "abut": false
+            }
+        ]
+    }
+]

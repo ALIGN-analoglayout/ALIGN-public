@@ -290,12 +290,18 @@ class Annotate:
                 if hasattr(const, 'instances'):
                     logger.debug(f"checking instances in the constraint:{const.instances} {set(remove_nodes)}")
                     if set(const.instances) & set(remove_nodes):
+                        replace = True
                         for block in remove_nodes:
-                            _list_replace(const.instances, block, new_inst)
+                            if replace:
+                                _list_replace(const.instances, block, new_inst)
+                                replace = False
+                            else:
+                                const.instances.remove(block)
+
                         logger.debug(f"updated instances in the constraint:{const}")
             #Removing single instances of instances
             self.hier_graph_dict[name]["constraints"] = constraint.ConstraintDB([const for const in const_list \
-                if ('instances' in const and len(const.instances)>1) or ('instances' not in const)])
+                if (hasattr(const,'instances') and len(const.instances)>1) or not hasattr(const,'instances')])
     def _if_const(self,name):
         """
         check if constraint exists for a subckt

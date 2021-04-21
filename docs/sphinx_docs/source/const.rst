@@ -21,11 +21,11 @@ Constraint options
 	* Example1: ``GroupBlocks -instances [B1,B2,B3] -name group1``
 	* Example2: ``GroupBlocks -instances alias1 -name group1``
 
-* OrderBlocks:
-	Pleaces the instances in the specified order.
+* Order:
+	Places the instances in the specified order.
 
-	* Format: ``OrderBlocks -instances <list of instances> -direction H/V``
-	* Example: ``OrderBlocks -instances alias1 -direction H``
+	* Format: ``Order -instances <list of instances> -direction left_to_right/top_to_bottom``
+	* Example: ``Order -instances alias1 -direction left_to_right``
 
 	.. image:: images/OrderBlocks.PNG
 
@@ -75,11 +75,11 @@ Constraint options
 
 	.. image:: images/SymmetricBlocks.PNG
 
-* AlignBlocks:
+* Align:
 	Aligns instances horizontally or vertically.
 
-	* Format: ``AlignBlocks -instances <list of instances> -direction H/V``
-	* Example: ``AlignBlocks -instances -alias1 -direction V``
+	* Format: ``Align -instances <list of instances> -line h_bottom/v_left``
+	* Example: ``Align -instances -alias1 -line v_left``
 
 	.. image:: images/AlignBlocks.PNG
 
@@ -134,7 +134,7 @@ Example constraints (command-line interface)
 	GroupBlocks -instances [mmn4,mmn3] -name ccn
 	GroupBlocks -instances [mmp1,mmp0] -name ccp
 	SymmetricBlocks -pairs [[mmn2], [diffpair] , [ccn] , [ccp]] -direction V
-	OrderBlocks -instances [mmn2, diffpair, ccn, ccp] -direction V
+	Order -instances [mmn2, diffpair, ccn, ccp] -direction top_to_bottom
 
 Example constraints (JSON format)
 -----------------------------------
@@ -164,8 +164,8 @@ Example constraints (JSON format)
 			"direction" : "V",
 			"pairs": [["mmn2"], ["diffpair"], ["ccn"], ["ccp"]]
 		},
-		{   "constraint": "OrderBlocks",
+		{   "constraint": "order",
 			"instances": ["mmn2", "diffpair", "ccn", "ccp"],
-			"direction": "V"
+			"direction": "top_to_bottom"
 		}
 	]

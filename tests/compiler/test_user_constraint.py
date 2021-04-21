@@ -3,6 +3,7 @@ import pytest
 import json
 
 from align.compiler.compiler import compiler, compiler_output
+from align.schema.checker import Z3Checker, CheckerError
 
 @pytest.fixture
 def test_compiler_hsc(dir_name):
@@ -42,3 +43,12 @@ def test_group_block_hsc(test_compiler_hsc):
         gold_const = json.load(const_fp)["constraints"]
         gold_const.sort(key=lambda item: item.get("const_name"))
     assert gold_const == gen_const
+
+@pytest.mark.skipif(not Z3Checker.enabled, reason="Couldn't import Z3")
+@pytest.mark.parametrize('dir_name', ['high_speed_comparator_broken'])
+def test_constraint_checking(dir_name):
+    circuit_name = 'high_speed_comparator'
+    test_path = pathlib.Path(__file__).resolve().parent / 'test_circuits' / dir_name / (circuit_name + '.sp')
+    pdk_dir = pathlib.Path(__file__).resolve().parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK'
+    with pytest.raises(CheckerError):
+        updated_ckt = compiler(test_path, circuit_name, pdk_dir)

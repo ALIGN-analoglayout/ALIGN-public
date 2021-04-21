@@ -1,4 +1,0 @@
-// ALIGN generated automatic constraints
-SymmBlock ( {m17_m15} , {m23_m27_m18_m19,m22_m26_m20_m21} , {m24_m25_m11_m10} , {m14_m16} )
-SymmBlock ( {m1nup} , {m1ndown} )
-SymmBlock ( {m1pdown} , {m1pup} )

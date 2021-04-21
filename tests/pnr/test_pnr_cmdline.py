@@ -26,3 +26,13 @@ def test_verilog_json():
     argv = [ 'pnr_compiler.py', str(d), f'{nm}.lef', f'{nm}.verilog.json', f'{nm}.map', 'layers.json', nm, '1', '0']
 
     cmdline( argv)
+
+def test_guardring():
+    
+    nm = 'telescopic_ota'
+
+    d = mydir / "telescopic_ota_guard_ring_inputs"
+
+    argv = [ 'pnr_compiler.py', str(d), f'{nm}.lef', f'{nm}.verilog.json', f'{nm}.map', 'layers.json', nm, '1', '0']
+
+    cmdline( argv)
