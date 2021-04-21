@@ -154,9 +154,9 @@ class PnRdatabase
 
     vector<tuple<string,string,string> > ReadVerilog(const string &fpath, const string &vname, const string &topcell);
 
-    void _ReadLEF(istream& fin, const string& leffile); // read building block data from LEF stream
-    bool ReadLEF(const string& leffile); // read building block data from LEF file
-    bool ReadLEFFromString(const string& lefString);
+    void _ReadLEF(istream& fin, const string& leffile, const bool wtap); // read building block data from LEF stream
+    bool ReadLEF(const string& leffile, const bool wtap = true); // read building block data from LEF file
+    bool ReadLEFFromString(const string& lefString, const bool wtap = true);
     void PrintLEFData();          // print LEF data for debugging
     map<string, vector<PnRDB::lefMacro>> checkoutlef() { return lefData; };
     void ReadConstraint_Json(PnRDB::hierNode &node, const string& jsonStr);

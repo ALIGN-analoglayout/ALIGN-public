@@ -50,7 +50,7 @@ bool PnRdatabase::ReadLEF(const string& leffile, bool wtap) {
   fin.exceptions(ifstream::failbit | ifstream::badbit);
   try {
     fin.open(leffile.c_str());
-    _ReadLEF( fin, leffile);
+    _ReadLEF( fin, leffile, wtap);
     fin.close();
     return true;
   } catch (ifstream::failure& e) {
@@ -59,13 +59,13 @@ bool PnRdatabase::ReadLEF(const string& leffile, bool wtap) {
   return false;
 }
 
-bool PnRdatabase::ReadLEFFromString(const string& lefStr) {
+bool PnRdatabase::ReadLEFFromString(const string& lefStr, const bool wtap) {
   std::istringstream is(lefStr);
-  _ReadLEF( is, "<string>");
+  _ReadLEF( is, "<string>", wtap);
   return true;
 }
 
-void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
+void PnRdatabase::_ReadLEF(istream& fin, const string& leffile, const bool wtap) {
 
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase._ReadLEF");
 

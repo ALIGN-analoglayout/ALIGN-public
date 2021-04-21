@@ -144,7 +144,7 @@ def ReadVerilogJson( DB, j):
 
     return global_signals
 
-def _ReadMap( path, mapname, wtap):
+def _ReadMap( path, mapname, wtap = True):
     d = pathlib.Path(path)
     p = re.compile( r'^(\S+)\s+(\S+)\s*$')
     tbl = {}
@@ -176,12 +176,12 @@ def _attach_constraint_files( DB, fpath):
         else:
             logger.warning(f"No constraint file for module {curr_node.name}")
                 
-def _ReadLEF( DB, path, lefname):
+def _ReadLEF( DB, path, lefname, wtap = True):
     p = pathlib.Path(path) / lefname
     if p.exists():
         with p.open( "rt") as fp:
             s = fp.read()
-            DB.ReadLEFFromString( s)
+            DB.ReadLEFFromString( s, wtap)
     else:
         logger.warn(f"LEF file {p} doesn't exist.")
 
@@ -191,8 +191,9 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     assert drname.endswith('.json'), drname
     DB.ReadPDKJSON( path + '/' + drname)
 
-    _ReadLEF( DB, path, lefname, True)
+    _ReadLEF( DB, path, lefname)
     DB.gdsData = _ReadMap( path, mapname)
+
     leftopname = lefname.rsplit('.lef', 1)[0]
     if pathlib.Path(path + '/' + leftopname + '.wotap.lef').is_file():
         _ReadLEF(DB, path, leftopname + '.wotap.lef', False)
