@@ -191,6 +191,7 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     _ReadLEF( DB, path, lefname)
     DB.gdsData = _ReadMap( path, mapname)
 
+    j = None
     if vname.endswith(".verilog.json"):
         with (pathlib.Path(path) / vname).open( "rt") as fp:
             j = json.load( fp)
@@ -203,4 +204,4 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     DB.semantic1( global_signals)
     DB.semantic2()
 
-    return DB
+    return DB, j
