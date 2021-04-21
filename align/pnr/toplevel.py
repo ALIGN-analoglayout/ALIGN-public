@@ -4,7 +4,7 @@ import json
 from itertools import chain
 
 from .. import PnR
-from .render_placement import dump_blocks, gen_placement_verilog
+from .render_placement import dump_blocks, dump_blocks2, gen_placement_verilog
 from .build_pnr_model import *
 
 logger = logging.getLogger(__name__)
@@ -242,10 +242,15 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
     for sel in range(DB.hierTree[idx].numPlacement):
         hN = DB.CheckoutHierNode( idx, sel)
         # create new verilog for each placement
-        placement_verilog_d = gen_placement_verilog( hN, DB, verilog_d)
+        if verilog_d is not None:
+            placement_verilog_d = gen_placement_verilog( hN, DB, verilog_d)
 
-        if render_placements:
-            dump_blocks( hN, DB, leaves_only=False)
+            if render_placements:
+                dump_blocks2( placement_verilog_d, hN.name, sel, leaves_only=False)
+        else:
+            if render_placements:
+                dump_blocks( hN, DB, leaves_only=False)
+
 
     return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, pdk=pdk)
 
