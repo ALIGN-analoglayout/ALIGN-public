@@ -9,6 +9,7 @@ import pathlib
 import pprint
 import json
 import logging
+from ..schema import constraint
 
 logger = logging.getLogger(__name__)
 pp = pprint.PrettyPrinter(indent=4)
@@ -25,7 +26,7 @@ class ConstraintWriter:
         logger.info(f"input constraints {all_const}")
         #Start mapping
         pnr_const=[]
-        for input_const in all_const:
+        for input_const in constraint.expand_user_constraints(all_const):
             # Create dict for PnR constraint
             # and handle common field aliasing
             const = input_const.dict(
@@ -39,8 +40,17 @@ class ConstraintWriter:
             if not const['const_name'] in ('NetConst', 'PortLocation', 'MultiConnection'):
                 pnr_const.append(const)
             # Constraint-specific field transformations
-            if const["const_name"] == 'OrderBlocks':
+            if const["const_name"] == 'Order':
                 const["const_name"] = 'Ordering'
+                if 'abut' in const:
+                    assert not const["abut"], 'PnR does not support abutment yet'
+                    del const["abut"]
+                if const["direction"] in ("left_to_right", "horizontal"):
+                    const["direction"] = 'H'
+                elif const["direction"] in ("top_to_bottom", "vertical"):
+                    const["direction"] = 'V'
+                else:
+                    raise NotImplementedError(f'PnR does not support direction {const["direction"]} yet')
             elif const["const_name"] == 'MatchBlocks':
                 const["const_name"] = 'MatchBlock'
                 const['block1'] =  const['blocks'][0]
@@ -87,8 +97,15 @@ class ConstraintWriter:
                 const["cap_s"] = -1
                 del const["dummy"]
                 del const["blocks"]
-            elif const["const_name"] == 'AlignBlocks':
+            elif const["const_name"] == 'Align':
                 const["const_name"] = 'AlignBlock'
+                if const["line"] in ('h_bottom', 'h_any'):
+                    const["direction"] = 'H'
+                elif const["line"] in ('v_left', 'v_any'):
+                    const["direction"] = 'V'
+                else:
+                    raise NotImplementedError(f'PnR does not support edge {const["line"]} yet')
+                del const["line"]
             elif const["const_name"] == 'SymmetricNets':
                 const["const_name"] = 'SymmNet'
                 const["axis_dir"] = const.pop("direction")
