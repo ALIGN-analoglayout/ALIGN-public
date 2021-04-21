@@ -1,5 +1,0 @@
-// ALIGN generated automatic constraints
-AlignBlock ( H , m66 , m2 )// ALIGN generated automatic constraints
-AlignBlock ( H , m2 , m66 )// ALIGN generated automatic constraints
-AlignBlock ( H , m2 , m66 )
-SymmBlock ( {m21,m19} )

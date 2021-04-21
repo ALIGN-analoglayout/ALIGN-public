@@ -1,2 +1,0 @@
-// ALIGN generated automatic constraints
-SymmBlock ( {MMU3_2_M_u1,MMU3_0_M_u1} , {MMU3_2_M_u3,MMU3_2_M_u4} , {MMU3_1_M_u4_MMU3_0_M_u4} , {MMU3_1_M_u2,MMU3_0_M_u2} )
