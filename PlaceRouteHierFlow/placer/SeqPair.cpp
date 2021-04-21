@@ -36,7 +36,11 @@ SeqPair::SeqPair() {
 
 void SeqPair::SetEnumerate(const bool e)
 {
-  _seqPairEnum = std::make_shared<SeqPairEnumerator>(posPair);
+  if (e) {
+    _seqPairEnum = std::make_shared<SeqPairEnumerator>(posPair);
+  } else {
+    _seqPairEnum.reset();
+  }
 }
 
 //SeqPair::SeqPair(int blockSize) {

@@ -733,6 +733,8 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
     if (2 * maxIter > totEnum) {
       curr_sp.SetEnumerate(true);
       logger->info("Enumerated search");
+    } else {
+      curr_sp.SetEnumerate(false);
     }
   }
   curr_sp.PrintSeqPair();
