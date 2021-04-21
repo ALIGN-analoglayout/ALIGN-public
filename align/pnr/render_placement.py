@@ -107,7 +107,7 @@ def gen_placement_verilog(hN, DB, verilog_d):
 
     d['leaves'] = leaves
 
-    print( json.dumps( d, indent=2))
+    #print( json.dumps( d, indent=2))
 
     return d
 
