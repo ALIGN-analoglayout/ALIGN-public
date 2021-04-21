@@ -135,11 +135,11 @@ class Z3Checker(AbstractChecker):
     def __init__(self):
         self._bbox_cache = {}
         self._solver = z3.Solver()
-        self._solver.set(unsat_core=True)
 
     def append(self, formula, identifier=None):
         self._solver.add(formula)
-        if self._solver.check() == z3.unsat:
+        r = self._solver.check()
+        if r == z3.unsat:
             raise CheckerError(f'No solution exists for {formula} in conjunction with {self._solver}')
 
     def checkpoint(self):
