@@ -62,6 +62,18 @@ class Transformation:
     def __repr__( self):
       return "Transformation(oX=%d, oY=%d, sX=%d, sY=%d)" % ( self.oX, self.oY, self.sX, self.sY) 
 
+    def toTuple(self):
+      return self.oX, self.oY, self.sX, self.sY
+
+    def toDict(self):
+      return { 'oX':self.oX, 'oY':self.oY, 'sX':self.sX, 'sY':self.sY}
+
+    def __eq__(self, other):
+      return self.toTuple() == other.toTuple()
+
+    def __hash__(self):
+      return self.toTuple().__hash__()
+
     def hit( self, p):
         x,y = p
         return self.sX * x + self.oX, self.sY * y + self.oY

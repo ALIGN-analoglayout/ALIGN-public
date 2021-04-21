@@ -12,7 +12,7 @@ mydir = pathlib.Path(__file__).resolve().parent
 def test_verilog_input():
     d = mydir / "current_mirror_ota_inputs"
 
-    DB = PnRdatabase( str(d), "current_mirror_ota", "current_mirror_ota.v", "current_mirror_ota.lef", "current_mirror_ota.map", "layers.json")
+    DB, _ = PnRdatabase( str(d), "current_mirror_ota", "current_mirror_ota.v", "current_mirror_ota.lef", "current_mirror_ota.map", "layers.json")
 
     for hN in DB.hierTree:
         analyze_hN( "verilog", hN)
@@ -20,7 +20,7 @@ def test_verilog_input():
 def test_verilog_json_input():
     d = mydir / "current_mirror_ota_inputs"
 
-    DB = PnRdatabase( str(d), "current_mirror_ota", "current_mirror_ota.verilog.json", "current_mirror_ota.lef", "current_mirror_ota.map", "layers.json")
+    DB, _ = PnRdatabase( str(d), "current_mirror_ota", "current_mirror_ota.verilog.json", "current_mirror_ota.lef", "current_mirror_ota.map", "layers.json")
 
     for hN in DB.hierTree:
         analyze_hN( "verilogJson", hN)

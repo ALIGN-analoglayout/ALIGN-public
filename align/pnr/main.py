@@ -12,7 +12,6 @@ import itertools
 from collections import deque, defaultdict
 
 from ..cell_fabric.pdk import Pdk
-from .render_placement import dump_blocks
 
 from .checkers import gen_viewer_json, gen_transformation
 from ..cell_fabric import gen_gds_json, transformation

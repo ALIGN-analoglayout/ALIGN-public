@@ -43,10 +43,11 @@ void GuardRing::DRC_Read(const PnRDB::Drc_info& drc_info){
   minimal.height = drc_info.Guardring_info.yspace;
   minimal.width = minimal.width + minimal_PC.width; //this is the minimal space between metal layer of guard ring primitive cell to wrapped cell
   minimal.height = minimal.height + minimal_PC.height;
+  path = drc_info.Guardring_info.path;
 }
 
 //main function
-GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& lefData, const PnRDB::Drc_info& drc_info){
+GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& lefData, const PnRDB::Drc_info& drc_info, const string& fpath){
 
   auto logger = spdlog::default_logger()->clone("guard_ring.GuardRing.GuardRing");
 
@@ -173,17 +174,18 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
   wcell_ur.y = wcell_ur.y + shift.y;
 
   gnuplot();
-  storegrhierNode(node); //return hierarchy node with guard ring information
+  storegrhierNode(node, fpath); //return hierarchy node with guard ring information
   movehierNode(node); //move hierarchy node to make sure lower left coordinate to (0,0)
 
 };
 
 //store guard ring primitive cell information into Hiernode
-void GuardRing::storegrhierNode(PnRDB::hierNode &node){
+void GuardRing::storegrhierNode(PnRDB::hierNode &node, const string& fpath){
   PnRDB::contact temp_contact;
   PnRDB::pin temp_pin;
   PnRDB::connectNode temp_connectNode;
   PnRDB::block temp_block;
+  temp_gr.gdsFile = fpath + '/' + temp_gr.gdsFile;
   for (unsigned int i_store = 0; i_store < stored_point_ll.size(); i_store++) 
   {
     temp_gr.LL.x = stored_point_ll[i_store].x;
