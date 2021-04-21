@@ -102,9 +102,11 @@ def gen_leaf_cell_info( verilog_d, topology_dir, primitive_dir):
             templates_called_in_an_instance[instance['template_name']].append( (nm,instance['instance_name']))
 
     pnr_const_ds = {}
+    constraint_files = set()
     for nm in non_leaves:
         fn = topology_dir / f'{nm}.pnr.const.json'
         if fn.is_file():
+            constraint_files.add( fn)
             with fn.open( "rt") as fp:
                 logger.debug( f'Loading in {fn}')
                 pnr_const_ds[nm] = json.load( fp)
@@ -134,11 +136,19 @@ def gen_leaf_cell_info( verilog_d, topology_dir, primitive_dir):
         if len(v) > 1:
             logger.error( f'CC Capacitor with template_name {v} instantiated more than once: {dict(v)}')
 
+    # Remove generated capacitors
+    leaves = leaves.difference( set(capacitors.keys()))
+
+    # Add unit caps to leaves
+    for _, v in cap_constraints.items():
+        for _, const in v.items():
+            unit_cap = const['unit_capacitor']
+            logger.debug( f'Adding unit_cap {unit_cap} to leaves')
+            leaves.add( unit_cap)
+
     # Check if collateral files exist
     leaf_collateral = {}
     for leaf in leaves:
-        if leaf in capacitors:
-            continue
         files = {}
         for suffix in ['.lef', '.json', '.gds.json']:
             fn = primitive_dir / f'{leaf}{suffix}'
@@ -148,7 +158,7 @@ def gen_leaf_cell_info( verilog_d, topology_dir, primitive_dir):
                 logger.error( f'Collateral {suffix} for leaf {leaf} not found in {primitive_dir}')
         leaf_collateral[leaf] = files
 
-    return leaf_collateral, capacitors
+    return leaf_collateral, constraint_files, capacitors
 
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nvariants=1, effort=0, check=False, extract=False, gds_json=False, render_placements=False, PDN_mode=False):
 
@@ -174,41 +184,40 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
     with (topology_dir / verilog_file).open( "rt") as fp:
         verilog_d = json.load( fp)
 
-    leaf_collateral, capacitors = gen_leaf_cell_info( verilog_d, topology_dir, primitive_dir)
+    leaf_collateral, constraint_files, capacitors = gen_leaf_cell_info( verilog_d, topology_dir, primitive_dir)
     logger.debug( f'leaf_collateral: {leaf_collateral}')
-    logger.info( f'capacitors: {dict(capacitors)}')
+    logger.debug( f'constraint_files: {constraint_files}')
+    logger.debug( f'capacitors: {dict(capacitors)}')
 
-    # Generate .map & .lef inputs for PnR
-    with (input_dir / map_file).open(mode='wt') as mp, \
-         (input_dir / lef_file).open(mode='wt') as lp:
-        for file_ in primitive_dir.iterdir():
-            logger.debug(f"found files {file_}")
-            if file_.suffixes == ['.gds', '.json']:
-                true_stem = file_.stem.split('.')[0]
-                mp.write(f'{true_stem} {true_stem}.gds\n')
-            elif file_.suffix == '.lef' and file_.stem != subckt:
-                logger.debug(f"found lef files {file_}")
-                lp.write(file_.read_text())
+    # Generate .map file for PnR
+    with (input_dir / map_file).open(mode='wt') as mp:
+        for k,v in leaf_collateral.items():
+            assert '.gds.json' in v
+            print( f'{k} {k}.gds', file=mp)
+
+    # Generate .lef inputs for PnR
+    with (input_dir / lef_file).open(mode='wt') as lp:
+        for k,v in leaf_collateral.items():
+            lp.write(pathlib.Path(v['.lef']).read_text())
 
     #
     # TODO: Copying is bad ! Consider rewriting C++ code to accept fully qualified paths
     #
 
-    # Copy verilog & const files
+    # Copy verilog
     (input_dir / verilog_file).write_text((topology_dir / verilog_file).read_text())
-    for file_ in topology_dir.iterdir():
-        if file_.suffix == '.json':
-            (input_dir / file_.name).write_text(file_.read_text())
+
+    # Copy const files
+    for file_ in constraint_files:
+        (input_dir / file_.name).write_text(file_.read_text())
 
     # Copy pdk file
     (input_dir / pdk_file).write_text((pdk_dir / pdk_file).read_text())
 
     # Copy primitive json files
-    for file_ in primitive_dir.iterdir():
-        if file_.suffixes == ['.gds', '.json'] or file_.suffixes == ['.json']:
-            (input_dir / file_.name).write_text(file_.read_text())
-
-
+    for k,v in leaf_collateral.items():
+        for suffix in ['.gds.json', '.json']:
+            (input_dir / f'{k}{suffix}').write_text(pathlib.Path(v[suffix]).read_text())
 
     # Run pnr_compiler
     cmd = [str(x) for x in ('align.PnR', input_dir, lef_file,

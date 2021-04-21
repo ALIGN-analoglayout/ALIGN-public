@@ -10,16 +10,16 @@
         "direction" : "V",
         "pairs": [["mn0"], ["dp"], ["ccn"], ["ccp"], ["mp7", "mp8"], ["mp9", "mp10"], ["inv_n", "inv_p"]]
     },
-    {"constraint": "OrderBlocks",
-        "direction" : "V",
+    {"constraint": "order",
+        "direction" : "top_to_bottom",
         "instances": ["mn0", "dp", "ccn", "ccp"]
     },
-    {"constraint": "AlignBlocks",
-        "direction" : "H",
+    {"constraint": "align",
+        "line" : "h_bottom",
         "instances": ["mp9", "mp7", "dp", "mp8", "mp10"]
     },
-    {"constraint": "AlignBlocks",
-        "direction" : "H",
+    {"constraint": "align",
+        "line" : "h_bottom",
         "instances": ["inv_n", "ccp", "inv_p"]
     },
     {"constraint": "PortLocation",

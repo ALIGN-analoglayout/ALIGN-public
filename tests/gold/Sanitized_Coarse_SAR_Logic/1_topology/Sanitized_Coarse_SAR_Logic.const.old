@@ -1,8 +1,0 @@
-// ALIGN generated automatic constraints
-SymmBlock ( {XI53} , {XI212,XI54} , {XI8} , {XI227,XI231} , {XI15,XI16} , {XI230,XI228} , {XI39_XI159} , {XI214_XI213} , {XI101_XI156} , {XI171_XI105} , {XI107_XI175} , {XI215_XI216} )
-SymmBlock ( {XI155,XI170} )
-SymmBlock ( {XI104,XI100} )
-SymmBlock ( {XI158,XI173} )
-SymmBlock ( {XI9,XI11} )
-SymmBlock ( {XI31,XI102} )
-SymmBlock ( {XI12,XI14} )

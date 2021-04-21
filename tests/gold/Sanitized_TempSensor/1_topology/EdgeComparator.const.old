@@ -1,4 +1,0 @@
-// ALIGN generated automatic constraints
-AlignBlock ( H , MM6 , MM2 )
-SymmBlock ( {XI95,XI96} , {XI3,XI1} , {MM45_MM3} , {MM6,MM2} , {MM5_MM4} , {MM7,MM0} )
-SymmBlock ( {MM1,MM28} , {XI5,XI4} )

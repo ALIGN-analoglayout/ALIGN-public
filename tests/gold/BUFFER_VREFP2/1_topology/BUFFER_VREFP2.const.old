@@ -1,3 +1,0 @@
-// ALIGN generated automatic constraints
-SymmBlock ( {xm34,xm58} , {xm46,xm56} , {xm54_xm51_xm53_xm52,xm62_xm59_xm61_xm60} , {xm20,xm55} , {xm4_xm36_xm57} , {xm35_xm43} )
-SymmBlock ( {xm28,xm33} , {xm44,xm45} )
