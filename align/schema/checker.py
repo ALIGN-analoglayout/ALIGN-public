@@ -10,6 +10,11 @@ except:
     logger.warning("Could not import z3. Z3Checker disabled.")
     z3 = None
 
+class CheckerError(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+
 class AbstractChecker(abc.ABC):
     @abc.abstractmethod
     def append(self, formula):
@@ -130,10 +135,12 @@ class Z3Checker(AbstractChecker):
     def __init__(self):
         self._bbox_cache = {}
         self._solver = z3.Solver()
+        self._solver.set(unsat_core=True)
 
-    def append(self, formula):
-        self._solver.append(formula)
-        assert self._solver.check() == z3.sat
+    def append(self, formula, identifier=None):
+        self._solver.add(formula)
+        if self._solver.check() == z3.unsat:
+            raise CheckerError(f'No solution exists for {formula} in conjunction with {self._solver}')
 
     def checkpoint(self):
         self._solver.push()
