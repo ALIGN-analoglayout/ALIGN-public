@@ -113,6 +113,7 @@ PnRDB::hierNode PnRdatabase::CheckoutHierNode(int nodeID, int sel) {
     hierTree.at(nodeID).LL = hierTree.at(nodeID).PnRAS[sel].LL;
     hierTree.at(nodeID).UR = hierTree.at(nodeID).PnRAS[sel].UR;
     hierTree.at(nodeID).PowerNets = hierTree.at(nodeID).PnRAS[sel].PowerNets;
+    hierTree.at(nodeID).GuardRings = hierTree.at(nodeID).PnRAS[sel].GuardRings;
   }
   return hierTree.at(nodeID);
 }
@@ -727,6 +728,7 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
   tmpL.Nets=updatedNode.Nets;
   tmpL.LL = updatedNode.LL;
   tmpL.UR = updatedNode.UR;
+  tmpL.GuardRings = updatedNode.GuardRings;
   hierTree[nodeID].PnRAS.push_back(tmpL);
 
   hierTree[nodeID].isCompleted = 1;

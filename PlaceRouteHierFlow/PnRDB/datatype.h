@@ -338,9 +338,10 @@ struct layoutAS {
   point LL;
   point UR;
   vector<PowerNet> PowerNets;
-  //vector<pin> blockPins;
-  //vector<contact> interMetals;
-  //vector<Via> interVias;
+  vector<GuardRing> GuardRings;
+  // vector<pin> blockPins;
+  // vector<contact> interMetals;
+  // vector<Via> interVias;
 };
 
 struct GuardRing {
