@@ -52,6 +52,7 @@ struct Multi_LinearConst;
 struct Multi_connection;
 struct GuardRing;
 struct Guardring_Const;
+struct guardring_info;
 
 /// Part 1: declaration of enum types
 enum NType {Block, Terminal};
@@ -344,7 +345,7 @@ struct layoutAS {
 
 struct GuardRing {
   std::string mastername = "";
-  string gdsFile="testcase_guardring/guard_ring.gds";
+  string gdsFile="guard_ring.gds";
   point LL;
   point UR;
   point center;
@@ -618,6 +619,7 @@ struct guardring_info {
   int xspace; // x dimension minimal space
   int yspace; // y dimension minimal space
   GdsDatatype gds_datatype;
+  string path;
 };
 
 struct design_info {

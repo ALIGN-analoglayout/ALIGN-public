@@ -665,7 +665,14 @@
 "GdsLayerNo": 104,
 "GdsDatatype": {"Draw":0}
 },    
-
+{
+"Layer": "GuardRing",
+"activeRingWidth": 400,
+"activeRing_enclosure": 300,
+"viaArray": 8,
+"XSpace": 240,
+"YSpace": 252
+}, 
 {
 "Layer": "Cap",
 "m1Pitch": 64,
