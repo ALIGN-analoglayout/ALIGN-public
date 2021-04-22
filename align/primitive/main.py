@@ -223,6 +223,16 @@ def generate_Res(pdkdir, block_name, height, x_cells, y_cells, nfin, unit_res):
 
     return uc, ['PLUS', 'MINUS']
 
+def generate_Ring(pdkdir, block_name, x_cells, y_cells):
+
+    pdk = Pdk().load(pdkdir / 'layers.json')
+    generator = get_generator('RingGenerator', pdkdir)
+
+    uc = generator(pdk)
+
+    uc.addRing(x_cells, y_cells)
+
+    return uc, ['Body']
 
 def get_generator(name, pdkdir):
     pdk_dir_path = pdkdir
@@ -261,6 +271,9 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
     elif 'Res' in primitive:
         uc, cell_pin = generate_Res(pdkdir, block_name, height, x_cells, y_cells, value[0], value[1])
         uc.setBboxFromBoundary()
+    elif 'ring' in primitive.lower():
+        uc, cell_pin = generate_Ring(pdkdir, block_name, x_cells, y_cells)
+        #uc.setBboxFromBoundary()    
     else:
         raise NotImplementedError(f"Unrecognized primitive {primitive}")
 

@@ -96,8 +96,12 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
       r = list(map( scale, obj['rect']))
       xc = (r[0]+r[2])//2
       yc = (r[1]+r[3])//2
-
-      strct["elements"].append ({"type": "sref", "sname" : via_gen_tbl[k][0], "xy" : [xc, yc]})
+      if k == "V0" and (r[2]-r[1]) > j['GuardRing']['v0WidthX']:
+          for num_v0 in range(j['GuardRing']['viaArray']):
+              xc = (r[0]+j['GuardRing']['v0WidthX'])//2+num_v0*(j['GuardRing']['v0WidthX']+j['GuardRing']['v0SpaceX'])
+              strct["elements"].append ({"type": "sref", "sname" : via_gen_tbl[k][0], "xy" : [xc, yc]})
+      else:    
+          strct["elements"].append ({"type": "sref", "sname" : via_gen_tbl[k][0], "xy" : [xc, yc]})
 
   strct["elements"].append ({"type": "boundary", "layer" : j['Bbox']['GdsLayerNo'], "datatype" : j['Bbox']['GdsDatatype']['Draw'],
                     "xy" : flat_rect_to_boundary( list(map(scale,data['bbox'])))})
