@@ -579,10 +579,11 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
       } else if (constraint["const_name"] == "Boundary") {
         node.placement_box[0] = constraint["max_width"];
         node.placement_box[1] = constraint["max_height"];
-        node.placement_box[0] *= unitScale;
-        node.placement_box[1] *= unitScale;
         if (node.placement_box[0] <= 0 || node.placement_box[1] <= 0)
           logger->error("Wrong placement bounding box, width {0}, height {1}", node.placement_box[0], node.placement_box[1]);
+        node.placement_box[0] *= unitScale;
+        node.placement_box[1] *= unitScale;
+        
       }
     }
 }
