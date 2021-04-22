@@ -200,6 +200,7 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     if pathlib.Path(path + '/wo_tap' ).is_dir():
         DB._gdsDataWoTap = _ReadMap( path, mapname, False)
 
+    j = None
     if vname.endswith(".verilog.json"):
         with (pathlib.Path(path) / vname).open( "rt") as fp:
             j = json.load( fp)
@@ -212,4 +213,4 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     DB.semantic1( global_signals)
     DB.semantic2()
 
-    return DB
+    return DB, j

@@ -572,6 +572,12 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
           temp_c_const.C.push_back(pair["C"]);
         }
         node.C_Constraints.push_back(temp_c_const);
+      } else if (constraint["const_name"] == "GuardRing") {
+        PnRDB::Guardring_Const temp_Guardring_Const;
+        temp_Guardring_Const.block_name = constraint["block_name"];
+        temp_Guardring_Const.guard_ring_primitives = constraint["guard_ring_primitives"];
+        temp_Guardring_Const.global_pin = constraint["global_pin"];
+        node.Guardring_Consts.push_back(temp_Guardring_Const);
       }
     }
 }
