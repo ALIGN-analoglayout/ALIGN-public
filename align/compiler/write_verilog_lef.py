@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class WriteVerilog:
     """ write hierarchical verilog file """
 
-    def __init__(self, circuit_graph, circuit_name, inout_pin_names,subckt_dict, power_pins):
+    def __init__(self, circuit_graph, circuit_name, inout_pin_names,subckt_dict, power_pins, constraints):
         self.circuit_graph = circuit_graph
         self.circuit_name = circuit_name
         self.inout_pins = inout_pin_names
@@ -25,12 +25,13 @@ class WriteVerilog:
                 self.pins.append(port)
         self.power_pins=power_pins
         self.subckt_dict = subckt_dict
+        self.constraints = constraints
 
     def gen_dict( self):
         d = {}
         d['name'] = self.circuit_name
         d['parameters'] = self.pins
-
+        d['constraints'] = self.constraints.dict()['__root__']
         d['instances'] = []
 
         for node, attr in self.circuit_graph.nodes(data=True):

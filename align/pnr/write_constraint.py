@@ -14,8 +14,8 @@ from ..schema import constraint
 logger = logging.getLogger(__name__)
 pp = pprint.PrettyPrinter(indent=4)
 
-class ConstraintWriter:
-    def __init__(self, pdk_dir: pathlib.Path):
+class PnRConstraintWriter:
+    def __init__(self):
         pass
 
     def map_valid_const(self,all_const):
