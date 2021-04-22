@@ -11,8 +11,12 @@ def check_placement(placement_verilog_d):
             continue  # Nothing useful to check against
         for inst in module['instances']:
             t = inst['transformation']
-            r = next((x['bbox'] for x in placement_verilog_d['modules'] if x['name'] == inst['template_name']),
-                     next((x['bbox'] for x in placement_verilog_d['leaves'] if x['name'] == inst['template_name']), None))
+            # Search for first match in 'modules' list
+            r = next((x['bbox'] for x in placement_verilog_d['modules'] if x['name'] == inst['template_name']), None)
+            # No match found in 'modules'. Search in 'leaves' instead
+            if r is None:
+                r = next((x['bbox'] for x in placement_verilog_d['leaves'] if x['name'] == inst['template_name']), None)
+            # No match found in 'modules' or 'leaves'. Cannot proceed
             assert r is not None, f'Could not find {inst["template_name"]} in modules or leaves!'
             bbox = transformation.Transformation(**t).hitRect(transformation.Rect(*r)).canonical()
             constraints.append(
