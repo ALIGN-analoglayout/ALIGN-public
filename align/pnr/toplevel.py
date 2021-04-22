@@ -4,8 +4,9 @@ import json
 from itertools import chain
 
 from .. import PnR
-from .render_placement import dump_blocks
+from .render_placement import dump_blocks2, gen_placement_verilog
 from .build_pnr_model import *
+from .checker import check_placement
 
 logger = logging.getLogger(__name__)
 
@@ -197,7 +198,8 @@ def place( *, DB, opath, fpath, numLayout, effort, idx):
     for lidx in range(actualNumLayout):
         node = curr_plc.getNode(lidx)
         if node.Guardring_Consts:
-            PnR.GuardRingIfc( node, DB.checkoutSingleLEF(), DB.getDrc_info())
+            logger.info( f'Running guardring flow')
+            PnR.GuardRingIfc( node, DB.checkoutSingleLEF(), DB.getDrc_info(), fpath)
         #analyze_hN( f'After placement {lidx}', node, False)
         DB.Extract_RemovePowerPins(node)
         #analyze_hN( f'After remove power pins {lidx}', node, True)
@@ -229,7 +231,7 @@ def route( *, DB, idx, opath, adr_mode, PDN_mode, pdk):
 
     return results_name_map
 
-def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, pdk, render_placements):
+def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, pdk, render_placements, verilog_d):
     TraverseOrder = DB.TraverseHierTree()
 
     for idx in TraverseOrder:
@@ -237,10 +239,16 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
     idx = TraverseOrder[-1]
 
-    if render_placements:
-        for sel in range(DB.hierTree[idx].numPlacement):
-            hN = DB.CheckoutHierNode( idx, sel)
-            dump_blocks( hN, DB, leaves_only=False)
+    for sel in range(DB.hierTree[idx].numPlacement):
+        hN = DB.CheckoutHierNode( idx, sel)
+        # create new verilog for each placement
+        if verilog_d is not None:
+            placement_verilog_d = gen_placement_verilog( hN, DB, verilog_d)
+
+            if render_placements:
+                dump_blocks2( placement_verilog_d, hN.name, sel, leaves_only=False)
+
+            check_placement(placement_verilog_d)
 
     return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, pdk=pdk)
 
@@ -253,13 +261,13 @@ def toplevel(args, *, PDN_mode=False, pdk=None, render_placements=False, adr_mod
 
     if fpath[-1] == '/': fpath = fpath[:-1]
 
-    DB = PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile)
+    DB, verilog_d = PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile)
 
     # Need the trailing /
     opath = './Results/'
     pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
 
-    results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, pdk=pdk, render_placements=render_placements)
+    results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, pdk=pdk, render_placements=render_placements, verilog_d=verilog_d)
 
     logger.info( f'results_name_map: {results_name_map}')
 

@@ -4,7 +4,7 @@ import re
 
 from . import types
 from .types import Union, Optional, Literal, List
-from .checker import Z3Checker
+from . import checker
 
 import logging
 logger = logging.getLogger(__name__)
@@ -344,6 +344,22 @@ class Spread(PlacementConstraint):
                     )
                 )
 
+class SetBoundingBox(HardConstraint):
+    instance: str
+    llx: int
+    lly: int
+    urx: int
+    ury: int
+
+    def check(self, checker):
+        super().check(checker)
+        assert self.llx < self.urx and self.lly < self.ury, f'Reflection is not supported yet for {self}'
+        bvar = checker.bbox_vars(self.instance)
+        checker.append(bvar.llx == self.llx)
+        checker.append(bvar.lly == self.lly)
+        checker.append(bvar.urx == self.urx)
+        checker.append(bvar.ury == self.ury)
+
 
 # You may chain constraints together for more complex constraints by
 #     1) Assigning default values to certain attributes
@@ -546,6 +562,7 @@ ConstraintType = Union[
     # ALIGN Internal DSL
     Order, Align,
     Enclose, Spread,
+    SetBoundingBox,
     # Additional helper constraints
     AlignInOrder,
     # Current Align constraints
@@ -575,7 +592,16 @@ class ConstraintDB(types.List[ConstraintType]):
 
     def _check(self, constraint):
         if self._checker and hasattr(constraint, 'check'):
-            constraint.check(self._checker)
+            try:
+                constraint.check(self._checker)
+            except checker.CheckerError as e:
+                logger.error(f'Checker raised error:\n {e}')
+                logger.error(f'Failed to add constraint {constraint} due to conflict with one or more of:')
+                for c in self.__root__:
+                    if hasattr(c, 'check'):
+                        logger.error(c)
+                raise e
+            
 
     def _check_recursive(self, constraints):
         for constraint in expand_user_constraints(constraints):
@@ -593,8 +619,8 @@ class ConstraintDB(types.List[ConstraintType]):
             kwargs['__root__'] = args[0]
             args = tuple()
         super().__init__(*args, **kwargs)
-        if Z3Checker.enabled:
-            self._checker = Z3Checker()
+        if checker.Z3Checker.enabled:
+            self._checker = checker.Z3Checker()
             self._check_recursive(self.__root__)
 
     def checkpoint(self):

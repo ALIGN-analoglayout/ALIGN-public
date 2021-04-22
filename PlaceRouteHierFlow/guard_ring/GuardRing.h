@@ -47,13 +47,14 @@ class GuardRing {
     vector<GuardRingDB::point> stored_pin_ur; //stored upper right coordinate of pin of guard ring primitive cells
     GuardRingDB::point shift;                   //shift vector to move wrapped cell
     PnRDB::GuardRing temp_gr;
+    string path;
   
   public:
     void Pcell_info(const map<string, PnRDB::lefMacro>& lefData); //read from lef file and set guard ring primitive cell width and height information       
     void Wcell_info(PnRDB::hierNode &node); //read from hierarchy node and set wrapped cell lower left & upper right coordinate and width & height
     void DRC_Read(const PnRDB::Drc_info& drc_info); //read drc info to obtain minimal space requirement
-    GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& lefData, const PnRDB::Drc_info& drc_info); //main function
-    void storegrhierNode(PnRDB::hierNode &node); //return hierarchy node with guard ring information
+    GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& lefData, const PnRDB::Drc_info& drc_info, const string& fpath); //main function
+    void storegrhierNode(PnRDB::hierNode &node, const string& fpath); //return hierarchy node with guard ring information
     PnRDB::hierNode movehierNode(PnRDB::hierNode &node); //move hierarchy node to make sure lower left coordinate to (0,0)
     void gnuplot(); //gnuplot function for plotting hierarchical node
     //functions to move each element of node: Start

@@ -1,45 +1,25 @@
-from align.pdk.finfet import CanvasPDK, mos, tap
 from align.schema.transistor import Transistor
-from .helper import *
+from align.pdk.finfet import MOS, CanvasPDK
+try:
+    from .helper import *
+except:
+    from helper import *
 
 
-def test_one():
-    tx = Transistor(model_name='n', nf=2, nfin=4, device_type='stack')
-    data = mos(CanvasPDK, tx, track_pattern={'G':[6], 'D':[4], 'S':[2]})
-    fn = "test_transistor_1"
-    compare_with_golden(fn, data)
+def test_zero():
+    cv = CanvasPDK()
+    ox = oy = 0
+    track_pattern={'G':[6], 'S':[4], 'D':[2]}
+    for nfin in range(1, 9):
+        ox = 0
+        for model_name in ['n','p']:
+            for device_type in ["stack", "parallel"]:
+                for nf in [2, 4, 6]:
+                    mg = MOS()
+                    tx = Transistor(model_name=model_name, nf=nf, nfin=nfin, device_type=device_type)
+                    data = mg.mos(tx, track_pattern=track_pattern)
+                    place(cv, data, ox, oy)
+                    ox += data['bbox'][2]
+        oy += data['bbox'][3]
+    compare_with_golden("test_transistor_0", cv)
 
-
-def test_two():
-    tx = Transistor(model_name='n', nf=4, nfin=4, device_type='stack')
-    data = mos(CanvasPDK, tx, track_pattern={'G':[6], 'D':[4], 'S':[2]})
-    fn = "test_transistor_2"
-    compare_with_golden(fn, data)
-
-
-def test_three():
-    tx = Transistor(model_name='n', nf=2, nfin=4, device_type='parallel')
-    data = mos(CanvasPDK, tx, track_pattern={'G':[6], 'D':[4], 'S':[2]})
-    fn = "test_transistor_3"
-    compare_with_golden(fn, data)
-
-
-def test_four():
-    tx = Transistor(model_name='n', nf=4, nfin=4, device_type='parallel')
-    data = mos(CanvasPDK, tx, track_pattern={'G':[6], 'D':[4], 'S':[2]})
-    fn = "test_transistor_4"
-    compare_with_golden(fn, data)
-
-
-def test_five():
-    tx = Transistor(model_name='n', nf=2, nfin=4, device_type='stack')
-    data = tap(CanvasPDK, tx)
-    fn = "test_transistor_5"
-    compare_with_golden(fn, data)
-
-
-def test_six():
-    tx = Transistor(model_name='n', nf=4, nfin=4, device_type='stack')
-    data = tap(CanvasPDK, tx)
-    fn = "test_transistor_6"
-    compare_with_golden(fn, data)
