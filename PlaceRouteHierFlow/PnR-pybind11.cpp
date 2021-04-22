@@ -16,7 +16,8 @@ using namespace pybind11::literals;
 #include "placer/PlacerIfc.h"
 #include "guard_ring/GuardRingIfc.h"
 #include "router/Router.h"
-#include "toplevel.h"
+#include "MNA/MNASimulationIfc.h"
+//#include "toplevel.h"
 
 using namespace PnRDB;
 using std::string;
@@ -104,7 +105,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("west", &tile::west)
     .def_readwrite("down", &tile::down)
     .def_readwrite("up", &tile::up);
-  py::class_<connectNode>( m, "connetNode")
+  py::class_<connectNode>( m, "connectNode")
     .def( py::init<>())
     .def_readwrite("type", &connectNode::type)
     .def_readwrite("iter", &connectNode::iter)
@@ -209,50 +210,50 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("LL", &layoutAS::LL)
     .def_readwrite("UR", &layoutAS::UR);
   py::class_<hierNode>( m, "hierNode")
-    .def( py::init<>())
-    .def( py::init<hierNode>())
-    .def_readwrite("isCompleted", &hierNode::isCompleted)
-    .def_readwrite("isTop", &hierNode::isTop)
-    .def_readwrite("isIntelGcellGlobalRouter", &hierNode::isIntelGcellGlobalRouter)
-    .def_readwrite("width", &hierNode::width)
-    .def_readwrite("height", &hierNode::height)
-    .def_readwrite("LL", &hierNode::LL)
-    .def_readwrite("UR", &hierNode::UR)
-    .def_readwrite("abs_orient", &hierNode::abs_orient)
-    .def_readwrite("n_copy", &hierNode::n_copy)
-    .def_readwrite("numPlacement", &hierNode::numPlacement)
-    .def_readwrite("name", &hierNode::name)
-    .def_readwrite("gdsFile", &hierNode::gdsFile)
-    .def_readwrite("parent", &hierNode::parent)
-    .def_readwrite("Blocks", &hierNode::Blocks)
-    .def_readwrite("tiles_total", &hierNode::tiles_total)
-    .def_readwrite("Nets", &hierNode::Nets)
-    .def_readwrite("Terminals", &hierNode::Terminals)
-    .def_readwrite("Vdd", &hierNode::Vdd)
-    .def_readwrite("Gnd", &hierNode::Gnd)
-    .def_readwrite("PowerNets", &hierNode::PowerNets)
-    .def_readwrite("blockPins", &hierNode::blockPins)
-    .def_readwrite("interMetals", &hierNode::interMetals)
-    .def_readwrite("interVias", &hierNode::interVias)
-    .def_readwrite("PnRAS", &hierNode::PnRAS)
-    .def_readwrite("SNets", &hierNode::SNets)
-    .def_readwrite("SPBlocks", &hierNode::SPBlocks)
-    .def_readwrite("Preplace_blocks", &hierNode::Preplace_blocks)
-    .def_readwrite("Alignment_blocks", &hierNode::Alignment_blocks)
-    .def_readwrite("Match_blocks", &hierNode::Match_blocks)
-    .def_readwrite("CC_Caps", &hierNode::CC_Caps)
-    .def_readwrite("R_Constraints", &hierNode::R_Constraints)
-    .def_readwrite("C_Constraints", &hierNode::C_Constraints)
-    .def_readwrite("Port_Location", &hierNode::Port_Location)
-    .def_readwrite("Guardring_Consts", &hierNode::Guardring_Consts)
-    .def_readwrite("bias_Hgraph", &hierNode::bias_Hgraph)
-    .def_readwrite("bias_Vgraph", &hierNode::bias_Vgraph)
-    .def_readwrite("router_report", &hierNode::router_report)
-    ;
+      .def( py::init<>())
+      .def( py::init<hierNode>())
+      .def_readwrite("isCompleted", &hierNode::isCompleted)
+      .def_readwrite("isTop", &hierNode::isTop)
+      .def_readwrite("isIntelGcellGlobalRouter", &hierNode::isIntelGcellGlobalRouter)
+      .def_readwrite("width", &hierNode::width)
+      .def_readwrite("height", &hierNode::height)
+      .def_readwrite("LL", &hierNode::LL)
+      .def_readwrite("UR", &hierNode::UR)
+      .def_readwrite("abs_orient", &hierNode::abs_orient)
+      .def_readwrite("n_copy", &hierNode::n_copy)
+      .def_readwrite("numPlacement", &hierNode::numPlacement)
+      .def_readwrite("name", &hierNode::name)
+      .def_readwrite("gdsFile", &hierNode::gdsFile)
+      .def_readwrite("parent", &hierNode::parent)
+      .def_readwrite("Blocks", &hierNode::Blocks)
+      .def_readwrite("tiles_total", &hierNode::tiles_total)
+      .def_readwrite("Nets", &hierNode::Nets)
+      .def_readwrite("Terminals", &hierNode::Terminals)
+      .def_readwrite("Vdd", &hierNode::Vdd)
+      .def_readwrite("Gnd", &hierNode::Gnd)
+      .def_readwrite("PowerNets", &hierNode::PowerNets)
+      .def_readwrite("blockPins", &hierNode::blockPins)
+      .def_readwrite("interMetals", &hierNode::interMetals)
+      .def_readwrite("interVias", &hierNode::interVias)
+      .def_readwrite("PnRAS", &hierNode::PnRAS)
+      .def_readwrite("SNets", &hierNode::SNets)
+      .def_readwrite("SPBlocks", &hierNode::SPBlocks)
+      .def_readwrite("Preplace_blocks", &hierNode::Preplace_blocks)
+      .def_readwrite("Alignment_blocks", &hierNode::Alignment_blocks)
+      .def_readwrite("Match_blocks", &hierNode::Match_blocks)
+      .def_readwrite("CC_Caps", &hierNode::CC_Caps)
+      .def_readwrite("R_Constraints", &hierNode::R_Constraints)
+      .def_readwrite("C_Constraints", &hierNode::C_Constraints)
+      .def_readwrite("Port_Location", &hierNode::Port_Location)
+      .def_readwrite("Guardring_Consts", &hierNode::Guardring_Consts)
+      .def_readwrite("bias_Hgraph", &hierNode::bias_Hgraph)
+      .def_readwrite("bias_Vgraph", &hierNode::bias_Vgraph)
+      .def_readwrite("router_report", &hierNode::router_report)
+      .def_readwrite("GuardRings", &hierNode::GuardRings);
   py::class_<Guardring_Const>( m, "Guardring_Const")
     .def( py::init<>())
     .def_readwrite("block_name", &Guardring_Const::block_name)
-    .def_readwrite("guard_ring_perimitives", &Guardring_Const::guard_ring_perimitives)
+    .def_readwrite("guard_ring_primitives", &Guardring_Const::guard_ring_primitives)
     .def_readwrite("global_pin", &Guardring_Const::global_pin)
     ;
   py::class_<SymmNet>( m, "SymmNet")
@@ -343,6 +344,16 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("UpperRect", &ViaModel::UpperRect)
     .def_readwrite("R", &ViaModel::R);
 
+  py::class_<design_info>( m, "design_info")
+    .def( py::init<>())
+    .def_readwrite("Hspace", &design_info::Hspace)
+    .def_readwrite("Vspace", &design_info::Vspace);
+
+  py::class_<guardring_info>( m, "guardring_info")
+    .def( py::init<>())
+    .def_readwrite("path", &guardring_info::path)
+    ;
+
   py::class_<Drc_info>( m, "Drc_info")
     .def( py::init<>())
     .def_readwrite("MaxLayer", &Drc_info::MaxLayer)
@@ -356,6 +367,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("MaskID_Via", &Drc_info::MaskID_Via)
     .def_readwrite("top_boundary", &Drc_info::top_boundary)
     .def_readwrite("Guardring_info", &Drc_info::Guardring_info)
+    .def_readwrite("Design_info", &Drc_info::Design_info)
   ;
 
   py::enum_<NType>(m,"NType")
@@ -404,9 +416,10 @@ PYBIND11_MODULE(PnR, m) {
     .def( "parse_top", &ReadVerilogHelper::parse_top);
 
   py::class_<PnRdatabase>( m, "PnRdatabase")
-    .def( py::init<string, string, string, string, string, string>())
     .def( py::init<>())
-    .def( "semantic", &PnRdatabase::semantic)
+    .def( "semantic0", &PnRdatabase::semantic0)
+    .def( "semantic1", &PnRdatabase::semantic1)
+    .def( "semantic2", &PnRdatabase::semantic2)
     .def( "TraverseHierTree", &PnRdatabase::TraverseHierTree)
     .def( "CheckoutHierNode", &PnRdatabase::CheckoutHierNode)
     .def( "CheckoutHierNodeVec", &PnRdatabase::CheckoutHierNodeVec)
@@ -414,7 +427,7 @@ PYBIND11_MODULE(PnR, m) {
     .def( "PrintHierTree", &PnRdatabase::PrintHierTree)
     .def( "ReadPDKJSON", &PnRdatabase::ReadPDKJSON)
     .def( "ReadLEF", &PnRdatabase::ReadLEF)
-    .def( "ReadMap", &PnRdatabase::ReadMap)
+    .def( "ReadLEFFromString", &PnRdatabase::ReadLEFFromString)
     .def( "ReadVerilog", &PnRdatabase::ReadVerilog)
     .def( "ReadDBJSON", &PnRdatabase::ReadDBJSON)
     .def( "WriteDBJSON", &PnRdatabase::WriteDBJSON)
@@ -428,13 +441,17 @@ PYBIND11_MODULE(PnR, m) {
     .def( "ExtractPinsToPowerPins", &PnRdatabase::ExtractPinsToPowerPins)
     .def( "CheckinChildnodetoBlock", &PnRdatabase::CheckinChildnodetoBlock)
     .def( "AppendToHierTree", &PnRdatabase::AppendToHierTree)
-    .def( "SetParentInHierTree", &PnRdatabase::SetParentInHierTree)
     .def( "WriteJSON", &PnRdatabase::WriteJSON)
     .def( "WriteLef", &PnRdatabase::WriteLef)
     .def( "Write_Router_Report", &PnRdatabase::Write_Router_Report)
     .def( "WriteGcellGlobalRoute", &PnRdatabase::WriteGcellGlobalRoute)
+    .def( "Write_Current_Workload", &PnRdatabase::Write_Current_Workload)
+    .def( "Write_Power_Mesh_Conf", &PnRdatabase::Write_Power_Mesh_Conf)
+    .def( "ReadConstraint_Json", &PnRdatabase::ReadConstraint_Json)
     .def_readwrite("hierTree", &PnRdatabase::hierTree)
     .def_readwrite("topidx", &PnRdatabase::topidx)
+    .def_readwrite("gdsData", &PnRdatabase::gdsData)
+    .def_readwrite("DRC_info", &PnRdatabase::DRC_info)
   ;
 
   py::class_<Placer_Router_Cap_Ifc>( m, "Placer_Router_Cap_Ifc")
@@ -446,17 +463,22 @@ PYBIND11_MODULE(PnR, m) {
     .def( "getNode", &PlacerIfc::getNode);
 
   py::class_<GuardRingIfc>( m, "GuardRingIfc")
-    .def( py::init<hierNode&, const map<string, lefMacro>&, const Drc_info&>());
+    .def( py::init<hierNode&, const map<string, lefMacro>&, const Drc_info&, const string&>());
+
+  py::class_<MNASimulationIfc>( m, "MNASimulationIfc")
+    .def( py::init<hierNode&, Drc_info&, string&, string&, string&>())
+    .def( "Return_Worst_Voltage", &MNASimulationIfc::Return_Worst_Voltage)
+    .def( "Clear_Power_Grid", &MNASimulationIfc::Clear_Power_Grid);
 
   py::class_<Router>( m, "Router")
     .def( py::init<>())
     .def( "RouteWork", &Router::RouteWork);
 
-
-
+  /*
   m.def("save_state", &save_state, "helper function to save_state");
   m.def("route_single_variant", &route_single_variant, "helper function to route a single variant");
   m.def("route_top_down", &route_top_down, "helper function to perform top-down routing");
 
   m.def("toplevel", &toplevel, py::return_value_policy::take_ownership, "helper function to perform the whole C++ flow");
+  */
 };

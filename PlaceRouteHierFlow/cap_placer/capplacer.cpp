@@ -59,9 +59,9 @@ Placer_Router_Cap::Placer_Router_Cap(const string& opath, const string& fpath, P
 
 	auto logger = spdlog::default_logger()->clone("cap_placer.Placer_Router_Cap.Placer_Router_Cap");
 
-    logger->info("Begin CC Capacitor Placement and Router");
+    logger->debug("Begin CC Capacitor Placement and Router");
     Common_centroid_capacitor_aspect_ratio(opath, fpath, current_node, drc_info, lefData, aspect_ratio, num_aspect);
-    logger->info("End CC Capacitor Placement and Router");
+    logger->debug("End CC Capacitor Placement and Router");
 }
 
 void Placer_Router_Cap::Placer_Router_Cap_clean(){
@@ -1810,6 +1810,8 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 	PnRDB::block b = current_node.Blocks[i].instance[current_node.Blocks[i].instance.size()-1];
 
 	if(b.isLeaf == 1 && b.gdsFile ==""){
+	    logger->info("CC Capacitor Placement and Router : {0} {1}", current_node.name, b.name);
+
 	    //this block must be CC
 	    vector<int> ki;
 	    vector<pair<string, string> > pin_names;

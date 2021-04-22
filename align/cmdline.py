@@ -104,6 +104,10 @@ class CmdlineParser():
                             "--render_placements",
                             action='store_true',
                             help='Set to true to render placements using plotly (Default False)')
+        parser.add_argument("-pdn",
+                            "--PDN_mode",
+                            action='store_true',
+                            help='Set to true to run power delivery network code (Default False)')
         parser.add_argument('--version',
                             action='version',
                             version='%(prog)s ' + __version__)

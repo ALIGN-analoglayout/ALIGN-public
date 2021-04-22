@@ -6,7 +6,7 @@ from pydantic import parse_obj_as
 
 
 def test_one():
-    json_str = """\
+    const = json.loads("""\
 {
     "constraints": [
       {
@@ -33,14 +33,13 @@ def test_one():
       }
     ]
   }
-"""   
-    const = json.loads(json_str)
+""")
     placement_constraints = parse_obj_as(ConstraintsPlacement, const)
     print(placement_constraints.json())
 
 
 def test_two():
-    json_str = """\
+    const = json.loads("""\
 {
     "constraints": [
       {
@@ -56,8 +55,7 @@ def test_two():
       }
     ]
   }
-"""
-    const = json.loads(json_str)
+""")
     with pytest.raises(Exception):
         placement_constraints = parse_obj_as(ConstraintsPlacement, const)
         print(placement_constraints.json())

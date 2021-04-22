@@ -1,6 +1,7 @@
 import pytest
+import pathlib
 from align.schema import constraint
-from align.schema.checker import Z3Checker
+from align.schema.checker import Z3Checker, CheckerError
 
 @pytest.fixture
 def db():
@@ -43,14 +44,14 @@ def test_Order_smt_checking(checker):
     x = constraint.Order(direction='left_to_right', instances=['M4', 'M5'])
     x.check(checker)
     x = constraint.Order(direction='left_to_right', instances=['M3', 'M2'])
-    with pytest.raises(AssertionError):
+    with pytest.raises(CheckerError):
         x.check(checker)
 
 @pytest.mark.skipif(not Z3Checker.enabled, reason="Couldn't import Z3")
 def test_Order_db_append(db):
     db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M2', 'M3']))
     db.append(constraint.Order(direction='left_to_right', instances=['M4', 'M5']))
-    with pytest.raises(AssertionError):
+    with pytest.raises(CheckerError):
         db.append(constraint.Order(direction='left_to_right', instances=['M3', 'M2']))
 
 def test_AlignInOrder_input_sanitation():
@@ -63,7 +64,7 @@ def test_AlignInOrder_input_sanitation():
 def test_AlignInOrder_smt_checking(db):
     db.append(constraint.AlignInOrder(instances=['M1', 'M2', 'M3'], direction='horizontal'))
     db.append(constraint.AlignInOrder(instances=['M4', 'M5'], line='bottom'))
-    with pytest.raises(AssertionError):
+    with pytest.raises(CheckerError):
         db.append(constraint.AlignInOrder(instances=['M3', 'M2'], line='bottom'))
 
 @pytest.mark.skipif(not Z3Checker.enabled, reason="Couldn't import Z3")
@@ -77,14 +78,14 @@ def test_ConstraintDB_incremental_checking(db):
     db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M2', 'M3']))
     db.checkpoint()
     # Experiment 2 : Failure
-    with pytest.raises(AssertionError):
+    with pytest.raises(CheckerError):
         db.append(constraint.Order(direction='left_to_right', instances=['M3', 'M2']))
     db.revert()
     # Experiment 3 : Success
     db.append(constraint.Order(direction='left_to_right', instances=['M4', 'M5']))
     db.checkpoint()
     # Experiment 4: Failure
-    with pytest.raises(AssertionError):
+    with pytest.raises(CheckerError):
         db.append(constraint.Order(direction='left_to_right', instances=['M3', 'M2']))
     db.revert()
     # Experiment 5: Success
@@ -111,3 +112,11 @@ def test_ConstraintDB_nonincremental_revert(db):
     assert len(db._commits) == 0
     if db._checker:
         assert 'M3' not in str(db._checker._solver)
+
+def test_ConstraintDB_json(db):
+    db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M2']))
+    db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M3']))
+    fp = pathlib.Path(__file__).parent / 'const.json'
+    fp.write_text(db.json())
+    newdb = constraint.ConstraintDB.parse_file(fp)
+    assert db == newdb

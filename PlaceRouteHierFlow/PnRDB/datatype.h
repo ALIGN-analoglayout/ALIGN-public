@@ -52,6 +52,7 @@ struct Multi_LinearConst;
 struct Multi_connection;
 struct GuardRing;
 struct Guardring_Const;
+struct guardring_info;
 
 /// Part 1: declaration of enum types
 enum NType {Block, Terminal};
@@ -336,14 +337,16 @@ struct layoutAS {
   vector<terminal> Terminals;
   point LL;
   point UR;
-  //vector<pin> blockPins;
-  //vector<contact> interMetals;
-  //vector<Via> interVias;
+  vector<PowerNet> PowerNets;
+  vector<GuardRing> GuardRings;
+  // vector<pin> blockPins;
+  // vector<contact> interMetals;
+  // vector<Via> interVias;
 };
 
 struct GuardRing {
   std::string mastername = "";
-  string gdsFile="testcase_guardring/guard_ring.gds";
+  string gdsFile="guard_ring.gds";
   point LL;
   point UR;
   point center;
@@ -483,7 +486,7 @@ struct CCCap {
 
 struct Guardring_Const {
   string block_name;
-  string guard_ring_perimitives;
+  string guard_ring_primitives;
   string global_pin;
 };
 
@@ -617,6 +620,7 @@ struct guardring_info {
   int xspace; // x dimension minimal space
   int yspace; // y dimension minimal space
   GdsDatatype gds_datatype;
+  string path;
 };
 
 struct design_info {

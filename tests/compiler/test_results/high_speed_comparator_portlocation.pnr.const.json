@@ -1,0 +1,157 @@
+{
+    "constraints": [
+        {
+            "const_name": "bias_Hgraph",
+            "distance": 0
+        },
+        {
+            "const_name": "bias_Vgraph",
+            "distance": 0
+        },
+        {
+            "const_name": "SymmBlock",
+            "pairs": [
+                {
+                    "type": "selfsym",
+                    "block": "mn0"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "mn1_mn2"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "mn3_mn4"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "mp5_mp6"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "mp7",
+                    "block2": "mp8"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "mp9",
+                    "block2": "mp10"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "mp11_mn13",
+                    "block2": "mp12_mn14"
+                }
+            ],
+            "axis_dir": "V"
+        },
+        {
+            "const_name": "Ordering",
+            "direction": "V",
+            "blocks": [
+                "mn0",
+                "mn1_mn2",
+                "mn3_mn4",
+                "mp5_mp6"
+            ]
+        },
+        {
+            "const_name": "AlignBlock",
+            "direction": "H",
+            "blocks": [
+                "mp9",
+                "mp7",
+                "mn1_mn2",
+                "mp8",
+                "mp10"
+            ]
+        },
+        {
+            "const_name": "AlignBlock",
+            "direction": "H",
+            "blocks": [
+                "mp11_mn13",
+                "mp5_mp6",
+                "mp12_mn14"
+            ]
+        },
+        {
+            "const_name": "PortLocation",
+            "location": "TC",
+            "terminal_name": "von"
+        },
+        {
+            "const_name": "PortLocation",
+            "location": "TC",
+            "terminal_name": "vop"
+        },
+        {
+            "const_name": "SymmNet",
+            "axis_dir": "V",
+            "net1": {
+                "name": "vin",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "mn1_mn2",
+                        "pin": "vin"
+                    },
+                    {
+                        "type": "terminal",
+                        "name": "vin",
+                        "pin": null
+                    }
+                ]
+            },
+            "net2": {
+                "name": "vip",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "mn1_mn2",
+                        "pin": "vip"
+                    },
+                    {
+                        "type": "terminal",
+                        "name": "vip",
+                        "pin": null
+                    }
+                ]
+            }
+        },
+        {
+            "const_name": "SymmNet",
+            "axis_dir": "V",
+            "net1": {
+                "name": "vin_d",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "mp7",
+                        "pin": "D"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "mn3_mn4",
+                        "pin": "vin_d"
+                    }
+                ]
+            },
+            "net2": {
+                "name": "vip_d",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "mp8",
+                        "pin": "D"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "mn3_mn4",
+                        "pin": "vip_d"
+                    }
+                ]
+            }
+        }
+    ]
+}

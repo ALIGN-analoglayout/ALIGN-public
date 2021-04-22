@@ -1,8 +1,0 @@
-#
-PDK_FILE=layers.json
-
-Results/${DESIGN}_0.lef:	inputs/${DESIGN}.lef inputs/${DESIGN}.v inputs/${DESIGN}.map inputs/${PDK_FILE}
-	mkdir -p Results/
-	-cp -p inputs/*.const .
-	-cp -p inputs/*.json .
-	$(TOP)/PlaceRouteHierFlow/pnr_compiler . inputs/${DESIGN}.lef inputs/${DESIGN}.v inputs/${DESIGN}.map inputs/${PDK_FILE} ${DESIGN} 1 0

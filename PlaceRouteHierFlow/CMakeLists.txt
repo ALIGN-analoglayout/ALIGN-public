@@ -5,11 +5,7 @@ add_subdirectory(cap_placer)
 add_subdirectory(guard_ring)
 add_subdirectory(MNA)
 
-set(headers
-     toplevel.h)
-
 set(sources
-     toplevel.cpp
      PnR-pybind11.cpp)
 
 add_library(PnR SHARED ${sources} ${headers})
