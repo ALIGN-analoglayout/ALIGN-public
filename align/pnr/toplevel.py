@@ -263,7 +263,9 @@ def toplevel(args, *, PDN_mode=False, render_placements=False, adr_mode=False):
 
     # Need the trailing /
     opath = './Results/'
-    pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
+    opath_path = pathlib.Path(opath).resolve()
+    logger.info( f'opath_path: {opath_path}')
+    opath_path.mkdir(parents=True,exist_ok=True)
 
     results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, render_placements=render_placements, verilog_d=verilog_d)
 

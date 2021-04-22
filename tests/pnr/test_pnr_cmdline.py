@@ -2,10 +2,13 @@ import json
 import pathlib
 import io
 import pytest
+import os
 
 from align.pnr.cmdline import cmdline
 
 mydir = pathlib.Path(__file__).resolve().parent
+
+
 
 def test_verilog():
     
@@ -15,7 +18,10 @@ def test_verilog():
 
     argv = [ 'pnr_compiler.py', str(d), f'{nm}.lef', f'{nm}.v', f'{nm}.map', 'layers.json', nm, '1', '0']
 
+    #current_working_dir = os.getcwd()
+    os.chdir(mydir)
     cmdline( argv)
+    #os.chdir(current_working_dir)
 
 def test_verilog_json():
     
@@ -25,7 +31,11 @@ def test_verilog_json():
 
     argv = [ 'pnr_compiler.py', str(d), f'{nm}.lef', f'{nm}.verilog.json', f'{nm}.map', 'layers.json', nm, '1', '0']
 
+    #current_working_dir = os.getcwd()
+    os.chdir(mydir)
     cmdline( argv)
+    #os.chdir(current_working_dir)
+
 
 def test_guardring():
     
@@ -35,4 +45,7 @@ def test_guardring():
 
     argv = [ 'pnr_compiler.py', str(d), f'{nm}.lef', f'{nm}.verilog.json', f'{nm}.map', 'layers.json', nm, '1', '0']
 
+    #current_working_dir = os.getcwd()
+    os.chdir(mydir)
     cmdline( argv)
+    #os.chdir(current_working_dir)

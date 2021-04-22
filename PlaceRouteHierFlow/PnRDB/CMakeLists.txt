@@ -14,7 +14,6 @@ set(sources
      ReadConstraint.cpp
      Print.cpp
      ReadLEF.cpp
-     PnRDBJSON.cpp
 )
 
 add_library(PnRDB STATIC ${sources} ${headers})
