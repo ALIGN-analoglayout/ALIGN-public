@@ -6,6 +6,7 @@ from itertools import chain
 from .. import PnR
 from .render_placement import dump_blocks2, gen_placement_verilog
 from .build_pnr_model import *
+from .checker import check_placement
 
 logger = logging.getLogger(__name__)
 
@@ -195,6 +196,7 @@ def place( *, DB, opath, fpath, numLayout, effort, idx):
     for lidx in range(actualNumLayout):
         node = curr_plc.getNode(lidx)
         if node.Guardring_Consts:
+            logger.info( f'Running guardring flow')
             PnR.GuardRingIfc( node, DB.checkoutSingleLEF(), DB.getDrc_info(), fpath)
         #analyze_hN( f'After placement {lidx}', node, False)
         DB.Extract_RemovePowerPins(node)
@@ -243,6 +245,8 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
             if render_placements:
                 dump_blocks2( placement_verilog_d, hN.name, sel, leaves_only=False)
+
+            check_placement(placement_verilog_d)
 
     return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode)
 

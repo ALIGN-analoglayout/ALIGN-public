@@ -10,8 +10,7 @@ from .match_graph import Annotate
 from .read_setup import read_setup
 from .write_verilog_lef import write_verilog, WriteVerilog,generate_lef
 from .common_centroid_cap_constraint import CapConst
-from .write_constraint import FindConst
-from .write_pnr_const import ConstraintWriter
+from .find_constraint import FindConst
 from .read_lef import read_lef
 from .user_const import ConstraintParser
 from ..schema import constraint
@@ -242,25 +241,18 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
         else:
             inoutpin = member["ports"]
         if name not in  all_lef:
-            logger.debug(f"call verilog writer for block: {name}")
-            wv = WriteVerilog(graph, name, inoutpin, hier_graph_dict, POWER_PINS)
-            logger.debug(f"Copy const file for: {name}")
-            # const_file = CopyConstFile(name, input_dir, result_dir)
-            logger.debug(f"cap constraint gen for block: {name}")
 
-            ##Removing constraints to fix cascoded cmc
+            ## Removing constraints to fix cascoded cmc
             if name not in design_setup['DIGITAL']:
                 logger.debug(f"call constraint generator writer for block: {name}")
                 stop_points = design_setup['POWER'] + design_setup['GND'] + design_setup['CLOCK']
                 if name not in design_setup['NO_CONST']:
                     constraints = FindConst(graph, name, inoutpin, member["ports_weight"], constraints, stop_points)
                 constraints = CapConst(graph, name, design_config["unit_size_cap"], constraints, design_setup['MERGE_SYMM_CAPS'])
-            if constraints and len(constraints) > 0:
-                pnr_const_format = ConstraintWriter(pdk_dir)
-                new_const = pnr_const_format.map_valid_const(constraints)
-                json_const_file = result_dir / (name + '.pnr.const.json')
-                with open(json_const_file, 'w') as outfile:
-                    json.dump(new_const, outfile, indent=4)
+
+            ## Write out modified netlist & constraints as JSON
+            logger.debug(f"call verilog writer for block: {name}")
+            wv = WriteVerilog(graph, name, inoutpin, hier_graph_dict, POWER_PINS, constraints)
             verilog_tbl['modules'].append( wv.gen_dict())
     if len(POWER_PINS)>0:
         for i, nm in enumerate(POWER_PINS):

@@ -3,7 +3,7 @@ import pathlib
 from align.compiler.compiler import compiler, compiler_output
 
 def test_compiler():
-    test_path=pathlib.Path(__file__).resolve().parent / 'test_circuits' / 'ota' / 'ota.sp'
+    test_path=pathlib.Path(__file__).resolve().parent.parent / 'files' / 'test_circuits' / 'ota' / 'ota.sp'
     pdk_dir = pathlib.Path(__file__).resolve().parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK'
 
     updated_ckt = compiler(test_path, "ota",pdk_dir )
