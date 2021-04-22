@@ -4,7 +4,7 @@ from ..cell_fabric import transformation
 
 def check_placement(placement_verilog_d):
     for module in placement_verilog_d['modules']:
-        if len(module['constraints']) == 0:
+        if 'constraints' not in module or len(module['constraints']) == 0:
             continue  # No constraints
         constraints = constraint.ConstraintDB(module['constraints'])
         if sum(hasattr(x, 'check') for x in constraints) == 0:

@@ -6,7 +6,7 @@ from align.compiler.compiler import compiler, compiler_output
 def primitives(cn):
     mydir = pathlib.Path(__file__).resolve()
     pdk_path = mydir.parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK' 
-    test_path = mydir.parent / 'test_circuits' / (cn+'.sp')
+    test_path = mydir.parent.parent / 'files' / 'test_circuits' / (cn+'.sp')
     updated_ckt = compiler(test_path, cn,pdk_path )
     assert cn in updated_ckt
     return compiler_output(test_path, updated_ckt, 'sizing', pathlib.Path(__file__).parent / 'Results', pdk_path )
@@ -15,7 +15,7 @@ def primitives(cn):
 def path(cn):
     mydir = pathlib.Path(__file__).resolve()
     pdk_path = mydir.parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK' 
-    test_path = mydir.parent / 'test_circuits' / (cn+'.sp')
+    test_path = mydir.parent.parent / 'files' / 'test_circuits' / (cn+'.sp')
     return test_path, pdk_path
     
 @pytest.mark.parametrize('cn',['intel_circuit'])

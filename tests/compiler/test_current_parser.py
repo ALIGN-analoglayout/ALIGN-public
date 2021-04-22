@@ -6,7 +6,7 @@ from align.compiler.create_database import CreateDatabase
 from align.compiler.user_const import ConstraintParser
 
 def test_parser1():
-    test_path=(pathlib.Path(__file__).parent / 'test_circuits' / 'test1.sp').resolve()
+    test_path=(pathlib.Path(__file__).parent.parent / 'files' / 'test_circuits' / 'test1.sp').resolve()
     sp = SpiceParser(test_path,"test1",0)
     g = sp.sp_parser()[0]
     assert len(g["graph"].nodes()) == 10
@@ -14,18 +14,18 @@ def test_parser1():
     assert 'vss' in g["ports"] # A port name 0 should be changed to vss
 
 def test_parser2():
-    test_path=(pathlib.Path(__file__).parent / 'test_circuits' / 'test2.sp').resolve()
+    test_path=(pathlib.Path(__file__).parent.parent / 'files' / 'test_circuits' / 'test2.sp').resolve()
     sp = SpiceParser(test_path,"test2",0)
     g = sp.sp_parser()[0]
     assert len(g["graph"].nodes()) == 12
 
 
 def test_parser3():
-    test_path=pathlib.Path(__file__).resolve().parent / 'test_circuits'/ 'ota'/ 'ota.sp'
+    test_path=pathlib.Path(__file__).resolve().parent.parent / 'files' / 'test_circuits'/ 'ota'/ 'ota.sp'
     sp = SpiceParser(test_path,"ota",0)
     g = sp.sp_parser()[0]
     assert len(g["graph"].nodes()) == 25 # number of nodes in OTA
-    test_path=pathlib.Path(__file__).resolve().parent / 'test_circuits'/ 'basic_template.sp'
+    test_path=pathlib.Path(__file__).resolve().parent.parent / 'files' / 'test_circuits'/ 'basic_template.sp'
     lib_sp =  SpiceParser(test_path)
     lib_list = lib_sp.sp_parser()
     assert len(lib_list) == 46 ## 18 subckt in basic template
@@ -33,7 +33,7 @@ def test_parser3():
 
 def test_match_ota():
     pdk_dir = pathlib.Path(__file__).resolve().parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK'
-    input_dir = pathlib.Path(__file__).resolve().parent / 'test_circuits'
+    input_dir = pathlib.Path(__file__).resolve().parent.parent / 'files' / 'test_circuits'
     g,lib_list = test_parser3()
     design_setup = {'POWER':['vdd'],'GND':['vss'], 'DIGITAL':[], 'CLOCK':[],'NO_ARRAY':[]}
     all_lef = ['Switch_NMOS','Switch_PMOS','CMC_PMOS','CMC_S_NMOS_B','DP_NMOS_B','SCM_NMOS']

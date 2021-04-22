@@ -6,9 +6,9 @@ from align.compiler.compiler import compiler, compiler_output
 def test_cap():
     mydir = pathlib.Path(__file__).resolve()
     pdk_path = mydir.parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK' 
-    test_path = mydir.parent / 'test_circuits' / 'test_cap.sp'
+    test_path = mydir.parent.parent / 'files' / 'test_circuits' / 'test_cap.sp'
     gen_const_path = mydir.parent / 'Results' / 'test_cap.pnr.const.json'
-    gold_const_path = mydir.parent / 'test_results' / 'test_cap.pnr.const-freeze.json'
+    gold_const_path = mydir.parent.parent / 'files' / 'test_results' / 'test_cap.pnr.const-freeze.json'
 
     updated_ckt = compiler(test_path, "test_cap", pdk_path)
     assert 'test_cap' in updated_ckt
