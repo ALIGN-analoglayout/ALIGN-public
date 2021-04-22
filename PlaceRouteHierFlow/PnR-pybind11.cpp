@@ -347,7 +347,16 @@ PYBIND11_MODULE(PnR, m) {
   py::class_<design_info>( m, "design_info")
     .def( py::init<>())
     .def_readwrite("Hspace", &design_info::Hspace)
-    .def_readwrite("Vspace", &design_info::Vspace);
+    .def_readwrite("Vspace", &design_info::Vspace)
+    .def_readwrite("signal_routing_metal_l", &design_info::signal_routing_metal_l)
+    .def_readwrite("signal_routing_metal_u", &design_info::signal_routing_metal_u)
+    .def_readwrite("power_grid_metal_l", &design_info::power_grid_metal_l)
+    .def_readwrite("power_grid_metal_u", &design_info::power_grid_metal_u)
+    .def_readwrite("power_routing_metal_l", &design_info::power_routing_metal_l)
+    .def_readwrite("power_routing_metal_u", &design_info::power_routing_metal_u)
+    .def_readwrite("h_skip_factor", &design_info::h_skip_factor)
+    .def_readwrite("v_skip_factor", &design_info::v_skip_factor)
+    ;
 
   py::class_<guardring_info>( m, "guardring_info")
     .def( py::init<>())
