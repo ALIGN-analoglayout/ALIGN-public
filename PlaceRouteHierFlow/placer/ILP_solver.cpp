@@ -10,6 +10,7 @@ ILP_solver::ILP_solver(design& mydesign) {
   Blocks.resize(mydesign.Blocks.size());
   Aspect_Ratio_weight = mydesign.Aspect_Ratio_weight;
   memcpy(Aspect_Ratio, mydesign.Aspect_Ratio, sizeof(mydesign.Aspect_Ratio));
+  memcpy(placement_box, mydesign.placement_box, sizeof(mydesign.placement_box));
 }
 
 ILP_solver::ILP_solver(const ILP_solver& solver) {
@@ -24,6 +25,7 @@ ILP_solver::ILP_solver(const ILP_solver& solver) {
   multi_linear_const = solver.multi_linear_const;
   Aspect_Ratio_weight = solver.Aspect_Ratio_weight;
   memcpy(Aspect_Ratio, solver.Aspect_Ratio, sizeof(solver.Aspect_Ratio));
+  memcpy(placement_box, solver.placement_box, sizeof(solver.placement_box));
 }
 
 ILP_solver& ILP_solver::operator=(const ILP_solver& solver) {
@@ -37,6 +39,7 @@ ILP_solver& ILP_solver::operator=(const ILP_solver& solver) {
   multi_linear_const = solver.multi_linear_const;
   Aspect_Ratio_weight = solver.Aspect_Ratio_weight;
   memcpy(Aspect_Ratio, solver.Aspect_Ratio, sizeof(solver.Aspect_Ratio));
+  memcpy(placement_box, solver.placement_box, sizeof(solver.placement_box));
   return *this;
 }
 
@@ -422,6 +425,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   // ratio = std::max(double(UR.x - LL.x) / double(UR.y - LL.y), double(UR.y - LL.y) / double(UR.x - LL.x));
   ratio = double(UR.x - LL.x) / double(UR.y - LL.y);
   if (ratio < Aspect_Ratio[0] || ratio > Aspect_Ratio[1]) return -1;
+  if (placement_box[0] > 0 && (UR.x - LL.x > placement_box[0]) || placement_box[1] > 0 && (UR.y - LL.y > placement_box[1])) return -1;
   // calculate HPWL
   HPWL = 0;
   for (auto neti : mydesign.Nets) {
