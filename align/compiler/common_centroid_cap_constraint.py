@@ -9,7 +9,7 @@ import os
 from math import ceil
 
 from .merge_nodes import merge_nodes
-from .write_constraint import symmnet_device_pairs	
+from .find_constraint import symmnet_device_pairs	
 import logging
 import json
 from ..schema import constraint

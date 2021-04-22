@@ -58,8 +58,8 @@ pycharm/
 **/_cmake.py
 coverage-reports/
 # Include files based on ALIGN naming conventions
-!examples/**/*.const.json
-!examples/**/const.json
+!tests/files/**/*.json
+!examples/**/*.json
 !**/*-freeze.json
 !**/Process.json
 !**/layers.json
@@ -80,8 +80,6 @@ tests/cell_fabric/Foo*.cir
 !docs/Tutorials/Build/src/json/
 !tests/cell_fabric/__json_cmc_nmos_big_no_duplicates_cand
 !tests/cell_fabric/__json_diff_pair_cand
-!tests/compiler/test_circuits/high_speed_comparator_*/high_speed_comparator.const.json
-!tests/compiler/test_results/high_speed_comparator_*.pnr.const.json
 !tests/pnr/current_mirror_ota_inputs/*.json
 !tests/pnr/current_mirror_ota_inputs/*.lef
 !tests/pnr/telescopic_ota_guard_ring_inputs/*.json
