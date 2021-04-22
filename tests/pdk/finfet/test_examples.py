@@ -40,6 +40,3 @@ def test_examples(example):
             assert v['errors'] <= maxerrors, f"{example.name} ({k}):Number of DRC errorrs: {str(v['errors'])}"
     
     shutil.rmtree(run_dir)
-
-example = pathlib.Path('/nfs/site/disks/scl.work.50/ash/users/soneryal/sles12/intel_pdks/p1222/ALIGN-public/align/pdk/finfet/examples/common_source')
-test_examples(example)
