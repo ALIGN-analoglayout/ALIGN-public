@@ -71,6 +71,9 @@ class WriteVerilog:
                     ports = attr["ports"]
                     nets = list(self.circuit_graph.neighbors(node))
 
+                print(instance)
+                print(ports)
+                print(nets)
                 instance['fa_map'] = self.gen_dict_fa(ports, nets)
                 if not instance['fa_map']:
                     logger.warning(f"Unconnected module, only power/gnd conenction found {node}")

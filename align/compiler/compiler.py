@@ -14,6 +14,7 @@ from .find_constraint import FindConst
 from .read_lef import read_lef
 from .user_const import ConstraintParser
 from ..schema import constraint
+from ..schema.subcircuit import HierDictNode
 
 import logging
 logger = logging.getLogger(__name__)
@@ -65,7 +66,8 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, flat
     lib_path=pathlib.Path(__file__).resolve().parent.parent / 'config' / 'user_template.sp'
     user_lib = SpiceParser(lib_path)
     library += user_lib.sp_parser()
-    library=sorted(library, key=lambda k: max_connectivity(k["graph"]), reverse=True)
+    library = [HierDictNode(**x, constraints=[], ports_weight={}) for x in library]
+    library=sorted(library, key=lambda k: max_connectivity(k.graph), reverse=True)
 
     logger.debug(f"dont use cells: {design_setup['DONT_USE_CELLS']}")
     logger.debug(f"all library elements: {[ele['name'] for ele in library]}")
@@ -195,6 +197,7 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
                     for nm in list(hier_graph_dict.keys()):
                         if nm == lef_name + attr['inst_copy']:
                             if block_name not in hier_graph_dict.keys():
+                                assert False, 'Hope this is dead code. Trying to modify a dictionary while iterating over it!'
                                 hier_graph_dict[block_name] = hier_graph_dict.pop(nm)
                             else:
                                 #For cells with extra parameters than current primitive naming convention
@@ -233,7 +236,7 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
                 if key not in POWER_PINS:
                     inoutpin.append(key)
             if member["ports"]:
-                logger.debug(f'Found module ports: {member["ports"]} {member.keys()}')
+                logger.debug(f'Found module ports: {member["ports"]} {member["name"]}')
                 floating_ports = set(inoutpin) - set(member["ports"]) - set(design_setup['POWER']) -set(design_setup['GND'])
                 if len(list(floating_ports))> 0:
                     logger.error(f"floating ports found: {name} {floating_ports}")

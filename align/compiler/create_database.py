@@ -5,6 +5,7 @@ Created on Fri Jan 15 10:38:14 2021
 
 @author: kunal001
 """
+from ..schema.subcircuit import HierDictNode
 import logging
 logger = logging.getLogger(__name__)
 
@@ -33,13 +34,13 @@ class CreateDatabase:
     
         logger.debug("Merging nested graph hierarchies to dictionary: ")
         constraints = self.const_parse.read_user_const(name)
-        self.hier_graph_dict[name] = {
-            "graph": self.G,
-            "ports": top_ports,
-            "ports_weight": ports_weight,
-            "constraints": constraints
-        }
-        
+        self.hier_graph_dict[name] = HierDictNode(
+            name = name,
+            graph = self.G,
+            ports = top_ports,
+            ports_weight = ports_weight,
+            constraints = constraints
+        )
         self._traverse_hier_in_graph(self.G)
         logger.debug(f"read graph {self.hier_graph_dict}")
         return self.hier_graph_dict
@@ -64,12 +65,13 @@ class CreateDatabase:
                 logger.debug(f'external ports: {sub_ports}, {attr["connection"]}, {ports_weight}')
                 constraints = self.const_parse.read_user_const(attr["inst_type"])
     
-                self.hier_graph_dict[attr["inst_type"]] = {
-                    "graph": attr["sub_graph"],
-                    "ports": sub_ports,
-                    "constraints": constraints,
-                    "ports_weight": ports_weight
-                }
-    
+                self.hier_graph_dict[attr["inst_type"]] = HierDictNode(
+                    name = attr["inst_type"],
+                    graph = attr["sub_graph"],
+                    ports = sub_ports,
+                    constraints = constraints,
+                    ports_weight = ports_weight
+                )
+       
                 self._traverse_hier_in_graph(attr["sub_graph"])
                 

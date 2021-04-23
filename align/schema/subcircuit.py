@@ -1,4 +1,5 @@
-from .types import Optional, List, Dict
+from .types import Optional, List, Dict, BaseModel
+from typing import Any
 
 from . import types
 
@@ -6,6 +7,26 @@ from .model import Model
 from .instance import Instance
 from .constraint import ConstraintDB
 
+
+class HierDictNode(BaseModel):
+    name : str
+    graph: Any
+    ports: List
+    constraints: ConstraintDB
+    ports_weight: Dict
+
+    class Config:
+        extra = 'allow'
+        allow_mutation = True
+
+    def __getitem__(self, item):
+        return getattr(self, item)
+    
+    def __setitem__(self, item, value):
+        setattr(self, item, value)
+
+    def __contains__(self, item):
+        return hasattr(self, item)
 
 class SubCircuit(Model):
 
