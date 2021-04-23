@@ -1,3 +1,3 @@
 from .canvas import CanvasPDK
-from .transistor import mos, tap
+from .transistor import MOS
 from .transistor_array import MOSGenerator

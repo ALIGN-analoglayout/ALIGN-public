@@ -233,7 +233,7 @@ def get_generator(name, pdkdir):
     try:  # is pdk an installed module
         module = importlib.import_module(pdk_dir_stem)
         return getattr(module, name)
-    except ImportError:
+    except:
         init_file = pdk_dir_path / '__init__.py'
         if init_file.is_file():  # is pdk a package
             spec = importlib.util.spec_from_file_location(pdk_dir_stem, pdk_dir_path / '__init__.py')

@@ -10,7 +10,7 @@ from networkx.algorithms import isomorphism
 
 from .merge_nodes import merge_nodes, merged_value
 from .util import get_next_level
-from .write_constraint import FindSymmetry
+from .find_constraint import FindSymmetry
 from .common_centroid_cap_constraint import merge_caps
 import pprint
 import logging
