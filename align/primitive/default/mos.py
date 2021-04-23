@@ -286,7 +286,7 @@ class MOSGenerator(DefaultCanvas):
         else:
             self.addWire( self.activeb_diff, None, None, y, 0, self.gate*x_cells+1)
             self.addWire( self.pb_diff, None, None, y, (x,1), (x+1,-1))
-        self.addWire( self.m1, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1))
+        self.addWire( self.m1, None, None, gate_x, ((y+1)*h+self.lFin//4-1, -1), ((y+1)*h+self.lFin//4+1, 1))
         self.addVia( self.va, f'{fullname}:B', None, gate_x, (y+1)*h + self.lFin//4)
 
     def _addMOSArray( self, x_cells, y_cells, pattern, vt_type, connections, minvias = 1, **parameters):
