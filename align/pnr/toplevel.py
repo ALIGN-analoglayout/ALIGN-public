@@ -73,8 +73,8 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
                 DB.Write_Power_Mesh_Conf(power_mesh_conffile)
 
             # Do we need to override these values?
-            power_grid_metal_l = 2
-            power_grid_metal_u = 11
+            power_grid_metal_l = 4
+            power_grid_metal_u = 5
             RouteWork(7, current_node_copy, metal_l=power_grid_metal_l, metal_u=power_grid_metal_u, fn=power_mesh_conffile)
 
             logger.info("Start MNA ")
