@@ -75,7 +75,7 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
       if exclude_based_on_name( obj['netName']): continue    
       r = list(map( scale, obj['rect']))
 
-      if k == "V0" and (r[2]-r[0]) > scale(10*j['GuardRing']['v0WidthX']):
+      if k == "V0" and (r[2]-r[0]) > scale(10*j['V0']['WidthX']):
           for NumX in range(j['GuardRing']['viaArray']):
               new_rect = [r[0]+NumX*(j['GuardRing']['v0WidthX']+j['GuardRing']['v0SpaceX']), r[1],
                           r[0]+NumX*(j['GuardRing']['v0WidthX']+j['GuardRing']['v0SpaceX'])+j['GuardRing']['v0WidthX'], r[3]]
