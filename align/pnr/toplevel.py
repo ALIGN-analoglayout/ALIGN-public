@@ -250,7 +250,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
     return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode)
 
-def toplevel(args, *, PDN_mode=False, render_placements=False, adr_mode=False):
+def toplevel(args, *, PDN_mode=False, render_placements=False, adr_mode=False, results_dir=None):
 
     assert len(args) == 9
 
@@ -261,11 +261,19 @@ def toplevel(args, *, PDN_mode=False, render_placements=False, adr_mode=False):
 
     DB, verilog_d = PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile)
 
-    # Need the trailing /
-    opath = './Results/'
-    opath_path = pathlib.Path(opath).resolve()
-    logger.info( f'opath_path: {opath_path}')
+    if results_dir is None:
+        opath_path = pathlib.Path('./Results/')
+    else:
+        opath_path = pathlib.Path(results_dir)
+
     opath_path.mkdir(parents=True,exist_ok=True)
+
+    # Need the trailing /
+    opath = str(opath_path)
+    if opath[-1] != '/':
+        opath = opath + '/'
+
+    logger.info( f'opath: {opath}')
 
     results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, render_placements=render_placements, verilog_d=verilog_d)
 
