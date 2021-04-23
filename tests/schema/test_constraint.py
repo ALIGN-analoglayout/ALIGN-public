@@ -120,3 +120,9 @@ def test_ConstraintDB_json(db):
     fp.write_text(db.json())
     newdb = constraint.ConstraintDB.parse_file(fp)
     assert db == newdb
+
+def test_ConstraintDB_parent_relationship(db):
+    db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M2']))
+    db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M3']))
+    for const in db:
+        assert const.parent == db
