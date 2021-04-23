@@ -262,18 +262,13 @@ def toplevel(args, *, PDN_mode=False, render_placements=False, adr_mode=False, r
     DB, verilog_d = PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile)
 
     if results_dir is None:
-        opath_path = pathlib.Path('./Results/')
+        opath = './Results/'
     else:
-        opath_path = pathlib.Path(results_dir)
+        opath = str(pathlib.Path(results_dir))
+        if opath[-1] != '/':
+            opath = opath + '/'
 
-    opath_path.mkdir(parents=True,exist_ok=True)
-
-    # Need the trailing /
-    opath = str(opath_path)
-    if opath[-1] != '/':
-        opath = opath + '/'
-
-    logger.info( f'opath: {opath}')
+    pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
 
     results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, render_placements=render_placements, verilog_d=verilog_d)
 
