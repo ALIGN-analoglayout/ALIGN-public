@@ -409,6 +409,7 @@ struct hierNode {
   int bias_Vgraph=0;
   double Aspect_Ratio_weight = 1000;
   double Aspect_Ratio[2] = {0, 100};
+  double placement_box[2] = {-1, -1};
   vector<Router_report> router_report;
   vector<Multi_connection> Multi_connections;
 
@@ -631,6 +632,8 @@ struct design_info {
   int power_grid_metal_u;
   int power_routing_metal_l;
   int power_routing_metal_u;  
+  int h_skip_factor;
+  int v_skip_factor;
 };
 
 struct Drc_info {

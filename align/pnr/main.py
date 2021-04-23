@@ -162,8 +162,6 @@ def gen_leaf_cell_info( verilog_d, input_dir, primitive_dir):
 
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nvariants=1, effort=0, check=False, extract=False, gds_json=False, render_placements=False, PDN_mode=False):
 
-    pdk = Pdk().load(pdk_dir / 'layers.json')
-
     logger.info(f"Running Place & Route for {subckt}")
 
     # Create working & input directories
@@ -220,7 +218,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
 
     current_working_dir = os.getcwd()
     os.chdir(working_dir)
-    DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, pdk=pdk, render_placements=render_placements)
+    DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, render_placements=render_placements, results_dir=None)
     os.chdir(current_working_dir)
 
     # Copy generated cap jsons from results_dir to working_dir

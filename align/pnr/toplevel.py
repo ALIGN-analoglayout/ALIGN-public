@@ -14,15 +14,12 @@ NType = PnR.NType
 Omark = PnR.Omark
 TransformType = PnR.TransformType
 
-def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, PDN_mode, pdk):
-    h_skip_factor = 7
-    v_skip_factor = 8
+def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, PDN_mode):
+    h_skip_factor = DB.getDrc_info().Design_info.h_skip_factor
+    v_skip_factor = DB.getDrc_info().Design_info.v_skip_factor
 
-    if pdk:
-        logger.debug( f"SMB {list(pdk.keys())}")
-
-    signal_routing_metal_l = 0
-    signal_routing_metal_u = 4
+    signal_routing_metal_l = DB.getDrc_info().Design_info.signal_routing_metal_l
+    signal_routing_metal_u = DB.getDrc_info().Design_info.signal_routing_metal_u
 
     curr_route = PnR.Router()
 
@@ -56,11 +53,11 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
         current_node.gdsFile = current_node_copy.gdsFile
 
     if current_node.isTop:
-        power_grid_metal_l = 4
-        power_grid_metal_u = 5
+        power_grid_metal_l = DB.getDrc_info().Design_info.power_grid_metal_l
+        power_grid_metal_u = DB.getDrc_info().Design_info.power_grid_metal_u
 
-        power_routing_metal_l = 0
-        power_routing_metal_u = 5
+        power_routing_metal_l = DB.getDrc_info().Design_info.power_routing_metal_l
+        power_routing_metal_u = DB.getDrc_info().Design_info.power_routing_metal_u
 
         # Power Grid Simulation
         if PDN_mode:
@@ -75,6 +72,7 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
                 DB.Write_Current_Workload(current_node_copy, total_current, current_number, current_file)
                 DB.Write_Power_Mesh_Conf(power_mesh_conffile)
 
+            # Do we need to override these values?
             power_grid_metal_l = 2
             power_grid_metal_u = 11
             RouteWork(7, current_node_copy, metal_l=power_grid_metal_l, metal_u=power_grid_metal_u, fn=power_mesh_conffile)
@@ -124,7 +122,7 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
 def route_top_down( DB, drcInfo,
                     bounding_box,
                     current_node_ort, idx, lidx, sel,
-                    opath, adr_mode, *, PDN_mode, pdk, results_name_map, hierarchical_path):
+                    opath, adr_mode, *, PDN_mode, results_name_map, hierarchical_path):
 
     current_node = DB.CheckoutHierNode(idx, sel) # Make a copy
     i_copy = DB.hierTree[idx].n_copy
@@ -145,12 +143,12 @@ def route_top_down( DB, drcInfo,
         childnode_orient = DB.RelOrt2AbsOrt( current_node_ort, inst.orient)
         child_node_name = DB.hierTree[child_idx].name
         childnode_bbox = PnR.bbox( inst.placedBox.LL, inst.placedBox.UR)
-        new_childnode_idx = route_top_down(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, lidx, blk.selectedInstance, opath, adr_mode, PDN_mode=PDN_mode, pdk=pdk, results_name_map=results_name_map, hierarchical_path=hierarchical_path + (inst.name,))
+        new_childnode_idx = route_top_down(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, lidx, blk.selectedInstance, opath, adr_mode, PDN_mode=PDN_mode, results_name_map=results_name_map, hierarchical_path=hierarchical_path + (inst.name,))
         DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_childnode_idx])
         current_node.Blocks[bit].child = new_childnode_idx
 
     DB.ExtractPinsToPowerPins(current_node)
-    result_name = route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, PDN_mode=PDN_mode, pdk=pdk)
+    result_name = route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, PDN_mode=PDN_mode)
     results_name_map[result_name] = hierarchical_path
 
     if not current_node.isTop:
@@ -210,7 +208,7 @@ def place( *, DB, opath, fpath, numLayout, effort, idx):
     #analyze_hN( 'End', current_node, False)
 
 
-def route( *, DB, idx, opath, adr_mode, PDN_mode, pdk):
+def route( *, DB, idx, opath, adr_mode, PDN_mode):
     logger.info(f'Starting top-down routing on {DB.hierTree[idx].name} {idx}')
 
     new_topnode_indices = []
@@ -226,12 +224,12 @@ def route( *, DB, idx, opath, adr_mode, PDN_mode, pdk):
                                                     PnR.point(DB.hierTree[idx].PnRAS[lidx].width,
                                                               DB.hierTree[idx].PnRAS[lidx].height)),
                                           Omark.N, idx, lidx, sel,
-                                          opath, adr_mode, PDN_mode=PDN_mode, pdk=pdk, results_name_map=results_name_map, hierarchical_path=(f'{DB.hierTree[idx].name}:placement_{lidx}',))
+                                          opath, adr_mode, PDN_mode=PDN_mode, results_name_map=results_name_map, hierarchical_path=(f'{DB.hierTree[idx].name}:placement_{lidx}',))
         new_topnode_indices.append(new_topnode_idx)
 
     return results_name_map
 
-def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, pdk, render_placements, verilog_d):
+def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, render_placements, verilog_d):
     TraverseOrder = DB.TraverseHierTree()
 
     for idx in TraverseOrder:
@@ -250,9 +248,9 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
             check_placement(placement_verilog_d)
 
-    return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, pdk=pdk)
+    return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode)
 
-def toplevel(args, *, PDN_mode=False, pdk=None, render_placements=False, adr_mode=False):
+def toplevel(args, *, PDN_mode=False, render_placements=False, adr_mode=False, results_dir=None):
 
     assert len(args) == 9
 
@@ -263,11 +261,16 @@ def toplevel(args, *, PDN_mode=False, pdk=None, render_placements=False, adr_mod
 
     DB, verilog_d = PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile)
 
-    # Need the trailing /
-    opath = './Results/'
+    if results_dir is None:
+        opath = './Results/'
+    else:
+        opath = str(pathlib.Path(results_dir))
+        if opath[-1] != '/':
+            opath = opath + '/'
+
     pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
 
-    results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, pdk=pdk, render_placements=render_placements, verilog_d=verilog_d)
+    results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, render_placements=render_placements, verilog_d=verilog_d)
 
     logger.info( f'results_name_map: {results_name_map}')
 

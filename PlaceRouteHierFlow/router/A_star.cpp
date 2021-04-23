@@ -1171,7 +1171,7 @@ void A_star::erase_candidate_node(std::set<int> &Close_set, std::vector<int> &ca
 
 std::vector<std::vector<int> > A_star::A_star_algorithm_Sym(Grid& grid, int left_up, int right_down, vector<RouterDB::Metal> &sym_path){
 
-  auto logger = spdlog::default_logger()->clone("router.A_star.A_star_algorithm");
+  auto logger = spdlog::default_logger()->clone("router.A_star.A_star_algorithm_Sym");
 
   int via_expand_effort = 100;
   std::set<std::pair<int,int>, RouterDB::pairComp> L_list;
