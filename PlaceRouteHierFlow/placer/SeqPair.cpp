@@ -914,7 +914,7 @@ void SeqPair::PerturbationNew(design& caseNL) {
     //neg += "}";
     //sel += "}";
     //logger->info("seq pair {0} {1} {2}", pos, neg, sel);
-    //return;
+    return;
   }
 
   bool mark=false;
