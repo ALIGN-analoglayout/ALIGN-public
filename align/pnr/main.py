@@ -134,7 +134,7 @@ def gen_leaf_cell_info( verilog_d, input_dir, primitive_dir):
 
     for k, v in capacitors.items():
         if len(v) > 1:
-            logger.error( f'CC Capacitor with template_name {v} instantiated more than once: {dict(v)}')
+            logger.error( f'CC Capacitor with template_name {k} instantiated more than once: {v}')
 
     # Remove generated capacitors
     leaves = leaves.difference( set(capacitors.keys()))
