@@ -186,7 +186,14 @@ def place( *, DB, opath, fpath, numLayout, effort, idx):
 
     PRC = PnR.Placer_Router_Cap_Ifc(opath,fpath,current_node,DB.getDrc_info(),DB.checkoutSingleLEF(),1,6)
 
-    curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, DB.getDrc_info())
+    hyper = PnR.PlacerHyperparameters()
+    # Defaults; change (and uncomment) as required
+    #hyper.T_INT = 1e6
+    #hyper.T_MIN = 1e-6
+    #hyper.ALPHA = 0.995
+    #hyper.COUNT_LIMIT = 200
+
+    curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, DB.getDrc_info(), hyper)
 
     actualNumLayout = curr_plc.getNodeVecSize()
 
