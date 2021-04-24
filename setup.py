@@ -36,9 +36,8 @@ cmake_args = [f"-DALIGN_VERSION:string={version}"]
 devmode = 'develop' in sys.argv
 # if devmode and not any(x.startswith('-DBUILD_TESTING') for x in sys.argv):
 #     cmake_args.append('-DBUILD_TESTING=ON')
-if False and devmode and '--build-type' not in sys.argv:
-    sys.argv.extend(["--build-type", "Debug"])
-sys.argv.extend(["--build-type", "Release"])
+if devmode and not any(x.startswith('--build-type') for x in sys.argv):
+     sys.argv.extend(['--build-type', 'Debug'])
 
 setup(name='align',
       version=version,
