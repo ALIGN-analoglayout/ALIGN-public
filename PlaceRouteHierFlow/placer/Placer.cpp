@@ -661,11 +661,11 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
         }
       }
 
-#endif
-
-      if (!oData.empty() && static_cast<int>(oData.size()) > nodeSize) {
+      if (trial_sp.Enumerate() && static_cast<int>(oData.size()) > nodeSize) {
         oData.erase(std::prev(oData.end()));
       }
+
+#endif
 
       i++;
       update_index++;
