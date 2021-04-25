@@ -52,7 +52,6 @@ Sanitized_Coarse_Comp_CK,False,False,0,0,0,0,0
 five_transistor_ota_high_frequency,False,False,0,0,0,0,0
 Gm1_v5_Practice,False,False,0,2,0,0,0
 inverter_v1,False,False,0,0,0,0,0
-regression.csv,True,,,,,,
 powertrain,False,False,0,0,0,0,0
 COMP_GM_STAGE_0415,False,False,0,0,0,0,0
 vco_dtype_12_hierarchical_res,False,False,8,0,0,0,0
