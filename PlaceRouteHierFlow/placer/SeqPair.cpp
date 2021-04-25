@@ -906,6 +906,7 @@ void SeqPair::PerturbationNew(design& caseNL) {
     negPair = _seqPairEnum->NegPair();
     selected = _seqPairEnum->Selected();
     _seqPairEnum->Permute();
+    KeepOrdering(caseNL);
     //std::string pos("{ "), neg("{ "), sel("{ ");
     //for (auto& it : posPair) pos += (std::to_string(it) + " ");
     //for (auto& it : negPair) neg += (std::to_string(it) + " ");
