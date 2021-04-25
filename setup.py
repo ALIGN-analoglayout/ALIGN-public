@@ -63,7 +63,7 @@ setup(name='align',
           'bin/schematic2layout.py',
           'bin/pnr_compiler.py',
           'bin/gds2png.sh',
-          'bin/analyze_regression.sh'
+          'bin/analyze_regression.py'
       ],
       install_requires=[
           'networkx>=2.4',
