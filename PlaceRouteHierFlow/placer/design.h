@@ -28,6 +28,7 @@ class design
   private:
     friend class ConstGraph;
     friend class SeqPair;
+    friend class SeqPairEnumerator;
     friend class Aplace;
     friend class Placer;
     friend class ILP_solver;
@@ -111,6 +112,7 @@ class design
     std::vector<pair<pair<int,int>, placerDB::Smark>> Ordering_Constraints;
     double Aspect_Ratio_weight = 1000;
     double Aspect_Ratio[2] = {0, 100};
+    double placement_box[2] = {-1.0, -1.0};
 
     //added by ya
     
