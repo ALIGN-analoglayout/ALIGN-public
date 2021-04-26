@@ -140,6 +140,12 @@ public:
     void merge_placement(PnRDB::hierNode &current_node);
 
     void modify_symm_after_split(PnRDB::hierNode &current_node);
+
+    void restore_CC_in_square();
+
+    void restore_MS(PnRDB::hierNode &current_node, Ppoint_F uni_cell_shape);
+
+    void split_CC(PnRDB::hierNode &current_node);
     //donghao end
 
     float Cal_Overlap();

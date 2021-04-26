@@ -139,6 +139,10 @@ Placement::Placement(PnRDB::hierNode &current_node)
   splitNode_MS(uni_cell_Dpoint.y, uni_cell_Dpoint.x);
   int tol_diff = 3;
   addNet_after_split_Blocks(tol_diff,uni_cell_Dpoint.y, uni_cell_Dpoint.x);
+  split_net();
+  modify_symm_after_split(current_node);
+  update_hiernode(current_node,uni_cell_Dpoint);
+
   //read alignment constrains
   read_alignment(current_node);
   read_order(current_node);
@@ -148,6 +152,8 @@ Placement::Placement(PnRDB::hierNode &current_node)
   //step 3: call E_placer
   std::cout << "start ePlacement" << std::endl;
   E_Placer();
+  restore_CC_in_square();
+
   //setp 4: write back to HierNode
   writeback(current_node);
 }
@@ -1229,8 +1235,8 @@ void Placement::E_Placer()
   }
   force_order(vc_x, vl_x, vc_y, vl_y);
   force_alignment(vc_x, vl_x, vc_y, vl_y);
-  restore_MS();
-  refine_CC();
+  // restore_MS();
+  // refine_CC();
   PlotPlacement(count_number);
   std::cout << "iter num when stop:=" << count_number << std::endl;
 }
@@ -2614,6 +2620,195 @@ void Placement::refine_CC()
     }
   }
 }
+
+void Placement::restore_CC_in_square()
+{
+  for(int i = 0;i < commonCentroids.size();++i)
+  {
+    //find X_MAX, Y_MAX, X_MIN, Y_MIN
+    float X_MAX, Y_MAX, X_MIN, Y_MIN;
+    int index = commonCentroids[i].blocks[0];
+    X_MAX = X_MIN = Blocks[index].Cpoint.x;
+    Y_MAX = Y_MIN = Blocks[index].Cpoint.y;
+
+    for(int ii=0;i<commonCentroids[i].shape.x;++ii)
+    {
+      for(int jj=0;jj<commonCentroids[i].shape.y;++jj)
+      {
+        index = commonCentroids[i].fillin_matrix[ii][jj];
+        if(index>=0)
+        {
+          Ppoint_F center = Blocks[index].Cpoint;
+          X_MIN = center.x<X_MIN?center.x:X_MIN;
+          X_MAX = center.x>X_MAX?center.x:X_MAX;
+          Y_MIN = center.y<Y_MIN?center.y:Y_MIN;
+          Y_MAX = center.y>Y_MAX?center.y:Y_MAX;
+        }
+      }
+    }
+
+    //relocate all blocks
+
+    Ppoint_F inteval;
+    if(commonCentroids[i].shape.x>1)
+    {
+      inteval.x = (X_MAX - X_MIN)/(commonCentroids[i].shape.x-1);
+    }
+    else
+    {
+      inteval.x=0;
+    }
+
+    if(commonCentroids[i].shape.y>1)
+    {
+      inteval.y = (Y_MAX - Y_MIN)/(commonCentroids[i].shape.y-1);
+    }
+    else
+    {
+      inteval.y=0;
+    }
+
+    for(int ii=0;i<commonCentroids[i].shape.x;++ii)
+    {
+      for(int jj=0;jj<commonCentroids[i].shape.y;++jj)
+      {
+        index = commonCentroids[i].fillin_matrix[ii][jj];
+        if(index>=0)
+        {
+          Blocks[index].Cpoint.x = X_MIN + ii*inteval.x;
+          Blocks[index].Cpoint.y = Y_MIN + jj*inteval.y;
+        }
+      }
+    }
+
+
+
+  }
+}
+
+void Placement::restore_MS(PnRDB::hierNode &current_node, Ppoint_F uni_cell_shape)
+{
+  current_node.Blocks.erase(current_node.Blocks.end()-(Blocks.size()-originalBlockCNT),current_node.Blocks.end());
+
+  current_node.Nets.erase(current_node.Nets.end()-(Nets.size()-originalNetCNT),current_node.Nets.end());
+
+  for(int i = 0;i < current_node.SPBlocks.size();++i)
+  {
+    int j=0;
+    while(current_node.SPBlocks[i].selfsym[j].first<originalBlockCNT and j < current_node.SPBlocks[i].selfsym.size())
+    {
+      ++j;
+    }
+
+    if(j < current_node.SPBlocks[i].selfsym.size())
+    {
+      current_node.SPBlocks[i].selfsym.erase(current_node.SPBlocks[i].selfsym.begin()+j,current_node.SPBlocks[i].selfsym.end());
+    }
+
+    j = 0;
+    while(current_node.SPBlocks[i].sympair[j].first<originalBlockCNT  and current_node.SPBlocks[i].sympair[j].second<originalBlockCNT and j < current_node.SPBlocks[i].selfsym.size())
+    {
+      ++j;
+    }
+
+    if(j < current_node.SPBlocks[i].sympair.size())
+    {
+      current_node.SPBlocks[i].sympair.erase(current_node.SPBlocks[i].sympair.begin()+j,current_node.SPBlocks[i].sympair.end());
+    }
+
+  }
+
+  //restore the size of block
+  int idx = 0;
+  for(int i = 0;i < current_node.Nets.size();++i)
+  {
+    current_node.Nets[i].weight = 1.0;
+  }
+
+  for(int i = 0;i < current_node.Blocks.size();++i)
+  {
+    for(int j = 0;j < current_node.Blocks[i].instance.size();++j)
+    {
+      if(Blocks[idx].splited)
+      {
+        current_node.Blocks[i].instance[j].height *= (int)ceil(Blocks[idx].split_shape.y);
+        current_node.Blocks[i].instance[j].width *= (int)ceil(Blocks[idx].split_shape.x);
+      }
+      ++idx;
+    }
+  }
+
+  //merge CC block
+  //make origin block in CC size to zero
+  int id_new_block = originalBlockCNT;
+  for(int i=0;i < commonCentroids.size();++i)
+  {
+    vector<int> to_connect;
+    PnRDB::block tempBlock;
+    tempBlock.name = "CC_merge_cell"+commonCentroids[i].label;
+    tempBlock.orient = PnRDB::N;
+
+    tempBlock.height = uni_cell_shape.y*commonCentroids[i].shape.y;
+    tempBlock.width = uni_cell_shape.x*commonCentroids[i].shape.x;
+
+    PnRDB::blockComplex tempBlockComplex;
+    
+    tempBlockComplex.instNum=1;
+    tempBlockComplex.instance.push_back(tempBlock);
+    current_node.Blocks.push_back(tempBlockComplex);
+
+    for(int j=0;j<commonCentroids[i].blocks.size();++j)
+    {
+      int id = commonCentroids[i].blocks[j];
+      int cur_id=0;
+      //find that id
+      for(int ii=0;ii<current_node.Blocks.size();++ii)
+      {
+        for(int jj=0;jj<current_node.Blocks[ii].instance.size();++jj)
+        {
+          if(id==cur_id)
+          {
+            current_node.Blocks[ii].instance[jj].height=0;
+            current_node.Blocks[ii].instance[jj].width=0;
+            break;
+          }
+          else
+          {
+            ++cur_id;
+          }
+        }
+        if(id==cur_id)
+          {
+            break;
+          }
+      }
+
+      for(int k=0;k<Blocks[id].connected_net.size();++k)
+      {
+        int netid = Blocks[id].connected_net[k];
+        // current_node.Nets[netid].weight=0;
+        if(netid<originalNetCNT)
+        {
+          PnRDB::connectNode tempNode;
+          tempNode.iter2 = id_new_block;
+          tempNode.type = PnRDB::Block;
+          tempNode.iter = 1;
+          current_node.Nets[netid].connected.push_back(tempNode);
+
+          for(int ii=0;ii < current_node.Nets[netid].connected.size();++ii)
+          {
+            if(current_node.Nets[netid].connected[ii].iter2 == id)
+            {
+              current_node.Nets[netid].connected.erase(current_node.Nets[netid].connected.begin()+ii);
+              break;
+            }
+          }
+        }
+      }
+    }
+    id_new_block++;
+  }
+}
 //donghao end
 
 void Placement::print_blocks_nets()
@@ -2987,6 +3182,7 @@ void Placement::update_hiernode(PnRDB::hierNode &current_node, Ppoint_F uni_cell
   for(int i = originalNetCNT;i<Nets.size();++i)
   {
     PnRDB::net tempNet;
+    tempNet.weight = Nets[i].weight;
     for(int j = 0;j < Nets[i].connected_block.size();++j)
     {
       PnRDB::connectNode tempNode;
@@ -2999,6 +3195,21 @@ void Placement::update_hiernode(PnRDB::hierNode &current_node, Ppoint_F uni_cell
   }
   //update ordering and alignment 
   // set a flag?
+
+  //update the size of block
+  int idx=0;
+  for(int i = 0;i < current_node.Blocks.size();++i)
+  {
+    for(int j = 0;j < current_node.Blocks[i].instance.size();++j)
+    {
+      if(Blocks[idx].splited)
+      {
+        current_node.Blocks[i].instance[j].height /= int(ceil(Blocks[i].split_shape.y));
+        current_node.Blocks[i].instance[j].width/= int(ceil(Blocks[i].split_shape.x));
+      }
+      ++idx;
+    }
+  }
   current_node.isFirstILP = true;
 }
 
@@ -3090,4 +3301,30 @@ void Placement::modify_symm_after_split(PnRDB::hierNode &current_node)
       }
     }
   }
+
+  //modify the sym_matrix
+  for(int i = 0;i < symmetric_force_matrix.size();++i)
+  {
+    while(symmetric_force_matrix[i].size() < Blocks.size())
+    {
+      Ppoint_F temp;
+      temp.x = 0;
+      temp.y = 0;
+      symmetric_force_matrix[i].push_back(temp);
+    }
+  }
+  while(symmetric_force_matrix.size()<Blocks.size())
+  {
+    vector< Ppoint_F > temp;
+    for(int i = 0;i < Blocks.size();++i)
+    {
+      Ppoint_F temp_point;
+      temp_point.x=0;
+      temp_point.y=0;
+      temp.push_back(temp_point);
+    }
+    symmetric_force_matrix.push_back(temp);
+  }
+
+
 }

@@ -233,6 +233,7 @@ struct net {
   double upperBound = INT_MAX;
   double lowerBound = INT_MIN;
   int multi_connection = 1;
+  float weight=1.0;
 }; // structure of nets
 
 struct Metal{
