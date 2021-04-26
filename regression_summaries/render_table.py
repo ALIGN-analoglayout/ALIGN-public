@@ -50,12 +50,8 @@ style_data_conditional = []
 for id in df.columns:
     if id == 'name':
         s = { 'if': { 'column_id': id},
-              'width': '100px'
-        }
-        style_data_conditional.append(s)
-    if id.endswith('_x') or id.endswith('_y') or id.endswith('_d'):
-        s = { 'if': { 'column_id': id},
-              'width': '20px',
+              'minWidth': '200px',
+              'width': '200px'
         }
         style_data_conditional.append(s)
     if id.endswith('_x') or id.endswith('_y'):
@@ -76,8 +72,6 @@ for id in df.columns:
         }
         style_data_conditional.append(s)
 
-print(style_data_conditional)
-
 app.layout = dash_table.DataTable(
     id='table',
     columns=[{"name": i, "id": i} for i in df.columns],
@@ -86,21 +80,13 @@ app.layout = dash_table.DataTable(
     filter_action='native',
     style_data_conditional=style_data_conditional,
     style_cell={
+        'height': 'auto',
+        'whiteSpace': 'normal',
         'overflow': 'hidden',
-        'textOverflow': 'ellipsis',
-        'maxWidth': 0
-    },
-    style_header={
-        'overflow': 'hidden',
-        'textOverflow': 'ellipsis',
-        'maxWidth': 0
-    },
-    tooltip_data=[
-        {
-            column: {'value': str(value), 'type': 'markdown'}
-            for column, value in row.items()
-        } for row in df.to_dict('records')
-    ]
+        'minWidth': '30px',
+        'width': '30px',
+        'maxWidth': '30px'
+    }
 )
 
 if __name__ == '__main__':
