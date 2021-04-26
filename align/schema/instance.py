@@ -43,7 +43,8 @@ class Instance(types.BaseModel):
         if parameters:
             parameters = {k.upper(): v.upper() for k, v in parameters.items()}
             assert values['model'].parameters and set(parameters.keys()).issubset(values['model'].parameters.keys()), \
-                f"{self.__class__.__name__} parameters must be a subset of {values['model'].__class__.__name__} parameters"
+                f"{cls.__name__} parameters {parameters.keys()} must be a subset of \
+                    {values['model'].__class__.__name__} parameters {values['model'].parameters.keys()}"
             parameters = {k: parameters[k] if k in parameters else v \
                 for k, v in values['model'].parameters.items()}
         elif values['model'].parameters:

@@ -1,6 +1,6 @@
 ************************************************************************
 * auCdl Netlist:
-* 
+*
 * Library Name: Test
 * Cell Name:    test
 * View Name:     schematic
@@ -8,7 +8,7 @@
 ************************************************************************
 
 *.BIPOLAR
-*.RESI = 2000 
+*.RESI = 2000
 *.RESSIZE
 *.CAPVAL
 *.DIOPERI
@@ -36,8 +36,8 @@ MM3 Vout net3 net4 gnd! nfet w=27n l=20n nfin=1
 RR0 Vbias net5 5K
 CC0 Vin net5 10f
 LL0 vdd! Vout 2m
-RR1 Vbias net6 resistor res=5K
-CC1 Vin net6 capacitor cap=10f
+RR1 Vbias net6 resistor r=5K
+CC1 Vin net6 capacitor c=10f
 LL1 vdd! net6 inductor ind=2m
 .ENDS
 

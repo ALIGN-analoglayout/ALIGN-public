@@ -2,11 +2,13 @@ import pathlib
 
 from align.schema.subcircuit import SubCircuit
 from align.schema.parser import SpiceParser
+# from .read_setup import read_setup
+
 import logging
 logger = logging.getLogger(__name__)
 
 def compiler(input_ckt: pathlib.Path, design_name: str, pdk_dir: pathlib.Path, config_path: pathlib.Path, flat=0, Debug=False):
-    
+
     """
     Reads input spice file, converts to a graph format and create hierarchies in the graph
 
@@ -32,28 +34,32 @@ def compiler(input_ckt: pathlib.Path, design_name: str, pdk_dir: pathlib.Path, c
     logger.info("Starting topology identification...")
     logger.debug(f"Reading subckt: {input_ckt}")
     parser = SpiceParser()
+    lib_parser = SpiceParser()
+
     model_statemenets = config_path / 'model.txt'
     design_name = design_name.upper()
     with open(model_statemenets) as f:
         lines = f.read()
     parser.parse(lines)
-    
+    lib_parser.parse(lines)
+
     with open(input_ckt) as f:
         lines =  f.read()
     parser.parse(lines)
     circuit = parser.library[design_name]
-    
-    lib_parser = SpiceParser()
-    basic_lib_path = config_path / 'basic_template.sp'
+
+
+    basic_lib_path = config_path / 'basic_template_copy.sp'
     with open(basic_lib_path) as f:
         lines = f.read()
     lib_parser.parse(lines)
-    # user_lib_path = config_path / 'user_template.sp'
-    # with open(user_lib_path) as f:
-    #     lines = f.read()
-    # lib_parser.parse(lines)
-    # library = parser.library
-    # print(library)
+
+    user_lib_path = config_path / 'user_template_copy.sp'
+    with open(user_lib_path) as f:
+        lines = f.read()
+    lib_parser.parse(lines)
+    library = lib_parser.library
+    print(library)
 
     return circuit
 
@@ -61,7 +67,7 @@ if __name__ == "__main__":
     circuit_name = 'telescopic_ota'
     input_circuit = pathlib.Path('../../examples/').resolve() / circuit_name / (circuit_name + '.sp')
     pdk_dir = pathlib.Path('../../pdks/FinFET14nm_Mock_PDK/')
-    config_path =  pathlib.Path(__file__).resolve().parent.parent / 'config' 
+    config_path =  pathlib.Path(__file__).resolve().parent.parent / 'config'
 
     circuit = compiler(input_circuit, circuit_name, pdk_dir, config_path)
     print(circuit.elements)

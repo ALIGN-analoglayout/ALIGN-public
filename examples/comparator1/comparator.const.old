@@ -1,6 +1,0 @@
-SymmBlock ( {I2} , {m8_m9} , {m10_m11} , {m0_m1} , {m4_m2,m7_m5} , {m6_m3} , {I5,I4} ) 
-Multi_Connection ( {net61} , {1} )
-Multi_Connection ( {net65} , {1} )
-Multi_Connection ( {net60} , {1} )
-Multi_Connection ( {net67} , {1} )
-

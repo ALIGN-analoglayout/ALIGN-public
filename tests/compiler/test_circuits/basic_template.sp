@@ -10,7 +10,7 @@ M0 (D G S B) PMOS w=w1 l=l1
 M0 (D G S S) NMOS w=w1 l=l1
 .ends Switch_NMOS
 
-.subckt Switch_PMOS D G S 
+.subckt Switch_PMOS D G S
 M0 (D G S S) PMOS w=w1 l=l1
 .ends Switch_PMOS
 
@@ -167,7 +167,7 @@ M1 (DB DA SB B) PMOS w=w l=90n
 **M1 (DB DA S B) PMOS w=w l=90n
 **.ends LS_S_PMOS
 
-***gate connected 
+***gate connected
 **
 **transmission gate
 **ccp `

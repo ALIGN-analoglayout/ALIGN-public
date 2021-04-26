@@ -182,8 +182,8 @@ R0 GB DA 1k
 .subckt SCM_PMOS_RC DA DB GA S
 M0 DA GA S B NMOS w=w l=90n
 M1 DB GB S B NMOS w=w l=90n
-C0 GB S capacitor cap=1f
-R0 GB DA resistor res=1k
+C0 GB S capacitor c=1f
+R0 GB DA resistor r=1k
 C1 DA net1 1f
 R1 net1 GA 1k
 .ends SCM_NMOS_RC

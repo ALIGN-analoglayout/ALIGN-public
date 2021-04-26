@@ -132,9 +132,9 @@ class SpiceParser:
         defaults = {'C': 'CAP', 'R': 'RES', 'L': 'IND'}
         if any(name.startswith(x) for x in ('C', 'R', 'L')):
             model = defaults[name[0]]
-            if not kwargs: 
+            if not kwargs:
                 kwargs['VALUE'] = args.pop()
-            else:
+            else: #to allow cap/res parameters
                 model = args.pop()
         elif any(name.startswith(x) for x in ('M', 'X')):
             model = args.pop()

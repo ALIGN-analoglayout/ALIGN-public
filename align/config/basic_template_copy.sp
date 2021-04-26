@@ -10,7 +10,7 @@ M0 D G S B PMOS w=w1 l=l1
 M0 D G S S NMOS w=w1 l=l1
 .ends Switch_NMOS
 
-.subckt Switch_PMOS D G S 
+.subckt Switch_PMOS D G S
 M0 D G S S PMOS w=w1 l=l1
 .ends Switch_PMOS
 
@@ -18,7 +18,7 @@ M0 D G S S PMOS w=w1 l=l1
 M0 D G S G NMOS w=w1 l=l1
 .ends Switch_NMOS_G
 
-.subckt Switch_PMOS_G D G S 
+.subckt Switch_PMOS_G D G S
 M0 D G S G PMOS w=w1 l=l1
 .ends Switch_PMOS_G
 
@@ -180,7 +180,7 @@ M1 DB DA SB B PMOS w=w l=90n
 **M1 DB DA S B PMOS w=w l=90n
 **.ends LS_S_PMOS
 
-***gate connected 
+***gate connected
 **
 **transmission gate
 **ccp `
@@ -250,7 +250,7 @@ M0 S S S S NMOS w=w l=90n
 M0 S S S S PMOS w=w l=90n
 .ends Dummy1_PMOS
 
-* Will be handles using model files now 
+* Will be handles using model files now
 * .subckt resistor PLUS MINUS
 * RR1 PLUS MINUS resistor res=10k
 * .ends resistor
@@ -263,7 +263,3 @@ M0 S S S S PMOS w=w l=90n
 * .subckt Cap PLUS MINUS
 * CC1 PLUS MINUS capacitor cap=60f
 * .ends Cap
-
-
-
-

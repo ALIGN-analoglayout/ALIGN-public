@@ -61,7 +61,7 @@ m8 net013 phi avdd avdd lvtpfet w=w6 l=l0
 m1 vg net06 net8 net8 lvtpfet w=w5 l=l0
 m4 net06 phieb avdd avdd lvtpfet w=w5 l=l0
 **need primitive m0 net8 vg avdd net8 lvtpfet w=w5 l=l0
-c0 net8 net13 cap cap=10f
+c0 net8 net13 10f
 .ends BSSW_WOTOD
 
 .subckt BSSW_WOTOD_NS avdd avss phi vcm vg
@@ -79,7 +79,7 @@ m6 net018 phie net019 avdd lvtpfet w=w5 l=l0
 m1 vg net018 net8 net8 lvtpfet w=w6 l=l0
 m4 net018 phieb avdd avdd lvtpfet w=w5 l=l0
 **need primitive m0 net8 phieb avdd net8 lvtpfet w=w5 l=l0
-c0 net8 net019 cap cap=10f
+c0 net8 net019 10f
 .ends BSSW_WOTOD_NS
 
 .subckt INVX1NB i vb vdd vss zn
@@ -452,10 +452,10 @@ m13 on1 cmfb avss avss lvtnfet w=w29 l=l2
 m59 avss net044 avss avss lvtnfet w=w29 l=l2
 m30 net044 net044 avss avss lvtnfet w=w30 l=l2
 m56 avss cmfb avss avss lvtnfet w=w29 l=l2
-c4 on vcmo cap cap=10f
-c5 op vcmo cap cap=10f
-r12 vcmo op res res=100
-r13 on vcmo res res=100
+c4 on vcmo 10f
+c5 op vcmo 10f
+r12 vcmo op 100
+r13 on vcmo 100
 .ends OTA_FF_2s_v3
 
 .subckt INT_V3 cs<2> cs<1> cs<0> c_sel<2> c_sel<1> c_sel<0> ib vcas vcmi vdd _net0 _net1 _net3 _net2 vss
@@ -466,15 +466,15 @@ m2 cs<0> c_sel<0> _net1 vss lvtnfet w=w29 l=l0
 m1 cs<1> c_sel<1> _net1 vss lvtnfet w=w23 l=l0
 m0 cs<2> c_sel<2> _net1 vss lvtnfet w=w22 l=l0
 xi181 vdd vss ib _net1 _net0 _net2 _net3 vcas vcmi OTA_FF_2s_v3
-c11 vdd vss cap cap=10f
-c6 cs<0> _net3 cap cap=10f
-c5 cs<1> _net3 cap cap=10f
-c1 cs<2> _net3 cap cap=10f
-c0 _net1 _net3 cap cap=10f
-c10 _net0 _net2 cap cap=10f
-c9 net028 _net2 cap cap=10f
-c8 net035 _net2 cap cap=10f
-c7 net037 _net2 cap cap=10f
+c11 vdd vss 10f
+c6 cs<0> _net3 10f
+c5 cs<1> _net3 10f
+c1 cs<2> _net3 10f
+c0 _net1 _net3 10f
+c10 _net0 _net2 10f
+c9 net028 _net2 10f
+c8 net035 _net2 10f
+c7 net037 _net2 10f
 .ends INT_V3
 
 .subckt INVX12 i vdd vss zn
@@ -517,8 +517,8 @@ m10 net016 dp vrefp vrefp lvtpfet w=w37 l=l0
 m3 net018 net016 vrefp vrefp lvtpfet w=w38 l=l0
 m2 net010 net09 vrefp vrefp lvtpfet w=w38 l=l0
 m12 net09 dn vrefp vrefp lvtpfet w=w37 l=l0
-r2 iop net018 res res=100
-r0 net010 ion res res=100
+r2 iop net018 100
+r0 net010 ion 100
 .ends DAC
 
 .subckt Retiming_DAC clkb d ion iop vdd vrefn vrefp vss
@@ -531,8 +531,8 @@ xi58 avdd_sar avss botep<3> botep<2> botep<1> botep<0> botp<3> botp<2> botp<1> b
 xi60<2> dout<2> dvdd dvss net026<0> INVX4
 xi60<1> dout<1> dvdd dvss net026<1> INVX4
 xi60<0> dout<0> dvdd dvss net026<2> INVX4
-r7 ip xp res res=100
-r6 in xn res res=100
+r7 ip xp 100
+r6 in xn 100
 xi39 net043<0> net043<1> net043<2> csel<2> csel<1> csel<0> ib_ota vcas vcmi vdd_int xn xp yp yn avss INT_V3
 xi54 net015 dvdd dvss doutl<3> INVX12
 xi53 phsbuf avdd_sar avss net045 INVX12
