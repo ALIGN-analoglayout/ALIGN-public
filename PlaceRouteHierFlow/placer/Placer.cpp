@@ -634,10 +634,18 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
         delta_cost = trial_cost - curr_cost;
         if (delta_cost <= 0) {
           Smark = true;
-        } else if (!trial_sp.Enumerate()) {
-          double r = (double)rand() / RAND_MAX;
-          if (r < exp((-1.0 * delta_cost) / T)) {
-            Smark = true;
+        } else {
+          if (trial_sp.Enumerate()) {
+            if (!oData.empty() && 
+                (oData.rbegin()->first > trial_cost 
+                  || static_cast<int>(oData.size()) < nodeSize)) {
+              Smark = true;
+            }
+          } else {
+            double r = (double)rand() / RAND_MAX;
+            if (r < exp((-1.0 * delta_cost) / T)) {
+              Smark = true;
+            }
           }
         }
         if (Smark) {
@@ -651,6 +659,10 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
           ReshapeSeqPairMap(oData, nodeSize);
           //}
         }
+      }
+
+      if (trial_sp.Enumerate() && static_cast<int>(oData.size()) > nodeSize) {
+        oData.erase(std::prev(oData.end()));
       }
 
 #endif

@@ -900,61 +900,60 @@ inline size_t SeqPair::Factorial(const size_t& t)
 void SeqPair::PerturbationNew(design& caseNL) {
   /* initialize random seed: */
   //srand(time(NULL));
-  //auto logger = spdlog::default_logger()->clone("placer.SeqPair.PerturbationNew");
   if (_seqPairEnum) {
     posPair = _seqPairEnum->PosPair();
     negPair = _seqPairEnum->NegPair();
     selected = _seqPairEnum->Selected();
     _seqPairEnum->Permute();
-    //std::string pos("{ "), neg("{ "), sel("{ ");
-    //for (auto& it : posPair) pos += (std::to_string(it) + " ");
-    //for (auto& it : negPair) neg += (std::to_string(it) + " ");
-    //for (auto& it : selected) sel += (std::to_string(it) + " ");
-    //pos += "}";
-    //neg += "}";
-    //sel += "}";
-    //logger->info("seq pair {0} {1} {2}", pos, neg, sel);
-    return;
-  }
-
-  bool mark=false;
-  std::set<int> pool;
-  // 0:ChangeSelectedBlock
-  // 1:MoveAsymmetricBlockposPair
-  // 2:MoveAsymmetricBlocknegPair
-  // 3:MoveAsymmetricBlockdoublePair
-  // 4:ChangeAsymmetricBlockOrient
-  // 5:SwapTwoBlocksofSameGroup
-  // 6:SwapTwoSymmetryGroup
-  // 7:ChangeSymmetryBlockOrient
-  // 8:SwapMultiBlocksofSameGroup
-  // 9:RotateSymmetryGroup
-  if(caseNL.GetSizeofBlocks()<=1) {return;}
-  if(caseNL.noBlock4Move>0) {pool.insert(0);}
-  if(caseNL.noAsymBlock4Move>0) { pool.insert(1); pool.insert(2); pool.insert(3);} //pool.insert(4);}
-  if(caseNL.noSymGroup4PartMove>0) {pool.insert(5); pool.insert(8); } //pool.insert(7);} // pool.insert(9);}
-  if(caseNL.noSymGroup4FullMove>1) {pool.insert(6);}
-  int fail = 0;
-  int count = 20;
-  while(!mark && fail<count) {
-    //std::cout<<int(pool.size())<<std::endl;
-    int choice=rand() % int(pool.size());
-    std::set<int>::iterator cit=pool.begin(); std::advance(cit, choice);
-    switch(*cit) {
+  } else {
+    bool mark=false;
+    std::set<int> pool;
+    // 0:ChangeSelectedBlock
+    // 1:MoveAsymmetricBlockposPair
+    // 2:MoveAsymmetricBlocknegPair
+    // 3:MoveAsymmetricBlockdoublePair
+    // 4:ChangeAsymmetricBlockOrient
+    // 5:SwapTwoBlocksofSameGroup
+    // 6:SwapTwoSymmetryGroup
+    // 7:ChangeSymmetryBlockOrient
+    // 8:SwapMultiBlocksofSameGroup
+    // 9:RotateSymmetryGroup
+    if(caseNL.GetSizeofBlocks()<=1) {return;}
+    if(caseNL.noBlock4Move>0) {pool.insert(0);}
+    if(caseNL.noAsymBlock4Move>0) { pool.insert(1); pool.insert(2); pool.insert(3);} 
+    if(caseNL.noSymGroup4PartMove>0) {pool.insert(5); pool.insert(8); } 
+    if(caseNL.noSymGroup4FullMove>1) {pool.insert(6);}
+    int fail = 0;
+    int count = 20;
+    while(!mark && fail<count) {
+      //std::cout<<int(pool.size())<<std::endl;
+      int choice=rand() % int(pool.size());
+      std::set<int>::iterator cit=pool.begin(); std::advance(cit, choice);
+      switch(*cit) {
         case 0: mark=ChangeSelectedBlock(caseNL); break;
         case 1: mark=MoveAsymmetricBlockposPair(caseNL); break;
         case 2: mark=MoveAsymmetricBlocknegPair(caseNL); break;
         case 3: mark=MoveAsymmetricBlockdoublePair(caseNL); break;
-        //case 4: mark=ChangeAsymmetricBlockOrient(caseNL); break;
+                //case 4: mark=ChangeAsymmetricBlockOrient(caseNL); break;
         case 5: mark=SwapTwoBlocksofSameGroup(caseNL); break;
         case 6: mark=SwapTwoSymmetryGroup(caseNL); break;
-        //case 7: mark=ChangeSymmetryBlockOrient(caseNL); break;
+                //case 7: mark=ChangeSymmetryBlockOrient(caseNL); break;
         case 8: mark=SwapMultiBlocksofSameGroup(caseNL); break;
-        //case 9: mark=RotateSymmetryGroup(caseNL); break;
+                //case 9: mark=RotateSymmetryGroup(caseNL); break;
         default: mark=false;
+      }
+      fail++;
     }
-    fail++;
   }
+  //auto logger = spdlog::default_logger()->clone("placer.SeqPair.PerturbationNew");
+  //std::string pos("{ "), neg("{ "), sel("{ ");
+  //for (auto& it : posPair) pos += (std::to_string(it) + " ");
+  //for (auto& it : negPair) neg += (std::to_string(it) + " ");
+  //for (auto& it : selected) sel += (std::to_string(it) + " ");
+  //pos += "}";
+  //neg += "}";
+  //sel += "}";
+  //logger->info("seq pair {0} {1} {2}", pos, neg, sel);
   KeepOrdering(caseNL);
 }
 
