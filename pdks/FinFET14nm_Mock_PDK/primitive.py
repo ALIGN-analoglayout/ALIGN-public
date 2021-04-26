@@ -81,6 +81,25 @@ class MOSGenerator(default.MOSGenerator):
             for i in range(self.finsPerUnitCell, self.finsPerUnitCell+self.lFin):
                 self.addWire( self.fin, None, None,  self.finsPerUnitCell*y+i, x, x+1)
 
+class TapGenerator(default.TapGenerator):
+
+    def _addTap(self, x_cells, y, yloc=None, name='M1'):
+        super()._addTap(x_cells, y, yloc, name)
+        if yloc is not None:
+            y = yloc
+        h = self.m2PerUnitCell
+        gu = self.gatesPerUnitCell
+        for x in range(x_cells):
+            gate_x = self.gateDummy*self.shared_diff + x*gu + gu // 2
+            self.addWire( self.LISDb, None, None, gate_x, (y*h+self.lFin//4-1, -1), (y*h+self.lFin//4+1, -1))
+        if self.shared_diff == 1:
+            for i in range(1, self.lFin):
+                self.addWire( self.fin_diff, None, None,  self.finsPerUnitCell*y+i, 0, (self.gate*x_cells+2*self.gateDummy))
+        else:
+            for x in range(x_cells):
+                for i in range(1, self.lFin):
+                    self.addWire( self.fin, None, None,  self.finsPerUnitCell*y+i, x, x+1)
+
 #
 # Default Cap & Res generators are good enough
 #

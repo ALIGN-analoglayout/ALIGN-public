@@ -198,6 +198,23 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
 
     return uc, cell_pin
 
+def generate_Tap(pdkdir, block_name, primitive, height, nfin, x_cells, y_cells, pinswitch):
+    pdk = Pdk().load(pdkdir / 'layers.json')
+    generator = get_generator('TapGenerator', pdkdir)
+    # TODO: THIS SHOULD NOT BE NEEDED !!!
+    fin = int(nfin)
+    #print(fin)
+    gateDummy = 3 ### Total Dummy gates per unit cell: 2*gateDummy
+    gate = 1
+    shared_diff = 0
+    uc = generator(pdk, height, fin, gate, gateDummy, shared_diff)
+
+    if 'TapN' in primitive:
+        uc.addNMOSTap( x_cells, y_cells)
+    else:
+        uc.addPMOSTap( x_cells, y_cells)
+    return uc, ['B']
+
 def generate_Cap(pdkdir, block_name, unit_cap):
 
     pdk = Pdk().load(pdkdir / 'layers.json')
@@ -249,7 +266,7 @@ def get_generator(name, pdkdir):
 
 
 # WARNING: Bad code. Changing these default values breaks functionality.
-def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None, pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd()):
+def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, value=12, pattern=1, vt_type='RVT', stack=1, parameters=None, pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd()):
 
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
 
@@ -261,6 +278,8 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
     elif 'Res' in primitive:
         uc, cell_pin = generate_Res(pdkdir, block_name, height, x_cells, y_cells, value[0], value[1])
         uc.setBboxFromBoundary()
+    elif 'Tap' in primitive:
+        uc, cell_pin = generate_Tap(pdkdir, block_name, primitive, height, value, x_cells, y_cells, pinswitch) 
     else:
         raise NotImplementedError(f"Unrecognized primitive {primitive}")
 
