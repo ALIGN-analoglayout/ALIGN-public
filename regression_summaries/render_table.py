@@ -48,6 +48,16 @@ for k,_ in names.items():
 
 style_data_conditional = []
 for id in df.columns:
+    if id == 'name':
+        s = { 'if': { 'column_id': id},
+              'width': '100px'
+        }
+        style_data_conditional.append(s)
+    if id.endswith('_x') or id.endswith('_y') or id.endswith('_d'):
+        s = { 'if': { 'column_id': id},
+              'width': '20px',
+        }
+        style_data_conditional.append(s)
     if id.endswith('_x') or id.endswith('_y'):
         s = { 'if': { 'column_id': id, 'filter_query': f'{{{id}}} > 0'},
               'color': 'tomato',
@@ -66,6 +76,7 @@ for id in df.columns:
         }
         style_data_conditional.append(s)
 
+print(style_data_conditional)
 
 app.layout = dash_table.DataTable(
     id='table',
@@ -73,7 +84,23 @@ app.layout = dash_table.DataTable(
     data=df.to_dict('records'),
     sort_action='native',
     filter_action='native',
-    style_data_conditional=style_data_conditional
+    style_data_conditional=style_data_conditional,
+    style_cell={
+        'overflow': 'hidden',
+        'textOverflow': 'ellipsis',
+        'maxWidth': 0
+    },
+    style_header={
+        'overflow': 'hidden',
+        'textOverflow': 'ellipsis',
+        'maxWidth': 0
+    },
+    tooltip_data=[
+        {
+            column: {'value': str(value), 'type': 'markdown'}
+            for column, value in row.items()
+        } for row in df.to_dict('records')
+    ]
 )
 
 if __name__ == '__main__':
