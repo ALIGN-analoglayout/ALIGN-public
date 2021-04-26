@@ -2688,7 +2688,7 @@ void Placement::restore_CC_in_square()
 
 void Placement::restore_MS(PnRDB::hierNode &current_node)
 {
-
+  current_node.isFirstILP=0;
   current_node.Blocks.erase(current_node.Blocks.end()-(Blocks.size()-originalBlockCNT),current_node.Blocks.end());
 
   current_node.Nets.erase(current_node.Nets.end()-(Nets.size()-originalNetCNT),current_node.Nets.end());
