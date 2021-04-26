@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import dash
 import dash_table
 import pandas as pd
@@ -45,8 +47,7 @@ for k,_ in names.items():
     df[f'{k}_d'] = df[f'{k}_y'] - df[f'{k}_x']
 
 style_data_conditional = []
-for i in df.columns:
-    id = toId(i)
+for id in df.columns:
     if id.endswith('_x') or id.endswith('_y'):
         s = { 'if': { 'column_id': id, 'filter_query': f'{{{id}}} > 0'},
               'color': 'tomato',
@@ -68,7 +69,7 @@ for i in df.columns:
 
 app.layout = dash_table.DataTable(
     id='table',
-    columns=[{"name": i, "id": toId(i)} for i in df.columns],
+    columns=[{"name": i, "id": i} for i in df.columns],
     data=df.to_dict('records'),
     sort_action='native',
     filter_action='native',
