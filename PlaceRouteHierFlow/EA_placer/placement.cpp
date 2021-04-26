@@ -2686,8 +2686,9 @@ void Placement::restore_CC_in_square()
   }
 }
 
-void Placement::restore_MS(PnRDB::hierNode &current_node, Ppoint_F uni_cell_shape)
+void Placement::restore_MS(PnRDB::hierNode &current_node)
 {
+
   current_node.Blocks.erase(current_node.Blocks.end()-(Blocks.size()-originalBlockCNT),current_node.Blocks.end());
 
   current_node.Nets.erase(current_node.Nets.end()-(Nets.size()-originalNetCNT),current_node.Nets.end());
@@ -2748,8 +2749,8 @@ void Placement::restore_MS(PnRDB::hierNode &current_node, Ppoint_F uni_cell_shap
     tempBlock.name = "CC_merge_cell"+commonCentroids[i].label;
     tempBlock.orient = PnRDB::N;
 
-    tempBlock.height = uni_cell_shape.y*commonCentroids[i].shape.y;
-    tempBlock.width = uni_cell_shape.x*commonCentroids[i].shape.x;
+    tempBlock.height = uni_cell.y*commonCentroids[i].shape.y;
+    tempBlock.width = uni_cell.x*commonCentroids[i].shape.x;
 
     PnRDB::blockComplex tempBlockComplex;
     

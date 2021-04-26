@@ -50,6 +50,7 @@ private:
     //donghao start
     //estimated required height y and width x, generally x = y
     Ppoint_F est_Size;
+    Ppoint_F uni_cell;
     //donghao end  
 
 public:
@@ -143,7 +144,7 @@ public:
 
     void restore_CC_in_square();
 
-    void restore_MS(PnRDB::hierNode &current_node, Ppoint_F uni_cell_shape);
+    void restore_MS(PnRDB::hierNode &current_node);
 
     void split_CC(PnRDB::hierNode &current_node);
     //donghao end
