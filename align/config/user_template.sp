@@ -1,111 +1,112 @@
 .subckt CASCODED_SCM_NMOS DA DC GA S
-M0 (DA GA DB B) NMOS w=w l=90n
-M1 (DB DA S B) NMOS w=w l=90n
-M2 (DC DA S B) NMOS w=w l=90n
+M0 DA GA DB B NMOS w=w l=90n
+M1 DB DA S B NMOS w=w l=90n
+M2 DC DA S B NMOS w=w l=90n
 .ends CASCODED_SCM_NMOS
 
 .subckt CASCODED_SCM_PMOS DA DC GA S
-M0 (DA GA DB B) PMOS w=w l=90n
-M1 (DB DA S B) PMOS w=w l=90n
-M2 (DC DA S B) PMOS w=w l=90n
+M0 DA GA DB B PMOS w=w l=90n
+M1 DB DA S B PMOS w=w l=90n
+M2 DC DA S B PMOS w=w l=90n
 .ends CASCODED_SCM_PMOS
 
 .subckt CASCODED_CMB_NMOS_2 DA DD DC GA S
-M0 (DA GA DB B) NMOS w=w l=90n
-M1 (DB DA S B) NMOS w=w l=90n
-M2 (DC DA S B) NMOS w=w l=90n
-M3 (DD DA S B) NMOS w=w l=90n
+M0 DA GA DB B NMOS w=w l=90n
+M1 DB DA S B NMOS w=w l=90n
+M2 DC DA S B NMOS w=w l=90n
+M3 DD DA S B NMOS w=w l=90n
 .ends CASCODED_CMB_NMOS_2
 
 .subckt CASCODED_CMB_PMOS_2 DA DC DD GA S
-M0 (DA GA DB B) PMOS w=w l=90n
-M1 (DB DA S B) PMOS w=w l=90n
-M2 (DC DA S B) PMOS w=w l=90n
-M3 (DD DA S B) PMOS w=w l=90n
+M0 DA GA DB B PMOS w=w l=90n
+M1 DB DA S B PMOS w=w l=90n
+M2 DC DA S B PMOS w=w l=90n
+M3 DD DA S B PMOS w=w l=90n
 .ends CASCODED_CMB_PMOS_2
 
 .subckt LSB_NMOS_2 DA DB DC SA SB SC
 **UT austin  array VCM5
-M0 (DA DA SA B) NMOS w=w l=90n
-M1 (DB DA SB B) NMOS w=w l=90n
-M2 (DC DA SC B) NMOS w=w l=90n
+M0 DA DA SA B NMOS w=w l=90n
+M1 DB DA SB B NMOS w=w l=90n
+M2 DC DA SC B NMOS w=w l=90n
 .ends LSB_NMOS_2
 
 .subckt LSB_NMOS_7 DA DB DC DD DE DF DG DH SA SB SC SD SE SF SG SH
 **UT austin  array BUFFER_VREFP2
-M0 (DA DA SA B) NMOS w=w l=90n
-M1 (DB DA SB B) NMOS w=w l=90n
-M2 (DC DA SC B) NMOS w=w l=90n
-M3 (DD DA SD B) NMOS w=w l=90n
-M4 (DE DA SE B) NMOS w=w l=90n
-M5 (DF DA SF B) NMOS w=w l=90n
-M6 (DG DA SG B) NMOS w=w l=90n
-M7 (DH DA SH B) NMOS w=w l=90n
+M0 DA DA SA B NMOS w=w l=90n
+M1 DB DA SB B NMOS w=w l=90n
+M2 DC DA SC B NMOS w=w l=90n
+M3 DD DA SD B NMOS w=w l=90n
+M4 DE DA SE B NMOS w=w l=90n
+M5 DF DA SF B NMOS w=w l=90n
+M6 DG DA SG B NMOS w=w l=90n
+M7 DH DA SH B NMOS w=w l=90n
 .ends LSB_NMOS_7
 
 .subckt LSB_PMOS_2 DA DB DC SA SB SC
 **UT austin  array VCM5
-M0 (DA DA SA B) PMOS w=w l=90n
-M1 (DB DA SB B) PMOS w=w l=90n
-M2 (DC DA SC B) PMOS w=w l=90n
+M0 DA DA SA B PMOS w=w l=90n
+M1 DB DA SB B PMOS w=w l=90n
+M2 DC DA SC B PMOS w=w l=90n
 .ends LSB_PMOS_2
 
 .subckt DP_PAIR_PMOS DA DB DC DD GB S
 *UT austin VCM5
-M0 (DC DC S B) PMOS w=w l=90n
-M1 (DA DC S B) PMOS w=w l=90n
-M2 (DB GB S B) PMOS w=w l=90n
-M3 (DD GB S B) PMOS w=w l=90n
+M0 DC DC S B PMOS w=w l=90n
+M1 DA DC S B PMOS w=w l=90n
+M2 DB GB S B PMOS w=w l=90n
+M3 DD GB S B PMOS w=w l=90n
 .ends DP_PAIR_PMOS
 
 .subckt CASCODED_CMB_PMOS_3 DA DC DD DE GA S
-M0 (DA GA DB B) PMOS w=w l=90n
-M1 (DB DA S B) PMOS w=w l=90n
-M2 (DC DA S B) PMOS w=w l=90n
-M3 (DD DA S B) PMOS w=w l=90n
-M4 (DE DA S B) PMOS w=w l=90n
+M0 DA GA DB B PMOS w=w l=90n
+M1 DB DA S B PMOS w=w l=90n
+M2 DC DA S B PMOS w=w l=90n
+M3 DD DA S B PMOS w=w l=90n
+M4 DE DA S B PMOS w=w l=90n
 .ends CASCODED_CMB_PMOS_3
 
 .subckt CMB_NMOS_2 DA DB DC S
-M0 (DA DA S S) NMOS_VTL w=w l=90n
-M1 (DB DA S S) NMOS_VTL w=w l=90n
-M2 (DC DA S S) NMOS_VTL w=w l=90n
-.ends CMB_NMOS_2 
+M0 DA DA S S NMOS_VTL w=w l=90n
+M1 DB DA S S NMOS_VTL w=w l=90n
+M2 DC DA S S NMOS_VTL w=w l=90n
+.ends CMB_NMOS_2
+*TBF: parser fails in case of space at end of line in .end statement
 
 .subckt CMB_PMOS_2 DA DB DC S
-M0 (DA DA S S) PMOS_VTL w=w l=90n
-M1 (DB DA S S) PMOS_VTL w=w l=90n
-M2 (DC DA S S) PMOS_VTL w=w l=90n
-.ends CMB_PMOS_2 
+M0 DA DA S S PMOS_VTL w=w l=90n
+M1 DB DA S S PMOS_VTL w=w l=90n
+M2 DC DA S S PMOS_VTL w=w l=90n
+.ends CMB_PMOS_2
 
 .subckt CMB_NMOS_3 DA DB DC DD S
-M0 (DA DA S S) NMOS_VTL w=w l=90n
-M1 (DB DA S S) NMOS_VTL w=w l=90n
-M2 (DC DA S S) NMOS_VTL w=w l=90n
-M3 (DD DA S S) NMOS_VTL w=w l=90n
-.ends CMB_NMOS_3 
+M0 DA DA S S NMOS_VTL w=w l=90n
+M1 DB DA S S NMOS_VTL w=w l=90n
+M2 DC DA S S NMOS_VTL w=w l=90n
+M3 DD DA S S NMOS_VTL w=w l=90n
+.ends CMB_NMOS_3
 
 .subckt CMB_PMOS_3 DA DB DC DD S
-M0 (DA DA S S) PMOS_VTL w=w l=90n
-M1 (DB DA S S) PMOS_VTL w=w l=90n
-M2 (DC DA S S) PMOS_VTL w=w l=90n
-M3 (DD DA S S) PMOS_VTL w=w l=90n
-.ends CMB_PMOS_3 
+M0 DA DA S S PMOS_VTL w=w l=90n
+M1 DB DA S S PMOS_VTL w=w l=90n
+M2 DC DA S S PMOS_VTL w=w l=90n
+M3 DD DA S S PMOS_VTL w=w l=90n
+.ends CMB_PMOS_3
 
 .subckt CMB_NMOS_4 DA DB DC DD DE S
-M0 (DA DA S S) NMOS_VTL w=w l=90n
-M1 (DB DA S S) NMOS_VTL w=w l=90n
-M2 (DC DA S S) NMOS_VTL w=w l=90n
-M3 (DD DA S S) NMOS_VTL w=w l=90n
-M4 (DE DA S S) NMOS_VTL w=w l=90n
+M0 DA DA S S NMOS_VTL w=w l=90n
+M1 DB DA S S NMOS_VTL w=w l=90n
+M2 DC DA S S NMOS_VTL w=w l=90n
+M3 DD DA S S NMOS_VTL w=w l=90n
+M4 DE DA S S NMOS_VTL w=w l=90n
 .ends CMB_NMOS_4
 
 .subckt CMB_PMOS_4 DA DB DC DD DE S
-M0 (DA DA S S) PMOS_VTL w=w l=90n
-M1 (DB DA S S) PMOS_VTL w=w l=90n
-M2 (DC DA S S) PMOS_VTL w=w l=90n
-M3 (DD DA S S) PMOS_VTL w=w l=90n
-M4 (DE DA S S) PMOS_VTL w=w l=90n
+M0 DA DA S S PMOS_VTL w=w l=90n
+M1 DB DA S S PMOS_VTL w=w l=90n
+M2 DC DA S S PMOS_VTL w=w l=90n
+M3 DD DA S S PMOS_VTL w=w l=90n
+M4 DE DA S S PMOS_VTL w=w l=90n
 .ends CMB_PMOS_4
 
 .subckt INV i zn SN SP
@@ -119,15 +120,17 @@ M1 zn i SP PB PMOS_VTL w=w1 l=l0
 .ends INV_B
 
 .subckt stage2_inv G1 G2 SN SP
-MM0 G1 D SN SN NMOS l=60n w=1u m=1
-MM1 G1 D SP SP PMOS l=60n w=1u m=1
-MM2 D G2 SN SN NMOS l=60n w=1u m=1
-MM3 D G2 SP SP PMOS l=60n w=1u m=1
+MM0 G1 D SN SN NMOS l=60n w=1u
+MM1 G1 D SP SP PMOS l=60n w=1u
+MM2 D G2 SN SN NMOS l=60n w=1u
+MM3 D G2 SP SP PMOS l=60n w=1u
 .ends stage2_inv
+*TBF: had to remove m=1 because in base model m=1 is not there. How to allow user to change base model?
 
-.subckt spiral_ind PLUS MINUS BULK CTAP
-L0 PLUS MINUS BULK CTAP spiral_sym_ct_mu_z w=9u
-.ends spiral_ind
+* .subckt spiral_ind PLUS MINUS BULK CTAP
+* L0 PLUS MINUS BULK CTAP spiral_sym_ct_mu_z w=9u
+* .ends spiral_ind
+*TBF: Multi pin inverter
 
 .subckt switched_capacitor_combination Vin agnd Vin_ota Voutn phi1 phi2
 m0 Voutn phi1 net67 vss nmos_rvt w=270e-9 l=20e-9 nfin=5
@@ -153,43 +156,43 @@ c0 net72 net63 60e-15
 **.ends res_array_8
 
 .subckt tgate GA GB D S BN BP
-M0 (D GA S BN) NMOS w=w l=90n
-M1 (D GB S BP) PMOS w=w l=90n
+M0 D GA S BN NMOS w=w l=90n
+M1 D GB S BP PMOS w=w l=90n
 .ends tgate
 
 .subckt SCM_NMOS_C DA DB S
-M0 (DA DA S B) NMOS w=w l=90n
-M1 (DB DA S B) NMOS w=w l=90n
-C0 (DA S) cap cap=1f
+M0 DA DA S B NMOS w=w l=90n
+M1 DB DA S B NMOS w=w l=90n
+C0 DA S 1f
 .ends SCM_NMOS_C
 
 .subckt SCM_PMOS_C DA DB S
-M0 (DA DA S B) PMOS w=w l=90n
-M1 (DB DA S B) PMOS w=w l=90n
-C0 (DA S) cap cap =1f
+M0 DA DA S B PMOS w=w l=90n
+M1 DB DA S B PMOS w=w l=90n
+C0 DA S 1f
 .ends SCM_PMOS_C
 
 .subckt SCM_NMOS_RC DA DB S
-M0 (DA DA S B) NMOS w=w l=90n
-M1 (DB GB S B) NMOS w=w l=90n
-C0 (GB S) cap cap=1f
-R0 (GB DA) res res=1k
+M0 DA DA S B NMOS w=w l=90n
+M1 DB GB S B NMOS w=w l=90n
+C0 GB S 1f
+R0 GB DA 1k
 .ends SCM_NMOS_RC
 
 .subckt SCM_PMOS_RC DA DB GA S
-M0 (DA GA S B) NMOS w=w l=90n
-M1 (DB GB S B) NMOS w=w l=90n
-C0 (GB S) cap cap=1f
-R0 (GB DA) res res=1k
-C1 (DA net1) cap cap=1f
-R1 (net1 GA) res res=1k
+M0 DA GA S B NMOS w=w l=90n
+M1 DB GB S B NMOS w=w l=90n
+C0 GB S capacitor c=1f
+R0 GB DA resistor r=1k
+C1 DA net1 1f
+R1 net1 GA 1k
 .ends SCM_NMOS_RC
 
 **.subckt SCM_PMOS_RC DA DB GA S
-**M0 (DA GA S B) NMOS w=w l=90n
-**M1 (DB GB S B) NMOS w=w l=90n
-**C0 (GB S) cap
-**R0 (GB DA) res
-**C1 (DA net1) cap
-**R1 (net1 GA) res
+**M0 DA GA S B NMOS w=w l=90n
+**M1 DB GB S B NMOS w=w l=90n
+**C0 GB S cap
+**R0 GB DA res
+**C1 DA net1 cap
+**R1 net1 GA res
 **.ends SCM_NMOS_RC

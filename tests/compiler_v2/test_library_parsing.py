@@ -11,7 +11,7 @@ def test_basic_lib():
     with open(model_statemenets) as f:
         lines = f.read()
     parser.parse(lines)
-    basic_lib_path = align_home / 'config' / 'basic_template_copy.sp'
+    basic_lib_path = align_home / 'config' / 'basic_template.sp'
     with open(basic_lib_path) as f:
         lines = f.read()
     parser.parse(lines)
@@ -21,7 +21,7 @@ def test_basic_lib():
     assert len(parser.library['DP_PMOS_B'].elements) == 2
     assert len(parser.library['CASCODED_CMC_PMOS'].elements) == 4
 
-    user_lib_path = align_home / 'config' / 'user_template_copy.sp'
+    user_lib_path = align_home / 'config' / 'user_template.sp'
     with open(user_lib_path) as f:
         lines = f.read()
     parser.parse(lines)

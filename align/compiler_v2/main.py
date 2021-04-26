@@ -49,12 +49,12 @@ def compiler(input_ckt: pathlib.Path, design_name: str, pdk_dir: pathlib.Path, c
     circuit = parser.library[design_name]
 
 
-    basic_lib_path = config_path / 'basic_template_copy.sp'
+    basic_lib_path = config_path / 'basic_template.sp'
     with open(basic_lib_path) as f:
         lines = f.read()
     lib_parser.parse(lines)
 
-    user_lib_path = config_path / 'user_template_copy.sp'
+    user_lib_path = config_path / 'user_template.sp'
     with open(user_lib_path) as f:
         lines = f.read()
     lib_parser.parse(lines)
