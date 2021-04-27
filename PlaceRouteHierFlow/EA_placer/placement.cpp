@@ -2631,7 +2631,7 @@ void Placement::restore_CC_in_square()
     X_MAX = X_MIN = Blocks[index].Cpoint.x;
     Y_MAX = Y_MIN = Blocks[index].Cpoint.y;
 
-    for(int ii=0;i<commonCentroids[i].shape.x;++ii)
+    for(int ii=0;ii<commonCentroids[i].shape.x;++ii)
     {
       for(int jj=0;jj<commonCentroids[i].shape.y;++jj)
       {
@@ -2668,7 +2668,7 @@ void Placement::restore_CC_in_square()
       inteval.y=0;
     }
 
-    for(int ii=0;i<commonCentroids[i].shape.x;++ii)
+    for(int ii=0;ii<commonCentroids[i].shape.x;++ii)
     {
       for(int jj=0;jj<commonCentroids[i].shape.y;++jj)
       {
