@@ -91,7 +91,7 @@ def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, check=Fal
 
 
 def gen_leaf_cell_info( verilog_d, input_dir, primitive_dir):
-    
+
 
     non_leaves = set()
     templates_called_in_an_instance = defaultdict(list)
@@ -117,9 +117,12 @@ def gen_leaf_cell_info( verilog_d, input_dir, primitive_dir):
         cap_constraints[nm] = { const['cap_name'] : const for const in pnr_const_d['constraints'] if const['const_name'] == "CC"}
 
     leaves = set(templates_called_in_an_instance.keys()).difference( non_leaves)
+    for nm, pnr_const_d in pnr_const_ds.items():
+        for const in pnr_const_d['constraints']:
+            if const['const_name'] == "GuardRing":
+                leaves.add(const['guard_ring_primitives'])
 
     logger.debug( f'non_leaves: {non_leaves} leaves: {leaves}')
-
     logger.debug( f'templates: {templates_called_in_an_instance}')
 
     # Find capacitors

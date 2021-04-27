@@ -208,12 +208,12 @@ class Align(PlacementConstraint):
 
 
 class Enclose(PlacementConstraint):
-    ''' 
+    '''
     Enclose `instances` within a flexible bounding box
     with `min_` & `max_` bounds
 
     Note: Specifying any one of the following variables
-    makes it a valid constraint but you may wish to 
+    makes it a valid constraint but you may wish to
     specify more than one for practical purposes
 
     > `min_height`
@@ -289,7 +289,7 @@ class Enclose(PlacementConstraint):
 
 class Spread(PlacementConstraint):
     '''
-    Spread `instances` by forcing minimum spacing along 
+    Spread `instances` by forcing minimum spacing along
     `direction` if two instances overlap in other direction
 
     WARNING: This constraint checks for overlap but
@@ -428,8 +428,8 @@ class AlignInOrder(UserConstraint):
 class PlaceSymmetric(PlacementConstraint):
     # TODO: Finish implementing this. Not registered to
     #       ConstraintDB yet
-    ''' 
-    Place instance / pair of `instances` symmetrically 
+    '''
+    Place instance / pair of `instances` symmetrically
     around line of symmetry along `direction`
 
     Note: This is a user-convenience constraint. Same
@@ -500,6 +500,14 @@ class HorizontalDistance(SoftConstraint):
     TODO: Replace with Spread
     '''
     abs_distance: int
+
+class GuardRing(SoftConstraint):
+    '''
+    Adds guard ring for particular hierarchy
+    '''
+    guard_ring_primitives: str
+    global_pin: str
+    block_name: str
 
 
 class GroupCaps(SoftConstraint):
@@ -573,6 +581,7 @@ ConstraintType = Union[
     BlockDistance,
     HorizontalDistance,
     VerticalDistance,
+    GuardRing,
     SymmetricBlocks,
     GroupCaps,
     NetConst,
@@ -601,7 +610,7 @@ class ConstraintDB(types.List[ConstraintType]):
                     if hasattr(c, 'check'):
                         logger.error(c)
                 raise e
-            
+
 
     def _check_recursive(self, constraints):
         for constraint in expand_user_constraints(constraints):
