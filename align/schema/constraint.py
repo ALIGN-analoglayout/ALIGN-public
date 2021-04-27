@@ -344,6 +344,22 @@ class Spread(PlacementConstraint):
                     )
                 )
 
+class SetBoundingBox(HardConstraint):
+    instance: str
+    llx: int
+    lly: int
+    urx: int
+    ury: int
+
+    def check(self, checker):
+        super().check(checker)
+        assert self.llx < self.urx and self.lly < self.ury, f'Reflection is not supported yet for {self}'
+        bvar = checker.bbox_vars(self.instance)
+        checker.append(bvar.llx == self.llx)
+        checker.append(bvar.lly == self.lly)
+        checker.append(bvar.urx == self.urx)
+        checker.append(bvar.ury == self.ury)
+
 
 # You may chain constraints together for more complex constraints by
 #     1) Assigning default values to certain attributes
@@ -546,6 +562,7 @@ ConstraintType = Union[
     # ALIGN Internal DSL
     Order, Align,
     Enclose, Spread,
+    SetBoundingBox,
     # Additional helper constraints
     AlignInOrder,
     # Current Align constraints
@@ -581,7 +598,8 @@ class ConstraintDB(types.List[ConstraintType]):
                 logger.error(f'Checker raised error:\n {e}')
                 logger.error(f'Failed to add constraint {constraint} due to conflict with one or more of:')
                 for c in self.__root__:
-                    logger.error(c)
+                    if hasattr(c, 'check'):
+                        logger.error(c)
                 raise e
             
 

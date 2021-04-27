@@ -1,6 +1,61 @@
 #include "SeqPair.h"
 #include "spdlog/spdlog.h"
 
+
+SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl)
+{
+  _enumIndex = std::make_pair(0, 0);
+  _exhausted = 0;
+  _posPair = pair;
+  std::sort(_posPair.begin(), _posPair.end());
+  _negPair = _posPair;
+  _maxEnum = SeqPair::Factorial(_posPair.size());
+  _selected.resize(casenl.GetSizeofBlocks(), 0);
+  _maxSelected.reserve(casenl.GetSizeofBlocks());
+  _maxSize = 0;
+  for (unsigned i = 0; i < casenl.GetSizeofBlocks(); ++i) {
+    auto s = static_cast<int>(casenl.Blocks.at(i).size());
+    _maxSize = std::max(_maxSize, s);
+    _maxSelected.push_back(s);
+  }
+}
+
+const bool SeqPairEnumerator::IncrementSelected()
+{
+  if (_maxSize <= 1) return false;
+  int i = _selected.size() - 1;
+  int rem = 1;
+  while (i >= 0) {
+    auto ui = static_cast<unsigned>(i);
+    _selected[ui] += rem;
+    if (_selected[ui] >= _maxSelected[ui]) {
+      _selected[ui] = 0;
+      rem = 1;
+    } else {
+      rem = 0;
+      break;
+    }
+    --i;
+  }
+  return rem ? false : true;
+}
+
+void SeqPairEnumerator::Permute()
+{
+  if (!IncrementSelected()) {
+    if (_enumIndex.second >= _maxEnum - 1) {
+      _enumIndex.second = 0;
+      ++_enumIndex.first;
+      std::sort(_negPair.begin(), _negPair.end());
+      std::next_permutation(std::begin(_posPair), std::end(_posPair));
+    } else {
+      ++_enumIndex.second;
+      std::next_permutation(std::begin(_negPair), std::end(_negPair));
+    }
+  }
+  if (_enumIndex.first >= _maxEnum) _exhausted = true;
+}
+
 SeqPair::SeqPair() {
   this->posPair.clear();
   this->negPair.clear();
@@ -39,6 +94,7 @@ SeqPair::SeqPair(const SeqPair& sp) {
   this->symAxis=sp.symAxis;
   this->selected=sp.selected;
   this->selectedCopy=sp.selectedCopy;
+  if (!_seqPairEnum) this->_seqPairEnum = sp._seqPairEnum;
 }
 
 SeqPair::SeqPair(design& originNL, design& reducedNL, SeqPair& reducedSP) {
@@ -50,6 +106,7 @@ SeqPair::SeqPair(design& originNL, design& reducedNL, SeqPair& reducedSP) {
   this->orient.resize( originNL.GetSizeofBlocks(),  placerDB::N  );
   this->symAxis.resize(originNL.GetSizeofSBlocks(), placerDB::V  );
   this->selected.resize(originNL.GetSizeofBlocks(), 0);
+  if (!_seqPairEnum) this->_seqPairEnum = reducedSP._seqPairEnum;
   // A. For those common symmetry groups in both original and reduced designs
   // 1. first, convert all the axis nodes of reduced design in sequence pairs
   // into axis nodes of original design
@@ -389,22 +446,12 @@ void SeqPair::InsertCommonSBlock(design& originNL, design& reducedNL, int origin
   this->negPair=new_negPair;
 }
 
-SeqPair::SeqPair(design& caseNL) {
+SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
   // Know limitation: currently we force all symmetry group in veritcal symmetry
   placerDB::Smark axis;
   orient.resize(caseNL.GetSizeofBlocks());
   selected.resize(caseNL.GetSizeofBlocks(),0);
   for(vector<placerDB::SymmBlock>::iterator bit=caseNL.SBlocks.begin(); bit!=caseNL.SBlocks.end(); ++bit) {
-    //axis = bit->axis_dir;
-    //axis=placerDB::V; // initialize veritcal symmetry
-    /*
-    if ( !(bit->selfsym).empty() ) {
-      switch( (bit->selfsym).at(0).second ) {
-        case placerDB::H: axis=placerDB::V;break;
-        case placerDB::V: axis=placerDB::H;break;
-      }
-    }
-    */
     axis = bit->axis_dir;
     //cout<<"axis"<<axis<<endl;
     symAxis.push_back(axis);
@@ -430,7 +477,6 @@ SeqPair::SeqPair(design& caseNL) {
       }
     }
     if(!bit->sympair.empty()) {
-      //for(vector< pair<int,int> >::iterator pit=bit->sympair.end()-1; pit>=bit->sympair.begin(); --pit) {
       for(vector< pair<int,int> >::reverse_iterator pit=bit->sympair.rbegin(); pit!=bit->sympair.rend(); ++pit) {
         if( pit->second<(int)caseNL.GetSizeofBlocks() ) {
           posPair.push_back(pit->second); // bp,...,b1 --> positive
@@ -452,7 +498,6 @@ SeqPair::SeqPair(design& caseNL) {
         }
       }
       if(!bit->selfsym.empty()) {
-        //for(vector< pair<int,placerDB::Smark> >::iterator sit=bit->selfsym.end()-1; sit>=bit->selfsym.begin(); --sit) {
         for(vector< pair<int,placerDB::Smark> >::reverse_iterator sit=bit->selfsym.rbegin(); sit!=bit->selfsym.rend(); ++sit) {
           if ( sit->first<(int)caseNL.GetSizeofBlocks() ) {
             negPair.push_back(sit->first); // cs,...c1 --> negative
@@ -461,7 +506,6 @@ SeqPair::SeqPair(design& caseNL) {
       }
       negPair.push_back(bit->dnode); // axis --> negative
       if (!bit->sympair.empty()) {
-        //for(vector< pair<int,int> >::iterator pit=bit->sympair.end()-1; pit>=bit->sympair.begin(); --pit) {
         for(vector< pair<int,int> >::reverse_iterator pit=bit->sympair.rbegin(); pit!=bit->sympair.rend(); ++pit) {
           if( pit->second<(int)caseNL.GetSizeofBlocks() ) {
             negPair.push_back(pit->second); // bp,...,b1 --> positive
@@ -485,7 +529,6 @@ SeqPair::SeqPair(design& caseNL) {
         }
       }
       if(!bit->sympair.empty()) {
-        //for(vector< pair<int,int> >::iterator pit=bit->sympair.end()-1; pit>=bit->sympair.begin(); --pit) {
         for(vector< pair<int,int> >::reverse_iterator pit=bit->sympair.rbegin(); pit!=bit->sympair.rend(); ++pit) {
           if( pit->first<(int)caseNL.GetSizeofBlocks() ) {
             negPair.push_back(pit->first); // ap,...,a1 --> negative
@@ -502,15 +545,36 @@ SeqPair::SeqPair(design& caseNL) {
     }
   }
   KeepOrdering(caseNL);
+  bool enumerate(false);
+  if (maxIter > 0 && posPair.size() <= 6) {
+    size_t totEnum = SeqPair::Factorial(posPair.size());
+    totEnum *= totEnum;
+    if (maxIter > totEnum) {
+      for (unsigned i = 0; i < caseNL.GetSizeofBlocks(); ++i) {
+        totEnum *= caseNL.Blocks.at(i).size();
+        if (2 * maxIter > totEnum) break;
+      }
+      enumerate = 2 * maxIter > totEnum;
+    }
+  }
+  if (enumerate) {
+    _seqPairEnum = std::make_shared<SeqPairEnumerator>(posPair, caseNL);
+    auto logger = spdlog::default_logger()->clone("placer.SeqPair.SetEnumerate");
+    logger->info("Enumerated search");
+  } else {
+    _seqPairEnum.reset();
+  }
 }
 
 SeqPair& SeqPair::operator=(const SeqPair& sp) {
+  auto logger = spdlog::default_logger()->clone("placer.SeqPair.=");
   this->posPair=sp.posPair;
   this->negPair=sp.negPair;
   this->orient=sp.orient;
   this->symAxis=sp.symAxis;
   this->selected=sp.selected;
   this->selectedCopy=sp.selectedCopy;
+  if (!_seqPairEnum) this->_seqPairEnum = sp._seqPairEnum;
   return *this;
 }
 
@@ -844,47 +908,69 @@ void SeqPair::KeepOrdering(design& caseNL) {
   }
 }
 
+inline size_t SeqPair::Factorial(const size_t& t)
+{
+  if (t <= 1) return 1;
+  return t * Factorial(t - 1);
+}
+
 void SeqPair::PerturbationNew(design& caseNL) {
   /* initialize random seed: */
   //srand(time(NULL));
-  bool mark=false;
-  std::set<int> pool;
-  // 0:ChangeSelectedBlock
-  // 1:MoveAsymmetricBlockposPair
-  // 2:MoveAsymmetricBlocknegPair
-  // 3:MoveAsymmetricBlockdoublePair
-  // 4:ChangeAsymmetricBlockOrient
-  // 5:SwapTwoBlocksofSameGroup
-  // 6:SwapTwoSymmetryGroup
-  // 7:ChangeSymmetryBlockOrient
-  // 8:SwapMultiBlocksofSameGroup
-  // 9:RotateSymmetryGroup
-  if(caseNL.GetSizeofBlocks()<=1) {return;}
-  if(caseNL.noBlock4Move>0) {pool.insert(0);}
-  if(caseNL.noAsymBlock4Move>0) { pool.insert(1); pool.insert(2); pool.insert(3);} //pool.insert(4);}
-  if(caseNL.noSymGroup4PartMove>0) {pool.insert(5); pool.insert(8); } //pool.insert(7);} // pool.insert(9);}
-  if(caseNL.noSymGroup4FullMove>1) {pool.insert(6);}
-  int fail = 0;
-  int count = 20;
-  while(!mark && fail<count) {
-    //std::cout<<int(pool.size())<<std::endl;
-    int choice=rand() % int(pool.size());
-    std::set<int>::iterator cit=pool.begin(); std::advance(cit, choice);
-    switch(*cit) {
+  if (_seqPairEnum) {
+    posPair = _seqPairEnum->PosPair();
+    negPair = _seqPairEnum->NegPair();
+    selected = _seqPairEnum->Selected();
+    _seqPairEnum->Permute();
+  } else {
+    bool mark=false;
+    std::set<int> pool;
+    // 0:ChangeSelectedBlock
+    // 1:MoveAsymmetricBlockposPair
+    // 2:MoveAsymmetricBlocknegPair
+    // 3:MoveAsymmetricBlockdoublePair
+    // 4:ChangeAsymmetricBlockOrient
+    // 5:SwapTwoBlocksofSameGroup
+    // 6:SwapTwoSymmetryGroup
+    // 7:ChangeSymmetryBlockOrient
+    // 8:SwapMultiBlocksofSameGroup
+    // 9:RotateSymmetryGroup
+    if(caseNL.GetSizeofBlocks()<=1) {return;}
+    if(caseNL.noBlock4Move>0) {pool.insert(0);}
+    if(caseNL.noAsymBlock4Move>0) { pool.insert(1); pool.insert(2); pool.insert(3);} 
+    if(caseNL.noSymGroup4PartMove>0) {pool.insert(5); pool.insert(8); } 
+    if(caseNL.noSymGroup4FullMove>1) {pool.insert(6);}
+    int fail = 0;
+    int count = 20;
+    while(!mark && fail<count) {
+      //std::cout<<int(pool.size())<<std::endl;
+      int choice=rand() % int(pool.size());
+      std::set<int>::iterator cit=pool.begin(); std::advance(cit, choice);
+      switch(*cit) {
         case 0: mark=ChangeSelectedBlock(caseNL); break;
         case 1: mark=MoveAsymmetricBlockposPair(caseNL); break;
         case 2: mark=MoveAsymmetricBlocknegPair(caseNL); break;
         case 3: mark=MoveAsymmetricBlockdoublePair(caseNL); break;
-        //case 4: mark=ChangeAsymmetricBlockOrient(caseNL); break;
+                //case 4: mark=ChangeAsymmetricBlockOrient(caseNL); break;
         case 5: mark=SwapTwoBlocksofSameGroup(caseNL); break;
         case 6: mark=SwapTwoSymmetryGroup(caseNL); break;
-        //case 7: mark=ChangeSymmetryBlockOrient(caseNL); break;
+                //case 7: mark=ChangeSymmetryBlockOrient(caseNL); break;
         case 8: mark=SwapMultiBlocksofSameGroup(caseNL); break;
-        //case 9: mark=RotateSymmetryGroup(caseNL); break;
+                //case 9: mark=RotateSymmetryGroup(caseNL); break;
         default: mark=false;
+      }
+      fail++;
     }
-    fail++;
   }
+  //auto logger = spdlog::default_logger()->clone("placer.SeqPair.PerturbationNew");
+  //std::string pos("{ "), neg("{ "), sel("{ ");
+  //for (auto& it : posPair) pos += (std::to_string(it) + " ");
+  //for (auto& it : negPair) neg += (std::to_string(it) + " ");
+  //for (auto& it : selected) sel += (std::to_string(it) + " ");
+  //pos += "}";
+  //neg += "}";
+  //sel += "}";
+  //logger->info("seq pair {0} {1} {2}", pos, neg, sel);
   KeepOrdering(caseNL);
 }
 

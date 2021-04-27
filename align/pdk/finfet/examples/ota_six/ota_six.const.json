@@ -1,0 +1,10 @@
+[
+    {"constraint": "HorizontalDistance", "abs_distance":0},
+    {"constraint": "VerticalDistance",   "abs_distance":0},
+    {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"],   "name": "cm"},
+    {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"],   "name": "dp"},
+    {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"],   "name": "ld"},
+    {"constraint": "Order", "direction" : "top_to_bottom", "instances": ["ld", "dp", "cm"]},
+    {"constraint": "SymmetricBlocks", "direction" : "V", "pairs": [["ld"], ["dp"], ["cm"]]},
+    {"constraint": "MultiConnection", "nets" : ["tail", "vcc", "vss"], "multiplier": 3}
+]

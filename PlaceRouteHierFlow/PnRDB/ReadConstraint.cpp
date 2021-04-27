@@ -76,7 +76,6 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
         node.Nets.at(iter1).axis_dir = constraint["axis_dir"] == "H" ? PnRDB::H : PnRDB::V;
         node.Nets.at(iter1).iter2SNetLsit = node.SNets.size();
         node.Nets.at(iter2).symCounterpart = iter1;
-        //std::cout<<"Reading Const symCounterpart"<<iter1<<"@"<<iter2<<" "<<iter2<<"@"<<iter1<<std::endl;
         node.Nets.at(iter2).axis_dir = constraint["axis_dir"] == "H" ? PnRDB::H : PnRDB::V;
         node.Nets.at(iter2).iter2SNetLsit = node.SNets.size();
         node.SNets.resize(node.SNets.size() + 1);
@@ -224,9 +223,9 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
           }
         }
 
-        if (match_const.blockid1 == -1)cout << "-E- ReadConstraint: MatchBlock: couldn't find block1:" << block_first << endl;
-        if (match_const.blockid2 == -1)cout << "-E- ReadConstraint: MatchBlock: couldn't find block2:" << block_second << endl;
-        if (match_const.blockid1 != -1 && match_const.blockid2 != -1)node.Match_blocks.push_back(match_const);
+        if (match_const.blockid1 == -1) logger->error("ReadConstraint: MatchBlock: couldn't find block1: {0}", block_first);
+        if (match_const.blockid2 == -1) logger->error("ReadConstraint: MatchBlock: couldn't find block2: {0}", block_second);
+        if (match_const.blockid1 != -1 && match_const.blockid2 != -1) node.Match_blocks.push_back(match_const);
       } else if (constraint["const_name"] == "bias_graph") {
         int distance = constraint["distance"];
         node.bias_Hgraph = distance;
@@ -564,7 +563,6 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
                 temp_end_pin.first = -1;
                 temp_end_pin.second = j;
                 temp_c_const.end_pin.push_back(temp_end_pin);
-                std::cout << "Test C end pin " << temp_end_pin.first << " " << temp_end_pin.second << std::endl;
                 break;
               }
             }
@@ -578,6 +576,14 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
         temp_Guardring_Const.guard_ring_primitives = constraint["guard_ring_primitives"];
         temp_Guardring_Const.global_pin = constraint["global_pin"];
         node.Guardring_Consts.push_back(temp_Guardring_Const);
+      } else if (constraint["const_name"] == "Boundary") {
+        node.placement_box[0] = constraint["max_width"];
+        node.placement_box[1] = constraint["max_height"];
+        if (node.placement_box[0] <= 0 || node.placement_box[1] <= 0)
+          logger->error("Wrong placement bounding box, width {0}, height {1}", node.placement_box[0], node.placement_box[1]);
+        node.placement_box[0] *= unitScale;
+        node.placement_box[1] *= unitScale;
+        
       }
     }
 }
