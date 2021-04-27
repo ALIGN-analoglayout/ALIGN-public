@@ -451,7 +451,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
         //logger->info("maximum delta area from tap removal : {0} {1}", delArea, swappedIndices.size());
       } 
     }
-    curr_sp.RestoreSelected();
+    if (!wtap) curr_sp.RestoreSelected();
   }
   // calculate area
   area = double(UR.x - LL.x) * double(UR.y - LL.y);
