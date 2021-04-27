@@ -684,10 +684,23 @@ double ILP_solver::GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcI
     for (auto connectedj : neti.connected) {
       if (connectedj.type == placerDB::Block) {
         int iter2 = connectedj.iter2, iter = connectedj.iter;
-        for (auto centerk : mydesign.Blocks[iter2][0].blockPins[iter].center) {
-          // calculate contact center
-          int pin_x = centerk.x;
-          int pin_y = centerk.y;
+        if (mydesign.Blocks[iter2][0].blockPins.size() > 0) {
+          for (auto centerk : mydesign.Blocks[iter2][0].blockPins[iter].center) {
+            // calculate contact center
+            int pin_x = centerk.x;
+            int pin_y = centerk.y;
+            if (Blocks[iter2].H_flip) pin_x = mydesign.Blocks[iter2][0].width - pin_x;
+            if (Blocks[iter2].V_flip) pin_y = mydesign.Blocks[iter2][0].height - pin_y;
+            pin_x += Blocks[iter2].x;
+            pin_y += Blocks[iter2].y;
+            HPWL_min_x = std::min(HPWL_min_x, pin_x);
+            HPWL_max_x = std::max(HPWL_max_x, pin_x);
+            HPWL_min_y = std::min(HPWL_min_y, pin_y);
+            HPWL_max_y = std::max(HPWL_max_y, pin_y);
+          }
+        } else {
+          int pin_x = mydesign.Blocks[iter2][0].width / 2;
+          int pin_y = mydesign.Blocks[iter2][0].height / 2;
           if (Blocks[iter2].H_flip) pin_x = mydesign.Blocks[iter2][0].width - pin_x;
           if (Blocks[iter2].V_flip) pin_y = mydesign.Blocks[iter2][0].height - pin_y;
           pin_x += Blocks[iter2].x;
@@ -709,17 +722,29 @@ double ILP_solver::GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcI
     for (auto connectedj : neti.connected) {
       if (connectedj.type == placerDB::Block) {
         std::vector<placerDB::point> pos;
-        for (auto ci : mydesign.Blocks[connectedj.iter2][0].blockPins[connectedj.iter].center) {
+        if (mydesign.Blocks[connectedj.iter2][0].blockPins.size() > 0) {
+          for (auto ci : mydesign.Blocks[connectedj.iter2][0].blockPins[connectedj.iter].center) {
+            placerDB::point newp;
+            newp.x = ci.x;
+            newp.y = ci.y;
+            if (Blocks[connectedj.iter2].H_flip) newp.x = mydesign.Blocks[connectedj.iter2][0].width - newp.x;
+            if (Blocks[connectedj.iter2].V_flip) newp.y = mydesign.Blocks[connectedj.iter2][0].height - newp.y;
+            newp.x += Blocks[connectedj.iter2].x;
+            newp.y += Blocks[connectedj.iter2].y;
+            pos.push_back(newp);
+          }
+          center_points.push_back(pos);
+        } else {
           placerDB::point newp;
-          newp.x = ci.x;
-          newp.y = ci.y;
+          newp.x = mydesign.Blocks[connectedj.iter2][0].width / 2;
+          newp.y = mydesign.Blocks[connectedj.iter2][0].height / 2;
           if (Blocks[connectedj.iter2].H_flip) newp.x = mydesign.Blocks[connectedj.iter2][0].width - newp.x;
           if (Blocks[connectedj.iter2].V_flip) newp.y = mydesign.Blocks[connectedj.iter2][0].height - newp.y;
           newp.x += Blocks[connectedj.iter2].x;
           newp.y += Blocks[connectedj.iter2].y;
           pos.push_back(newp);
+          center_points.push_back(pos);
         }
-        center_points.push_back(pos);
       } else if (connectedj.type == placerDB::Terminal) {
         center_points.push_back({mydesign.Terminals[connectedj.iter].center});
       }
@@ -937,9 +962,19 @@ void ILP_solver::PlotPlacement(design& mydesign, string outfile) {
     // for each pin
     for (auto ci : ni->connected) {
       if (ci.type == placerDB::Block) {
-        if (mydesign.Blocks[ci.iter2][0].blockPins[ci.iter].center.size() > 0) {
-          tp.x = mydesign.Blocks[ci.iter2][0].blockPins[ci.iter].center[0].x;
-          tp.y = mydesign.Blocks[ci.iter2][0].blockPins[ci.iter].center[0].y;
+        if (mydesign.Blocks[ci.iter2][0].blockPins.size() > 0) {
+          if (mydesign.Blocks[ci.iter2][0].blockPins[ci.iter].center.size() > 0) {
+            tp.x = mydesign.Blocks[ci.iter2][0].blockPins[ci.iter].center[0].x;
+            tp.y = mydesign.Blocks[ci.iter2][0].blockPins[ci.iter].center[0].y;
+            if (Blocks[ci.iter2].H_flip) tp.x = mydesign.Blocks[ci.iter2][0].width - tp.x;
+            if (Blocks[ci.iter2].V_flip) tp.y = mydesign.Blocks[ci.iter2][0].height - tp.y;
+            tp.x += Blocks[ci.iter2].x;
+            tp.y += Blocks[ci.iter2].y;
+            pins.push_back(tp);
+          }
+        } else {
+          tp.x = mydesign.Blocks[ci.iter2][0].width / 2;
+          tp.y = mydesign.Blocks[ci.iter2][0].height / 2;
           if (Blocks[ci.iter2].H_flip) tp.x = mydesign.Blocks[ci.iter2][0].width - tp.x;
           if (Blocks[ci.iter2].V_flip) tp.y = mydesign.Blocks[ci.iter2][0].height - tp.y;
           tp.x += Blocks[ci.iter2].x;

@@ -2734,6 +2734,10 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
       {
         current_node.Blocks[i].instance[j].height *= (int)ceil(Blocks[idx].split_shape.y);
         current_node.Blocks[i].instance[j].width *= (int)ceil(Blocks[idx].split_shape.x);
+        current_node.Blocks[i].instance[j].originBox.UR.y *= (int)ceil(Blocks[idx].split_shape.y);
+        current_node.Blocks[i].instance[j].originBox.UR.x *= (int)ceil(Blocks[idx].split_shape.x);
+        current_node.Blocks[i].instance[j].originCenter.y *= (int)ceil(Blocks[idx].split_shape.y);
+        current_node.Blocks[i].instance[j].originCenter.x *= (int)ceil(Blocks[idx].split_shape.x);
       }
       ++idx;
     }
@@ -2793,7 +2797,7 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
           PnRDB::connectNode tempNode;
           tempNode.iter2 = id_new_block;
           tempNode.type = PnRDB::Block;
-          tempNode.iter = 1;
+          tempNode.iter = 0;
           current_node.Nets[netid].connected.push_back(tempNode);
 
           for(int ii=0;ii < current_node.Nets[netid].connected.size();++ii)
@@ -3169,10 +3173,12 @@ void Placement::update_hiernode(PnRDB::hierNode &current_node, Ppoint_F uni_cell
   {
     //add blockcomplex
     PnRDB::block tempBlock;
-    tempBlock.name = "standardcell";
+    tempBlock.name = Blocks[i].blockname;
     tempBlock.orient = PnRDB::N;
     tempBlock.height = uni_cell_shape.y;
     tempBlock.width = uni_cell_shape.x;
+    tempBlock.originBox.LL.x = 0, tempBlock.originBox.LL.y = 0;
+    tempBlock.originBox.UR.x = tempBlock.width, tempBlock.originBox.LL.y = tempBlock.height;
 
     PnRDB::blockComplex tempBlockComplex;
     tempBlockComplex.instNum=1;
@@ -3189,7 +3195,7 @@ void Placement::update_hiernode(PnRDB::hierNode &current_node, Ppoint_F uni_cell
       PnRDB::connectNode tempNode;
       tempNode.iter2 = Nets[i].connected_block[j];
       tempNode.type = PnRDB::Block;
-      tempNode.iter = 1;
+      tempNode.iter = 0;
       tempNet.connected.push_back(tempNode);
     }
     current_node.Nets.push_back(tempNet);
@@ -3207,6 +3213,10 @@ void Placement::update_hiernode(PnRDB::hierNode &current_node, Ppoint_F uni_cell
       {
         current_node.Blocks[i].instance[j].height /= int(ceil(Blocks[i].split_shape.y));
         current_node.Blocks[i].instance[j].width/= int(ceil(Blocks[i].split_shape.x));
+        current_node.Blocks[i].instance[j].originBox.UR.y /= int(ceil(Blocks[i].split_shape.y));
+        current_node.Blocks[i].instance[j].originBox.UR.x /= int(ceil(Blocks[i].split_shape.x));
+        current_node.Blocks[i].instance[j].originCenter.y /= int(ceil(Blocks[i].split_shape.y));
+        current_node.Blocks[i].instance[j].originCenter.x /= int(ceil(Blocks[i].split_shape.x));
       }
       ++idx;
     }
