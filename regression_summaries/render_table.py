@@ -32,6 +32,11 @@ parser.add_argument( '-d1', '--regression_directory1', type=str, help='Regressio
 
 args = parser.parse_args()
 
+if args.csv_input_file0 is None and args.regression_directory0 is not None:
+    args.csv_input_file0 = str( pathlib.Path(args.regression_directory0) / 'summary.csv')
+if args.csv_input_file1 is None and args.regression_directory1 is not None:
+    args.csv_input_file1 = str( pathlib.Path(args.regression_directory1) / 'summary.csv')
+
 df0 = pd.read_csv( args.csv_input_file0)
 df1 = pd.read_csv( args.csv_input_file1)
 clean_column_names( df0)
@@ -55,6 +60,15 @@ for k,_ in names.items():
 
 df['id'] = df['name']
 
+column_p = re.compile( r'^(.*)_(x|y|d)$')
+
+def exclude(s):
+    m = column_p.match(s)
+    if not m:
+        return False
+    #return False
+    return m.groups()[0] in ['w','h']
+
 style_data_conditional = []
 for id in df.columns:
     if id == 'name':
@@ -63,13 +77,19 @@ for id in df.columns:
               'width': '200px'
         }
         style_data_conditional.append(s)
-    if id.endswith('_x') or id.endswith('_y'):
+
+    if exclude(id): continue
+
+    m = column_p.match(id)
+    if not m: continue
+
+    if m.groups()[1] in 'xy' and m.groups()[0] not in ["w", "h", "area", "aspect"]:
         s = { 'if': { 'column_id': id, 'filter_query': f'{{{id}}} > 0'},
               'color': 'tomato',
               'fontWeight': 'bold'
         }
         style_data_conditional.append(s)
-    if id.endswith('_d'):
+    elif m.groups()[1] in 'd':
         s = { 'if': { 'column_id': id, 'filter_query': f'{{{id}}} > 0'},
               'color': 'tomato',
               'fontWeight': 'bold'
@@ -84,7 +104,7 @@ for id in df.columns:
 app.layout = html.Div([
     dash_table.DataTable(
     id='table',
-    columns=[{"name": i, "id": i} for i in df.columns if i != 'id'],
+    columns=[{"name": i, "id": i} for i in df.columns if i != 'id' and not exclude(i)],
     data=df.to_dict('records'),
     sort_action='native',
     filter_action='native',

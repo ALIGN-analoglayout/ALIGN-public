@@ -4,6 +4,7 @@ import pathlib
 import pandas as pd
 import re
 import argparse
+import json
 from collections import defaultdict
 
 patterns = [
@@ -33,10 +34,19 @@ def parse_errors( errors_path):
 
     return counts
 
+def get_area( json_path):
+    with json_path.open( 'rt') as fp:
+        j = json.load( fp)
+    r = j['bbox']
+    w, h = (r[2]-r[0])/10000, (r[3]-r[1])/10000
+    aspect = max( h/w, w/h)
+    return w, h, w*h, aspect
 
 def collect_errors( regression_path):
+    """Apparently the append method in pd.DataFrame has been deprecated; we should do this another way
+"""
 
-    df = pd.DataFrame(columns=('name', 'failed before pnr', 'failed during pnr') + tuple(p[0] for p in patterns) + ('other',))
+    df = pd.DataFrame(columns=('name', 'failed before pnr', 'failed during pnr') + tuple(p[0] for p in patterns) + ('other', 'w', 'h', 'area', 'aspect'))
 
     for path in regression_path.iterdir():
         pnr = path / '3_pnr'
@@ -51,6 +61,16 @@ def collect_errors( regression_path):
                 }
                 for k, v in counts.items():
                     d[k] = v
+
+                json_path = pnr / f'{path}_0.json'
+
+                if json_path.is_file():
+                    w, h, area, aspect = get_area( json_path)
+                    d['h'] = h
+                    d['w'] = w
+                    d['area'] = area
+                    d['aspect'] = aspect
+
                 df = df.append( d, ignore_index=True)
             else:
                 df = df.append( {
@@ -75,5 +95,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     df = collect_errors( pathlib.Path(args.regression_directory))
-    with open( args.csv_output_file, "wt") as fp:
-        df.to_csv( fp, header=True, index=False)
+
+    df.to_csv( args.csv_output_file, header=True, index=False)
