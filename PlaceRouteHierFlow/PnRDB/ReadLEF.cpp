@@ -86,10 +86,10 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile, const bool wtap)
   vector<PnRDB::contact> interMetals;  // metal within each MACRO
   vector<PnRDB::Via> interVias; //via within each MACRO
   vector<PnRDB::bbox> tapVias, activeVias;
-  bool Metal_Flag, tapVia(false), activeVia(false);
+  bool Metal_Flag, tapVia(false), activeVia(false), pmosDevice(false);
   {
     int stage = 0;
-    bool skip_the_rest_of_stage_4 = false, pmosDevice = false;
+    bool skip_the_rest_of_stage_4 = false;
     while (fin.peek() != EOF) {
       getline(fin, def);
       // cout<<def<<endl;
@@ -128,43 +128,40 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile, const bool wtap)
           // interMetals.resize(interMetals.size()+1);
           stage = 4;
         } else if ((found = def.find(macroEnd)) != string::npos) {
-          if (wtap || !pmosDevice) {
-            PnRDB::lefMacro macroIns;
-            macroIns.width = width;
-            macroIns.height = height;
-            macroIns.name = macroName;
-            macroIns.macroPins = macroPins;
-            macroIns.interMetals = interMetals;
-            macroIns.interVias = interVias;
-            if (!pmosDevice) {
-              macroIns._tapVias = tapVias;
-              macroIns._activeVias = activeVias;
-            }
+          PnRDB::lefMacro macroIns;
+          macroIns.width = width;
+          macroIns.height = height;
+          macroIns.name = macroName;
+          macroIns.macroPins = macroPins;
+          macroIns.interMetals = interMetals;
+          macroIns.interVias = interVias;
+          macroIns._tapVias = tapVias;
+          macroIns._activeVias = activeVias;
+          macroIns._pmosDevice = pmosDevice;
 
-            string key = "_AspectRatio";
-            std::size_t found = macroIns.name.find(key);
-            if (found != std::string::npos) {  // different aspect ratio exists
-              macroIns.master = macroIns.name.substr(0, found);
-            } else {  // different aspect ratio does not exist
-              macroIns.master = macroIns.name;
-            }
-            MergeVias(macroIns._tapVias);
-            MergeVias(macroIns._activeVias);
-            //for (auto& v : macroIns._tapVias) {
-            //  logger->debug("{0} tap row : {1} {2} {3} {4}", macroIns.master, v.LL.x, v.LL.y, v.UR.x, v.UR.y);
-            //}
-            //for (auto& v : macroIns._activeVias) {
-            //  logger->debug("active row : {0} {1} {2} {3} {4}", v.LL.x, v.LL.y, v.UR.x, v.UR.y, macroIns.master);
-            //}
-            auto& lefD = wtap ? lefData : _lefDataWoTap;
-            if (lefD.find(macroIns.master) == lefD.end()) {
-              std::vector<PnRDB::lefMacro> lefV;
-              lefV.push_back(macroIns);
-              lefD.insert(std::pair<string, std::vector<PnRDB::lefMacro> >(macroIns.master, lefV));
-              // lefD.insert( std::pair<string,PnRDB::lefMacro>(macroName,macroIns) );
-            } else {
-              lefD[macroIns.master].push_back(macroIns);
-            }
+          string key = "_AspectRatio";
+          std::size_t found = macroIns.name.find(key);
+          if (found != std::string::npos) {  // different aspect ratio exists
+            macroIns.master = macroIns.name.substr(0, found);
+          } else {  // different aspect ratio does not exist
+            macroIns.master = macroIns.name;
+          }
+          MergeVias(macroIns._tapVias);
+          MergeVias(macroIns._activeVias);
+          //for (auto& v : macroIns._tapVias) {
+          //  logger->debug("{0} tap row : {1} {2} {3} {4}", macroIns.master, v.LL.x, v.LL.y, v.UR.x, v.UR.y);
+          //}
+          //for (auto& v : macroIns._activeVias) {
+          //  logger->debug("active row : {0} {1} {2} {3} {4}", v.LL.x, v.LL.y, v.UR.x, v.UR.y, macroIns.master);
+          //}
+          auto& lefD = wtap ? lefData : _lefDataWoTap;
+          if (lefD.find(macroIns.master) == lefD.end()) {
+            std::vector<PnRDB::lefMacro> lefV;
+            lefV.push_back(macroIns);
+            lefD.insert(std::pair<string, std::vector<PnRDB::lefMacro> >(macroIns.master, lefV));
+            // lefD.insert( std::pair<string,PnRDB::lefMacro>(macroName,macroIns) );
+          } else {
+            lefD[macroIns.master].push_back(macroIns);
           }
           // cout<<"Stage "<<stage<<" @ insert macro data"<<endl;
           stage = 0;

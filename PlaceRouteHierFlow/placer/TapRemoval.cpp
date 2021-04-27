@@ -49,58 +49,6 @@ Rect Rect::transform(const Transform& tr, const int width, const int height) con
 
 namespace PrimitiveData {
 
-void Primitive::build()
-{
-  map<string, RTree> layerTree;
-  for (auto& idx : _lr) {
-    auto& tr = layerTree[idx.first];
-    for (unsigned i = 0; i < idx.second.size(); ++i) {
-      bgBox b(bgPt(idx.second[i].xmin(), idx.second[i].ymin()), bgPt(idx.second[i].xmax(), idx.second[i].ymax()));
-      tr.insert(bgVal(b, i));
-    }
-  }
-  map<pair<int, int>, Rect> verMap, horMap;
-  for (auto& t : _taps) {
-    verMap[make_pair(t.ymin(), t.ymax())].merge(t);
-    horMap[make_pair(t.xmin(), t.xmax())].merge(t);
-  }
-  bool verTap(true);
-  for (auto& idx : verMap) {
-    auto& val = idx.second;
-    if (layerTree.find("Poly") != layerTree.end()) {
-      auto& lt = layerTree["Poly"];
-      vector<bgVal> overlapRects;
-      auto count = lt.query(bgi::intersects(bgBox(bgPt(val.xmin(), val.ymin()), bgPt(val.xmax(), val.ymax()))) 
-          && bgi::satisfies([&overlapRects](bgVal const& v) { return overlapRects.empty(); }),
-          back_inserter(overlapRects));
-      if (count) {
-        verTap = false;
-        break;
-      }
-    }
-  }
-  _taps.clear();
-  for (auto& idx : verTap ? verMap : horMap) {
-    _taps.push_back(idx.second);
-  }
-  if (_lr.find("Active") != _lr.end()) {
-    for (auto& r : _lr["Active"]) {
-      if (layerTree.find("Poly") != layerTree.end()) {
-        auto& lt = layerTree["Poly"];
-        vector<bgVal> overlapRects;
-        auto count = lt.query(bgi::intersects(bgBox(bgPt(r.xmin(), r.ymin()), bgPt(r.xmax(), r.ymax())))
-            && bgi::satisfies([&overlapRects](bgVal const& v) { return overlapRects.empty(); }),
-            back_inserter(overlapRects));
-        if (count) {
-          _actives.push_back(r);
-        }
-      }
-    }
-  }
-  _lr.clear();
-}
-
-
 Instance::Instance(const Primitive* prim, const Primitive* primWoTap, const string& name, const Transform& tr, const int& ind) :
 _prim(prim), _primWoTap(primWoTap), _name(name), _bbox(Rect()), _woTapIndex(ind)
 {
@@ -213,31 +161,6 @@ void Graph::print() const
   }*/
 }
 
-void Graph::parseGraph(const string& fn)
-{
-  ifstream ifs(fn);
-  if (!ifs) return;
-
-  //cout << "Parsing graph from file : " << fn << endl << endl;
-
-  string line;
-  while (!ifs.eof()) {
-    getline(ifs, line);
-    Strings strs = splitString(line);
-    if (!strs.empty()) {
-      if (strs[0][0] == '#') continue;
-      if (strs[0] == "Node" && strs.size() >= 2) {
-        NodeType nt = (strs.size() >= 3) ? (strs[2] == "T" ? NodeType::Tap : NodeType::Active) : NodeType::Tap;
-        addNode(strs[1], nt);
-      } else if (strs[0] == "Edge" && strs.size() >= 3) {
-        addEdge(strs[1], strs[2], strs.size() > 3 ? strs[3] : "");
-      }
-    }
-  }
-
-  ifs.close();
-}
-
 NodeSet Graph::dominatingSet() const
 {
   //auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.dominatingSet");
@@ -338,11 +261,12 @@ void TapRemoval::buildGraph()
   map<string, geom::Rect> allTaps;
   if (_graph == nullptr) _graph = new DomSetGraph::Graph;
   for (const auto& inst : _instances) {
+    const string pmos = (inst->primitive() && inst->primitive()->isPMOS()) ? "__tr_pmos_" : "__tr_nmos_";
     auto& taps = inst->getTaps();
     for (unsigned i = 0; i < taps.size(); ++i) {
       bgBox b(bgPt(taps[i].xmin(), taps[i].ymin()), bgPt(taps[i].xmax(), taps[i].ymax()));
       rtree.insert(bgVal(b, _graph->nodes().size()));
-      string nodeName(inst->name() + "__tap_" + to_string(i));
+      string nodeName(inst->name() + "__tap_" + pmos + to_string(i));
       allTaps[nodeName] = taps[i];
       _graph->addNode(nodeName, DomSetGraph::NodeType::Tap, inst->deltaArea(), inst->isBlack());
     }
@@ -350,20 +274,38 @@ void TapRemoval::buildGraph()
     for (unsigned i = 0; i < actives.size(); ++i) {
       bgBox b(bgPt(actives[i].xmin(), actives[i].ymin()), bgPt(actives[i].xmax(), actives[i].ymax()));
       rtree.insert(bgVal(b, _graph->nodes().size()));
-      _graph->addNode(inst->name() + "__active_" + to_string(i), DomSetGraph::NodeType::Active, inst->deltaArea());
+      _graph->addNode(inst->name() + "__active_" + pmos + to_string(i), DomSetGraph::NodeType::Active, inst->deltaArea());
     }
   }
 
   //cout << allTaps.size() << endl;
 
   for (auto& it : allTaps) {
+    bool pmosTap = it.first.find("__tr_pmos_") != std::string::npos;
     auto r = it.second.bloated(_dist);
     bgBox box(bgPt(r.xmin(), r.ymin()), bgPt(r.xmax(), r.ymax()));
     vector<bgVal> overlapRects;
     rtree.query(bgi::covered_by(box), back_inserter(overlapRects));
     for (auto& val : overlapRects) {
       auto& rname = _graph->nodes()[val.second]->name();
-      if (it.first != rname) {
+      bool pmosNbr = rname.find("__tr_pmos_") != std::string::npos;
+      bool addRect(pmosTap == pmosNbr);
+      if (pmosTap && pmosNbr) {
+        auto minx = std::min(it.second.xmin(), val.first.min_corner().get<0>());
+        auto miny = std::min(it.second.ymin(), val.first.min_corner().get<1>());
+        auto maxx = std::max(it.second.xmax(), val.first.max_corner().get<0>());
+        auto maxy = std::max(it.second.ymax(), val.first.max_corner().get<1>());
+        vector<bgVal> rects;
+        rtree.query(bgi::intersects(bgBox(bgPt(minx, miny), bgPt(maxx, maxy))), back_inserter(rects));
+        for (auto& r : rects) {
+          auto& rn= _graph->nodes()[r.second]->name();
+          if (rn.find("__tr_pmos_") == std::string::npos) {
+            addRect = false;
+            break;
+          }
+        }
+      }
+      if (it.first != rname && addRect) {
         //cout << it.first << ' ' << rname << endl;
         _graph->addEdge(it.first, rname);
       }
@@ -378,10 +320,12 @@ TapRemoval::TapRemoval(const PnRDB::hierNode& node, const unsigned dist) : _dist
   for (unsigned i = 0; i < node.Blocks.size(); ++i) {
     if (node.Blocks[i].instance.empty()) continue;
     const auto& master=node.Blocks[i].instance.back().master;
+    if (_primitives.find(master) != _primitives.end() ||
+        _primitivesWoTap.find(master) != _primitivesWoTap.end()) continue;
     for (unsigned j = 0; j < node.Blocks[i].instance.size(); ++j) {
       const auto& n = node.Blocks[i].instance[j];
       PrimitiveData::Primitive *p(nullptr);
-      p = new PrimitiveData::Primitive(master, geom::Rect(node.Blocks[i].instance[j].originBox));
+      p = new PrimitiveData::Primitive(master, geom::Rect(n.originBox), n.IsPMOS());
 
       for (const auto& t : n._tapVias) p->addTap(geom::Rect(t));
       for (const auto& t : n._activeVias) p->addActive(geom::Rect(t));

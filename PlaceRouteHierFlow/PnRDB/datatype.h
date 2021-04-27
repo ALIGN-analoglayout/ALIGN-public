@@ -312,7 +312,9 @@ struct block {
   vector<pin> dummy_power_pin; //power pins below to this block, but needs updated hierachy
   vector<GuardRing> GuardRings;
   vector<PnRDB::bbox> _tapVias, _activeVias;
+  bool _pmosDevice=false;
   bool HasTap() const { return _activeVias.empty() ||  !_tapVias.empty() ; }
+  bool IsPMOS() const { return _pmosDevice; }
 }; // structure of block
 
 struct terminal {
@@ -560,6 +562,7 @@ struct lefMacro {
   vector<bbox> _tapVias;
   vector<bbox> _activeVias;
   string master = "";
+  bool _pmosDevice = false;
 };
 
 /// PArt 5: declaration of structures for design rule data

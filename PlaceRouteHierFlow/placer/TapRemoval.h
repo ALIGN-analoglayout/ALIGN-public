@@ -164,9 +164,10 @@ class Primitive
     Rect _bbox;
     Rects _taps, _actives;
     LayerRects _lr;
+    bool _pmos;
 
   public:
-    Primitive(const string& name, const Rect& r = Rect()) : _name(name), _bbox(r)
+    Primitive(const string& name, const Rect& r = Rect(), const bool pmos = false) : _name(name), _bbox(r), _pmos(pmos)
     {
       _taps.reserve(2);
       _actives.reserve(8);
@@ -187,7 +188,6 @@ class Primitive
     long area() const { return _bbox.area(); }
     int width() const { return _bbox.width(); }
     int height() const { return _bbox.height(); }
-    void build();
 
     ~Primitive()
     {
@@ -204,6 +204,7 @@ class Primitive
 
     const Rects& getTaps() const { return _taps; }
     const Rects& getActives() const { return _actives; }
+    const bool isPMOS() const { return _pmos; }
 };
 using Primitives = map<string, vector<Primitive*> >;
 
@@ -249,6 +250,8 @@ class Instance
     const int index() const { return _woTapIndex; }
 
     bool isBlack() const { return _prim != nullptr && _primWoTap == nullptr; }
+
+    const Primitive* primitive() const { return _prim; }
 
     void print() const;
 };
@@ -357,7 +360,6 @@ class Graph {
 
     const Edge* findEdge(const string& u, const string& v) const;
 
-    void parseGraph(const string& fn);
     void print() const;
 
     NodeSet dominatingSet() const;

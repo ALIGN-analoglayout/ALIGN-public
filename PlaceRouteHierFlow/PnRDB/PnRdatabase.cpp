@@ -2158,6 +2158,7 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
         node.Blocks[i].instance.back().gdsFile=wtap ? gdsData[lefDatw.name] : _gdsDataWoTap[lefDatw.name];
         node.Blocks[i].instance.back()._tapVias = lefDatw._tapVias;
         node.Blocks[i].instance.back()._activeVias = lefDatw._activeVias;
+        node.Blocks[i].instance.back()._pmosDevice = lefDatw._pmosDevice;
         //cout<<"xxx "<<node.Blocks[i].instance.back().gdsFile<<endl;
       }
     }

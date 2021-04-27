@@ -57,16 +57,6 @@ void ILP_solver::lpsolve_logger(lprec* lp, void* userhandle, char* buf) {
 }
 
 
-template<class T>
-class SaveRestore {
-  private:
-    T& _orig;
-    const T _cp;
-  public:
-    SaveRestore(T& orig) : _orig(orig), _cp(orig) {}
-    ~SaveRestore() { _orig = _cp; }
-};
-
 double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
 
@@ -436,30 +426,32 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
       if (removeTaps) {
         const auto& master = mydesign.Blocks[i][index].master;
         const auto& instName = mydesign.Blocks[i][index].name;
+        //logger->info("plmap {0} {1} {2}", instName, i, index);
         plmap.insert(std::make_pair(std::make_pair(instName, static_cast<unsigned>(index)),
               PrimitiveData::PlInfo(master,
                 geom::Point(Blocks[i].x, Blocks[i].y),
                 Blocks[i].H_flip, Blocks[i].V_flip)));
       }
-      if (removeTaps) {
-        mydesign.RebuildTapInstances(plmap);
-        map<string, int> swappedIndices;
-        auto delArea = mydesign.TapDeltaArea(&swappedIndices);
-        //SaveRestore<vector<int> > srSelected(curr_sp.selected);
-        if (!swappedIndices.empty()) {
-          curr_sp.BackupSelected();
-          for (int i = 0; i < mydesign.Blocks.size(); i++) {
-            auto& index = curr_sp.selected[i];
-            auto it = swappedIndices.find(mydesign.Blocks[i][index].name);
-            if (it != swappedIndices.end() && index != it->second) index = it->second;
+    }
+    if (removeTaps) {
+      mydesign.RebuildTapInstances(plmap);
+      map<string, int> swappedIndices;
+      auto delArea = mydesign.TapDeltaArea(&swappedIndices);
+      if (!swappedIndices.empty()) {
+        curr_sp.BackupSelected();
+        for (int i = 0; i < mydesign.Blocks.size(); i++) {
+          auto& index = curr_sp.selected[i];
+          //logger->info("{0} {1}", mydesign.Blocks[i][0].name, index);
+          auto it = swappedIndices.find(mydesign.Blocks[i][index].name);
+          if (it != swappedIndices.end() && index != it->second) {
+            index = it->second;
+            //logger->info("{0}", it->second);
           }
-          //logger->info("maximum delta area from tap removal : {0} {1}", delArea, swappedIndices.size());
-        } 
-      }
+        }
+        //logger->info("maximum delta area from tap removal : {0} {1}", delArea, swappedIndices.size());
+      } 
     }
-    if (!wtap) {
-      curr_sp.RestoreSelected();
-    }
+    curr_sp.RestoreSelected();
   }
   // calculate area
   area = double(UR.x - LL.x) * double(UR.y - LL.y);
