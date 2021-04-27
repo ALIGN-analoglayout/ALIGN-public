@@ -534,23 +534,26 @@ class SymmetricNets(SoftConstraint):
     direction: Literal['H', 'V']
 
 
-class AspectRatio(SoftConstraint):
+class AspectRatio(HardConstraint):
     '''
-    TODO: Replace with Enclose
+    Define lower and upper bounds on aspect ratio (=width/height) of a subcircuit
+    `ratio_low` <= width/height <= `ratio_high`
     '''
-    ratio_low: Optional[float]
-    ratio_high: Optional[float]
-    weight: int
+    subcircuit: str
+    ratio_low: Optional[float] = 0.1
+    ratio_high: Optional[float] = 10
+    weight: int = 1
 
-    @types.root_validator(allow_reuse=True)
-    def cast_aspect_ratio_spec(cls, values):
-        if not values['ratio_low'] and not values['ratio_high']:
-            raise AssertionError('At least one parameter must be specified')
-        elif values['ratio_low']:
-            values['ratio_high'] = 1 / values['ratio_low']
-        else:
-            values['ratio_low'] = 1 / values['ratio_high']
-        return values
+    def check(self, checker):
+        if not self.ratio_low and not self.ratio_high:
+            raise AssertionError('AspectRatio: Specify ratio_low or ratio_high')
+        bvar = checker.bbox_vars(self.subcircuit, is_subcircuit=True)
+        if self.ratio_low is not None:
+            assert self.ratio_low >= 0, f'AspectRatio:ratio_low should be greater than zero {self.ratio_low}'
+            checker.append((bvar.urx-bvar.llx)/(bvar.ury-bvar.lly) >= self.ratio_low)
+        if self.ratio_high is not None:
+            assert self.ratio_high >= self.ratio_low, f'AspectRatio:ratio_high {self.ratio_high} should be greater than ratio_low {self.ratio_low}'
+            checker.append((bvar.urx-bvar.llx)/(bvar.ury-bvar.lly) <= self.ratio_high)
 
 
 class MultiConnection(SoftConstraint):
