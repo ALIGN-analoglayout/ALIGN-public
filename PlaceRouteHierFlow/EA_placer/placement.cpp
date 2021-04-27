@@ -136,6 +136,8 @@ Placement::Placement(PnRDB::hierNode &current_node)
   Unify_blocks(area, scale_factor);
   Ppoint_F uni_cell_Dpoint = find_uni_cell();
   readCC();
+  Initilize_Placement();
+  PlotPlacement(600);
   splitNode_MS(uni_cell_Dpoint.y, uni_cell_Dpoint.x);
   int tol_diff = 3;
   addNet_after_split_Blocks(tol_diff,uni_cell_Dpoint.y, uni_cell_Dpoint.x);
