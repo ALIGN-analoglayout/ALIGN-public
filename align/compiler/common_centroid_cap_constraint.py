@@ -9,7 +9,7 @@ import os
 from math import ceil
 
 from .merge_nodes import merge_nodes
-from .find_constraint import symmnet_device_pairs	
+from .find_constraint import symmnet_device_pairs
 import logging
 import json
 from ..schema import constraint
@@ -39,11 +39,11 @@ def CapConst(graph,name,unit_size_cap,all_const,merge_caps):
         if isinstance(const, constraint.GroupCaps):
             available_cap_const.append(const.name)
 
-    logger.debug(f"Searching cap constraints for block {name}, input const: {all_const}")
+    logger.debug(f"Available cap constraints, input const: {available_cap_const}")
     if merge_caps:
         cc_cap_size = merge_symmetric_caps(all_const, graph, unit_size_cap, available_cap_const)
     else:
-        cc_cap_size={}	
+        cc_cap_size={}
     logger.debug(f"Writing constraints for remaining caps in the circuit graph {name}")
     for node, attr in graph.nodes(data=True):
         if attr['inst_type'].lower().startswith('cap_')  and node not in available_cap_const:
@@ -53,7 +53,7 @@ def CapConst(graph,name,unit_size_cap,all_const,merge_caps):
             else:
                 size = unit_size_cap
             if node in cc_cap_size:
-                n_cap=cc_cap_size[node]
+                n_cap = cc_cap_size[node]
             else:
                 n_cap = [ceil(size/unit_size_cap)]
             if not isinstance(n_cap,list) and n_cap > 128:
@@ -97,14 +97,14 @@ def merge_symmetric_caps(all_const, graph, unit_size_cap, available_cap_const):
                     inst = pair[0]
                     if inst in graph and graph.nodes[inst]['inst_type'].lower().startswith('cap') \
                         and len (graph.nodes[inst]['ports'])==2: #Not merge user provided const
-                        logger.debug("merging cap cc constraints:%s",b)
+                        logger.debug("Symmetric cap constraints:%s",b)
                         p1, p2 = sorted(pair, key=lambda c: graph.nodes[c]['values']["cap"] * 1E15)
                         cap_array[p1]={p1:[p1,p2]}
                         pair[0]= "_".join([p1,p2])
                         pair.pop()
 
-    logger.debug(f"Updating circuit graph by merging caps: {cap_array}")
-    cc_cap_size={}	
+    logger.debug(f"Updating symmetric cap pairs by merging caps: {cap_array} not in {available_cap_const}")
+    cc_cap_size = {}
     for array in cap_array.values():
         n_cap=[]
         cc_caps=[]
@@ -124,7 +124,7 @@ def merge_symmetric_caps(all_const, graph, unit_size_cap, available_cap_const):
                 ctype = 'Cap_cc_'+"_".join([str(x) for x in n_cap])
                 merge_caps(graph, ctype, cc_caps, cc_cap)
                 cc_cap_size[cc_cap] = n_cap
-    # updating any symmnet constraint 	
+    # updating any symmnet constraint
     for index, const in enumerate(all_const):
         if isinstance(const, constraint.SymmetricNets):
             net1 = const.net1
@@ -132,21 +132,21 @@ def merge_symmetric_caps(all_const, graph, unit_size_cap, available_cap_const):
             existing = ""
             logger.debug(f"updating symmnet constraint {const}")
             removed_blocks1 = [pin.split('/')[0]  for pin in const.pins1 if net1 in graph.nodes() \
-                and pin.split('/')[0] not in graph.nodes()]	
+                and pin.split('/')[0] not in graph.nodes()]
             removed_blocks2 = [pin.split('/')[0]  for pin in const.pins2 if net2 in graph.nodes() \
-                and pin.split('/')[0] not in graph.nodes()]	
+                and pin.split('/')[0] not in graph.nodes()]
             removed_blocks = removed_blocks1 + removed_blocks2
-            if removed_blocks:	
-                pairs, s1, s2 = symmnet_device_pairs(graph, net1, net2, existing)	
-                if pairs:	
+            if removed_blocks:
+                pairs, s1, s2 = symmnet_device_pairs(graph, net1, net2, existing)
+                if pairs:
                     symmNetj = constraint.SymmetricNets(
-                        direction = "V", 
+                        direction = "V",
                         net1 = net1,
                         net2 = net2,
                         pins1 = s1,
                         pins2 = s2)
-                    all_const[index] =symmNetj	
-                else:	
+                    all_const[index] =symmNetj
+                else:
                     logger.debug("skipped symmnet on net1 {net1} and net2 {}")
     return cc_cap_size
 
@@ -164,7 +164,7 @@ def merge_caps(graph, name, caps, inst):
     None.
 
     """
-
+    logger.info(f"creating common-centorid cap {caps}")
     matched_ports ={}
     for idx,cap in enumerate(caps):
         #cc_pair.update({cap_block: updated_cap})
