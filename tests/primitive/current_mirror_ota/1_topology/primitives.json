@@ -1,0 +1,69 @@
+{
+  "DCL_PMOS_nfin60_n12_X5_Y1_RVT": {
+    "primitive": "DCL_PMOS",
+    "value": 12,
+    "x_cells": 5,
+    "y_cells": 1,
+    "parameters": {
+      "w": 2.7e-08,
+      "l": 2e-08,
+      "nfin": 60.0,
+      "real_inst_type": "pmos_rvt"
+    },
+    "vt_type": "RVT"
+  },
+  "Switch_PMOS_nfin240_n12_X5_Y4_ST2_RVT": {
+    "primitive": "Switch_PMOS",
+    "value": 12,
+    "x_cells": 5,
+    "y_cells": 4,
+    "parameters": {
+      "w": 2.7e-08,
+      "l": 2e-08,
+      "nfin": 240.0,
+      "stack": 2,
+      "real_inst_type": "pmos_rvt"
+    },
+    "stack": 2,
+    "vt_type": "RVT"
+  },
+  "SCM_NMOS_nfin10_n12_X1_Y1_RVT": {
+    "primitive": "SCM_NMOS",
+    "value": 12,
+    "x_cells": 1,
+    "y_cells": 1,
+    "parameters": {
+      "w": 2.7e-08,
+      "l": 2e-08,
+      "nfin": 10.0,
+      "real_inst_type": "nmos_rvt"
+    },
+    "vt_type": "RVT"
+  },
+  "SCM_NMOS_nfin24_n12_X2_Y1_RVT": {
+    "primitive": "SCM_NMOS",
+    "value": 12,
+    "x_cells": 2,
+    "y_cells": 1,
+    "parameters": {
+      "w": 2.7e-08,
+      "l": 2e-08,
+      "nfin": 24.0,
+      "real_inst_type": "nmos_rvt"
+    },
+    "vt_type": "RVT"
+  },
+  "DP_NMOS_B_nfin28_n12_X3_Y1_RVT": {
+    "primitive": "DP_NMOS_B",
+    "value": 12,
+    "x_cells": 3,
+    "y_cells": 1,
+    "parameters": {
+      "w": 2.7e-08,
+      "l": 2e-08,
+      "nfin": 28.0,
+      "real_inst_type": "nmos_rvt"
+    },
+    "vt_type": "RVT"
+  }
+}
