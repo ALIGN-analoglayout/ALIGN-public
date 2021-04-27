@@ -535,25 +535,26 @@ class SymmetricNets(SoftConstraint):
 
 
 class AspectRatio(HardConstraint):
-    '''
+    """
     Define lower and upper bounds on aspect ratio (=width/height) of a subcircuit
+
     `ratio_low` <= width/height <= `ratio_high`
-    '''
+    """
     subcircuit: str
-    ratio_low: Optional[float] = 0.1
-    ratio_high: Optional[float] = 10
+    ratio_low: float = 0.1
+    ratio_high: float = 10
     weight: int = 1
 
     def check(self, checker):
-        if not self.ratio_low and not self.ratio_high:
-            raise AssertionError('AspectRatio: Specify ratio_low or ratio_high')
+        assert self.ratio_low >= 0, f'AspectRatio:ratio_low should be greater than zero {self.ratio_low}'
+        assert self.ratio_high > self.ratio_low, f'AspectRatio:ratio_high {self.ratio_high} should be greater than ratio_low {self.ratio_low}'
+
         bvar = checker.bbox_vars(self.subcircuit, is_subcircuit=True)
-        if self.ratio_low is not None:
-            assert self.ratio_low >= 0, f'AspectRatio:ratio_low should be greater than zero {self.ratio_low}'
-            checker.append((bvar.urx-bvar.llx)/(bvar.ury-bvar.lly) >= self.ratio_low)
-        if self.ratio_high is not None:
-            assert self.ratio_high >= self.ratio_low, f'AspectRatio:ratio_high {self.ratio_high} should be greater than ratio_low {self.ratio_low}'
-            checker.append((bvar.urx-bvar.llx)/(bvar.ury-bvar.lly) <= self.ratio_high)
+        # checker.append(checker.cast((bvar.urx-bvar.llx)/(bvar.ury-bvar.lly), float) >= self.ratio_low)
+        # checker.append(checker.cast((bvar.urx-bvar.llx)/(bvar.ury-bvar.lly), float) < self.ratio_high)
+        checker.append(checker.cast(bvar.urx-bvar.llx, float) >= self.ratio_low*checker.cast(bvar.ury-bvar.lly, float))
+        checker.append(checker.cast(bvar.urx-bvar.llx, float) < self.ratio_high*checker.cast(bvar.ury-bvar.lly, float))
+
 
 
 class MultiConnection(SoftConstraint):
