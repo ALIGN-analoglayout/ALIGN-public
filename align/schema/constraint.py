@@ -550,11 +550,8 @@ class AspectRatio(HardConstraint):
         assert self.ratio_high > self.ratio_low, f'AspectRatio:ratio_high {self.ratio_high} should be greater than ratio_low {self.ratio_low}'
 
         bvar = checker.bbox_vars(self.subcircuit, is_subcircuit=True)
-        # checker.append(checker.cast((bvar.urx-bvar.llx)/(bvar.ury-bvar.lly), float) >= self.ratio_low)
-        # checker.append(checker.cast((bvar.urx-bvar.llx)/(bvar.ury-bvar.lly), float) < self.ratio_high)
         checker.append(checker.cast(bvar.urx-bvar.llx, float) >= self.ratio_low*checker.cast(bvar.ury-bvar.lly, float))
         checker.append(checker.cast(bvar.urx-bvar.llx, float) < self.ratio_high*checker.cast(bvar.ury-bvar.lly, float))
-
 
 
 class MultiConnection(SoftConstraint):
