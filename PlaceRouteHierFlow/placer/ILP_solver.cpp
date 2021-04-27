@@ -441,21 +441,21 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
                 geom::Point(Blocks[i].x, Blocks[i].y),
                 Blocks[i].H_flip, Blocks[i].V_flip)));
       }
-      if (removeTaps) {
-        mydesign.RebuildTapInstances(plmap);
-        map<string, int> swappedIndices;
-        auto delArea = mydesign.TapDeltaArea(&swappedIndices);
-        //SaveRestore<vector<int> > srSelected(curr_sp.selected);
-        if (!swappedIndices.empty()) {
-          curr_sp.BackupSelected();
-          for (int i = 0; i < mydesign.Blocks.size(); i++) {
-            auto& index = curr_sp.selected[i];
-            auto it = swappedIndices.find(mydesign.Blocks[i][index].name);
-            if (it != swappedIndices.end() && index != it->second) index = it->second;
-          }
-          //logger->info("maximum delta area from tap removal : {0} {1}", delArea, swappedIndices.size());
-        } 
-      }
+    }
+    if (removeTaps) {
+      mydesign.RebuildTapInstances(plmap);
+      map<string, int> swappedIndices;
+      auto delArea = mydesign.TapDeltaArea(&swappedIndices);
+      //SaveRestore<vector<int> > srSelected(curr_sp.selected);
+      if (!swappedIndices.empty()) {
+        curr_sp.BackupSelected();
+        for (int i = 0; i < mydesign.Blocks.size(); i++) {
+          auto& index = curr_sp.selected[i];
+          auto it = swappedIndices.find(mydesign.Blocks[i][index].name);
+          if (it != swappedIndices.end() && index != it->second) index = it->second;
+        }
+        //logger->info("maximum delta area from tap removal : {0} {1}", delArea, swappedIndices.size());
+      } 
     }
     if (!wtap) {
       curr_sp.RestoreSelected();

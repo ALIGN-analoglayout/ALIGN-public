@@ -378,6 +378,8 @@ TapRemoval::TapRemoval(const PnRDB::hierNode& node, const unsigned dist) : _dist
   for (unsigned i = 0; i < node.Blocks.size(); ++i) {
     if (node.Blocks[i].instance.empty()) continue;
     const auto& master=node.Blocks[i].instance.back().master;
+    if (_primitives.find(master) != _primitives.end() ||
+        _primitivesWoTap.find(master) != _primitivesWoTap.end()) continue;
     for (unsigned j = 0; j < node.Blocks[i].instance.size(); ++j) {
       const auto& n = node.Blocks[i].instance[j];
       PrimitiveData::Primitive *p(nullptr);
