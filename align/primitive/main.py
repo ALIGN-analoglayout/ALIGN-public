@@ -209,7 +209,7 @@ def generate_Tap(pdkdir, block_name, primitive, height, nfin, x_cells, y_cells, 
     shared_diff = 0
     uc = generator(pdk, height, fin, gate, gateDummy, shared_diff)
 
-    if 'TapN' in primitive:
+    if 'Tap_N' in primitive:
         uc.addNMOSTap( x_cells, y_cells)
     else:
         uc.addPMOSTap( x_cells, y_cells)

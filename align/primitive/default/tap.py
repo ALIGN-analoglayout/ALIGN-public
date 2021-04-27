@@ -97,7 +97,6 @@ class TapGenerator(DefaultCanvas):
         self.addWireAndViaSet('B', 'B', self.m2, self.v1, y*h+self.lFin//4, self._xpins[name]['B'])
 
     def addNMOSTap( self, x_cells, y_cells):
-        print(y_cells)
         self._addTap(x_cells, (y_cells-1))
         #####   Nselect Placement   #####
         self.addRegion( self.nselect, None, None, (0, -1), -1, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1), y_cells*self.lFin) 
