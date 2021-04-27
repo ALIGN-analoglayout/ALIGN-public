@@ -62,7 +62,8 @@ setup(name='align',
       scripts=[
           'bin/schematic2layout.py',
           'bin/pnr_compiler.py',
-          'bin/gds2png.sh'
+          'bin/gds2png.sh',
+          'bin/analyze_regression.py'
       ],
       install_requires=[
           'networkx>=2.4',
@@ -75,6 +76,7 @@ setup(name='align',
           'more-itertools',
           'colorlog',
           'plotly',
+          'pandas',
           'typing_extensions; python_version<"3.8"'
           ],
       extras_require={
