@@ -81,9 +81,9 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         regression_dir.mkdir(exist_ok=True)
 
     assert len(netlist_files) == 1, "Only one .sp file allowed"
+    netlist = netlist_files[0]
 
     results = []
-    netlist = netlist_files[0]
 
     logger.info(f"READ file: {netlist} subckt={subckt}, flat={flatten}")
 
