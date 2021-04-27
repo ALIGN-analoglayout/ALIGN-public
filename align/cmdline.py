@@ -115,6 +115,13 @@ class CmdlineParser():
 #                            action='store_true',
 #                            help="Write out GDS after python postprocessing")
 
+        parser.add_argument('--flow_start',
+                            type=str,
+                            help='Stage to start the flow. Previous stages are skipped.')
+        parser.add_argument('--flow_stop',
+                            type=str,
+                            help='Stage after which to stop the flow. Subsequent stages are skipped.')
+
         self.parser = parser
 
     def parse_args(self, *args, **kwargs):
