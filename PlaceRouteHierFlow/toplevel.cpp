@@ -346,7 +346,8 @@ int toplevel( const std::vector<std::string>& argv) {
     DB.PrintHierNode(current_node);
     //EA placer
     Placement EA_placer(current_node);
-
+    PlacerIfc curr_plc1(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
+    
 
 
     // AFTER FIRST ILP, RUN THE FOLLOWING LINE

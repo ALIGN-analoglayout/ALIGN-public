@@ -540,7 +540,7 @@ design::design(PnRDB::hierNode& node) {
     this->Port_Location.back().pos=placerDB::Bmark(it->pos);
   }
   constructSymmGroup();
-  PrintDesign();
+  //PrintDesign();
   //std::cout<<"Leaving design2\n";
   hasAsymBlock=checkAsymmetricBlockExist();
   //std::cout<<"Leaving design\n";

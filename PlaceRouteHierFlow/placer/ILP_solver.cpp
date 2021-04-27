@@ -28,7 +28,7 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
         }
       }
       temp.first.push_back(temp_seq);
-      //group alignblock into the same order group
+      // group alignblock into the same order group
     }
     ordering_alignblock.push_back(temp);
   }
@@ -532,19 +532,27 @@ double ILP_solver::GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcI
       int Rblock_id = block_pos_x.back().first.first, Rpin_id = block_pos_x.back().first.second;
       int Lblock_width = mydesign.Blocks[Lblock_id][0].width, Lblock_height = mydesign.Blocks[Lblock_id][0].height;
       int Rblock_width = mydesign.Blocks[Rblock_id][0].width, Rblock_height = mydesign.Blocks[Rblock_id][0].height;
-      int Lpin_x = mydesign.Blocks[Lblock_id][0].blockPins[Lpin_id].center.front().x,
-          Lpin_y = mydesign.Blocks[Lblock_id][0].blockPins[Lpin_id].center.front().y;
-      int Rpin_x = mydesign.Blocks[Rblock_id][0].blockPins[Rpin_id].center.front().x,
-          Rpin_y = mydesign.Blocks[Rblock_id][0].blockPins[Rpin_id].center.front().y;
+      int Lpin_x = mydesign.Blocks[Lblock_id][0].blockPins.size() > 0 ? mydesign.Blocks[Lblock_id][0].blockPins[Lpin_id].center.front().x
+                                                                      : mydesign.Blocks[Lblock_id][0].width / 2,
+          Lpin_y = mydesign.Blocks[Lblock_id][0].blockPins.size() > 0 ? mydesign.Blocks[Lblock_id][0].blockPins[Lpin_id].center.front().y
+                                                                      : mydesign.Blocks[Lblock_id][0].height / 2;
+      int Rpin_x = mydesign.Blocks[Rblock_id][0].blockPins.size() > 0 ? mydesign.Blocks[Rblock_id][0].blockPins[Rpin_id].center.front().x
+                                                                      : mydesign.Blocks[Rblock_id][0].width / 2,
+          Rpin_y = mydesign.Blocks[Rblock_id][0].blockPins.size() > 0 ? mydesign.Blocks[Rblock_id][0].blockPins[Rpin_id].center.front().y
+                                                                      : mydesign.Blocks[Rblock_id][0].height / 2;
 
       int Dblock_id = block_pos_y.front().first.first, Dpin_id = block_pos_y.front().first.second;
       int Ublock_id = block_pos_y.back().first.first, Upin_id = block_pos_y.back().first.second;
       int Dblock_width = mydesign.Blocks[Dblock_id][0].width, Dblock_height = mydesign.Blocks[Dblock_id][0].height;
       int Ublock_width = mydesign.Blocks[Ublock_id][0].width, Ublock_height = mydesign.Blocks[Ublock_id][0].height;
-      int Dpin_x = mydesign.Blocks[Dblock_id][0].blockPins[Dpin_id].center.front().x,
-          Dpin_y = mydesign.Blocks[Dblock_id][0].blockPins[Dpin_id].center.front().y;
-      int Upin_x = mydesign.Blocks[Ublock_id][0].blockPins[Upin_id].center.front().x,
-          Upin_y = mydesign.Blocks[Ublock_id][0].blockPins[Upin_id].center.front().y;
+      int Dpin_x = mydesign.Blocks[Dblock_id][0].blockPins.size() > 0 ? mydesign.Blocks[Dblock_id][0].blockPins[Dpin_id].center.front().x
+                                                                      : mydesign.Blocks[Dblock_id][0].width / 2,
+          Dpin_y = mydesign.Blocks[Dblock_id][0].blockPins.size() > 0 ? mydesign.Blocks[Dblock_id][0].blockPins[Dpin_id].center.front().y
+                                                                      : mydesign.Blocks[Dblock_id][0].height / 2;
+      int Upin_x = mydesign.Blocks[Ublock_id][0].blockPins.size() > 0 ? mydesign.Blocks[Ublock_id][0].blockPins[Upin_id].center.front().x
+                                                                      : mydesign.Blocks[Ublock_id][0].width / 2,
+          Upin_y = mydesign.Blocks[Ublock_id][0].blockPins.size() > 0 ? mydesign.Blocks[Ublock_id][0].blockPins[Upin_id].center.front().y
+                                                                      : mydesign.Blocks[Ublock_id][0].height / 2;
 
       // min abs(LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)=HPWLx
       //-> (LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)<=HPWLx
@@ -657,98 +665,98 @@ double ILP_solver::GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcI
     LL.y = std::min(LL.y, Blocks[i].y);
     UR.x = std::max(UR.x, Blocks[i].x + mydesign.Blocks[i][0].width);
     UR.y = std::max(UR.y, Blocks[i].y + mydesign.Blocks[i][0].height);
-  } 
-   // calculate area
-   area = double(UR.x - LL.x) * double(UR.y - LL.y);
-   /**
-   // calculate dead area
-   dead_area = area;
-   for (int i = 0; i < mydesign.Blocks.size(); i++) {
-     dead_area -= double(mydesign.Blocks[i][0].width) * double(mydesign.Blocks[i][0].height);
-   }
-   // calculate ratio
-   ratio = std::max(double(UR.x - LL.x) / double(UR.y - LL.y), double(UR.y - LL.y) / double(UR.x - LL.x));
-   **/
-   // calculate HPWL
-   HPWL = 0;
-   for (auto neti : mydesign.Nets) {
-     int HPWL_min_x = UR.x, HPWL_min_y = UR.y, HPWL_max_x = 0, HPWL_max_y = 0;
-     for (auto connectedj : neti.connected) {
-       if (connectedj.type == placerDB::Block) {
-         int iter2 = connectedj.iter2, iter = connectedj.iter;
-         for (auto centerk : mydesign.Blocks[iter2][0].blockPins[iter].center) {
-           // calculate contact center
-           int pin_x = centerk.x;
-           int pin_y = centerk.y;
-           if (Blocks[iter2].H_flip) pin_x = mydesign.Blocks[iter2][0].width - pin_x;
-           if (Blocks[iter2].V_flip) pin_y = mydesign.Blocks[iter2][0].height - pin_y;
-           pin_x += Blocks[iter2].x;
-           pin_y += Blocks[iter2].y;
-           HPWL_min_x = std::min(HPWL_min_x, pin_x);
-           HPWL_max_x = std::max(HPWL_max_x, pin_x);
-           HPWL_min_y = std::min(HPWL_min_y, pin_y);
-           HPWL_max_y = std::max(HPWL_max_y, pin_y);
-         }
-       }  
-     }
-     HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);
-   }
-   // calculate linear constraint
-   linear_const = 0;
-   std::vector<std::vector<double>> feature_value;
-   for (auto neti : mydesign.Nets) {
-     std::vector<std::vector<placerDB::point>> center_points;
-     for (auto connectedj : neti.connected) {
-       if (connectedj.type == placerDB::Block) {
-         std::vector<placerDB::point> pos;
-         for (auto ci : mydesign.Blocks[connectedj.iter2][0].blockPins[connectedj.iter].center) {
-           placerDB::point newp;
-           newp.x = ci.x;
-           newp.y = ci.y;
-           if (Blocks[connectedj.iter2].H_flip) newp.x = mydesign.Blocks[connectedj.iter2][0].width - newp.x;
-           if (Blocks[connectedj.iter2].V_flip) newp.y = mydesign.Blocks[connectedj.iter2][0].height - newp.y;
-           newp.x += Blocks[connectedj.iter2].x;
-           newp.y += Blocks[connectedj.iter2].y;
-           pos.push_back(newp);
-         }
-         center_points.push_back(pos);
-       } else if (connectedj.type == placerDB::Terminal) {
-         center_points.push_back({mydesign.Terminals[connectedj.iter].center});
-       }
-     }
-     std::vector<double> temp_feature = Calculate_Center_Point_feature(center_points);
-     feature_value.push_back(temp_feature);
-     double temp_sum = 0;
-     for (unsigned int j = 0; j < neti.connected.size(); j++) temp_sum += neti.connected[j].alpha * temp_feature[j];
-     temp_sum = std::max(temp_sum - neti.upperBound, double(0));
-     linear_const += temp_sum;
-   }
+  }
+  // calculate area
+  area = double(UR.x - LL.x) * double(UR.y - LL.y);
+  /**
+  // calculate dead area
+  dead_area = area;
+  for (int i = 0; i < mydesign.Blocks.size(); i++) {
+    dead_area -= double(mydesign.Blocks[i][0].width) * double(mydesign.Blocks[i][0].height);
+  }
+  // calculate ratio
+  ratio = std::max(double(UR.x - LL.x) / double(UR.y - LL.y), double(UR.y - LL.y) / double(UR.x - LL.x));
+  **/
+  // calculate HPWL
+  HPWL = 0;
+  for (auto neti : mydesign.Nets) {
+    int HPWL_min_x = UR.x, HPWL_min_y = UR.y, HPWL_max_x = 0, HPWL_max_y = 0;
+    for (auto connectedj : neti.connected) {
+      if (connectedj.type == placerDB::Block) {
+        int iter2 = connectedj.iter2, iter = connectedj.iter;
+        for (auto centerk : mydesign.Blocks[iter2][0].blockPins[iter].center) {
+          // calculate contact center
+          int pin_x = centerk.x;
+          int pin_y = centerk.y;
+          if (Blocks[iter2].H_flip) pin_x = mydesign.Blocks[iter2][0].width - pin_x;
+          if (Blocks[iter2].V_flip) pin_y = mydesign.Blocks[iter2][0].height - pin_y;
+          pin_x += Blocks[iter2].x;
+          pin_y += Blocks[iter2].y;
+          HPWL_min_x = std::min(HPWL_min_x, pin_x);
+          HPWL_max_x = std::max(HPWL_max_x, pin_x);
+          HPWL_min_y = std::min(HPWL_min_y, pin_y);
+          HPWL_max_y = std::max(HPWL_max_y, pin_y);
+        }
+      }
+    }
+    HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);
+  }
+  // calculate linear constraint
+  linear_const = 0;
+  std::vector<std::vector<double>> feature_value;
+  for (auto neti : mydesign.Nets) {
+    std::vector<std::vector<placerDB::point>> center_points;
+    for (auto connectedj : neti.connected) {
+      if (connectedj.type == placerDB::Block) {
+        std::vector<placerDB::point> pos;
+        for (auto ci : mydesign.Blocks[connectedj.iter2][0].blockPins[connectedj.iter].center) {
+          placerDB::point newp;
+          newp.x = ci.x;
+          newp.y = ci.y;
+          if (Blocks[connectedj.iter2].H_flip) newp.x = mydesign.Blocks[connectedj.iter2][0].width - newp.x;
+          if (Blocks[connectedj.iter2].V_flip) newp.y = mydesign.Blocks[connectedj.iter2][0].height - newp.y;
+          newp.x += Blocks[connectedj.iter2].x;
+          newp.y += Blocks[connectedj.iter2].y;
+          pos.push_back(newp);
+        }
+        center_points.push_back(pos);
+      } else if (connectedj.type == placerDB::Terminal) {
+        center_points.push_back({mydesign.Terminals[connectedj.iter].center});
+      }
+    }
+    std::vector<double> temp_feature = Calculate_Center_Point_feature(center_points);
+    feature_value.push_back(temp_feature);
+    double temp_sum = 0;
+    for (unsigned int j = 0; j < neti.connected.size(); j++) temp_sum += neti.connected[j].alpha * temp_feature[j];
+    temp_sum = std::max(temp_sum - neti.upperBound, double(0));
+    linear_const += temp_sum;
+  }
 
-   // calculate multi linear constraint
-   multi_linear_const = 0;
-   for (auto constrainti : mydesign.ML_Constraints) {
-     double temp_sum = 0;
-     for (auto constraintj : constrainti.Multi_linearConst) {
-       for (unsigned int k = 0; k < constraintj.pins.size(); k++) {
-         int index_i = 0;
-         int index_j = 0;
-         for (unsigned int m = 0; m < mydesign.Nets.size(); m++) {
-           for (unsigned int n = 0; n < mydesign.Nets[m].connected.size(); n++) {
-             if (mydesign.Nets[m].connected[n].iter2 == constraintj.pins[k].first && mydesign.Nets[m].connected[n].iter == constraintj.pins[k].second) {
-               index_i = m;
-               index_j = n;
-               break;
-             }
-           }
-         }
-         temp_sum += constraintj.alpha[k] * feature_value[index_i][index_j];
-       }
-     }
-     temp_sum = std::min(temp_sum, constrainti.upperBound);
-     multi_linear_const += temp_sum;
-   }
+  // calculate multi linear constraint
+  multi_linear_const = 0;
+  for (auto constrainti : mydesign.ML_Constraints) {
+    double temp_sum = 0;
+    for (auto constraintj : constrainti.Multi_linearConst) {
+      for (unsigned int k = 0; k < constraintj.pins.size(); k++) {
+        int index_i = 0;
+        int index_j = 0;
+        for (unsigned int m = 0; m < mydesign.Nets.size(); m++) {
+          for (unsigned int n = 0; n < mydesign.Nets[m].connected.size(); n++) {
+            if (mydesign.Nets[m].connected[n].iter2 == constraintj.pins[k].first && mydesign.Nets[m].connected[n].iter == constraintj.pins[k].second) {
+              index_i = m;
+              index_j = n;
+              break;
+            }
+          }
+        }
+        temp_sum += constraintj.alpha[k] * feature_value[index_i][index_j];
+      }
+    }
+    temp_sum = std::min(temp_sum, constrainti.upperBound);
+    multi_linear_const += temp_sum;
+  }
 
-   double cost = CalculateCost(mydesign);
+  double cost = CalculateCost(mydesign);
   return cost;
 }
 
@@ -759,10 +767,9 @@ double ILP_solver::CalculateCost(design& mydesign) {
   cost += HPWL * const_graph.LAMBDA;
   double match_cost = 0;
   for (auto mbi : mydesign.Match_blocks) {
-    match_cost += abs(Blocks[mbi.blockid1].x + mydesign.Blocks[mbi.blockid1][0].width / 2 - Blocks[mbi.blockid2].x -
-                      mydesign.Blocks[mbi.blockid2][0].width / 2) +
-                  abs(Blocks[mbi.blockid1].y + mydesign.Blocks[mbi.blockid1][0].height / 2 - Blocks[mbi.blockid2].y -
-                      mydesign.Blocks[mbi.blockid2][0].height / 2);
+    match_cost +=
+        abs(Blocks[mbi.blockid1].x + mydesign.Blocks[mbi.blockid1][0].width / 2 - Blocks[mbi.blockid2].x - mydesign.Blocks[mbi.blockid2][0].width / 2) +
+        abs(Blocks[mbi.blockid1].y + mydesign.Blocks[mbi.blockid1][0].height / 2 - Blocks[mbi.blockid2].y - mydesign.Blocks[mbi.blockid2][0].height / 2);
   }
   cost += match_cost * const_graph.BETA;
   cost += ratio * Aspect_Ratio_weight;
@@ -1024,8 +1031,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign) {
       placerDB::Smark axis = mydesign.SBlocks[sbIdx].axis_dir;
       if (cp == (int)i) {  // self-symmetric
         if (axis == placerDB::V) {
-          int axis_X = Blocks[mydesign.SBlocks[sbIdx].selfsym[0].first].x +
-                       mydesign.Blocks[mydesign.SBlocks[sbIdx].selfsym[0].first][0].width / 2;
+          int axis_X = Blocks[mydesign.SBlocks[sbIdx].selfsym[0].first].x + mydesign.Blocks[mydesign.SBlocks[sbIdx].selfsym[0].first][0].width / 2;
           int distTerm = INT_MAX;
           placerDB::point tp(axis_X, 0);
           for (auto ci : mydesign.Nets[netIdx].connected) {
@@ -1049,8 +1055,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign) {
           }
           mydesign.Terminals.at(i).center = tp;
         } else if (axis == placerDB::H) {
-          int axis_Y = Blocks[mydesign.SBlocks[sbIdx].selfsym[0].first].y +
-                       mydesign.Blocks[mydesign.SBlocks[sbIdx].selfsym[0].first][0].height / 2;
+          int axis_Y = Blocks[mydesign.SBlocks[sbIdx].selfsym[0].first].y + mydesign.Blocks[mydesign.SBlocks[sbIdx].selfsym[0].first][0].height / 2;
           int distTerm = INT_MAX;
           placerDB::point tp(0, axis_Y);
           for (auto ci : mydesign.Nets.at(netIdx).connected) {
@@ -1651,24 +1656,18 @@ void ILP_solver::UpdateSymmetryNetInfo(design& mydesign, PnRDB::hierNode& node, 
   if (axis_dir == placerDB::V) {
     if (mydesign.SBlocks[SBidx].selfsym.size() > 0) {
       // self sym x axis coordinate
-      axis_coor = Blocks[mydesign.SBlocks[SBidx].selfsym[0].first].x +
-                  mydesign.Blocks[mydesign.SBlocks[SBidx].selfsym[0].first][0].width / 2;
+      axis_coor = Blocks[mydesign.SBlocks[SBidx].selfsym[0].first].x + mydesign.Blocks[mydesign.SBlocks[SBidx].selfsym[0].first][0].width / 2;
     } else {
       // sym pair x axis coordinate
-      axis_coor = Blocks[mydesign.SBlocks[SBidx].sympair[0].first].x / 2 +
-                  mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].first][0].width / 4 +
-                  Blocks[mydesign.SBlocks[SBidx].sympair[0].second].x / 2 +
-                  mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].second][0].width / 4;
+      axis_coor = Blocks[mydesign.SBlocks[SBidx].sympair[0].first].x / 2 + mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].first][0].width / 4 +
+                  Blocks[mydesign.SBlocks[SBidx].sympair[0].second].x / 2 + mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].second][0].width / 4;
     }
   } else if (axis_dir == placerDB::H) {
     if (mydesign.SBlocks[SBidx].selfsym.size() > 0) {
-      axis_coor = Blocks[mydesign.SBlocks[SBidx].selfsym[0].first].y +
-                  mydesign.Blocks[mydesign.SBlocks[SBidx].selfsym[0].first][0].height / 2;
+      axis_coor = Blocks[mydesign.SBlocks[SBidx].selfsym[0].first].y + mydesign.Blocks[mydesign.SBlocks[SBidx].selfsym[0].first][0].height / 2;
     } else {
-      axis_coor = Blocks[mydesign.SBlocks[SBidx].sympair[0].first].y / 2 +
-                  mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].first][0].height / 4 +
-                  Blocks[mydesign.SBlocks[SBidx].sympair[0].second].y / 2 +
-                  mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].second][0].height / 4;
+      axis_coor = Blocks[mydesign.SBlocks[SBidx].sympair[0].first].y / 2 + mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].first][0].height / 4 +
+                  Blocks[mydesign.SBlocks[SBidx].sympair[0].second].y / 2 + mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].second][0].height / 4;
     }
   } else {
     logger->error("Placer-Error: incorrect symmetry axis direction");
