@@ -74,3 +74,24 @@ def test_aspect_ratio_max():
     name = "example_aspect_ratio_max"
     run_example(cascode_amplifier(my_dir, name, constraints))
 
+
+def test_boundary_max_width():
+    constraints = """[
+    {"constraint": "HorizontalDistance", "abs_distance":0},
+    {"constraint": "VerticalDistance",   "abs_distance":0},
+    {"constraint": "Boundary", "subcircuit": "example_boundary_max_width", "max_width": 1}
+]
+"""
+    name = "example_boundary_max_width"
+    run_example(cascode_amplifier(my_dir, name, constraints))
+
+
+def test_boundary_max_height():
+    constraints = """[
+    {"constraint": "HorizontalDistance", "abs_distance":0},
+    {"constraint": "VerticalDistance",   "abs_distance":0},
+    {"constraint": "Boundary", "subcircuit": "example_boundary_max_height", "max_height": 1}
+]
+"""
+    name = "example_boundary_max_height"
+    run_example(cascode_amplifier(my_dir, name, constraints))
