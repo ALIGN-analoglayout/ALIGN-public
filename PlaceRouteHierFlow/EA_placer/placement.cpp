@@ -2748,6 +2748,12 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
   //merge CC block
   //make origin block in CC size to zero
   int id_new_block = originalBlockCNT;
+  Ppoint_F uni_cell_Dpoint;
+  uni_cell_Dpoint.x = Blocks[0].Dpoint.x;
+  uni_cell_Dpoint.y = Blocks[0].Dpoint.y;
+  Ppoint_I uni_cell_shape;
+  uni_cell_shape.x = (int)(est_Size.x*uni_cell_Dpoint.x);
+  uni_cell_shape.y = (int)(est_Size.y*uni_cell_Dpoint.y);
   for(int i=0;i < commonCentroids.size();++i)
   {
     vector<int> to_connect;
@@ -2755,8 +2761,8 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
     tempBlock.name = "CC_merge_cell"+commonCentroids[i].label;
     tempBlock.orient = PnRDB::N;
 
-    tempBlock.height = uni_cell.y*commonCentroids[i].shape.y;
-    tempBlock.width = uni_cell.x*commonCentroids[i].shape.x;
+    tempBlock.height = uni_cell_shape.y*commonCentroids[i].shape.y;
+    tempBlock.width = uni_cell_shape.x*commonCentroids[i].shape.x;
 
     PnRDB::blockComplex tempBlockComplex;
     
