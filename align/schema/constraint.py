@@ -344,17 +344,19 @@ class Spread(PlacementConstraint):
                     )
                 )
 
+
 class SetBoundingBox(HardConstraint):
     instance: str
     llx: int
     lly: int
     urx: int
     ury: int
+    is_subcircuit: Optional[bool] = False
 
     def check(self, checker):
         super().check(checker)
         assert self.llx < self.urx and self.lly < self.ury, f'Reflection is not supported yet for {self}'
-        bvar = checker.bbox_vars(self.instance)
+        bvar = checker.bbox_vars(self.instance, is_subcircuit=self.is_subcircuit)
         checker.append(bvar.llx == self.llx)
         checker.append(bvar.lly == self.lly)
         checker.append(bvar.urx == self.urx)
@@ -534,23 +536,24 @@ class SymmetricNets(SoftConstraint):
     direction: Literal['H', 'V']
 
 
-class AspectRatio(SoftConstraint):
-    '''
-    TODO: Replace with Enclose
-    '''
-    ratio_low: Optional[float]
-    ratio_high: Optional[float]
-    weight: int
+class AspectRatio(HardConstraint):
+    """
+    Define lower and upper bounds on aspect ratio (=width/height) of a subcircuit
 
-    @types.root_validator(allow_reuse=True)
-    def cast_aspect_ratio_spec(cls, values):
-        if not values['ratio_low'] and not values['ratio_high']:
-            raise AssertionError('At least one parameter must be specified')
-        elif values['ratio_low']:
-            values['ratio_high'] = 1 / values['ratio_low']
-        else:
-            values['ratio_low'] = 1 / values['ratio_high']
-        return values
+    `ratio_low` <= width/height <= `ratio_high`
+    """
+    subcircuit: str
+    ratio_low: float = 0.1
+    ratio_high: float = 10
+    weight: int = 1
+
+    def check(self, checker):
+        assert self.ratio_low >= 0, f'AspectRatio:ratio_low should be greater than zero {self.ratio_low}'
+        assert self.ratio_high > self.ratio_low, f'AspectRatio:ratio_high {self.ratio_high} should be greater than ratio_low {self.ratio_low}'
+
+        bvar = checker.bbox_vars(self.subcircuit, is_subcircuit=True)
+        checker.append(checker.cast(bvar.urx-bvar.llx, float) >= self.ratio_low*checker.cast(bvar.ury-bvar.lly, float))
+        checker.append(checker.cast(bvar.urx-bvar.llx, float) < self.ratio_high*checker.cast(bvar.ury-bvar.lly, float))
 
 
 class MultiConnection(SoftConstraint):
