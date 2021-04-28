@@ -591,6 +591,8 @@ class ConstraintDB(types.List[ConstraintType]):
     _checker = types.PrivateAttr(None)
 
     def _check(self, constraint):
+        assert constraint.parent is not None
+        assert constraint.parent.parent is not None
         if self._checker and hasattr(constraint, 'check'):
             try:
                 constraint.check(self._checker)
@@ -609,17 +611,14 @@ class ConstraintDB(types.List[ConstraintType]):
 
     @types.validate_arguments
     def append(self, constraint: ConstraintType):
-        self._check_recursive([constraint])
         super().append(constraint)
+        self._check_recursive([self.__root__[-1]])
 
-    def __init__(self, *args, **kwargs):
-        if len(args) == 0 and '__root__' not in kwargs:
-            kwargs['__root__'] = []
-        elif len(args) == 1:
-            kwargs['__root__'] = args[0]
-            args = tuple()
+    def __init__(self, *args, check=True, **kwargs):
         super().__init__(*args, **kwargs)
-        if checker.Z3Checker.enabled:
+        # Constraints may need to access parent scope for subcircuit information
+        # To ensure parent is set appropriately, force users to use append
+        if check and checker.Z3Checker.enabled:
             self._checker = checker.Z3Checker()
             self._check_recursive(self.__root__)
 
@@ -637,6 +636,7 @@ class ConstraintDB(types.List[ConstraintType]):
 def expand_user_constraints(const_list):
     for const in const_list:
         if hasattr(const, 'yield_constraints'):
-            yield from expand_user_constraints(const.yield_constraints())
+            with types.set_context(const.parent):
+                yield from const.yield_constraints()
         else:
             yield const

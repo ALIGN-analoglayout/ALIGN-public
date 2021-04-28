@@ -37,11 +37,6 @@ class SubCircuit(Model):
     constraints: ConstraintDB
     prefix : str = 'X'         # Instance name prefix, optional
 
-    @types.validate_arguments
-    def add(self, instance: Instance):
-        self.elements.append(instance)
-        return instance
-
     @property
     def nets(self):
         nets = []
@@ -53,7 +48,7 @@ class SubCircuit(Model):
         if 'elements' not in kwargs:
             kwargs['elements'] = []
         if 'constraints' not in kwargs:
-            kwargs['constraints'] = ConstraintDB()
+            kwargs['constraints'] = []
         super().__init__(*args, **kwargs)
 
     def xyce(self):

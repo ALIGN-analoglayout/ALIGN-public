@@ -1,11 +1,35 @@
 import pytest
 import pathlib
-from align.schema import constraint
+from align.schema import constraint, Model, Instance, SubCircuit, Library
 from align.schema.checker import Z3Checker, CheckerError
+from align.schema.types import set_context
 
 @pytest.fixture
-def db():
-    return constraint.ConstraintDB()
+def subckt():
+    library = Library()
+    with set_context(library):
+        model = Model(
+            name='TwoTerminalDevice',
+            pins=['A', 'B'],
+            parameters={'MYPARAMETER': '3'})
+        library.append(model)
+        subckt = SubCircuit(
+            name = 'SUBCKT',
+            pins = ['PIN1', 'PIN2'],
+            parameters = {'PARAM1':1, 'PARAM2':'1E-3'})
+        library.append(subckt)
+    with set_context(subckt.elements):
+        subckt.elements.append(Instance(name='M1', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'}))
+        subckt.elements.append(Instance(name='M2', model='TwoTerminalDevice', pins={'A': 'NET2', 'B': 'NET3'}))
+        subckt.elements.append(Instance(name='M3', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'}))
+        subckt.elements.append(Instance(name='M4', model='TwoTerminalDevice', pins={'A': 'NET2', 'B': 'NET3'}))
+        subckt.elements.append(Instance(name='M5', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'}))
+        subckt.elements.append(Instance(name='M6', model='TwoTerminalDevice', pins={'A': 'NET2', 'B': 'NET3'}))
+    return subckt
+
+@pytest.fixture
+def db(subckt):
+    return subckt.constraints
 
 @pytest.fixture
 def checker():
@@ -118,7 +142,8 @@ def test_ConstraintDB_json(db):
     db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M3']))
     fp = pathlib.Path(__file__).parent / 'const.json'
     fp.write_text(db.json())
-    newdb = constraint.ConstraintDB.parse_file(fp)
+    with set_context(db.parent.parent):
+        newdb = constraint.ConstraintDB.parse_file(fp)
     assert db == newdb
 
 def test_ConstraintDB_parent_relationship(db):

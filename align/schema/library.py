@@ -1,67 +1,87 @@
+from .model import Model
+from .subcircuit import SubCircuit
 import inspect
 import random
 import string
+from .types import List, Union, set_context
 
 libraries = {}
 
-class Library(dict):
+
+class Library(List[Union[Model, SubCircuit]]):
 
     def __init__(self, name=None, loadbuiltins=True):
         if name:
             assert name not in libraries
             libraries.update({name: self})
+        super().__init__()
         if loadbuiltins:
-            self.update(libraries['default'])
+            self.extend(libraries['default'])
+
+    def find(self, name):
+        return next((x for x in self if x.name == name), None)
 
 #
 # Create default library
 #
 
+
 default = Library('default')
 
-from .model import Model
 
-default['NMOS'] = Model(
-    name='NMOS',
-    pins=['D', 'G', 'S', 'B'],
-    parameters={
-        'W': 0,
-        'L': 0,
-        'NFIN': 1},
-    prefix = 'M')
-
-default['PMOS'] = Model(
-    name='PMOS',
-    pins=['D', 'G', 'S', 'B'],
-    parameters={
-        'W': 0,
-        'L': 0,
-        'NFIN': 1},
-    prefix = 'M')
-
-default['CAP'] = Model(
-    name='CAP',
-    pins=['+', '-'],
-    parameters={
-        'VALUE': 0
-    },
-    prefix = 'C'
+with set_context(default):
+    default.append(
+        Model(
+            name='NMOS',
+            pins=['D', 'G', 'S', 'B'],
+            parameters={
+                'W': 0,
+                'L': 0,
+                'NFIN': 1},
+            prefix='M'
+        )
     )
 
-default['RES'] = Model(
-    name='RES',
-    pins=['+', '-'],
-    parameters={
-        'VALUE': 0
-    },
-    prefix = 'R'
+    default.append(
+        Model(
+            name='PMOS',
+            pins=['D', 'G', 'S', 'B'],
+            parameters={
+                'W': 0,
+                'L': 0,
+                'NFIN': 1},
+            prefix='M'
+        )
     )
 
-default['IND'] = Model(
-    name='IND',
-    pins=['+', '-'],
-    parameters={
-        'VALUE': 0
-    },
-    prefix = 'L'
+    default.append(
+        Model(
+            name='CAP',
+            pins=['+', '-'],
+            parameters={
+                'VALUE': 0
+            },
+            prefix='C'
+        )
+    )
+
+    default.append(
+        Model(
+            name='RES',
+            pins=['+', '-'],
+            parameters={
+                'VALUE': 0
+            },
+            prefix='R'
+        )
+    )
+    default.append(
+        Model(
+            name='IND',
+            pins=['+', '-'],
+            parameters={
+                'VALUE': 0
+            },
+            prefix='L'
+        )
     )
