@@ -162,49 +162,31 @@ class Primitive
   private:
     string _name;
     Rect _bbox;
-    Rects _taps, _actives;
-    LayerRects _lr;
-    bool _pmos;
+    Rects _ntaps, _nactives;
+    Rects _ptaps, _pactives;
 
   public:
-    Primitive(const string& name, const Rect& r = Rect(), const bool pmos = false) : _name(name), _bbox(r), _pmos(pmos)
+    Primitive(const string& name, const Rect& r = Rect()) : _name(name), _bbox(r)
     {
-      _taps.reserve(2);
-      _actives.reserve(8);
+      _ntaps.reserve(2);
+      _nactives.reserve(4);
+      _ptaps.reserve(2);
+      _pactives.reserve(4);
     }
 
     const string& name() const { return _name; }
     string& name() { return _name; }
 
-    void addTap(const Rect& t) { _taps.push_back(t); }
-    void addTap(const int& x1, const int& y1, const int& x2, const int& y2) { _taps.emplace_back(x1, y1, x2, y2); }
-    void addActive(const Rect& r) { _actives.push_back(r); }
-    void addTaps(const Rects& t) { _taps.insert(_taps.end(), t.begin(), t.end()); }
-    void addActives(const Rects& r) { _actives.insert(_actives.end(), r.begin(), r.end()); }
-
-    void addLayerRects(const string& layer, const Rect& r) { _lr[layer].push_back(r); }
+    void addTap(const Rect& t, const bool n = true) { n ? _ntaps.push_back(t) : _ptaps.push_back(t); }
+    void addActive(const Rect& r, const bool n = true) { n ? _nactives.push_back(r) : _pactives.push_back(r); }
 
     const Rect& bbox() const { return _bbox; }
     long area() const { return _bbox.area(); }
     int width() const { return _bbox.width(); }
     int height() const { return _bbox.height(); }
 
-    ~Primitive()
-    {
-      /*cout << _name << " : " << _lr.size() << ' ' << _taps.size() << ' ' << area() << endl;
-      cout << "taps : " << endl;
-      for (auto& t : _taps) {
-        cout << t.toString() << endl;
-      }
-      cout << "rows : " << endl;
-      for (auto& r : _actives) {
-        cout << r.toString() << endl;
-      }*/
-    }
-
-    const Rects& getTaps() const { return _taps; }
-    const Rects& getActives() const { return _actives; }
-    const bool isPMOS() const { return _pmos; }
+    const Rects& getTaps(const bool n) const { return n ? _ntaps : _ptaps; }
+    const Rects& getActives(const bool n) const { return n ? _nactives : _pactives; }
 };
 using Primitives = map<string, vector<Primitive*> >;
 
@@ -221,31 +203,20 @@ class Instance
   private:
     const Primitive *_prim, *_primWoTap;
     string _name;
-    Rects _taps, _actives;
+    Rects _ntaps, _nactives;
+    Rects _ptaps, _pactives;
     Rect _bbox;
     const int _woTapIndex;
 
   public:
     Instance(const Primitive* prim, const Primitive* primWoTap, const string& name, const Transform& tr, const int& wtIndex);
-    ~Instance()
-    {
-      /*cout << _name << ' ' << _prim->name() << ' ' << _origin.toString() << endl;
-      cout << "taps : " << endl;
-      for (auto& t : _taps) {
-        cout << t.toString() << endl;
-      }
-      cout << "rows : " << endl;
-      for (auto& r : _actives) {
-        cout << r.toString() << endl;
-      }*/
-    }
 
     long deltaArea() const { return (_prim != nullptr && _primWoTap != nullptr) ? (_prim->area() - _primWoTap->area()) : 0; }
 
     const string& name() const { return _name; }
 
-    const Rects& getTaps() const { return _taps; }
-    const Rects& getActives() const { return _actives; }
+    const Rects& getTaps(const bool nmos) const { return nmos ? _ntaps : _ptaps; }
+    const Rects& getActives(const bool nmos) const { return nmos ? _nactives : _pactives; }
     const Rect& bbox() const { return _bbox; }
     const int index() const { return _woTapIndex; }
 

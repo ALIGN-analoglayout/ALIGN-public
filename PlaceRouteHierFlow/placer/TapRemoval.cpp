@@ -53,11 +53,15 @@ Instance::Instance(const Primitive* prim, const Primitive* primWoTap, const stri
 _prim(prim), _primWoTap(primWoTap), _name(name), _bbox(Rect()), _woTapIndex(ind)
 {
   if (_prim) {
-    for (const auto& t : _prim->getTaps()) {
-      _taps.push_back(t.transform(tr, _prim->width(), _prim->height()));
-    }
-    for (const auto& r : _prim->getActives()) {
-      _actives.push_back(r.transform(tr, _prim->width(), _prim->height()));
+    for (auto nmos : {true, false}) {
+      auto& taps = nmos ? _ntaps : _ptaps;
+      auto& actives = nmos ? _nactives : _pactives;
+      for (const auto& t : _prim->getTaps(nmos)) {
+        taps.push_back(t.transform(tr, _prim->width(), _prim->height()));
+      }
+      for (const auto& r : _prim->getActives(nmos)) {
+        actives.push_back(r.transform(tr, _prim->width(), _prim->height()));
+      }
     }
     _bbox = _prim->bbox().transform(tr, _prim->width(), _prim->height());
   }
@@ -67,12 +71,20 @@ void Instance::print() const
 {
   auto logger = spdlog::default_logger()->clone("placer.Instance.print");
   logger->info("{0} {1} {2}", _name, _prim->name(), _primWoTap->name());
-  logger->info("taps : ");
-  for (auto& t : _taps) {
+  logger->info("ntaps : ");
+  for (auto& t : _ntaps) {
     logger->info("{0}", t.toString());
   }
-  logger->info("actives : ");
-  for (auto& r : _actives) {
+  logger->info("nactives : ");
+  for (auto& r : _nactives) {
+    logger->info("{0}", r.toString());
+  }
+  logger->info("ptaps : ");
+  for (auto& t : _ptaps) {
+    logger->info("{0}", t.toString());
+  }
+  logger->info("pactives : ");
+  for (auto& r : _pactives) {
     logger->info("{0}", r.toString());
   }
 }
@@ -261,20 +273,22 @@ void TapRemoval::buildGraph()
   map<string, geom::Rect> allTaps;
   if (_graph == nullptr) _graph = new DomSetGraph::Graph;
   for (const auto& inst : _instances) {
-    const string pmos = (inst->primitive() && inst->primitive()->isPMOS()) ? "__tr_pmos_" : "__tr_nmos_";
-    auto& taps = inst->getTaps();
-    for (unsigned i = 0; i < taps.size(); ++i) {
-      bgBox b(bgPt(taps[i].xmin(), taps[i].ymin()), bgPt(taps[i].xmax(), taps[i].ymax()));
-      rtree.insert(bgVal(b, _graph->nodes().size()));
-      string nodeName(inst->name() + "__tap_" + pmos + to_string(i));
-      allTaps[nodeName] = taps[i];
-      _graph->addNode(nodeName, DomSetGraph::NodeType::Tap, inst->deltaArea(), inst->isBlack());
-    }
-    auto& actives = inst->getActives();
-    for (unsigned i = 0; i < actives.size(); ++i) {
-      bgBox b(bgPt(actives[i].xmin(), actives[i].ymin()), bgPt(actives[i].xmax(), actives[i].ymax()));
-      rtree.insert(bgVal(b, _graph->nodes().size()));
-      _graph->addNode(inst->name() + "__active_" + pmos + to_string(i), DomSetGraph::NodeType::Active, inst->deltaArea());
+    for (auto nmos : {true, false}) {
+      const string pmos = nmos ? "__tr_nmos_" : "__tr_pmos_";
+      auto& taps = inst->getTaps(nmos);
+      for (unsigned i = 0; i < taps.size(); ++i) {
+        bgBox b(bgPt(taps[i].xmin(), taps[i].ymin()), bgPt(taps[i].xmax(), taps[i].ymax()));
+        rtree.insert(bgVal(b, _graph->nodes().size()));
+        string nodeName(inst->name() + "__tap_" + pmos + to_string(i));
+        allTaps[nodeName] = taps[i];
+        _graph->addNode(nodeName, DomSetGraph::NodeType::Tap, inst->deltaArea(), inst->isBlack());
+      }
+      auto& actives = inst->getActives(nmos);
+      for (unsigned i = 0; i < actives.size(); ++i) {
+        bgBox b(bgPt(actives[i].xmin(), actives[i].ymin()), bgPt(actives[i].xmax(), actives[i].ymax()));
+        rtree.insert(bgVal(b, _graph->nodes().size()));
+        _graph->addNode(inst->name() + "__active_" + pmos + to_string(i), DomSetGraph::NodeType::Active, inst->deltaArea());
+      }
     }
   }
 
@@ -325,19 +339,27 @@ TapRemoval::TapRemoval(const PnRDB::hierNode& node, const unsigned dist) : _dist
     for (unsigned j = 0; j < node.Blocks[i].instance.size(); ++j) {
       const auto& n = node.Blocks[i].instance[j];
       PrimitiveData::Primitive *p(nullptr);
-      p = new PrimitiveData::Primitive(master, geom::Rect(n.originBox), n.IsPMOS());
+      //logger->info("node {0} {1} {2} {3}", n.name, i, j, n.HasTap());
 
-      for (const auto& t : n._tapVias) p->addTap(geom::Rect(t));
-      for (const auto& t : n._activeVias) p->addActive(geom::Rect(t));
+      if (n._taVias) {
+        p = new PrimitiveData::Primitive(master, geom::Rect(n.originBox));
+        for (auto nmos : {true, false}) {
+          const auto& tapVias = nmos ? n._taVias->_ntapVias : n._taVias->_ptapVias;
+          const auto& activeVias = nmos ? n._taVias->_nactiveVias : n._taVias->_pactiveVias;
+          for (const auto& t : tapVias) p->addTap(geom::Rect(t), nmos);
+          for (const auto& t : activeVias) p->addActive(geom::Rect(t), nmos);
+        }
+      } else {
+        continue;
+      }
 
-      //logger->info("master : {0} {1} {2}", master, n._tapVias.size(), n._activeVias.size());
-
-      if (!n._tapVias.empty()) {
+      if (!n._taVias->_ntapVias.empty() || !n._taVias->_ptapVias.empty()) {
         _primitives[master].push_back(p);
       } else {
         _primitivesWoTap[master].push_back(p);
       }
     }
+    //logger->info("master : {0} {1} {2}", master, _primitives.size(), _primitivesWoTap.size());
     if (!_primitivesWoTap[master].empty() && _primitives[master].size() != _primitivesWoTap[master].size()) {
       for (auto wtap : {true, false}) {
         auto& t = wtap ? _primitives[master] : _primitivesWoTap[master];
@@ -471,11 +493,13 @@ void TapRemoval::plot(const string& pltfile, const map<string, int>* swappedIndi
 
     for (const auto& b : _instances) {
       ofs << "set label \"" << b->name() << "\" at " << b->bbox().xcenter() << " , " << b->bbox().ycenter() << " center " << "\n";
-      for (const auto& t : b->getTaps()) {
-        ofs << "set label \"tap\" at " << t.xcenter() << " , " << t.ycenter() << "\n";
-      }
-      for (const auto& t : b->getActives()) {
-        ofs << "set label \"active\" at " << t.xcenter() << " , " << t.ycenter() << "\n";
+      for (auto nmos : {true, false}) {
+        for (const auto& t : b->getTaps(nmos)) {
+          ofs << "set label \"" << (nmos ? "N" : "P") << "tap\" at " << t.xcenter() << " , " << t.ycenter() << "\n";
+        }
+        for (const auto& t : b->getActives(nmos)) {
+          ofs << "set label \"" << (nmos ? "N" : "P") << "active\" at " << t.xcenter() << " , " << t.ycenter() << "\n";
+        }
       }
     }
 
@@ -498,12 +522,14 @@ void TapRemoval::plot(const string& pltfile, const map<string, int>* swappedIndi
 
     for (auto tap : {true, false}) {
       for (const auto& b : _instances) {
-        for (const auto& t : (tap ? b->getTaps() : b->getActives())) {
-          ofs << "\t" << t.xmin() << ' ' << t.ymin() << "\n";
-          ofs << "\t" << t.xmax() << ' ' << t.ymin() << "\n";
-          ofs << "\t" << t.xmax() << ' ' << t.ymax() << "\n";
-          ofs << "\t" << t.xmin() << ' ' << t.ymax() << "\n";
-          ofs << "\t" << t.xmin() << ' ' << t.ymin() << "\n\n";
+        for (auto nmos : {true, false}) {
+          for (const auto& t : (tap ? b->getTaps(nmos) : b->getActives(nmos))) {
+            ofs << "\t" << t.xmin() << ' ' << t.ymin() << "\n";
+            ofs << "\t" << t.xmax() << ' ' << t.ymin() << "\n";
+            ofs << "\t" << t.xmax() << ' ' << t.ymax() << "\n";
+            ofs << "\t" << t.xmin() << ' ' << t.ymax() << "\n";
+            ofs << "\t" << t.xmin() << ' ' << t.ymin() << "\n\n";
+          }
         }
       }
       ofs << "EOF\n\n";

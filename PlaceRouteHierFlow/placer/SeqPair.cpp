@@ -14,7 +14,15 @@ SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl)
   _maxSelected.reserve(casenl.GetSizeofBlocks());
   _maxSize = 0;
   for (unsigned i = 0; i < casenl.GetSizeofBlocks(); ++i) {
-    auto s = static_cast<int>(casenl.Blocks.at(i).size());
+    int s = static_cast<int>(casenl.Blocks.at(i).size());
+    if (casenl.RemoveTaps()) {
+      for (unsigned j = 0; j < casenl.Blocks.at(i).size(); ++j) {
+        if (!casenl.Blocks.at(i).at(j).wtap) {
+          s = static_cast<int>(j);
+          break;
+        }
+      }
+    }
     _maxSize = std::max(_maxSize, s);
     _maxSelected.push_back(s);
   }
