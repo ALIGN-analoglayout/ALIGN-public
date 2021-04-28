@@ -1,12 +1,14 @@
 from ..schema import constraint
 from ..cell_fabric import transformation
-
+from ..schema.types import set_context
 
 def check_placement(placement_verilog_d):
     for module in placement_verilog_d['modules']:
         if 'constraints' not in module or len(module['constraints']) == 0:
             continue  # No constraints
-        constraints = constraint.ConstraintDB(module['constraints'])
+        with set_context(module):
+            constraints = constraint.ConstraintDB()
+        constraints.extend(module['constraints'])
         if sum(hasattr(x, 'check') for x in constraints) == 0:
             continue  # Nothing useful to check against
         for inst in module['instances']:

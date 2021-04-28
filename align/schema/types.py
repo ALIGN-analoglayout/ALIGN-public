@@ -72,7 +72,7 @@ class BaseModel(pydantic.BaseModel):
     @classmethod
     def _validator_ctx(cls):
         self = _ctx.get()
-        assert self is not None
+        assert self is not None, 'Could not retrieve ctx'
         return self
 
     _parent = pydantic.PrivateAttr()

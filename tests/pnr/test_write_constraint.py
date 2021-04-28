@@ -3,7 +3,7 @@ import pytest
 import json
 
 from align.pnr.write_constraint import PnRConstraintWriter
-from align.schema import constraint
+from align.schema import types, constraint
 
 @pytest.mark.parametrize('results_file', 
     (pathlib.Path(__file__).parent.parent / 'files' / 'test_results').glob('*.pnr.const.json'),
@@ -15,7 +15,7 @@ def test_group_block_hsc(results_file):
     tmp_dir = pathlib.Path(__file__).parent.parent / 'tmp'
     tmp_dir.mkdir(exist_ok=True)
     tmp_file = tmp_dir / (name + '.pnr.const.json')
-    constraints = constraint.ConstraintDB.parse_file(constraint_file)
+    constraints = types.List[constraint.ConstraintType].parse_file(constraint_file)
     with open(tmp_file, 'w') as outfile:
         json.dump(PnRConstraintWriter().map_valid_const(constraints), outfile, indent=4)
     with open(tmp_file, "r") as const_fp:

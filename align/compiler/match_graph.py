@@ -134,12 +134,13 @@ class Annotate:
 
     def _group_block_const(self,G1,name):
         if self._if_const(name):
-            const_list = self.hier_graph_dict[name]["constraints"]
-            gb_const = (const for const in const_list if isinstance(const, constraint.GroupBlocks))
-            const_list = constraint.ConstraintDB([const for const in const_list if not isinstance(const, constraint.GroupBlocks)])
+            gb_const = [const for const in self.hier_graph_dict[name]["constraints"] if isinstance(const, constraint.GroupBlocks)]
+            const_list = [const for const in self.hier_graph_dict[name]["constraints"] if not isinstance(const, constraint.GroupBlocks)]
             self.hier_graph_dict[name] = self.hier_graph_dict[name].copy(
-                update={'constraints': const_list}
+                update={'constraints': constraint.ConstraintDB()}
             )
+            self.hier_graph_dict[name].constraints._parent = self.hier_graph_dict[name]
+            self.hier_graph_dict[name].constraints.extend(const_list)
             for const in gb_const:
                 if not set(const.instances).issubset(set(G1.nodes)):
                     logger.error(f"Constraint instances: {const.instances} not in subcircuit {list(G1.nodes)}")
@@ -169,14 +170,11 @@ class Annotate:
                     constraints = []
                     )
                 sconst = self._top_to_bottom_translation(name, G1, mapping, inst_name, const.name)
-                self.hier_graph_dict[const.name] = self.hier_graph_dict[const.name].copy(
-                    update={'constraints': sconst}
-                )
+                self.hier_graph_dict[const.name].constraints.extend(sconst)
                 self._update_sym_const(name, G1, const.instances, inst_name)
                 self._update_sym_const(name, G1, const.name, inst_name)
                 self._update_block_const(name, G1, [const.name], inst_name)
                 self._update_block_const(name, G1, const.instances, inst_name)
-
 
     def _group_cap_const(self, G1, name):
         """
@@ -255,7 +253,7 @@ class Annotate:
             if sub_hierarchy_name in self.hier_graph_dict and 'constraints' in self.hier_graph_dict[sub_hierarchy_name]:
                 sub_const = self.hier_graph_dict[sub_hierarchy_name]['constraints']
             else:
-                sub_const=constraint.ConstraintDB()
+                sub_const = []
                 for const in self.hier_graph_dict[name]["constraints"]:
                     if any(isinstance(const, x) for x in [constraint.HorizontalDistance,constraint.VerticalDistance,constraint.BlockDistance]):
                         sub_const.append(const)
@@ -272,7 +270,7 @@ class Annotate:
                         if len(sconst.instances) > 0:
                             sub_const.append(sconst)
         else:
-            sub_const = constraint.ConstraintDB()
+            sub_const = []
         return sub_const
             
 
@@ -309,8 +307,10 @@ class Annotate:
                         logger.debug(f"updated instances in the constraint:{const}")
             #Removing single instances of instances
             self.hier_graph_dict[name] = self.hier_graph_dict[name].copy(
-                update={"constraints" : constraint.ConstraintDB([const for const in const_list \
-                if (hasattr(const,'instances') and len(const.instances)>1) or not hasattr(const,'instances')])})
+                update={"constraints" : constraint.ConstraintDB()})
+            self.hier_graph_dict[name].constraints._parent = self.hier_graph_dict[name]
+            self.hier_graph_dict[name].constraints.extend([const for const in const_list \
+                if (hasattr(const,'instances') and len(const.instances)>1) or not hasattr(const,'instances')])
 
     def _if_const(self,name):
         """

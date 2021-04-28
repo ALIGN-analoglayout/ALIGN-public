@@ -119,7 +119,6 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, flat
 
     annotate = Annotate(hier_graph_dict, design_setup, library, all_lef)
     annotate.annotate()
-
     return hier_graph_dict
 
 def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:pathlib.Path, pdk_dir:pathlib.Path, uniform_height=False):
@@ -227,7 +226,6 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
     logger.debug(f"All available cell generator with updates: {all_lef}")
     for name,member in hier_graph_dict.items():
         graph = member["graph"]
-        constraints = member["constraints"]
         logger.debug(f"Found module: {name} {graph.nodes()}")
         inoutpin = []
         floating_ports=[]
@@ -249,13 +247,18 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
             if name not in design_setup['DIGITAL']:
                 logger.debug(f"call constraint generator writer for block: {name}")
                 stop_points = design_setup['POWER'] + design_setup['GND'] + design_setup['CLOCK']
+                constraints = member["constraints"]
                 if name not in design_setup['NO_CONST']:
                     constraints = FindConst(graph, name, inoutpin, member["ports_weight"], constraints, stop_points)
                 constraints = CapConst(graph, name, design_config["unit_size_cap"], constraints, design_setup['MERGE_SYMM_CAPS'])
-
+                hier_graph_dict[name] = hier_graph_dict[name].copy(
+                    update={'constraints': constraint.ConstraintDB()}
+                )
+                hier_graph_dict[name].constraints._parent = hier_graph_dict[name]
+                hier_graph_dict[name].constraints.extend(constraints)
             ## Write out modified netlist & constraints as JSON
             logger.debug(f"call verilog writer for block: {name}")
-            wv = WriteVerilog(graph, name, inoutpin, hier_graph_dict, POWER_PINS, constraints)
+            wv = WriteVerilog(name, inoutpin, hier_graph_dict, POWER_PINS)
             verilog_tbl['modules'].append( wv.gen_dict())
     if len(POWER_PINS)>0:
         for i, nm in enumerate(POWER_PINS):

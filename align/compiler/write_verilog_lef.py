@@ -14,9 +14,8 @@ logger = logging.getLogger(__name__)
 
 class WriteVerilog:
     """ write hierarchical verilog file """
-
-    def __init__(self, circuit_graph, circuit_name, inout_pin_names,subckt_dict, power_pins, constraints):
-        self.circuit_graph = circuit_graph
+    def __init__(self, circuit_name, inout_pin_names, hier_graph_dict, power_pins):
+        self.hier_graph_dict = hier_graph_dict
         self.circuit_name = circuit_name
         self.inout_pins = inout_pin_names
         self.pins = []
@@ -24,8 +23,9 @@ class WriteVerilog:
             if port not in power_pins:
                 self.pins.append(port)
         self.power_pins=power_pins
-        self.subckt_dict = subckt_dict
-        self.constraints = constraints
+
+        self.circuit_graph = self.hier_graph_dict[self.circuit_name].graph
+        self.constraints = self.hier_graph_dict[self.circuit_name].constraints
 
     def gen_dict( self):
         d = {}
@@ -63,7 +63,7 @@ class WriteVerilog:
                         nets.append(nets[1])
                 elif "connection" in attr and attr["connection"]:
                     for key, value in attr["connection"].items():
-                        if attr['inst_type'] in self.subckt_dict and key in self.subckt_dict[attr['inst_type']]['ports']:
+                        if attr['inst_type'] in self.hier_graph_dict and key in self.hier_graph_dict[attr['inst_type']]['ports']:
                             ports.append(key)
                             nets.append(value)
                 else:
@@ -71,9 +71,6 @@ class WriteVerilog:
                     ports = attr["ports"]
                     nets = list(self.circuit_graph.neighbors(node))
 
-                print(instance)
-                print(ports)
-                print(nets)
                 instance['fa_map'] = self.gen_dict_fa(ports, nets)
                 if not instance['fa_map']:
                     logger.warning(f"Unconnected module, only power/gnd conenction found {node}")

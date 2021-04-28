@@ -23,7 +23,6 @@ class MOSGenerator(CanvasPDK):
 
 
     def mos_array_temporary_wrapper(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
-        print('##DEBUG##',pattern, ports, parameters)
         #################################################################################################
         # TODO: All of below goes away when TransistorArray is passed to mos_array as shown below
         for key in ['m', 'real_inst_type']:
@@ -238,7 +237,6 @@ class MOSGenerator(CanvasPDK):
             y_offset += cell['bbox'][3] - cell['bbox'][1]
 
         self.bbox = transformation.Rect(*[0, 0, x_offset, y_offset])
-        print(self.bbox)
 
 
     def route(self):

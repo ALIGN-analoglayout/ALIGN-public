@@ -99,7 +99,7 @@ def gen_leaf_cell_info( verilog_d, input_dir, primitive_dir):
     pnr_const_ds = {}
     for module in verilog_d['modules']:
         nm = module['name']
-        pnr_const_ds[nm] = PnRConstraintWriter().map_valid_const(ConstraintDB(module['constraints']))
+        pnr_const_ds[nm] = PnRConstraintWriter().map_valid_const(ConstraintDB(__root__=module['constraints'], check=False))
         non_leaves.add( nm)
         for instance in module['instances']:
             templates_called_in_an_instance[instance['template_name']].append( (nm,instance['instance_name']))
