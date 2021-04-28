@@ -8,7 +8,7 @@ from .preprocess import define_SD, preprocess_stack_parallel, remove_pg_pins
 from .create_database import CreateDatabase
 from .match_graph import Annotate
 from .read_setup import read_setup
-from .write_verilog_lef import write_verilog, WriteVerilog,generate_lef
+from .write_verilog_lef import write_verilog, WriteVerilog, generate_lef
 from .common_centroid_cap_constraint import CapConst
 from .find_constraint import FindConst
 from .read_lef import read_lef
@@ -176,10 +176,14 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
 
     primitives = {}
     for name,member in hier_graph_dict.items():
-
         logger.debug(f"Found module: {name} {member['graph'].nodes()}")
-
         graph = member["graph"]
+        constraints = member["constraints"]
+
+        for const in constraints:
+            if isinstance(const, constraint.GuardRing):
+                primitives['guard_ring'] = {'primitive':'guard_ring'}
+
         logger.debug(f"Reading nodes from graph: {name}")
         for node, attr in graph.nodes(data=True):
             if 'net' in attr['inst_type']: continue
@@ -199,7 +203,7 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
                             else:
                                 #For cells with extra parameters than current primitive naming convention
                                 all_lef.append(nm)
-                    graph.nodes[node]["inst_type"]=block_name
+                    graph.nodes[node]["inst_type"] = block_name
                     all_lef.append(block_name)
 
                 # Only unit caps are generated
