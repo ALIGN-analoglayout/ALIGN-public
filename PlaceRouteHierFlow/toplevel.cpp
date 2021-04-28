@@ -355,10 +355,10 @@ int toplevel( const std::vector<std::string>& argv) {
 
     // Do the ILP again
 
+    PlacerIfc curr_plc(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
     
     return 0;
     // Placement
-    PlacerIfc curr_plc(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
     std::vector<PnRDB::hierNode>& nodeVec(curr_plc.get());
 
     logger->debug("Checkpoint: generated {0} placements",nodeVec.size());
