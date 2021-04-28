@@ -2783,16 +2783,20 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
           {
             current_node.Blocks[ii].instance[jj].height=0;
             current_node.Blocks[ii].instance[jj].width=0;
-            break;
+            current_node.Blocks[ii].instance[jj].originBox.UR.x=0;
+            current_node.Blocks[ii].instance[jj].originBox.UR.y=0;
+            current_node.Blocks[ii].instance[jj].originCenter.x=0;
+            current_node.Blocks[ii].instance[jj].originCenter.y=0;
+            //break;
           }
-          else
-          {
-            ++cur_id;
-          }
+          
         }
         if(id==cur_id)
           {
             break;
+          }else
+          {
+            ++cur_id;
           }
       }
 
