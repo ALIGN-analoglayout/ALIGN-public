@@ -6,6 +6,7 @@
 #include "limits.h"
 #include <map>
 #include <utility>
+#include <memory>
 //#include "../router/Rdatatype.h"
 using std::vector;
 using std::string;
@@ -285,6 +286,22 @@ struct PowerNet {
   vector<Via> path_via;
 }; // structure of nets
 
+struct taVias {
+  vector<PnRDB::bbox> _ntapVias, _nactiveVias;
+  vector<PnRDB::bbox> _ptapVias, _pactiveVias;
+  taVias() {}
+  taVias(const vector<PnRDB::bbox>& tVias, const vector<PnRDB::bbox>& aVias, const bool n = true)
+  {
+    if (n) {
+      _ntapVias = tVias;
+      _nactiveVias = aVias;
+    } else {
+      _ptapVias = tVias;
+      _pactiveVias = aVias;
+    }
+  }
+};
+
 struct block {
   // Basic information
   string name="";
@@ -311,10 +328,14 @@ struct block {
   vector<Via> interVias;
   vector<pin> dummy_power_pin; //power pins below to this block, but needs updated hierachy
   vector<GuardRing> GuardRings;
-  vector<PnRDB::bbox> _tapVias, _activeVias;
-  bool _pmosDevice=false;
-  bool HasTap() const { return _activeVias.empty() ||  !_tapVias.empty() ; }
-  bool IsPMOS() const { return _pmosDevice; }
+  std::shared_ptr<taVias> _taVias;
+  bool HasTap() const
+  {
+    return _taVias ? 
+      ((_taVias->_nactiveVias.empty() && _taVias->_pactiveVias.empty())
+       || !_taVias->_ntapVias.empty() || !_taVias->_ptapVias.empty())
+      : true; 
+  }
 }; // structure of block
 
 struct terminal {
@@ -422,7 +443,7 @@ struct hierNode {
   double placement_box[2] = {-1, -1};
   vector<Router_report> router_report;
   vector<Multi_connection> Multi_connections;
-  vector<PnRDB::bbox> _tapVias, _activeVias;
+  std::shared_ptr<taVias> _taVias;
 
 }; // structure of vertex in heirarchical tree
 
@@ -559,10 +580,8 @@ struct lefMacro {
   vector<pin> macroPins;
   vector<contact> interMetals;
   vector<Via> interVias;
-  vector<bbox> _tapVias;
-  vector<bbox> _activeVias;
+  std::shared_ptr<taVias> _taVias;
   string master = "";
-  bool _pmosDevice = false;
 };
 
 /// PArt 5: declaration of structures for design rule data

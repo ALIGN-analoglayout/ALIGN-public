@@ -416,6 +416,8 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
 
     PrimitiveData::PlMap plmap;
     bool removeTaps(wtap && mydesign.RemoveTaps());
+    LL.x = INT_MAX, LL.y = INT_MAX;
+    UR.x = INT_MIN, UR.y = INT_MIN;
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
       const auto& index = curr_sp.selected[i];
       // calculate LL and UR
@@ -1432,11 +1434,20 @@ void ILP_solver::UpdateBlockinHierNode(design& mydesign, placerDB::Omark ort, Pn
     iv.ViaRect.placedCenter = mydesign.GetPlacedBlockInterMetalAbsPoint(i, ort, iv.ViaRect.originCenter, LL, sel);
   }
 
-  for (auto& t : nd._tapVias) {
-    node._tapVias.push_back(mydesign.GetPlacedBlockInterMetalAbsBox(i, ort, t, LL, sel));
-  }
-  for (auto& t : nd._activeVias) {
-    node._activeVias.push_back(mydesign.GetPlacedBlockInterMetalAbsBox(i, ort, t, LL, sel));
+  node._taVias = std::make_shared<PnRDB::taVias>();
+  if (nd._taVias) {
+    for (auto n : {true, false}) {
+      auto& ndtapVias = n ? nd._taVias->_ntapVias : nd._taVias->_ptapVias;
+      auto& ndactiveVias = n ? nd._taVias->_nactiveVias : nd._taVias->_pactiveVias;
+      auto& nodeTap = n ? node._taVias->_ntapVias : node._taVias->_ptapVias;
+      auto& nodeActive = n ? node._taVias->_nactiveVias : node._taVias->_pactiveVias;
+      for (auto& t : ndtapVias) {
+        nodeTap.push_back(mydesign.GetPlacedBlockInterMetalAbsBox(i, ort, t, LL, sel));
+      }
+      for (auto& t : ndactiveVias) {
+        nodeActive.push_back(mydesign.GetPlacedBlockInterMetalAbsBox(i, ort, t, LL, sel));
+      }
+    }
   }
 }
 

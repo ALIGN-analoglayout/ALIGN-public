@@ -135,9 +135,13 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile, const bool wtap)
           macroIns.macroPins = macroPins;
           macroIns.interMetals = interMetals;
           macroIns.interVias = interVias;
-          macroIns._tapVias = tapVias;
-          macroIns._activeVias = activeVias;
-          macroIns._pmosDevice = pmosDevice;
+          MergeVias(tapVias);
+          MergeVias(activeVias);
+          if (pmosDevice) {
+            macroIns._taVias = std::make_shared<PnRDB::taVias>(tapVias, activeVias, false);
+          } else {
+            macroIns._taVias = std::make_shared<PnRDB::taVias>(tapVias, activeVias, true);
+          }
 
           string key = "_AspectRatio";
           std::size_t found = macroIns.name.find(key);
@@ -146,8 +150,6 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile, const bool wtap)
           } else {  // different aspect ratio does not exist
             macroIns.master = macroIns.name;
           }
-          MergeVias(macroIns._tapVias);
-          MergeVias(macroIns._activeVias);
           //for (auto& v : macroIns._tapVias) {
           //  logger->debug("{0} tap row : {1} {2} {3} {4}", macroIns.master, v.LL.x, v.LL.y, v.UR.x, v.UR.y);
           //}

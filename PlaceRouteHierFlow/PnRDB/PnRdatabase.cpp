@@ -213,8 +213,12 @@ void PnRdatabase::TransformBlock(PnRDB::block& block, PnRDB::point translate, in
   TransformContacts(block.interMetals, translate, width, height, ort, transform_type);
   TransformVias(block.interVias, translate, width, height, ort, transform_type);
   TransformPins(block.dummy_power_pin, translate, width, height, ort, transform_type);
-  TransformBboxs(block._tapVias, translate, width, height, ort, transform_type);
-  TransformBboxs(block._activeVias, translate, width, height, ort, transform_type);
+  if (block._taVias) {
+    TransformBboxs(block._taVias->_ntapVias, translate, width, height, ort, transform_type);
+    TransformBboxs(block._taVias->_nactiveVias, translate, width, height, ort, transform_type);
+    TransformBboxs(block._taVias->_ptapVias, translate, width, height, ort, transform_type);
+    TransformBboxs(block._taVias->_pactiveVias, translate, width, height, ort, transform_type);
+  }
 }
 
 void PnRdatabase::TransformBlocks(std::vector<PnRDB::block>& blocks, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
@@ -776,12 +780,7 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
       for(unsigned int j=0;j<lhs.interVias.size();j++){
         lhs.interVias[j]= rhs.interVias[j];
       }
-      for (unsigned int j = 0; j < lhs._tapVias.size(); ++j) {
-        lhs._tapVias[j] = rhs._tapVias[j];
-      }
-      for (unsigned int j = 0; j < lhs._activeVias.size(); ++j) {
-        lhs._activeVias[j] = rhs._activeVias[j];
-      }
+      lhs._taVias = rhs._taVias;
     }
 
   }
@@ -889,8 +888,7 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
 
         b.interMetals = updatedNode.interMetals;
         b.interVias = updatedNode.interVias;
-        b._tapVias = updatedNode._tapVias;
-        b._activeVias = updatedNode._activeVias;
+        b._taVias = updatedNode._taVias;
 
         b.width=updatedNode.width;
         b.height=updatedNode.height;
@@ -2156,9 +2154,7 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
         node.Blocks[i].instance.back().interMetals = lefDatw.interMetals;
         node.Blocks[i].instance.back().interVias = lefDatw.interVias;
         node.Blocks[i].instance.back().gdsFile=wtap ? gdsData[lefDatw.name] : _gdsDataWoTap[lefDatw.name];
-        node.Blocks[i].instance.back()._tapVias = lefDatw._tapVias;
-        node.Blocks[i].instance.back()._activeVias = lefDatw._activeVias;
-        node.Blocks[i].instance.back()._pmosDevice = lefDatw._pmosDevice;
+        node.Blocks[i].instance.back()._taVias = lefDatw._taVias;
         //cout<<"xxx "<<node.Blocks[i].instance.back().gdsFile<<endl;
       }
     }
