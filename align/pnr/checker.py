@@ -9,6 +9,18 @@ def check_placement(placement_verilog_d):
         constraints = constraint.ConstraintDB(module['constraints'])
         if sum(hasattr(x, 'check') for x in constraints) == 0:
             continue  # Nothing useful to check against
+        # Set module (i.e. subcircuit) bounding box parameters
+        bbox = transformation.Rect(*module['bbox'])
+        constraints.append(
+            constraint.SetBoundingBox(
+                instance=module['name'],
+                llx=bbox.llx,
+                lly=bbox.lly,
+                urx=bbox.urx,
+                ury=bbox.ury,
+                is_subcircuit=True
+            )
+        )
         for inst in module['instances']:
             t = inst['transformation']
             # Search for first match in 'modules' list
