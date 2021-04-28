@@ -136,8 +136,8 @@ Placement::Placement(PnRDB::hierNode &current_node)
   Unify_blocks(area, scale_factor);
   Ppoint_F uni_cell_Dpoint = find_uni_cell();
   readCC();
-  Initilize_Placement();
-  PlotPlacement(600);
+  //Initilize_Placement();
+  //PlotPlacement(600);
   splitNode_MS(uni_cell_Dpoint.y, uni_cell_Dpoint.x);
   int tol_diff = 3;
   addNet_after_split_Blocks(tol_diff,uni_cell_Dpoint.y, uni_cell_Dpoint.x);
@@ -1587,8 +1587,8 @@ float Placement::readInputNode(PnRDB::hierNode &current_node)
       tempblock.Cpoint = tempPoint1;
 
       //update height and width
-      tempPoint2.x = (float)it->instance[i].height;
-      tempPoint2.y = (float)it->instance[i].width;
+      tempPoint2.x = (float)it->instance[i].width;
+      tempPoint2.y = (float)it->instance[i].height;
       totalArea += tempPoint2.x * tempPoint2.y;
       tempblock.Dpoint = tempPoint2;
 
