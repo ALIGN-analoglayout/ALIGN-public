@@ -2763,6 +2763,10 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
 
     tempBlock.height = uni_cell_shape.y*commonCentroids[i].shape.y;
     tempBlock.width = uni_cell_shape.x*commonCentroids[i].shape.x;
+    tempBlock.originBox.UR.x = tempBlock.width;
+    tempBlock.originBox.UR.y = tempBlock.height;
+    tempBlock.originCenter.x = tempBlock.width / 2;
+    tempBlock.originCenter.y = tempBlock.height / 2;
 
     PnRDB::blockComplex tempBlockComplex;
     
