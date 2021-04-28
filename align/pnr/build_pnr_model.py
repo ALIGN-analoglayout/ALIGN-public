@@ -6,6 +6,7 @@ import re
 from itertools import chain
 
 from .. import PnR
+from ..schema.hacks import VerilogJsonTop
 
 logger = logging.getLogger(__name__)
 
@@ -193,8 +194,7 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
 
     j = None
     if vname.endswith(".verilog.json"):
-        with (pathlib.Path(path) / vname).open( "rt") as fp:
-            j = json.load( fp)
+        j = VerilogJsonTop.parse_file(pathlib.Path(path) / vname)
         global_signals = ReadVerilogJson( DB, j)
     else:
         global_signals = DB.ReadVerilog( path, vname, topcell)

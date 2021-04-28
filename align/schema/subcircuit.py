@@ -1,5 +1,4 @@
-from .types import Optional, List, Dict, BaseModel
-from typing import Any
+from .types import Optional, List, Dict
 
 from . import types
 
@@ -7,29 +6,7 @@ from .model import Model
 from .instance import Instance
 from .constraint import ConstraintDB
 
-
-class HierDictNode(BaseModel):
-    name : str
-    graph: Any
-    ports: List
-    constraints: ConstraintDB
-    ports_weight: Dict
-
-    class Config:
-        extra = 'allow'
-        allow_mutation = True
-
-    def __getitem__(self, item):
-        return getattr(self, item)
-    
-    def __setitem__(self, item, value):
-        setattr(self, item, value)
-
-    def __contains__(self, item):
-        return hasattr(self, item)
-
 class SubCircuit(Model):
-
     name : str                 # Model Name
     pins : Optional[List[str]] # List of pin names (derived from base if base exists)
     parameters : Optional[Dict[str, str]]   # Parameter Name: Value mapping (inherits & adds to base if needed)
@@ -45,11 +22,20 @@ class SubCircuit(Model):
         return nets
 
     def __init__(self, *args, **kwargs):
+        # make elements optional in __init__
+        # TODO: Replace with default factory
         if 'elements' not in kwargs:
             kwargs['elements'] = []
-        if 'constraints' not in kwargs:
-            kwargs['constraints'] = []
+        # defer constraint processing for now
+        constraints = []
+        if 'constraints' in kwargs:
+            constraints = kwargs['constraints']
+        kwargs['constraints'] = []
+        # load subcircuit
         super().__init__(*args, **kwargs)
+        # process constraints
+        with types.set_context(self.constraints):
+            self.constraints.extend(constraints)
 
     def xyce(self):
         ret = []

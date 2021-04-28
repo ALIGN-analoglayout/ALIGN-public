@@ -14,7 +14,7 @@ from .find_constraint import FindConst
 from .read_lef import read_lef
 from .user_const import ConstraintParser
 from ..schema import constraint
-from ..schema.subcircuit import HierDictNode
+from ..schema.hacks import HierDictNode
 
 import logging
 logger = logging.getLogger(__name__)

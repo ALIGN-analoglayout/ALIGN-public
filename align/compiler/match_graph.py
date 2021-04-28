@@ -15,7 +15,7 @@ from .common_centroid_cap_constraint import merge_caps
 import pprint
 import logging
 from ..schema import constraint
-from ..schema.subcircuit import HierDictNode
+from ..schema.hacks import HierDictNode
 
 logger = logging.getLogger(__name__)
 
@@ -305,10 +305,11 @@ class Annotate:
                         logger.debug(f"updated instances in the constraint:{const}")
             #Removing single instances of instances
             self.hier_graph_dict[name] = self.hier_graph_dict[name].copy(
-                update={"constraints" : constraint.ConstraintDB()})
-            self.hier_graph_dict[name].constraints._parent = self.hier_graph_dict[name]
-            self.hier_graph_dict[name].constraints.extend([const for const in const_list \
-                if (hasattr(const,'instances') and len(const.instances)>1) or not hasattr(const,'instances')])
+                update={"constraints" : [
+                    const 
+                    for const in const_list
+                    if (hasattr(const,'instances') and len(const.instances)>1) 
+                        or not hasattr(const,'instances')]})
 
     def _if_const(self,name):
         """

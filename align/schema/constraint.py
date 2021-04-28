@@ -3,7 +3,7 @@ import more_itertools as itertools
 import re
 
 from . import types
-from .types import Union, Optional, Literal, List
+from .types import Union, Optional, Literal, List, set_context
 from . import checker
 
 import logging
@@ -11,6 +11,23 @@ logger = logging.getLogger(__name__)
 
 pattern = re.compile(r'(?<!^)(?=[A-Z])')
 
+def get_instances_from_hacked_dataclasses(constraint):
+    assert constraint.parent.parent is not None, 'Cannot access parent scope'
+    if hasattr(constraint.parent.parent, 'graph'):
+        instances = {k for k, v in constraint.parent.parent.graph.nodes.items() if v['inst_type'] != 'net'}
+    elif hasattr(constraint.parent.parent, 'elements'):
+        instances = {x.name for x in constraint.parent.parent.elements}
+    else:
+        raise NotImplementedError(f"Cannot handle {type(constraint.parent.parent)}")
+    names = {x.name for x in constraint.parent if hasattr(x, 'name')}
+    return set.union(instances, names)
+
+def validate_instances(cls, value):
+    # instances = cls._validator_ctx().parent.parent.instances
+    instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+    assert isinstance(instances, set), 'Could not retrieve instances from subcircuit definition'
+    assert all(x in instances for x in value), f'One or more constraint instances {value} not found in {instances}'
+    return value
 
 class SoftConstraint(types.BaseModel):
 
@@ -96,6 +113,8 @@ class Order(PlacementConstraint):
     ]]
     abut: Optional[bool] = False
 
+    # _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
+
     def check(self, checker):
         assert len(self.instances) >= 2, 'Must contain at least two instances'
 
@@ -163,6 +182,8 @@ class Align(PlacementConstraint):
         'v_any', 'v_left', 'v_right', 'v_center'
     ]]
 
+    # _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
+
     def check(self, checker):
         super().check(checker)
         assert len(self.instances) >= 2, 'Must contain at least two instances'
@@ -225,7 +246,7 @@ class Enclose(PlacementConstraint):
     > `min_aspect_ratio`
     > `max_aspect_ratio`
     '''
-    instances: List[str]
+    instances: Optional[List[str]]
     min_height: Optional[int]
     max_height: Optional[int]
     min_width: Optional[int]
@@ -233,17 +254,18 @@ class Enclose(PlacementConstraint):
     min_aspect_ratio: Optional[float]
     max_aspect_ratio: Optional[float]
 
-    @types.root_validator(allow_reuse=True)
-    def bound_in_box_optional_fields(cls, values):
-        assert any(
+    # _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
+
+    @types.validator('max_aspect_ratio', allow_reuse=True)
+    def bound_in_box_optional_fields(cls, value, values):
+        assert value or any(
             getattr(values, x, None)
             for x in (
                 'min_height',
                 'max_height',
                 'min_width',
                 'max_width',
-                'min_aspect_ratio',
-                'max_aspect_ratio'
+                'min_aspect_ratio'
             )
         ), 'Too many optional fields'
 
@@ -305,6 +327,8 @@ class Spread(PlacementConstraint):
     instances: List[str]
     direction: Optional[Literal['horizontal', 'vertical']]
     distance: int  # in nm
+
+    # _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
 
     def check(self, checker):
         def cc(b1, b2, c='x'):
@@ -615,12 +639,23 @@ class ConstraintDB(types.List[ConstraintType]):
         self._check_recursive([self.__root__[-1]])
 
     def __init__(self, *args, check=True, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Constraints may need to access parent scope for subcircuit information
-        # To ensure parent is set appropriately, force users to use append
+        super().__init__()
         if check and checker.Z3Checker.enabled:
             self._checker = checker.Z3Checker()
-            self._check_recursive(self.__root__)
+        # Constraints may need to access parent scope for subcircuit information
+        # To ensure parent is set appropriately, force users to use append
+        if '__root__' in kwargs:
+            data = kwargs['__root__']
+            del kwargs['__root__']
+        elif len(args) == 1:
+            data = args[0]
+            args = tuple()
+        else:
+            assert len(args) == 0 and len(kwargs) == 0
+            data = []
+        with set_context(self):
+            for x in data:
+                self.append(x)
 
     def checkpoint(self):
         if self._checker:

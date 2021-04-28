@@ -78,6 +78,7 @@ class SpiceParser:
 
     def parse(self, text):
         cache = []
+        self._constraints = None
         for tok in self._generate_tokens(text):
             if tok.type == 'NEWL':
                 self._dispatch(cache)
@@ -85,8 +86,7 @@ class SpiceParser:
             elif tok.type == 'ANNOTATION':
                 self._dispatch(cache)
                 cache.clear()
-                constraint = self._extract_constraint(tok.value)
-                self._process_constraint(constraint)
+                self._queue_constraint(tok.value)
             else:
                 cache.append(tok)
         self._dispatch(cache)
@@ -103,9 +103,10 @@ class SpiceParser:
         else:
             assert False
 
-    @staticmethod
-    def _extract_constraint(annotation):
-        return annotation.split('@:')[1].strip()
+    def _queue_constraint(self, annotation):
+        assert self._constraints is not None
+        constraint = annotation.split('@:')[1].strip()
+        self._constraints.append(constraint)
 
     @staticmethod
     def _decompose(cache):
@@ -150,19 +151,17 @@ class SpiceParser:
         with set_context(self._scope[-1].elements):
             self._scope[-1].elements.append(Instance(name=name, model=model.name, pins=pins, parameters=kwargs))
 
-    def _process_constraint(self, constraint):
-        try:
-            constraint = eval(constraint, {}, constraint_dict)
-        except:
-            logger.warning(f'Error parsing constraint {repr(constraint)}')
-            return
+    def _process_constraints(self):
         assert hasattr(self._scope[-1], 'constraints'), \
             f'Constraint {repr(constraint)} can only be defined within a .SUBCKT \nCurrent scope:{self._scope[-1]}'
         with set_context(self._scope[-1].constraints):
-            self._scope[-1].constraints.append(constraint)
+            for constraint in self._constraints:
+                self._scope[-1].constraints.append(eval(constraint, {}, constraint_dict))
+        self._constraints = None
 
     def _process_declaration(self, decl, args, kwargs):
         if decl == '.SUBCKT':
+            self._constraints = []
             name = args.pop(0)
             assert self.library.find(name) is None, f"User is attempting to redeclare {name}"
             with set_context(self.library):
@@ -170,6 +169,7 @@ class SpiceParser:
             self.library.append(subckt)
             self._scope.append(subckt)
         elif decl == '.ENDS':
+            self._process_constraints()
             self._scope.pop()
         elif decl == '.PARAM':
             assert len(args) == 0

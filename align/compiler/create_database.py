@@ -5,7 +5,7 @@ Created on Fri Jan 15 10:38:14 2021
 
 @author: kunal001
 """
-from ..schema.subcircuit import HierDictNode
+from ..schema.hacks import HierDictNode
 import logging
 logger = logging.getLogger(__name__)
 

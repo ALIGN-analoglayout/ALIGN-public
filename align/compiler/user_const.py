@@ -44,9 +44,10 @@ class ConstraintParser:
         if json_path.is_file():
             logger.info(
                 f"JSON input const file for block {design_name} {json_path}")
-            node.constraints.extend(
-                types.List[constraint.ConstraintType].parse_file(json_path)
-            )
+            with types.set_context(node):
+                node.constraints.extend(
+                    constraint.ConstraintDB.parse_file(json_path)
+                )
         elif (self.input_dir / (design_name+'.const')).is_file():
             # TODO: Reimplement using pydantic-cli if you really want this
             raise NotImplementedError(

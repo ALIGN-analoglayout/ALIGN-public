@@ -128,8 +128,6 @@ class List(pydantic.generics.GenericModel, typing.Generic[DataT]):
 
     def append(self, item: DataT):
         self.__root__.append(item)
-        if isinstance(self.__root__[-1], (BaseModel, List, Dict)):
-            self.__root__[-1]._parent = self
 
     def extend(self, items: "List[DataT]"):
         for item in items:
@@ -152,8 +150,6 @@ class List(pydantic.generics.GenericModel, typing.Generic[DataT]):
 
     def __setitem__(self, item, value):
         self.__root__[item] = value
-        if isinstance(self.__root__[item], (BaseModel, List, Dict)):
-            self.__root__[item]._parent = self
 
     def __delitem__(self, sliceobj):
         del self.__root__[sliceobj]
@@ -239,8 +235,6 @@ class Dict(pydantic.generics.GenericModel, typing.Generic[KeyT, DataT]):
 
     def __setitem__(self, item, value):
         self.__root__[item] = value
-        if isinstance(self.__root__[item], (BaseModel, List, Dict)):
-            self.__root__[item]._parent = self
 
     def __eq__(self, other):
         return self.__root__ == other

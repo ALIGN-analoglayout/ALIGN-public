@@ -10,7 +10,7 @@ from itertools import combinations
 from .merge_nodes import merge_nodes
 from .util import compare_two_nodes
 from ..schema import constraint
-from ..schema.subcircuit import HierDictNode
+from ..schema.hacks import HierDictNode
 
 import logging
 logger = logging.getLogger(__name__)
