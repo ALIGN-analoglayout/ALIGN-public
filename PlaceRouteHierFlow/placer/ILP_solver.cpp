@@ -412,6 +412,8 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   }
 
   // calculate LL and UR
+  LL.x = INT_MAX, LL.y = INT_MAX;
+  UR.x = INT_MIN, UR.y = INT_MIN;
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
     LL.x = std::min(LL.x, Blocks[i].x);
     LL.y = std::min(LL.y, Blocks[i].y);

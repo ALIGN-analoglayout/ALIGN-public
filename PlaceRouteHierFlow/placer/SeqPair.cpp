@@ -555,7 +555,6 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
       enumerate = 2 * maxIter > totEnum;
     }
   }
-  enumerate = false;
   if (enumerate) {
     _seqPairEnum = std::make_shared<SeqPairEnumerator>(posPair, caseNL);
     auto logger = spdlog::default_logger()->clone("placer.SeqPair.SetEnumerate");
