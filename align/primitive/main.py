@@ -249,7 +249,7 @@ def get_generator(name, pdkdir):
 
 
 # WARNING: Bad code. Changing these default values breaks functionality.
-def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None, pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd()):
+def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None, pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd(), abstract_template_name=None, concrete_template_name=None):
 
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
 

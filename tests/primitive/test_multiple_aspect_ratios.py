@@ -40,27 +40,12 @@ def test_primitive_multiple_aspect_ratios():
 
     concrete2abstract = { vv:k for k,v in map_d.items() for vv in v}
 
-    placeholders_d = defaultdict(list)
-    for module in verilog_d['modules']:
-        parent_name = module['name']
-        for instance in module['instances']:
-            abstract_name = concrete2abstract[instance['template_name']]
-            instance_name = instance['instance_name']
-            full_name = f'{abstract_name}:{parent_name}/{instance_name}'
-            placeholders_d[abstract_name].append(full_name)
-            instance['template_name'] = full_name
-
-    print(json.dumps(verilog_d, indent=2))
-
     map2_d = []
     for k,v in map_d.items():
-        map2_d.append( {'abstract': k, 'concrete': v, 'placeholders': placeholders_d[k]})
+        map2_d.append( {'abstract_template_name': k, 'concrete_template_names': v})
     print(json.dumps( map2_d, indent=2))
 
-
     args = [str(design_dir), '-c', '--flow_start', '2_primitives', '--flow_stop', '2_primitives']
-
-
 
     os.chdir( run_dir)
 

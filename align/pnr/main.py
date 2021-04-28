@@ -174,7 +174,6 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
     # Generate file name inputs
     map_file = f'{subckt}.map'
     lef_file = f'{subckt}.lef'
-    #verilog_file = f'{subckt}.v'
     verilog_file = f'{subckt}.verilog.json'
     pdk_file = 'layers.json'
 
