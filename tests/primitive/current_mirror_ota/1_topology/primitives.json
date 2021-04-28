@@ -12,6 +12,51 @@
     },
     "vt_type": "RVT"
   },
+  "Switch_PMOS_nfin240_n10_X4_Y6_ST2_RVT": {
+    "primitive": "Switch_PMOS",
+    "value": 10,
+    "x_cells": 4,
+    "y_cells": 6,
+    "parameters": {
+      "w": 2.7e-08,
+      "l": 2e-08,
+      "nfin": 240.0,
+      "stack": 2,
+      "real_inst_type": "pmos_rvt"
+    },
+    "stack": 2,
+    "vt_type": "RVT"
+  },
+  "Switch_PMOS_nfin240_n10_X6_Y4_ST2_RVT": {
+    "primitive": "Switch_PMOS",
+    "value": 10,
+    "x_cells": 6,
+    "y_cells": 4,
+    "parameters": {
+      "w": 2.7e-08,
+      "l": 2e-08,
+      "nfin": 240.0,
+      "stack": 2,
+      "real_inst_type": "pmos_rvt"
+    },
+    "stack": 2,
+    "vt_type": "RVT"
+  },
+  "Switch_PMOS_nfin240_n12_X4_Y5_ST2_RVT": {
+    "primitive": "Switch_PMOS",
+    "value": 12,
+    "x_cells": 4,
+    "y_cells": 5,
+    "parameters": {
+      "w": 2.7e-08,
+      "l": 2e-08,
+      "nfin": 240.0,
+      "stack": 2,
+      "real_inst_type": "pmos_rvt"
+    },
+    "stack": 2,
+    "vt_type": "RVT"
+  },
   "Switch_PMOS_nfin240_n12_X5_Y4_ST2_RVT": {
     "primitive": "Switch_PMOS",
     "value": 12,
