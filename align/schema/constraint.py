@@ -363,6 +363,29 @@ class SetBoundingBox(HardConstraint):
         checker.append(bvar.ury == self.ury)
 
 
+class Generate(SoftConstraint):
+    '''
+    Generate a custom array for up to two transistors or passives
+    Specify a unique `name` to utilize in other constraints
+    Multiple `instances` can be interleaved using the `style`
+    Additional `parameters` per PDK can be specified
+    '''
+    instances: List[str]
+    name: Optional[str]
+    rows: Optional[int]
+    style: Optional[Literal['common_centroid', 'interdigitated']] = 'common_centroid'
+    add_guardring: Optional[bool] = False
+    parameters: Optional[Dict[str, Union[str,int]]
+
+    def check(self, checker):
+        super().check(checker)
+        assert len(self.instances) > 1 and len(self.instances) < 3, f'Maximum of two devices supported {self.instances}'
+        assert rows is None or rows > 0, f'Number of rows should be greater than zero {self.rows}'
+        # TODO: Verify that the instances exists (possibly in compiler or when this constraint has the circuit hierarchy) => Delegate to align/compiler?
+        # TODO: Verify that the instances can be arrayed (of same device type and vt type is transistor) => Delegate to Generator()
+        # TODO: Verify that the instance exists in at most one generate constraint => Handle here using indicator variables? 
+
+
 # You may chain constraints together for more complex constraints by
 #     1) Assigning default values to certain attributes
 #     2) Using custom validators to modify attribute values
@@ -566,6 +589,7 @@ ConstraintType = Union[
     Order, Align,
     Enclose, Spread,
     SetBoundingBox,
+    Generate,
     # Additional helper constraints
     AlignInOrder,
     # Current Align constraints
