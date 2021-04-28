@@ -416,6 +416,8 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
 
     PrimitiveData::PlMap plmap;
     bool removeTaps(wtap && mydesign.RemoveTaps());
+    LL.x = INT_MAX, LL.y = INT_MAX;
+    UR.x = INT_MIN, UR.y = INT_MIN;
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
       const auto& index = curr_sp.selected[i];
       // calculate LL and UR
