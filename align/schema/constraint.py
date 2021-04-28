@@ -63,7 +63,7 @@ class PlacementConstraint(HardConstraint):
         return list of z3 constraints associated
         each bbox at least
         '''
-        assert len(self.instances) >= 1
+        assert len(self.instances) >= 1, 'Must contain at least one instance'
 
 
 class Order(PlacementConstraint):
@@ -97,7 +97,7 @@ class Order(PlacementConstraint):
     abut: Optional[bool] = False
 
     def check(self, checker):
-        assert len(self.instances) >= 2
+        assert len(self.instances) >= 2, 'Must contain at least two instances'
 
         def cc(b1, b2, c='x'):  # Create coordinate constraint
             if self.abut:
@@ -165,7 +165,7 @@ class Align(PlacementConstraint):
 
     def check(self, checker):
         super().check(checker)
-        assert len(self.instances) >= 2
+        assert len(self.instances) >= 2, 'Must contain at least two instances'
         bvars = checker.iter_bbox_vars(self.instances)
         for b1, b2 in itertools.pairwise(bvars):
             if self.line == 'h_top':
@@ -245,11 +245,11 @@ class Enclose(PlacementConstraint):
                 'min_aspect_ratio',
                 'max_aspect_ratio'
             )
-        )
+        ), 'Too many optional fields'
 
     def check(self, checker):
         super().check(checker)
-        assert len(self.instances) >= 2
+        assert len(self.instances) >= 2, 'Must contain at least two instances'
         bb = checker.bbox_vars(id(self))
         if self.min_width:
             checker.append(
@@ -325,7 +325,7 @@ class Spread(PlacementConstraint):
                 ) >= self.distance * 2
             )
         super().check(checker)
-        assert len(self.instances) >= 2
+        assert len(self.instances) >= 2, 'Must contain at least two instances'
         bvars = checker.iter_bbox_vars(self.instances)
         for b1, b2 in itertools.pairwise(bvars):
             if self.direction == 'horizontal':
@@ -453,8 +453,8 @@ class PlaceSymmetric(PlacementConstraint):
         Align(1, X, Y, 6, 'center')
 
         '''
-        assert len(self.instances) >= 1
-        assert all(isinstance(x, List) for x in self.instances)
+        assert len(self.instances) >= 1, 'Must contain at least one instance'
+        assert all(isinstance(x, List) for x in self.instances), f'All arguments must be of type list in {self.instances}'
 
 
 class CreateAlias(SoftConstraint):
@@ -591,8 +591,8 @@ class ConstraintDB(types.List[ConstraintType]):
     _checker = types.PrivateAttr(None)
 
     def _check(self, constraint):
-        assert constraint.parent is not None
-        assert constraint.parent.parent is not None
+        assert constraint.parent is not None, 'parent is not set'
+        assert constraint.parent.parent is not None, 'parent.parent is not set'
         if self._checker and hasattr(constraint, 'check'):
             try:
                 constraint.check(self._checker)

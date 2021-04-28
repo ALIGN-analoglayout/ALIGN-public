@@ -137,10 +137,8 @@ class Annotate:
             gb_const = [const for const in self.hier_graph_dict[name]["constraints"] if isinstance(const, constraint.GroupBlocks)]
             const_list = [const for const in self.hier_graph_dict[name]["constraints"] if not isinstance(const, constraint.GroupBlocks)]
             self.hier_graph_dict[name] = self.hier_graph_dict[name].copy(
-                update={'constraints': constraint.ConstraintDB()}
+                update={'constraints': const_list}
             )
-            self.hier_graph_dict[name].constraints._parent = self.hier_graph_dict[name]
-            self.hier_graph_dict[name].constraints.extend(const_list)
             for const in gb_const:
                 if not set(const.instances).issubset(set(G1.nodes)):
                     logger.error(f"Constraint instances: {const.instances} not in subcircuit {list(G1.nodes)}")

@@ -69,6 +69,34 @@ class BaseModel(pydantic.BaseModel):
         with set_context(self):
             super().__init__(*args, **kwargs)
 
+    def copy(self, include=None, exclude=None, update={}):
+        def to_dict(val):
+            if isinstance(val, list):
+                return [to_dict(v) for v in val]
+            elif isinstance(val, dict):
+                return {to_dict(k): to_dict(v) for k, v in val.items()}
+            elif isinstance(val, (BaseModel, List, Dict)):
+                return val.dict(
+                    exclude_unset=True,
+                    exclude_defaults=True)
+            else:
+                return val
+        ctx = self.parent if _ctx.get() is None else _ctx.get()
+        v = {
+            **self.dict(
+                exclude_unset=True,
+                exclude_defaults=True,
+                include=include,
+                exclude=exclude),
+            **{
+                k: to_dict(v)
+                for k, v
+                in update.items()
+            }
+        }
+        with set_context(ctx):
+            return self.__class__(**v)
+
     @classmethod
     def _validator_ctx(cls):
         self = _ctx.get()

@@ -5,11 +5,10 @@ def gen_dot_file(nm, ifn, ofn):
 
     parser = SpiceParser()
     # Patch library to use different model name
-    with set_context(parser.library):
-        parser.library.append(parser.library.find('PMOS').copy(update={'name': 'P'}))
-        parser.library.append(parser.library.find('NMOS').copy(update={'name': 'N'}))
-        parser.library.append(parser.library.find('PMOS').copy(update={'name': 'PFET'}))
-        parser.library.append(parser.library.find('NMOS').copy(update={'name': 'NFET'}))
+    parser.library.append(parser.library.find('PMOS').copy(update={'name': 'P'}))
+    parser.library.append(parser.library.find('NMOS').copy(update={'name': 'N'}))
+    parser.library.append(parser.library.find('PMOS').copy(update={'name': 'PFET'}))
+    parser.library.append(parser.library.find('NMOS').copy(update={'name': 'NFET'}))
 
     with open( ifn, "rt") as fp:
         txt = fp.read()

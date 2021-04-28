@@ -252,10 +252,8 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
                     constraints = FindConst(graph, name, inoutpin, member["ports_weight"], constraints, stop_points)
                 constraints = CapConst(graph, name, design_config["unit_size_cap"], constraints, design_setup['MERGE_SYMM_CAPS'])
                 hier_graph_dict[name] = hier_graph_dict[name].copy(
-                    update={'constraints': constraint.ConstraintDB()}
+                    update={'constraints': constraints}
                 )
-                hier_graph_dict[name].constraints._parent = hier_graph_dict[name]
-                hier_graph_dict[name].constraints.extend(constraints)
             ## Write out modified netlist & constraints as JSON
             logger.debug(f"call verilog writer for block: {name}")
             wv = WriteVerilog(name, inoutpin, hier_graph_dict, POWER_PINS)
