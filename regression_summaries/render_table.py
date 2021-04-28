@@ -55,6 +55,11 @@ for nm in df.columns.tolist():
 for k,v in names.items():
     assert set([f'{k}_x', f'{k}_y']) == set(v)
 
+for k,v in names.items():
+    for kk in v:
+        if kk.startswith('failed'):
+            df[kk] = df[kk].replace({True:1, False:0})
+
 for k,_ in names.items():
     df[f'{k}_d'] = df[f'{k}_y'] - df[f'{k}_x']
 
