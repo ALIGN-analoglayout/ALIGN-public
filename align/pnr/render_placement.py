@@ -43,7 +43,7 @@ def gen_placement_verilog(hN, DB, verilog_d):
     transforms = defaultdict(list)
     leaf_bboxes = defaultdict(list)
 
-    master_renaming_d = defaultdict(list)
+    templates = defaultdict(list)
 
 
     def aux(hN, r, prefix_path):
@@ -66,16 +66,14 @@ def gen_placement_verilog(hN, DB, verilog_d):
                 new_hN = DB.CheckoutHierNode(child_idx, blk.selectedInstance)
                 aux(new_hN, new_r, new_prefix_path)
             else:
-                # Maybe we should use the .gds name (choosen master)
                 assert inst.gdsFile.endswith( ".gds")
                 chosen_master = inst.gdsFile[:-len(".gds")]
                 if chosen_master.startswith("./Results/"):
                     chosen_master = chosen_master[len("./Results/"):]
 
                 #chosen_master = inst.master
-                if chosen_master != inst.master:
-                    logger.info( f'Choose {chosen_master} for {inst.master} {(hN.name, inst.name)}')
-                master_renaming_d[(hN.name, inst.name)].append( chosen_master)
+                logger.info( f'Choose {chosen_master} for {inst.master} {(hN.name, inst.name)}')
+                templates[(hN.name, inst.name)].append( chosen_master)
 
                 leaf_bboxes[chosen_master].append( new_r)
 
@@ -95,9 +93,9 @@ def gen_placement_verilog(hN, DB, verilog_d):
         if len(set(v)) > 1:
             logger.error( f'Different leaf bboxes for {k}: {v}')
 
-    for k,v in master_renaming_d.items():
+    for k,v in templates.items():
         if len(set(v)) > 1:
-            logger.error( f'Different choosen masters for {k}: {v}')
+            logger.error( f'Different chosen masters for {k}: {v}')
 
     logger.debug( f'transforms: {transforms}')
     logger.debug( f'bboxes: {bboxes}')
@@ -111,8 +109,8 @@ def gen_placement_verilog(hN, DB, verilog_d):
             logger.error( f'No bounding box for module {nm}')
         for instance in module['instances']:
             k = (nm, instance['instance_name'])
-            if k in master_renaming_d:
-                instance['template_name'] = master_renaming_d[k][0]
+            if k in templates:
+                instance['template_name'] = templates[k][0]
             k = (nm, instance['instance_name']) 
             if k in transforms:
                 instance['transformation'] = transforms[k][0].toDict()
