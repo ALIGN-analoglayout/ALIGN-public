@@ -155,5 +155,6 @@ public:
     void Initilize_sym_beta();
     void match_pairs(commonCentroid &CC, int dummyNum);
 
+    void plotPlacement(PnRDB::hierNode &current_node);
 };
 #endif

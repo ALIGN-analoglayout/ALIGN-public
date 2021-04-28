@@ -153,9 +153,14 @@ Placement::Placement(PnRDB::hierNode &current_node)
   print_blocks_nets();
   //step 3: call E_placer
   std::cout << "start ePlacement" << std::endl;
+  PlotPlacement(602);
   E_Placer();
   restore_CC_in_square();
 
+  //only for plot
+
+  restore_MS();
+  PlotPlacement(603);
   //setp 4: write back to HierNode
   writeback(current_node);
 }
@@ -331,18 +336,23 @@ void Placement::Initilize_Placement()
 
   for (unsigned int i = 0; i < originalBlockCNT; ++i)
   {
-    Blocks[i].Cpoint.x = 0.5 + (float)(rand() % 100) / 1000;
-    Blocks[i].Cpoint.y = 0.5 + (float)(rand() % 100) / 1000;
+    if(Blocks[i].Cpoint.x==0 and Blocks[i].Cpoint.y==0)
+    {
+      Blocks[i].Cpoint.x = 0.5 + (float)(rand() % 400) / 1000;
+      Blocks[i].Cpoint.y = 0.5 + (float)(rand() % 400) / 1000;
+    }
+    
   }
   for (int i = originalBlockCNT; i < Blocks.size(); ++i)
   {
     int id = Blocks[i].splitedsource;
-    // Blocks[i].Cpoint.x = Blocks[id].Cpoint.x + (float)(rand() % 100) / 1000;
-    // Blocks[i].Cpoint.y = Blocks[id].Cpoint.y + (float)(rand() % 100) / 1000;
-    Blocks[i].Cpoint.x = 0.5 + (float)(rand() % 100) / 1000;
-    Blocks[i].Cpoint.y = 0.5 + (float)(rand() % 100) / 1000;
+    Blocks[i].Cpoint.x = Blocks[id].Cpoint.x + (float)(rand() % 80) / 1000;
+    Blocks[i].Cpoint.y = Blocks[id].Cpoint.y + (float)(rand() % 80) / 1000;
+    // Blocks[i].Cpoint.x = 0.45 + (float)(rand() % 100) / 1000;
+    // Blocks[i].Cpoint.y = 0.45 + (float)(rand() % 100) / 1000;
   }
-  refine_CC();
+  // refine_CC();
+  restore_CC_in_square();
 }
 
 void Placement::Update_Bin_Density()
@@ -516,12 +526,16 @@ void Placement::PlotPlacement(int index)
     fout << "\nset label \"" << Blocks[i].blockname << "\" at " << Blocks[i].Cpoint.x << " , " << Blocks[i].Cpoint.y << " center " << endl;
   }
 
-  fout << "\nplot[:][:] \'-\' with lines linestyle 3, \'-\' with lines linestyle 7, \'-\' with lines linestyle 1, \'-\' with lines linestyle 0" << endl
-       << endl;
+  // fout << "\nplot[:][:] \'-\' with lines linestyle 3 lc 2,  \'-\' with lines linestyle 7 lc 2, "<<
+  //       "\'-\' with lines linestyle 1 lc 2, \'-\' with lines linestyle 0 lc 2" << endl
+  //      << endl;
   ;
 
   for (int i = 0; i < (int)Blocks.size(); ++i)
   {
+      fout << "\nplot[:][:] \'-\' with lines linestyle 3 lc " <<  to_string(2*i)<<",  \'-\' with lines linestyle 7 lc " <<  to_string(i*2)<<", "<<
+        "\'-\' with lines linestyle 1 lc " <<  to_string(i*2)<<", \'-\' with lines linestyle 0 lc " <<  to_string(i*2)<<"" << endl
+       << endl;
     fout << "\t" << Blocks[i].Cpoint.x - Blocks[i].Dpoint.x / 2 << "\t" << Blocks[i].Cpoint.y - Blocks[i].Dpoint.y / 2 << endl;
     fout << "\t" << Blocks[i].Cpoint.x - Blocks[i].Dpoint.x / 2 << "\t" << Blocks[i].Cpoint.y + Blocks[i].Dpoint.y / 2 << endl;
     fout << "\t" << Blocks[i].Cpoint.x + Blocks[i].Dpoint.x / 2 << "\t" << Blocks[i].Cpoint.y + Blocks[i].Dpoint.y / 2 << endl;
@@ -1582,8 +1596,11 @@ float Placement::readInputNode(PnRDB::hierNode &current_node)
       tempblock.blockname = it->instance[i].name;
       Ppoint_F tempPoint1, tempPoint2;
       //update center point
-      tempPoint1.x = (float)it->instance[i].originCenter.x;
-      tempPoint1.y = (float)it->instance[i].originCenter.y;
+      // tempPoint1.x = (float)it->instance[i].originCenter.x;
+      // tempPoint1.y = (float)it->instance[i].originCenter.y;
+      
+      tempPoint1.x = 0.0;
+      tempPoint1.y = 0.0;
       tempblock.Cpoint = tempPoint1;
 
       //update height and width
@@ -2690,11 +2707,12 @@ void Placement::restore_CC_in_square()
 
 void Placement::restore_MS(PnRDB::hierNode &current_node)
 {
+  std::cout<<"restore ms debug:0"<<std::endl;
   current_node.isFirstILP=0;
   current_node.Blocks.erase(current_node.Blocks.end()-(Blocks.size()-originalBlockCNT),current_node.Blocks.end());
-
+  std::cout<<"restore ms debug:1"<<std::endl;
   current_node.Nets.erase(current_node.Nets.end()-(Nets.size()-originalNetCNT),current_node.Nets.end());
-
+  std::cout<<"restore ms debug:2"<<std::endl;
   for(int i = 0;i < current_node.SPBlocks.size();++i)
   {
     int j=0;
@@ -2720,14 +2738,14 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
     }
 
   }
-
+  std::cout<<"restore ms debug:3"<<std::endl;
   //restore the size of block
   int idx = 0;
   for(int i = 0;i < current_node.Nets.size();++i)
   {
     current_node.Nets[i].weight = 1.0;
   }
-
+  std::cout<<"restore ms debug:4"<<std::endl;
   for(int i = 0;i < current_node.Blocks.size();++i)
   {
     for(int j = 0;j < current_node.Blocks[i].instance.size();++j)
@@ -2745,6 +2763,7 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
     }
   }
 
+  std::cout<<"restore ms debug:5"<<std::endl;
   //merge CC block
   //make origin block in CC size to zero
   int id_new_block = originalBlockCNT;
@@ -2763,7 +2782,7 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
     tempBlockComplex.instNum=1;
     tempBlockComplex.instance.push_back(tempBlock);
     current_node.Blocks.push_back(tempBlockComplex);
-
+    std::cout<<"restore ms debug:6"<<std::endl;
     for(int j=0;j<commonCentroids[i].blocks.size();++j)
     {
       int id = commonCentroids[i].blocks[j];
@@ -2777,6 +2796,7 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
           {
             current_node.Blocks[ii].instance[jj].height=0;
             current_node.Blocks[ii].instance[jj].width=0;
+            current_node.Blocks[ii].instance[jj].isRead=false;
             break;
           }
           else
@@ -2789,7 +2809,7 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
             break;
           }
       }
-
+      std::cout<<"restore ms debug:7"<<std::endl;
       for(int k=0;k<Blocks[id].connected_net.size();++k)
       {
         int netid = Blocks[id].connected_net[k];
@@ -2813,8 +2833,11 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
         }
       }
     }
+    std::cout<<"restore ms debug:8"<<std::endl;
     id_new_block++;
   }
+
+  PlotPlacement(601);
 }
 //donghao end
 
