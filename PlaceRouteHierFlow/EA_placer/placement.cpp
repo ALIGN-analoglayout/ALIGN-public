@@ -2713,7 +2713,7 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
   current_node.Blocks.erase(current_node.Blocks.end()-(Blocks.size()-originalBlockCNT),current_node.Blocks.end());
   std::cout<<"restore ms debug:1"<<std::endl;
   current_node.Nets.erase(current_node.Nets.end()-(Nets.size()-originalNetCNT),current_node.Nets.end());
-  
+
   for(int i = 0;i < current_node.SPBlocks.size();++i)
   {
     int j=0;
@@ -2813,20 +2813,22 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
           {
             current_node.Blocks[ii].instance[jj].height=0;
             current_node.Blocks[ii].instance[jj].width=0;
-<<<<<<< HEAD
+
             current_node.Blocks[ii].instance[jj].isRead=false;
             break;
           }
           else
           {
             ++cur_id;
-=======
+
             current_node.Blocks[ii].instance[jj].originBox.UR.x=0;
             current_node.Blocks[ii].instance[jj].originBox.UR.y=0;
             current_node.Blocks[ii].instance[jj].originCenter.x=0;
             current_node.Blocks[ii].instance[jj].originCenter.y=0;
+
+            current_node.Blocks[ii].instance[jj].isRead=false;
             //break;
->>>>>>> dd1e8368adeede0355e3a9005d90850a09dc40a0
+
           }
           
         }
