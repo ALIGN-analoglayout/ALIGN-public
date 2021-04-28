@@ -2691,10 +2691,11 @@ void Placement::restore_CC_in_square()
 void Placement::restore_MS(PnRDB::hierNode &current_node)
 {
   current_node.isFirstILP=0;
+  PnRDB::hierNode copy_node(current_node);
   current_node.Blocks.erase(current_node.Blocks.end()-(Blocks.size()-originalBlockCNT),current_node.Blocks.end());
 
   current_node.Nets.erase(current_node.Nets.end()-(Nets.size()-originalNetCNT),current_node.Nets.end());
-
+  
   for(int i = 0;i < current_node.SPBlocks.size();++i)
   {
     int j=0;
@@ -2767,6 +2768,12 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
     tempBlock.originBox.UR.y = tempBlock.height;
     tempBlock.originCenter.x = tempBlock.width / 2;
     tempBlock.originCenter.y = tempBlock.height / 2;
+    for(int j=0;j<commonCentroids[i].blocks.size();++j){
+      tempBlock.placedCenter.x += copy_node.Blocks[commonCentroids[i].blocks[j]].instance[0].placedCenter.x;
+      tempBlock.placedCenter.y += copy_node.Blocks[commonCentroids[i].blocks[j]].instance[0].placedCenter.y;
+    }
+    tempBlock.placedCenter.x /= float(commonCentroids[i].blocks.size());
+    tempBlock.placedCenter.y /= float(commonCentroids[i].blocks.size());
 
     PnRDB::blockComplex tempBlockComplex;
     
