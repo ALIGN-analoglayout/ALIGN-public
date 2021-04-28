@@ -17,7 +17,8 @@ def check_placement(placement_verilog_d):
                 llx=bbox.llx,
                 lly=bbox.lly,
                 urx=bbox.urx,
-                ury=bbox.ury
+                ury=bbox.ury,
+                is_subcircuit=True
             )
         )
         for inst in module['instances']:

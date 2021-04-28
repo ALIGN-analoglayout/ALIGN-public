@@ -344,17 +344,19 @@ class Spread(PlacementConstraint):
                     )
                 )
 
+
 class SetBoundingBox(HardConstraint):
     instance: str
     llx: int
     lly: int
     urx: int
     ury: int
+    is_subcircuit: Optional[bool] = False
 
     def check(self, checker):
         super().check(checker)
         assert self.llx < self.urx and self.lly < self.ury, f'Reflection is not supported yet for {self}'
-        bvar = checker.bbox_vars(self.instance)
+        bvar = checker.bbox_vars(self.instance, is_subcircuit=self.is_subcircuit)
         checker.append(bvar.llx == self.llx)
         checker.append(bvar.lly == self.lly)
         checker.append(bvar.urx == self.urx)

@@ -141,6 +141,7 @@ class Z3Checker(AbstractChecker):
         self._solver.add(formula)
         r = self._solver.check()
         if r == z3.unsat:
+            z3.set_option(max_depth=10000, max_args=100, max_lines=10000)
             raise CheckerError(f'No solution exists for {formula} in conjunction with {self._solver}')
 
     def checkpoint(self):

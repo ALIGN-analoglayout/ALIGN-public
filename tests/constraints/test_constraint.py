@@ -50,6 +50,7 @@ def run_example(example):
     assert results is not None, f"{example.name}: No results generated"
     
     shutil.rmtree(run_dir)
+    shutil.rmtree(example)
 
 
 def test_aspect_ratio_min():
