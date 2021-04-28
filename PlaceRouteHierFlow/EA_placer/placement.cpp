@@ -136,8 +136,8 @@ Placement::Placement(PnRDB::hierNode &current_node)
   Unify_blocks(area, scale_factor);
   Ppoint_F uni_cell_Dpoint = find_uni_cell();
   readCC();
-  Initilize_Placement();
-  PlotPlacement(600);
+  //Initilize_Placement();
+  //PlotPlacement(600);
   splitNode_MS(uni_cell_Dpoint.y, uni_cell_Dpoint.x);
   int tol_diff = 3;
   addNet_after_split_Blocks(tol_diff,uni_cell_Dpoint.y, uni_cell_Dpoint.x);
@@ -1604,8 +1604,8 @@ float Placement::readInputNode(PnRDB::hierNode &current_node)
       tempblock.Cpoint = tempPoint1;
 
       //update height and width
-      tempPoint2.x = (float)it->instance[i].height;
-      tempPoint2.y = (float)it->instance[i].width;
+      tempPoint2.x = (float)it->instance[i].width;
+      tempPoint2.y = (float)it->instance[i].height;
       totalArea += tempPoint2.x * tempPoint2.y;
       tempblock.Dpoint = tempPoint2;
 
@@ -2709,10 +2709,11 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
 {
   std::cout<<"restore ms debug:0"<<std::endl;
   current_node.isFirstILP=0;
+  PnRDB::hierNode copy_node(current_node);
   current_node.Blocks.erase(current_node.Blocks.end()-(Blocks.size()-originalBlockCNT),current_node.Blocks.end());
   std::cout<<"restore ms debug:1"<<std::endl;
   current_node.Nets.erase(current_node.Nets.end()-(Nets.size()-originalNetCNT),current_node.Nets.end());
-  std::cout<<"restore ms debug:2"<<std::endl;
+  
   for(int i = 0;i < current_node.SPBlocks.size();++i)
   {
     int j=0;
@@ -2767,6 +2768,12 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
   //merge CC block
   //make origin block in CC size to zero
   int id_new_block = originalBlockCNT;
+  Ppoint_F uni_cell_Dpoint;
+  uni_cell_Dpoint.x = Blocks[0].Dpoint.x;
+  uni_cell_Dpoint.y = Blocks[0].Dpoint.y;
+  Ppoint_I uni_cell_shape;
+  uni_cell_shape.x = (int)(est_Size.x*uni_cell_Dpoint.x);
+  uni_cell_shape.y = (int)(est_Size.y*uni_cell_Dpoint.y);
   for(int i=0;i < commonCentroids.size();++i)
   {
     vector<int> to_connect;
@@ -2774,8 +2781,18 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
     tempBlock.name = "CC_merge_cell"+commonCentroids[i].label;
     tempBlock.orient = PnRDB::N;
 
-    tempBlock.height = uni_cell.y*commonCentroids[i].shape.y;
-    tempBlock.width = uni_cell.x*commonCentroids[i].shape.x;
+    tempBlock.height = uni_cell_shape.y*commonCentroids[i].shape.y;
+    tempBlock.width = uni_cell_shape.x*commonCentroids[i].shape.x;
+    tempBlock.originBox.UR.x = tempBlock.width;
+    tempBlock.originBox.UR.y = tempBlock.height;
+    tempBlock.originCenter.x = tempBlock.width / 2;
+    tempBlock.originCenter.y = tempBlock.height / 2;
+    for(int j=0;j<commonCentroids[i].blocks.size();++j){
+      tempBlock.placedCenter.x += copy_node.Blocks[commonCentroids[i].blocks[j]].instance[0].placedCenter.x;
+      tempBlock.placedCenter.y += copy_node.Blocks[commonCentroids[i].blocks[j]].instance[0].placedCenter.y;
+    }
+    tempBlock.placedCenter.x /= float(commonCentroids[i].blocks.size());
+    tempBlock.placedCenter.y /= float(commonCentroids[i].blocks.size());
 
     PnRDB::blockComplex tempBlockComplex;
     
@@ -2796,17 +2813,29 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
           {
             current_node.Blocks[ii].instance[jj].height=0;
             current_node.Blocks[ii].instance[jj].width=0;
+<<<<<<< HEAD
             current_node.Blocks[ii].instance[jj].isRead=false;
             break;
           }
           else
           {
             ++cur_id;
+=======
+            current_node.Blocks[ii].instance[jj].originBox.UR.x=0;
+            current_node.Blocks[ii].instance[jj].originBox.UR.y=0;
+            current_node.Blocks[ii].instance[jj].originCenter.x=0;
+            current_node.Blocks[ii].instance[jj].originCenter.y=0;
+            //break;
+>>>>>>> dd1e8368adeede0355e3a9005d90850a09dc40a0
           }
+          
         }
         if(id==cur_id)
           {
             break;
+          }else
+          {
+            ++cur_id;
           }
       }
       std::cout<<"restore ms debug:7"<<std::endl;
