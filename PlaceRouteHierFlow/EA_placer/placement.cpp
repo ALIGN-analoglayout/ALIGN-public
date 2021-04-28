@@ -336,7 +336,7 @@ void Placement::Initilize_Placement()
 
   for (unsigned int i = 0; i < originalBlockCNT; ++i)
   {
-    if(Blocks[i].Cpoint.x==0 and Blocks[i].Cpoint.y==0)
+    if(Blocks[i].Cpoint.x<0.5 or Blocks[i].Cpoint.y<0.5)
     {
       Blocks[i].Cpoint.x = 0.5 + (float)(rand() % 400) / 1000;
       Blocks[i].Cpoint.y = 0.5 + (float)(rand() % 400) / 1000;
@@ -1596,11 +1596,11 @@ float Placement::readInputNode(PnRDB::hierNode &current_node)
       tempblock.blockname = it->instance[i].name;
       Ppoint_F tempPoint1, tempPoint2;
       //update center point
-      // tempPoint1.x = (float)it->instance[i].originCenter.x;
-      // tempPoint1.y = (float)it->instance[i].originCenter.y;
+      tempPoint1.x = (float)it->instance[i].originCenter.x;
+      tempPoint1.y = (float)it->instance[i].originCenter.y;
       
-      tempPoint1.x = 0.0;
-      tempPoint1.y = 0.0;
+      // tempPoint1.x = 0.0;
+      // tempPoint1.y = 0.0;
       tempblock.Cpoint = tempPoint1;
 
       //update height and width
