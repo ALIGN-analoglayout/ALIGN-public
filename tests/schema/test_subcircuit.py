@@ -1,11 +1,12 @@
 import pytest
 
 from align.schema.subcircuit import Model, SubCircuit, Circuit, Instance
-from align.schema.types import set_context, List
+from align.schema.library import Library
+from align.schema.types import set_context
 
 @pytest.fixture
 def library():
-    library = List[Model]()
+    library = Library()
     with set_context(library):
         model = Model(
             name='TwoTerminalDevice',
@@ -27,13 +28,11 @@ def test_subckt_definition(library, test_ckt):
             pins = ['PIN1', 'PIN2'],
             parameters = {'PARAM1':1, 'PARAM2':'1E-3', 'PARAM3':'0.1F', 'PARAM4':'HELLO'})
         library.append(subckt)
-    with pytest.raises(Exception):
-        with set_context(test_ckt.elements):
-            inst = Instance(name='X1', model='subckt')
-    with pytest.raises(Exception):
-        with set_context(test_ckt.elements):
-            inst = Instance(name='X1', model='subckt', pins={'PIN1': 'NET10'})
     with set_context(test_ckt.elements):
+        with pytest.raises(Exception):
+            inst = Instance(name='X1', model='subckt')
+        with pytest.raises(Exception):
+            inst = Instance(name='X1', model='subckt', pins={'PIN1': 'NET10'})
         inst = Instance(name='X1', model='subckt', pins={'PIN1': 'NET10', 'PIN2': 'NET12'})
     assert inst.name == 'X1'
     assert inst.model == 'SUBCKT'
@@ -43,10 +42,9 @@ def test_subckt_definition(library, test_ckt):
     assert inst.parameters['PARAM2'] == '1E-3'
     assert inst.parameters['PARAM3'] == '0.1F'
     assert inst.parameters['PARAM4'] == 'HELLO'
-    with pytest.raises(Exception):
-        with set_context(test_ckt.elements):
-            inst = subckt(name='X1', model='subckt', pins={'PIN1': 'NET10', 'PIN2': 'NET12'}, parameters={'garbage':''})
     with set_context(test_ckt.elements):
+        with pytest.raises(Exception):
+            inst = subckt(name='X1', model='subckt', pins={'PIN1': 'NET10', 'PIN2': 'NET12'}, parameters={'garbage':''})
         inst = Instance(name='X1', model='subckt', pins={'PIN1': 'NET10', 'PIN2': 'NET12'}, parameters={'param1': '2', 'param3': '1e-16'})
     assert inst.parameters['PARAM1'] == '2'
     assert inst.parameters['PARAM3'] == '1E-16'
@@ -64,13 +62,11 @@ def test_subckt_instantiation(library, test_ckt):
     assert subckt.elements[0] == X1
     assert subckt.elements[1] == X2
     assert subckt.nets == ['NET1', 'NET2', 'NET3']
-    with pytest.raises(Exception):
-        with set_context(test_ckt.elements):
-            inst = Instance(name='X1', model='subckt')
-    with pytest.raises(Exception):
-        with set_context(test_ckt.elements):
-            inst = Instance(name='X1', model='subckt', pins={'PIN1': 'NET10'})
     with set_context(test_ckt.elements):
+        with pytest.raises(Exception):
+            inst = Instance(name='X1', model='subckt')
+        with pytest.raises(Exception):
+            inst = Instance(name='X1', model='subckt', pins={'PIN1': 'NET10'})
         inst = Instance(name='X1', model='subckt', pins={'PIN1': 'NET10', 'PIN2': 'NET12'})
     assert inst.name == 'X1'
     assert inst.model == 'SUBCKT'

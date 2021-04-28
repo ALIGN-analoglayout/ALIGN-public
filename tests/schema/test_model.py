@@ -24,13 +24,11 @@ def testmos(library):
 
 
 def test_new_model(library):
-    with pytest.raises(Exception):
-        with set_context(library):
-            MyDevice = Model()
-    with pytest.raises(Exception):
-        with set_context(library):
-            MyDevice = Model(name='MyDevice')
     with set_context(library):
+        with pytest.raises(Exception):     
+            MyDevice = Model()
+        with pytest.raises(Exception):
+            MyDevice = Model(name='MyDevice')
         MyDevice = Model(
             name='MyDevice',
             pins=['D', 'S'],
@@ -41,23 +39,19 @@ def test_new_model(library):
 
 
 def test_derived_model(testmos):
-    with pytest.raises(Exception):
-        with set_context(testmos.parent):
-            MyDevice = Model(base='TESTMOS')
-    with pytest.raises(Exception):
-        with set_context(testmos.parent):
-            MyDevice = Model(name='MyDevice')
-    with pytest.raises(Exception):
-        with set_context(testmos.parent):
-            MyDevice = Model(
-                name='MyDevice', base='TESTMOS',
-                pins=['D', 'G'], parameters={'PARAM1': '3'})
-    with pytest.raises(Exception):
-        with set_context(testmos.parent):
-            MyDevice = Model(
-                name='MyDevice', base='TESTMOS',
-                pins=['D', 'G'], parameters={'PARAM1': '3'})
     with set_context(testmos.parent):
+        with pytest.raises(Exception):
+            MyDevice = Model(base='TESTMOS')
+        with pytest.raises(Exception):
+            MyDevice = Model(name='MyDevice')
+        with pytest.raises(Exception):
+            MyDevice = Model(
+                name='MyDevice', base='TESTMOS',
+                pins=['D', 'G'], parameters={'PARAM1': '3'})
+        with pytest.raises(Exception):
+            MyDevice = Model(
+                name='MyDevice', base='TESTMOS',
+                pins=['D', 'G'], parameters={'PARAM1': '3'})
         MyDevice = Model(
             name='MyDevice', base='TESTMOS',
             parameters={'PARAM1': '3'})

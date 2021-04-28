@@ -26,31 +26,27 @@ def circuit(library):
     return mock_subckt
 
 def test_instance_model(circuit):
-    with pytest.raises(Exception):
-        with set_context(circuit.elements):
+    with set_context(circuit.elements):
+        with pytest.raises(Exception):
             M1 = Instance()
-    with pytest.raises(Exception):
-        with set_context(circuit.elements):
+        with pytest.raises(Exception):
             M1 = Instance(
                 name='M1',
                 pins={'D': 'NET01', 'G': 'NET02', 'S':'NET03', 'B':'NET04'}
             )
-    with pytest.raises(Exception):
-        with set_context(circuit.elements):
+        with pytest.raises(Exception):
             M1 = Instance(
                 name='M1',
                 pins={'D': 'NET01', 'G': 'NET02', 'S': 'NET03', 'B': 'NET04'},
                 parameters={'PARAM1':'12', 'PARAM2': '13'}
             )
-    with pytest.raises(Exception):
-        with set_context(circuit.elements):
+        with pytest.raises(Exception):
             M1 = Instance(
                 name='M1',
                 model='undefinedmos',
                 pins={'D': 'NET01', 'G': 'NET02', 'S': 'NET03', 'B': 'NET04'},
                 parameters={'PARAM1':'12', 'PARAM2': '13'}
             )
-    with set_context(circuit.elements):
         M1 = Instance(
             name='M1',
             model='testmos',
@@ -59,40 +55,35 @@ def test_instance_model(circuit):
         )
 
 def test_instance_name(circuit):
-    with pytest.raises(Exception):
-        with set_context(circuit.elements):
+    with set_context(circuit.elements):
+        with pytest.raises(Exception):
             M1 = Instance(model='testmos')
-    with pytest.raises(Exception):
-        with set_context(circuit.elements):
+        with pytest.raises(Exception):
             M1 = Instance(name='M1')
-    with pytest.raises(Exception):
-        with set_context(circuit.elements):
+        with pytest.raises(Exception):
             M1 = Instance(name='M1', model='testmos')
 
 def test_instance_pins(circuit):
-    with pytest.raises(Exception):
-        with set_context(circuit.elements):
+    with set_context(circuit.elements):
+        with pytest.raises(Exception):
             M1 = Instance(
                 name='M1',
                 model='testmos',
                 pins={'D': 'NET01'})
-    with pytest.raises(Exception):
-        with set_context(circuit.elements):
+        with pytest.raises(Exception):
             M1 = Instance(
                 name='M1',
                 model='testmos',
                 pins={'D': 'NET01', 'G': 'NET02', 'S': 'NET03', 'B':'NET04'},
                 parameters={'garbage': 'NET05'}
             )
-    with pytest.raises(Exception):
-        with set_context(circuit.elements):
+        with pytest.raises(Exception):
             M1 = Instance(
                 name='M1',
                 model='testmos',
                 pins={'D': 'NET01', 'G': 'NET02', 'S': 'NET03', 'B': 'NET04'},
                 parameters={'garbage':'dfddfd'}
             )
-    with set_context(circuit.elements):
         M1 = Instance(
             name='M1',
             model='testmos',

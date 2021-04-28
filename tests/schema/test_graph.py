@@ -13,10 +13,8 @@ from align.schema.types import set_context
 def library():
     library = Library(loadbuiltins=True)
     with set_context(library):
-        model = Model(name='TwoTerminalDevice', pins=['A', 'B'], parameters={'MYPARAMETER': '3'})
-        library.append(model)
-        model = Model(name='ThreeTerminalDevice', pins=['A', 'B', 'C'], parameters={'MYPARAMETER': '1'})
-        library.append(model)
+        library.append(Model(name='TwoTerminalDevice', pins=['A', 'B'], parameters={'MYPARAMETER': '3'}))
+        library.append(Model(name='ThreeTerminalDevice', pins=['A', 'B', 'C'], parameters={'MYPARAMETER': '1'}))
     return library
 
 @pytest.fixture
