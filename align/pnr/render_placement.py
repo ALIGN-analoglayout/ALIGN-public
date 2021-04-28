@@ -1,6 +1,7 @@
 import json
 import logging
 import copy
+import pathlib
 import plotly.graph_objects as go
 from collections import defaultdict
 from ..cell_fabric import transformation
@@ -66,12 +67,7 @@ def gen_placement_verilog(hN, DB, verilog_d):
                 new_hN = DB.CheckoutHierNode(child_idx, blk.selectedInstance)
                 aux(new_hN, new_r, new_prefix_path)
             else:
-                assert inst.gdsFile.endswith( ".gds")
-                chosen_master = inst.gdsFile[:-len(".gds")]
-                if chosen_master.startswith("./Results/"):
-                    chosen_master = chosen_master[len("./Results/"):]
-
-                #chosen_master = inst.master
+                chosen_master = pathlib.Path(inst.gdsFile).stem
                 logger.info( f'Choose {chosen_master} for {inst.master} {(hN.name, inst.name)}')
                 templates[(hN.name, inst.name)].append( chosen_master)
 
@@ -110,8 +106,9 @@ def gen_placement_verilog(hN, DB, verilog_d):
         for instance in module['instances']:
             k = (nm, instance['instance_name'])
             if k in templates:
-                instance['template_name'] = templates[k][0]
-            k = (nm, instance['instance_name']) 
+                instance['abstract_template_name'] = instance['template_name']
+                instance['concrete_template_name'] = templates[k][0]
+                del instance['template_name']
             if k in transforms:
                 instance['transformation'] = transforms[k][0].toDict()
             else:
