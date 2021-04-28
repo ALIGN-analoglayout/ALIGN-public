@@ -145,7 +145,7 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
                                  'DA': [('M1', 'D')],
                                  'DB': [('M2', 'D')],
                                  'G':  [('M1', 'G'), ('M2', 'G')],
-                                 'B':  [('M1', 'B'), ('M2', 'B')]}) 
+                                 'B':  [('M1', 'B'), ('M2', 'B')]})
 
     elif primitive in ["CMC_NMOS", "CMC_PMOS"]:
         cell_pin = gen(pattern, {'S': [('M1', 'S'), ('M2', 'S'), ('M1', 'B'), ('M2', 'B')],
@@ -191,7 +191,7 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
                                  'SB': [('M2','S')],
                                  'DA': [('M1', 'D'),('M2', 'G')],
                                  'DB': [('M2', 'D'), ('M1', 'G')],
-                                 'B':  [('M1', 'B'), ('M2', 'B')]}) 
+                                 'B':  [('M1', 'B'), ('M2', 'B')]})
 
     else:
         raise NotImplementedError(f"Unrecognized primitive {primitive}")
@@ -223,6 +223,16 @@ def generate_Res(pdkdir, block_name, height, x_cells, y_cells, nfin, unit_res):
 
     return uc, ['PLUS', 'MINUS']
 
+def generate_Ring(pdkdir, block_name, x_cells, y_cells):
+
+    pdk = Pdk().load(pdkdir / 'layers.json')
+    generator = get_generator('RingGenerator', pdkdir)
+
+    uc = generator(pdk)
+
+    uc.addRing(x_cells, y_cells)
+
+    return uc, ['Body']
 
 def get_generator(name, pdkdir):
     pdk_dir_path = pdkdir
@@ -261,6 +271,9 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
     elif 'Res' in primitive:
         uc, cell_pin = generate_Res(pdkdir, block_name, height, x_cells, y_cells, value[0], value[1])
         uc.setBboxFromBoundary()
+    elif 'ring' in primitive.lower():
+        uc, cell_pin = generate_Ring(pdkdir, block_name, x_cells, y_cells)
+        #uc.setBboxFromBoundary()
     else:
         raise NotImplementedError(f"Unrecognized primitive {primitive}")
 
@@ -278,7 +291,7 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
         blockM = 1
     else:
         blockM = 0
-    positive_coord.json_pos(outputdir / (block_name + '.json'))         
+    positive_coord.json_pos(outputdir / (block_name + '.json'))
     gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, cell_pin, bodyswitch, blockM, uc.pdk)
     with open( outputdir / (block_name + ".json"), "rt") as fp0, \
          open( outputdir / (block_name + ".gds.json"), 'wt') as fp1:

@@ -38,7 +38,6 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
     strct = {"time" : tme, "strname" : nm, "elements" : []}
 
     for layer, rect in layers.items():
-      #print(j['V1']['GdsLayerNo'])
       strct["elements"].append ({"type": "boundary", "layer" : j[layer]['GdsLayerNo'], "datatype" : j[layer]['GdsDatatype']['Draw'],
                                  "xy" : flat_rect_to_boundary( rect)})
 
@@ -73,9 +72,18 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
   for obj in data['terminals']:
       k = obj['layer']
       if k in via_gen_tbl: continue
-      if exclude_based_on_name( obj['netName']): continue
+      if exclude_based_on_name( obj['netName']): continue    
+      r = list(map( scale, obj['rect']))
 
-      strct["elements"].append ({"type": "boundary", "layer" : j[k]['GdsLayerNo'],
+      if k == "V0" and (r[2]-r[0]) > scale(10*j['V0']['WidthX']):
+          for NumX in range(j['GuardRing']['viaArray']):
+              new_rect = [r[0]+NumX*(j['GuardRing']['v0WidthX']+j['GuardRing']['v0SpaceX']), r[1],
+                          r[0]+NumX*(j['GuardRing']['v0WidthX']+j['GuardRing']['v0SpaceX'])+j['GuardRing']['v0WidthX'], r[3]]
+              strct["elements"].append ({"type": "boundary", "layer" : j[k]['GdsLayerNo'],
+                            "datatype" : j[k]['GdsDatatype']['Draw'],
+                            "xy" : flat_rect_to_boundary( new_rect)})
+      else:
+          strct["elements"].append ({"type": "boundary", "layer" : j[k]['GdsLayerNo'],
                         "datatype" : j[k]['GdsDatatype']['Draw'],
                         "xy" : flat_rect_to_boundary( list(map(scale,obj['rect'])))})
       if ('color' in obj):
@@ -96,7 +104,7 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
       r = list(map( scale, obj['rect']))
       xc = (r[0]+r[2])//2
       yc = (r[1]+r[3])//2
-
+      
       strct["elements"].append ({"type": "sref", "sname" : via_gen_tbl[k][0], "xy" : [xc, yc]})
 
   strct["elements"].append ({"type": "boundary", "layer" : j['Bbox']['GdsLayerNo'], "datatype" : j['Bbox']['GdsDatatype']['Draw'],
