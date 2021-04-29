@@ -28,7 +28,7 @@ def validate_instances(cls, value):
     # instances = cls._validator_ctx().parent.parent.instances
     instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
     assert isinstance(instances, set), 'Could not retrieve instances from subcircuit definition'
-    assert all(x in instances for x in value), f'One or more constraint instances {value} not found in {instances}'
+    assert all(x in instances or x.upper() in instances for x in value), f'One or more constraint instances {value} not found in {instances}'
     return value
 
 class SoftConstraint(types.BaseModel):
