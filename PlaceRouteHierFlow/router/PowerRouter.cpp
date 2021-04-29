@@ -21,6 +21,9 @@ PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int L
   //power_grid 1 create power_grid, 0 power net routing
 
   if(power_grid == 1){
+
+     if(node.PowerNets.size()==0) return;
+     
      logger->debug("Power router checkPoint 1");
      CreatePowerGrid(node, drc_info, Lmetal, Hmetal, h_skip_factor, v_skip_factor);
      logger->debug("Power router checkPoint 2");
@@ -66,6 +69,8 @@ PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int L
   //power_grid 1 create power_grid, 0 power net routing
 
   if(power_grid == 1){
+     if(node.PowerNets.size()==0) return;
+
      //std::cout<<"CheckPoint 1"<<std::endl;
      CreatePowerGrid_DC(node, drc_info, Lmetal, Hmetal, inputfile);
      //std::cout<<"CheckPoint 2"<<std::endl;

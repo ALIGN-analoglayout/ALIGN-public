@@ -102,6 +102,25 @@ def test_AlignInOrder_smt_checking(db):
         with pytest.raises(CheckerError):
             db.append(constraint.AlignInOrder(instances=['M3', 'M2'], line='bottom'))
 
+
+@pytest.mark.skipif(not Z3Checker.enabled, reason="Couldn't import Z3")
+def test_AspectRatio_input_sanitation(checker, db):
+    with set_context(db):
+        x = constraint.AspectRatio(subcircuit="amplifier", ratio_low=0.1, ratio_high=0.5)
+        x.check(checker)
+        x = constraint.AspectRatio(subcircuit="amplifier", ratio_low=0.6, ratio_high=0.5)
+        with pytest.raises(AssertionError):
+            x.check(checker)
+
+
+@pytest.mark.skipif(not Z3Checker.enabled, reason="Couldn't import Z3")
+def test_AspectRatio_smt_checking(db):
+    with set_context(db):
+        db.append(constraint.AspectRatio(subcircuit="amplifier", ratio_low=0.1, ratio_high=0.5))
+        with pytest.raises(CheckerError):
+            db.append(constraint.AspectRatio(subcircuit="amplifier", ratio_low=0.6, ratio_high=1.0))
+
+
 @pytest.mark.skipif(not Z3Checker.enabled, reason="Couldn't import Z3")
 def test_ConstraintDB_incremental_checking(db):
     '''

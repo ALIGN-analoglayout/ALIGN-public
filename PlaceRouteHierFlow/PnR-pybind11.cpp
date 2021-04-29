@@ -464,8 +464,16 @@ PYBIND11_MODULE(PnR, m) {
   py::class_<Placer_Router_Cap_Ifc>( m, "Placer_Router_Cap_Ifc")
     .def( py::init<string, string, hierNode&, Drc_info&, map<string, lefMacro>&, bool, int>());    
 
+  py::class_<PlacerHyperparameters>( m, "PlacerHyperparameters")
+    .def( py::init<>())
+    .def_readwrite("T_INT", &PlacerHyperparameters::T_INT)
+    .def_readwrite("T_MIN", &PlacerHyperparameters::T_MIN)
+    .def_readwrite("ALPHA", &PlacerHyperparameters::ALPHA)
+    .def_readwrite("COUNT_LIMIT", &PlacerHyperparameters::COUNT_LIMIT)
+    ;
+
   py::class_<PlacerIfc>( m, "PlacerIfc")
-    .def( py::init<hierNode&, int, string, int, Drc_info&>())
+    .def( py::init<hierNode&, int, string, int, Drc_info&, const PlacerHyperparameters&>())
     .def( "getNodeVecSize", &PlacerIfc::getNodeVecSize)
     .def( "getNode", &PlacerIfc::getNode);
 

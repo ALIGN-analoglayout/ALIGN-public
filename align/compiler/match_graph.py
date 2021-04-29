@@ -203,16 +203,16 @@ class Annotate:
         """
         if self._if_const(name):
             const_list = self.hier_graph_dict[name]["constraints"]
+            logger.debug(f"checking existing GroupCaps constraint {const_list} {G1.nodes}")
             for const in const_list:
-                #Check1: atleast one block in defined constraint
+                # Check1: atleast one block in defined constraint
                 # Check2:  Check block in design
                 if isinstance(const, constraint.GroupCaps) \
-                    and hasattr(const, 'instances') and isinstance(const.instances, list) \
+                    and hasattr(const, 'instances') and len(const.instances) > 1 \
                     and set(const.instances).issubset(set(G1.nodes)):
                     logger.debug(f"Grouping CC caps {const}")
                     ctype = 'Cap_cc_' + "_".join([str(x) for x in const.num_units])
-                    if len(set(const.instances)) > 1:
-                        merge_caps(G1,ctype,const.instances,const.name)
+                    merge_caps(G1,ctype,const.instances,const.name)
 
 
     def _update_sym_const(self,name,G1,remove_nodes,new_inst, const_list):

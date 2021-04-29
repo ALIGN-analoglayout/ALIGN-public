@@ -73,8 +73,8 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
                 DB.Write_Power_Mesh_Conf(power_mesh_conffile)
 
             # Do we need to override these values?
-            power_grid_metal_l = 2
-            power_grid_metal_u = 11
+            power_grid_metal_l = 4
+            power_grid_metal_u = 5
             RouteWork(7, current_node_copy, metal_l=power_grid_metal_l, metal_u=power_grid_metal_u, fn=power_mesh_conffile)
 
             logger.info("Start MNA ")
@@ -88,13 +88,13 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
             logger.info("End MNA")
             #return
 
-
+        
         RouteWork(2, current_node, metal_l=power_grid_metal_l, metal_u=power_grid_metal_u)
 
         DB.WriteJSON(current_node, True, True, False, True, f'{current_node.name}_PG_{lidx}', drcInfo, opath)
 
         logger.debug("Checkpoint : Starting Power Routing");
-
+        
         RouteWork(3, current_node, metal_l=power_routing_metal_l, metal_u=power_routing_metal_u)
 
         DB.WriteJSON(current_node, True, False, True, True, f'{current_node.name}_PR_{lidx}', drcInfo, opath)
@@ -186,7 +186,14 @@ def place( *, DB, opath, fpath, numLayout, effort, idx):
 
     PRC = PnR.Placer_Router_Cap_Ifc(opath,fpath,current_node,DB.getDrc_info(),DB.checkoutSingleLEF(),1,6)
 
-    curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, DB.getDrc_info())
+    hyper = PnR.PlacerHyperparameters()
+    # Defaults; change (and uncomment) as required
+    #hyper.T_INT = 1e6
+    #hyper.T_MIN = 1e-6
+    #hyper.ALPHA = 0.995
+    #hyper.COUNT_LIMIT = 200
+
+    curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, DB.getDrc_info(), hyper)
 
     actualNumLayout = curr_plc.getNodeVecSize()
 
