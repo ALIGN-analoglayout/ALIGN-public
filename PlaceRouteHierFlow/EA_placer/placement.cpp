@@ -155,7 +155,8 @@ Placement::Placement(PnRDB::hierNode &current_node)
   std::cout << "start ePlacement" << std::endl;
   PlotPlacement(602);
   E_Placer();
-  restore_CC_in_square();
+  bool isCompact = true;
+  restore_CC_in_square(isCompact);
 
   //only for plot
 
@@ -352,7 +353,7 @@ void Placement::Initilize_Placement()
     // Blocks[i].Cpoint.y = 0.45 + (float)(rand() % 100) / 1000;
   }
   // refine_CC();
-  restore_CC_in_square();
+  restore_CC_in_square(true);
 }
 
 void Placement::Update_Bin_Density()
@@ -2640,7 +2641,7 @@ void Placement::refine_CC()
   }
 }
 
-void Placement::restore_CC_in_square()
+void Placement::restore_CC_in_square(bool isCompact)
 {
   for(int i = 0;i < commonCentroids.size();++i)
   {
@@ -2671,7 +2672,16 @@ void Placement::restore_CC_in_square()
     Ppoint_F inteval;
     if(commonCentroids[i].shape.x>1)
     {
-      inteval.x = (X_MAX - X_MIN)/(commonCentroids[i].shape.x-1);
+      if(isCompact)
+      {
+        inteval.x = (X_MAX - X_MIN)/(commonCentroids[i].shape.x-1)/2;
+      }
+      else
+      {
+        inteval.x = (X_MAX - X_MIN)/(commonCentroids[i].shape.x-1);
+      }
+      
+      
     }
     else
     {
@@ -2680,7 +2690,15 @@ void Placement::restore_CC_in_square()
 
     if(commonCentroids[i].shape.y>1)
     {
-      inteval.y = (Y_MAX - Y_MIN)/(commonCentroids[i].shape.y-1);
+      // inteval.y = (Y_MAX - Y_MIN)/(commonCentroids[i].shape.y-1);
+      if(isCompact)
+      {
+        inteval.y = (Y_MAX - Y_MIN)/(commonCentroids[i].shape.y-1)/2;
+      }
+      else{
+        inteval.y = (Y_MAX - Y_MIN)/(commonCentroids[i].shape.y-1);
+      }
+      
     }
     else
     {
@@ -3331,6 +3349,15 @@ void Placement::split_net()
   }
 }
 
+
+// void Placement::compact_cc()
+// {
+//   for(int i = 0;i < commonCentroids.size();++i)
+//   {
+//     Ppoint_F center;
+//     for(int)
+//   }
+// }
 
 void Placement::modify_symm_after_split(PnRDB::hierNode &current_node)
 {

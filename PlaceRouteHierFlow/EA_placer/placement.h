@@ -142,7 +142,7 @@ public:
 
     void modify_symm_after_split(PnRDB::hierNode &current_node);
 
-    void restore_CC_in_square();
+    void restore_CC_in_square(bool isCompact);
 
     void restore_MS(PnRDB::hierNode &current_node);
 
@@ -156,5 +156,7 @@ public:
     void match_pairs(commonCentroid &CC, int dummyNum);
 
     void plotPlacement(PnRDB::hierNode &current_node);
+
+    void compact_cc();
 };
 #endif
