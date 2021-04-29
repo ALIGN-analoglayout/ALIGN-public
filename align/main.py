@@ -36,7 +36,7 @@ def build_steps( flow_start, flow_stop):
     return steps_to_run
 
 
-def gen_more_primitives( primitives):
+def gen_more_primitives( primitives, topology_dir, subckt):
     """primitives dictiionary updated in place"""
 
     map_d = defaultdict(list)
@@ -54,14 +54,14 @@ def gen_more_primitives( primitives):
             if X != Y:
                 concrete_name = f'{m.groups()[0]}_nfin{nfin}_n{n}_X{Y}_Y{X}_{m.groups()[5]}'
                 map_d[abstract_name].append( concrete_name)             
-                if concrete_name not in more_primitives:
+                if concrete_name not in primitives and \
+                   concrete_name not in more_primitives:
                     more_primitives[concrete_name] = copy.deepcopy(v)
                     more_primitives[concrete_name]['x_cells'] = Y
                     more_primitives[concrete_name]['y_cells'] = X
         else:
             logger.warning( f'Expected pattern not matched for primitive {k}')
             map_d[k].append( k)
-
 
     primitives.update( more_primitives)
 
@@ -70,6 +70,20 @@ def gen_more_primitives( primitives):
     for k,v in primitives.items():
         v['abstract_template_name'] = concrete2abstract[k]
         v['concrete_template_name'] = k
+
+
+    # now hack the netlist to replace the template names using the concrete2abstract mapping
+
+    with (topology_dir / f'{subckt}.verilog.json').open( 'rt') as fp:
+        verilog_json_d = json.load(fp)
+
+    for module in verilog_json_d['modules']:
+        for instance in module['instances']:
+            t = instance['template_name'] 
+            instance['template_name'] = concrete2abstract.get( t, t)
+
+    with (topology_dir / f'{subckt}.verilog.json').open( 'wt') as fp:
+        json.dump( verilog_json_d, fp=fp, indent=2)
 
 
 def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, check=False, extract=False, log_level=None, verbosity=None, generate=False, python_gds_json=True, regression=False, uniform_height=False, render_placements=False, PDN_mode=False, flow_start=None, flow_stop=None):
@@ -132,7 +146,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         topology_dir.mkdir(exist_ok=True)
         primitives = generate_hierarchy(netlist, subckt, topology_dir, flatten, pdk_dir, uniform_height)
 
-        gen_more_primitives( primitives)
+        gen_more_primitives( primitives, topology_dir, subckt)
 
         with (topology_dir / 'primitives.json').open( 'wt') as fp:
             json.dump( primitives, fp=fp, indent=2)
@@ -153,7 +167,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     pnr_dir = working_dir / '3_pnr'
     if '3_pnr' in steps_to_run:
         pnr_dir.mkdir(exist_ok=True)
-        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, nvariants=nvariants, effort=effort, check=check, extract=extract, gds_json=python_gds_json, render_placements=render_placements, PDN_mode=PDN_mode)
+        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort, check=check, extract=extract, gds_json=python_gds_json, render_placements=render_placements, PDN_mode=PDN_mode)
         results.append( (netlist, variants))
         assert len(variants) >= 1, f"No layouts were generated for {netlist}. Cannot proceed further. See LOG/align.log for last error."
 

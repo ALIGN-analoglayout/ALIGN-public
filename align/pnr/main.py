@@ -90,7 +90,7 @@ def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, check=Fal
     return ret
 
 
-def gen_leaf_cell_info( verilog_d, input_dir, primitive_dir):
+def gen_leaf_cell_info( verilog_d, input_dir, primitive_dir, primitives):
     
 
     non_leaves = set()
@@ -147,8 +147,10 @@ def gen_leaf_cell_info( verilog_d, input_dir, primitive_dir):
             leaves.add( unit_cap)
 
     # Check if collateral files exist
-    leaf_collateral = {}
-    for leaf in leaves:
+    leaf_collateral = defaultdict(list)
+    for k, v in primitives.items():
+        if v['abstract_template_name'] not in leaves: continue
+        leaf = v['concrete_template_name']
         files = {}
         for suffix in ['.lef', '.json', '.gds.json']:
             fn = primitive_dir / f'{leaf}{suffix}'
@@ -160,7 +162,7 @@ def gen_leaf_cell_info( verilog_d, input_dir, primitive_dir):
 
     return leaf_collateral, constraint_files, capacitors
 
-def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nvariants=1, effort=0, check=False, extract=False, gds_json=False, render_placements=False, PDN_mode=False):
+def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, check=False, extract=False, gds_json=False, render_placements=False, PDN_mode=False):
 
     logger.info(f"Running Place & Route for {subckt}")
 
@@ -180,16 +182,19 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, nv
     with (topology_dir / verilog_file).open( "rt") as fp:
         verilog_d = json.load( fp)
 
-    leaf_collateral, constraint_files, capacitors = gen_leaf_cell_info( verilog_d, input_dir, primitive_dir)
-    logger.debug( f'leaf_collateral: {leaf_collateral}')
+    leaf_collateral, constraint_files, capacitors = gen_leaf_cell_info( verilog_d, input_dir, primitive_dir, primitives)
+    logger.info( f'leaf_collateral: {leaf_collateral}')
     logger.debug( f'constraint_files: {constraint_files}')
     logger.debug( f'capacitors: {dict(capacitors)}')
 
     # Generate .map file for PnR
     with (input_dir / map_file).open(mode='wt') as mp:
-        for k,v in leaf_collateral.items():
-            assert '.gds.json' in v
-            print( f'{k} {k}.gds', file=mp)
+        for _,v in primitives.items():
+            a = v['abstract_template_name']
+            c = v['concrete_template_name']
+            files = leaf_collateral[c]
+            assert '.gds.json' in files
+            print( f'{a} {c}.gds', file=mp)
 
     # Generate .lef inputs for PnR
     with (input_dir / lef_file).open(mode='wt') as lp:
