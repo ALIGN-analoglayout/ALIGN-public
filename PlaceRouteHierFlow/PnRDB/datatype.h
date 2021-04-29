@@ -288,6 +288,7 @@ struct block {
   int width=0;
   int height=0;
   bool isLeaf=true;
+  bool isRead=true;
   bbox originBox;
   point originCenter;
   string gdsFile="";
@@ -305,6 +306,7 @@ struct block {
   vector<Via> interVias;
   vector<pin> dummy_power_pin; //power pins below to this block, but needs updated hierachy
   vector<GuardRing> GuardRings;
+
 }; // structure of block
 
 struct terminal {
