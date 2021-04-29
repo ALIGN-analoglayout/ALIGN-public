@@ -106,7 +106,11 @@ def gen_placement_verilog(hN, DB, verilog_d):
         for instance in module['instances']:
             k = (nm, instance['instance_name'])
             if k in templates:
-                assert 'abstract_template_name' in instance
+                if 'abstract_template_name' not in instance:
+                    # Capacitor (internally generated)
+                    instance['abstract_template_name'] = instance['template_name']
+                    del instance['template_name']
+
                 instance['concrete_template_name'] = templates[k][0]
             if k in transforms:
                 instance['transformation'] = transforms[k][0].toDict()

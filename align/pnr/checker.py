@@ -3,11 +3,14 @@ from ..cell_fabric import transformation
 
 
 def check_placement(placement_verilog_d):
+    leaf_bboxes = { x['name'] : x['bbox'] for x in placement_verilog_d['leaves']}
+    internal_bboxes = { x['name'] : x['bbox'] for x in placement_verilog_d['modules']}
+
     for module in placement_verilog_d['modules']:
         if 'constraints' not in module or len(module['constraints']) == 0:
             continue  # No constraints
         constraints = constraint.ConstraintDB(module['constraints'])
-        if sum(hasattr(x, 'check') for x in constraints) == 0:
+        if not any(hasattr(x, 'check') for x in constraints):
             continue  # Nothing useful to check against
         # Set module (i.e. subcircuit) bounding box parameters
         bbox = transformation.Rect(*module['bbox'])
@@ -23,13 +26,14 @@ def check_placement(placement_verilog_d):
         )
         for inst in module['instances']:
             t = inst['transformation']
-            # Search for first match in 'modules' list
-            r = next((x['bbox'] for x in placement_verilog_d['modules'] if x['name'] == inst['template_name']), None)
-            # No match found in 'modules'. Search in 'leaves' instead
-            if r is None:
-                r = next((x['bbox'] for x in placement_verilog_d['leaves'] if x['name'] == inst['template_name']), None)
-            # No match found in 'modules' or 'leaves'. Cannot proceed
-            assert r is not None, f'Could not find {inst["template_name"]} in modules or leaves!'
+
+            if 'template_name' in inst:
+                r = internal_bboxes[inst['template_name']]
+            elif 'abstract_template_name' in inst:
+                r = leaf_bboxes[inst['abstract_template_name']]
+            else:
+                assert False, f'Neither \'template_name\' or \'abstract_template_name\' in inst {inst}.'
+
             bbox = transformation.Transformation(**t).hitRect(transformation.Rect(*r)).canonical()
             constraints.append(
                 constraint.SetBoundingBox(
