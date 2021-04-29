@@ -17,6 +17,8 @@ def get_instances_from_hacked_dataclasses(constraint):
         instances = {k for k, v in constraint.parent.parent.graph.nodes.items() if v['inst_type'] != 'net'}
     elif hasattr(constraint.parent.parent, 'elements'):
         instances = {x.name for x in constraint.parent.parent.elements}
+    elif hasattr(constraint.parent.parent, 'instances'):
+        instances = {x.instance_name for x in constraint.parent.parent.instances}
     else:
         raise NotImplementedError(f"Cannot handle {type(constraint.parent.parent)}")
     names = {x.name for x in constraint.parent if hasattr(x, 'name')}
