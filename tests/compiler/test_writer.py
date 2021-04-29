@@ -34,8 +34,11 @@ def test_verilog_writer():
         else:
             const = FindConst(subckt["graph"], name, subckt['ports'], subckt['ports_weight'], ConstraintDB(), ['vdd!'])
             const = CapConst(subckt["graph"], name, design_config["unit_size_cap"], const, True)
+            subckts[name] = subckt.copy(
+                update={'constraints': const}
+            )
 
-        wv = WriteVerilog(subckt["graph"], name, subckt["ports"], subckts, ['vdd!','vss'], const)
+        wv = WriteVerilog(name, subckt["ports"], subckts, ['vdd!','vss'])
         verilog_tbl['modules'].append( wv.gen_dict())
 
     with (result_dir / 'ota.v').open( 'wt') as fp:
