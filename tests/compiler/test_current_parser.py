@@ -48,7 +48,7 @@ def test_match_ota():
     assert 'CMC_S_NMOS_B' in mapped_graph_list.keys()
     assert 'DP_NMOS_B' in mapped_graph_list.keys()
 
-    hier_graph_dict['ota']['graph'] = annotate._reduce_graph(g, "ota", mapped_graph_list)
+    hier_graph_dict['ota']['graph'] = annotate._reduce_graph(g, "ota", mapped_graph_list, hier_graph_dict['ota']['constraints'])
     assert len( hier_graph_dict['ota']['graph'].nodes()) == 19
     return hier_graph_dict
 
