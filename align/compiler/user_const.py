@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class ConstJsonEntry(types.BaseModel):
     subcircuit: str
-    constraints: types.List[constraint.ConstraintType]
+    constraints: types.List[types.Dict]
 
 
 class ConstraintParser:
@@ -38,8 +38,9 @@ class ConstraintParser:
         """
         design_name = node.name
         if design_name in self.constraint_dict:
-            for const in self.constraint_dict[design_name]:
-                node.constraints.append(const)
+            with types.set_context(node.constraints):
+                for const in self.constraint_dict[design_name]:
+                    node.constraints.append(const)
         json_path = self.input_dir / (design_name+'.const.json')
         if json_path.is_file():
             logger.info(

@@ -68,7 +68,15 @@ class Annotate:
             G1 = circuit["graph"]
             # map and reduce graph to dictionary
             mapped_graph_list = self._mapped_graph_list(G1, circuit_name, self.pg )
-            self.hier_graph_dict[circuit_name]["graph"] = self._reduce_graph(G1, circuit_name, mapped_graph_list)
+            const_list = self.hier_graph_dict[circuit_name]['constraints']
+            self.hier_graph_dict[circuit_name]["graph"] = self._reduce_graph(G1, circuit_name, mapped_graph_list, const_list)
+            #Removing single instances of instances
+            self.hier_graph_dict[circuit_name] = self.hier_graph_dict[circuit_name].copy(
+                update={"constraints" : [
+                    const
+                    for const in const_list
+                    if (hasattr(const,'instances') and len(const.instances)>1)
+                        or not hasattr(const,'instances')]})
             check_nodes(self.hier_graph_dict)
             logger.debug(f"Grest ckt is {circuit['graph'].nodes(data=True)}")
             if circuit_name not in self.no_array:
@@ -136,9 +144,6 @@ class Annotate:
         if self._if_const(name):
             gb_const = [const for const in self.hier_graph_dict[name]["constraints"] if isinstance(const, constraint.GroupBlocks)]
             const_list = [const for const in self.hier_graph_dict[name]["constraints"] if not isinstance(const, constraint.GroupBlocks)]
-            self.hier_graph_dict[name] = self.hier_graph_dict[name].copy(
-                update={'constraints': []}
-            )
             for const in gb_const:
                 if not set(const.instances).issubset(set(G1.nodes)):
                     logger.error(f"Constraint instances: {const.instances} not in subcircuit {list(G1.nodes)}")
@@ -160,17 +165,23 @@ class Annotate:
                                 ports_weight[nbr] = []
                                 ports_weight[nbr].append(G1.get_edge_data(block, nbr)['weight'])
                 subgraph,_ = merge_nodes(G1,const.name,const.instances,matched_ports,inst_name)
+                sconst = self._top_to_bottom_translation(name, G1, mapping, inst_name, const.name, const_list)
                 self.hier_graph_dict[const.name] = HierDictNode(
                     name = const.name,
                     graph = subgraph,
                     ports = list(matched_ports.keys()),
                     ports_weight = ports_weight,
-                    constraints = []
+                    constraints = sconst
                     )
-                sconst = self._top_to_bottom_translation(name, G1, mapping, inst_name, const.name, const_list)
-                self.hier_graph_dict[const.name].constraints.extend(sconst)
                 self._update_sym_const(name, G1, [const.name, *const.instances], inst_name, const_list)
                 self._update_block_const(name, G1, [const.name, *const.instances], inst_name, const_list)
+            #Removing single instances of instances
+            self.hier_graph_dict[name] = self.hier_graph_dict[name].copy(
+                update={"constraints" : [
+                    const
+                    for const in const_list
+                    if (hasattr(const,'instances') and len(const.instances)>1)
+                        or not hasattr(const,'instances')]})
 
 
     def _group_cap_const(self, G1, name):
@@ -256,14 +267,14 @@ class Annotate:
                         logger.debug(f"transferring global const {const}")
                     elif hasattr(const, "instances"):
                         logger.debug(f"checking if sub hierarchy instances are in const defined {Gsub} {new_inst} {const} ")
-                        sconst = const.__class__(**{x:
+                        sconst = {x:
                             [Gsub[block] for block in const.instances if block in Gsub.keys()]
                             if x == 'instances'
                             else getattr(const, x)
                             for x in const.__fields_set__}
-                        )
+                        assert 'constraint' in sconst
                         logger.debug(f"transferred constraint instances {Gsub} from {const} to {sconst}")
-                        if len(sconst.instances) > 0:
+                        if len(sconst['instances']) > 0:
                             sub_const.append(sconst)
         else:
             sub_const = []
@@ -296,22 +307,14 @@ class Annotate:
                             if replace:
                                 _list_replace(const.instances, block, new_inst)
                                 replace = False
-                            else:
+                            elif block in const.instances:
                                 const.instances.remove(block)
-
                         logger.debug(f"updated instances in the constraint:{const}")
-            #Removing single instances of instances
-            self.hier_graph_dict[name] = self.hier_graph_dict[name].copy(
-                update={"constraints" : [
-                    const
-                    for const in const_list
-                    if (hasattr(const,'instances') and len(const.instances)>1)
-                        or not hasattr(const,'instances')]})
 
     def _if_const(self,name):
         return True
 
-    def _reduce_graph(self,circuit_graph,name,mapped_graph_list):
+    def _reduce_graph(self,circuit_graph,name,mapped_graph_list, const_list):
         """
         merge matched graphs
         """
@@ -344,34 +347,33 @@ class Annotate:
                         subgraph,new_node = merge_nodes(
                             G1, lib_name, remove_nodes, matched_ports)
 
-                        constraints = self._top_to_bottom_translation(name, G1, Gsub, new_node, lib_name, self.hier_graph_dict[name]['constraints'])
-                        self._update_sym_const(name, G1, remove_nodes, new_node, constraints)
-                        self._update_block_const(name, G1, remove_nodes, new_node, constraints)
+                        sconst = self._top_to_bottom_translation(name, G1, Gsub, new_node, lib_name, const_list)
+                        self._update_sym_const(name, G1, remove_nodes, new_node, const_list)
+                        self._update_block_const(name, G1, remove_nodes, new_node, const_list)
 
-                        logger.debug(f"adding new sub_ckt: {lib_name} {constraints}")
+                        logger.debug(f"adding new sub_ckt: {lib_name} {sconst}")
                         if lib_name not in self.all_lef:
-                            # TODO: Heirarchical constraints need to be handled
                             logger.debug(f'Calling recursive for block: {lib_name}')
                             mapped_subgraph_list = self._mapped_graph_list(G2, lib_name)
                             Grest = self._reduce_graph(
-                                G2, lib_name,mapped_subgraph_list)
+                                G2, lib_name,mapped_subgraph_list, sconst)
                         else:
                             Grest = subgraph
 
                         check_nodes(self.hier_graph_dict)
 
                         subckt = HierDictNode(
-                            name = name,
+                            name = 'undefined',
                             graph = Grest,
                             ports = list(matched_ports.keys()),
                             ports_match = matched_ports,
                             ports_weight = ports_weight,
-                            constraints = constraints,
+                            constraints = sconst,
                             size = len(subgraph.nodes())
                         )
                         self.multiple_instances(G1,new_node,lib_name,subckt)
                         check_nodes(self.hier_graph_dict)
-        logger.debug(f"Finished one branch: {lib_name}")
+            logger.debug(f"Finished one branch: {lib_name}")
         return G1
 
     def _is_small(self,g1,g2):
