@@ -200,7 +200,7 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
                     for nm in list(hier_graph_dict.keys()):
                         if nm == lef_name + attr['inst_copy']:
                             if block_name not in hier_graph_dict.keys():
-                                assert False, 'Hope this is dead code. Trying to modify a dictionary while iterating over it!'
+                                logger.warning('Trying to modify a dictionary while iterating over it!')
                                 hier_graph_dict[block_name] = hier_graph_dict.pop(nm)
                             else:
                                 #For cells with extra parameters than current primitive naming convention
