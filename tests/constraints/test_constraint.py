@@ -90,7 +90,7 @@ def test_boundary_max_height():
     constraints = """[
     {"constraint": "HorizontalDistance", "abs_distance":0},
     {"constraint": "VerticalDistance",   "abs_distance":0},
-    {"constraint": "Boundary", "subcircuit": "example_boundary_max_height", "max_height": 1}
+    {"constraint": "Boundary", "subcircuit": "example_boundary_max_height", "max_height": 1.3}
 ]
 """
     name = "example_boundary_max_height"
