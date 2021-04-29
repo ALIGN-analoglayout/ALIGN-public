@@ -57,7 +57,7 @@ class ILP_solver {
   double GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node);
   double CalculateCost(design& mydesign);
   void WritePlacement(design& caseNL, SeqPair& curr_sp, string outfile);
-  void PlotPlacement(design& caseNL, string outfile);
+  void PlotPlacement(design& caseNL, string outfile, bool plot_pin, bool plot_terminal, bool plot_net);
   std::vector<double> Calculate_Center_Point_feature(std::vector<std::vector<placerDB::point> >& temp_contact);
   void updateTerminalCenter(design& mydesign);
   void UpdateHierNode(design& mydesign, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo);

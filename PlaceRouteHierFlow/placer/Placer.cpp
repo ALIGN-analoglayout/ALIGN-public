@@ -720,7 +720,7 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   ILP_solver curr_sol(designData,nodeVec.back());
   curr_sol.GenerateValidSolution(designData, drcInfo, nodeVec.back());
   curr_sol.updateTerminalCenter(designData);
-  curr_sol.PlotPlacement(designData, opath + nodeVec.back().name + "_" + std::to_string(0) + ".plt");
+  curr_sol.PlotPlacement(designData, opath + nodeVec.back().name + "_" + std::to_string(0) + ".plt", false, false, false);
   curr_sol.UpdateHierNode(designData, nodeVec.back(), drcInfo);
   // std::map<double, std::pair<SeqPair, ILP_solver>> spVec=PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo);
   // curr_sol.updateTerminalCenter(designData, curr_sp);

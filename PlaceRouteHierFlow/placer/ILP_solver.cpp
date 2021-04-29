@@ -626,6 +626,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcI
     set_obj_fn(lp, row);
     set_minim(lp);
     set_timeout(lp, 10);
+    //print_lp(lp);
     int ret = solve(lp);
     if (ret != 0 && ret != 1) return -1;
   }
@@ -837,7 +838,7 @@ void ILP_solver::WritePlacement(design& mydesign, SeqPair& curr_sp, string outfi
   fout.close();
 }
 
-void ILP_solver::PlotPlacement(design& mydesign, string outfile) {
+void ILP_solver::PlotPlacement(design& mydesign, string outfile, bool plot_pin, bool plot_terminal, bool plot_net) {
   // cout << "Placer-Info: create gnuplot file" << endl;
   placerDB::point p, bp;
   ofstream fout;
@@ -858,45 +859,53 @@ void ILP_solver::PlotPlacement(design& mydesign, string outfile) {
 
   int bias = 50;
   int range = std::max(UR.x, UR.y) + bias;
-  fout << "\nset xrange [" << -range << ":" << range << "]" << endl;
-  fout << "\nset yrange [" << 0 - bias << ":" << range << "]" << endl;
+  fout << "\nset xrange [" << LL.x - bias << ":" << UR.x + bias << "]" << endl;
+  fout << "\nset yrange [" << LL.y - bias << ":" << UR.y + bias << "]" << endl;
   // set labels for blocks
   for (unsigned int i = 0; i < mydesign.Blocks.size(); ++i) {
     placerDB::point tp;
     tp.x = Blocks[i].x + mydesign.Blocks[i][0].width / 2;
     tp.y = Blocks[i].y + mydesign.Blocks[i][0].height / 2;
     fout << "\nset label \"" << mydesign.Blocks[i][0].name << "\" at " << tp.x << " , " << tp.y << " center " << endl;
-    for (unsigned int j = 0; j < mydesign.Blocks[i][0].blockPins.size(); j++) {
-      for (unsigned int k = 0; k < mydesign.Blocks[i][0].blockPins[j].center.size(); k++) {
-        placerDB::point newp;
-        newp.x = mydesign.Blocks[i][0].blockPins[j].center[k].x;
-        newp.y = mydesign.Blocks[i][0].blockPins[j].center[k].y;
-        if (Blocks[i].H_flip) newp.x = mydesign.Blocks[i][0].width - newp.x;
-        if (Blocks[i].V_flip) newp.y = mydesign.Blocks[i][0].height - newp.y;
-        newp.x += Blocks[i].x;
-        newp.y += Blocks[i].y;
-        fout << "\nset label \"" << mydesign.Blocks[i][0].blockPins[j].name << "\" at " << newp.x << " , " << newp.y << endl;
-        fout << endl;
+    if(plot_pin){
+      for (unsigned int j = 0; j < mydesign.Blocks[i][0].blockPins.size(); j++) {
+        for (unsigned int k = 0; k < mydesign.Blocks[i][0].blockPins[j].center.size(); k++) {
+          placerDB::point newp;
+          newp.x = mydesign.Blocks[i][0].blockPins[j].center[k].x;
+          newp.y = mydesign.Blocks[i][0].blockPins[j].center[k].y;
+          if (Blocks[i].H_flip) newp.x = mydesign.Blocks[i][0].width - newp.x;
+          if (Blocks[i].V_flip) newp.y = mydesign.Blocks[i][0].height - newp.y;
+          newp.x += Blocks[i].x;
+          newp.y += Blocks[i].y;
+          fout << "\nset label \"" << mydesign.Blocks[i][0].blockPins[j].name << "\" at " << newp.x << " , " << newp.y << endl;
+          fout << endl;
+        }
       }
     }
   }
 
   // set labels for terminals
   // cout << "set labels for terminals..." << endl;
-  for (auto ni : mydesign.Nets) {
-    // for each pin
-    for (auto ci : ni.connected) {
-      if (ci.type == placerDB::Terminal) {
-        int tno = ci.iter;
-        fout << "\nset label \"" << mydesign.Terminals.at(tno).name << "\" at " << mydesign.Terminals.at(tno).center.x << " , "
-             << mydesign.Terminals.at(tno).center.y << " center                " << endl;
-        break;
+  if(plot_terminal){
+    for (auto ni : mydesign.Nets) {
+      // for each pin
+      for (auto ci : ni.connected) {
+        if (ci.type == placerDB::Terminal) {
+          int tno = ci.iter;
+          fout << "\nset label \"" << mydesign.Terminals.at(tno).name << "\" at " << mydesign.Terminals.at(tno).center.x << " , "
+              << mydesign.Terminals.at(tno).center.y << " center                " << endl;
+          break;
+        }
       }
     }
   }
 
   // plot blocks
-  fout << "\nplot[:][:] \'-\' with lines linestyle 3, \'-\' with lines linestyle 7, \'-\' with lines linestyle 1, \'-\' with lines linestyle 0" << endl << endl;
+  fout << "\nplot[:][:] \'-\' with lines linestyle 3";
+  if(plot_pin)fout << ", \'-\' with lines linestyle 7";
+  if(plot_terminal)fout << ", \'-\' with lines linestyle 1";
+  if(plot_net)fout << ", \'-\' with lines linestyle 0";
+  fout << endl << endl;
   for (unsigned int i = 0; i < mydesign.Blocks.size(); ++i) {
     vector<placerDB::point> newp = mydesign.Blocks[i][0].boundary.polygon;
     fout << "# block " << mydesign.Blocks[i][0].name << " select " << 0 << " bsize " << newp.size() << endl;
@@ -909,92 +918,98 @@ void ILP_solver::PlotPlacement(design& mydesign, string outfile) {
   fout << "\nEOF" << endl;
 
   // plot block pins
-  for (unsigned int i = 0; i < mydesign.Blocks.size(); ++i) {
-    for (unsigned int j = 0; j < mydesign.Blocks[i][0].blockPins.size(); j++) {
-      for (unsigned int k = 0; k < mydesign.Blocks[i][0].blockPins[j].boundary.size(); k++) {
-        for (unsigned int it = 0; it < mydesign.Blocks[i][0].blockPins[j].boundary[k].polygon.size(); it++) {
+  if(plot_pin){
+    for (unsigned int i = 0; i < mydesign.Blocks.size(); ++i) {
+      for (unsigned int j = 0; j < mydesign.Blocks[i][0].blockPins.size(); j++) {
+        for (unsigned int k = 0; k < mydesign.Blocks[i][0].blockPins[j].boundary.size(); k++) {
+          for (unsigned int it = 0; it < mydesign.Blocks[i][0].blockPins[j].boundary[k].polygon.size(); it++) {
+            placerDB::point newp;
+            newp.x = mydesign.Blocks[i][0].blockPins[j].boundary[k].polygon[it].x;
+            newp.y = mydesign.Blocks[i][0].blockPins[j].boundary[k].polygon[it].y;
+            if (Blocks[i].H_flip) newp.x = mydesign.Blocks[i][0].width - newp.x;
+            if (Blocks[i].V_flip) newp.y = mydesign.Blocks[i][0].height - newp.y;
+            newp.x += Blocks[i].x;
+            newp.y += Blocks[i].y;
+            fout << "\t" << newp.x << "\t" << newp.y << endl;
+          }
           placerDB::point newp;
-          newp.x = mydesign.Blocks[i][0].blockPins[j].boundary[k].polygon[it].x;
-          newp.y = mydesign.Blocks[i][0].blockPins[j].boundary[k].polygon[it].y;
+          newp.x = mydesign.Blocks[i][0].blockPins[j].boundary[k].polygon[0].x;
+          newp.y = mydesign.Blocks[i][0].blockPins[j].boundary[k].polygon[0].y;
           if (Blocks[i].H_flip) newp.x = mydesign.Blocks[i][0].width - newp.x;
           if (Blocks[i].V_flip) newp.y = mydesign.Blocks[i][0].height - newp.y;
           newp.x += Blocks[i].x;
           newp.y += Blocks[i].y;
           fout << "\t" << newp.x << "\t" << newp.y << endl;
+          fout << endl;
         }
-        placerDB::point newp;
-        newp.x = mydesign.Blocks[i][0].blockPins[j].boundary[k].polygon[0].x;
-        newp.y = mydesign.Blocks[i][0].blockPins[j].boundary[k].polygon[0].y;
-        if (Blocks[i].H_flip) newp.x = mydesign.Blocks[i][0].width - newp.x;
-        if (Blocks[i].V_flip) newp.y = mydesign.Blocks[i][0].height - newp.y;
-        newp.x += Blocks[i].x;
-        newp.y += Blocks[i].y;
-        fout << "\t" << newp.x << "\t" << newp.y << endl;
-        fout << endl;
       }
     }
+    fout << "\nEOF" << endl;
   }
-  fout << "\nEOF" << endl;
 
   // plot terminals
-  for (auto ni : mydesign.Nets) {
-    // for each pin
-    for (auto ci : ni.connected) {
-      if (ci.type == placerDB::Terminal) {
-        int tno = ci.iter;
-        int bias = 20;
-        fout << endl;
-        fout << "\t" << mydesign.Terminals.at(tno).center.x - bias << "\t" << mydesign.Terminals.at(tno).center.y - bias << endl;
-        fout << "\t" << mydesign.Terminals.at(tno).center.x - bias << "\t" << mydesign.Terminals.at(tno).center.y + bias << endl;
-        fout << "\t" << mydesign.Terminals.at(tno).center.x + bias << "\t" << mydesign.Terminals.at(tno).center.y + bias << endl;
-        fout << "\t" << mydesign.Terminals.at(tno).center.x + bias << "\t" << mydesign.Terminals.at(tno).center.y - bias << endl;
-        fout << "\t" << mydesign.Terminals.at(tno).center.x - bias << "\t" << mydesign.Terminals.at(tno).center.y - bias << endl;
-        break;
+  if(plot_terminal){
+    for (auto ni : mydesign.Nets) {
+      // for each pin
+      for (auto ci : ni.connected) {
+        if (ci.type == placerDB::Terminal) {
+          int tno = ci.iter;
+          int bias = 20;
+          fout << endl;
+          fout << "\t" << mydesign.Terminals.at(tno).center.x - bias << "\t" << mydesign.Terminals.at(tno).center.y - bias << endl;
+          fout << "\t" << mydesign.Terminals.at(tno).center.x - bias << "\t" << mydesign.Terminals.at(tno).center.y + bias << endl;
+          fout << "\t" << mydesign.Terminals.at(tno).center.x + bias << "\t" << mydesign.Terminals.at(tno).center.y + bias << endl;
+          fout << "\t" << mydesign.Terminals.at(tno).center.x + bias << "\t" << mydesign.Terminals.at(tno).center.y - bias << endl;
+          fout << "\t" << mydesign.Terminals.at(tno).center.x - bias << "\t" << mydesign.Terminals.at(tno).center.y - bias << endl;
+          break;
+        }
       }
     }
+    fout << "\nEOF" << endl;
   }
-  fout << "\nEOF" << endl;
 
   // plot nets
-  for (vector<placerDB::net>::iterator ni = mydesign.Nets.begin(); ni != mydesign.Nets.end(); ++ni) {
-    placerDB::point tp;
-    vector<placerDB::point> pins;
-    // for each pin
-    for (auto ci : ni->connected) {
-      if (ci.type == placerDB::Block) {
-        if (mydesign.Blocks[ci.iter2][0].blockPins.size() > 0) {
-          if (mydesign.Blocks[ci.iter2][0].blockPins[ci.iter].center.size() > 0) {
-            tp.x = mydesign.Blocks[ci.iter2][0].blockPins[ci.iter].center[0].x;
-            tp.y = mydesign.Blocks[ci.iter2][0].blockPins[ci.iter].center[0].y;
+  if(plot_net){
+    for (vector<placerDB::net>::iterator ni = mydesign.Nets.begin(); ni != mydesign.Nets.end(); ++ni) {
+      placerDB::point tp;
+      vector<placerDB::point> pins;
+      // for each pin
+      for (auto ci : ni->connected) {
+        if (ci.type == placerDB::Block) {
+          if (mydesign.Blocks[ci.iter2][0].blockPins.size() > 0) {
+            if (mydesign.Blocks[ci.iter2][0].blockPins[ci.iter].center.size() > 0) {
+              tp.x = mydesign.Blocks[ci.iter2][0].blockPins[ci.iter].center[0].x;
+              tp.y = mydesign.Blocks[ci.iter2][0].blockPins[ci.iter].center[0].y;
+              if (Blocks[ci.iter2].H_flip) tp.x = mydesign.Blocks[ci.iter2][0].width - tp.x;
+              if (Blocks[ci.iter2].V_flip) tp.y = mydesign.Blocks[ci.iter2][0].height - tp.y;
+              tp.x += Blocks[ci.iter2].x;
+              tp.y += Blocks[ci.iter2].y;
+              pins.push_back(tp);
+            }
+          } else {
+            tp.x = mydesign.Blocks[ci.iter2][0].width / 2;
+            tp.y = mydesign.Blocks[ci.iter2][0].height / 2;
             if (Blocks[ci.iter2].H_flip) tp.x = mydesign.Blocks[ci.iter2][0].width - tp.x;
             if (Blocks[ci.iter2].V_flip) tp.y = mydesign.Blocks[ci.iter2][0].height - tp.y;
             tp.x += Blocks[ci.iter2].x;
             tp.y += Blocks[ci.iter2].y;
             pins.push_back(tp);
           }
-        } else {
-          tp.x = mydesign.Blocks[ci.iter2][0].width / 2;
-          tp.y = mydesign.Blocks[ci.iter2][0].height / 2;
-          if (Blocks[ci.iter2].H_flip) tp.x = mydesign.Blocks[ci.iter2][0].width - tp.x;
-          if (Blocks[ci.iter2].V_flip) tp.y = mydesign.Blocks[ci.iter2][0].height - tp.y;
-          tp.x += Blocks[ci.iter2].x;
-          tp.y += Blocks[ci.iter2].y;
-          pins.push_back(tp);
+        } else if (ci.type == placerDB::Terminal) {
+          pins.push_back(mydesign.Terminals.at(ci.iter).center);
         }
-      } else if (ci.type == placerDB::Terminal) {
-        pins.push_back(mydesign.Terminals.at(ci.iter).center);
+      }
+      fout << "\n#Net: " << ni->name << endl;
+      if (pins.size() >= 2) {
+        for (int i = 1; i < (int)pins.size(); i++) {
+          fout << "\t" << pins.at(0).x << "\t" << pins.at(0).y << endl;
+          fout << "\t" << pins.at(i).x << "\t" << pins.at(i).y << endl;
+          fout << "\t" << pins.at(0).x << "\t" << pins.at(0).y << endl << endl;
+        }
       }
     }
-    fout << "\n#Net: " << ni->name << endl;
-    if (pins.size() >= 2) {
-      for (int i = 1; i < (int)pins.size(); i++) {
-        fout << "\t" << pins.at(0).x << "\t" << pins.at(0).y << endl;
-        fout << "\t" << pins.at(i).x << "\t" << pins.at(i).y << endl;
-        fout << "\t" << pins.at(0).x << "\t" << pins.at(0).y << endl << endl;
-      }
-    }
+    fout << "\nEOF" << endl;
   }
-  fout << "\nEOF" << endl;
   fout << endl << "pause -1 \'Press any key\'";
   fout.close();
 }
