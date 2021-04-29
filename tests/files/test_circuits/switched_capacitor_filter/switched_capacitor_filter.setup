@@ -1,0 +1,4 @@
+POWER = vdd
+GND = vss
+CLOCK = phi1 phi2
+DIGITAL = switched_capacitor_combination

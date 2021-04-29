@@ -1,0 +1,273 @@
+{
+    "constraints": [
+        {
+            "const_name": "CC",
+            "cap_name": "c1_c3",
+            "unit_capacitor": "Cap_12f",
+            "size": [
+                3,
+                5
+            ],
+            "nodummy": true,
+            "cap_r": -1,
+            "cap_s": -1
+        },
+        {
+            "const_name": "CC",
+            "cap_name": "c7_c6",
+            "unit_capacitor": "Cap_12f",
+            "size": [
+                3,
+                5
+            ],
+            "nodummy": true,
+            "cap_r": -1,
+            "cap_s": -1
+        },
+        {
+            "net1": {
+                "name": "net66",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "m7",
+                        "pin": "D"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "xi0",
+                        "pin": "vinp"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "c1_c3",
+                        "pin": "MINUS1"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "c2_c5",
+                        "pin": "MINUS0"
+                    }
+                ]
+            },
+            "net2": {
+                "name": "net64",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "m10",
+                        "pin": "D"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "xi0",
+                        "pin": "vinn"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "c7_c6",
+                        "pin": "MINUS1"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "c2_c5",
+                        "pin": "PLUS1"
+                    }
+                ]
+            },
+            "const_name": "SymmNet",
+            "axis_dir": "V"
+        },
+        {
+            "net1": {
+                "name": "vinp",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "m12",
+                        "pin": "S"
+                    },
+                    {
+                        "type": "terminal",
+                        "name": "vinp",
+                        "pin": null
+                    }
+                ]
+            },
+            "net2": {
+                "name": "vinn",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "m6",
+                        "pin": "S"
+                    },
+                    {
+                        "type": "terminal",
+                        "name": "vinn",
+                        "pin": null
+                    }
+                ]
+            },
+            "const_name": "SymmNet",
+            "axis_dir": "V"
+        },
+        {
+            "net1": {
+                "name": "voutn",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "m0",
+                        "pin": "D"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "xi0",
+                        "pin": "voutn"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "c1_c3",
+                        "pin": "PLUS1"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "c8_c9",
+                        "pin": "MINUS0"
+                    },
+                    {
+                        "type": "terminal",
+                        "name": "voutn",
+                        "pin": null
+                    }
+                ]
+            },
+            "net2": {
+                "name": "voutp",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "m14",
+                        "pin": "D"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "xi0",
+                        "pin": "voutp"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "c7_c6",
+                        "pin": "PLUS1"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "c8_c9",
+                        "pin": "PLUS1"
+                    },
+                    {
+                        "type": "terminal",
+                        "name": "voutp",
+                        "pin": null
+                    }
+                ]
+            },
+            "const_name": "SymmNet",
+            "axis_dir": "V"
+        },
+        {
+            "pairs": [
+                {
+                    "type": "selfsym",
+                    "block": "c0_c4"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "c1_c3",
+                    "block2": "c7_c6"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "c2_c5"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "c4_c0"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "c8_c9"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "m0",
+                    "block2": "m14"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "m12",
+                    "block2": "m6"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "m3",
+                    "block2": "m11"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "m5",
+                    "block2": "m9"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "m7",
+                    "block2": "m10"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "m8",
+                    "block2": "m4"
+                }
+            ],
+            "const_name": "SymmBlock",
+            "axis_dir": "V"
+        },
+        {
+            "const_name": "CC",
+            "cap_name": "c0_c4",
+            "unit_capacitor": "Cap_12f",
+            "size": [
+                5,
+                5
+            ],
+            "nodummy": true,
+            "cap_r": -1,
+            "cap_s": -1
+        },
+        {
+            "const_name": "CC",
+            "cap_name": "c2_c5",
+            "unit_capacitor": "Cap_12f",
+            "size": [
+                3,
+                3
+            ],
+            "nodummy": true,
+            "cap_r": -1,
+            "cap_s": -1
+        },
+        {
+            "const_name": "CC",
+            "cap_name": "c8_c9",
+            "unit_capacitor": "Cap_12f",
+            "size": [
+                5,
+                5
+            ],
+            "nodummy": true,
+            "cap_r": -1,
+            "cap_s": -1
+        }
+    ]
+}

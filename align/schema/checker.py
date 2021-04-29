@@ -134,12 +134,14 @@ class Z3Checker(AbstractChecker):
 
     def __init__(self):
         self._bbox_cache = {}
+        self._bbox_subcircuit = {}
         self._solver = z3.Solver()
 
     def append(self, formula, identifier=None):
         self._solver.add(formula)
         r = self._solver.check()
         if r == z3.unsat:
+            z3.set_option(max_depth=10000, max_args=100, max_lines=10000)
             raise CheckerError(f'No solution exists for {formula} in conjunction with {self._solver}')
 
     def checkpoint(self):
@@ -148,7 +150,7 @@ class Z3Checker(AbstractChecker):
     def revert(self):
         self._solver.pop()
 
-    def bbox_vars(self, name):
+    def bbox_vars(self, name, is_subcircuit=False):
         # bbox was previously generated
         if name in self._bbox_cache:
             return self._bbox_cache[name]
@@ -162,16 +164,20 @@ class Z3Checker(AbstractChecker):
         # width / height cannot be 0
         self.append(b.llx < b.urx)
         self.append(b.lly < b.ury)
-        # Do not overlap with other bboxes
-        for b2 in self._bbox_cache.values():
-            self.append(
-                self.Or(
-                    b.urx <= b2.llx,
-                    b2.urx <= b.llx,
-                    b.ury <= b2.lly,
-                    b2.ury <= b.lly,
-                )
-            )
+        if is_subcircuit:
+            self._bbox_subcircuit[name] = True
+        else:
+            # Do not overlap with other instance bboxes
+            for k2, b2 in self._bbox_cache.items():
+                if k2 not in self._bbox_subcircuit:
+                    self.append(
+                        self.Or(
+                            b.urx <= b2.llx,
+                            b2.urx <= b.llx,
+                            b.ury <= b2.lly,
+                            b2.ury <= b.lly,
+                        )
+                    )
         self._bbox_cache[name] = b
         return b
 

@@ -208,12 +208,12 @@ class Align(PlacementConstraint):
 
 
 class Enclose(PlacementConstraint):
-    ''' 
+    '''
     Enclose `instances` within a flexible bounding box
     with `min_` & `max_` bounds
 
     Note: Specifying any one of the following variables
-    makes it a valid constraint but you may wish to 
+    makes it a valid constraint but you may wish to
     specify more than one for practical purposes
 
     > `min_height`
@@ -289,7 +289,7 @@ class Enclose(PlacementConstraint):
 
 class Spread(PlacementConstraint):
     '''
-    Spread `instances` by forcing minimum spacing along 
+    Spread `instances` by forcing minimum spacing along
     `direction` if two instances overlap in other direction
 
     WARNING: This constraint checks for overlap but
@@ -344,17 +344,19 @@ class Spread(PlacementConstraint):
                     )
                 )
 
+
 class SetBoundingBox(HardConstraint):
     instance: str
     llx: int
     lly: int
     urx: int
     ury: int
+    is_subcircuit: Optional[bool] = False
 
     def check(self, checker):
         super().check(checker)
         assert self.llx < self.urx and self.lly < self.ury, f'Reflection is not supported yet for {self}'
-        bvar = checker.bbox_vars(self.instance)
+        bvar = checker.bbox_vars(self.instance, is_subcircuit=self.is_subcircuit)
         checker.append(bvar.llx == self.llx)
         checker.append(bvar.lly == self.lly)
         checker.append(bvar.urx == self.urx)
@@ -428,8 +430,8 @@ class AlignInOrder(UserConstraint):
 class PlaceSymmetric(PlacementConstraint):
     # TODO: Finish implementing this. Not registered to
     #       ConstraintDB yet
-    ''' 
-    Place instance / pair of `instances` symmetrically 
+    '''
+    Place instance / pair of `instances` symmetrically
     around line of symmetry along `direction`
 
     Note: This is a user-convenience constraint. Same
@@ -501,6 +503,14 @@ class HorizontalDistance(SoftConstraint):
     '''
     abs_distance: int
 
+class GuardRing(SoftConstraint):
+    '''
+    Adds guard ring for particular hierarchy
+    '''
+    guard_ring_primitives: str
+    global_pin: str
+    block_name: str
+
 
 class GroupCaps(SoftConstraint):
     ''' Common Centroid Cap '''
@@ -534,23 +544,24 @@ class SymmetricNets(SoftConstraint):
     direction: Literal['H', 'V']
 
 
-class AspectRatio(SoftConstraint):
-    '''
-    TODO: Replace with Enclose
-    '''
-    ratio_low: Optional[float]
-    ratio_high: Optional[float]
-    weight: int
+class AspectRatio(HardConstraint):
+    """
+    Define lower and upper bounds on aspect ratio (=width/height) of a subcircuit
 
-    @types.root_validator(allow_reuse=True)
-    def cast_aspect_ratio_spec(cls, values):
-        if not values['ratio_low'] and not values['ratio_high']:
-            raise AssertionError('At least one parameter must be specified')
-        elif values['ratio_low']:
-            values['ratio_high'] = 1 / values['ratio_low']
-        else:
-            values['ratio_low'] = 1 / values['ratio_high']
-        return values
+    `ratio_low` <= width/height <= `ratio_high`
+    """
+    subcircuit: str
+    ratio_low: float = 0.1
+    ratio_high: float = 10
+    weight: int = 1
+
+    def check(self, checker):
+        assert self.ratio_low >= 0, f'AspectRatio:ratio_low should be greater than zero {self.ratio_low}'
+        assert self.ratio_high > self.ratio_low, f'AspectRatio:ratio_high {self.ratio_high} should be greater than ratio_low {self.ratio_low}'
+
+        bvar = checker.bbox_vars(self.subcircuit, is_subcircuit=True)
+        checker.append(checker.cast(bvar.urx-bvar.llx, float) >= self.ratio_low*checker.cast(bvar.ury-bvar.lly, float))
+        checker.append(checker.cast(bvar.urx-bvar.llx, float) < self.ratio_high*checker.cast(bvar.ury-bvar.lly, float))
 
 
 class MultiConnection(SoftConstraint):
@@ -573,6 +584,7 @@ ConstraintType = Union[
     BlockDistance,
     HorizontalDistance,
     VerticalDistance,
+    GuardRing,
     SymmetricBlocks,
     GroupCaps,
     NetConst,
@@ -601,7 +613,7 @@ class ConstraintDB(types.List[ConstraintType]):
                     if hasattr(c, 'check'):
                         logger.error(c)
                 raise e
-            
+
 
     def _check_recursive(self, constraints):
         for constraint in expand_user_constraints(constraints):
