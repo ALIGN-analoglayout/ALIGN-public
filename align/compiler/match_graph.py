@@ -43,7 +43,7 @@ class Annotate:
         self.all_lef = existing_generator
         self.stop_points = self.pg+self.clk
         self.no_array = design_setup['NO_ARRAY']+design_setup['DIGITAL']
-        
+
     def annotate(self):
         """
         main function to creates hierarchies in the block
@@ -62,15 +62,15 @@ class Annotate:
             self._group_block_const(G1,circuit_name)
             self._group_cap_const(G1,circuit_name)
 
-        for circuit_name in list(self.hier_graph_dict.keys()):           
+        for circuit_name in list(self.hier_graph_dict.keys()):
             logger.debug(f"START MATCHING in circuit: {circuit_name}")
             circuit = self.hier_graph_dict[circuit_name]
             G1 = circuit["graph"]
             # map and reduce graph to dictionary
             mapped_graph_list = self._mapped_graph_list(G1, circuit_name, self.pg )
-            circuit["graph"] = self._reduce_graph(G1, circuit_name, mapped_graph_list)
+            self.hier_graph_dict[circuit_name]["graph"] = self._reduce_graph(G1, circuit_name, mapped_graph_list)
             check_nodes(self.hier_graph_dict)
-            logger.debug(f"Grest ckt is {circuit['graph'].nodes(data=True)}")  
+            logger.debug(f"Grest ckt is {circuit['graph'].nodes(data=True)}")
             if circuit_name not in self.no_array:
                 symmetry_blocks = FindSymmetry(circuit["graph"], circuit["ports"], circuit["ports_weight"], self.stop_points)
                 for symm_blocks in symmetry_blocks.values():
@@ -80,18 +80,18 @@ class Annotate:
                         self.hier_graph_dict[symm_blocks['name']] = symm_blocks
                         assert False, "Don't understand what's being deleted here"
                         del self.hier_graph_dict[symm_blocks['name']]['name']
-    
+
             self.lib_names = [lib_ele['name'] for lib_ele in self.lib]
             for ckt_name, circuit in self.hier_graph_dict.items():
                 if 'id' in self.hier_graph_dict[ckt_name] and len(self.hier_graph_dict[ckt_name]['id']) > 1:
                     copies = len(self.hier_graph_dict[ckt_name]['id'])
                     self.lib_names += [ckt_name + '_type' + str(n) for n in range(copies)]
         return self.lib_names
-    
+
     def _update_attributes(self,circuit_graph,name,lib_name,lib_graph, Gsub):
         """
         Creates a copy of the library element
-        Copies attributes from the netlist graph to copied library graph 
+        Copies attributes from the netlist graph to copied library graph
         Args:
             circuit_graph (graph): graph of netlist subckt
             name (str): name of subckt
@@ -197,13 +197,13 @@ class Annotate:
                 # Check2:  Check block in design
                 if isinstance(const, constraint.GroupCaps) \
                     and hasattr(const, 'instances') and isinstance(const.instances, list) \
-                    and set(const.instances).issubset(set(G1.nodes)): 
+                    and set(const.instances).issubset(set(G1.nodes)):
                     logger.debug(f"Grouping CC caps {const}")
                     ctype = 'Cap_cc_' + "_".join([str(x) for x in const.num_units])
                     if len(set(const.instances)) > 1:
                         merge_caps(G1,ctype,const.instances,const.name)
 
-                
+
     def _update_sym_const(self,name,G1,remove_nodes,new_inst, const_list):
         """
         Update instance names in the constraint in case they are reduced
@@ -231,7 +231,7 @@ class Annotate:
                             if pair[0] in remove_nodes:
                                 pair[0] = new_inst
                                 logger.debug(f"updated symmetric pair constraint to self symmetry:{const}")
-                                                            
+
 
     def _top_to_bottom_translation(self, name, G1, Gsub, new_inst, sub_hierarchy_name, const_list):
         """
@@ -268,7 +268,7 @@ class Annotate:
         else:
             sub_const = []
         return sub_const
-            
+
 
     def _update_block_const(self,name,G1,remove_nodes,new_inst, const_list):
         """
@@ -303,9 +303,9 @@ class Annotate:
             #Removing single instances of instances
             self.hier_graph_dict[name] = self.hier_graph_dict[name].copy(
                 update={"constraints" : [
-                    const 
+                    const
                     for const in const_list
-                    if (hasattr(const,'instances') and len(const.instances)>1) 
+                    if (hasattr(const,'instances') and len(const.instances)>1)
                         or not hasattr(const,'instances')]})
 
     def _if_const(self,name):
@@ -316,12 +316,12 @@ class Annotate:
         merge matched graphs
         """
         logger.debug("START reducing graph: ")
-        G1 = circuit_graph.copy()           
+        G1 = circuit_graph.copy()
         for lib_ele in self.lib:
             lib_name = lib_ele['name']
             if lib_name in mapped_graph_list:
                 logger.debug(f"Reducing ISOMORPHIC sub_block: {lib_name}{mapped_graph_list[lib_name]}")
-    
+
                 for Gsub in sorted(mapped_graph_list[lib_name], key= lambda i: '_'.join(sorted(i.keys()))):
                     if already_merged(G1,Gsub):
                         continue
@@ -339,7 +339,7 @@ class Annotate:
                         updated_values = merged_value({}, G1.nodes[remove_nodes[0]]["values"])
                         G1.nodes[remove_nodes[0]]["values"] = updated_values
                     else:
-                        
+
                         logger.debug(f"Multi node element: {lib_name} {matched_ports}")
                         subgraph,new_node = merge_nodes(
                             G1, lib_name, remove_nodes, matched_ports)
@@ -357,7 +357,7 @@ class Annotate:
                                 G2, lib_name,mapped_subgraph_list)
                         else:
                             Grest = subgraph
-    
+
                         check_nodes(self.hier_graph_dict)
 
                         subckt = HierDictNode(
@@ -373,7 +373,7 @@ class Annotate:
                         check_nodes(self.hier_graph_dict)
         logger.debug(f"Finished one branch: {lib_name}")
         return G1
-    
+
     def _is_small(self,g1,g2):
         nd2 = [g2.nodes[node]["inst_type"] for node in g2.nodes()]
         nd2 = {i:nd2.count(i) for i in nd2}
@@ -386,7 +386,7 @@ class Annotate:
             else:
                 is_small=False
         return is_small
-    
+
     def _is_digital(self,g2,name):
         nd = [node for node in g2.nodes() if 'net' not in g2.nodes[node]["inst_type"]]
         if name in self.digital and len(nd)>1:
@@ -398,7 +398,7 @@ class Annotate:
             if clk in Gsub:
                 return True
         return False
-       
+
     def _mapped_graph_list(self,G1, name, POWER=None):
         """
         find all matches of library element in the graph
@@ -427,9 +427,9 @@ class Annotate:
             if GM.subgraph_is_isomorphic():
                 logger.debug(f"ISOMORPHIC : {block_name}")
                 map_list = []
-    
+
                 for Gsub in GM.subgraph_isomorphisms_iter():
-    
+
                     all_nd = [key for key in Gsub.keys() if 'net' not in G1.nodes[key]["inst_type"]]
                     logger.debug(f"matched inst: {all_nd}")
                     if len(all_nd)>1 and self._is_clk(Gsub):
@@ -454,7 +454,7 @@ class Annotate:
                             logger.debug(f"Discarding match {block_name} due to non matching branches")
                     elif block_name.startswith('SCM') and G1.nodes[all_nd[0]]['values'] != G1.nodes[all_nd[1]]['values']:
                         logger.debug(f"Discarding match {block_name} due to value mismatch")
-    
+
                     else:
                         map_list.append(Gsub)
                         logger.debug(f"Matched Lib: {' '.join(Gsub.values())}")
