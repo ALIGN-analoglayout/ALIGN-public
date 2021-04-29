@@ -502,18 +502,20 @@ double ILP_solver::GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcI
       /// blockids.push_back(std::make_pair(find(curr_sp.negPair.begin(), curr_sp.negPair.end(), mydesign.Nets[i].connected[j].iter2) - curr_sp.negPair.begin(),
       /// mydesign.Nets[i].connected[j].iter));
       //}
-      vector<pair<pair<int, int>, int>> block_pos_x;
-      vector<pair<pair<int, int>, int>> block_pos_y;
+      set<pair<pair<int, int>, int>> block_pos_x_set;
+      set<pair<pair<int, int>, int>> block_pos_y_set;
       for (unsigned int j = 0; j < mydesign.Nets[i].connected.size(); j++) {
         if (mydesign.Nets[i].connected[j].type == placerDB::Block) {
-          block_pos_x.push_back(std::make_pair(std::make_pair(mydesign.Nets[i].connected[j].iter2, mydesign.Nets[i].connected[j].iter),
+          block_pos_x_set.insert(std::make_pair(std::make_pair(mydesign.Nets[i].connected[j].iter2, mydesign.Nets[i].connected[j].iter),
                                                node.Blocks[mydesign.Nets[i].connected[j].iter2].instance[0].placedCenter.x));
-          block_pos_y.push_back(std::make_pair(std::make_pair(mydesign.Nets[i].connected[j].iter2, mydesign.Nets[i].connected[j].iter),
+          block_pos_y_set.insert(std::make_pair(std::make_pair(mydesign.Nets[i].connected[j].iter2, mydesign.Nets[i].connected[j].iter),
                                                node.Blocks[mydesign.Nets[i].connected[j].iter2].instance[0].placedCenter.y));
         }
         // blockids.push_back(std::make_pair(find(curr_sp.negPair.begin(), curr_sp.negPair.end(), mydesign.Nets[i].connected[j].iter2) -
         // curr_sp.negPair.begin(), mydesign.Nets[i].connected[j].iter));
       }
+      vector<pair<pair<int, int>, int>> block_pos_x(block_pos_x_set.begin(), block_pos_x_set.end());
+      vector<pair<pair<int, int>, int>> block_pos_y(block_pos_y_set.begin(), block_pos_y_set.end());
       if (block_pos_x.size() < 2) continue;
       sort(block_pos_x.begin(), block_pos_x.end(), [](const pair<pair<int, int>, int>& a, const pair<pair<int, int>, int>& b) { return a.second < b.second; });
       sort(block_pos_y.begin(), block_pos_y.end(), [](const pair<pair<int, int>, int>& a, const pair<pair<int, int>, int>& b) { return a.second < b.second; });
@@ -628,7 +630,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcI
     set_timeout(lp, 10);
     //print_lp(lp);
     int ret = solve(lp);
-    if (ret != 0 && ret != 1) return -1;
+    if (ret != 0 && ret != 1 && ret!= 25) return -1;
   }
 
   double var[N_var];
@@ -866,8 +868,9 @@ void ILP_solver::PlotPlacement(design& mydesign, string outfile, bool plot_pin, 
     placerDB::point tp;
     tp.x = Blocks[i].x + mydesign.Blocks[i][0].width / 2;
     tp.y = Blocks[i].y + mydesign.Blocks[i][0].height / 2;
-    fout << "\nset label \"" << mydesign.Blocks[i][0].name << "\" at " << tp.x << " , " << tp.y << " center " << endl;
-    if(plot_pin){
+    if(mydesign.Blocks[i][0].width>0 && mydesign.Blocks[i][0].height>0)
+      fout << "\nset label \"" << mydesign.Blocks[i][0].name << "\" at " << tp.x << " , " << tp.y << " center " << endl;
+    if (plot_pin) {
       for (unsigned int j = 0; j < mydesign.Blocks[i][0].blockPins.size(); j++) {
         for (unsigned int k = 0; k < mydesign.Blocks[i][0].blockPins[j].center.size(); k++) {
           placerDB::point newp;

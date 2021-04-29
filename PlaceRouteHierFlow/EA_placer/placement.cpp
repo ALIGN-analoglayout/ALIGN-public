@@ -2830,25 +2830,13 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
           if(id==cur_id)
           {
             current_node.Blocks[ii].instance[jj].height=0;
-            current_node.Blocks[ii].instance[jj].width=0;
-
-            current_node.Blocks[ii].instance[jj].isRead=false;
-            break;
-          }
-          else
-          {
-            ++cur_id;
-
-            current_node.Blocks[ii].instance[jj].originBox.UR.x=0;
+            current_node.Blocks[ii].instance[jj].width = 0;
+            current_node.Blocks[ii].instance[jj].originBox.UR.x = 0;
             current_node.Blocks[ii].instance[jj].originBox.UR.y=0;
             current_node.Blocks[ii].instance[jj].originCenter.x=0;
             current_node.Blocks[ii].instance[jj].originCenter.y=0;
-
             current_node.Blocks[ii].instance[jj].isRead=false;
-            //break;
-
           }
-          
         }
         if(id==cur_id)
           {
