@@ -4,62 +4,13 @@ import pathlib
 import json
 import re
 from itertools import chain
+from collections import defaultdict
 
 from .. import PnR
 
 logger = logging.getLogger(__name__)
 
 NType = PnR.NType
-
-def analyze_hN( tag, hN, beforeAddingBlockPins=False):
-    logger.info( f'{tag} name {hN.name}')
-
-    logger.info( f'Nets and PowerNets')
-    for net in chain( hN.Nets, hN.PowerNets):
-        logger.info( f'  {net.name}')
-        for conn in net.connected:
-            if conn.type == NType.Block:
-                if 0 <= conn.iter2 < len(hN.Blocks):
-                    blk = hN.Blocks[conn.iter2]
-                    inst = blk.instance[0]
-
-                    if 0 <= conn.iter < len(inst.blockPins):
-
-                        logger.info( f'    {conn.type} {conn.iter} ({inst.blockPins[conn.iter].name}) {conn.iter2} ({inst.name} {inst.master})')
-                    else:
-                        logger.info( f'    {conn.type} {conn.iter} (<out of range>) {conn.iter2} ({inst.name} {inst.master})')                        
-
-                else:
-                    logger.info( f'    {conn.type} {conn.iter} (<unknown>) {conn.iter2} (<out of range>)')
-            elif conn.type == NType.Terminal:
-                assert conn.iter2 == -1
-                if 0 <= conn.iter < len(hN.Terminals):
-                    logger.info( f'    {conn.type} {conn.iter} ({hN.Terminals[conn.iter].name})')
-                else:
-                    logger.info( f'    {conn.type} {conn.iter} (<out of range>)')
-
-    logger.info( f'PowerNets (second pass)')
-    for net in hN.PowerNets:
-        logger.info( f'  {net.name}')
-        for conn in net.dummy_connected:
-            if 0 <= conn.iter2 < len(hN.Blocks):
-                blk = hN.Blocks[conn.iter2]
-                logger.info( f'    blk.selectedInstance={blk.selectedInstance}')
-                for inst_idx,inst in enumerate(blk.instance):
-                    if beforeAddingBlockPins:
-                        if 0 <= conn.iter < len(inst.dummy_power_pin):
-                            logger.info( f'    {conn.iter} ({inst.dummy_power_pin[conn.iter].name}) {conn.iter2} ({inst.name} {inst.master}) inst_idx={inst_idx}')
-                        else:
-                            logger.info( f'    {conn.iter} (<out of range>) {conn.iter2} ({inst.name} {inst.master}) inst_idx={inst_idx}')                        
-            else:
-                logger.info( f'    {conn.iter} (<unknown>) {conn.iter2} (<out of range>)')
-
-    logger.info( f'Blocks')
-    for blk in hN.Blocks:
-        logger.info( f'  blk.child={blk.child} len(blk.instance)={len(blk.instance)} blk.selectedInstance={blk.selectedInstance} blk.instNum={blk.instNum}')
-        for inst in blk.instance:
-            logger.info( f'    inst.name={inst.name} inst.master={inst.master} len(inst.dummy_power_pin)={len(inst.dummy_power_pin)}')
-
 
 def ReadVerilogJson( DB, j):
     hierTree = []
@@ -148,6 +99,7 @@ def _ReadMap( path, mapname):
     d = pathlib.Path(path)
     p = re.compile( r'^(\S+)\s+(\S+)\s*$')
     tbl = {}
+    tbl2 = defaultdict(list)
     with (d / mapname).open( "rt") as fp:
         for line in fp:
             line = line.rstrip('\n')
@@ -155,7 +107,9 @@ def _ReadMap( path, mapname):
             assert m
             k, v = m.groups()
             tbl[k] = str(d / v)
-    return tbl
+            tbl2[k].append( str(d / v))
+    logger.info( f'expanded table: {tbl2}')
+    return tbl, tbl2
 
 def _attach_constraint_files( DB, fpath):
     d = pathlib.Path(fpath)
@@ -189,7 +143,11 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     DB.ReadPDKJSON( path + '/' + drname)
 
     _ReadLEF( DB, path, lefname)
-    DB.gdsData = _ReadMap( path, mapname)
+    DB.gdsData, DB.gdsData2 = _ReadMap( path, mapname)
+
+    if True:
+        for k, v in DB.gdsData2.items():
+            logger.info( f'DB.gdsData2: {k} {v}')
 
     j = None
     if vname.endswith(".verilog.json"):
