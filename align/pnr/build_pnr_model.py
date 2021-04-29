@@ -41,7 +41,13 @@ def ReadVerilogJson( DB, j):
             temp_blockComplex = PnR.blockComplex()
             current_instance = PnR.block()
 
-            current_instance.master = instance['template_name']
+            if 'template_name' in instance:
+                current_instance.master = instance['template_name']
+            elif 'abstract_template_name' in instance:
+                current_instance.master = instance['abstract_template_name']
+            else:
+                assert False, f'Missing template_name (abstract or otherwise) in instance {instance}'
+
             current_instance.name = instance['instance_name']
 
             blockPins = []

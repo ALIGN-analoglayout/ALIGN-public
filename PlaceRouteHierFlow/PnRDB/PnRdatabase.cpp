@@ -2170,6 +2170,27 @@ hierTree[i].Terminals[hierTree[i].Nets[j].connected[k].iter].netIter = j;
 }
 
 
+static string stem(const string& s) {
+
+  unsigned int start = 0;
+  unsigned int slash = s.find_last_of( '/');
+  if ( slash != string::npos) {
+    start = slash + 1;
+  }
+
+  unsigned int end = s.size();
+  unsigned int dot = s.find_last_of( '.');
+  if ( dot != string::npos) {
+    end = dot;
+  }
+
+  // xx/y.d
+  //   ^ ^
+  // 012345
+
+  return s.substr( start, end-start);
+}
+
 bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
 
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.MergeLEFMapData");
@@ -2178,51 +2199,67 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
 
   logger->info("merge LEF/map data on node {0}", node.name);
   for(unsigned int i=0;i<node.Blocks.size();i++){
-    const string& master=node.Blocks[i].instance.back().master;
-    if(lefData.find(master)==lefData.end()) {
+    const string& abstract_template_name=node.Blocks[i].instance.back().master;
+
+    vector<string> foo = gdsData2[abstract_template_name];
+
+    if (foo.size() == 0) continue;
+
+    string a_concrete_template_name = stem(foo.back());
+
+    if(lefData.find(a_concrete_template_name)==lefData.end()) {
 	// LEF is missing; Ok if a cap or if not a leaf
-	if(master.find("Cap")!=std::string::npos ||
-	   master.find("cap")!=std::string::npos) continue;
+	if(a_concrete_template_name.find("Cap")!=std::string::npos ||
+	   a_concrete_template_name.find("cap")!=std::string::npos) continue;
 	if(node.Blocks[i].instance.back().isLeaf) {
-	    logger->error("The key does not exist in map: {0}",master);
+	    logger->error("No LEF file for a_concrete_template_name {0}",a_concrete_template_name);
 	    missing_lef_file = 1;
 	}
 	continue;
     }
     
-    //cout<<node.Blocks[i].instance.back().name<<" "<<master<<endl;
-    for(unsigned int w=0;w<lefData[master].size();++w) {
+    auto& lef = lefData.at(a_concrete_template_name);
+
+    //cout<<node.Blocks[i].instance.back().name<<" "<<abstract_template_name<<endl;
+    for(unsigned int w=0;w<lef.size();++w) {
+      auto& l = lef.at(w);
+
+      logger->info( "what is this? {0} {1}", l.name, w);
+
       if(node.Blocks[i].instNum>0) { node.Blocks[i].instance.push_back( node.Blocks[i].instance.back() ); }
       node.Blocks[i].instNum++;
-      node.Blocks[i].instance.back().width=lefData[master].at(w).width;
-      node.Blocks[i].instance.back().height=lefData[master].at(w).height;
-      node.Blocks[i].instance.back().lefmaster=lefData[master].at(w).name;
-      node.Blocks[i].instance.back().originBox.LL.x=0;
-      node.Blocks[i].instance.back().originBox.LL.y=0;
-      node.Blocks[i].instance.back().originBox.UR.x=lefData[master].at(w).width;
-      node.Blocks[i].instance.back().originBox.UR.y=lefData[master].at(w).height;
-      node.Blocks[i].instance.back().originCenter.x=lefData[master].at(w).width/2;
-      node.Blocks[i].instance.back().originCenter.y=lefData[master].at(w).height/2;
 
-      for(unsigned int j=0;j<lefData[master].at(w).macroPins.size();j++){
+      auto& b = node.Blocks[i].instance.back();
+
+      b.width=l.width;
+      b.height=l.height;
+      b.lefmaster=l.name;
+      b.originBox.LL.x=0;
+      b.originBox.LL.y=0;
+      b.originBox.UR.x=l.width;
+      b.originBox.UR.y=l.height;
+      b.originCenter.x=l.width/2;
+      b.originCenter.y=l.height/2;
+
+      for(unsigned int j=0;j<l.macroPins.size();j++){
         bool found = 0;
-        for(unsigned int k=0;k<node.Blocks[i].instance.back().blockPins.size();k++){
-          if(lefData[master].at(w).macroPins[j].name.compare(node.Blocks[i].instance.back().blockPins[k].name)==0){
-            node.Blocks[i].instance.back().blockPins[k].type = lefData[master].at(w).macroPins[j].type;
-            node.Blocks[i].instance.back().blockPins[k].pinContacts = lefData[master].at(w).macroPins[j].pinContacts;
-            node.Blocks[i].instance.back().blockPins[k].use = lefData[master].at(w).macroPins[j].use;
+        for(unsigned int k=0;k<b.blockPins.size();k++){
+          if(l.macroPins[j].name.compare(b.blockPins[k].name)==0){
+            b.blockPins[k].type = l.macroPins[j].type;
+            b.blockPins[k].pinContacts = l.macroPins[j].pinContacts;
+            b.blockPins[k].use = l.macroPins[j].use;
             found = 1;
             }
         }
         if(found == 0){
-          node.Blocks[i].instance.back().blockPins.push_back(lefData[master].at(w).macroPins[j]);
+          b.blockPins.push_back(l.macroPins[j]);
         }
       }
 
-      node.Blocks[i].instance.back().interMetals = lefData[master].at(w).interMetals;
-      node.Blocks[i].instance.back().interVias = lefData[master].at(w).interVias;
-      node.Blocks[i].instance.back().gdsFile=gdsData[lefData[master].at(w).name];
-  //cout<<"xxx "<<node.Blocks[i].instance.back().gdsFile<<endl;
+      b.interMetals = l.interMetals;
+      b.interVias = l.interVias;
+      b.gdsFile=gdsData[l.name];
+  //cout<<"xxx "<<b.gdsFile<<endl;
     }
 
 
