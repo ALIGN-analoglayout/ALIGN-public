@@ -113,7 +113,7 @@ class Order(PlacementConstraint):
     ]]
     abut: Optional[bool] = False
 
-    # _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
+    _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
 
     def check(self, checker):
         assert len(self.instances) >= 2, 'Must contain at least two instances'
@@ -182,7 +182,7 @@ class Align(PlacementConstraint):
         'v_any', 'v_left', 'v_right', 'v_center'
     ]]
 
-    # _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
+    _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
 
     def check(self, checker):
         super().check(checker)
@@ -254,7 +254,7 @@ class Enclose(PlacementConstraint):
     min_aspect_ratio: Optional[float]
     max_aspect_ratio: Optional[float]
 
-    # _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
+    _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
 
     @types.validator('max_aspect_ratio', allow_reuse=True)
     def bound_in_box_optional_fields(cls, value, values):
@@ -328,7 +328,7 @@ class Spread(PlacementConstraint):
     direction: Optional[Literal['horizontal', 'vertical']]
     distance: int  # in nm
 
-    # _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
+    _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
 
     def check(self, checker):
         def cc(b1, b2, c='x'):

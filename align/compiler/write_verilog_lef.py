@@ -98,8 +98,7 @@ class WriteVerilog:
                     else:
                         mapped_pins.append( { "formal" : a[i], "actual": b[i - no_of_short]})
                         check_short.append(a[i])
-                    if a[i] in self.power_pins:
-                        mapped_pins= mapped_pins[:-1]
+                mapped_pins = [x for x in mapped_pins if x['formal'] not in self.power_pins]
 
                 return list(sorted(mapped_pins,key=lambda x:x['formal']))
 
