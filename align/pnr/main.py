@@ -94,6 +94,7 @@ def gen_leaf_cell_info( verilog_d, input_dir, primitive_dir, primitives):
 
     non_leaves = set()
     templates_called_in_an_instance = defaultdict(list)
+    abstract_templates_called_in_an_instance = defaultdict(list)
 
     pnr_const_ds = {}
     for module in verilog_d['modules']:
@@ -101,7 +102,10 @@ def gen_leaf_cell_info( verilog_d, input_dir, primitive_dir, primitives):
         pnr_const_ds[nm] = PnRConstraintWriter().map_valid_const(ConstraintDB(module['constraints']))
         non_leaves.add( nm)
         for instance in module['instances']:
-            templates_called_in_an_instance[instance['template_name']].append( (nm,instance['instance_name']))
+            if 'template_name' in instance:
+                templates_called_in_an_instance[instance['template_name']].append( (nm,instance['instance_name']))
+            if 'abstract_template_name' in instance:
+                abstract_templates_called_in_an_instance[instance['abstract_template_name']].append( (nm,instance['instance_name']))
 
     constraint_files = set()
     for nm, constraints in pnr_const_ds.items():
@@ -115,7 +119,7 @@ def gen_leaf_cell_info( verilog_d, input_dir, primitive_dir, primitives):
     for nm, pnr_const_d in pnr_const_ds.items():
         cap_constraints[nm] = { const['cap_name'] : const for const in pnr_const_d['constraints'] if const['const_name'] == "CC"}
 
-    leaves = set(templates_called_in_an_instance.keys()).difference( non_leaves)
+    leaves = set(abstract_templates_called_in_an_instance.keys())
     for nm, pnr_const_d in pnr_const_ds.items():
         for const in pnr_const_d['constraints']:
             if const['const_name'] == "GuardRing":
@@ -127,7 +131,7 @@ def gen_leaf_cell_info( verilog_d, input_dir, primitive_dir, primitives):
     # Find capacitors
     capacitors = defaultdict(list)
     for leaf in leaves:
-        for parent, instance_name in templates_called_in_an_instance[leaf]:
+        for parent, instance_name in abstract_templates_called_in_an_instance[leaf]:
             if parent in cap_constraints:
                 if instance_name in cap_constraints[parent]:
                     logger.debug( f'parent: {parent} instance_name: {instance_name} leaf: {leaf} cap_constraints: {cap_constraints}')

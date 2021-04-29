@@ -80,7 +80,9 @@ def gen_more_primitives( primitives, topology_dir, subckt):
     for module in verilog_json_d['modules']:
         for instance in module['instances']:
             t = instance['template_name'] 
-            instance['template_name'] = concrete2abstract.get( t, t)
+            if t in concrete2abstract:
+                del instance['template_name']
+                instance['abstract_template_name'] = concrete2abstract[t]
 
     with (topology_dir / f'{subckt}.verilog.json').open( 'wt') as fp:
         json.dump( verilog_json_d, fp=fp, indent=2)
