@@ -130,7 +130,7 @@ def gen_placement_verilog(hN, DB, verilog_d):
 
     return d
 
-def dump_blocks2( placement_verilog_d, top_cell, sel, leaves_only=False):
+def dump_blocks2( placement_verilog_d, top_cell, sel, leaves_only=False, show=True):
     logger.info(f'Drawing {top_cell}_{sel}...')
 
     fig = go.Figure()
@@ -185,8 +185,8 @@ def dump_blocks2( placement_verilog_d, top_cell, sel, leaves_only=False):
 
     aux( modules[top_cell], (), transformation.Transformation())
 
-
     fig.update_yaxes(scaleanchor="x", scaleratio=1)
     fig.update_layout(title=dict(text=f'{top_cell}_{sel}'))
-    fig.show()
 
+    if show:
+        fig.show()

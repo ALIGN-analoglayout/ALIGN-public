@@ -244,7 +244,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
             placement_verilog_d = gen_placement_verilog( hN, DB, verilog_d)
 
             if render_placements:
-                dump_blocks2( placement_verilog_d, hN.name, sel, leaves_only=False)
+                dump_blocks2( placement_verilog_d, hN.name, sel, leaves_only=False, show=True)
 
             check_placement(placement_verilog_d)
 
