@@ -67,8 +67,8 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
 
   //calculate cell number
   int x_number, y_number;
-  x_number = ceil(double((wcell_size.width + 2*minimal.width))/ double(pcell_metal_size.width)) + 2;//number of guard ring cells at the bottom or top, including corner
-  y_number = ceil(double((wcell_size.height + 2*minimal.height))/ double(pcell_metal_size.height));//excluding corner
+  x_number = ceil(double((wcell_size.width + 2*minimal.width+drc_info.Metal_info[0].grid_unit_x))/ double(pcell_metal_size.width)) + 2;//number of guard ring cells at the bottom or top, including corner
+  y_number = ceil(double((wcell_size.height + 2*minimal.height+drc_info.Metal_info[1].grid_unit_y))/ double(pcell_metal_size.height));//excluding corner
 
   //store lower left coordinate of guard ring primitive cell
   //start from Pcell0 which is at the southwest corner of wrapped cell
