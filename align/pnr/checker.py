@@ -27,10 +27,10 @@ def check_placement(placement_verilog_d):
 
             if 'template_name' in inst:
                 r = internal_bboxes[inst['template_name']]
-            elif 'abstract_template_name' in inst:
-                r = leaf_bboxes[inst['abstract_template_name']]
+            elif 'concrete_template_name' in inst:
+                r = leaf_bboxes[inst['concrete_template_name']]
             else:
-                assert False, f'Neither \'template_name\' or \'abstract_template_name\' in inst {inst}.'
+                assert False, f'Neither \'template_name\' or \'concrete_template_name\' in inst {inst}.'
 
             bbox = transformation.Transformation(**t).hitRect(transformation.Rect(*r)).canonical()
             with types.set_context(constraints):
