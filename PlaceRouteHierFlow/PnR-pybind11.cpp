@@ -457,7 +457,6 @@ PYBIND11_MODULE(PnR, m) {
     .def( "ReadConstraint_Json", &PnRdatabase::ReadConstraint_Json)
     .def_readwrite("hierTree", &PnRdatabase::hierTree)
     .def_readwrite("topidx", &PnRdatabase::topidx)
-    .def_readwrite("gdsData", &PnRdatabase::gdsData)
     .def_readwrite("gdsData2", &PnRdatabase::gdsData2)
     .def_readwrite("DRC_info", &PnRdatabase::DRC_info)
   ;

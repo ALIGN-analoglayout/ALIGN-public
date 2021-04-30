@@ -105,7 +105,6 @@ def ReadVerilogJson( DB, j):
 def _ReadMap( path, mapname):
     d = pathlib.Path(path)
     p = re.compile( r'^(\S+)\s+(\S+)\s*$')
-    tbl = {}
     tbl2 = defaultdict(list)
     with (d / mapname).open( "rt") as fp:
         for line in fp:
@@ -113,10 +112,9 @@ def _ReadMap( path, mapname):
             m = p.match(line)
             assert m
             k, v = m.groups()
-            tbl[k] = str(d / v)
             tbl2[k].append( str(d / v))
-    logger.info( f'expanded table: {tbl2}')
-    return tbl, tbl2
+    logger.debug( f'expanded table: {tbl2}')
+    return tbl2
 
 def _attach_constraint_files( DB, fpath):
     d = pathlib.Path(fpath)
@@ -150,7 +148,7 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     DB.ReadPDKJSON( path + '/' + drname)
 
     _ReadLEF( DB, path, lefname)
-    DB.gdsData, DB.gdsData2 = _ReadMap( path, mapname)
+    DB.gdsData2 = _ReadMap( path, mapname)
 
     j = None
     if vname.endswith(".verilog.json"):

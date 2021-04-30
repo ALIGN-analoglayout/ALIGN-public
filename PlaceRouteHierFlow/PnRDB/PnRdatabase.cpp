@@ -16,7 +16,7 @@ static bool EndsWith( const string& str, const string& pat)
 
 PnRdatabase::~PnRdatabase() {
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.~PnRdatabase");
-  logger->info( "Deconstructing PnRdatabase");
+  logger->debug( "Deconstructing PnRdatabase");
 }
 
 deque<int> PnRdatabase::TraverseHierTree() {
