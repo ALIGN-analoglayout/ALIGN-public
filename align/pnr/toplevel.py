@@ -179,10 +179,8 @@ def place( *, DB, opath, fpath, numLayout, effort, idx):
     logger.info(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
 
     current_node = DB.CheckoutHierNode(idx,-1)
-    #analyze_hN( 'Start', current_node, True)
 
     DB.AddingPowerPins(current_node)
-    #analyze_hN( 'After adding power pins', current_node, False)
 
     PRC = PnR.Placer_Router_Cap_Ifc(opath,fpath,current_node,DB.getDrc_info(),DB.checkoutSingleLEF(),1,6)
 
@@ -205,15 +203,10 @@ def place( *, DB, opath, fpath, numLayout, effort, idx):
         if node.Guardring_Consts:
             logger.info( f'Running guardring flow')
             PnR.GuardRingIfc( node, DB.checkoutSingleLEF(), DB.getDrc_info(), fpath)
-        #analyze_hN( f'After placement {lidx}', node, False)
         DB.Extract_RemovePowerPins(node)
-        #analyze_hN( f'After remove power pins {lidx}', node, True)
         DB.CheckinHierNode(idx, node)
 
     DB.hierTree[idx].numPlacement = actualNumLayout
-
-    #analyze_hN( 'End', current_node, False)
-
 
 def route( *, DB, idx, opath, adr_mode, PDN_mode):
     logger.info(f'Starting top-down routing on {DB.hierTree[idx].name} {idx}')
@@ -251,7 +244,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
             placement_verilog_d = gen_placement_verilog( hN, DB, verilog_d)
 
             if render_placements:
-                dump_blocks2( placement_verilog_d, hN.name, sel, leaves_only=False)
+                dump_blocks2( placement_verilog_d, hN.name, sel, leaves_only=False, show=True)
 
             check_placement(placement_verilog_d)
 

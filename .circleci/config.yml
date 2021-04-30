@@ -207,7 +207,7 @@ workflows:
               pdk:
                 - "Finfet"
               design:
-                - "adder or switched_capacitor_filter or high_speed_comparator or telescopic_ota_guard_ring"
+                - "adder or switched_capacitor_filter or high_speed_comparator"
       - test-integration:
           name: "test-integration-cp38-<<matrix.pdk>>"
           requires:
@@ -224,7 +224,7 @@ workflows:
               pdk:
                 - "Finfet"
               design:
-                - "not SAR and not DLL and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD"
+                - "not SAR and not DLL and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD and not telescopic_ota_guard_ring"
       - build-wheel:
           name: "build-wheel-<<matrix.platform>>"
           requires:
