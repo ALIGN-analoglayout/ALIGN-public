@@ -11,7 +11,6 @@ def check_placement(placement_verilog_d):
         constraints = module['constraints']
         for inst in module['instances']:
             t = inst['transformation']
-
             if 'template_name' in inst:
                 r = internal_bboxes[inst['template_name']]
             elif 'abstract_template_name' in inst:
