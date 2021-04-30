@@ -126,7 +126,7 @@ def hack_capacitor_instances( verilog_d, pnr_const_ds):
                 instance['abstract_template_name'] = instance['template_name']
                 del instance['template_name']
 
-def gen_leaf_cell_info( verilog_d, primitive_dir, primitives, pnr_const_ds):
+def gen_leaf_cell_info( verilog_d, pnr_const_ds):
 
     non_leaves = set()
     templates_called_in_an_instance = defaultdict(list)
@@ -144,7 +144,7 @@ def gen_leaf_cell_info( verilog_d, primitive_dir, primitives, pnr_const_ds):
 
     leaves = set(abstract_templates_called_in_an_instance.keys())
 
-    logger.debug( f'non_leaves: {non_leaves} leaves: {leaves}')
+    logger.debug( f'non_leaves: {non_leaves}')
     logger.debug( f'templates: {templates_called_in_an_instance}')
     logger.debug( f'abstract_templates: {abstract_templates_called_in_an_instance}')
 
@@ -170,14 +170,18 @@ def gen_leaf_cell_info( verilog_d, primitive_dir, primitives, pnr_const_ds):
             logger.debug( f'Adding unit_cap {unit_cap} to leaves')
             leaves.add( unit_cap)
 
-    # Add guard_ring_primitives to leaves
+    #
+    # Guardring hack --- Should be able to remove eventally
+    #
     for nm, pnr_const_d in pnr_const_ds.items():
         for const in pnr_const_d['constraints']:
             if const['const_name'] == "GuardRing":
                 leaves.add(const['guard_ring_primitives'])
 
+    logger.debug( f'leaves: {leaves}')
+    return leaves, capacitors
 
-
+def gen_leaf_collateral( leaves, primitives, primitive_dir):
     # Check if collateral files exist
     leaf_collateral = defaultdict(list)
     for k, v in primitives.items():
@@ -194,7 +198,7 @@ def gen_leaf_cell_info( verilog_d, primitive_dir, primitives, pnr_const_ds):
                 logger.error( f'Collateral {suffix} for leaf {leaf} not found in {primitive_dir}')
         leaf_collateral[leaf] = files
 
-    return leaf_collateral, capacitors
+    return leaf_collateral
 
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, check=False, extract=False, gds_json=False, render_placements=False, PDN_mode=False):
 
@@ -222,7 +226,10 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
     # SMB: I want this in the topology stage
     hack_capacitor_instances( verilog_d, pnr_const_ds)
 
-    leaf_collateral, capacitors = gen_leaf_cell_info( verilog_d, primitive_dir, primitives, pnr_const_ds)
+    leaves, capacitors = gen_leaf_cell_info( verilog_d, pnr_const_ds)
+
+    leaf_collateral = gen_leaf_collateral( leaves, primitives, primitive_dir)
+
     logger.debug( f'leaf_collateral: {leaf_collateral}')
     logger.debug( f'capacitors: {dict(capacitors)}')
 
