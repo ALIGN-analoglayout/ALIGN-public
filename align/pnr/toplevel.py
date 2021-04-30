@@ -118,6 +118,17 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
 
     return return_name
 
+def route_bottom_up( DB, drcInfo,
+                    bounding_box,
+                    current_node_ort, idx, lidx, sel,
+                    opath, adr_mode, *, PDN_mode, results_name_map, hierarchical_path):
+    raise NotImplementedError( f'route_bottom_up not yet implemented')
+
+def route_no_op( DB, drcInfo,
+                    bounding_box,
+                    current_node_ort, idx, lidx, sel,
+                    opath, adr_mode, *, PDN_mode, results_name_map, hierarchical_path):
+    pass
 
 def route_top_down( DB, drcInfo,
                     bounding_box,
@@ -208,8 +219,8 @@ def place( *, DB, opath, fpath, numLayout, effort, idx):
 
     DB.hierTree[idx].numPlacement = actualNumLayout
 
-def route( *, DB, idx, opath, adr_mode, PDN_mode):
-    logger.info(f'Starting top-down routing on {DB.hierTree[idx].name} {idx}')
+def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode):
+    logger.info(f'Starting {router_mode} routing on {DB.hierTree[idx].name} {idx}')
 
     new_topnode_indices = []
 
@@ -217,19 +228,26 @@ def route( *, DB, idx, opath, adr_mode, PDN_mode):
 
     results_name_map = {}
 
+    router_engines = { 'top_down': route_top_down,
+                       'bottom_up': route_bottom_up,
+                       'no_op': route_no_op
+                       }
+
+    router_engine = router_engines[router_mode]
+
     for lidx in range(DB.hierTree[idx].numPlacement):
         sel = lidx
-        new_topnode_idx = route_top_down( DB, DB.getDrc_info(),
-                                          PnR.bbox( PnR.point(0,0),
-                                                    PnR.point(DB.hierTree[idx].PnRAS[lidx].width,
-                                                              DB.hierTree[idx].PnRAS[lidx].height)),
-                                          Omark.N, idx, lidx, sel,
-                                          opath, adr_mode, PDN_mode=PDN_mode, results_name_map=results_name_map, hierarchical_path=(f'{DB.hierTree[idx].name}:placement_{lidx}',))
+        new_topnode_idx = router_engine( DB, DB.getDrc_info(),
+                                         PnR.bbox( PnR.point(0,0),
+                                                   PnR.point(DB.hierTree[idx].PnRAS[lidx].width,
+                                                             DB.hierTree[idx].PnRAS[lidx].height)),
+                                         Omark.N, idx, lidx, sel,
+                                         opath, adr_mode, PDN_mode=PDN_mode, results_name_map=results_name_map, hierarchical_path=(f'{DB.hierTree[idx].name}:placement_{lidx}',))
         new_topnode_indices.append(new_topnode_idx)
 
     return results_name_map
 
-def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, render_placements, verilog_d):
+def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, render_placements, verilog_d, router_mode):
     TraverseOrder = DB.TraverseHierTree()
 
     for idx in TraverseOrder:
@@ -248,9 +266,9 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
             check_placement(placement_verilog_d)
 
-    return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode)
+    return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode)
 
-def toplevel(args, *, PDN_mode=False, render_placements=False, adr_mode=False, results_dir=None):
+def toplevel(args, *, PDN_mode=False, render_placements=False, adr_mode=False, results_dir=None, router_mode='top_down'):
 
     assert len(args) == 9
 
@@ -270,7 +288,7 @@ def toplevel(args, *, PDN_mode=False, render_placements=False, adr_mode=False, r
 
     pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
 
-    results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, render_placements=render_placements, verilog_d=verilog_d)
+    results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, render_placements=render_placements, verilog_d=verilog_d, router_mode=router_mode)
 
     logger.info( f'results_name_map: {results_name_map}')
 

@@ -202,9 +202,9 @@ def gen_leaf_collateral( leaves, primitives, primitive_dir):
 
     return leaf_collateral
 
-def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, check=False, extract=False, gds_json=False, render_placements=False, PDN_mode=False):
+def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, check=False, extract=False, gds_json=False, render_placements=False, PDN_mode=False, router_mode='top_down'):
 
-    logger.info(f"Running Place & Route for {subckt}")
+    logger.info(f"Running Place & Route for {subckt} {router_mode}")
 
     # Create working & input directories
     working_dir = output_dir
@@ -272,7 +272,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
     current_working_dir = os.getcwd()
     os.chdir(working_dir)
-    DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, render_placements=render_placements, results_dir=None)
+    DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, render_placements=render_placements, results_dir=None, router_mode=router_mode)
     os.chdir(current_working_dir)
 
     # Copy generated cap jsons from results_dir to working_dir
@@ -299,7 +299,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
             return q
 
         possible_final_circuits = [(i, hN) for i, hN in enumerate(DB.hierTree) if hN.name == subckt]
-        assert len(possible_final_circuits) > 1
+        assert router_mode == 'no_op' or len(possible_final_circuits) > 1
 
         variants = collections.defaultdict(collections.defaultdict)
         for lidx, (topidx, _) in enumerate(possible_final_circuits[1:]):
