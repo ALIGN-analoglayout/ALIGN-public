@@ -185,8 +185,9 @@ def gen_leaf_collateral( leaves, primitives, primitive_dir):
     # Check if collateral files exist
     leaf_collateral = defaultdict(list)
     for k, v in primitives.items():
-        if v['abstract_template_name'] not in leaves:
-            logger.warning( f'abstract_template_name of {v} not in {leaves}')
+        atn = v['abstract_template_name']
+        if atn not in leaves:
+            logger.warning( f'abstract_template_name {atn} of {v} not in {leaves}')
             continue
         leaf = v['concrete_template_name']
         files = {}
