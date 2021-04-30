@@ -191,7 +191,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
     leaf_collateral, constraint_files, capacitors = gen_leaf_cell_info( verilog_d, input_dir, primitive_dir, primitives)
     logger.info( f'leaf_collateral: {leaf_collateral}')
     logger.debug( f'constraint_files: {constraint_files}')
-    logger.debug( f'capacitors: {dict(capacitors)}')
+    logger.info( f'capacitors: {dict(capacitors)}')
 
     # Generate .map file for PnR
     with (input_dir / map_file).open(mode='wt') as mp:
