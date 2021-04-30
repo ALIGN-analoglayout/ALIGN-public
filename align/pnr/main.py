@@ -157,7 +157,7 @@ def gen_leaf_cell_info( verilog_d, pnr_const_ds):
         for parent, instance_name in abstract_templates_called_in_an_instance[leaf]:
             if parent in cap_constraints:
                 if instance_name in cap_constraints[parent]:
-                    logger.info( f'parent: {parent} instance_name: {instance_name} leaf: {leaf} cap_constraints: {cap_constraints}')
+                    logger.debug( f'parent: {parent} instance_name: {instance_name} leaf: {leaf} cap_constraints: {cap_constraints}')
                     capacitors[leaf].append( (parent,instance_name))
 
     # Remove generated capacitors
@@ -182,12 +182,13 @@ def gen_leaf_cell_info( verilog_d, pnr_const_ds):
     return leaves, capacitors
 
 def gen_leaf_collateral( leaves, primitives, primitive_dir):
+
     # Check if collateral files exist
     leaf_collateral = defaultdict(list)
     for k, v in primitives.items():
         atn = v['abstract_template_name']
         if atn not in leaves:
-            logger.warning( f'abstract_template_name {atn} of {v} not in {leaves}')
+            logger.debug( f'abstract_template_name {atn} of {v} not in {leaves}')
             continue
         leaf = v['concrete_template_name']
         files = {}
@@ -239,8 +240,10 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         for _,v in primitives.items():
             a = v['abstract_template_name']
             c = v['concrete_template_name']
-            files = leaf_collateral[c]
-            assert '.gds.json' in files
+            if c in leaf_collateral:
+                assert '.gds.json' in leaf_collateral[c]
+            else:
+                logger.warning( f'Unused primitive: {a} {c} excluded from map file')
             print( f'{a} {c}.gds', file=mp)
 
     # Generate .lef inputs for PnR
