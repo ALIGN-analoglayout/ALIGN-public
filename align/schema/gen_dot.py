@@ -1,19 +1,20 @@
 from .parser import SpiceParser
+from .types import set_context
 
 def gen_dot_file(nm, ifn, ofn):
 
     parser = SpiceParser()
     # Patch library to use different model name
-    parser.library['P'] = parser.library['PMOS']
-    parser.library['N'] = parser.library['NMOS']
-    parser.library['PFET'] = parser.library['PMOS']
-    parser.library['NFET'] = parser.library['NMOS']
+    parser.library.append(parser.library.find('PMOS').copy(update={'name': 'P'}))
+    parser.library.append(parser.library.find('NMOS').copy(update={'name': 'N'}))
+    parser.library.append(parser.library.find('PMOS').copy(update={'name': 'PFET'}))
+    parser.library.append(parser.library.find('NMOS').copy(update={'name': 'NFET'}))
 
     with open( ifn, "rt") as fp:
         txt = fp.read()
         parser.parse(txt)
 
-    q = parser.library[nm.upper()]
+    q = parser.library.find(nm.upper())
 
     tbl = { "GND": {}, "VSS": {}, "VDD": {}, "CLK": {}}
 
@@ -37,18 +38,18 @@ def gen_dot_file(nm, ifn, ofn):
         print( "\tnode[shape=record]", file=fp)
 
         for e in elements_no_dummys:
-            if   e.model.name == "NMOS":
+            if   e.model in ("NMOS", "N", "NFET"):
                 print( f"\t{e.name} [label=\"{{ {e.name}|<f0>d|<f1>g|<f2>s}}\"]", file=fp)
-            elif e.model.name == "PMOS":
+            elif e.model in ("PMOS", "P", "PFET"):
                 print( f"\t{e.name} [label=\"{{<f2>s|<f1>g|<f0>d|{e.name} }}\"]", file=fp)
-            elif e.model.name == "CAP":
+            elif e.model == "CAP":
                 print( f"\t{e.name} [label=\"{{ {e.name}|<f1>+|<f0>- }}\"]", file=fp)
             else:
-                assert False, e.model.name
+                assert False, e.model
 
         # lst = []
         # for e in elements_no_dummys:
-        #     if e.model.name == "NMOS":
+        #     if e.model == "NMOS":
         #         lst.append( e.name)
 
         # if lst:
@@ -57,7 +58,7 @@ def gen_dot_file(nm, ifn, ofn):
 
         # lst = []
         # for e in elements_no_dummys:
-        #     if e.model.name == "PMOS":
+        #     if e.model == "PMOS":
         #         lst.append( e.name)
 
         # if lst:
@@ -82,8 +83,8 @@ def gen_dot_file(nm, ifn, ofn):
             for k,v in e.pins.items():
                 if k in m:
                     vv = f"{v}{tbl[v][e.name]}" if v in tbl and e.name in tbl[v] else v
-                    if k in ["S"]     and e.model.name == "PMOS" or \
-                       k in ["D","G"] and e.model.name == "NMOS":
+                    if k in ["S"]     and e.model == "PMOS" or \
+                       k in ["D","G"] and e.model == "NMOS":
                         print( f"\t{vv} -- {e.name}:{m[k]}", file=fp)
                     else:
                         print( f"\t{e.name}:{m[k]} -- {vv}", file=fp)

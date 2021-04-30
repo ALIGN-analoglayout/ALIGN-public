@@ -1,26 +1,11 @@
-from ..schema import constraint
+from ..schema import constraint, types
 from ..cell_fabric import transformation
-
 
 def check_placement(placement_verilog_d):
     for module in placement_verilog_d['modules']:
-        if 'constraints' not in module or len(module['constraints']) == 0:
+        if len(module['constraints']) == 0:
             continue  # No constraints
-        constraints = constraint.ConstraintDB(module['constraints'])
-        if sum(hasattr(x, 'check') for x in constraints) == 0:
-            continue  # Nothing useful to check against
-        # Set module (i.e. subcircuit) bounding box parameters
-        bbox = transformation.Rect(*module['bbox'])
-        constraints.append(
-            constraint.SetBoundingBox(
-                instance=module['name'],
-                llx=bbox.llx,
-                lly=bbox.lly,
-                urx=bbox.urx,
-                ury=bbox.ury,
-                is_subcircuit=True
-            )
-        )
+        constraints = module['constraints']
         for inst in module['instances']:
             t = inst['transformation']
             # Search for first match in 'modules' list
@@ -31,12 +16,13 @@ def check_placement(placement_verilog_d):
             # No match found in 'modules' or 'leaves'. Cannot proceed
             assert r is not None, f'Could not find {inst["template_name"]} in modules or leaves!'
             bbox = transformation.Transformation(**t).hitRect(transformation.Rect(*r)).canonical()
-            constraints.append(
-                constraint.SetBoundingBox(
-                    instance=inst['instance_name'],
-                    llx=bbox.llx,
-                    lly=bbox.lly,
-                    urx=bbox.urx,
-                    ury=bbox.ury
+            with types.set_context(constraints):
+                constraints.append(
+                    constraint.SetBoundingBox(
+                        instance=inst['instance_name'],
+                        llx=bbox.llx,
+                        lly=bbox.lly,
+                        urx=bbox.urx,
+                        ury=bbox.ury
+                    )
                 )
-            )

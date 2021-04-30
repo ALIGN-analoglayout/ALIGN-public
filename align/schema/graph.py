@@ -2,6 +2,8 @@ import networkx
 
 from .instance import Instance
 from .subcircuit import SubCircuit, Circuit
+from .types import set_context
+
 
 class Graph(networkx.Graph):
 
@@ -28,9 +30,9 @@ class Graph(networkx.Graph):
         super().__init__()
         self.subckt = subckt
         for element in subckt.elements:
-            self._add(element)
+            self._add_to_graph(element)
 
-    def _add(self, element):
+    def _add_to_graph(self, element):
         assert isinstance(element, Instance)
         for pin, net in element.pins.items():
             if self.has_edge(element.name, net):
@@ -41,15 +43,19 @@ class Graph(networkx.Graph):
                 self.add_edge(element.name, net, pin={pin})
                 self.nodes[element.name]['instance'] = element
 
-    def add(self, element):
-        self._add(element)
+    def add_instance(self, **kwargs):
+        with set_context(self.subckt.elements):
+            element = Instance(**kwargs)
         self.subckt.elements.append(element)
+        self._add_to_graph(element)
         return element
 
     def remove(self, element):
-        self.remove_nodes_from([x for x in self.neighbors(element.name) if self.degree(x) == 1])
-        self.remove_node(element.name)
         self.subckt.elements.remove(element)
+        self.remove_nodes_from(
+            [x for x in self.neighbors(element.name)
+             if self.degree(x) == 1])
+        self.remove_node(element.name)
 
     def xyce(self):
         return '\n'.join(x.xyce() for x in self.elements)
@@ -66,7 +72,7 @@ class Graph(networkx.Graph):
     @staticmethod
     def default_node_match(x, y):
         if isinstance(x.get('instance'), Instance) and isinstance(y.get('instance'), Instance):
-            return y.get('instance').model.name in x.get('instance').model.bases + [x.get('instance').model.name]
+            return y.get('instance').model in x.get('instance').mclass.bases + [x.get('instance').model]
         else:
             return type(x.get('instance')) == type(y.get('instance'))
 
@@ -97,26 +103,34 @@ class Graph(networkx.Graph):
         for match in matches:
             # Cannot replace as some prior transformation has made the current one invalid
             assert all(x in self.nodes for x in match)
-            removal_candidates = [x for x, y in match.items() if y not in subckt.pins]
+            removal_candidates = [
+                x for x, y in match.items() 
+                if y not in subckt.pins]
             # Cannot replace if internal node is used elsewhere in subckt (Boundary elements / nets)
             if not all(x in match for node in removal_candidates for x in self.neighbors(node)):
                 continue
             # Remove nodes not on subckt boundary
             for node in removal_candidates:
-                if node in self.nodes and self._is_element(self.nodes[node]): # Elements only
-                    self.remove(self.element(node)) # Takes care of nets attached to element too
+                # Elements only
+                if node in self.nodes and self._is_element(self.nodes[node]):
+                    # Takes care of nets attached to element too
+                    self.remove(self.element(node))
             # Create new instance of subckt
             name, counter = f'X_{subckt.name}_{counter}', counter + 1
             assert name not in self.elements
-            pin2net_map = {pin: net for net, pin in match.items() if pin in subckt.pins}
+            pin2net_map = {pin: net for net,
+                           pin in match.items() if pin in subckt.pins}
             assert all(x in pin2net_map for x in subckt.pins), (match, subckt)
-            inst = Instance(
+            # Model may need to be copied to current library
+            if subckt not in self.subckt.parent:
+                with set_context(self.subckt.parent):
+                    self.subckt.parent.append(SubCircuit(**subckt.dict(exclude_unset=True)))
+            # attach instance to current graph
+            self.add_instance(
                 name=name,
-                model=subckt,
+                model=subckt.name,
                 pins=pin2net_map
             )
-            # attach instance to current graph
-            self.add(inst)
 
     # Algorithms to find & replace repeated subgraphs
 
@@ -126,13 +140,14 @@ class Graph(networkx.Graph):
         worklist = list(self.elements)
         while len(worklist) > 0:
             # Create new graph with a single element
-            netlist = Graph(Circuit())
-            netlist.add(worklist.pop(0))
+            with set_context(self.subckt.parent):
+                netlist = Graph(Circuit())
+            netlist.add_instance(**worklist.pop(0).dict())
             # Grow graph iteratively & look for subgraph matches
             matchlist = self._get_match_candidates(worklist, netlist)
             while len(matchlist) > 0:
                 element = matchlist.pop(0)
-                netlist.add(element)
+                netlist.add_instance(**element.dict())
                 if len(self.find_subgraph_matches(netlist)) <= 1:
                     netlist.remove(element)
                 else:
@@ -140,17 +155,28 @@ class Graph(networkx.Graph):
             # Create subcircuit & update worklist if needed
             if len(netlist.elements) > 1:
                 net2pin_map = {y: f'pin{x}' for x, y in enumerate(
-                    (net for net in netlist.nets \
-                        if not all(neighbor in netlist.nodes for neighbor in self.neighbors(net))))}
-                subckt, index = SubCircuit(name=f'XREP{index}', pins=list(net2pin_map.values())), index + 1
+                    (net
+                     for net in netlist.nets
+                     if not all(neighbor in netlist.nodes for neighbor in self.neighbors(net))))}
+                with set_context(self.subckt.parent):
+                    subckt, index = SubCircuit(
+                        name=f'XREP{index}', pins=list(net2pin_map.values())), index + 1
                 for element in netlist.elements:
-                    subckt.add(Instance(
-                        name=element.name,
-                        model=element.model,
-                        pins={pin: net2pin_map[net] if net in net2pin_map else net for pin, net in element.pins.items()}))
+                    with set_context(subckt.elements):
+                        subckt.elements.append(
+                            Instance(
+                                name=element.name,
+                                model=element.model,
+                                pins={
+                                    pin: net2pin_map[net]
+                                    if net in net2pin_map else net
+                                    for pin, net in element.pins.items()}
+                            )
+                        )
                 subckts.append(subckt)
                 matches = self.find_subgraph_matches(Graph(subckt))
-                worklist = [element for element in worklist if not any(element.name in match for match in matches)]
+                worklist = [element for element in worklist if not any(
+                    element.name in match for match in matches)]
                 if replace:
                     self._replace_matches_with_subckt(matches, subckt)
         return subckts
@@ -160,9 +186,11 @@ class Graph(networkx.Graph):
 
     def _get_match_candidates(self, worklist, netlist):
         # Pick subckt elements that have some net-name based overlap with netlist subgraph
-        matchlist = [element for element in worklist if element.name not in netlist and any(x in netlist for x in self.neighbors(element.name))]
+        matchlist = [element for element in worklist if element.name not in netlist and any(
+            x in netlist for x in self.neighbors(element.name))]
         # Sort subckt elements to minimize the number of (net) nodes added to netlist subgraph
-        matchlist.sort(key=lambda element: sum([x not in netlist for x in self.neighbors(element.name)]))
+        matchlist.sort(key=lambda element: sum(
+            [x not in netlist for x in self.neighbors(element.name)]))
         return matchlist
 
     # Algorithms to flatten netlist
@@ -170,23 +198,25 @@ class Graph(networkx.Graph):
     def flatten(self, depth=999):
         ''' depth = 999 helps protect against recursive subckt definitions '''
         depth = depth - 1
-        for subcktinst in (x for x in self.elements if isinstance(x.model, SubCircuit)):
+        for subcktinst in (x for x in self.elements if isinstance(x.mclass, SubCircuit)):
             self._replace_subckt_with_components(subcktinst)
-        if any((isinstance(x.model, SubCircuit) for x in self.elements)) and depth > 0:
+        if any((isinstance(x.mclass, SubCircuit) for x in self.elements)) and depth > 0:
             self.flatten(depth)
         for element in self.elements:
-            if element.model.prefix and not element.name.startswith(element.model.prefix):
-                    element.name = f'{element.model.prefix}_{element.name}'
+            model = element.mclass
+            if model.prefix and not element.name.startswith(model.prefix):
+                element.name = f'{model.prefix}_{element.name}'
 
     def _replace_subckt_with_components(self, subcktinst):
         # Remove element from graph
         self.remove(subcktinst)
         # Add new elements
-        for element in subcktinst.model.elements:
-            newelement = Instance(
-                name = f'{subcktinst.name}_{element.name}',
-                model = element.model,
-                pins = {pin: subcktinst.pins[net] if net in subcktinst.pins else f'{subcktinst.name}_{net}' for pin, net in element.pins.items()},
-                parameters = {key: eval(val, {}, subcktinst.parameters) for key, val in element.parameters.items()})
-            self.add(newelement)
-
+        for element in subcktinst.mclass.elements:
+            self.add_instance(
+                name=f'{subcktinst.name}_{element.name}',
+                model=element.model,
+                pins={
+                    pin: subcktinst.pins[net] if net in subcktinst.pins else f'{subcktinst.name}_{net}' for pin, net in element.pins.items()},
+                parameters={key: eval(val, {}, subcktinst.parameters)
+                            for key, val in element.parameters.items()}
+            )
