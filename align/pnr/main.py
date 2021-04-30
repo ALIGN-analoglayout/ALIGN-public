@@ -16,9 +16,9 @@ from ..cell_fabric.pdk import Pdk
 from .checkers import gen_viewer_json, gen_transformation
 from ..cell_fabric import gen_gds_json, transformation
 from .write_constraint import PnRConstraintWriter
-from ..schema.constraint import ConstraintDB
 from .. import PnR
 from .toplevel import toplevel
+from ..schema.hacks import VerilogJsonTop
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +99,7 @@ def gen_leaf_cell_info( verilog_d, input_dir, primitive_dir, primitives):
     pnr_const_ds = {}
     for module in verilog_d['modules']:
         nm = module['name']
-        pnr_const_ds[nm] = PnRConstraintWriter().map_valid_const(ConstraintDB(module['constraints']))
+        pnr_const_ds[nm] = PnRConstraintWriter().map_valid_const(module.constraints)
         non_leaves.add( nm)
         for instance in module['instances']:
             if 'template_name' in instance:
@@ -185,9 +185,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
     verilog_file = f'{subckt}.verilog.json'
     pdk_file = 'layers.json'
 
-    with (topology_dir / verilog_file).open( "rt") as fp:
-        verilog_d = json.load( fp)
-
+    verilog_d = VerilogJsonTop.parse_file((topology_dir / verilog_file))
     leaf_collateral, constraint_files, capacitors = gen_leaf_cell_info( verilog_d, input_dir, primitive_dir, primitives)
     logger.info( f'leaf_collateral: {leaf_collateral}')
     logger.debug( f'constraint_files: {constraint_files}')

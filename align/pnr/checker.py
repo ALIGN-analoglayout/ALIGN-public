@@ -1,29 +1,14 @@
-from ..schema import constraint
+from ..schema import constraint, types
 from ..cell_fabric import transformation
-
 
 def check_placement(placement_verilog_d):
     leaf_bboxes = { x['name'] : x['bbox'] for x in placement_verilog_d['leaves']}
     internal_bboxes = { x['name'] : x['bbox'] for x in placement_verilog_d['modules']}
 
     for module in placement_verilog_d['modules']:
-        if 'constraints' not in module or len(module['constraints']) == 0:
+        if len(module['constraints']) == 0:
             continue  # No constraints
-        constraints = constraint.ConstraintDB(module['constraints'])
-        if not any(hasattr(x, 'check') for x in constraints):
-            continue  # Nothing useful to check against
-        # Set module (i.e. subcircuit) bounding box parameters
-        bbox = transformation.Rect(*module['bbox'])
-        constraints.append(
-            constraint.SetBoundingBox(
-                instance=module['name'],
-                llx=bbox.llx,
-                lly=bbox.lly,
-                urx=bbox.urx,
-                ury=bbox.ury,
-                is_subcircuit=True
-            )
-        )
+        constraints = module['constraints']
         for inst in module['instances']:
             t = inst['transformation']
 
@@ -35,12 +20,13 @@ def check_placement(placement_verilog_d):
                 assert False, f'Neither \'template_name\' or \'abstract_template_name\' in inst {inst}.'
 
             bbox = transformation.Transformation(**t).hitRect(transformation.Rect(*r)).canonical()
-            constraints.append(
-                constraint.SetBoundingBox(
-                    instance=inst['instance_name'],
-                    llx=bbox.llx,
-                    lly=bbox.lly,
-                    urx=bbox.urx,
-                    ury=bbox.ury
+            with types.set_context(constraints):
+                constraints.append(
+                    constraint.SetBoundingBox(
+                        instance=inst['instance_name'],
+                        llx=bbox.llx,
+                        lly=bbox.lly,
+                        urx=bbox.urx,
+                        ury=bbox.ury
+                    )
                 )
-            )

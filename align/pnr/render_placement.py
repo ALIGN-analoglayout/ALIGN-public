@@ -38,7 +38,7 @@ def gen_transformation( blk):
     return tr3
 
 def gen_placement_verilog(hN, DB, verilog_d):
-    d = copy.deepcopy( verilog_d)
+    d = verilog_d.copy()
 
     bboxes = defaultdict(list)
     transforms = defaultdict(list)
