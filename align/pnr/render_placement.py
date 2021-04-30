@@ -140,18 +140,17 @@ def dump_blocks2( placement_verilog_d, top_cell, sel, leaves_only=False):
 
     def gen_trace_xy(instance, prefix_path, tr):
         # tr converts local coordinates into global coordinates
-
-        template_name = instance['template_name']
-
-        if leaves_only and template_name in modules:
-            return
-
-        if template_name in leaves:
-            r = leaves[template_name]['bbox']
-        elif template_name in modules:
+        if 'template_name' in instance:
+            if leaves_only:
+                return
+            template_name = instance['template_name']
             r = modules[template_name]['bbox']
+
+        elif 'concrete_template_name' in instance:
+            template_name = instance ['concrete_template_name']
+            r = leaves[template_name]['bbox']
         else:
-            assert False, template_name
+            assert False, f'Neither \'template_name\' or \'concrete_template_name\' in inst {instance}.'
 
         [x0, y0, x1, y1] = tr.hitRect(
             transformation.Rect(*r)).canonical().toList()
@@ -179,7 +178,8 @@ def dump_blocks2( placement_verilog_d, top_cell, sel, leaves_only=False):
 
             gen_trace_xy(instance, new_prefix_path, new_tr)
 
-            if instance['template_name'] in modules:
+            if 'template_name' in instance:
+                assert instance['template_name'] in modules
                 new_module = modules[instance['template_name']]
                 aux(new_module, new_prefix_path, new_tr)
 
