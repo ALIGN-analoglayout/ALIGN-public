@@ -85,7 +85,6 @@ tests/cell_fabric/Foo*.cir
 !tests/pnr/current_mirror_ota_inputs/*.lef
 !tests/pnr/telescopic_ota_guard_ring_inputs/*.json
 !tests/pnr/telescopic_ota_guard_ring_inputs/*.lef
-!tests/primitive/current_mirror_ota/1_topology/*.json
 !tests/gdsconv/file.*
 !tests/gdsconv/only_paths.*
 !Viewer/INPUT/mydesign_dr_globalrouting.json
