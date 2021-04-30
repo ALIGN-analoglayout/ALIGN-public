@@ -82,7 +82,7 @@ class PnRdatabase
     int unitScale;
     map<string, vector<PnRDB::lefMacro> > lefData;  //map from Macro name to Macro Instance
   public:
-    map<string, string> gdsData; //map from gds name to gds file
+    map<string, vector<string> > gdsData2; //map from gds name to multiple gds file (abstract to multiple concrete)
   private:
     PnRDB::designRule drData;
 

@@ -29,7 +29,7 @@ def parse_errors( errors_path):
                     counts[k] += 1
                     match = True
             if not match:
-                assert False, line
+                print( f'Mapping error to other: {line}')
                 counts['other'] += 1
 
     return counts

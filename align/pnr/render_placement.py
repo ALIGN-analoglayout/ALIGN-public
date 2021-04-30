@@ -1,6 +1,7 @@
 import json
 import logging
 import copy
+import pathlib
 import plotly.graph_objects as go
 from collections import defaultdict
 from ..cell_fabric import transformation
@@ -43,6 +44,9 @@ def gen_placement_verilog(hN, DB, verilog_d):
     transforms = defaultdict(list)
     leaf_bboxes = defaultdict(list)
 
+    templates = defaultdict(list)
+
+
     def aux(hN, r, prefix_path):
 
         bboxes[prefix_path[-1][1]].append( r)
@@ -63,7 +67,11 @@ def gen_placement_verilog(hN, DB, verilog_d):
                 new_hN = DB.CheckoutHierNode(child_idx, blk.selectedInstance)
                 aux(new_hN, new_r, new_prefix_path)
             else:
-                leaf_bboxes[inst.master].append( new_r)
+                chosen_master = pathlib.Path(inst.gdsFile).stem
+                logger.debug( f'Choose \'{chosen_master}\' for {inst.master} {(hN.name, inst.name)}')
+                templates[(hN.name, inst.name)].append( chosen_master)
+
+                leaf_bboxes[chosen_master].append( new_r)
 
                 
     r = 0, 0, hN.width, hN.height
@@ -81,6 +89,10 @@ def gen_placement_verilog(hN, DB, verilog_d):
         if len(set(v)) > 1:
             logger.error( f'Different leaf bboxes for {k}: {v}')
 
+    for k,v in templates.items():
+        if len(set(v)) > 1:
+            logger.error( f'Different chosen masters for {k}: {v}')
+
     logger.debug( f'transforms: {transforms}')
     logger.debug( f'bboxes: {bboxes}')
     logger.debug( f'leaf_bboxes: {leaf_bboxes}')
@@ -92,7 +104,14 @@ def gen_placement_verilog(hN, DB, verilog_d):
         else:
             logger.error( f'No bounding box for module {nm}')
         for instance in module['instances']:
-            k = (nm, instance['instance_name']) 
+            k = (nm, instance['instance_name'])
+            if k in templates:
+                if 'abstract_template_name' not in instance:
+                    # Capacitor (internally generated)
+                    instance['abstract_template_name'] = instance['template_name']
+                    del instance['template_name']
+
+                instance['concrete_template_name'] = templates[k][0]
             if k in transforms:
                 instance['transformation'] = transforms[k][0].toDict()
             else:
@@ -111,7 +130,7 @@ def gen_placement_verilog(hN, DB, verilog_d):
 
     return d
 
-def dump_blocks2( placement_verilog_d, top_cell, sel, leaves_only=False):
+def dump_blocks2( placement_verilog_d, top_cell, sel, leaves_only=False, show=True):
     logger.info(f'Drawing {top_cell}_{sel}...')
 
     fig = go.Figure()
@@ -121,18 +140,17 @@ def dump_blocks2( placement_verilog_d, top_cell, sel, leaves_only=False):
 
     def gen_trace_xy(instance, prefix_path, tr):
         # tr converts local coordinates into global coordinates
-
-        template_name = instance['template_name']
-
-        if leaves_only and template_name in modules:
-            return
-
-        if template_name in leaves:
-            r = leaves[template_name]['bbox']
-        elif template_name in modules:
+        if 'template_name' in instance:
+            if leaves_only:
+                return
+            template_name = instance['template_name']
             r = modules[template_name]['bbox']
+
+        elif 'concrete_template_name' in instance:
+            template_name = instance ['concrete_template_name']
+            r = leaves[template_name]['bbox']
         else:
-            assert False, template_name
+            assert False, f'Neither \'template_name\' or \'concrete_template_name\' in inst {instance}.'
 
         [x0, y0, x1, y1] = tr.hitRect(
             transformation.Rect(*r)).canonical().toList()
@@ -160,14 +178,15 @@ def dump_blocks2( placement_verilog_d, top_cell, sel, leaves_only=False):
 
             gen_trace_xy(instance, new_prefix_path, new_tr)
 
-            if instance['template_name'] in modules:
+            if 'template_name' in instance:
+                assert instance['template_name'] in modules
                 new_module = modules[instance['template_name']]
                 aux(new_module, new_prefix_path, new_tr)
 
     aux( modules[top_cell], (), transformation.Transformation())
 
-
     fig.update_yaxes(scaleanchor="x", scaleratio=1)
     fig.update_layout(title=dict(text=f'{top_cell}_{sel}'))
-    fig.show()
 
+    if show:
+        fig.show()

@@ -601,8 +601,8 @@ void ILP_solver::PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfil
 
   int bias = 50;
   int range = std::max(UR.x, UR.y) + bias;
-  fout << "\nset xrange [" << -range << ":" << range << "]" << endl;
-  fout << "\nset yrange [" << 0 - bias << ":" << range << "]" << endl;
+  fout << "\nset xrange [" << LL.x - bias << ":" << UR.x + bias << "]" << endl;
+  fout << "\nset yrange [" << LL.y - bias << ":" << UR.y + bias << "]" << endl;
   // set labels for blocks
   for (int i = 0; i < mydesign.Blocks.size(); ++i) {
     placerDB::point tp;
