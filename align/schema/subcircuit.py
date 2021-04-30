@@ -6,20 +6,13 @@ from .model import Model
 from .instance import Instance
 from .constraint import ConstraintDB
 
-
 class SubCircuit(Model):
-
     name : str                 # Model Name
     pins : Optional[List[str]] # List of pin names (derived from base if base exists)
     parameters : Optional[Dict[str, str]]   # Parameter Name: Value mapping (inherits & adds to base if needed)
     elements: List[Instance]
     constraints: ConstraintDB
     prefix : str = 'X'         # Instance name prefix, optional
-
-    @types.validate_arguments
-    def add(self, instance: Instance):
-        self.elements.append(instance)
-        return instance
 
     @property
     def nets(self):
@@ -29,11 +22,20 @@ class SubCircuit(Model):
         return nets
 
     def __init__(self, *args, **kwargs):
+        # make elements optional in __init__
+        # TODO: Replace with default factory
         if 'elements' not in kwargs:
             kwargs['elements'] = []
-        if 'constraints' not in kwargs:
-            kwargs['constraints'] = ConstraintDB()
+        # defer constraint processing for now
+        constraints = []
+        if 'constraints' in kwargs:
+            constraints = kwargs['constraints']
+        kwargs['constraints'] = []
+        # load subcircuit
         super().__init__(*args, **kwargs)
+        # process constraints
+        with types.set_context(self.constraints):
+            self.constraints.extend(constraints)
 
     def xyce(self):
         ret = []
