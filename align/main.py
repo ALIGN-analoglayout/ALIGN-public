@@ -42,18 +42,19 @@ def gen_more_primitives( primitives, topology_dir, subckt):
     map_d = defaultdict(list)
 
     # As a hack, add more primitives if it matches this pattern
-    p = re.compile( r'^(\S+)_nfin(\d+)_n(\d+)_X(\d+)_Y(\d+)_(\S+)$')
+    p = re.compile( r'^(\S+)_nfin(\d+)_n(\d+)_X(\d+)_Y(\d+)(|_\S+)$')
 
     more_primitives = {}
 
     for k,v in primitives.items():
         m = p.match(k)
         if m:
+            logger.info( f'Matched primitive {k}')
             nfin,n,X,Y = tuple(int(x) for x in m.groups()[1:5])
-            abstract_name = f'{m.groups()[0]}_nfin{nfin}_{m.groups()[5]}'
+            abstract_name = f'{m.groups()[0]}_nfin{nfin}{m.groups()[5]}'
             map_d[abstract_name].append( k)
             if X != Y:
-                concrete_name = f'{m.groups()[0]}_nfin{nfin}_n{n}_X{Y}_Y{X}_{m.groups()[5]}'
+                concrete_name = f'{m.groups()[0]}_nfin{nfin}_n{n}_X{Y}_Y{X}{m.groups()[5]}'
                 map_d[abstract_name].append( concrete_name)             
                 if concrete_name not in primitives and \
                    concrete_name not in more_primitives:
@@ -61,6 +62,7 @@ def gen_more_primitives( primitives, topology_dir, subckt):
                     more_primitives[concrete_name]['x_cells'] = Y
                     more_primitives[concrete_name]['y_cells'] = X
         else:
+            logger.warning( f'Didn\'t match primitive {k}')
             map_d[k].append( k)
 
     primitives.update( more_primitives)

@@ -2200,8 +2200,12 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
   logger->info("merge LEF/map data on node {0}", node.name);  
   for (unsigned int i = 0; i < node.Blocks.size(); i++) {
     const string abstract_template_name = node.Blocks[i].instance.front().master;
-    if (abstract_template_name.find("Cap") != std::string::npos || abstract_template_name.find("cap") != std::string::npos || !node.Blocks[i].instance.back().isLeaf) continue;
-    if (gdsData2.find(abstract_template_name) == gdsData2.end()) logger->error("The key does not exist in map: {0}", abstract_template_name);
+
+    if (gdsData2.find(abstract_template_name) == gdsData2.end()) {
+      if (abstract_template_name.find("Cap") != std::string::npos || abstract_template_name.find("cap") != std::string::npos || !node.Blocks[i].instance.back().isLeaf) continue;
+      logger->error("The key does not exist in map: {0}", abstract_template_name);
+    }
+
     unsigned int variants_count = gdsData2[abstract_template_name].size();
     node.Blocks[i].instance.resize(variants_count);
     for (unsigned int j = 1; j < variants_count; j++) node.Blocks[i].instance[j] = node.Blocks[i].instance[0];
