@@ -41,6 +41,7 @@ def gen_more_primitives( primitives, topology_dir, subckt):
 
     map_d = defaultdict(list)
 
+    # As a hack, add more primitives if it matches this pattern
     p = re.compile( r'^(\S+)_nfin(\d+)_n(\d+)_X(\d+)_Y(\d+)_(\S+)$')
 
     more_primitives = {}
@@ -60,7 +61,6 @@ def gen_more_primitives( primitives, topology_dir, subckt):
                     more_primitives[concrete_name]['x_cells'] = Y
                     more_primitives[concrete_name]['y_cells'] = X
         else:
-            logger.warning( f'Expected pattern not matched for primitive {k}')
             map_d[k].append( k)
 
     primitives.update( more_primitives)
@@ -70,7 +70,6 @@ def gen_more_primitives( primitives, topology_dir, subckt):
     for k,v in primitives.items():
         v['abstract_template_name'] = concrete2abstract[k]
         v['concrete_template_name'] = k
-
 
     # now hack the netlist to replace the template names using the concrete2abstract mapping
 

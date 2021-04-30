@@ -152,10 +152,6 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     _ReadLEF( DB, path, lefname)
     DB.gdsData, DB.gdsData2 = _ReadMap( path, mapname)
 
-    if True:
-        for k, v in DB.gdsData2.items():
-            logger.info( f'DB.gdsData2: {k} {v}')
-
     j = None
     if vname.endswith(".verilog.json"):
         j = VerilogJsonTop.parse_file(pathlib.Path(path) / vname)

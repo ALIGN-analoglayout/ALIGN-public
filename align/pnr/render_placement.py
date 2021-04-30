@@ -68,7 +68,7 @@ def gen_placement_verilog(hN, DB, verilog_d):
                 aux(new_hN, new_r, new_prefix_path)
             else:
                 chosen_master = pathlib.Path(inst.gdsFile).stem
-                logger.info( f'Choose \'{chosen_master}\' for {inst.master} {(hN.name, inst.name)}')
+                logger.debug( f'Choose \'{chosen_master}\' for {inst.master} {(hN.name, inst.name)}')
                 templates[(hN.name, inst.name)].append( chosen_master)
 
                 leaf_bboxes[chosen_master].append( new_r)

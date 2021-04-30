@@ -89,23 +89,11 @@ def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, check=Fal
 
     return ret
 
-
-def gen_leaf_cell_info( verilog_d, input_dir, primitive_dir, primitives):
-
-    non_leaves = set()
-    templates_called_in_an_instance = defaultdict(list)
-    abstract_templates_called_in_an_instance = defaultdict(list)
-
+def gen_constraint_files( verilog_d, input_dir):
     pnr_const_ds = {}
     for module in verilog_d['modules']:
         nm = module['name']
         pnr_const_ds[nm] = PnRConstraintWriter().map_valid_const(module.constraints)
-        non_leaves.add( nm)
-        for instance in module['instances']:
-            if 'template_name' in instance:
-                templates_called_in_an_instance[instance['template_name']].append( (nm,instance['instance_name']))
-            if 'abstract_template_name' in instance:
-                abstract_templates_called_in_an_instance[instance['abstract_template_name']].append( (nm,instance['instance_name']))
 
     constraint_files = set()
     for nm, constraints in pnr_const_ds.items():
@@ -115,32 +103,62 @@ def gen_leaf_cell_info( verilog_d, input_dir, primitive_dir, primitives):
         with open(fn, 'w') as outfile:
             json.dump(constraints, outfile, indent=4)
 
+    return constraint_files, pnr_const_ds
+
+def extract_capacitor_constraints( pnr_const_ds):
     cap_constraints = {}
     for nm, pnr_const_d in pnr_const_ds.items():
         cap_constraints[nm] = { const['cap_name'] : const for const in pnr_const_d['constraints'] if const['const_name'] == "CC"}
+    logger.debug( f'cap_constraints: {cap_constraints}')
+
+    return cap_constraints
+
+def hack_capacitor_instances( verilog_d, pnr_const_ds):
+    cap_constraints = extract_capacitor_constraints( pnr_const_ds)
+
+    # Hack capacitor instances from template_name to abstract_template_name
+    # Should move to earlier in flow
+    # Only needed because Capacitors to not considered primitives
+    for module in verilog_d['modules']:
+        nm = module['name']
+        for instance in module['instances']:
+            if instance['instance_name'] in cap_constraints[nm]:
+                instance['abstract_template_name'] = instance['template_name']
+                del instance['template_name']
+
+def gen_leaf_cell_info( verilog_d, primitive_dir, primitives, pnr_const_ds):
+
+    non_leaves = set()
+    templates_called_in_an_instance = defaultdict(list)
+    abstract_templates_called_in_an_instance = defaultdict(list)
+
+    for module in verilog_d['modules']:
+        nm = module['name']
+        non_leaves.add( nm)
+        for instance in module['instances']:
+            if 'template_name' in instance:
+                templates_called_in_an_instance[instance['template_name']].append( (nm,instance['instance_name']))
+            if 'abstract_template_name' in instance:
+                abstract_templates_called_in_an_instance[instance['abstract_template_name']].append( (nm,instance['instance_name']))
+
 
     leaves = set(abstract_templates_called_in_an_instance.keys())
-    for nm, pnr_const_d in pnr_const_ds.items():
-        for const in pnr_const_d['constraints']:
-            if const['const_name'] == "GuardRing":
-                leaves.add(const['guard_ring_primitives'])
 
     logger.debug( f'non_leaves: {non_leaves} leaves: {leaves}')
     logger.debug( f'templates: {templates_called_in_an_instance}')
+    logger.debug( f'abstract_templates: {abstract_templates_called_in_an_instance}')
 
-    # Find capacitors
+    #
+    # Capacitor hack --- Should be able to remove eventally
+    #
+    cap_constraints = extract_capacitor_constraints( pnr_const_ds)
     capacitors = defaultdict(list)
     for leaf in leaves:
         for parent, instance_name in abstract_templates_called_in_an_instance[leaf]:
             if parent in cap_constraints:
                 if instance_name in cap_constraints[parent]:
-                    logger.debug( f'parent: {parent} instance_name: {instance_name} leaf: {leaf} cap_constraints: {cap_constraints}')
+                    logger.info( f'parent: {parent} instance_name: {instance_name} leaf: {leaf} cap_constraints: {cap_constraints}')
                     capacitors[leaf].append( (parent,instance_name))
-
-
-    for k, v in capacitors.items():
-        if len(v) > 1:
-            logger.error( f'CC Capacitor with template_name {k} instantiated more than once: {v}')
 
     # Remove generated capacitors
     leaves = leaves.difference( set(capacitors.keys()))
@@ -152,10 +170,20 @@ def gen_leaf_cell_info( verilog_d, input_dir, primitive_dir, primitives):
             logger.debug( f'Adding unit_cap {unit_cap} to leaves')
             leaves.add( unit_cap)
 
+    # Add guard_ring_primitives to leaves
+    for nm, pnr_const_d in pnr_const_ds.items():
+        for const in pnr_const_d['constraints']:
+            if const['const_name'] == "GuardRing":
+                leaves.add(const['guard_ring_primitives'])
+
+
+
     # Check if collateral files exist
     leaf_collateral = defaultdict(list)
     for k, v in primitives.items():
-        if v['abstract_template_name'] not in leaves: continue
+        if v['abstract_template_name'] not in leaves:
+            logger.warning( f'abstract_template_name of {v} not in {leaves}')
+            continue
         leaf = v['concrete_template_name']
         files = {}
         for suffix in ['.lef', '.json', '.gds.json']:
@@ -166,7 +194,7 @@ def gen_leaf_cell_info( verilog_d, input_dir, primitive_dir, primitives):
                 logger.error( f'Collateral {suffix} for leaf {leaf} not found in {primitive_dir}')
         leaf_collateral[leaf] = files
 
-    return leaf_collateral, constraint_files, capacitors
+    return leaf_collateral, capacitors
 
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, check=False, extract=False, gds_json=False, render_placements=False, PDN_mode=False):
 
@@ -186,10 +214,17 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
     pdk_file = 'layers.json'
 
     verilog_d = VerilogJsonTop.parse_file((topology_dir / verilog_file))
-    leaf_collateral, constraint_files, capacitors = gen_leaf_cell_info( verilog_d, input_dir, primitive_dir, primitives)
-    logger.info( f'leaf_collateral: {leaf_collateral}')
+
+    # SMB: I want this to be in main (perhaps), or in the topology stage
+    constraint_files, pnr_const_ds = gen_constraint_files( verilog_d, input_dir)
     logger.debug( f'constraint_files: {constraint_files}')
-    logger.info( f'capacitors: {dict(capacitors)}')
+
+    # SMB: I want this in the topology stage
+    hack_capacitor_instances( verilog_d, pnr_const_ds)
+
+    leaf_collateral, capacitors = gen_leaf_cell_info( verilog_d, primitive_dir, primitives, pnr_const_ds)
+    logger.debug( f'leaf_collateral: {leaf_collateral}')
+    logger.debug( f'capacitors: {dict(capacitors)}')
 
     # Generate .map file for PnR
     with (input_dir / map_file).open(mode='wt') as mp:
@@ -233,11 +268,9 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
     # TODO: Cap arrays should eventually be generated by align.primitive
     #       at which point this hack will no longer be needed
 
-    #for cap_template_name in capacitors.keys():
-    #    for fn in results_dir.glob( f'{cap_template_name}_AspectRatio_*.json'):
-    #        (working_dir / fn.name).write_text(fn.read_text())
-    for fn in results_dir.glob( f'*_AspectRatio_*.json'):
-        (working_dir / fn.name).write_text(fn.read_text())
+    for cap_template_name in capacitors.keys():
+        for fn in results_dir.glob( f'{cap_template_name}_AspectRatio_*.json'):
+            (working_dir / fn.name).write_text(fn.read_text())
 
     if check or extract or gds_json:
 
