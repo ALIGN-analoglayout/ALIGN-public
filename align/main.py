@@ -52,17 +52,40 @@ def gen_more_primitives( primitives, topology_dir, subckt):
             logger.info( f'Matched primitive {k}')
             nfin,n,X,Y = tuple(int(x) for x in m.groups()[1:5])
             abstract_name = f'{m.groups()[0]}_nfin{nfin}{m.groups()[5]}'
+
             map_d[abstract_name].append( k)
-            if X != Y:
-                concrete_name = f'{m.groups()[0]}_nfin{nfin}_n{n}_X{Y}_Y{X}{m.groups()[5]}'
+
+            clusters = (nfin+n-1) // n
+
+            pairs = set()
+            for newx in range( 1, clusters+1):
+                newy = (nfin+newx*n-1)//(newx*n)
+                assert newx*newy*n >= nfin
+                pairs.add( (newx,newy))
+
+            by_y = defaultdict(list)
+            for x,y in pairs:
+                by_y[y].append( x)
+
+            pairs = set()
+            for y,xs in by_y.items():
+                pairs.add( (min(xs), y))
+
+            pairs = pairs.difference( { (X,Y)})
+
+            logger.info( f'Inject new primitive sizes: {pairs} for {nfin} {n} {X} {Y}')
+
+            for newx,newy in pairs:
+                concrete_name = f'{m.groups()[0]}_nfin{nfin}_n{n}_X{newx}_Y{newy}{m.groups()[5]}'
                 map_d[abstract_name].append( concrete_name)             
                 if concrete_name not in primitives and \
                    concrete_name not in more_primitives:
                     more_primitives[concrete_name] = copy.deepcopy(v)
-                    more_primitives[concrete_name]['x_cells'] = Y
-                    more_primitives[concrete_name]['y_cells'] = X
+                    more_primitives[concrete_name]['x_cells'] = newx
+                    more_primitives[concrete_name]['y_cells'] = newy
         else:
-            logger.warning( f'Didn\'t match primitive {k}')
+            if not (k.startswith( "Res") or k.startswith( "Cap")): 
+                logger.warning( f'Didn\'t match primitive {k}')
             map_d[k].append( k)
 
     primitives.update( more_primitives)
