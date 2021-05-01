@@ -5,6 +5,8 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
+import plotly.graph_objects as go
+
 import itertools
 import random
 
@@ -75,9 +77,6 @@ class AppWithCallbacksAndState:
 
 
     def display_hover_data(self,clickData):
-        idx = None
-        md_str = ''
-
         if clickData is not None:
             points = clickData['points']
             assert 1 == len(points)
@@ -101,8 +100,11 @@ Subindex: {self.subindex}/{len(lst)}
 ```
 """
 
-        return make_placement_graph(self.placements, self.histo, self.pairs, self.max_x, self.max_y, idx, self.subindex), md_str, None
+            placement = self.placements[self.histo[self.pairs[idx]][self.subindex]]:
 
+            return make_placement_graph(placement, self.max_x, self.max_y), md_str, None
+        else:
+            return go.Figure(), '', None
 
 if __name__ == '__main__':
 

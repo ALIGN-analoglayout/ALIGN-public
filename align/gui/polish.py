@@ -264,11 +264,8 @@ def main(block_str):
     return placements, histo, pairs, max_x, max_y
 
 
-def make_placement_graph(placements, histo, pairs, max_x, max_y, idx,subindex):
+def make_placement_graph(placement, max_x, max_y):
     fig = go.Figure()
-
-    if idx is None:
-        return fig
 
     colors = {'A': 'Plum', 'B': 'Khaki', 'C': 'SpringGreen', 'D': 'Salmon', 'E': 'SteelBlue', 'F': 'yellow',
               'w0': 'rgb( 255, 255, 255)',
