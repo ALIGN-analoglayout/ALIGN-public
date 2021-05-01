@@ -51,7 +51,7 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
 
   def scale(x):
 
-    result = x*40//j1['ScaleFactor'] ### Multiplied by 40 because unit are set  to 2.5e-11 and input is in 1e-09
+      result = x*40//j1['ScaleFactor'] ### Multiplied by 40: Unit are set to 2.5e-11 and input is in 1e-09
     if isinstance(result, float):
       logger.warning(f"translate_data:scale: Coord {x} ({result}) not integral")
       intresult = int(round(result,0))
