@@ -182,6 +182,9 @@ def place( *, DB, opath, fpath, numLayout, effort, idx):
 
     DB.AddingPowerPins(current_node)
 
+    #
+    # We want to run this step earlier in the flow; Can we run it in its own DB and move the resulting LEF files to the corrent place?
+    #
     PRC = PnR.Placer_Router_Cap_Ifc(opath,fpath,current_node,DB.getDrc_info(),DB.checkoutSingleLEF(),1,6)
 
     hyper = PnR.PlacerHyperparameters()
