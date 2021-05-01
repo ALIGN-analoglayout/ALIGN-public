@@ -3,7 +3,7 @@ import pathlib
 import io
 
 from align import PnR
-from align.pnr.toplevel import ReadVerilogJson, analyze_hN
+from align.pnr.toplevel import ReadVerilogJson
 from align.pnr.build_pnr_model import PnRdatabase, _attach_constraint_files
 from align.compiler.write_verilog_lef import write_verilog
 
@@ -14,16 +14,10 @@ def test_verilog_input():
 
     DB, _ = PnRdatabase( str(d), "current_mirror_ota", "current_mirror_ota.v", "current_mirror_ota.lef", "current_mirror_ota.map", "layers.json")
 
-    for hN in DB.hierTree:
-        analyze_hN( "verilog", hN)
-
 def test_verilog_json_input():
     d = mydir / "current_mirror_ota_inputs"
 
     DB, _ = PnRdatabase( str(d), "current_mirror_ota", "current_mirror_ota.verilog.json", "current_mirror_ota.lef", "current_mirror_ota.map", "layers.json")
-
-    for hN in DB.hierTree:
-        analyze_hN( "verilogJson", hN)
 
 
 def test_diff_verilog_and_verilog_json():
