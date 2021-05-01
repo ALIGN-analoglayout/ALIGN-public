@@ -1,0 +1,5 @@
+[
+    {"constraint": "HorizontalDistance", "abs_distance":0},
+    {"constraint": "VerticalDistance",   "abs_distance":0},
+    {"constraint": "AspectRatio", "subcircuit": "common_source", "ratio_high": 0.5}
+]

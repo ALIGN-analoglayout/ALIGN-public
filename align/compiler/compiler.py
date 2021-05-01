@@ -8,12 +8,13 @@ from .preprocess import define_SD, preprocess_stack_parallel, remove_pg_pins
 from .create_database import CreateDatabase
 from .match_graph import Annotate
 from .read_setup import read_setup
-from .write_verilog_lef import write_verilog, WriteVerilog,generate_lef
+from .write_verilog_lef import write_verilog, WriteVerilog, generate_lef
 from .common_centroid_cap_constraint import CapConst
 from .find_constraint import FindConst
 from .read_lef import read_lef
 from .user_const import ConstraintParser
 from ..schema import constraint
+from ..schema.hacks import HierDictNode
 
 import logging
 logger = logging.getLogger(__name__)
@@ -65,7 +66,8 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, flat
     lib_path=pathlib.Path(__file__).resolve().parent.parent / 'config' / 'user_template.sp'
     user_lib = SpiceParser(lib_path)
     library += user_lib.sp_parser()
-    library=sorted(library, key=lambda k: max_connectivity(k["graph"]), reverse=True)
+    library = [HierDictNode(**x, constraints=[], ports_weight={}) for x in library]
+    library=sorted(library, key=lambda k: max_connectivity(k.graph), reverse=True)
 
     logger.debug(f"dont use cells: {design_setup['DONT_USE_CELLS']}")
     logger.debug(f"all library elements: {[ele['name'] for ele in library]}")
@@ -117,7 +119,6 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, flat
 
     annotate = Annotate(hier_graph_dict, design_setup, library, all_lef)
     annotate.annotate()
-
     return hier_graph_dict
 
 def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:pathlib.Path, pdk_dir:pathlib.Path, uniform_height=False):
@@ -176,10 +177,14 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
 
     primitives = {}
     for name,member in hier_graph_dict.items():
-
         logger.debug(f"Found module: {name} {member['graph'].nodes()}")
-
         graph = member["graph"]
+        constraints = member["constraints"]
+
+        for const in constraints:
+            if isinstance(const, constraint.GuardRing):
+                primitives['guard_ring'] = {'primitive':'guard_ring'}
+
         logger.debug(f"Reading nodes from graph: {name}")
         for node, attr in graph.nodes(data=True):
             if 'net' in attr['inst_type']: continue
@@ -195,11 +200,12 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
                     for nm in list(hier_graph_dict.keys()):
                         if nm == lef_name + attr['inst_copy']:
                             if block_name not in hier_graph_dict.keys():
+                                logger.warning('Trying to modify a dictionary while iterating over it!')
                                 hier_graph_dict[block_name] = hier_graph_dict.pop(nm)
                             else:
                                 #For cells with extra parameters than current primitive naming convention
                                 all_lef.append(nm)
-                    graph.nodes[node]["inst_type"]=block_name
+                    graph.nodes[node]["inst_type"] = block_name
                     all_lef.append(block_name)
 
                 # Only unit caps are generated
@@ -224,7 +230,6 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
     logger.debug(f"All available cell generator with updates: {all_lef}")
     for name,member in hier_graph_dict.items():
         graph = member["graph"]
-        constraints = member["constraints"]
         logger.debug(f"Found module: {name} {graph.nodes()}")
         inoutpin = []
         floating_ports=[]
@@ -233,7 +238,7 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
                 if key not in POWER_PINS:
                     inoutpin.append(key)
             if member["ports"]:
-                logger.debug(f'Found module ports: {member["ports"]} {member.keys()}')
+                logger.debug(f'Found module ports: {member["ports"]} {member["name"]}')
                 floating_ports = set(inoutpin) - set(member["ports"]) - set(design_setup['POWER']) -set(design_setup['GND'])
                 if len(list(floating_ports))> 0:
                     logger.error(f"floating ports found: {name} {floating_ports}")
@@ -246,13 +251,16 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
             if name not in design_setup['DIGITAL']:
                 logger.debug(f"call constraint generator writer for block: {name}")
                 stop_points = design_setup['POWER'] + design_setup['GND'] + design_setup['CLOCK']
+                constraints = member["constraints"]
                 if name not in design_setup['NO_CONST']:
                     constraints = FindConst(graph, name, inoutpin, member["ports_weight"], constraints, stop_points)
                 constraints = CapConst(graph, name, design_config["unit_size_cap"], constraints, design_setup['MERGE_SYMM_CAPS'])
-
+                hier_graph_dict[name] = hier_graph_dict[name].copy(
+                    update={'constraints': constraints}
+                )
             ## Write out modified netlist & constraints as JSON
             logger.debug(f"call verilog writer for block: {name}")
-            wv = WriteVerilog(graph, name, inoutpin, hier_graph_dict, POWER_PINS, constraints)
+            wv = WriteVerilog(name, inoutpin, hier_graph_dict, POWER_PINS)
             verilog_tbl['modules'].append( wv.gen_dict())
     if len(POWER_PINS)>0:
         for i, nm in enumerate(POWER_PINS):

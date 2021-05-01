@@ -14,9 +14,8 @@ logger = logging.getLogger(__name__)
 
 class WriteVerilog:
     """ write hierarchical verilog file """
-
-    def __init__(self, circuit_graph, circuit_name, inout_pin_names,subckt_dict, power_pins, constraints):
-        self.circuit_graph = circuit_graph
+    def __init__(self, circuit_name, inout_pin_names, hier_graph_dict, power_pins):
+        self.hier_graph_dict = hier_graph_dict
         self.circuit_name = circuit_name
         self.inout_pins = inout_pin_names
         self.pins = []
@@ -24,8 +23,9 @@ class WriteVerilog:
             if port not in power_pins:
                 self.pins.append(port)
         self.power_pins=power_pins
-        self.subckt_dict = subckt_dict
-        self.constraints = constraints
+
+        self.circuit_graph = self.hier_graph_dict[self.circuit_name].graph
+        self.constraints = self.hier_graph_dict[self.circuit_name].constraints
 
     def gen_dict( self):
         d = {}
@@ -63,7 +63,7 @@ class WriteVerilog:
                         nets.append(nets[1])
                 elif "connection" in attr and attr["connection"]:
                     for key, value in attr["connection"].items():
-                        if attr['inst_type'] in self.subckt_dict and key in self.subckt_dict[attr['inst_type']]['ports']:
+                        if attr['inst_type'] in self.hier_graph_dict and key in self.hier_graph_dict[attr['inst_type']]['ports']:
                             ports.append(key)
                             nets.append(value)
                 else:
@@ -98,8 +98,7 @@ class WriteVerilog:
                     else:
                         mapped_pins.append( { "formal" : a[i], "actual": b[i - no_of_short]})
                         check_short.append(a[i])
-                    if a[i] in self.power_pins:
-                        mapped_pins= mapped_pins[:-1]
+                mapped_pins = [x for x in mapped_pins if x['formal'] not in self.power_pins]
 
                 return list(sorted(mapped_pins,key=lambda x:x['formal']))
 

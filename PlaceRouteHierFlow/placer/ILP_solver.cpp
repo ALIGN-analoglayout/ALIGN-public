@@ -412,6 +412,8 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   }
 
   // calculate LL and UR
+  LL.x = INT_MAX, LL.y = INT_MAX;
+  UR.x = INT_MIN, UR.y = INT_MIN;
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
     LL.x = std::min(LL.x, Blocks[i].x);
     LL.y = std::min(LL.y, Blocks[i].y);
@@ -599,8 +601,8 @@ void ILP_solver::PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfil
 
   int bias = 50;
   int range = std::max(UR.x, UR.y) + bias;
-  fout << "\nset xrange [" << -range << ":" << range << "]" << endl;
-  fout << "\nset yrange [" << 0 - bias << ":" << range << "]" << endl;
+  fout << "\nset xrange [" << LL.x - bias << ":" << UR.x + bias << "]" << endl;
+  fout << "\nset yrange [" << LL.y - bias << ":" << UR.y + bias << "]" << endl;
   // set labels for blocks
   for (int i = 0; i < mydesign.Blocks.size(); ++i) {
     placerDB::point tp;

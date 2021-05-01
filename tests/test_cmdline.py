@@ -49,6 +49,8 @@ def test_cmdline(design,num_placements,PDN_mode):
 
     results = align.CmdlineParser().parse_args(args)
 
+    assert results is not None, "ALIGN exception encountered"
+    
     for result in results:
         _, variants = result
         for (k,v) in variants.items():
