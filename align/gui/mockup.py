@@ -5,7 +5,6 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
-import plotly.graph_objects as go
 
 import itertools
 import random
@@ -55,7 +54,7 @@ class AppWithCallbacksAndState:
                         html.H2(children='Placement'),
                         dcc.Graph(
                             id='Placement',
-                            figure = make_placement_graph(self.placements, self.histo, self.pairs, self.max_x, self.max_y, 0, 0)
+                            figure = make_placement_graph([], self.max_x, self.max_y)
                         )
                     ],
                     style={'display': 'inline-block', 'vertical-align': 'top'}
@@ -77,6 +76,8 @@ class AppWithCallbacksAndState:
 
 
     def display_hover_data(self,clickData):
+        placement = []
+        md_str = ''
         if clickData is not None:
             points = clickData['points']
             assert 1 == len(points)
@@ -99,12 +100,9 @@ Coord: {self.pairs[idx]}
 Subindex: {self.subindex}/{len(lst)}
 ```
 """
+            placement = self.placements[self.histo[self.pairs[idx]][self.subindex]]
 
-            placement = self.placements[self.histo[self.pairs[idx]][self.subindex]]:
-
-            return make_placement_graph(placement, self.max_x, self.max_y), md_str, None
-        else:
-            return go.Figure(), '', None
+        return make_placement_graph(placement, self.max_x, self.max_y), md_str, None
 
 if __name__ == '__main__':
 

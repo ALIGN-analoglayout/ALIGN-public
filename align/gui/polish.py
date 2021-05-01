@@ -274,7 +274,7 @@ def make_placement_graph(placement, max_x, max_y):
               'w3': 'rgb( 255, 255, 240)',
               'w4': 'rgb( 255, 240, 240)'}
 
-    for named_rect in placements[histo[pairs[idx]][subindex]]:
+    for named_rect in placement:
         nm, [x0, y0, x1, y1] = named_rect
         x = [x0, x1, x1, x0, x0]
         y = [y0, y0, y1, y1, y0]
