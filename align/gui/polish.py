@@ -263,6 +263,7 @@ def main(block_str):
 
     return placements, histo, pairs, max_x, max_y
 
+
 def make_placement_graph(placements, histo, pairs, max_x, max_y, idx,subindex):
     fig = go.Figure()
 
@@ -276,9 +277,7 @@ def make_placement_graph(placements, histo, pairs, max_x, max_y, idx,subindex):
               'w3': 'rgb( 255, 255, 240)',
               'w4': 'rgb( 255, 240, 240)'}
 
-    s = histo[pairs[idx]][subindex]
-
-    for named_rect in placements[s]:
+    for named_rect in placements[histo[pairs[idx]][subindex]]:
         nm, [x0, y0, x1, y1] = named_rect
         x = [x0, x1, x1, x0, x0]
         y = [y0, y0, y1, y1, y0]

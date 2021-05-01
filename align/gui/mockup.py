@@ -19,90 +19,96 @@ logging.basicConfig(level=logging.INFO)
 
 import argparse
 
-assert __name__ == '__main__'
 
-parser = argparse.ArgumentParser( description='Mockup of ALIGN UI')
-parser.add_argument( '-s', '--block_str', type=str, default='ABCD', help='Blocks to use in enumeration; must only include the characters "ABCEDF"; strings longer than 5 will take a long time')
 
-args = parser.parse_args()
+class AppWithCallbacksAndState:
+    def __init__(self, placements, histo, pairs, max_x, max_y):
+        external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+        self.app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-placements, histo, pairs, max_x, max_y = main(args.block_str)
+        self.placements = placements
+        self.histo = histo
+        self.pairs = pairs
+        self.max_x = max_x
+        self.max_y = max_y
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+        self.subindex = 0
+        self.prev_idx = None
 
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-
-app.layout = html.Div(
-    id='frame',
-    children=[
-        html.Div(
+        self.app.layout = html.Div(
+            id='frame',
             children=[
-                html.H2(children='Pareto Frontier'),
-                dcc.Graph(
-                    id='width-vs-height',
-                    figure=make_tradeoff_fig(pairs)
+                html.Div(
+                    children=[
+                        html.H2(children='Pareto Frontier'),
+                        dcc.Graph(
+                            id='width-vs-height',
+                            figure=make_tradeoff_fig(self.pairs)
+                        )
+                    ],
+                    style={'display': 'inline-block', 'vertical-align': 'top'}
+                ),
+                html.Div(
+                    children=[    
+                        html.H2(children='Placement'),
+                        dcc.Graph(
+                            id='Placement',
+                            figure = make_placement_graph(self.placements, self.histo, self.pairs, self.max_x, self.max_y, 0, 0)
+                        )
+                    ],
+                    style={'display': 'inline-block', 'vertical-align': 'top'}
+                ),
+                html.Div(
+                    children=[    
+                        html.H2(children='Tree'),
+                        dcc.Markdown(children='',id='Tree')
+                    ],
+                    style={'display': 'inline-block', 'vertical-align': 'top'}
                 )
-            ],
-            style={'display': 'inline-block', 'vertical-align': 'top'}
-        ),
-        html.Div(
-            children=[    
-                html.H2(children='Placement'),
-                dcc.Graph(
-                    id='Placement',
-                    figure = make_placement_graph(placements, histo, pairs, max_x, max_y,0,0)
-                )
-            ],
-            style={'display': 'inline-block', 'vertical-align': 'top'}
-        ),
-        html.Div(
-            children=[    
-                html.H2(children='Tree'),
-                dcc.Markdown(children='',id='Tree')
-            ],
-            style={'display': 'inline-block', 'vertical-align': 'top'}
+            ]
         )
-    ]
-)
 
-subindex = 0
-prev_idx = None
+        self.app.callback( (Output('Placement', 'figure'),
+                       Output('Tree', 'children'),
+                            Output('width-vs-height', 'clickData')),
+                      [Input('width-vs-height', 'clickData')])(self.display_hover_data)
 
-@app.callback(
-    Output('Placement', 'figure'),
-    Output('Tree', 'children'),
-    Output('width-vs-height', 'clickData'),
-    Input('width-vs-height', 'clickData'))
-def display_hover_data(clickData):
-    global subindex
-    global prev_idx
 
-    idx = None
-    md_str = ''
+    def display_hover_data(self,clickData):
+        idx = None
+        md_str = ''
 
-    if clickData is not None:
-        points = clickData['points']
-        assert 1 == len(points)
-        idx = points[0]['pointNumber']
+        if clickData is not None:
+            points = clickData['points']
+            assert 1 == len(points)
+            idx = points[0]['pointNumber']
 
-        lst = histo[pairs[idx]]
+            lst = self.histo[self.pairs[idx]]
 
-        if prev_idx != idx:
-            subindex = 0
-        else:
-            subindex = (subindex+1)%len(lst)
-        ps = lst[subindex]
-        prev_idx = idx
+            if self.prev_idx != idx:
+                self.subindex = 0
+            else:
+                self.subindex = (self.subindex+1)%len(lst)
+            ps = lst[self.subindex]
+            self.prev_idx = idx
 
-        md_str = f"""```text
+            md_str = f"""```text
 {polish2tree(ps)}
 
 Polish: {ps}
-Coord: {pairs[idx]}
-Subindex: {subindex}/{len(lst)}
+Coord: {self.pairs[idx]}
+Subindex: {self.subindex}/{len(lst)}
 ```
 """
 
-    return make_placement_graph(placements, histo, pairs, max_x, max_y, idx, subindex), md_str, None
+        return make_placement_graph(self.placements, self.histo, self.pairs, self.max_x, self.max_y, idx, self.subindex), md_str, None
 
-app.run_server(debug=True)
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser( description='Mockup of ALIGN UI')
+    parser.add_argument( '-s', '--block_str', type=str, default='ABCD', help='Blocks to use in enumeration; must only include the characters "ABCEDF"; strings longer than 5 will take a long time')
+
+    args = parser.parse_args()
+
+    AppWithCallbacksAndState( *main(args.block_str)).app.run_server(debug=True)
