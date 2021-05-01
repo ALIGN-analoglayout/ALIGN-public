@@ -6,6 +6,11 @@ from transformation import Transformation as Tr
 from transformation import Rect
 from collections import defaultdict
 
+import pandas as pd
+
+import plotly.graph_objects as go
+import plotly.express as px
+
 class Block:
     def __init__(self, nm, *, w=None, h=None):
         self.nm = nm
@@ -257,3 +262,64 @@ def main(block_str):
     logging.debug( f'histo: {histo}')
 
     return placements, histo, pairs, max_x, max_y
+
+def make_placement_graph(placements, histo, pairs, max_x, max_y, idx,subindex):
+    fig = go.Figure()
+
+    if idx is None:
+        return fig
+
+    colors = {'A': 'Plum', 'B': 'Khaki', 'C': 'SpringGreen', 'D': 'Salmon', 'E': 'SteelBlue', 'F': 'yellow',
+              'w0': 'rgb( 255, 255, 255)',
+              'w1': 'rgb( 240, 255, 255)',
+              'w2': 'rgb( 255, 240, 255)',
+              'w3': 'rgb( 255, 255, 240)',
+              'w4': 'rgb( 255, 240, 240)'}
+
+    s = histo[pairs[idx]][subindex]
+
+    for named_rect in placements[s]:
+        nm, [x0, y0, x1, y1] = named_rect
+        x = [x0, x1, x1, x0, x0]
+        y = [y0, y0, y1, y1, y0]
+        fig.add_trace( go.Scatter(x=x, y=y,
+                                   mode='lines', fill='toself',
+                                   fillcolor=colors.get(nm,'yellow'),
+                                   showlegend=False,
+                                   name=f'{nm}'))
+
+    fig.update_layout(
+        autosize=False,
+        width=800,
+        height=800
+    )
+
+    fig.update_xaxes(
+        tickvals=[0,max_x],
+        range=[0,max(max_x,max_y)]
+    )
+
+    fig.update_yaxes(
+        tickvals=[0,max_y],
+        range=[0,max(max_x,max_y)]
+    )
+
+    return fig
+
+def make_tradeoff_fig(pairs):
+
+    df = pd.DataFrame( data=pairs, columns=['width','height'])
+    fig = px.scatter(df, x="width", y="height", width=800, height=800)
+
+    fig.update_traces( marker=dict(size=10))
+    fig.update_xaxes(
+        rangemode="tozero"
+    )
+    fig.update_yaxes(
+        rangemode="tozero",
+        scaleanchor='x',
+        scaleratio = 1
+    )
+
+    return fig
+
