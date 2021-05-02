@@ -20,6 +20,8 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
     if (jsonFile.is_open()) {
 	      json jedb = json::parse (jsonFile);
         json layerAry = jedb["Abstraction"];
+        int ScaleFactor = jedb["ScaleFactor"];
+        times *= ScaleFactor;
         std::map<int, PnRDB::metal_info> metalSet;
         std::map<int, PnRDB::via_info> viaSet;
         std::unordered_map<string, int> name2ViaLayerMap;
