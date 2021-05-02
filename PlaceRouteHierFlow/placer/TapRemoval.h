@@ -321,6 +321,7 @@ class Graph {
     NodeMap _nodeMap;
     Edges _edges;
     EdgeMap _edgeMap;
+    std::map<const Node*, const Node*> _nodeSymPairs;
 
   public:
     Graph();
@@ -334,6 +335,8 @@ class Graph {
     void print() const;
 
     NodeSet dominatingSet() const;
+
+    void addSymPairs(const std::map<std::string, std::string>& counterparts);
 
     const Nodes& nodes() const { return _nodes; }
     const Edges& edges() const { return _edges; }
@@ -350,10 +353,11 @@ class TapRemoval {
     PrimitiveData::Instances _instances;
     PrimitiveData::Primitives _primitives, _primitivesWoTap;
     std::map<std::string, PrimitiveData::Instance*> _instMap;
+    std::map<std::string, std::string> _symPairs;
 
-    void buildGraph();
+    void buildGraph(const std::map<std::string, std::string>& counterparts);
   public:
-    TapRemoval(const PnRDB::hierNode& node, const unsigned dist);
+    TapRemoval(const PnRDB::hierNode& node, const std::map<std::string, std::string>& sympairs, const unsigned dist);
     ~TapRemoval();
     bool valid() const { return !_primitives.empty() && !_primitivesWoTap.empty(); }
     //void createInstances(const PrimitiveData::PlMap& plmap);

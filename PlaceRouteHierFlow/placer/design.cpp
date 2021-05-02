@@ -347,7 +347,6 @@ design::design(PnRDB::hierNode& node) {
   double averageWL=0;
   double macroThreshold=0.5; // threshold to filter out small blocks
   // Add blocks
-  _tapRemover = std::make_shared<TapRemoval>(node, (envTrDist == 0 ? 60000 : envTrDist*2000));
   for(vector<PnRDB::blockComplex>::iterator it=node.Blocks.begin(); it!=node.Blocks.end(); ++it) {
     this->Blocks.resize(this->Blocks.size()+1);
     int WL=0;
@@ -545,6 +544,19 @@ design::design(PnRDB::hierNode& node) {
   noSymGroup4FullMove=GetSizeSymGroup4FullMove(1);
   noSymGroup4PartMove=noSymGroup4FullMove;
   //std::cout<<"Leaving design\n";
+  std::map<std::string, std::string> counterparts;
+  for (int i = 0; i < Blocks.size(); i++) {
+    if (Blocks[i].empty()) continue;
+    const auto& instName = Blocks[i][0].name;
+    const auto counterPartIndex = GetBlockCounterpart(i);
+    if (counterPartIndex > 0 && counterPartIndex != i) {
+      if (Blocks[counterPartIndex].empty()) continue;
+      const auto& cname = Blocks[counterPartIndex][0].name;
+      counterparts[instName] = cname;
+      counterparts[cname] = instName;
+    }
+  }
+  _tapRemover = std::make_shared<TapRemoval>(node, counterparts, (envTrDist == 0 ? 60000 : envTrDist*2000));
 }
 
 int design::GetSizeBlock4Move(int mode) {
