@@ -25,6 +25,9 @@ class DictEmulator(BaseModel):
     def __setitem__(self, item, value):
         setattr(self, item, value)
 
+    def __delitem__(self, item):
+        delattr(self, item)
+
     def __contains__(self, item):
         return hasattr(self, item)
 
@@ -52,7 +55,6 @@ class FormalActualMap(DictEmulator):
 
 
 class VerilogJsonInstance(DictEmulator):
-    template_name: str
     instance_name: str
     fa_map: List[FormalActualMap]
 

@@ -16,7 +16,7 @@ static bool EndsWith( const string& str, const string& pat)
 
 PnRdatabase::~PnRdatabase() {
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.~PnRdatabase");
-  logger->info( "Deconstructing PnRdatabase");
+  logger->debug( "Deconstructing PnRdatabase");
 }
 
 deque<int> PnRdatabase::TraverseHierTree() {
@@ -2097,71 +2097,88 @@ void PnRdatabase::semantic2()
 }
 
 
+static string stem(const string& s) {
+
+  unsigned int start = 0;
+  unsigned int slash = s.find_last_of( '/');
+  if ( slash != string::npos) {
+    start = slash + 1;
+  }
+
+  unsigned int end = s.size();
+  unsigned int dot = s.find_last_of( '.');
+  if ( dot != string::npos) {
+    end = dot;
+  }
+
+  // xx/y.d
+  //   ^ ^
+  // 012345
+
+  return s.substr( start, end-start);
+}
+
 bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
 
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.MergeLEFMapData");
 
   bool missing_lef_file = 0;
 
-  logger->info("merge LEF/map data on node {0}", node.name);
-  for(unsigned int i=0;i<node.Blocks.size();i++){
-    const string master=node.Blocks[i].instance.back().master;
-    if(lefData.find(master)==lefData.end()) {
-      // LEF is missing; Ok if a cap or if not a leaf
-      if(master.find("Cap")!=std::string::npos ||
-          master.find("cap")!=std::string::npos) continue;
-      if(node.Blocks[i].instance.back().isLeaf) {
-        logger->error("The key does not exist in map: {0}",master);
-        missing_lef_file = 1;
-      }
-      continue;
+  logger->info("merge LEF/map data on node {0}", node.name);  
+  for (unsigned int i = 0; i < node.Blocks.size(); i++) {
+    const string abstract_template_name = node.Blocks[i].instance.front().master;
+
+    if (gdsData2.find(abstract_template_name) == gdsData2.end()) {
+      if (abstract_template_name.find("Cap") != std::string::npos || abstract_template_name.find("cap") != std::string::npos || !node.Blocks[i].instance.back().isLeaf) continue;
+      logger->error("The key does not exist in map: {0}", abstract_template_name);
     }
 
-    //cout<<node.Blocks[i].instance.back().name<<" "<<master<<endl;
+    unsigned int variants_count = gdsData2[abstract_template_name].size();
+    node.Blocks[i].instance.resize(variants_count);
+    for (unsigned int j = 1; j < variants_count; j++) node.Blocks[i].instance[j] = node.Blocks[i].instance[0];
+    node.Blocks[i].instNum = variants_count;
+    for (unsigned int j = 0; j < variants_count; j++) {
+      auto& b = node.Blocks[i].instance[j];
+      b.gdsFile = gdsData2[abstract_template_name][j];
+      string a_concrete_template_name = stem(b.gdsFile);
+      if (lefData.find(a_concrete_template_name) == lefData.end()) {
+        logger->error("No LEF file for a_concrete_template_name {0}", a_concrete_template_name);
+        missing_lef_file = 1;
+        continue;
+      }
+      auto& lef = lefData.at(a_concrete_template_name).front();
+      b.interMetals = lef.interMetals;
+      b.interVias = lef.interVias;
+      b._tapVias = lef._tapVias;
+      b._activeVias = lef._activeVias;
+      // node.Blocks[i].instNum++;
+      b.width = lef.width;
+      b.height = lef.height;
+      b.lefmaster = lef.name;
+      b.originBox.LL.x = 0;
+      b.originBox.LL.y = 0;
+      b.originBox.UR.x = lef.width;
+      b.originBox.UR.y = lef.height;
+      b.originCenter.x = lef.width / 2;
+      b.originCenter.y = lef.height / 2;
 
-    for (bool wtap : {true, false}) {
-      auto& lefD = wtap ? lefData : _lefDataWoTap;
-      if (!wtap && lefD.find(master) == lefD.end()) continue;
-      for(unsigned int w=0;w<lefD[master].size();++w) {
-        if(node.Blocks[i].instNum>0) { node.Blocks[i].instance.push_back( node.Blocks[i].instance.back() ); }
-        node.Blocks[i].instNum++;
-        const auto& lefDatw = lefD[master].at(w);
-        node.Blocks[i].instance.back().width=lefDatw.width;
-        node.Blocks[i].instance.back().height=lefDatw.height;
-        node.Blocks[i].instance.back().lefmaster=lefDatw.name;
-        node.Blocks[i].instance.back().originBox.LL.x=0;
-        node.Blocks[i].instance.back().originBox.LL.y=0;
-        node.Blocks[i].instance.back().originBox.UR.x=lefDatw.width;
-        node.Blocks[i].instance.back().originBox.UR.y=lefDatw.height;
-        node.Blocks[i].instance.back().originCenter.x=lefDatw.width/2;
-        node.Blocks[i].instance.back().originCenter.y=lefDatw.height/2;
-
-        for(unsigned int j=0;j<lefDatw.macroPins.size();j++){
-          bool found = 0;
-          for(unsigned int k=0;k<node.Blocks[i].instance.back().blockPins.size();k++){
-            if(lefDatw.macroPins[j].name.compare(node.Blocks[i].instance.back().blockPins[k].name)==0){
-              node.Blocks[i].instance.back().blockPins[k].type = lefDatw.macroPins[j].type;
-              node.Blocks[i].instance.back().blockPins[k].pinContacts = lefDatw.macroPins[j].pinContacts;
-              node.Blocks[i].instance.back().blockPins[k].use = lefDatw.macroPins[j].use;
-              found = 1;
-            }
-          }
-          if(found == 0){
-            node.Blocks[i].instance.back().blockPins.push_back(lefDatw.macroPins[j]);
+      for (unsigned int k = 0; k < b.blockPins.size(); k++) {
+        bool found = 0;
+        for (unsigned int m = 0; m < lef.macroPins.size(); m++) {
+          if (lef.macroPins[m].name.compare(b.blockPins[k].name) == 0) {
+            b.blockPins[k].type = lef.macroPins[m].type;
+            b.blockPins[k].pinContacts = lef.macroPins[m].pinContacts;
+            b.blockPins[k].pinVias = lef.macroPins[m].pinVias;
+            b.blockPins[k].use = lef.macroPins[m].use;
+            found = 1;
+            break;
           }
         }
-
-        node.Blocks[i].instance.back().interMetals = lefDatw.interMetals;
-        node.Blocks[i].instance.back().interVias = lefDatw.interVias;
-        node.Blocks[i].instance.back().gdsFile=wtap ? gdsData[lefDatw.name] : _gdsDataWoTap[lefDatw.name];
-        node.Blocks[i].instance.back()._taVias = lefDatw._taVias;
-        //cout<<"xxx "<<node.Blocks[i].instance.back().gdsFile<<endl;
+        if (found == 0) logger->error("Block {0} pin {1} not found in lef file", b.name, b.blockPins[k].name);
       }
     }
+    assert(!missing_lef_file);
   }
 
-  assert( !missing_lef_file);
-
   return 1;
-
 }
