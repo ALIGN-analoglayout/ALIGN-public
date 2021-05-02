@@ -1,8 +1,8 @@
 
-from align.pnr.render_placement import dump_blocks2
+from align.pnr.render_placement import dump_blocks3
+import plotly.graph_objects as go
 
-
-def test_dump_blocks2():
+def test_dump_blocks3():
     placement_verilog_d = {
         "modules": [
             { "name": "top",
@@ -32,4 +32,6 @@ def test_dump_blocks2():
         ]
     }
     
-    dump_blocks2( placement_verilog_d, 'top', 0, show=False)
+    fig = go.Figure()
+
+    dump_blocks3( fig, placement_verilog_d, 'top', 0)
