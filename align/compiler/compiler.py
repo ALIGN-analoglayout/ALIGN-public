@@ -3,7 +3,9 @@ import pprint
 import json
 
 from .util import _write_circuit_graph, max_connectivity
-from .read_netlist import SpiceParser
+# from .read_netlist import SpiceParser
+from align.schema.subcircuit import SubCircuit
+from align.schema.parser import SpiceParser
 from .preprocess import define_SD, preprocess_stack_parallel, remove_pg_pins
 from .create_database import CreateDatabase
 from .match_graph import Annotate
@@ -22,7 +24,7 @@ def generate_hierarchy(netlist, subckt, output_dir, flatten_heirarchy, pdk_dir, 
     hier_graph_dict = compiler(netlist, subckt, pdk_dir, flatten_heirarchy)
     return compiler_output(netlist, hier_graph_dict, subckt, output_dir, pdk_dir, uniform_height)
 
-def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, flat=0, Debug=False):
+def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, config_path: pathlib.Path, flat=0, Debug=False):
     """
     Reads input spice file, converts to a graph format and create hierarchies in the graph
 
@@ -51,7 +53,32 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, flat
     #
     # TODO: flatten should be separate pass
     #
-    sp = SpiceParser(input_ckt, design_name, flat)
+    parser = SpiceParser()
+    lib_parser = SpiceParser()
+    #Read model file to map devices
+    # TODO: add pdk specific model files
+    model_statemenets = config_path / 'model.txt'
+    design_name = design_name.upper()
+    with open(model_statemenets) as f:
+        lines = f.read()
+    parser.parse(lines)
+    lib_parser.parse(lines)
+
+    with open(input_ckt) as f:
+        lines =  f.read()
+    parser.parse(lines)
+    circuit = parser.library[design_name]
+
+
+    lib_files = ['basic_template.sp', 'user_template.sp']
+    for lib_file in lib_files:
+        with open(config_path /lib_file) as f:
+            lines = f.read()
+        lib_parser.parse(lines)
+
+    library = lib_parser.library
+
+    # sp = SpiceParser(input_ckt, design_name, flat)
     circuit_graphs = sp.sp_parser()
     assert circuit_graphs !=None  , f"No subcircuit with name {design_name} found in spice {input_ckt}"
     circuit = circuit_graphs[0]
