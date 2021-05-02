@@ -9,7 +9,7 @@ from dash.dependencies import Input, Output
 import itertools
 import random
 
-from .polish import *
+from polish import *
 
 from collections import defaultdict
 
