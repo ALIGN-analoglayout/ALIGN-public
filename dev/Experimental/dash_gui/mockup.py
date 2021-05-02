@@ -9,80 +9,23 @@ from dash.dependencies import Input, Output
 import itertools
 import random
 
+from .polish import *
+
 from collections import defaultdict
 
 import logging
+logging.basicConfig(level=logging.INFO)
 
-import pandas as pd
+import argparse
 
-import plotly.graph_objects as go
-import plotly.express as px
 
-from ..pnr.render_placement import dump_blocks3, gen_placement_verilog
-
-import logging
-
-logger = logging.getLogger(__name__)
-
-def make_placement_graph( DB, idx, verilog_d, sel, max_x, max_y):
-    fig = go.Figure()
-
-    title_d = {}
-
-    if sel is not None:
-        logger.info( f'{idx} {sel}')
-
-        hN = DB.CheckoutHierNode( idx, sel)
-        placement_verilog_d = gen_placement_verilog( hN, DB, verilog_d)
-
-        dump_blocks3( fig, placement_verilog_d, hN.name, sel, leaves_only=False)
-
-        title_d = dict(text=f'{hN.name}_{sel}')
-
-    fig.update_layout(
-        autosize=False,
-        width=800,
-        height=800,
-        title=title_d
-    )
-
-    fig.update_xaxes(
-        tickvals=[0,max_x],
-        range=[0,max(max_x,max_y)]
-    )
-
-    fig.update_yaxes(
-        tickvals=[0,max_y],
-        range=[0,max(max_x,max_y)]
-    )
-
-    return fig
-
-def make_tradeoff_fig(pairs):
-
-    df = pd.DataFrame( data=pairs, columns=['width','height'])
-    fig = px.scatter(df, x="width", y="height", width=800, height=800)
-
-    fig.update_traces( marker=dict(size=10))
-    fig.update_xaxes(
-        rangemode="tozero"
-    )
-    fig.update_yaxes(
-        rangemode="tozero",
-        scaleanchor='x',
-        scaleratio = 1
-    )
-
-    return fig
 
 class AppWithCallbacksAndState:
-    def __init__(self, DB, idx, verilog_d, histo, pairs, max_x, max_y):
+    def __init__(self, placements, histo, pairs, max_x, max_y):
         external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
         self.app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-        self.DB = DB
-        self.idx = idx
-        self.verilog_d = verilog_d
+        self.placements = placements
         self.histo = histo
         self.pairs = pairs
         self.max_x = max_x
@@ -109,7 +52,7 @@ class AppWithCallbacksAndState:
                         html.H2(children='Placement'),
                         dcc.Graph(
                             id='Placement',
-                            figure = make_placement_graph(self.DB, self.idx, self.verilog_d, None, self.max_x, self.max_y)
+                            figure = make_placement_graph([], self.max_x, self.max_y)
                         )
                     ],
                     style={'display': 'inline-block', 'vertical-align': 'top'}
@@ -131,8 +74,8 @@ class AppWithCallbacksAndState:
 
 
     def display_hover_data(self,clickData):
+        placement = []
         md_str = ''
-        sel = None
         if clickData is not None:
             points = clickData['points']
             assert 1 == len(points)
@@ -144,30 +87,28 @@ class AppWithCallbacksAndState:
                 self.subindex = 0
             else:
                 self.subindex = (self.subindex+1)%len(lst)
-            sel = lst[self.subindex]
+            ps = lst[self.subindex]
             self.prev_idx = idx
 
             md_str = f"""```text
-Selection: {sel}
+{polish2tree(ps)}
+
+Polish: {ps}
 Coord: {self.pairs[idx]}
 Subindex: {self.subindex}/{len(lst)}
 ```
 
 """
+            placement = self.placements[self.histo[self.pairs[idx]][self.subindex]]
 
-        return make_placement_graph(self.DB, self.idx, self.verilog_d, sel, self.max_x, self.max_y), md_str, None
+        return make_placement_graph(placement, self.max_x, self.max_y), md_str, None
 
-
-
-
-
-
-def run_gui( DB, idx, verilog_d, bboxes):
-    logging.info( f'run_gui DB {idx} verilog_d {bboxes}')
+def run_gui( DB, bboxes):
+    logging.info( f'Running GUI: {bboxes}')
 
     histo = defaultdict(list)
-    for i,p in enumerate(bboxes):
-        histo[p].append(i)
+    for idx,p in enumerate(bboxes):
+        histo[p].append(idx)
     
     pairs = list(histo.keys())
 
@@ -176,5 +117,15 @@ def run_gui( DB, idx, verilog_d, bboxes):
 
     logging.info( f'histo: {histo}')
 
-    awcas = AppWithCallbacksAndState( DB, idx, verilog_d, histo, pairs, max_x, max_y)
+    awcas = AppWithCallbacksAndState( [], histo, pairs, max_x, max_y)
     awcas.app.run_server(debug=False)
+
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser( description='Mockup of ALIGN UI')
+    parser.add_argument( '-s', '--block_str', type=str, default='ABCD', help='Blocks to use in enumeration; must only include the characters "ABCEDF"; strings longer than 5 will take a long time')
+
+    args = parser.parse_args()
+
+    AppWithCallbacksAndState( *main(args.block_str)).app.run_server(debug=True)

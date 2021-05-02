@@ -190,3 +190,56 @@ def dump_blocks2( placement_verilog_d, top_cell, sel, leaves_only=False, show=Tr
 
     if show:
         fig.show()
+
+def dump_blocks3( fig, placement_verilog_d, top_cell, sel, leaves_only=False):
+    logger.info(f'Drawing {top_cell}_{sel}...')
+
+    leaves = { x['name']: x for x in placement_verilog_d['leaves']}
+    modules = { x['name']: x for x in placement_verilog_d['modules']}
+
+    def gen_trace_xy(instance, prefix_path, tr):
+        # tr converts local coordinates into global coordinates
+        if 'template_name' in instance:
+            if leaves_only:
+                return
+            template_name = instance['template_name']
+            r = modules[template_name]['bbox']
+
+        elif 'concrete_template_name' in instance:
+            template_name = instance ['concrete_template_name']
+            r = leaves[template_name]['bbox']
+        else:
+            assert False, f'Neither \'template_name\' or \'concrete_template_name\' in inst {instance}.'
+
+        [x0, y0, x1, y1] = tr.hitRect(
+            transformation.Rect(*r)).canonical().toList()
+        x = [x0, x1, x1, x0, x0]
+        y = [y0, y0, y1, y1, y0]
+
+        hovertext = f'{"/".join(prefix_path)}<br>{template_name}<br>{tr}<br>Global {x0} {y0} {x1} {y1}<br>Local {r[0]} {r[1]} {r[2]} {r[3]}'
+
+        fig.add_trace(go.Scatter(x=x, y=y, mode='lines',
+                      name=hovertext, fill="toself", showlegend=False))
+
+
+    def aux(module, prefix_path, tr):
+
+        for instance in module['instances']:
+
+            new_prefix_path = prefix_path + (instance['instance_name'],)
+
+            # tr converts module coordinates to global coordinates
+            # local_tr converts local coordinates to module coordinates
+            # new_tr should be global = tr(local_tr(local))
+
+            local_tr = transformation.Transformation( **instance['transformation'])
+            new_tr = tr.postMult(local_tr)
+
+            gen_trace_xy(instance, new_prefix_path, new_tr)
+
+            if 'template_name' in instance:
+                assert instance['template_name'] in modules
+                new_module = modules[instance['template_name']]
+                aux(new_module, new_prefix_path, new_tr)
+
+    aux( modules[top_cell], (), transformation.Transformation())

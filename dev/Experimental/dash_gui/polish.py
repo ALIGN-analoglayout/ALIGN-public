@@ -2,8 +2,8 @@ import itertools
 import random
 import logging
 
-from transformation import Transformation as Tr
-from transformation import Rect
+from .transformation import Transformation as Tr
+from .transformation import Rect
 from collections import defaultdict
 
 import pandas as pd

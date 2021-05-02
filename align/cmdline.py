@@ -128,6 +128,10 @@ class CmdlineParser():
                             choices=['top_down','bottom_up','no_op'],
                             help='Router mode')
 
+        parser.add_argument('--gui',
+                            action='store_true',
+                            help='Run in GUI mode')
+
         self.parser = parser
 
     def parse_args(self, *args, **kwargs):

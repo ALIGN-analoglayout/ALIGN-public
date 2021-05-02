@@ -7,6 +7,7 @@ from .. import PnR
 from .render_placement import dump_blocks2, gen_placement_verilog
 from .build_pnr_model import *
 from .checker import check_placement
+from ..gui.mockup import run_gui
 
 logger = logging.getLogger(__name__)
 
@@ -247,7 +248,7 @@ def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode):
 
     return results_name_map
 
-def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, render_placements, verilog_d, router_mode):
+def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, render_placements, verilog_d, router_mode, gui):
     TraverseOrder = DB.TraverseHierTree()
 
     for idx in TraverseOrder:
@@ -255,7 +256,10 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
     idx = TraverseOrder[-1]
 
+    pairs = []
+
     for sel in range(DB.hierTree[idx].numPlacement):
+        logger.info( f'DB.CheckoutHierNode( {idx}, {sel})')
         hN = DB.CheckoutHierNode( idx, sel)
         # create new verilog for each placement
         if verilog_d is not None:
@@ -266,9 +270,17 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
             check_placement(placement_verilog_d)
 
+            modules = { x['name']: x for x in placement_verilog_d['modules']}
+
+            r = modules[hN.name]['bbox']
+            pairs.append( (r[2]-r[0], r[3]-r[1]))
+
+    if gui:
+        run_gui( DB, idx, verilog_d, pairs)
+
     return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode)
 
-def toplevel(args, *, PDN_mode=False, render_placements=False, adr_mode=False, results_dir=None, router_mode='top_down'):
+def toplevel(args, *, PDN_mode=False, render_placements=False, adr_mode=False, results_dir=None, router_mode='top_down', gui=False):
 
     assert len(args) == 9
 
@@ -288,7 +300,7 @@ def toplevel(args, *, PDN_mode=False, render_placements=False, adr_mode=False, r
 
     pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
 
-    results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, render_placements=render_placements, verilog_d=verilog_d, router_mode=router_mode)
+    results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, render_placements=render_placements, verilog_d=verilog_d, router_mode=router_mode, gui=gui)
 
     logger.info( f'results_name_map: {results_name_map}')
 
