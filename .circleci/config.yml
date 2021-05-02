@@ -207,7 +207,7 @@ workflows:
               pdk:
                 - "Finfet"
               design:
-                - "adder or switched_capacitor_filter or high_speed_comparator or telescopic_ota"
+                - "adder or switched_capacitor_filter or high_speed_comparator or telescopic_ota_guard_ring"
       - test-integration:
           name: "test-integration-cp38-<<matrix.pdk>>"
           requires:

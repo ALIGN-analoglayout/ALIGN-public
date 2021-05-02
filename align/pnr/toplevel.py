@@ -7,6 +7,7 @@ from .. import PnR
 from .render_placement import dump_blocks2, gen_placement_verilog
 from .build_pnr_model import *
 from .checker import check_placement
+from ..gui.mockup import run_gui
 
 logger = logging.getLogger(__name__)
 
@@ -88,13 +89,13 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
             logger.info("End MNA")
             #return
 
-
+        
         RouteWork(2, current_node, metal_l=power_grid_metal_l, metal_u=power_grid_metal_u)
 
         DB.WriteJSON(current_node, True, True, False, True, f'{current_node.name}_PG_{lidx}', drcInfo, opath)
 
         logger.debug("Checkpoint : Starting Power Routing");
-
+        
         RouteWork(3, current_node, metal_l=power_routing_metal_l, metal_u=power_routing_metal_u)
 
         DB.WriteJSON(current_node, True, False, True, True, f'{current_node.name}_PR_{lidx}', drcInfo, opath)
@@ -118,6 +119,17 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
 
     return return_name
 
+def route_bottom_up( DB, drcInfo,
+                    bounding_box,
+                    current_node_ort, idx, lidx, sel,
+                    opath, adr_mode, *, PDN_mode, results_name_map, hierarchical_path):
+    raise NotImplementedError( f'route_bottom_up not yet implemented')
+
+def route_no_op( DB, drcInfo,
+                    bounding_box,
+                    current_node_ort, idx, lidx, sel,
+                    opath, adr_mode, *, PDN_mode, results_name_map, hierarchical_path):
+    pass
 
 def route_top_down( DB, drcInfo,
                     bounding_box,
@@ -179,10 +191,8 @@ def place( *, DB, opath, fpath, numLayout, effort, idx):
     logger.info(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
 
     current_node = DB.CheckoutHierNode(idx,-1)
-    #analyze_hN( 'Start', current_node, True)
 
     DB.AddingPowerPins(current_node)
-    #analyze_hN( 'After adding power pins', current_node, False)
 
     PRC = PnR.Placer_Router_Cap_Ifc(opath,fpath,current_node,DB.getDrc_info(),DB.checkoutSingleLEF(),1,6)
 
@@ -205,18 +215,13 @@ def place( *, DB, opath, fpath, numLayout, effort, idx):
         if node.Guardring_Consts:
             logger.info( f'Running guardring flow')
             PnR.GuardRingIfc( node, DB.checkoutSingleLEF(), DB.getDrc_info(), fpath)
-        #analyze_hN( f'After placement {lidx}', node, False)
         DB.Extract_RemovePowerPins(node)
-        #analyze_hN( f'After remove power pins {lidx}', node, True)
         DB.CheckinHierNode(idx, node)
 
     DB.hierTree[idx].numPlacement = actualNumLayout
 
-    #analyze_hN( 'End', current_node, False)
-
-
-def route( *, DB, idx, opath, adr_mode, PDN_mode):
-    logger.info(f'Starting top-down routing on {DB.hierTree[idx].name} {idx}')
+def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode):
+    logger.info(f'Starting {router_mode} routing on {DB.hierTree[idx].name} {idx}')
 
     new_topnode_indices = []
 
@@ -224,19 +229,26 @@ def route( *, DB, idx, opath, adr_mode, PDN_mode):
 
     results_name_map = {}
 
+    router_engines = { 'top_down': route_top_down,
+                       'bottom_up': route_bottom_up,
+                       'no_op': route_no_op
+                       }
+
+    router_engine = router_engines[router_mode]
+
     for lidx in range(DB.hierTree[idx].numPlacement):
         sel = lidx
-        new_topnode_idx = route_top_down( DB, DB.getDrc_info(),
-                                          PnR.bbox( PnR.point(0,0),
-                                                    PnR.point(DB.hierTree[idx].PnRAS[lidx].width,
-                                                              DB.hierTree[idx].PnRAS[lidx].height)),
-                                          Omark.N, idx, lidx, sel,
-                                          opath, adr_mode, PDN_mode=PDN_mode, results_name_map=results_name_map, hierarchical_path=(f'{DB.hierTree[idx].name}:placement_{lidx}',))
+        new_topnode_idx = router_engine( DB, DB.getDrc_info(),
+                                         PnR.bbox( PnR.point(0,0),
+                                                   PnR.point(DB.hierTree[idx].PnRAS[lidx].width,
+                                                             DB.hierTree[idx].PnRAS[lidx].height)),
+                                         Omark.N, idx, lidx, sel,
+                                         opath, adr_mode, PDN_mode=PDN_mode, results_name_map=results_name_map, hierarchical_path=(f'{DB.hierTree[idx].name}:placement_{lidx}',))
         new_topnode_indices.append(new_topnode_idx)
 
     return results_name_map
 
-def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, render_placements, verilog_d):
+def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, render_placements, verilog_d, router_mode, gui):
     TraverseOrder = DB.TraverseHierTree()
 
     for idx in TraverseOrder:
@@ -244,20 +256,31 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
     idx = TraverseOrder[-1]
 
+    pairs = []
+
     for sel in range(DB.hierTree[idx].numPlacement):
+        logger.info( f'DB.CheckoutHierNode( {idx}, {sel})')
         hN = DB.CheckoutHierNode( idx, sel)
         # create new verilog for each placement
         if verilog_d is not None:
             placement_verilog_d = gen_placement_verilog( hN, DB, verilog_d)
 
             if render_placements:
-                dump_blocks2( placement_verilog_d, hN.name, sel, leaves_only=False)
+                dump_blocks2( placement_verilog_d, hN.name, sel, leaves_only=False, show=True)
 
             check_placement(placement_verilog_d)
 
-    return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode)
+            modules = { x['name']: x for x in placement_verilog_d['modules']}
 
-def toplevel(args, *, PDN_mode=False, render_placements=False, adr_mode=False, results_dir=None):
+            r = modules[hN.name]['bbox']
+            pairs.append( (r[2]-r[0], r[3]-r[1]))
+
+    if gui:
+        run_gui( DB, idx, verilog_d, pairs)
+
+    return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode)
+
+def toplevel(args, *, PDN_mode=False, render_placements=False, adr_mode=False, results_dir=None, router_mode='top_down', gui=False):
 
     assert len(args) == 9
 
@@ -277,7 +300,7 @@ def toplevel(args, *, PDN_mode=False, render_placements=False, adr_mode=False, r
 
     pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
 
-    results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, render_placements=render_placements, verilog_d=verilog_d)
+    results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, render_placements=render_placements, verilog_d=verilog_d, router_mode=router_mode, gui=gui)
 
     logger.info( f'results_name_map: {results_name_map}')
 

@@ -5,7 +5,8 @@ import logging
 from .model import Model
 from .subcircuit import Circuit, SubCircuit
 from .instance import Instance
-from . import library
+from .types import set_context
+from .library import Library
 from . import constraint
 
 logger = logging.getLogger(__name__)
@@ -59,11 +60,12 @@ class SpiceParser:
 
     _context = []
 
-    def __init__(self, mode='Xyce'):
+    def __init__(self, library=None, mode='Xyce'):
         self.mode = mode.lower()
         assert self.mode in ('xyce', 'hspice')
-        self.library = library.Library(loadbuiltins=True)
-        self.circuit = Circuit()
+        self.library = Library(loadbuiltins=True) if library is None else library
+        with set_context(self.library):
+            self.circuit = Circuit()
         self._scope = [self.circuit]
 
     @staticmethod
@@ -76,6 +78,7 @@ class SpiceParser:
 
     def parse(self, text):
         cache = []
+        self._constraints = None
         for tok in self._generate_tokens(text):
             if tok.type == 'NEWL':
                 self._dispatch(cache)
@@ -83,8 +86,7 @@ class SpiceParser:
             elif tok.type == 'ANNOTATION':
                 self._dispatch(cache)
                 cache.clear()
-                constraint = self._extract_constraint(tok.value)
-                self._process_constraint(constraint)
+                self._queue_constraint(tok.value)
             else:
                 cache.append(tok)
         self._dispatch(cache)
@@ -101,9 +103,10 @@ class SpiceParser:
         else:
             assert False
 
-    @staticmethod
-    def _extract_constraint(annotation):
-        return annotation.split('@:')[1].strip()
+    def _queue_constraint(self, annotation):
+        assert self._constraints is not None
+        constraint = annotation.split('@:')[1].strip()
+        self._constraints.append(constraint)
 
     @staticmethod
     def _decompose(cache):
@@ -141,31 +144,34 @@ class SpiceParser:
         else:
             raise NotImplementedError(name, args, kwargs, "is not yet recognized by parser")
 
-        assert model in self.library, (model, name, args, kwargs)
-        assert len(args) == len(self.library[model].pins), \
-                f"Model {model} has {len(self.library[model].pins)} pins {self.library[model].pins}. " \
+        model = self.library.find(model)
+        assert model is not None, (model, name, args, kwargs)
+        assert len(args) == len(model.pins), \
+                f"Model {model.name} has {len(model.pins)} pins {model.pins}. " \
                 + f"{len(args)} nets {args} were passed when instantiating {name}."
-        pins = {pin:net for pin, net in zip(self.library[model].pins, args)}
-        self._scope[-1].add(Instance(name=name, model=self.library[model], pins=pins, parameters=kwargs))
+        pins = {pin:net for pin, net in zip(model.pins, args)}
+        with set_context(self._scope[-1].elements):
+            self._scope[-1].elements.append(Instance(name=name, model=model.name, pins=pins, parameters=kwargs))
 
-    def _process_constraint(self, constraint):
-        try:
-            constraint = eval(constraint, {}, constraint_dict)
-        except:
-            logger.warning(f'Error parsing constraint {repr(constraint)}')
-            return
+    def _process_constraints(self):
         assert hasattr(self._scope[-1], 'constraints'), \
             f'Constraint {repr(constraint)} can only be defined within a .SUBCKT \nCurrent scope:{self._scope[-1]}'
-        self._scope[-1].constraints.append(constraint)
+        with set_context(self._scope[-1].constraints):
+            for constraint in self._constraints:
+                self._scope[-1].constraints.append(eval(constraint, {}, constraint_dict))
+        self._constraints = None
 
     def _process_declaration(self, decl, args, kwargs):
         if decl == '.SUBCKT':
+            self._constraints = []
             name = args.pop(0)
-            assert name not in self.library, f"User is attempting to redeclare {name}"
-            subckt = SubCircuit(name=name, pins=args, parameters=kwargs)
-            self.library[name] = subckt
+            assert self.library.find(name) is None, f"User is attempting to redeclare {name}"
+            with set_context(self.library):
+                subckt = SubCircuit(name=name, pins=args, parameters=kwargs)
+            self.library.append(subckt)
             self._scope.append(subckt)
         elif decl == '.ENDS':
+            self._process_constraints()
             self._scope.pop()
         elif decl == '.PARAM':
             assert len(args) == 0
@@ -175,7 +181,10 @@ class SpiceParser:
         elif decl == '.MODEL':
             assert len(args) == 2, args
             name, base = args[0], args[1]
-            assert name not in self.library, f"User is attempting to redeclare {name}"
-            assert base in self.library, base
-            model = Model(name=name, base=self.library[base], parameters=kwargs)
-            self.library[name] = model
+            assert self.library.find(name) is None, f"User is attempting to redeclare {name}"
+            assert self.library.find(base) is not None, f"Base model {base} not found for model {name}"
+            with set_context(self.library):
+                self.library.append(
+                    Model(name=name, base=base, parameters=kwargs)
+                )
+

@@ -1,0 +1,3 @@
+[
+    {"constraint":"GuardRing", "block_name": "telescopic_ota", "guard_ring_primitives": "guard_ring",   "global_pin": "vdd"}
+]
