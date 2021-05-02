@@ -139,6 +139,8 @@ def route_bottom_up( DB, drcInfo,
 
     for i in TraverseOrder:
         current_node = DB.CheckoutHierNode(i, sel) # Make a copy
+        DB.hierTree[idx].n_copy += 1
+
         logger.info( f'Order: {i} {current_node.name}')
 
         current_node_name = current_node.name
@@ -152,11 +154,22 @@ def route_bottom_up( DB, drcInfo,
 
         result_name = route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, PDN_mode=PDN_mode)
 
-        DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Backward)
+        if not current_node.isTop:
+            DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Backward)
 
         results_name_map[result_name] = (current_node.name,)
 
-    return idx
+        hierTree_len = len(DB.hierTree)
+        # Make sure the length of hierTree increased by one; this won't happend if you did the commented out line below
+        #DB.hierTree.append( current_node)
+        # It would if you did commented out line below but this requires a bunch of copying
+        #DB.hierTree = DB.hierTree + [current_node]
+        # Instead we added a custom method to do this
+        DB.AppendToHierTree(current_node)
+        assert len(DB.hierTree) == 1+hierTree_len
+        new_currentnode_idx = len(DB.hierTree) - 1
+
+    return new_currentnode_idx
 
 def route_no_op( DB, drcInfo,
                     bounding_box,
@@ -172,7 +185,7 @@ def route_top_down( DB, drcInfo,
     current_node = DB.CheckoutHierNode(idx, sel) # Make a copy
     i_copy = DB.hierTree[idx].n_copy
 
-    logger.info( f'Start of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy}')
+    logger.debug( f'Start of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy}')
 
     DB.hierTree[idx].n_copy += 1
     current_node_name = current_node.name
@@ -215,7 +228,7 @@ def route_top_down( DB, drcInfo,
         DB.hierTree[blk.child].parent = [ new_currentnode_idx ]
         logger.debug( f'Set parent of {blk.child} to {new_currentnode_idx} => DB.hierTree[blk.child].parent[0]={DB.hierTree[blk.child].parent[0]}')
 
-    logger.info( f'End of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy} new_currentnode_idx {new_currentnode_idx}')
+    logger.debug( f'End of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy} new_currentnode_idx {new_currentnode_idx}')
 
     return new_currentnode_idx
 
