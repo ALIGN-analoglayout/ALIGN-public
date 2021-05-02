@@ -2132,25 +2132,34 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
       if (abstract_template_name.find("Cap") != std::string::npos || abstract_template_name.find("cap") != std::string::npos || !node.Blocks[i].instance.back().isLeaf) continue;
       logger->error("The key does not exist in map: {0}", abstract_template_name);
     }
+    unsigned int wotap_variants_count(0);
+    if (_gdsDataWoTap2.find(abstract_template_name) != _gdsDataWoTap2.end()) {
+      wotap_variants_count = _gdsDataWoTap2[abstract_template_name].size();
+    }
 
-    unsigned int variants_count = gdsData2[abstract_template_name].size();
+    unsigned int variants_count = gdsData2[abstract_template_name].size() + wotap_variants_count;
     node.Blocks[i].instance.resize(variants_count);
     for (unsigned int j = 1; j < variants_count; j++) node.Blocks[i].instance[j] = node.Blocks[i].instance[0];
     node.Blocks[i].instNum = variants_count;
     for (unsigned int j = 0; j < variants_count; j++) {
       auto& b = node.Blocks[i].instance[j];
-      b.gdsFile = gdsData2[abstract_template_name][j];
+      bool wtap = j < (variants_count - wotap_variants_count);
+      auto wotap_index = wtap ? 0 : j - wotap_variants_count;
+      b.gdsFile = wtap ?
+        gdsData2[abstract_template_name][j] : _gdsDataWoTap2[abstract_template_name][wotap_index] ;
       string a_concrete_template_name = stem(b.gdsFile);
-      if (lefData.find(a_concrete_template_name) == lefData.end()) {
+      if (wtap && lefData.find(a_concrete_template_name) == lefData.end()) {
         logger->error("No LEF file for a_concrete_template_name {0}", a_concrete_template_name);
         missing_lef_file = 1;
         continue;
       }
-      auto& lef = lefData.at(a_concrete_template_name).front();
+      if (!wtap && _lefDataWoTap.find(a_concrete_template_name) == _lefDataWoTap.end()) {
+        continue;
+      }
+      auto& lef = wtap ? lefData.at(a_concrete_template_name).front() : _lefDataWoTap.at(a_concrete_template_name).front();
       b.interMetals = lef.interMetals;
       b.interVias = lef.interVias;
-      b._tapVias = lef._tapVias;
-      b._activeVias = lef._activeVias;
+      b._taVias = lef._taVias;
       // node.Blocks[i].instNum++;
       b.width = lef.width;
       b.height = lef.height;
@@ -2174,7 +2183,7 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
             break;
           }
         }
-        if (found == 0) logger->error("Block {0} pin {1} not found in lef file", b.name, b.blockPins[k].name);
+        if (found == 0 && wtap) logger->error("Block {0} pin {1} not found in lef file", b.name, b.blockPins[k].name);
       }
     }
     assert(!missing_lef_file);

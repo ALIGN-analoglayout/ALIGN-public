@@ -137,6 +137,7 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile, const bool wtap)
           macroIns.interVias = interVias;
           MergeVias(tapVias);
           MergeVias(activeVias);
+          //logger->info("name : {0} {1} {2}", macroName, tapVias.size(), activeVias.size());
           if (pmosDevice) {
             macroIns._taVias = std::make_shared<PnRDB::taVias>(tapVias, activeVias, false);
           } else {

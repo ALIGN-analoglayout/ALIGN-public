@@ -116,7 +116,6 @@ def _ReadMap( path, mapname, wtap = True):
                 tbl2[k].append( str(d / v))
             else :
                 tbl2[k].append( str(d / 'wo_tap' / v))
-            tbl2[k].append( str(d / v))
     logger.debug( f'expanded table: {tbl2}')
     return tbl2
 
@@ -158,7 +157,7 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     if pathlib.Path(path + '/' + leftopname + '.wotap.lef').is_file():
         _ReadLEF(DB, path, leftopname + '.wotap.lef', False)
     if pathlib.Path(path + '/wo_tap' ).is_dir():
-        DB._gdsDataWoTap = _ReadMap( path, mapname, False)
+        DB._gdsDataWoTap2 = _ReadMap( path, mapname, False)
 
     j = None
     if vname.endswith(".verilog.json"):
