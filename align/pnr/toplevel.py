@@ -4,7 +4,7 @@ import json
 from itertools import chain
 
 from .. import PnR
-from .render_placement import dump_blocks2, gen_placement_verilog
+from .render_placement import gen_placement_verilog
 from .build_pnr_model import *
 from .checker import check_placement
 from ..gui.mockup import run_gui
@@ -163,7 +163,7 @@ def route_bottom_up( DB, drcInfo,
         for bit,blk in enumerate(current_node.Blocks):
             child_idx = blk.child
             if child_idx >= 0:
-                # probably a little heavy handed
+                # SMB This needs to be here.
                 DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_currentnode_idx_d[child_idx]])
                 blk.child = new_currentnode_idx_d[child_idx]
 
@@ -183,7 +183,8 @@ def route_bottom_up( DB, drcInfo,
                 # Potential slug bug
                 DB.hierTree[blk.child].parent = DB.hierTree[blk.child].parent + [ new_currentnode_idx_d[i] ]
 
-
+        # SMB Added to see if it helped
+        #DB.CheckinHierNode( new_currentnode_idx_d[i], current_node)
 
     return new_currentnode_idx_d[idx]
 
@@ -326,21 +327,28 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
         # create new verilog for each placement
         if verilog_d is not None:
             placement_verilog_d = gen_placement_verilog( hN, DB, verilog_d)
-
-            if render_placements:
-                dump_blocks2( placement_verilog_d, hN.name, sel, leaves_only=False, show=True)
-
             check_placement(placement_verilog_d)
 
+            # gen info for GUI
             modules = { x['name']: x for x in placement_verilog_d['modules']}
-
             r = modules[hN.name]['bbox']
             pairs.append( (r[2]-r[0], r[3]-r[1]))
 
     if gui:
         run_gui( DB, idx, verilog_d, pairs)
 
-    return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode)
+    result = route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode)
+
+    if False:
+        # This breaks the flow
+        #hN = DB.CheckoutHierNode( len(DB.hierTree)-1, 0)
+        hN = DB.hierTree[-1]
+
+        if verilog_d is not None:
+            placement_verilog_d = gen_placement_verilog( hN, DB, verilog_d)
+            check_placement(placement_verilog_d)
+
+    return result
 
 def toplevel(args, *, PDN_mode=False, render_placements=False, adr_mode=False, results_dir=None, router_mode='top_down', gui=False):
 
