@@ -11,11 +11,12 @@ from ..gui.mockup import run_gui
 
 logger = logging.getLogger(__name__)
 
-NType = PnR.NType
 Omark = PnR.Omark
 TransformType = PnR.TransformType
 
 def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, PDN_mode):
+    DB.ExtractPinsToPowerPins(current_node)
+    
     h_skip_factor = DB.getDrc_info().Design_info.h_skip_factor
     v_skip_factor = DB.getDrc_info().Design_info.v_skip_factor
 
@@ -132,9 +133,30 @@ def route_bottom_up( DB, drcInfo,
     if lidx != 0:
         raise NotImplementedError( f'route_bottom_up not yet implemented for multiple placements: lidx {lidx} != 0')
 
-    current_node = DB.CheckoutHierNode(idx, sel) # Make a copy
+    TraverseOrder = DB.TraverseHierTree()
 
-    raise NotImplementedError( f'route_bottom_up not yet implemented')
+    assert idx == TraverseOrder[-1]
+
+    for i in TraverseOrder:
+        current_node = DB.CheckoutHierNode(i, sel) # Make a copy
+        logger.info( f'Order: {i} {current_node.name}')
+
+        current_node_name = current_node.name
+
+        current_node.LL = bounding_box.LL
+        current_node.UR = bounding_box.UR
+        current_node.abs_orient = current_node_ort
+
+        # doesn't work if I don't do this
+        DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Forward)
+
+        result_name = route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, PDN_mode=PDN_mode)
+
+        DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Backward)
+
+        results_name_map[result_name] = (current_node.name,)
+
+    return idx
 
 def route_no_op( DB, drcInfo,
                     bounding_box,
@@ -150,10 +172,11 @@ def route_top_down( DB, drcInfo,
     current_node = DB.CheckoutHierNode(idx, sel) # Make a copy
     i_copy = DB.hierTree[idx].n_copy
 
-    logger.debug( f'Start of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy}')
+    logger.info( f'Start of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy}')
 
     DB.hierTree[idx].n_copy += 1
     current_node_name = current_node.name
+
     current_node.LL = bounding_box.LL
     current_node.UR = bounding_box.UR
     current_node.abs_orient = current_node_ort
@@ -170,7 +193,6 @@ def route_top_down( DB, drcInfo,
         DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_childnode_idx])
         current_node.Blocks[bit].child = new_childnode_idx
 
-    DB.ExtractPinsToPowerPins(current_node)
     result_name = route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, PDN_mode=PDN_mode)
     results_name_map[result_name] = hierarchical_path
 
@@ -193,7 +215,7 @@ def route_top_down( DB, drcInfo,
         DB.hierTree[blk.child].parent = [ new_currentnode_idx ]
         logger.debug( f'Set parent of {blk.child} to {new_currentnode_idx} => DB.hierTree[blk.child].parent[0]={DB.hierTree[blk.child].parent[0]}')
 
-    logger.debug( f'End of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy} new_currentnode_idx {new_currentnode_idx}')
+    logger.info( f'End of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy} new_currentnode_idx {new_currentnode_idx}')
 
     return new_currentnode_idx
 
