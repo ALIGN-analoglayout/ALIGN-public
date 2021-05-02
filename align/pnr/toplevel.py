@@ -123,6 +123,17 @@ def route_bottom_up( DB, drcInfo,
                     bounding_box,
                     current_node_ort, idx, lidx, sel,
                     opath, adr_mode, *, PDN_mode, results_name_map, hierarchical_path):
+
+    """We are trying to route the lidx-th placement (also the sel-th)
+"""
+
+    assert lidx == sel
+
+    if lidx != 0:
+        raise NotImplementedError( f'route_bottom_up not yet implemented for multiple placements: lidx {lidx} != 0')
+
+    current_node = DB.CheckoutHierNode(idx, sel) # Make a copy
+
     raise NotImplementedError( f'route_bottom_up not yet implemented')
 
 def route_no_op( DB, drcInfo,
