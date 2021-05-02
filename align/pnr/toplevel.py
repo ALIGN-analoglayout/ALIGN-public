@@ -137,6 +137,8 @@ def route_bottom_up( DB, drcInfo,
 
     assert idx == TraverseOrder[-1]
 
+    new_currentnode_idx_d = {}
+
     for i in TraverseOrder:
         current_node = DB.CheckoutHierNode(i, sel) # Make a copy
         DB.hierTree[idx].n_copy += 1
@@ -145,12 +147,25 @@ def route_bottom_up( DB, drcInfo,
 
         current_node_name = current_node.name
 
+        logger.info( f'Existing parents: {current_node.parent}')
+        current_node.parent = []
+
+        logger.info( f'Existing LL,UR,abs_orient: {current_node.LL.x},{current_node.LL.y} {current_node.UR.x},{current_node.UR.y} {current_node.abs_orient}')
+
         current_node.LL = bounding_box.LL
         current_node.UR = bounding_box.UR
         current_node.abs_orient = current_node_ort
 
         # doesn't work if I don't do this
         DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Forward)
+
+        # Remap using new bottom up hNs
+        for bit,blk in enumerate(current_node.Blocks):
+            child_idx = blk.child
+            if child_idx >= 0:
+                # probably a little heavy handed
+                DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_currentnode_idx_d[child_idx]])
+                blk.child = new_currentnode_idx_d[child_idx]
 
         result_name = route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, PDN_mode=PDN_mode)
 
@@ -159,17 +174,18 @@ def route_bottom_up( DB, drcInfo,
 
         results_name_map[result_name] = (current_node.name,)
 
-        hierTree_len = len(DB.hierTree)
-        # Make sure the length of hierTree increased by one; this won't happend if you did the commented out line below
-        #DB.hierTree.append( current_node)
-        # It would if you did commented out line below but this requires a bunch of copying
-        #DB.hierTree = DB.hierTree + [current_node]
-        # Instead we added a custom method to do this
         DB.AppendToHierTree(current_node)
-        assert len(DB.hierTree) == 1+hierTree_len
-        new_currentnode_idx = len(DB.hierTree) - 1
 
-    return new_currentnode_idx
+        new_currentnode_idx_d[i] = len(DB.hierTree) - 1
+
+        for blk in current_node.Blocks:
+            if blk.child >= 0:
+                # Potential slug bug
+                DB.hierTree[blk.child].parent = DB.hierTree[blk.child].parent + [ new_currentnode_idx_d[i] ]
+
+
+
+    return new_currentnode_idx_d[idx]
 
 def route_no_op( DB, drcInfo,
                     bounding_box,
@@ -204,7 +220,7 @@ def route_top_down( DB, drcInfo,
         childnode_bbox = PnR.bbox( inst.placedBox.LL, inst.placedBox.UR)
         new_childnode_idx = route_top_down(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, lidx, blk.selectedInstance, opath, adr_mode, PDN_mode=PDN_mode, results_name_map=results_name_map, hierarchical_path=hierarchical_path + (inst.name,))
         DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_childnode_idx])
-        current_node.Blocks[bit].child = new_childnode_idx
+        blk.child = new_childnode_idx
 
     result_name = route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, PDN_mode=PDN_mode)
     results_name_map[result_name] = hierarchical_path
@@ -222,7 +238,7 @@ def route_top_down( DB, drcInfo,
     assert len(DB.hierTree) == 1+hierTree_len
     new_currentnode_idx = len(DB.hierTree) - 1
 
-    for bit,blk in enumerate(current_node.Blocks):
+    for blk in current_node.Blocks:
         if blk.child == -1: continue
         # Set the whole array, not parent[0]; otherwise the python temporary is updated
         DB.hierTree[blk.child].parent = [ new_currentnode_idx ]

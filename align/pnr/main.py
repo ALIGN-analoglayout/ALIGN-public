@@ -300,10 +300,10 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
         possible_final_circuits = [(i, hN) for i, hN in enumerate(DB.hierTree) if hN.name == subckt]
 
-        assert router_mode == 'no_op' or len(possible_final_circuits) > 1
-
         # strip off placer solutions
         possible_final_circuits = possible_final_circuits[1:]
+
+        assert router_mode == 'no_op' or len(possible_final_circuits) > 0
 
         variants = collections.defaultdict(collections.defaultdict)
         for lidx, (topidx, _) in enumerate(possible_final_circuits):
