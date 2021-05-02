@@ -24,40 +24,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def make_placement_graph( DB, idx, verilog_d, sel, max_x, max_y):
-    fig = go.Figure()
-
-    title_d = {}
-
-    if sel is not None:
-        logger.info( f'{idx} {sel}')
-
-        hN = DB.CheckoutHierNode( idx, sel)
-        placement_verilog_d = gen_placement_verilog( hN, DB, verilog_d)
-
-        dump_blocks3( fig, placement_verilog_d, hN.name, sel, leaves_only=False)
-
-        title_d = dict(text=f'{hN.name}_{sel}')
-
-    fig.update_layout(
-        autosize=False,
-        width=800,
-        height=800,
-        title=title_d
-    )
-
-    fig.update_xaxes(
-        tickvals=[0,max_x],
-        range=[0,max(max_x,max_y)]
-    )
-
-    fig.update_yaxes(
-        tickvals=[0,max_y],
-        range=[0,max(max_x,max_y)]
-    )
-
-    return fig
-
 def make_tradeoff_fig(pairs):
 
     df = pd.DataFrame( data=pairs, columns=['width','height'])
@@ -76,7 +42,7 @@ def make_tradeoff_fig(pairs):
     return fig
 
 class AppWithCallbacksAndState:
-    def __init__(self, DB, idx, verilog_d, histo, pairs, max_x, max_y):
+    def __init__(self, DB, idx, verilog_d, histo):
         external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
         self.app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
@@ -84,9 +50,11 @@ class AppWithCallbacksAndState:
         self.idx = idx
         self.verilog_d = verilog_d
         self.histo = histo
-        self.pairs = pairs
-        self.max_x = max_x
-        self.max_y = max_y
+
+        self.pairs = list(self.histo.keys())
+
+        self.max_x = max( p[0] for p in self.pairs)
+        self.max_y = max( p[1] for p in self.pairs)
 
         self.subindex = 0
         self.prev_idx = None
@@ -109,7 +77,7 @@ class AppWithCallbacksAndState:
                         html.H2(children='Placement'),
                         dcc.Graph(
                             id='Placement',
-                            figure = make_placement_graph(self.DB, self.idx, self.verilog_d, None, self.max_x, self.max_y)
+                            figure = self.make_placement_graph(None)
                         )
                     ],
                     style={'display': 'inline-block', 'vertical-align': 'top'}
@@ -128,6 +96,40 @@ class AppWithCallbacksAndState:
                        Output('Tree', 'children'),
                             Output('width-vs-height', 'clickData')),
                       [Input('width-vs-height', 'clickData')])(self.display_hover_data)
+
+
+    def make_placement_graph( self, sel):
+        fig = go.Figure()
+
+        title_d = {}
+
+        if sel is not None:
+            hN = self.DB.CheckoutHierNode( self.idx, sel)
+            placement_verilog_d = gen_placement_verilog( hN, self.DB, self.verilog_d)
+
+            dump_blocks3( fig, placement_verilog_d, hN.name, sel, leaves_only=False)
+
+            title_d = dict(text=f'{hN.name}_{sel}')
+
+        fig.update_layout(
+            autosize=False,
+            width=800,
+            height=800,
+            title=title_d
+        )
+
+        fig.update_xaxes(
+            tickvals=[0,self.max_x],
+            range=[0,max(self.max_x,self.max_y)]
+        )
+
+        fig.update_yaxes(
+            tickvals=[0,self.max_y],
+            range=[0,max(self.max_x,self.max_y)]
+        )
+
+        return fig
+
 
 
     def display_hover_data(self,clickData):
@@ -155,26 +157,13 @@ Subindex: {self.subindex}/{len(lst)}
 
 """
 
-        return make_placement_graph(self.DB, self.idx, self.verilog_d, sel, self.max_x, self.max_y), md_str, None
-
-
-
-
+        return self.make_placement_graph(sel), md_str, None
 
 
 def run_gui( DB, idx, verilog_d, bboxes):
-    logging.info( f'run_gui DB {idx} verilog_d {bboxes}')
-
     histo = defaultdict(list)
     for i,p in enumerate(bboxes):
         histo[p].append(i)
     
-    pairs = list(histo.keys())
-
-    max_x = max( p[0] for p in pairs)
-    max_y = max( p[1] for p in pairs)
-
-    logging.info( f'histo: {histo}')
-
-    awcas = AppWithCallbacksAndState( DB, idx, verilog_d, histo, pairs, max_x, max_y)
+    awcas = AppWithCallbacksAndState( DB, idx, verilog_d, histo)
     awcas.app.run_server(debug=False)
