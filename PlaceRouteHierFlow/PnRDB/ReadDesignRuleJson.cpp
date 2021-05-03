@@ -234,6 +234,8 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
              //temp_boundary.gds_datatype.Blockage=layer["GdsDatatype"]["Blockage"];
              temp_guardring_info.xspace = layer["XSpace"];
              temp_guardring_info.yspace = layer["YSpace"];
+             temp_guardring_info.xspace *= times;
+             temp_guardring_info.yspace *= times;
              DRC_info.Guardring_info = temp_guardring_info;
           }          
 

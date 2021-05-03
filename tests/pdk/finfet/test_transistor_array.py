@@ -35,7 +35,7 @@ ports_duo = [
     {'S': [('M1', 'S'), ('M2', 'S')], 'DA': [('M1', 'D'), ('M2', 'G')], 'DB': [('M2', 'D'), ('M1', 'G')]}
     ]
 
-
+@pytest.mark.nightly
 @pytest.mark.parametrize('n_row', range(1,4))
 @pytest.mark.parametrize('n_col', range(1,6))
 @pytest.mark.parametrize('nf', [2, 4, 6, 8])
@@ -54,7 +54,7 @@ def test_uno_drc(n_row, n_col, nf, device_type, ports):
         export_to_viewer(get_test_id(), c)
         assert False, f'{get_test_id()} DRC ports:{ports} type:{device_type} nf:{nf}, n_col:{n_col} n_row:{n_row}'
 
-
+@pytest.mark.nightly
 @pytest.mark.parametrize('n_row', range(1,4))
 @pytest.mark.parametrize('n_col', range(1,6))
 @pytest.mark.parametrize('nf', [2, 4, 6, 8])

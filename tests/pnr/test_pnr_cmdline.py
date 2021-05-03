@@ -31,9 +31,3 @@ def test_verilog_json():
     d = mydir / "current_mirror_ota_inputs"
     argv = [ 'pnr_compiler.py', str(d), f'{nm}.lef', f'{nm}.verilog.json', f'{nm}.map', 'layers.json', nm, '1', '0']
     cmdline( argv, results_dir=str(pathlib.Path(ALIGN_WORK_DIR) / 'test_verilog_json_Results'))
-
-def test_guardring():
-    nm = 'telescopic_ota'
-    d = mydir / "telescopic_ota_guard_ring_inputs"
-    argv = [ 'pnr_compiler.py', str(d), f'{nm}.lef', f'{nm}.verilog.json', f'{nm}.map', 'layers.json', nm, '1', '0']
-    cmdline( argv, results_dir=str(pathlib.Path(ALIGN_WORK_DIR) / 'test_guardring_Results'))
