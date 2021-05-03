@@ -338,6 +338,7 @@ design::design(PnRDB::hierNode& node) {
 
   auto logger = spdlog::default_logger()->clone("placer.design.design");
 
+  _tapRemover = std::make_shared<TapRemoval>(node, (envTrDist == 0 ? 60000 : envTrDist*2000));
   bias_Vgraph=node.bias_Vgraph; // from node
   bias_Hgraph=node.bias_Hgraph; // from node
   Aspect_Ratio_weight = node.Aspect_Ratio_weight;
@@ -544,19 +545,21 @@ design::design(PnRDB::hierNode& node) {
   noSymGroup4FullMove=GetSizeSymGroup4FullMove(1);
   noSymGroup4PartMove=noSymGroup4FullMove;
   //std::cout<<"Leaving design\n";
-  std::map<std::string, std::string> counterparts;
-  for (int i = 0; i < Blocks.size(); i++) {
-    if (Blocks[i].empty()) continue;
-    const auto& instName = Blocks[i][0].name;
-    const auto counterPartIndex = GetBlockCounterpart(i);
-    if (counterPartIndex > 0 && counterPartIndex != i) {
-      if (Blocks[counterPartIndex].empty()) continue;
-      const auto& cname = Blocks[counterPartIndex][0].name;
-      counterparts[instName] = cname;
-      counterparts[cname] = instName;
+  if (_tapRemover) {
+    std::map<std::string, std::string> counterparts;
+    for (int i = 0; i < Blocks.size(); i++) {
+      if (Blocks[i].empty()) continue;
+      const auto& instName = Blocks[i][0].name;
+      const auto counterPartIndex = GetBlockCounterpart(i);
+      if (counterPartIndex > 0 && counterPartIndex != i) {
+        if (Blocks[counterPartIndex].empty()) continue;
+        const auto& cname = Blocks[counterPartIndex][0].name;
+        counterparts[instName] = cname;
+        counterparts[cname] = instName;
+      }
     }
+    _tapRemover->setSymPairs(counterparts);
   }
-  _tapRemover = std::make_shared<TapRemoval>(node, counterparts, (envTrDist == 0 ? 60000 : envTrDist*2000));
 }
 
 int design::GetSizeBlock4Move(int mode) {

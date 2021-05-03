@@ -114,10 +114,10 @@ Graph::~Graph()
   _nodeMap.clear();
 }
 
-void Graph::addNode(const string& name, const NodeType& nt, const long& da, const bool isb)
+void Graph::addNode(const string& name, const NodeType& nt, const long& da, const bool isb, const int dist)
 {
   if (_nodeMap.find(name) != _nodeMap.end()) return;
-  Node *n = new Node(name, nt, da);
+  Node *n = new Node(name, nt, da, isb, dist);
   _nodes.push_back(n);
   _nodeMap[name] = n;
 }
@@ -302,6 +302,7 @@ void Graph::addSymPairs(const std::map<std::string, std::string>& counterparts)
 
 void TapRemoval::buildGraph(const std::map<std::string, std::string>& counterparts)
 {
+  auto logger = spdlog::default_logger()->clone("placer.TapRemoval.buildGraph");
   RTree rtree;
   map<string, geom::Rect> allTaps;
   if (_graph == nullptr) _graph = new DomSetGraph::Graph;
@@ -314,7 +315,7 @@ void TapRemoval::buildGraph(const std::map<std::string, std::string>& counterpar
         rtree.insert(bgVal(b, _graph->nodes().size()));
         string nodeName(inst->name() + "__tap_" + mosString + to_string(i));
         allTaps[nodeName] = taps[i];
-        _graph->addNode(nodeName, DomSetGraph::NodeType::Tap, inst->deltaArea(), inst->isBlack());
+        _graph->addNode(nodeName, DomSetGraph::NodeType::Tap, inst->deltaArea(), inst->isBlack(), taps[i].ydist(_bbox));
       }
       auto& actives = inst->getActives(nmos);
       for (unsigned i = 0; i < actives.size(); ++i) {
@@ -361,9 +362,9 @@ void TapRemoval::buildGraph(const std::map<std::string, std::string>& counterpar
   _graph->addSymPairs(counterparts);
 }
 
-TapRemoval::TapRemoval(const PnRDB::hierNode& node, const std::map<std::string, std::string>& sympairs, const unsigned dist) : _dist(dist), _name(node.name), _graph(nullptr), _symPairs(sympairs)
+TapRemoval::TapRemoval(const PnRDB::hierNode& node, const unsigned dist) : _dist(dist), _name(node.name), _graph(nullptr)
 {
-  //auto logger = spdlog::default_logger()->clone("placer.TapRemoval.TapRemoval");
+  auto logger = spdlog::default_logger()->clone("placer.TapRemoval.TapRemoval");
   for (unsigned i = 0; i < node.Blocks.size(); ++i) {
     if (node.Blocks[i].instance.empty()) continue;
     const auto& master=node.Blocks[i].instance.back().master;
@@ -477,13 +478,14 @@ long TapRemoval::deltaArea(map<string, int>* swappedIndices) const
 
 void TapRemoval::rebuildInstances(const PrimitiveData::PlMap& plmap)
 {
-  //auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.rebuildInstances");
-  //for (auto& p : plmap) //logger->info("plmap {0} {1} {2} {3}\n", p.first.first, p.second._primName, p.second._tr.origin().x(), p.second._tr.origin().y());
+  auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.rebuildInstances");
+  //for (auto& p : plmap) logger->info("plmap {0} {1} {2} {3}", p.first.first, p.second._primName, p.second._tr.origin().x(), p.second._tr.origin().y());
   
   for (auto& x : _instances) {
     delete x;
   }
   _instances.clear();
+  _bbox.set();
 
   for (auto& it : plmap) {
     auto primIt = _primitives.find(it.second._primName);
@@ -492,7 +494,7 @@ void TapRemoval::rebuildInstances(const PrimitiveData::PlMap& plmap)
     const auto& index = it.first.second;
     if (primIt != _primitives.end() && index < primIt->second.size()) prim = primIt->second[index];
     if (primWoTapIt != _primitivesWoTap.end() && index < primWoTapIt->second.size()) primWoTap = primWoTapIt->second[index];
-    //logger->info("adding {0} {1}", prim ? prim->name() : "", primWoTap ? primWoTap->name() : "");
+    //logger->info("adding {0} {1} {2} {3}", it.second._primName, index, prim ? prim->name() : "", primWoTap ? primWoTap->name() : "");
     if (prim != nullptr) {
       //logger->info("adding {0} {1}", prim->name(), primWoTap ? primWoTap->name() : "");
       auto inst = new PrimitiveData::Instance(prim, primWoTap, it.first.first, it.second._tr,
@@ -502,6 +504,11 @@ void TapRemoval::rebuildInstances(const PrimitiveData::PlMap& plmap)
       //inst->print();
     }
   }
+  for (auto& inst : _instances) {
+    //logger->info("{0} {1}", inst->name(), inst->bbox().toString());
+    _bbox.merge(inst->bbox());
+  }
+  //logger->info("bbox : {0}", _bbox.toString());
   delete _graph;
   _graph = new DomSetGraph::Graph;
   buildGraph(_symPairs);

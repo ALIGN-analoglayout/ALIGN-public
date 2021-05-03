@@ -137,6 +137,16 @@ class Rect {
 
     long area() const { return ((long)width()) * height(); }
     string toString() const { return _ll.toString() + " -- " + _ur.toString(); }
+
+    int xdist(const Rect& r) const
+    {
+      return std::min(std::abs(r.xmin() - xmin()), std::abs(r.xmax() - xmax()));
+    }
+    int ydist(const Rect& r) const
+    {
+      return std::min(std::abs(r.ymin() - ymin()), std::abs(r.ymax() - ymax()));
+    }
+    int dist(const Rect&r) const { return std::min(xdist(r), ydist(r)); }
 };
 
 typedef vector<Rect> Rects;
@@ -267,9 +277,10 @@ class Node {
     NodeColor _nc;
     long _deltaarea;
     bool _black;
+    int _dist;
 
   public:
-    Node(const string& name, const NodeType nt = NodeType::Tap, const long& deltaarea = 0, const bool& isb = false) : _name(name), _nt(nt), _span(0), _nc(NodeColor::White), _deltaarea(deltaarea), _black(isb) {}
+    Node(const string& name, const NodeType nt = NodeType::Tap, const long& deltaarea = 0, const bool& isb = false, const int dist = 0) : _name(name), _nt(nt), _span(0), _nc(NodeColor::White), _deltaarea(deltaarea), _black(isb), _dist(dist) {}
     const NodeType& nodeType() const { return _nt; }
     NodeType& nodeType() { return _nt; }
 
@@ -289,14 +300,18 @@ class Node {
 
     const long& deltaArea() const { return _deltaarea; }
     bool isBlack() const { return _black; }
+    const int dist() const { return _dist; }
 };
 
 struct NodeComp {
   bool operator() (const Node* const& n1, const Node* const& n2) const {
     if (n1 == nullptr) return false;
     if (n2 == nullptr) return true;
-    if (n1->deltaArea() == n2->deltaArea()) return n1->name() < n2->name();
-    return n1->deltaArea() < n2->deltaArea();
+    if (n1->dist() == n2->dist()) {
+      if (n1->deltaArea() == n2->deltaArea()) return n1->name() < n2->name();
+      return n1->deltaArea() < n2->deltaArea();
+    }
+    return n1->dist() < n2->dist();
   }
 };
 
@@ -327,7 +342,7 @@ class Graph {
     Graph();
     ~Graph();
 
-    void addNode(const string& name, const NodeType& nt, const long& da = 0, const bool isb = false);
+    void addNode(const string& name, const NodeType& nt, const long& da = 0, const bool isb = false, const int dist = 0);
     void addEdge(const string& u, const string& v, const string& name = "");
 
     const Edge* findEdge(const string& u, const string& v) const;
@@ -354,14 +369,16 @@ class TapRemoval {
     PrimitiveData::Primitives _primitives, _primitivesWoTap;
     std::map<std::string, PrimitiveData::Instance*> _instMap;
     std::map<std::string, std::string> _symPairs;
+    geom::Rect _bbox;
 
     void buildGraph(const std::map<std::string, std::string>& counterparts);
   public:
-    TapRemoval(const PnRDB::hierNode& node, const std::map<std::string, std::string>& sympairs, const unsigned dist);
+    TapRemoval(const PnRDB::hierNode& node, const unsigned dist);
     ~TapRemoval();
     bool valid() const { return !_primitives.empty() && !_primitivesWoTap.empty(); }
     //void createInstances(const PrimitiveData::PlMap& plmap);
     long deltaArea(std::map<std::string, int>* swappedIndices = nullptr) const;
+    void setSymPairs(const std::map<std::string, std::string>& sympairs) { _symPairs = std::move(sympairs); }
     void rebuildInstances(const PrimitiveData::PlMap& plmap);
     bool containsPrimitive(const string& prim) const { return _primitives.find(prim) != _primitives.end(); }
 
