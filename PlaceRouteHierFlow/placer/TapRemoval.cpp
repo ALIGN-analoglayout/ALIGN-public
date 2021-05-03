@@ -305,12 +305,16 @@ void Graph::addSymPairs(const std::map<std::string, std::string>& counterparts)
 
 }
 
-void TapRemoval::buildGraph(const std::map<std::string, std::string>& counterparts)
+void TapRemoval::buildGraph()
 {
   auto logger = spdlog::default_logger()->clone("placer.TapRemoval.buildGraph");
   RTree rtree;
   map<string, geom::Rect> allTaps;
-  if (_graph == nullptr) _graph = new DomSetGraph::Graph;
+  if (_graph != nullptr) {
+    delete _graph;
+    _graph = nullptr;
+  }
+  _graph = new DomSetGraph::Graph;
   for (const auto& inst : _instances) {
     for (auto nmos : {true, false}) {
       const string mosString = nmos ? "__tr_nmos_" : "__tr_pmos_";
@@ -364,7 +368,7 @@ void TapRemoval::buildGraph(const std::map<std::string, std::string>& counterpar
       }
     }
   }
-  _graph->addSymPairs(counterparts);
+  _graph->addSymPairs(_symPairs);
 }
 
 TapRemoval::TapRemoval(const PnRDB::hierNode& node, const unsigned dist) : _dist(dist), _name(node.name), _graph(nullptr)
@@ -526,9 +530,7 @@ void TapRemoval::rebuildInstances(const PrimitiveData::PlMap& plmap)
     _bbox.merge(inst->bbox());
   }
   //logger->info("bbox : {0}", _bbox.toString());
-  delete _graph;
-  _graph = new DomSetGraph::Graph;
-  buildGraph(_symPairs);
+  buildGraph();
 }
 
 void TapRemoval::plot(const string& pltfile, const map<string, int>* swappedIndices) const

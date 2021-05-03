@@ -12,6 +12,7 @@ design::design() {
   noAsymBlock4Move=0;
   noSymGroup4PartMove=0;
   noSymGroup4FullMove=0;
+  isTop = false;
 }
 
 design::design(design& other, int mode) {
@@ -23,6 +24,7 @@ design::design(design& other, int mode) {
   // Limitation: currently we ignore terminals when placer works on big macros only
   //cout<<"Test: design mode "<<mode<<endl;
   this->_tapRemover = other._tapRemover;
+  this->isTop = other.isTop;
   if(mode==1) {
     this->mixFlag=false;
     other.mixFlag=true;
@@ -341,6 +343,7 @@ design::design(PnRDB::hierNode& node) {
   _tapRemover = std::make_shared<TapRemoval>(node, (envTrDist == 0 ? 60000 : envTrDist*2000));
   bias_Vgraph=node.bias_Vgraph; // from node
   bias_Hgraph=node.bias_Hgraph; // from node
+  isTop=node.isTop;
   Aspect_Ratio_weight = node.Aspect_Ratio_weight;
   memcpy(Aspect_Ratio, node.Aspect_Ratio, sizeof(node.Aspect_Ratio));
   memcpy(placement_box, node.placement_box, sizeof(node.placement_box));
@@ -1257,6 +1260,7 @@ design::design(const design& other):Port_Location(other.Port_Location) {
   this->noSymGroup4PartMove=other.noSymGroup4PartMove;
   this->noSymGroup4FullMove=other.noSymGroup4FullMove;
   this->_tapRemover=other._tapRemover;
+  this->isTop=other.isTop;
   //this->Port_Location=other.Port_Location;
 }
 
@@ -1281,6 +1285,7 @@ design& design::operator= (const design& other) {
   this->noSymGroup4FullMove=other.noSymGroup4FullMove;
   this->Port_Location=other.Port_Location;
   this->_tapRemover=other._tapRemover;
+  this->isTop=other.isTop;
   return *this;
 }
 

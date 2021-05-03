@@ -70,7 +70,8 @@ SeqPair::SeqPair() {
   this->orient.clear();
   this->symAxis.clear();
   this->selected.clear();
-  this->selectedCopy.clear();
+  this->selectedOptTaps.clear();
+  this->selectedNoTaps.clear();
 }
 
 //SeqPair::SeqPair(int blockSize) {
@@ -101,7 +102,8 @@ SeqPair::SeqPair(const SeqPair& sp) {
   this->orient=sp.orient;
   this->symAxis=sp.symAxis;
   this->selected=sp.selected;
-  this->selectedCopy=sp.selectedCopy;
+  this->selectedOptTaps=sp.selectedOptTaps;
+  this->selectedNoTaps=sp.selectedNoTaps;
   if (!_seqPairEnum) this->_seqPairEnum = sp._seqPairEnum;
 }
 
@@ -581,7 +583,8 @@ SeqPair& SeqPair::operator=(const SeqPair& sp) {
   this->orient=sp.orient;
   this->symAxis=sp.symAxis;
   this->selected=sp.selected;
-  this->selectedCopy=sp.selectedCopy;
+  this->selectedOptTaps=sp.selectedOptTaps;
+  this->selectedNoTaps=sp.selectedNoTaps;
   if (!_seqPairEnum) this->_seqPairEnum = sp._seqPairEnum;
   return *this;
 }
@@ -612,9 +615,13 @@ void SeqPair::PrintSeqPair() {
   for(int i=0;i<(int)selected.size();++i) {
     logger->debug("{0}",selected.at(i));
   }
-  logger->debug("SelectedCopy: ");
-  for(int i=0;i<(int)selectedCopy.size();++i) {
-    logger->debug("{0}",selectedCopy.at(i));
+  logger->debug("SelectedOptTaps: ");
+  for(int i=0;i<(int)selectedOptTaps.size();++i) {
+    logger->debug("{0}",selectedOptTaps.at(i));
+  }
+  logger->debug("SelectedNoTaps: ");
+  for(int i=0;i<(int)selectedNoTaps.size();++i) {
+    logger->debug("{0}",selectedNoTaps.at(i));
   }
   //cout<<endl;
 }

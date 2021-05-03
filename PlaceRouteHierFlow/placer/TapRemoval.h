@@ -371,8 +371,8 @@ class TapRemoval {
     std::map<std::string, std::string> _symPairs;
     geom::Rect _bbox;
 
-    void buildGraph(const std::map<std::string, std::string>& counterparts);
   public:
+    void buildGraph();
     TapRemoval(const PnRDB::hierNode& node, const unsigned dist);
     ~TapRemoval();
     bool valid() const { return !_primitives.empty() && !_primitivesWoTap.empty(); }

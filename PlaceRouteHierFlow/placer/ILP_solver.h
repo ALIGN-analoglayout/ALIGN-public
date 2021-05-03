@@ -41,8 +41,9 @@ class ILP_solver {
     int x = 0, y = 0;         // LL of each block
     int H_flip = 0, V_flip = 0;  // flip along V axis and H axis
   };
-  vector<Block> Blocks;
+  vector<Block> Blocks, BlocksCopy;
   placerDB::point LL, UR;
+  placerDB::point LLcp, URcp;
   double area = 0, HPWL = 0, ratio = 0, dead_area = 0, linear_const = 0, multi_linear_const = 0;
   double area_norm = 0, HPWL_norm = 0;
   double Aspect_Ratio_weight = 1000;
@@ -55,6 +56,8 @@ class ILP_solver {
   ILP_solver();
   ILP_solver(design& mydesign);
   ILP_solver(const ILP_solver& solver);
+  void SaveBlocks();
+  void RestoreBlocks();
   ILP_solver& operator=(const ILP_solver& solver);
   double GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
   int CompactPlacement(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);

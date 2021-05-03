@@ -186,6 +186,7 @@ class design
     int GetSizeSymGroup4PartMove(int mode);
     int GetSizeSymGroup4FullMove(int mode);
     int GetSizeBlock4Move(int mode);
+    bool isTop = false;
   public:
     design();
     design(PnRDB::hierNode& node);
@@ -256,7 +257,15 @@ class design
     PnRDB::point GetPlacedBlockInterMetalRelPoint(int blockid, placerDB::Omark ort, PnRDB::point& originP, int sel);
 
     bool RemoveTaps() const { return (_tapRemover) ? _tapRemover->valid() : false; }
-    void RebuildTapInstances(const PrimitiveData::PlMap& plmap) {if (_tapRemover) _tapRemover->rebuildInstances(plmap); }
+    void RebuildTapInstances(const PrimitiveData::PlMap& plmap, const bool complete = true) {
+      if (_tapRemover) {
+        if (complete) {
+          _tapRemover->rebuildInstances(plmap);
+        } else {
+          _tapRemover->buildGraph();
+        }
+      }
+    }
     long TapDeltaArea(map<string, int>* swappedIndices, const bool removeAllTaps = false) const { return _tapRemover ?  _tapRemover->deltaArea(swappedIndices, removeAllTaps) : 0.; }
 };
 
