@@ -18,7 +18,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 
-from ..pnr.render_placement import dump_blocks3, gen_placement_verilog
+from ..pnr.render_placement import dump_blocks, gen_placement_verilog
 
 import logging
 
@@ -107,7 +107,7 @@ class AppWithCallbacksAndState:
             hN = self.DB.CheckoutHierNode( self.idx, sel)
             placement_verilog_d = gen_placement_verilog( hN, self.DB, self.verilog_d)
 
-            dump_blocks3( fig, placement_verilog_d, hN.name, sel, leaves_only=False)
+            dump_blocks( fig, placement_verilog_d, hN.name, sel, leaves_only=False)
 
             title_d = dict(text=f'{hN.name}_{sel}')
 

@@ -4,7 +4,7 @@ import json
 from itertools import chain
 
 from .. import PnR
-from .render_placement import gen_placement_verilog
+from .render_placement import render_placement, gen_placement_verilog
 from .build_pnr_model import *
 from .checker import check_placement
 from ..gui.mockup import run_gui
@@ -339,13 +339,11 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
     result = route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode)
 
-    if False:
-        # This breaks the flow
-        #hN = DB.CheckoutHierNode( len(DB.hierTree)-1, 0)
-        hN = DB.hierTree[-1]
-
+    if True:
+        hN = DB.CheckoutHierNode( len(DB.hierTree)-1, -1)
         if verilog_d is not None:
-            placement_verilog_d = gen_placement_verilog( hN, DB, verilog_d)
+            placement_verilog_d = gen_placement_verilog( hN, DB, verilog_d, skip_checkout=True)
+            render_placement( placement_verilog_d, hN.name)
             check_placement(placement_verilog_d)
 
     return result

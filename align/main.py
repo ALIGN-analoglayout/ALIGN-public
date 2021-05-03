@@ -65,7 +65,8 @@ def gen_more_primitives( primitives, topology_dir, subckt):
             logger.warning( f'Didn\'t match primitive {k}')
             map_d[k].append( k)
 
-    primitives.update( more_primitives)
+    #SMB Hack to see if this is causing trouble with bottom up
+    #primitives.update( more_primitives)
 
     concrete2abstract = { vv:k for k,v in map_d.items() for vv in v}
 
