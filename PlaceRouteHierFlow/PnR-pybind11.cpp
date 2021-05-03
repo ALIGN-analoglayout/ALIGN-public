@@ -444,6 +444,8 @@ PYBIND11_MODULE(PnR, m) {
     .def( "Extract_RemovePowerPins", &PnRdatabase::Extract_RemovePowerPins)
     .def( "CheckinHierNode", &PnRdatabase::CheckinHierNode)
     .def( "TransformNode", &PnRdatabase::TransformNode)
+    .def( "TransformBbox", &PnRdatabase::TransformBbox)
+    .def( "TransformPoint", &PnRdatabase::TransformPoint)
     .def( "RelOrt2AbsOrt", &PnRdatabase::RelOrt2AbsOrt)
     .def( "ExtractPinsToPowerPins", &PnRdatabase::ExtractPinsToPowerPins)
     .def( "CheckinChildnodetoBlock", &PnRdatabase::CheckinChildnodetoBlock)
