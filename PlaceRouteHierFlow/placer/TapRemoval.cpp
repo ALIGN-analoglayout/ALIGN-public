@@ -173,7 +173,7 @@ void Graph::print() const
   }*/
 }
 
-NodeSet Graph::dominatingSet() const
+NodeSet Graph::dominatingSet(bool removeAllTaps) const
 {
   auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.dominatingSet");
   NodeSet whiteNodes, dom;
@@ -191,6 +191,11 @@ NodeSet Graph::dominatingSet() const
       }
     }
   }
+
+  if (removeAllTaps) {
+    return dom;
+  }
+
   for (auto& n : _nodes) {
     bool foundTap(false);
     if (n->nodeType() == NodeType::Tap) {
@@ -417,6 +422,18 @@ TapRemoval::TapRemoval(const PnRDB::hierNode& node, const unsigned dist) : _dist
       t.clear();
     }
   }
+
+  /*auto primitiveWidthComparator = [](const PrimitiveData::Primitive* const& p1, const PrimitiveData::Primitive* const& p2) {
+    if (p1 == nullptr) return false;
+    if (p2 == nullptr) return true;
+    return p1->width() < p2->width();
+  };
+
+  for (auto wtap : {true, false}) {
+    for (auto& it : wtap ? _primitives : _primitivesWoTap) {
+      std::sort(it.second.begin(), it.second.end(), primitiveWidthComparator);
+    }
+  }*/
 }
 
 TapRemoval::~TapRemoval()
@@ -437,17 +454,17 @@ TapRemoval::~TapRemoval()
   _graph = nullptr;
 }
 
-long TapRemoval::deltaArea(map<string, int>* swappedIndices) const
+long TapRemoval::deltaArea(map<string, int>* swappedIndices, bool removeAllTaps) const
 {
   auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.deltaArea");
   long deltaarea(0);
   if (_instances.empty()) return deltaarea;
   if (_graph == nullptr || _dist == 0) return deltaarea;
-  auto nodes = _graph->dominatingSet();
+  auto nodes = _graph->dominatingSet(removeAllTaps);
 
   //logger->info("Found {0} nodes in dominating set {1}", nodes.size(), _dist);
 
-  if (nodes.empty()) logger->error("No dominating nodes found");
+  if (!removeAllTaps && nodes.empty()) logger->error("No dominating nodes found");
 
   //for (auto& it : _instances) {
   //  deltaarea += it->primitive()->area();

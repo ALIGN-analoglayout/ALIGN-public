@@ -257,7 +257,7 @@ class design
 
     bool RemoveTaps() const { return (_tapRemover) ? _tapRemover->valid() : false; }
     void RebuildTapInstances(const PrimitiveData::PlMap& plmap) {if (_tapRemover) _tapRemover->rebuildInstances(plmap); }
-    long TapDeltaArea(map<string, int>* swappedIndices) const { return _tapRemover ?  _tapRemover->deltaArea(swappedIndices) : 0.; }
+    long TapDeltaArea(map<string, int>* swappedIndices, const bool removeAllTaps = false) const { return _tapRemover ?  _tapRemover->deltaArea(swappedIndices, removeAllTaps) : 0.; }
 };
 
 #endif

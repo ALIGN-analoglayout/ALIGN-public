@@ -349,7 +349,7 @@ class Graph {
 
     void print() const;
 
-    NodeSet dominatingSet() const;
+    NodeSet dominatingSet(bool removeAlltaps) const;
 
     void addSymPairs(const std::map<std::string, std::string>& counterparts);
 
@@ -377,7 +377,7 @@ class TapRemoval {
     ~TapRemoval();
     bool valid() const { return !_primitives.empty() && !_primitivesWoTap.empty(); }
     //void createInstances(const PrimitiveData::PlMap& plmap);
-    long deltaArea(std::map<std::string, int>* swappedIndices = nullptr) const;
+    long deltaArea(std::map<std::string, int>* swappedIndices = nullptr, bool removeAllTaps = false) const;
     void setSymPairs(const std::map<std::string, std::string>& sympairs) { _symPairs = std::move(sympairs); }
     void rebuildInstances(const PrimitiveData::PlMap& plmap);
     bool containsPrimitive(const string& prim) const { return _primitives.find(prim) != _primitives.end(); }
