@@ -11,7 +11,7 @@ pdk_dir = pathlib.Path(align.pdk.finfet.__file__).parent
 
 examples_dir = pdk_dir / 'examples'
 
-skip_dirs = ['ring_oscillator']
+skip_dirs = []
 
 examples = [p.parents[0] for p in examples_dir.rglob('*.sp') \
                 if all(x not in skip_dirs for x in p.relative_to(examples_dir).parts)]
