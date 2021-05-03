@@ -25,8 +25,10 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
 
   tme = [ ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second]
   tme = tme + tme
-
-  lib = {"time" : tme, "libname" : "pcell", "units" : [ 0.000025, 2.5e-11 ]}
+  units_meter = (1/j1['ScaleFactor'])*1e-09
+  units_user = (1/j1['ScaleFactor'])*1e-09
+  #lib = {"time" : tme, "libname" : "pcell", "units" : [ 0.000025, 2.5e-11 ]}
+  lib = {"time" : tme, "libname" : "pcell", "units" : [ units_user, units_meter ]}
   libraries.append (lib)
 
   structures = []
@@ -51,7 +53,7 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
 
   def scale(x):
 
-      result = x*40//j1['ScaleFactor'] ### Multiplied by 40: Unit are set to 2.5e-11 and input is in 1e-09
+      result = x
       if isinstance(result, float):
         logger.warning(f"translate_data:scale: Coord {x} ({result}) not integral")
         intresult = int(round(result,0))

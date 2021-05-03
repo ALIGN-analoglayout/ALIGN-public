@@ -63,7 +63,8 @@ def json_lef(input_json, out_lef, cell_pin, bodyswitch, blockM, p):
     Scale_factor = j1["ScaleFactor"]
 
     def s(x):
-        return "%.3f" % (x/(1000))
+        #return "%.3f" % (x/(1000))
+        return(x)
     # Start: This part converting all negative coordinates into positive
 
     with open(input_json, "rt") as fp:
@@ -73,15 +74,6 @@ def json_lef(input_json, out_lef, cell_pin, bodyswitch, blockM, p):
                 ) % p['M2']['Pitch'] == 0, f"Cell height not a multiple of the grid {j['bbox']}"
         assert (j['bbox'][2]-j['bbox'][0]
                 ) % p['M1']['Pitch'] == 0, f"Cell width not a multiple of the grid {j['bbox']}"
-
-        for i in range(4):
-            assert j['bbox'][i] % Scale_factor == 0, f"coord not integral"
-            j['bbox'][i] //= Scale_factor
-          
-        for obj in j['terminals']:
-            for i in range(4):
-                assert obj['rect'][i] % Scale_factor == 0, f"coord not integral"
-                obj['rect'][i] //= Scale_factor
 
     with open(input_json, "wt") as fp:
         fp.write(json.dumps(j, indent=2) + '\n')
@@ -94,6 +86,9 @@ def json_lef(input_json, out_lef, cell_pin, bodyswitch, blockM, p):
     with open(input_json.parents[0] / macro_name, "wt") as fp:
 
         fp.write("MACRO %s\n" % out_lef)
+        fp.write("  UNITS \n")
+        fp.write("    DATABASE MICRONS UNITS %s ;\n" % 1000*Scale_factor)
+        fp.write("  END UNITS \n")
         fp.write("  ORIGIN 0 0 ;\n")
         fp.write("  FOREIGN %s 0 0 ;\n" % out_lef)
 
