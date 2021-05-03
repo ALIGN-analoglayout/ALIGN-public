@@ -667,17 +667,20 @@ void PnRdatabase::CheckinChildnodetoBlock(PnRDB::hierNode& parent, int blockID, 
   PnRDB::Omark ort = child.abs_orient;
   int width = child.UR.x - child.LL.x;
   int height = child.UR.y - child.LL.y;
-  PnRDB::point translate = parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].placedBox.LL;
-  parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].gdsFile = child.gdsFile;
+
+  auto& pi = parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance];
+
+  PnRDB::point translate = pi.placedBox.LL;
+  pi.gdsFile = child.gdsFile;
 
   // transform child blockpins orginals into placed in parent coordinate
   std::vector<PnRDB::pin> blockPins = child.blockPins;
   TransformBlockPinsOriginToPlaced(blockPins, translate, width, height, ort);
-  for (unsigned int p = 0; p < parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins.size(); p++) {
+  for (unsigned int p = 0; p < pi.blockPins.size(); p++) {
     for (unsigned int q = 0; q < child.blockPins.size(); q++) {
-      if (parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins[p].name == blockPins[q].name) {
-        parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins[p].pinContacts = blockPins[q].pinContacts;
-        parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins[p].pinVias = blockPins[q].pinVias;
+      if (pi.blockPins[p].name == blockPins[q].name) {
+        pi.blockPins[p].pinContacts = blockPins[q].pinContacts;
+        pi.blockPins[p].pinVias = blockPins[q].pinVias;
         break;
       }
     }
@@ -686,12 +689,12 @@ void PnRdatabase::CheckinChildnodetoBlock(PnRDB::hierNode& parent, int blockID, 
   //transform child intermetals originals into placed in parent coordinate
   std::vector<PnRDB::contact> interMetals = child.interMetals;
   TransformIntermetalsOriginToPlaced(interMetals, translate, width, height, ort);
-  parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].interMetals = interMetals;
+  pi.interMetals = interMetals;
 
   //transform child intervias originals into placed in parent coordinate
   std::vector<PnRDB::Via> interVias = child.interVias;
   TransformInterviasOriginToPlaced(interVias, translate, width, height, ort);
-  parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].interVias = interVias;
+  pi.interVias = interVias;
 
   //checkin childnode router report
   for (unsigned int i = 0; i < child.router_report.size();++i){
