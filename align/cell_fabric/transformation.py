@@ -21,28 +21,6 @@ class Rect:
 class Transformation:
     @staticmethod
     def genTr( tag, *, w, h):
-      """This seems like non-sense but it matches the PnR flow
-         It seems that the oX and oY should be swapped.
-         N should be the identity, but we need to translate.
-         In FN, we mirror the X coord, but somehow offset the Y coord
-         Mystery solved: it seems that: betterGenTr(tag,w,h) = Transformation( oX=w, oY=h).postMult(genTr(tag,w,h))
- 
-      """
-      if   tag == "FN":
-          tr = Transformation(        oY=-h, sX=-1       )
-      elif tag == "FS":
-          tr = Transformation( oX=-w,               sY=-1)
-      elif tag == "N":
-          tr = Transformation( oX=-w, oY=-h              )
-      elif tag == "S":
-          tr = Transformation(               sX=-1, sY=-1)
-      else:
-          assert tag in ["FN","FS","N","S"]
-      return tr
-
-    def betterGenTr( tag, *, w, h):
-      """I'd rather it be this.
-      """
       if   tag == "FN":
           tr = Transformation( oX=w,        sX=-1       )
       elif tag == "FS":

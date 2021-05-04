@@ -24,18 +24,16 @@ def gen_transformation( blk):
     else:
         assert False, blk.orient
 
-    # tr is the reflection part
-    tr = transformation.Transformation.betterGenTr( orient, w=blk.width, h=blk.height)
+    tr_reflect = transformation.Transformation.genTr( orient, w=blk.width, h=blk.height)
 
-    # tr2 is the translation part
-    tr2 = transformation.Transformation( oX=blk.placedBox.LL.x - blk.originBox.LL.x,
-                                         oY=blk.placedBox.LL.y - blk.originBox.LL.y)
+    tr_offset = transformation.Transformation( oX=blk.placedBox.LL.x - blk.originBox.LL.x,
+                                               oY=blk.placedBox.LL.y - blk.originBox.LL.y)
 
-    # tr3 converts local coords into global coordinates
-    tr3 = tr.preMult(tr2)
+    # tr converts local coords into global coordinates
+    tr = tr_offset.postMult(tr_reflect)
 
-    logger.debug( f"TRANS {blk.master} {blk.orient} {tr} {tr2} {tr3}")
-    return tr3
+    logger.debug( f"TRANS {blk.master} {blk.orient} {tr} {tr_reflect} {tr_offset}")
+    return tr
 
 def gen_placement_verilog(hN, DB, verilog_d, *, skip_checkout=False):
     d = verilog_d.copy()

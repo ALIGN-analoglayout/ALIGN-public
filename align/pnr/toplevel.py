@@ -339,7 +339,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
     result = route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode)
 
-    if True:
+    if False:
         hN = DB.CheckoutHierNode( len(DB.hierTree)-1, -1)
         if verilog_d is not None:
             placement_verilog_d = gen_placement_verilog( hN, DB, verilog_d, skip_checkout=True)
