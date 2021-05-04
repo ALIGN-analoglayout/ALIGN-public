@@ -24,7 +24,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def make_tradeoff_fig(pairs, log=False):
+def make_tradeoff_fig(pairs, log=False, scale='Blugrn'):
 
     df = pd.DataFrame( data=pairs, columns=['width','height'])
     df['area'] = df['width']*df['height']
@@ -33,8 +33,6 @@ def make_tradeoff_fig(pairs, log=False):
     df['ordering'] = np.arange(len(df))
     df['size'] = len(df) - np.arange(len(df))
 
-
-    scale = 'Blugrn'
 
     fig = px.scatter(
         df,
@@ -84,19 +82,23 @@ def make_tradeoff_fig(pairs, log=False):
 
     else:
 
+        linear_min = 0
+        linear_max = max( max_width, max_height) * 1.1
+
         fig.update_xaxes(
-            rangemode="tozero"
+            range=[linear_min,linear_max]
         )
         fig.update_yaxes(
-            rangemode="tozero",
+            range=[linear_min,linear_max],
             scaleanchor='x',
             scaleratio = 1
         )
 
 
-
     return fig
 
+
+colorscales = ['Blugrn'] + px.colors.named_colorscales() 
 
 class AppWithCallbacksAndState:
     def __init__(self, DB, idx, verilog_d, histo):
@@ -108,6 +110,8 @@ class AppWithCallbacksAndState:
         self.verilog_d = verilog_d
         self.histo = histo
 
+        self.module_names = [ module['name'] for module in self.verilog_d['modules']]
+
         self.pairs = list(self.histo.keys())
 
         self.max_x = max( p[0] for p in self.pairs)
@@ -116,7 +120,7 @@ class AppWithCallbacksAndState:
         self.subindex = 0
         self.prev_idx = None
 
-        self.tradeoff = make_tradeoff_fig(self.pairs, log=False)
+        self.tradeoff = make_tradeoff_fig(self.pairs, log=True)
 
         self.app.layout = html.Div(
             id='frame',
@@ -124,6 +128,16 @@ class AppWithCallbacksAndState:
                 html.Div(
                     children=[
                         html.H2(children='Pareto Frontier'),
+                        dcc.Dropdown(
+                            id='colorscale', 
+                            options=[{"value": x, "label": x} 
+                                     for x in colorscales],
+                            value='Blugrn'),
+                        dcc.Dropdown(
+                            id='module-name', 
+                            options=[{"value": x, "label": x} 
+                                     for x in self.module_names],
+                            value=self.DB.hierTree[self.idx].name),
                         dcc.Graph(
                             id='width-vs-height',
                             figure=self.tradeoff
@@ -134,9 +148,15 @@ class AppWithCallbacksAndState:
                 html.Div(
                     children=[    
                         html.H2(children='Placement'),
+                        dcc.RadioItems(
+                            id='display-type',
+                            options=[{'label': i, 'value': i} for i in ['All', 'Direct', 'Leaves Only']],
+                            value='All',
+                            labelStyle={'display': 'inline-block'}
+                        ),
                         dcc.Graph(
                             id='Placement',
-                            figure = self.make_placement_graph(None)
+                            figure = self.make_placement_graph()
                         )
                     ],
                     style={'display': 'inline-block', 'vertical-align': 'top'}
@@ -152,12 +172,16 @@ class AppWithCallbacksAndState:
         )
 
         self.app.callback( (Output('Placement', 'figure'),
-                       Output('Tree', 'children'),
+                            Output('Tree', 'children'),
                             Output('width-vs-height', 'clickData')),
-                      [Input('width-vs-height', 'clickData')])(self.display_hover_data)
+                      [Input('width-vs-height', 'clickData'),
+                       Input('display-type', 'value')])(self.display_hover_data)
 
+        self.app.callback( (Output('width-vs-height', 'figure'),),
+                           [Input('colorscale', 'value'),
+                            Input('module-name', 'value')])(self.change_colorscale)
 
-    def make_placement_graph( self, sel):
+    def make_placement_graph( self, sel=None, *, display_type='All'):
         fig = go.Figure()
 
         title_d = {}
@@ -166,7 +190,19 @@ class AppWithCallbacksAndState:
             hN = self.DB.CheckoutHierNode( self.idx, sel)
             placement_verilog_d = gen_placement_verilog( hN, self.DB, self.verilog_d)
 
-            dump_blocks3( fig, placement_verilog_d, hN.name, sel, leaves_only=False)
+            if display_type == 'All':
+                levels = None
+                leaves_only = False
+            elif display_type == 'Direct':
+                levels = 0
+                leaves_only = False
+            elif display_type == 'Leaves Only':
+                leaves_only = True
+                levels = None
+            else:
+                assert False, display_type
+
+            dump_blocks3( fig, placement_verilog_d, hN.name, sel, leaves_only=leaves_only, levels=levels)
 
             title_d = dict(text=f'{hN.name}_{sel}')
 
@@ -189,16 +225,29 @@ class AppWithCallbacksAndState:
 
         return fig
 
+    def change_colorscale(self, scale, module_name):
+        # Should get a diffent set of pairs for a different module name
 
+        self.tradeoff = make_tradeoff_fig(self.pairs, log=True, scale=scale)
+        return (self.tradeoff,)
 
-    def display_hover_data(self,clickData):
+    def display_hover_data(self,clickData,display_type):
         md_str = ''
         sel = None
+
+        ctx = dash.callback_context
+        if ctx.triggered:
+            d = ctx.triggered[0]
+            if d['prop_id'] == 'display-type.value':
+                sel = self.sel
+                md_str = self.md_str
+            if d['prop_id'] == 'width-vs-height.clickData':
+                pass
+
         if clickData is not None:
             points = clickData['points']
             assert 1 == len(points)
             idx = points[0]['pointNumber']
-
 
             lst = self.histo[self.pairs[idx]]
 
@@ -214,10 +263,11 @@ Selection: {sel}
 Coord: {self.pairs[idx]}
 Subindex: {self.subindex}/{len(lst)}
 ```
-
 """
+            self.sel = sel
+            self.md_str = md_str
 
-        return self.make_placement_graph(sel), md_str, None
+        return self.make_placement_graph(sel,display_type=display_type), md_str, None
 
 
 def run_gui( DB, idx, verilog_d, bboxes):
@@ -226,4 +276,4 @@ def run_gui( DB, idx, verilog_d, bboxes):
         histo[p].append(i)
     
     awcas = AppWithCallbacksAndState( DB, idx, verilog_d, histo)
-    awcas.app.run_server(debug=True)
+    awcas.app.run_server(debug=False)
