@@ -30,30 +30,11 @@ def test_TransformPointForward():
         p = PnR.point( *start_p)
         DB.TransformPoint( p, o, w, h, orient, PnR.Forward)
 
-        tr = transformation.Transformation.genTr( orient2char(orient), w=w, h=h)
-        tr.oX, tr.oY = 0, 0
-        # tr is now just the flipping matrix, no translation
-
+        tr_reflect = transformation.Transformation.genTr( orient2char(orient), w=w, h=h)
         tr_offset = transformation.Transformation( oX=o.x, oY=o.y)
+        tr = tr_offset.postMult( tr_reflect)
 
-        tr_center = transformation.Transformation( oX=-w//2, oY=-h//2)
-        tr_uncenter = transformation.Transformation( oX=w//2, oY=h//2)        
-        tr_first = tr_uncenter.postMult( tr).postMult( tr_center)
-        tr_whole = tr_offset.postMult( tr_first)
-
-        tr_first2 = transformation.Transformation.genTr( orient2char(orient), w=w, h=h)
-        tr_whole2 = tr_offset.postMult( tr_first2)
-
-        assert transformation.Transformation() == tr_first2.postMult( tr_first2.inv())
-        assert transformation.Transformation() == tr_first2.inv().postMult( tr_first2)
-
-        assert tr_first == tr_first2
-        assert tr_whole == tr_whole2
-
-        print(tr_first, tr_first2)
-        #print(tr_whole, tr_whole2)
-
-        p_shadow = tr_whole.hit( start_p)
+        p_shadow = tr.hit( start_p)
         assert (p.x,p.y) == p_shadow
 
 def test_TransformPointBackward():
@@ -70,35 +51,11 @@ def test_TransformPointBackward():
         p = PnR.point( *start_p)
         DB.TransformPoint( p, o, w, h, orient, PnR.Backward)
 
-        tr = transformation.Transformation.genTr( orient2char(orient), w=w, h=h)
-        tr.oX, tr.oY = 0, 0
-        # tr is now just the flipping matrix, no translation
-
+        tr_reflect = transformation.Transformation.genTr( orient2char(orient), w=w, h=h)
         tr_offset = transformation.Transformation( oX=o.x, oY=o.y)
+        tr = tr_offset.postMult( tr_reflect)
 
-        tr_center = transformation.Transformation( oX=-w//2, oY=-h//2)
-        tr_uncenter = transformation.Transformation( oX=w//2, oY=h//2)        
-        tr_first = tr_uncenter.postMult( tr).postMult( tr_center)
-        tr_whole = tr_offset.postMult( tr_first)
-
-        assert tr_first.inv() == tr_center.inv().postMult( tr.inv()).postMult( tr_uncenter.inv())
-        assert tr_first.inv() == tr_uncenter.postMult( tr).postMult( tr_center)
-        assert tr_first.inv() == tr_first
-
-        assert tr_whole.inv() == tr_first.inv().postMult( tr_offset.inv())
-
-        
-        tr_first2 = transformation.Transformation.genTr( orient2char(orient), w=w, h=h)
-
-        tr_whole2 = tr_offset.postMult( tr_first2)
-
-        assert tr_first == tr_first2
-        assert tr_whole == tr_whole2
-
-        print(tr_first, tr_first2)
-        #print(tr_whole, tr_whole2)
-
-        p_shadow = tr_whole.inv().hit( start_p)
+        p_shadow = tr.inv().hit( start_p)
         assert (p.x,p.y) == p_shadow
 
 
