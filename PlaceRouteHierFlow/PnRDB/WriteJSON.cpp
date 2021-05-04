@@ -68,7 +68,7 @@ JSONExtractUit (string GDSData, double& unit)
                      logger->debug("Unit {0} ", to_string(strAry));
 		     json::iterator xyI = strAry.begin();
                      double xyU=*xyI;
-                     unit=2*0.00025/xyU;
+                     unit=0.5*0.000000001/xyU;
                      return;
                 }
             }
@@ -400,7 +400,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     node.gdsFile = opath+gdsName+".gds";
     string TopCellName = gdsName;
     std::set<string> uniGDSset;
-    double unitScale=2;
+    double unitScale=0.5;
 	for (unsigned int i = 0; i < node.Blocks.size(); i++) 
 	    uniGDSset.insert(node.Blocks[i].instance.at( node.Blocks[i].selectedInstance ).gdsFile);
 
@@ -417,7 +417,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     jsonTop["header"] = 600;
     json jsonLib;
     jsonLib["time"] = JSON_TimeTime ();
-    double dbUnitUser=2*0.00025/unitScale;
+    double dbUnitUser=0.5*0.000000001/unitScale;
     double dbUnitMeter=dbUnitUser/1e6;
     jsonLib["units"] = {dbUnitUser, dbUnitMeter};
     //jsonLib["units"] = {0.00025, 2.5e-10};
