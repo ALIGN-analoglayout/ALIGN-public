@@ -6,8 +6,8 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 
-import itertools
-import random
+import math
+import numpy as np
 
 from collections import defaultdict
 
@@ -24,22 +24,79 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def make_tradeoff_fig(pairs):
+def make_tradeoff_fig(pairs, log=False):
 
     df = pd.DataFrame( data=pairs, columns=['width','height'])
-    fig = px.scatter(df, x="width", y="height", width=800, height=800)
+    df['area'] = df['width']*df['height']
+    df['aspect_ratio'] = df['height'] / df['width']
 
-    fig.update_traces( marker=dict(size=10))
-    fig.update_xaxes(
-        rangemode="tozero"
+    df['ordering'] = np.arange(len(df))
+    df['size'] = len(df) - np.arange(len(df))
+
+
+    scale = 'Blugrn'
+
+    fig = px.scatter(
+        df,
+        x="width",
+        y="height",
+        color="ordering",
+        color_continuous_scale=scale,
+        size="size",
+        width=800,
+        height=800
     )
-    fig.update_yaxes(
-        rangemode="tozero",
-        scaleanchor='x',
-        scaleratio = 1
+
+    area = df['area'].min()
+
+    min_width, max_width = min(df['width']),max(df['width'])
+    min_height, max_height = min(df['height']),max(df['height'])
+
+    sweep_width = np.linspace( min_width, max_width, 101)
+    sweep_height = area/sweep_width
+
+    fig.add_trace(
+        go.Scatter( 
+            x=sweep_width,
+            y=sweep_height,
+            mode='lines',
+            showlegend=False
+        )
     )
+
+    #fig.update_traces( marker=dict(size=10))
+
+    if log:
+
+        log_min = min( math.log10(min_width), math.log10(min_height)) - 0.01
+        log_max = max( math.log10(max_width), math.log10(max_height)) + 0.01
+
+        fig.update_xaxes(
+            type="log",
+            range=[log_min,log_max]
+        )
+        fig.update_yaxes(
+            type="log",
+            range=[log_min,log_max],
+            scaleanchor='x',
+            scaleratio = 1
+        )
+
+    else:
+
+        fig.update_xaxes(
+            rangemode="tozero"
+        )
+        fig.update_yaxes(
+            rangemode="tozero",
+            scaleanchor='x',
+            scaleratio = 1
+        )
+
+
 
     return fig
+
 
 class AppWithCallbacksAndState:
     def __init__(self, DB, idx, verilog_d, histo):
@@ -59,6 +116,8 @@ class AppWithCallbacksAndState:
         self.subindex = 0
         self.prev_idx = None
 
+        self.tradeoff = make_tradeoff_fig(self.pairs, log=False)
+
         self.app.layout = html.Div(
             id='frame',
             children=[
@@ -67,7 +126,7 @@ class AppWithCallbacksAndState:
                         html.H2(children='Pareto Frontier'),
                         dcc.Graph(
                             id='width-vs-height',
-                            figure=make_tradeoff_fig(self.pairs)
+                            figure=self.tradeoff
                         )
                     ],
                     style={'display': 'inline-block', 'vertical-align': 'top'}
@@ -140,6 +199,7 @@ class AppWithCallbacksAndState:
             assert 1 == len(points)
             idx = points[0]['pointNumber']
 
+
             lst = self.histo[self.pairs[idx]]
 
             if self.prev_idx != idx:
@@ -166,4 +226,4 @@ def run_gui( DB, idx, verilog_d, bboxes):
         histo[p].append(i)
     
     awcas = AppWithCallbacksAndState( DB, idx, verilog_d, histo)
-    awcas.app.run_server(debug=False)
+    awcas.app.run_server(debug=True)
