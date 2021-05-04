@@ -418,7 +418,8 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     json jsonLib;
     jsonLib["time"] = JSON_TimeTime ();
     double dbUnitUser=0.5*0.000000001/unitScale;
-    double dbUnitMeter=dbUnitUser/1e6;
+    double dbUnitMeter = dbUnitUser;
+    /// 1e6;
     jsonLib["units"] = {dbUnitUser, dbUnitMeter};
     //jsonLib["units"] = {0.00025, 2.5e-10};
     jsonLib["libname"] = "test";
