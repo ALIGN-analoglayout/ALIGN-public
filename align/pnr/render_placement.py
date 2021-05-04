@@ -24,20 +24,18 @@ def gen_transformation( blk):
     else:
         assert False, blk.orient
 
-    # tr is the reflection part
-    tr = transformation.Transformation.genTr( orient, w=blk.width, h=blk.height)
+    tr_reflect = transformation.Transformation.genTr( orient, w=blk.width, h=blk.height)
 
-    # tr2 is the translation part
-    tr2 = transformation.Transformation( oX=blk.placedBox.UR.x - blk.originBox.LL.x,
-                                         oY=blk.placedBox.UR.y - blk.originBox.LL.y)
+    tr_offset = transformation.Transformation( oX=blk.placedBox.LL.x - blk.originBox.LL.x,
+                                               oY=blk.placedBox.LL.y - blk.originBox.LL.y)
 
-    # tr3 converts local coords into global coordinates
-    tr3 = tr.preMult(tr2)
+    # tr converts local coords into global coordinates
+    tr = tr_offset.postMult(tr_reflect)
 
-    logger.debug( f"TRANS {blk.master} {blk.orient} {tr} {tr2} {tr3}")
-    return tr3
+    logger.debug( f"TRANS {blk.master} {blk.orient} {tr} {tr_reflect} {tr_offset}")
+    return tr
 
-def gen_placement_verilog(hN, DB, verilog_d):
+def gen_placement_verilog(hN, DB, verilog_d, *, skip_checkout=False):
     d = verilog_d.copy()
 
     bboxes = defaultdict(list)
@@ -64,7 +62,7 @@ def gen_placement_verilog(hN, DB, verilog_d):
             b = inst.originBox
             new_r = b.LL.x, b.LL.y, b.UR.x, b.UR.y
             if child_idx >= 0:
-                new_hN = DB.CheckoutHierNode(child_idx, blk.selectedInstance)
+                new_hN = DB.CheckoutHierNode(child_idx, -1 if skip_checkout else blk.selectedInstance)
                 aux(new_hN, new_r, new_prefix_path)
             else:
                 chosen_master = pathlib.Path(inst.gdsFile).stem
@@ -93,9 +91,9 @@ def gen_placement_verilog(hN, DB, verilog_d):
         if len(set(v)) > 1:
             logger.error( f'Different chosen masters for {k}: {v}')
 
-    logger.debug( f'transforms: {transforms}')
-    logger.debug( f'bboxes: {bboxes}')
-    logger.debug( f'leaf_bboxes: {leaf_bboxes}')
+    logger.info( f'transforms: {transforms}')
+    logger.info( f'bboxes: {bboxes}')
+    logger.info( f'leaf_bboxes: {leaf_bboxes}')
 
     for module in d['modules']:
         nm = module['name']
@@ -130,69 +128,15 @@ def gen_placement_verilog(hN, DB, verilog_d):
 
     return d
 
-def dump_blocks2( placement_verilog_d, top_cell, sel, leaves_only=False, show=True):
-    logger.info(f'Drawing {top_cell}_{sel}...')
-
+def render_placement( placement_verilog_d, top_cell, sel=None, leaves_only=False):
     fig = go.Figure()
+    dump_blocks( fig, placement_verilog_d, top_cell, sel, leaves_only)
+    fig.show()
 
-    leaves = { x['name']: x for x in placement_verilog_d['leaves']}
-    modules = { x['name']: x for x in placement_verilog_d['modules']}
+def dump_blocks( fig, placement_verilog_d, top_cell, sel=None, leaves_only=False):
+    title = f'{top_cell}_{sel}' if sel is not None else top_cell
 
-    def gen_trace_xy(instance, prefix_path, tr):
-        # tr converts local coordinates into global coordinates
-        if 'template_name' in instance:
-            if leaves_only:
-                return
-            template_name = instance['template_name']
-            r = modules[template_name]['bbox']
-
-        elif 'concrete_template_name' in instance:
-            template_name = instance ['concrete_template_name']
-            r = leaves[template_name]['bbox']
-        else:
-            assert False, f'Neither \'template_name\' or \'concrete_template_name\' in inst {instance}.'
-
-        [x0, y0, x1, y1] = tr.hitRect(
-            transformation.Rect(*r)).canonical().toList()
-        x = [x0, x1, x1, x0, x0]
-        y = [y0, y0, y1, y1, y0]
-
-        hovertext = f'{"/".join(prefix_path)}<br>{template_name}<br>{tr}<br>Global {x0} {y0} {x1} {y1}<br>Local {r[0]} {r[1]} {r[2]} {r[3]}'
-
-        fig.add_trace(go.Scatter(x=x, y=y, mode='lines',
-                      name=hovertext, fill="toself", showlegend=False))
-
-
-    def aux(module, prefix_path, tr):
-
-        for instance in module['instances']:
-
-            new_prefix_path = prefix_path + (instance['instance_name'],)
-
-            # tr converts module coordinates to global coordinates
-            # local_tr converts local coordinates to module coordinates
-            # new_tr should be global = tr(local_tr(local))
-
-            local_tr = transformation.Transformation( **instance['transformation'])
-            new_tr = tr.postMult(local_tr)
-
-            gen_trace_xy(instance, new_prefix_path, new_tr)
-
-            if 'template_name' in instance:
-                assert instance['template_name'] in modules
-                new_module = modules[instance['template_name']]
-                aux(new_module, new_prefix_path, new_tr)
-
-    aux( modules[top_cell], (), transformation.Transformation())
-
-    fig.update_yaxes(scaleanchor="x", scaleratio=1)
-    fig.update_layout(title=dict(text=f'{top_cell}_{sel}'))
-
-    if show:
-        fig.show()
-
-def dump_blocks3( fig, placement_verilog_d, top_cell, sel, leaves_only=False):
-    logger.info(f'Drawing {top_cell}_{sel}...')
+    logger.info(f'Drawing {title}...')
 
     leaves = { x['name']: x for x in placement_verilog_d['leaves']}
     modules = { x['name']: x for x in placement_verilog_d['modules']}
