@@ -77,6 +77,7 @@ setup(name='align',
           'colorlog',
           'plotly',
           'pandas',
+          'dash',
           'typing_extensions; python_version<"3.8"'
           ],
       extras_require={
