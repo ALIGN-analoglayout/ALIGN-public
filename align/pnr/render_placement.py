@@ -25,11 +25,11 @@ def gen_transformation( blk):
         assert False, blk.orient
 
     # tr is the reflection part
-    tr = transformation.Transformation.genTr( orient, w=blk.width, h=blk.height)
+    tr = transformation.Transformation.betterGenTr( orient, w=blk.width, h=blk.height)
 
     # tr2 is the translation part
-    tr2 = transformation.Transformation( oX=blk.placedBox.UR.x - blk.originBox.LL.x,
-                                         oY=blk.placedBox.UR.y - blk.originBox.LL.y)
+    tr2 = transformation.Transformation( oX=blk.placedBox.LL.x - blk.originBox.LL.x,
+                                         oY=blk.placedBox.LL.y - blk.originBox.LL.y)
 
     # tr3 converts local coords into global coordinates
     tr3 = tr.preMult(tr2)

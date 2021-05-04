@@ -24,7 +24,9 @@ class Transformation:
       """This seems like non-sense but it matches the PnR flow
          It seems that the oX and oY should be swapped.
          N should be the identity, but we need to translate.
-         In FN, we mirror the X coord, but somehow offset the Y coord  
+         In FN, we mirror the X coord, but somehow offset the Y coord
+         Mystery solved: it seems that: betterGenTr(tag,w,h) = Transformation( oX=w, oY=h).postMult(genTr(tag,w,h))
+ 
       """
       if   tag == "FN":
           tr = Transformation(        oY=-h, sX=-1       )
@@ -42,13 +44,13 @@ class Transformation:
       """I'd rather it be this.
       """
       if   tag == "FN":
-          tr = Transformation( oX=-w,        sX=-1       )
+          tr = Transformation( oX=w,        sX=-1       )
       elif tag == "FS":
-          tr = Transformation(        oY=-h,        sY=-1)
+          tr = Transformation(        oY=h,        sY=-1)
       elif tag == "N":
           tr = Transformation(                           )
       elif tag == "S":
-          tr = Transformation( oX=-w, oY=-h, sX=-1, sY=-1)
+          tr = Transformation( oX=w, oY=h, sX=-1, sY=-1)
       else:
           assert tag in ["FN","FS","N","S"]
       return tr
@@ -82,6 +84,22 @@ class Transformation:
         llx,lly = self.hit( (r.llx, r.lly))
         urx,ury = self.hit( (r.urx, r.ury))
         return Rect( llx, lly, urx, ury)
+
+    def inv(self):
+        # A.sX 0    A.oX     B.sX 0    B.oX      1 0 0
+        # 0    A.sY A.oY     0    B.sY B.oY      0 1 0
+        # 0    0    1        0    0    1         0 0 1
+        #
+        # A.sX = B.sX
+        # A.sY = B.sY
+        # A.sX B.oX + A.oX = 0
+        # A.sY B.oY + A.oY = 0
+        # =>
+        # B.oX = -A.oX / A.sX = -A.oX * A.sX
+        # B.oY = -A.oY / A.sY = -A.oY * A.sY
+        return Transformation( sX=self.sX,          sY=self.sY,
+                               oX=-self.oX*self.sX, oY=-self.oY*self.sY)
+
 
     @staticmethod
     def mult( A, B):
