@@ -87,7 +87,7 @@ def json_lef(input_json, out_lef, cell_pin, bodyswitch, blockM, p):
 
         fp.write("MACRO %s\n" % out_lef)
         fp.write("  UNITS \n")
-        fp.write("    DATABASE MICRONS UNITS %s ;\n" % 1000*Scale_factor)
+        fp.write("    DATABASE MICRONS UNITS %s ;\n" % (1000*Scale_factor))
         fp.write("  END UNITS \n")
         fp.write("  ORIGIN 0 0 ;\n")
         fp.write("  FOREIGN %s 0 0 ;\n" % out_lef)
