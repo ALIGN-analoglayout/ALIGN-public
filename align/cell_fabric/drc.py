@@ -163,12 +163,22 @@ class DesignRuleCheck():
             return result
 
     def _check_metal_rules(self, layer, vv):
-        '''Check metal min-length / min-spacing rules'''
+        '''Check metal grid / min-length / min-spacing rules'''
+        self._check_grid(layer, vv)
         for v in vv.values():
-            self._check_min_length(
-                layer, v.rects, v.dIndex)
-            self._check_min_spacing(
-                layer, v.rects, v.dIndex)
+            self._check_min_length(layer, v.rects, v.dIndex)
+            self._check_min_spacing(layer, v.rects, v.dIndex)
+
+    def _check_grid(self, layer, vv):
+        if layer in self.canvas.generators:
+            gen = self.canvas.generators[layer]
+            for cl in vv.keys():
+                p = gen.clg.inverseBounds(cl//2)
+                if p[0] != p[1]:
+                    for slr in vv[cl].rects:
+                        root = slr.root()
+                        txt = f"Off grid: {layer} {root.netName} {slr.rect} "
+                        self.errors.append(txt)
 
     def _check_min_length(self, layer, slrects, dIndex):
         min_length = self.canvas.pdk[layer]['MinL']

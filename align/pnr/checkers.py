@@ -48,38 +48,8 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     errors = []
 
     def add_terminal( netName, layer, b, tag=None):
-
         r = [ b.LL.x, b.LL.y, b.UR.x, b.UR.y]
         terminals.append( { "netName": netName, "layer": layer, "rect": r})
-
-        # def f( gen, value, tag=None):
-        #     # value is in 2x units
-        #     if value%2 != 0:
-        #         txt = f"Off grid:{tag} {layer} {netName} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} (in 2x units) is not divisible by two."
-        #         errors.append( txt)
-        #         logger.error( txt)
-        #     else:
-        #         p = gen.clg.inverseBounds( value//2)
-        #         if p[0] != p[1]:
-        #             txt = f"Off grid:{tag} {layer} {netName} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} doesn't land on grid, lb and ub are: {p}"
-        #             errors.append( txt)
-        #             logger.error( txt)
-
-        # if layer == "cellarea":
-        #     f( cnv.m1, b.LL.x, "LL.x")
-        #     f( cnv.m1, b.UR.x, "UR.x")
-        #     f( cnv.m2, b.LL.y, "LL.y")
-        #     f( cnv.m2, b.UR.y, "UR.y")
-        # else:
-        #     if   layer in ["M1", "M3", "M5"]:
-        #         center = (b.LL.x + b.UR.x)//2
-        #     elif layer in ["M2", "M4", "M6"]:
-        #         center = (b.LL.y + b.UR.y)//2
-        #     else:
-        #         center = None
-        #     if center is not None:
-        #         lyr = layer.lower() if layer.lower() in cnv.generators else layer.upper()
-        #         f( cnv.generators[lyr], center, tag)
 
     if not checkOnly and draw_grid:
         m1_pitch = 2*cnv.pdk['M1']['Pitch']
@@ -328,13 +298,10 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
 
         nets_allowed_to_be_open = [] if toplevel else global_power_names
 
-        new_d = cnv.gen_data(run_pex=extract,nets_allowed_to_be_open=nets_allowed_to_be_open,postprocess=toplevel)
+        new_d = cnv.gen_data(run_drc=True, run_pex=extract,nets_allowed_to_be_open=nets_allowed_to_be_open,postprocess=toplevel)
 
         d['bbox'] = cnv.bbox.toList()
         d['terminals'] = new_d['terminals']
-
-        # # multiply by ten make it be in JSON file units (angstroms) This is a mess!
-        # rational_scaling( d, mul=10, errors=errors)
 
         for e in errors:
             cnv.drc.errors.append( e)
