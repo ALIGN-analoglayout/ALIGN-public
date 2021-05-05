@@ -220,7 +220,7 @@ def place( *, DB, opath, fpath, numLayout, effort, idx):
 
     DB.hierTree[idx].numPlacement = actualNumLayout
 
-def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode):
+def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode, selection=None):
     logger.info(f'Starting {router_mode} routing on {DB.hierTree[idx].name} {idx}')
 
     new_topnode_indices = []
@@ -237,6 +237,9 @@ def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode):
     router_engine = router_engines[router_mode]
 
     for lidx in range(DB.hierTree[idx].numPlacement):
+        if selection is not None and lidx != selection:
+            continue
+
         sel = lidx
         new_topnode_idx = router_engine( DB, DB.getDrc_info(),
                                          PnR.bbox( PnR.point(0,0),

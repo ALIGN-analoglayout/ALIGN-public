@@ -113,6 +113,7 @@ class AppWithCallbacksAndState:
         self.app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
         self.sel = None
+        self.md_str = ''
 
         self.module_names = [ module['name'] for module in self.verilog_d['modules']]
 
@@ -125,6 +126,7 @@ class AppWithCallbacksAndState:
         self.prev_idx = None
 
         self.tradeoff = make_tradeoff_fig(self.pairs, log=True)
+        self.placement_graph = self.make_placement_graph()
 
         self.app.layout = html.Div(
             id='frame',
@@ -132,18 +134,19 @@ class AppWithCallbacksAndState:
                 html.Div(
                     children=[
                         html.H2(children='Pareto Frontier'),
+                        dcc.RadioItems(
+                            id='axes-type',
+                            options=[{'label': i, 'value': i} for i in ['linear', 'loglog']],
+                            value='loglog',
+                            labelStyle={'display': 'inline-block'},
+                            style={ 'width': '250px', 'display': 'inline-block', 'vertical-align': 'top'}
+                        ),
                         dcc.Dropdown(
                             id='colorscale', 
                             options=[{"value": x, "label": x} 
                                      for x in colorscales],
                             value='Blugrn',
-                            style={ 'width': '350px'}
-                        ),
-                        dcc.RadioItems(
-                            id='axes-type',
-                            options=[{'label': i, 'value': i} for i in ['linear', 'loglog']],
-                            value='loglog',
-                            labelStyle={'display': 'inline-block'}
+                            style={ 'width': '250px', 'display': 'inline-block'}
                         ),
                         dcc.Dropdown(
                             id='module-name', 
@@ -175,7 +178,7 @@ class AppWithCallbacksAndState:
                         ),
                         dcc.Graph(
                             id='Placement',
-                            figure = self.make_placement_graph()
+                            figure = self.placement_graph
                         )
                     ],
                     style={'display': 'inline-block', 'vertical-align': 'top'}
@@ -261,38 +264,40 @@ class AppWithCallbacksAndState:
         if self.sel is not None:
             print( f'Start the router using sel {self.sel}')
             from ..pnr.toplevel import route
-            route( DB=self.DB, idx=self.idx, opath=self.opath, adr_mode=False, PDN_mode=False, router_mode='top_down')
+            route( DB=self.DB, idx=self.idx, opath=self.opath, adr_mode=False, PDN_mode=False, router_mode='top_down', selection=self.sel)
 
         return (0,)
 
     def display_hover_data(self,clickData,hoverData,display_type):
-        md_str = ''
-        sel = None
+        display_type_change = False
 
         ctx = dash.callback_context
         if ctx.triggered:
             d = ctx.triggered[0]
             if d['prop_id'] == 'display-type.value':
-                sel = self.sel
-                md_str = self.md_str
+                display_type_change = True
+                pass
             if d['prop_id'] == 'width-vs-height.clickData':
                 pass
             if d['prop_id'] == 'width-vs-height.hoverData':
                 pass
 
-
         if clickData is not None:
             points = clickData['points']
             assert 1 == len(points)
             idx = points[0]['pointNumber']
+            curve_idx = points[0]['curveNumber']
 
         if hoverData is not None:
             points = hoverData['points']
             assert 1 == len(points)
             idx = points[0]['pointNumber']
+            curve_idx = points[0]['curveNumber']
 
-
-        if clickData is not None or hoverData is not None:
+        if (clickData is not None or hoverData is not None) \
+           and curve_idx == 0 \
+           and not display_type_change \
+           and 0 <= idx < len(self.pairs):
 
             lst = self.histo[self.pairs[idx]]
 
@@ -300,19 +305,18 @@ class AppWithCallbacksAndState:
                 self.subindex = 0
             else:
                 self.subindex = (self.subindex+1)%len(lst)
-            sel = lst[self.subindex]
+            self.sel = lst[self.subindex]
             self.prev_idx = idx
 
-            md_str = f"""```text
-Selection: {sel}
+            self.md_str = f"""```text
+Selection: {self.sel}
 Coord: {self.pairs[idx]}
 Subindex: {self.subindex}/{len(lst)}
 ```
 """
-            self.sel = sel
-            self.md_str = md_str
+            self.placement_graph = self.make_placement_graph(self.sel,display_type=display_type)
 
-        return self.make_placement_graph(sel,display_type=display_type), md_str, None
+        return self.placement_graph, self.md_str, None
 
 
 def run_gui( DB, idx, verilog_d, bboxes, opath):
