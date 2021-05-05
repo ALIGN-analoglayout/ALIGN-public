@@ -20,6 +20,7 @@ import plotly.express as px
 
 from ..pnr.render_placement import dump_blocks3, gen_placement_verilog
 
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -101,14 +102,17 @@ def make_tradeoff_fig(pairs, log=False, scale='Blugrn'):
 colorscales = ['Blugrn'] + px.colors.named_colorscales() 
 
 class AppWithCallbacksAndState:
-    def __init__(self, DB, idx, verilog_d, histo):
-        external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-        self.app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-
+    def __init__(self, DB, idx, verilog_d, histo, opath):
         self.DB = DB
         self.idx = idx
         self.verilog_d = verilog_d
         self.histo = histo
+        self.opath = opath
+
+        external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+        self.app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+
+        self.sel = None
 
         self.module_names = [ module['name'] for module in self.verilog_d['modules']]
 
@@ -132,12 +136,22 @@ class AppWithCallbacksAndState:
                             id='colorscale', 
                             options=[{"value": x, "label": x} 
                                      for x in colorscales],
-                            value='Blugrn'),
+                            value='Blugrn',
+                            style={ 'width': '350px'}
+                        ),
+                        dcc.RadioItems(
+                            id='axes-type',
+                            options=[{'label': i, 'value': i} for i in ['linear', 'loglog']],
+                            value='loglog',
+                            labelStyle={'display': 'inline-block'}
+                        ),
                         dcc.Dropdown(
                             id='module-name', 
                             options=[{"value": x, "label": x} 
                                      for x in self.module_names],
-                            value=self.DB.hierTree[self.idx].name),
+                            value=self.DB.hierTree[self.idx].name,
+                            style={ 'width': '350px'}
+                        ),
                         dcc.Graph(
                             id='width-vs-height',
                             figure=self.tradeoff
@@ -154,6 +168,11 @@ class AppWithCallbacksAndState:
                             value='All',
                             labelStyle={'display': 'inline-block'}
                         ),
+                        html.Button(
+                            'Route',
+                            id='route-current',
+                            n_clicks=0
+                        ),
                         dcc.Graph(
                             id='Placement',
                             figure = self.make_placement_graph()
@@ -167,6 +186,11 @@ class AppWithCallbacksAndState:
                         dcc.Markdown(children='',id='Tree')
                     ],
                     style={'display': 'inline-block', 'vertical-align': 'top'}
+                ),
+                html.Div(
+                    children=[    
+                    ],
+                    style={'display': 'inline-block', 'vertical-align': 'top'}
                 )
             ]
         )
@@ -175,35 +199,37 @@ class AppWithCallbacksAndState:
                             Output('Tree', 'children'),
                             Output('width-vs-height', 'clickData')),
                       [Input('width-vs-height', 'clickData'),
+                       Input('width-vs-height', 'hoverData'),
                        Input('display-type', 'value')])(self.display_hover_data)
+
+        self.app.callback( (Output('route-current', 'n_clicks'),),
+                           [Input('route-current', 'n_clicks')])(self.route_current_placement)
 
         self.app.callback( (Output('width-vs-height', 'figure'),),
                            [Input('colorscale', 'value'),
+                            Input('axes-type', 'value'),
                             Input('module-name', 'value')])(self.change_colorscale)
 
     def make_placement_graph( self, sel=None, *, display_type='All'):
-        fig = go.Figure()
+        if display_type == 'All':
+            levels = None
+            leaves_only = False
+        elif display_type == 'Direct':
+            levels = 0
+            leaves_only = False
+        elif display_type == 'Leaves Only':
+            leaves_only = True
+            levels = None
+        else:
+            assert False, display_type
 
+        fig = go.Figure()
         title_d = {}
 
         if sel is not None:
             hN = self.DB.CheckoutHierNode( self.idx, sel)
             placement_verilog_d = gen_placement_verilog( hN, self.DB, self.verilog_d)
-
-            if display_type == 'All':
-                levels = None
-                leaves_only = False
-            elif display_type == 'Direct':
-                levels = 0
-                leaves_only = False
-            elif display_type == 'Leaves Only':
-                leaves_only = True
-                levels = None
-            else:
-                assert False, display_type
-
             dump_blocks3( fig, placement_verilog_d, hN.name, sel, leaves_only=leaves_only, levels=levels)
-
             title_d = dict(text=f'{hN.name}_{sel}')
 
         fig.update_layout(
@@ -225,13 +251,21 @@ class AppWithCallbacksAndState:
 
         return fig
 
-    def change_colorscale(self, scale, module_name):
+    def change_colorscale(self, scale, axes_type, module_name):
         # Should get a diffent set of pairs for a different module name
 
-        self.tradeoff = make_tradeoff_fig(self.pairs, log=True, scale=scale)
+        self.tradeoff = make_tradeoff_fig(self.pairs, log=axes_type == 'loglog', scale=scale)
         return (self.tradeoff,)
 
-    def display_hover_data(self,clickData,display_type):
+    def route_current_placement(self, n_clicks):
+        if self.sel is not None:
+            print( f'Start the router using sel {self.sel}')
+            from ..pnr.toplevel import route
+            route( DB=self.DB, idx=self.idx, opath=self.opath, adr_mode=False, PDN_mode=False, router_mode='top_down')
+
+        return (0,)
+
+    def display_hover_data(self,clickData,hoverData,display_type):
         md_str = ''
         sel = None
 
@@ -243,11 +277,22 @@ class AppWithCallbacksAndState:
                 md_str = self.md_str
             if d['prop_id'] == 'width-vs-height.clickData':
                 pass
+            if d['prop_id'] == 'width-vs-height.hoverData':
+                pass
+
 
         if clickData is not None:
             points = clickData['points']
             assert 1 == len(points)
             idx = points[0]['pointNumber']
+
+        if hoverData is not None:
+            points = hoverData['points']
+            assert 1 == len(points)
+            idx = points[0]['pointNumber']
+
+
+        if clickData is not None or hoverData is not None:
 
             lst = self.histo[self.pairs[idx]]
 
@@ -270,10 +315,10 @@ Subindex: {self.subindex}/{len(lst)}
         return self.make_placement_graph(sel,display_type=display_type), md_str, None
 
 
-def run_gui( DB, idx, verilog_d, bboxes):
+def run_gui( DB, idx, verilog_d, bboxes, opath):
+    # this could probably be done in pandas
     histo = defaultdict(list)
     for i,p in enumerate(bboxes):
         histo[p].append(i)
     
-    awcas = AppWithCallbacksAndState( DB, idx, verilog_d, histo)
-    awcas.app.run_server(debug=False)
+    AppWithCallbacksAndState( DB, idx, verilog_d, histo, opath).app.run_server(debug=False)
