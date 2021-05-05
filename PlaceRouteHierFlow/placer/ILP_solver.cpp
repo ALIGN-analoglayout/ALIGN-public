@@ -422,7 +422,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
         if (CompactPlacement(mydesign, curr_sp, drcInfo) < 0) return -1.;
         break;
       case 1 :
-        {
+        if (mydesign.RemoveTaps()) {
           for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
             const auto& index = curr_sp.selected[i];
             const auto& master = mydesign.Blocks[i][index].master;
@@ -453,7 +453,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
         }
         break;
       case 2 :
-        if (!mydesign.isTop) {
+        if (mydesign.RemoveTaps() && !mydesign.isTop) {
           mydesign.RebuildTapInstances(plmap, false); // incremental rebuild
           map<string, int> swappedIndices;
           auto delArea = mydesign.TapDeltaArea(&swappedIndices, true); // remove all taps

@@ -403,7 +403,7 @@ TapRemoval::TapRemoval(const PnRDB::hierNode& node, const unsigned dist) : _dist
       }
     }
     //logger->info("master : {0} {1} {2}", master, _primitives.size(), _primitivesWoTap.size());
-    if (!_primitivesWoTap[master].empty() && _primitives[master].size() != _primitivesWoTap[master].size()) {
+    if (_primitivesWoTap[master].empty() || _primitives[master].size() != _primitivesWoTap[master].size()) {
       for (auto wtap : {true, false}) {
         auto& t = wtap ? _primitives[master] : _primitivesWoTap[master];
         for (auto& x : t) delete x;
