@@ -366,7 +366,10 @@ int ILP_solver::CompactPlacement(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_
     set_minim(lp);
     set_timeout(lp, 1);
     int ret = solve(lp);
-    if (ret != 0 && ret != 1) return -1;
+    if (ret != 0 && ret != 1) {
+      delete_lp(lp);
+      return -1;
+    }
   }
 
   double var[N_var];
