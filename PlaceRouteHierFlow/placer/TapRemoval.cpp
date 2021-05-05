@@ -463,7 +463,7 @@ long TapRemoval::deltaArea(map<string, int>* swappedIndices, bool removeAllTaps)
   auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.deltaArea");
   long deltaarea(0);
   if (_instances.empty()) return deltaarea;
-  if (_graph == nullptr || _dist == 0) return deltaarea;
+  if (_graph == nullptr || _dist == 0 || !valid()) return deltaarea;
   auto nodes = _graph->dominatingSet(removeAllTaps);
 
   //logger->info("Found {0} nodes in dominating set {1}", nodes.size(), _dist);
