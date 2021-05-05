@@ -36,6 +36,11 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     #       (Height may be okay since it defines UnitCellHeight)
     cnv = generator(pdk.Pdk().load(pdkdir / 'layers.json'),28,12,2,3,1,1,1)
 
+    with open(cnv.pdk.layerfile, "rt") as fp:
+        scale_factor = json.load(fp)["ScaleFactor"]
+    # PnRDB coordinates are in units of 2nm. All else is in PDK abstraction.
+    assert scale_factor >= 1 and scale_factor % 2 == 0, f'PDK ScaleFactor should be even.'
+
     terminals = []
 
     subinsts = {}
@@ -47,34 +52,34 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
         r = [ b.LL.x, b.LL.y, b.UR.x, b.UR.y]
         terminals.append( { "netName": netName, "layer": layer, "rect": r})
 
-        def f( gen, value, tag=None):
-            # value is in 2x units
-            if value%2 != 0:
-                txt = f"Off grid:{tag} {layer} {netName} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} (in 2x units) is not divisible by two."
-                errors.append( txt)
-                logger.error( txt)
-            else:
-                p = gen.clg.inverseBounds( value//2)
-                if p[0] != p[1]:
-                    txt = f"Off grid:{tag} {layer} {netName} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} doesn't land on grid, lb and ub are: {p}"
-                    errors.append( txt)
-                    logger.error( txt)
+        # def f( gen, value, tag=None):
+        #     # value is in 2x units
+        #     if value%2 != 0:
+        #         txt = f"Off grid:{tag} {layer} {netName} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} (in 2x units) is not divisible by two."
+        #         errors.append( txt)
+        #         logger.error( txt)
+        #     else:
+        #         p = gen.clg.inverseBounds( value//2)
+        #         if p[0] != p[1]:
+        #             txt = f"Off grid:{tag} {layer} {netName} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} doesn't land on grid, lb and ub are: {p}"
+        #             errors.append( txt)
+        #             logger.error( txt)
 
-        if layer == "cellarea":
-            f( cnv.m1, b.LL.x, "LL.x")
-            f( cnv.m1, b.UR.x, "UR.x")
-            f( cnv.m2, b.LL.y, "LL.y")
-            f( cnv.m2, b.UR.y, "UR.y")
-        else:
-            if   layer in ["M1", "M3", "M5"]:
-                center = (b.LL.x + b.UR.x)//2
-            elif layer in ["M2", "M4", "M6"]:
-                center = (b.LL.y + b.UR.y)//2
-            else:
-                center = None
-            if center is not None:
-                lyr = layer.lower() if layer.lower() in cnv.generators else layer.upper()
-                f( cnv.generators[lyr], center, tag)
+        # if layer == "cellarea":
+        #     f( cnv.m1, b.LL.x, "LL.x")
+        #     f( cnv.m1, b.UR.x, "UR.x")
+        #     f( cnv.m2, b.LL.y, "LL.y")
+        #     f( cnv.m2, b.UR.y, "UR.y")
+        # else:
+        #     if   layer in ["M1", "M3", "M5"]:
+        #         center = (b.LL.x + b.UR.x)//2
+        #     elif layer in ["M2", "M4", "M6"]:
+        #         center = (b.LL.y + b.UR.y)//2
+        #     else:
+        #         center = None
+        #     if center is not None:
+        #         lyr = layer.lower() if layer.lower() in cnv.generators else layer.upper()
+        #         f( cnv.generators[lyr], center, tag)
 
     if not checkOnly and draw_grid:
         m1_pitch = 2*cnv.pdk['M1']['Pitch']
@@ -88,8 +93,6 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
             y = m2_pitch*iy
             r = [ 0, y-2, hN.width, y+2]
             terminals.append( { "netName": 'm2_grid', "layer": 'M2', "rect": r})
-
-
 
     fa_map = {}
     for n in itertools.chain( hN.Nets, hN.PowerNets):
@@ -138,8 +141,11 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
         if found:
             with pth.open( "rt") as fp:
                 d = json.load( fp)
-            # Scale to PnRDB coords (seems like 10x um, but PnRDB is 2x um, so divide by 5
-            rational_scaling( d, div=5, errors=errors)
+            # PnRDB coordinates are in units of 2nm. Scale primitives to this unit.
+            if scale_factor == 1:
+                rational_scaling( d, mul=2, errors=errors)
+            else:
+                rational_scaling( d, div=scale_factor//2, errors=errors)
 
             tr3 = gen_transformation( blk)
             for term in d['terminals']:
@@ -207,7 +213,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                 logger.debug( f'\t{tag}')
                 for con in term.termContacts:
                     pass
-#                    addt( n, con)
+                    # addt( n, con)
             else:
                 assert False, c.type
 
@@ -309,8 +315,12 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     d["terminals"] = terminals
 
     if checkOnly:
-        # divide by two be make it be in CellFabric units (nanometer)
-        rational_scaling( d, div=2, errors=errors)
+        
+        if scale_factor == 1:
+            rational_scaling(d, div=2, errors=errors)
+        else:
+            rational_scaling(d, mul=scale_factor//2, errors=errors)
+
         cnv.bbox = transformation.Rect( *d["bbox"])
         cnv.terminals = d["terminals"]
         for inst, parameters in subinsts.items():
@@ -323,14 +333,16 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
         d['bbox'] = cnv.bbox.toList()
         d['terminals'] = new_d['terminals']
 
-        # multiply by ten make it be in JSON file units (angstroms) This is a mess!
-        rational_scaling( d, mul=10, errors=errors)
+        # # multiply by ten make it be in JSON file units (angstroms) This is a mess!
+        # rational_scaling( d, mul=10, errors=errors)
 
         for e in errors:
             cnv.drc.errors.append( e)
 
         return (cnv, d)
     else:
+        assert False, f'ALWAYS CHECK!'
+        # We should never get here, make -c default
         # multiply by five make it be in JSON file units (angstroms) This is a mess!
         rational_scaling( d, mul=5, errors=errors)
         return d
