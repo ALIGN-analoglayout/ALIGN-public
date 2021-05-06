@@ -53,16 +53,13 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
         terminals.append( { "netName": netName, "layer": layer, "rect": r})
 
         def f( gen, value, tag=None):
-            # value is in units of 2nm
+            # value is in units of 0.5nm
             if value%2 != 0:
                 txt = f"Off grid:{tag} {layer} {netName} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} (in 2x units) is not divisible by two."
                 errors.append( txt)
                 logger.error( txt)
             else:
-                if scale_factor == 1:
-                    value = value // 2 
-                else:
-                    value = value * scale_factor // 2 
+                value = value * scale_factor // 2 
                 p = gen.clg.inverseBounds(value)
                 if p[0] != p[1]:
                     txt = f"Off grid:{tag} {layer} {netName} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} doesn't land on grid, lb and ub are: {p}"
