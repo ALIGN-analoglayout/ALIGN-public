@@ -1,7 +1,7 @@
 import pytest
 import pathlib
 
-from align.cell_fabric import Canvas, Pdk, Wire, Via
+from align.cell_fabric import Canvas, Pdk, Wire, Via, UncoloredCenterLineGrid, EnclosureGrid
 
 mydir = pathlib.Path(__file__).resolve().parent
 pdkfile = mydir.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK' / 'layers.json'
@@ -74,4 +74,13 @@ def test_min_spacing_fail_h(setup):
     c.terminals = [{'layer': 'M2', 'netName': 'x', 'rect': [  0, -50, 200, 50]},
                    {'layer': 'M2', 'netName': 'x', 'rect': [240, -50, 600, 50]}]
     c.gen_data()
+    assert c.drc.num_errors == 1
+
+def test_grid():
+    from align.pdk.finfet.canvas import CanvasPDK
+    c = CanvasPDK()
+    # Below yields [780, 700, 1380, 5600]
+    # c.addWire(c.m1, 'a', None, 1, (1, -1), (6, 1))
+    c.terminals.append({'layer': 'M1', 'netName': 'a', 'rect': [780, 700, 1390, 5600]})
+    c.gen_data(run_drc=True)
     assert c.drc.num_errors == 1

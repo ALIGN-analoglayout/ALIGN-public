@@ -171,14 +171,21 @@ class DesignRuleCheck():
 
     def _check_grid(self, layer, vv):
         if layer in self.canvas.generators:
-            gen = self.canvas.generators[layer]
-            for cl in vv.keys():
-                p = gen.clg.inverseBounds(cl//2)
-                if p[0] != p[1]:
-                    for slr in vv[cl].rects:
-                        root = slr.root()
-                        txt = f"Off grid: {layer} {root.netName} {slr.rect} "
-                        self.errors.append(txt)
+            nm = layer
+        elif layer.lower() in self.canvas.generators:
+            nm = layer.lower()
+        else:
+            nm = None
+        if nm is not None:
+            gen = self.canvas.generators[nm]
+            if gen.clg is not None:
+                for cl in vv.keys():
+                    p = gen.clg.inverseBounds(cl//2)
+                    if p[0] != p[1]:
+                        for slr in vv[cl].rects:
+                            root = slr.root()
+                            txt = f"Off grid: {layer} {root.netName} {slr.rect} "
+                            self.errors.append(txt)
 
     def _check_min_length(self, layer, slrects, dIndex):
         min_length = self.canvas.pdk[layer]['MinL']

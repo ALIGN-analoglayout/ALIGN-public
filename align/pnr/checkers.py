@@ -39,7 +39,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     with open(cnv.pdk.layerfile, "rt") as fp:
         scale_factor = json.load(fp)["ScaleFactor"]
     # PnRDB coordinates are in units of 2nm. All else is in PDK abstraction.
-    assert scale_factor >= 1 and scale_factor % 2 == 0, f'PDK ScaleFactor should be even.'
+    assert scale_factor == 1 or scale_factor % 2 == 0, f'PDK ScaleFactor should be even.'
 
     terminals = []
 
