@@ -220,7 +220,7 @@ def place( *, DB, opath, fpath, numLayout, effort, idx):
 
     DB.hierTree[idx].numPlacement = actualNumLayout
 
-def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode):
+def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode, selection=None):
     logger.info(f'Starting {router_mode} routing on {DB.hierTree[idx].name} {idx}')
 
     new_topnode_indices = []
@@ -237,6 +237,9 @@ def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode):
     router_engine = router_engines[router_mode]
 
     for lidx in range(DB.hierTree[idx].numPlacement):
+        if selection is not None and lidx != selection:
+            continue
+
         sel = lidx
         new_topnode_idx = router_engine( DB, DB.getDrc_info(),
                                          PnR.bbox( PnR.point(0,0),
@@ -258,6 +261,11 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
     pairs = []
 
+    #
+    # We need to make some changes if we want to just annotate a subhierarchy, for example if idx were not the toplevel
+    # We need to search for the sub-hierarchies of that module and only retain those in our new verilog_d file
+    # For visualizing primitives we need to use a different list (abstract and concrete template names)
+    #
     for sel in range(DB.hierTree[idx].numPlacement):
         logger.info( f'DB.CheckoutHierNode( {idx}, {sel})')
         hN = DB.CheckoutHierNode( idx, sel)
@@ -276,7 +284,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
             pairs.append( (r[2]-r[0], r[3]-r[1]))
 
     if gui:
-        run_gui( DB, idx, verilog_d, pairs)
+        run_gui( DB, idx, verilog_d, pairs, opath)
 
     return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode)
 

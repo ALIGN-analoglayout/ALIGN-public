@@ -24,18 +24,16 @@ def gen_transformation( blk):
     else:
         assert False, blk.orient
 
-    # tr is the reflection part
-    tr = transformation.Transformation.genTr( orient, w=blk.width, h=blk.height)
+    tr_reflect = transformation.Transformation.genTr( orient, w=blk.width, h=blk.height)
 
-    # tr2 is the translation part
-    tr2 = transformation.Transformation( oX=blk.placedBox.UR.x - blk.originBox.LL.x,
-                                         oY=blk.placedBox.UR.y - blk.originBox.LL.y)
+    tr_offset = transformation.Transformation( oX=blk.placedBox.LL.x - blk.originBox.LL.x,
+                                               oY=blk.placedBox.LL.y - blk.originBox.LL.y)
 
-    # tr3 converts local coords into global coordinates
-    tr3 = tr.preMult(tr2)
+    # tr converts local coords into global coordinates
+    tr = tr_offset.postMult(tr_reflect)
 
-    logger.debug( f"TRANS {blk.master} {blk.orient} {tr} {tr2} {tr3}")
-    return tr3
+    logger.debug( f"TRANS {blk.master} {blk.orient} {tr} {tr_reflect} {tr_offset}")
+    return tr
 
 def gen_placement_verilog(hN, DB, verilog_d):
     d = verilog_d.copy()
@@ -191,7 +189,7 @@ def dump_blocks2( placement_verilog_d, top_cell, sel, leaves_only=False, show=Tr
     if show:
         fig.show()
 
-def dump_blocks3( fig, placement_verilog_d, top_cell, sel, leaves_only=False):
+def dump_blocks3( fig, placement_verilog_d, top_cell, sel, leaves_only=False, levels=None):
     logger.info(f'Drawing {top_cell}_{sel}...')
 
     leaves = { x['name']: x for x in placement_verilog_d['leaves']}
@@ -222,7 +220,7 @@ def dump_blocks3( fig, placement_verilog_d, top_cell, sel, leaves_only=False):
                       name=hovertext, fill="toself", showlegend=False))
 
 
-    def aux(module, prefix_path, tr):
+    def aux(module, prefix_path, tr, lvl):
 
         for instance in module['instances']:
 
@@ -237,9 +235,9 @@ def dump_blocks3( fig, placement_verilog_d, top_cell, sel, leaves_only=False):
 
             gen_trace_xy(instance, new_prefix_path, new_tr)
 
-            if 'template_name' in instance:
+            if 'template_name' in instance and (levels is None or lvl < levels):
                 assert instance['template_name'] in modules
                 new_module = modules[instance['template_name']]
-                aux(new_module, new_prefix_path, new_tr)
+                aux(new_module, new_prefix_path, new_tr, lvl+1)
 
-    aux( modules[top_cell], (), transformation.Transformation())
+    aux( modules[top_cell], (), transformation.Transformation(), 0)
