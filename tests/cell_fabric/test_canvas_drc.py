@@ -1,7 +1,7 @@
 import pytest
 import pathlib
 
-from align.cell_fabric import Canvas, Pdk, Wire, Via, UncoloredCenterLineGrid, EnclosureGrid
+from align.cell_fabric import Canvas, Pdk, Wire, Via
 
 mydir = pathlib.Path(__file__).resolve().parent
 pdkfile = mydir.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK' / 'layers.json'
