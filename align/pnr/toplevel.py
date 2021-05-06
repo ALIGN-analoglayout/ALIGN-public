@@ -194,6 +194,75 @@ def route_no_op( DB, drcInfo,
                     opath, adr_mode, *, PDN_mode, results_name_map, hierarchical_path):
     pass
 
+def route_psuedo_bottom_up( DB, drcInfo,
+                            bounding_box,
+                            current_node_ort, idx, lidx, sel,
+                            opath, adr_mode, *, PDN_mode, results_name_map, hierarchical_path, reuse_map=None):
+
+    if reuse_map is None:
+        reuse_map = defaultdict(list)
+
+    if (idx, sel) in reuse_map:
+        # the first one in the list is the one we should copy
+        routed_idx = reuse_map[(idx,sel)][0]
+        current_node = PnR.hierNode(DB.hierTree[routed_idx]) # make a copy
+        i_copy = DB.hierTree[idx].n_copy
+    else:
+        current_node = DB.CheckoutHierNode(idx, sel) # Make a copy
+        i_copy = DB.hierTree[idx].n_copy
+
+        logger.debug( f'Start of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy}')
+
+        DB.hierTree[idx].n_copy += 1
+        current_node_name = current_node.name
+
+        current_node.LL = bounding_box.LL
+        current_node.UR = bounding_box.UR
+        current_node.abs_orient = current_node_ort
+        DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Forward)
+
+        for bit, blk in enumerate(current_node.Blocks):
+            child_idx = blk.child
+            if child_idx == -1: continue
+            inst = blk.instance[blk.selectedInstance]
+            childnode_orient = DB.RelOrt2AbsOrt( current_node_ort, inst.orient)
+            child_node_name = DB.hierTree[child_idx].name
+            childnode_bbox = PnR.bbox( inst.placedBox.LL, inst.placedBox.UR)
+            new_childnode_idx = route_psuedo_bottom_up(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, lidx, blk.selectedInstance, opath, adr_mode, PDN_mode=PDN_mode, results_name_map=results_name_map, hierarchical_path=hierarchical_path + (inst.name,), reuse_map=reuse_map)
+            DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_childnode_idx])
+            blk.child = new_childnode_idx
+
+        result_name = route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, PDN_mode=PDN_mode)
+        results_name_map[result_name] = hierarchical_path
+
+        if not current_node.isTop:
+            DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Backward)
+
+
+    hierTree_len = len(DB.hierTree)
+    # Make sure the length of hierTree increased by one; this won't happend if you did the commented out line below
+    #DB.hierTree.append( current_node)
+    # It would if you did commented out line below but this requires a bunch of copying
+    #DB.hierTree = DB.hierTree + [current_node]
+    # Instead we added a custom method to do this
+    DB.AppendToHierTree(current_node)
+    assert len(DB.hierTree) == 1+hierTree_len
+    new_currentnode_idx = len(DB.hierTree) - 1
+
+    reuse_map[(idx,sel)].append( new_currentnode_idx)
+
+    logger.info( f'reuse_map: {dict(reuse_map)}')
+
+    for blk in current_node.Blocks:
+        if blk.child == -1: continue
+        # Set the whole array, not parent[0]; otherwise the python temporary is updated
+        DB.hierTree[blk.child].parent = [ new_currentnode_idx ]
+        logger.debug( f'Set parent of {blk.child} to {new_currentnode_idx} => DB.hierTree[blk.child].parent[0]={DB.hierTree[blk.child].parent[0]}')
+
+    logger.debug( f'End of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy} new_currentnode_idx {new_currentnode_idx}')
+
+    return new_currentnode_idx
+
 def route_top_down( DB, drcInfo,
                     bounding_box,
                     current_node_ort, idx, lidx, sel,
@@ -293,6 +362,7 @@ def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode):
     results_name_map = {}
 
     router_engines = { 'top_down': route_top_down,
+                       'psuedo_bottom_up': route_psuedo_bottom_up,
                        'bottom_up': route_bottom_up,
                        'no_op': route_no_op
                        }
