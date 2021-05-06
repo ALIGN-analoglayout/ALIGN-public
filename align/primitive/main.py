@@ -63,6 +63,11 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
                             'D': [('M1', 'D')],
                             'G': [('M1', 'G')]})
 
+    elif primitive in ["Switch_GB_NMOS", "Switch_GB_PMOS"]:
+        cell_pin = gen( 0, {'S': [('M1', 'S')],
+                            'D': [('M1', 'D')],
+                            'G': [('M1', 'G'), ('M1', 'B')]})
+
     elif primitive in ["DCL_NMOS_B", "DCL_PMOS_B"]:
         cell_pin = gen( 0, {'S': [('M1', 'S')],
                             'D': [('M1', 'G'), ('M1', 'D')],

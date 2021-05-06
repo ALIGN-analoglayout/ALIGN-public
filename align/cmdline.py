@@ -122,6 +122,16 @@ class CmdlineParser():
                             type=str,
                             help='Stage after which to stop the flow. Subsequent stages are skipped.')
 
+        parser.add_argument('--router_mode',
+                            type=str,
+                            default='top_down',
+                            choices=['top_down','bottom_up','no_op'],
+                            help='Router mode')
+
+        parser.add_argument('--gui',
+                            action='store_true',
+                            help='Run in GUI mode')
+
         self.parser = parser
 
     def parse_args(self, *args, **kwargs):

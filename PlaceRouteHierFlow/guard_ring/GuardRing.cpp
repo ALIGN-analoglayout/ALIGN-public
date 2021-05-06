@@ -67,8 +67,8 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
 
   //calculate cell number
   int x_number, y_number;
-  x_number = ceil(double((wcell_size.width + 2*minimal.width))/ double(pcell_metal_size.width)) + 2;//number of guard ring cells at the bottom or top, including corner
-  y_number = ceil(double((wcell_size.height + 2*minimal.height))/ double(pcell_metal_size.height));//excluding corner
+  x_number = ceil(double((wcell_size.width + 2*minimal.width+drc_info.Metal_info[0].grid_unit_x))/ double(pcell_metal_size.width)) + 2;//number of guard ring cells at the bottom or top, including corner
+  y_number = ceil(double((wcell_size.height + 2*minimal.height+drc_info.Metal_info[1].grid_unit_y))/ double(pcell_metal_size.height));//excluding corner
 
   //store lower left coordinate of guard ring primitive cell
   //start from Pcell0 which is at the southwest corner of wrapped cell
@@ -127,8 +127,10 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
   //calculate shift distance
   //GuardRingDB::point shift;
   shift.x = - southwest.x + offset.width;
-  shift.y = - southwest.y + offset.height;
-  
+  shift.y = -southwest.y + offset.height;
+  wcell_shift.x = shift.x / drc_info.Metal_info[0].grid_unit_x * drc_info.Metal_info[0].grid_unit_x;
+  wcell_shift.y = shift.y / drc_info.Metal_info[1].grid_unit_y * drc_info.Metal_info[1].grid_unit_y;
+
   //recalculate lower left coordinates of stored points
   for (unsigned int i_ll = 0; i_ll < stored_point_ll.size(); i_ll++) 
   {
@@ -175,7 +177,7 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
 
   gnuplot();
   storegrhierNode(node, fpath); //return hierarchy node with guard ring information
-  movehierNode(node); //move hierarchy node to make sure lower left coordinate to (0,0)
+  movehierNode(node, wcell_shift); //move hierarchy node to make sure lower left coordinate to (0,0)
 
 };
 
@@ -237,176 +239,176 @@ void GuardRing::storegrhierNode(PnRDB::hierNode &node, const string& fpath){
 }
 
 //return hiernode for movement
-PnRDB::hierNode GuardRing::movehierNode(PnRDB::hierNode &node){
+PnRDB::hierNode GuardRing::movehierNode(PnRDB::hierNode &node, GuardRingDB::point offset){
   node.width += 2*shift.x;
   node.height += 2*shift.y;
   // Blocks
-  movevecblockcomplex(node.Blocks);
+  movevecblockcomplex(node.Blocks, offset);
   //Nets
   for (unsigned int i_nets = 0; i_nets < node.Nets.size(); i_nets++) 
   {
-    movenet(node.Nets[i_nets]);
+    movenet(node.Nets[i_nets], offset);
   }
   //Terminals
   for (unsigned int i_ter = 0; i_ter < node.Terminals.size(); i_ter++) 
   {
-    moveterminal(node.Terminals[i_ter]);
+    moveterminal(node.Terminals[i_ter], offset);
   }
   //PowerNets
-  movevecpowernet(node.PowerNets);
+  movevecpowernet(node.PowerNets, offset);
   //blockPins
-  movevecpin(node.blockPins);
+  movevecpin(node.blockPins, offset);
   //interMetals
-  moveveccontact(node.interMetals);
+  moveveccontact(node.interMetals, offset);
   //interVias
-  movevecvia(node.interVias);
+  movevecvia(node.interVias, offset);
   //PnRAS
   for (unsigned int i_pnras = 0; i_pnras < node.PnRAS.size(); i_pnras++) 
   {
-    movevecblockcomplex(node.PnRAS[i_pnras].Blocks);
+    movevecblockcomplex(node.PnRAS[i_pnras].Blocks, offset);
     for (unsigned int i_net = 0; i_net < node.PnRAS[i_pnras].Nets.size(); i_net++) 
     {
-    movenet(node.PnRAS[i_pnras].Nets[i_net]);
+    movenet(node.PnRAS[i_pnras].Nets[i_net], offset);
     }
     for (unsigned int i_terminal = 0; i_terminal < node.PnRAS[i_pnras].Terminals.size(); i_terminal++) 
     {
-    moveterminal(node.PnRAS[i_pnras].Terminals[i_terminal]);
+    moveterminal(node.PnRAS[i_pnras].Terminals[i_terminal], offset);
     }
-    movepoint(node.PnRAS[i_pnras].LL);
-    movepoint(node.PnRAS[i_pnras].UR);
+    movepoint(node.PnRAS[i_pnras].LL, offset);
+    movepoint(node.PnRAS[i_pnras].UR, offset);
   }
   //SNets
   for (unsigned int i_snets = 0; i_snets < node.SNets.size(); i_snets++) 
   {
-    movenet(node.SNets[i_snets].net1);
-    movenet(node.SNets[i_snets].net2);
+    movenet(node.SNets[i_snets].net1, offset);
+    movenet(node.SNets[i_snets].net2, offset);
   }
   return node;
 }
 
 //move datatype point with shift
-void GuardRing::movepoint(PnRDB::point &point){
-  point.x = point.x + shift.x;
-  point.y = point.y + shift.y;
+void GuardRing::movepoint(PnRDB::point &point, GuardRingDB::point offset){
+  point.x = point.x + offset.x;
+  point.y = point.y + offset.y;
 }
 
 //move datatype bbox
-void GuardRing::movebbox(PnRDB::bbox &bbox){
-  movepoint(bbox.LL);
-  movepoint(bbox.UR);
+void GuardRing::movebbox(PnRDB::bbox &bbox, GuardRingDB::point offset){
+  movepoint(bbox.LL, offset);
+  movepoint(bbox.UR, offset);
 }
 
 //move datatype contact
-void GuardRing::movecontact(PnRDB::contact &contact){
-  movebbox(contact.placedBox);
-  movepoint(contact.placedCenter);
+void GuardRing::movecontact(PnRDB::contact &contact, GuardRingDB::point offset){
+  movebbox(contact.placedBox, offset);
+  movepoint(contact.placedCenter, offset);
 }
 
 //move datatype block
-void GuardRing::moveblock(PnRDB::block &block){
-  movebbox(block.placedBox);
-  movepoint(block.placedCenter);
-  movevecpowernet(block.PowerNets);
-  movevecpin(block.blockPins);
-  moveveccontact(block.interMetals);
-  movevecvia(block.interVias);
-  movevecpin(block.dummy_power_pin);
+void GuardRing::moveblock(PnRDB::block &block, GuardRingDB::point offset){
+  movebbox(block.placedBox, offset);
+  movepoint(block.placedCenter, offset);
+  movevecpowernet(block.PowerNets, offset);
+  movevecpin(block.blockPins, offset);
+  moveveccontact(block.interMetals, offset);
+  movevecvia(block.interVias, offset);
+  movevecpin(block.dummy_power_pin, offset);
 }
 
 //move datatype terminal
-void GuardRing::moveterminal(PnRDB::terminal &terminal){
-  moveveccontact(terminal.termContacts);
+void GuardRing::moveterminal(PnRDB::terminal &terminal, GuardRingDB::point offset){
+  moveveccontact(terminal.termContacts, offset);
 }
 
 //move datatype net
-void GuardRing::movenet(PnRDB::net &net){
-  moveveccontact(net.segments);
-  moveveccontact(net.interVias);
-  movevecmetal(net.path_metal);
-  movevecvia(net.path_via);
+void GuardRing::movenet(PnRDB::net &net, GuardRingDB::point offset){
+  moveveccontact(net.segments, offset);
+  moveveccontact(net.interVias, offset);
+  movevecmetal(net.path_metal, offset);
+  movevecvia(net.path_via, offset);
   for (unsigned int i_cc = 0; i_cc < net.connectedContact.size(); i_cc++) 
   {
-    movecontact(net.connectedContact[i_cc].conTact);
+    movecontact(net.connectedContact[i_cc].conTact, offset);
   }
 }
 
 //move datatype metal
-void GuardRing::movemetal(PnRDB::Metal &metal){
+void GuardRing::movemetal(PnRDB::Metal &metal, GuardRingDB::point offset){
   for (unsigned int i_lp = 0; i_lp < metal.LinePoint.size(); i_lp++) 
   {
-    movepoint(metal.LinePoint[i_lp]);
+    movepoint(metal.LinePoint[i_lp], offset);
   }
-  movecontact(metal.MetalRect);
+  movecontact(metal.MetalRect, offset);
 }
 
 //move datatype via
-void GuardRing::movevia(PnRDB::Via &via){
-  movepoint(via.placedpos);
-  movecontact(via.UpperMetalRect);
-  movecontact(via.LowerMetalRect);
-  movecontact(via.ViaRect);
+void GuardRing::movevia(PnRDB::Via &via, GuardRingDB::point offset){
+  movepoint(via.placedpos, offset);
+  movecontact(via.UpperMetalRect, offset);
+  movecontact(via.LowerMetalRect, offset);
+  movecontact(via.ViaRect, offset);
 }
 
 //move datatype pin
-void GuardRing::movepin(PnRDB::pin &pin){
-  moveveccontact(pin.pinContacts);
-  movevecvia(pin.pinVias);
+void GuardRing::movepin(PnRDB::pin &pin, GuardRingDB::point offset){
+  moveveccontact(pin.pinContacts, offset);
+  movevecvia(pin.pinVias, offset);
 }
 
 //move datatype powernet
-void GuardRing::movepowernet(PnRDB::PowerNet &powernet){
-  movevecpin(powernet.Pins);
-  movevecmetal(powernet.path_metal);
-  movevecvia(powernet.path_via);
+void GuardRing::movepowernet(PnRDB::PowerNet &powernet, GuardRingDB::point offset){
+  movevecpin(powernet.Pins, offset);
+  movevecmetal(powernet.path_metal, offset);
+  movevecvia(powernet.path_via, offset);
 }
 
 //move datatype vector<contact>
-void GuardRing::moveveccontact(std::vector<PnRDB::contact> &contactvector){
+void GuardRing::moveveccontact(std::vector<PnRDB::contact> &contactvector, GuardRingDB::point offset){
   for (unsigned int i_veccon = 0; i_veccon < contactvector.size(); i_veccon++) 
   {
-    movecontact(contactvector[i_veccon]);
+    movecontact(contactvector[i_veccon], offset);
   }
 }
 
 //move datatype vector<via>
-void GuardRing::movevecvia(std::vector<PnRDB::Via> &vecvia){
+void GuardRing::movevecvia(std::vector<PnRDB::Via> &vecvia, GuardRingDB::point offset){
   for (unsigned int i_vecvia = 0; i_vecvia < vecvia.size(); i_vecvia++) 
   {
-    movevia(vecvia[i_vecvia]);
+    movevia(vecvia[i_vecvia], offset);
   }
 }
 
 //move datatype vector<pin>
-void GuardRing::movevecpin(std::vector<PnRDB::pin> &vecpin){
+void GuardRing::movevecpin(std::vector<PnRDB::pin> &vecpin, GuardRingDB::point offset){
   for (unsigned int i_vecpin = 0; i_vecpin < vecpin.size(); i_vecpin++) 
   {
-    movepin(vecpin[i_vecpin]);
+    movepin(vecpin[i_vecpin], offset);
   }
 }
 
 //move datatype vector<powernet>
-void GuardRing::movevecpowernet(std::vector<PnRDB::PowerNet> &vecpowernet){
+void GuardRing::movevecpowernet(std::vector<PnRDB::PowerNet> &vecpowernet, GuardRingDB::point offset){
   for (unsigned int i_vecpow = 0; i_vecpow < vecpowernet.size(); i_vecpow++) 
   {
-    movepowernet(vecpowernet[i_vecpow]);
+    movepowernet(vecpowernet[i_vecpow], offset);
   }
 }
 
 //move datatype vector<metal>
-void GuardRing::movevecmetal(std::vector<PnRDB::Metal> &vecmetal){
+void GuardRing::movevecmetal(std::vector<PnRDB::Metal> &vecmetal, GuardRingDB::point offset){
   for (unsigned int i_vecmet = 0; i_vecmet < vecmetal.size(); i_vecmet++) 
   {
-    movemetal(vecmetal[i_vecmet]);
+    movemetal(vecmetal[i_vecmet], offset);
   }
 }
 
 //move datatype vector<blockcomplex>
-void GuardRing::movevecblockcomplex(std::vector<PnRDB::blockComplex> &vecbc){
+void GuardRing::movevecblockcomplex(std::vector<PnRDB::blockComplex> &vecbc, GuardRingDB::point offset){
   for (unsigned int i_vecbc = 0; i_vecbc < vecbc.size(); i_vecbc++) 
   {
     for (unsigned int j_inst = 0; j_inst < vecbc[i_vecbc].instance.size(); j_inst++) 
     {
-      moveblock(vecbc[i_vecbc].instance[j_inst]);
+      moveblock(vecbc[i_vecbc].instance[j_inst], offset);
     }
   }
 }

@@ -4,7 +4,7 @@ if (NOT TARGET Boost::boost)
   message(STATUS "Boost not found on host system. Downloading headers.")
   FetchContent_Declare(
     boost
-    URL https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.tar.bz2
+    URL https://boostorg.jfrog.io/artifactory/main/release/1.75.0/source/boost_1_75_0.tar.bz2
     URL_HASH SHA256=953db31e016db7bb207f11432bef7df100516eeb746843fa0486a222e3fd49cb
   )
   FetchContent_GetProperties(boost)
