@@ -174,6 +174,7 @@ class AppWithCallbacksAndState:
                         html.Button(
                             'Route',
                             id='route-current',
+                            disabled=True,
                             n_clicks=0
                         ),
                         dcc.Graph(
@@ -294,10 +295,11 @@ class AppWithCallbacksAndState:
             idx = points[0]['pointNumber']
             curve_idx = points[0]['curveNumber']
 
-        if (clickData is not None or hoverData is not None) \
-           and curve_idx == 0 \
-           and not display_type_change \
-           and 0 <= idx < len(self.pairs):
+        if display_type_change:
+            self.placement_graph = self.make_placement_graph(self.sel,display_type=display_type)
+        elif (clickData is not None or hoverData is not None) and \
+             curve_idx == 0 and \
+             0 <= idx < len(self.pairs):
 
             lst = self.histo[self.pairs[idx]]
 
