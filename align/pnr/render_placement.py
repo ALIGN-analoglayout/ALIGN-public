@@ -189,7 +189,7 @@ def dump_blocks2( placement_verilog_d, top_cell, sel, leaves_only=False, show=Tr
     if show:
         fig.show()
 
-def dump_blocks3( fig, placement_verilog_d, top_cell, sel, leaves_only=False):
+def dump_blocks3( fig, placement_verilog_d, top_cell, sel, leaves_only=False, levels=None):
     logger.info(f'Drawing {top_cell}_{sel}...')
 
     leaves = { x['name']: x for x in placement_verilog_d['leaves']}
@@ -220,7 +220,7 @@ def dump_blocks3( fig, placement_verilog_d, top_cell, sel, leaves_only=False):
                       name=hovertext, fill="toself", showlegend=False))
 
 
-    def aux(module, prefix_path, tr):
+    def aux(module, prefix_path, tr, lvl):
 
         for instance in module['instances']:
 
@@ -235,9 +235,9 @@ def dump_blocks3( fig, placement_verilog_d, top_cell, sel, leaves_only=False):
 
             gen_trace_xy(instance, new_prefix_path, new_tr)
 
-            if 'template_name' in instance:
+            if 'template_name' in instance and (levels is None or lvl < levels):
                 assert instance['template_name'] in modules
                 new_module = modules[instance['template_name']]
-                aux(new_module, new_prefix_path, new_tr)
+                aux(new_module, new_prefix_path, new_tr, lvl+1)
 
-    aux( modules[top_cell], (), transformation.Transformation())
+    aux( modules[top_cell], (), transformation.Transformation(), 0)
