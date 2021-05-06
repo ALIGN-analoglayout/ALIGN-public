@@ -485,30 +485,13 @@ void SeqPair::CompactSeq(){
 
 SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
   // Know limitation: currently we force all symmetry group in veritcal symmetry
-  std::cout<<"seq debug 1"<<std::endl;
   placerDB::Smark axis;
   orient.resize(caseNL.GetSizeofBlocks());
-  std::cout<<"seq debug 2"<<std::endl;
   selected.resize(caseNL.GetSizeofBlocks(),0);
-  std::cout<<"seq debug 3"<<std::endl;
 
-  std::cout<<"sequence posPair c ";
-  for(unsigned int i=0;i<posPair.size();i++){
-     std::cout<<posPair[i]<<" ";
-  }
-  std::cout<<std::endl;
-
-  std::cout<<"sequence negPair c ";
-  for(unsigned int i=0;i<posPair.size();i++){
-     std::cout<<negPair[i]<<" ";
-  }
-  std::cout<<std::endl;
-
-  
   int sym_group_index = 0;
   for(vector<placerDB::SymmBlock>::iterator bit=caseNL.SBlocks.begin(); bit!=caseNL.SBlocks.end(); ++bit) {
     axis = bit->axis_dir;
-    std::cout<<"sym blocks "<<sym_group_index<<std::endl;
     sym_group_index++;
     //cout<<"axis"<<axis<<endl;
     symAxis.push_back(axis);
@@ -517,31 +500,23 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
     // axis==H: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
     //          negative - b1,...,bp, axis, c1,...,cs, ap,...,a1
     if(!bit->sympair.empty()) {
-      std::cout<<"sympair ";
       for(vector< pair<int,int> >::iterator pit=bit->sympair.begin(); pit!=bit->sympair.end(); ++pit) {
-        std::cout<<pit->first<<","<<pit->second<<" ";
         if( pit->first<(int)caseNL.GetSizeofBlocks() ) {
           //std::<<pit->first<<","<<pit->secode<<" ";
           posPair.push_back(pit->first); // a1,a2,...,ap --> positive
           orient[pit->first]=placerDB::N;
         }
       }
-      std::cout<<std::endl;
     }
-    std::cout<<"seq debug 4"<<std::endl;
     posPair.push_back(bit->dnode); // axis --> positive
     if(!bit->selfsym.empty()) {
-      std::cout<<"selfsym ";
       for(vector< pair<int,placerDB::Smark> >::iterator sit=bit->selfsym.begin(); sit!=bit->selfsym.end(); ++sit) {
-        std::cout<<sit->first<<" ";
         if ( sit->first<(int)caseNL.GetSizeofBlocks() ) {
           posPair.push_back(sit->first); // c1,...cs --> positve
           orient[sit->first]=placerDB::N;
         }
       }
-      std::cout<<std::endl;
     }
-    std::cout<<"seq debug 5"<<std::endl;
     if(!bit->sympair.empty()) {
       for(vector< pair<int,int> >::reverse_iterator pit=bit->sympair.rbegin(); pit!=bit->sympair.rend(); ++pit) {
         if( pit->second<(int)caseNL.GetSizeofBlocks() ) {
@@ -551,31 +526,28 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
         }
       }
     }
-    std::cout<<"seq debug 6"<<std::endl;
     // axis==V: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
     //          negative - a1,...,ap, cs,...,c1, axis, bp,...,b1
     // axis==H: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
     //          negative - b1,...,bp, axis, c1,...,cs, ap,...,a1
     if(axis==placerDB::V) {
       if(!bit->sympair.empty()) {
-        std::cout<<"sympair ";
         for(vector< pair<int,int> >::iterator pit=bit->sympair.begin(); pit!=bit->sympair.end(); ++pit) {
-          std::cout<<pit->first<<","<<pit->second<<" ";
           if( pit->first<(int)caseNL.GetSizeofBlocks() ) {
             negPair.push_back(pit->first); // a1,a2,...,ap --> negative
           }
         }
-        std::cout<<std::endl;
+
       }
       if(!bit->selfsym.empty()) {
-        std::cout<<"selfsym ";
+
         for(vector< pair<int,placerDB::Smark> >::reverse_iterator sit=bit->selfsym.rbegin(); sit!=bit->selfsym.rend(); ++sit) {
-          std::cout<<sit->first<<" ";
+
           if ( sit->first<(int)caseNL.GetSizeofBlocks() ) {
             negPair.push_back(sit->first); // cs,...c1 --> negative
           }
         }
-        std::cout<<std::endl;
+
       }
       negPair.push_back(bit->dnode); // axis --> negative
       if (!bit->sympair.empty()) {
@@ -587,25 +559,25 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
       }
     } else if (axis==placerDB::H) {
       if(!bit->sympair.empty()) {
-        std::cout<<"sympair ";
+
         for(vector< pair<int,int> >::iterator pit=bit->sympair.begin(); pit!=bit->sympair.end(); ++pit) {
-          std::cout<<pit->first<<","<<pit->second<<" ";
+
           if( pit->second<(int)caseNL.GetSizeofBlocks() ) {
             negPair.push_back(pit->second); // b1,...,bp --> negative
           }
         }
-        std::cout<<std::endl;
+
       }
       negPair.push_back(bit->dnode); // axis --> negative
       if(!bit->selfsym.empty()) {
-        std::cout<<"selfsym ";
+
         for(vector< pair<int,placerDB::Smark> >::iterator sit=bit->selfsym.begin(); sit!=bit->selfsym.end(); ++sit) {
-          std::cout<<sit->first<<" ";
+
           if ( sit->first<(int)caseNL.GetSizeofBlocks() ) {
             negPair.push_back(sit->first); // c1,...cs --> negative
           }
         }
-        std::cout<<std::endl;
+
       }
       if(!bit->sympair.empty()) {
         for(vector< pair<int,int> >::reverse_iterator pit=bit->sympair.rbegin(); pit!=bit->sympair.rend(); ++pit) {
@@ -616,19 +588,7 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
       }
     }
   }
-  std::cout<<"seq debug 7"<<std::endl;
 
-  std::cout<<"sequence posPair a ";
-  for(unsigned int i=0;i<posPair.size();i++){
-     std::cout<<posPair[i]<<" ";
-  }
-  std::cout<<std::endl;
-
-  std::cout<<"sequence negPair a ";
-  for(unsigned int i=0;i<posPair.size();i++){
-     std::cout<<negPair[i]<<" ";
-  }
-  std::cout<<std::endl;
 
   CompactSeq();
 
@@ -640,20 +600,8 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
     }
   }
 
-  std::cout<<"sequence posPair b ";
-  for(unsigned int i=0;i<posPair.size();i++){
-     std::cout<<posPair[i]<<" ";
-  }
-  std::cout<<std::endl;
-
-  std::cout<<"sequence negPair b ";
-  for(unsigned int i=0;i<posPair.size();i++){
-     std::cout<<negPair[i]<<" ";
-  }
-  std::cout<<std::endl;
-  std::cout<<"seq debug 8"<<std::endl;
   KeepOrdering(caseNL);
-  std::cout<<"seq debug 9"<<std::endl;
+
   bool enumerate(false);
   if (maxIter > 0 && posPair.size() <= 6) {
     size_t totEnum = SeqPair::Factorial(posPair.size());
@@ -666,7 +614,7 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
       enumerate = 2 * maxIter > totEnum;
     }
   }
-  std::cout<<"seq debug 10"<<std::endl;
+
   if (enumerate) {
     _seqPairEnum = std::make_shared<SeqPairEnumerator>(posPair, caseNL);
     auto logger = spdlog::default_logger()->clone("placer.SeqPair.SetEnumerate");
@@ -674,7 +622,7 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
   } else {
     _seqPairEnum.reset();
   }
-  std::cout<<"seq debug 11"<<std::endl;
+
 }
 
 SeqPair& SeqPair::operator=(const SeqPair& sp) {
@@ -939,59 +887,26 @@ bool SeqPair::ChangeSelectedBlock(design& caseNL) {
 void SeqPair::KeepOrdering(design& caseNL) {
   // ids of blocks which have order constraints
   set<int> block_id_with_order;
-  std::cout<<"ordering debug 1"<<std::endl;
-  std::cout<<"block_id_with_order ";
   for (auto order : caseNL.Ordering_Constraints) {
     block_id_with_order.insert(order.first.first);
-    std::cout<<order.first.first<<" ";
     block_id_with_order.insert(order.first.second);
-    std::cout<<order.first.second<<" | ";
   }
-  std::cout<<std::endl;;
-  std::cout<<"ordering debug 2"<<std::endl;
   // places of block_id_with_order in pair
   vector<int> pos_idx, neg_idx;
 
-  std::cout<<"keeporder posPair a ";
-  for(unsigned int i=0;i<posPair.size();i++){
-     std::cout<<posPair[i]<<" ";
-  }
-  std::cout<<std::endl;
-
-  std::cout<<"keeporder negPair a ";
-  for(unsigned int i=0;i<posPair.size();i++){
-     std::cout<<negPair[i]<<" ";
-  }
-  std::cout<<std::endl;
 
   for (unsigned int i = 0; i < posPair.size(); i++) {
     if (block_id_with_order.find(posPair[i]) != block_id_with_order.end()) pos_idx.push_back(i);
     if (block_id_with_order.find(negPair[i]) != block_id_with_order.end()) neg_idx.push_back(i);
   }
 
-  std::cout<<"keeporder pos_idx ";
-  for(unsigned int i=0;i<pos_idx.size();i++){
-     std::cout<<pos_idx[i]<<" ";
-  }
-  std::cout<<std::endl;
-
-  std::cout<<"keeporder neg_idx ";
-  for(unsigned int i=0;i<neg_idx.size();i++){
-     std::cout<<neg_idx[i]<<" ";
-  }
-  std::cout<<std::endl;
 
 
-  std::cout<<"ordering debug 3"<<std::endl;
   vector<int> pos_order(block_id_with_order.size()), neg_order(block_id_with_order.size());
-  std::cout<<"original neg_order ";
   for (unsigned int i = 0; i < block_id_with_order.size(); i++) {
     pos_order[i] = posPair[pos_idx[i]];
     neg_order[i] = negPair[neg_idx[i]];
-    std::cout<<neg_order[i]<<" ";
   }
-  std::cout<<std::endl;
-  std::cout<<"ordering debug 4"<<std::endl;
   bool pos_keep_order = true, neg_keep_order = true;
   //unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   //std::default_random_engine e(seed);
@@ -1014,18 +929,10 @@ void SeqPair::KeepOrdering(design& caseNL) {
 
   } while (!pos_keep_order);
   // generate a neg order
-  std::cout<<"ordering debug 5"<<std::endl;
   do {
 	  int first_it, second_it;
     neg_keep_order = true;
     for (auto order : caseNL.Ordering_Constraints) {
-                  std::cout<<"order.first.first "<<order.first.first<<std::endl;
-                  std::cout<<"order.first.second "<<order.first.second<<std::endl;
-                  std::cout<<"neg_order ";
-                  for (auto index=neg_order.begin();index!=neg_order.end();++index){
-                       std::cout<<*index<<" ";
-                      }
-                  std::cout<<std::endl;
 		  first_it = find(neg_order.begin(), neg_order.end(), order.first.first) - neg_order.begin();
 		  second_it = find(neg_order.begin(), neg_order.end(), order.first.second) - neg_order.begin();
 	    if (first_it - second_it < 0) {
@@ -1039,44 +946,17 @@ void SeqPair::KeepOrdering(design& caseNL) {
       }
     }
     if (!neg_keep_order) {
-            std::cout<<"first_it "<<first_it<<" second_it "<<second_it<<"neg_oder size"<<neg_order.size()<<std::endl;
 	    swap(neg_order.at(first_it), neg_order.at(second_it));
       //shuffle(neg_order.begin(), neg_order.end(), e);
     }
   } while (!neg_keep_order);
   //write order back to pospair and negpair
-  std::cout<<"ordering debug 6"<<std::endl;
-
-  std::cout<<"keeporder posPair b ";
-  for(unsigned int i=0;i<posPair.size();i++){
-     std::cout<<posPair[i]<<" ";
-  }
-  std::cout<<std::endl;
-
-  std::cout<<"keeporder negPair b ";
-  for(unsigned int i=0;i<posPair.size();i++){
-     std::cout<<negPair[i]<<" ";
-  }
-  std::cout<<std::endl;
 
   for (unsigned int i = 0; i < pos_idx.size(); i++) {
     posPair[pos_idx[i]] = pos_order[i];
     negPair[neg_idx[i]] = neg_order[i];
   }
 
-  std::cout<<"keeporder posPair c ";
-  for(unsigned int i=0;i<posPair.size();i++){
-     std::cout<<posPair[i]<<" ";
-  }
-  std::cout<<std::endl;
-
-  std::cout<<"keeporder negPair c ";
-  for(unsigned int i=0;i<posPair.size();i++){
-     std::cout<<negPair[i]<<" ";
-  }
-  std::cout<<std::endl;
-
-  std::cout<<"ordering debug 7"<<std::endl;
 }
 
 inline size_t SeqPair::Factorial(const size_t& t)
@@ -1088,19 +968,6 @@ inline size_t SeqPair::Factorial(const size_t& t)
 void SeqPair::PerturbationNew(design& caseNL) {
   /* initialize random seed: */
   //srand(time(NULL));
-
-  std::cout<<"PerturbationNew posPair a ";
-  for(unsigned int i=0;i<posPair.size();i++){
-     std::cout<<posPair[i]<<" ";
-  }
-  std::cout<<std::endl;
-
-  std::cout<<"PerturbationNew negPair a ";
-  for(unsigned int i=0;i<posPair.size();i++){
-     std::cout<<negPair[i]<<" ";
-  }
-  std::cout<<std::endl;
-
 
   if (_seqPairEnum) {
     posPair = _seqPairEnum->PosPair();
@@ -1156,19 +1023,6 @@ void SeqPair::PerturbationNew(design& caseNL) {
   //neg += "}";
   //sel += "}";
   //logger->info("seq pair {0} {1} {2}", pos, neg, sel);
-
-  std::cout<<"PerturbationNew posPair b ";
-  for(unsigned int i=0;i<posPair.size();i++){
-     std::cout<<posPair[i]<<" ";
-  }
-  std::cout<<std::endl;
-
-  std::cout<<"PerturbationNew negPair b ";
-  for(unsigned int i=0;i<posPair.size();i++){
-     std::cout<<negPair[i]<<" ";
-  }
-  std::cout<<std::endl;
-
 
   KeepOrdering(caseNL);
 }
@@ -1266,18 +1120,6 @@ bool SeqPair::SwapTwoSymmetryGroup(design& caseNL) {
   //cout<<"Swap symmetry group "<<sgA<<" and "<<sgB<<endl;
   vector<int> Alist=caseNL.GetRealBlockPlusAxisListfromSymmGroup(sgA);
   vector<int> Blist=caseNL.GetRealBlockPlusAxisListfromSymmGroup(sgB);
-
-  std::cout<<"Alist ";
-  for(unsigned int index=0;index<Alist.size();++index){
-     std::cout<<Alist[index]<<" ";
-  }
-  std::cout<<std::endl;
-
-  std::cout<<"Blist ";
-  for(unsigned int index=0;index<Blist.size();++index){
-     std::cout<<Blist[index]<<" ";
-  }
-  std::cout<<std::endl;
 
   this->posPair=SwapTwoListinSeq(Alist, Blist, this->posPair);
   this->negPair=SwapTwoListinSeq(Alist, Blist, this->negPair);
