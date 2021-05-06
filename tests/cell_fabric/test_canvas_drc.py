@@ -75,12 +75,3 @@ def test_min_spacing_fail_h(setup):
                    {'layer': 'M2', 'netName': 'x', 'rect': [240, -50, 600, 50]}]
     c.gen_data()
     assert c.drc.num_errors == 1
-
-def test_grid():
-    from align.pdk.finfet.canvas import CanvasPDK
-    c = CanvasPDK()
-    # Below yields [780, 700, 1380, 5600]
-    # c.addWire(c.m1, 'a', None, 1, (1, -1), (6, 1))
-    c.terminals.append({'layer': 'M1', 'netName': 'a', 'rect': [780, 700, 1390, 5600]})
-    c.gen_data(run_drc=True)
-    assert c.drc.num_errors == 1
