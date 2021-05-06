@@ -142,11 +142,8 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
         if found:
             with pth.open( "rt") as fp:
                 d = json.load( fp)
-            # PnRDB coordinates are in units of 2nm. Scale primitives to this unit.
-            if scale_factor == 1:
-                rational_scaling( d, mul=2, errors=errors)
-            else:
-                rational_scaling( d, div=scale_factor//2, errors=errors)
+            # PnRDB coordinates are in units of 0.5nm. Scale primitives to this unit.
+            rational_scaling( d, mul=2, div=scale_factor, errors=errors)
 
             tr3 = gen_transformation( blk)
             for term in d['terminals']:
@@ -317,10 +314,8 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
 
     if checkOnly:
         
-        if scale_factor == 1:
-            rational_scaling(d, div=2, errors=errors)
-        else:
-            rational_scaling(d, mul=scale_factor//2, errors=errors)
+        # PnRDB coordinates are in units of 0.5nm. Scale back to PDK.
+        rational_scaling(d, mul=scale_factor, div=2, errors=errors)
 
         cnv.bbox = transformation.Rect( *d["bbox"])
         cnv.terminals = d["terminals"]
