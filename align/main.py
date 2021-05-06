@@ -1,6 +1,10 @@
 import pathlib
 import shutil
 import os
+import json
+import re
+import copy
+from collections import defaultdict
 
 from .compiler import generate_hierarchy
 from .primitive import generate_primitive
@@ -12,7 +16,82 @@ from .utils.logging import reconfigure_loglevels
 import logging
 logger = logging.getLogger(__name__)
 
-def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, check=False, extract=False, log_level=None, verbosity=None, generate=False, python_gds_json=True, regression=False, uniform_height=False, render_placements=False, PDN_mode=False):
+def build_steps( flow_start, flow_stop):
+    steps = [ '1_topology', '2_primitives', '3_pnr']
+
+    start_idx = 0
+    if flow_start is not None:
+        assert flow_start in steps
+        start_idx = steps.index( flow_start)
+    stop_idx = len(steps)
+    if flow_stop is not None:
+        assert flow_stop in steps
+        stop_idx = steps.index( flow_stop)+1
+
+    assert start_idx < stop_idx, f'No steps to run in the flow: {steps}[{start_idx}:{stop_idx}]'
+
+    steps_to_run = steps[start_idx:stop_idx]
+    logger.info( f'Steps to run in the flow: {steps}[{start_idx}:{stop_idx}] => {steps_to_run}')
+
+    return steps_to_run
+
+
+def gen_more_primitives( primitives, topology_dir, subckt):
+    """primitives dictiionary updated in place"""
+
+    map_d = defaultdict(list)
+
+    # As a hack, add more primitives if it matches this pattern
+    p = re.compile( r'^(\S+)_nfin(\d+)_n(\d+)_X(\d+)_Y(\d+)(|_\S+)$')
+
+    more_primitives = {}
+
+    for k,v in primitives.items():
+        m = p.match(k)
+        if m:
+            logger.info( f'Matched primitive {k}')
+            nfin,n,X,Y = tuple(int(x) for x in m.groups()[1:5])
+            abstract_name = f'{m.groups()[0]}_nfin{nfin}{m.groups()[5]}'
+            map_d[abstract_name].append( k)
+            if X != Y:
+                concrete_name = f'{m.groups()[0]}_nfin{nfin}_n{n}_X{Y}_Y{X}{m.groups()[5]}'
+                map_d[abstract_name].append( concrete_name)             
+                if concrete_name not in primitives and \
+                   concrete_name not in more_primitives:
+                    more_primitives[concrete_name] = copy.deepcopy(v)
+                    more_primitives[concrete_name]['x_cells'] = Y
+                    more_primitives[concrete_name]['y_cells'] = X
+        else:
+            logger.warning( f'Didn\'t match primitive {k}')
+            map_d[k].append( k)
+
+    primitives.update( more_primitives)
+
+    concrete2abstract = { vv:k for k,v in map_d.items() for vv in v}
+
+    for k,v in primitives.items():
+        v['abstract_template_name'] = concrete2abstract[k]
+        v['concrete_template_name'] = k
+
+    # now hack the netlist to replace the template names using the concrete2abstract mapping
+
+    with (topology_dir / f'{subckt}.verilog.json').open( 'rt') as fp:
+        verilog_json_d = json.load(fp)
+
+    for module in verilog_json_d['modules']:
+        for instance in module['instances']:
+            t = instance['template_name'] 
+            if t in concrete2abstract:
+                del instance['template_name']
+                instance['abstract_template_name'] = concrete2abstract[t]
+
+    with (topology_dir / f'{subckt}.verilog.json').open( 'wt') as fp:
+        json.dump( verilog_json_d, fp=fp, indent=2)
+
+
+def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, check=False, extract=False, log_level=None, verbosity=None, generate=False, python_gds_json=True, regression=False, uniform_height=False, render_placements=False, PDN_mode=False, flow_start=None, flow_stop=None, router_mode='top_down', gui=False):
+
+    steps_to_run = build_steps( flow_start, flow_stop)
 
     reconfigure_loglevels(file_level=log_level, console_level=verbosity)
 
@@ -52,31 +131,48 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         assert len(netlist_files) == 1, "Encountered multiple spice files. Cannot infer top-level circuit"
         subckt = netlist_files[0].stem
 
-    # Create directories for each stage
-    topology_dir = working_dir / '1_topology'
-    topology_dir.mkdir(exist_ok=True)
-    primitive_dir = (working_dir / '2_primitives')
-    primitive_dir.mkdir(exist_ok=True)
-    pnr_dir = working_dir / '3_pnr'
-    pnr_dir.mkdir(exist_ok=True)
     if regression:
         # Copy regression results in one dir
         regression_dir = working_dir / 'regression'
         regression_dir.mkdir(exist_ok=True)
 
+    assert len(netlist_files) == 1, "Only one .sp file allowed"
+    netlist = netlist_files[0]
+
     results = []
-    for netlist in netlist_files:
-        logger.info(f"READ file: {netlist} subckt={subckt}, flat={flatten}")
-        # Generate hierarchy
+
+    logger.info(f"READ file: {netlist} subckt={subckt}, flat={flatten}")
+
+    # Generate hierarchy
+    topology_dir = working_dir / '1_topology'
+    if '1_topology' in steps_to_run:
+        topology_dir.mkdir(exist_ok=True)
         primitives = generate_hierarchy(netlist, subckt, topology_dir, flatten, pdk_dir, uniform_height)
-        # Generate primitives
+
+        gen_more_primitives( primitives, topology_dir, subckt)
+
+        with (topology_dir / 'primitives.json').open( 'wt') as fp:
+            json.dump( primitives, fp=fp, indent=2)
+    else:
+        with (topology_dir / 'primitives.json').open( 'rt') as fp:
+            primitives = json.load(fp)
+        
+
+    # Generate primitives
+    primitive_dir = (working_dir / '2_primitives')
+    if '2_primitives' in steps_to_run:
+        primitive_dir.mkdir(exist_ok=True)
         for block_name, block_args in primitives.items():
             logger.debug(f"Generating primitive: {block_name}")
             generate_primitive(block_name, **block_args, pdkdir=pdk_dir, outputdir=primitive_dir)
-        # Copy over necessary collateral & run PNR tool
-        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, nvariants=nvariants, effort=effort, check=check, extract=extract, gds_json=python_gds_json, render_placements=render_placements, PDN_mode=PDN_mode)
+
+    # run PNR tool
+    pnr_dir = working_dir / '3_pnr'
+    if '3_pnr' in steps_to_run:
+        pnr_dir.mkdir(exist_ok=True)
+        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort, check=check, extract=extract, gds_json=python_gds_json, render_placements=render_placements, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui)
         results.append( (netlist, variants))
-        assert len(variants) >= 1, f"No layouts were generated for {netlist}. Cannot proceed further. See LOG/align.log for last error."
+        assert router_mode == 'no_op' or len(variants) > 0, f"No layouts were generated for {netlist}. Cannot proceed further. See LOG/align.log for last error."
 
         # Generate necessary output collateral into current directory
         for variant, filemap in variants.items():

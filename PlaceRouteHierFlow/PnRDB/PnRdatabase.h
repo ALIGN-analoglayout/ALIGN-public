@@ -82,7 +82,7 @@ class PnRdatabase
     int unitScale;
     map<string, vector<PnRDB::lefMacro> > lefData;  //map from Macro name to Macro Instance
   public:
-    map<string, string> gdsData; //map from gds name to gds file
+    map<string, vector<string> > gdsData2; //map from gds name to multiple gds file (abstract to multiple concrete)
   private:
     PnRDB::designRule drData;
 
@@ -169,8 +169,6 @@ class PnRdatabase
     // Interface for detail router II - wbxu
     void WritePlaceRoute(PnRDB::hierNode &node, string pofile, string rofile);
     void PrintDesignRuleData();
-    void ReadDBJSON(PnRDB::hierNode &node, const string &filename) const;
-    void WriteDBJSON(const PnRDB::hierNode &node, const string &filename) const;
     string WriteJSON(PnRDB::hierNode &node, bool includeBlock, bool includeNet, bool includePowerNet, bool includePowerGrid, const string &gdsName, const PnRDB::Drc_info &drc_info, const string &opath);
     void WriteJSON_Routability_Analysis(PnRDB::hierNode &node, const string &opath, PnRDB::Drc_info &drc_info);
     void PrintHierNode(PnRDB::hierNode &node);

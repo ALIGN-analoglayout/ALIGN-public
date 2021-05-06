@@ -3,7 +3,7 @@ import more_itertools as itertools
 import re
 
 from . import types
-from .types import Union, Optional, Literal, List
+from .types import Union, Optional, Literal, List, set_context
 from . import checker
 
 import logging
@@ -11,6 +11,25 @@ logger = logging.getLogger(__name__)
 
 pattern = re.compile(r'(?<!^)(?=[A-Z])')
 
+def get_instances_from_hacked_dataclasses(constraint):
+    assert constraint.parent.parent is not None, 'Cannot access parent scope'
+    if hasattr(constraint.parent.parent, 'graph'):
+        instances = {k for k, v in constraint.parent.parent.graph.nodes.items() if v['inst_type'] != 'net'}
+    elif hasattr(constraint.parent.parent, 'elements'):
+        instances = {x.name for x in constraint.parent.parent.elements}
+    elif hasattr(constraint.parent.parent, 'instances'):
+        instances = {x.instance_name for x in constraint.parent.parent.instances}
+    else:
+        raise NotImplementedError(f"Cannot handle {type(constraint.parent.parent)}")
+    names = {x.name for x in constraint.parent if hasattr(x, 'name')}
+    return set.union(instances, names)
+
+def validate_instances(cls, value):
+    # instances = cls._validator_ctx().parent.parent.instances
+    instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+    assert isinstance(instances, set), 'Could not retrieve instances from subcircuit definition'
+    assert all(x in instances or x.upper() in instances for x in value), f'One or more constraint instances {value} not found in {instances}'
+    return value
 
 class SoftConstraint(types.BaseModel):
 
@@ -63,7 +82,7 @@ class PlacementConstraint(HardConstraint):
         return list of z3 constraints associated
         each bbox at least
         '''
-        assert len(self.instances) >= 1
+        assert len(self.instances) >= 1, 'Must contain at least one instance'
 
 
 class Order(PlacementConstraint):
@@ -96,8 +115,10 @@ class Order(PlacementConstraint):
     ]]
     abut: Optional[bool] = False
 
+    _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
+
     def check(self, checker):
-        assert len(self.instances) >= 2
+        assert len(self.instances) >= 2, 'Must contain at least two instances'
 
         def cc(b1, b2, c='x'):  # Create coordinate constraint
             if self.abut:
@@ -163,9 +184,11 @@ class Align(PlacementConstraint):
         'v_any', 'v_left', 'v_right', 'v_center'
     ]]
 
+    _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
+
     def check(self, checker):
         super().check(checker)
-        assert len(self.instances) >= 2
+        assert len(self.instances) >= 2, 'Must contain at least two instances'
         bvars = checker.iter_bbox_vars(self.instances)
         for b1, b2 in itertools.pairwise(bvars):
             if self.line == 'h_top':
@@ -208,12 +231,12 @@ class Align(PlacementConstraint):
 
 
 class Enclose(PlacementConstraint):
-    ''' 
+    '''
     Enclose `instances` within a flexible bounding box
     with `min_` & `max_` bounds
 
     Note: Specifying any one of the following variables
-    makes it a valid constraint but you may wish to 
+    makes it a valid constraint but you may wish to
     specify more than one for practical purposes
 
     > `min_height`
@@ -225,7 +248,7 @@ class Enclose(PlacementConstraint):
     > `min_aspect_ratio`
     > `max_aspect_ratio`
     '''
-    instances: List[str]
+    instances: Optional[List[str]]
     min_height: Optional[int]
     max_height: Optional[int]
     min_width: Optional[int]
@@ -233,23 +256,24 @@ class Enclose(PlacementConstraint):
     min_aspect_ratio: Optional[float]
     max_aspect_ratio: Optional[float]
 
-    @types.root_validator(allow_reuse=True)
-    def bound_in_box_optional_fields(cls, values):
-        assert any(
+    _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
+
+    @types.validator('max_aspect_ratio', allow_reuse=True)
+    def bound_in_box_optional_fields(cls, value, values):
+        assert value or any(
             getattr(values, x, None)
             for x in (
                 'min_height',
                 'max_height',
                 'min_width',
                 'max_width',
-                'min_aspect_ratio',
-                'max_aspect_ratio'
+                'min_aspect_ratio'
             )
-        )
+        ), 'Too many optional fields'
 
     def check(self, checker):
         super().check(checker)
-        assert len(self.instances) >= 2
+        assert len(self.instances) >= 2, 'Must contain at least two instances'
         bb = checker.bbox_vars(id(self))
         if self.min_width:
             checker.append(
@@ -289,7 +313,7 @@ class Enclose(PlacementConstraint):
 
 class Spread(PlacementConstraint):
     '''
-    Spread `instances` by forcing minimum spacing along 
+    Spread `instances` by forcing minimum spacing along
     `direction` if two instances overlap in other direction
 
     WARNING: This constraint checks for overlap but
@@ -305,6 +329,8 @@ class Spread(PlacementConstraint):
     instances: List[str]
     direction: Optional[Literal['horizontal', 'vertical']]
     distance: int  # in nm
+
+    _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
 
     def check(self, checker):
         def cc(b1, b2, c='x'):
@@ -325,7 +351,7 @@ class Spread(PlacementConstraint):
                 ) >= self.distance * 2
             )
         super().check(checker)
-        assert len(self.instances) >= 2
+        assert len(self.instances) >= 2, 'Must contain at least two instances'
         bvars = checker.iter_bbox_vars(self.instances)
         for b1, b2 in itertools.pairwise(bvars):
             if self.direction == 'horizontal':
@@ -343,6 +369,24 @@ class Spread(PlacementConstraint):
                         cc(b1, b2, 'y')
                     )
                 )
+
+
+class SetBoundingBox(HardConstraint):
+    instance: str
+    llx: int
+    lly: int
+    urx: int
+    ury: int
+    is_subcircuit: Optional[bool] = False
+
+    def check(self, checker):
+        super().check(checker)
+        assert self.llx < self.urx and self.lly < self.ury, f'Reflection is not supported yet for {self}'
+        bvar = checker.bbox_vars(self.instance, is_subcircuit=self.is_subcircuit)
+        checker.append(bvar.llx == self.llx)
+        checker.append(bvar.lly == self.lly)
+        checker.append(bvar.urx == self.urx)
+        checker.append(bvar.ury == self.ury)
 
 
 # You may chain constraints together for more complex constraints by
@@ -412,8 +456,8 @@ class AlignInOrder(UserConstraint):
 class PlaceSymmetric(PlacementConstraint):
     # TODO: Finish implementing this. Not registered to
     #       ConstraintDB yet
-    ''' 
-    Place instance / pair of `instances` symmetrically 
+    '''
+    Place instance / pair of `instances` symmetrically
     around line of symmetry along `direction`
 
     Note: This is a user-convenience constraint. Same
@@ -437,8 +481,8 @@ class PlaceSymmetric(PlacementConstraint):
         Align(1, X, Y, 6, 'center')
 
         '''
-        assert len(self.instances) >= 1
-        assert all(isinstance(x, List) for x in self.instances)
+        assert len(self.instances) >= 1, 'Must contain at least one instance'
+        assert all(isinstance(x, List) for x in self.instances), f'All arguments must be of type list in {self.instances}'
 
 
 class CreateAlias(SoftConstraint):
@@ -485,6 +529,14 @@ class HorizontalDistance(SoftConstraint):
     '''
     abs_distance: int
 
+class GuardRing(SoftConstraint):
+    '''
+    Adds guard ring for particular hierarchy
+    '''
+    guard_ring_primitives: str
+    global_pin: str
+    block_name: str
+
 
 class GroupCaps(SoftConstraint):
     ''' Common Centroid Cap '''
@@ -518,23 +570,24 @@ class SymmetricNets(SoftConstraint):
     direction: Literal['H', 'V']
 
 
-class AspectRatio(SoftConstraint):
-    '''
-    TODO: Replace with Enclose
-    '''
-    ratio_low: Optional[float]
-    ratio_high: Optional[float]
-    weight: int
+class AspectRatio(HardConstraint):
+    """
+    Define lower and upper bounds on aspect ratio (=width/height) of a subcircuit
 
-    @types.root_validator(allow_reuse=True)
-    def cast_aspect_ratio_spec(cls, values):
-        if not values['ratio_low'] and not values['ratio_high']:
-            raise AssertionError('At least one parameter must be specified')
-        elif values['ratio_low']:
-            values['ratio_high'] = 1 / values['ratio_low']
-        else:
-            values['ratio_low'] = 1 / values['ratio_high']
-        return values
+    `ratio_low` <= width/height <= `ratio_high`
+    """
+    subcircuit: str
+    ratio_low: float = 0.1
+    ratio_high: float = 10
+    weight: int = 1
+
+    def check(self, checker):
+        assert self.ratio_low >= 0, f'AspectRatio:ratio_low should be greater than zero {self.ratio_low}'
+        assert self.ratio_high > self.ratio_low, f'AspectRatio:ratio_high {self.ratio_high} should be greater than ratio_low {self.ratio_low}'
+
+        bvar = checker.bbox_vars(self.subcircuit, is_subcircuit=True)
+        checker.append(checker.cast(bvar.urx-bvar.llx, float) >= self.ratio_low*checker.cast(bvar.ury-bvar.lly, float))
+        checker.append(checker.cast(bvar.urx-bvar.llx, float) < self.ratio_high*checker.cast(bvar.ury-bvar.lly, float))
 
 
 class MultiConnection(SoftConstraint):
@@ -546,6 +599,7 @@ ConstraintType = Union[
     # ALIGN Internal DSL
     Order, Align,
     Enclose, Spread,
+    SetBoundingBox,
     # Additional helper constraints
     AlignInOrder,
     # Current Align constraints
@@ -556,6 +610,7 @@ ConstraintType = Union[
     BlockDistance,
     HorizontalDistance,
     VerticalDistance,
+    GuardRing,
     SymmetricBlocks,
     GroupCaps,
     NetConst,
@@ -574,6 +629,8 @@ class ConstraintDB(types.List[ConstraintType]):
     _checker = types.PrivateAttr(None)
 
     def _check(self, constraint):
+        assert constraint.parent is not None, 'parent is not set'
+        assert constraint.parent.parent is not None, 'parent.parent is not set'
         if self._checker and hasattr(constraint, 'check'):
             try:
                 constraint.check(self._checker)
@@ -581,9 +638,10 @@ class ConstraintDB(types.List[ConstraintType]):
                 logger.error(f'Checker raised error:\n {e}')
                 logger.error(f'Failed to add constraint {constraint} due to conflict with one or more of:')
                 for c in self.__root__:
-                    logger.error(c)
+                    if hasattr(c, 'check'):
+                        logger.error(c)
                 raise e
-            
+
 
     def _check_recursive(self, constraints):
         for constraint in expand_user_constraints(constraints):
@@ -591,19 +649,27 @@ class ConstraintDB(types.List[ConstraintType]):
 
     @types.validate_arguments
     def append(self, constraint: ConstraintType):
-        self._check_recursive([constraint])
         super().append(constraint)
+        self._check_recursive([self.__root__[-1]])
 
-    def __init__(self, *args, **kwargs):
-        if len(args) == 0 and '__root__' not in kwargs:
-            kwargs['__root__'] = []
-        elif len(args) == 1:
-            kwargs['__root__'] = args[0]
-            args = tuple()
-        super().__init__(*args, **kwargs)
-        if checker.Z3Checker.enabled:
+    def __init__(self, *args, check=True, **kwargs):
+        super().__init__()
+        if check and checker.Z3Checker.enabled:
             self._checker = checker.Z3Checker()
-            self._check_recursive(self.__root__)
+        # Constraints may need to access parent scope for subcircuit information
+        # To ensure parent is set appropriately, force users to use append
+        if '__root__' in kwargs:
+            data = kwargs['__root__']
+            del kwargs['__root__']
+        elif len(args) == 1:
+            data = args[0]
+            args = tuple()
+        else:
+            assert len(args) == 0 and len(kwargs) == 0
+            data = []
+        with set_context(self):
+            for x in data:
+                self.append(x)
 
     def checkpoint(self):
         if self._checker:
@@ -619,6 +685,7 @@ class ConstraintDB(types.List[ConstraintType]):
 def expand_user_constraints(const_list):
     for const in const_list:
         if hasattr(const, 'yield_constraints'):
-            yield from expand_user_constraints(const.yield_constraints())
+            with types.set_context(const.parent):
+                yield from const.yield_constraints()
         else:
             yield const

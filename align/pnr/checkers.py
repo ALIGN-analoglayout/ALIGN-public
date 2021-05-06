@@ -114,7 +114,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
         blk = cblk.instance[cblk.selectedInstance]
         found = False
         if json_dir is not None:
-            pth = pathlib.Path( json_dir + "/" + blk.master + ".json")
+            pth = pathlib.Path( json_dir + "/" + blk.lefmaster + ".json")
             if not pth.is_file():
                 logger.debug( f"{pth} is not available; not importing subblock rectangles")
             else:

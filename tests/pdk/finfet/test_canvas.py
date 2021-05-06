@@ -5,9 +5,17 @@ from align.pdk.finfet import CanvasPDK
 from align.primitive.default import DefaultCanvas
 from align.cell_fabric import Pdk
 import align.pdk.finfet
-from .helper import *
+try:
+    from .helper import *
+except:
+    from helper import *
+
 
 layers_json = pathlib.Path(align.pdk.finfet.__file__).parent / 'layers.json'
+
+
+def test_canvas_zero():
+    c = CanvasPDK()
 
 
 def test_canvas_one():

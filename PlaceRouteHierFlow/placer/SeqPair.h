@@ -10,6 +10,7 @@
 #include <utility>
 #include <string>
 #include <iostream>
+#include <memory>
 #include <stdlib.h>     /* srand, rand */
 #include "../PnRDB/readfile.h"
 #include "Pdatatype.h"
@@ -25,6 +26,27 @@ using std::string;
 using std::swap;
 using std::vector;
 
+
+class SeqPairEnumerator
+{
+  private:
+    vector<int> _posPair, _negPair, _selected;
+    std::pair<size_t, size_t> _enumIndex; //first : pos, second : neg
+    vector<int> _maxSelected;
+    size_t _maxEnum;
+    int _maxSize;
+    unsigned _exhausted : 1;
+  public:
+    SeqPairEnumerator(const vector<int>& pair, design& casenl);
+    void Permute();
+    const vector<int>& PosPair() const { return _posPair; }
+    const vector<int>& NegPair() const { return _negPair; }
+    const vector<int>& Selected() const { return _selected; }
+    const bool EnumExhausted() const { return _exhausted; }
+    const bool IncrementSelected();
+};
+
+
 class SeqPair 
 {
   private:
@@ -34,6 +56,7 @@ class SeqPair
     vector<placerDB::Omark> orient;
     vector<placerDB::Smark> symAxis;
     vector<int> selected;
+    std::shared_ptr<SeqPairEnumerator> _seqPairEnum;
     vector<int> FindShortSeq(design& caseNL, vector<int>& seq, int idx);
     int GetVertexIndexinSeq(vector<int>& seq, int v);
     bool MoveAsymmetricBlockUnit(design& caseNL, vector<int>& seq, int anode);
@@ -47,9 +70,12 @@ class SeqPair
     SeqPair(int blockSize);
     SeqPair(string pos, string neg);
     SeqPair(const SeqPair& sp);
-    SeqPair(design& caseNL);
+    SeqPair(design& caseNL, const size_t maxIter = 0);
     SeqPair& operator=(const SeqPair& sp);
     SeqPair(design& originNL, design& reducedNL, SeqPair& reducedSP);
+    static size_t Factorial(const size_t& t);
+    bool Enumerate() const { return _seqPairEnum ? true : false; }
+    const bool EnumExhausted() const { return _seqPairEnum ? _seqPairEnum->EnumExhausted() : false; }
     vector<int> GetBlockIndex(int blockNo);
     vector<int> GetRightBlock(int blockNo);
     vector<int> GetLeftBlock(int blockNo);
@@ -80,6 +106,7 @@ class SeqPair
     int GetBlockSelected(int blockNo);
     bool ChangeSelectedBlock(design& caseNL);
     void KeepOrdering(design& caseNL);
+    void CompactSeq();
 };
 
 #endif

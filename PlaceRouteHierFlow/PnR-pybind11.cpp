@@ -347,7 +347,16 @@ PYBIND11_MODULE(PnR, m) {
   py::class_<design_info>( m, "design_info")
     .def( py::init<>())
     .def_readwrite("Hspace", &design_info::Hspace)
-    .def_readwrite("Vspace", &design_info::Vspace);
+    .def_readwrite("Vspace", &design_info::Vspace)
+    .def_readwrite("signal_routing_metal_l", &design_info::signal_routing_metal_l)
+    .def_readwrite("signal_routing_metal_u", &design_info::signal_routing_metal_u)
+    .def_readwrite("power_grid_metal_l", &design_info::power_grid_metal_l)
+    .def_readwrite("power_grid_metal_u", &design_info::power_grid_metal_u)
+    .def_readwrite("power_routing_metal_l", &design_info::power_routing_metal_l)
+    .def_readwrite("power_routing_metal_u", &design_info::power_routing_metal_u)
+    .def_readwrite("h_skip_factor", &design_info::h_skip_factor)
+    .def_readwrite("v_skip_factor", &design_info::v_skip_factor)
+    ;
 
   py::class_<guardring_info>( m, "guardring_info")
     .def( py::init<>())
@@ -429,14 +438,14 @@ PYBIND11_MODULE(PnR, m) {
     .def( "ReadLEF", &PnRdatabase::ReadLEF)
     .def( "ReadLEFFromString", &PnRdatabase::ReadLEFFromString)
     .def( "ReadVerilog", &PnRdatabase::ReadVerilog)
-    .def( "ReadDBJSON", &PnRdatabase::ReadDBJSON)
-    .def( "WriteDBJSON", &PnRdatabase::WriteDBJSON)
     .def( "getDrc_info", &PnRdatabase::getDrc_info)
     .def( "checkoutSingleLEF", &PnRdatabase::checkoutSingleLEF)
     .def( "AddingPowerPins", &PnRdatabase::AddingPowerPins)
     .def( "Extract_RemovePowerPins", &PnRdatabase::Extract_RemovePowerPins)
     .def( "CheckinHierNode", &PnRdatabase::CheckinHierNode)
     .def( "TransformNode", &PnRdatabase::TransformNode)
+    .def( "TransformBbox", &PnRdatabase::TransformBbox)
+    .def( "TransformPoint", &PnRdatabase::TransformPoint)
     .def( "RelOrt2AbsOrt", &PnRdatabase::RelOrt2AbsOrt)
     .def( "ExtractPinsToPowerPins", &PnRdatabase::ExtractPinsToPowerPins)
     .def( "CheckinChildnodetoBlock", &PnRdatabase::CheckinChildnodetoBlock)
@@ -450,15 +459,23 @@ PYBIND11_MODULE(PnR, m) {
     .def( "ReadConstraint_Json", &PnRdatabase::ReadConstraint_Json)
     .def_readwrite("hierTree", &PnRdatabase::hierTree)
     .def_readwrite("topidx", &PnRdatabase::topidx)
-    .def_readwrite("gdsData", &PnRdatabase::gdsData)
+    .def_readwrite("gdsData2", &PnRdatabase::gdsData2)
     .def_readwrite("DRC_info", &PnRdatabase::DRC_info)
   ;
 
   py::class_<Placer_Router_Cap_Ifc>( m, "Placer_Router_Cap_Ifc")
     .def( py::init<string, string, hierNode&, Drc_info&, map<string, lefMacro>&, bool, int>());    
 
+  py::class_<PlacerHyperparameters>( m, "PlacerHyperparameters")
+    .def( py::init<>())
+    .def_readwrite("T_INT", &PlacerHyperparameters::T_INT)
+    .def_readwrite("T_MIN", &PlacerHyperparameters::T_MIN)
+    .def_readwrite("ALPHA", &PlacerHyperparameters::ALPHA)
+    .def_readwrite("COUNT_LIMIT", &PlacerHyperparameters::COUNT_LIMIT)
+    ;
+
   py::class_<PlacerIfc>( m, "PlacerIfc")
-    .def( py::init<hierNode&, int, string, int, Drc_info&>())
+    .def( py::init<hierNode&, int, string, int, Drc_info&, const PlacerHyperparameters&>())
     .def( "getNodeVecSize", &PlacerIfc::getNodeVecSize)
     .def( "getNode", &PlacerIfc::getNode);
 

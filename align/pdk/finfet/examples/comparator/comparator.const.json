@@ -1,0 +1,14 @@
+[
+    {"constraint": "HorizontalDistance", "abs_distance":0},
+    {"constraint": "VerticalDistance",   "abs_distance":0},
+    {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"],   "name": "dp"},
+    {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"],   "name": "ccn"},
+    {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"],   "name": "ccp"},
+    {"constraint": "GroupBlocks", "instances": ["mp11", "mn13"], "name": "inv_n"},
+    {"constraint": "GroupBlocks", "instances": ["mp12", "mn14"], "name": "inv_p"},
+    {"constraint": "Order", "direction" : "top_to_bottom", "instances": ["ccp", "ccn", "dp", "mn0"]},
+    {"constraint": "SymmetricBlocks", "direction" : "V", "pairs": [["mn0"], ["dp"], ["ccn"], ["ccp"], ["mp7", "mp8"], ["mp9", "mp10"]]},
+    {"constraint": "AlignInOrder", "direction" : "horizontal", "line": "bottom", "instances": ["mp7", "mn0", "mp8"]},
+    {"constraint": "AlignInOrder", "direction" : "horizontal", "line": "bottom", "instances": ["mp9", "ccp", "mp10"]},
+    {"constraint": "MultiConnection", "nets" : ["vcom"], "multiplier": 3}
+]
