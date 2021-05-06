@@ -952,13 +952,13 @@ void SeqPair::KeepOrdering(design& caseNL) {
   // places of block_id_with_order in pair
   vector<int> pos_idx, neg_idx;
 
-  std::cout<<"keeporder posPair ";
+  std::cout<<"keeporder posPair a ";
   for(unsigned int i=0;i<posPair.size();i++){
      std::cout<<posPair[i]<<" ";
   }
   std::cout<<std::endl;
 
-  std::cout<<"keeporder negPair ";
+  std::cout<<"keeporder negPair a ";
   for(unsigned int i=0;i<posPair.size();i++){
      std::cout<<negPair[i]<<" ";
   }
@@ -1046,10 +1046,36 @@ void SeqPair::KeepOrdering(design& caseNL) {
   } while (!neg_keep_order);
   //write order back to pospair and negpair
   std::cout<<"ordering debug 6"<<std::endl;
+
+  std::cout<<"keeporder posPair b ";
+  for(unsigned int i=0;i<posPair.size();i++){
+     std::cout<<posPair[i]<<" ";
+  }
+  std::cout<<std::endl;
+
+  std::cout<<"keeporder negPair b ";
+  for(unsigned int i=0;i<posPair.size();i++){
+     std::cout<<negPair[i]<<" ";
+  }
+  std::cout<<std::endl;
+
   for (unsigned int i = 0; i < pos_idx.size(); i++) {
     posPair[pos_idx[i]] = pos_order[i];
     negPair[neg_idx[i]] = neg_order[i];
   }
+
+  std::cout<<"keeporder posPair c ";
+  for(unsigned int i=0;i<posPair.size();i++){
+     std::cout<<posPair[i]<<" ";
+  }
+  std::cout<<std::endl;
+
+  std::cout<<"keeporder negPair c ";
+  for(unsigned int i=0;i<posPair.size();i++){
+     std::cout<<negPair[i]<<" ";
+  }
+  std::cout<<std::endl;
+
   std::cout<<"ordering debug 7"<<std::endl;
 }
 
@@ -1062,6 +1088,20 @@ inline size_t SeqPair::Factorial(const size_t& t)
 void SeqPair::PerturbationNew(design& caseNL) {
   /* initialize random seed: */
   //srand(time(NULL));
+
+  std::cout<<"PerturbationNew posPair a ";
+  for(unsigned int i=0;i<posPair.size();i++){
+     std::cout<<posPair[i]<<" ";
+  }
+  std::cout<<std::endl;
+
+  std::cout<<"PerturbationNew negPair a ";
+  for(unsigned int i=0;i<posPair.size();i++){
+     std::cout<<negPair[i]<<" ";
+  }
+  std::cout<<std::endl;
+
+
   if (_seqPairEnum) {
     posPair = _seqPairEnum->PosPair();
     negPair = _seqPairEnum->NegPair();
@@ -1082,7 +1122,7 @@ void SeqPair::PerturbationNew(design& caseNL) {
     // 9:RotateSymmetryGroup
     if(caseNL.GetSizeofBlocks()<=1) {return;}
     if(caseNL.noBlock4Move>0) {pool.insert(0);}
-    if(caseNL.noAsymBlock4Move>0) { pool.insert(1); pool.insert(2); pool.insert(3);} 
+    if(caseNL.noAsymBlock4Move>0) { pool.insert(1); pool.insert(2); pool.insert(3);}
     if(caseNL.noSymGroup4PartMove>0) {pool.insert(5); pool.insert(8); } 
     if(caseNL.noSymGroup4FullMove>1) {pool.insert(6);}
     int fail = 0;
@@ -1116,6 +1156,20 @@ void SeqPair::PerturbationNew(design& caseNL) {
   //neg += "}";
   //sel += "}";
   //logger->info("seq pair {0} {1} {2}", pos, neg, sel);
+
+  std::cout<<"PerturbationNew posPair b ";
+  for(unsigned int i=0;i<posPair.size();i++){
+     std::cout<<posPair[i]<<" ";
+  }
+  std::cout<<std::endl;
+
+  std::cout<<"PerturbationNew negPair b ";
+  for(unsigned int i=0;i<posPair.size();i++){
+     std::cout<<negPair[i]<<" ";
+  }
+  std::cout<<std::endl;
+
+
   KeepOrdering(caseNL);
 }
 
@@ -1212,6 +1266,19 @@ bool SeqPair::SwapTwoSymmetryGroup(design& caseNL) {
   //cout<<"Swap symmetry group "<<sgA<<" and "<<sgB<<endl;
   vector<int> Alist=caseNL.GetRealBlockPlusAxisListfromSymmGroup(sgA);
   vector<int> Blist=caseNL.GetRealBlockPlusAxisListfromSymmGroup(sgB);
+
+  std::cout<<"Alist ";
+  for(unsigned int index=0;index<Alist.size();++index){
+     std::cout<<Alist[index]<<" ";
+  }
+  std::cout<<std::endl;
+
+  std::cout<<"Blist ";
+  for(unsigned int index=0;index<Blist.size();++index){
+     std::cout<<Blist[index]<<" ";
+  }
+  std::cout<<std::endl;
+
   this->posPair=SwapTwoListinSeq(Alist, Blist, this->posPair);
   this->negPair=SwapTwoListinSeq(Alist, Blist, this->negPair);
   return true;
@@ -1250,8 +1317,11 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
   //     B0, B1, ..., Bm
   if(Apos.size()==Bpos.size()) {
     for(int i=0;i<(int)Apos.size();++i) {
-      newseq.at(Apos.at(i))=seq.at(Bpos.at(i)); // B --> A
-      newseq.at(Bpos.at(i))=seq.at(Apos.at(i)); // A --> B
+      //newseq.at(Apos.at(i))=seq.at(Bpos.at(i)); // B --> A
+      //newseq.at(Bpos.at(i))=seq.at(Apos.at(i)); // A --> B
+      int temp_value = newseq.at(Apos.at(i));
+      newseq.at(Apos.at(i))=newseq.at(Bpos.at(i)); // B --> A
+      newseq.at(Bpos.at(i))=temp_value;//A --> B
     }
   } else if (Apos.size()<Bpos.size()) {
     for(int i=0;i<(int)Apos.size();++i)
@@ -1434,6 +1504,7 @@ bool SeqPair::MoveAsymmetricBlockUnit(design& caseNL, vector<int>& seq, int anod
     newpos=rand() % (int)seq.size();
   } // randomly choose a new position
   //cout<<"Aymnode-"<<anode<<" oldpos-"<<oldpos<<" newpos-"<<newpos<<endl;
+
   if(oldpos<newpos) {
     for(int i=0;i<oldpos;++i) 
       newseq.at(i)=seq.at(i);
