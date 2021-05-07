@@ -145,7 +145,6 @@ Placer_Router_Cap::Placer_Router_Cap_function (vector<int> & ki, vector<pair<str
     assert( obs_map.size() == obs.size());
 
     unit_cap_dim = PnRDB::point (uc.width, uc.height);
-    std::cout<<"uc.width "<<uc.width<<"uc.height "<<uc.height<<std::endl;
 
     PnRDB::point pin_min (INT_MAX, INT_MAX);
     string pin_metal;
@@ -1483,8 +1482,9 @@ Placer_Router_Cap::WriteGDSJSON (const string& fpath, const string& unit_capacit
     string gds_unit_capacitor = fpath+"/"+unit_capacitor+".gds";
     string topGDS_loc = opath+final_gds+".gds";
     string TopCellName = final_gds;
-    double unitScale=0.5;
-    JSONExtractUit (gds_unit_capacitor, unitScale);
+    double unitScale=2;
+    double extractScale=0.5;
+    JSONExtractUit (gds_unit_capacitor, extractScale);
     logger->debug("Cap unitScale {0}",unitScale);
 
     std::ofstream jsonStream;
@@ -1497,8 +1497,8 @@ Placer_Router_Cap::WriteGDSJSON (const string& fpath, const string& unit_capacit
     jsonLib["time"] = JSON_TimeTime();
     // DAK Overwrite to match
     jsonLib["time"] = {2019, 4, 24, 9, 46, 15, 2019, 4, 24, 9, 46, 15};
-    double dbUnitUser=2*0.00025/unitScale;
-    double dbUnitMeter=dbUnitUser/1e6;
+    double dbUnitUser=2*0.000000001/unitScale;
+    double dbUnitMeter=dbUnitUser;
     jsonLib["units"] = {dbUnitUser, dbUnitMeter};
     jsonLib["libname"] = "test";
 
@@ -1552,7 +1552,7 @@ Placer_Router_Cap::WriteGDSJSON (const string& fpath, const string& unit_capacit
 		const auto& mi = drc_info.Metal_info.at(drc_info.Metalmap.at(n.metal[j]));
 		int width = mi.width/2;
 		auto box = fillPathBBox (n.start_connection_pos[j],
-					 n.end_connection_pos[j], width) * unitScale;
+					 n.end_connection_pos[j], width) / unitScale;
 		//		box = box * unitScale;
  		json bound;
 		bound["type"] = "boundary";
@@ -1577,7 +1577,7 @@ Placer_Router_Cap::WriteGDSJSON (const string& fpath, const string& unit_capacit
 		json bound;
 		bound["type"] = "boundary";
 		bound["datatype"] = 0;
-		json z = ToJsonAry (viaBox * unitScale);
+		json z = ToJsonAry (viaBox / unitScale);
 		bound["xy"] = z;
 		bound["layer"] = getLayerViaMask (n.via_metal[j], drc_info);
 		jsonElements.push_back (bound);
@@ -1600,7 +1600,7 @@ Placer_Router_Cap::WriteGDSJSON (const string& fpath, const string& unit_capacit
 	PnRDB::point half_cap_dim = unit_cap_dim / 2;
 	auto pt = Caps[i].pos;
 
-	pt = (pt - half_cap_dim + offset) * unitScale;
+	pt = (pt - half_cap_dim + offset) / unitScale;
 	json xy = json::array();
 	xy.push_back(pt.x);
 	xy.push_back(pt.y);
@@ -1608,7 +1608,7 @@ Placer_Router_Cap::WriteGDSJSON (const string& fpath, const string& unit_capacit
 	jsonElements.push_back (sref);
     }
 
-    addOABoundaries(jsonElements, unitScale * CheckOutBlock.width, unitScale * CheckOutBlock.height);
+    addOABoundaries(jsonElements,  CheckOutBlock.width/unitScale, CheckOutBlock.height/unitScale);
     jsonStr["elements"] = jsonElements;
     jsonStrAry.push_back (jsonStr);
     jsonLib["bgnstr"] = jsonStrAry;
