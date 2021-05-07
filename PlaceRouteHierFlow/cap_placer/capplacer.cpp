@@ -145,6 +145,7 @@ Placer_Router_Cap::Placer_Router_Cap_function (vector<int> & ki, vector<pair<str
     assert( obs_map.size() == obs.size());
 
     unit_cap_dim = PnRDB::point (uc.width, uc.height);
+    std::cout<<"uc.width "<<uc.width<<"uc.height "<<uc.height<<std::endl;
 
     PnRDB::point pin_min (INT_MAX, INT_MAX);
     string pin_metal;
@@ -1482,7 +1483,7 @@ Placer_Router_Cap::WriteGDSJSON (const string& fpath, const string& unit_capacit
     string gds_unit_capacitor = fpath+"/"+unit_capacitor+".gds";
     string topGDS_loc = opath+final_gds+".gds";
     string TopCellName = final_gds;
-    double unitScale=2;
+    double unitScale=0.5;
     JSONExtractUit (gds_unit_capacitor, unitScale);
     logger->debug("Cap unitScale {0}",unitScale);
 
@@ -1626,15 +1627,15 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 
     // write Viewer JSON file for capacitor array
 
-    int unitScale = 5; /* PnRDB units to angstroms */
+    int unitScale = 2; /* PnRDB units to angstroms */
 
     json jsonTop;
 
     json bbox = json::array();
     bbox.push_back( 0);
     bbox.push_back( 0);
-    bbox.push_back( CheckOutBlock.width*unitScale);
-    bbox.push_back( CheckOutBlock.height*unitScale);
+    bbox.push_back( CheckOutBlock.width/unitScale);
+    bbox.push_back( CheckOutBlock.height/unitScale);
 
     jsonTop["bbox"] = bbox;
 
@@ -1653,7 +1654,7 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 		const auto& mi = drc_info.Metal_info.at(drc_info.Metalmap.at(n.metal[j]));
 		int width = mi.width/2;
 		auto box = fillPathBBox (n.start_connection_pos[j],
-					 n.end_connection_pos[j], width) * unitScale;
+					 n.end_connection_pos[j], width) / unitScale;
 		json term;
 		term["netName"] = n.name;
 		term["layer"] = n.name; //drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).name;
@@ -1676,7 +1677,7 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 		term["netName"] = n.name;
 		term["layer"] = drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).name;
 
-		auto viaBox = (PnRDB::bbox (viaRect[0], viaRect[1]) + (n.via_pos[j] + offset)) * unitScale;
+		auto viaBox = (PnRDB::bbox (viaRect[0], viaRect[1]) + (n.via_pos[j] + offset)) / unitScale;
 		term["rect"] = ToJsonAry (viaBox.LL, viaBox.UR);
 
 		terminals.push_back( term);
@@ -1704,7 +1705,7 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 	PnRDB::point half_cap_dim = unit_cap_dim / 2;
 	auto pt = Caps[i].pos;
 
-	pt = (pt - half_cap_dim + offset) * unitScale;
+	pt = (pt - half_cap_dim + offset) / unitScale;
 	
 	int ni = Caps[i].net_index;
 
