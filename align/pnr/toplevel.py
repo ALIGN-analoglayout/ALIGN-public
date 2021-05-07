@@ -4,7 +4,7 @@ import json
 from itertools import chain
 
 from .. import PnR
-from .render_placement import dump_blocks2, gen_placement_verilog
+from .render_placement import gen_placement_verilog
 from .build_pnr_model import *
 from .checker import check_placement
 from ..gui.mockup import run_gui
@@ -251,7 +251,7 @@ def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode, selection=None):
 
     return results_name_map
 
-def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, render_placements, verilog_d, router_mode, gui):
+def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, verilog_d, router_mode, gui):
     TraverseOrder = DB.TraverseHierTree()
 
     for idx in TraverseOrder:
@@ -259,13 +259,19 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
     idx = TraverseOrder[-1]
 
-    pairs = []
+    bboxes = []
+
+    # construct set of abstract_template_names
+    atns = defaultdict(set)
 
     #
     # We need to make some changes if we want to just annotate a subhierarchy, for example if idx were not the toplevel
     # We need to search for the sub-hierarchies of that module and only retain those in our new verilog_d file
     # For visualizing primitives we need to use a different list (abstract and concrete template names)
     #
+    def r2wh( r):
+        return (r[2]-r[0], r[3]-r[1])
+
     for sel in range(DB.hierTree[idx].numPlacement):
         logger.info( f'DB.CheckoutHierNode( {idx}, {sel})')
         hN = DB.CheckoutHierNode( idx, sel)
@@ -273,22 +279,26 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
         if verilog_d is not None:
             placement_verilog_d = gen_placement_verilog( hN, DB, verilog_d)
 
-            if render_placements:
-                dump_blocks2( placement_verilog_d, hN.name, sel, leaves_only=False, show=True)
+            if gui:
+                modules = { x['name']: x for x in placement_verilog_d['modules']}
+                bboxes.append( r2wh(modules[hN.name]['bbox']))
+
+                leaves  = { x['name']: x for x in placement_verilog_d['leaves']}
+                for module in placement_verilog_d['modules']:
+                    for instance in module['instances']:
+                        if 'abstract_template_name' in instance:
+                            atn = instance['abstract_template_name'] 
+                            ctn = instance['concrete_template_name']
+                            atns[atn].add((ctn, r2wh(leaves[ctn]['bbox'])))
 
             check_placement(placement_verilog_d)
 
-            modules = { x['name']: x for x in placement_verilog_d['modules']}
-
-            r = modules[hN.name]['bbox']
-            pairs.append( (r[2]-r[0], r[3]-r[1]))
-
     if gui:
-        run_gui( DB, idx, verilog_d, pairs, opath)
+        run_gui( DB=DB, idx=idx, verilog_d=verilog_d, bboxes=bboxes, atns=atns, opath=opath)
 
     return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode)
 
-def toplevel(args, *, PDN_mode=False, render_placements=False, adr_mode=False, results_dir=None, router_mode='top_down', gui=False):
+def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_mode='top_down', gui=False):
 
     assert len(args) == 9
 
@@ -308,7 +318,7 @@ def toplevel(args, *, PDN_mode=False, render_placements=False, adr_mode=False, r
 
     pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
 
-    results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, render_placements=render_placements, verilog_d=verilog_d, router_mode=router_mode, gui=gui)
+    results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, verilog_d=verilog_d, router_mode=router_mode, gui=gui)
 
     logger.info( f'results_name_map: {results_name_map}')
 

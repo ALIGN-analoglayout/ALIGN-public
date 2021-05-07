@@ -202,7 +202,7 @@ def gen_leaf_collateral( leaves, primitives, primitive_dir):
 
     return leaf_collateral
 
-def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, check=False, extract=False, gds_json=False, render_placements=False, PDN_mode=False, router_mode='top_down', gui=False):
+def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, check=False, extract=False, gds_json=False, PDN_mode=False, router_mode='top_down', gui=False):
 
     logger.info(f"Running Place & Route for {subckt} {router_mode}")
 
@@ -272,7 +272,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
     current_working_dir = os.getcwd()
     os.chdir(working_dir)
-    DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, render_placements=render_placements, results_dir=None, router_mode=router_mode, gui=gui)
+    DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, results_dir=None, router_mode=router_mode, gui=gui)
     os.chdir(current_working_dir)
 
     # Copy generated cap jsons from results_dir to working_dir

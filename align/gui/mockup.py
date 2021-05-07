@@ -18,7 +18,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 
-from ..pnr.render_placement import dump_blocks3, gen_placement_verilog
+from ..pnr.render_placement import dump_blocks, gen_placement_verilog
 
 
 import logging
@@ -27,13 +27,14 @@ logger = logging.getLogger(__name__)
 
 def make_tradeoff_fig(pairs, log=False, scale='Blugrn'):
 
+
+
     df = pd.DataFrame( data=pairs, columns=['width','height'])
     df['area'] = df['width']*df['height']
     df['aspect_ratio'] = df['height'] / df['width']
 
     df['ordering'] = np.arange(len(df))
     df['size'] = len(df) - np.arange(len(df))
-
 
     fig = px.scatter(
         df,
@@ -63,10 +64,7 @@ def make_tradeoff_fig(pairs, log=False, scale='Blugrn'):
         )
     )
 
-    #fig.update_traces( marker=dict(size=10))
-
     if log:
-
         log_min = min( math.log10(min_width), math.log10(min_height)) - 0.01
         log_max = max( math.log10(max_width), math.log10(max_height)) + 0.01
 
@@ -80,9 +78,7 @@ def make_tradeoff_fig(pairs, log=False, scale='Blugrn'):
             scaleanchor='x',
             scaleratio = 1
         )
-
     else:
-
         linear_min = 0
         linear_max = max( max_width, max_height) * 1.1
 
@@ -102,31 +98,54 @@ def make_tradeoff_fig(pairs, log=False, scale='Blugrn'):
 colorscales = ['Blugrn'] + px.colors.named_colorscales() 
 
 class AppWithCallbacksAndState:
-    def __init__(self, DB, idx, verilog_d, histo, opath):
+    def rebuild_histo( self, module_name):
+        pass
+
+    def __init__(self, *, DB, idx, verilog_d, bboxes, atns, opath):
         self.DB = DB
         self.idx = idx
         self.verilog_d = verilog_d
-        self.histo = histo
+        # don't store bboxes
+        self.atns = atns
         self.opath = opath
 
-        external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-        self.app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+        nm = self.DB.hierTree[idx].name
+        self.tagged_bboxes = { nm: [ (f'{nm}_{i}', bbox) for i, bbox in enumerate(bboxes)]}
+        self.tagged_bboxes.update( atns)
+
+
+        self.tagged_histos = {}
+        for k, v in self.tagged_bboxes.items():
+            self.tagged_histos[k] = defaultdict(list)
+            for nm, p in v:
+                self.tagged_histos[k][p].append(nm)
+
+        print( self.tagged_histos)
+
+        # this could probably be done in pandas
+        self.histo = defaultdict(list)
+        for i,p in enumerate(bboxes):
+            self.histo[p].append(i)
+
+        self.pairs = list(self.histo.keys())
 
         self.sel = None
         self.md_str = ''
 
-        self.module_names = [ module['name'] for module in self.verilog_d['modules']]
+        #self.module_names = [ module['name'] for module in self.verilog_d['modules']] + [ k for k,v in self.atns.items()]
+        self.module_names = list(self.tagged_bboxes.keys())
 
-        self.pairs = list(self.histo.keys())
+        print(self.atns)
 
-        self.max_x = max( p[0] for p in self.pairs)
-        self.max_y = max( p[1] for p in self.pairs)
 
         self.subindex = 0
         self.prev_idx = None
 
         self.tradeoff = make_tradeoff_fig(self.pairs, log=True)
         self.placement_graph = self.make_placement_graph()
+
+        external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+        self.app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
         self.app.layout = html.Div(
             id='frame',
@@ -219,7 +238,7 @@ class AppWithCallbacksAndState:
             levels = None
             leaves_only = False
         elif display_type == 'Direct':
-            levels = 0
+            levels = 1
             leaves_only = False
         elif display_type == 'Leaves Only':
             leaves_only = True
@@ -233,7 +252,7 @@ class AppWithCallbacksAndState:
         if sel is not None:
             hN = self.DB.CheckoutHierNode( self.idx, sel)
             placement_verilog_d = gen_placement_verilog( hN, self.DB, self.verilog_d)
-            dump_blocks3( fig, placement_verilog_d, hN.name, sel, leaves_only=leaves_only, levels=levels)
+            dump_blocks( fig, placement_verilog_d, hN.name, sel, leaves_only=leaves_only, levels=levels)
             title_d = dict(text=f'{hN.name}_{sel}')
 
         fig.update_layout(
@@ -243,20 +262,33 @@ class AppWithCallbacksAndState:
             title=title_d
         )
 
+        # This should always be for width and height which might not be what we are plotting in the tradeoff graph
+        max_x = max( p[0] for p in self.pairs)
+        max_y = max( p[1] for p in self.pairs)
+
         fig.update_xaxes(
-            tickvals=[0,self.max_x],
-            range=[0,max(self.max_x,self.max_y)]
+            tickvals=[0,max_x],
+            range=[0,max(max_x,max_y)]
         )
 
         fig.update_yaxes(
-            tickvals=[0,self.max_y],
-            range=[0,max(self.max_x,self.max_y)]
+            tickvals=[0,max_y],
+            range=[0,max(max_x,max_y)]
         )
 
         return fig
 
     def change_colorscale(self, scale, axes_type, module_name):
         # Should get a diffent set of pairs for a different module name
+
+        # if module_name changes
+        ctx = dash.callback_context
+        if ctx.triggered:
+            d = ctx.triggered[0]
+            if d['prop_id'] == 'module-name.value':
+                print( f'module name changed to: {module_name}')
+                if module_name in self.atns:
+                    print( self.atns[module_name])
 
         self.tradeoff = make_tradeoff_fig(self.pairs, log=axes_type == 'loglog', scale=scale)
         return (self.tradeoff,)
@@ -321,10 +353,5 @@ Subindex: {self.subindex}/{len(lst)}
         return self.placement_graph, self.md_str, None
 
 
-def run_gui( DB, idx, verilog_d, bboxes, opath):
-    # this could probably be done in pandas
-    histo = defaultdict(list)
-    for i,p in enumerate(bboxes):
-        histo[p].append(i)
-    
-    AppWithCallbacksAndState( DB, idx, verilog_d, histo, opath).app.run_server(debug=False)
+def run_gui( *, DB, idx, verilog_d, bboxes, opath, atns):
+    AppWithCallbacksAndState( DB=DB, idx=idx, verilog_d=verilog_d, bboxes=bboxes, atns=atns, opath=opath).app.run_server(debug=False)
