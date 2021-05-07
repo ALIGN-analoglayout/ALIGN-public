@@ -99,19 +99,19 @@ class AppWithCallbacksAndState:
     def rebuild_histo( self, module_name):
         pass
 
-    def __init__(self, *, DB, idx, verilog_d, bboxes, atns, opath):
-        self.DB = DB
-        self.idx = idx
+    def __init__(self, *, hack, module_name, verilog_d, bboxes, atns, opath):
+        self.hack = hack
+        self.module_name = module_name
         self.verilog_d = verilog_d
         # don't store bboxes
         self.atns = atns
         self.opath = opath
 
-        nm = self.DB.hierTree[idx].name
+        nm = self.module_name
         self.tagged_bboxes = { nm: [ (f'{nm}_{i}', bbox) for i, bbox in enumerate(bboxes)]}
         self.tagged_bboxes.update( atns)
 
-        self.module_name = nm
+
 
         self.tagged_histos = {}
         for k, v in self.tagged_bboxes.items():
@@ -128,12 +128,7 @@ class AppWithCallbacksAndState:
 
         self.pairs = list(self.histo.keys())
 
-        self.hack = []
-        for sel in range(len(bboxes)):
-            hN = self.DB.CheckoutHierNode( self.idx, sel)
-            placement_verilog_d = gen_placement_verilog( hN, self.DB, self.verilog_d)
-            lst = list(gen_boxes_and_hovertext( placement_verilog_d, hN.name, sel))
-            self.hack.append( lst)
+
 
         self.sel = None
         self.md_str = ''
@@ -177,7 +172,7 @@ class AppWithCallbacksAndState:
                             id='module-name', 
                             options=[{"value": x, "label": x} 
                                      for x in self.module_names],
-                            value=self.DB.hierTree[self.idx].name,
+                            value=self.module_name,
                             style={ 'width': '350px'}
                         ),
                         dcc.Graph(
@@ -355,5 +350,5 @@ Subindex: {self.subindex}/{len(lst)}
         return self.placement_graph, self.md_str, None
 
 
-def run_gui( *, DB, idx, verilog_d, bboxes, opath, atns):
-    AppWithCallbacksAndState( DB=DB, idx=idx, verilog_d=verilog_d, bboxes=bboxes, atns=atns, opath=opath).app.run_server(debug=False)
+def run_gui( *, hack, module_name, verilog_d, bboxes, opath, atns):
+    AppWithCallbacksAndState( hack=hack, module_name=module_name, verilog_d=verilog_d, bboxes=bboxes, atns=atns, opath=opath).app.run_server(debug=False)
