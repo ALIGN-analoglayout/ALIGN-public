@@ -18,7 +18,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 
-from ..pnr.render_placement import dump_blocks, gen_placement_verilog
+from ..pnr.render_placement import gen_boxes_and_hovertext, dump_blocks_aux, dump_blocks, gen_placement_verilog
 
 
 import logging
@@ -26,8 +26,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 def make_tradeoff_fig(pairs, log=False, scale='Blugrn'):
-
-
 
     df = pd.DataFrame( data=pairs, columns=['width','height'])
     df['area'] = df['width']*df['height']
@@ -113,6 +111,7 @@ class AppWithCallbacksAndState:
         self.tagged_bboxes = { nm: [ (f'{nm}_{i}', bbox) for i, bbox in enumerate(bboxes)]}
         self.tagged_bboxes.update( atns)
 
+        self.module_name = nm
 
         self.tagged_histos = {}
         for k, v in self.tagged_bboxes.items():
@@ -128,6 +127,13 @@ class AppWithCallbacksAndState:
             self.histo[p].append(i)
 
         self.pairs = list(self.histo.keys())
+
+        self.hack = []
+        for sel in range(len(bboxes)):
+            hN = self.DB.CheckoutHierNode( self.idx, sel)
+            placement_verilog_d = gen_placement_verilog( hN, self.DB, self.verilog_d)
+            lst = list(gen_boxes_and_hovertext( placement_verilog_d, hN.name, sel))
+            self.hack.append( lst)
 
         self.sel = None
         self.md_str = ''
@@ -250,10 +256,8 @@ class AppWithCallbacksAndState:
         title_d = {}
 
         if sel is not None:
-            hN = self.DB.CheckoutHierNode( self.idx, sel)
-            placement_verilog_d = gen_placement_verilog( hN, self.DB, self.verilog_d)
-            dump_blocks( fig, placement_verilog_d, hN.name, sel, leaves_only=leaves_only, levels=levels)
-            title_d = dict(text=f'{hN.name}_{sel}')
+            dump_blocks_aux( fig, self.hack[sel], leaves_only, levels)
+            title_d = dict(text=f'{self.module_name}_{sel}')
 
         fig.update_layout(
             autosize=False,
@@ -296,8 +300,6 @@ class AppWithCallbacksAndState:
     def route_current_placement(self, n_clicks):
         if self.sel is not None:
             print( f'Start the router using sel {self.sel}')
-            from ..pnr.toplevel import route
-            route( DB=self.DB, idx=self.idx, opath=self.opath, adr_mode=False, PDN_mode=False, router_mode='top_down', selection=self.sel)
 
         return (0,)
 

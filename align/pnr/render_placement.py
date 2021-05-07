@@ -171,21 +171,25 @@ def gen_boxes_and_hovertext( placement_verilog_d, top_cell, sel, leaves_only=Fal
             new_tr = tr.postMult(local_tr)
 
             r, isleaf, template_name = get_rect(instance)
-            if not leaves_only or isleaf:
-                yield gen_trace_xy(r, template_name, new_prefix_path, new_tr)
+            yield gen_trace_xy(r, template_name, new_prefix_path, new_tr) + (isleaf, lvl)
 
-            if 'template_name' in instance and (levels is None or lvl+1 < levels):
+            if 'template_name' in instance:
                 assert instance['template_name'] in modules
                 new_module = modules[instance['template_name']]
                 yield from aux(new_module, new_prefix_path, new_tr, lvl+1)
 
     if top_cell in leaves:
-        yield gen_trace_xy(leaves[top_cell]['bbox'], top_cell, (), transformation.Transformation())        
+        yield gen_trace_xy(leaves[top_cell]['bbox'], top_cell, (), transformation.Transformation()) + (True, 0)
     else:
         yield from aux( modules[top_cell], (), transformation.Transformation(), 0)
 
-def dump_blocks_aux( fig, boxes_and_hovertext):
-    for r, hovertext in boxes_and_hovertext:
+def dump_blocks_aux( fig, boxes_and_hovertext, leaves_only, levels):
+    for r, hovertext, isleaf, lvl in boxes_and_hovertext:
+        if leaves_only and not isleaf:
+            continue
+        if levels is not None and lvl >= levels:
+            continue
+
         [x0, y0, x1, y1] = r
         x = [x0, x1, x1, x0, x0]
         y = [y0, y0, y1, y1, y0]
@@ -196,5 +200,5 @@ def dump_blocks_aux( fig, boxes_and_hovertext):
 def dump_blocks( fig, placement_verilog_d, top_cell, sel, leaves_only=False, levels=None):
     logger.info(f'Drawing {top_cell}_{sel}...')
 
-    dump_blocks_aux( fig, gen_boxes_and_hovertext( placement_verilog_d, top_cell, sel, leaves_only=leaves_only, levels=levels))
+    dump_blocks_aux( fig, gen_boxes_and_hovertext( placement_verilog_d, top_cell, sel), leaves_only=leaves_only, levels=levels)
 
