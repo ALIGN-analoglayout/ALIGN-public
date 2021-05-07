@@ -273,6 +273,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
         return (r[2]-r[0], r[3]-r[1])
 
     hack = []
+    hack2 = []
 
     for sel in range(DB.hierTree[idx].numPlacement):
         logger.info( f'DB.CheckoutHierNode( {idx}, {sel})')
@@ -293,12 +294,19 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                             ctn = instance['concrete_template_name']
                             atns[atn].add((ctn, r2wh(leaves[ctn]['bbox'])))
 
-                hack.append( list(gen_boxes_and_hovertext( placement_verilog_d, hN.name, sel)))
+                hack.append( list(gen_boxes_and_hovertext( placement_verilog_d, hN.name)))
+
+                for k, v in atns.items():
+                    for (ctn, p) in v:
+                        pass
+                        #hack2[ctn] = (p, list(gen_boxes_and_hovertext( placement_verilog_d, ctn
+                        
+                
 
             check_placement(placement_verilog_d)
 
     if gui:
-        run_gui( hack=hack, module_name=DB.hierTree[idx].name, verilog_d=verilog_d, bboxes=bboxes, atns=atns, opath=opath)
+        run_gui( hack=hack, module_name=DB.hierTree[idx].name, bboxes=bboxes, atns=atns)
 
     return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode)
 

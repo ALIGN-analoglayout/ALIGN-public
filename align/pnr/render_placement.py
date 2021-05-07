@@ -128,7 +128,7 @@ def gen_placement_verilog(hN, DB, verilog_d):
 
     return d
 
-def gen_boxes_and_hovertext( placement_verilog_d, top_cell, sel, leaves_only=False, levels=None):
+def gen_boxes_and_hovertext( placement_verilog_d, top_cell):
 
     leaves = { x['name']: x for x in placement_verilog_d['leaves']}
     modules = { x['name']: x for x in placement_verilog_d['modules']}
@@ -183,7 +183,7 @@ def gen_boxes_and_hovertext( placement_verilog_d, top_cell, sel, leaves_only=Fal
     else:
         yield from aux( modules[top_cell], (), transformation.Transformation(), 0)
 
-def dump_blocks_aux( fig, boxes_and_hovertext, leaves_only, levels):
+def dump_blocks( fig, boxes_and_hovertext, leaves_only, levels):
     for r, hovertext, isleaf, lvl in boxes_and_hovertext:
         if leaves_only and not isleaf:
             continue
@@ -196,9 +196,4 @@ def dump_blocks_aux( fig, boxes_and_hovertext, leaves_only, levels):
 
         fig.add_trace(go.Scatter(x=x, y=y, mode='lines',
                       name=hovertext, fill="toself", showlegend=False))
-
-def dump_blocks( fig, placement_verilog_d, top_cell, sel, leaves_only=False, levels=None):
-    logger.info(f'Drawing {top_cell}_{sel}...')
-
-    dump_blocks_aux( fig, gen_boxes_and_hovertext( placement_verilog_d, top_cell, sel), leaves_only=leaves_only, levels=levels)
 

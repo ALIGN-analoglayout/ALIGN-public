@@ -18,7 +18,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 
-from ..pnr.render_placement import gen_boxes_and_hovertext, dump_blocks_aux, dump_blocks, gen_placement_verilog
+from ..pnr.render_placement import dump_blocks
 
 
 import logging
@@ -96,53 +96,33 @@ def make_tradeoff_fig(pairs, log=False, scale='Blugrn'):
 colorscales = ['Blugrn'] + px.colors.named_colorscales() 
 
 class AppWithCallbacksAndState:
-    def rebuild_histo( self, module_name):
-        pass
-
-    def __init__(self, *, hack, module_name, verilog_d, bboxes, atns, opath):
+    def __init__(self, *, hack, module_name, bboxes, atns):
         self.hack = hack
         self.module_name = module_name
-        self.verilog_d = verilog_d
         # don't store bboxes
-        self.atns = atns
-        self.opath = opath
+        # dont' store atns
 
         nm = self.module_name
-        self.tagged_bboxes = { nm: [ (f'{nm}_{i}', bbox) for i, bbox in enumerate(bboxes)]}
-        self.tagged_bboxes.update( atns)
-
-
-
+        self.tagged_bboxes = { nm: { f'{nm}_{i}' : (bbox, d) for i, (bbox,d) in enumerate(zip(bboxes,hack))}}
+        #self.tagged_bboxes.update( atns)
         self.tagged_histos = {}
         for k, v in self.tagged_bboxes.items():
             self.tagged_histos[k] = defaultdict(list)
-            for nm, p in v:
+            for nm, (p, _) in v.items():
                 self.tagged_histos[k][p].append(nm)
-
-        print( self.tagged_histos)
-
-        # this could probably be done in pandas
-        self.histo = defaultdict(list)
-        for i,p in enumerate(bboxes):
-            self.histo[p].append(i)
-
-        self.pairs = list(self.histo.keys())
-
-
+        self.tagged_pairs = {}
+        for k, v in self.tagged_histos.items():
+            self.tagged_pairs[k] = list(self.tagged_histos[k].keys())
 
         self.sel = None
         self.md_str = ''
 
-        #self.module_names = [ module['name'] for module in self.verilog_d['modules']] + [ k for k,v in self.atns.items()]
         self.module_names = list(self.tagged_bboxes.keys())
-
-        print(self.atns)
-
 
         self.subindex = 0
         self.prev_idx = None
 
-        self.tradeoff = make_tradeoff_fig(self.pairs, log=True)
+        self.tradeoff = make_tradeoff_fig(self.tagged_pairs[self.module_name], log=True)
         self.placement_graph = self.make_placement_graph()
 
         external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -251,8 +231,9 @@ class AppWithCallbacksAndState:
         title_d = {}
 
         if sel is not None:
-            dump_blocks_aux( fig, self.hack[sel], leaves_only, levels)
-            title_d = dict(text=f'{self.module_name}_{sel}')
+            _, d = self.tagged_bboxes[self.module_name][sel]
+            dump_blocks( fig, d, leaves_only, levels)
+            title_d = dict(text=sel)
 
         fig.update_layout(
             autosize=False,
@@ -262,8 +243,8 @@ class AppWithCallbacksAndState:
         )
 
         # This should always be for width and height which might not be what we are plotting in the tradeoff graph
-        max_x = max( p[0] for p in self.pairs)
-        max_y = max( p[1] for p in self.pairs)
+        max_x = max( p[0] for p in self.tagged_pairs[self.module_name])
+        max_y = max( p[1] for p in self.tagged_pairs[self.module_name])
 
         fig.update_xaxes(
             tickvals=[0,max_x],
@@ -286,10 +267,8 @@ class AppWithCallbacksAndState:
             d = ctx.triggered[0]
             if d['prop_id'] == 'module-name.value':
                 print( f'module name changed to: {module_name}')
-                if module_name in self.atns:
-                    print( self.atns[module_name])
 
-        self.tradeoff = make_tradeoff_fig(self.pairs, log=axes_type == 'loglog', scale=scale)
+        self.tradeoff = make_tradeoff_fig(self.tagged_pairs[self.module_name], log=axes_type == 'loglog', scale=scale)
         return (self.tradeoff,)
 
     def route_current_placement(self, n_clicks):
@@ -313,24 +292,18 @@ class AppWithCallbacksAndState:
                 pass
 
         if clickData is not None:
-            points = clickData['points']
-            assert 1 == len(points)
-            idx = points[0]['pointNumber']
-            curve_idx = points[0]['curveNumber']
+            [idx, curve_idx] = [clickData['points'][0][x] for x in ['pointNumber', 'curveNumber']]
 
         if hoverData is not None:
-            points = hoverData['points']
-            assert 1 == len(points)
-            idx = points[0]['pointNumber']
-            curve_idx = points[0]['curveNumber']
+            [idx, curve_idx] = [hoverData['points'][0][x] for x in ['pointNumber', 'curveNumber']]
 
         if display_type_change:
             self.placement_graph = self.make_placement_graph(self.sel,display_type=display_type)
         elif (clickData is not None or hoverData is not None) and \
              curve_idx == 0 and \
-             0 <= idx < len(self.pairs):
+             0 <= idx < len(self.tagged_pairs[self.module_name]):
 
-            lst = self.histo[self.pairs[idx]]
+            lst = self.tagged_histos[self.module_name][self.tagged_pairs[self.module_name][idx]]
 
             if self.prev_idx != idx:
                 self.subindex = 0
@@ -341,7 +314,7 @@ class AppWithCallbacksAndState:
 
             self.md_str = f"""```text
 Selection: {self.sel}
-Coord: {self.pairs[idx]}
+Coord: {self.tagged_pairs[self.module_name][idx]}
 Subindex: {self.subindex}/{len(lst)}
 ```
 """
@@ -350,5 +323,5 @@ Subindex: {self.subindex}/{len(lst)}
         return self.placement_graph, self.md_str, None
 
 
-def run_gui( *, hack, module_name, verilog_d, bboxes, opath, atns):
-    AppWithCallbacksAndState( hack=hack, module_name=module_name, verilog_d=verilog_d, bboxes=bboxes, atns=atns, opath=opath).app.run_server(debug=False)
+def run_gui( *, hack, module_name, bboxes, atns):
+    AppWithCallbacksAndState( hack=hack, module_name=module_name, bboxes=bboxes, atns=atns).app.run_server(debug=False)

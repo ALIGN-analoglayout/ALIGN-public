@@ -30,7 +30,7 @@ def test_gen_boxes_and_hovertext():
         ]
     }
     
-    lst = list(gen_boxes_and_hovertext( placement_verilog_d, 'top', 0))
+    lst = list(gen_boxes_and_hovertext( placement_verilog_d, 'top'))
 
     assert lst[0][0] == [0,0,10,10]
     assert lst[1][0] == [0,20,10,30]
