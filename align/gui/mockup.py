@@ -96,15 +96,9 @@ def make_tradeoff_fig(pairs, log=False, scale='Blugrn'):
 colorscales = ['Blugrn'] + px.colors.named_colorscales() 
 
 class AppWithCallbacksAndState:
-    def __init__(self, *, hack, hack2, module_name, bboxes):
-        # don't store hack
-        # don't store hack2
+    def __init__(self, *, tagged_bboxes, module_name):
+        self.tagged_bboxes = tagged_bboxes
         self.module_name = module_name
-        # don't store bboxes
-
-        nm = self.module_name
-        self.tagged_bboxes = { nm: { f'{nm}_{i}' : (bbox, d) for i, (bbox,d) in enumerate(zip(bboxes,hack))}}
-        self.tagged_bboxes.update( hack2)
         self.tagged_histos = {}
         for k, v in self.tagged_bboxes.items():
             self.tagged_histos[k] = defaultdict(list)
@@ -267,7 +261,6 @@ class AppWithCallbacksAndState:
             d = ctx.triggered[0]
             if d['prop_id'] == 'module-name.value':
                 self.module_name = module_name
-                print( f'module name changed to: {module_name}')
 
         self.tradeoff = make_tradeoff_fig(self.tagged_pairs[self.module_name], log=axes_type == 'loglog', scale=scale)
         return (self.tradeoff,)
@@ -324,5 +317,8 @@ Subindex: {self.subindex}/{len(lst)}
         return self.placement_graph, self.md_str, None
 
 
-def run_gui( *, hack, hack2, module_name, bboxes):
-    AppWithCallbacksAndState( hack=hack, hack2=hack2, module_name=module_name, bboxes=bboxes).app.run_server(debug=False)
+def run_gui( *, tagged_bboxes, module_name):
+    awcas = AppWithCallbacksAndState( tagged_bboxes=tagged_bboxes, module_name=module_name)
+    awcas.app.run_server(debug=False)
+    
+    logger.info( f'final module_name: {awcas.module_name} We have access to any state from the GUI object here.')

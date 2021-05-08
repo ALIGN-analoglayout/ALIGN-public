@@ -302,7 +302,10 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
                 for atn, v in atns.items():
                     for (ctn, p) in v:
-                        hack2[atn][ctn] = (p, list(gen_boxes_and_hovertext( placement_verilog_d, ctn)))
+                        if ctn in hack2[atn]:
+                            assert hack2[atn][ctn][0] == p
+                        else:
+                            hack2[atn][ctn] = (p, list(gen_boxes_and_hovertext( placement_verilog_d, ctn)))
 
             check_placement(placement_verilog_d)
 
@@ -311,7 +314,11 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
             if len(v) > 1:
                 logger.info( f'Multiple concrete names for {atn}: {list(v.keys())}')
 
-        run_gui( hack=hack, hack2=hack2, module_name=DB.hierTree[idx].name, bboxes=bboxes)
+        nm = DB.hierTree[idx].name
+        tagged_bboxes = { nm: { f'{nm}_{i}' : (bbox, d) for i, (bbox,d) in enumerate(zip(bboxes,hack))}}
+        tagged_bboxes.update( hack2)
+
+        run_gui( tagged_bboxes=tagged_bboxes, module_name=nm)
 
     return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode)
 
