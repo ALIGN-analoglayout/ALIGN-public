@@ -279,6 +279,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
         # create new verilog for each placement
         if verilog_d is not None:
             placement_verilog_d = gen_placement_verilog( hN, DB, verilog_d)
+            check_placement(placement_verilog_d)
 
             #print( placement_verilog_d.json(indent=2))
 
@@ -305,9 +306,8 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                         if ctn in hack2[atn]:
                             assert hack2[atn][ctn][0] == p
                         else:
-                            hack2[atn][ctn] = (p, list(gen_boxes_and_hovertext( placement_verilog_d, ctn)))
-
-            check_placement(placement_verilog_d)
+                            #hack2[atn][ctn] = (p, list(gen_boxes_and_hovertext( placement_verilog_d, ctn)))
+                            hack2[atn][ctn] = (p, [ ((0, 0)+p, f'{ctn}<br>{0} {0} {p[0]} {p[1]}', True, 0)])
 
     if gui:
         for atn,v in hack2.items():
