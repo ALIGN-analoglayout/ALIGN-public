@@ -261,8 +261,6 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
     bboxes = []
 
-    # construct set of abstract_template_names
-    atns = defaultdict(set)
 
     #
     # We need to make some changes if we want to just annotate a subhierarchy, for example if idx were not the toplevel
@@ -273,7 +271,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
         return (r[2]-r[0], r[3]-r[1])
 
     hack = []
-    hack2 = []
+    hack2 = defaultdict(dict)
 
     for sel in range(DB.hierTree[idx].numPlacement):
         logger.info( f'DB.CheckoutHierNode( {idx}, {sel})')
@@ -282,11 +280,17 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
         if verilog_d is not None:
             placement_verilog_d = gen_placement_verilog( hN, DB, verilog_d)
 
+            #print( placement_verilog_d.json(indent=2))
+
             if gui:
                 modules = { x['name']: x for x in placement_verilog_d['modules']}
                 bboxes.append( r2wh(modules[hN.name]['bbox']))
 
                 leaves  = { x['name']: x for x in placement_verilog_d['leaves']}
+
+                # construct set of abstract_template_names
+                atns = defaultdict(set)
+
                 for module in placement_verilog_d['modules']:
                     for instance in module['instances']:
                         if 'abstract_template_name' in instance:
@@ -296,17 +300,18 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
                 hack.append( list(gen_boxes_and_hovertext( placement_verilog_d, hN.name)))
 
-                for k, v in atns.items():
+                for atn, v in atns.items():
                     for (ctn, p) in v:
-                        pass
-                        #hack2[ctn] = (p, list(gen_boxes_and_hovertext( placement_verilog_d, ctn
-                        
-                
+                        hack2[atn][ctn] = (p, list(gen_boxes_and_hovertext( placement_verilog_d, ctn)))
 
             check_placement(placement_verilog_d)
 
     if gui:
-        run_gui( hack=hack, module_name=DB.hierTree[idx].name, bboxes=bboxes, atns=atns)
+        for atn,v in hack2.items():
+            if len(v) > 1:
+                logger.info( f'Multiple concrete names for {atn}: {list(v.keys())}')
+
+        run_gui( hack=hack, hack2=hack2, module_name=DB.hierTree[idx].name, bboxes=bboxes)
 
     return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode)
 

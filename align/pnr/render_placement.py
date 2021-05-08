@@ -180,8 +180,10 @@ def gen_boxes_and_hovertext( placement_verilog_d, top_cell):
 
     if top_cell in leaves:
         yield gen_trace_xy(leaves[top_cell]['bbox'], top_cell, (), transformation.Transformation()) + (True, 0)
-    else:
+    elif top_cell in modules:
         yield from aux( modules[top_cell], (), transformation.Transformation(), 0)
+    else:
+        logger.warning( f'{top_cell} not in either leaves or modules.')
 
 def dump_blocks( fig, boxes_and_hovertext, leaves_only, levels):
     for r, hovertext, isleaf, lvl in boxes_and_hovertext:
