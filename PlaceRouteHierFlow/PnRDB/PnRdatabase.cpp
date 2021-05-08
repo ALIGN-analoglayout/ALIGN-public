@@ -661,10 +661,29 @@ void PnRdatabase::TransformInterviasOriginToPlaced(std::vector<PnRDB::Via>& inte
     }
 }
 
-void PnRdatabase::CheckinChildnodetoBlock(PnRDB::hierNode& parent, int blockID, const PnRDB::hierNode& child) {
+std::vector<int> PnRdatabase::UsedInstancesIdx(int nodeID) {
+  std::vector<int> ret;
+  for (unsigned int i = 0; i < hierTree[nodeID].PnRAS.size(); i++) {
+    bool found = false;
+    for (auto p : hierTree[nodeID].parent) {
+      for (auto b : hierTree[p].Blocks) {
+        if (b.instance[b.selectedInstance].master == hierTree[nodeID].name && b.selectedInstance == i) {
+          //if the instance is used in any parent node
+          ret.push_back(i);
+          found = true;
+          break;
+        }
+      }
+      if (found) break;
+    }
+  }
+  return ret;
+}
+
+void PnRdatabase::CheckinChildnodetoBlock(PnRDB::hierNode& parent, int blockID, const PnRDB::hierNode& child, PnRDB::Omark ort) {
   // update child into parent.blocks[blockID]
   // update (child.intermetal,intervia,blockpins) into blocks[blockid]
-  PnRDB::Omark ort = child.abs_orient;
+  //PnRDB::Omark ort = child.abs_orient;
   int width = child.UR.x - child.LL.x;
   int height = child.UR.y - child.LL.y;
 

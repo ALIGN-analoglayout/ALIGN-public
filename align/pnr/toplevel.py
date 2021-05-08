@@ -140,48 +140,53 @@ def route_bottom_up( DB, drcInfo,
     new_currentnode_idx_d = {}
 
     for i in TraverseOrder:
-        current_node = DB.CheckoutHierNode(i, sel) # Make a copy
-        DB.hierTree[idx].n_copy += 1
+        new_currentnode_idx_d[i] = {}
+        UsedInstances = DB.UsedInstancesIdx(i) if not DB.hierTree[i].isTop else list(range(len(DB.hierTree[i].PnRAS)))
+        for j in UsedInstances:
+            current_node = DB.CheckoutHierNode(i, j)  # Make a copy
+            DB.hierTree[i].n_copy += 1
 
-        logger.info( f'Order: {i} {current_node.name}')
+            logger.info( f'Order: {i} {current_node.name}')
 
-        current_node_name = current_node.name
+            current_node_name = current_node.name
 
-        logger.info( f'Existing parents: {current_node.parent}')
-        current_node.parent = []
+            logger.info( f'Existing parents: {current_node.parent}')
+            #current_node.parent = []
 
-        logger.info( f'Existing LL,UR,abs_orient: {current_node.LL.x},{current_node.LL.y} {current_node.UR.x},{current_node.UR.y} {current_node.abs_orient}')
+            logger.info( f'Existing LL,UR,abs_orient: {current_node.LL.x},{current_node.LL.y} {current_node.UR.x},{current_node.UR.y} {current_node.abs_orient}')
 
-        current_node.LL = bounding_box.LL
-        current_node.UR = bounding_box.UR
-        current_node.abs_orient = current_node_ort
+            #current_node.LL = current_node.LL
+            current_node.UR.x = current_node.width
+            current_node.UR.y = current_node.height
+            current_node.abs_orient = current_node_ort
 
-        # doesn't work if I don't do this
-        DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Forward)
+            # doesn't work if I don't do this
+            DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Forward)
 
-        # Remap using new bottom up hNs
-        for bit,blk in enumerate(current_node.Blocks):
-            child_idx = blk.child
-            if child_idx >= 0:
-                # SMB This needs to be here.
-                DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_currentnode_idx_d[child_idx]])
-                blk.child = new_currentnode_idx_d[child_idx]
+            # Remap using new bottom up hNs
+            for bit,blk in enumerate(current_node.Blocks):
+                child_idx = blk.child
+                inst_idx = blk.selectedInstance
+                if child_idx >= 0:
+                    # SMB This needs to be here.
+                    DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_currentnode_idx_d[child_idx][inst_idx]], blk.instance[inst_idx].orient)
+                    blk.child = new_currentnode_idx_d[child_idx][inst_idx]
 
-        result_name = route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, PDN_mode=PDN_mode)
+            result_name = route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, PDN_mode=PDN_mode)
 
-        if not current_node.isTop:
-            DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Backward)
+            if not current_node.isTop:
+                DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Backward)
 
-        results_name_map[result_name] = (current_node.name,)
+            results_name_map[result_name] = (current_node.name,)
 
-        DB.AppendToHierTree(current_node)
+            DB.AppendToHierTree(current_node)
 
-        new_currentnode_idx_d[i] = len(DB.hierTree) - 1
+            new_currentnode_idx_d[i][j] = len(DB.hierTree) - 1
 
-        for blk in current_node.Blocks:
-            if blk.child >= 0:
-                # Potential slug bug
-                DB.hierTree[blk.child].parent = DB.hierTree[blk.child].parent + [ new_currentnode_idx_d[i] ]
+            for blk in current_node.Blocks:
+                if blk.child >= 0:
+                    # Potential slug bug
+                    DB.hierTree[blk.child].parent = DB.hierTree[blk.child].parent + [ new_currentnode_idx_d[i][j] ]
 
         # SMB Added to see if it helped
         #DB.CheckinHierNode( new_currentnode_idx_d[i], current_node)
@@ -220,7 +225,7 @@ def route_top_down( DB, drcInfo,
         child_node_name = DB.hierTree[child_idx].name
         childnode_bbox = PnR.bbox( inst.placedBox.LL, inst.placedBox.UR)
         new_childnode_idx = route_top_down(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, lidx, blk.selectedInstance, opath, adr_mode, PDN_mode=PDN_mode, results_name_map=results_name_map, hierarchical_path=hierarchical_path + (inst.name,))
-        DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_childnode_idx])
+        DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_childnode_idx], DB.hierTree[new_childnode_idx].abs_orient)
         blk.child = new_childnode_idx
 
     result_name = route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, PDN_mode=PDN_mode)
