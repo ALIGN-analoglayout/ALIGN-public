@@ -43,7 +43,7 @@ def test_cmdline(design,num_placements,PDN_mode):
 
     design_dir = ALIGN_HOME / 'examples' / design
     pdk_dir = ALIGN_HOME / 'pdks' / 'FinFET14nm_Mock_PDK'
-    args = [str(design_dir), '-f', str(design_dir / f"{design}.sp"), '-s', design, '-p', str(pdk_dir), '-flat',  str(0), '--check', '-v', 'INFO', '-l', 'INFO', '-n', str(num_placements)]
+    args = [str(design_dir), '-f', str(design_dir / f"{design}.sp"), '-s', design, '-p', str(pdk_dir), '-flat',  str(0), '-v', 'INFO', '-l', 'INFO', '-n', str(num_placements)]
     if PDN_mode:
         args.append( '--PDN_mode')
 

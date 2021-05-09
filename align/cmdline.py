@@ -70,10 +70,6 @@ class CmdlineParser():
                             type=int,
                             default=0,
                             help='Amount of effort to dedicate to alternate layouts')
-        parser.add_argument("-c",
-                            "--check",
-                            action='store_true',
-                            help='Set to true to run LVS / DRC checks (Default False)')
         parser.add_argument("-x",
                             "--extract",
                             action='store_true',

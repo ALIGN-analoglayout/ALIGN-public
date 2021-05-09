@@ -47,10 +47,6 @@ You can visualize this by running:
 ```
 Then visit `localhost:8000?design=telescopic_ota_0` in your browser.
 
-To run the short and open checker, you can use this command line:
-```bash
-./gen_viewer_json.py -b telescopic_ota -d ../build/tmp/telescopic_ota/pnr_output/Results -o ../Viewer/INPUT --draw_grid -l INFO  --json_dir ../build/tmp/telescopic_ota/pnr_output/inputs/ --check
-```
 This works with multiple levels of hierarchy if the intermediate JSON files are generated in the correct order.
 The script:
 ```bash
