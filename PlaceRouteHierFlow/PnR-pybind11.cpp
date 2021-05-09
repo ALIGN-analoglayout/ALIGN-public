@@ -460,6 +460,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("hierTree", &PnRdatabase::hierTree)
     .def_readwrite("topidx", &PnRdatabase::topidx)
     .def_readwrite("gdsData2", &PnRdatabase::gdsData2)
+    .def_readwrite("lefData", &PnRdatabase::lefData)
     .def_readwrite("DRC_info", &PnRdatabase::DRC_info)
   ;
 

@@ -273,6 +273,22 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
     hack = []
     hack2 = defaultdict(dict)
 
+    # Hack to get all the leaf cells sizes; still doesn't get the CC capacitors
+    for atn, gds_lst in DB.gdsData2.items():
+        ctns = [str(pathlib.Path(fn).stem) for fn in gds_lst]
+        for ctn in ctns:
+            if ctn in DB.lefData:
+                lef = DB.lefData[ctn][0]
+                p = lef.width, lef.height
+                if ctn in hack2[atn]:
+                    assert hack2[atn][ctn][0] == p
+                else:
+                    #hack2[atn][ctn] = (p, list(gen_boxes_and_hovertext( placement_verilog_d, ctn)))
+                    hack2[atn][ctn] = (p, [ ((0, 0)+p, f'{ctn}<br>{0} {0} {p[0]} {p[1]}', True, 0)])
+
+            else:
+                logger.error( f'LEF for concrete name {ctn} (of {atn}) missing.')
+
     for sel in range(DB.hierTree[idx].numPlacement):
         logger.info( f'DB.CheckoutHierNode( {idx}, {sel})')
         hN = DB.CheckoutHierNode( idx, sel)
