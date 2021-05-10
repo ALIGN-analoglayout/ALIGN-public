@@ -38,8 +38,11 @@ def build_steps( flow_start, flow_stop):
 
 
 def gen_more_primitives( primitives, topology_dir, subckt):
-    """primitives dictiionary updated in place"""
+    """primitives dictionary updated in place"""
 
+    #
+    # This code should be improved at moved to 2_primitives
+    #
     map_d = defaultdict(list)
 
     # As a hack, add more primitives if it matches this pattern
@@ -103,6 +106,11 @@ def gen_more_primitives( primitives, topology_dir, subckt):
 
     primitives.update( more_primitives)
 
+    #
+    # This code should move to 1_topology, we also need two different the primitives.json files;
+    # One generated in 1_topology and consumed by 2_primitives that has abstract_template_names
+    # One generated in 2_primitives and consumed by 3_pnr that has both abstract_template_names and concrete_template_name
+    #
     concrete2abstract = { vv:k for k,v in map_d.items() for vv in v}
 
     for k,v in primitives.items():
