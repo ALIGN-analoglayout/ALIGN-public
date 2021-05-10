@@ -4,6 +4,7 @@ import os
 import json
 import re
 import copy
+import math
 from collections import defaultdict
 
 from .compiler import generate_hierarchy
@@ -72,6 +73,18 @@ def gen_more_primitives( primitives, topology_dir, subckt):
                 pairs.add( (min(xs), y))
 
             pairs = pairs.difference( { (X,Y)})
+
+            #
+            # Hack to limit aspect ratios when there are a lot of choices
+            #
+            if len(pairs) > 12:
+                new_pairs = []
+                #log10_aspect_ratios = [ -1.0, -0.3, -0.1, 0, 0.1, 0.3, 1.0]
+                log10_aspect_ratios = [ -0.3, 0, 0.3]
+                for l in log10_aspect_ratios:
+                    best_pair = min( (abs( math.log10(newy) - math.log10(newx) - l), (newx, newy)) for newx,newy in pairs)[1]
+                    new_pairs.append( best_pair)
+                pairs = new_pairs
 
             logger.info( f'Inject new primitive sizes: {pairs} for {nfin} {n} {X} {Y}')
 
