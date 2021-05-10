@@ -305,7 +305,7 @@ struct block {
   vector<Via> interVias;
   vector<pin> dummy_power_pin; //power pins below to this block, but needs updated hierachy
   vector<GuardRing> GuardRings;
-}; // structure of block
+};  // structure of block
 
 struct terminal {
   string name="";
@@ -412,7 +412,7 @@ struct hierNode {
   double placement_box[2] = {-1, -1};
   vector<Router_report> router_report;
   vector<Multi_connection> Multi_connections;
-
+  int HPWL = -1;
 }; // structure of vertex in heirarchical tree
 
 

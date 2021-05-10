@@ -1302,6 +1302,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign, SeqPair& curr_sp) {
 void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo) {
   node.width = UR.x;
   node.height = UR.y;
+  node.HPWL = HPWL;
   for (unsigned int i = 0; i < mydesign.Blocks.size(); ++i) {
     node.Blocks.at(i).selectedInstance = curr_sp.GetBlockSelected(i);
     placerDB::Omark ort;
