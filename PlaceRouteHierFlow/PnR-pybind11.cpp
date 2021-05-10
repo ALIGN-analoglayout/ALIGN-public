@@ -249,6 +249,7 @@ PYBIND11_MODULE(PnR, m) {
       .def_readwrite("bias_Hgraph", &hierNode::bias_Hgraph)
       .def_readwrite("bias_Vgraph", &hierNode::bias_Vgraph)
       .def_readwrite("router_report", &hierNode::router_report)
+      .def_readwrite("HPWL", &hierNode::HPWL)
       .def_readwrite("GuardRings", &hierNode::GuardRings);
   py::class_<Guardring_Const>( m, "Guardring_Const")
     .def( py::init<>())
