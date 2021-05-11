@@ -482,6 +482,10 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
               }else{
                SetSrcDest(temp_pin, Gnd_grid, temp_source, temp_dest);
               }
+           if (LL.x >= UR.x || LL.y >= UR.y) {
+             logger->error("Missing pin {0} of net {1} in layout", PowerNets[i].pins[j].pinName, PowerNets[i].netName);
+             continue;
+           }
             Grid grid(this->drc_info, this->LL, this->UR, lowest_metal, highest_metal, this->grid_scale);
             grid.Full_Connected_Vertex();
             std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > pinplist = FindsetPlist(Set_x, LL, UR);
