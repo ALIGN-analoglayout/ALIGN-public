@@ -331,7 +331,8 @@ struct PowerGrid{
 struct layoutAS {
   int width=0;
   int height=0;
-  string gdsFile="";
+  int HPWL = -1;
+  string gdsFile = "";
   vector<blockComplex> Blocks;
   vector<net> Nets;
   vector<terminal> Terminals;
@@ -412,7 +413,7 @@ struct hierNode {
   double placement_box[2] = {-1, -1};
   vector<Router_report> router_report;
   vector<Multi_connection> Multi_connections;
-
+  int HPWL = -1;
 }; // structure of vertex in heirarchical tree
 
 
