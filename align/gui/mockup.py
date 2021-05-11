@@ -25,20 +25,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def gen_dataframe( pairs):
-    df = pd.DataFrame( data=pairs, columns=['width','height'])
-    df['area'] = df['width']*df['height']
-    df['aspect_ratio'] = df['height'] / df['width']
-
-    df['ordering'] = np.arange(len(df))
-    df['size'] = len(df) - np.arange(len(df))
-
-    return df
-
-
-def make_tradeoff_fig(pairs, log=False, scale='Blugrn'):
-    df = gen_dataframe(pairs)
-
+def make_tradeoff_fig(df, log=False, scale='Blugrn'):
     fig = px.scatter(
         df,
         x="width",
@@ -101,9 +88,25 @@ def make_tradeoff_fig(pairs, log=False, scale='Blugrn'):
 colorscales = ['Blugrn'] + px.colors.named_colorscales() 
 
 class AppWithCallbacksAndState:
-    def __init__(self, *, tagged_bboxes, module_name):
-        self.tagged_bboxes = tagged_bboxes
-        self.module_name = module_name
+    def gen_dataframe( self):
+        data = [ { 'abstract_template_name': atn, 'concrete_template_name': ctn, **m} for atn, v in self.tagged_bboxes.items() for ctn, (m, _) in v.items()]
+
+        df = pd.DataFrame( data=data)
+        df['area'] = df['width']*df['height']
+        df['aspect_ratio'] = df['height'] / df['width']
+
+        # We want these to be limited by abstract template name
+        df['ordering'] = np.arange(len(df))
+        df['size'] = len(df) - np.arange(len(df))
+        print(df)
+
+        g = df.groupby(['abstract_template_name', 'width','height'])
+        for (atn, w, h), df_group in g:
+            #print( atn, w, h)
+            for row_index, row in df_group.iterrows():
+                pass
+                #print( row)
+            #print()
 
         self.tagged_histos = {}
         for k, v in self.tagged_bboxes.items():
@@ -115,13 +118,27 @@ class AppWithCallbacksAndState:
         for k, v in self.tagged_histos.items():
             self.tagged_pairs[k] = list(self.tagged_histos[k].keys())
 
+        df = pd.DataFrame( data=self.tagged_pairs[self.module_name], columns=['width','height'])
+        df['area'] = df['width']*df['height']
+        df['aspect_ratio'] = df['height'] / df['width']
+
+        df['ordering'] = np.arange(len(df))
+        df['size'] = len(df) - np.arange(len(df))
+
+        self.df = df
+
+    def __init__(self, *, tagged_bboxes, module_name):
+        self.tagged_bboxes = tagged_bboxes
+        self.module_name = module_name
+
         self.sel = None
         self.md_str = ''
 
         self.subindex = 0
         self.prev_idx = None
 
-        self.tradeoff = make_tradeoff_fig(self.tagged_pairs[self.module_name], log=True)
+        self.gen_dataframe()
+        self.tradeoff = make_tradeoff_fig(self.df, log=True)
         self.placement_graph = self.make_placement_graph()
 
         external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -257,8 +274,6 @@ class AppWithCallbacksAndState:
         return fig
 
     def change_colorscale(self, scale, axes_type, module_name):
-        # Should get a diffent set of pairs for a different module name
-
         # if module_name changes
         ctx = dash.callback_context
         if ctx.triggered:
@@ -266,11 +281,12 @@ class AppWithCallbacksAndState:
             if d['prop_id'] == 'module-name.value':
                 self.module_name = module_name
 
-        self.tradeoff = make_tradeoff_fig(self.tagged_pairs[self.module_name], log=axes_type == 'loglog', scale=scale)
+        self.gen_dataframe()
+        self.tradeoff = make_tradeoff_fig(self.df, log=axes_type == 'loglog', scale=scale)
         return (self.tradeoff,)
 
     def route_current_placement(self, n_clicks):
-        if self.sel is not None:
+        if self.sel is not None and n_clicks > 0:
             print( f'Start the router using sel {self.sel}')
 
         return (0,)
