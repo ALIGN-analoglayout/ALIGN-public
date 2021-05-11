@@ -305,7 +305,7 @@ struct block {
   vector<Via> interVias;
   vector<pin> dummy_power_pin; //power pins below to this block, but needs updated hierachy
   vector<GuardRing> GuardRings;
-}; // structure of block
+};  // structure of block
 
 struct terminal {
   string name="";

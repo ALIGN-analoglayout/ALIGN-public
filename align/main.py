@@ -4,6 +4,7 @@ import os
 import json
 import re
 import copy
+import math
 from collections import defaultdict
 
 from .compiler import generate_hierarchy
@@ -37,8 +38,11 @@ def build_steps( flow_start, flow_stop):
 
 
 def gen_more_primitives( primitives, topology_dir, subckt):
-    """primitives dictiionary updated in place"""
+    """primitives dictionary updated in place"""
 
+    #
+    # This code should be improved at moved to 2_primitives
+    #
     map_d = defaultdict(list)
 
     # As a hack, add more primitives if it matches this pattern
@@ -73,6 +77,18 @@ def gen_more_primitives( primitives, topology_dir, subckt):
 
             pairs = pairs.difference( { (X,Y)})
 
+            #
+            # Hack to limit aspect ratios when there are a lot of choices
+            #
+            if len(pairs) > 12:
+                new_pairs = []
+                #log10_aspect_ratios = [ -1.0, -0.3, -0.1, 0, 0.1, 0.3, 1.0]
+                log10_aspect_ratios = [ -0.3, 0, 0.3]
+                for l in log10_aspect_ratios:
+                    best_pair = min( (abs( math.log10(newy) - math.log10(newx) - l), (newx, newy)) for newx,newy in pairs)[1]
+                    new_pairs.append( best_pair)
+                pairs = new_pairs
+
             logger.info( f'Inject new primitive sizes: {pairs} for {nfin} {n} {X} {Y}')
 
             for newx,newy in pairs:
@@ -90,6 +106,11 @@ def gen_more_primitives( primitives, topology_dir, subckt):
 
     primitives.update( more_primitives)
 
+    #
+    # This code should move to 1_topology, we also need two different the primitives.json files;
+    # One generated in 1_topology and consumed by 2_primitives that has abstract_template_names
+    # One generated in 2_primitives and consumed by 3_pnr that has both abstract_template_names and concrete_template_name
+    #
     concrete2abstract = { vv:k for k,v in map_d.items() for vv in v}
 
     for k,v in primitives.items():

@@ -270,6 +270,11 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
     def r2wh( r):
         return (r[2]-r[0], r[3]-r[1])
 
+    def gen_leaf_bbox_and_hovertext( ctn, p):
+        #return (p, list(gen_boxes_and_hovertext( placement_verilog_d, ctn)))
+        d = { 'width': p[0], 'height': p[1]}
+        return (d, [ ((0, 0)+p, f'{ctn}<br>{0} {0} {p[0]} {p[1]}', True, 0)])
+
     hack = []
     hack2 = defaultdict(dict)
 
@@ -283,8 +288,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                 if ctn in hack2[atn]:
                     assert hack2[atn][ctn][0] == p
                 else:
-                    #hack2[atn][ctn] = (p, list(gen_boxes_and_hovertext( placement_verilog_d, ctn)))
-                    hack2[atn][ctn] = (p, [ ((0, 0)+p, f'{ctn}<br>{0} {0} {p[0]} {p[1]}', True, 0)])
+                    hack2[atn][ctn] = gen_leaf_bbox_and_hovertext( ctn, p)
 
             else:
                 logger.error( f'LEF for concrete name {ctn} (of {atn}) missing.')
@@ -295,13 +299,21 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
         # create new verilog for each placement
         if verilog_d is not None:
             placement_verilog_d = gen_placement_verilog( hN, DB, verilog_d)
+
+
+
             check_placement(placement_verilog_d)
 
             #print( placement_verilog_d.json(indent=2))
 
             if gui:
                 modules = { x['name']: x for x in placement_verilog_d['modules']}
-                bboxes.append( r2wh(modules[hN.name]['bbox']))
+
+                logger.info( f"hpwl: {hN.HPWL}")
+                p = r2wh(modules[hN.name]['bbox'])
+                d = { 'width': p[0], 'height': p[1], 'hpwl': hN.HPWL}
+
+                bboxes.append( d)
 
                 leaves  = { x['name']: x for x in placement_verilog_d['leaves']}
 
@@ -320,10 +332,9 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                 for atn, v in atns.items():
                     for (ctn, p) in v:
                         if ctn in hack2[atn]:
-                            assert hack2[atn][ctn][0] == p
+                            assert hack2[atn][ctn][0] == { 'width': p[0], 'height': p[1]}
                         else:
-                            #hack2[atn][ctn] = (p, list(gen_boxes_and_hovertext( placement_verilog_d, ctn)))
-                            hack2[atn][ctn] = (p, [ ((0, 0)+p, f'{ctn}<br>{0} {0} {p[0]} {p[1]}', True, 0)])
+                            hack2[atn][ctn] = gen_leaf_bbox_and_hovertext( ctn, p)
 
     if gui:
         for atn,v in hack2.items():
