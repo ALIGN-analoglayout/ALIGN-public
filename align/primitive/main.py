@@ -63,6 +63,11 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
                             'D': [('M1', 'D')],
                             'G': [('M1', 'G')]})
 
+    elif primitive in ["Switch_GB_NMOS", "Switch_GB_PMOS"]:
+        cell_pin = gen( 0, {'S': [('M1', 'S')],
+                            'D': [('M1', 'D')],
+                            'G': [('M1', 'G'), ('M1', 'B')]})
+
     elif primitive in ["DCL_NMOS_B", "DCL_PMOS_B"]:
         cell_pin = gen( 0, {'S': [('M1', 'S')],
                             'D': [('M1', 'G'), ('M1', 'D')],
@@ -277,13 +282,14 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
     else:
         raise NotImplementedError(f"Unrecognized primitive {primitive}")
 
-    with open(outputdir / (block_name + '.debug.json'), "wt") as fp:
-        uc.computeBbox()
-        json.dump( { 'bbox' : uc.bbox.toList(),
-                     'globalRoutes' : [],
-                     'globalRouteGrid' : [],
-                     'terminals' : uc.terminals}
-                    , fp, indent=2)
+    uc.computeBbox()
+    if False:
+        with open(outputdir / (block_name + '.debug.json'), "wt") as fp:
+            json.dump( { 'bbox' : uc.bbox.toList(),
+                         'globalRoutes' : [],
+                         'globalRouteGrid' : [],
+                         'terminals' : uc.terminals}
+                        , fp, indent=2)
 
     with open(outputdir / (block_name + '.json'), "wt") as fp:
         uc.writeJSON( fp)
@@ -293,6 +299,7 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
         blockM = 0
     positive_coord.json_pos(outputdir / (block_name + '.json'))
     gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, cell_pin, bodyswitch, blockM, uc.pdk)
+
     with open( outputdir / (block_name + ".json"), "rt") as fp0, \
          open( outputdir / (block_name + ".gds.json"), 'wt') as fp1:
         gen_gds_json.translate(block_name, '', pinswitch, fp0, fp1, datetime.datetime( 2019, 1, 1, 0, 0, 0), uc.pdk)

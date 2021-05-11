@@ -1,8 +1,6 @@
+from align.pnr.render_placement import gen_boxes_and_hovertext
 
-from align.pnr.render_placement import dump_blocks
-import plotly.graph_objects as go
-
-def test_dump_blocks():
+def test_gen_boxes_and_hovertext():
     placement_verilog_d = {
         "modules": [
             { "name": "top",
@@ -32,6 +30,7 @@ def test_dump_blocks():
         ]
     }
     
-    fig = go.Figure()
+    lst = list(gen_boxes_and_hovertext( placement_verilog_d, 'top'))
 
-    dump_blocks( fig, placement_verilog_d, 'top', 0)
+    assert lst[0][0] == [0,0,10,10]
+    assert lst[1][0] == [0,20,10,30]

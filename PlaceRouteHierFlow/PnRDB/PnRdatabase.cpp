@@ -107,6 +107,7 @@ PnRDB::hierNode PnRdatabase::CheckoutHierNode(int nodeID, int sel) {
     hierTree.at(nodeID).gdsFile = hierTree.at(nodeID).PnRAS[sel].gdsFile;
     hierTree.at(nodeID).width = hierTree.at(nodeID).PnRAS[sel].width;
     hierTree.at(nodeID).height = hierTree.at(nodeID).PnRAS[sel].height;
+    hierTree.at(nodeID).HPWL = hierTree.at(nodeID).PnRAS[sel].HPWL;
     hierTree.at(nodeID).Blocks = hierTree.at(nodeID).PnRAS[sel].Blocks;
     hierTree.at(nodeID).Terminals = hierTree.at(nodeID).PnRAS[sel].Terminals;
     hierTree.at(nodeID).Nets = hierTree.at(nodeID).PnRAS[sel].Nets;
@@ -726,7 +727,8 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
   tmpL.gdsFile=updatedNode.gdsFile;
   tmpL.width=updatedNode.width;
   tmpL.height=updatedNode.height;
-  tmpL.Blocks=updatedNode.Blocks;
+  tmpL.HPWL = updatedNode.HPWL;
+  tmpL.Blocks = updatedNode.Blocks;
   tmpL.Terminals=updatedNode.Terminals;
   tmpL.Nets=updatedNode.Nets;
   tmpL.LL = updatedNode.LL;

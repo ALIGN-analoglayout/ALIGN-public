@@ -4,9 +4,12 @@ try:
     from .helper import *
 except:
     from helper import *
+import logging
+logger = logging.getLogger(__name__)
 
 
 def test_zero():
+    logger.info(f'running {get_test_id()}')
     cv = CanvasPDK()
     ox = oy = 0
     track_pattern={'G':[6], 'S':[4], 'D':[2]}

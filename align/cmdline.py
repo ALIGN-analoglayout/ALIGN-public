@@ -70,10 +70,6 @@ class CmdlineParser():
                             type=int,
                             default=0,
                             help='Amount of effort to dedicate to alternate layouts')
-        parser.add_argument("-c",
-                            "--check",
-                            action='store_true',
-                            help='Set to true to run LVS / DRC checks (Default False)')
         parser.add_argument("-x",
                             "--extract",
                             action='store_true',
@@ -100,10 +96,6 @@ class CmdlineParser():
                             "--uniform_height",
                             action='store_true',
                             help='Set to true to use cells of uniform height (Default False)')
-        parser.add_argument("-rp",
-                            "--render_placements",
-                            action='store_true',
-                            help='Set to true to render placements using plotly (Default False)')
         parser.add_argument("-pdn",
                             "--PDN_mode",
                             action='store_true',
