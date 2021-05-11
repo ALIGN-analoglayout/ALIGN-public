@@ -23,7 +23,8 @@ SuperLu_DIR?=/opt/superlu
 # DEBUGFLAGS gets used in `make debug`
 # You may override them before calling make as previously shown
 NOPYBIND11?=0
-FLAGS?=-std=c++17 -m64 -fPIC --coverage -DNDEBUG -DPRNTlevel=0 -DAdd_
+#FLAGS?=-std=c++17 -m64 -fPIC --coverage -DNDEBUG -DPRNTlevel=0 -DAdd_
+FLAGS?=-g -w -Wall -std=c++11 -g -O3 -lm -ldl -m64 -pthread -std=c++17 -m64 -fPIC --coverage -DPRNTlevel=0 -DAdd_ -O3 -g -Wall
 DEBUGFLAGS?=-O3 -g -Wall # Consider using -Og instead of -O3
 OPTIMFLAGS?=-O3 -s -w
 
