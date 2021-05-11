@@ -99,6 +99,17 @@ $ pip install -v --no-build-isolation -e . --no-deps --install-option='--build-t
 ```
 Use this mode if you are mostly developing in Python and don't need the C++ debugging symbols.
 
+To debug runtime issues, run:
+```console
+python -m cProfile -o stats $ALIGN_HOME/bin/schematic2layout.py $ALIGN_HOME/examples/sc_dc_dc_converter
+```
+Then in a python shell:
+```python
+import pstats
+from pstats import SortKey
+p = pstats.Stats('stats')
+p.sort_stats(SortKey.TIME).print_stats(20)
+```
 
 ### Step 4: Run ALIGN
 You may run the align tool using a simple command line tool named `schematic2layout.py`

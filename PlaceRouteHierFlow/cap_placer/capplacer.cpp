@@ -1278,9 +1278,7 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(
 		PnRDB::point lr (mb.get_left_right(), mb.get_left_right());
 		PnRDB::point nsh = half_cap_dim + lr.scale (min_dis.x, min_dis.y) -shifting;
 		PnRDB::point nsh_final = nsh.scale(sign, sign);
-	        //problem here
-
-		PnRDB::point npt = Caps[mb.get_best_cap_index()].pos - nsh_final;
+		PnRDB::point npt = Caps.at(mb.get_best_cap_index()).pos - nsh_final;
 		coordP.y = npt.y;
 		n.end_connection_pos.push_back (coordP);
 		n.Is_pin.push_back(0);

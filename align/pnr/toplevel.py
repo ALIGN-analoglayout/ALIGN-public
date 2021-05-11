@@ -4,7 +4,7 @@ import json
 from itertools import chain
 
 from .. import PnR
-from .render_placement import dump_blocks2, gen_placement_verilog
+from .render_placement import gen_placement_verilog, gen_boxes_and_hovertext
 from .build_pnr_model import *
 from .checker import check_placement
 from ..gui.mockup import run_gui
@@ -251,7 +251,7 @@ def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode, selection=None):
 
     return results_name_map
 
-def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, render_placements, verilog_d, router_mode, gui):
+def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, verilog_d, router_mode, gui):
     TraverseOrder = DB.TraverseHierTree()
 
     for idx in TraverseOrder:
@@ -259,13 +259,40 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
     idx = TraverseOrder[-1]
 
-    pairs = []
+    bboxes = []
+
 
     #
     # We need to make some changes if we want to just annotate a subhierarchy, for example if idx were not the toplevel
     # We need to search for the sub-hierarchies of that module and only retain those in our new verilog_d file
     # For visualizing primitives we need to use a different list (abstract and concrete template names)
     #
+    def r2wh( r):
+        return (r[2]-r[0], r[3]-r[1])
+
+    def gen_leaf_bbox_and_hovertext( ctn, p):
+        #return (p, list(gen_boxes_and_hovertext( placement_verilog_d, ctn)))
+        d = { 'width': p[0], 'height': p[1]}
+        return (d, [ ((0, 0)+p, f'{ctn}<br>{0} {0} {p[0]} {p[1]}', True, 0)])
+
+    hack = []
+    hack2 = defaultdict(dict)
+
+    # Hack to get all the leaf cells sizes; still doesn't get the CC capacitors
+    for atn, gds_lst in DB.gdsData2.items():
+        ctns = [str(pathlib.Path(fn).stem) for fn in gds_lst]
+        for ctn in ctns:
+            if ctn in DB.lefData:
+                lef = DB.lefData[ctn][0]
+                p = lef.width, lef.height
+                if ctn in hack2[atn]:
+                    assert hack2[atn][ctn][0] == p
+                else:
+                    hack2[atn][ctn] = gen_leaf_bbox_and_hovertext( ctn, p)
+
+            else:
+                logger.error( f'LEF for concrete name {ctn} (of {atn}) missing.')
+
     for sel in range(DB.hierTree[idx].numPlacement):
         logger.info( f'DB.CheckoutHierNode( {idx}, {sel})')
         hN = DB.CheckoutHierNode( idx, sel)
@@ -273,22 +300,56 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
         if verilog_d is not None:
             placement_verilog_d = gen_placement_verilog( hN, DB, verilog_d)
 
-            if render_placements:
-                dump_blocks2( placement_verilog_d, hN.name, sel, leaves_only=False, show=True)
+
 
             check_placement(placement_verilog_d)
 
-            modules = { x['name']: x for x in placement_verilog_d['modules']}
+            #print( placement_verilog_d.json(indent=2))
 
-            r = modules[hN.name]['bbox']
-            pairs.append( (r[2]-r[0], r[3]-r[1]))
+            if gui:
+                modules = { x['name']: x for x in placement_verilog_d['modules']}
+
+                logger.info( f"hpwl: {hN.HPWL}")
+                p = r2wh(modules[hN.name]['bbox'])
+                d = { 'width': p[0], 'height': p[1], 'hpwl': hN.HPWL}
+
+                bboxes.append( d)
+
+                leaves  = { x['name']: x for x in placement_verilog_d['leaves']}
+
+                # construct set of abstract_template_names
+                atns = defaultdict(set)
+
+                for module in placement_verilog_d['modules']:
+                    for instance in module['instances']:
+                        if 'abstract_template_name' in instance:
+                            atn = instance['abstract_template_name'] 
+                            ctn = instance['concrete_template_name']
+                            atns[atn].add((ctn, r2wh(leaves[ctn]['bbox'])))
+
+                hack.append( list(gen_boxes_and_hovertext( placement_verilog_d, hN.name)))
+
+                for atn, v in atns.items():
+                    for (ctn, p) in v:
+                        if ctn in hack2[atn]:
+                            assert hack2[atn][ctn][0] == { 'width': p[0], 'height': p[1]}
+                        else:
+                            hack2[atn][ctn] = gen_leaf_bbox_and_hovertext( ctn, p)
 
     if gui:
-        run_gui( DB, idx, verilog_d, pairs, opath)
+        for atn,v in hack2.items():
+            if len(v) > 1:
+                logger.info( f'Multiple concrete names for {atn}: {list(v.keys())}')
+
+        nm = DB.hierTree[idx].name
+        tagged_bboxes = { nm: { f'{nm}_{i}' : (bbox, d) for i, (bbox,d) in enumerate(zip(bboxes,hack))}}
+        tagged_bboxes.update( hack2)
+
+        run_gui( tagged_bboxes=tagged_bboxes, module_name=nm)
 
     return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode)
 
-def toplevel(args, *, PDN_mode=False, render_placements=False, adr_mode=False, results_dir=None, router_mode='top_down', gui=False):
+def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_mode='top_down', gui=False):
 
     assert len(args) == 9
 
@@ -308,7 +369,7 @@ def toplevel(args, *, PDN_mode=False, render_placements=False, adr_mode=False, r
 
     pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
 
-    results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, render_placements=render_placements, verilog_d=verilog_d, router_mode=router_mode, gui=gui)
+    results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, verilog_d=verilog_d, router_mode=router_mode, gui=gui)
 
     logger.info( f'results_name_map: {results_name_map}')
 

@@ -203,6 +203,7 @@ PYBIND11_MODULE(PnR, m) {
     .def( py::init<>())
     .def_readwrite("width", &layoutAS::width)
     .def_readwrite("height", &layoutAS::height)
+    .def_readwrite("HPWL", &layoutAS::HPWL)
     .def_readwrite("gdsFile", &layoutAS::gdsFile)
     .def_readwrite("Blocks", &layoutAS::Blocks)
     .def_readwrite("Nets", &layoutAS::Nets)
@@ -461,6 +462,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("hierTree", &PnRdatabase::hierTree)
     .def_readwrite("topidx", &PnRdatabase::topidx)
     .def_readwrite("gdsData2", &PnRdatabase::gdsData2)
+    .def_readwrite("lefData", &PnRdatabase::lefData)
     .def_readwrite("DRC_info", &PnRdatabase::DRC_info)
   ;
 

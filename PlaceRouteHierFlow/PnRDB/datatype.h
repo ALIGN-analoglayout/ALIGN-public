@@ -331,7 +331,8 @@ struct PowerGrid{
 struct layoutAS {
   int width=0;
   int height=0;
-  string gdsFile="";
+  int HPWL = -1;
+  string gdsFile = "";
   vector<blockComplex> Blocks;
   vector<net> Nets;
   vector<terminal> Terminals;
