@@ -478,16 +478,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
         run_gui( tagged_bboxes=tagged_bboxes, module_name=nm)
 
-    result = route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode)
-
-    if False:
-        hN = DB.CheckoutHierNode( len(DB.hierTree)-1, -1)
-        if verilog_d is not None:
-            placement_verilog_d = gen_placement_verilog( hN, DB, verilog_d, skip_checkout=True)
-            render_placement( placement_verilog_d, hN.name)
-            check_placement(placement_verilog_d)
-
-    return result
+    return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode)
 
 def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_mode='top_down', gui=False):
 

@@ -56,10 +56,10 @@ class DesignRuleCheck():
         #SMB Is it good enough to have the actual errors in the .errors file
         if True:
             if self.errors:
-                logger.error(f'Found errors: DRC {self.num_errors} ')
-            else:
-                for error in self.errors:
-                    logger.warning(pprint.pformat(error))
+                logger.error(f'Found errors: DRC {self.num_errors}')
+        else:
+            for error in self.errors:
+                logger.warning(pprint.pformat(error))
 
         return self.num_errors
 
