@@ -270,10 +270,9 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
     def r2wh( r):
         return (r[2]-r[0], r[3]-r[1])
 
-    def get_leaf_bbox_and_hovertext( ctn, p):
+    def gen_leaf_bbox_and_hovertext( ctn, p):
         #return (p, list(gen_boxes_and_hovertext( placement_verilog_d, ctn)))
         return (p, [ ((0, 0)+p, f'{ctn}<br>{0} {0} {p[0]} {p[1]}', True, 0)])
-
 
     hack = []
     hack2 = defaultdict(dict)
@@ -299,6 +298,9 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
         # create new verilog for each placement
         if verilog_d is not None:
             placement_verilog_d = gen_placement_verilog( hN, DB, verilog_d)
+
+            logger.info( f"hpwl: {hN.HPWL}")
+
             check_placement(placement_verilog_d)
 
             #print( placement_verilog_d.json(indent=2))
