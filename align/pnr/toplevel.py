@@ -272,7 +272,8 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
     def gen_leaf_bbox_and_hovertext( ctn, p):
         #return (p, list(gen_boxes_and_hovertext( placement_verilog_d, ctn)))
-        return (p, [ ((0, 0)+p, f'{ctn}<br>{0} {0} {p[0]} {p[1]}', True, 0)])
+        d = { 'width': p[0], 'height': p[1]}
+        return (d, [ ((0, 0)+p, f'{ctn}<br>{0} {0} {p[0]} {p[1]}', True, 0)])
 
     hack = []
     hack2 = defaultdict(dict)
@@ -299,7 +300,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
         if verilog_d is not None:
             placement_verilog_d = gen_placement_verilog( hN, DB, verilog_d)
 
-            logger.info( f"hpwl: {hN.HPWL}")
+
 
             check_placement(placement_verilog_d)
 
@@ -307,7 +308,12 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
             if gui:
                 modules = { x['name']: x for x in placement_verilog_d['modules']}
-                bboxes.append( r2wh(modules[hN.name]['bbox']))
+
+                logger.info( f"hpwl: {hN.HPWL}")
+                p = r2wh(modules[hN.name]['bbox'])
+                d = { 'width': p[0], 'height': p[1], 'hpwl': hN.HPWL}
+
+                bboxes.append( d)
 
                 leaves  = { x['name']: x for x in placement_verilog_d['leaves']}
 
@@ -326,7 +332,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                 for atn, v in atns.items():
                     for (ctn, p) in v:
                         if ctn in hack2[atn]:
-                            assert hack2[atn][ctn][0] == p
+                            assert hack2[atn][ctn][0] == { 'width': p[0], 'height': p[1]}
                         else:
                             hack2[atn][ctn] = gen_leaf_bbox_and_hovertext( ctn, p)
 

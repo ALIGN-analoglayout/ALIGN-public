@@ -25,14 +25,19 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def make_tradeoff_fig(pairs, log=False, scale='Blugrn'):
-
+def gen_dataframe( pairs):
     df = pd.DataFrame( data=pairs, columns=['width','height'])
     df['area'] = df['width']*df['height']
     df['aspect_ratio'] = df['height'] / df['width']
 
     df['ordering'] = np.arange(len(df))
     df['size'] = len(df) - np.arange(len(df))
+
+    return df
+
+
+def make_tradeoff_fig(pairs, log=False, scale='Blugrn'):
+    df = gen_dataframe(pairs)
 
     fig = px.scatter(
         df,
@@ -99,10 +104,12 @@ class AppWithCallbacksAndState:
     def __init__(self, *, tagged_bboxes, module_name):
         self.tagged_bboxes = tagged_bboxes
         self.module_name = module_name
+
         self.tagged_histos = {}
         for k, v in self.tagged_bboxes.items():
             self.tagged_histos[k] = defaultdict(list)
-            for nm, (p, _) in v.items():
+            for nm, (m, _) in v.items():
+                p = m['width'], m['height']
                 self.tagged_histos[k][p].append(nm)
         self.tagged_pairs = {}
         for k, v in self.tagged_histos.items():
@@ -110,8 +117,6 @@ class AppWithCallbacksAndState:
 
         self.sel = None
         self.md_str = ''
-
-        self.module_names = list(self.tagged_bboxes.keys())
 
         self.subindex = 0
         self.prev_idx = None
@@ -145,7 +150,7 @@ class AppWithCallbacksAndState:
                         dcc.Dropdown(
                             id='module-name', 
                             options=[{"value": x, "label": x} 
-                                     for x in self.module_names],
+                                     for x in self.tagged_bboxes.keys()],
                             value=self.module_name,
                             style={ 'width': '350px'}
                         ),
@@ -236,9 +241,8 @@ class AppWithCallbacksAndState:
             title=title_d
         )
 
-        # This should always be for width and height which might not be what we are plotting in the tradeoff graph
-        max_x = max( p[0] for p in self.tagged_pairs[self.module_name])
-        max_y = max( p[1] for p in self.tagged_pairs[self.module_name])
+        max_x = max( m['width']  for _, (m, _) in self.tagged_bboxes[self.module_name].items())
+        max_y = max( m['height'] for _, (m, _) in self.tagged_bboxes[self.module_name].items())
 
         fig.update_xaxes(
             tickvals=[0,max_x],
@@ -319,6 +323,6 @@ Subindex: {self.subindex}/{len(lst)}
 
 def run_gui( *, tagged_bboxes, module_name):
     awcas = AppWithCallbacksAndState( tagged_bboxes=tagged_bboxes, module_name=module_name)
-    awcas.app.run_server(debug=False)
+    awcas.app.run_server(debug=True,use_reloader=False)
     
     logger.info( f'final module_name: {awcas.module_name} We have access to any state from the GUI object here.')
