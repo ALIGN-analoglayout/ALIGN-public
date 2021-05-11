@@ -270,6 +270,11 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
     def r2wh( r):
         return (r[2]-r[0], r[3]-r[1])
 
+    def get_leaf_bbox_and_hovertext( ctn, p):
+        #return (p, list(gen_boxes_and_hovertext( placement_verilog_d, ctn)))
+        return (p, [ ((0, 0)+p, f'{ctn}<br>{0} {0} {p[0]} {p[1]}', True, 0)])
+
+
     hack = []
     hack2 = defaultdict(dict)
 
@@ -283,8 +288,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                 if ctn in hack2[atn]:
                     assert hack2[atn][ctn][0] == p
                 else:
-                    #hack2[atn][ctn] = (p, list(gen_boxes_and_hovertext( placement_verilog_d, ctn)))
-                    hack2[atn][ctn] = (p, [ ((0, 0)+p, f'{ctn}<br>{0} {0} {p[0]} {p[1]}', True, 0)])
+                    hack2[atn][ctn] = gen_leaf_bbox_and_hovertext( ctn, p)
 
             else:
                 logger.error( f'LEF for concrete name {ctn} (of {atn}) missing.')
@@ -322,8 +326,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                         if ctn in hack2[atn]:
                             assert hack2[atn][ctn][0] == p
                         else:
-                            #hack2[atn][ctn] = (p, list(gen_boxes_and_hovertext( placement_verilog_d, ctn)))
-                            hack2[atn][ctn] = (p, [ ((0, 0)+p, f'{ctn}<br>{0} {0} {p[0]} {p[1]}', True, 0)])
+                            hack2[atn][ctn] = gen_leaf_bbox_and_hovertext( ctn, p)
 
     if gui:
         for atn,v in hack2.items():
