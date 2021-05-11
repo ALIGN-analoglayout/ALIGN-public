@@ -267,6 +267,7 @@ class design
       }
     }
     long TapDeltaArea(map<string, int>* swappedIndices, const bool removeAllTaps = false) const { return _tapRemover ?  _tapRemover->deltaArea(swappedIndices, removeAllTaps) : 0.; }
+    void checkselfsym(vector< pair<int,int> > &tmpsympair, vector< pair<int,placerDB::Smark> > &tmpselfsym, placerDB::Smark tsmark);
 };
 
 #endif

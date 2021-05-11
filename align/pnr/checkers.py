@@ -36,6 +36,11 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     #       (Height may be okay since it defines UnitCellHeight)
     cnv = generator(pdk.Pdk().load(pdkdir / 'layers.json'),28,12,2,3,1,1,1)
 
+    with open(cnv.pdk.layerfile, "rt") as fp:
+        scale_factor = json.load(fp)["ScaleFactor"]
+    # PnRDB coordinates are in units of 2nm. All else is in PDK abstraction.
+    assert scale_factor == 1 or scale_factor % 2 == 0, f'PDK ScaleFactor should be even.'
+
     terminals = []
 
     subinsts = {}
@@ -48,13 +53,14 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
         terminals.append( { "netName": netName, "layer": layer, "rect": r})
 
         def f( gen, value, tag=None):
-            # value is in 2x units
+            # value is in units of 0.5nm
             if value%2 != 0:
                 txt = f"Off grid:{tag} {layer} {netName} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} (in 2x units) is not divisible by two."
                 errors.append( txt)
                 logger.error( txt)
             else:
-                p = gen.clg.inverseBounds( value//2)
+                value = value * scale_factor // 2 
+                p = gen.clg.inverseBounds(value)
                 if p[0] != p[1]:
                     txt = f"Off grid:{tag} {layer} {netName} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} doesn't land on grid, lb and ub are: {p}"
                     errors.append( txt)
@@ -88,8 +94,6 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
             y = m2_pitch*iy
             r = [ 0, y-2, hN.width, y+2]
             terminals.append( { "netName": 'm2_grid', "layer": 'M2', "rect": r})
-
-
 
     fa_map = {}
     for n in itertools.chain( hN.Nets, hN.PowerNets):
@@ -138,8 +142,8 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
         if found:
             with pth.open( "rt") as fp:
                 d = json.load( fp)
-            # Scale to PnRDB coords (seems like 10x um, but PnRDB is 2x um, so divide by 5
-            rational_scaling( d, div=5, errors=errors)
+            # PnRDB coordinates are in units of 0.5nm. Scale primitives to this unit.
+            rational_scaling( d, mul=2, div=scale_factor, errors=errors)
 
             tr3 = gen_transformation( blk)
             for term in d['terminals']:
@@ -207,7 +211,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                 logger.debug( f'\t{tag}')
                 for con in term.termContacts:
                     pass
-#                    addt( n, con)
+                    # addt( n, con)
             else:
                 assert False, c.type
 
@@ -309,8 +313,10 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     d["terminals"] = terminals
 
     if checkOnly:
-        # divide by two be make it be in CellFabric units (nanometer)
-        rational_scaling( d, div=2, errors=errors)
+        
+        # PnRDB coordinates are in units of 0.5nm. Scale back to PDK.
+        rational_scaling(d, mul=scale_factor, div=2, errors=errors)
+
         cnv.bbox = transformation.Rect( *d["bbox"])
         cnv.terminals = d["terminals"]
         for inst, parameters in subinsts.items():
@@ -318,19 +324,18 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
 
         nets_allowed_to_be_open = [] if toplevel else global_power_names
 
-        new_d = cnv.gen_data(run_pex=extract,nets_allowed_to_be_open=nets_allowed_to_be_open,postprocess=toplevel)
+        new_d = cnv.gen_data(run_drc=True, run_pex=extract,nets_allowed_to_be_open=nets_allowed_to_be_open,postprocess=toplevel)
 
         d['bbox'] = cnv.bbox.toList()
         d['terminals'] = new_d['terminals']
-
-        # multiply by ten make it be in JSON file units (angstroms) This is a mess!
-        rational_scaling( d, mul=10, errors=errors)
 
         for e in errors:
             cnv.drc.errors.append( e)
 
         return (cnv, d)
     else:
+        assert False, f'ALWAYS CHECK!'
+        # We should never get here, make -c default
         # multiply by five make it be in JSON file units (angstroms) This is a mess!
         rational_scaling( d, mul=5, errors=errors)
         return d

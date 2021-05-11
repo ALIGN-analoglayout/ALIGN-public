@@ -336,7 +336,7 @@ struct block {
        || !_taVias->_ntapVias.empty() || !_taVias->_ptapVias.empty())
       : true; 
   }
-}; // structure of block
+};  // structure of block
 
 struct terminal {
   string name="";
@@ -445,6 +445,7 @@ struct hierNode {
   vector<Multi_connection> Multi_connections;
   std::shared_ptr<taVias> _taVias;
 
+  int HPWL = -1;
 }; // structure of vertex in heirarchical tree
 
 
