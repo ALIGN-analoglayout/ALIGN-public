@@ -25,7 +25,9 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def make_tradeoff_fig(df, log=False, scale='Blugrn'):
+
+
+def make_tradeoff_fig_wh(df, log=False, scale='Blugrn'):
     fig = px.scatter(
         df,
         x="width",
@@ -34,7 +36,9 @@ def make_tradeoff_fig(df, log=False, scale='Blugrn'):
         color_continuous_scale=scale,
         size="size",
         width=800,
-        height=800
+        height=800,
+        hover_name="concrete_template_name",
+        hover_data=['aspect_ratio','area']
     )
 
     area = df['area'].min()
@@ -84,6 +88,59 @@ def make_tradeoff_fig(df, log=False, scale='Blugrn'):
 
     return fig
 
+def make_tradeoff_fig_aa(df, log=False, scale='Blugrn'):
+    fig = px.scatter(
+        df,
+        x="aspect_ratio",
+        y="area",
+        color="ordering",
+        color_continuous_scale=scale,
+        size="size",
+        width=800,
+        height=800,
+        hover_name="concrete_template_name",
+        hover_data=['width','height']
+    )
+
+    area = df['area'].min()
+
+    min_x, max_x = min(df['aspect_ratio']),max(df['aspect_ratio'])
+    min_y, max_y = min(df['area']),max(df['area'])
+
+    sweep_x = np.linspace( min_x, max_x, 101)
+    sweep_y = area+0*sweep_x
+
+    fig.add_trace(
+        go.Scatter( 
+            x=sweep_x,
+            y=sweep_y,
+            mode='lines',
+            showlegend=False
+        )
+    )
+
+    if log:
+        fig.update_xaxes(
+            type="log"
+        )
+        fig.update_yaxes(
+            type="log"
+        )
+    else:
+        fig.update_xaxes(
+        )
+        fig.update_yaxes(
+        )
+
+    return fig
+
+def make_tradeoff_fig( axes, df, log=False, scale='Blugrn'):
+    if   axes == ('width', 'height'):
+        return make_tradeoff_fig_wh( df, log, scale)
+    elif axes == ('aspect_ratio', 'area'):
+        return make_tradeoff_fig_aa( df, log, scale)
+    else:
+        assert False, axes
 
 colorscales = ['Blugrn'] + px.colors.named_colorscales() 
 
@@ -95,33 +152,19 @@ class AppWithCallbacksAndState:
         df['area'] = df['width']*df['height']
         df['aspect_ratio'] = df['height'] / df['width']
 
-        # We want these to be limited by abstract template name
-        df['ordering'] = np.arange(len(df))
-        df['size'] = len(df) - np.arange(len(df))
-        print(df)
-
-        g = df.groupby(['abstract_template_name', 'width','height'])
-        for (atn, w, h), df_group in g:
-            #print( atn, w, h)
-            for row_index, row in df_group.iterrows():
-                pass
-                #print( row)
-            #print()
+        self.axes = ('width','height')
+        #self.axes = ('aspect_ratio','area')
 
         self.tagged_histos = {}
-        for k, v in self.tagged_bboxes.items():
-            self.tagged_histos[k] = defaultdict(list)
-            for nm, (m, _) in v.items():
-                p = m['width'], m['height']
-                self.tagged_histos[k][p].append(nm)
-        self.tagged_pairs = {}
-        for k, v in self.tagged_histos.items():
-            self.tagged_pairs[k] = list(self.tagged_histos[k].keys())
+        for atn, df_group0 in df.groupby(['abstract_template_name']):
+            self.tagged_histos[atn] = defaultdict(list)
+            for p, df_group1 in df_group0.groupby(list(self.axes)):
+                print(atn,p)
+                for row_index, row in df_group1.iterrows():
+                    print('\t', row['concrete_template_name'])
+                    self.tagged_histos[atn][p].append( row['concrete_template_name'])
 
-        df = pd.DataFrame( data=self.tagged_pairs[self.module_name], columns=['width','height'])
-        df['area'] = df['width']*df['height']
-        df['aspect_ratio'] = df['height'] / df['width']
-
+        df = df[df['abstract_template_name'] == self.module_name]
         df['ordering'] = np.arange(len(df))
         df['size'] = len(df) - np.arange(len(df))
 
@@ -138,7 +181,7 @@ class AppWithCallbacksAndState:
         self.prev_idx = None
 
         self.gen_dataframe()
-        self.tradeoff = make_tradeoff_fig(self.df, log=True)
+        self.tradeoff = make_tradeoff_fig(self.axes, self.df, log=True)
         self.placement_graph = self.make_placement_graph()
 
         external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -172,7 +215,7 @@ class AppWithCallbacksAndState:
                             style={ 'width': '350px'}
                         ),
                         dcc.Graph(
-                            id='width-vs-height',
+                            id='tradeoff-graph',
                             figure=self.tradeoff
                         )
                     ],
@@ -217,15 +260,15 @@ class AppWithCallbacksAndState:
 
         self.app.callback( (Output('Placement', 'figure'),
                             Output('Tree', 'children'),
-                            Output('width-vs-height', 'clickData')),
-                      [Input('width-vs-height', 'clickData'),
-                       Input('width-vs-height', 'hoverData'),
+                            Output('tradeoff-graph', 'clickData')),
+                      [Input('tradeoff-graph', 'clickData'),
+                       Input('tradeoff-graph', 'hoverData'),
                        Input('display-type', 'value')])(self.display_hover_data)
 
         self.app.callback( (Output('route-current', 'n_clicks'),),
                            [Input('route-current', 'n_clicks')])(self.route_current_placement)
 
-        self.app.callback( (Output('width-vs-height', 'figure'),),
+        self.app.callback( (Output('tradeoff-graph', 'figure'),),
                            [Input('colorscale', 'value'),
                             Input('axes-type', 'value'),
                             Input('module-name', 'value')])(self.change_colorscale)
@@ -282,7 +325,7 @@ class AppWithCallbacksAndState:
                 self.module_name = module_name
 
         self.gen_dataframe()
-        self.tradeoff = make_tradeoff_fig(self.df, log=axes_type == 'loglog', scale=scale)
+        self.tradeoff = make_tradeoff_fig(self.axes, self.df, log=axes_type == 'loglog', scale=scale)
         return (self.tradeoff,)
 
     def route_current_placement(self, n_clicks):
@@ -300,24 +343,23 @@ class AppWithCallbacksAndState:
             if d['prop_id'] == 'display-type.value':
                 display_type_change = True
                 pass
-            if d['prop_id'] == 'width-vs-height.clickData':
+            if d['prop_id'] == 'tradeoff-graph.clickData':
                 pass
-            if d['prop_id'] == 'width-vs-height.hoverData':
+            if d['prop_id'] == 'tradeoff-graph.hoverData':
                 pass
 
         if clickData is not None:
-            [idx, curve_idx] = [clickData['points'][0][x] for x in ['pointNumber', 'curveNumber']]
+            [idx, curve_idx, x, y] = [clickData['points'][0][t] for t in ['pointNumber', 'curveNumber', 'x', 'y']]
 
         if hoverData is not None:
-            [idx, curve_idx] = [hoverData['points'][0][x] for x in ['pointNumber', 'curveNumber']]
+            [idx, curve_idx, x, y] = [hoverData['points'][0][t] for t in ['pointNumber', 'curveNumber', 'x', 'y']]
 
         if display_type_change:
             self.placement_graph = self.make_placement_graph(self.sel,display_type=display_type)
         elif (clickData is not None or hoverData is not None) and \
-             curve_idx == 0 and \
-             0 <= idx < len(self.tagged_pairs[self.module_name]):
+             curve_idx == 0:
 
-            lst = self.tagged_histos[self.module_name][self.tagged_pairs[self.module_name][idx]]
+            lst = self.tagged_histos[self.module_name][(x,y)]
 
             if self.prev_idx != idx:
                 self.subindex = 0
@@ -328,7 +370,7 @@ class AppWithCallbacksAndState:
 
             self.md_str = f"""```text
 Selection: {self.sel}
-Coord: {self.tagged_pairs[self.module_name][idx]}
+Coord: {x,y}
 Subindex: {self.subindex}/{len(lst)}
 ```
 """
