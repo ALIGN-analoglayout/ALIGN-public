@@ -145,8 +145,6 @@ def route_bottom_up( DB, drcInfo,
 
         logger.info( f'Order: {i} {current_node.name}')
 
-        current_node_name = current_node.name
-
         logger.info( f'Existing parents: {current_node.parent}')
         current_node.parent = []
 
@@ -194,7 +192,7 @@ def route_no_op( DB, drcInfo,
                     opath, adr_mode, *, PDN_mode, results_name_map, hierarchical_path):
     pass
 
-def route_psuedo_bottom_up( DB, drcInfo,
+def route_pseudo_bottom_up( DB, drcInfo,
                             bounding_box,
                             current_node_ort, idx, lidx, sel,
                             opath, adr_mode, *, PDN_mode, results_name_map, hierarchical_path, reuse_map=None):
@@ -202,10 +200,20 @@ def route_psuedo_bottom_up( DB, drcInfo,
     if reuse_map is None:
         reuse_map = defaultdict(list)
 
+    def b2s( o):
+        return f'{o.LL.x} {o.LL.y} {o.UR.x} {o.UR.y}'
+
+
+
     if (idx, sel) in reuse_map:
         # the first one in the list is the one we should copy
         routed_idx = reuse_map[(idx,sel)][0]
         current_node = PnR.hierNode(DB.hierTree[routed_idx]) # make a copy
+
+        assert current_node.LL.x == 0 and current_node.LL.y == 0
+
+        logger.info( f'SMB {idx,sel} {b2s(current_node)} {b2s(bounding_box)} {current_node.abs_orient} {current_node_ort}')
+
         i_copy = DB.hierTree[idx].n_copy
     else:
         current_node = DB.CheckoutHierNode(idx, sel) # Make a copy
@@ -214,7 +222,6 @@ def route_psuedo_bottom_up( DB, drcInfo,
         logger.debug( f'Start of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy}')
 
         DB.hierTree[idx].n_copy += 1
-        current_node_name = current_node.name
 
         current_node.LL = bounding_box.LL
         current_node.UR = bounding_box.UR
@@ -228,7 +235,7 @@ def route_psuedo_bottom_up( DB, drcInfo,
             childnode_orient = DB.RelOrt2AbsOrt( current_node_ort, inst.orient)
             child_node_name = DB.hierTree[child_idx].name
             childnode_bbox = PnR.bbox( inst.placedBox.LL, inst.placedBox.UR)
-            new_childnode_idx = route_psuedo_bottom_up(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, lidx, blk.selectedInstance, opath, adr_mode, PDN_mode=PDN_mode, results_name_map=results_name_map, hierarchical_path=hierarchical_path + (inst.name,), reuse_map=reuse_map)
+            new_childnode_idx = route_pseudo_bottom_up(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, lidx, blk.selectedInstance, opath, adr_mode, PDN_mode=PDN_mode, results_name_map=results_name_map, hierarchical_path=hierarchical_path + (inst.name,), reuse_map=reuse_map)
             DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_childnode_idx])
             blk.child = new_childnode_idx
 
@@ -238,15 +245,7 @@ def route_psuedo_bottom_up( DB, drcInfo,
         if not current_node.isTop:
             DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Backward)
 
-
-    hierTree_len = len(DB.hierTree)
-    # Make sure the length of hierTree increased by one; this won't happend if you did the commented out line below
-    #DB.hierTree.append( current_node)
-    # It would if you did commented out line below but this requires a bunch of copying
-    #DB.hierTree = DB.hierTree + [current_node]
-    # Instead we added a custom method to do this
     DB.AppendToHierTree(current_node)
-    assert len(DB.hierTree) == 1+hierTree_len
     new_currentnode_idx = len(DB.hierTree) - 1
 
     reuse_map[(idx,sel)].append( new_currentnode_idx)
@@ -274,7 +273,6 @@ def route_top_down( DB, drcInfo,
     logger.debug( f'Start of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy}')
 
     DB.hierTree[idx].n_copy += 1
-    current_node_name = current_node.name
 
     current_node.LL = bounding_box.LL
     current_node.UR = bounding_box.UR
@@ -362,7 +360,7 @@ def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode, selection=None):
     results_name_map = {}
 
     router_engines = { 'top_down': route_top_down,
-                       'psuedo_bottom_up': route_psuedo_bottom_up,
+                       'pseudo_bottom_up': route_pseudo_bottom_up,
                        'bottom_up': route_bottom_up,
                        'no_op': route_no_op
                        }

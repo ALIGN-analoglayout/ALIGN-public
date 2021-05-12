@@ -103,20 +103,22 @@ void PnRdatabase::TraverseDFS(deque<int>& Q, vector<string>& color, int idx) {
 }
 
 PnRDB::hierNode PnRdatabase::CheckoutHierNode(int nodeID, int sel) {
-  if (sel >= 0 && hierTree.at(nodeID).PnRAS.size() > 0) {
-    hierTree.at(nodeID).gdsFile = hierTree.at(nodeID).PnRAS[sel].gdsFile;
-    hierTree.at(nodeID).width = hierTree.at(nodeID).PnRAS[sel].width;
-    hierTree.at(nodeID).height = hierTree.at(nodeID).PnRAS[sel].height;
-    hierTree.at(nodeID).HPWL = hierTree.at(nodeID).PnRAS[sel].HPWL;
-    hierTree.at(nodeID).Blocks = hierTree.at(nodeID).PnRAS[sel].Blocks;
-    hierTree.at(nodeID).Terminals = hierTree.at(nodeID).PnRAS[sel].Terminals;
-    hierTree.at(nodeID).Nets = hierTree.at(nodeID).PnRAS[sel].Nets;
-    hierTree.at(nodeID).LL = hierTree.at(nodeID).PnRAS[sel].LL;
-    hierTree.at(nodeID).UR = hierTree.at(nodeID).PnRAS[sel].UR;
-    hierTree.at(nodeID).PowerNets = hierTree.at(nodeID).PnRAS[sel].PowerNets;
-    hierTree.at(nodeID).GuardRings = hierTree.at(nodeID).PnRAS[sel].GuardRings;
+  auto& hN = hierTree.at(nodeID);
+  if (sel >= 0 && hN.PnRAS.size() > 0) {
+    const auto& p = hN.PnRAS[sel];
+    hN.gdsFile = p.gdsFile;
+    hN.width = p.width;
+    hN.height = p.height;
+    hN.HPWL = p.HPWL;
+    hN.Blocks = p.Blocks;
+    hN.Terminals = p.Terminals;
+    hN.Nets = p.Nets;
+    hN.LL = p.LL;
+    hN.UR = p.UR;
+    hN.PowerNets = p.PowerNets;
+    hN.GuardRings = p.GuardRings;
   }
-  return hierTree.at(nodeID);
+  return hN;
 }
 
 void PnRdatabase::AppendToHierTree(const PnRDB::hierNode& hN) {
