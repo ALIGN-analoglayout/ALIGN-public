@@ -21,17 +21,8 @@ class Rect:
 class Transformation:
     @staticmethod
     def genTr( tag, *, w, h):
-      if   tag == "FN":
-          tr = Transformation( oX=w,        sX=-1       )
-      elif tag == "FS":
-          tr = Transformation(        oY=h,        sY=-1)
-      elif tag == "N":
-          tr = Transformation(                           )
-      elif tag == "S":
-          tr = Transformation( oX=w, oY=h, sX=-1, sY=-1)
-      else:
-          assert tag in ["FN","FS","N","S"]
-      return tr
+      sX,sY = { 'FN': (-1,1), 'FS': (1,-1), 'N': (1,1), 'S': (-1,-1)}[tag]
+      return Transformation( sX=sX, sY=sY, oX=0 if sX==1 else w, oY=0 if sY==1 else h)
 
     def __init__( self, oX=0, oY=0, sX=1, sY=1):
         self.oX = oX

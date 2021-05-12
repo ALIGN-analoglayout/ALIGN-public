@@ -4,6 +4,7 @@ import os
 import json
 import re
 import copy
+import math
 from collections import defaultdict
 
 from .compiler import generate_hierarchy
@@ -37,8 +38,11 @@ def build_steps( flow_start, flow_stop):
 
 
 def gen_more_primitives( primitives, topology_dir, subckt):
-    """primitives dictiionary updated in place"""
+    """primitives dictionary updated in place"""
 
+    #
+    # This code should be improved at moved to 2_primitives
+    #
     map_d = defaultdict(list)
 
     # As a hack, add more primitives if it matches this pattern
@@ -52,22 +56,61 @@ def gen_more_primitives( primitives, topology_dir, subckt):
             logger.info( f'Matched primitive {k}')
             nfin,n,X,Y = tuple(int(x) for x in m.groups()[1:5])
             abstract_name = f'{m.groups()[0]}_nfin{nfin}{m.groups()[5]}'
+
             map_d[abstract_name].append( k)
-            if X != Y:
-                concrete_name = f'{m.groups()[0]}_nfin{nfin}_n{n}_X{Y}_Y{X}{m.groups()[5]}'
+
+            clusters = (nfin+n-1) // n
+
+            pairs = set()
+            for newx in range( 1, clusters+1):
+                newy = (nfin+newx*n-1)//(newx*n)
+                assert newx*newy*n >= nfin
+                pairs.add( (newx,newy))
+
+            by_y = defaultdict(list)
+            for x,y in pairs:
+                by_y[y].append( x)
+
+            pairs = set()
+            for y,xs in by_y.items():
+                pairs.add( (min(xs), y))
+
+            pairs = pairs.difference( { (X,Y)})
+
+            #
+            # Hack to limit aspect ratios when there are a lot of choices
+            #
+            if len(pairs) > 12:
+                new_pairs = []
+                #log10_aspect_ratios = [ -1.0, -0.3, -0.1, 0, 0.1, 0.3, 1.0]
+                log10_aspect_ratios = [ -0.3, 0, 0.3]
+                for l in log10_aspect_ratios:
+                    best_pair = min( (abs( math.log10(newy) - math.log10(newx) - l), (newx, newy)) for newx,newy in pairs)[1]
+                    new_pairs.append( best_pair)
+                pairs = new_pairs
+
+            logger.info( f'Inject new primitive sizes: {pairs} for {nfin} {n} {X} {Y}')
+
+            for newx,newy in pairs:
+                concrete_name = f'{m.groups()[0]}_nfin{nfin}_n{n}_X{newx}_Y{newy}{m.groups()[5]}'
                 map_d[abstract_name].append( concrete_name)             
                 if concrete_name not in primitives and \
                    concrete_name not in more_primitives:
                     more_primitives[concrete_name] = copy.deepcopy(v)
-                    more_primitives[concrete_name]['x_cells'] = Y
-                    more_primitives[concrete_name]['y_cells'] = X
+                    more_primitives[concrete_name]['x_cells'] = newx
+                    more_primitives[concrete_name]['y_cells'] = newy
         else:
-            logger.warning( f'Didn\'t match primitive {k}')
+            if not (k.startswith( "Res") or k.startswith( "Cap")): 
+                logger.warning( f'Didn\'t match primitive {k}')
             map_d[k].append( k)
 
-    #SMB Hack to see if this is causing trouble with bottom up
-    #primitives.update( more_primitives)
+    primitives.update( more_primitives)
 
+    #
+    # This code should move to 1_topology, we also need two different the primitives.json files;
+    # One generated in 1_topology and consumed by 2_primitives that has abstract_template_names
+    # One generated in 2_primitives and consumed by 3_pnr that has both abstract_template_names and concrete_template_name
+    #
     concrete2abstract = { vv:k for k,v in map_d.items() for vv in v}
 
     for k,v in primitives.items():
@@ -90,7 +133,9 @@ def gen_more_primitives( primitives, topology_dir, subckt):
         json.dump( verilog_json_d, fp=fp, indent=2)
 
 
-def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, check=False, extract=False, log_level=None, verbosity=None, generate=False, python_gds_json=True, regression=False, uniform_height=False, render_placements=False, PDN_mode=False, flow_start=None, flow_stop=None, router_mode='top_down', gui=False):
+def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, extract=False, log_level=None, verbosity=None, generate=False, python_gds_json=True, regression=False, uniform_height=False, PDN_mode=False, flow_start=None, flow_stop=None, router_mode='top_down', gui=False):
+
+    check = True 
 
     steps_to_run = build_steps( flow_start, flow_stop)
 
@@ -171,7 +216,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     pnr_dir = working_dir / '3_pnr'
     if '3_pnr' in steps_to_run:
         pnr_dir.mkdir(exist_ok=True)
-        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort, check=check, extract=extract, gds_json=python_gds_json, render_placements=render_placements, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui)
+        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort, check=check, extract=extract, gds_json=python_gds_json, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui)
         results.append( (netlist, variants))
         assert router_mode == 'no_op' or len(variants) > 0, f"No layouts were generated for {netlist}. Cannot proceed further. See LOG/align.log for last error."
 

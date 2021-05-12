@@ -246,6 +246,7 @@ class design
     PnRDB::bbox GetPlacedBlockInterMetalAbsBox(int blockid, placerDB::Omark ort, PnRDB::bbox& originBox, placerDB::point LL, int sel); 
     PnRDB::point GetPlacedBlockInterMetalAbsPoint(int blockid, placerDB::Omark ort, PnRDB::point& originP, placerDB::point LL, int sel);
     PnRDB::point GetPlacedBlockInterMetalRelPoint(int blockid, placerDB::Omark ort, PnRDB::point& originP, int sel);
+    void checkselfsym(vector< pair<int,int> > &tmpsympair, vector< pair<int,placerDB::Smark> > &tmpselfsym, placerDB::Smark tsmark);
 };
 
 #endif

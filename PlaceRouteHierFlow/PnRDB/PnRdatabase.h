@@ -80,8 +80,8 @@ class PnRdatabase
   private:
     int maxNode;
     int unitScale;
-    map<string, vector<PnRDB::lefMacro> > lefData;  //map from Macro name to Macro Instance
   public:
+    map<string, vector<PnRDB::lefMacro> > lefData;  //map from Macro name to Macro Instance
     map<string, vector<string> > gdsData2; //map from gds name to multiple gds file (abstract to multiple concrete)
   private:
     PnRDB::designRule drData;

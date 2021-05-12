@@ -106,6 +106,7 @@ class SeqPair
     int GetBlockSelected(int blockNo);
     bool ChangeSelectedBlock(design& caseNL);
     void KeepOrdering(design& caseNL);
+    void CompactSeq();
 };
 
 #endif

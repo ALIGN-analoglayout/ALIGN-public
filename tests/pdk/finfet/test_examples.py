@@ -11,7 +11,7 @@ pdk_dir = pathlib.Path(align.pdk.finfet.__file__).parent
 
 examples_dir = pdk_dir / 'examples'
 
-skip_dirs = ['ring_oscillator']
+skip_dirs = []
 
 examples = [p.parents[0] for p in examples_dir.rglob('*.sp') \
                 if all(x not in skip_dirs for x in p.relative_to(examples_dir).parts)]
@@ -28,7 +28,7 @@ def test_examples(example):
     run_dir.mkdir(parents=True, exist_ok=True)
     os.chdir(run_dir)
 
-    args = [str(example), '-p', str(pdk_dir), '--check', '-l','INFO']
+    args = [str(example), '-p', str(pdk_dir), '-l','INFO']
    
     results = align.CmdlineParser().parse_args(args)
 

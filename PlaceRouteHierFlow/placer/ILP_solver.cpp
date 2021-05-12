@@ -379,7 +379,10 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     set_minim(lp);
     set_timeout(lp, 1);
     int ret = solve(lp);
-    if (ret != 0 && ret != 1) return -1;
+    if (ret != 0 && ret != 1) {
+      delete_lp(lp);
+      return -1;
+    }
   }
 
   double var[N_var];
@@ -1299,6 +1302,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign, SeqPair& curr_sp) {
 void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo) {
   node.width = UR.x;
   node.height = UR.y;
+  node.HPWL = HPWL;
   for (unsigned int i = 0; i < mydesign.Blocks.size(); ++i) {
     node.Blocks.at(i).selectedInstance = curr_sp.GetBlockSelected(i);
     placerDB::Omark ort;
