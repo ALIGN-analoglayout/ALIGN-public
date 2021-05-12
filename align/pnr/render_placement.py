@@ -35,7 +35,7 @@ def gen_transformation( blk):
     logger.debug( f"TRANS {blk.master} {blk.orient} {tr} {tr_reflect} {tr_offset}")
     return tr
 
-def gen_placement_verilog(hN, DB, verilog_d):
+def gen_placement_verilog(hN, DB, verilog_d, *, skip_checkout=False):
     d = verilog_d.copy()
 
     bboxes = defaultdict(list)
@@ -62,7 +62,7 @@ def gen_placement_verilog(hN, DB, verilog_d):
             b = inst.originBox
             new_r = b.LL.x, b.LL.y, b.UR.x, b.UR.y
             if child_idx >= 0:
-                new_hN = DB.CheckoutHierNode(child_idx, blk.selectedInstance)
+                new_hN = DB.CheckoutHierNode(child_idx, -1 if skip_checkout else blk.selectedInstance)
                 aux(new_hN, new_r, new_prefix_path)
             else:
                 chosen_master = pathlib.Path(inst.gdsFile).stem
@@ -91,9 +91,9 @@ def gen_placement_verilog(hN, DB, verilog_d):
         if len(set(v)) > 1:
             logger.error( f'Different chosen masters for {k}: {v}')
 
-    logger.debug( f'transforms: {transforms}')
-    logger.debug( f'bboxes: {bboxes}')
-    logger.debug( f'leaf_bboxes: {leaf_bboxes}')
+    logger.info( f'transforms: {transforms}')
+    logger.info( f'bboxes: {bboxes}')
+    logger.info( f'leaf_bboxes: {leaf_bboxes}')
 
     for module in d['modules']:
         nm = module['name']

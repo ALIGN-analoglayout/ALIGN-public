@@ -20,7 +20,6 @@ import plotly.express as px
 
 from ..pnr.render_placement import dump_blocks
 
-
 import logging
 
 logger = logging.getLogger(__name__)

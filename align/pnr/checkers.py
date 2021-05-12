@@ -137,7 +137,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                     logger.debug( f"{pth} found in input_dir")
                     found = True
             else:
-                logger.error( f"{blk.gdsFile} does not end in .gds")
+                logger.error( f"'{blk.gdsFile}' does not end in .gds")
 
         if found:
             with pth.open( "rt") as fp:
