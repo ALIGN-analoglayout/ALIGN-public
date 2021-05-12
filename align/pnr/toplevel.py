@@ -176,19 +176,18 @@ def route_bottom_up( *, DB, idx, opath, adr_mode, PDN_mode):
                     DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_currentnode_idx_d[child_idx][inst_idx]], blk.instance[inst_idx].orient)
                     blk.child = new_currentnode_idx_d[child_idx][inst_idx]
 
-            #return_name = f'{current_node.name}_{j}'
-            return_name = None
+            return_name = f'{current_node.name}_{j}'
             result_name = route_single_variant( DB, DB.getDrc_info(), current_node, j, opath, adr_mode, PDN_mode=PDN_mode, return_name=return_name)
 
             if False:
                 if not current_node.isTop:
                     DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Backward)
 
-            results_name_map[result_name] = (current_node.name,)
-
             DB.AppendToHierTree(current_node)
 
             new_currentnode_idx_d[i][j] = len(DB.hierTree) - 1
+
+            results_name_map[result_name] = ( (f'{current_node.name}:placement_{j}',), new_currentnode_idx_d[i][j])
 
             for blk in current_node.Blocks:
                 if blk.child >= 0:
@@ -245,6 +244,9 @@ def route_top_down_aux( DB, drcInfo,
     assert len(DB.hierTree) == 1+hierTree_len
     new_currentnode_idx = len(DB.hierTree) - 1
 
+    results_name_map[result_name] = ( hierarchical_path, new_currentnode_idx)
+
+
     for blk in current_node.Blocks:
         if blk.child == -1: continue
         # Set the whole array, not parent[0]; otherwise the python temporary is updated
@@ -254,6 +256,24 @@ def route_top_down_aux( DB, drcInfo,
     logger.debug( f'End of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy} new_currentnode_idx {new_currentnode_idx}')
 
     return new_currentnode_idx
+
+def route_top_down( *, DB, idx, opath, adr_mode, PDN_mode):
+    assert len(DB.hierTree[idx].PnRAS) == DB.hierTree[idx].numPlacement
+
+    results_name_map = {}
+    new_topnode_indices = []
+    for lidx in range(DB.hierTree[idx].numPlacement):
+        sel = lidx
+        new_topnode_idx = route_top_down_aux( DB, DB.getDrc_info(),
+                                              PnR.bbox( PnR.point(0,0),
+                                                        PnR.point(DB.hierTree[idx].PnRAS[lidx].width,
+                                                                  DB.hierTree[idx].PnRAS[lidx].height)),
+                                              Omark.N, idx, lidx, sel,
+                                              opath, adr_mode, PDN_mode=PDN_mode, results_name_map=results_name_map,
+                                              hierarchical_path=(f'{DB.hierTree[idx].name}:placement_{lidx}',)
+        )
+        new_topnode_indices.append(new_topnode_idx)
+    return results_name_map
 
 
 def place( *, DB, opath, fpath, numLayout, effort, idx):
@@ -288,24 +308,6 @@ def place( *, DB, opath, fpath, numLayout, effort, idx):
         DB.CheckinHierNode(idx, node)
 
     DB.hierTree[idx].numPlacement = actualNumLayout
-
-def route_top_down( *, DB, idx, opath, adr_mode, PDN_mode):
-    assert len(DB.hierTree[idx].PnRAS) == DB.hierTree[idx].numPlacement
-
-    results_name_map = {}
-    new_topnode_indices = []
-    for lidx in range(DB.hierTree[idx].numPlacement):
-        sel = lidx
-        new_topnode_idx = route_top_down_aux( DB, DB.getDrc_info(),
-                                              PnR.bbox( PnR.point(0,0),
-                                                        PnR.point(DB.hierTree[idx].PnRAS[lidx].width,
-                                                                  DB.hierTree[idx].PnRAS[lidx].height)),
-                                              Omark.N, idx, lidx, sel,
-                                              opath, adr_mode, PDN_mode=PDN_mode, results_name_map=results_name_map,
-                                              hierarchical_path=(f'{DB.hierTree[idx].name}:placement_{lidx}',)
-        )
-        new_topnode_indices.append(new_topnode_idx)
-    return results_name_map
 
 def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode):
     logger.info(f'Starting {router_mode} routing on {DB.hierTree[idx].name} {idx}')

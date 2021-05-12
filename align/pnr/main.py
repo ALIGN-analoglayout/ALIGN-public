@@ -30,13 +30,6 @@ def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, check=Fal
 
     ret = {}
 
-    if not toplevel:
-        # Check name matches n_copy number (top down flow)
-        p2 = re.compile(r"^(\S+)_(\d+)_(\d+)$")
-        m = p2.match(variant)
-        assert m
-        ncpy = int(m.groups()[1])
-        assert ncpy == hN.n_copy, f"n_copy {hN.n_copy} should be same as in the variant name {variant} {ncpy}"
 
     res = gen_viewer_json(hN, pdkdir=pdk_dir, draw_grid=True, json_dir=str(primitive_dir), checkOnly=(
         check or extract or gds_json), extract=extract, input_dir=input_dir, toplevel=toplevel)
@@ -306,54 +299,81 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         assert router_mode == 'no_op' or len(possible_final_circuits) > 0
 
         variants = collections.defaultdict(collections.defaultdict)
-        for lidx, (topidx, _) in enumerate(possible_final_circuits):
 
-            order = [(i, DB.CheckoutHierNode(i, -1).name) for i in TraverseHierTree(topidx)]
-            assert order[-1][1] == subckt, f"Last in topological order should be the subckt {subckt} {order}"
+        if router_mode == 'bottom_up' or router_mode == 'top_down':
+            for variant, ( path_name, layout_idx) in results_name_map.items():
+                hN = DB.hierTree[layout_idx]
+                result = _generate_json(hN=hN,
+                                        variant=variant,
+                                        pdk_dir=pdk_dir,
+                                        primitive_dir=input_dir,
+                                        input_dir=working_dir,
+                                        output_dir=working_dir,
+                                        check=check,
+                                        extract=extract,
+                                        gds_json=gds_json,
+                                        toplevel=hN.isTop)
 
-            logger.info(f'order={order}')
+                if hN.isTop:
+                    variants[variant].update(result)
 
-            for idx, nm in order[:-1]:
-                n_copy = DB.hierTree[idx].n_copy
-                #assert 1 == DB.hierTree[idx].numPlacement
-                i_placement = lidx
+                    for tag, suffix in [('lef', '.lef'), ('gdsjson', '.gds.json')]:
+                        path = results_dir / (variant + suffix)
+                        assert path.exists()
+                        variants[variant][tag] = path
 
-                variant_name = f'{nm}_{n_copy}_{i_placement}'
-                _generate_json(hN=DB.hierTree[idx],
-                               variant=variant_name,
-                               pdk_dir=pdk_dir,
-                               primitive_dir=input_dir,
-                               input_dir=working_dir,
-                               output_dir=working_dir,
-                               check=check,
-                               extract=extract,
-                               gds_json=gds_json,
-                               toplevel=False)
 
-            # toplevel
-            (idx, nm) = order[-1]
-            assert idx == topidx
+        else:
 
-            variant = f'{nm}_{lidx}'
+            for lidx, (topidx, _) in enumerate(possible_final_circuits):
 
-            logger.info( f'Processing top-down generated blocks: lidx={lidx} topidx={topidx} nm={nm} variant={variant}')
+                order = [(i, DB.CheckoutHierNode(i, -1).name) for i in TraverseHierTree(topidx)]
+                assert order[-1][1] == subckt, f"Last in topological order should be the subckt {subckt} {order}"
 
-            variants[variant].update(
-                _generate_json(hN=DB.hierTree[idx],
-                               variant=variant,
-                               pdk_dir=pdk_dir,
-                               primitive_dir=input_dir,
-                               input_dir=working_dir,
-                               output_dir=working_dir,
-                               check=check,
-                               extract=extract,
-                               gds_json=gds_json,
-                               toplevel=True))
+                logger.info(f'order={order}')
 
-            for tag, suffix in [('lef', '.lef'), ('gdsjson', '.gds.json')]:
-                path = results_dir / (variant + suffix)
-                assert path.exists()
-                variants[variant][tag] = path
+                for idx, nm in order[:-1]:
+                    n_copy = DB.hierTree[idx].n_copy
+                    #assert 1 == DB.hierTree[idx].numPlacement
+                    i_placement = lidx
+
+                    variant_name = f'{nm}_{n_copy}_{i_placement}'
+                    _generate_json(hN=DB.hierTree[idx],
+                                   variant=variant_name,
+                                   pdk_dir=pdk_dir,
+                                   primitive_dir=input_dir,
+                                   input_dir=working_dir,
+                                   output_dir=working_dir,
+                                   check=check,
+                                   extract=extract,
+                                   gds_json=gds_json,
+                                   toplevel=False)
+
+                # toplevel
+                (idx, nm) = order[-1]
+                assert idx == topidx
+
+                variant = f'{nm}_{lidx}'
+
+                logger.info( f'Processing top-down generated blocks: lidx={lidx} topidx={topidx} nm={nm} variant={variant}')
+
+                variants[variant].update(
+                    _generate_json(hN=DB.hierTree[idx],
+                                   variant=variant,
+                                   pdk_dir=pdk_dir,
+                                   primitive_dir=input_dir,
+                                   input_dir=working_dir,
+                                   output_dir=working_dir,
+                                   check=check,
+                                   extract=extract,
+                                   gds_json=gds_json,
+                                   toplevel=True))
+
+                for tag, suffix in [('lef', '.lef'), ('gdsjson', '.gds.json')]:
+                    path = results_dir / (variant + suffix)
+                    assert path.exists()
+                    variants[variant][tag] = path
+
 
     logger.info('Explicitly deleting DB...')
     del DB
