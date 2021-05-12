@@ -25,7 +25,7 @@ def rational_scaling( d, *, mul=1, div=1, errors=None):
 
         term['rect'] = [ (mul*c)//div for c in term['rect']]
 
-def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False, extract=False, input_dir=None, markers=False, toplevel=True):
+def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, json_dir=None, extract=False, input_dir=None, markers=False, toplevel=True):
 
     logger.info( f'Checking: {hN.name}')
 
@@ -81,19 +81,6 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
             if center is not None:
                 lyr = layer.lower() if layer.lower() in cnv.generators else layer.upper()
                 f( cnv.generators[lyr], center, tag)
-
-    if not checkOnly and draw_grid:
-        m1_pitch = 2*cnv.pdk['M1']['Pitch']
-        m2_pitch = 2*cnv.pdk['M2']['Pitch']
-        for ix in range( (hN.width+m1_pitch-1)//m1_pitch):
-            x = m1_pitch*ix
-            r = [ x-2, 0, x+2, hN.height]
-            terminals.append( { "netName": 'm1_grid', "layer": 'M1', "rect": r})
-
-        for iy in range( (hN.height+m2_pitch-1)//m2_pitch):
-            y = m2_pitch*iy
-            r = [ 0, y-2, hN.width, y+2]
-            terminals.append( { "netName": 'm2_grid', "layer": 'M2', "rect": r})
 
     fa_map = {}
     for n in itertools.chain( hN.Nets, hN.PowerNets):
@@ -168,16 +155,6 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
 
             if 'subinsts' in d:
                 subinsts.update({f'{blk.name}/{nm}': v for nm, v in d['subinsts'].items()})
-
-        if not checkOnly:
-            for con in blk.interMetals:
-                add_terminal( '!interMetals', con.metal, con.placedBox)
-
-            for via in blk.interVias:
-                for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-                    add_terminal( '!interVias', con.metal, con.placedBox)
-
-            add_terminal( f"{blk.master}:{blk.name}", 'cellarea', blk.placedBox)
 
     for n in itertools.chain( hN.Nets, hN.PowerNets):
         logger.debug( f"Net: {n.name}")
@@ -312,30 +289,22 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
 
     d["terminals"] = terminals
 
-    if checkOnly:
-        
-        # PnRDB coordinates are in units of 0.5nm. Scale back to PDK.
-        rational_scaling(d, mul=scale_factor, div=2, errors=errors)
+    # PnRDB coordinates are in units of 0.5nm. Scale back to PDK.
+    rational_scaling(d, mul=scale_factor, div=2, errors=errors)
 
-        cnv.bbox = transformation.Rect( *d["bbox"])
-        cnv.terminals = d["terminals"]
-        for inst, parameters in subinsts.items():
-            cnv.subinsts[inst].parameters.update(parameters)
+    cnv.bbox = transformation.Rect( *d["bbox"])
+    cnv.terminals = d["terminals"]
+    for inst, parameters in subinsts.items():
+        cnv.subinsts[inst].parameters.update(parameters)
 
-        nets_allowed_to_be_open = [] if toplevel else global_power_names
+    nets_allowed_to_be_open = [] if toplevel else global_power_names
 
-        new_d = cnv.gen_data(run_drc=True, run_pex=extract,nets_allowed_to_be_open=nets_allowed_to_be_open,postprocess=toplevel)
+    new_d = cnv.gen_data(run_drc=True, run_pex=extract,nets_allowed_to_be_open=nets_allowed_to_be_open,postprocess=toplevel)
 
-        d['bbox'] = cnv.bbox.toList()
-        d['terminals'] = new_d['terminals']
+    d['bbox'] = cnv.bbox.toList()
+    d['terminals'] = new_d['terminals']
 
-        for e in errors:
-            cnv.drc.errors.append( e)
+    for e in errors:
+        cnv.drc.errors.append( e)
 
-        return (cnv, d)
-    else:
-        assert False, f'ALWAYS CHECK!'
-        # We should never get here, make -c default
-        # multiply by five make it be in JSON file units (angstroms) This is a mess!
-        rational_scaling( d, mul=5, errors=errors)
-        return d
+    return (cnv, d)

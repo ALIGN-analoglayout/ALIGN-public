@@ -135,8 +135,6 @@ def gen_more_primitives( primitives, topology_dir, subckt):
 
 def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, extract=False, log_level=None, verbosity=None, generate=False, python_gds_json=True, regression=False, uniform_height=False, PDN_mode=False, flow_start=None, flow_stop=None, router_mode='top_down', gui=False):
 
-    check = True 
-
     steps_to_run = build_steps( flow_start, flow_stop)
 
     reconfigure_loglevels(file_level=log_level, console_level=verbosity)
@@ -216,7 +214,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     pnr_dir = working_dir / '3_pnr'
     if '3_pnr' in steps_to_run:
         pnr_dir.mkdir(exist_ok=True)
-        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort, check=check, extract=extract, gds_json=python_gds_json, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui)
+        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort, extract=extract, gds_json=python_gds_json, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui)
         results.append( (netlist, variants))
         assert router_mode == 'no_op' or len(variants) > 0, f"No layouts were generated for {netlist}. Cannot proceed further. See LOG/align.log for last error."
 
@@ -235,9 +233,8 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
 
 
             (working_dir / filemap['lef'].name).write_text(filemap['lef'].read_text())
-            if check:
-                if filemap['errors'] > 0:
-                    (working_dir / filemap['errfile'].name).write_text(filemap['errfile'].read_text())
+            if filemap['errors'] > 0:
+                (working_dir / filemap['errfile'].name).write_text(filemap['errfile'].read_text())
 
             if extract:
                 (working_dir / filemap['cir'].name).write_text(filemap['cir'].read_text())
