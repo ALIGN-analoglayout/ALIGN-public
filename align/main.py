@@ -32,7 +32,7 @@ def build_steps( flow_start, flow_stop):
     assert start_idx < stop_idx, f'No steps to run in the flow: {steps}[{start_idx}:{stop_idx}]'
 
     steps_to_run = steps[start_idx:stop_idx]
-    logger.info( f'Steps to run in the flow: {steps}[{start_idx}:{stop_idx}] => {steps_to_run}')
+    logger.info( f'Running flow steps {steps_to_run}')
 
     return steps_to_run
 
@@ -53,7 +53,7 @@ def gen_more_primitives( primitives, topology_dir, subckt):
     for k,v in primitives.items():
         m = p.match(k)
         if m:
-            logger.info( f'Matched primitive {k}')
+            logger.debug( f'Matched primitive {k}')
             nfin,n,X,Y = tuple(int(x) for x in m.groups()[1:5])
             abstract_name = f'{m.groups()[0]}_nfin{nfin}{m.groups()[5]}'
 
@@ -89,7 +89,7 @@ def gen_more_primitives( primitives, topology_dir, subckt):
                     new_pairs.append( best_pair)
                 pairs = new_pairs
 
-            logger.info( f'Inject new primitive sizes: {pairs} for {nfin} {n} {X} {Y}')
+            logger.debug( f'Inject new primitive sizes: {pairs} for {nfin} {n} {X} {Y}')
 
             for newx,newy in pairs:
                 concrete_name = f'{m.groups()[0]}_nfin{nfin}_n{n}_X{newx}_Y{newy}{m.groups()[5]}'

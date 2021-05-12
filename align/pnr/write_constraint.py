@@ -23,7 +23,7 @@ class PnRConstraintWriter:
         Maps input format to pnr format
 
         """
-        logger.info(f"input constraints {all_const}")
+        logger.debug(f"input constraints {all_const}")
         #Start mapping
         pnr_const=[]
         for input_const in constraint.expand_user_constraints(all_const):
@@ -170,7 +170,7 @@ class PnRConstraintWriter:
                             "priority" : const["criticality"]
                             }
                         pnr_const.append(extra)
-        logger.info(f"Const mapped to PnR const format {pnr_const}")
+        logger.debug(f"Const mapped to PnR const format {pnr_const}")
         return {'constraints': pnr_const}
 
 

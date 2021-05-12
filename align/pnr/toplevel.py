@@ -150,9 +150,9 @@ def route_bottom_up( *, DB, idx, opath, adr_mode, PDN_mode):
             current_node = DB.CheckoutHierNode(i, j)  # Make a copy
             DB.hierTree[i].n_copy += 1
 
-            logger.info( f'bottom up routing for {current_node.name} ({i}) version {j}')
+            logger.info( f'bottom up routing for {current_node.name} ({i}) placement version {j}')
 
-            logger.info( f'Existing parents: {current_node.parent}')
+            logger.debug( f'Existing parents: {current_node.parent}')
             # SMB: I think we should clear this and build up parents of the routing hN
             current_node.parent = []
 
@@ -193,12 +193,13 @@ def route_bottom_up( *, DB, idx, opath, adr_mode, PDN_mode):
                 if blk.child >= 0:
                     # Potential slug bug; uniqifying the vector each time
                     DB.hierTree[blk.child].parent = list(set(DB.hierTree[blk.child].parent + [ new_currentnode_idx_d[i][j] ]))
-                    logger.info( f'Set parent of {blk.child} to {DB.hierTree[blk.child].parent}')
+                    logger.debug( f'Set parent of {blk.child} to {DB.hierTree[blk.child].parent}')
 
     return results_name_map
 
 def route_no_op( *, DB, idx, opath, adr_mode, PDN_mode):
-    return None
+    results_name_map = {}
+    return results_name_map
 
 def route_top_down_aux( DB, drcInfo,
                         bounding_box,
@@ -362,7 +363,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                 logger.error( f'LEF for concrete name {ctn} (of {atn}) missing.')
 
     for sel in range(DB.hierTree[idx].numPlacement):
-        logger.info( f'DB.CheckoutHierNode( {idx}, {sel})')
+        logger.debug( f'DB.CheckoutHierNode( {idx}, {sel})')
         hN = DB.CheckoutHierNode( idx, sel)
         # create new verilog for each placement
         if verilog_d is not None:
@@ -375,7 +376,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
             if gui:
                 modules = { x['name']: x for x in placement_verilog_d['modules']}
 
-                logger.info( f"hpwl: {hN.HPWL}")
+                logger.debug( f"hpwl: {hN.HPWL}")
                 p = r2wh(modules[hN.name]['bbox'])
                 d = { 'width': p[0], 'height': p[1], 'hpwl': hN.HPWL}
 
@@ -405,7 +406,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
     if gui:
         for atn,v in hack2.items():
             if len(v) > 1:
-                logger.info( f'Multiple concrete names for {atn}: {list(v.keys())}')
+                logger.debug( f'Multiple concrete names for {atn}: {list(v.keys())}')
 
         nm = DB.hierTree[idx].name
         tagged_bboxes = { nm: { f'{nm}_{i}' : (bbox, d) for i, (bbox,d) in enumerate(zip(bboxes,hack))}}
@@ -436,7 +437,5 @@ def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_m
     pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
 
     results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, verilog_d=verilog_d, router_mode=router_mode, gui=gui)
-
-    logger.info( f'results_name_map: {results_name_map}')
 
     return DB, results_name_map

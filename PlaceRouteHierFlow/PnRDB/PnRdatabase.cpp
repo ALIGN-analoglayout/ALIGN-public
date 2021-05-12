@@ -743,7 +743,7 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
 
   //In fact, the original node, do not need to be updated. Just update father node is fine.
   //update the original node
-  logger->info("CheckinHierNode");
+  logger->debug("CheckinHierNode");
   PnRDB::layoutAS tmpL;
   tmpL.gdsFile=updatedNode.gdsFile;
   tmpL.width=updatedNode.width;
@@ -2223,7 +2223,7 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
 
   bool missing_lef_file = 0;
 
-  logger->info("merge LEF/map data on node {0}", node.name);  
+  logger->debug("merge LEF/map data on node {0}", node.name);  
   for (unsigned int i = 0; i < node.Blocks.size(); i++) {
     const string abstract_template_name = node.Blocks[i].instance.front().master;
 
