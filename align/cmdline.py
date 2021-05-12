@@ -117,7 +117,7 @@ class CmdlineParser():
         parser.add_argument('--router_mode',
                             type=str,
                             default='top_down',
-                            choices=['top_down','pseudo_bottom_up', 'bottom_up','no_op'],
+                            choices=['top_down','bottom_up','no_op'],
                             help='Router mode')
 
         parser.add_argument('--gui',

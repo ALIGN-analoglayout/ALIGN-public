@@ -664,10 +664,29 @@ void PnRdatabase::TransformInterviasOriginToPlaced(std::vector<PnRDB::Via>& inte
     }
 }
 
-void PnRdatabase::CheckinChildnodetoBlock(PnRDB::hierNode& parent, int blockID, const PnRDB::hierNode& child) {
+std::vector<int> PnRdatabase::UsedInstancesIdx(int nodeID) {
+  std::vector<int> ret;
+  for (unsigned int i = 0; i < hierTree[nodeID].PnRAS.size(); i++) {
+    bool found = false;
+    for (auto p : hierTree[nodeID].parent) {
+      for (auto b : hierTree[p].Blocks) {
+        if (b.instance[b.selectedInstance].master == hierTree[nodeID].name && b.selectedInstance == i) {
+          //if the instance is used in any parent node
+          ret.push_back(i);
+          found = true;
+          break;
+        }
+      }
+      if (found) break;
+    }
+  }
+  return ret;
+}
+
+void PnRdatabase::CheckinChildnodetoBlock(PnRDB::hierNode& parent, int blockID, const PnRDB::hierNode& child, PnRDB::Omark ort) {
   // update child into parent.blocks[blockID]
   // update (child.intermetal,intervia,blockpins) into blocks[blockid]
-  PnRDB::Omark ort = child.abs_orient;
+  //PnRDB::Omark ort = child.abs_orient;
   int width = child.UR.x - child.LL.x;
   int height = child.UR.y - child.LL.y;
 
@@ -724,7 +743,7 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
 
   //In fact, the original node, do not need to be updated. Just update father node is fine.
   //update the original node
-  logger->info("CheckinHierNode");
+  logger->debug("CheckinHierNode");
   PnRDB::layoutAS tmpL;
   tmpL.gdsFile=updatedNode.gdsFile;
   tmpL.width=updatedNode.width;
@@ -2204,7 +2223,7 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
 
   bool missing_lef_file = 0;
 
-  logger->info("merge LEF/map data on node {0}", node.name);  
+  logger->debug("merge LEF/map data on node {0}", node.name);  
   for (unsigned int i = 0; i < node.Blocks.size(); i++) {
     const string abstract_template_name = node.Blocks[i].instance.front().master;
 

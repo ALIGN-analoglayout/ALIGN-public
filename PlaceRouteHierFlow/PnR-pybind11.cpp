@@ -451,6 +451,7 @@ PYBIND11_MODULE(PnR, m) {
     .def( "RelOrt2AbsOrt", &PnRdatabase::RelOrt2AbsOrt)
     .def( "ExtractPinsToPowerPins", &PnRdatabase::ExtractPinsToPowerPins)
     .def( "CheckinChildnodetoBlock", &PnRdatabase::CheckinChildnodetoBlock)
+    .def( "UsedInstancesIdx", &PnRdatabase::UsedInstancesIdx) 
     .def( "AppendToHierTree", &PnRdatabase::AppendToHierTree)
     .def( "WriteJSON", &PnRdatabase::WriteJSON)
     .def( "WriteLef", &PnRdatabase::WriteLef)

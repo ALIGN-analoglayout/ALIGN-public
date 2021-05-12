@@ -91,9 +91,9 @@ def gen_placement_verilog(hN, DB, verilog_d, *, skip_checkout=False):
         if len(set(v)) > 1:
             logger.error( f'Different chosen masters for {k}: {v}')
 
-    logger.info( f'transforms: {transforms}')
-    logger.info( f'bboxes: {bboxes}')
-    logger.info( f'leaf_bboxes: {leaf_bboxes}')
+    logger.debug( f'transforms: {transforms}')
+    logger.debug( f'bboxes: {bboxes}')
+    logger.debug( f'leaf_bboxes: {leaf_bboxes}')
 
     for module in d['modules']:
         nm = module['name']

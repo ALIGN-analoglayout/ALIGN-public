@@ -32,7 +32,7 @@ def build_steps( flow_start, flow_stop):
     assert start_idx < stop_idx, f'No steps to run in the flow: {steps}[{start_idx}:{stop_idx}]'
 
     steps_to_run = steps[start_idx:stop_idx]
-    logger.info( f'Steps to run in the flow: {steps}[{start_idx}:{stop_idx}] => {steps_to_run}')
+    logger.info( f'Running flow steps {steps_to_run}')
 
     return steps_to_run
 
@@ -53,7 +53,7 @@ def gen_more_primitives( primitives, topology_dir, subckt):
     for k,v in primitives.items():
         m = p.match(k)
         if m:
-            logger.info( f'Matched primitive {k}')
+            logger.debug( f'Matched primitive {k}')
             nfin,n,X,Y = tuple(int(x) for x in m.groups()[1:5])
             abstract_name = f'{m.groups()[0]}_nfin{nfin}{m.groups()[5]}'
 
@@ -89,7 +89,7 @@ def gen_more_primitives( primitives, topology_dir, subckt):
                     new_pairs.append( best_pair)
                 pairs = new_pairs
 
-            logger.info( f'Inject new primitive sizes: {pairs} for {nfin} {n} {X} {Y}')
+            logger.debug( f'Inject new primitive sizes: {pairs} for {nfin} {n} {X} {Y}')
 
             for newx,newy in pairs:
                 concrete_name = f'{m.groups()[0]}_nfin{nfin}_n{n}_X{newx}_Y{newy}{m.groups()[5]}'
@@ -134,8 +134,6 @@ def gen_more_primitives( primitives, topology_dir, subckt):
 
 
 def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, extract=False, log_level=None, verbosity=None, generate=False, python_gds_json=True, regression=False, uniform_height=False, PDN_mode=False, flow_start=None, flow_stop=None, router_mode='top_down', gui=False):
-
-    check = True 
 
     steps_to_run = build_steps( flow_start, flow_stop)
 
@@ -216,7 +214,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     pnr_dir = working_dir / '3_pnr'
     if '3_pnr' in steps_to_run:
         pnr_dir.mkdir(exist_ok=True)
-        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort, check=check, extract=extract, gds_json=python_gds_json, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui)
+        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort, extract=extract, gds_json=python_gds_json, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui)
         results.append( (netlist, variants))
         assert router_mode == 'no_op' or len(variants) > 0, f"No layouts were generated for {netlist}. Cannot proceed further. See LOG/align.log for last error."
 
@@ -235,9 +233,8 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
 
 
             (working_dir / filemap['lef'].name).write_text(filemap['lef'].read_text())
-            if check:
-                if filemap['errors'] > 0:
-                    (working_dir / filemap['errfile'].name).write_text(filemap['errfile'].read_text())
+            if filemap['errors'] > 0:
+                (working_dir / filemap['errfile'].name).write_text(filemap['errfile'].read_text())
 
             if extract:
                 (working_dir / filemap['cir'].name).write_text(filemap['cir'].read_text())

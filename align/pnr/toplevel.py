@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 Omark = PnR.Omark
 TransformType = PnR.TransformType
 
-def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, PDN_mode):
+def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, PDN_mode, return_name=None):
     DB.ExtractPinsToPowerPins(current_node)
     
     h_skip_factor = DB.getDrc_info().Design_info.h_skip_factor
@@ -105,14 +105,14 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
 
     # transform current_node into current_node coordinate
     if current_node.isTop:
-        return_name = f'{current_node.name}_{lidx}'
+        return_name = f'{current_node.name}_{lidx}' if return_name is None else return_name
         DB.WriteJSON(current_node, True, True, True, True, return_name, drcInfo, opath)
         DB.WriteLef(current_node, f'{return_name}.lef', opath)
         DB.PrintHierNode(current_node)
     else:
         current_node_copy = PnR.hierNode(current_node)
         DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, TransformType.Backward)
-        return_name = f'{current_node_copy.name}_{current_node_copy.n_copy}_{lidx}'
+        return_name = f'{current_node_copy.name}_{current_node_copy.n_copy}_{lidx}' if return_name is None else return_name
         DB.WriteJSON(current_node_copy, True, True, True, True, return_name, drcInfo, opath)
         current_node.gdsFile = current_node_copy.gdsFile
         DB.WriteLef(current_node_copy, f'{return_name}.lef', opath)
@@ -120,18 +120,23 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
 
     return return_name
 
-def route_bottom_up( DB, drcInfo,
-                    bounding_box,
-                    current_node_ort, idx, lidx, sel,
-                    opath, adr_mode, *, PDN_mode, results_name_map, hierarchical_path):
+def route_bottom_up( *, DB, idx, opath, adr_mode, PDN_mode):
 
-    """We are trying to route the lidx-th placement (also the sel-th)
-"""
+    # Compute all the needed subblocks
+    subblocks_d = defaultdict(set)
 
-    assert lidx == sel
+    def aux(idx, sel):
+        subblocks_d[idx].add(sel)
+        current_node = DB.CheckoutHierNode(idx, sel) # Make a copy
+        for blk in current_node.Blocks:
+            child_idx = blk.child
+            if child_idx >= 0:
+                aux(child_idx, blk.selectedInstance)
 
-    if lidx != 0:
-        raise NotImplementedError( f'route_bottom_up not yet implemented for multiple placements: lidx {lidx} != 0')
+    for lidx in range(DB.hierTree[idx].numPlacement):
+        aux(idx, lidx)
+
+    results_name_map = {}
 
     TraverseOrder = DB.TraverseHierTree()
 
@@ -140,132 +145,66 @@ def route_bottom_up( DB, drcInfo,
     new_currentnode_idx_d = {}
 
     for i in TraverseOrder:
-        current_node = DB.CheckoutHierNode(i, sel) # Make a copy
-        DB.hierTree[idx].n_copy += 1
+        new_currentnode_idx_d[i] = {}
+        for j in subblocks_d[i]:
+            current_node = DB.CheckoutHierNode(i, j)  # Make a copy
+            DB.hierTree[i].n_copy += 1
 
-        logger.info( f'Order: {i} {current_node.name}')
+            logger.info( f'bottom up routing for {current_node.name} ({i}) placement version {j}')
 
-        logger.info( f'Existing parents: {current_node.parent}')
-        current_node.parent = []
+            logger.debug( f'Existing parents: {current_node.parent}')
+            # SMB: I think we should clear this and build up parents of the routing hN
+            current_node.parent = []
 
-        logger.info( f'Existing LL,UR,abs_orient: {current_node.LL.x},{current_node.LL.y} {current_node.UR.x},{current_node.UR.y} {current_node.abs_orient}')
+            assert current_node.LL.x == 0
+            assert current_node.LL.y == 0
+            current_node.UR.x = current_node.width
+            current_node.UR.y = current_node.height
+            assert current_node.abs_orient == Omark.N
 
-        current_node.LL = bounding_box.LL
-        current_node.UR = bounding_box.UR
-        current_node.abs_orient = current_node_ort
+            if False:
+                DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Forward)
 
-        # doesn't work if I don't do this
-        DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Forward)
+            # Remap using new bottom up hNs
+            for bit,blk in enumerate(current_node.Blocks):
+                child_idx = blk.child
+                inst_idx = blk.selectedInstance
+                if child_idx >= 0:
+                    assert child_idx in new_currentnode_idx_d, f"Toporder incorrect {child_idx} {i} {TraverseOrder}"
+                    assert inst_idx in new_currentnode_idx_d[child_idx], f"subblocks_d incorrect {child_idx} {inst_idx} {subblocks_d[child_idx]}"
+                    
+                    DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_currentnode_idx_d[child_idx][inst_idx]], blk.instance[inst_idx].orient)
+                    blk.child = new_currentnode_idx_d[child_idx][inst_idx]
 
-        # Remap using new bottom up hNs
-        for bit,blk in enumerate(current_node.Blocks):
-            child_idx = blk.child
-            if child_idx >= 0:
-                # SMB This needs to be here.
-                DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_currentnode_idx_d[child_idx]])
-                blk.child = new_currentnode_idx_d[child_idx]
+            return_name = f'{current_node.name}_{j}'
+            result_name = route_single_variant( DB, DB.getDrc_info(), current_node, j, opath, adr_mode, PDN_mode=PDN_mode, return_name=return_name)
 
-        result_name = route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, PDN_mode=PDN_mode)
+            if False:
+                if not current_node.isTop:
+                    DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Backward)
 
-        if not current_node.isTop:
-            DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Backward)
+            DB.AppendToHierTree(current_node)
 
-        results_name_map[result_name] = (current_node.name,)
+            new_currentnode_idx_d[i][j] = len(DB.hierTree) - 1
 
-        DB.AppendToHierTree(current_node)
+            results_name_map[result_name] = ( (f'{current_node.name}:placement_{j}',), new_currentnode_idx_d[i][j])
 
-        new_currentnode_idx_d[i] = len(DB.hierTree) - 1
+            for blk in current_node.Blocks:
+                if blk.child >= 0:
+                    # Potential slug bug; uniqifying the vector each time
+                    DB.hierTree[blk.child].parent = list(set(DB.hierTree[blk.child].parent + [ new_currentnode_idx_d[i][j] ]))
+                    logger.debug( f'Set parent of {blk.child} to {DB.hierTree[blk.child].parent}')
 
-        for blk in current_node.Blocks:
-            if blk.child >= 0:
-                # Potential slug bug
-                DB.hierTree[blk.child].parent = DB.hierTree[blk.child].parent + [ new_currentnode_idx_d[i] ]
+    return results_name_map
 
-        # SMB Added to see if it helped
-        #DB.CheckinHierNode( new_currentnode_idx_d[i], current_node)
+def route_no_op( *, DB, idx, opath, adr_mode, PDN_mode):
+    results_name_map = {}
+    return results_name_map
 
-    return new_currentnode_idx_d[idx]
-
-def route_no_op( DB, drcInfo,
-                    bounding_box,
-                    current_node_ort, idx, lidx, sel,
-                    opath, adr_mode, *, PDN_mode, results_name_map, hierarchical_path):
-    pass
-
-def route_pseudo_bottom_up( DB, drcInfo,
-                            bounding_box,
-                            current_node_ort, idx, lidx, sel,
-                            opath, adr_mode, *, PDN_mode, results_name_map, hierarchical_path, reuse_map=None):
-
-    if reuse_map is None:
-        reuse_map = defaultdict(list)
-
-    def b2s( o):
-        return f'{o.LL.x} {o.LL.y} {o.UR.x} {o.UR.y}'
-
-
-
-    if (idx, sel) in reuse_map:
-        # the first one in the list is the one we should copy
-        routed_idx = reuse_map[(idx,sel)][0]
-        current_node = PnR.hierNode(DB.hierTree[routed_idx]) # make a copy
-
-        assert current_node.LL.x == 0 and current_node.LL.y == 0
-
-        logger.info( f'SMB {idx,sel} {b2s(current_node)} {b2s(bounding_box)} {current_node.abs_orient} {current_node_ort}')
-
-        i_copy = DB.hierTree[idx].n_copy
-    else:
-        current_node = DB.CheckoutHierNode(idx, sel) # Make a copy
-        i_copy = DB.hierTree[idx].n_copy
-
-        logger.debug( f'Start of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy}')
-
-        DB.hierTree[idx].n_copy += 1
-
-        current_node.LL = bounding_box.LL
-        current_node.UR = bounding_box.UR
-        current_node.abs_orient = current_node_ort
-        DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Forward)
-
-        for bit, blk in enumerate(current_node.Blocks):
-            child_idx = blk.child
-            if child_idx == -1: continue
-            inst = blk.instance[blk.selectedInstance]
-            childnode_orient = DB.RelOrt2AbsOrt( current_node_ort, inst.orient)
-            child_node_name = DB.hierTree[child_idx].name
-            childnode_bbox = PnR.bbox( inst.placedBox.LL, inst.placedBox.UR)
-            new_childnode_idx = route_pseudo_bottom_up(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, lidx, blk.selectedInstance, opath, adr_mode, PDN_mode=PDN_mode, results_name_map=results_name_map, hierarchical_path=hierarchical_path + (inst.name,), reuse_map=reuse_map)
-            DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_childnode_idx])
-            blk.child = new_childnode_idx
-
-        result_name = route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, PDN_mode=PDN_mode)
-        results_name_map[result_name] = hierarchical_path
-
-        if not current_node.isTop:
-            DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Backward)
-
-    DB.AppendToHierTree(current_node)
-    new_currentnode_idx = len(DB.hierTree) - 1
-
-    reuse_map[(idx,sel)].append( new_currentnode_idx)
-
-    logger.info( f'reuse_map: {dict(reuse_map)}')
-
-    for blk in current_node.Blocks:
-        if blk.child == -1: continue
-        # Set the whole array, not parent[0]; otherwise the python temporary is updated
-        DB.hierTree[blk.child].parent = [ new_currentnode_idx ]
-        logger.debug( f'Set parent of {blk.child} to {new_currentnode_idx} => DB.hierTree[blk.child].parent[0]={DB.hierTree[blk.child].parent[0]}')
-
-    logger.debug( f'End of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy} new_currentnode_idx {new_currentnode_idx}')
-
-    return new_currentnode_idx
-
-def route_top_down( DB, drcInfo,
-                    bounding_box,
-                    current_node_ort, idx, lidx, sel,
-                    opath, adr_mode, *, PDN_mode, results_name_map, hierarchical_path):
+def route_top_down_aux( DB, drcInfo,
+                        bounding_box,
+                        current_node_ort, idx, lidx, sel,
+                        opath, adr_mode, *, PDN_mode, results_name_map, hierarchical_path):
 
     current_node = DB.CheckoutHierNode(idx, sel) # Make a copy
     i_copy = DB.hierTree[idx].n_copy
@@ -286,8 +225,8 @@ def route_top_down( DB, drcInfo,
         childnode_orient = DB.RelOrt2AbsOrt( current_node_ort, inst.orient)
         child_node_name = DB.hierTree[child_idx].name
         childnode_bbox = PnR.bbox( inst.placedBox.LL, inst.placedBox.UR)
-        new_childnode_idx = route_top_down(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, lidx, blk.selectedInstance, opath, adr_mode, PDN_mode=PDN_mode, results_name_map=results_name_map, hierarchical_path=hierarchical_path + (inst.name,))
-        DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_childnode_idx])
+        new_childnode_idx = route_top_down_aux(DB, drcInfo, childnode_bbox, childnode_orient, child_idx, lidx, blk.selectedInstance, opath, adr_mode, PDN_mode=PDN_mode, results_name_map=results_name_map, hierarchical_path=hierarchical_path + (inst.name,))
+        DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_childnode_idx], DB.hierTree[new_childnode_idx].abs_orient)
         blk.child = new_childnode_idx
 
     result_name = route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, PDN_mode=PDN_mode)
@@ -306,6 +245,9 @@ def route_top_down( DB, drcInfo,
     assert len(DB.hierTree) == 1+hierTree_len
     new_currentnode_idx = len(DB.hierTree) - 1
 
+    results_name_map[result_name] = ( hierarchical_path, new_currentnode_idx)
+
+
     for blk in current_node.Blocks:
         if blk.child == -1: continue
         # Set the whole array, not parent[0]; otherwise the python temporary is updated
@@ -315,6 +257,24 @@ def route_top_down( DB, drcInfo,
     logger.debug( f'End of route_top_down; placement idx {idx} lidx {lidx} nm {current_node.name} i_copy {i_copy} new_currentnode_idx {new_currentnode_idx}')
 
     return new_currentnode_idx
+
+def route_top_down( *, DB, idx, opath, adr_mode, PDN_mode):
+    assert len(DB.hierTree[idx].PnRAS) == DB.hierTree[idx].numPlacement
+
+    results_name_map = {}
+    new_topnode_indices = []
+    for lidx in range(DB.hierTree[idx].numPlacement):
+        sel = lidx
+        new_topnode_idx = route_top_down_aux( DB, DB.getDrc_info(),
+                                              PnR.bbox( PnR.point(0,0),
+                                                        PnR.point(DB.hierTree[idx].PnRAS[lidx].width,
+                                                                  DB.hierTree[idx].PnRAS[lidx].height)),
+                                              Omark.N, idx, lidx, sel,
+                                              opath, adr_mode, PDN_mode=PDN_mode, results_name_map=results_name_map,
+                                              hierarchical_path=(f'{DB.hierTree[idx].name}:placement_{lidx}',)
+        )
+        new_topnode_indices.append(new_topnode_idx)
+    return results_name_map
 
 
 def place( *, DB, opath, fpath, numLayout, effort, idx):
@@ -350,37 +310,15 @@ def place( *, DB, opath, fpath, numLayout, effort, idx):
 
     DB.hierTree[idx].numPlacement = actualNumLayout
 
-def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode, selection=None):
+def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode):
     logger.info(f'Starting {router_mode} routing on {DB.hierTree[idx].name} {idx}')
 
-    new_topnode_indices = []
-
-    assert len(DB.hierTree[idx].PnRAS) == DB.hierTree[idx].numPlacement
-
-    results_name_map = {}
-
     router_engines = { 'top_down': route_top_down,
-                       'pseudo_bottom_up': route_pseudo_bottom_up,
                        'bottom_up': route_bottom_up,
                        'no_op': route_no_op
                        }
 
-    router_engine = router_engines[router_mode]
-
-    for lidx in range(DB.hierTree[idx].numPlacement):
-        if selection is not None and lidx != selection:
-            continue
-
-        sel = lidx
-        new_topnode_idx = router_engine( DB, DB.getDrc_info(),
-                                         PnR.bbox( PnR.point(0,0),
-                                                   PnR.point(DB.hierTree[idx].PnRAS[lidx].width,
-                                                             DB.hierTree[idx].PnRAS[lidx].height)),
-                                         Omark.N, idx, lidx, sel,
-                                         opath, adr_mode, PDN_mode=PDN_mode, results_name_map=results_name_map, hierarchical_path=(f'{DB.hierTree[idx].name}:placement_{lidx}',))
-        new_topnode_indices.append(new_topnode_idx)
-
-    return results_name_map
+    return router_engines[router_mode]( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode)
 
 def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, verilog_d, router_mode, gui):
     TraverseOrder = DB.TraverseHierTree()
@@ -425,7 +363,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                 logger.error( f'LEF for concrete name {ctn} (of {atn}) missing.')
 
     for sel in range(DB.hierTree[idx].numPlacement):
-        logger.info( f'DB.CheckoutHierNode( {idx}, {sel})')
+        logger.debug( f'DB.CheckoutHierNode( {idx}, {sel})')
         hN = DB.CheckoutHierNode( idx, sel)
         # create new verilog for each placement
         if verilog_d is not None:
@@ -438,7 +376,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
             if gui:
                 modules = { x['name']: x for x in placement_verilog_d['modules']}
 
-                logger.info( f"hpwl: {hN.HPWL}")
+                logger.debug( f"hpwl: {hN.HPWL}")
                 p = r2wh(modules[hN.name]['bbox'])
                 d = { 'width': p[0], 'height': p[1], 'hpwl': hN.HPWL}
 
@@ -468,7 +406,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
     if gui:
         for atn,v in hack2.items():
             if len(v) > 1:
-                logger.info( f'Multiple concrete names for {atn}: {list(v.keys())}')
+                logger.debug( f'Multiple concrete names for {atn}: {list(v.keys())}')
 
         nm = DB.hierTree[idx].name
         tagged_bboxes = { nm: { f'{nm}_{i}' : (bbox, d) for i, (bbox,d) in enumerate(zip(bboxes,hack))}}
@@ -499,7 +437,5 @@ def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_m
     pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
 
     results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, verilog_d=verilog_d, router_mode=router_mode, gui=gui)
-
-    logger.info( f'results_name_map: {results_name_map}')
 
     return DB, results_name_map

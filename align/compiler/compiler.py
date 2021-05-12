@@ -273,7 +273,7 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
         write_verilog( verilog_tbl, fp)
 
     logger.info("Topology identification done !!!")
-    logger.info(f"OUTPUT verilog json netlist at: {result_dir}/{design_name}.verilog.json")
-    logger.info(f"OUTPUT verilog netlist at: {result_dir}/{design_name}.v")
-    logger.info(f"OUTPUT const file at: {result_dir}/{design_name}.pnr.const.json")
+    logger.debug(f"OUTPUT verilog json netlist at: {result_dir}/{design_name}.verilog.json")
+    logger.debug(f"OUTPUT verilog netlist at: {result_dir}/{design_name}.v")
+    logger.debug(f"OUTPUT const file at: {result_dir}/{design_name}.pnr.const.json")
     return primitives
