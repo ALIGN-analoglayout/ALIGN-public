@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 Omark = PnR.Omark
 TransformType = PnR.TransformType
 
-def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, PDN_mode):
+def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, PDN_mode, return_name=None):
     DB.ExtractPinsToPowerPins(current_node)
     
     h_skip_factor = DB.getDrc_info().Design_info.h_skip_factor
@@ -105,14 +105,14 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
 
     # transform current_node into current_node coordinate
     if current_node.isTop:
-        return_name = f'{current_node.name}_{lidx}'
+        return_name = f'{current_node.name}_{lidx}' if return_name is None else return_name
         DB.WriteJSON(current_node, True, True, True, True, return_name, drcInfo, opath)
         DB.WriteLef(current_node, f'{return_name}.lef', opath)
         DB.PrintHierNode(current_node)
     else:
         current_node_copy = PnR.hierNode(current_node)
         DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, TransformType.Backward)
-        return_name = f'{current_node_copy.name}_{current_node_copy.n_copy}_{lidx}'
+        return_name = f'{current_node_copy.name}_{current_node_copy.n_copy}_{lidx}' if return_name is None else return_name
         DB.WriteJSON(current_node_copy, True, True, True, True, return_name, drcInfo, opath)
         current_node.gdsFile = current_node_copy.gdsFile
         DB.WriteLef(current_node_copy, f'{return_name}.lef', opath)
@@ -153,7 +153,8 @@ def route_bottom_up( *, DB, idx, opath, adr_mode, PDN_mode):
             logger.info( f'bottom up routing for {current_node.name} ({i}) version {j}')
 
             logger.info( f'Existing parents: {current_node.parent}')
-            #current_node.parent = []
+            # SMB: I think we should clear this and build up parents of the routing hN
+            current_node.parent = []
 
             assert current_node.LL.x == 0
             assert current_node.LL.y == 0
@@ -175,7 +176,9 @@ def route_bottom_up( *, DB, idx, opath, adr_mode, PDN_mode):
                     DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_currentnode_idx_d[child_idx][inst_idx]], blk.instance[inst_idx].orient)
                     blk.child = new_currentnode_idx_d[child_idx][inst_idx]
 
-            result_name = route_single_variant( DB, DB.getDrc_info(), current_node, j, opath, adr_mode, PDN_mode=PDN_mode)
+            #return_name = f'{current_node.name}_{j}'
+            return_name = None
+            result_name = route_single_variant( DB, DB.getDrc_info(), current_node, j, opath, adr_mode, PDN_mode=PDN_mode, return_name=return_name)
 
             if False:
                 if not current_node.isTop:
@@ -189,8 +192,8 @@ def route_bottom_up( *, DB, idx, opath, adr_mode, PDN_mode):
 
             for blk in current_node.Blocks:
                 if blk.child >= 0:
-                    # Potential slug bug
-                    DB.hierTree[blk.child].parent = DB.hierTree[blk.child].parent + [ new_currentnode_idx_d[i][j] ]
+                    # Potential slug bug; uniqifying the vector each time
+                    DB.hierTree[blk.child].parent = list(set(DB.hierTree[blk.child].parent + [ new_currentnode_idx_d[i][j] ]))
                     logger.info( f'Set parent of {blk.child} to {DB.hierTree[blk.child].parent}')
 
     return results_name_map
