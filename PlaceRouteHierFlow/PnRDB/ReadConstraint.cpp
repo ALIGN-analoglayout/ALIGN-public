@@ -583,7 +583,25 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
           logger->error("Wrong placement bounding box, width {0}, height {1}", node.placement_box[0], node.placement_box[1]);
         node.placement_box[0] *= unitScale;
         node.placement_box[1] *= unitScale;
-        
+      } else if (constraint["const_name"] == "LabelLayer") {
+        for (auto p : constraint["ports"]) {
+          for (auto& t : node.Terminals) {
+            if (t.name == p["port_name"]) {
+              for (auto l : p["layer"]) {
+                t.LabelLayers.push_back(DRC_info.Metalmap[l]);
+              }
+              break;
+            }
+          }
+          for (auto& n : node.PowerNets) {
+            if (n.name == p["port_name"]) {
+              for (auto l : p["layer"]) {
+                n.LabelLayers.push_back(DRC_info.Metalmap[l]);
+              }
+              break;
+            }
+          }
+        }
       }
     }
 }

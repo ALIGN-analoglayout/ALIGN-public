@@ -228,7 +228,7 @@ addTextElements (json& jsonElements, int cenX, int cenY, int layer, const PnRDB:
     json element;
     element["type"] = "text";
     element["layer"] = layer;
-    element["texttype"] = drc_info.Metal_info.at(layer_index).gds_datatype.Pin;
+    element["texttype"] = drc_info.Metal_info.at(layer_index).gds_datatype.Label;
     //std::cout << "add Text Elements Test" << layer_index << layer << element["texttype"] << std::endl;
     //reminder, layer_index is not metal layer number. It is the index of metal in drc_info.Metal_info
     element["presentation"] = JSON_Presentation (test_font, test_vp, test_hp);
@@ -459,27 +459,47 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     json jsonElements = json::array();
 
     int x[5], y[5];
-    int write_blockPins_name = 0;
+    int write_blockPins_name = 1;
     if (write_blockPins_name && node.isTop ==1){
 	for (unsigned int i = 0; i < node.blockPins.size(); i++) {
 	    int write = 0;
-            logger->debug("Write blockPins info {0}",node.blockPins[i].name);
-            logger->debug("blockPins contact size {0}",node.blockPins[i].pinContacts.size());
-	    for (unsigned int j = 0; j < node.blockPins[i].pinContacts.size(); j++) {
-		if (write == 0) {
-		    PnRDB::contact con = node.blockPins[i].pinContacts[j];
-                    logger->debug("contact info {0} {1} {2} {3}",con.originBox.LL.x,con.originBox.LL.y,con.originBox.UR.x,con.originBox.UR.y);
-                    con.placedBox = con.originBox;
-                    addContactBoundaries (jsonElements, con, drc_info, unitScale);
-		    assignBoxPoints (x, y, con.originBox, unitScale);
-		    addTextElements (jsonElements, (x[0]+x[2])/2, (y[0]+y[2])/2,
-				     metal2int( drc_info, con.metal), 
-                    drc_info, drc_info.Metalmap.at(con.metal),
-                    node.blockPins[i].name);
-		    write = 1;	// added by yg 
-		}
-	    }
-	}
+        logger->debug("Write blockPins info {0}",node.blockPins[i].name);
+        logger->debug("blockPins contact size {0}",node.blockPins[i].pinContacts.size());
+        for (unsigned int j = 0; j < node.Terminals.size();j++){
+            if(node.Terminals[j].name==node.blockPins[i].name){
+              for (unsigned int k = 0; k < node.Terminals[j].LabelLayers.size();k++) {
+                  for (unsigned int m = 0; m < node.blockPins[i].pinContacts.size(); m++){
+                      if(DRC_info.Metalmap[node.blockPins[i].pinContacts[m].metal]==node.Terminals[j].LabelLayers[k]){
+                        PnRDB::contact con = node.blockPins[i].pinContacts[m];
+                        logger->debug("contact info {0} {1} {2} {3}", con.originBox.LL.x, con.originBox.LL.y, con.originBox.UR.x, con.originBox.UR.y);
+                        con.placedBox = con.originBox;
+                        addContactBoundaries (jsonElements, con, drc_info, unitScale);
+                        assignBoxPoints(x, y, con.originBox, unitScale);
+                        addTextElements(jsonElements, (x[0] + x[2]) / 2, (y[0] + y[2]) / 2, metal2int(drc_info, con.metal), drc_info,
+                                        drc_info.Metalmap.at(con.metal), node.blockPins[i].name);
+                        write = 1;
+                        break;
+                      }
+                  }
+                  if (write) break;
+              }
+              break;
+            }
+        }
+        if (write) continue;
+        for (unsigned int j = 0; j < node.blockPins[i].pinContacts.size(); j++) {
+          if (write == 0) {
+            PnRDB::contact con = node.blockPins[i].pinContacts[j];
+            logger->debug("contact info {0} {1} {2} {3}", con.originBox.LL.x, con.originBox.LL.y, con.originBox.UR.x, con.originBox.UR.y);
+            con.placedBox = con.originBox;
+            addContactBoundaries(jsonElements, con, drc_info, unitScale);
+            assignBoxPoints(x, y, con.originBox, unitScale);
+            addTextElements(jsonElements, (x[0] + x[2]) / 2, (y[0] + y[2]) / 2, metal2int(drc_info, con.metal), drc_info, drc_info.Metalmap.at(con.metal),
+                            node.blockPins[i].name);
+            write = 1;  // added by yg
+          }
+        }
+        }
     }
 
     //write out extend pins
@@ -553,6 +573,24 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 	for (unsigned int i = 0; i < node.PowerNets.size(); i++) {
 	    //path_metal
 	    int write = 0;
+        for (unsigned int k = 0; k < node.PowerNets[i].LabelLayers.size();k++) {
+            for (unsigned int m = 0; m < node.PowerNets[i].path_metal.size(); m++){
+                if(node.PowerNets[i].path_metal[m].MetalIdx==node.PowerNets[i].LabelLayers[k]){
+                PnRDB::Metal metal = node.PowerNets[i].path_metal[m];
+                if (addMetalBoundaries (jsonElements,  metal, drc_info, unitScale)) {
+                  assignBoxPoints(x, y, metal.MetalRect.placedBox, unitScale);
+                  addTextElements(jsonElements, (x[0] + x[2]) / 2, (y[0] + y[2]) / 2, metal2int(drc_info, metal.MetalRect.metal), drc_info,
+                                  drc_info.Metalmap.at(metal.MetalRect.metal), node.PowerNets[i].name);
+                  write = 1;
+                  break;
+                }
+                break;
+                }
+                if (write) break;
+            }
+            if (write) break;
+        }
+        if (write) continue;
 	    for (unsigned int j = 0; j < node.PowerNets[i].path_metal.size(); j++) {
 		PnRDB::Metal metal = node.PowerNets[i].path_metal[j];
 		if (addMetalBoundaries (jsonElements,  metal, drc_info, unitScale)) {

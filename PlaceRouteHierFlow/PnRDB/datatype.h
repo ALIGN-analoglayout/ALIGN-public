@@ -277,6 +277,7 @@ struct PowerNet {
   //vector<contact> interVias;////TEMPORARY!!!+Jinhyun
   vector<Metal> path_metal;
   vector<Via> path_via;
+  vector<int> LabelLayers;
 }; // structure of nets
 
 struct block {
@@ -312,7 +313,8 @@ struct terminal {
   string type=""; //add by yg //////////////////////////////////////
   int netIter=-1;
   vector<contact> termContacts; // only used for exchange of placed coordinates in top-level
-}; // structure of terminal
+  vector<int> LabelLayers;
+};  // structure of terminal
 
 struct blockComplex {
   std::vector<block> instance;

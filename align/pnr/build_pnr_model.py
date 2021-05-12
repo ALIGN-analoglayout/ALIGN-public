@@ -157,9 +157,8 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     else:
         global_signals = DB.ReadVerilog( path, vname, topcell)
 
-    _attach_constraint_files( DB, path)
     DB.semantic0( topcell)
     DB.semantic1( global_signals)
     DB.semantic2()
-
+    _attach_constraint_files( DB, path)
     return DB, j
