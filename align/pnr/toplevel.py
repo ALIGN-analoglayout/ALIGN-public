@@ -148,8 +148,6 @@ def route_bottom_up( DB, drcInfo,
 
             logger.info( f'Order: {i} {current_node.name}')
 
-            current_node_name = current_node.name
-
             logger.info( f'Existing parents: {current_node.parent}')
             #current_node.parent = []
 
