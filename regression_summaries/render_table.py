@@ -33,9 +33,17 @@ parser.add_argument( '-d1', '--regression_directory1', type=str, help='Regressio
 args = parser.parse_args()
 
 if args.csv_input_file0 is None and args.regression_directory0 is not None:
+    short_name0 = pathlib.Path(args.regression_directory0).name
     args.csv_input_file0 = str( pathlib.Path(args.regression_directory0) / 'summary.csv')
+else:
+    short_name0 = pathlib.Path(args.csv_input_file0).stem
+
 if args.csv_input_file1 is None and args.regression_directory1 is not None:
+    short_name1 = pathlib.Path(args.regression_directory1).name
     args.csv_input_file1 = str( pathlib.Path(args.regression_directory1) / 'summary.csv')
+else:
+    short_name1 = pathlib.Path(args.csv_input_file1).stem
+
 
 df0 = pd.read_csv( args.csv_input_file0)
 df1 = pd.read_csv( args.csv_input_file1)
@@ -108,25 +116,42 @@ for id in df.columns:
         }
         style_data_conditional.append(s)
 
+print(df.columns)
+print(names)
+
+pattern = re.compile( r'^(\S+)_(x|y|d)$')
+
+translate = { 'x': f'File0 or Directory0: {short_name0}',
+              'y': f'File1 or Directory1: {short_name1}',
+              'd': 'Delta'}
+
+def h_name( s):
+    m = pattern.match(s)
+    if m:
+        return [translate[m.groups()[1]], m.groups()[0]]
+    else:
+        return ["", s]
+
 app.layout = html.Div([
     dash_table.DataTable(
-    id='table',
-    columns=[{"name": i, "id": i} for i in df.columns if i != 'id' and not exclude(i)],
-    data=df.to_dict('records'),
-    sort_action='native',
-    filter_action='native',
-    style_data_conditional=style_data_conditional,
-    style_cell={
-        'height': 'auto',
-        'whiteSpace': 'normal',
-        'overflow': 'hidden',
-        'minWidth': '30px',
-        'width': '30px',
-        'maxWidth': '30px'
-    }
+        id='table',
+        columns=[{"name": h_name(i), "id": i} for i in df.columns if i != 'id' and not exclude(i)],
+        data=df.to_dict('records'),
+        sort_action='native',
+        filter_action='native',
+        style_data_conditional=style_data_conditional,
+        style_cell={
+            'height': 'auto',
+            'whiteSpace': 'normal',
+            'overflow': 'hidden',
+            'minWidth': '30px',
+            'width': '30px',
+            'maxWidth': '30px'
+        },
+        merge_duplicate_headers=True
     ),
     html.Div(id='container')
-    ])
+])
 
 @app.callback(
     Output('container', 'children'),
