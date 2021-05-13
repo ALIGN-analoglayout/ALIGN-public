@@ -181,6 +181,54 @@ def make_tradeoff_fig_ha(df, log=False, scale='Blugrn'):
 
     return fig
 
+def make_tradeoff_fig_ac(df, log=False, scale='Blugrn'):
+    fig = px.scatter(
+        df,
+        x="area",
+        y="cost",
+        color="ordering",
+        color_continuous_scale=scale,
+        size="size",
+        width=800,
+        height=800,
+        hover_name="concrete_template_name",
+        hover_data=['width','height']
+    )
+
+    y = df['cost'].min()
+
+    min_x, max_x = min(df['area']),max(df['area'])
+    min_y, max_y = min(df['cost']),max(df['cost'])
+
+    sweep_x = np.linspace( min_x, max_x, 101)
+    sweep_y = y+0*sweep_x
+
+    fig.add_trace(
+        go.Scatter( 
+            x=sweep_x,
+            y=sweep_y,
+            mode='lines',
+            showlegend=False
+        )
+    )
+
+    if log:
+        fig.update_xaxes(
+            type="log"
+        )
+        fig.update_yaxes(
+            type="log"
+        )
+    else:
+        fig.update_xaxes(
+            range=[0,max_x*1.1]
+        )
+        fig.update_yaxes(
+            range=[0,max_y*1.1]
+        )
+
+    return fig
+
 def make_tradeoff_fig( axes, df, log=False, scale='Blugrn'):
     if   axes == ('width', 'height'):
         return make_tradeoff_fig_wh( df, log, scale)
@@ -188,6 +236,8 @@ def make_tradeoff_fig( axes, df, log=False, scale='Blugrn'):
         return make_tradeoff_fig_aa( df, log, scale)
     elif axes == ('hpwl', 'area'):
         return make_tradeoff_fig_ha( df, log, scale)
+    elif axes == ('area', 'cost'):
+        return make_tradeoff_fig_ac( df, log, scale)
     else:
         assert False, axes
 
@@ -200,10 +250,6 @@ class AppWithCallbacksAndState:
         df = pd.DataFrame( data=data)
         df['area'] = df['width']*df['height']
         df['aspect_ratio'] = df['height'] / df['width']
-
-        #self.axes = ('width','height')
-        #self.axes = ('aspect_ratio','area')
-        #self.axes = ('hpwl','area')
 
         self.tagged_histos = {}
         for atn, df_group0 in df.groupby(['abstract_template_name']):
@@ -255,7 +301,7 @@ class AppWithCallbacksAndState:
                         dcc.Dropdown(
                             id='tradeoff-type', 
                             options=[{"value": x, "label": x} 
-                                     for x in ['width-height', 'aspect_ratio-area', 'hpwl-area']],
+                                     for x in ['width-height', 'aspect_ratio-area', 'hpwl-area', 'area-cost']],
                             value='width-height',
                             style={ 'width': '250px', 'display': 'inline-block'}
                         ),

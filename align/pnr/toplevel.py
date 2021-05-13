@@ -376,9 +376,10 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
             if gui:
                 modules = { x['name']: x for x in placement_verilog_d['modules']}
 
-                logger.debug( f"hpwl: {hN.HPWL}")
+                logger.info( f"hpwl: {hN.HPWL} cost: {hN.cost} constraint_penalty: {hN.constraint_penalty}")
+
                 p = r2wh(modules[hN.name]['bbox'])
-                d = { 'width': p[0], 'height': p[1], 'hpwl': hN.HPWL}
+                d = { 'width': p[0], 'height': p[1], 'hpwl': hN.HPWL, 'cost': hN.cost, 'constraint_penalty': hN.constraint_penalty}
 
                 bboxes.append( d)
 

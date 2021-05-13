@@ -19,6 +19,7 @@ ILP_solver::ILP_solver(const ILP_solver& solver) {
   UR = solver.UR;
   area = solver.area;
   HPWL = solver.HPWL;
+  cost = solver.cost;
   area_norm = solver.area_norm;
   HPWL_norm = solver.HPWL_norm;
   ratio = solver.ratio;
@@ -35,6 +36,7 @@ ILP_solver& ILP_solver::operator=(const ILP_solver& solver) {
   LL = solver.LL;
   UR = solver.UR;
   area = solver.area;
+  cost = solver.cost;
   HPWL = solver.HPWL;
   area_norm = solver.area_norm;
   HPWL_norm = solver.HPWL_norm;
@@ -524,8 +526,9 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     multi_linear_const += temp_sum;
   }
 
-  double cost = CalculateCost(mydesign, curr_sp);
-  return cost;
+  double calculated_cost = CalculateCost(mydesign, curr_sp);
+  cost = calculated_cost;
+  return calculated_cost;
 }
 
 double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
@@ -1303,6 +1306,9 @@ void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierN
   node.width = UR.x;
   node.height = UR.y;
   node.HPWL = HPWL;
+  node.constraint_penalty = 0;
+  node.cost = cost;
+
   for (unsigned int i = 0; i < mydesign.Blocks.size(); ++i) {
     node.Blocks.at(i).selectedInstance = curr_sp.GetBlockSelected(i);
     placerDB::Omark ort;
