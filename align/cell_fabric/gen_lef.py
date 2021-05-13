@@ -2,7 +2,6 @@ import sys
 import json
 import collections
 
-
 def gen_lef_data(data, fp, macro_name, cell_pin, bodyswitch):
     def s(x):
         return "%.4f" % (x/10000.0)
@@ -53,30 +52,28 @@ def gen_lef_json(json_fn, lef_fn, macro_name, cell_pin, bodyswitch):
     with open(json_fn, "rt") as json_fp, open(lef_fn, "wt") as lef_fp:
         gen_lef_json_fp(json_fp, lef_fp, macro_name, cell_pin)
 
-
 def json_lef(input_json, out_lef, cell_pin, bodyswitch, blockM, p):
 
     exclude_layers = p.get_lef_exclude()
 
     macro_name = out_lef + '.lef'
 
+    with open(p.layerfile, "rt") as fp1:
+        j1 = json.load(fp1)
+    Scale_factor = j1["ScaleFactor"]
+
     def s(x):
-        return "%.4f" % (x/10000.0)
+        #return "%.3f" % (x/(1000))
+        return(x)
     # Start: This part converting all negative coordinates into positive
+
     with open(input_json, "rt") as fp:
         j = json.load(fp, object_pairs_hook=collections.OrderedDict)
-
-        for i in range(4):
-            j['bbox'][i] *= 10
 
         assert (j['bbox'][3]-j['bbox'][1]
                 ) % p['M2']['Pitch'] == 0, f"Cell height not a multiple of the grid {j['bbox']}"
         assert (j['bbox'][2]-j['bbox'][0]
                 ) % p['M1']['Pitch'] == 0, f"Cell width not a multiple of the grid {j['bbox']}"
-
-        for obj in j['terminals']:
-            for i in range(4):
-                obj['rect'][i] *= 10
 
     with open(input_json, "wt") as fp:
         fp.write(json.dumps(j, indent=2) + '\n')
@@ -89,6 +86,9 @@ def json_lef(input_json, out_lef, cell_pin, bodyswitch, blockM, p):
     with open(input_json.parents[0] / macro_name, "wt") as fp:
 
         fp.write("MACRO %s\n" % out_lef)
+        fp.write("  UNITS \n")
+        fp.write("    DATABASE MICRONS UNITS %s ;\n" % (1000*Scale_factor))
+        fp.write("  END UNITS \n")
         fp.write("  ORIGIN 0 0 ;\n")
         fp.write("  FOREIGN %s 0 0 ;\n" % out_lef)
 

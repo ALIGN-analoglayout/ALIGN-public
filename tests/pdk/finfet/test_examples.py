@@ -28,7 +28,7 @@ def test_examples(example):
     run_dir.mkdir(parents=True, exist_ok=True)
     os.chdir(run_dir)
 
-    args = [str(example), '-p', str(pdk_dir), '--check', '-l','INFO']
+    args = [str(example), '-p', str(pdk_dir), '-l','INFO']
    
     results = align.CmdlineParser().parse_args(args)
 
