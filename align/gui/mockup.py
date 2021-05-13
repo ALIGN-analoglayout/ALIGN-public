@@ -136,7 +136,7 @@ def make_tradeoff_fig_ha(df, log=False, scale='Blugrn'):
         df,
         x="hpwl",
         y="area",
-        color="ordering",
+        color="constraint_penalty",
         color_continuous_scale=scale,
         size="size",
         width=800,
@@ -184,7 +184,7 @@ def make_tradeoff_fig_ac(df, log=False, scale='Blugrn'):
         df,
         x="area",
         y="cost",
-        color="ordering",
+        color="constraint_penalty",
         color_continuous_scale=scale,
         size="size",
         width=800,
@@ -227,6 +227,54 @@ def make_tradeoff_fig_ac(df, log=False, scale='Blugrn'):
 
     return fig
 
+def make_tradeoff_fig_hc(df, log=False, scale='Blugrn'):
+    fig = px.scatter(
+        df,
+        x="hpwl",
+        y="cost",
+        color="constraint_penalty",
+        color_continuous_scale=scale,
+        size="size",
+        width=800,
+        height=800,
+        hover_name="concrete_template_name",
+        hover_data=['width','height']
+    )
+
+    y = df['cost'].min()
+
+    min_x, max_x = min(df['hpwl']),max(df['hpwl'])
+    min_y, max_y = min(df['cost']),max(df['cost'])
+
+    sweep_x = np.linspace( min_x, max_x, 101)
+    sweep_y = y+0*sweep_x
+
+    fig.add_trace(
+        go.Scatter( 
+            x=sweep_x,
+            y=sweep_y,
+            mode='lines',
+            showlegend=False
+        )
+    )
+
+    if log:
+        fig.update_xaxes(
+            type="log"
+        )
+        fig.update_yaxes(
+            type="log"
+        )
+    else:
+        fig.update_xaxes(
+            range=[0,max_x*1.1]
+        )
+        fig.update_yaxes(
+            range=[0,max_y*1.1]
+        )
+
+    return fig
+
 def make_tradeoff_fig( axes, df, log=False, scale='Blugrn'):
     if   axes == ('width', 'height'):
         return make_tradeoff_fig_wh( df, log, scale)
@@ -236,6 +284,8 @@ def make_tradeoff_fig( axes, df, log=False, scale='Blugrn'):
         return make_tradeoff_fig_ha( df, log, scale)
     elif axes == ('area', 'cost'):
         return make_tradeoff_fig_ac( df, log, scale)
+    elif axes == ('hpwl', 'cost'):
+        return make_tradeoff_fig_hc( df, log, scale)
     else:
         assert False, axes
 
@@ -299,7 +349,7 @@ class AppWithCallbacksAndState:
                         dcc.Dropdown(
                             id='tradeoff-type', 
                             options=[{"value": x, "label": x} 
-                                     for x in ['width-height', 'aspect_ratio-area', 'hpwl-area', 'area-cost']],
+                                     for x in ['width-height', 'aspect_ratio-area', 'hpwl-area', 'area-cost', 'hpwl-cost']],
                             value='width-height',
                             style={ 'width': '250px', 'display': 'inline-block'}
                         ),
@@ -348,6 +398,7 @@ class AppWithCallbacksAndState:
                 ),
                 html.Div(
                     children=[    
+                        #html.Img(src=self.app.get_asset_url('align.png'), style={'height':'10%', 'width':'10%'}),
                         html.H2(children='Tree'),
                         dcc.Markdown(children='',id='Tree')
                     ],
