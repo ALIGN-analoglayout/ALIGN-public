@@ -45,7 +45,7 @@ def run_example(example):
     run_dir.mkdir(parents=True)
     os.chdir(run_dir)
 
-    args = [str(example), '-p', str(pdk_dir), '--check', '-l','INFO']
+    args = [str(example), '-p', str(pdk_dir), '-l','INFO']
     results = align.CmdlineParser().parse_args(args)
     assert results is not None, f"{example.name}: No results generated"
     

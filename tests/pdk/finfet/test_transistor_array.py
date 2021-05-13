@@ -4,6 +4,8 @@ try:
     from .helper import *
 except:
     from helper import *
+import logging
+logger = logging.getLogger(__name__)
 
 
 ports_uno = [
@@ -42,6 +44,7 @@ ports_duo = [
 @pytest.mark.parametrize('device_type', ['parallel', 'stack'])
 @pytest.mark.parametrize('ports', ports_uno)
 def test_uno_drc(n_row, n_col, nf, device_type, ports):
+    logger.info(f'running {get_test_id()}')
     c = MOSGenerator()
     parameters = {'m': n_row*n_col, 'nfin': 4, 'real_inst_type': 'n'}
     if device_type == 'parallel':
@@ -61,6 +64,7 @@ def test_uno_drc(n_row, n_col, nf, device_type, ports):
 @pytest.mark.parametrize('device_type', ['parallel', 'stack'])
 @pytest.mark.parametrize('ports', ports_duo)
 def test_duo_drc(n_row, n_col, nf, device_type, ports):
+    logger.info(f'running {get_test_id()}')
     if n_row * n_col % 2 == 0 and n_col >= 2:
         c = MOSGenerator()
         parameters = {'m': n_row*n_col, 'nfin': 4, 'real_inst_type': 'n'}

@@ -203,6 +203,7 @@ PYBIND11_MODULE(PnR, m) {
     .def( py::init<>())
     .def_readwrite("width", &layoutAS::width)
     .def_readwrite("height", &layoutAS::height)
+    .def_readwrite("HPWL", &layoutAS::HPWL)
     .def_readwrite("gdsFile", &layoutAS::gdsFile)
     .def_readwrite("Blocks", &layoutAS::Blocks)
     .def_readwrite("Nets", &layoutAS::Nets)
@@ -249,6 +250,7 @@ PYBIND11_MODULE(PnR, m) {
       .def_readwrite("bias_Hgraph", &hierNode::bias_Hgraph)
       .def_readwrite("bias_Vgraph", &hierNode::bias_Vgraph)
       .def_readwrite("router_report", &hierNode::router_report)
+      .def_readwrite("HPWL", &hierNode::HPWL)
       .def_readwrite("GuardRings", &hierNode::GuardRings);
   py::class_<Guardring_Const>( m, "Guardring_Const")
     .def( py::init<>())
@@ -444,9 +446,12 @@ PYBIND11_MODULE(PnR, m) {
     .def( "Extract_RemovePowerPins", &PnRdatabase::Extract_RemovePowerPins)
     .def( "CheckinHierNode", &PnRdatabase::CheckinHierNode)
     .def( "TransformNode", &PnRdatabase::TransformNode)
+    .def( "TransformBbox", &PnRdatabase::TransformBbox)
+    .def( "TransformPoint", &PnRdatabase::TransformPoint)
     .def( "RelOrt2AbsOrt", &PnRdatabase::RelOrt2AbsOrt)
     .def( "ExtractPinsToPowerPins", &PnRdatabase::ExtractPinsToPowerPins)
     .def( "CheckinChildnodetoBlock", &PnRdatabase::CheckinChildnodetoBlock)
+    .def( "UsedInstancesIdx", &PnRdatabase::UsedInstancesIdx) 
     .def( "AppendToHierTree", &PnRdatabase::AppendToHierTree)
     .def( "WriteJSON", &PnRdatabase::WriteJSON)
     .def( "WriteLef", &PnRdatabase::WriteLef)
@@ -458,6 +463,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("hierTree", &PnRdatabase::hierTree)
     .def_readwrite("topidx", &PnRdatabase::topidx)
     .def_readwrite("gdsData2", &PnRdatabase::gdsData2)
+    .def_readwrite("lefData", &PnRdatabase::lefData)
     .def_readwrite("DRC_info", &PnRdatabase::DRC_info)
   ;
 

@@ -23,28 +23,15 @@ from ..schema.hacks import VerilogJsonTop
 logger = logging.getLogger(__name__)
 
 
-def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False, input_dir=None, toplevel=True, gds_json=True):
+def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, extract=False, input_dir=None, toplevel=True, gds_json=True):
 
     logger.debug(
-        f"_generate_json: {hN} {variant} {primitive_dir} {pdk_dir} {output_dir} {check} {extract} {input_dir} {toplevel} {gds_json}")
+        f"_generate_json: {hN} {variant} {primitive_dir} {pdk_dir} {output_dir} {extract} {input_dir} {toplevel} {gds_json}")
 
-    ret = {}
 
-    if not toplevel:
-        # Check name matches n_copy number (top down flow)
-        p2 = re.compile(r"^(\S+)_(\d+)_(\d+)$")
-        m = p2.match(variant)
-        assert m
-        ncpy = int(m.groups()[1])
-        assert ncpy == hN.n_copy, f"n_copy {hN.n_copy} should be same as in the variant name {variant} {ncpy}"
 
-    res = gen_viewer_json(hN, pdkdir=pdk_dir, draw_grid=True, json_dir=str(primitive_dir), checkOnly=(
-        check or extract or gds_json), extract=extract, input_dir=input_dir, toplevel=toplevel)
-
-    if check or extract or gds_json:
-        cnv, d = res
-    else:
-        d = res
+    cnv, d = gen_viewer_json(hN, pdkdir=pdk_dir, draw_grid=True, json_dir=str(primitive_dir),
+                             extract=extract, input_dir=input_dir, toplevel=toplevel)
 
     if gds_json and toplevel:
         # Hack in Outline layer
@@ -52,26 +39,27 @@ def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, check=Fal
         d['terminals'].append(
             {"layer": "Outline", "netName": None, "rect": d['bbox']})
 
+    ret = {}
+
     ret['json'] = output_dir / f'{variant}.json'
     with open(ret['json'], 'wt') as fp:
         json.dump(d, fp=fp, indent=2)
     logger.info(f"OUTPUT json at {ret['json']}")
 
-    if check:
-        ret['errfile'] = output_dir / f'{variant}.errors'
-        with open(ret['errfile'], 'wt') as fp:
-            for x in cnv.rd.shorts:
-                fp.write(f'SHORT {x}\n')
-            for x in cnv.rd.opens:
-                fp.write(f'OPEN {x}\n')
-            #for x in cnv.rd.different_widths: fp.write( f'DIFFERENT WIDTH {x}\n')
-            for x in cnv.drc.errors:
-                fp.write(f'DRC ERROR {x}\n')
-        ret['errors'] = len(cnv.rd.shorts) + \
-            len(cnv.rd.opens) + len(cnv.drc.errors)
-        if ret['errors'] > 0:
-            logger.error(f"{ret['errors']} LVS / DRC errors found !!!")
-            logger.info(f"OUTPUT error file at {ret['errors']}")
+    ret['errfile'] = output_dir / f'{variant}.errors'
+    with open(ret['errfile'], 'wt') as fp:
+        for x in cnv.rd.shorts:
+            fp.write(f'SHORT {x}\n')
+        for x in cnv.rd.opens:
+            fp.write(f'OPEN {x}\n')
+        #for x in cnv.rd.different_widths: fp.write( f'DIFFERENT WIDTH {x}\n')
+        for x in cnv.drc.errors:
+            fp.write(f'DRC ERROR {x}\n')
+    ret['errors'] = len(cnv.rd.shorts) + \
+        len(cnv.rd.opens) + len(cnv.drc.errors)
+    if ret['errors'] > 0:
+        logger.error(f"{ret['errors']} LVS / DRC errors found !!!")
+        logger.info(f"OUTPUT error file at {ret['errors']}")
 
     if extract:
         ret['cir'] = output_dir / f'{variant}.cir'
@@ -202,7 +190,7 @@ def gen_leaf_collateral( leaves, primitives, primitive_dir):
 
     return leaf_collateral
 
-def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, check=False, extract=False, gds_json=False, render_placements=False, PDN_mode=False, router_mode='top_down', gui=False):
+def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False, gds_json=False, PDN_mode=False, router_mode='top_down', gui=False):
 
     logger.info(f"Running Place & Route for {subckt} {router_mode}")
 
@@ -272,7 +260,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
     current_working_dir = os.getcwd()
     os.chdir(working_dir)
-    DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, render_placements=render_placements, results_dir=None, router_mode=router_mode, gui=gui)
+    DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, results_dir=None, router_mode=router_mode, gui=gui)
     os.chdir(current_working_dir)
 
     # Copy generated cap jsons from results_dir to working_dir
@@ -283,75 +271,29 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         for fn in results_dir.glob( f'{cap_template_name}_AspectRatio_*.json'):
             (working_dir / fn.name).write_text(fn.read_text())
 
-    if check or extract or gds_json:
+    variants = collections.defaultdict(collections.defaultdict)
 
-        def TraverseHierTree(topidx):
-            """Find topoorder of routing copies: (start from topidx)"""
-            q = []
-            visited = set()
-            def TraverseDFS(idx):
-                visited.add(idx)
-                for bit in DB.hierTree[idx].Blocks:
-                    if bit.child != -1 and bit.child not in visited:
-                        TraverseDFS(bit.child)
-                q.append(idx)
-            TraverseDFS(topidx)
-            return q
+    for variant, ( path_name, layout_idx) in results_name_map.items():
+        hN = DB.hierTree[layout_idx]
+        result = _generate_json(hN=hN,
+                                variant=variant,
+                                pdk_dir=pdk_dir,
+                                primitive_dir=input_dir,
+                                input_dir=working_dir,
+                                output_dir=working_dir,
+                                extract=extract,
+                                gds_json=gds_json,
+                                toplevel=hN.isTop)
 
-        possible_final_circuits = [(i, hN) for i, hN in enumerate(DB.hierTree) if hN.name == subckt]
-        assert router_mode == 'no_op' or len(possible_final_circuits) > 1
-
-        variants = collections.defaultdict(collections.defaultdict)
-        for lidx, (topidx, _) in enumerate(possible_final_circuits[1:]):
-
-            order = [(i, DB.CheckoutHierNode(i, -1).name) for i in TraverseHierTree(topidx)]
-            assert order[-1][1] == subckt, f"Last in topological order should be the subckt {subckt} {order}"
-
-            logger.info(f'order={order}')
-
-            for idx, nm in order[:-1]:
-                n_copy = DB.hierTree[idx].n_copy
-                #assert 1 == DB.hierTree[idx].numPlacement
-                i_placement = lidx
-
-                variant_name = f'{nm}_{n_copy}_{i_placement}'
-                _generate_json(hN=DB.hierTree[idx],
-                               variant=variant_name,
-                               pdk_dir=pdk_dir,
-                               primitive_dir=input_dir,
-                               input_dir=working_dir,
-                               output_dir=working_dir,
-                               check=check,
-                               extract=extract,
-                               gds_json=gds_json,
-                               toplevel=False)
-
-            # toplevel
-            (idx, nm) = order[-1]
-            assert idx == topidx
-
-            variant = f'{nm}_{lidx}'
-
-            logger.info( f'Processing top-down generated blocks: lidx={lidx} topidx={topidx} nm={nm} variant={variant}')
-
-            variants[variant].update(
-                _generate_json(hN=DB.hierTree[idx],
-                               variant=variant,
-                               pdk_dir=pdk_dir,
-                               primitive_dir=input_dir,
-                               input_dir=working_dir,
-                               output_dir=working_dir,
-                               check=check,
-                               extract=extract,
-                               gds_json=gds_json,
-                               toplevel=True))
+        if hN.isTop:
+            variants[variant].update(result)
 
             for tag, suffix in [('lef', '.lef'), ('gdsjson', '.gds.json')]:
                 path = results_dir / (variant + suffix)
                 assert path.exists()
                 variants[variant][tag] = path
 
-    logger.info('Explicitly deleting DB...')
+    logger.debug('Explicitly deleting DB...')
     del DB
 
     return variants

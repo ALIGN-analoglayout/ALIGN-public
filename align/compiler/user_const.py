@@ -54,5 +54,5 @@ class ConstraintParser:
             raise NotImplementedError(
                 'Command-line interface has not been upgraded. Please use json constraints')
         else:
-            logger.info(
+            logger.warning(
                 f"No user constraints found for block {design_name} in path {self.input_dir}")
