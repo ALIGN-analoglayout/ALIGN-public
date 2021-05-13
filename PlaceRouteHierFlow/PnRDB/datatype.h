@@ -332,8 +332,8 @@ struct layoutAS {
   int width=0;
   int height=0;
   int HPWL = -1;
-  int constraint_penalty = -1;
-  int cost = -1;
+  double constraint_penalty = -1;
+  double cost = -1;
   string gdsFile = "";
   vector<blockComplex> Blocks;
   vector<net> Nets;

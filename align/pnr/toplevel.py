@@ -119,8 +119,15 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
             return_name = f'{current_node_copy.name}_{current_node_copy.n_copy}_{lidx}' if return_name is None else return_name
             DB.WriteJSON(current_node_copy, True, True, True, True, return_name, drcInfo, opath)
             current_node.gdsFile = current_node_copy.gdsFile
+            logger.info( f'SMB {current_node_copy.gdsFile}')
             DB.WriteLef(current_node_copy, f'{return_name}.lef', opath)
             DB.PrintHierNode(current_node_copy)
+    else:
+        if current_node.isTop:
+            pass
+        else:
+            return_name = f'{current_node.name}_{current_node.n_copy}_{lidx}' if return_name is None else return_name
+            current_node.gdsFile = f'{opath}{return_name}.gds'
 
     return return_name
 
@@ -178,7 +185,7 @@ def route_bottom_up( *, DB, idx, opath, adr_mode, PDN_mode):
                     blk.child = new_currentnode_idx_d[child_idx][inst_idx]
 
             return_name = f'{current_node.name}_{j}'
-            result_name = route_single_variant( DB, DB.getDrc_info(), current_node, j, opath, adr_mode, PDN_mode=PDN_mode, return_name=return_name, noGDS=True, noExtra=True)
+            result_name = route_single_variant( DB, DB.getDrc_info(), current_node, j, opath, adr_mode, PDN_mode=PDN_mode, return_name=return_name, noGDS=False, noExtra=True)
 
             DB.AppendToHierTree(current_node)
 

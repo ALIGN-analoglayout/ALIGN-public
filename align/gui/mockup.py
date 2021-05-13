@@ -24,8 +24,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
-
 def make_tradeoff_fig_wh(df, log=False, scale='Blugrn'):
     fig = px.scatter(
         df,
@@ -352,11 +350,6 @@ class AppWithCallbacksAndState:
                     children=[    
                         html.H2(children='Tree'),
                         dcc.Markdown(children='',id='Tree')
-                    ],
-                    style={'display': 'inline-block', 'vertical-align': 'top'}
-                ),
-                html.Div(
-                    children=[    
                     ],
                     style={'display': 'inline-block', 'vertical-align': 'top'}
                 )
