@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 Omark = PnR.Omark
 TransformType = PnR.TransformType
 
-def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, PDN_mode, return_name=None):
+def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, PDN_mode, return_name=None, noGDS=False, noExtra=False):
     DB.ExtractPinsToPowerPins(current_node)
     
     h_skip_factor = DB.getDrc_info().Design_info.h_skip_factor
@@ -32,27 +32,29 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
 
     RouteWork( 6 if adr_mode else 4, current_node)
 
-    logger.debug( "Start WriteGcellGlobalRoute")
-    if current_node.isTop:
-        DB.WriteGcellGlobalRoute(current_node, f'{current_node.name}_GcellGlobalRoute_{lidx}.json', opath)
-    else:
-        current_node_copy = PnR.hierNode(current_node)
-        DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, TransformType.Backward)
-        DB.WriteGcellGlobalRoute(
-            current_node_copy,
-            f'{current_node_copy.name}_GcellGlobalRoute_{current_node_copy.n_copy}_{lidx}.json', opath)
-    logger.debug("End WriteGcellGlobalRoute" )
+    if not noExtra:
+        logger.debug( "Start WriteGcellGlobalRoute")
+        if current_node.isTop:
+            DB.WriteGcellGlobalRoute(current_node, f'{current_node.name}_GcellGlobalRoute_{lidx}.json', opath)
+        else:
+            current_node_copy = PnR.hierNode(current_node)
+            DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, TransformType.Backward)
+            DB.WriteGcellGlobalRoute(
+                current_node_copy,
+                f'{current_node_copy.name}_GcellGlobalRoute_{current_node_copy.n_copy}_{lidx}.json', opath)
+        logger.debug("End WriteGcellGlobalRoute" )
 
     RouteWork( 5, current_node)
 
-    if current_node.isTop:
-        DB.WriteJSON(current_node, True, True, False, False, f'{current_node.name}_DR_{lidx}', drcInfo, opath)
-    else:
-        current_node_copy = PnR.hierNode(current_node)
-        DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, TransformType.Backward)
-        DB.WriteJSON(current_node_copy, True, True, False, False,
-                     f'{current_node_copy.name}_DR_{current_node_copy.n_copy}_{lidx}', drcInfo, opath)
-        current_node.gdsFile = current_node_copy.gdsFile
+    if not noExtra:
+        if current_node.isTop:
+            DB.WriteJSON(current_node, True, True, False, False, f'{current_node.name}_DR_{lidx}', drcInfo, opath)
+        else:
+            current_node_copy = PnR.hierNode(current_node)
+            DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, TransformType.Backward)
+            DB.WriteJSON(current_node_copy, True, True, False, False,
+                         f'{current_node_copy.name}_DR_{current_node_copy.n_copy}_{lidx}', drcInfo, opath)
+            current_node.gdsFile = current_node_copy.gdsFile
 
     if current_node.isTop:
         power_grid_metal_l = DB.getDrc_info().Design_info.power_grid_metal_l
@@ -93,30 +95,32 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
         
         RouteWork(2, current_node, metal_l=power_grid_metal_l, metal_u=power_grid_metal_u)
 
-        DB.WriteJSON(current_node, True, True, False, True, f'{current_node.name}_PG_{lidx}', drcInfo, opath)
+        if not noExtra:
+            DB.WriteJSON(current_node, True, True, False, True, f'{current_node.name}_PG_{lidx}', drcInfo, opath)
 
         logger.debug("Checkpoint : Starting Power Routing");
         
         RouteWork(3, current_node, metal_l=power_routing_metal_l, metal_u=power_routing_metal_u)
 
-        DB.WriteJSON(current_node, True, False, True, True, f'{current_node.name}_PR_{lidx}', drcInfo, opath)
-
-        DB.Write_Router_Report(current_node, opath)
+        if not noExtra:
+            DB.WriteJSON(current_node, True, False, True, True, f'{current_node.name}_PR_{lidx}', drcInfo, opath)
+            DB.Write_Router_Report(current_node, opath)
 
     # transform current_node into current_node coordinate
-    if current_node.isTop:
-        return_name = f'{current_node.name}_{lidx}' if return_name is None else return_name
-        DB.WriteJSON(current_node, True, True, True, True, return_name, drcInfo, opath)
-        DB.WriteLef(current_node, f'{return_name}.lef', opath)
-        DB.PrintHierNode(current_node)
-    else:
-        current_node_copy = PnR.hierNode(current_node)
-        DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, TransformType.Backward)
-        return_name = f'{current_node_copy.name}_{current_node_copy.n_copy}_{lidx}' if return_name is None else return_name
-        DB.WriteJSON(current_node_copy, True, True, True, True, return_name, drcInfo, opath)
-        current_node.gdsFile = current_node_copy.gdsFile
-        DB.WriteLef(current_node_copy, f'{return_name}.lef', opath)
-        DB.PrintHierNode(current_node_copy)
+    if not noGDS:
+        if current_node.isTop:
+            return_name = f'{current_node.name}_{lidx}' if return_name is None else return_name
+            DB.WriteJSON(current_node, True, True, True, True, return_name, drcInfo, opath)
+            DB.WriteLef(current_node, f'{return_name}.lef', opath)
+            DB.PrintHierNode(current_node)
+        else:
+            current_node_copy = PnR.hierNode(current_node)
+            DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, TransformType.Backward)
+            return_name = f'{current_node_copy.name}_{current_node_copy.n_copy}_{lidx}' if return_name is None else return_name
+            DB.WriteJSON(current_node_copy, True, True, True, True, return_name, drcInfo, opath)
+            current_node.gdsFile = current_node_copy.gdsFile
+            DB.WriteLef(current_node_copy, f'{return_name}.lef', opath)
+            DB.PrintHierNode(current_node_copy)
 
     return return_name
 
@@ -162,9 +166,6 @@ def route_bottom_up( *, DB, idx, opath, adr_mode, PDN_mode):
             current_node.UR.y = current_node.height
             assert current_node.abs_orient == Omark.N
 
-            if False:
-                DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Forward)
-
             # Remap using new bottom up hNs
             for bit,blk in enumerate(current_node.Blocks):
                 child_idx = blk.child
@@ -177,11 +178,7 @@ def route_bottom_up( *, DB, idx, opath, adr_mode, PDN_mode):
                     blk.child = new_currentnode_idx_d[child_idx][inst_idx]
 
             return_name = f'{current_node.name}_{j}'
-            result_name = route_single_variant( DB, DB.getDrc_info(), current_node, j, opath, adr_mode, PDN_mode=PDN_mode, return_name=return_name)
-
-            if False:
-                if not current_node.isTop:
-                    DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, TransformType.Backward)
+            result_name = route_single_variant( DB, DB.getDrc_info(), current_node, j, opath, adr_mode, PDN_mode=PDN_mode, return_name=return_name, noGDS=True, noExtra=True)
 
             DB.AppendToHierTree(current_node)
 
