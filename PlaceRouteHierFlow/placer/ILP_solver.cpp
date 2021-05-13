@@ -20,6 +20,7 @@ ILP_solver::ILP_solver(const ILP_solver& solver) {
   area = solver.area;
   HPWL = solver.HPWL;
   cost = solver.cost;
+  constraint_penalty = solver.constraint_penalty;
   area_norm = solver.area_norm;
   HPWL_norm = solver.HPWL_norm;
   ratio = solver.ratio;
@@ -37,6 +38,7 @@ ILP_solver& ILP_solver::operator=(const ILP_solver& solver) {
   UR = solver.UR;
   area = solver.area;
   cost = solver.cost;
+  constraint_penalty = solver.constraint_penalty;
   HPWL = solver.HPWL;
   area_norm = solver.area_norm;
   HPWL_norm = solver.HPWL_norm;
@@ -550,6 +552,7 @@ double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
   cost += dead_area / area * const_graph.PHI;
   cost += linear_const * const_graph.PI;
   cost += multi_linear_const * const_graph.PII;
+  constraint_penalty = cost - area_norm - HPWL_norm * const_graph.LAMBDA;
   return cost;
 }
 
@@ -1306,7 +1309,7 @@ void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierN
   node.width = UR.x;
   node.height = UR.y;
   node.HPWL = HPWL;
-  node.constraint_penalty = 0;
+  node.constraint_penalty = constraint_penalty;
   node.cost = cost;
 
   for (unsigned int i = 0; i < mydesign.Blocks.size(); ++i) {
