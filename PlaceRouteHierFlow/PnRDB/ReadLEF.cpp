@@ -69,7 +69,7 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile, const bool wtap)
 
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase._ReadLEF");
 
-  logger->info( "PnRDB-Info: reading LEF file {0}" , leffile);
+  logger->debug( "Reading LEF file {0}" , leffile);
   string def;
   size_t found;
   vector<string> temp;

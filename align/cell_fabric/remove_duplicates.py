@@ -324,12 +324,18 @@ class RemoveDuplicates():
         self.check_shorts_induced_by_terminals()
         self.check_opens()
 
-        for short in self.shorts:
-            logger.warning("SHORT" + pprint.pformat(short))
-        for opn in self.opens:
-            logger.warning( "OPEN" + pprint.pformat(opn))
-        for dif in self.different_widths:
-            logger.warning( "DIFFERENT WIDTH" + pprint.pformat(dif))
+        # Trying fewer error messages
+        if True:
+            if self.shorts or self.opens or self.different_widths:
+                logger.error(f'Found errors: SHORT: {len(self.shorts)} OPEN: {len(self.opens)} DIFFERENT WIDTH: {len(self.different_widths)}')
+        else:
+            for short in self.shorts:
+                logger.warning("SHORT" + pprint.pformat(short))
+            for opn in self.opens:
+                logger.warning( "OPEN" + pprint.pformat(opn))
+            for dif in self.different_widths:
+                logger.warning( "DIFFERENT WIDTH" + pprint.pformat(dif))
+
         for subinst in self.subinsts:
             logger.debug("SUBINST" + pprint.pformat(subinst))
 

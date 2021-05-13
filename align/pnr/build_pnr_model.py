@@ -131,7 +131,7 @@ def _attach_constraint_files( DB, fpath):
             with fp.open( "rt") as fp:
                 jsonStr = fp.read()
             DB.ReadConstraint_Json( curr_node, jsonStr)
-            logger.info(f"Finished reading contraint json file {curr_node.name}.pnr.const.json")
+            logger.debug(f"Finished reading contraint json file {curr_node.name}.pnr.const.json")
         else:
             logger.warning(f"No constraint file for module {curr_node.name}")
                 
