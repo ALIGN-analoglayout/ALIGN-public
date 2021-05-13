@@ -65,6 +65,8 @@ for k,_ in names.items():
 
 df['id'] = df['name']
 
+df.to_csv( "__csv__")
+
 column_p = re.compile( r'^(.*)_(x|y|d)$')
 
 def exclude(s):
