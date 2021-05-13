@@ -416,8 +416,8 @@ struct hierNode {
   vector<Router_report> router_report;
   vector<Multi_connection> Multi_connections;
   int HPWL = -1;
-  int constraint_penalty = -1;
-  int cost = -1;
+  double constraint_penalty = -1;
+  double cost = -1;
 }; // structure of vertex in heirarchical tree
 
 

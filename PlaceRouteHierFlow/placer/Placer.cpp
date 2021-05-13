@@ -535,6 +535,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       break;
     }
   }
+  curr_sol.cost = curr_cost;
   oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
   ReshapeSeqPairMap(oData, nodeSize);
   //cout << "Placer-Info: initial cost = " << curr_cost << endl;
@@ -655,6 +656,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
           curr_sol = trial_sol;
           // if(update_index>updateThrd) {
           //std::cout << "Insert\n";
+          curr_sol.cost = curr_cost;
           oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
           ReshapeSeqPairMap(oData, nodeSize);
           //}

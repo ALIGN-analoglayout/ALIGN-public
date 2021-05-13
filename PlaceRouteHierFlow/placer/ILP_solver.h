@@ -43,7 +43,6 @@ class ILP_solver {
   vector<Block> Blocks;
   placerDB::point LL, UR;
   double area = 0, HPWL = 0, ratio = 0, dead_area = 0, linear_const = 0, multi_linear_const = 0;
-  double cost = 0;
   double area_norm = 0, HPWL_norm = 0;
   double Aspect_Ratio_weight = 1000;
   double Aspect_Ratio[2] = {0, 100};
@@ -52,6 +51,7 @@ class ILP_solver {
   static void lpsolve_logger(lprec *lp, void *userhandle, char *buf);
 
   public:
+  double cost = 0;
   ILP_solver();
   ILP_solver(design& mydesign);
   ILP_solver(const ILP_solver& solver);
