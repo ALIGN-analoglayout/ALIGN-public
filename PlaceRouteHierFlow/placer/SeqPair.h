@@ -119,6 +119,7 @@ class SeqPair
         if (!selectedNoTaps.empty()) std::swap(selected, selectedNoTaps);
       }
     }
+    void CompactSeq();
 };
 
 #endif

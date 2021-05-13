@@ -1,0 +1,5 @@
+[
+    {"constraint": "HorizontalDistance", "abs_distance":0},
+    {"constraint": "VerticalDistance",   "abs_distance":0},
+    {"constraint": "AlignInOrder", "direction" : "vertical", "line": "left", "instances": ["mp0", "mn0"]}
+]
