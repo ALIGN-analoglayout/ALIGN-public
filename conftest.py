@@ -10,7 +10,7 @@ def pytest_addoption(parser):
         "--runregression", action="store_true", default=False, help="run regression tests"
     )
     parser.addoption(
-        "--maxerrors", metavar='INT', type=int, help="Maximum number of circuit errors to tolerate (Use with --runnightly)", default=0
+        "--maxerrors", type=int, help="Maximum number of circuit errors to tolerate (Use with --runnightly)", default=0
     )
     parser.addoption(
         "--router_mode", type=str, help="Router mode for nightly run (Use with --runnightly)", default='top_down'
