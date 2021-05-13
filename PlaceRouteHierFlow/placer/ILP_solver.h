@@ -52,6 +52,7 @@ class ILP_solver {
 
   public:
   double cost = 0;
+  double constraint_penalty = 0;
   ILP_solver();
   ILP_solver(design& mydesign);
   ILP_solver(const ILP_solver& solver);
