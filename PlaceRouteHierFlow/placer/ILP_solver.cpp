@@ -552,7 +552,12 @@ double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
   cost += dead_area / area * const_graph.PHI;
   cost += linear_const * const_graph.PI;
   cost += multi_linear_const * const_graph.PII;
-  constraint_penalty = cost - area_norm - HPWL_norm * const_graph.LAMBDA;
+  // constraint_penalty = cost - area_norm - HPWL_norm * const_graph.LAMBDA;
+  constraint_penalty =
+    match_cost * const_graph.BETA +
+    // dead_area / area * const_graph.PHI +
+    linear_const * const_graph.PI +
+    multi_linear_const * const_graph.PII;
   return cost;
 }
 

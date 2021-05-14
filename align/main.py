@@ -133,7 +133,7 @@ def gen_more_primitives( primitives, topology_dir, subckt):
         json.dump( verilog_json_d, fp=fp, indent=2)
 
 
-def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, extract=False, log_level=None, verbosity=None, generate=False, python_gds_json=True, regression=False, uniform_height=False, PDN_mode=False, flow_start=None, flow_stop=None, router_mode='top_down', gui=False):
+def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, extract=False, log_level=None, verbosity=None, generate=False, regression=False, uniform_height=False, PDN_mode=False, flow_start=None, flow_stop=None, router_mode='top_down', gui=False, skipGDS=False):
 
     steps_to_run = build_steps( flow_start, flow_stop)
 
@@ -214,35 +214,43 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     pnr_dir = working_dir / '3_pnr'
     if '3_pnr' in steps_to_run:
         pnr_dir.mkdir(exist_ok=True)
-        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort, extract=extract, gds_json=python_gds_json, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui)
+        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort, extract=extract, gds_json=not skipGDS, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui, skipGDS=skipGDS)
         results.append( (netlist, variants))
         assert router_mode == 'no_op' or len(variants) > 0, f"No layouts were generated for {netlist}. Cannot proceed further. See LOG/align.log for last error."
 
         # Generate necessary output collateral into current directory
         for variant, filemap in variants.items():
-            convert_GDSjson_GDS(filemap['gdsjson'], working_dir / f'{variant}.gds')
-            print("Use KLayout to visualize the generated GDS:",working_dir / f'{variant}.gds')
+            if filemap['errors'] > 0:
+                (working_dir / filemap['errfile'].name).write_text(filemap['errfile'].read_text())
 
             if os.getenv('ALIGN_HOME', False):
                 shutil.copy(pnr_dir/f'{variant}.json',
                             pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/f'{variant}.json')
 
+            assert skipGDS or 'gdsjson' in filemap
+            if 'gdsjson' in filemap:
+                convert_GDSjson_GDS(filemap['gdsjson'], working_dir / f'{variant}.gds')
+                print("Use KLayout to visualize the generated GDS:",working_dir / f'{variant}.gds')
+
+            assert skipGDS or 'python_gds_json' in filemap
             if 'python_gds_json' in filemap:
                 convert_GDSjson_GDS(filemap['python_gds_json'], working_dir / f'{variant}.python.gds')
                 print("Use KLayout to visualize the python generated GDS:",working_dir / f'{variant}.python.gds')
 
-
-            (working_dir / filemap['lef'].name).write_text(filemap['lef'].read_text())
-            if filemap['errors'] > 0:
-                (working_dir / filemap['errfile'].name).write_text(filemap['errfile'].read_text())
+            assert skipGDS or 'lef' in filemap
+            if 'lef' in filemap:
+                (working_dir / filemap['lef'].name).write_text(filemap['lef'].read_text())
 
             if extract:
                 (working_dir / filemap['cir'].name).write_text(filemap['cir'].read_text())
+
             # Generate PNG
             if generate:
                 generate_png(working_dir, variant)
+
+            # Copy regression results in one dir
+            # SMB: Do we use this; let's get rid of it
             if regression:
-                # Copy regression results in one dir
                 (regression_dir / filemap['gdsjson'].name).write_text(filemap['gdsjson'].read_text())
                 (regression_dir / filemap['python_gds_json'].name).write_text(filemap['python_gds_json'].read_text())
                 convert_GDSjson_GDS(filemap['python_gds_json'], regression_dir / f'{variant}.python.gds')                
@@ -252,5 +260,6 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
                 for file_ in topology_dir.iterdir():
                     if file_.suffix == '.const':
                         (regression_dir / file_.name).write_text(file_.read_text())
+
     return results
 
