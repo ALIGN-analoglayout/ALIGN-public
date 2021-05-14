@@ -192,19 +192,20 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
     logger.info(f"Running Place & Route for {subckt} {router_mode} {steps_to_run}")
 
+    # Generate file name inputs
+    map_file = f'{subckt}.map'
+    lef_file = f'{subckt}.lef'
+    verilog_file = f'{subckt}.verilog.json'
+    pdk_file = 'layers.json'
+
+    working_dir = output_dir
+    input_dir = working_dir / 'inputs'
+    results_dir = working_dir / 'Results'
+
     if '3_pnr:prep' in steps_to_run:
         # Create working & input directories
-        working_dir = output_dir
         working_dir.mkdir(exist_ok=True)
-        input_dir = working_dir / 'inputs'
         input_dir.mkdir(exist_ok=True)
-        results_dir = working_dir / 'Results'
-
-        # Generate file name inputs
-        map_file = f'{subckt}.map'
-        lef_file = f'{subckt}.lef'
-        verilog_file = f'{subckt}.verilog.json'
-        pdk_file = 'layers.json'
 
         verilog_d = VerilogJsonTop.parse_file((topology_dir / verilog_file))
 
@@ -216,6 +217,9 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         hack_capacitor_instances( verilog_d, pnr_const_ds)
 
         leaves, capacitors = gen_leaf_cell_info( verilog_d, pnr_const_ds)
+
+        with (working_dir / "__capacitors__.json").open("wt") as fp:
+            json.dump( capacitors, fp=fp, indent=2)
 
         leaf_collateral = gen_leaf_collateral( leaves, primitives, primitive_dir)
 
@@ -252,6 +256,10 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         for k,v in leaf_collateral.items():
             for suffix in ['.gds.json', '.json']:
                 (input_dir / f'{k}{suffix}').write_text(pathlib.Path(v[suffix]).read_text())
+
+    else:
+        with (working_dir / "__capacitors__.json").open("rt") as fp:
+            capacitors = json.load(fp)
 
     if '3_pnr:place' in steps_to_run or '3_pnr:route' in steps_to_run:
 
