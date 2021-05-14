@@ -6,6 +6,7 @@ import re
 import copy
 import math
 from collections import defaultdict
+import sys
 
 from .compiler import generate_hierarchy
 from .primitive import generate_primitive
@@ -19,19 +20,45 @@ logger = logging.getLogger(__name__)
 
 def build_steps( flow_start, flow_stop):
     steps = [ '1_topology', '2_primitives', '3_pnr']
+    sub_steps = { '3_pnr': ['prep', 'place', 'route', 'check']}
 
-    start_idx = 0
+    start_idx = 0,
     if flow_start is not None:
-        assert flow_start in steps
-        start_idx = steps.index( flow_start)
-    stop_idx = len(steps)
+        if ':' in flow_start:
+            [step, sub_step] = flow_start.split(':')
+            assert step in steps
+            assert step in sub_steps
+            assert sub_step in sub_steps[step]
+            start_idx = steps.index( step), sub_steps[step].index( sub_step)
+        else:
+            assert flow_start in steps
+            start_idx = steps.index( flow_start),
+
+    stop_idx = len(steps),
     if flow_stop is not None:
-        assert flow_stop in steps
-        stop_idx = steps.index( flow_stop)+1
+        if ':' in flow_stop:
+            [step, sub_step] = flow_stop.split(':')
+            assert step in steps
+            assert step in sub_steps
+            assert sub_step in sub_steps[step]
+            stop_idx = steps.index( step), sub_steps[step].index( sub_step)
+        else:
+            assert flow_stop in steps
+            stop_idx = steps.index( flow_stop),
 
-    assert start_idx < stop_idx, f'No steps to run in the flow: {steps}[{start_idx}:{stop_idx}]'
+    steps_to_run = []
+    enabled = False
+    for i,step in enumerate(steps):
+        if (i,) == start_idx: enabled = True
+        if step in sub_steps:
+            for j,sub_step in enumerate(sub_steps[step]):
+                if (i,j) == start_idx: enabled = True
+                if enabled: steps_to_run.append( f'{step}:{sub_step}')
+                if (i,j) == stop_idx: enabled = False
+        else:
+            if enabled: steps_to_run.append( f'{step}')
+            if (i,) == stop_idx: enabled = False
 
-    steps_to_run = steps[start_idx:stop_idx]
     logger.info( f'Running flow steps {steps_to_run}')
 
     return steps_to_run
@@ -41,7 +68,7 @@ def gen_more_primitives( primitives, topology_dir, subckt):
     """primitives dictionary updated in place"""
 
     #
-    # This code should be improved at moved to 2_primitives
+    # This code should be improved and moved to 2_primitives
     #
     map_d = defaultdict(list)
 
@@ -212,11 +239,14 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
 
     # run PNR tool
     pnr_dir = working_dir / '3_pnr'
-    if '3_pnr' in steps_to_run:
+
+    sub_steps = [step for step in steps_to_run if '3_pnr:' in step]
+    if sub_steps:
         pnr_dir.mkdir(exist_ok=True)
-        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort, extract=extract, gds_json=not skipGDS, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui, skipGDS=skipGDS)
+        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort, extract=extract, gds_json=not skipGDS, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui, skipGDS=skipGDS, steps_to_run=sub_steps)
         results.append( (netlist, variants))
-        assert router_mode == 'no_op' or len(variants) > 0, f"No layouts were generated for {netlist}. Cannot proceed further. See LOG/align.log for last error."
+
+        assert router_mode == 'no_op' or '3_pnr:check' not in sub_steps or len(variants) > 0, f"No layouts were generated for {netlist}. Cannot proceed further. See LOG/align.log for last error."
 
         # Generate necessary output collateral into current directory
         for variant, filemap in variants.items():
