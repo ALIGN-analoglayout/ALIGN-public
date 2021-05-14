@@ -251,6 +251,8 @@ PYBIND11_MODULE(PnR, m) {
       .def_readwrite("bias_Vgraph", &hierNode::bias_Vgraph)
       .def_readwrite("router_report", &hierNode::router_report)
       .def_readonly("HPWL", &hierNode::HPWL)
+      .def_readonly("HPWL_norm", &hierNode::HPWL_norm)
+      .def_readonly("area_norm", &hierNode::area_norm)
       .def_readonly("cost", &hierNode::cost)
       .def_readonly("constraint_penalty", &hierNode::constraint_penalty)
       .def_readwrite("GuardRings", &hierNode::GuardRings);
