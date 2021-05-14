@@ -323,12 +323,10 @@ class AppWithCallbacksAndState:
         self.subindex = 0
         self.prev_idx = None
 
-        self.axes = ('width', 'height')
-        #self.axes = ('width','height')
-        #self.axes = ('aspect_ratio','area')
+        self.axes = ('hpwl', 'area')
 
         self.gen_dataframe()
-        self.tradeoff = make_tradeoff_fig(self.axes, self.df, log=True)
+        self.tradeoff = make_tradeoff_fig(self.axes, self.df, log=False)
         self.placement_graph = self.make_placement_graph()
 
         self.app = dash.Dash(__name__, assets_ignore=r'.*\.#.*')
@@ -343,13 +341,13 @@ class AppWithCallbacksAndState:
                         dcc.RadioItems(
                             id='axes-type',
                             options=[{'label': i, 'value': i} for i in ['linear', 'loglog']],
-                            value='loglog'
+                            value='linear'
                         ),
                         dcc.Dropdown(
                             id='tradeoff-type', 
                             options=[{"value": x, "label": x} 
                                      for x in ['width-height', 'aspect_ratio-area', 'hpwl-area', 'area-cost', 'hpwl-cost']],
-                            value='width-height'
+                            value='hpwl-area'
                         ),
                         dcc.Dropdown(
                             id='colorscale', 
