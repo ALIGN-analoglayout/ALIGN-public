@@ -330,58 +330,52 @@ class AppWithCallbacksAndState:
         self.tradeoff = make_tradeoff_fig(self.axes, self.df, log=True)
         self.placement_graph = self.make_placement_graph()
 
-        external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-        self.app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+        self.app = dash.Dash(__name__, assets_ignore=r'.*\.#.*')
 
         self.app.layout = html.Div(
             id='frame',
             children=[
                 html.Div(
+                    id='pareto-col',
                     children=[
                         html.H2(children='Pareto Frontier'),
                         dcc.RadioItems(
                             id='axes-type',
                             options=[{'label': i, 'value': i} for i in ['linear', 'loglog']],
-                            value='loglog',
-                            labelStyle={'display': 'inline-block'},
-                            style={ 'width': '250px', 'display': 'inline-block', 'vertical-align': 'top'}
+                            value='loglog'
                         ),
                         dcc.Dropdown(
                             id='tradeoff-type', 
                             options=[{"value": x, "label": x} 
                                      for x in ['width-height', 'aspect_ratio-area', 'hpwl-area', 'area-cost', 'hpwl-cost']],
-                            value='width-height',
-                            style={ 'width': '250px', 'display': 'inline-block'}
+                            value='width-height'
                         ),
                         dcc.Dropdown(
                             id='colorscale', 
                             options=[{"value": x, "label": x} 
                                      for x in colorscales],
-                            value='Blugrn',
-                            style={ 'width': '250px', 'display': 'inline-block'}
+                            value='Blugrn'
                         ),
                         dcc.Dropdown(
                             id='module-name', 
                             options=[{"value": x, "label": x} 
                                      for x in self.tagged_bboxes.keys()],
-                            value=self.module_name,
-                            style={ 'width': '350px'}
+                            value=self.module_name
                         ),
                         dcc.Graph(
                             id='tradeoff-graph',
                             figure=self.tradeoff
                         )
-                    ],
-                    style={'display': 'inline-block', 'vertical-align': 'top'}
+                    ]
                 ),
                 html.Div(
+                    id='placement-col',
                     children=[    
                         html.H2(children='Placement'),
                         dcc.RadioItems(
                             id='display-type',
                             options=[{'label': i, 'value': i} for i in ['All', 'Direct', 'Leaves Only']],
-                            value='All',
-                            labelStyle={'display': 'inline-block'}
+                            value='All'
                         ),
                         html.Button(
                             'Route',
@@ -393,16 +387,15 @@ class AppWithCallbacksAndState:
                             id='Placement',
                             figure = self.placement_graph
                         )
-                    ],
-                    style={'display': 'inline-block', 'vertical-align': 'top'}
+                    ]
                 ),
                 html.Div(
+                    id='tree-col',
                     children=[    
-                        #html.Img(src=self.app.get_asset_url('align.png'), style={'height':'10%', 'width':'10%'}),
+                        #html.Img(src=self.app.get_asset_url('align.png')),
                         html.H2(children='Tree'),
                         dcc.Markdown(children='',id='Tree')
-                    ],
-                    style={'display': 'inline-block', 'vertical-align': 'top'}
+                    ]
                 )
             ]
         )

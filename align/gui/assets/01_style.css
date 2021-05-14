@@ -1,0 +1,50 @@
+
+div#pareto-col {
+    display: inline-block;
+    vertical-align: top;
+}
+
+div#placement-col {
+    display: inline-block;
+    vertical-align: top;
+}
+
+div#tree-col {
+    display: inline-block;
+    vertical-align: top;
+}
+
+div#tree-col img {
+    height: 10%;
+    width: 10%;
+    display: block;
+}
+
+div#axes-type {
+    width: 250px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+div#axes-type label {
+    display: inline-block;   
+}
+div#tradeoff-type.dash-dropdown {
+    width: 250px;
+    display: inline-block;
+}
+
+div#colorscale.dash-dropdown {
+    width: 250px;
+    display: inline-block;
+}
+
+div#module-name.dash-dropdown {
+    width: 350px;
+}
+
+div#display-type label {
+    display: inline-block;   
+}
+
+
