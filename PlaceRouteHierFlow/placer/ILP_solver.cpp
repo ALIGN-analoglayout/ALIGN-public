@@ -19,6 +19,8 @@ ILP_solver::ILP_solver(const ILP_solver& solver) {
   UR = solver.UR;
   area = solver.area;
   HPWL = solver.HPWL;
+  cost = solver.cost;
+  constraint_penalty = solver.constraint_penalty;
   area_norm = solver.area_norm;
   HPWL_norm = solver.HPWL_norm;
   ratio = solver.ratio;
@@ -35,6 +37,8 @@ ILP_solver& ILP_solver::operator=(const ILP_solver& solver) {
   LL = solver.LL;
   UR = solver.UR;
   area = solver.area;
+  cost = solver.cost;
+  constraint_penalty = solver.constraint_penalty;
   HPWL = solver.HPWL;
   area_norm = solver.area_norm;
   HPWL_norm = solver.HPWL_norm;
@@ -524,8 +528,9 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     multi_linear_const += temp_sum;
   }
 
-  double cost = CalculateCost(mydesign, curr_sp);
-  return cost;
+  double calculated_cost = CalculateCost(mydesign, curr_sp);
+  cost = calculated_cost;
+  return calculated_cost;
 }
 
 double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
@@ -547,6 +552,12 @@ double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
   cost += dead_area / area * const_graph.PHI;
   cost += linear_const * const_graph.PI;
   cost += multi_linear_const * const_graph.PII;
+  // constraint_penalty = cost - area_norm - HPWL_norm * const_graph.LAMBDA;
+  constraint_penalty =
+    match_cost * const_graph.BETA +
+    // dead_area / area * const_graph.PHI +
+    linear_const * const_graph.PI +
+    multi_linear_const * const_graph.PII;
   return cost;
 }
 
@@ -1303,6 +1314,9 @@ void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierN
   node.width = UR.x;
   node.height = UR.y;
   node.HPWL = HPWL;
+  node.constraint_penalty = constraint_penalty;
+  node.cost = cost;
+
   for (unsigned int i = 0; i < mydesign.Blocks.size(); ++i) {
     node.Blocks.at(i).selectedInstance = curr_sp.GetBlockSelected(i);
     placerDB::Omark ort;

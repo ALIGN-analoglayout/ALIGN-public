@@ -15,6 +15,9 @@ def pytest_addoption(parser):
     parser.addoption(
         "--router_mode", type=str, help="Router mode for nightly run (Use with --runnightly)", default='top_down'
     )
+    parser.addoption(
+        "--skipGDS", action="store_true", default=False, help="Skip GDS for nightly run (Use with --runnightly)"
+    )
 
 def pytest_collection_modifyitems(config, items):
     if not config.getoption("--runnightly"):
@@ -35,3 +38,5 @@ def pytest_generate_tests(metafunc):
     if "router_mode" in metafunc.fixturenames:
         router_mode = metafunc.config.getoption("--router_mode")
         metafunc.parametrize("router_mode", [router_mode])
+    if "skipGDS" in metafunc.fixturenames:
+        metafunc.parametrize("skipGDS", [True])

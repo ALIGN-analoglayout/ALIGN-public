@@ -25,10 +25,8 @@ logger = logging.getLogger(__name__)
 
 def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, extract=False, input_dir=None, toplevel=True, gds_json=True):
 
-    logger.debug(
+    logger.info(
         f"_generate_json: {hN} {variant} {primitive_dir} {pdk_dir} {output_dir} {extract} {input_dir} {toplevel} {gds_json}")
-
-
 
     cnv, d = gen_viewer_json(hN, pdkdir=pdk_dir, draw_grid=True, json_dir=str(primitive_dir),
                              extract=extract, input_dir=input_dir, toplevel=toplevel)
@@ -190,7 +188,7 @@ def gen_leaf_collateral( leaves, primitives, primitive_dir):
 
     return leaf_collateral
 
-def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False, gds_json=False, PDN_mode=False, router_mode='top_down', gui=False):
+def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False, gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False):
 
     logger.info(f"Running Place & Route for {subckt} {router_mode}")
 
@@ -260,7 +258,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
     current_working_dir = os.getcwd()
     os.chdir(working_dir)
-    DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, results_dir=None, router_mode=router_mode, gui=gui)
+    DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, results_dir=None, router_mode=router_mode, gui=gui, skipGDS=skipGDS)
     os.chdir(current_working_dir)
 
     # Copy generated cap jsons from results_dir to working_dir
@@ -274,6 +272,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
     variants = collections.defaultdict(collections.defaultdict)
 
     for variant, ( path_name, layout_idx) in results_name_map.items():
+
         hN = DB.hierTree[layout_idx]
         result = _generate_json(hN=hN,
                                 variant=variant,
@@ -288,10 +287,11 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         if hN.isTop:
             variants[variant].update(result)
 
-            for tag, suffix in [('lef', '.lef'), ('gdsjson', '.gds.json')]:
-                path = results_dir / (variant + suffix)
-                assert path.exists()
-                variants[variant][tag] = path
+            if not skipGDS:
+                for tag, suffix in [('lef', '.lef'), ('gdsjson', '.gds.json')]:
+                    path = results_dir / (variant + suffix)
+                    assert path.exists()
+                    variants[variant][tag] = path
 
     logger.debug('Explicitly deleting DB...')
     del DB
