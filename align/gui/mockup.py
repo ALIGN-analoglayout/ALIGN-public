@@ -318,7 +318,7 @@ class AppWithCallbacksAndState:
         self.module_name = module_name
 
         self.sel = None
-        self.md_str = ''
+        self.title = None
 
         self.subindex = 0
         self.prev_idx = None
@@ -393,16 +393,13 @@ class AppWithCallbacksAndState:
                 html.Div(
                     id='tree-col',
                     children=[    
-                        #html.Img(src=self.app.get_asset_url('align.png')),
-                        html.H2(children='Tree'),
-                        dcc.Markdown(children='',id='Tree')
+                        html.Img(src=self.app.get_asset_url('align.png'))
                     ]
                 )
             ]
         )
 
         self.app.callback( (Output('Placement', 'figure'),
-                            Output('Tree', 'children'),
                             Output('tradeoff-graph', 'clickData')),
                       [Input('tradeoff-graph', 'clickData'),
                        Input('tradeoff-graph', 'hoverData'),
@@ -417,7 +414,10 @@ class AppWithCallbacksAndState:
                             Input('axes-type', 'value'),
                             Input('module-name', 'value')])(self.change_colorscale)
 
-    def make_placement_graph( self, sel=None, *, display_type='All'):
+    def make_placement_graph( self, *, display_type='All'):
+        sel = self.sel
+        title = self.title
+
         if display_type == 'All':
             levels = None
             leaves_only = False
@@ -436,7 +436,7 @@ class AppWithCallbacksAndState:
         if sel is not None:
             _, d = self.tagged_bboxes[self.module_name][sel]
             dump_blocks( fig, d, leaves_only, levels)
-            title_d = dict(text=sel)
+            title_d = dict(text=sel if title is None else title)
 
         fig.update_layout(
             autosize=False,
@@ -501,7 +501,7 @@ class AppWithCallbacksAndState:
             [idx, curve_idx, x, y] = [hoverData['points'][0][t] for t in ['pointNumber', 'curveNumber', 'x', 'y']]
 
         if display_type_change:
-            self.placement_graph = self.make_placement_graph(self.sel,display_type=display_type)
+            self.placement_graph = self.make_placement_graph(display_type=display_type)
         elif (clickData is not None or hoverData is not None) and \
              curve_idx == 0:
 
@@ -514,15 +514,11 @@ class AppWithCallbacksAndState:
             self.sel = lst[self.subindex]
             self.prev_idx = idx
 
-            self.md_str = f"""```text
-Selection: {self.sel}
-Coord: {x,y}
-Subindex: {self.subindex}/{len(lst)}
-```
-"""
-            self.placement_graph = self.make_placement_graph(self.sel,display_type=display_type)
+            self.title = f'{self.sel} {self.subindex}/{len(lst)}'
 
-        return self.placement_graph, self.md_str, None
+            self.placement_graph = self.make_placement_graph(display_type=display_type)
+
+        return self.placement_graph, None
 
 
 def run_gui( *, tagged_bboxes, module_name):
