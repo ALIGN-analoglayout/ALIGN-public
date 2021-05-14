@@ -145,13 +145,14 @@ def make_tradeoff_fig_ha(df, log=False, scale='Blugrn'):
         hover_data=['width','height']
     )
 
-    area = df['area'].min()
+    best_x = df['hpwl'].values[0]
+    best_y = df['area'].values[0]
 
     min_x, max_x = min(df['hpwl']),max(df['hpwl'])
     min_y, max_y = min(df['area']),max(df['area'])
 
     sweep_x = np.linspace( min_x, max_x, 101)
-    sweep_y = area+0*sweep_x
+    sweep_y = best_y*(2 - sweep_x/best_x)
 
     fig.add_trace(
         go.Scatter( 

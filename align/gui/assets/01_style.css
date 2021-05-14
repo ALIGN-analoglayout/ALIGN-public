@@ -21,7 +21,8 @@ div#tree-col img {
 }
 
 div#axes-type {
-    width: 250px;
+    /*width: 150px;*/
+    padding-right: 10px;
     display: inline-block;
     vertical-align: top;
 }
@@ -30,12 +31,13 @@ div#axes-type label {
     display: inline-block;   
 }
 div#tradeoff-type.dash-dropdown {
-    width: 250px;
+    width: 180px;
+    padding-right: 10px;
     display: inline-block;
 }
 
 div#colorscale.dash-dropdown {
-    width: 250px;
+    width: 150px;
     display: inline-block;
 }
 
