@@ -435,7 +435,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     dead_area -= double(mydesign.Blocks[i][curr_sp.selected[i]].width) * double(mydesign.Blocks[i][curr_sp.selected[i]].height);
   }
   //calculate norm area
-  area_norm = area * 0.1 / (area - dead_area);
+  area_norm = area * 0.1 / mydesign.GetMaxBlockAreaSum();
   // calculate ratio
   // ratio = std::max(double(UR.x - LL.x) / double(UR.y - LL.y), double(UR.y - LL.y) / double(UR.x - LL.x));
   ratio = double(UR.x - LL.x) / double(UR.y - LL.y);
@@ -466,11 +466,11 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);  
   }
   //HPWL norm
-  double block_HPWL = 0;
-  for (int i = 0; i < mydesign.Blocks.size(); i++) {
-    block_HPWL += double(mydesign.Blocks[i][curr_sp.selected[i]].width) + double(mydesign.Blocks[i][curr_sp.selected[i]].height);
-  }
-  if (!mydesign.Nets.empty()) HPWL_norm = HPWL / block_HPWL / double(mydesign.Nets.size());
+  //double block_HPWL = 0;
+  //for (int i = 0; i < mydesign.Blocks.size(); i++) {
+  //  block_HPWL += double(mydesign.Blocks[i][curr_sp.selected[i]].width) + double(mydesign.Blocks[i][curr_sp.selected[i]].height);
+  //}
+  if (!mydesign.Nets.empty()) HPWL_norm = HPWL / mydesign.GetMaxBlockHPWLSum() / double(mydesign.Nets.size());
   // calculate linear constraint
   linear_const = 0;
   std::vector<std::vector<double>> feature_value;
@@ -502,7 +502,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     linear_const += temp_sum;
   }
 
-  if (!mydesign.Nets.empty()) linear_const /= (block_HPWL * double(mydesign.Nets.size()));
+  if (!mydesign.Nets.empty()) linear_const /= (mydesign.GetMaxBlockHPWLSum() * double(mydesign.Nets.size()));
 
   // calculate multi linear constraint
   multi_linear_const = 0;
