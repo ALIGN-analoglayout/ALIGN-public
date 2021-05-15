@@ -430,6 +430,14 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   // calculate area
   area = double(UR.x - LL.x) * double(UR.y - LL.y);
   // calculate dead area
+  //
+  // The number we subtract off of area is the size of the blocks at
+  //    the current level of hierarchy. This number is not constant
+  //    across different placements, because the placer is choosing
+  //    different aspect ratios of the primitives (which can have
+  //    different areas.) This is the source of the non-constant (and even
+  //    non-monotonic) scaling for area.
+  //
   dead_area = area;
   for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
     dead_area -= double(mydesign.Blocks[i][curr_sp.selected[i]].width) * double(mydesign.Blocks[i][curr_sp.selected[i]].height);
@@ -465,7 +473,15 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     }
     HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);  
   }
+
   //HPWL norm
+  //
+  // block_HPWL is also not constant across different placements,
+  //    because, again, the placer is choosing different aspect ratios
+  //    of the primitives (which can have different areas.)
+  //    This is the source of the non-constant (and even
+  //    non-monotonic) scaling for hpwl.
+  //
   double block_HPWL = 0;
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
     block_HPWL += double(mydesign.Blocks[i][curr_sp.selected[i]].width) + double(mydesign.Blocks[i][curr_sp.selected[i]].height);
