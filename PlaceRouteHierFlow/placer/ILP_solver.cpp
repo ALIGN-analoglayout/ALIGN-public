@@ -1314,6 +1314,8 @@ void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierN
   node.width = UR.x;
   node.height = UR.y;
   node.HPWL = HPWL;
+  node.area_norm = area_norm;
+  node.HPWL_norm = HPWL_norm;
   node.constraint_penalty = constraint_penalty;
   node.cost = cost;
 

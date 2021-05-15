@@ -332,6 +332,8 @@ struct layoutAS {
   int width=0;
   int height=0;
   int HPWL = -1;
+  double HPWL_norm=-1;
+  double area_norm = -1;
   double constraint_penalty = -1;
   double cost = -1;
   string gdsFile = "";
@@ -416,6 +418,8 @@ struct hierNode {
   vector<Router_report> router_report;
   vector<Multi_connection> Multi_connections;
   int HPWL = -1;
+  double area_norm = -1;
+  double HPWL_norm = -1;
   double constraint_penalty = -1;
   double cost = -1;
 }; // structure of vertex in heirarchical tree

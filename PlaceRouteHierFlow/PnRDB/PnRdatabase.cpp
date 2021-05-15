@@ -112,6 +112,8 @@ PnRDB::hierNode PnRdatabase::CheckoutHierNode(int nodeID, int sel) {
     hN.constraint_penalty = p.constraint_penalty;
     hN.cost = p.cost;
     hN.HPWL = p.HPWL;
+    hN.HPWL_norm = p.HPWL_norm;
+    hN.area_norm = p.area_norm;
     hN.Blocks = p.Blocks;
     hN.Terminals = p.Terminals;
     hN.Nets = p.Nets;
@@ -734,6 +736,8 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
   tmpL.constraint_penalty = updatedNode.constraint_penalty;
   tmpL.cost = updatedNode.cost;
   tmpL.HPWL = updatedNode.HPWL;
+  tmpL.HPWL_norm = updatedNode.HPWL_norm;
+  tmpL.area_norm = updatedNode.area_norm;
   tmpL.Blocks = updatedNode.Blocks;
   tmpL.Terminals=updatedNode.Terminals;
   tmpL.Nets=updatedNode.Nets;
