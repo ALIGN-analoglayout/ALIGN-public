@@ -154,6 +154,8 @@ Placement::Placement(PnRDB::hierNode &current_node)
   //step 3: call E_placer
   std::cout << "start ePlacement" << std::endl;
   PlotPlacement(602);
+  // restore_MS();
+  // PlotPlacement(601);
   E_Placer();
   bool isCompact = true;
   restore_CC_in_square(isCompact);
@@ -337,10 +339,10 @@ void Placement::Initilize_Placement()
 
   for (unsigned int i = 0; i < originalBlockCNT; ++i)
   {
-    if(Blocks[i].Cpoint.x<0.5 or Blocks[i].Cpoint.y<0.5)
+    if(Blocks[i].Cpoint.x<0.3 or Blocks[i].Cpoint.y<0.3)
     {
-      Blocks[i].Cpoint.x = 0.5 + (float)(rand() % 400) / 1000;
-      Blocks[i].Cpoint.y = 0.5 + (float)(rand() % 400) / 1000;
+      Blocks[i].Cpoint.x = 0.3 + (float)(rand() % 400) / 1000;
+      Blocks[i].Cpoint.y = 0.3 + (float)(rand() % 400) / 1000;
     }
     
   }
@@ -524,7 +526,8 @@ void Placement::PlotPlacement(int index)
 
   for (int i = 0; i < (int)Blocks.size(); ++i)
   {
-    fout << "\nset label \"" << Blocks[i].blockname << "\" at " << Blocks[i].Cpoint.x << " , " << Blocks[i].Cpoint.y << " center " << endl;
+    // fout << "\nset label \"" << Blocks[i].blockname << "\" at " << Blocks[i].Cpoint.x << " , " << Blocks[i].Cpoint.y << " center " << endl;
+    fout << "\nset label \"" << Blocks[i].index << "\" at " << Blocks[i].Cpoint.x << " , " << Blocks[i].Cpoint.y << " center " << endl;
   }
 
   // fout << "\nplot[:][:] \'-\' with lines linestyle 3 lc 2,  \'-\' with lines linestyle 7 lc 2, "<<
@@ -1142,7 +1145,7 @@ void Placement::E_Placer()
   PlotPlacement(0);
   current_overlap = Cal_Overlap();
   // while((Stop_Condition(stop_density,current_max_density) or symCheck(symmetricMin)) and count_number<upper_count_number ){//Q: stop condition
-  while ((current_overlap > 0.1 or symCheck(symmetricMin)) and count_number < upper_count_number)
+  while ((current_overlap > 0.3 or symCheck(symmetricMin)) and count_number < upper_count_number)
   { //Q: stop condition
     //Initilize_lambda();
     //Initilize_sym_beta();
@@ -2051,6 +2054,7 @@ void Placement::addNet_for_one_split_Blocks(int blockID, Ppoint_I num)
         Blocks[ID_array[i + 1][j]].connected_net.push_back(netID);
         std::cout << "add net for one splited blocks: debug 10" << std::endl;
         ++netID;
+        temp1.weight = dummy_net_weight;
         Nets.push_back(temp1);
       }
       if (j < num.y - 1)
@@ -2059,6 +2063,7 @@ void Placement::addNet_for_one_split_Blocks(int blockID, Ppoint_I num)
         temp2.index = netID;
         temp2.connected_block.push_back(ID_array[i][j]);
         temp2.connected_block.push_back(ID_array[i][j + 1]);
+        temp2.weight = dummy_net_weight;
         Blocks[ID_array[i][j]].connected_net.push_back(netID);
         Blocks[ID_array[i][j + 1]].connected_net.push_back(netID);
         Nets.push_back(temp2);
@@ -2277,6 +2282,7 @@ void Placement::addNet_commonCentroid(commonCentroid &CC, int cell_num,float uni
           temp.connected_block.push_back(b2);
           Blocks[b1].connected_net.push_back(netID);
           Blocks[b2].connected_net.push_back(netID);
+          temp.weight = dummy_net_weight;
           Nets.push_back(temp);
           netID++;
         }
@@ -2295,6 +2301,7 @@ void Placement::addNet_commonCentroid(commonCentroid &CC, int cell_num,float uni
           temp.connected_block.push_back(b2);
           Blocks[b1].connected_net.push_back(netID);
           Blocks[b2].connected_net.push_back(netID);
+          temp.weight=dummy_net_weight;
           Nets.push_back(temp);
           netID++;
         }

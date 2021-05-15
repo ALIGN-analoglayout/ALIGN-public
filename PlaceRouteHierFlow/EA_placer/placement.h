@@ -51,6 +51,8 @@ private:
     //estimated required height y and width x, generally x = y
     Ppoint_F est_Size;
     Ppoint_F uni_cell;
+
+    float dummy_net_weight = 0.1;
     //donghao end  
 
 public:
