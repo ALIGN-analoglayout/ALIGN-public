@@ -114,40 +114,34 @@ def hack_capacitor_instances( verilog_d, pnr_const_ds):
 
 def gen_leaf_cell_info( verilog_d, pnr_const_ds):
 
-    non_leaves = set()
-    templates_called_in_an_instance = defaultdict(list)
-    abstract_templates_called_in_an_instance = defaultdict(list)
+    non_leaves = { module['name'] for module in verilog_d['modules'] }
+    leaves_called_in_an_instance = defaultdict(list)
 
     for module in verilog_d['modules']:
         nm = module['name']
-        non_leaves.add( nm)
         for instance in module['instances']:
-            if 'template_name' in instance:
-                templates_called_in_an_instance[instance['template_name']].append( (nm,instance['instance_name']))
             if 'abstract_template_name' in instance:
-                abstract_templates_called_in_an_instance[instance['abstract_template_name']].append( (nm,instance['instance_name']))
-
-
-    leaves = set(abstract_templates_called_in_an_instance.keys())
+                atn = instance['abstract_template_name']
+                if atn not in non_leaves:
+                    leaves_called_in_an_instance[atn].append( (nm,instance['instance_name']))
 
     logger.debug( f'non_leaves: {non_leaves}')
-    logger.debug( f'templates: {templates_called_in_an_instance}')
-    logger.debug( f'abstract_templates: {abstract_templates_called_in_an_instance}')
+    logger.debug( f'abstract_templates: {leaves_called_in_an_instance}')
 
     #
     # Capacitor hack --- Should be able to remove eventally
     #
     cap_constraints = extract_capacitor_constraints( pnr_const_ds)
     capacitors = defaultdict(list)
-    for leaf in leaves:
-        for parent, instance_name in abstract_templates_called_in_an_instance[leaf]:
+    for leaf, v in leaves_called_in_an_instance.items():
+        for parent, instance_name in v:
             if parent in cap_constraints:
                 if instance_name in cap_constraints[parent]:
                     logger.debug( f'parent: {parent} instance_name: {instance_name} leaf: {leaf} cap_constraints: {cap_constraints}')
                     capacitors[leaf].append( (parent,instance_name))
 
     # Remove generated capacitors
-    leaves = leaves.difference( set(capacitors.keys()))
+    leaves = set(leaves_called_in_an_instance.keys()).difference( set(capacitors.keys()))
 
     # Add unit caps to leaves
     for _, v in cap_constraints.items():
