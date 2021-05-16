@@ -131,6 +131,32 @@ def make_tradeoff_fig_aa(df, log=False, scale='Blugrn'):
 
     return fig
 
+def define_axes( fig, max_x, max_y):
+    if log:
+        fig.update_xaxes(
+            type="log"
+        )
+        fig.update_yaxes(
+            type="log"
+        )
+    else:
+        fig.update_xaxes(
+            range=[0,max_x*1.1]
+        )
+        fig.update_yaxes(
+            range=[0,max_y*1.1]
+        )
+
+
+def define_colorscale( fig, col):
+    min_c,max_c = col.min(),col.max()
+    if min_c == max_c: max_c = min_c + 0.1
+    fig.update_coloraxes(
+        cmin=min_c,
+        cmax=max_c,
+        reversescale=True
+    )
+
 def make_tradeoff_fig_ha(df, log=False, scale='Blugrn'):
     fig = px.scatter(
         df,
@@ -163,28 +189,8 @@ def make_tradeoff_fig_ha(df, log=False, scale='Blugrn'):
         )
     )
 
-
-    min_c,max_c = df['constraint_penalty'].min(),df['constraint_penalty'].max()
-
-    fig.update_coloraxes(
-        cmin=min_c,
-        cmax=max_c
-    )
-
-    if log:
-        fig.update_xaxes(
-            type="log"
-        )
-        fig.update_yaxes(
-            type="log"
-        )
-    else:
-        fig.update_xaxes(
-            range=[0,max_x*1.1]
-        )
-        fig.update_yaxes(
-            range=[0,max_y*1.1]
-        )
+    define_colorscale( fig, df['constraint_penalty'])
+    define_axes( fig, max_x, max_y)
 
     return fig
 
@@ -220,27 +226,8 @@ def make_tradeoff_fig_nn(df, log=False, scale='Blugrn'):
         )
     )
 
-    min_c,max_c = df['constraint_penalty'].min(),df['constraint_penalty'].max()
-
-    fig.update_coloraxes(
-        cmin=min_c,
-        cmax=max_c
-    )
-
-    if log:
-        fig.update_xaxes(
-            type="log"
-        )
-        fig.update_yaxes(
-            type="log"
-        )
-    else:
-        fig.update_xaxes(
-            range=[0,max_x*1.1]
-        )
-        fig.update_yaxes(
-            range=[0,max_y*1.1]
-        )
+    define_colorscale( fig, df['constraint_penalty'])
+    define_axes( fig, max_x, max_y)
 
     return fig
 
@@ -275,29 +262,13 @@ def make_tradeoff_fig_ac(df, log=False, scale='Blugrn'):
         )
     )
 
-    min_c,max_c = df['constraint_penalty'].min(),df['constraint_penalty'].max()
-
-    fig.update_coloraxes(
-        cmin=min_c,
-        cmax=max_c
-    )
-
-    if log:
-        fig.update_xaxes(
-            type="log"
-        )
-        fig.update_yaxes(
-            type="log"
-        )
-    else:
-        fig.update_xaxes(
-            range=[0,max_x*1.1]
-        )
-        fig.update_yaxes(
-            range=[0,max_y*1.1]
-        )
+    define_colorscale( fig, df['constraint_penalty'])
+    define_axes( fig, max_x, max_y)
 
     return fig
+
+
+
 
 def make_tradeoff_fig_hc(df, log=False, scale='Blugrn'):
     fig = px.scatter(
@@ -330,27 +301,8 @@ def make_tradeoff_fig_hc(df, log=False, scale='Blugrn'):
         )
     )
 
-    min_c,max_c = df['constraint_penalty'].min(),df['constraint_penalty'].max()
-
-    fig.update_coloraxes(
-        cmin=min_c,
-        cmax=max_c
-    )
-
-    if log:
-        fig.update_xaxes(
-            type="log"
-        )
-        fig.update_yaxes(
-            type="log"
-        )
-    else:
-        fig.update_xaxes(
-            range=[0,max_x*1.1]
-        )
-        fig.update_yaxes(
-            range=[0,max_y*1.1]
-        )
+    define_colorscale( fig, df['constraint_penalty'])
+    define_axes( fig, max_x, max_y)
 
     return fig
 
@@ -371,27 +323,8 @@ def make_tradeoff_fig_ss(df, log=False, scale='Blugrn'):
     min_x, max_x = min(df['hpwl_norm']),max(df['hpwl_norm'])
     min_y, max_y = min(df['area_norm']),max(df['area_norm'])
 
-    min_c,max_c = df['constraint_penalty'].min(),df['constraint_penalty'].max()
-
-    fig.update_coloraxes(
-        cmin=min_c,
-        cmax=max_c
-    )
-
-    if log:
-        fig.update_xaxes(
-            type="log"
-        )
-        fig.update_yaxes(
-            type="log"
-        )
-    else:
-        fig.update_xaxes(
-            range=[0,max_x*1.1]
-        )
-        fig.update_yaxes(
-            range=[0,max_y*1.1]
-        )
+    define_colorscale( fig, df['constraint_penalty'])
+    define_axes( fig, max_x, max_y)
 
     return fig
 
