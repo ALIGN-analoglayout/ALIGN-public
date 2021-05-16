@@ -4,6 +4,7 @@ import io
 import pytest
 import os
 import shutil
+from align.compiler.write_verilog_lef import write_verilog
 
 from align.pnr.cmdline import cmdline
 import align
@@ -22,7 +23,6 @@ else:
 
 mydir = pathlib.Path(__file__).resolve().parent
 
-@pytest.mark.skip # Broken because of incorrect primitive names
 def test_verilog():
     nm = 'current_mirror_ota'
 
@@ -41,7 +41,11 @@ def test_verilog():
     args = [str(design_dir), '--flow_stop', '3_pnr:prep']
     results = align.CmdlineParser().parse_args(args)
 
-    (run_dir / '3_pnr' / 'inputs' / f'{nm}.v').write_text((run_dir / '1_topology' / f'{nm}.v').read_text())    
+    with (run_dir / '3_pnr' / 'inputs' / f"{nm}.verilog.json").open("rt") as fp:
+        j = json.load( fp)
+
+    with (run_dir / '3_pnr' / 'inputs' / f"{nm}.v").open("wt") as fp:
+        write_verilog( j, fp)
 
     os.chdir(run_dir / "3_pnr")
 

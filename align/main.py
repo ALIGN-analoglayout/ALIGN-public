@@ -150,6 +150,11 @@ def gen_more_primitives( primitives, topology_dir, subckt):
             if t in concrete2abstract:
                 del instance['template_name']
                 instance['abstract_template_name'] = concrete2abstract[t]
+            else:
+                # actually want all instances to use abstract_template_name, even the non-leaf ones
+                del instance['template_name']
+                instance['abstract_template_name'] = t
+
 
     with (topology_dir / f'{subckt}.verilog.json').open( 'wt') as fp:
         json.dump( verilog_json_d, fp=fp, indent=2)

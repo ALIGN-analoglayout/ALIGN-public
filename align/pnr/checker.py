@@ -5,6 +5,8 @@ def check_placement(placement_verilog_d):
     leaf_bboxes = { x['name'] : x['bbox'] for x in placement_verilog_d['leaves']}
     internal_bboxes = { x['name'] : x['bbox'] for x in placement_verilog_d['modules']}
 
+    non_leaves = { module['name'] for module in placement_verilog_d['modules']}
+
     for module in placement_verilog_d['modules']:
         if len(module['constraints']) == 0:
             continue  # No constraints
@@ -24,8 +26,9 @@ def check_placement(placement_verilog_d):
             )
         for inst in module['instances']:
             t = inst['transformation']
-            if 'template_name' in inst:
-                r = internal_bboxes[inst['template_name']]
+            atn = inst['abstract_template_name']
+            if atn in non_leaves:
+                r = internal_bboxes[atn]
             elif 'concrete_template_name' in inst:
                 r = leaf_bboxes[inst['concrete_template_name']]
             else:
