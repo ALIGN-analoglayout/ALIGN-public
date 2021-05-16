@@ -217,10 +217,10 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
 
         gen_more_primitives( primitives, topology_dir, subckt)
 
-        with (topology_dir / 'primitives.json').open( 'wt') as fp:
+        with (topology_dir / '__primitives__.json').open( 'wt') as fp:
             json.dump( primitives, fp=fp, indent=2)
     else:
-        with (topology_dir / 'primitives.json').open( 'rt') as fp:
+        with (topology_dir / '__primitives__.json').open( 'rt') as fp:
             primitives = json.load(fp)
         
 
