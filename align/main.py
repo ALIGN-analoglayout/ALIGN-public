@@ -22,42 +22,37 @@ def build_steps( flow_start, flow_stop):
     steps = [ '1_topology', '2_primitives', '3_pnr']
     sub_steps = { '3_pnr': ['prep', 'place', 'route', 'check']}
 
-    start_idx = 0,
-    if flow_start is not None:
-        if ':' in flow_start:
-            [step, sub_step] = flow_start.split(':')
-            assert step in steps
-            assert step in sub_steps
-            assert sub_step in sub_steps[step]
-            start_idx = steps.index( step), sub_steps[step].index( sub_step)
-        else:
-            assert flow_start in steps
-            start_idx = steps.index( flow_start),
+    unimplemented_start_points = { '3_pnr:route', '3_pnr:check'}
+    unimplemented_stop_points = { '3_pnr:place'}
 
-    stop_idx = len(steps),
-    if flow_stop is not None:
-        if ':' in flow_stop:
-            [step, sub_step] = flow_stop.split(':')
-            assert step in steps
-            assert step in sub_steps
-            assert sub_step in sub_steps[step]
-            stop_idx = steps.index( step), sub_steps[step].index( sub_step)
-        else:
-            assert flow_stop in steps
-            stop_idx = steps.index( flow_stop),
+    if flow_start is None:
+        flow_start = steps[0]
+    if flow_start in unimplemented_start_points:
+        raise NotImplementedError(f'Don\'t know how to start from {flow_start}')
+    start_t = tuple(flow_start.split(':')) if ':' in flow_start else (flow_start,)
+
+    if flow_stop is None:
+        flow_stop = steps[-1]
+    if flow_stop in unimplemented_stop_points:
+        raise NotImplementedError(f'Don\'t know how to stop at {flow_stop}')
+    stop_t = tuple(flow_stop.split(':')) if ':' in flow_stop else (flow_stop,)
 
     steps_to_run = []
     enabled = False
-    for i,step in enumerate(steps):
-        if (i,) == start_idx: enabled = True
+    for step in steps:
+        if (step,) == start_t: enabled = True
         if step in sub_steps:
-            for j,sub_step in enumerate(sub_steps[step]):
-                if (i,j) == start_idx: enabled = True
+            for sub_step in sub_steps[step]:
+                if (step,sub_step) == start_t: enabled = True
                 if enabled: steps_to_run.append( f'{step}:{sub_step}')
-                if (i,j) == stop_idx: enabled = False
+                if (step,sub_step) == stop_t:
+                    assert enabled, f'Stopping flow before it started: {flow_start} {flow_stop}'
+                    enabled = False
         else:
             if enabled: steps_to_run.append( f'{step}')
-            if (i,) == stop_idx: enabled = False
+            if (step,) == stop_t:
+                assert enabled, f'Stopping flow before it started: {flow_start} {flow_stop}'
+                enabled = False
 
     logger.info( f'Running flow steps {steps_to_run}')
 
