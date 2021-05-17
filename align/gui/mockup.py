@@ -131,6 +131,32 @@ def make_tradeoff_fig_aa(df, log=False, scale='Blugrn'):
 
     return fig
 
+def define_axes( fig, log, max_x, max_y):
+    if log:
+        fig.update_xaxes(
+            type="log"
+        )
+        fig.update_yaxes(
+            type="log"
+        )
+    else:
+        fig.update_xaxes(
+            range=[0,max_x*1.1]
+        )
+        fig.update_yaxes(
+            range=[0,max_y*1.1]
+        )
+
+
+def define_colorscale( fig, col):
+    min_c,max_c = col.min(),col.max()
+    if min_c == max_c: max_c = min_c + 0.1
+    fig.update_coloraxes(
+        cmin=min_c,
+        cmax=max_c,
+        reversescale=True
+    )
+
 def make_tradeoff_fig_ha(df, log=False, scale='Blugrn'):
     fig = px.scatter(
         df,
@@ -163,20 +189,45 @@ def make_tradeoff_fig_ha(df, log=False, scale='Blugrn'):
         )
     )
 
-    if log:
-        fig.update_xaxes(
-            type="log"
+    define_colorscale( fig, df['constraint_penalty'])
+    define_axes( fig, log, max_x, max_y)
+
+    return fig
+
+def make_tradeoff_fig_nn(df, log=False, scale='Blugrn'):
+    fig = px.scatter(
+        df,
+        x="hpwl_norm",
+        y="area_norm",
+        color="constraint_penalty",
+        color_continuous_scale=scale,
+        size="size",
+        width=800,
+        height=800,
+        hover_name="concrete_template_name",
+        hover_data=['width','height']
+    )
+
+    best_x = df['hpwl_norm'].values[0]
+    best_y = df['area_norm'].values[0]
+
+    min_x, max_x = min(df['hpwl_norm']),max(df['hpwl_norm'])
+    min_y, max_y = min(df['area_norm']),max(df['area_norm'])
+
+    sweep_x = np.linspace( min_x, max_x, 101)
+    sweep_y = best_y*(2 - sweep_x/best_x)
+
+    fig.add_trace(
+        go.Scatter( 
+            x=sweep_x,
+            y=sweep_y,
+            mode='lines',
+            showlegend=False
         )
-        fig.update_yaxes(
-            type="log"
-        )
-    else:
-        fig.update_xaxes(
-            range=[0,max_x*1.1]
-        )
-        fig.update_yaxes(
-            range=[0,max_y*1.1]
-        )
+    )
+
+    define_colorscale( fig, df['constraint_penalty'])
+    define_axes( fig, log, max_x, max_y)
 
     return fig
 
@@ -211,22 +262,13 @@ def make_tradeoff_fig_ac(df, log=False, scale='Blugrn'):
         )
     )
 
-    if log:
-        fig.update_xaxes(
-            type="log"
-        )
-        fig.update_yaxes(
-            type="log"
-        )
-    else:
-        fig.update_xaxes(
-            range=[0,max_x*1.1]
-        )
-        fig.update_yaxes(
-            range=[0,max_y*1.1]
-        )
+    define_colorscale( fig, df['constraint_penalty'])
+    define_axes( fig, log, max_x, max_y)
 
     return fig
+
+
+
 
 def make_tradeoff_fig_hc(df, log=False, scale='Blugrn'):
     fig = px.scatter(
@@ -259,20 +301,30 @@ def make_tradeoff_fig_hc(df, log=False, scale='Blugrn'):
         )
     )
 
-    if log:
-        fig.update_xaxes(
-            type="log"
-        )
-        fig.update_yaxes(
-            type="log"
-        )
-    else:
-        fig.update_xaxes(
-            range=[0,max_x*1.1]
-        )
-        fig.update_yaxes(
-            range=[0,max_y*1.1]
-        )
+    define_colorscale( fig, df['constraint_penalty'])
+    define_axes( fig, log, max_x, max_y)
+
+    return fig
+
+def make_tradeoff_fig_ss(df, log=False, scale='Blugrn'):
+    fig = px.scatter(
+        df,
+        x="hpwl_scale",
+        y="area_scale",
+        color="constraint_penalty",
+        color_continuous_scale=scale,
+        size="size",
+        width=800,
+        height=800,
+        hover_name="concrete_template_name",
+        hover_data=['width','height']
+    )
+
+    min_x, max_x = min(df['hpwl_norm']),max(df['hpwl_norm'])
+    min_y, max_y = min(df['area_norm']),max(df['area_norm'])
+
+    define_colorscale( fig, df['constraint_penalty'])
+    define_axes( fig, log, max_x, max_y)
 
     return fig
 
@@ -287,6 +339,10 @@ def make_tradeoff_fig( axes, df, log=False, scale='Blugrn'):
         return make_tradeoff_fig_ac( df, log, scale)
     elif axes == ('hpwl', 'cost'):
         return make_tradeoff_fig_hc( df, log, scale)
+    elif axes == ('hpwl_scale', 'area_scale'):
+        return make_tradeoff_fig_ss( df, log, scale)
+    elif axes == ('hpwl_norm', 'area_norm'):
+        return make_tradeoff_fig_nn( df, log, scale)
     else:
         assert False, axes
 
@@ -317,7 +373,7 @@ class AppWithCallbacksAndState:
         self.tagged_bboxes = tagged_bboxes
         self.module_name = module_name
 
-        self.sel = None
+        self.sel = f'{module_name}_0'
         self.title = None
 
         self.subindex = 0
@@ -346,7 +402,7 @@ class AppWithCallbacksAndState:
                         dcc.Dropdown(
                             id='tradeoff-type', 
                             options=[{"value": x, "label": x} 
-                                     for x in ['width-height', 'aspect_ratio-area', 'hpwl-area', 'area-cost', 'hpwl-cost']],
+                                     for x in ['width-height', 'aspect_ratio-area', 'hpwl-area', 'area-cost', 'hpwl-cost', 'hpwl_scale-area_scale', 'hpwl_norm-area_norm']],
                             value='hpwl-area'
                         ),
                         dcc.Dropdown(
@@ -374,7 +430,7 @@ class AppWithCallbacksAndState:
                         dcc.RadioItems(
                             id='display-type',
                             options=[{'label': i, 'value': i} for i in ['All', 'Direct', 'Leaves Only']],
-                            value='All'
+                            value='Direct'
                         ),
                         html.Button(
                             'Route',
