@@ -131,14 +131,21 @@ def make_tradeoff_fig_aa(df, log=False, scale='Blugrn'):
 
     return fig
 
-def define_axes( fig, log, max_x, max_y):
+def define_axes( fig, log, max_x, max_y, *, log_one_to_one=False):
     if log:
         fig.update_xaxes(
             type="log"
         )
-        fig.update_yaxes(
-            type="log"
-        )
+        if log_one_to_one:
+            fig.update_yaxes(
+                type="log",
+                scaleanchor='x',
+                scaleratio = 1
+            )
+        else:
+            fig.update_yaxes(
+                type="log"
+            )
     else:
         fig.update_xaxes(
             range=[0,max_x*1.1]
@@ -182,7 +189,15 @@ def make_tradeoff_fig_ha(df, log=False, scale='Blugrn', lambda_coeff=1.0):
         sweep_y = best_y*(2 - sweep_x/best_x)
     else:
         log_product = math.log(best_x)*lambda_coeff + math.log(best_y)
-        sweep_x = np.linspace( min_x, max_x, 101)
+
+        alt_min_x = min_x / ((max_x/min_x) ** 0.1)
+
+        alt_min_y = min_y / ((max_y/min_y) ** 0.1)
+
+        # find x where cost = f(x,min_y)
+        alt_max_x = math.exp( (log_product - math.log(alt_min_y))/lambda_coeff)
+
+        sweep_x = np.linspace( alt_min_x, min(alt_max_x,max_x), 101)
         log_sweep_y = log_product - np.log(sweep_x)*lambda_coeff
         sweep_y = np.exp(log_sweep_y)
 
@@ -196,7 +211,7 @@ def make_tradeoff_fig_ha(df, log=False, scale='Blugrn', lambda_coeff=1.0):
     )
 
     define_colorscale( fig, df['constraint_penalty'])
-    define_axes( fig, log, max_x, max_y)
+    define_axes( fig, log, max_x, max_y, log_one_to_one=True)
 
     return fig
 
