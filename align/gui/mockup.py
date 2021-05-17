@@ -373,7 +373,7 @@ class AppWithCallbacksAndState:
         self.tagged_bboxes = tagged_bboxes
         self.module_name = module_name
 
-        self.sel = None
+        self.sel = f'{module_name}_0'
         self.title = None
 
         self.subindex = 0
@@ -430,7 +430,7 @@ class AppWithCallbacksAndState:
                         dcc.RadioItems(
                             id='display-type',
                             options=[{'label': i, 'value': i} for i in ['All', 'Direct', 'Leaves Only']],
-                            value='All'
+                            value='Direct'
                         ),
                         html.Button(
                             'Route',
