@@ -125,6 +125,11 @@ class CmdlineParser():
                             action='store_true',
                             help='Don\'t generate GDS files.')
 
+        parser.add_argument('--lambda_coeff',
+                            type=float,
+                            default=1.0,
+                            help='Multiplier for hpwl in placer cost function.')
+
         self.parser = parser
 
     def parse_args(self, *args, **kwargs):

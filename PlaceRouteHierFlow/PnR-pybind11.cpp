@@ -479,6 +479,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("T_MIN", &PlacerHyperparameters::T_MIN)
     .def_readwrite("ALPHA", &PlacerHyperparameters::ALPHA)
     .def_readwrite("COUNT_LIMIT", &PlacerHyperparameters::COUNT_LIMIT)
+    .def_readwrite("LAMBDA", &PlacerHyperparameters::LAMBDA)
     ;
 
   py::class_<PlacerIfc>( m, "PlacerIfc")

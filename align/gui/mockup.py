@@ -157,7 +157,7 @@ def define_colorscale( fig, col):
         reversescale=True
     )
 
-def make_tradeoff_fig_ha(df, log=False, scale='Blugrn'):
+def make_tradeoff_fig_ha(df, log=False, scale='Blugrn', lambda_coeff=1.0):
     fig = px.scatter(
         df,
         x="hpwl",
@@ -181,9 +181,10 @@ def make_tradeoff_fig_ha(df, log=False, scale='Blugrn'):
         sweep_x = np.linspace( min_x, max_x, 101)
         sweep_y = best_y*(2 - sweep_x/best_x)
     else:
-        product = best_x*best_y
+        log_product = math.log(best_x)*lambda_coeff + math.log(best_y)
         sweep_x = np.linspace( min_x, max_x, 101)
-        sweep_y = product/sweep_x
+        log_sweep_y = log_product - np.log(sweep_x)*lambda_coeff
+        sweep_y = np.exp(log_sweep_y)
 
     fig.add_trace(
         go.Scatter( 
@@ -311,13 +312,13 @@ def make_tradeoff_fig_hc(df, log=False, scale='Blugrn'):
 
     return fig
 
-def make_tradeoff_fig( axes, df, log=False, scale='Blugrn'):
+def make_tradeoff_fig( axes, df, log=False, scale='Blugrn', lambda_coeff=1.0):
     if   axes == ('width', 'height'):
         return make_tradeoff_fig_wh( df, log, scale)
     elif axes == ('aspect_ratio', 'area'):
         return make_tradeoff_fig_aa( df, log, scale)
     elif axes == ('hpwl', 'area'):
-        return make_tradeoff_fig_ha( df, log, scale)
+        return make_tradeoff_fig_ha( df, log, scale, lambda_coeff)
     elif axes == ('area', 'cost'):
         return make_tradeoff_fig_ac( df, log, scale)
     elif axes == ('hpwl', 'cost'):
@@ -350,9 +351,10 @@ class AppWithCallbacksAndState:
 
         self.df = df
 
-    def __init__(self, *, tagged_bboxes, module_name):
+    def __init__(self, *, tagged_bboxes, module_name, lambda_coeff):
         self.tagged_bboxes = tagged_bboxes
         self.module_name = module_name
+        self.lambda_coeff = lambda_coeff
 
         self.sel = f'{module_name}_0'
         self.title = None
@@ -363,7 +365,7 @@ class AppWithCallbacksAndState:
         self.axes = ('hpwl', 'area')
 
         self.gen_dataframe()
-        self.tradeoff = make_tradeoff_fig(self.axes, self.df, log=True)
+        self.tradeoff = make_tradeoff_fig(self.axes, self.df, log=True, lambda_coeff=lambda_coeff)
         self.placement_graph = self.make_placement_graph()
 
         self.app = dash.Dash(__name__, assets_ignore=r'.*\.#.*')
@@ -506,7 +508,7 @@ class AppWithCallbacksAndState:
                 self.axes = tuple(tradeoff_type.split('-'))
 
         self.gen_dataframe()
-        self.tradeoff = make_tradeoff_fig(self.axes, self.df, log=axes_type == 'loglog', scale=scale)
+        self.tradeoff = make_tradeoff_fig(self.axes, self.df, log=axes_type == 'loglog', scale=scale, lambda_coeff=self.lambda_coeff)
         return (self.tradeoff,)
 
     def route_current_placement(self, n_clicks):
@@ -556,8 +558,8 @@ class AppWithCallbacksAndState:
         return self.placement_graph, None
 
 
-def run_gui( *, tagged_bboxes, module_name):
-    awcas = AppWithCallbacksAndState( tagged_bboxes=tagged_bboxes, module_name=module_name)
+def run_gui( *, tagged_bboxes, module_name, lambda_coeff):
+    awcas = AppWithCallbacksAndState( tagged_bboxes=tagged_bboxes, module_name=module_name, lambda_coeff=lambda_coeff)
     awcas.app.run_server(debug=True,use_reloader=False)
     
     logger.info( f'final module_name: {awcas.module_name} We have access to any state from the GUI object here.')

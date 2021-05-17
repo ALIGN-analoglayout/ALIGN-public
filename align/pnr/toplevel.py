@@ -284,7 +284,7 @@ def route_top_down( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS):
     return results_name_map
 
 
-def place( *, DB, opath, fpath, numLayout, effort, idx):
+def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff):
     logger.info(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
 
     current_node = DB.CheckoutHierNode(idx,-1)
@@ -299,6 +299,7 @@ def place( *, DB, opath, fpath, numLayout, effort, idx):
     #hyper.T_MIN = 1e-6
     #hyper.ALPHA = 0.995
     #hyper.COUNT_LIMIT = 200
+    hyper.LAMBDA = lambda_coeff
 
     curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, DB.getDrc_info(), hyper)
 
@@ -359,11 +360,11 @@ def subset_verilog_d( verilog_d, nm):
     return new_verilog_d
 
 
-def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, verilog_d, router_mode, gui, skipGDS):
+def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, verilog_d, router_mode, gui, skipGDS, lambda_coeff):
     TraverseOrder = DB.TraverseHierTree()
 
     for idx in TraverseOrder:
-        place( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx)
+        place( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx, lambda_coeff=lambda_coeff)
 
     if verilog_d is not None:
         def r2wh( r):
@@ -450,11 +451,11 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
         if gui:
             tagged_bboxes.update( leaf_map)
             top_level = DB.hierTree[TraverseOrder[-1]].name
-            run_gui( tagged_bboxes=tagged_bboxes, module_name=top_level)
+            run_gui( tagged_bboxes=tagged_bboxes, module_name=top_level, lambda_coeff=lambda_coeff)
 
     return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode, skipGDS=skipGDS)
 
-def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_mode='top_down', gui=False, skipGDS=False):
+def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff):
 
     assert len(args) == 9
 
@@ -474,6 +475,6 @@ def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_m
 
     pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
 
-    results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, verilog_d=verilog_d, router_mode=router_mode, gui=gui, skipGDS=skipGDS)
+    results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, verilog_d=verilog_d, router_mode=router_mode, gui=gui, skipGDS=skipGDS, lambda_coeff=lambda_coeff)
 
     return DB, results_name_map

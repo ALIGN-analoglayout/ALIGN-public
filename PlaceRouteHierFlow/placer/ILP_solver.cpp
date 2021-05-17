@@ -485,6 +485,8 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
 }
 
 double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
+  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.CalculateCost");
+
   ConstGraph const_graph;
   double cost = 0;
 
@@ -492,8 +494,8 @@ double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
     cost += area_norm;
     cost += HPWL_norm * const_graph.LAMBDA;
   } else {
-    cost += log10( area);
-    cost += log10( HPWL);
+    cost += log( area);
+    cost += log( HPWL) * const_graph.LAMBDA;
   }
 
   double match_cost = 0;
