@@ -746,7 +746,6 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   for (bool optTap : {true, false}) {
     if (!optTap && (!designData.RemoveTaps() || designData.isTop)) continue;
     for(std::map<double, std::pair<SeqPair, ILP_solver>>::iterator it=spVec.begin(); it!=spVec.end() and idx<nodeSize; ++it, ++idx) {
-      if (designData.RemoveTaps()) it->second.first.RestoreSelected(optTap);
       if (!optTap) {
         it->second.second.RestoreBlocks();
       }
@@ -755,7 +754,7 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
       it->second.second.WritePlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".pl");
       it->second.second.PlotPlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".plt");
       it->second.second.UpdateHierNode(designData, it->second.first, nodeVec[idx], drcInfo);
-      it->second.first.RestoreSelected(optTap);
+      it->second.first.RestoreSelected();
     }
   }
 }

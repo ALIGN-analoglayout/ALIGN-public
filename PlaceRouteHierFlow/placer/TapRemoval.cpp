@@ -220,6 +220,11 @@ NodeSet Graph::dominatingSet(bool removeAllTaps) const
     //}
   }
 
+  if (isoActive) {
+    dom.clear();
+    return dom;
+  }
+
 
   while (!whiteNodes.empty()) {
     //logger->info("white nodes : {0}", whiteNodes.size());
@@ -308,6 +313,7 @@ void Graph::addSymPairs(const std::map<std::string, std::string>& counterparts)
 void TapRemoval::buildGraph()
 {
   auto logger = spdlog::default_logger()->clone("placer.TapRemoval.buildGraph");
+  _activesPresent = false;
   RTree rtree;
   map<string, geom::Rect> allTaps;
   if (_graph != nullptr) {
@@ -315,6 +321,7 @@ void TapRemoval::buildGraph()
     _graph = nullptr;
   }
   _graph = new DomSetGraph::Graph;
+  bool nactive(false), pactive(false);
   for (const auto& inst : _instances) {
     for (auto nmos : {true, false}) {
       const string mosString = nmos ? "__tr_nmos_" : "__tr_pmos_";
@@ -328,12 +335,15 @@ void TapRemoval::buildGraph()
       }
       auto& actives = inst->getActives(nmos);
       for (unsigned i = 0; i < actives.size(); ++i) {
+        if (nmos) nactive = true;
+        else pactive = true;
         bgBox b(bgPt(actives[i].xmin(), actives[i].ymin()), bgPt(actives[i].xmax(), actives[i].ymax()));
         rtree.insert(bgVal(b, _graph->nodes().size()));
         _graph->addNode(inst->name() + "__active_" + mosString + to_string(i), DomSetGraph::NodeType::Active, inst->deltaArea());
       }
     }
   }
+  _activesPresent = nactive && pactive;
 
   //cout << allTaps.size() << endl;
 
@@ -371,7 +381,7 @@ void TapRemoval::buildGraph()
   _graph->addSymPairs(_symPairs);
 }
 
-TapRemoval::TapRemoval(const PnRDB::hierNode& node, const unsigned dist) : _dist(dist), _name(node.name), _graph(nullptr)
+TapRemoval::TapRemoval(const PnRDB::hierNode& node, const unsigned dist) : _dist(dist), _name(node.name), _graph(nullptr), _activesPresent(false)
 {
   auto logger = spdlog::default_logger()->clone("placer.TapRemoval.TapRemoval");
   for (unsigned i = 0; i < node.Blocks.size(); ++i) {
@@ -461,6 +471,7 @@ TapRemoval::~TapRemoval()
 long TapRemoval::deltaArea(map<string, int>* swappedIndices, bool removeAllTaps) const
 {
   auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.deltaArea");
+  if (!_activesPresent) return -1;
   long deltaarea(0);
   if (_instances.empty()) return deltaarea;
   if (_graph == nullptr || _dist == 0 || !valid()) return deltaarea;
@@ -468,7 +479,10 @@ long TapRemoval::deltaArea(map<string, int>* swappedIndices, bool removeAllTaps)
 
   //logger->info("Found {0} nodes in dominating set {1}", nodes.size(), _dist);
 
-  if (!removeAllTaps && nodes.empty()) logger->error("No dominating nodes found");
+  if (!removeAllTaps && nodes.empty()) {
+    logger->error("No dominating nodes found");
+    return -1;
+  }
 
   //for (auto& it : _instances) {
   //  deltaarea += it->primitive()->area();

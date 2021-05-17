@@ -422,13 +422,12 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
 
   // each block has 4 vars, x, y, H_flip, V_flip;
   PrimitiveData::PlMap plmap;
-  for (int iterCompact : {0, 1, 2}) {
+  long delArea(0);
+  for (int iterCompact : {0, 1}) {
     switch (iterCompact) {
       case 0 :
       default :
         if (CompactPlacement(mydesign, curr_sp, drcInfo) < 0) return -1.;
-        break;
-      case 1 :
         if (mydesign.RemoveTaps()) {
           for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
             const auto& index = curr_sp.selected[i];
@@ -441,31 +440,17 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
                     Blocks[i].H_flip, Blocks[i].V_flip)));
           }
           mydesign.RebuildTapInstances(plmap);
-          map<string, int> swappedIndices;
-          auto delArea = mydesign.TapDeltaArea(&swappedIndices);
-          if (!swappedIndices.empty()) {
-            curr_sp.BackupSelected(true);
-            for (int i = 0; i < mydesign.Blocks.size(); i++) {
-              auto& index = curr_sp.selected[i];
-              auto it = swappedIndices.find(mydesign.Blocks[i][index].name);
-              if (it != swappedIndices.end() && index != it->second) {
-                index = it->second;
-              }
-            }
-            if (CompactPlacement(mydesign, curr_sp, drcInfo) < 0) return -1.;
-          }
-          SaveBlocks();
-          curr_sp.RestoreSelected(true);
-          //logger->info("Max delta area from tap removal : {0} {1}", delArea, swappedIndices.size());
+          delArea = mydesign.TapDeltaArea(nullptr);
+          if (delArea < 0)  return -1;
         }
         break;
-      case 2 :
+      case 1 :
         if (mydesign.RemoveTaps() && !mydesign.isTop) {
           mydesign.RebuildTapInstances(plmap, false); // incremental rebuild
           map<string, int> swappedIndices;
-          auto delArea = mydesign.TapDeltaArea(&swappedIndices, true); // remove all taps
+          delArea = mydesign.TapDeltaArea(&swappedIndices, true); // remove all taps
           if (!swappedIndices.empty()) {
-            curr_sp.BackupSelected(false);
+            curr_sp.BackupSelected();
             for (int i = 0; i < mydesign.Blocks.size(); i++) {
               auto& index = curr_sp.selected[i];
               auto it = swappedIndices.find(mydesign.Blocks[i][index].name);
@@ -476,7 +461,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
             if (CompactPlacement(mydesign, curr_sp, drcInfo) < 0) return -1.;
           }
           RestoreBlocks();
-          curr_sp.RestoreSelected(false);
+          curr_sp.RestoreSelected();
           //logger->info("maximum delta area from tap removal : {0} {1} {2}", delArea, swappedIndices.size(), Blocks.size());
         }
         break;

@@ -106,18 +106,13 @@ class SeqPair
     int GetBlockSelected(int blockNo);
     bool ChangeSelectedBlock(design& caseNL);
     void KeepOrdering(design& caseNL);
-    void BackupSelected(const bool opt = true) 
+    void BackupSelected() 
     {
-      if (opt) selectedOptTaps = selected;
-      else selectedNoTaps = selected;
+      selectedNoTaps = selected;
     }
-    void RestoreSelected(const bool opt = true)
+    void RestoreSelected()
     {
-      if (opt) {
-        if (!selectedOptTaps.empty()) std::swap(selected, selectedOptTaps);
-      } else {
-        if (!selectedNoTaps.empty()) std::swap(selected, selectedNoTaps);
-      }
+      if (!selectedNoTaps.empty()) std::swap(selected, selectedNoTaps);
     }
     void CompactSeq();
 };

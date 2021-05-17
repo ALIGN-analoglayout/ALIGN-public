@@ -370,6 +370,7 @@ class TapRemoval {
     std::map<std::string, PrimitiveData::Instance*> _instMap;
     std::map<std::string, std::string> _symPairs;
     geom::Rect _bbox;
+    bool _activesPresent;
 
   public:
     void buildGraph();

@@ -15,14 +15,6 @@ SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl)
   _maxSize = 0;
   for (unsigned i = 0; i < casenl.GetSizeofBlocks(); ++i) {
     int s = static_cast<int>(casenl.Blocks.at(i).size());
-    if (casenl.RemoveTaps()) {
-      for (unsigned j = 0; j < casenl.Blocks.at(i).size(); ++j) {
-        if (!casenl.Blocks.at(i).at(j).wtap) {
-          s = static_cast<int>(j);
-          break;
-        }
-      }
-    }
     _maxSize = std::max(_maxSize, s);
     _maxSelected.push_back(s);
   }
@@ -70,7 +62,6 @@ SeqPair::SeqPair() {
   this->orient.clear();
   this->symAxis.clear();
   this->selected.clear();
-  this->selectedOptTaps.clear();
   this->selectedNoTaps.clear();
 }
 
@@ -102,7 +93,6 @@ SeqPair::SeqPair(const SeqPair& sp) {
   this->orient=sp.orient;
   this->symAxis=sp.symAxis;
   this->selected=sp.selected;
-  this->selectedOptTaps=sp.selectedOptTaps;
   this->selectedNoTaps=sp.selectedNoTaps;
   if (!_seqPairEnum) this->_seqPairEnum = sp._seqPairEnum;
 }
@@ -644,7 +634,6 @@ SeqPair& SeqPair::operator=(const SeqPair& sp) {
   this->orient=sp.orient;
   this->symAxis=sp.symAxis;
   this->selected=sp.selected;
-  this->selectedOptTaps=sp.selectedOptTaps;
   this->selectedNoTaps=sp.selectedNoTaps;
   if (!_seqPairEnum) this->_seqPairEnum = sp._seqPairEnum;
   return *this;
@@ -675,10 +664,6 @@ void SeqPair::PrintSeqPair() {
   logger->debug("Selected: ");
   for(int i=0;i<(int)selected.size();++i) {
     logger->debug("{0}",selected.at(i));
-  }
-  logger->debug("SelectedOptTaps: ");
-  for(int i=0;i<(int)selectedOptTaps.size();++i) {
-    logger->debug("{0}",selectedOptTaps.at(i));
   }
   logger->debug("SelectedNoTaps: ");
   for(int i=0;i<(int)selectedNoTaps.size();++i) {
@@ -902,11 +887,6 @@ bool SeqPair::ChangeSelectedBlock(design& caseNL) {
   }
   int newsel=rand() % caseNL.Blocks.at(anode).size();
   int fail(0), cnt(20);
-  if (caseNL.RemoveTaps()) {
-    while (!caseNL.Blocks.at(anode).at(newsel).wtap && fail++ < cnt) {
-      newsel=rand() % caseNL.Blocks.at(anode).size();
-    }
-  }
   selected.at(anode)=newsel;
   if(caseNL.GetBlockCounterpart(anode)!=-1) { selected.at( caseNL.GetBlockCounterpart(anode) )=newsel;}
   return true;
