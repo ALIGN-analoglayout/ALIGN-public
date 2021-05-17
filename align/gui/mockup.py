@@ -184,10 +184,7 @@ def make_tradeoff_fig_ha(df, log=False, scale='Blugrn', lambda_coeff=1.0):
     min_x, max_x = min(df['hpwl']),max(df['hpwl'])
     min_y, max_y = min(df['area']),max(df['area'])
 
-    if False:
-        sweep_x = np.linspace( min_x, max_x, 101)
-        sweep_y = best_y*(2 - sweep_x/best_x)
-    else:
+    if min_x > 0:
         log_product = math.log(best_x)*lambda_coeff + math.log(best_y)
 
         alt_min_x = min_x / ((max_x/min_x) ** 0.1)
@@ -201,14 +198,14 @@ def make_tradeoff_fig_ha(df, log=False, scale='Blugrn', lambda_coeff=1.0):
         log_sweep_y = log_product - np.log(sweep_x)*lambda_coeff
         sweep_y = np.exp(log_sweep_y)
 
-    fig.add_trace(
-        go.Scatter( 
-            x=sweep_x,
-            y=sweep_y,
-            mode='lines',
-            showlegend=False
+        fig.add_trace(
+            go.Scatter( 
+                x=sweep_x,
+                y=sweep_y,
+                mode='lines',
+                showlegend=False
+            )
         )
-    )
 
     define_colorscale( fig, df['constraint_penalty'])
     define_axes( fig, log, max_x, max_y, log_one_to_one=True)

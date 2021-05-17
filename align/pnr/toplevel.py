@@ -419,8 +419,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                     d = { 'width': p[0], 'height': p[1],
                           'hpwl': hN.HPWL, 'cost': hN.cost,
                           'constraint_penalty': hN.constraint_penalty,
-                          'area_norm': hN.area_norm, 'hpwl_norm': hN.HPWL_norm,
-                          'area_scale': hN.area_norm/(p[0]*p[1]), 'hpwl_scale': hN.HPWL_norm/hN.HPWL
+                          'area_norm': hN.area_norm, 'hpwl_norm': hN.HPWL_norm
                     }
                     logger.info( f"data: {d}")
 
