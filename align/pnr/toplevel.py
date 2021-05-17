@@ -402,8 +402,9 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                     for instance in module['instances']:
                         if 'abstract_template_name' in instance:
                             atn = instance['abstract_template_name'] 
-                            ctn = instance['concrete_template_name']
-                            atns[atn].add((ctn, r2wh(leaves[ctn]['bbox'])))
+                            if 'concrete_template_name' in instance:
+                                ctn = instance['concrete_template_name']
+                                atns[atn].add((ctn, r2wh(leaves[ctn]['bbox'])))
 
                 hack.append( list(gen_boxes_and_hovertext( placement_verilog_d, hN.name)))
 

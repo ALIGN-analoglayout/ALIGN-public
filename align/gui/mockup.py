@@ -131,7 +131,7 @@ def make_tradeoff_fig_aa(df, log=False, scale='Blugrn'):
 
     return fig
 
-def define_axes( fig, max_x, max_y):
+def define_axes( fig, log, max_x, max_y):
     if log:
         fig.update_xaxes(
             type="log"
@@ -190,7 +190,7 @@ def make_tradeoff_fig_ha(df, log=False, scale='Blugrn'):
     )
 
     define_colorscale( fig, df['constraint_penalty'])
-    define_axes( fig, max_x, max_y)
+    define_axes( fig, log, max_x, max_y)
 
     return fig
 
@@ -227,7 +227,7 @@ def make_tradeoff_fig_nn(df, log=False, scale='Blugrn'):
     )
 
     define_colorscale( fig, df['constraint_penalty'])
-    define_axes( fig, max_x, max_y)
+    define_axes( fig, log, max_x, max_y)
 
     return fig
 
@@ -263,7 +263,7 @@ def make_tradeoff_fig_ac(df, log=False, scale='Blugrn'):
     )
 
     define_colorscale( fig, df['constraint_penalty'])
-    define_axes( fig, max_x, max_y)
+    define_axes( fig, log, max_x, max_y)
 
     return fig
 
@@ -302,7 +302,7 @@ def make_tradeoff_fig_hc(df, log=False, scale='Blugrn'):
     )
 
     define_colorscale( fig, df['constraint_penalty'])
-    define_axes( fig, max_x, max_y)
+    define_axes( fig, log, max_x, max_y)
 
     return fig
 
@@ -324,7 +324,7 @@ def make_tradeoff_fig_ss(df, log=False, scale='Blugrn'):
     min_y, max_y = min(df['area_norm']),max(df['area_norm'])
 
     define_colorscale( fig, df['constraint_penalty'])
-    define_axes( fig, max_x, max_y)
+    define_axes( fig, log, max_x, max_y)
 
     return fig
 

@@ -134,18 +134,14 @@ def gen_boxes_and_hovertext( placement_verilog_d, top_cell):
     modules = { x['name']: x for x in placement_verilog_d['modules']}
 
     def get_rect( instance):
-        # tr converts local coordinates into global coordinates
-        if 'template_name' in instance:
-            isleaf = False
-            template_name = instance['template_name']
-            r = modules[template_name]['bbox']
-        elif 'concrete_template_name' in instance:
-            isleaf = True
-            template_name = instance ['concrete_template_name']
-            r = leaves[template_name]['bbox']
+        if 'concrete_template_name' in instance:
+            ctn = instance ['concrete_template_name']
+            r = leaves[ctn]['bbox']
+            return r, True, ctn
         else:
-            assert False, f'Neither \'template_name\' or \'concrete_template_name\' in inst {instance}.'
-        return r, isleaf, template_name
+            atn = instance['abstract_template_name']
+            r = modules[atn]['bbox']
+            return r, False, atn
 
     def gen_trace_xy(r, template_name, prefix_path, tr):
 
@@ -160,7 +156,6 @@ def gen_boxes_and_hovertext( placement_verilog_d, top_cell):
     def aux(module, prefix_path, tr, lvl):
 
         for instance in module['instances']:
-
             new_prefix_path = prefix_path + (instance['instance_name'],)
 
             # tr converts module coordinates to global coordinates
@@ -173,10 +168,9 @@ def gen_boxes_and_hovertext( placement_verilog_d, top_cell):
             r, isleaf, template_name = get_rect(instance)
             yield gen_trace_xy(r, template_name, new_prefix_path, new_tr) + (isleaf, lvl)
 
-            if 'template_name' in instance:
-                assert instance['template_name'] in modules
-                new_module = modules[instance['template_name']]
-                yield from aux(new_module, new_prefix_path, new_tr, lvl+1)
+            atn = instance['abstract_template_name']
+            if atn in modules:
+                yield from aux(modules[atn], new_prefix_path, new_tr, lvl+1)
 
     if top_cell in leaves:
         yield gen_trace_xy(leaves[top_cell]['bbox'], top_cell, (), transformation.Transformation()) + (True, 0)
