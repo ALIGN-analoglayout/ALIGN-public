@@ -99,55 +99,36 @@ def extract_capacitor_constraints( pnr_const_ds):
 
     return cap_constraints
 
-def hack_capacitor_instances( verilog_d, pnr_const_ds):
-    cap_constraints = extract_capacitor_constraints( pnr_const_ds)
-
-    # Hack capacitor instances from template_name to abstract_template_name
-    # Should move to earlier in flow
-    # Only needed because Capacitors to not considered primitives
-    for module in verilog_d['modules']:
-        nm = module['name']
-        for instance in module['instances']:
-            if instance['instance_name'] in cap_constraints[nm]:
-                instance['abstract_template_name'] = instance['template_name']
-                del instance['template_name']
-
 def gen_leaf_cell_info( verilog_d, pnr_const_ds):
 
-    non_leaves = set()
-    templates_called_in_an_instance = defaultdict(list)
-    abstract_templates_called_in_an_instance = defaultdict(list)
+    non_leaves = { module['name'] for module in verilog_d['modules'] }
+    leaves_called_in_an_instance = defaultdict(list)
 
     for module in verilog_d['modules']:
         nm = module['name']
-        non_leaves.add( nm)
         for instance in module['instances']:
-            if 'template_name' in instance:
-                templates_called_in_an_instance[instance['template_name']].append( (nm,instance['instance_name']))
             if 'abstract_template_name' in instance:
-                abstract_templates_called_in_an_instance[instance['abstract_template_name']].append( (nm,instance['instance_name']))
-
-
-    leaves = set(abstract_templates_called_in_an_instance.keys())
+                atn = instance['abstract_template_name']
+                if atn not in non_leaves:
+                    leaves_called_in_an_instance[atn].append( (nm,instance['instance_name']))
 
     logger.debug( f'non_leaves: {non_leaves}')
-    logger.debug( f'templates: {templates_called_in_an_instance}')
-    logger.debug( f'abstract_templates: {abstract_templates_called_in_an_instance}')
+    logger.debug( f'abstract_templates: {leaves_called_in_an_instance}')
 
     #
     # Capacitor hack --- Should be able to remove eventally
     #
     cap_constraints = extract_capacitor_constraints( pnr_const_ds)
     capacitors = defaultdict(list)
-    for leaf in leaves:
-        for parent, instance_name in abstract_templates_called_in_an_instance[leaf]:
+    for leaf, v in leaves_called_in_an_instance.items():
+        for parent, instance_name in v:
             if parent in cap_constraints:
                 if instance_name in cap_constraints[parent]:
                     logger.debug( f'parent: {parent} instance_name: {instance_name} leaf: {leaf} cap_constraints: {cap_constraints}')
                     capacitors[leaf].append( (parent,instance_name))
 
     # Remove generated capacitors
-    leaves = leaves.difference( set(capacitors.keys()))
+    leaves = set(leaves_called_in_an_instance.keys()).difference( set(capacitors.keys()))
 
     # Add unit caps to leaves
     for _, v in cap_constraints.items():
@@ -212,9 +193,6 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         # SMB: I want this to be in main (perhaps), or in the topology stage
         constraint_files, pnr_const_ds = gen_constraint_files( verilog_d, input_dir)
         logger.debug( f'constraint_files: {constraint_files}')
-
-        # SMB: I want this in the topology stage
-        hack_capacitor_instances( verilog_d, pnr_const_ds)
 
         leaves, capacitors = gen_leaf_cell_info( verilog_d, pnr_const_ds)
 

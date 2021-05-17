@@ -430,6 +430,14 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   // calculate area
   area = double(UR.x - LL.x) * double(UR.y - LL.y);
   // calculate dead area
+  //
+  // The number we subtract off of area is the size of the blocks at
+  //    the current level of hierarchy. This number is not constant
+  //    across different placements, because the placer is choosing
+  //    different aspect ratios of the primitives (which can have
+  //    different areas.) This is the source of the non-constant (and even
+  //    non-monotonic) scaling for area.
+  //
   dead_area = area;
   for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
     dead_area -= double(mydesign.Blocks[i][curr_sp.selected[i]].width) * double(mydesign.Blocks[i][curr_sp.selected[i]].height);
@@ -465,11 +473,8 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     }
     HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);  
   }
+
   //HPWL norm
-  //double block_HPWL = 0;
-  //for (int i = 0; i < mydesign.Blocks.size(); i++) {
-  //  block_HPWL += double(mydesign.Blocks[i][curr_sp.selected[i]].width) + double(mydesign.Blocks[i][curr_sp.selected[i]].height);
-  //}
   if (!mydesign.Nets.empty()) HPWL_norm = HPWL / mydesign.GetMaxBlockHPWLSum() / double(mydesign.Nets.size());
   // calculate linear constraint
   linear_const = 0;
@@ -549,7 +554,8 @@ double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
   if (!mydesign.Match_blocks.empty()) match_cost /= (mydesign.Match_blocks.size());
   cost += match_cost * const_graph.BETA;
   // cost += abs(log(ratio) - log(Aspect_Ratio[0])) * Aspect_Ratio_weight;
-  cost += dead_area / area * const_graph.PHI;
+  // SMB what is this for?
+  // cost += dead_area / area * const_graph.PHI;
   cost += linear_const * const_graph.PI;
   cost += multi_linear_const * const_graph.PII;
   // constraint_penalty = cost - area_norm - HPWL_norm * const_graph.LAMBDA;
