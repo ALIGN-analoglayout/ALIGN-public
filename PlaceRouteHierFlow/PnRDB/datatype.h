@@ -363,6 +363,10 @@ struct layoutAS {
   int width=0;
   int height=0;
   int HPWL = -1;
+  double HPWL_norm=-1;
+  double area_norm = -1;
+  double constraint_penalty = -1;
+  double cost = -1;
   string gdsFile = "";
   vector<blockComplex> Blocks;
   vector<net> Nets;
@@ -447,6 +451,10 @@ struct hierNode {
   std::shared_ptr<taVias> _taVias;
 
   int HPWL = -1;
+  double area_norm = -1;
+  double HPWL_norm = -1;
+  double constraint_penalty = -1;
+  double cost = -1;
 }; // structure of vertex in heirarchical tree
 
 

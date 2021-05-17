@@ -53,6 +53,8 @@ class ILP_solver {
   static void lpsolve_logger(lprec *lp, void *userhandle, char *buf);
 
   public:
+  double cost = 0;
+  double constraint_penalty = 0;
   ILP_solver();
   ILP_solver(design& mydesign);
   ILP_solver(const ILP_solver& solver);

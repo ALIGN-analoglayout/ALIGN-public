@@ -6,6 +6,7 @@ import re
 import copy
 import math
 from collections import defaultdict
+import sys
 
 from .compiler import generate_hierarchy
 from .primitive import generate_primitive
@@ -19,19 +20,45 @@ logger = logging.getLogger(__name__)
 
 def build_steps( flow_start, flow_stop):
     steps = [ '1_topology', '2_primitives', '3_pnr']
+    sub_steps = { '3_pnr': ['prep', 'place', 'route', 'check']}
 
-    start_idx = 0
+    start_idx = 0,
     if flow_start is not None:
-        assert flow_start in steps
-        start_idx = steps.index( flow_start)
-    stop_idx = len(steps)
+        if ':' in flow_start:
+            [step, sub_step] = flow_start.split(':')
+            assert step in steps
+            assert step in sub_steps
+            assert sub_step in sub_steps[step]
+            start_idx = steps.index( step), sub_steps[step].index( sub_step)
+        else:
+            assert flow_start in steps
+            start_idx = steps.index( flow_start),
+
+    stop_idx = len(steps),
     if flow_stop is not None:
-        assert flow_stop in steps
-        stop_idx = steps.index( flow_stop)+1
+        if ':' in flow_stop:
+            [step, sub_step] = flow_stop.split(':')
+            assert step in steps
+            assert step in sub_steps
+            assert sub_step in sub_steps[step]
+            stop_idx = steps.index( step), sub_steps[step].index( sub_step)
+        else:
+            assert flow_stop in steps
+            stop_idx = steps.index( flow_stop),
 
-    assert start_idx < stop_idx, f'No steps to run in the flow: {steps}[{start_idx}:{stop_idx}]'
+    steps_to_run = []
+    enabled = False
+    for i,step in enumerate(steps):
+        if (i,) == start_idx: enabled = True
+        if step in sub_steps:
+            for j,sub_step in enumerate(sub_steps[step]):
+                if (i,j) == start_idx: enabled = True
+                if enabled: steps_to_run.append( f'{step}:{sub_step}')
+                if (i,j) == stop_idx: enabled = False
+        else:
+            if enabled: steps_to_run.append( f'{step}')
+            if (i,) == stop_idx: enabled = False
 
-    steps_to_run = steps[start_idx:stop_idx]
     logger.info( f'Running flow steps {steps_to_run}')
 
     return steps_to_run
@@ -41,7 +68,7 @@ def gen_more_primitives( primitives, topology_dir, subckt):
     """primitives dictionary updated in place"""
 
     #
-    # This code should be improved at moved to 2_primitives
+    # This code should be improved and moved to 2_primitives
     #
     map_d = defaultdict(list)
 
@@ -133,7 +160,7 @@ def gen_more_primitives( primitives, topology_dir, subckt):
         json.dump( verilog_json_d, fp=fp, indent=2)
 
 
-def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, extract=False, log_level=None, verbosity=None, generate=False, python_gds_json=True, regression=False, uniform_height=False, PDN_mode=False, flow_start=None, flow_stop=None, router_mode='top_down', gui=False):
+def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, extract=False, log_level=None, verbosity=None, generate=False, regression=False, uniform_height=False, PDN_mode=False, flow_start=None, flow_stop=None, router_mode='top_down', gui=False, skipGDS=False):
 
     steps_to_run = build_steps( flow_start, flow_stop)
 
@@ -215,37 +242,48 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
 
     # run PNR tool
     pnr_dir = working_dir / '3_pnr'
-    if '3_pnr' in steps_to_run:
+
+    sub_steps = [step for step in steps_to_run if '3_pnr:' in step]
+    if sub_steps:
         pnr_dir.mkdir(exist_ok=True)
-        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort, extract=extract, gds_json=python_gds_json, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui)
+        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort, extract=extract, gds_json=not skipGDS, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui, skipGDS=skipGDS, steps_to_run=sub_steps)
         results.append( (netlist, variants))
-        assert router_mode == 'no_op' or len(variants) > 0, f"No layouts were generated for {netlist}. Cannot proceed further. See LOG/align.log for last error."
+
+        assert router_mode == 'no_op' or '3_pnr:check' not in sub_steps or len(variants) > 0, f"No layouts were generated for {netlist}. Cannot proceed further. See LOG/align.log for last error."
 
         # Generate necessary output collateral into current directory
         for variant, filemap in variants.items():
-            convert_GDSjson_GDS(filemap['gdsjson'], working_dir / f'{variant}.gds')
-            print("Use KLayout to visualize the generated GDS:",working_dir / f'{variant}.gds')
+            if filemap['errors'] > 0:
+                (working_dir / filemap['errfile'].name).write_text(filemap['errfile'].read_text())
 
             if os.getenv('ALIGN_HOME', False):
                 shutil.copy(pnr_dir/f'{variant}.json',
                             pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/f'{variant}.json')
 
+            assert skipGDS or 'gdsjson' in filemap
+            if 'gdsjson' in filemap:
+                convert_GDSjson_GDS(filemap['gdsjson'], working_dir / f'{variant}.gds')
+                print("Use KLayout to visualize the generated GDS:",working_dir / f'{variant}.gds')
+
+            assert skipGDS or 'python_gds_json' in filemap
             if 'python_gds_json' in filemap:
                 convert_GDSjson_GDS(filemap['python_gds_json'], working_dir / f'{variant}.python.gds')
                 print("Use KLayout to visualize the python generated GDS:",working_dir / f'{variant}.python.gds')
 
-
-            (working_dir / filemap['lef'].name).write_text(filemap['lef'].read_text())
-            if filemap['errors'] > 0:
-                (working_dir / filemap['errfile'].name).write_text(filemap['errfile'].read_text())
+            assert skipGDS or 'lef' in filemap
+            if 'lef' in filemap:
+                (working_dir / filemap['lef'].name).write_text(filemap['lef'].read_text())
 
             if extract:
                 (working_dir / filemap['cir'].name).write_text(filemap['cir'].read_text())
+
             # Generate PNG
             if generate:
                 generate_png(working_dir, variant)
+
+            # Copy regression results in one dir
+            # SMB: Do we use this; let's get rid of it
             if regression:
-                # Copy regression results in one dir
                 (regression_dir / filemap['gdsjson'].name).write_text(filemap['gdsjson'].read_text())
                 (regression_dir / filemap['python_gds_json'].name).write_text(filemap['python_gds_json'].read_text())
                 convert_GDSjson_GDS(filemap['python_gds_json'], regression_dir / f'{variant}.python.gds')                
@@ -255,5 +293,6 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
                 for file_ in topology_dir.iterdir():
                     if file_.suffix == '.const':
                         (regression_dir / file_.name).write_text(file_.read_text())
+
     return results
 

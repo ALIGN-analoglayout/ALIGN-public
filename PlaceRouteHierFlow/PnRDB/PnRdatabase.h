@@ -118,7 +118,6 @@ class PnRdatabase
     std::vector<PnRDB::hierNode> CheckoutHierNodeVec(int nodeID);//checkout nodeVec, which consists of different placement
     void AppendToHierTree( const PnRDB::hierNode& updatedNode); // append node to end of hierTree
     void CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode); // check out data of specific hierarchical node
-    std::vector<int> UsedInstancesIdx(int nodeID);       // indices of used instances of a hiernode
     void CheckinChildnodetoBlock(PnRDB::hierNode &parent, int blockID, const PnRDB::hierNode &updatedNode, PnRDB::Omark ort);
     void updatePowerPins(PnRDB::pin &temp_pin);
 

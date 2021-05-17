@@ -25,10 +25,8 @@ logger = logging.getLogger(__name__)
 
 def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, extract=False, input_dir=None, toplevel=True, gds_json=True):
 
-    logger.debug(
+    logger.info(
         f"_generate_json: {hN} {variant} {primitive_dir} {pdk_dir} {output_dir} {extract} {input_dir} {toplevel} {gds_json}")
-
-
 
     cnv, d = gen_viewer_json(hN, pdkdir=pdk_dir, draw_grid=True, json_dir=str(primitive_dir),
                              extract=extract, input_dir=input_dir, toplevel=toplevel)
@@ -190,18 +188,9 @@ def gen_leaf_collateral( leaves, primitives, primitive_dir):
 
     return leaf_collateral
 
-def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False, gds_json=False, PDN_mode=False, router_mode='top_down', gui=False):
+def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False, gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False, steps_to_run):
 
-    logger.info(f"Running Place & Route for {subckt} {router_mode}")
-
-    # Create working & input directories
-    working_dir = output_dir
-    working_dir.mkdir(exist_ok=True)
-    input_dir = working_dir / 'inputs'
-    input_dir.mkdir(exist_ok=True)
-    input_dir_wotap = working_dir / 'inputs' / 'wo_tap' 
-    input_dir_wotap.mkdir(exist_ok=True)
-    results_dir = working_dir / 'Results'
+    logger.info(f"Running Place & Route for {subckt} {router_mode} {steps_to_run}")
 
     # Generate file name inputs
     map_file = f'{subckt}.map'
@@ -211,112 +200,136 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
     verilog_file = f'{subckt}.verilog.json'
     pdk_file = 'layers.json'
 
-    verilog_d = VerilogJsonTop.parse_file((topology_dir / verilog_file))
+    working_dir = output_dir
+    input_dir = working_dir / 'inputs'
+    results_dir = working_dir / 'Results'
+    input_dir_wotap = input_dir / 'wo_tap' 
 
-    # SMB: I want this to be in main (perhaps), or in the topology stage
-    constraint_files, pnr_const_ds = gen_constraint_files( verilog_d, input_dir)
-    logger.debug( f'constraint_files: {constraint_files}')
+    if '3_pnr:prep' in steps_to_run:
+        # Create working & input directories
+        working_dir.mkdir(exist_ok=True)
+        input_dir.mkdir(exist_ok=True)
+        input_dir_wotap.mkdir(exist_ok=True)
 
-    # SMB: I want this in the topology stage
-    hack_capacitor_instances( verilog_d, pnr_const_ds)
+        verilog_d = VerilogJsonTop.parse_file((topology_dir / verilog_file))
 
-    leaves, capacitors = gen_leaf_cell_info( verilog_d, pnr_const_ds)
+        # SMB: I want this to be in main (perhaps), or in the topology stage
+        constraint_files, pnr_const_ds = gen_constraint_files( verilog_d, input_dir)
+        logger.debug( f'constraint_files: {constraint_files}')
 
-    leaf_collateral = gen_leaf_collateral( leaves, primitives, primitive_dir)
+        # SMB: I want this in the topology stage
+        hack_capacitor_instances( verilog_d, pnr_const_ds)
 
-    logger.debug( f'leaf_collateral: {leaf_collateral}')
-    logger.debug( f'capacitors: {dict(capacitors)}')
+        leaves, capacitors = gen_leaf_cell_info( verilog_d, pnr_const_ds)
 
-    # Generate .map file for PnR
-    with (input_dir / map_file).open(mode='wt') as mp:
-        for _,v in primitives.items():
-            a = v['abstract_template_name']
-            c = v['concrete_template_name']
-            if c in leaf_collateral:
-                assert '.gds.json' in leaf_collateral[c]
-            else:
-                logger.warning( f'Unused primitive: {a} {c} excluded from map file')
-            print( f'{a} {c}.gds', file=mp)
+        with (working_dir / "__capacitors__.json").open("wt") as fp:
+            json.dump( capacitors, fp=fp, indent=2)
 
-    # Generate .lef inputs for PnR
-    with (input_dir / lef_file).open(mode='wt') as lp:
-        for k,v in leaf_collateral.items():
-            lp.write(pathlib.Path(v['.lef']).read_text())
+        leaf_collateral = gen_leaf_collateral( leaves, primitives, primitive_dir)
 
-    with (input_dir / lef_file_wotap).open(mode='wt') as lpwot:
-        for k,v in leaf_collateral.items():
-            fl = v['.lef']
-            index = fl.rfind('/', 0)
-            if (index >= 0) :
-                leffile = fl[0:index] + '/wo_tap/' + fl[index+1:]
-                if (pathlib.Path(leffile).is_file()):
-                   lpwot.write(pathlib.Path(leffile).read_text())
+        with (input_dir / lef_file_wotap).open(mode='wt') as lpwot:
+            for k,v in leaf_collateral.items():
+                fl = v['.lef']
+                index = fl.rfind('/', 0)
+                if (index >= 0) :
+                    leffile = fl[0:index] + '/wo_tap/' + fl[index+1:]
+                    if (pathlib.Path(leffile).is_file()):
+                       lpwot.write(pathlib.Path(leffile).read_text())
 
     #
     # TODO: Copying is bad ! Consider rewriting C++ code to accept fully qualified paths
     #
+        logger.debug( f'leaf_collateral: {leaf_collateral}')
+        logger.debug( f'capacitors: {dict(capacitors)}')
 
-    # Copy verilog
-    (input_dir / verilog_file).write_text((topology_dir / verilog_file).read_text())
+        # Generate .map file for PnR
+        with (input_dir / map_file).open(mode='wt') as mp:
+            for _,v in primitives.items():
+                a = v['abstract_template_name']
+                c = v['concrete_template_name']
+                if c in leaf_collateral:
+                    assert '.gds.json' in leaf_collateral[c]
+                else:
+                    logger.warning( f'Unused primitive: {a} {c} excluded from map file')
+                print( f'{a} {c}.gds', file=mp)
 
-    # Copy pdk file
-    (input_dir / pdk_file).write_text((pdk_dir / pdk_file).read_text())
+        # Generate .lef inputs for PnR
+        with (input_dir / lef_file).open(mode='wt') as lp:
+            for k,v in leaf_collateral.items():
+                lp.write(pathlib.Path(v['.lef']).read_text())
 
-    # Copy primitive json files
-    for k,v in leaf_collateral.items():
-        for suffix in ['.gds.json', '.json']:
-            (input_dir / f'{k}{suffix}').write_text(pathlib.Path(v[suffix]).read_text())
+        #
+        # TODO: Copying is bad ! Consider rewriting C++ code to accept fully qualified paths
+        #
 
-    for k,v in leaf_collateral.items():
-        for suffix in ['.gds.json', '.json']:
-            fl = v[suffix]
-            index = fl.rfind('/', 0)
-            if (index >= 0) :
-                flsuffix = fl[0:index] + '/wo_tap/' + fl[index+1:]
-                if (pathlib.Path(flsuffix).is_file()):
-                    (input_dir_wotap / f'{k}{suffix}').write_text(pathlib.Path(flsuffix).read_text())
+        # Copy verilog
+        (input_dir / verilog_file).write_text((topology_dir / verilog_file).read_text())
+
+        # Copy pdk file
+        (input_dir / pdk_file).write_text((pdk_dir / pdk_file).read_text())
+
+        # Copy primitive json files
+        for k,v in leaf_collateral.items():
+            for suffix in ['.gds.json', '.json']:
+                (input_dir / f'{k}{suffix}').write_text(pathlib.Path(v[suffix]).read_text())
+                fl = v[suffix]
+                index = fl.rfind('/', 0)
+                if (index >= 0) :
+                    flsuffix = fl[0:index] + '/wo_tap/' + fl[index+1:]
+                    if (pathlib.Path(flsuffix).is_file()):
+                        (input_dir_wotap / f'{k}{suffix}').write_text(pathlib.Path(flsuffix).read_text())
 
 
-    # Run pnr_compiler
-    cmd = [str(x) for x in ('align.PnR', input_dir, lef_file,
-                            verilog_file, map_file, pdk_file, subckt, nvariants, effort)]
+    else:
+        with (working_dir / "__capacitors__.json").open("rt") as fp:
+            capacitors = json.load(fp)
 
-    current_working_dir = os.getcwd()
-    os.chdir(working_dir)
-    DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, results_dir=None, router_mode=router_mode, gui=gui)
-    os.chdir(current_working_dir)
+    if '3_pnr:place' in steps_to_run or '3_pnr:route' in steps_to_run:
 
-    # Copy generated cap jsons from results_dir to working_dir
-    # TODO: Cap arrays should eventually be generated by align.primitive
-    #       at which point this hack will no longer be needed
+        # Run pnr_compiler
+        cmd = [str(x) for x in ('align.PnR', input_dir, lef_file,
+                                verilog_file, map_file, pdk_file, subckt, nvariants, effort)]
 
-    for cap_template_name in capacitors.keys():
-        for fn in results_dir.glob( f'{cap_template_name}_AspectRatio_*.json'):
-            (working_dir / fn.name).write_text(fn.read_text())
+        current_working_dir = os.getcwd()
+        os.chdir(working_dir)
+        DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, results_dir=None, router_mode=router_mode, gui=gui, skipGDS=skipGDS)
+        os.chdir(current_working_dir)
+
+        # Copy generated cap jsons from results_dir to working_dir
+        # TODO: Cap arrays should eventually be generated by align.primitive
+        #       at which point this hack will no longer be needed
+
+        for cap_template_name in capacitors.keys():
+            for fn in results_dir.glob( f'{cap_template_name}_AspectRatio_*.json'):
+                (working_dir / fn.name).write_text(fn.read_text())
+
 
     variants = collections.defaultdict(collections.defaultdict)
+    if '3_pnr:check' in steps_to_run:
+        for variant, ( path_name, layout_idx) in results_name_map.items():
 
-    for variant, ( path_name, layout_idx) in results_name_map.items():
-        hN = DB.hierTree[layout_idx]
-        result = _generate_json(hN=hN,
-                                variant=variant,
-                                pdk_dir=pdk_dir,
-                                primitive_dir=input_dir,
-                                input_dir=working_dir,
-                                output_dir=working_dir,
-                                extract=extract,
-                                gds_json=gds_json,
-                                toplevel=hN.isTop)
+            hN = DB.hierTree[layout_idx]
+            result = _generate_json(hN=hN,
+                                    variant=variant,
+                                    pdk_dir=pdk_dir,
+                                    primitive_dir=input_dir,
+                                    input_dir=working_dir,
+                                    output_dir=working_dir,
+                                    extract=extract,
+                                    gds_json=gds_json,
+                                    toplevel=hN.isTop)
 
-        if hN.isTop:
-            variants[variant].update(result)
+            if hN.isTop:
+                variants[variant].update(result)
 
-            for tag, suffix in [('lef', '.lef'), ('gdsjson', '.gds.json')]:
-                path = results_dir / (variant + suffix)
-                assert path.exists()
-                variants[variant][tag] = path
+                if not skipGDS:
+                    for tag, suffix in [('lef', '.lef'), ('gdsjson', '.gds.json')]:
+                        path = results_dir / (variant + suffix)
+                        assert path.exists()
+                        variants[variant][tag] = path
 
-    logger.debug('Explicitly deleting DB...')
-    del DB
+    if '3_pnr:place' in steps_to_run or '3_pnr:route' in steps_to_run:
+        logger.debug('Explicitly deleting DB...')
+        del DB
 
     return variants
