@@ -1,6 +1,7 @@
 import logging
 import pathlib
 import json
+import copy
 from itertools import chain
 
 from .. import PnR
@@ -326,69 +327,94 @@ def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode, skipGDS):
 
     return router_engines[router_mode]( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, skipGDS=skipGDS)
 
+def subset_verilog_d( verilog_d, nm):
+    # Should be an abstract verilog_d; no concrete_instance_names
+
+    for module in verilog_d['modules']:
+        for instance in module['instances']:
+            assert 'concrete_template_name' not in instance
+            assert 'abstract_template_name' in instance
+
+    modules = { module['name'] : module for module in verilog_d['modules']}
+
+    found_modules = set()
+    def aux( module_name):
+        found_modules.add( module_name)
+        if module_name in modules:
+            for instance in modules[module_name]['instances']:        
+                atn = instance['abstract_template_name']
+                aux( atn)
+
+    aux(nm)
+
+    new_verilog_d = copy.deepcopy(verilog_d)
+
+    new_modules = []
+    for module in new_verilog_d['modules']:
+        if module['name'] in found_modules:
+            new_modules.append( module)
+    
+    new_verilog_d['modules'] = new_modules
+
+    return new_verilog_d
+
+
 def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, verilog_d, router_mode, gui, skipGDS):
     TraverseOrder = DB.TraverseHierTree()
 
     for idx in TraverseOrder:
         place( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx)
 
+    if verilog_d is not None:
+        def r2wh( r):
+            return (r[2]-r[0], r[3]-r[1])
 
+        def gen_leaf_bbox_and_hovertext( ctn, p):
+            #return (p, list(gen_boxes_and_hovertext( placement_verilog_d, ctn)))
+            d = { 'width': p[0], 'height': p[1]}
+            return (d, [ ((0, 0)+p, f'{ctn}<br>{0} {0} {p[0]} {p[1]}', True, 0)])
 
-    #
-    # We need to make some changes if we want to just annotate a subhierarchy, for example if idx were not the toplevel
-    # We need to search for the sub-hierarchies of that module and only retain those in our new verilog_d file
-    # For visualizing primitives we need to use a different list (abstract and concrete template names)
-    #
-    def r2wh( r):
-        return (r[2]-r[0], r[3]-r[1])
+        leaf_map = defaultdict(dict)
 
-    def gen_leaf_bbox_and_hovertext( ctn, p):
-        #return (p, list(gen_boxes_and_hovertext( placement_verilog_d, ctn)))
-        d = { 'width': p[0], 'height': p[1]}
-        return (d, [ ((0, 0)+p, f'{ctn}<br>{0} {0} {p[0]} {p[1]}', True, 0)])
+        # Get all the leaf cells sizes; still doesn't get the CC capacitors
+        for atn, gds_lst in DB.gdsData2.items():
+            ctns = [str(pathlib.Path(fn).stem) for fn in gds_lst]
+            for ctn in ctns:
+                if ctn in DB.lefData:
+                    lef = DB.lefData[ctn][0]
+                    p = lef.width, lef.height
+                    if ctn in leaf_map[atn]:
+                        assert leaf_map[atn][ctn][0] == p
+                    else:
+                        leaf_map[atn][ctn] = gen_leaf_bbox_and_hovertext( ctn, p)
 
-
-    leaf_map = defaultdict(dict)
-
-    # Get all the leaf cells sizes; still doesn't get the CC capacitors
-    for atn, gds_lst in DB.gdsData2.items():
-        ctns = [str(pathlib.Path(fn).stem) for fn in gds_lst]
-        for ctn in ctns:
-            if ctn in DB.lefData:
-                lef = DB.lefData[ctn][0]
-                p = lef.width, lef.height
-                if ctn in leaf_map[atn]:
-                    assert leaf_map[atn][ctn][0] == p
                 else:
-                    leaf_map[atn][ctn] = gen_leaf_bbox_and_hovertext( ctn, p)
+                    logger.error( f'LEF for concrete name {ctn} (of {atn}) missing.')
 
-            else:
-                logger.error( f'LEF for concrete name {ctn} (of {atn}) missing.')
 
-    tagged_bboxes = defaultdict(dict)
-    for idx in TraverseOrder:
-        
-        nm = DB.hierTree[idx].name
+        tagged_bboxes = defaultdict(dict)
+        for idx in TraverseOrder:
+            nm = DB.hierTree[idx].name
 
-        for sel in range(DB.hierTree[idx].numPlacement):
-            logger.debug( f'DB.CheckoutHierNode( {idx}, {sel})')
-            hN = DB.CheckoutHierNode( idx, sel)
-            # create new verilog for each placement
-            if verilog_d is not None:
+            # Restrict verilog_d to include only sub-hierachies of nm
+            s_verilog_d = subset_verilog_d( verilog_d, nm)
 
-                # Could restrict verilog_d to include only sub-hierachies of hN
+            for sel in range(DB.hierTree[idx].numPlacement):
 
-                placement_verilog_d = gen_placement_verilog( hN, DB, verilog_d)
+                logger.debug( f'DB.CheckoutHierNode( {idx}, {sel})')
+                hN = DB.CheckoutHierNode( idx, sel)
 
-                (pathlib.Path(opath) / f'{hN.name}_{sel}.placement_verilog.json').write_text(placement_verilog_d.json(indent=2))
+                # create new verilog for each placement
+                placement_verilog_d = gen_placement_verilog( hN, DB, s_verilog_d)
 
-                if idx == TraverseOrder[-1]: 
-                    check_placement(placement_verilog_d)
+                #(pathlib.Path(opath) / f'{nm}_{sel}.placement_verilog.json').write_text(placement_verilog_d.json(indent=2))
+
+                check_placement(placement_verilog_d)
 
                 if gui:
                     modules = { x['name']: x for x in placement_verilog_d['modules']}
 
-                    p = r2wh(modules[hN.name]['bbox'])
+                    p = r2wh(modules[nm]['bbox'])
                     d = { 'width': p[0], 'height': p[1],
                           'hpwl': hN.HPWL, 'cost': hN.cost,
                           'constraint_penalty': hN.constraint_penalty,
@@ -421,10 +447,10 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                             else:
                                 leaf_map[atn][ctn] = gen_leaf_bbox_and_hovertext( ctn, p)
 
-    if gui:
-        tagged_bboxes.update( leaf_map)
-        top_level = DB.hierTree[TraverseOrder[-1]].name
-        run_gui( tagged_bboxes=tagged_bboxes, module_name=top_level)
+        if gui:
+            tagged_bboxes.update( leaf_map)
+            top_level = DB.hierTree[TraverseOrder[-1]].name
+            run_gui( tagged_bboxes=tagged_bboxes, module_name=top_level)
 
     return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode, skipGDS=skipGDS)
 
