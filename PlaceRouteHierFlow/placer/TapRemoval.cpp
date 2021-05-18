@@ -64,6 +64,14 @@ _prim(prim), _primWoTap(primWoTap), _name(name), _bbox(Rect()), _woTapIndex(ind)
       }
     }
     _bbox = _prim->bbox().transform(tr, _prim->width(), _prim->height());
+  } else if (_primWoTap) {
+    for (auto nmos : {true, false}) {
+      auto& actives = nmos ? _nactives : _pactives;
+      for (const auto& r : _primWoTap->getActives(nmos)) {
+        actives.push_back(r.transform(tr, _primWoTap->width(), _primWoTap->height()));
+      }
+    }
+    _bbox = _primWoTap->bbox().transform(tr, _primWoTap->width(), _primWoTap->height());
   }
 }
 
@@ -327,8 +335,6 @@ void TapRemoval::buildGraph()
     for (auto nmos : {true, false}) {
       const string mosString = nmos ? "__tr_nmos_" : "__tr_pmos_";
       auto& taps = inst->getTaps(nmos);
-      nmosPresent = nmosPresent || (nmos && !taps.empty());
-      pmosPresent = pmosPresent || (!nmos && !taps.empty());
       for (unsigned i = 0; i < taps.size(); ++i) {
         bgBox b(bgPt(taps[i].xmin(), taps[i].ymin()), bgPt(taps[i].xmax(), taps[i].ymax()));
         rtree.insert(bgVal(b, _graph->nodes().size()));
@@ -337,6 +343,8 @@ void TapRemoval::buildGraph()
         _graph->addNode(nodeName, DomSetGraph::NodeType::Tap, inst->deltaArea(), inst->isBlack(), taps[i].ydist(_bbox));
       }
       auto& actives = inst->getActives(nmos);
+      nmosPresent = nmosPresent || (nmos && !actives.empty());
+      pmosPresent = pmosPresent || (!nmos && !actives.empty());
       for (unsigned i = 0; i < actives.size(); ++i) {
         if (nmos) nactive = true;
         else pactive = true;
@@ -483,7 +491,7 @@ long TapRemoval::deltaArea(map<string, int>* swappedIndices, bool removeAllTaps)
   //logger->info("Found {0} nodes in dominating set {1}", nodes.size(), _dist);
 
   if (!removeAllTaps && nodes.empty()) {
-    logger->error("No dominating nodes found");
+    logger->debug("No dominating nodes found");
     return -1;
   }
 
@@ -529,9 +537,15 @@ void TapRemoval::rebuildInstances(const PrimitiveData::PlMap& plmap)
     auto primIt = _primitives.find(it.second._primName);
     auto primWoTapIt = _primitivesWoTap.find(it.second._primName);
     const PrimitiveData::Primitive *prim(nullptr), *primWoTap(nullptr);
-    const auto& index = it.first.second;
+    auto index = it.first.second;
     if (primIt != _primitives.end() && index < primIt->second.size()) prim = primIt->second[index];
-    if (primWoTapIt != _primitivesWoTap.end() && index < primWoTapIt->second.size()) primWoTap = primWoTapIt->second[index];
+    if (primWoTapIt != _primitivesWoTap.end()) {
+      if (index < primWoTapIt->second.size()) primWoTap = primWoTapIt->second[index];
+      else {
+        index -= primWoTapIt->second.size();
+        if (index < primWoTapIt->second.size()) primWoTap = primWoTapIt->second[index];
+      }
+    }
     //logger->info("adding {0} {1} {2} {3}", it.second._primName, index, prim ? prim->name() : "", primWoTap ? primWoTap->name() : "");
     if (prim != nullptr) {
       //logger->info("adding {0} {1}", prim->name(), primWoTap ? primWoTap->name() : "");
@@ -540,6 +554,11 @@ void TapRemoval::rebuildInstances(const PrimitiveData::PlMap& plmap)
       _instances.push_back(inst);
       _instMap[it.first.first] = inst;
       //inst->print();
+    } else if (primWoTap != nullptr) {
+      auto inst = new PrimitiveData::Instance(prim, primWoTap, it.first.first, it.second._tr,
+          static_cast<int>(index + primIt->second.size()));
+      _instances.push_back(inst);
+      _instMap[it.first.first] = inst;
     }
   }
   for (auto& inst : _instances) {
