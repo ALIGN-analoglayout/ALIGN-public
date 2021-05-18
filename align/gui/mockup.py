@@ -24,8 +24,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
-
 def make_tradeoff_fig_wh(df, log=False, scale='Blugrn'):
     fig = px.scatter(
         df,
@@ -138,7 +136,7 @@ def make_tradeoff_fig_ha(df, log=False, scale='Blugrn'):
         df,
         x="hpwl",
         y="area",
-        color="ordering",
+        color="constraint_penalty",
         color_continuous_scale=scale,
         size="size",
         width=800,
@@ -147,13 +145,110 @@ def make_tradeoff_fig_ha(df, log=False, scale='Blugrn'):
         hover_data=['width','height']
     )
 
-    area = df['area'].min()
+    best_x = df['hpwl'].values[0]
+    best_y = df['area'].values[0]
 
     min_x, max_x = min(df['hpwl']),max(df['hpwl'])
     min_y, max_y = min(df['area']),max(df['area'])
 
     sweep_x = np.linspace( min_x, max_x, 101)
-    sweep_y = area+0*sweep_x
+    sweep_y = best_y*(2 - sweep_x/best_x)
+
+    fig.add_trace(
+        go.Scatter( 
+            x=sweep_x,
+            y=sweep_y,
+            mode='lines',
+            showlegend=False
+        )
+    )
+
+    if log:
+        fig.update_xaxes(
+            type="log"
+        )
+        fig.update_yaxes(
+            type="log"
+        )
+    else:
+        fig.update_xaxes(
+            range=[0,max_x*1.1]
+        )
+        fig.update_yaxes(
+            range=[0,max_y*1.1]
+        )
+
+    return fig
+
+def make_tradeoff_fig_ac(df, log=False, scale='Blugrn'):
+    fig = px.scatter(
+        df,
+        x="area",
+        y="cost",
+        color="constraint_penalty",
+        color_continuous_scale=scale,
+        size="size",
+        width=800,
+        height=800,
+        hover_name="concrete_template_name",
+        hover_data=['width','height']
+    )
+
+    y = df['cost'].min()
+
+    min_x, max_x = min(df['area']),max(df['area'])
+    min_y, max_y = min(df['cost']),max(df['cost'])
+
+    sweep_x = np.linspace( min_x, max_x, 101)
+    sweep_y = y+0*sweep_x
+
+    fig.add_trace(
+        go.Scatter( 
+            x=sweep_x,
+            y=sweep_y,
+            mode='lines',
+            showlegend=False
+        )
+    )
+
+    if log:
+        fig.update_xaxes(
+            type="log"
+        )
+        fig.update_yaxes(
+            type="log"
+        )
+    else:
+        fig.update_xaxes(
+            range=[0,max_x*1.1]
+        )
+        fig.update_yaxes(
+            range=[0,max_y*1.1]
+        )
+
+    return fig
+
+def make_tradeoff_fig_hc(df, log=False, scale='Blugrn'):
+    fig = px.scatter(
+        df,
+        x="hpwl",
+        y="cost",
+        color="constraint_penalty",
+        color_continuous_scale=scale,
+        size="size",
+        width=800,
+        height=800,
+        hover_name="concrete_template_name",
+        hover_data=['width','height']
+    )
+
+    y = df['cost'].min()
+
+    min_x, max_x = min(df['hpwl']),max(df['hpwl'])
+    min_y, max_y = min(df['cost']),max(df['cost'])
+
+    sweep_x = np.linspace( min_x, max_x, 101)
+    sweep_y = y+0*sweep_x
 
     fig.add_trace(
         go.Scatter( 
@@ -188,6 +283,10 @@ def make_tradeoff_fig( axes, df, log=False, scale='Blugrn'):
         return make_tradeoff_fig_aa( df, log, scale)
     elif axes == ('hpwl', 'area'):
         return make_tradeoff_fig_ha( df, log, scale)
+    elif axes == ('area', 'cost'):
+        return make_tradeoff_fig_ac( df, log, scale)
+    elif axes == ('hpwl', 'cost'):
+        return make_tradeoff_fig_hc( df, log, scale)
     else:
         assert False, axes
 
@@ -200,10 +299,6 @@ class AppWithCallbacksAndState:
         df = pd.DataFrame( data=data)
         df['area'] = df['width']*df['height']
         df['aspect_ratio'] = df['height'] / df['width']
-
-        #self.axes = ('width','height')
-        #self.axes = ('aspect_ratio','area')
-        #self.axes = ('hpwl','area')
 
         self.tagged_histos = {}
         for atn, df_group0 in df.groupby(['abstract_template_name']):
@@ -223,71 +318,63 @@ class AppWithCallbacksAndState:
         self.module_name = module_name
 
         self.sel = None
-        self.md_str = ''
+        self.title = None
 
         self.subindex = 0
         self.prev_idx = None
 
-        self.axes = ('width', 'height')
-        #self.axes = ('width','height')
-        #self.axes = ('aspect_ratio','area')
+        self.axes = ('hpwl', 'area')
 
         self.gen_dataframe()
-        self.tradeoff = make_tradeoff_fig(self.axes, self.df, log=True)
+        self.tradeoff = make_tradeoff_fig(self.axes, self.df, log=False)
         self.placement_graph = self.make_placement_graph()
 
-        external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-        self.app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+        self.app = dash.Dash(__name__, assets_ignore=r'.*\.#.*')
 
         self.app.layout = html.Div(
             id='frame',
             children=[
                 html.Div(
+                    id='pareto-col',
                     children=[
                         html.H2(children='Pareto Frontier'),
                         dcc.RadioItems(
                             id='axes-type',
                             options=[{'label': i, 'value': i} for i in ['linear', 'loglog']],
-                            value='loglog',
-                            labelStyle={'display': 'inline-block'},
-                            style={ 'width': '250px', 'display': 'inline-block', 'vertical-align': 'top'}
+                            value='linear'
                         ),
                         dcc.Dropdown(
                             id='tradeoff-type', 
                             options=[{"value": x, "label": x} 
-                                     for x in ['width-height', 'aspect_ratio-area', 'hpwl-area']],
-                            value='width-height',
-                            style={ 'width': '250px', 'display': 'inline-block'}
+                                     for x in ['width-height', 'aspect_ratio-area', 'hpwl-area', 'area-cost', 'hpwl-cost']],
+                            value='hpwl-area'
                         ),
                         dcc.Dropdown(
                             id='colorscale', 
                             options=[{"value": x, "label": x} 
                                      for x in colorscales],
-                            value='Blugrn',
-                            style={ 'width': '250px', 'display': 'inline-block'}
+                            value='Blugrn'
                         ),
                         dcc.Dropdown(
                             id='module-name', 
                             options=[{"value": x, "label": x} 
                                      for x in self.tagged_bboxes.keys()],
-                            value=self.module_name,
-                            style={ 'width': '350px'}
+                            value=self.module_name
                         ),
                         dcc.Graph(
                             id='tradeoff-graph',
                             figure=self.tradeoff
                         )
-                    ],
-                    style={'display': 'inline-block', 'vertical-align': 'top'}
+                    ]
                 ),
                 html.Div(
+                    id='placement-col',
                     children=[    
                         html.H2(children='Placement'),
                         dcc.RadioItems(
                             id='display-type',
                             options=[{'label': i, 'value': i} for i in ['All', 'Direct', 'Leaves Only']],
-                            value='All',
-                            labelStyle={'display': 'inline-block'}
+                            value='All'
                         ),
                         html.Button(
                             'Route',
@@ -299,26 +386,18 @@ class AppWithCallbacksAndState:
                             id='Placement',
                             figure = self.placement_graph
                         )
-                    ],
-                    style={'display': 'inline-block', 'vertical-align': 'top'}
+                    ]
                 ),
                 html.Div(
+                    id='tree-col',
                     children=[    
-                        html.H2(children='Tree'),
-                        dcc.Markdown(children='',id='Tree')
-                    ],
-                    style={'display': 'inline-block', 'vertical-align': 'top'}
-                ),
-                html.Div(
-                    children=[    
-                    ],
-                    style={'display': 'inline-block', 'vertical-align': 'top'}
+                        html.Img(src=self.app.get_asset_url('align.png'))
+                    ]
                 )
             ]
         )
 
         self.app.callback( (Output('Placement', 'figure'),
-                            Output('Tree', 'children'),
                             Output('tradeoff-graph', 'clickData')),
                       [Input('tradeoff-graph', 'clickData'),
                        Input('tradeoff-graph', 'hoverData'),
@@ -333,7 +412,10 @@ class AppWithCallbacksAndState:
                             Input('axes-type', 'value'),
                             Input('module-name', 'value')])(self.change_colorscale)
 
-    def make_placement_graph( self, sel=None, *, display_type='All'):
+    def make_placement_graph( self, *, display_type='All'):
+        sel = self.sel
+        title = self.title
+
         if display_type == 'All':
             levels = None
             leaves_only = False
@@ -352,7 +434,7 @@ class AppWithCallbacksAndState:
         if sel is not None:
             _, d = self.tagged_bboxes[self.module_name][sel]
             dump_blocks( fig, d, leaves_only, levels)
-            title_d = dict(text=sel)
+            title_d = dict(text=sel if title is None else title)
 
         fig.update_layout(
             autosize=False,
@@ -417,7 +499,7 @@ class AppWithCallbacksAndState:
             [idx, curve_idx, x, y] = [hoverData['points'][0][t] for t in ['pointNumber', 'curveNumber', 'x', 'y']]
 
         if display_type_change:
-            self.placement_graph = self.make_placement_graph(self.sel,display_type=display_type)
+            self.placement_graph = self.make_placement_graph(display_type=display_type)
         elif (clickData is not None or hoverData is not None) and \
              curve_idx == 0:
 
@@ -430,15 +512,11 @@ class AppWithCallbacksAndState:
             self.sel = lst[self.subindex]
             self.prev_idx = idx
 
-            self.md_str = f"""```text
-Selection: {self.sel}
-Coord: {x,y}
-Subindex: {self.subindex}/{len(lst)}
-```
-"""
-            self.placement_graph = self.make_placement_graph(self.sel,display_type=display_type)
+            self.title = f'{self.sel} {self.subindex}/{len(lst)}'
 
-        return self.placement_graph, self.md_str, None
+            self.placement_graph = self.make_placement_graph(display_type=display_type)
+
+        return self.placement_graph, None
 
 
 def run_gui( *, tagged_bboxes, module_name):

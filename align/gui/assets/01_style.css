@@ -1,0 +1,67 @@
+
+div#frame {
+    display: grid;
+    grid-template-columns: 40% 40% 20%;
+    grid-template-rows: auto;
+    column-gap: 10px;
+}
+
+div#pareto-col {
+    grid-column-start: 1;
+    grid-column-end: 2;
+    vertical-align: top;
+    border-radius: 25px;
+    border: 2px solid #73AD21;
+    padding: 10px;
+}
+
+div#placement-col {
+    grid-column-start: 2;
+    grid-column-end: 3;
+    vertical-align: top;
+    border-radius: 25px;
+    border: 2px solid #73AD21;
+    padding: 10px;
+}
+
+div#tree-col {
+    grid-column-start: 3;
+    grid-column-end: 4;
+    vertical-align: top;
+}
+
+div#tree-col img {
+    height: 20%;
+    display: block;
+}
+
+div#axes-type {
+    /*width: 150px;*/
+    padding-right: 10px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+div#axes-type label {
+    display: inline-block;   
+}
+div#tradeoff-type.dash-dropdown {
+    width: 180px;
+    padding-right: 10px;
+    display: inline-block;
+}
+
+div#colorscale.dash-dropdown {
+    width: 150px;
+    display: inline-block;
+}
+
+div#module-name.dash-dropdown {
+    width: 350px;
+}
+
+div#display-type label {
+    display: inline-block;   
+}
+
+

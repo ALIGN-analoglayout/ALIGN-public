@@ -119,6 +119,8 @@ class design
     double Aspect_Ratio_weight = 1000;
     double Aspect_Ratio[2] = {0, 100};
     double placement_box[2] = {-1.0, -1.0};
+    double maxBlockAreaSum = 0;
+    double maxBlockHPWLSum = 0;
 
     //added by ya
     
@@ -268,6 +270,9 @@ class design
     }
     long TapDeltaArea(map<string, int>* swappedIndices, const bool removeAllTaps = false) const { return _tapRemover ?  _tapRemover->deltaArea(swappedIndices, removeAllTaps) : 0.; }
     void checkselfsym(vector< pair<int,int> > &tmpsympair, vector< pair<int,placerDB::Smark> > &tmpselfsym, placerDB::Smark tsmark);
+
+    double GetMaxBlockAreaSum();
+    double GetMaxBlockHPWLSum();
 };
 
 #endif
