@@ -128,6 +128,31 @@ def gen_placement_verilog(hN, DB, verilog_d, *, skip_checkout=False):
 
     return d
 
+def scalar_rational_scaling( v, *, mul=1, div=1):
+    q, r = divmod( mul*v, div)
+    assert r == 0
+    return q
+
+def array_rational_scaling( a, *, mul=1, div=1):
+    return [ scalar_rational_scaling(v, mul=mul, div=div) for v in a]
+
+def scale_placement_verilog( placement_verilog_d, scale_factor):
+    # Convert from 0.5 nm to 0.1 nm if the scale_factor is 10
+    d = copy.deepcopy(placement_verilog_d)
+
+    for module in d['modules']:
+        module['bbox'] = array_rational_scaling(module['bbox'], mul=scale_factor, div=2)
+        for instance in module['instances']:
+            tr = instance['transformation'] 
+            for field in ['oX','oY']:
+                tr[field] = scalar_rational_scaling(tr[field], mul=scale_factor, div=2)
+
+    for leaf in d['leaves']:
+        leaf['bbox'] = array_rational_scaling(leaf['bbox'], mul=scale_factor, div=2)
+
+    return d
+
+
 def gen_boxes_and_hovertext( placement_verilog_d, top_cell):
 
     leaves = { x['name']: x for x in placement_verilog_d['leaves']}
@@ -147,7 +172,7 @@ def gen_boxes_and_hovertext( placement_verilog_d, top_cell):
 
         [x0, y0, x1, y1] = tr.hitRect(
             transformation.Rect(*r)).canonical().toList()
-
+ 
         hovertext = f'{"/".join(prefix_path)}<br>{template_name}<br>{tr}<br>Global {x0} {y0} {x1} {y1}<br>Local {r[0]} {r[1]} {r[2]} {r[3]}'
 
         return [x0, y0, x1, y1], hovertext

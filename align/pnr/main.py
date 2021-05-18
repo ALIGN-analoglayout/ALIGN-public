@@ -241,13 +241,16 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
     if '3_pnr:place' in steps_to_run or '3_pnr:route' in steps_to_run:
 
+        with (pdk_dir / pdk_file).open( 'rt') as fp:
+            scale_factor = json.load(fp)["ScaleFactor"]
+
         # Run pnr_compiler
         cmd = [str(x) for x in ('align.PnR', input_dir, lef_file,
                                 verilog_file, map_file, pdk_file, subckt, nvariants, effort)]
 
         current_working_dir = os.getcwd()
         os.chdir(working_dir)
-        DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, results_dir=None, router_mode=router_mode, gui=gui, skipGDS=skipGDS, lambda_coeff=lambda_coeff)
+        DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, results_dir=None, router_mode=router_mode, gui=gui, skipGDS=skipGDS, lambda_coeff=lambda_coeff, scale_factor=scale_factor)
         os.chdir(current_working_dir)
 
         # Copy generated cap jsons from results_dir to working_dir

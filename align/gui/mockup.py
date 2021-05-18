@@ -35,7 +35,8 @@ def make_tradeoff_fig_wh(df, log=False, scale='Blugrn'):
         width=800,
         height=800,
         hover_name="concrete_template_name",
-        hover_data=['aspect_ratio','area']
+        hover_data=['aspect_ratio','area'],
+        opacity=0.8
     )
 
     area = df['area'].min()
@@ -157,12 +158,18 @@ def define_axes( fig, log, max_x, max_y, *, log_one_to_one=False):
 
 def define_colorscale( fig, col):
     min_c,max_c = col.min(),col.max()
-    if min_c == max_c: max_c = min_c + 0.1
-    fig.update_coloraxes(
-        cmin=min_c,
-        cmax=max_c,
-        reversescale=True
-    )
+    if min_c == max_c:
+        fig.update_coloraxes(
+            cmin=min_c,
+            cmax=max_c,
+            showscale=False
+        )
+    else:
+        fig.update_coloraxes(
+            cmin=min_c,
+            cmax=max_c
+        )
+
 
 def make_tradeoff_fig_ha(df, log=False, scale='Blugrn', lambda_coeff=1.0):
     fig = px.scatter(
