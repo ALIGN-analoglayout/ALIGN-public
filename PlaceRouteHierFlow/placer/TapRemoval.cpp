@@ -322,10 +322,13 @@ void TapRemoval::buildGraph()
   }
   _graph = new DomSetGraph::Graph;
   bool nactive(false), pactive(false);
+  bool nmosPresent(false), pmosPresent(false);
   for (const auto& inst : _instances) {
     for (auto nmos : {true, false}) {
       const string mosString = nmos ? "__tr_nmos_" : "__tr_pmos_";
       auto& taps = inst->getTaps(nmos);
+      nmosPresent = nmosPresent || (nmos && !taps.empty());
+      pmosPresent = pmosPresent || (!nmos && !taps.empty());
       for (unsigned i = 0; i < taps.size(); ++i) {
         bgBox b(bgPt(taps[i].xmin(), taps[i].ymin()), bgPt(taps[i].xmax(), taps[i].ymax()));
         rtree.insert(bgVal(b, _graph->nodes().size()));
@@ -343,7 +346,7 @@ void TapRemoval::buildGraph()
       }
     }
   }
-  _activesPresent = nactive && pactive;
+  _activesPresent = (!nmosPresent || nactive) && (!pmosPresent || pactive);
 
   //cout << allTaps.size() << endl;
 

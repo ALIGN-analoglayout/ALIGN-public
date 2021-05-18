@@ -441,8 +441,9 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
           }
           mydesign.RebuildTapInstances(plmap);
           delArea = mydesign.TapDeltaArea(nullptr);
-          if (delArea < 0)  return -1;
+          if (delArea < 0) return -1;
         }
+        SaveBlocks();
         break;
       case 1 :
         if (mydesign.RemoveTaps() && !mydesign.isTop) {
@@ -458,7 +459,10 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
                 index = it->second;
               }
             }
-            if (CompactPlacement(mydesign, curr_sp, drcInfo) < 0) return -1.;
+            if (CompactPlacement(mydesign, curr_sp, drcInfo) < 0) {
+              curr_sp.RestoreSelected();
+              return -1.;
+            }
           }
           RestoreBlocks();
           curr_sp.RestoreSelected();
