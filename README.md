@@ -12,7 +12,7 @@ The goal of ALIGN (Analog Layout, Intelligently Generated from Netlists) is to a
 The ALIGN flow includes the following steps:
 * _Circuit annotation_ creates a multilevel hierarchical representation of the input netlist. This representation is used to implement the circuit layout in using a hierarchical manner. 
 * _Design rule abstraction_ creates a compact JSON-format represetation of the design rules in a PDK. This repository provides a mock PDK based on a FinFET technology (where the parameters are based on published data). These design rules are used to guide the layout and ensure DRC-correctness.
-* _Primitive cell generation_ works with primitives, i.e., blocks the lowest level of design hierarchy, and generates their layouts. Primitives typically contain a small number of transistor structures (each of which may be implemented using multiple fins and/or fingers). A parameterized instance of a primitive is automatically translated to a GDSII layout in this step.
+* _Primitive cell generation_ works with primitives, i.e., blocks at the lowest level of design hierarchy, and generates their layouts. Primitives typically contain a small number of transistor structures (each of which may be implemented using multiple fins and/or fingers). A parameterized instance of a primitive is automatically translated to a GDSII layout in this step.
 * _Placement and routing_ performs block assembly of the hierarchical blocks in the netlist and routes connections between these blocks, while obeying a set of analog layout constraints. At the end of this step, the translation of the input SPICE netlist to a GDSII layout is complete. 
 
 ## Inputs
@@ -90,6 +90,26 @@ $ pip install setuptools wheel pybind11 scikit-build cmake ninja
 $ pip install -v -e .[test] --no-build-isolation
 ```
 The second command doesn't just install ALIGN inplace, it also caches generated object files etc. under an `_skbuild` subdirectory. Re-running `pip install -v -e .[test] --no-build-isolation` will reuse this cache to perform an incremental build. We add the `-v` or `--verbose` flag to be able to see build flags in the terminal.
+
+If you want the build-type to be Release (-O3), you can issue the following three lines:
+```console
+$ pip install setuptools wheel pybind11 scikit-build cmake ninja
+$ pip install -v -e .[test] --no-build-isolation
+$ pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=Release'
+```
+Use this mode if you are mostly developing in Python and don't need the C++ debugging symbols.
+
+To debug runtime issues, run:
+```console
+python -m cProfile -o stats $ALIGN_HOME/bin/schematic2layout.py $ALIGN_HOME/examples/sc_dc_dc_converter
+```
+Then in a python shell:
+```python
+import pstats
+from pstats import SortKey
+p = pstats.Stats('stats')
+p.sort_stats(SortKey.TIME).print_stats(20)
+```
 
 ### Step 4: Run ALIGN
 You may run the align tool using a simple command line tool named `schematic2layout.py`

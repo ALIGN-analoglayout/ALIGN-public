@@ -1,10 +1,8 @@
-{
-    "constraints":[
-        {"const_name":"HorizontalDistance", "abs_distance":0},
-        {"const_name":"VerticalDistance",   "abs_distance":0},
-        {"const_name": "OrderBlocks",
-            "blocks": ["mp0", "mn0"],
-            "direction": "V"
-        }
-    ]
-}
+[
+    {"constraint":"HorizontalDistance", "abs_distance":0},
+    {"constraint":"VerticalDistance",   "abs_distance":0},
+    {"constraint": "order",
+        "instances": ["mp0", "mn0"],
+        "direction": "top_to_bottom"
+    }
+]

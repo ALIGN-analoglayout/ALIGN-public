@@ -47,10 +47,13 @@ class ILP_solver {
   double area_norm = 0, HPWL_norm = 0;
   double Aspect_Ratio_weight = 1000;
   double Aspect_Ratio[2] = {0, 100};
+  double placement_box[2] = {-1.0, -1.0};
   typedef void(lphandlestr_func)(lprec* lp, void* userhandle, char* buf);
   static void lpsolve_logger(lprec *lp, void *userhandle, char *buf);
 
   public:
+  double cost = 0;
+  double constraint_penalty = 0;
   ILP_solver();
   ILP_solver(design& mydesign);
   ILP_solver(const ILP_solver& solver);

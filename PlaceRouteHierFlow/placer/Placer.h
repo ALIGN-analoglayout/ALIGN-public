@@ -7,6 +7,7 @@
 #include <cmath>
 #include <ctime>
 #include <chrono>
+#include "PlacerHyperparameters.h"
 #include "design.h"
 #include "Aplace.h"
 #include "SeqPair.h"
@@ -20,10 +21,6 @@ using std::cout;
 using std::endl;
 
 //#define MAX_TIMEOUT 4300000 //4.3 seconds = 4300000 us
-#define T_INT 1e4
-#define T_MIN 1e-10
-#define ALPHA 0.9995
-#define COUNT_LIMIT 200
 
 //#define MTMODE 1 // flag to turn on multi-threading
 
@@ -56,9 +53,11 @@ class Placer {
     void PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo);
     void PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo);
 
+    PlacerHyperparameters hyper;
+
   public:
-    Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo);
-    Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo);
+    Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in);
+    Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in);
     //Placer(PnRDB::hierNode& input_node); // Constructor
     //PnRDB::hierNode CheckoutHierNode(); // Output hier Node after placement
 	ofstream _debugCostCompStream, _debugCFCompStream;

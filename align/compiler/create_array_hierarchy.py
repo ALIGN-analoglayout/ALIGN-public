@@ -9,6 +9,8 @@ from collections import Counter
 from itertools import combinations
 from .merge_nodes import merge_nodes
 from .util import compare_two_nodes
+from ..schema import constraint
+from ..schema.hacks import HierDictNode
 
 import logging
 logger = logging.getLogger(__name__)
@@ -189,12 +191,14 @@ def create_hierarchy(graph,node:str,traversed:list,ports_weight:dict):
             logger.debug(f"creating a new hierarchy for {node}, {all_inst}, {matched_ports}")
             subgraph,_ = merge_nodes(
                     graph, 'array_hier_'+node,all_inst , matched_ports)
-            hier_of_node[node]={
-                        "name": 'array_hier_'+node,
-                        "graph": subgraph,
-                        "ports": list(matched_ports.keys()),
-                        "ports_match": matched_ports,
-                        "ports_weight": h_ports_weight,
-                        "size": len(subgraph.nodes())
-                    }
+
+            hier_of_node[node] = HierDictNode(
+                        name = 'array_hier_'+node,
+                        graph = subgraph,
+                        ports = list(matched_ports.keys()),
+                        ports_match = matched_ports,
+                        ports_weight = h_ports_weight,
+                        constraints = [],
+                        size = len(subgraph.nodes())
+            )
         return hier_of_node

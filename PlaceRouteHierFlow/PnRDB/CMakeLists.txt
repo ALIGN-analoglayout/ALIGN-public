@@ -8,15 +8,12 @@ set(headers
 set(sources
      readfile.cpp
      PnRdatabase.cpp
-     ReadDesignRule.cpp
      ReadDesignRuleJson.cpp
-     HardDesignRule.cpp
      WriteJSON.cpp
      ReadVerilog.cpp
      ReadConstraint.cpp
      Print.cpp
      ReadLEF.cpp
-     PnRDBJSON.cpp
 )
 
 add_library(PnRDB STATIC ${sources} ${headers})

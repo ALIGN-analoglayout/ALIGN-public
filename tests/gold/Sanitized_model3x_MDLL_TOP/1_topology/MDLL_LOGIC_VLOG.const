@@ -1,5 +1,0 @@
-// ALIGN generated automatic constraints
-SymmBlock ( {XU105} , {XADD049} , {XU2} , {XSUB049} , {XU65} , {XU89} , {XU56} , {XU143} , {XU144} , {XU132,XU152} , {XU133} , {XU96} , {XU86} , {XU74} , {XU100} , {XU83} , {XU71} , {XU113} , {XU114} , {XU81} , {XU116} , {XU85} , {XU147} , {XU93} , {XU125} , {XU97} , {XU151} , {XU153} , {XU107} , {XU148,XU127} , {XADD051} , {XU129} , {XU131} , {XU106} , {XU154,XU156} , {XU104,XU103} , {XSAR0CODE0REG010,XSAR0CODE0REG020} , {XU60} , {XU80} , {XU67} , {XU101} , {XU70} , {XU75} , {XU110} , {XU68} , {XU91} , {XU112} , {XU92} , {XU126} , {XU78} , {XU118} , {XSAR0CODE0REG060} , {XU157} , {XU120} , {XU121} , {XU130} , {XU122} , {XU150} , {XSAR0CODE0REG000} , {XU95,XU73} , {XU57} , {XU69} , {XU64} , {XU90} , {XU76} , {XU87} , {XU84} , {XU3} )
-SymmBlock ( {XSTATUS0REG000} , {XU4} , {XU72} )
-SymmBlock ( {XSAR0CODE0REG050} , {XU98} , {XU88} )
-SymmBlock ( {XU59} , {XU117} )

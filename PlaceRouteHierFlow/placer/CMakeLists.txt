@@ -2,6 +2,7 @@ set(headers
      Aplace.h
      ILP_solver.h
      Placer.h
+     PlacerHyperparameters.h
      Preadfile.h
      design.h
      ConstGraph.h

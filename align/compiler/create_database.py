@@ -5,6 +5,7 @@ Created on Fri Jan 15 10:38:14 2021
 
 @author: kunal001
 """
+from ..schema.hacks import HierDictNode
 import logging
 logger = logging.getLogger(__name__)
 
@@ -32,14 +33,14 @@ class CreateDatabase:
                         ports_weight[node].append(self.G.get_edge_data(node, nbr)['weight'])
     
         logger.debug("Merging nested graph hierarchies to dictionary: ")
-        const = self.const_parse.read_user_const(name)
-        self.hier_graph_dict[name] = {
-            "graph": self.G,
-            "ports": top_ports,
-            "ports_weight": ports_weight,
-            "const": const
-        }
-        
+        self.hier_graph_dict[name] = HierDictNode(
+            name = name,
+            graph = self.G,
+            ports = top_ports,
+            ports_weight = ports_weight,
+            constraints = []
+        )
+        self.const_parse.annotate_user_constraints(self.hier_graph_dict[name])
         self._traverse_hier_in_graph(self.G)
         logger.debug(f"read graph {self.hier_graph_dict}")
         return self.hier_graph_dict
@@ -62,14 +63,14 @@ class CreateDatabase:
                                 ports_weight[sub_node].append(attr["sub_graph"].get_edge_data(sub_node, nbr)['weight'])
     
                 logger.debug(f'external ports: {sub_ports}, {attr["connection"]}, {ports_weight}')
-                const = self.const_parse.read_user_const(attr["inst_type"])
-    
-                self.hier_graph_dict[attr["inst_type"]] = {
-                    "graph": attr["sub_graph"],
-                    "ports": sub_ports,
-                    "const": const,
-                    "ports_weight": ports_weight
-                }
-    
+                self.hier_graph_dict[attr["inst_type"]] = HierDictNode(
+                    name = attr["inst_type"],
+                    graph = attr["sub_graph"],
+                    ports = sub_ports,
+                    constraints = [],
+                    ports_weight = ports_weight
+                )
+                self.const_parse.annotate_user_constraints(self.hier_graph_dict[attr["inst_type"]]) 
+       
                 self._traverse_hier_in_graph(attr["sub_graph"])
                 

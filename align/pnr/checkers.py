@@ -1,4 +1,3 @@
-
 from ..cell_fabric import transformation, pdk
 from .. import primitive
 import itertools
@@ -7,7 +6,9 @@ import importlib
 import sys
 import pathlib
 import re
-from .toplevel import NType, Omark
+from .toplevel import NType
+
+from .render_placement import gen_transformation
 
 import logging
 logger = logging.getLogger(__name__)
@@ -24,7 +25,7 @@ def rational_scaling( d, *, mul=1, div=1, errors=None):
 
         term['rect'] = [ (mul*c)//div for c in term['rect']]
 
-def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False, extract=False, input_dir=None, markers=False, toplevel=True):
+def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, json_dir=None, extract=False, input_dir=None, markers=False, toplevel=True):
 
     logger.info( f'Checking: {hN.name}')
 
@@ -34,6 +35,11 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     # TODO: Remove these hardcoded widths & heights from __init__()
     #       (Height may be okay since it defines UnitCellHeight)
     cnv = generator(pdk.Pdk().load(pdkdir / 'layers.json'),28,12,2,3,1,1,1)
+
+    with open(cnv.pdk.layerfile, "rt") as fp:
+        scale_factor = json.load(fp)["ScaleFactor"]
+    # PnRDB coordinates are in units of 2nm. All else is in PDK abstraction.
+    assert scale_factor == 1 or scale_factor % 2 == 0, f'PDK ScaleFactor should be even.'
 
     terminals = []
 
@@ -47,13 +53,14 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
         terminals.append( { "netName": netName, "layer": layer, "rect": r})
 
         def f( gen, value, tag=None):
-            # value is in 2x units
+            # value is in units of 0.5nm
             if value%2 != 0:
                 txt = f"Off grid:{tag} {layer} {netName} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} (in 2x units) is not divisible by two."
                 errors.append( txt)
                 logger.error( txt)
             else:
-                p = gen.clg.inverseBounds( value//2)
+                value = value * scale_factor // 2 
+                p = gen.clg.inverseBounds(value)
                 if p[0] != p[1]:
                     txt = f"Off grid:{tag} {layer} {netName} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} doesn't land on grid, lb and ub are: {p}"
                     errors.append( txt)
@@ -74,21 +81,6 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
             if center is not None:
                 lyr = layer.lower() if layer.lower() in cnv.generators else layer.upper()
                 f( cnv.generators[lyr], center, tag)
-
-    if not checkOnly and draw_grid:
-        m1_pitch = 2*cnv.pdk['M1']['Pitch']
-        m2_pitch = 2*cnv.pdk['M2']['Pitch']
-        for ix in range( (hN.width+m1_pitch-1)//m1_pitch):
-            x = m1_pitch*ix
-            r = [ x-2, 0, x+2, hN.height]
-            terminals.append( { "netName": 'm1_grid', "layer": 'M1', "rect": r})
-
-        for iy in range( (hN.height+m2_pitch-1)//m2_pitch):
-            y = m2_pitch*iy
-            r = [ 0, y-2, hN.width, y+2]
-            terminals.append( { "netName": 'm2_grid', "layer": 'M2', "rect": r})
-
-
 
     fa_map = {}
     for n in itertools.chain( hN.Nets, hN.PowerNets):
@@ -113,7 +105,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
         blk = cblk.instance[cblk.selectedInstance]
         found = False
         if json_dir is not None:
-            pth = pathlib.Path( json_dir + "/" + blk.master + ".json")
+            pth = pathlib.Path( json_dir + "/" + blk.lefmaster + ".json")
             if not pth.is_file():
                 logger.debug( f"{pth} is not available; not importing subblock rectangles")
             else:
@@ -132,34 +124,15 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                     logger.debug( f"{pth} found in input_dir")
                     found = True
             else:
-                logger.error( f"{blk.gdsFile} does not end in .gds")
+                logger.error( f"'{blk.gdsFile}' does not end in .gds")
 
         if found:
             with pth.open( "rt") as fp:
                 d = json.load( fp)
-            # Scale to PnRDB coords (seems like 10x um, but PnRDB is 2x um, so divide by 5
-            rational_scaling( d, div=5, errors=errors)
+            # PnRDB coordinates are in units of 0.5nm. Scale primitives to this unit.
+            rational_scaling( d, mul=2, div=scale_factor, errors=errors)
 
-
-            if blk.orient == Omark.FN:
-                orient = 'FN'
-            elif blk.orient == Omark.FS:
-                orient = 'FS'
-            elif blk.orient == Omark.N:
-                orient = 'N'
-            elif blk.orient == Omark.S:
-                orient = 'S'
-            else:
-                assert False, blk.orient
-
-            tr = transformation.Transformation.genTr( orient, w=blk.width, h=blk.height)
-
-            tr2 = transformation.Transformation( oX=blk.placedBox.UR.x - blk.originBox.LL.x,
-                                                 oY=blk.placedBox.UR.y - blk.originBox.LL.y)
-
-            tr3 = tr.preMult(tr2)
-
-            logger.debug( f"TRANS {blk.master} {blk.orient} {tr} {tr2} {tr3}")
+            tr3 = gen_transformation( blk)
             for term in d['terminals']:
                 term['rect'] = tr3.hitRect( transformation.Rect( *term['rect'])).canonical().toList()
 
@@ -182,16 +155,6 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
 
             if 'subinsts' in d:
                 subinsts.update({f'{blk.name}/{nm}': v for nm, v in d['subinsts'].items()})
-
-        if not checkOnly:
-            for con in blk.interMetals:
-                add_terminal( '!interMetals', con.metal, con.placedBox)
-
-            for via in blk.interVias:
-                for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-                    add_terminal( '!interVias', con.metal, con.placedBox)
-
-            add_terminal( f"{blk.master}:{blk.name}", 'cellarea', blk.placedBox)
 
     for n in itertools.chain( hN.Nets, hN.PowerNets):
         logger.debug( f"Net: {n.name}")
@@ -225,7 +188,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                 logger.debug( f'\t{tag}')
                 for con in term.termContacts:
                     pass
-#                    addt( n, con)
+                    # addt( n, con)
             else:
                 assert False, c.type
 
@@ -326,29 +289,22 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
 
     d["terminals"] = terminals
 
-    if checkOnly:
-        # divide by two be make it be in CellFabric units (nanometer)
-        rational_scaling( d, div=2, errors=errors)
-        cnv.bbox = transformation.Rect( *d["bbox"])
-        cnv.terminals = d["terminals"]
-        for inst, parameters in subinsts.items():
-            cnv.subinsts[inst].parameters.update(parameters)
+    # PnRDB coordinates are in units of 0.5nm. Scale back to PDK.
+    rational_scaling(d, mul=scale_factor, div=2, errors=errors)
 
-        nets_allowed_to_be_open = [] if toplevel else global_power_names
+    cnv.bbox = transformation.Rect( *d["bbox"])
+    cnv.terminals = d["terminals"]
+    for inst, parameters in subinsts.items():
+        cnv.subinsts[inst].parameters.update(parameters)
 
-        new_d = cnv.gen_data(run_pex=extract,nets_allowed_to_be_open=nets_allowed_to_be_open,postprocess=toplevel)
+    nets_allowed_to_be_open = [] if toplevel else global_power_names
 
-        d['bbox'] = cnv.bbox.toList()
-        d['terminals'] = new_d['terminals']
+    new_d = cnv.gen_data(run_drc=True, run_pex=extract,nets_allowed_to_be_open=nets_allowed_to_be_open,postprocess=toplevel)
 
-        # multiply by ten make it be in JSON file units (angstroms) This is a mess!
-        rational_scaling( d, mul=10, errors=errors)
+    d['bbox'] = cnv.bbox.toList()
+    d['terminals'] = new_d['terminals']
 
-        for e in errors:
-            cnv.drc.errors.append( e)
+    for e in errors:
+        cnv.drc.errors.append( e)
 
-        return (cnv, d)
-    else:
-        # multiply by five make it be in JSON file units (angstroms) This is a mess!
-        rational_scaling( d, mul=5, errors=errors)
-        return d
+    return (cnv, d)

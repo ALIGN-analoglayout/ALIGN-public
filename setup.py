@@ -34,8 +34,10 @@ cmake_args = [f"-DALIGN_VERSION:string={version}"]
 
 # Enable unit-tests for all in-place builds (pip install -e . --no-build-isolation)
 devmode = 'develop' in sys.argv
-if devmode and not any(x.startswith('-DBUILD_TESTING') for x in sys.argv):
-    cmake_args.append('-DBUILD_TESTING=ON')
+# if devmode and not any(x.startswith('-DBUILD_TESTING') for x in sys.argv):
+#     cmake_args.append('-DBUILD_TESTING=ON')
+if devmode and not any(x.startswith('--build-type') for x in sys.argv):
+     sys.argv.extend(['--build-type', 'Debug'])
 
 setup(name='align',
       version=version,
@@ -54,7 +56,9 @@ setup(name='align',
       cmake_process_manifest_hook=align_manifest_filter,
       scripts=[
           'bin/schematic2layout.py',
-          'bin/gds2png.sh'
+          'bin/pnr_compiler.py',
+          'bin/gds2png.sh',
+          'bin/analyze_regression.py'
       ],
       install_requires=[
           'networkx>=2.4',
@@ -67,6 +71,8 @@ setup(name='align',
           'more-itertools',
           'colorlog',
           'plotly',
+          'pandas',
+          'dash',
           'typing_extensions; python_version<"3.8"'
           ],
       extras_require={

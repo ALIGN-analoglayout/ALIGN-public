@@ -1,5 +1,0 @@
-// ALIGN generated automatic constraints
-SymmBlock ( {XU50,XU51} , {XU26} , {XU48} , {XU23} , {XU25} , {XU9} , {XU11,XU12} , {XU32,XU7} , {XU24} )
-SymmBlock ( {XU38,XU37} , {XU43,XU39} )
-SymmBlock ( {XU19,XU21} )
-SymmBlock ( {XU59} , {XU40,XU42} )

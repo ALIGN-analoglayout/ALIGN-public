@@ -52,6 +52,7 @@ struct Multi_LinearConst;
 struct Multi_connection;
 struct GuardRing;
 struct Guardring_Const;
+struct guardring_info;
 
 /// Part 1: declaration of enum types
 enum NType {Block, Terminal};
@@ -304,7 +305,7 @@ struct block {
   vector<Via> interVias;
   vector<pin> dummy_power_pin; //power pins below to this block, but needs updated hierachy
   vector<GuardRing> GuardRings;
-}; // structure of block
+};  // structure of block
 
 struct terminal {
   string name="";
@@ -330,20 +331,27 @@ struct PowerGrid{
 struct layoutAS {
   int width=0;
   int height=0;
-  string gdsFile="";
+  int HPWL = -1;
+  double HPWL_norm=-1;
+  double area_norm = -1;
+  double constraint_penalty = -1;
+  double cost = -1;
+  string gdsFile = "";
   vector<blockComplex> Blocks;
   vector<net> Nets;
   vector<terminal> Terminals;
   point LL;
   point UR;
-  //vector<pin> blockPins;
-  //vector<contact> interMetals;
-  //vector<Via> interVias;
+  vector<PowerNet> PowerNets;
+  vector<GuardRing> GuardRings;
+  // vector<pin> blockPins;
+  // vector<contact> interMetals;
+  // vector<Via> interVias;
 };
 
 struct GuardRing {
   std::string mastername = "";
-  string gdsFile="testcase_guardring/guard_ring.gds";
+  string gdsFile="guard_ring.gds";
   point LL;
   point UR;
   point center;
@@ -406,9 +414,14 @@ struct hierNode {
   int bias_Vgraph=0;
   double Aspect_Ratio_weight = 1000;
   double Aspect_Ratio[2] = {0, 100};
+  double placement_box[2] = {-1, -1};
   vector<Router_report> router_report;
   vector<Multi_connection> Multi_connections;
-
+  int HPWL = -1;
+  double area_norm = -1;
+  double HPWL_norm = -1;
+  double constraint_penalty = -1;
+  double cost = -1;
 }; // structure of vertex in heirarchical tree
 
 
@@ -483,7 +496,7 @@ struct CCCap {
 
 struct Guardring_Const {
   string block_name;
-  string guard_ring_perimitives;
+  string guard_ring_primitives;
   string global_pin;
 };
 
@@ -617,10 +630,19 @@ struct guardring_info {
   int xspace; // x dimension minimal space
   int yspace; // y dimension minimal space
   GdsDatatype gds_datatype;
+  string path;
 };
 
 struct design_info {
   int Hspace = 0, Vspace = 0;  // global Hspace and Vspace in placement
+  int signal_routing_metal_l;
+  int signal_routing_metal_u;
+  int power_grid_metal_l;
+  int power_grid_metal_u;
+  int power_routing_metal_l;
+  int power_routing_metal_u;  
+  int h_skip_factor;
+  int v_skip_factor;
 };
 
 struct Drc_info {

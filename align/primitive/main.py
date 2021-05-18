@@ -29,7 +29,6 @@ def get_parameters(primitive, parameters, nfin):
         parameters = {}
     if 'model' not in parameters:
         parameters['model'] = 'NMOS' if 'NMOS' in primitive else 'PMOS'
-    parameters['nfin'] = nfin
     return parameters
 
 # TODO: Pass cell_pin and pattern to this function to begin with
@@ -63,6 +62,11 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
         cell_pin = gen( 0, {'S': [('M1', 'S'), ('M1', 'B')],
                             'D': [('M1', 'D')],
                             'G': [('M1', 'G')]})
+
+    elif primitive in ["Switch_GB_NMOS", "Switch_GB_PMOS"]:
+        cell_pin = gen( 0, {'S': [('M1', 'S')],
+                            'D': [('M1', 'D')],
+                            'G': [('M1', 'G'), ('M1', 'B')]})
 
     elif primitive in ["DCL_NMOS_B", "DCL_PMOS_B"]:
         cell_pin = gen( 0, {'S': [('M1', 'S')],
@@ -146,7 +150,7 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
                                  'DA': [('M1', 'D')],
                                  'DB': [('M2', 'D')],
                                  'G':  [('M1', 'G'), ('M2', 'G')],
-                                 'B':  [('M1', 'B'), ('M2', 'B')]}) 
+                                 'B':  [('M1', 'B'), ('M2', 'B')]})
 
     elif primitive in ["CMC_NMOS", "CMC_PMOS"]:
         cell_pin = gen(pattern, {'S': [('M1', 'S'), ('M2', 'S'), ('M1', 'B'), ('M2', 'B')],
@@ -192,7 +196,7 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
                                  'SB': [('M2','S')],
                                  'DA': [('M1', 'D'),('M2', 'G')],
                                  'DB': [('M2', 'D'), ('M1', 'G')],
-                                 'B':  [('M1', 'B'), ('M2', 'B')]}) 
+                                 'B':  [('M1', 'B'), ('M2', 'B')]})
 
     else:
         raise NotImplementedError(f"Unrecognized primitive {primitive}")
@@ -224,6 +228,16 @@ def generate_Res(pdkdir, block_name, height, x_cells, y_cells, nfin, unit_res):
 
     return uc, ['PLUS', 'MINUS']
 
+def generate_Ring(pdkdir, block_name, x_cells, y_cells):
+
+    pdk = Pdk().load(pdkdir / 'layers.json')
+    generator = get_generator('RingGenerator', pdkdir)
+
+    uc = generator(pdk)
+
+    uc.addRing(x_cells, y_cells)
+
+    return uc, ['Body']
 
 def get_generator(name, pdkdir):
     pdk_dir_path = pdkdir
@@ -234,7 +248,7 @@ def get_generator(name, pdkdir):
     try:  # is pdk an installed module
         module = importlib.import_module(pdk_dir_stem)
         return getattr(module, name)
-    except ImportError:
+    except:
         init_file = pdk_dir_path / '__init__.py'
         if init_file.is_file():  # is pdk a package
             spec = importlib.util.spec_from_file_location(pdk_dir_stem, pdk_dir_path / '__init__.py')
@@ -250,7 +264,7 @@ def get_generator(name, pdkdir):
 
 
 # WARNING: Bad code. Changing these default values breaks functionality.
-def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None, pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd()):
+def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None, pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd(), abstract_template_name=None, concrete_template_name=None):
 
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
 
@@ -262,16 +276,20 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
     elif 'Res' in primitive:
         uc, cell_pin = generate_Res(pdkdir, block_name, height, x_cells, y_cells, value[0], value[1])
         uc.setBboxFromBoundary()
+    elif 'ring' in primitive.lower():
+        uc, cell_pin = generate_Ring(pdkdir, block_name, x_cells, y_cells)
+        #uc.setBboxFromBoundary()
     else:
         raise NotImplementedError(f"Unrecognized primitive {primitive}")
 
-    with open(outputdir / (block_name + '.debug.json'), "wt") as fp:
-        uc.computeBbox()
-        json.dump( { 'bbox' : uc.bbox.toList(),
-                     'globalRoutes' : [],
-                     'globalRouteGrid' : [],
-                     'terminals' : uc.terminals}
-                    , fp, indent=2)
+    uc.computeBbox()
+    if False:
+        with open(outputdir / (block_name + '.debug.json'), "wt") as fp:
+            json.dump( { 'bbox' : uc.bbox.toList(),
+                         'globalRoutes' : [],
+                         'globalRouteGrid' : [],
+                         'terminals' : uc.terminals}
+                        , fp, indent=2)
 
     with open(outputdir / (block_name + '.json'), "wt") as fp:
         uc.writeJSON( fp)
@@ -279,8 +297,9 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
         blockM = 1
     else:
         blockM = 0
-    positive_coord.json_pos(outputdir / (block_name + '.json'))         
+    positive_coord.json_pos(outputdir / (block_name + '.json'))
     gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, cell_pin, bodyswitch, blockM, uc.pdk)
+
     with open( outputdir / (block_name + ".json"), "rt") as fp0, \
          open( outputdir / (block_name + ".gds.json"), 'wt') as fp1:
         gen_gds_json.translate(block_name, '', pinswitch, fp0, fp1, datetime.datetime( 2019, 1, 1, 0, 0, 0), uc.pdk)

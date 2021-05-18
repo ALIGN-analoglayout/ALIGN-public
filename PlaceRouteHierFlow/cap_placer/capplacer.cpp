@@ -59,9 +59,9 @@ Placer_Router_Cap::Placer_Router_Cap(const string& opath, const string& fpath, P
 
 	auto logger = spdlog::default_logger()->clone("cap_placer.Placer_Router_Cap.Placer_Router_Cap");
 
-    logger->info("Begin CC Capacitor Placement and Router");
+    logger->debug("Begin CC Capacitor Placement and Router");
     Common_centroid_capacitor_aspect_ratio(opath, fpath, current_node, drc_info, lefData, aspect_ratio, num_aspect);
-    logger->info("End CC Capacitor Placement and Router");
+    logger->debug("End CC Capacitor Placement and Router");
 }
 
 void Placer_Router_Cap::Placer_Router_Cap_clean(){
@@ -151,7 +151,7 @@ Placer_Router_Cap::Placer_Router_Cap_function (vector<int> & ki, vector<pair<str
     logger->debug("CC Capacitor Debug flag step3");
     /*
      * SMB: This does something weird
-     * it updates the LL if both the x and y coords are less than the previous best
+     * it updates the LL if both the x && y coords are less than the previous best
      * So not necessarily the smallest x or the smallest y
      */
     
@@ -160,7 +160,7 @@ Placer_Router_Cap::Placer_Router_Cap_function (vector<int> & ki, vector<pair<str
 	    const auto& pc = uc.macroPins[i].pinContacts[j];
 	    const auto& r = pc.originBox.LL;
             logger->debug("Cand {0} {1}", r.x, r.y);
-	    if(r.x<=pin_min.x and r.y<=pin_min.y){
+	    if(r.x<=pin_min.x && r.y<=pin_min.y){
 		pin_min = r;
 		pin_metal = pc.metal;
 	    }
@@ -317,7 +317,7 @@ Placer_Router_Cap::Placer_Router_Cap_function (vector<int> & ki, vector<pair<str
 		if(dis[index[i]]!=dis[index[j]]){
 		    break;
 		}
-		if (Caps[index[i]].index_x+Caps[index[j]].index_x==2*Cx and
+		if (Caps[index[i]].index_x+Caps[index[j]].index_x==2*Cx &&
 		    Caps[index[i]].index_y+Caps[index[j]].index_y==2*Cy) {
 		    cap_pair_sequence.push_back(make_pair( min( index[i], index[j]), max( index[i], index[j])));
 		    break;
@@ -329,7 +329,7 @@ Placer_Router_Cap::Placer_Router_Cap_function (vector<int> & ki, vector<pair<str
     
     if(dummy_flag){
 	auto not_on_border = [&]( const auto& c) {
-	    return c.index_x!=0 and c.index_x!=r-1 and c.index_y!=0 and c.index_y!=s-1;
+	    return c.index_x!=0 && c.index_x!=r-1 && c.index_y!=0 && c.index_y!=s-1;
 	};
 
 	vector<pair<int,int> > temp_cap_pair_sequence;
@@ -337,7 +337,7 @@ Placer_Router_Cap::Placer_Router_Cap_function (vector<int> & ki, vector<pair<str
 	    int fi = cap_pair_sequence[i].first;
 	    if( not_on_border(Caps[fi])) {
 		int si = cap_pair_sequence[i].second;
-		if(si==-1 or not_on_border( Caps[si])) {
+		if(si==-1 || not_on_border( Caps[si])) {
 		    temp_cap_pair_sequence.push_back(cap_pair_sequence[i]);
 		}
 	    }
@@ -615,7 +615,7 @@ Placer_Router_Cap::cal_offset(const PnRDB::Drc_info &drc_info, int H_metal, int 
     auto mp = minmax.LL;
     offset = gp - wp - covPnt - mp;
     logger->debug("offset {0} {1}",offset.x,offset.y);
-    if(offset.x%gp.x!=0 or offset.y%gp.y!=0){//why offset is not correct, might have some bug here? Yaguang - 4/12/2020
+    if(offset.x%gp.x!=0 || offset.y%gp.y!=0){//why offset is not correct, might have some bug here? Yaguang - 4/12/2020
       logger->debug("gp {0} {1}",gp.x,gp.y);
       logger->debug("offset.x%gp.x {0} offset.y%gp.y {1}",offset.x%gp.x,offset.y%gp.y);
       offset.x = ceil((double) offset.x/gp.x)*gp.x;
@@ -676,14 +676,14 @@ Placer_Router_Cap::initial_net_pair_sequence(vector<int> & ki, vector<pair<strin
 	num_odd = num_odd -2;
 	S_odd_odd.push_back(temp_pair);
     }
-    if(num_odd==1 and num_unit>0){
+    if(num_odd==1 && num_unit>0){
 	temp_pair.first = C_odd[num_odd-1];
 	temp_pair.second = C_unit[num_unit-1];
 	C_unit.pop_back();
 	num_unit = num_unit -1;
 	num_odd = num_odd -1;
 	S_unit_odd.push_back(temp_pair);
-    }else if(num_odd==1 and num_unit ==0){
+    }else if(num_odd==1 && num_unit ==0){
 	temp_pair.first = C_odd[num_odd-1];
 	temp_pair.second = -1;
 	num_odd = num_odd -1;
@@ -742,14 +742,14 @@ Placer_Router_Cap::initial_net_pair_sequence(vector<int> & ki, vector<pair<strin
 	    Nets_pos[net_sequence[i].first].cap_index.push_back(cap_pair_sequence[start_index].first);
 	    Caps[cap_pair_sequence[start_index].first].net_index = net_sequence[i].first;
 	    start_index = start_index+1;
-	}else if(net_sequence[i].second!=-1 and cap_pair_sequence[start_index].second == -1){
+	}else if(net_sequence[i].second!=-1 && cap_pair_sequence[start_index].second == -1){
 	    start_index = start_index+1;
 	    Nets_pos[net_sequence[i].first].cap_index.push_back(cap_pair_sequence[start_index].first);
 	    Nets_pos[net_sequence[i].second].cap_index.push_back(cap_pair_sequence[start_index].second);
 	    Caps[cap_pair_sequence[start_index].first].net_index = net_sequence[i].first;
 	    Caps[cap_pair_sequence[start_index].second].net_index = net_sequence[i].second;
 	    start_index = start_index+1;
-	}else if(net_sequence[i].second!=-1 and cap_pair_sequence[start_index].second != -1){
+	}else if(net_sequence[i].second!=-1 && cap_pair_sequence[start_index].second != -1){
 	    Nets_pos[net_sequence[i].first].cap_index.push_back(cap_pair_sequence[start_index].first);
 	    Nets_pos[net_sequence[i].second].cap_index.push_back(cap_pair_sequence[start_index].second);
 	    Caps[cap_pair_sequence[start_index].first].net_index = net_sequence[i].first;
@@ -840,7 +840,7 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
 	}
 	for(unsigned int k=0;k<Nets_pos[i].router_line_v.size();k++){
 	    for(unsigned int l=0;l<Nets_pos[i].router_line_v[k].cap_index.size();l++){
-		Nets_pos[i].routable_line_v[l] =(int) Nets_pos[i].routable_line_v[l] and Nets_pos[i].router_line_v[k].cap_index[l];
+		Nets_pos[i].routable_line_v[l] =(int) Nets_pos[i].routable_line_v[l] && Nets_pos[i].router_line_v[k].cap_index[l];
 	    }
 	}
     }
@@ -872,7 +872,7 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
 	}
 	for(unsigned int k=0;k<Nets_pos[i].router_line_h.size();k++){
 	    for(unsigned int l=0;l<Nets_pos[i].router_line_h[k].cap_index.size();l++){
-		Nets_pos[i].routable_line_h[l] = Nets_pos[i].routable_line_h[l] and Nets_pos[i].router_line_h[k].cap_index[l];
+		Nets_pos[i].routable_line_h[l] = Nets_pos[i].routable_line_h[l] && Nets_pos[i].router_line_h[k].cap_index[l];
 	    }
 	}
     }
@@ -969,7 +969,7 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
 		    assert( ci.size() == lv.size());
 		    int found = std::inner_product( ci.begin(), ci.end(), lv.begin(), false,
 						    []( bool a, bool b) { return a || b; },
-						    []( int a, int b) { return a==1 and b==1; });
+						    []( int a, int b) { return a==1 && b==1; });
 		    if(found ==0){
 			int router_num=n_array.size();
 			int choosen_route=-1;
@@ -1028,7 +1028,7 @@ void Placer_Router_Cap::found_neighbor(int j, net& pos, connection_set& temp_set
 	if(pci.access==0){
 	    int adiffx = abs(pci.index_x -pcj.index_x);
 	    int adiffy = abs(pci.index_y -pcj.index_y);
-	    if((adiffx == 0 and adiffy==1) or (adiffy == 0 and adiffx==1)) {
+	    if((adiffx == 0 && adiffy==1) || (adiffy == 0 && adiffx==1)) {
 		pci.access = 1;
 		temp_set.cap_index.push_back(pos.cap_index[i]);
 		found_neighbor(i, pos, temp_set);
@@ -1084,8 +1084,8 @@ void Placer_Router_Cap::check_grid( const net& n) const
     for( unsigned int i=0; i<n.start_connection_pos.size(); ++i) {
 	const auto& s = n.start_connection_pos[i];
 	const auto& e = n.end_connection_pos[i];
-	const auto& m = n.metal[i];
-	const auto& p = n.Is_pin[i];
+	//const auto& m = n.metal[i];
+	//const auto& p = n.Is_pin[i];
 	if ( s.x == e.x) {
 	    // Vertical wi
 	    int x = s.x;
@@ -1115,7 +1115,10 @@ public:
     }    
 
     int get_best_cap_index() const {
-	return best_cap_index;
+        if(best_cap_index==-1)
+           return 0;
+        else
+	   return best_cap_index;
     }
 
     int get_left_right() const {
@@ -1169,7 +1172,7 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(
 
 		    int lr = l-Caps[n.cap_index[k]].index_x;
 
-		    if(lr!=0 and lr!=1) continue;
+		    if(lr!=0 && lr!=1) continue;
 
 		    found = 1;
 		    PnRDB::point half_cap_dim = unit_cap_dim / 2;
@@ -1271,19 +1274,18 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(
 		n.metal.push_back(V_metal);
 		n.start_connection_pos.push_back (coordP);
 
+                //problem here
 		PnRDB::point lr (mb.get_left_right(), mb.get_left_right());
 		PnRDB::point nsh = half_cap_dim + lr.scale (min_dis.x, min_dis.y) -shifting;
 		PnRDB::point nsh_final = nsh.scale(sign, sign);
-	      
-		PnRDB::point npt = Caps[mb.get_best_cap_index()].pos - nsh_final;
-
+		PnRDB::point npt = Caps.at(mb.get_best_cap_index()).pos - nsh_final;
 		coordP.y = npt.y;
 		n.end_connection_pos.push_back (coordP);
 		n.Is_pin.push_back(0);
 
 		n.metal.push_back(V_metal);
 		  
-		if(first_lock==0 and found==1){
+		if(first_lock==0 && found==1){
 		    first_coordP.x = opt.x;
 		    first_coordP.y = pt.y;
 		    first_lock=1;
@@ -1300,7 +1302,7 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(
 	    }
 	}
 	//connect to each trail
-	if(first_lock==1 and end_close==1){
+	if(first_lock==1 && end_close==1){
 
             if(drc_info.Metalmap.find(H_metal)==drc_info.Metalmap.end()){
                logger->error("H_metal error");
@@ -1335,6 +1337,8 @@ void Placer_Router_Cap::GetPhysicalInfo_common_net ( vector<net>& n_array,
 						     int sign)
 {
     //  pair<double,double> coord;
+
+    //return;
     PnRDB::point coordP;
 
     for(unsigned int i=0;i<n_array.size();i++){
@@ -1352,7 +1356,7 @@ void Placer_Router_Cap::GetPhysicalInfo_common_net ( vector<net>& n_array,
 			int absx = abs(Caps[n.Set[j].cap_index[k]].index_x-Caps[n.Set[j].cap_index[index]].index_x);
 			int absy = abs(Caps[n.Set[j].cap_index[k]].index_y-Caps[n.Set[j].cap_index[index]].index_y);
 
-			if( !((absy == 0 and absx == 1) or (absx == 0 and absy == 1))) continue;
+			if( !((absy == 0 && absx == 1) || (absx == 0 && absy == 1))) continue;
 
 			PnRDB::point half_cap_dim = unit_cap_dim / 2;
 			PnRDB::point shift = half_cap_dim - shifting;
@@ -1365,9 +1369,9 @@ void Placer_Router_Cap::GetPhysicalInfo_common_net ( vector<net>& n_array,
 		      
 			n.Is_pin.push_back(0);
 
-			if( absy==0 and absx==1) {
+			if( absy==0 && absx==1) {
 			    n.metal.push_back(H_metal);
-			}else if( absx == 0 and absy ==1) {
+			}else if( absx == 0 && absy ==1) {
 			    n.metal.push_back(V_metal);
 			}
 			addVia (n,coordP,drc_info,HV_via_metal,HV_via_metal_index,0);
@@ -1483,7 +1487,8 @@ Placer_Router_Cap::WriteGDSJSON (const string& fpath, const string& unit_capacit
     string topGDS_loc = opath+final_gds+".gds";
     string TopCellName = final_gds;
     double unitScale=2;
-    JSONExtractUit (gds_unit_capacitor, unitScale);
+    double extractScale=0.5;
+    JSONExtractUit (gds_unit_capacitor, extractScale);
     logger->debug("Cap unitScale {0}",unitScale);
 
     std::ofstream jsonStream;
@@ -1496,8 +1501,8 @@ Placer_Router_Cap::WriteGDSJSON (const string& fpath, const string& unit_capacit
     jsonLib["time"] = JSON_TimeTime();
     // DAK Overwrite to match
     jsonLib["time"] = {2019, 4, 24, 9, 46, 15, 2019, 4, 24, 9, 46, 15};
-    double dbUnitUser=2*0.00025/unitScale;
-    double dbUnitMeter=dbUnitUser/1e6;
+    double dbUnitUser=2*0.000000001/unitScale;
+    double dbUnitMeter=dbUnitUser;
     jsonLib["units"] = {dbUnitUser, dbUnitMeter};
     jsonLib["libname"] = "test";
 
@@ -1551,7 +1556,7 @@ Placer_Router_Cap::WriteGDSJSON (const string& fpath, const string& unit_capacit
 		const auto& mi = drc_info.Metal_info.at(drc_info.Metalmap.at(n.metal[j]));
 		int width = mi.width/2;
 		auto box = fillPathBBox (n.start_connection_pos[j],
-					 n.end_connection_pos[j], width) * unitScale;
+					 n.end_connection_pos[j], width) / unitScale;
 		//		box = box * unitScale;
  		json bound;
 		bound["type"] = "boundary";
@@ -1576,7 +1581,7 @@ Placer_Router_Cap::WriteGDSJSON (const string& fpath, const string& unit_capacit
 		json bound;
 		bound["type"] = "boundary";
 		bound["datatype"] = 0;
-		json z = ToJsonAry (viaBox * unitScale);
+		json z = ToJsonAry (viaBox / unitScale);
 		bound["xy"] = z;
 		bound["layer"] = getLayerViaMask (n.via_metal[j], drc_info);
 		jsonElements.push_back (bound);
@@ -1599,7 +1604,7 @@ Placer_Router_Cap::WriteGDSJSON (const string& fpath, const string& unit_capacit
 	PnRDB::point half_cap_dim = unit_cap_dim / 2;
 	auto pt = Caps[i].pos;
 
-	pt = (pt - half_cap_dim + offset) * unitScale;
+	pt = (pt - half_cap_dim + offset) / unitScale;
 	json xy = json::array();
 	xy.push_back(pt.x);
 	xy.push_back(pt.y);
@@ -1607,7 +1612,7 @@ Placer_Router_Cap::WriteGDSJSON (const string& fpath, const string& unit_capacit
 	jsonElements.push_back (sref);
     }
 
-    addOABoundaries(jsonElements, unitScale * CheckOutBlock.width, unitScale * CheckOutBlock.height);
+    addOABoundaries(jsonElements,  CheckOutBlock.width/unitScale, CheckOutBlock.height/unitScale);
     jsonStr["elements"] = jsonElements;
     jsonStrAry.push_back (jsonStr);
     jsonLib["bgnstr"] = jsonStrAry;
@@ -1626,15 +1631,15 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 
     // write Viewer JSON file for capacitor array
 
-    int unitScale = 5; /* PnRDB units to angstroms */
+    int unitScale = 2; /* PnRDB units to angstroms */
 
     json jsonTop;
 
     json bbox = json::array();
     bbox.push_back( 0);
     bbox.push_back( 0);
-    bbox.push_back( CheckOutBlock.width*unitScale);
-    bbox.push_back( CheckOutBlock.height*unitScale);
+    bbox.push_back( CheckOutBlock.width/unitScale);
+    bbox.push_back( CheckOutBlock.height/unitScale);
 
     jsonTop["bbox"] = bbox;
 
@@ -1653,7 +1658,7 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 		const auto& mi = drc_info.Metal_info.at(drc_info.Metalmap.at(n.metal[j]));
 		int width = mi.width/2;
 		auto box = fillPathBBox (n.start_connection_pos[j],
-					 n.end_connection_pos[j], width) * unitScale;
+					 n.end_connection_pos[j], width) / unitScale;
 		json term;
 		term["netName"] = n.name;
 		term["layer"] = n.name; //drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).name;
@@ -1676,7 +1681,7 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 		term["netName"] = n.name;
 		term["layer"] = drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).name;
 
-		auto viaBox = (PnRDB::bbox (viaRect[0], viaRect[1]) + (n.via_pos[j] + offset)) * unitScale;
+		auto viaBox = (PnRDB::bbox (viaRect[0], viaRect[1]) + (n.via_pos[j] + offset)) / unitScale;
 		term["rect"] = ToJsonAry (viaBox.LL, viaBox.UR);
 
 		terminals.push_back( term);
@@ -1704,7 +1709,7 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 	PnRDB::point half_cap_dim = unit_cap_dim / 2;
 	auto pt = Caps[i].pos;
 
-	pt = (pt - half_cap_dim + offset) * unitScale;
+	pt = (pt - half_cap_dim + offset) / unitScale;
 	
 	int ni = Caps[i].net_index;
 
@@ -1712,7 +1717,7 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 	for (unsigned int j = 0; j < jsonUnit["terminals"].size(); ++j) {
 	    const json& term0 = jsonUnit["terminals"][j];
 	    	
-	    bool addNetName = true;
+	    //bool addNetName = true;
 
 	    json term1;
 /*
@@ -1809,7 +1814,9 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 	//const auto& b = current_node.Blocks[i].instance.back();
 	PnRDB::block b = current_node.Blocks[i].instance[current_node.Blocks[i].instance.size()-1];
 
-	if(b.isLeaf == 1 and b.gdsFile ==""){
+	if(b.isLeaf == 1 && b.gdsFile ==""){
+	    logger->info("CC Capacitor Placement and Router : {0} {1}", current_node.name, b.name);
+
 	    //this block must be CC
 	    vector<int> ki;
 	    vector<pair<string, string> > pin_names;
@@ -1877,9 +1884,9 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 			double temp_r = ceil(sqrt(sum));
 			double temp_s = ceil(sum/temp_r);
 			int aspect_num = num_aspect;
-			while(aspect_num > 0 and temp_r > 0){
+			while(aspect_num > 0 && temp_r > 0){
 
-                            if(temp_r*ceil(sum/temp_r)!=sum and ceil(sum/temp_s)*temp_s!=sum){   
+                            if(temp_r*ceil(sum/temp_r)!=sum && ceil(sum/temp_s)*temp_s!=sum){   
 			      cap_r.push_back(temp_r);
 			      cap_s.push_back(ceil(sum/temp_r));
 			      cap_r.push_back(ceil(sum/temp_s));
@@ -1895,9 +1902,9 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 			  temp_r = ceil(sqrt(sum));
 			  temp_s = ceil(sum/temp_r);
                           aspect_num = num_aspect;
-			  while(aspect_num > 0 and temp_r > 0){
+			  while(aspect_num > 0 && temp_r > 0){
 
-                              if(temp_r*ceil(sum/temp_r)==sum and ceil(sum/temp_s)*temp_s==sum){   
+                              if(temp_r*ceil(sum/temp_r)==sum && ceil(sum/temp_s)*temp_s==sum){   
 			        cap_r.push_back(temp_r);
 			        cap_s.push_back(ceil(sum/temp_r));
 			        cap_r.push_back(ceil(sum/temp_s));
@@ -1924,7 +1931,7 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
    
                         Placer_Router_Cap_clean();
 
-                        Placer_Router_Cap_function(ki, pin_names, fpath, unit_capacitor, cc_gds_file, cap_ratio or aspect_ratio, cap_r[q], cap_s[q], drc_info, lefData, dummy_flag, opath);
+                        Placer_Router_Cap_function(ki, pin_names, fpath, unit_capacitor, cc_gds_file, cap_ratio || aspect_ratio, cap_r[q], cap_s[q], drc_info, lefData, dummy_flag, opath);
                         PnRDB::block temp_block=CheckoutData();
 
                         if(q!=0){
@@ -1964,7 +1971,7 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 
                             }
                             //if not found then insert this pin as a power pin and add a dummy pin in 
-                            if(!found and !temp_block.blockPins[l].name.empty()){
+                            if(!found && !temp_block.blockPins[l].name.empty()){
                             //if(!found){
                                    //create dummy connection and insert power pin
                                    PnRDB::connectNode temp_connectNode;
@@ -1975,7 +1982,7 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
                                    //insert the dummy connection power power net
                                      //if power net does not exist, then create a power net
                                    for(unsigned powernet_index = 0;powernet_index<current_node.PowerNets.size();powernet_index++){
-                                         if(current_node.PowerNets[powernet_index].power==0 and !insert_dummy_connection){
+                                         if(current_node.PowerNets[powernet_index].power==0 && !insert_dummy_connection){
                                             current_node.PowerNets[powernet_index].dummy_connected.push_back(temp_connectNode);
                                             break;
                                            }

@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 
 #include "PnRdatabase.h"
 
@@ -19,12 +20,33 @@ static double parse_and_scale(const std::string& s, double unitScale) {
   return result;
 }
 
-bool PnRdatabase::ReadLEF(string leffile) {
-
+bool PnRdatabase::ReadLEF(const string& leffile) {
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.ReadLEF");
 
-  logger->info( "PnRDB-Info: reading LEF file {0}" , leffile);
   ifstream fin;
+  fin.exceptions(ifstream::failbit | ifstream::badbit);
+  try {
+    fin.open(leffile.c_str());
+    _ReadLEF( fin, leffile);
+    fin.close();
+    return true;
+  } catch (ifstream::failure& e) {
+    logger->error("PnRDB-Error: fail to read LEF file ");
+  }
+  return false;
+}
+
+bool PnRdatabase::ReadLEFFromString(const string& lefStr) {
+  std::istringstream is(lefStr);
+  _ReadLEF( is, "<string>");
+  return true;
+}
+
+void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
+
+  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase._ReadLEF");
+
+  logger->debug( "Reading LEF file {0}" , leffile);
   string def;
   size_t found;
   vector<string> temp;
@@ -36,13 +58,14 @@ bool PnRdatabase::ReadLEF(string leffile) {
   string obsEnd = "END";
   string pinEnd;
   string macroEnd;
+  string unitsEnd;
+  double units = 2.0;
   int width = -1, height = -1;
   vector<PnRDB::pin> macroPins;
   vector<PnRDB::contact> interMetals;  // metal within each MACRO
   vector<PnRDB::Via> interVias; //via within each MACRO
-  fin.exceptions(ifstream::failbit | ifstream::badbit);
-  try {
-    fin.open(leffile.c_str());
+  bool Metal_Flag;
+  {
     int stage = 0;
     bool skip_the_rest_of_stage_4 = false;
     while (fin.peek() != EOF) {
@@ -63,12 +86,22 @@ bool PnRdatabase::ReadLEF(string leffile) {
           interVias.clear();
           stage = 1;
         }
+      } else if (stage == 5) {  // within UNITS
+        if ((found = def.find(unitsEnd)) != string::npos) {
+          stage = 1;
+        } else if ((found = def.find("DATABASE")) != string::npos) {
+          temp = get_true_word(found, def, 0, ';', p);
+          units = unitScale / stod(temp[3]);
+        }
       } else if (stage == 1) {  // within MACRO
         if ((found = def.find("SIZE")) != string::npos) {
           temp = get_true_word(found, def, 0, ';', p);
-          width = parse_and_scale(temp[1], unitScale);
-          height = parse_and_scale(temp[3], unitScale);
+          width = parse_and_scale(temp[1], units);
+          height = parse_and_scale(temp[3], units);
           // cout<<"Stage "<<stage<<" @ W "<<width<<"; H "<<height<<endl;
+        } else if ((found = def.find("UNITS")) != string::npos) {
+          stage = 5;
+          unitsEnd = "END UNITS";
         } else if ((found = def.find("PIN")) != string::npos) {
           temp = get_true_word(found, def, 0, ';', p);
           macroPins.resize(macroPins.size() + 1);
@@ -106,7 +139,7 @@ bool PnRdatabase::ReadLEF(string leffile) {
           stage = 0;
         }
       } else if (stage == 4) {  // within OBS
-         logger->debug("stage4.Def: {0}", def);
+        logger->debug("stage4.Def: {0}", def);
         if ((found = def.find("LAYER")) != string::npos) {
           skip_the_rest_of_stage_4 = false;
           temp = get_true_word(found, def, 0, ';', p);
@@ -123,10 +156,10 @@ bool PnRdatabase::ReadLEF(string leffile) {
         } else if ((found = def.find("RECT")) != string::npos) {
           char rect_type = temp[1].front();
           temp = get_true_word(found, def, 0, ';', p);
-          int LLx = parse_and_scale(temp[1], unitScale);
-          int LLy = parse_and_scale(temp[2], unitScale);
-          int URx = parse_and_scale(temp[3], unitScale);
-          int URy = parse_and_scale(temp[4], unitScale);
+          int LLx = parse_and_scale(temp[1], units);
+          int LLy = parse_and_scale(temp[2], units);
+          int URx = parse_and_scale(temp[3], units);
+          int URy = parse_and_scale(temp[4], units);
           PnRDB::bbox oBox;
           PnRDB::point tp;
           tp.x = LLx;
@@ -188,13 +221,13 @@ bool PnRdatabase::ReadLEF(string leffile) {
           macroPins.back().pinContacts.resize(macroPins.back().pinContacts.size() + 1);
           macroPins.back().pinContacts.back().metal = temp[1];
           // cout<<"Stage "<<stage<<" @ contact layer "<<macroPins.back().pinContacts.back().metal<<endl;
-        } else if ((found = def.find("RECT")) != string::npos) {
+        } else if ((found = def.find("RECT")) != string::npos && Metal_Flag) {
           // Metal_Flag = true;
           temp = get_true_word(found, def, 0, ';', p);
-          int LLx = parse_and_scale(temp[1], unitScale);
-          int LLy = parse_and_scale(temp[2], unitScale);
-          int URx = parse_and_scale(temp[3], unitScale);
-          int URy = parse_and_scale(temp[4], unitScale);
+          int LLx = parse_and_scale(temp[1], units);
+          int LLy = parse_and_scale(temp[2], units);
+          int URx = parse_and_scale(temp[3], units);
+          int URy = parse_and_scale(temp[4], units);
           PnRDB::bbox oBox;
           PnRDB::point tp;
           tp.x = LLx;
@@ -216,7 +249,7 @@ bool PnRdatabase::ReadLEF(string leffile) {
           // "<<macroPins.back().pinContacts.back().originCenter.x<<","<<macroPins.back().pinContacts.back().originCenter.y<<endl;
         } else if ((found = def.find(portEnd)) != string::npos) {
           // cout<<"Stage "<<stage<<" @ port end "<<portEnd<<endl;
-          if (macroPins.back().pinContacts.size() == 0 or macroPins.back().pinContacts.back().metal == "") {
+          if (macroPins.back().pinContacts.size() == 0 || macroPins.back().pinContacts.back().metal == "") {
             logger->error("Error: LEF Physical Pin information Missing" );
             assert(0);
           }
@@ -224,10 +257,5 @@ bool PnRdatabase::ReadLEF(string leffile) {
         }
       }
     }
-    fin.close();
-    return true;
-  } catch (ifstream::failure& e) {
-    logger->error("PnRDB-Error: fail to read LEF file ");
   }
-  return false;
 }

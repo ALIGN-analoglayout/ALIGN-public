@@ -204,7 +204,7 @@ void PnRdatabase::PrintVia(PnRDB::Via& v) {
 
 void PnRdatabase::PrintContact(PnRDB::contact& cont) {
         //std::cout<<"@Contact ";
-        PnRDB::contact *it3=&cont;
+        //PnRDB::contact *it3=&cont;
         //std::cout<<" metal: "<<it3->metal<<" ; originCenter: {"<<it3->originCenter.x<<","<<it3->originCenter.y<<"} ; placedCenter: {"<<it3->placedCenter.x<<","<<it3->placedCenter.y<<"}"<<std::endl;
         //std::cout<<"originBox: LL"<<it3->originBox.LL.x<<","<<it3->originBox.LL.y<<" UR"<<it3->originBox.UR.x<<","<<it3->originBox.UR.y<<std::endl;
         //std::cout<<"placedBox: LL"<<it3->placedBox.LL.x<<","<<it3->placedBox.LL.y<<" UR"<<it3->placedBox.UR.x<<","<<it3->placedBox.UR.y<<std::endl;

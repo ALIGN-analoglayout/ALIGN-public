@@ -6,12 +6,14 @@
 "design_info":
 {
 "vt_type":["SLVT", "HVT","LVT","RVT"],
-"top_signal_routing_layer": "M9",
-"bottom_signal_routing_layer": "M2",
+"top_signal_routing_layer": "M5",
+"bottom_signal_routing_layer": "M1",
+"top_power_grid_layer": "M6",
+"bottom_power_grid_layer": "M5",
+"top_power_routing_layer": "M6",
+"bottom_power_routing_layer": "M1",
 "top_clock_routing_layer": "M9",
 "bottom_clock_routing_layer":"M2",
-"top_power_routing_layer": "M9",
-"bottom_power_routing_layer": "M2",
 "top_port_routing_layer": "M9",
 "bottom_port_routing_layer": "M2",
 "power_rail_frequency":2,
@@ -25,25 +27,6 @@
 "Gate_pitch":100,
 "unit_height_res":600
 },
-"valid_constraints" : 
-{
-"CreateAlias":  { "blocks":"list","name":"str"},
-"GroupBlocks":  {"blocks":"list","name":"str","style":["None","tbd_interdigitated","tbd_common_centroid"]},
-"OrderBlocks": {"blocks":"list","name":"str","direction":["H","V"]}, 
-"MatchBlocks": {"blocks":"list"}, 
-"BlockDistance":       {"abs_distance":"int"},
-"HorizontalDistance":  {"abs_distance":"int"},
-"VerticalDistance":    {"abs_distance":"int"},
-"SymmetricBlocks":  {"pairs":"list","direction":["H","V"]},
-"GroupCaps":       {"blocks":"list","name":"str","unit_cap":"str","num_units":"list","dummy":"bool"},
-"AlignBlocks":     {"blocks":"list","direction":["H","V"]},
-"NetConst":        {"nets":"list","shield":"str","criticality":"int"},
-"PortLocation":    {"ports":"list","location":["BL","BR","BC","TL","TR","TC","RL","RR","RC","LL","LR","LC"]},
-"SymmetricNets":   {"net1":"str","net2":"str","pins1":"list","pins2":"list","direction":["H","V"]},
-"AspectRatio": {"weight":"int"},
-"MultiConnection": {"nets":"list", "multiplier":"int"}
-},
-
 "Abstraction": [
 {
 "Layer": "Poly",
