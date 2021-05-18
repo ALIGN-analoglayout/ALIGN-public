@@ -69,8 +69,44 @@ def gen_more_primitives( primitives, topology_dir, subckt):
 
     # As a hack, add more primitives if it matches this pattern
     p = re.compile( r'^(\S+)_nfin(\d+)_n(\d+)_X(\d+)_Y(\d+)(|_\S+)$')
+    p_soner = re.compile( r'^(\S+)_nfin(\d+)_nf(\d+)_m(\d+)_n(\d+)_X(\d+)_Y(\d+)(|_\S+)$')
 
     more_primitives = {}
+
+    #
+    # Hack to limit aspect ratios when there are a lot of choices
+    #
+    def limit_pairs( pairs):
+        if len(pairs) > 12:
+            new_pairs = []
+            #log10_aspect_ratios = [ -1.0, -0.3, -0.1, 0, 0.1, 0.3, 1.0]
+            log10_aspect_ratios = [ -0.3, 0, 0.3]
+            for l in log10_aspect_ratios:
+                best_pair = min( (abs( math.log10(newy) - math.log10(newx) - l), (newx, newy))
+                                 for newx,newy in pairs)[1]
+                new_pairs.append( best_pair)
+            pairs = new_pairs
+
+    def gen_pairs( n, nfin):
+        clusters = (nfin+n-1) // n
+
+        pairs = set()
+        for newx in range( 1, clusters+1):
+            newy = (nfin+newx*n-1)//(newx*n)
+            assert newx*newy*n >= nfin
+            pairs.add( (newx,newy))
+
+        by_y = defaultdict(list)
+        for x,y in pairs:
+            by_y[y].append( x)
+
+        pairs = set()
+        for y,xs in by_y.items():
+            pairs.add( (min(xs), y))
+
+        return pairs.difference( { (X,Y)})
+
+
 
     for k,v in primitives.items():
         m = p.match(k)
@@ -81,12 +117,36 @@ def gen_more_primitives( primitives, topology_dir, subckt):
 
             map_d[abstract_name].append( k)
 
-            clusters = (nfin+n-1) // n
+            pairs = gen_pairs( n, nfin)
+
+            limit_pairs( pairs)
+
+            logger.debug( f'Inject new primitive sizes: {pairs} for {nfin} {n} {X} {Y}')
+
+            for newx,newy in pairs:
+                concrete_name = f'{m.groups()[0]}_nfin{nfin}_n{n}_X{newx}_Y{newy}{m.groups()[5]}'
+                map_d[abstract_name].append( concrete_name)             
+                if concrete_name not in primitives and \
+                   concrete_name not in more_primitives:
+                    more_primitives[concrete_name] = copy.deepcopy(v)
+                    more_primitives[concrete_name]['x_cells'] = newx
+                    more_primitives[concrete_name]['y_cells'] = newy
+            continue
+
+        mm = p_soner.match(k)
+        if mm:
+            logger.debug( f'Matched primitive {k}')
+            nfin,nf,m,n,X,Y = tuple(int(x) for x in mm.groups()[1:7])
+            abstract_name = f'{mm.groups()[0]}_nfin{nfin}{mm.groups()[7]}'
+
+            map_d[abstract_name].append( k)
+
+            clusters = (nfin*nf*m+n-1) // n
 
             pairs = set()
             for newx in range( 1, clusters+1):
-                newy = (nfin+newx*n-1)//(newx*n)
-                assert newx*newy*n >= nfin
+                newy = (nfin*nf*m+newx*n-1)//(newx*n)
+                assert newx*newy*n >= nfin*nf*m
                 pairs.add( (newx,newy))
 
             by_y = defaultdict(list)
@@ -99,29 +159,21 @@ def gen_more_primitives( primitives, topology_dir, subckt):
 
             pairs = pairs.difference( { (X,Y)})
 
-            #
-            # Hack to limit aspect ratios when there are a lot of choices
-            #
-            if len(pairs) > 12:
-                new_pairs = []
-                #log10_aspect_ratios = [ -1.0, -0.3, -0.1, 0, 0.1, 0.3, 1.0]
-                log10_aspect_ratios = [ -0.3, 0, 0.3]
-                for l in log10_aspect_ratios:
-                    best_pair = min( (abs( math.log10(newy) - math.log10(newx) - l), (newx, newy)) for newx,newy in pairs)[1]
-                    new_pairs.append( best_pair)
-                pairs = new_pairs
+            limit_pairs( pairs)
 
-            logger.debug( f'Inject new primitive sizes: {pairs} for {nfin} {n} {X} {Y}')
+            logger.info( f'Inject new primitive sizes: {pairs} for {nfin} {nf} {m} {n} {X} {Y}')
 
             for newx,newy in pairs:
-                concrete_name = f'{m.groups()[0]}_nfin{nfin}_n{n}_X{newx}_Y{newy}{m.groups()[5]}'
+                concrete_name = f'{mm.groups()[0]}_nfin{nfin}_nf{nf}_m{m}_n{n}_X{newx}_Y{newy}{mm.groups()[7]}'
                 map_d[abstract_name].append( concrete_name)             
                 if concrete_name not in primitives and \
                    concrete_name not in more_primitives:
                     more_primitives[concrete_name] = copy.deepcopy(v)
                     more_primitives[concrete_name]['x_cells'] = newx
                     more_primitives[concrete_name]['y_cells'] = newy
-        else:
+            continue
+
+        if True:
             if not (k.startswith( "Res") or k.startswith( "Cap")): 
                 logger.warning( f'Didn\'t match primitive {k}')
             map_d[k].append( k)

@@ -495,7 +495,9 @@ double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
     cost += HPWL_norm * const_graph.LAMBDA;
   } else {
     cost += log( area);
-    cost += log( HPWL) * const_graph.LAMBDA;
+    if (HPWL > 0) {
+      cost += log( HPWL) * const_graph.LAMBDA;
+    }
   }
 
   double match_cost = 0;
