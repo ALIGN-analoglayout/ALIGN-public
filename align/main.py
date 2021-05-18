@@ -85,7 +85,9 @@ def gen_more_primitives( primitives, topology_dir, subckt):
                 best_pair = min( (abs( math.log10(newy) - math.log10(newx) - l), (newx, newy))
                                  for newx,newy in pairs)[1]
                 new_pairs.append( best_pair)
-            pairs = new_pairs
+            return new_pairs
+        else:
+            return pairs
 
     def gen_pairs( n, nfin):
         clusters = (nfin+n-1) // n
@@ -104,76 +106,35 @@ def gen_more_primitives( primitives, topology_dir, subckt):
         for y,xs in by_y.items():
             pairs.add( (min(xs), y))
 
-        return pairs.difference( { (X,Y)})
-
-
+        return limit_pairs( pairs.difference( { (X,Y)}))
 
     for k,v in primitives.items():
         m = p.match(k)
         if m:
-            logger.debug( f'Matched primitive {k}')
-            nfin,n,X,Y = tuple(int(x) for x in m.groups()[1:5])
-            abstract_name = f'{m.groups()[0]}_nfin{nfin}{m.groups()[5]}'
-
-            map_d[abstract_name].append( k)
-
+            nfin,n,X,Y = tuple(int(x) for x in m.groups()[1:-1])
+            prefix = f'{m.groups()[0]}_nfin{nfin}'
+            suffix = m.groups()[-1]
             pairs = gen_pairs( n, nfin)
-
-            limit_pairs( pairs)
-
-            logger.debug( f'Inject new primitive sizes: {pairs} for {nfin} {n} {X} {Y}')
-
-            for newx,newy in pairs:
-                concrete_name = f'{m.groups()[0]}_nfin{nfin}_n{n}_X{newx}_Y{newy}{m.groups()[5]}'
-                map_d[abstract_name].append( concrete_name)             
-                if concrete_name not in primitives and \
-                   concrete_name not in more_primitives:
-                    more_primitives[concrete_name] = copy.deepcopy(v)
-                    more_primitives[concrete_name]['x_cells'] = newx
-                    more_primitives[concrete_name]['y_cells'] = newy
-            continue
 
         mm = p_soner.match(k)
         if mm:
-            logger.debug( f'Matched primitive {k}')
-            nfin,nf,m,n,X,Y = tuple(int(x) for x in mm.groups()[1:7])
-            abstract_name = f'{mm.groups()[0]}_nfin{nfin}{mm.groups()[7]}'
+            nfin,nf,m,n,X,Y = tuple(int(x) for x in mm.groups()[1:-1])
+            prefix = f'{mm.groups()[0]}_nfin{nfin}_nf{nf}_m{m}'
+            suffix = mm.groups()[-1]
+            pairs = gen_pairs( n, nfin*nf*m)
 
+        if m or mm:
+            abstract_name = f'{prefix}{suffix}'
             map_d[abstract_name].append( k)
-
-            clusters = (nfin*nf*m+n-1) // n
-
-            pairs = set()
-            for newx in range( 1, clusters+1):
-                newy = (nfin*nf*m+newx*n-1)//(newx*n)
-                assert newx*newy*n >= nfin*nf*m
-                pairs.add( (newx,newy))
-
-            by_y = defaultdict(list)
-            for x,y in pairs:
-                by_y[y].append( x)
-
-            pairs = set()
-            for y,xs in by_y.items():
-                pairs.add( (min(xs), y))
-
-            pairs = pairs.difference( { (X,Y)})
-
-            limit_pairs( pairs)
-
-            logger.info( f'Inject new primitive sizes: {pairs} for {nfin} {nf} {m} {n} {X} {Y}')
-
             for newx,newy in pairs:
-                concrete_name = f'{mm.groups()[0]}_nfin{nfin}_nf{nf}_m{m}_n{n}_X{newx}_Y{newy}{mm.groups()[7]}'
+                concrete_name = f'{prefix}_n{n}_X{newx}_Y{newy}{suffix}'
                 map_d[abstract_name].append( concrete_name)             
                 if concrete_name not in primitives and \
                    concrete_name not in more_primitives:
                     more_primitives[concrete_name] = copy.deepcopy(v)
                     more_primitives[concrete_name]['x_cells'] = newx
                     more_primitives[concrete_name]['y_cells'] = newy
-            continue
-
-        if True:
+        else:
             if not (k.startswith( "Res") or k.startswith( "Cap")): 
                 logger.warning( f'Didn\'t match primitive {k}')
             map_d[k].append( k)

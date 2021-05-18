@@ -408,7 +408,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                 # create new verilog for each placement
                 placement_verilog_d = gen_placement_verilog( hN, DB, s_verilog_d)
 
-                #(pathlib.Path(opath) / f'{nm}_{sel}.placement_verilog.json').write_text(placement_verilog_d.json(indent=2))
+                (pathlib.Path(opath) / f'{nm}_{sel}.placement_verilog.json').write_text(placement_verilog_d.json(indent=2))
 
                 check_placement(placement_verilog_d)
 
