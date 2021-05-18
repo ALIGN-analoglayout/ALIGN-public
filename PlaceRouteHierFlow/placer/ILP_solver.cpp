@@ -448,7 +448,10 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
                 index = it->second;
               }
             }
-            if (CompactPlacement(mydesign, curr_sp, drcInfo) < 0) return -1.;
+            if (CompactPlacement(mydesign, curr_sp, drcInfo) < 0) {
+              curr_sp.RestoreSelected(true);
+              return -1.;
+            }
           }
           SaveBlocks();
           curr_sp.RestoreSelected(true);
@@ -469,7 +472,10 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
                 index = it->second;
               }
             }
-            if (CompactPlacement(mydesign, curr_sp, drcInfo) < 0) return -1.;
+            if (CompactPlacement(mydesign, curr_sp, drcInfo) < 0) {
+              curr_sp.RestoreSelected(false);
+              return -1.;
+            }
           }
           RestoreBlocks();
           curr_sp.RestoreSelected(false);
