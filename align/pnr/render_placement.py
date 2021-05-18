@@ -3,6 +3,7 @@ import logging
 import copy
 import pathlib
 import plotly.graph_objects as go
+from itertools import combinations
 from collections import defaultdict
 from ..cell_fabric import transformation
 
@@ -203,6 +204,17 @@ def gen_boxes_and_hovertext( placement_verilog_d, top_cell):
         yield from aux( modules[top_cell], (), transformation.Transformation(), 0)
     else:
         logger.warning( f'{top_cell} not in either leaves or modules.')
+
+def standalone_overlap_checker( placement_verilog_d, top_cell):
+    def rects_intersect( rA, rB):
+        """ rA[2] > rB[0] and rB[2] > rA[0] and rA[3] > rB[1] and rB[3] > rA[1] """
+        return not (rA[2] <= rB[0] or rB[2] <= rA[0] or rA[3] <= rB[1] or rB[3] <= rA[1])
+
+    leaves = [ r for r, _, isleaf, _ in gen_boxes_and_hovertext( placement_verilog_d, top_cell) if isleaf]
+
+    for a,b in combinations(leaves,2):
+        if rects_intersect( a, b):
+            logger.error( f'Leaves {a} and {b} intersect')
 
 def dump_blocks( fig, boxes_and_hovertext, leaves_only, levels):
     for r, hovertext, isleaf, lvl in boxes_and_hovertext:

@@ -5,7 +5,7 @@ import copy
 from itertools import chain
 
 from .. import PnR
-from .render_placement import gen_placement_verilog, scale_placement_verilog, gen_boxes_and_hovertext
+from .render_placement import gen_placement_verilog, scale_placement_verilog, gen_boxes_and_hovertext, standalone_overlap_checker
 from .build_pnr_model import *
 from .checker import check_placement
 from ..gui.mockup import run_gui
@@ -410,7 +410,10 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
                 #(pathlib.Path(opath) / f'{nm}_{sel}.placement_verilog.json').write_text(placement_verilog_d.json(indent=2))
 
-                check_placement( scale_placement_verilog( placement_verilog_d, scale_factor))
+                scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, scale_factor)
+
+                check_placement( scaled_placement_verilog_d)
+                standalone_overlap_checker( scaled_placement_verilog_d, nm)
 
                 if gui:
                     modules = { x['name']: x for x in placement_verilog_d['modules']}
