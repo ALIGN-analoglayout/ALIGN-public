@@ -14,7 +14,7 @@ Placer::Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info&
   PlacementRegular(node, opath, effort, drcInfo);
 }
 
-Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in) : hyper(hyper_in), _mpgen(nullptr) {{
+Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in) : hyper(hyper_in), _mpgen(nullptr) {
   char* _debugPlot = getenv("DEBUG_PLOT");
   if (_debugPlot != nullptr && atoi(_debugPlot) && !nodeVec.empty()) {
 	  _debugCostCompStream = ofstream("./Results/debug_cost_comp_" + nodeVec.back().name + ".pl");
