@@ -5,7 +5,7 @@ import copy
 from itertools import chain
 
 from .. import PnR
-from .render_placement import gen_placement_verilog, gen_boxes_and_hovertext
+from .render_placement import gen_placement_verilog, scale_placement_verilog, gen_boxes_and_hovertext, standalone_overlap_checker
 from .build_pnr_model import *
 from .checker import check_placement
 from ..gui.mockup import run_gui
@@ -284,7 +284,7 @@ def route_top_down( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS):
     return results_name_map
 
 
-def place( *, DB, opath, fpath, numLayout, effort, idx):
+def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff):
     logger.info(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
 
     current_node = DB.CheckoutHierNode(idx,-1)
@@ -299,6 +299,7 @@ def place( *, DB, opath, fpath, numLayout, effort, idx):
     #hyper.T_MIN = 1e-6
     #hyper.ALPHA = 0.995
     #hyper.COUNT_LIMIT = 200
+    hyper.LAMBDA = lambda_coeff
 
     curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, DB.getDrc_info(), hyper)
 
@@ -359,11 +360,11 @@ def subset_verilog_d( verilog_d, nm):
     return new_verilog_d
 
 
-def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, verilog_d, router_mode, gui, skipGDS):
+def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, verilog_d, router_mode, gui, skipGDS, lambda_coeff, scale_factor):
     TraverseOrder = DB.TraverseHierTree()
 
     for idx in TraverseOrder:
-        place( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx)
+        place( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx, lambda_coeff=lambda_coeff)
 
     if verilog_d is not None:
         def r2wh( r):
@@ -409,7 +410,10 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
                 #(pathlib.Path(opath) / f'{nm}_{sel}.placement_verilog.json').write_text(placement_verilog_d.json(indent=2))
 
-                check_placement(placement_verilog_d)
+                scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, scale_factor)
+
+                check_placement( scaled_placement_verilog_d)
+                standalone_overlap_checker( scaled_placement_verilog_d, nm)
 
                 if gui:
                     modules = { x['name']: x for x in placement_verilog_d['modules']}
@@ -418,8 +422,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                     d = { 'width': p[0], 'height': p[1],
                           'hpwl': hN.HPWL, 'cost': hN.cost,
                           'constraint_penalty': hN.constraint_penalty,
-                          'area_norm': hN.area_norm, 'hpwl_norm': hN.HPWL_norm,
-                          'area_scale': hN.area_norm/(p[0]*p[1]), 'hpwl_scale': hN.HPWL_norm/hN.HPWL
+                          'area_norm': hN.area_norm, 'hpwl_norm': hN.HPWL_norm
                     }
                     logger.info( f"data: {d}")
 
@@ -450,11 +453,11 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
         if gui:
             tagged_bboxes.update( leaf_map)
             top_level = DB.hierTree[TraverseOrder[-1]].name
-            run_gui( tagged_bboxes=tagged_bboxes, module_name=top_level)
+            run_gui( tagged_bboxes=tagged_bboxes, module_name=top_level, lambda_coeff=lambda_coeff)
 
     return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode, skipGDS=skipGDS)
 
-def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_mode='top_down', gui=False, skipGDS=False):
+def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0, scale_factor=2):
 
     assert len(args) == 9
 
@@ -474,6 +477,6 @@ def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_m
 
     pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
 
-    results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, verilog_d=verilog_d, router_mode=router_mode, gui=gui, skipGDS=skipGDS)
+    results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, verilog_d=verilog_d, router_mode=router_mode, gui=gui, skipGDS=skipGDS, lambda_coeff=lambda_coeff, scale_factor=scale_factor)
 
     return DB, results_name_map

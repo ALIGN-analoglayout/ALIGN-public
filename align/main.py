@@ -69,52 +69,65 @@ def gen_more_primitives( primitives, topology_dir, subckt):
 
     # As a hack, add more primitives if it matches this pattern
     p = re.compile( r'^(\S+)_nfin(\d+)_n(\d+)_X(\d+)_Y(\d+)(|_\S+)$')
+    p_soner = re.compile( r'^(\S+)_nfin(\d+)_nf(\d+)_m(\d+)_n(\d+)_X(\d+)_Y(\d+)(|_\S+)$')
 
     more_primitives = {}
+
+    #
+    # Hack to limit aspect ratios when there are a lot of choices
+    #
+    def limit_pairs( pairs):
+        if len(pairs) > 12:
+            new_pairs = []
+            #log10_aspect_ratios = [ -1.0, -0.3, -0.1, 0, 0.1, 0.3, 1.0]
+            log10_aspect_ratios = [ -0.3, 0, 0.3]
+            for l in log10_aspect_ratios:
+                best_pair = min( (abs( math.log10(newy) - math.log10(newx) - l), (newx, newy))
+                                 for newx,newy in pairs)[1]
+                new_pairs.append( best_pair)
+            return new_pairs
+        else:
+            return pairs
+
+    def gen_pairs( n, nfin):
+        clusters = (nfin+n-1) // n
+
+        pairs = set()
+        for newx in range( 1, clusters+1):
+            newy = (nfin+newx*n-1)//(newx*n)
+            assert newx*newy*n >= nfin
+            pairs.add( (newx,newy))
+
+        by_y = defaultdict(list)
+        for x,y in pairs:
+            by_y[y].append( x)
+
+        pairs = set()
+        for y,xs in by_y.items():
+            pairs.add( (min(xs), y))
+
+        return limit_pairs( pairs.difference( { (X,Y)}))
 
     for k,v in primitives.items():
         m = p.match(k)
         if m:
-            logger.debug( f'Matched primitive {k}')
-            nfin,n,X,Y = tuple(int(x) for x in m.groups()[1:5])
-            abstract_name = f'{m.groups()[0]}_nfin{nfin}{m.groups()[5]}'
+            nfin,n,X,Y = tuple(int(x) for x in m.groups()[1:-1])
+            prefix = f'{m.groups()[0]}_nfin{nfin}'
+            suffix = m.groups()[-1]
+            pairs = gen_pairs( n, nfin)
 
+        mm = p_soner.match(k)
+        if mm:
+            nfin,nf,m,n,X,Y = tuple(int(x) for x in mm.groups()[1:-1])
+            prefix = f'{mm.groups()[0]}_nfin{nfin}_nf{nf}_m{m}'
+            suffix = mm.groups()[-1]
+            pairs = gen_pairs( n, nfin*nf*m)
+
+        if m or mm:
+            abstract_name = f'{prefix}{suffix}'
             map_d[abstract_name].append( k)
-
-            clusters = (nfin+n-1) // n
-
-            pairs = set()
-            for newx in range( 1, clusters+1):
-                newy = (nfin+newx*n-1)//(newx*n)
-                assert newx*newy*n >= nfin
-                pairs.add( (newx,newy))
-
-            by_y = defaultdict(list)
-            for x,y in pairs:
-                by_y[y].append( x)
-
-            pairs = set()
-            for y,xs in by_y.items():
-                pairs.add( (min(xs), y))
-
-            pairs = pairs.difference( { (X,Y)})
-
-            #
-            # Hack to limit aspect ratios when there are a lot of choices
-            #
-            if len(pairs) > 12:
-                new_pairs = []
-                #log10_aspect_ratios = [ -1.0, -0.3, -0.1, 0, 0.1, 0.3, 1.0]
-                log10_aspect_ratios = [ -0.3, 0, 0.3]
-                for l in log10_aspect_ratios:
-                    best_pair = min( (abs( math.log10(newy) - math.log10(newx) - l), (newx, newy)) for newx,newy in pairs)[1]
-                    new_pairs.append( best_pair)
-                pairs = new_pairs
-
-            logger.debug( f'Inject new primitive sizes: {pairs} for {nfin} {n} {X} {Y}')
-
             for newx,newy in pairs:
-                concrete_name = f'{m.groups()[0]}_nfin{nfin}_n{n}_X{newx}_Y{newy}{m.groups()[5]}'
+                concrete_name = f'{prefix}_n{n}_X{newx}_Y{newy}{suffix}'
                 map_d[abstract_name].append( concrete_name)             
                 if concrete_name not in primitives and \
                    concrete_name not in more_primitives:
@@ -160,7 +173,7 @@ def gen_more_primitives( primitives, topology_dir, subckt):
         json.dump( verilog_json_d, fp=fp, indent=2)
 
 
-def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, extract=False, log_level=None, verbosity=None, generate=False, regression=False, uniform_height=False, PDN_mode=False, flow_start=None, flow_stop=None, router_mode='top_down', gui=False, skipGDS=False):
+def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, extract=False, log_level=None, verbosity=None, generate=False, regression=False, uniform_height=False, PDN_mode=False, flow_start=None, flow_stop=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0):
 
     steps_to_run = build_steps( flow_start, flow_stop)
 
@@ -243,7 +256,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     sub_steps = [step for step in steps_to_run if '3_pnr:' in step]
     if sub_steps:
         pnr_dir.mkdir(exist_ok=True)
-        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort, extract=extract, gds_json=not skipGDS, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui, skipGDS=skipGDS, steps_to_run=sub_steps)
+        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort, extract=extract, gds_json=not skipGDS, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui, skipGDS=skipGDS, steps_to_run=sub_steps, lambda_coeff=lambda_coeff)
         results.append( (netlist, variants))
 
         assert router_mode == 'no_op' or '3_pnr:check' not in sub_steps or len(variants) > 0, f"No layouts were generated for {netlist}. Cannot proceed further. See LOG/align.log for last error."
