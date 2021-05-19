@@ -543,10 +543,6 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
 double ILP_solver::CalculateCostFromSim(design& mydesign, SeqPair& curr_sp)
 {
 	auto logger = spdlog::default_logger()->clone("placer.cost.Cost");
-	double block_HPWL = 0;
-	for (int i = 0; i < mydesign.Blocks.size(); i++) {
-		block_HPWL += double(mydesign.Blocks[i][curr_sp.selected[i]].width) + double(mydesign.Blocks[i][curr_sp.selected[i]].height);
-	}
 	map<string, PnRDB::bbox> pinCoords;
 	for (auto neti : mydesign.Nets) {
 		if (!mydesign.IsNetInCF(neti.name))  continue;
@@ -585,8 +581,8 @@ double ILP_solver::CalculateCostFromSim(design& mydesign, SeqPair& curr_sp)
 		}
 	}
 
-	//for (auto& it : inCoords) {
-	//	logger->info("DEBUG  {0} : {1} {2}", it.first, it.second.first, it.second.second);
+	//for (auto& it : pinCoords) {
+	//	logger->info("DEBUG  {0} : {1} {2}", it.first, it.second.LL.x, it.second.LL.y);
 	//}
 
 	double cost(0.);
@@ -639,11 +635,11 @@ double ILP_solver::CalculateCostFromSim(design& mydesign, SeqPair& curr_sp)
 				}
 			}
 		}
-		double dcost = dist * it.second.first / block_HPWL / static_cast<double>(mydesign.Blocks.size());
+		double dcost = dist * it.second.first / mydesign.GetMaxBlockHPWLSum() / static_cast<double>(mydesign.Blocks.size());
 		if (getenv("DEBUG_PLOT") != nullptr) {
 			mydesign._cfCostComponents += std::to_string(dist) + " " + std::to_string(dcost) + " " ;
 		}
-		//logger->info("DEBUG_delta_cost_pin_pair : {0} {1} {2} {3} {4}", it.first.first, it.first.second, dist, it.second, dcost);
+		//logger->info("DEBUG_delta_cost_pin_pair : {0} {1} {2} {3} {4} {5}", it.first.first, it.first.second, dist, it.second.first, dcost, mydesign.GetMaxBlockHPWLSum());
 		//logger->info("DEBUG_delta_cost_pin_pos : {0} {1} {2} {3} {4} {5} {6} {7} {8} {9}", it.first.first, it.first.second,
 		//		b1.LL.x, b1.LL.y, b1.UR.x, b1.UR.y, b2.LL.x, b2.LL.y, b2.UR.x, b2.UR.y);
 		cost += dcost;
@@ -658,13 +654,18 @@ double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
   double cost = 0;
   cost += area_norm;
   cost += HPWL_norm * const_graph.LAMBDA;
-  double match_cost = 0;
-  cost += match_cost * const_graph.BETA;
   // cost += abs(log(ratio) - log(Aspect_Ratio[0])) * Aspect_Ratio_weight;
-  cost += linear_const * const_graph.PI;
-  cost += multi_linear_const * const_graph.PII;
   double cf_cost =  CalculateCostFromSim(mydesign, curr_sp) * 10;
   cost += cf_cost;
+  double match_cost = 0.;
+  //for (auto mbi : mydesign.Match_blocks) {
+  //  match_cost += (abs(Blocks[mbi.blockid1].x + mydesign.Blocks[mbi.blockid1][curr_sp.selected[mbi.blockid1]].width / 2 - Blocks[mbi.blockid2].x -
+  //                    mydesign.Blocks[mbi.blockid2][curr_sp.selected[mbi.blockid2]].width / 2) +
+  //                abs(Blocks[mbi.blockid1].y + mydesign.Blocks[mbi.blockid1][curr_sp.selected[mbi.blockid1]].height / 2 - Blocks[mbi.blockid2].y -
+  //                    mydesign.Blocks[mbi.blockid2][curr_sp.selected[mbi.blockid2]].height / 2)) / max_dim ;
+  //}
+  //if (!mydesign.Match_blocks.empty()) match_cost /= (mydesign.Match_blocks.size());
+  //cost += match_cost * const_graph.BETA;
   if (getenv("DEBUG_PLOT") != nullptr) {
 	  mydesign._costComponents = std::to_string(area_norm) + " " + std::to_string(HPWL_norm * const_graph.LAMBDA) + " " + std::to_string( match_cost * const_graph.BETA) + " ";
 	  mydesign._costComponents += std::to_string(0.) + " " + std::to_string(dead_area / area * const_graph.PHI) + " ";
@@ -684,14 +685,6 @@ double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
 	  }
   }
   double max_dim = std::max(UR.x - LL.x, UR.y - LL.y);
-  for (auto mbi : mydesign.Match_blocks) {
-    match_cost += (abs(Blocks[mbi.blockid1].x + mydesign.Blocks[mbi.blockid1][curr_sp.selected[mbi.blockid1]].width / 2 - Blocks[mbi.blockid2].x -
-                      mydesign.Blocks[mbi.blockid2][curr_sp.selected[mbi.blockid2]].width / 2) +
-                  abs(Blocks[mbi.blockid1].y + mydesign.Blocks[mbi.blockid1][curr_sp.selected[mbi.blockid1]].height / 2 - Blocks[mbi.blockid2].y -
-                      mydesign.Blocks[mbi.blockid2][curr_sp.selected[mbi.blockid2]].height / 2)) / max_dim ;
-  }
-  if (!mydesign.Match_blocks.empty()) match_cost /= (mydesign.Match_blocks.size());
-  //cost += match_cost * const_graph.BETA;
   // cost += abs(log(ratio) - log(Aspect_Ratio[0])) * Aspect_Ratio_weight;
   // SMB what is this for?
   // cost += dead_area / area * const_graph.PHI;
