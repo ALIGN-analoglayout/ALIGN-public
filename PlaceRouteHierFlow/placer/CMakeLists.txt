@@ -8,6 +8,7 @@ set(headers
      ConstGraph.h
      Pdatatype.h
      PlacerIfc.h
+     IntPlot.h
      SeqPair.h)
 
 set(sources
@@ -18,6 +19,7 @@ set(sources
      ConstGraph.cpp
      Placer.cpp
      Preadfile.cpp
+     IntPlot.cpp
      design.cpp)
 
 add_library(placer STATIC ${sources} ${headers})
