@@ -27,8 +27,23 @@ def gen_transformation( blk):
     logger.debug( f"TRANS {blk.master} {blk.orient} {tr} {tr_reflect} {tr_offset}")
     return tr
 
+class DB_wrapper:
+    def __init__( self, DB):
+        self.DB = DB
+        self.checkout_cache = {}
+
+    def CheckoutHierNode( self, idx, sel):
+        k = (idx,sel)
+        if k not in self.checkout_cache:
+            self.checkout_cache[k] = PnR.hierNode(self.DB.CheckoutHierNode( idx, sel))
+        return self.checkout_cache[k]
+
+    @property
+    def hierTree(self):
+        return self.DB.hierTree
+
 def gen_placement_verilog(hN, idx, sel, DB, verilog_d):
-    used_leaves = defaultdict(set)
+    used_leaves = defaultdict(dict)
     used_internal = defaultdict(dict)
 
     abstract_template_name = hN.name
@@ -55,17 +70,19 @@ def gen_placement_verilog(hN, idx, sel, DB, verilog_d):
                     assert used_internal[abstract_template_name][concrete_template_name] == (child_idx,blk.selectedInstance,new_r)
             else:
                 concrete_template_name = pathlib.Path(inst.gdsFile).stem
-                used_leaves[abstract_template_name].add( (concrete_template_name,new_r))
+                if concrete_template_name not in used_leaves[abstract_template_name]:                
+                    used_leaves[abstract_template_name][concrete_template_name] = new_r
+                else:
+                    assert used_leaves[abstract_template_name][concrete_template_name] == new_r
 
     traverse( hN, sel)
     logger.debug( f'used_leaves: {used_leaves} used_internal: {used_internal}')
 
     d = verilog_d.copy()
 
-    new_modules = []
+    modules = []
     for module in d['modules']:
         abstract_name = module['name']
-
         for concrete_name, (module_idx, module_sel, module_r) in used_internal[abstract_name].items():
            new_module =  module.copy()
            del new_module['name']
@@ -82,29 +99,20 @@ def gen_placement_verilog(hN, idx, sel, DB, verilog_d):
                inst = blk.instance[blk.selectedInstance]
 
                instance_d = instance_map[inst.name]
-
-               abstract_template_name = f'{inst.master}'
-               assert abstract_template_name == instance_d['abstract_template_name']
+               assert inst.master == instance_d['abstract_template_name']
 
                if child_idx >= 0:
-                   concrete_template_name = f'{inst.master}_{blk.selectedInstance}'
-                   instance_d['concrete_template_name'] = concrete_template_name
+                   instance_d['concrete_template_name'] = f'{inst.master}_{blk.selectedInstance}'
                else:
-                   concrete_template_name = pathlib.Path(inst.gdsFile).stem
-                   instance_d['concrete_template_name'] = concrete_template_name
+                   instance_d['concrete_template_name'] = pathlib.Path(inst.gdsFile).stem
 
-               tr = gen_transformation(inst)            
+               instance_d['transformation'] = gen_transformation(inst).toDict()
 
-               instance_d['transformation'] = tr.toDict()
-           new_modules.append(new_module)
+           modules.append(new_module)
 
-    leaves = []
-    for abstract_name, v in used_leaves.items():
-        for concrete_name, r in v:
-            leaves.append({'abstract_name': abstract_name,  'concrete_name': concrete_name, 'bbox': r})
+    d['modules'] = modules
 
-    d['modules'] = new_modules
-    d['leaves'] = leaves
+    d['leaves'] = [{'abstract_name': a, 'concrete_name': c, 'bbox': r} for a, v in used_leaves.items() for c, r in v.items()]
 
     #print(d.json(indent=2))
 

@@ -5,7 +5,7 @@ import copy
 from itertools import chain
 
 from .. import PnR
-from .render_placement import gen_placement_verilog, scale_placement_verilog, gen_boxes_and_hovertext, standalone_overlap_checker
+from .render_placement import gen_placement_verilog, scale_placement_verilog, gen_boxes_and_hovertext, standalone_overlap_checker, DB_wrapper
 from .build_pnr_model import *
 from .checker import check_placement
 from ..gui.mockup import run_gui
@@ -393,24 +393,25 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                     logger.error( f'LEF for concrete name {ctn} (of {atn}) missing.')
 
 
+        DBw = DB_wrapper(DB)
+
         tagged_bboxes = defaultdict(dict)
         for idx in TraverseOrder:
-            nm = DB.hierTree[idx].name
+            nm = DBw.hierTree[idx].name
 
             # Restrict verilog_d to include only sub-hierachies of nm
             s_verilog_d = subset_verilog_d( verilog_d, nm)
 
-            for sel in range(DB.hierTree[idx].numPlacement):
+            for sel in range(DBw.hierTree[idx].numPlacement):
 
                 concrete_name = f'{nm}_{sel}'
 
-                logger.debug( f'DB.CheckoutHierNode( {idx}, {sel})')
-                hN = DB.CheckoutHierNode( idx, sel)
+                hN = DBw.CheckoutHierNode( idx, sel)
 
                 # create new verilog for each placement
-                placement_verilog_d = gen_placement_verilog( hN, idx, sel, DB, s_verilog_d)
+                placement_verilog_d = gen_placement_verilog( hN, idx, sel, DBw, s_verilog_d)
 
-                (pathlib.Path(opath) / f'{nm}_{sel}.placement_verilog.json').write_text(placement_verilog_d.json(indent=2,sort_keys=True))
+                (pathlib.Path(opath) / f'{concrete_name}.placement_verilog.json').write_text(placement_verilog_d.json(indent=2,sort_keys=True))
 
                 scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, scale_factor)
 
@@ -420,7 +421,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                 if gui:
                     modules = { x['concrete_name']: x for x in placement_verilog_d['modules']}
 
-                    p = r2wh(modules[f'{nm}_{sel}']['bbox'])
+                    p = r2wh(modules[concrete_name]['bbox'])
                     d = { 'width': p[0], 'height': p[1],
                           'hpwl': hN.HPWL, 'cost': hN.cost,
                           'constraint_penalty': hN.constraint_penalty,
@@ -428,7 +429,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                     }
                     logger.info( f"data: {d}")
 
-                    tagged_bboxes[nm][f'{nm}_{sel}'] = d, list(gen_boxes_and_hovertext( placement_verilog_d, concrete_name))
+                    tagged_bboxes[nm][concrete_name] = d, list(gen_boxes_and_hovertext( placement_verilog_d, concrete_name))
 
                     leaves  = { x['concrete_name']: x for x in placement_verilog_d['leaves']}
 
@@ -455,7 +456,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
         if gui:
             tagged_bboxes.update( leaf_map)
-            top_level = DB.hierTree[TraverseOrder[-1]].name
+            top_level = DBw.hierTree[TraverseOrder[-1]].name
             run_gui( tagged_bboxes=tagged_bboxes, module_name=top_level, lambda_coeff=lambda_coeff)
 
     return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode, skipGDS=skipGDS)
