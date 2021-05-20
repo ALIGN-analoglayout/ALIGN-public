@@ -479,11 +479,11 @@ TapRemoval::~TapRemoval()
   _graph = nullptr;
 }
 
-long TapRemoval::deltaArea(map<string, int>* swappedIndices, bool removeAllTaps) const
+double TapRemoval::deltaArea(map<string, int>* swappedIndices, bool removeAllTaps) const
 {
   auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.deltaArea");
   if (!_activesPresent) return -1;
-  long deltaarea(0);
+  double deltaarea(0.);
   if (_instances.empty()) return deltaarea;
   if (_graph == nullptr || _dist == 0 || !valid()) return deltaarea;
   auto nodes = _graph->dominatingSet(removeAllTaps);
@@ -501,6 +501,7 @@ long TapRemoval::deltaArea(map<string, int>* swappedIndices, bool removeAllTaps)
 
   std::set<std::string> names;
 
+  double dist(0.);
   for (auto& n : nodes) {
     string name;
     auto pos = n->name().rfind("__tap_");
@@ -509,16 +510,17 @@ long TapRemoval::deltaArea(map<string, int>* swappedIndices, bool removeAllTaps)
     if (!name.empty()) {
       names.insert(name);
     }
+    dist += (1.0*n->dist()/_bbox.height());
   }
   if (swappedIndices != nullptr) swappedIndices->clear();
   for (const auto& b : _instances) {
     if (names.find(b->name()) != names.end()) continue;
     if (swappedIndices != nullptr) swappedIndices->insert(make_pair(b->name(), b->index()));
-    deltaarea += b->deltaArea();
+    deltaarea += static_cast<double>(b->deltaArea());
   }
 
   //plot(_name + "_TR_" + std::to_string(deltaarea) + ".plt", swappedIndices);
-  return deltaarea;
+  return dist;
 }
 
 

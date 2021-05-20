@@ -420,7 +420,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
 
   // each block has 4 vars, x, y, H_flip, V_flip;
   PrimitiveData::PlMap plmap;
-  long delArea(0);
+  double delArea(0.), tapdist(0.);
   for (int iterCompact : {0, 1}) {
     switch (iterCompact) {
       case 0 :
@@ -438,8 +438,8 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
                     Blocks[i].H_flip, Blocks[i].V_flip)));
           }
           mydesign.RebuildTapInstances(plmap);
-          delArea = mydesign.TapDeltaArea(nullptr);
-          if (delArea < 0) return -1;
+          tapdist = mydesign.TapDeltaArea(nullptr);
+          if (tapdist < 0) return -1;
         }
         SaveBlocks();
         break;
@@ -564,8 +564,8 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   }
 
   double calculated_cost = CalculateCost(mydesign, curr_sp);
-  cost = calculated_cost;
-  return calculated_cost;
+  cost = calculated_cost + tapdist;
+  return cost;
 }
 
 double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
