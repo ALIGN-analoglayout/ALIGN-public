@@ -195,6 +195,7 @@ class PnRdatabase
     void Write_Power_Mesh_Conf(std::string outputfile);
     void Write_Current_Workload(PnRDB::hierNode &node, double total_current, int current_number, std::string outputfile);
     void WriteGcellDetailRoute(const PnRDB::hierNode& node, const string& rofile, const string& opath) const;
+    PnRDB::Metal Find_Top_Middle_Metal(PnRDB::hierNode& node, const PnRDB::Drc_info& drc_info, int index);
     
 };
 

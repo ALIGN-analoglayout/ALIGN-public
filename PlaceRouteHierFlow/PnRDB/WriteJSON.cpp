@@ -548,11 +548,10 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     json j;
     //JSONLabelTerminals(node, drc_info, j, unitScale);
     for (json::iterator elm = j.begin(); elm != j.end(); ++elm) jsonElements.push_back (*elm);
-
     if (includePowerNet) {
 	for (unsigned int i = 0; i < node.PowerNets.size(); i++) {
 	    //path_metal
-	    int write = 0;
+	    int write = 1;
 	    for (unsigned int j = 0; j < node.PowerNets[i].path_metal.size(); j++) {
 		PnRDB::Metal metal = node.PowerNets[i].path_metal[j];
 		if (addMetalBoundaries (jsonElements,  metal, drc_info, unitScale)) {
@@ -565,6 +564,14 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 			write = 1; //added by yg 
 		    }
 		}
+                //add power label in the top middle
+                metal = Find_Top_Middle_Metal(node, drc_info, i);
+	        assignBoxPoints (x, y, metal.MetalRect.placedBox, unitScale);
+		addTextElements (jsonElements, (x[0]+x[2])/2, (y[0]+y[2])/2,
+					 metal2int( drc_info, metal.MetalRect.metal),
+                     drc_info, drc_info.Metalmap.at(metal.MetalRect.metal),
+					 node.PowerNets[i].name);
+                
 	    }
 	    //path_via
 	    for (unsigned int j = 0; j < node.PowerNets[i].path_via.size(); j++) 
@@ -575,15 +582,17 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     if (includePowerGrid) {
 	const int vdd = 1; const int gnd = 1;
 	if (vdd == 1) {
-	    for (unsigned int i = 0; i < node.Vdd.metals.size(); i++) 
+	    for (unsigned int i = 0; i < node.Vdd.metals.size(); i++){
 		addMetalBoundaries (jsonElements, node.Vdd.metals[i], drc_info, unitScale);
+            }
 
 	    for (unsigned int i = 0; i < node.Vdd.vias.size(); i++) 
 		addViaBoundaries(jsonElements, node.Vdd.vias[i], drc_info, unitScale);
 	}
 	if (gnd == 1) {
-	    for (unsigned int i = 0; i < node.Gnd.metals.size(); i++) 
+	    for (unsigned int i = 0; i < node.Gnd.metals.size(); i++){ 
 		addMetalBoundaries (jsonElements, node.Gnd.metals[i], drc_info, unitScale);
+            }
 
 	    for (unsigned int i = 0; i < node.Gnd.vias.size(); i++) 
 		addViaBoundaries(jsonElements, node.Gnd.vias[i], drc_info, unitScale);
@@ -700,6 +709,36 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     jsonStream.close();
     logger->debug(" JSON FINALIZE {0} ",gdsName );
     return node.gdsFile;
+}
+
+PnRDB::Metal PnRdatabase::Find_Top_Middle_Metal(PnRDB::hierNode& node, const PnRDB::Drc_info& drc_info, int index){
+
+  std::vector<PnRDB::Metal> Metals;
+
+  if(node.PowerNets[index].name==node.Vdd.name){
+     Metals = node.Vdd.metals;
+  }else if(node.PowerNets[index].name==node.Gnd.name){
+     Metals = node.Gnd.metals;
+  }
+
+  PnRDB::point chip_centor = node.LL + node.UR;
+  chip_centor.x = chip_centor.x/2;
+  chip_centor.y = chip_centor.y/2;
+
+  int top_power_routing_metal = drc_info.Design_info.power_routing_metal_u;
+  int Metal_index = 0;
+  int distance = INT_MAX;
+  for(unsigned int i=0;i<Metals.size();++i){
+     if(Metals[i].MetalIdx==top_power_routing_metal){
+       int temp_dis = abs(Metals[i].MetalRect.placedCenter.x-chip_centor.x)+abs(Metals[i].MetalRect.placedCenter.y-chip_centor.y);
+       if(temp_dis<distance){
+          distance = temp_dis;
+          Metal_index = i;
+       }
+     }
+  }
+  return Metals[Metal_index];
+  
 }
 
 //added by yg 2019-10-26
