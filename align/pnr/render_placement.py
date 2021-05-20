@@ -27,21 +27,6 @@ def gen_transformation( blk):
     logger.debug( f"TRANS {blk.master} {blk.orient} {tr} {tr_reflect} {tr_offset}")
     return tr
 
-class DB_wrapper:
-    def __init__( self, DB):
-        self.DB = DB
-        self.checkout_cache = {}
-
-    def CheckoutHierNode( self, idx, sel):
-        k = (idx,sel)
-        if k not in self.checkout_cache:
-            self.checkout_cache[k] = PnR.hierNode(self.DB.CheckoutHierNode( idx, sel))
-        return self.checkout_cache[k]
-
-    @property
-    def hierTree(self):
-        return self.DB.hierTree
-
 def gen_placement_verilog(hN, idx, sel, DB, verilog_d):
     used_leaves = defaultdict(dict)
     used_internal = defaultdict(dict)
@@ -119,9 +104,12 @@ def gen_placement_verilog(hN, idx, sel, DB, verilog_d):
     return d
 
 def scalar_rational_scaling( v, *, mul=1, div=1):
-    q, r = divmod( mul*v, div)
-    assert r == 0
-    return q
+    if type(mul) == float:
+        return mul*v/div
+    else:
+        q, r = divmod( mul*v, div)
+        assert r == 0
+        return q
 
 def array_rational_scaling( a, *, mul=1, div=1):
     return [ scalar_rational_scaling(v, mul=mul, div=div) for v in a]

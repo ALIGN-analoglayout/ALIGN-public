@@ -5,7 +5,8 @@ import copy
 from itertools import chain
 
 from .. import PnR
-from .render_placement import gen_placement_verilog, scale_placement_verilog, gen_boxes_and_hovertext, standalone_overlap_checker, DB_wrapper
+from .DB_wrapper import DB_wrapper
+from .render_placement import gen_placement_verilog, scale_placement_verilog, gen_boxes_and_hovertext, standalone_overlap_checker
 from .build_pnr_model import *
 from .checker import check_placement
 from ..gui.mockup import run_gui
@@ -383,7 +384,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
             for ctn in ctns:
                 if ctn in DB.lefData:
                     lef = DB.lefData[ctn][0]
-                    p = lef.width, lef.height
+                    p = lef.width / 2000, lef.height / 2000
                     if ctn in leaf_map[atn]:
                         assert leaf_map[atn][ctn][0] == p
                     else:
@@ -392,8 +393,8 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                 else:
                     logger.error( f'LEF for concrete name {ctn} (of {atn}) missing.')
 
-
         DBw = DB_wrapper(DB)
+        #DBw = DB
 
         tagged_bboxes = defaultdict(dict)
         for idx in TraverseOrder:
@@ -406,37 +407,41 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
                 concrete_name = f'{nm}_{sel}'
 
+                logger.info( f'Working on {concrete_name}')
+
                 hN = DBw.CheckoutHierNode( idx, sel)
 
                 # create new verilog for each placement
                 placement_verilog_d = gen_placement_verilog( hN, idx, sel, DBw, s_verilog_d)
 
-                (pathlib.Path(opath) / f'{concrete_name}.placement_verilog.json').write_text(placement_verilog_d.json(indent=2,sort_keys=True))
-
                 scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, scale_factor)
+
+                (pathlib.Path(opath) / f'{concrete_name}.placement_verilog.json').write_text(scaled_placement_verilog_d.json(indent=2,sort_keys=True))
 
                 check_placement( scaled_placement_verilog_d)
                 standalone_overlap_checker( scaled_placement_verilog_d, concrete_name)
 
                 if gui:
-                    modules = { x['concrete_name']: x for x in placement_verilog_d['modules']}
+                    gui_scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, 0.001)
+
+                    modules = { x['concrete_name']: x for x in gui_scaled_placement_verilog_d['modules']}
 
                     p = r2wh(modules[concrete_name]['bbox'])
                     d = { 'width': p[0], 'height': p[1],
-                          'hpwl': hN.HPWL, 'cost': hN.cost,
+                          'hpwl': hN.HPWL / 2000, 'cost': hN.cost,
                           'constraint_penalty': hN.constraint_penalty,
                           'area_norm': hN.area_norm, 'hpwl_norm': hN.HPWL_norm
                     }
                     logger.info( f"data: {d}")
 
-                    tagged_bboxes[nm][concrete_name] = d, list(gen_boxes_and_hovertext( placement_verilog_d, concrete_name))
+                    tagged_bboxes[nm][concrete_name] = d, list(gen_boxes_and_hovertext( gui_scaled_placement_verilog_d, concrete_name))
 
-                    leaves  = { x['concrete_name']: x for x in placement_verilog_d['leaves']}
+                    leaves  = { x['concrete_name']: x for x in gui_scaled_placement_verilog_d['leaves']}
 
                     # construct set of abstract_template_names
                     atns = defaultdict(set)
 
-                    for module in placement_verilog_d['modules']:
+                    for module in gui_scaled_placement_verilog_d['modules']:
                         for instance in module['instances']:
                             if 'abstract_template_name' in instance:
                                 atn = instance['abstract_template_name'] 
