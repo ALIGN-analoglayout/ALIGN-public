@@ -35,7 +35,8 @@ def make_tradeoff_fig_wh(df, log=False, scale='Blugrn'):
         width=800,
         height=800,
         hover_name="concrete_template_name",
-        hover_data=['aspect_ratio','area']
+        hover_data=['aspect_ratio','area'],
+        opacity=0.8
     )
 
     area = df['area'].min()
@@ -131,7 +132,46 @@ def make_tradeoff_fig_aa(df, log=False, scale='Blugrn'):
 
     return fig
 
-def make_tradeoff_fig_ha(df, log=False, scale='Blugrn'):
+def define_axes( fig, log, max_x, max_y, *, log_one_to_one=False):
+    if log:
+        fig.update_xaxes(
+            type="log"
+        )
+        if log_one_to_one:
+            fig.update_yaxes(
+                type="log",
+                scaleanchor='x',
+                scaleratio = 1
+            )
+        else:
+            fig.update_yaxes(
+                type="log"
+            )
+    else:
+        fig.update_xaxes(
+            range=[0,max_x*1.1]
+        )
+        fig.update_yaxes(
+            range=[0,max_y*1.1]
+        )
+
+
+def define_colorscale( fig, col):
+    min_c,max_c = col.min(),col.max()
+    if min_c == max_c:
+        fig.update_coloraxes(
+            cmin=min_c,
+            cmax=max_c,
+            showscale=False
+        )
+    else:
+        fig.update_coloraxes(
+            cmin=min_c,
+            cmax=max_c
+        )
+
+
+def make_tradeoff_fig_ha(df, log=False, scale='Blugrn', lambda_coeff=1.0):
     fig = px.scatter(
         df,
         x="hpwl",
@@ -151,6 +191,54 @@ def make_tradeoff_fig_ha(df, log=False, scale='Blugrn'):
     min_x, max_x = min(df['hpwl']),max(df['hpwl'])
     min_y, max_y = min(df['area']),max(df['area'])
 
+    if min_x > 0:
+        log_product = math.log(best_x)*lambda_coeff + math.log(best_y)
+
+        alt_min_x = min_x / ((max_x/min_x) ** 0.1)
+
+        alt_min_y = min_y / ((max_y/min_y) ** 0.1)
+
+        # find x where cost = f(x,min_y)
+        alt_max_x = math.exp( (log_product - math.log(alt_min_y))/lambda_coeff)
+
+        sweep_x = np.linspace( alt_min_x, min(alt_max_x,max_x), 101)
+        log_sweep_y = log_product - np.log(sweep_x)*lambda_coeff
+        sweep_y = np.exp(log_sweep_y)
+
+        fig.add_trace(
+            go.Scatter( 
+                x=sweep_x,
+                y=sweep_y,
+                mode='lines',
+                showlegend=False
+            )
+        )
+
+    define_colorscale( fig, df['constraint_penalty'])
+    define_axes( fig, log, max_x, max_y, log_one_to_one=True)
+
+    return fig
+
+def make_tradeoff_fig_nn(df, log=False, scale='Blugrn'):
+    fig = px.scatter(
+        df,
+        x="hpwl_norm",
+        y="area_norm",
+        color="constraint_penalty",
+        color_continuous_scale=scale,
+        size="size",
+        width=800,
+        height=800,
+        hover_name="concrete_template_name",
+        hover_data=['width','height']
+    )
+
+    best_x = df['hpwl_norm'].values[0]
+    best_y = df['area_norm'].values[0]
+
+    min_x, max_x = min(df['hpwl_norm']),max(df['hpwl_norm'])
+    min_y, max_y = min(df['area_norm']),max(df['area_norm'])
+
     sweep_x = np.linspace( min_x, max_x, 101)
     sweep_y = best_y*(2 - sweep_x/best_x)
 
@@ -163,20 +251,8 @@ def make_tradeoff_fig_ha(df, log=False, scale='Blugrn'):
         )
     )
 
-    if log:
-        fig.update_xaxes(
-            type="log"
-        )
-        fig.update_yaxes(
-            type="log"
-        )
-    else:
-        fig.update_xaxes(
-            range=[0,max_x*1.1]
-        )
-        fig.update_yaxes(
-            range=[0,max_y*1.1]
-        )
+    define_colorscale( fig, df['constraint_penalty'])
+    define_axes( fig, log, max_x, max_y)
 
     return fig
 
@@ -211,22 +287,13 @@ def make_tradeoff_fig_ac(df, log=False, scale='Blugrn'):
         )
     )
 
-    if log:
-        fig.update_xaxes(
-            type="log"
-        )
-        fig.update_yaxes(
-            type="log"
-        )
-    else:
-        fig.update_xaxes(
-            range=[0,max_x*1.1]
-        )
-        fig.update_yaxes(
-            range=[0,max_y*1.1]
-        )
+    define_colorscale( fig, df['constraint_penalty'])
+    define_axes( fig, log, max_x, max_y)
 
     return fig
+
+
+
 
 def make_tradeoff_fig_hc(df, log=False, scale='Blugrn'):
     fig = px.scatter(
@@ -259,34 +326,24 @@ def make_tradeoff_fig_hc(df, log=False, scale='Blugrn'):
         )
     )
 
-    if log:
-        fig.update_xaxes(
-            type="log"
-        )
-        fig.update_yaxes(
-            type="log"
-        )
-    else:
-        fig.update_xaxes(
-            range=[0,max_x*1.1]
-        )
-        fig.update_yaxes(
-            range=[0,max_y*1.1]
-        )
+    define_colorscale( fig, df['constraint_penalty'])
+    define_axes( fig, log, max_x, max_y)
 
     return fig
 
-def make_tradeoff_fig( axes, df, log=False, scale='Blugrn'):
+def make_tradeoff_fig( axes, df, log=False, scale='Blugrn', lambda_coeff=1.0):
     if   axes == ('width', 'height'):
         return make_tradeoff_fig_wh( df, log, scale)
     elif axes == ('aspect_ratio', 'area'):
         return make_tradeoff_fig_aa( df, log, scale)
     elif axes == ('hpwl', 'area'):
-        return make_tradeoff_fig_ha( df, log, scale)
+        return make_tradeoff_fig_ha( df, log, scale, lambda_coeff)
     elif axes == ('area', 'cost'):
         return make_tradeoff_fig_ac( df, log, scale)
     elif axes == ('hpwl', 'cost'):
         return make_tradeoff_fig_hc( df, log, scale)
+    elif axes == ('hpwl_norm', 'area_norm'):
+        return make_tradeoff_fig_nn( df, log, scale)
     else:
         assert False, axes
 
@@ -313,11 +370,12 @@ class AppWithCallbacksAndState:
 
         self.df = df
 
-    def __init__(self, *, tagged_bboxes, module_name):
+    def __init__(self, *, tagged_bboxes, module_name, lambda_coeff):
         self.tagged_bboxes = tagged_bboxes
         self.module_name = module_name
+        self.lambda_coeff = lambda_coeff
 
-        self.sel = None
+        self.sel = f'{module_name}_0'
         self.title = None
 
         self.subindex = 0
@@ -326,7 +384,7 @@ class AppWithCallbacksAndState:
         self.axes = ('hpwl', 'area')
 
         self.gen_dataframe()
-        self.tradeoff = make_tradeoff_fig(self.axes, self.df, log=False)
+        self.tradeoff = make_tradeoff_fig(self.axes, self.df, log=True, lambda_coeff=lambda_coeff)
         self.placement_graph = self.make_placement_graph()
 
         self.app = dash.Dash(__name__, assets_ignore=r'.*\.#.*')
@@ -341,12 +399,12 @@ class AppWithCallbacksAndState:
                         dcc.RadioItems(
                             id='axes-type',
                             options=[{'label': i, 'value': i} for i in ['linear', 'loglog']],
-                            value='linear'
+                            value='loglog'
                         ),
                         dcc.Dropdown(
                             id='tradeoff-type', 
                             options=[{"value": x, "label": x} 
-                                     for x in ['width-height', 'aspect_ratio-area', 'hpwl-area', 'area-cost', 'hpwl-cost']],
+                                     for x in ['width-height', 'aspect_ratio-area', 'hpwl-area', 'area-cost', 'hpwl-cost', 'hpwl_norm-area_norm']],
                             value='hpwl-area'
                         ),
                         dcc.Dropdown(
@@ -374,7 +432,7 @@ class AppWithCallbacksAndState:
                         dcc.RadioItems(
                             id='display-type',
                             options=[{'label': i, 'value': i} for i in ['All', 'Direct', 'Leaves Only']],
-                            value='All'
+                            value='Direct'
                         ),
                         html.Button(
                             'Route',
@@ -412,7 +470,7 @@ class AppWithCallbacksAndState:
                             Input('axes-type', 'value'),
                             Input('module-name', 'value')])(self.change_colorscale)
 
-    def make_placement_graph( self, *, display_type='All'):
+    def make_placement_graph( self, *, display_type='Direct'):
         sel = self.sel
         title = self.title
 
@@ -469,7 +527,7 @@ class AppWithCallbacksAndState:
                 self.axes = tuple(tradeoff_type.split('-'))
 
         self.gen_dataframe()
-        self.tradeoff = make_tradeoff_fig(self.axes, self.df, log=axes_type == 'loglog', scale=scale)
+        self.tradeoff = make_tradeoff_fig(self.axes, self.df, log=axes_type == 'loglog', scale=scale, lambda_coeff=self.lambda_coeff)
         return (self.tradeoff,)
 
     def route_current_placement(self, n_clicks):
@@ -519,8 +577,8 @@ class AppWithCallbacksAndState:
         return self.placement_graph, None
 
 
-def run_gui( *, tagged_bboxes, module_name):
-    awcas = AppWithCallbacksAndState( tagged_bboxes=tagged_bboxes, module_name=module_name)
+def run_gui( *, tagged_bboxes, module_name, lambda_coeff):
+    awcas = AppWithCallbacksAndState( tagged_bboxes=tagged_bboxes, module_name=module_name, lambda_coeff=lambda_coeff)
     awcas.app.run_server(debug=True,use_reloader=False)
     
     logger.info( f'final module_name: {awcas.module_name} We have access to any state from the GUI object here.')

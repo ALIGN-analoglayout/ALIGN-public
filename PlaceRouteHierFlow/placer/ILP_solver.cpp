@@ -31,7 +31,6 @@ ILP_solver::ILP_solver(const ILP_solver& solver) {
   area_norm = solver.area_norm;
   HPWL_norm = solver.HPWL_norm;
   ratio = solver.ratio;
-  dead_area = solver.dead_area;
   linear_const = solver.linear_const;
   multi_linear_const = solver.multi_linear_const;
   Aspect_Ratio_weight = solver.Aspect_Ratio_weight;
@@ -53,7 +52,6 @@ ILP_solver& ILP_solver::operator=(const ILP_solver& solver) {
   area_norm = solver.area_norm;
   HPWL_norm = solver.HPWL_norm;
   ratio = solver.ratio;
-  dead_area = solver.dead_area;
   multi_linear_const = solver.multi_linear_const;
   Aspect_Ratio_weight = solver.Aspect_Ratio_weight;
   memcpy(Aspect_Ratio, solver.Aspect_Ratio, sizeof(solver.Aspect_Ratio));
@@ -491,11 +489,6 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
 
   // calculate area
   area = double(UR.x - LL.x) * double(UR.y - LL.y);
-  // calculate dead area
-  dead_area = area;
-  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
-    dead_area -= double(mydesign.Blocks[i][curr_sp.selected[i]].width) * double(mydesign.Blocks[i][curr_sp.selected[i]].height);
-  }
   //calculate norm area
   area_norm = area * 0.1 / mydesign.GetMaxBlockAreaSum();
   // calculate ratio
@@ -527,11 +520,8 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     }
     HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);  
   }
+
   //HPWL norm
-  //double block_HPWL = 0;
-  //for (int i = 0; i < mydesign.Blocks.size(); i++) {
-  //  block_HPWL += double(mydesign.Blocks[i][curr_sp.selected[i]].width) + double(mydesign.Blocks[i][curr_sp.selected[i]].height);
-  //}
   if (!mydesign.Nets.empty()) HPWL_norm = HPWL / mydesign.GetMaxBlockHPWLSum() / double(mydesign.Nets.size());
   // calculate linear constraint
   linear_const = 0;
@@ -596,10 +586,21 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
 }
 
 double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
+  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.CalculateCost");
+
   ConstGraph const_graph;
   double cost = 0;
-  cost += area_norm;
-  cost += HPWL_norm * const_graph.LAMBDA;
+
+  if (false) {
+    cost += area_norm;
+    cost += HPWL_norm * const_graph.LAMBDA;
+  } else {
+    cost += log( area);
+    if (HPWL > 0) {
+      cost += log( HPWL) * const_graph.LAMBDA;
+    }
+  }
+
   double match_cost = 0;
   double max_dim = std::max(UR.x - LL.x, UR.y - LL.y);
   for (auto mbi : mydesign.Match_blocks) {
@@ -609,17 +610,11 @@ double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
                       mydesign.Blocks[mbi.blockid2][curr_sp.selected[mbi.blockid2]].height / 2)) / max_dim ;
   }
   if (!mydesign.Match_blocks.empty()) match_cost /= (mydesign.Match_blocks.size());
-  cost += match_cost * const_graph.BETA;
-  // cost += abs(log(ratio) - log(Aspect_Ratio[0])) * Aspect_Ratio_weight;
-  cost += dead_area / area * const_graph.PHI;
-  cost += linear_const * const_graph.PI;
-  cost += multi_linear_const * const_graph.PII;
-  // constraint_penalty = cost - area_norm - HPWL_norm * const_graph.LAMBDA;
   constraint_penalty =
     match_cost * const_graph.BETA +
-    // dead_area / area * const_graph.PHI +
     linear_const * const_graph.PI +
     multi_linear_const * const_graph.PII;
+  cost += constraint_penalty;
   return cost;
 }
 
