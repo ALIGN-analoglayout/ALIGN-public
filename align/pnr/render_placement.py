@@ -3,6 +3,7 @@ import logging
 import copy
 import pathlib
 import plotly.graph_objects as go
+from itertools import combinations
 from collections import defaultdict
 from ..cell_fabric import transformation
 
@@ -128,6 +129,31 @@ def gen_placement_verilog(hN, DB, verilog_d, *, skip_checkout=False):
 
     return d
 
+def scalar_rational_scaling( v, *, mul=1, div=1):
+    q, r = divmod( mul*v, div)
+    assert r == 0
+    return q
+
+def array_rational_scaling( a, *, mul=1, div=1):
+    return [ scalar_rational_scaling(v, mul=mul, div=div) for v in a]
+
+def scale_placement_verilog( placement_verilog_d, scale_factor):
+    # Convert from 0.5 nm to 0.1 nm if the scale_factor is 10
+    d = copy.deepcopy(placement_verilog_d)
+
+    for module in d['modules']:
+        module['bbox'] = array_rational_scaling(module['bbox'], mul=scale_factor, div=2)
+        for instance in module['instances']:
+            tr = instance['transformation'] 
+            for field in ['oX','oY']:
+                tr[field] = scalar_rational_scaling(tr[field], mul=scale_factor, div=2)
+
+    for leaf in d['leaves']:
+        leaf['bbox'] = array_rational_scaling(leaf['bbox'], mul=scale_factor, div=2)
+
+    return d
+
+
 def gen_boxes_and_hovertext( placement_verilog_d, top_cell):
 
     leaves = { x['name']: x for x in placement_verilog_d['leaves']}
@@ -147,7 +173,7 @@ def gen_boxes_and_hovertext( placement_verilog_d, top_cell):
 
         [x0, y0, x1, y1] = tr.hitRect(
             transformation.Rect(*r)).canonical().toList()
-
+ 
         hovertext = f'{"/".join(prefix_path)}<br>{template_name}<br>{tr}<br>Global {x0} {y0} {x1} {y1}<br>Local {r[0]} {r[1]} {r[2]} {r[3]}'
 
         return [x0, y0, x1, y1], hovertext
@@ -178,6 +204,17 @@ def gen_boxes_and_hovertext( placement_verilog_d, top_cell):
         yield from aux( modules[top_cell], (), transformation.Transformation(), 0)
     else:
         logger.warning( f'{top_cell} not in either leaves or modules.')
+
+def standalone_overlap_checker( placement_verilog_d, top_cell):
+    def rects_intersect( rA, rB):
+        """ rA[2] > rB[0] and rB[2] > rA[0] and rA[3] > rB[1] and rB[3] > rA[1] """
+        return not (rA[2] <= rB[0] or rB[2] <= rA[0] or rA[3] <= rB[1] or rB[3] <= rA[1])
+
+    leaves = [ r for r, _, isleaf, _ in gen_boxes_and_hovertext( placement_verilog_d, top_cell) if isleaf]
+
+    for a,b in combinations(leaves,2):
+        if rects_intersect( a, b):
+            logger.error( f'Leaves {a} and {b} intersect')
 
 def dump_blocks( fig, boxes_and_hovertext, leaves_only, levels):
     for r, hovertext, isleaf, lvl in boxes_and_hovertext:
