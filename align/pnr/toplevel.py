@@ -402,23 +402,25 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
             for sel in range(DB.hierTree[idx].numPlacement):
 
+                concrete_name = f'{nm}_{sel}'
+
                 logger.debug( f'DB.CheckoutHierNode( {idx}, {sel})')
                 hN = DB.CheckoutHierNode( idx, sel)
 
                 # create new verilog for each placement
-                placement_verilog_d = gen_placement_verilog( hN, DB, s_verilog_d)
+                placement_verilog_d = gen_placement_verilog( hN, idx, sel, DB, s_verilog_d)
 
-                #(pathlib.Path(opath) / f'{nm}_{sel}.placement_verilog.json').write_text(placement_verilog_d.json(indent=2))
+                (pathlib.Path(opath) / f'{nm}_{sel}.placement_verilog.json').write_text(placement_verilog_d.json(indent=2))
 
                 scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, scale_factor)
 
                 check_placement( scaled_placement_verilog_d)
-                standalone_overlap_checker( scaled_placement_verilog_d, nm)
+                standalone_overlap_checker( scaled_placement_verilog_d, concrete_name)
 
                 if gui:
-                    modules = { x['name']: x for x in placement_verilog_d['modules']}
+                    modules = { x['concrete_name']: x for x in placement_verilog_d['modules']}
 
-                    p = r2wh(modules[nm]['bbox'])
+                    p = r2wh(modules[f'{nm}_{sel}']['bbox'])
                     d = { 'width': p[0], 'height': p[1],
                           'hpwl': hN.HPWL, 'cost': hN.cost,
                           'constraint_penalty': hN.constraint_penalty,
@@ -426,9 +428,9 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                     }
                     logger.info( f"data: {d}")
 
-                    tagged_bboxes[nm][f'{nm}_{sel}'] = d, list(gen_boxes_and_hovertext( placement_verilog_d, nm))
+                    tagged_bboxes[nm][f'{nm}_{sel}'] = d, list(gen_boxes_and_hovertext( placement_verilog_d, concrete_name))
 
-                    leaves  = { x['name']: x for x in placement_verilog_d['leaves']}
+                    leaves  = { x['concrete_name']: x for x in placement_verilog_d['leaves']}
 
                     # construct set of abstract_template_names
                     atns = defaultdict(set)
@@ -439,7 +441,8 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                                 atn = instance['abstract_template_name'] 
                                 if 'concrete_template_name' in instance:
                                     ctn = instance['concrete_template_name']
-                                    atns[atn].add((ctn, r2wh(leaves[ctn]['bbox'])))
+                                    if ctn in leaves:
+                                        atns[atn].add((ctn, r2wh(leaves[ctn]['bbox'])))
 
                     # Hack to get CC capacitors because they are missing from gdsData2 above
                     # Can be removed when CC capacitor generation is moved to correct spot in flow

@@ -13,19 +13,10 @@ logger = logging.getLogger(__name__)
 
 Omark = PnR.Omark
 
-def gen_transformation( blk):
-    if blk.orient == Omark.FN:
-        orient = 'FN'
-    elif blk.orient == Omark.FS:
-        orient = 'FS'
-    elif blk.orient == Omark.N:
-        orient = 'N'
-    elif blk.orient == Omark.S:
-        orient = 'S'
-    else:
-        assert False, blk.orient
+orient_map = {Omark.FN: 'FN', Omark.FS: 'FS', Omark.N: 'N', Omark.S: 'S'}
 
-    tr_reflect = transformation.Transformation.genTr( orient, w=blk.width, h=blk.height)
+def gen_transformation( blk):
+    tr_reflect = transformation.Transformation.genTr( orient_map[blk.orient], w=blk.width, h=blk.height)
 
     tr_offset = transformation.Transformation( oX=blk.placedBox.LL.x - blk.originBox.LL.x,
                                                oY=blk.placedBox.LL.y - blk.originBox.LL.y)
@@ -36,96 +27,83 @@ def gen_transformation( blk):
     logger.debug( f"TRANS {blk.master} {blk.orient} {tr} {tr_reflect} {tr_offset}")
     return tr
 
-def gen_placement_verilog(hN, DB, verilog_d, *, skip_checkout=False):
-    d = verilog_d.copy()
+def gen_placement_verilog(hN, idx, sel, DB, verilog_d):
+    used_leaves = defaultdict(set)
+    used_internal = defaultdict(set)
 
-    bboxes = defaultdict(list)
-    transforms = defaultdict(list)
-    leaf_bboxes = defaultdict(list)
+    abstract_template_name = hN.name
+    concrete_template_name = f'{abstract_template_name}_{sel}'
 
-    templates = defaultdict(list)
+    used_internal[abstract_template_name].add( (concrete_template_name,idx,sel,(0,0,hN.width,hN.height)))
 
-
-    def aux(hN, r, prefix_path):
-
-        bboxes[prefix_path[-1][1]].append( r)
-
+    def traverse( hN, sel):
         for blk in hN.Blocks:
             child_idx = blk.child
             inst = blk.instance[blk.selectedInstance]
 
-            tr = gen_transformation(inst)            
-
-            new_prefix_path = prefix_path + ((inst.name,inst.master),)
-            k = new_prefix_path[-2][1], new_prefix_path[-1][0]
-            transforms[k].append( tr)
-
             b = inst.originBox
             new_r = b.LL.x, b.LL.y, b.UR.x, b.UR.y
+
+            abstract_template_name = f'{inst.master}'
             if child_idx >= 0:
-                new_hN = DB.CheckoutHierNode(child_idx, -1 if skip_checkout else blk.selectedInstance)
-                aux(new_hN, new_r, new_prefix_path)
+                concrete_template_name = f'{inst.master}_{blk.selectedInstance}'
+                if concrete_template_name not in used_internal[abstract_template_name]:
+                    new_hN = DB.CheckoutHierNode(child_idx, blk.selectedInstance)
+                    traverse(new_hN, blk.selectedInstance)
+                used_internal[abstract_template_name].add( (concrete_template_name,child_idx,blk.selectedInstance,new_r))
             else:
-                chosen_master = pathlib.Path(inst.gdsFile).stem
-                logger.debug( f'Choose \'{chosen_master}\' for {inst.master} {(hN.name, inst.name)}')
-                templates[(hN.name, inst.name)].append( chosen_master)
+                concrete_template_name = pathlib.Path(inst.gdsFile).stem
+                used_leaves[abstract_template_name].add( (concrete_template_name,new_r))
 
-                leaf_bboxes[chosen_master].append( new_r)
+    traverse( hN, sel)
+    logger.debug( f'used_leaves: {used_leaves} used_internal: {used_internal}')
 
-                
-    r = 0, 0, hN.width, hN.height
-    aux(hN, r, (('',hN.name),))
+    d = verilog_d.copy()
 
-    for k,v in transforms.items():
-        if len(set(v)) > 1:
-            logger.error( f'Different transforms for {k}: {v}')
-
-    for k,v in bboxes.items():
-        if len(set(v)) > 1:
-            logger.error( f'Different bboxes for {k}: {v}')
-
-    for k,v in leaf_bboxes.items():
-        if len(set(v)) > 1:
-            logger.error( f'Different leaf bboxes for {k}: {v}')
-
-    for k,v in templates.items():
-        if len(set(v)) > 1:
-            logger.error( f'Different chosen masters for {k}: {v}')
-
-    logger.debug( f'transforms: {transforms}')
-    logger.debug( f'bboxes: {bboxes}')
-    logger.debug( f'leaf_bboxes: {leaf_bboxes}')
-
+    new_modules = []
     for module in d['modules']:
-        nm = module['name']
-        if nm in bboxes:
-            module['bbox'] = bboxes[nm][0]
-        else:
-            logger.error( f'No bounding box for module {nm}')
-        for instance in module['instances']:
-            k = (nm, instance['instance_name'])
-            if k in templates:
-                if 'abstract_template_name' not in instance:
-                    # Capacitor (internally generated)
-                    instance['abstract_template_name'] = instance['template_name']
-                    del instance['template_name']
+        abstract_name = module['name']
+        for concrete_name, module_idx, module_sel, module_r in used_internal[abstract_name]:
+           new_module =  module.copy()
+           del new_module['name']
+           new_module['abstract_name'] = abstract_name
+           new_module['concrete_name'] = concrete_name
+           new_module['bbox'] = module_r
 
-                instance['concrete_template_name'] = templates[k][0]
-            if k in transforms:
-                instance['transformation'] = transforms[k][0].toDict()
-            else:
-                logger.error( f'No transform for instance {k[0]} in {k[1]}')
+           new_hN = DB.CheckoutHierNode(module_idx, module_sel)           
+
+           instance_map = { inst['instance_name'] : inst for inst in new_module['instances']}
+
+           for blk in new_hN.Blocks:
+               child_idx = blk.child
+               inst = blk.instance[blk.selectedInstance]
+
+               instance_d = instance_map[inst.name]
+
+               abstract_template_name = f'{inst.master}'
+               assert abstract_template_name == instance_d['abstract_template_name']
+
+               if child_idx >= 0:
+                   concrete_template_name = f'{inst.master}_{blk.selectedInstance}'
+                   instance_d['concrete_template_name'] = concrete_template_name
+               else:
+                   concrete_template_name = pathlib.Path(inst.gdsFile).stem
+                   instance_d['concrete_template_name'] = concrete_template_name
+
+               tr = gen_transformation(inst)            
+
+               instance_d['transformation'] = tr.toDict()
+           new_modules.append(new_module)
 
     leaves = []
-    for k, v in leaf_bboxes.items():
-        leaf = {}
-        leaf['name'] = k
-        leaf['bbox'] = v[0]
-        leaves.append(leaf)
+    for abstract_name, v in used_leaves.items():
+        for concrete_name, r in v:
+            leaves.append({'abstract_name': abstract_name,  'concrete_name': concrete_name, 'bbox': r})
 
+    d['modules'] = new_modules
     d['leaves'] = leaves
 
-    #print( json.dumps( d, indent=2))
+    #print(d.json(indent=2))
 
     return d
 
@@ -156,18 +134,17 @@ def scale_placement_verilog( placement_verilog_d, scale_factor):
 
 def gen_boxes_and_hovertext( placement_verilog_d, top_cell):
 
-    leaves = { x['name']: x for x in placement_verilog_d['leaves']}
-    modules = { x['name']: x for x in placement_verilog_d['modules']}
+    leaves = { x['concrete_name']: x for x in placement_verilog_d['leaves']}
+    modules = { x['concrete_name']: x for x in placement_verilog_d['modules']}
 
     def get_rect( instance):
-        if 'concrete_template_name' in instance:
-            ctn = instance ['concrete_template_name']
+        ctn = instance ['concrete_template_name']
+        if ctn in leaves:
             r = leaves[ctn]['bbox']
             return r, True, ctn
         else:
-            atn = instance['abstract_template_name']
-            r = modules[atn]['bbox']
-            return r, False, atn
+            r = modules[ctn]['bbox']
+            return r, False, ctn
 
     def gen_trace_xy(r, template_name, prefix_path, tr):
 
@@ -194,9 +171,9 @@ def gen_boxes_and_hovertext( placement_verilog_d, top_cell):
             r, isleaf, template_name = get_rect(instance)
             yield gen_trace_xy(r, template_name, new_prefix_path, new_tr) + (isleaf, lvl)
 
-            atn = instance['abstract_template_name']
-            if atn in modules:
-                yield from aux(modules[atn], new_prefix_path, new_tr, lvl+1)
+            ctn = instance['concrete_template_name']
+            if ctn in modules:
+                yield from aux(modules[ctn], new_prefix_path, new_tr, lvl+1)
 
     if top_cell in leaves:
         yield gen_trace_xy(leaves[top_cell]['bbox'], top_cell, (), transformation.Transformation()) + (True, 0)
@@ -206,14 +183,14 @@ def gen_boxes_and_hovertext( placement_verilog_d, top_cell):
         logger.warning( f'{top_cell} not in either leaves or modules.')
 
 def standalone_overlap_checker( placement_verilog_d, top_cell):
-    def rects_intersect( rA, rB):
-        """ rA[2] > rB[0] and rB[2] > rA[0] and rA[3] > rB[1] and rB[3] > rA[1] """
-        return not (rA[2] <= rB[0] or rB[2] <= rA[0] or rA[3] <= rB[1] or rB[3] <= rA[1])
+    def rects_overlap( rA, rB):
+        return max( rA[0], rB[0]) < min( rA[2], rB[2]) and max( rA[1], rB[1]) < min( rA[3], rB[3])
+        #return rA[0] < rB[2] and rB[0] < rA[2] and rA[1] < rB[3] and rB[1] < rA[3]
 
     leaves = [ r for r, _, isleaf, _ in gen_boxes_and_hovertext( placement_verilog_d, top_cell) if isleaf]
-
+    logger.debug( f'Checking {len(leaves)} bboxes for overlap')
     for a,b in combinations(leaves,2):
-        if rects_intersect( a, b):
+        if rects_overlap( a, b):
             logger.error( f'Leaves {a} and {b} intersect')
 
 def dump_blocks( fig, boxes_and_hovertext, leaves_only, levels):

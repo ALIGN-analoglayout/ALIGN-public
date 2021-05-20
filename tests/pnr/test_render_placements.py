@@ -3,7 +3,8 @@ from align.pnr.render_placement import gen_boxes_and_hovertext
 def test_gen_boxes_and_hovertext():
     placement_verilog_d = {
         "modules": [
-            { "name": "top",
+            { "abstract_name": "top",
+              "concrete_name": "top",
               "bbox": [0,0,100,100],
               "parameters": [],
               "instances": [
@@ -24,7 +25,8 @@ def test_gen_boxes_and_hovertext():
             }
         ],
         "leaves": [
-            { "name": "a",
+            { "abstract_name": "a",
+              "concrete_name": "a",
               "bbox": [0,0,10,10]
             }
         ]
