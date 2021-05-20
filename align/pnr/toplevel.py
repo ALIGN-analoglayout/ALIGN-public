@@ -410,7 +410,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                 # create new verilog for each placement
                 placement_verilog_d = gen_placement_verilog( hN, idx, sel, DB, s_verilog_d)
 
-                (pathlib.Path(opath) / f'{nm}_{sel}.placement_verilog.json').write_text(placement_verilog_d.json(indent=2))
+                (pathlib.Path(opath) / f'{nm}_{sel}.placement_verilog.json').write_text(placement_verilog_d.json(indent=2,sort_keys=True))
 
                 scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, scale_factor)
 

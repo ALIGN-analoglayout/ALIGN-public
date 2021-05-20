@@ -29,12 +29,12 @@ def gen_transformation( blk):
 
 def gen_placement_verilog(hN, idx, sel, DB, verilog_d):
     used_leaves = defaultdict(set)
-    used_internal = defaultdict(set)
+    used_internal = defaultdict(dict)
 
     abstract_template_name = hN.name
     concrete_template_name = f'{abstract_template_name}_{sel}'
 
-    used_internal[abstract_template_name].add( (concrete_template_name,idx,sel,(0,0,hN.width,hN.height)))
+    used_internal[abstract_template_name][concrete_template_name] = (idx,sel,(0,0,hN.width,hN.height))
 
     def traverse( hN, sel):
         for blk in hN.Blocks:
@@ -50,7 +50,9 @@ def gen_placement_verilog(hN, idx, sel, DB, verilog_d):
                 if concrete_template_name not in used_internal[abstract_template_name]:
                     new_hN = DB.CheckoutHierNode(child_idx, blk.selectedInstance)
                     traverse(new_hN, blk.selectedInstance)
-                used_internal[abstract_template_name].add( (concrete_template_name,child_idx,blk.selectedInstance,new_r))
+                    used_internal[abstract_template_name][concrete_template_name] = (child_idx,blk.selectedInstance,new_r)
+                else:
+                    assert used_internal[abstract_template_name][concrete_template_name] == (child_idx,blk.selectedInstance,new_r)
             else:
                 concrete_template_name = pathlib.Path(inst.gdsFile).stem
                 used_leaves[abstract_template_name].add( (concrete_template_name,new_r))
@@ -63,7 +65,8 @@ def gen_placement_verilog(hN, idx, sel, DB, verilog_d):
     new_modules = []
     for module in d['modules']:
         abstract_name = module['name']
-        for concrete_name, module_idx, module_sel, module_r in used_internal[abstract_name]:
+
+        for concrete_name, (module_idx, module_sel, module_r) in used_internal[abstract_name].items():
            new_module =  module.copy()
            del new_module['name']
            new_module['abstract_name'] = abstract_name
