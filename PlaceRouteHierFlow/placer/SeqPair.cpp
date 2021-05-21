@@ -1177,6 +1177,9 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
         newApos.push_back(*ait); ++ait;
       } else if ( (*ait)>(*bit) ) {
         newApos.push_back(*bit); ++bit;
+      } else if ( (*ait)==(*bit) ) {
+        logger->error("Same index for different lists (adding b)!");
+        newApos.push_back(*bit); ++bit;
       } else {
         logger->error("Same index for different lists!");
 	throw std::runtime_error("Would enter infinite loop");
@@ -1197,6 +1200,9 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
       if( (*ait)<(*bit) ) {
         newBpos.push_back(*ait); ++ait;
       } else if ( (*ait)>(*bit) ) {
+        newBpos.push_back(*bit); ++bit;
+      } else if ( (*ait)==(*bit) ) {
+        logger->error("Same index for different lists (adding b)!");
         newBpos.push_back(*bit); ++bit;
       } else {
         logger->error("Same index for different lists!");
