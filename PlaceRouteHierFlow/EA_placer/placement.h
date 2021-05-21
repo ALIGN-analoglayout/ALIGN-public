@@ -52,12 +52,15 @@ private:
     Ppoint_F est_Size;
     Ppoint_F uni_cell;
 
-    float dummy_net_weight = 0.1;
+    float dummy_net_weight;
+    float dummy_net_rate;
+    float dummy_net_target;
     //donghao end  
 
 public:
     Placement();
     Placement(float chip_width, float chip_hight, float bin_width, float bin_hight);
+    void place(PnRDB::hierNode &current_node);
     void Read_In_Blocks_Nets();
     void Create_Placement_Bins();
     void Initilize_Placement();
@@ -160,5 +163,10 @@ public:
     void plotPlacement(PnRDB::hierNode &current_node);
 
     void compact_cc();
+
+    float cal_weight_init_increase(float &rate, float &init_val,float &target_val,float target_converge_iter);
+    void cal_dummy_net_weight(float &weight, float &rate, float &increase);
+
+    void set_dummy_net_weight(float init_weight, float rate, float targe);
 };
 #endif

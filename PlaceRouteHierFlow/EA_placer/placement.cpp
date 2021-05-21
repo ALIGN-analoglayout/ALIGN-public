@@ -168,6 +168,93 @@ Placement::Placement(PnRDB::hierNode &current_node)
   writeback(current_node);
 }
 
+void Placement::place(PnRDB::hierNode &current_node)
+{
+  //step 1: transfroming info. of current_node to Blocks and Nets
+  //create a small function for this
+  float area, scale_factor;
+  int max_block_number = 1000;
+  int max_net_number = 100;
+  int max_conection_number = 100;
+
+  // for bins
+  unit_x_bin = (float)1 / 16;
+  unit_y_bin = (float)1 / 16;
+  x_dimension_bin = 16; //number of bin, number of pe
+  y_dimension_bin = 16; //number of bin, number of pe
+
+  Bin_D.x = unit_x_bin;
+  Bin_D.y = unit_y_bin;
+  std::cout << "start reading node file" << std::endl;
+  area = readInputNode(current_node);
+
+  // for blocks
+  unit_x = (float)1 / Blocks.size();
+  unit_y = (float)1 / Blocks.size();
+  x_dimension = Blocks.size(); //number of pe
+  y_dimension = x_dimension;   //S number of pe
+  Chip_D.x = (float)1;
+  Chip_D.y = (float)1;
+
+  for (unsigned int i = 0; i < x_dimension_bin; ++i)
+  {
+    vector<bin> temp_bins;
+    for (unsigned int j = 0; j < y_dimension_bin; ++j)
+    {
+      bin temp_bin;
+      temp_bin.Dpoint.x = unit_x_bin;
+      temp_bin.Dpoint.y = unit_y_bin;
+      temp_bin.Cpoint.x = i * unit_x_bin + unit_x_bin / 2;
+      temp_bin.Cpoint.y = j * unit_y_bin + unit_y_bin / 2;
+      temp_bin.Index.x = i;
+      temp_bin.Index.y = j;
+      temp_bins.push_back(temp_bin);
+    }
+    Bins.push_back(temp_bins);
+  }
+
+  //step 2: Given a initial position for each block
+  //create a small function for this
+  // need to estimate a area to do placement
+  // scale into 1x1
+  // initial position for each block
+  std::cout << "Unify the block coordinate" << std::endl;
+  scale_factor = 40.0;
+  Unify_blocks(area, scale_factor);
+  Ppoint_F uni_cell_Dpoint = find_uni_cell();
+  readCC();
+  //Initilize_Placement();
+  //PlotPlacement(600);
+  splitNode_MS(uni_cell_Dpoint.y, uni_cell_Dpoint.x);
+  int tol_diff = 3;
+  addNet_after_split_Blocks(tol_diff,uni_cell_Dpoint.y, uni_cell_Dpoint.x);
+  split_net();
+  modify_symm_after_split(current_node);
+  update_hiernode(current_node,uni_cell_Dpoint);
+
+  //read alignment constrains
+  read_alignment(current_node);
+  read_order(current_node);
+  Initilize_Placement();
+
+  print_blocks_nets();
+  //step 3: call E_placer
+  std::cout << "start ePlacement" << std::endl;
+  PlotPlacement(602);
+  // restore_MS();
+  // PlotPlacement(601);
+  E_Placer();
+  bool isCompact = true;
+  restore_CC_in_square(isCompact);
+
+  //only for plot
+
+  restore_MS();
+  PlotPlacement(603);
+  //setp 4: write back to HierNode
+  writeback(current_node);
+}
+
 Placement::Placement(float chip_width, float chip_hight, float bin_width, float bin_hight)
 {
 
@@ -349,8 +436,8 @@ void Placement::Initilize_Placement()
   for (int i = originalBlockCNT; i < Blocks.size(); ++i)
   {
     int id = Blocks[i].splitedsource;
-    Blocks[i].Cpoint.x = Blocks[id].Cpoint.x + (float)(rand() % 80) / 1000;
-    Blocks[i].Cpoint.y = Blocks[id].Cpoint.y + (float)(rand() % 80) / 1000;
+    Blocks[i].Cpoint.x = Blocks[id].Cpoint.x  - 0.1+ (float)(rand() % 200) / 1000;
+    Blocks[i].Cpoint.y = Blocks[id].Cpoint.y - 0.1+ (float)(rand() % 200) / 1000;
     // Blocks[i].Cpoint.x = 0.45 + (float)(rand() % 100) / 1000;
     // Blocks[i].Cpoint.y = 0.45 + (float)(rand() % 100) / 1000;
   }
@@ -663,8 +750,16 @@ void Placement::Cal_WA_Net_Force()
       float x_nagative = ((1 + Blocks[i].Cpoint.x / gammar) * Blocks[i].Net_block_force_N.x * NSumNetforce.x - Blocks[i].Net_block_force_N.x * NSumNetforce_WA.x) / (NSumNetforce.x * NSumNetforce.x);
       float y_positive = ((1 + Blocks[i].Cpoint.y / gammar) * Blocks[i].Net_block_force_P.y * PSumNetforce.y - Blocks[i].Net_block_force_P.y * PSumNetforce_WA.y) / (PSumNetforce.y * PSumNetforce.y);
       float y_nagative = ((1 + Blocks[i].Cpoint.y / gammar) * Blocks[i].Net_block_force_N.y * NSumNetforce.y - Blocks[i].Net_block_force_N.y * NSumNetforce_WA.y) / (NSumNetforce.y * NSumNetforce.y);
-      Blocks[i].Netforce.x += Nets[net_index].weight*(x_positive - x_nagative);
-      Blocks[i].Netforce.y += Nets[net_index].weight*(y_positive - y_nagative);
+      if(net_index>=originalNetCNT)
+      {
+        Blocks[i].Netforce.x += dummy_net_weight*(x_positive - x_nagative);
+        Blocks[i].Netforce.y += dummy_net_weight*(y_positive - y_nagative);
+      }
+      else{
+        Blocks[i].Netforce.x += (x_positive - x_nagative);
+      Blocks[i].Netforce.y += (y_positive - y_nagative);
+      }
+      
       
     }
     std::cout<<"block net force "<<i<<" force "<<Blocks[i].Netforce.x<<" "<<Blocks[i].Netforce.y<<std::endl;
@@ -1138,6 +1233,11 @@ void Placement::E_Placer()
   int upper_count_number = 200;
   float current_overlap = 1.0;
   float symmetricMin = 0.3; //need to tune
+  // initialize dummy net weight
+  // dummy_net_weight = 0.001;
+  // float dummy_net_weight_rate = dummy_net_weight_rate;
+  // float dummy_net_target = 3.0;
+  float dummy_net_weight_increase = cal_weight_init_increase(dummy_net_rate,dummy_net_weight,dummy_net_target,100);
   vector<float> Density;
 #ifdef DEBUG
   std::cout << "E_placer debug flage: 14" << std::endl;
@@ -1145,6 +1245,10 @@ void Placement::E_Placer()
   PlotPlacement(0);
   current_overlap = Cal_Overlap();
   // while((Stop_Condition(stop_density,current_max_density) or symCheck(symmetricMin)) and count_number<upper_count_number ){//Q: stop condition
+
+
+
+
   while ((current_overlap > 0.3 or symCheck(symmetricMin)) and count_number < upper_count_number)
   { //Q: stop condition
     //Initilize_lambda();
@@ -1196,6 +1300,7 @@ void Placement::E_Placer()
     Update_Bin_Density();
     //gradient cal
     Cal_WA_Net_Force();
+    cal_dummy_net_weight(dummy_net_weight,dummy_net_rate,dummy_net_weight_increase);
     //Cal_LSE_Net_Force();
     Cal_Density_Eforce();
 #ifdef DEBUG
@@ -3415,5 +3520,25 @@ void Placement::modify_symm_after_split(PnRDB::hierNode &current_node)
     symmetric_force_matrix.push_back(temp);
   }
 
+
+}
+
+float Placement::cal_weight_init_increase(float &rate, float &init_val,float &target_val,float target_converge_iter)
+{
+  float qn = pow(rate, target_converge_iter);  
+  float a1 = target_val*(1-rate)/(1 - qn);
+  return a1;
+}
+
+void Placement::cal_dummy_net_weight(float &weight, float &rate, float &increase)
+{
+  weight += increase;
+  increase *= rate;
+  std::cout<<"dummy_net weight:= "<<weight<<std::endl;
+}
+
+void Placement::set_dummy_net_weight(float init_weight, float rate, float targe)
+{
+  dummy_net_weight = init_weight;
 
 }

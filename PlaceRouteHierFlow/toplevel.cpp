@@ -299,6 +299,9 @@ int toplevel( const std::vector<std::string>& argv) {
   string topcell=argv[6];
   int numLayout=std::stoi(argv[7]);
   int effort=std::stoi(argv[8]);
+  float dummy_init_weight = std::stof(argv[9]);
+  float dummy_init_rate = std::stof(argv[10]);
+  float dummy_target = std::stof(argv[11]);
   if(fpath.back()=='/') {fpath.erase(fpath.end()-1);}
   if(opath.back()!='/') {opath+="/";}
 
@@ -345,7 +348,11 @@ int toplevel( const std::vector<std::string>& argv) {
     logger->debug("Checkpoint : before place");
     DB.PrintHierNode(current_node);
     //EA placer
-    Placement EA_placer(current_node);
+    Placement EA_placer;
+
+    EA_placer.set_dummy_net_weight(dummy_init_weight,dummy_init_rate,dummy_init_weight);
+    EA_placer.place(current_node);
+
     PlacerIfc curr_plc1(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
     current_node = curr_plc1.getNode(0);
 
