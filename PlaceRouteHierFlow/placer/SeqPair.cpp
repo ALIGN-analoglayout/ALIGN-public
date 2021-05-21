@@ -1144,9 +1144,6 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
   vector<int> Apos=GetVerticesIndexinSeq(seq, Alist);
   vector<int> Bpos=GetVerticesIndexinSeq(seq, Blist);
   /*
-  cout<<"seq: ";
-  for(vector<int>::iterator it=seq.begin();it!=seq.end();it++) {cout<<" "<<*it;} 
-  cout<<endl;
   cout<<"Apos: ";
   for(vector<int>::iterator it=Apos.begin();it!=Apos.end();it++) {cout<<" "<<*it;} 
   cout<<endl;
@@ -1172,12 +1169,9 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
         newApos.push_back(*ait); ++ait;
       } else if ( (*ait)>(*bit) ) {
         newApos.push_back(*bit); ++bit;
-      } else if ( (*ait)==(*bit) ) {
-        logger->error("Same index for different lists (b)!");
-        newApos.push_back(*bit); ++bit;
       } else {
-        logger->error("Same index for different lists!");
-	throw std::runtime_error("Would enter infinite loop");
+        newApos.push_back(*bit); newApos.push_back(*bit); ++bit; ++ait;
+        logger->debug("Placer-Error: same index for different lists!");
       }
     }
     while(ait!=Apos.end()) { newApos.push_back(*ait); ++ait; }
@@ -1202,12 +1196,9 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
         newBpos.push_back(*ait); ++ait;
       } else if ( (*ait)>(*bit) ) {
         newBpos.push_back(*bit); ++bit;
-      } else if ( (*ait)==(*bit) ) {
-        logger->error("Same index for different lists (a)!");
-        newBpos.push_back(*ait); ++ait;
       } else {
-        logger->error("Same index for different lists!");
-	throw std::runtime_error("Would enter infinite loop");
+        newBpos.push_back(*ait); newBpos.push_back(*ait); ++ait; ++bit;
+        logger->debug("Placer-Error: same index for different lists!");
       }
     }
     while(ait!=Apos.end()) { newBpos.push_back(*ait); ++ait; }
@@ -1222,11 +1213,6 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
     for(int i=0;i<(int)Apos.size();++i)
       newseq.at(newBpos.at(i))=seq.at(Apos.at(i)); // A--> B
   }
-  /*
-  cout<<"newseq: ";
-  for(vector<int>::iterator it=newseq.begin();it!=newseq.end();it++) {cout<<" "<<*it;} 
-  cout<<endl;
-  */
   return newseq;
 }
 
