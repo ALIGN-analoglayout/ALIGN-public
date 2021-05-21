@@ -1143,24 +1143,19 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
   vector<int> newseq=seq;
   vector<int> Apos=GetVerticesIndexinSeq(seq, Alist);
   vector<int> Bpos=GetVerticesIndexinSeq(seq, Blist);
-  //cout<<"Apos: ";
-  //for(vector<int>::iterator it=Apos.begin();it!=Apos.end();it++) {cout<<" "<<*it;} 
-  //cout<<endl;
-  //cout<<"Bpos: ";
-  //for(vector<int>::iterator it=Bpos.begin();it!=Bpos.end();it++) {cout<<" "<<*it;} 
-  //cout<<endl;
-  //vector<int> AL=Alist;
-  //vector<int> BL=Blist;
-  //if(Apos.at(0)>Bpos.at(0)) {
-  //  //vector<int> tmp=BL;   BL=AL;     AL=tmp;
-  //  vector<int> tmp=Bpos; Bpos=Apos; Apos=tmp;
-  //} // Make Apos_0 , ..., Bpos_0
-  // A0, A1, ..., An
-  //     B0, B1, ..., Bm
+  /*
+  cout<<"seq: ";
+  for(vector<int>::iterator it=seq.begin();it!=seq.end();it++) {cout<<" "<<*it;} 
+  cout<<endl;
+  cout<<"Apos: ";
+  for(vector<int>::iterator it=Apos.begin();it!=Apos.end();it++) {cout<<" "<<*it;} 
+  cout<<endl;
+  cout<<"Bpos: ";
+  for(vector<int>::iterator it=Bpos.begin();it!=Bpos.end();it++) {cout<<" "<<*it;} 
+  cout<<endl;
+  */
   if(Apos.size()==Bpos.size()) {
     for(int i=0;i<(int)Apos.size();++i) {
-      //newseq.at(Apos.at(i))=seq.at(Bpos.at(i)); // B --> A
-      //newseq.at(Bpos.at(i))=seq.at(Apos.at(i)); // A --> B
       int temp_value = newseq.at(Apos.at(i));
       newseq.at(Apos.at(i))=newseq.at(Bpos.at(i)); // B --> A
       newseq.at(Bpos.at(i))=temp_value;//A --> B
@@ -1178,7 +1173,7 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
       } else if ( (*ait)>(*bit) ) {
         newApos.push_back(*bit); ++bit;
       } else if ( (*ait)==(*bit) ) {
-        logger->error("Same index for different lists (adding b)!");
+        logger->error("Same index for different lists (b)!");
         newApos.push_back(*bit); ++bit;
       } else {
         logger->error("Same index for different lists!");
@@ -1187,6 +1182,12 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
     }
     while(ait!=Apos.end()) { newApos.push_back(*ait); ++ait; }
     while(bit!=Bpos.end()) { newApos.push_back(*bit); ++bit; }
+    /*
+    cout<<"newApos: ";
+    for(vector<int>::iterator it=newApos.begin();it!=newApos.end();it++) {cout<<" "<<*it;} 
+    cout<<endl;
+    */
+
     for(int i=0;i<(int)Bpos.size();++i)
       newseq.at(newApos.at(i))=seq.at(Bpos.at(i)); // B--> A
   } else {
@@ -1202,8 +1203,8 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
       } else if ( (*ait)>(*bit) ) {
         newBpos.push_back(*bit); ++bit;
       } else if ( (*ait)==(*bit) ) {
-        logger->error("Same index for different lists (adding b)!");
-        newBpos.push_back(*bit); ++bit;
+        logger->error("Same index for different lists (a)!");
+        newBpos.push_back(*ait); ++ait;
       } else {
         logger->error("Same index for different lists!");
 	throw std::runtime_error("Would enter infinite loop");
@@ -1211,9 +1212,21 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
     }
     while(ait!=Apos.end()) { newBpos.push_back(*ait); ++ait; }
     while(bit!=Bpos.end()) { newBpos.push_back(*bit); ++bit; }
+
+    /*
+    cout<<"newBpos: ";
+    for(vector<int>::iterator it=newBpos.begin();it!=newBpos.end();it++) {cout<<" "<<*it;} 
+    cout<<endl;
+    */
+
     for(int i=0;i<(int)Apos.size();++i)
       newseq.at(newBpos.at(i))=seq.at(Apos.at(i)); // A--> B
   }
+  /*
+  cout<<"newseq: ";
+  for(vector<int>::iterator it=newseq.begin();it!=newseq.end();it++) {cout<<" "<<*it;} 
+  cout<<endl;
+  */
   return newseq;
 }
 
