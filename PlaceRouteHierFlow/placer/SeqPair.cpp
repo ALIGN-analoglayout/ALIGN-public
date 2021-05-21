@@ -1,6 +1,6 @@
 #include "SeqPair.h"
 #include "spdlog/spdlog.h"
-
+#include <exception>
 
 SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl)
 {
@@ -1178,7 +1178,8 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
       } else if ( (*ait)>(*bit) ) {
         newApos.push_back(*bit); ++bit;
       } else {
-        logger->debug("Placer-Error: same index for different lists!");
+        logger->error("Same index for different lists!");
+	throw std::runtime_error("Would enter infinite loop");
       }
     }
     while(ait!=Apos.end()) { newApos.push_back(*ait); ++ait; }
@@ -1198,7 +1199,8 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
       } else if ( (*ait)>(*bit) ) {
         newBpos.push_back(*bit); ++bit;
       } else {
-        logger->debug("Placer-Error: same index for different lists!");
+        logger->error("Same index for different lists!");
+	throw std::runtime_error("Would enter infinite loop");
       }
     }
     while(ait!=Apos.end()) { newBpos.push_back(*ait); ++ait; }
