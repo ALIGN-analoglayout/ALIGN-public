@@ -1178,6 +1178,7 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
       } else if ( (*ait)>(*bit) ) {
         newApos.push_back(*bit); ++bit;
       } else {
+        newApos.push_back(*bit); newApos.push_back(*bit); ++bit; ++ait;
         logger->debug("Placer-Error: same index for different lists!");
       }
     }
@@ -1198,6 +1199,7 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
       } else if ( (*ait)>(*bit) ) {
         newBpos.push_back(*bit); ++bit;
       } else {
+        newBpos.push_back(*ait); newBpos.push_back(*ait); ++ait; ++bit;
         logger->debug("Placer-Error: same index for different lists!");
       }
     }
