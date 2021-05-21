@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, extract=False, input_dir=None, toplevel=True, gds_json=True):
 
-    logger.info(
+    logger.debug(
         f"_generate_json: {hN} {variant} {primitive_dir} {pdk_dir} {output_dir} {extract} {input_dir} {toplevel} {gds_json}")
 
     cnv, d = gen_viewer_json(hN, pdkdir=pdk_dir, draw_grid=True, json_dir=str(primitive_dir),
@@ -50,14 +50,17 @@ def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, extract=F
             fp.write(f'SHORT {x}\n')
         for x in cnv.rd.opens:
             fp.write(f'OPEN {x}\n')
-        #for x in cnv.rd.different_widths: fp.write( f'DIFFERENT WIDTH {x}\n')
+        for x in cnv.rd.different_widths:
+            fp.write( f'DIFFERENT WIDTH {x}\n')
         for x in cnv.drc.errors:
             fp.write(f'DRC ERROR {x}\n')
+        for x in cnv.postprocessor.errors:
+            fp.write(f'POSTPROCESSOR ERROR {x}\n')
     ret['errors'] = len(cnv.rd.shorts) + \
         len(cnv.rd.opens) + len(cnv.drc.errors)
     if ret['errors'] > 0:
         logger.error(f"{ret['errors']} LVS / DRC errors found !!!")
-        logger.info(f"OUTPUT error file at {ret['errors']}")
+        logger.info(f"OUTPUT error file at {ret['errfile']}")
 
     if extract:
         ret['cir'] = output_dir / f'{variant}.cir'
