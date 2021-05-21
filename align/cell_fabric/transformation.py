@@ -31,7 +31,7 @@ class Transformation:
         self.sY = sY
 
     def __repr__( self):
-      return "Transformation(oX=%d, oY=%d, sX=%d, sY=%d)" % ( self.oX, self.oY, self.sX, self.sY) 
+      return f'Transformation(oX={self.oX}, oY={self.oY}, sX={self.sX}, sY={self.sY})'
 
     def toTuple(self):
       return self.oX, self.oY, self.sX, self.sY
