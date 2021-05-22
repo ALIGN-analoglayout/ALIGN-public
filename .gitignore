@@ -61,6 +61,8 @@ coverage-reports/
 !**/*.const.json
 !tests/files/**/*.json
 !examples/**/*.json
+!examples/**/**/*.json
+!examples/**/**/*.lef
 !**/*-freeze.json
 !**/Process.json
 !**/layers.json

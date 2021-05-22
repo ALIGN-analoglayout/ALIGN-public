@@ -1,0 +1,81 @@
+{
+  "Res_1": {
+    "primitive": "Res",
+    "value": [
+      1,
+      1.0
+    ],
+    "abstract_template_name": "Res_1",
+    "concrete_template_name": "Res_1"
+  },
+  "Cap_12f": {
+    "primitive": "Cap_12f",
+    "value": 12,
+    "abstract_template_name": "Cap_12f",
+    "concrete_template_name": "Cap_12f"
+  },
+  "Switch_PMOS_nfin711_nf8_m1_n12_X79_Y6": {
+    "primitive": "Switch_PMOS",
+    "value": 12,
+    "x_cells": 79,
+    "y_cells": 6,
+    "parameters": {
+      "l": 2.0e-07,
+      "w": 3.2e-05,
+      "m": 1.0,
+      "nf": 8.0,
+      "nfin": 711,
+      "real_inst_type": "pch"
+    },
+    "abstract_template_name": "Switch_PMOS_nfin711_nf8_m1_n12_X79_Y6",
+    "concrete_template_name": "Switch_PMOS_nfin711_nf8_m1_n12_X79_Y6"
+  },
+  "Switch_NMOS_nfin44_nf16_n12_X59_Y1": {
+    "primitive": "Switch_NMOS",
+    "value": 12,
+    "x_cells": 59,
+    "y_cells": 1,
+    "parameters": {
+      "l": 6.0e-08,
+      "w": 2e-06,
+      "nf": 16.0,
+      "nfin": 44,
+      "real_inst_type": "nmos_rf"
+    },
+    "abstract_template_name": "Switch_NMOS_nfin44_nf16_n12_X59_Y1",
+    "concrete_template_name": "Switch_NMOS_nfin44_nf16_n12_X59_Y1"
+  },
+  "Switch_NMOS_nfin1422_nf8_m1_n12_X79_Y12_LVT": {
+    "primitive": "Switch_NMOS",
+    "value": 12,
+    "x_cells": 79,
+    "y_cells": 12,
+    "parameters": {
+      "l": 4.0e-07,
+      "w": 6.4e-05,
+      "m": 1.0,
+      "nf": 8.0,
+      "nfin": 1422,
+      "real_inst_type": "nch_lvt"
+    },
+    "vt_type": "LVT",
+    "abstract_template_name": "Switch_NMOS_nfin1422_nf8_m1_n12_X79_Y12_LVT",
+    "concrete_template_name": "Switch_NMOS_nfin1422_nf8_m1_n12_X79_Y12_LVT"
+  },
+  "Switch_PMOS_nfin4266_nf32_m1_n12_X144_Y79": {
+    "primitive": "Switch_PMOS",
+    "value": 12,
+    "x_cells": 144,
+    "y_cells": 79,
+    "parameters": {
+      "l": 2.0e-07,
+      "w": 0.000192,
+      "m": 1.0,
+      "nf": 32.0,
+      "nfin": 4266,
+      "real_inst_type": "pch"
+    },
+    "abstract_template_name": "Switch_PMOS_nfin4266_nf32_m1_n12_X144_Y79",
+    "concrete_template_name": "Switch_PMOS_nfin4266_nf32_m1_n12_X144_Y79"
+  }
+}

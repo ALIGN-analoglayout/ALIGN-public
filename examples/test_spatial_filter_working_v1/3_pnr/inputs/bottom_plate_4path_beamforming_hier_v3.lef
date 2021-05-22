@@ -1,0 +1,370 @@
+MACRO CAP_MIM_MOM_13pF
+  UNITS 
+    DATABASE MICRONS UNITS 1;
+  END UNITS
+  ORIGIN 0 0 ;
+  FOREIGN CAP_MIM_MOM_13pF 0 0 ;
+  SIZE 95.8 BY 99.8 ;
+  PIN TOP
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M8 ;
+        RECT 8.72 12.54 9.56 87.26 ;
+    END
+  END TOP
+  PIN BOTTOM
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M8 ;
+        RECT 86.24 11.56 87.08 88.24 ;
+    END
+  END BOTTOM
+  OBS
+    LAYER M3 ;
+      RECT 8.5 8.5 87.3 91.3 ;
+    LAYER M4 ;
+      RECT 8.5 8.5 87.3 91.3 ;
+    LAYER M5 ;
+      RECT 8.5 8.5 87.3 91.3 ;
+    LAYER M6 ;
+      RECT 8.5 8.5 87.3 91.3 ;
+    LAYER M7 ;
+      RECT 8.5 8.5 87.3 91.3 ;
+    LAYER M8 ;
+      RECT 10 10 85.8 89.8 ;
+  END
+END CAP_MIM_MOM_13pF
+
+MACRO CAP_MIM_wt32_lt32
+  UNITS 
+    DATABASE MICRONS UNITS 1 ;
+  END UNITS
+  ORIGIN 0 0 ;
+  FOREIGN CAP_MIM_wt32_lt32 0 0 ;
+  SIZE 52.8 BY 56.8 ;
+  PIN PLUS
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M8 ;
+        RECT 8.4 12.8 9.52 44.16 ;
+    END
+  END PLUS
+  PIN MINUS
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M8 ;
+        RECT 43.12 11.52 44.24 45.44 ;
+    END
+  END MINUS
+  OBS
+    LAYER M7 ;
+      RECT 7 6.96 46 49 ;
+    LAYER M8 ;
+      RECT 10 10 42.8 46.8 ;
+  END
+END CAP_MIM_wt32_lt32
+
+
+
+MACRO RES_w1u_l14u
+  UNITS 
+    DATABASE MICRONS UNITS 1 ;
+  END UNITS
+  ORIGIN 0 0 ;
+  FOREIGN RES_w1u_l14u 0 0 ;
+  SIZE 14.54 BY 1.3 ;
+  PIN PLUS
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0 0.15 0.32 1.15 ;
+    END
+  END PLUS
+  PIN MINUS
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 14.22 0.15 14.54 1.15 ;
+    END
+  END MINUS
+END RES_w1u_l14u
+
+MACRO TIA_1
+  UNITS 
+    DATABASE MICRONS UNITS 1 ;
+  END UNITS
+  ORIGIN 0 0 ;
+  FOREIGN TIA_1 0 0 ;
+  SIZE 41.68 BY 48.585 ;
+  PIN OUT_P
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT 
+      LAYER M2 ;
+        RECT 3.5 41.305 4.37 45.855 ;
+      LAYER M3 ;
+        RECT 3.345 26.02 16.325 32.2 ;
+      LAYER M3 ;
+        RECT 9.14 7.555 14.35 15.575 ;
+      LAYER M2 ;
+        RECT 3.36 41.83 4.2 42.65 ;
+      LAYER M3 ;
+        RECT 2.57 31.92 4.15 42.24 ;
+      LAYER M3 ;
+        RECT 9.29 15.54 10.87 26.04 ;
+    END
+  END OUT_P
+  PIN OUT_M
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT 
+      LAYER M2 ;
+        RECT 23.99 41.305 24.86 45.855 ;
+      LAYER M3 ;
+        RECT 25.335 26.02 38.315 32.2 ;
+      LAYER M3 ;
+        RECT 27.69 7.555 32.9 15.575 ;
+      LAYER M2 ;
+        RECT 24.36 41.83 26.88 42.65 ;
+      LAYER M3 ;
+        RECT 26.09 31.92 27.67 42.24 ;
+      LAYER M3 ;
+        RECT 27.77 15.54 29.35 26.04 ;
+    END
+  END OUT_M
+  PIN VDDA
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT 
+      LAYER M9 ;
+        RECT 12.28 41.72 15.94 45.38 ;
+      LAYER M1 ;
+        RECT 15.535 5.795 16 19.19 ;
+      LAYER M1 ;
+        RECT 26.04 5.795 26.505 19.19 ;
+      LAYER M9 ;
+        RECT 13.28 40 14.72 42 ;
+      LAYER M8 ;
+        RECT 13.52 39.28 14 40.72 ;
+      LAYER M7 ;
+        RECT 12.91 39.52 14.13 40 ;
+      LAYER M6 ;
+        RECT 13.427 39.33 13.533 39.71 ;
+      LAYER M5 ;
+        RECT 13.25 39.44 13.63 39.56 ;
+      LAYER M4 ;
+        RECT 1.68 39.29 13.44 39.67 ;
+      LAYER M3 ;
+        RECT 0.89 39.2755 2.47 39.5645 ;
+      LAYER M2 ;
+        RECT 1.5355 38.95 1.8245 39.77 ;
+      LAYER M1 ;
+        RECT 1.31 18.24 2.05 39.36 ;
+      LAYER M2 ;
+        RECT 1.68 17.83 15.96 18.65 ;
+      LAYER M1 ;
+        RECT 15.59 17.87 16.33 18.61 ;
+      LAYER M2 ;
+        RECT 15.96 17.83 26.04 18.65 ;
+      LAYER M1 ;
+        RECT 25.67 17.87 26.41 18.61 ;
+    END
+  END VDDA
+  PIN IN_M
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT 
+      LAYER M2 ;
+        RECT 4.125 24.58 15.575 25.22 ;
+      LAYER M2 ;
+        RECT 9.715 16.53 13.805 17.63 ;
+      LAYER M2 ;
+        RECT 11.35 24.55 12.17 25.37 ;
+      LAYER M3 ;
+        RECT 10.97 17.28 12.55 24.96 ;
+      LAYER M2 ;
+        RECT 11.35 16.87 12.17 17.69 ;
+    END
+  END IN_M
+  PIN IN_P
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT 
+      LAYER M2 ;
+        RECT 26.085 24.58 37.535 25.22 ;
+      LAYER M2 ;
+        RECT 28.235 16.53 32.325 17.63 ;
+      LAYER M2 ;
+        RECT 28.15 24.55 28.97 25.37 ;
+      LAYER M1 ;
+        RECT 28.19 17.28 28.93 24.96 ;
+      LAYER M2 ;
+        RECT 28.15 16.87 28.97 17.69 ;
+    END
+  END IN_P
+  PIN VSSA
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT 
+      LAYER M2 ;
+        RECT 18.415 1.37 23.735 5.745 ;
+    END
+  END VSSA
+  OBS 
+  LAYER M1 ;
+        RECT 5.14 35.52 7.73 38.47 ;
+  LAYER M1 ;
+        RECT 20.63 35.52 23.22 38.47 ;
+  LAYER M1 ;
+        RECT 3.765 33.235 15.905 34.29 ;
+  LAYER M1 ;
+        RECT 25.755 33.235 37.895 34.29 ;
+  LAYER M1 ;
+        RECT 7.19 34.56 7.93 35.52 ;
+  LAYER M2 ;
+        RECT 7.56 34.15 21 34.97 ;
+  LAYER M1 ;
+        RECT 20.63 34.56 21.37 35.52 ;
+  LAYER M1 ;
+        RECT 7.19 33.6 7.93 34.56 ;
+  LAYER M1 ;
+        RECT 22.31 33.6 23.05 35.52 ;
+  LAYER M2 ;
+        RECT 22.68 33.19 26.04 34.01 ;
+  LAYER M1 ;
+        RECT 25.67 33.23 26.41 33.97 ;
+  LAYER M1 ;
+        RECT 7.19 34.17 7.93 34.95 ;
+  LAYER M2 ;
+        RECT 7.27 34.15 7.85 34.97 ;
+  LAYER M1 ;
+        RECT 20.63 34.17 21.37 34.95 ;
+  LAYER M2 ;
+        RECT 20.71 34.15 21.29 34.97 ;
+  LAYER M1 ;
+        RECT 7.19 34.17 7.93 34.95 ;
+  LAYER M2 ;
+        RECT 7.27 34.15 7.85 34.97 ;
+  LAYER M1 ;
+        RECT 20.63 34.17 21.37 34.95 ;
+  LAYER M2 ;
+        RECT 20.71 34.15 21.29 34.97 ;
+  LAYER M1 ;
+        RECT 7.19 34.17 7.93 34.95 ;
+  LAYER M2 ;
+        RECT 7.27 34.15 7.85 34.97 ;
+  LAYER M1 ;
+        RECT 20.63 34.17 21.37 34.95 ;
+  LAYER M2 ;
+        RECT 20.71 34.15 21.29 34.97 ;
+  LAYER M1 ;
+        RECT 22.31 33.21 23.05 33.99 ;
+  LAYER M2 ;
+        RECT 22.39 33.19 22.97 34.01 ;
+  LAYER M1 ;
+        RECT 25.67 33.21 26.41 33.99 ;
+  LAYER M2 ;
+        RECT 25.75 33.19 26.33 34.01 ;
+  LAYER M1 ;
+        RECT 7.19 34.17 7.93 34.95 ;
+  LAYER M2 ;
+        RECT 7.27 34.15 7.85 34.97 ;
+  LAYER M1 ;
+        RECT 20.63 34.17 21.37 34.95 ;
+  LAYER M2 ;
+        RECT 20.71 34.15 21.29 34.97 ;
+  LAYER M1 ;
+        RECT 22.31 33.21 23.05 33.99 ;
+  LAYER M2 ;
+        RECT 22.39 33.19 22.97 34.01 ;
+  LAYER M1 ;
+        RECT 25.67 33.21 26.41 33.99 ;
+  LAYER M2 ;
+        RECT 25.75 33.19 26.33 34.01 ;
+  LAYER M1 ;
+        RECT 2.405 39.87 9.23 47.235 ;
+  LAYER M2 ;
+        RECT 4.745 35.52 8.14 45.545 ;
+  LAYER M3 ;
+        RECT 4.745 41.525 23.615 45.545 ;
+  LAYER M4 ;
+        RECT 12.58 42.02 15.64 45.08 ;
+  LAYER M5 ;
+        RECT 12.58 42.02 15.645 45.08 ;
+  LAYER M6 ;
+        RECT 12.58 42.02 15.645 45.08 ;
+  LAYER M7 ;
+        RECT 12.5 41.94 15.725 45.16 ;
+  LAYER M8 ;
+        RECT 12.5 41.94 15.725 45.16 ;
+  LAYER M1 ;
+        RECT 2.42 23.66 17.25 33.185 ;
+  LAYER M2 ;
+        RECT 25.335 26.02 38.325 32.2 ;
+  LAYER M1 ;
+        RECT 7.785 5.795 15.395 19.19 ;
+  LAYER M2 ;
+        RECT 9.255 1.37 14.235 15.58 ;
+  END 
+END TIA_1
+
+MACRO SW_NMOS_wr2u_lr60n_nr16
+  UNITS 
+    DATABASE MICRONS UNITS 1 ;
+  END UNITS
+  ORIGIN 0 0 ;
+  FOREIGN SW_NMOS_wr2u_lr60n_nr16 0 0 ;
+  SIZE 10 BY 7.54 ;
+  PIN S
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M4 ;
+        RECT 2.435 2.24 7.565 4.41 ;
+    END
+  END S
+  PIN G
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M3 ;
+        RECT 8.02 2.695 8.2 4.78 ;
+    END
+  END G
+  PIN D
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 2.65 5.24 7.35 6.54 ;
+    END
+  END D
+  PIN DNWP
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 8.76 1.03 8.97 6.29 ;
+    END
+  END DNWP
+  OBS
+    LAYER M1 ;
+      RECT 1 1 8.61 6.51 ;
+    LAYER M2 ;
+      RECT 1.785 1.53 8.2 5.04 ;
+    LAYER M3 ;
+      RECT 1.785 2.5 7.93 5.04 ;
+  END
+END SW_NMOS_wr2u_lr60n_nr16
+
+
+END LIBRARY
+
+
+
