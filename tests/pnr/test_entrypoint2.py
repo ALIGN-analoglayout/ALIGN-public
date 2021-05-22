@@ -42,8 +42,6 @@ def test_row():
     (run_dir / '1_topology').mkdir(parents=False, exist_ok=False)
     (run_dir / '2_primitives').mkdir(parents=False, exist_ok=False)
 
-
-
     instances = []
     n = 3
     for i in range(n):
@@ -60,7 +58,18 @@ def test_row():
     topmodule = {
         'name': nm,
         'parameters': ["inp","out"],
-        'instances': instances
+        'instances': instances,
+        'constraints': [
+            {
+                'constraint': 'Order',
+                'direction': 'left_to_right',
+                'instances': [ f'u{i}' for i in range(n)]
+            },
+            {
+                'constraint': 'SameTemplate',
+                'instances': [ f'u{i}' for i in range(n)]
+            }
+        ]
     }
 
     verilog_d = { 'modules': [topmodule], 'global_signals': []}
