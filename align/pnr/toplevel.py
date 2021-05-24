@@ -5,6 +5,7 @@ import copy
 from itertools import chain
 
 from .. import PnR
+from .DB_wrapper import DB_wrapper
 from .render_placement import gen_placement_verilog, scale_placement_verilog, gen_boxes_and_hovertext, standalone_overlap_checker
 from .build_pnr_model import *
 from .checker import check_placement
@@ -120,7 +121,6 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
             return_name = f'{current_node_copy.name}_{current_node_copy.n_copy}_{lidx}' if return_name is None else return_name
             DB.WriteJSON(current_node_copy, True, True, True, True, return_name, drcInfo, opath)
             current_node.gdsFile = current_node_copy.gdsFile
-            logger.info( f'SMB {current_node_copy.gdsFile}')
             DB.WriteLef(current_node_copy, f'{return_name}.lef', opath)
             DB.PrintHierNode(current_node_copy)
     else:
@@ -132,7 +132,10 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
 
     return return_name
 
-def route_bottom_up( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS):
+def route_bottom_up( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS, placements_to_run):
+
+    if placements_to_run is None:
+        placements_to_run = list(range(DB.hierTree[idx].numPlacement))
 
     # Compute all the needed subblocks
     subblocks_d = defaultdict(set)
@@ -145,7 +148,7 @@ def route_bottom_up( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS):
             if child_idx >= 0:
                 aux(child_idx, blk.selectedInstance)
 
-    for lidx in range(DB.hierTree[idx].numPlacement):
+    for lidx in placements_to_run:
         aux(idx, lidx)
 
     results_name_map = {}
@@ -202,7 +205,7 @@ def route_bottom_up( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS):
 
     return results_name_map
 
-def route_no_op( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS):
+def route_no_op( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS, placements_to_run):
     results_name_map = {}
     return results_name_map
 
@@ -264,12 +267,15 @@ def route_top_down_aux( DB, drcInfo,
 
     return new_currentnode_idx
 
-def route_top_down( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS):
+def route_top_down( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS, placements_to_run):
     assert len(DB.hierTree[idx].PnRAS) == DB.hierTree[idx].numPlacement
+
+    if placements_to_run is None:
+        placements_to_run = list(range(DB.hierTree[idx].numPlacement))
 
     results_name_map = {}
     new_topnode_indices = []
-    for lidx in range(DB.hierTree[idx].numPlacement):
+    for lidx in placements_to_run:
         sel = lidx
         new_topnode_idx = route_top_down_aux( DB, DB.getDrc_info(),
                                               PnR.bbox( PnR.point(0,0),
@@ -318,15 +324,15 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff):
 
     DB.hierTree[idx].numPlacement = actualNumLayout
 
-def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode, skipGDS):
-    logger.info(f'Starting {router_mode} routing on {DB.hierTree[idx].name} {idx}')
+def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode, skipGDS, placements_to_run):
+    logger.info(f'Starting {router_mode} routing on {DB.hierTree[idx].name} {idx} restricted to {placements_to_run}')
 
     router_engines = { 'top_down': route_top_down,
                        'bottom_up': route_bottom_up,
                        'no_op': route_no_op
                        }
 
-    return router_engines[router_mode]( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, skipGDS=skipGDS)
+    return router_engines[router_mode]( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, skipGDS=skipGDS, placements_to_run=placements_to_run)
 
 def subset_verilog_d( verilog_d, nm):
     # Should be an abstract verilog_d; no concrete_instance_names
@@ -366,6 +372,8 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
     for idx in TraverseOrder:
         place( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx, lambda_coeff=lambda_coeff)
 
+    placements_to_run = None
+
     if verilog_d is not None:
         def r2wh( r):
             return (r[2]-r[0], r[3]-r[1])
@@ -375,71 +383,81 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
             d = { 'width': p[0], 'height': p[1]}
             return (d, [ ((0, 0)+p, f'{ctn}<br>{0} {0} {p[0]} {p[1]}', True, 0)])
 
-        leaf_map = defaultdict(dict)
+        if gui:
+            leaf_map = defaultdict(dict)
 
-        # Get all the leaf cells sizes; still doesn't get the CC capacitors
-        for atn, gds_lst in DB.gdsData2.items():
-            ctns = [str(pathlib.Path(fn).stem) for fn in gds_lst]
-            for ctn in ctns:
-                if ctn in DB.lefData:
-                    lef = DB.lefData[ctn][0]
-                    p = lef.width, lef.height
-                    if ctn in leaf_map[atn]:
-                        assert leaf_map[atn][ctn][0] == p
+            # Get all the leaf cells sizes; still doesn't get the CC capacitors
+            for atn, gds_lst in DB.gdsData2.items():
+                ctns = [str(pathlib.Path(fn).stem) for fn in gds_lst]
+                for ctn in ctns:
+                    if ctn in DB.lefData:
+                        lef = DB.lefData[ctn][0]
+                        p = lef.width / 2000, lef.height / 2000
+                        if ctn in leaf_map[atn]:
+                            assert leaf_map[atn][ctn][0] == p
+                        else:
+                            leaf_map[atn][ctn] = gen_leaf_bbox_and_hovertext( ctn, p)
+
                     else:
-                        leaf_map[atn][ctn] = gen_leaf_bbox_and_hovertext( ctn, p)
+                        logger.error( f'LEF for concrete name {ctn} (of {atn}) missing.')
 
-                else:
-                    logger.error( f'LEF for concrete name {ctn} (of {atn}) missing.')
-
+        DBw = DB_wrapper(DB)
+        #DBw = DB
 
         tagged_bboxes = defaultdict(dict)
         for idx in TraverseOrder:
-            nm = DB.hierTree[idx].name
+            nm = DBw.hierTree[idx].name
 
             # Restrict verilog_d to include only sub-hierachies of nm
             s_verilog_d = subset_verilog_d( verilog_d, nm)
 
-            for sel in range(DB.hierTree[idx].numPlacement):
+            for sel in range(DBw.hierTree[idx].numPlacement):
 
-                logger.debug( f'DB.CheckoutHierNode( {idx}, {sel})')
-                hN = DB.CheckoutHierNode( idx, sel)
+                concrete_name = f'{nm}_{sel}'
+
+                if not gui:
+                    logger.info( f'Working on {concrete_name}')
+
+                hN = DBw.CheckoutHierNode( idx, sel)
 
                 # create new verilog for each placement
-                placement_verilog_d = gen_placement_verilog( hN, DB, s_verilog_d)
-
-                #(pathlib.Path(opath) / f'{nm}_{sel}.placement_verilog.json').write_text(placement_verilog_d.json(indent=2))
+                placement_verilog_d = gen_placement_verilog( hN, idx, sel, DBw, s_verilog_d)
 
                 scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, scale_factor)
 
+                (pathlib.Path(opath) / f'{concrete_name}.placement_verilog.json').write_text(scaled_placement_verilog_d.json(indent=2,sort_keys=True))
+
                 check_placement( scaled_placement_verilog_d)
-                standalone_overlap_checker( scaled_placement_verilog_d, nm)
+                standalone_overlap_checker( scaled_placement_verilog_d, concrete_name)
 
                 if gui:
-                    modules = { x['name']: x for x in placement_verilog_d['modules']}
+                    gui_scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, 0.001)
 
-                    p = r2wh(modules[nm]['bbox'])
+                    modules = { x['concrete_name']: x for x in gui_scaled_placement_verilog_d['modules']}
+
+                    p = r2wh(modules[concrete_name]['bbox'])
                     d = { 'width': p[0], 'height': p[1],
-                          'hpwl': hN.HPWL, 'cost': hN.cost,
+                          'hpwl': hN.HPWL / 2000, 'cost': hN.cost,
                           'constraint_penalty': hN.constraint_penalty,
                           'area_norm': hN.area_norm, 'hpwl_norm': hN.HPWL_norm
                     }
-                    logger.info( f"data: {d}")
+                    logger.info( f"Working on {concrete_name}: {d}")
 
-                    tagged_bboxes[nm][f'{nm}_{sel}'] = d, list(gen_boxes_and_hovertext( placement_verilog_d, nm))
+                    tagged_bboxes[nm][concrete_name] = d, list(gen_boxes_and_hovertext( gui_scaled_placement_verilog_d, concrete_name))
 
-                    leaves  = { x['name']: x for x in placement_verilog_d['leaves']}
+                    leaves  = { x['concrete_name']: x for x in gui_scaled_placement_verilog_d['leaves']}
 
                     # construct set of abstract_template_names
                     atns = defaultdict(set)
 
-                    for module in placement_verilog_d['modules']:
+                    for module in gui_scaled_placement_verilog_d['modules']:
                         for instance in module['instances']:
                             if 'abstract_template_name' in instance:
                                 atn = instance['abstract_template_name'] 
                                 if 'concrete_template_name' in instance:
                                     ctn = instance['concrete_template_name']
-                                    atns[atn].add((ctn, r2wh(leaves[ctn]['bbox'])))
+                                    if ctn in leaves:
+                                        atns[atn].add((ctn, r2wh(leaves[ctn]['bbox'])))
 
                     # Hack to get CC capacitors because they are missing from gdsData2 above
                     # Can be removed when CC capacitor generation is moved to correct spot in flow
@@ -452,10 +470,22 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
         if gui:
             tagged_bboxes.update( leaf_map)
-            top_level = DB.hierTree[TraverseOrder[-1]].name
-            run_gui( tagged_bboxes=tagged_bboxes, module_name=top_level, lambda_coeff=lambda_coeff)
+            top_level = DBw.hierTree[TraverseOrder[-1]].name
 
-    return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode, skipGDS=skipGDS)
+            print( f"Press Ctrl-C to end the GUI interaction. If current selection is a toplevel placement, the routing engine will be called on that placement. If the current selection is not toplevel (an intermediate hierarchy or a leaf), the router call will be skipped.")
+
+            selected_concrete_name = run_gui( tagged_bboxes=tagged_bboxes, module_name=top_level, lambda_coeff=lambda_coeff)
+
+            # Don't like name hacking; make we can do this another way
+            p = re.compile( r'^(\S+)_(\d+)$')
+
+            placements_to_run = []
+            m = p.match(selected_concrete_name)
+            if m:
+                if m.groups()[0] == top_level:
+                    placements_to_run = [int(m.groups()[1])]
+
+    return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run)
 
 def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0, scale_factor=2):
 

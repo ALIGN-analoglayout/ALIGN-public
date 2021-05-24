@@ -1,0 +1,19 @@
+[
+    {"constraint": "GroupBlocks", "instances": ["I1<1>", "I1<2>", "I1<3>", "I1<4>"], "name": "top"},
+    {"constraint": "GroupBlocks", "instances": ["I1<8>", "I1<7>", "I1<6>", "I1<5>"], "name": "bot"},
+    {
+	"constraint": "Order",
+	"direction" : "left_to_right",
+	"instances": ["I1<1>", "I1<2>", "I1<3>", "I1<4>"]
+    },
+    {
+	"constraint": "Order",
+	"direction" : "left_to_right",
+	"instances": ["I1<8>", "I1<7>", "I1<6>", "I1<5>"]
+    },
+    {
+	"constraint": "Order",
+	"direction" : "top_to_bottom",
+	"instances": ["top", "bot"]
+    }
+]

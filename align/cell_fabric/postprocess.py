@@ -8,6 +8,7 @@ from copy import deepcopy
 class PostProcessor():
     def __init__(self):
         self.postprocessors = {}
+        self.errors = []
 
     def register(self, layer, func):
         assert layer not in self.postprocessors, "Please specify only one postprocessor per layer"
@@ -39,4 +40,8 @@ class PostProcessor():
             else:
                 terminals.append(term)
         logger.debug(f"Terminals before {len(old_terminals)} after {len(terminals)}")
+
+        if self.errors:
+            logger.error( f'Found errors: POSTPROCESSING: {len(self.errors)}')
+
         return terminals
