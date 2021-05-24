@@ -40,5 +40,5 @@ def lef_to_json( fn, nm=None):
         txt = fp.read()
 
     with open( f"{nm}.json", "wt") as fp:
-        json.dump( lef_to_layout_d( txt, nm), fp=fp, indent=2)
+        json.dump( lef_txt_to_layout_d( txt, nm), fp=fp, indent=2)
     
