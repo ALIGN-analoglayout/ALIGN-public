@@ -108,12 +108,9 @@ class LEFParser:
         if not self._accept_keyword(k):
             raise SyntaxError('Expected keyword' + k)
 
-    def cA( self, sf):
-        return float(self.tok.value)
-
     def pA( self, m):
         self._expect('NUM')     
-        return self.cA(m.scale_factor)
+        return float(self.tok.value)
 
     # Grammar rules follow
     def ports(self, m, pin):

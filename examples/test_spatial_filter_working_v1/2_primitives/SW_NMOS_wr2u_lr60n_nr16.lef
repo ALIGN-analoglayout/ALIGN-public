@@ -9,7 +9,7 @@ MACRO SW_NMOS_wr2u_lr60n_nr16
 
   ORIGIN 0 0 ;
   FOREIGN SW_NMOS_wr2u_lr60n_nr16 0 0 ;
-  SIZE 10 BY 7.54 ;
+  SIZE 9.88 BY 7.4 ;
   PIN S
     DIRECTION INOUT ;
     USE SIGNAL ;
@@ -23,7 +23,7 @@ MACRO SW_NMOS_wr2u_lr60n_nr16
     USE SIGNAL ;
     PORT
       LAYER M3 ;
-        RECT 8.02 2.695 8.2 4.78 ;
+        RECT 7.97 2.695 8.15 4.78 ;
     END
   END G
   PIN D
@@ -31,7 +31,7 @@ MACRO SW_NMOS_wr2u_lr60n_nr16
     USE SIGNAL ;
     PORT
       LAYER M2 ;
-        RECT 2.65 5.24 7.35 6.54 ;
+        RECT 2.65 5.15 7.35 6.45 ;
     END
   END D
   PIN DNWP
@@ -39,7 +39,7 @@ MACRO SW_NMOS_wr2u_lr60n_nr16
     USE SIGNAL ;
     PORT
       LAYER M1 ;
-        RECT 8.76 1.03 8.97 6.29 ;
+        RECT 8.735 1.03 8.945 6.29 ;
     END
   END DNWP
   OBS

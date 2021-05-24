@@ -5,7 +5,7 @@ from . import lef_parser
 
 logger = logging.getLogger(__name__)
 
-def lef_txt_to_layout_d( txt, nm=None, scale_factor=10, m1pitch=None, m2pitch=None):
+def lef_txt_to_layout_d( txt, nm=None, *, scale_factor=10, m1pitch=None, m2pitch=None):
     p = lef_parser.LEFParser()
     p.parse(txt)
 
@@ -63,7 +63,7 @@ def lef_txt_to_layout_d( txt, nm=None, scale_factor=10, m1pitch=None, m2pitch=No
         if h % m2pitch != 0:
             logger.warning( f"bbox height not on grid {h} {h%m2pitch}")
     if m1pitch is not None:
-        w = scaled_r[2]
+        w = scaled_bbox[2]
         if w % m1pitch != 0:
             logger.warning( f"bbox width not on grid {w} {w%m1pitch}")
 
@@ -74,10 +74,10 @@ def lef_txt_to_layout_d( txt, nm=None, scale_factor=10, m1pitch=None, m2pitch=No
         "terminals": terminals
     }
 
-def lef_to_json( fn, nm=None, scale_factor=10, m1pitch=None, m2pitch=None):
+def lef_to_json( fn, nm=None, *, scale_factor=10, m1pitch=None, m2pitch=None):
     with open( fn, "rt") as fp:
         txt = fp.read()
 
     with open( f"{nm}.json", "wt") as fp:
-        json.dump( lef_txt_to_layout_d( txt, nm, scale_factor, m1pitch, m2pitch), fp=fp, indent=2)
+        json.dump( lef_txt_to_layout_d( txt, nm, scale_factor=scale_factor, m1pitch=m1pitch, m2pitch=m2pitch), fp=fp, indent=2)
     
