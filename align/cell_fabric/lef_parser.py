@@ -26,6 +26,7 @@ class Macro:
     def __init__(self):
         self.pins = None
         self.obs = None
+        self.scale_factor = 10000
 
     def prnt(self):
         print( f"macroName {self.macroName} ox {self.ox} oy {self.oy} sx {self.sx} sy {self.sy} bbox {self.bbox}")
@@ -107,20 +108,18 @@ class LEFParser:
         if not self._accept_keyword(k):
             raise SyntaxError('Expected keyword' + k)
 
-    # Grammar rules follow
+    def cA( self, sf):
+        # I don't seem to care what the units are.
+        # the rectangles are all in the database units
+        # It would matter if I write them out in different units
+        return int(round(sf/sf*float(self.tok.value),0))
 
-    @staticmethod
-    def toA( s):
-        return int(round(10000*float(s),0))
-
-    def cA( self):
-        return LEFParser.toA(self.tok.value)
-
-    def pA( self):
+    def pA( self, m):
         self._expect('NUM')     
-        return self.cA()
+        return self.cA(m.scale_factor)
 
-    def ports(self, pin):
+    # Grammar rules follow
+    def ports(self, m, pin):
         pin.ports = []
         layer = None
         while True:
@@ -131,7 +130,7 @@ class LEFParser:
                 layer = self.tok.value
                 self._expect('SEMI')    
             elif self._accept_keyword( 'RECT'):
-                lst = [ self.pA() for _ in range(4)]
+                lst = [ self.pA(m) for _ in range(4)]
                 self._expect('SEMI')    
                 assert layer is not None
                 pin.ports.append( ( layer, tuple(lst)))
@@ -149,19 +148,19 @@ class LEFParser:
                 self._expect_keyword(m.macroName)
                 break
             elif self._accept_keyword( 'ORIGIN'):
-                m.ox = self.pA()
-                m.oy = self.pA()
+                m.ox = self.pA(m)
+                m.oy = self.pA(m)
                 self._expect('SEMI')
             elif self._accept_keyword( 'FOREIGN'):
                 self._expect('NAME')
                 m.foreign_name = self.tok.value
-                m.fx = self.pA()
-                m.fy = self.pA()
+                m.fx = self.pA(m)
+                m.fy = self.pA(m)
                 self._expect('SEMI')
             elif self._accept_keyword( 'SIZE'):
-                m.sx = self.pA()
+                m.sx = self.pA(m)
                 self._expect_keyword('BY')
-                m.sy = self.pA()
+                m.sy = self.pA(m)
                 self._expect('SEMI')
             elif self._accept_keyword( 'PIN'):
                 pin = Pin()
@@ -179,13 +178,22 @@ class LEFParser:
                         self._expect('NAME')
                         self._expect('SEMI')    
                     elif self._accept_keyword( 'PORT'):
-                        self.ports(pin)
+                        self.ports(m, pin)
                     else:
                         raise SyntaxError('Expected END, DIRECTION, USE, or PORT keywords.')     
                 m.pins.append(pin)
+            elif self._accept_keyword( 'UNITS'):
+                self._expect_keyword( 'DATABASE')
+                self._expect_keyword('MICRONS')
+                self._expect_keyword('UNITS')
+                self._expect('NUM')
+                m.scale_factor = float(self.tok.value)
+                self._expect('SEMI')    
+                self._expect_keyword( 'END')
+                self._expect_keyword('UNITS')
             elif self._accept_keyword( 'OBS'):
                 m.obs = Obs()
-                self.ports( m.obs)
+                self.ports( m, m.obs)
             elif self._accept_keyword( 'PROPERTY'):
                 self._expect('NAME')
                 if self._accept( 'LIT') or self._accept( 'NUM'):
