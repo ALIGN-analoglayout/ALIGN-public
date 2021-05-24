@@ -6,7 +6,7 @@ from itertools import chain
 
 from .. import PnR
 from .DB_wrapper import DB_wrapper
-from .render_placement import gen_placement_verilog, scale_placement_verilog, gen_boxes_and_hovertext, standalone_overlap_checker
+from .render_placement import gen_placement_verilog, scale_placement_verilog, gen_boxes_and_hovertext, standalone_overlap_checker, scalar_rational_scaling, round_to_angstroms
 from .build_pnr_model import *
 from .checker import check_placement
 from ..gui.mockup import run_gui
@@ -375,8 +375,6 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
     placements_to_run = None
 
     if verilog_d is not None:
-        def r2wh( r):
-            return (r[2]-r[0], r[3]-r[1])
 
         def gen_leaf_bbox_and_hovertext( ctn, p):
             #return (p, list(gen_boxes_and_hovertext( placement_verilog_d, ctn)))
@@ -392,9 +390,9 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                 for ctn in ctns:
                     if ctn in DB.lefData:
                         lef = DB.lefData[ctn][0]
-                        p = lef.width / 2000, lef.height / 2000
+                        p = scalar_rational_scaling(lef.width,mul=0.001,div=2), scalar_rational_scaling(lef.height,mul=0.001,div=2)
                         if ctn in leaf_map[atn]:
-                            assert leaf_map[atn][ctn][0] == p
+                            assert leaf_map[atn][ctn][0] == p, (leaf_map[atn][ctn][0], p)
                         else:
                             leaf_map[atn][ctn] = gen_leaf_bbox_and_hovertext( ctn, p)
 
@@ -431,6 +429,9 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                 standalone_overlap_checker( scaled_placement_verilog_d, concrete_name)
 
                 if gui:
+                    def r2wh( r):
+                        return (round_to_angstroms(r[2]-r[0]), round_to_angstroms(r[3]-r[1]))
+
                     gui_scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, 0.001)
 
                     modules = { x['concrete_name']: x for x in gui_scaled_placement_verilog_d['modules']}
@@ -464,7 +465,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                     for atn, v in atns.items():
                         for (ctn, p) in v:
                             if ctn in leaf_map[atn]:
-                                assert leaf_map[atn][ctn][0] == { 'width': p[0], 'height': p[1]}
+                                assert leaf_map[atn][ctn][0] == { 'width': p[0], 'height': p[1]}, (atn,ctn,leaf_map[atn][ctn][0], p)
                             else:
                                 leaf_map[atn][ctn] = gen_leaf_bbox_and_hovertext( ctn, p)
 

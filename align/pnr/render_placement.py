@@ -103,9 +103,14 @@ def gen_placement_verilog(hN, idx, sel, DB, verilog_d):
 
     return d
 
+def round_to_angstroms(x):
+    return round(x,4)
+
 def scalar_rational_scaling( v, *, mul=1, div=1):
     if type(mul) == float:
-        return mul*v/div
+        assert mul == 0.001
+        # round to angstroms
+        return round_to_angstroms(mul*v/div)
     else:
         q, r = divmod( mul*v, div)
         assert r == 0
@@ -186,10 +191,10 @@ def standalone_overlap_checker( placement_verilog_d, top_cell):
         return max( rA[0], rB[0]) < min( rA[2], rB[2]) and max( rA[1], rB[1]) < min( rA[3], rB[3])
         #return rA[0] < rB[2] and rB[0] < rA[2] and rA[1] < rB[3] and rB[1] < rA[3]
 
-    leaves = [ r for r, _, isleaf, _ in gen_boxes_and_hovertext( placement_verilog_d, top_cell) if isleaf]
+    leaves = [ (r, hovertext) for r, hovertext, isleaf, _ in gen_boxes_and_hovertext( placement_verilog_d, top_cell) if isleaf]
     logger.debug( f'Checking {len(leaves)} bboxes for overlap')
     for a,b in combinations(leaves,2):
-        if rects_overlap( a, b):
+        if rects_overlap( a[0], b[0]):
             logger.error( f'Leaves {a} and {b} intersect')
 
 def dump_blocks( fig, boxes_and_hovertext, leaves_only, levels):

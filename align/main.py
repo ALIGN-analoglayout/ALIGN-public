@@ -173,25 +173,7 @@ def gen_more_primitives( primitives, topology_dir, subckt):
         json.dump( verilog_json_d, fp=fp, indent=2)
 
 
-def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, extract=False, log_level=None, verbosity=None, generate=False, regression=False, uniform_height=False, PDN_mode=False, flow_start=None, flow_stop=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0):
-
-    steps_to_run = build_steps( flow_start, flow_stop)
-
-    reconfigure_loglevels(file_level=log_level, console_level=verbosity)
-
-    if working_dir is None:
-        working_dir = pathlib.Path.cwd().resolve()
-    else:
-        working_dir = pathlib.Path(working_dir).resolve()
-    if not working_dir.is_dir():
-        logger.error(f"Working directory {working_dir} doesn't exist. Please enter a valid directory path.")
-        raise FileNotFoundError(2, 'No such working directory', working_dir)
-
-    pdk_dir = pathlib.Path(pdk_dir).resolve()
-    if not pdk_dir.is_dir():
-        logger.error(f"PDK directory {pdk_dir} doesn't exist. Please enter a valid directory path")
-        raise FileNotFoundError(2, 'No such pdk directory', pdk_dir)
-
+def extract_netlist_files(netlist_dir,netlist_file):
     netlist_dir = pathlib.Path(netlist_dir).resolve()
     if not netlist_dir.is_dir():
         logger.error(f"Netlist directory {netlist_dir} doesn't exist. Please enter a valid directory path")
@@ -211,25 +193,45 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
                 f"No spice files {netlist_file} found in netlist directory. Exiting...")
             raise FileNotFoundError(2, 'No such netlist file', netlist_file)
 
-    if subckt is None:
-        assert len(netlist_files) == 1, "Encountered multiple spice files. Cannot infer top-level circuit"
-        subckt = netlist_files[0].stem
+    assert len(netlist_files) == 1, "Only one .sp file allowed"
+
+    return netlist_files[0]
+
+def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, extract=False, log_level=None, verbosity=None, generate=False, regression=False, uniform_height=False, PDN_mode=False, flow_start=None, flow_stop=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0):
+
+    steps_to_run = build_steps( flow_start, flow_stop)
+
+    reconfigure_loglevels(file_level=log_level, console_level=verbosity)
+
+    if working_dir is None:
+        working_dir = pathlib.Path.cwd().resolve()
+    else:
+        working_dir = pathlib.Path(working_dir).resolve()
+    if not working_dir.is_dir():
+        logger.error(f"Working directory {working_dir} doesn't exist. Please enter a valid directory path.")
+        raise FileNotFoundError(2, 'No such working directory', working_dir)
+
+    pdk_dir = pathlib.Path(pdk_dir).resolve()
+    if not pdk_dir.is_dir():
+        logger.error(f"PDK directory {pdk_dir} doesn't exist. Please enter a valid directory path")
+        raise FileNotFoundError(2, 'No such pdk directory', pdk_dir)
 
     if regression:
         # Copy regression results in one dir
         regression_dir = working_dir / 'regression'
         regression_dir.mkdir(exist_ok=True)
 
-    assert len(netlist_files) == 1, "Only one .sp file allowed"
-    netlist = netlist_files[0]
-
     results = []
-
-    logger.info(f"READ file: {netlist} subckt={subckt}, flat={flatten}")
 
     # Generate hierarchy
     topology_dir = working_dir / '1_topology'
     if '1_topology' in steps_to_run:
+        netlist = extract_netlist_files(netlist_dir,netlist_file)
+        if subckt is None:
+            subckt = netlist.stem
+
+        logger.info(f"READ file: {netlist} subckt={subckt}, flat={flatten}")
+
         topology_dir.mkdir(exist_ok=True)
         primitives = generate_hierarchy(netlist, subckt, topology_dir, flatten, pdk_dir, uniform_height)
 
@@ -238,9 +240,11 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         with (topology_dir / '__primitives__.json').open( 'wt') as fp:
             json.dump( primitives, fp=fp, indent=2)
     else:
+        if subckt is None:
+            subckt = extract_netlist_files(netlist_dir,netlist_file).stem
+
         with (topology_dir / '__primitives__.json').open( 'rt') as fp:
             primitives = json.load(fp)
-        
 
     # Generate primitives
     primitive_dir = (working_dir / '2_primitives')
@@ -257,9 +261,9 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     if sub_steps:
         pnr_dir.mkdir(exist_ok=True)
         variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort, extract=extract, gds_json=not skipGDS, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui, skipGDS=skipGDS, steps_to_run=sub_steps, lambda_coeff=lambda_coeff)
-        results.append( (netlist, variants))
+        results.append( (subckt, variants))
 
-        assert gui or router_mode == 'no_op' or '3_pnr:check' not in sub_steps or len(variants) > 0, f"No layouts were generated for {netlist}. Cannot proceed further. See LOG/align.log for last error."
+        assert gui or router_mode == 'no_op' or '3_pnr:check' not in sub_steps or len(variants) > 0, f"No layouts were generated for {subckt}. Cannot proceed further. See LOG/align.log for last error."
 
         # Generate necessary output collateral into current directory
         for variant, filemap in variants.items():
