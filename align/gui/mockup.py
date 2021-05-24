@@ -389,6 +389,8 @@ class AppWithCallbacksAndState:
 
         self.app = dash.Dash(__name__, assets_ignore=r'.*\.#.*')
 
+
+
         self.app.layout = html.Div(
             id='frame',
             children=[
@@ -434,12 +436,6 @@ class AppWithCallbacksAndState:
                             options=[{'label': i, 'value': i} for i in ['All', 'Direct', 'Leaves Only']],
                             value='Direct'
                         ),
-                        html.Button(
-                            'Route',
-                            id='route-current',
-                            disabled=True,
-                            n_clicks=0
-                        ),
                         dcc.Graph(
                             id='Placement',
                             figure = self.placement_graph
@@ -460,9 +456,6 @@ class AppWithCallbacksAndState:
                       [Input('tradeoff-graph', 'clickData'),
                        Input('tradeoff-graph', 'hoverData'),
                        Input('display-type', 'value')])(self.display_hover_data)
-
-        self.app.callback( (Output('route-current', 'n_clicks'),),
-                           [Input('route-current', 'n_clicks')])(self.route_current_placement)
 
         self.app.callback( (Output('tradeoff-graph', 'figure'),),
                            [Input('colorscale', 'value'),
@@ -530,12 +523,6 @@ class AppWithCallbacksAndState:
         self.tradeoff = make_tradeoff_fig(self.axes, self.df, log=axes_type == 'loglog', scale=scale, lambda_coeff=self.lambda_coeff)
         return (self.tradeoff,)
 
-    def route_current_placement(self, n_clicks):
-        if self.sel is not None and n_clicks > 0:
-            print( f'Start the router using sel {self.sel}')
-
-        return (0,)
-
     def display_hover_data(self,clickData,hoverData,display_type):
         display_type_change = False
 
@@ -581,4 +568,5 @@ def run_gui( *, tagged_bboxes, module_name, lambda_coeff):
     awcas = AppWithCallbacksAndState( tagged_bboxes=tagged_bboxes, module_name=module_name, lambda_coeff=lambda_coeff)
     awcas.app.run_server(debug=True,use_reloader=False)
     
-    logger.info( f'final module_name: {awcas.module_name} We have access to any state from the GUI object here.')
+    logger.info( f'final selection: {awcas.sel} We have access to any state from the GUI object here.')
+    return awcas.sel
