@@ -109,10 +109,7 @@ class LEFParser:
             raise SyntaxError('Expected keyword' + k)
 
     def cA( self, sf):
-        # I don't seem to care what the units are.
-        # the rectangles are all in the database units
-        # It would matter if I write them out in different units
-        return int(round(sf/sf*float(self.tok.value),0))
+        return float(self.tok.value)
 
     def pA( self, m):
         self._expect('NUM')     
