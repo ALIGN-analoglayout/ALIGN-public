@@ -379,7 +379,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
         def gen_leaf_bbox_and_hovertext( ctn, p):
             #return (p, list(gen_boxes_and_hovertext( placement_verilog_d, ctn)))
             d = { 'width': p[0], 'height': p[1]}
-            return (d, [ ((0, 0)+p, f'{ctn}<br>{0} {0} {p[0]} {p[1]}', True, 0, False)])
+            return d, [ ((0, 0)+p, f'{ctn}<br>{0} {0} {p[0]} {p[1]}', True, 0, False)], None
 
         if gui:
             leaf_map = defaultdict(dict)
@@ -453,7 +453,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                     }
                     logger.info( f"Working on {concrete_name}: {d}")
 
-                    tagged_bboxes[nm][concrete_name] = d, list(gen_boxes_and_hovertext( gui_scaled_placement_verilog_d, concrete_name, nets_d))
+                    tagged_bboxes[nm][concrete_name] = d, list(gen_boxes_and_hovertext( gui_scaled_placement_verilog_d, concrete_name, nets_d)), nets_d
 
                     leaves  = { x['concrete_name']: x for x in gui_scaled_placement_verilog_d['leaves']}
 

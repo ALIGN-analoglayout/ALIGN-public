@@ -1,3 +1,4 @@
+import re
 import json
 import logging
 import copy
@@ -261,7 +262,9 @@ def standalone_overlap_checker( placement_verilog_d, top_cell):
         if rects_overlap( a[0], b[0]):
             logger.error( f'Leaves {a} and {b} intersect')
 
-def dump_blocks( fig, boxes_and_hovertext, leaves_only, levels):
+def dump_blocks( fig, boxes_and_hovertext, leaves_only, levels, netnames):
+    pat = re.compile( r'^Net: (\S+)<br>')
+
     for r, hovertext, isleaf, lvl, ispin in boxes_and_hovertext:
         if leaves_only and not isleaf:
             continue
@@ -273,9 +276,14 @@ def dump_blocks( fig, boxes_and_hovertext, leaves_only, levels):
         y = [y0, y0, y1, y1, y0]
 
         if ispin:
-            fig.add_trace(go.Scatter(x=x, y=y, mode='lines', line={ 'color': 'RoyalBlue'},
-                                     name=hovertext, fill="toself", showlegend=False))
-        else:
+            m = pat.match(hovertext)
+            if m:
+                pinname = m.groups()[0]
+                if netnames is None or netnames == [] or pinname in netnames:
+                    fig.add_trace(go.Scatter(x=x, y=y, mode='lines', line={ 'color': 'RoyalBlue'},
+                                             name=hovertext, fill="toself", showlegend=False))
+
+        if not ispin:
             fig.add_trace(go.Scatter(x=x, y=y, mode='lines',
                                      name=hovertext, fill="toself", showlegend=False))
 
