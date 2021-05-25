@@ -72,7 +72,7 @@ def gen_placement_verilog(hN, idx, sel, DB, verilog_d):
                     assert used_leaves[abstract_template_name][concrete_template_name] == (new_r, centers, pinterminals)
 
     traverse( hN, sel)
-    logger.info( f'used_leaves: {used_leaves} used_internal: {used_internal}')
+    logger.debug( f'used_leaves: {used_leaves} used_internal: {used_internal}')
 
     d = verilog_d.copy()
 
@@ -263,9 +263,25 @@ def standalone_overlap_checker( placement_verilog_d, top_cell):
             logger.error( f'Leaves {a} and {b} intersect')
 
 def dump_blocks( fig, boxes_and_hovertext, leaves_only, levels, netnames):
+    lst = list(boxes_and_hovertext)
+
     pat = re.compile( r'^Net: (\S+)<br>')
 
-    for r, hovertext, isleaf, lvl, ispin in boxes_and_hovertext:
+    for r, hovertext, isleaf, lvl, ispin in lst:
+        if leaves_only and not isleaf:
+            continue
+        if levels is not None and lvl >= levels:
+            continue
+
+        [x0, y0, x1, y1] = r
+        x = [x0, x1, x1, x0, x0]
+        y = [y0, y0, y1, y1, y0]
+
+        if not ispin:
+            fig.add_trace(go.Scatter(x=x, y=y, mode='lines',
+                                     name=hovertext, fill="toself", showlegend=False))
+
+    for r, hovertext, isleaf, lvl, ispin in lst:
         if leaves_only and not isleaf:
             continue
         if levels is not None and lvl >= levels:
@@ -282,10 +298,6 @@ def dump_blocks( fig, boxes_and_hovertext, leaves_only, levels, netnames):
                 if netnames is None or netnames == [] or pinname in netnames:
                     fig.add_trace(go.Scatter(x=x, y=y, mode='lines', line={ 'color': 'RoyalBlue'},
                                              name=hovertext, fill="toself", showlegend=False))
-
-        if not ispin:
-            fig.add_trace(go.Scatter(x=x, y=y, mode='lines',
-                                     name=hovertext, fill="toself", showlegend=False))
 
 
 

@@ -546,8 +546,6 @@ class AppWithCallbacksAndState:
         return (self.tradeoff,)
 
     def display_hover_data(self,clickData,hoverData,display_type,display_pins_type,netname):
-        print( f'{display_pins_type} {netname}')
-
         display_type_change = False
 
         ctx = dash.callback_context
