@@ -10,6 +10,7 @@ from .render_placement import gen_placement_verilog, scale_placement_verilog, ge
 from .build_pnr_model import *
 from .checker import check_placement
 from ..gui.mockup import run_gui
+from .hpwl import calculate_HPWL_from_hN
 
 logger = logging.getLogger(__name__)
 
@@ -365,7 +366,6 @@ def subset_verilog_d( verilog_d, nm):
 
     return new_verilog_d
 
-
 def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, verilog_d, router_mode, gui, skipGDS, lambda_coeff, scale_factor):
     TraverseOrder = DB.TraverseHierTree()
 
@@ -399,8 +399,8 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                     else:
                         logger.error( f'LEF for concrete name {ctn} (of {atn}) missing.')
 
-        DBw = DB_wrapper(DB)
-        #DBw = DB
+        #DBw = DB_wrapper(DB)
+        DBw = DB
 
         tagged_bboxes = defaultdict(dict)
         for idx in TraverseOrder:
@@ -435,6 +435,10 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                     gui_scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, 0.001)
 
                     modules = { x['concrete_name']: x for x in gui_scaled_placement_verilog_d['modules']}
+
+                    hpwl = calculate_HPWL_from_hN( hN)
+                    if hpwl != hN.HPWL:
+                        logger.error( f'hpwl: locally computed {hpwl} placer computed {hN.HPWL} differ!')
 
                     p = r2wh(modules[concrete_name]['bbox'])
                     d = { 'width': p[0], 'height': p[1],

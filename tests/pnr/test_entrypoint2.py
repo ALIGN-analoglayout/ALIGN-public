@@ -28,22 +28,8 @@ pdkdir = pathlib.Path(__file__).parent.parent.parent / "pdks" / "FinFET14nm_Mock
 
 p = pdk.Pdk().load(pdkdir / 'layers.json')
 
-def test_row():
-    nm = 'row'
-
-    run_dir = ALIGN_WORK_DIR / f'{nm}_entrypoint2'
-
-    if run_dir.exists():
-        assert run_dir.is_dir()
-        shutil.rmtree(run_dir)
-
-    run_dir.mkdir(parents=True, exist_ok=False)
-
-    (run_dir / '1_topology').mkdir(parents=False, exist_ok=False)
-    (run_dir / '2_primitives').mkdir(parents=False, exist_ok=False)
-
+def gen_row_module(nm, n=3):
     instances = []
-    n = 3
     for i in range(n):
         inp = 'inp' if i==0   else f'x{i}'
         out = 'out' if i==n-1 else f'x{i+1}'
@@ -71,13 +57,43 @@ def test_row():
             }
         ]
     }
+    
+    return topmodule
 
-    verilog_d = { 'modules': [topmodule], 'global_signals': []}
+def gen_matrix_module(nm, n=3):
+    instances = []
+    for i in range(n):
+        inp = 'inp' if i==0   else f'x{i}'
+        out = 'out' if i==n-1 else f'x{i+1}'
+        instance = {
+            'instance_name': f'u{i}',
+            'abstract_template_name': 'row',
+            'fa_map': [ {'formal': 'inp', 'actual': inp},
+                        {'formal': 'out', 'actual': out}]
+        }    
+        instances.append( instance)
 
-    with (run_dir / '1_topology' / f'{nm}.verilog.json').open('wt') as fp:
-        json.dump( verilog_d, fp=fp, indent=2)
+    topmodule = {
+        'name': nm,
+        'parameters': ["inp","out"],
+        'instances': instances,
+        'constraints': [
+            {
+                'constraint': 'Order',
+                'direction': 'top_to_bottom',
+                'instances': [ f'u{i}' for i in range(n)]
+            },
+            {
+                'constraint': 'SameTemplate',
+                'instances': [ f'u{i}' for i in range(n)]
+            }
+        ]
+    }
+    
+    return topmodule
 
 
+def gen_primitives(run_dir):
     primitives_d = {}
     
     for suffix in ['_a', '_b', '_c']:
@@ -141,11 +157,65 @@ def test_row():
         gen_lef.json_lef( run_dir / '2_primitives' / f'{ctn}.json', ctn,
                           cell_pin=['inp','out'], bodyswitch=1, blockM=0, p=p)
 
+
+def test_row():
+    nm = 'row'
+
+    run_dir = ALIGN_WORK_DIR / f'{nm}_entrypoint2'
+
+    if run_dir.exists():
+        assert run_dir.is_dir()
+        shutil.rmtree(run_dir)
+
+    run_dir.mkdir(parents=True, exist_ok=False)
+
+    (run_dir / '1_topology').mkdir(parents=False, exist_ok=False)
+    (run_dir / '2_primitives').mkdir(parents=False, exist_ok=False)
+
+    topmodule = gen_row_module(nm)
+
+    verilog_d = { 'modules': [topmodule], 'global_signals': []}
+
+    with (run_dir / '1_topology' / f'{nm}.verilog.json').open('wt') as fp:
+        json.dump( verilog_d, fp=fp, indent=2)
+
+    gen_primitives(run_dir)
+
     #==========================
 
     os.chdir(run_dir)
 
-    (run_dir / 'inputs').mkdir(parents=False, exist_ok=False)
+    args = [ 'dummy_input_directory_can_be_anything', '-s', nm, '--flow_start', '3_pnr', '--skipGDS']
+    results = align.CmdlineParser().parse_args(args)
 
-    args = [ 'inputs', '-s', nm, '--flow_start', '3_pnr']
+
+def test_matrix():
+    nm = 'matrix'
+
+    run_dir = ALIGN_WORK_DIR / f'{nm}_entrypoint2'
+
+    if run_dir.exists():
+        assert run_dir.is_dir()
+        shutil.rmtree(run_dir)
+
+    run_dir.mkdir(parents=True, exist_ok=False)
+
+    (run_dir / '1_topology').mkdir(parents=False, exist_ok=False)
+    (run_dir / '2_primitives').mkdir(parents=False, exist_ok=False)
+
+    rowmodule = gen_row_module('row', n=10)
+    topmodule = gen_matrix_module(nm, n=12)
+
+    verilog_d = { 'modules': [topmodule,rowmodule], 'global_signals': []}
+
+    with (run_dir / '1_topology' / f'{nm}.verilog.json').open('wt') as fp:
+        json.dump( verilog_d, fp=fp, indent=2)
+
+    gen_primitives(run_dir)
+
+    #==========================
+
+    os.chdir(run_dir)
+
+    args = [ 'dummy_input_directory_can_be_anything', '-s', nm, '--flow_start', '3_pnr', '--skipGDS']
     results = align.CmdlineParser().parse_args(args)
