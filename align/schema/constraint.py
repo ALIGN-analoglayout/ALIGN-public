@@ -85,6 +85,12 @@ class PlacementConstraint(HardConstraint):
         assert len(self.instances) >= 1, 'Must contain at least one instance'
 
 
+class SameTemplate(PlacementConstraint):
+    instances: List[str]
+
+    def check(self, checker):
+        pass
+
 class Order(PlacementConstraint):
     '''
     All `instances` will be ordered along `direction`
@@ -603,6 +609,7 @@ ConstraintType = Union[
     # Additional helper constraints
     AlignInOrder,
     # Current Align constraints
+    SameTemplate,
     # Consider removing redundant ones
     CreateAlias,
     GroupBlocks,

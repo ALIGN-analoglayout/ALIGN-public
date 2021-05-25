@@ -12,12 +12,10 @@
 using std::map;
 static double parse_and_scale(const std::string& s, double unitScale) {
   auto logger = spdlog::default_logger()->clone("PnRDB.parse_and_scale");
-
   double scaled = stod(s) * unitScale;
   double result = round(scaled);
   if (fabs(scaled - result) > 0.001) {
-    logger->error( "ERROR: parse_and_scale {0} {1} Rounded result differs too much from unrounded result ( {2} {3} )" , s , unitScale , result
-              , scaled );
+    logger->error( "{0}*{1} Rounded result ({2}) differs too much from unrounded result ({3})", s , unitScale , result, scaled);
   }
   return result;
 }

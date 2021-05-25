@@ -167,7 +167,7 @@ def gen_leaf_collateral( leaves, primitives, primitive_dir):
             if fn.is_file():
                 files[suffix] = str(fn)
             else:
-                logger.error( f'Collateral {suffix} for leaf {leaf} not found in {primitive_dir}')
+                logger.warning( f'Collateral {suffix} for leaf {leaf} not found in {primitive_dir}')
         leaf_collateral[leaf] = files
 
     return leaf_collateral
@@ -229,7 +229,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                 a = v['abstract_template_name']
                 c = v['concrete_template_name']
                 if c in leaf_collateral:
-                    assert '.gds.json' in leaf_collateral[c]
+                    assert '.lef' in leaf_collateral[c]
                 else:
                     logger.warning( f'Unused primitive: {a} {c} excluded from map file')
                 print( f'{a} {c}.gds', file=mp)
@@ -252,13 +252,14 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         # Copy primitive json files
         for k,v in leaf_collateral.items():
             for suffix in ['.gds.json', '.json']:
-                (input_dir / f'{k}{suffix}').write_text(pathlib.Path(v[suffix]).read_text())
-                fl = v[suffix]
-                index = fl.rfind('/', 0)
-                if (index >= 0) :
-                    flsuffix = fl[0:index] + '/wo_tap/' + fl[index+1:]
-                    if (pathlib.Path(flsuffix).is_file()):
-                        (input_dir_wotap / f'{k}{suffix}').write_text(pathlib.Path(flsuffix).read_text())
+                if suffix in v:
+                    (input_dir / f'{k}{suffix}').write_text(pathlib.Path(v[suffix]).read_text())
+                    fl = v[suffix]
+                    index = fl.rfind('/', 0)
+                    if (index >= 0) :
+                        flsuffix = fl[0:index] + '/wo_tap/' + fl[index+1:]
+                        if (pathlib.Path(flsuffix).is_file()):
+                            (input_dir_wotap / f'{k}{suffix}').write_text(pathlib.Path(flsuffix).read_text())
 
 
     else:

@@ -136,13 +136,20 @@ class Z3Checker(AbstractChecker):
         self._bbox_cache = {}
         self._bbox_subcircuit = {}
         self._solver = z3.Solver()
+        self.previously_unsat = False
 
     def append(self, formula, identifier=None):
         self._solver.add(formula)
         r = self._solver.check()
         if r == z3.unsat:
             z3.set_option(max_depth=10000, max_args=100, max_lines=10000)
-            raise CheckerError(f'No solution exists for {formula} in conjunction with {self._solver}')
+            raise_on_unsat = True
+            if raise_on_unsat:
+                raise CheckerError(f'No solution exists for {formula} in conjunction with {self._solver}')
+            else:
+                if not self.previously_unsat:
+                    logger.error(f'No solution exists for {formula}')
+            self.previously_unsat = True
 
     def checkpoint(self):
         self._solver.push()
