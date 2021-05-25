@@ -203,8 +203,8 @@ def test_matrix():
     (run_dir / '1_topology').mkdir(parents=False, exist_ok=False)
     (run_dir / '2_primitives').mkdir(parents=False, exist_ok=False)
 
-    rowmodule = gen_row_module('row', n=10)
-    topmodule = gen_matrix_module(nm, n=12)
+    rowmodule = gen_row_module('row', n=3)
+    topmodule = gen_matrix_module(nm, n=4)
 
     verilog_d = { 'modules': [topmodule,rowmodule], 'global_signals': []}
 

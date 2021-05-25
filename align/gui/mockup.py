@@ -489,8 +489,8 @@ class AppWithCallbacksAndState:
 
         fig.update_layout(
             autosize=False,
-            width=800,
-            height=800,
+            width=1024,
+            height=1024,
             title=title_d
         )
 
