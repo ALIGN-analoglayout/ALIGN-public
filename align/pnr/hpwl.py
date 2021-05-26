@@ -91,8 +91,6 @@ def gen_netlist( placement_verilog_d, concrete_name):
 
     aux( modules[concrete_name], (), {})
 
-    logger.info( f'{list(modules.keys())} {nets_d}')
-
     return nets_d
 
 

@@ -178,8 +178,6 @@ def gen_boxes_and_hovertext( placement_verilog_d, top_cell, nets_d=None):
                 assert pin not in inverse_nets_d
                 inverse_nets_d[pin] = k
 
-        logger.info( f'{inverse_nets_d}')
-
     leaves = { x['concrete_name']: x for x in placement_verilog_d['leaves']}
     modules = { x['concrete_name']: x for x in placement_verilog_d['modules']}
 
@@ -295,7 +293,7 @@ def dump_blocks( fig, boxes_and_hovertext, leaves_only, levels, netnames):
             m = pat.match(hovertext)
             if m:
                 pinname = m.groups()[0]
-                if netnames is None or netnames == [] or pinname in netnames:
+                if netnames is not None and (netnames == [] or pinname in netnames):
                     fig.add_trace(go.Scatter(x=x, y=y, mode='lines', line={ 'color': 'RoyalBlue'},
                                              name=hovertext, fill="toself", showlegend=False))
 

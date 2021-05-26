@@ -505,8 +505,7 @@ class AppWithCallbacksAndState:
                     if net_tuple not in self.nets_d:
                         print( f'Error Unknown net: {net} {list(self.nets_d.keys())}')
 
-
-            dump_blocks( fig, d, leaves_only, levels, netname)
+            dump_blocks( fig, d, leaves_only, levels, netname if display_pins_type == 'Pins' else None)
             title_d = dict(text=sel if title is None else title)
 
         fig.update_layout(
