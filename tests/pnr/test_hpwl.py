@@ -1,4 +1,25 @@
-from align.pnr.hpwl import gen_netlist, calculate_HPWL_from_placement_verilog_d
+from align.pnr.hpwl import gen_netlist, calculate_HPWL_from_placement_verilog_d, Interval, SemiPerimeter
+
+def test_interval():
+    i = Interval()
+    i.add( 7)
+
+    assert 0 == i.dist()
+
+    i.add( 3)
+
+    assert 4 == i.dist()
+
+def test_semiperimeter():
+    sp = SemiPerimeter()
+    sp.addPoint( (3,7))
+
+    assert 0 == sp.dist()
+
+    sp.addRect( (10,10,12,12))
+
+    assert 14 == sp.dist()
+
 
 def test_gen_netlist():
     placement_verilog_d = {
