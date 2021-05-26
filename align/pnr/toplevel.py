@@ -10,6 +10,7 @@ from .render_placement import gen_placement_verilog, scale_placement_verilog, ge
 from .build_pnr_model import *
 from .checker import check_placement
 from ..gui.mockup import run_gui
+from .hpwl import calculate_HPWL_from_hN, calculate_HPWL_from_placement_verilog_d, gen_netlist
 
 logger = logging.getLogger(__name__)
 
@@ -365,7 +366,6 @@ def subset_verilog_d( verilog_d, nm):
 
     return new_verilog_d
 
-
 def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, verilog_d, router_mode, gui, skipGDS, lambda_coeff, scale_factor):
     TraverseOrder = DB.TraverseHierTree()
 
@@ -379,7 +379,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
         def gen_leaf_bbox_and_hovertext( ctn, p):
             #return (p, list(gen_boxes_and_hovertext( placement_verilog_d, ctn)))
             d = { 'width': p[0], 'height': p[1]}
-            return (d, [ ((0, 0)+p, f'{ctn}<br>{0} {0} {p[0]} {p[1]}', True, 0)])
+            return d, [ ((0, 0)+p, f'{ctn}<br>{0} {0} {p[0]} {p[1]}', True, 0, False)], None
 
         if gui:
             leaf_map = defaultdict(dict)
@@ -399,8 +399,8 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                     else:
                         logger.error( f'LEF for concrete name {ctn} (of {atn}) missing.')
 
-        DBw = DB_wrapper(DB)
-        #DBw = DB
+        #DBw = DB_wrapper(DB)
+        DBw = DB
 
         tagged_bboxes = defaultdict(dict)
         for idx in TraverseOrder:
@@ -425,10 +425,15 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
                 (pathlib.Path(opath) / f'{concrete_name}.placement_verilog.json').write_text(scaled_placement_verilog_d.json(indent=2,sort_keys=True))
 
-                check_placement( scaled_placement_verilog_d)
                 standalone_overlap_checker( scaled_placement_verilog_d, concrete_name)
+                check_placement( scaled_placement_verilog_d)
 
                 if gui:
+
+                    nets_d = gen_netlist( placement_verilog_d, concrete_name)
+
+                    hpwl_alt = calculate_HPWL_from_placement_verilog_d( placement_verilog_d, concrete_name, nets_d)
+
                     def r2wh( r):
                         return (round_to_angstroms(r[2]-r[0]), round_to_angstroms(r[3]-r[1]))
 
@@ -436,15 +441,26 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
                     modules = { x['concrete_name']: x for x in gui_scaled_placement_verilog_d['modules']}
 
+                    hpwl = calculate_HPWL_from_hN( hN)
+                    if hpwl != hN.HPWL:
+                        logger.error( f'hpwl: locally computed from hN {hpwl}, placer computed {hN.HPWL} differ!')
+
+                    if hpwl_alt != hN.HPWL:
+                        logger.debug( f'hpwl: locally computed from netlist {hpwl_alt}, placer computed {hN.HPWL} differ!')
+
+                    reported_hpwl = hN.HPWL / 2000
+                    # This is a much better estimate but not what the placer is using
+                    #reported_hpwl = hpwl_alt / 2000
+
                     p = r2wh(modules[concrete_name]['bbox'])
                     d = { 'width': p[0], 'height': p[1],
-                          'hpwl': hN.HPWL / 2000, 'cost': hN.cost,
+                          'hpwl': reported_hpwl, 'cost': hN.cost,
                           'constraint_penalty': hN.constraint_penalty,
                           'area_norm': hN.area_norm, 'hpwl_norm': hN.HPWL_norm
                     }
                     logger.info( f"Working on {concrete_name}: {d}")
 
-                    tagged_bboxes[nm][concrete_name] = d, list(gen_boxes_and_hovertext( gui_scaled_placement_verilog_d, concrete_name))
+                    tagged_bboxes[nm][concrete_name] = d, list(gen_boxes_and_hovertext( gui_scaled_placement_verilog_d, concrete_name, nets_d)), nets_d
 
                     leaves  = { x['concrete_name']: x for x in gui_scaled_placement_verilog_d['leaves']}
 

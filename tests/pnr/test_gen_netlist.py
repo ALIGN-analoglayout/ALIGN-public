@@ -1,6 +1,6 @@
-from align.pnr.render_placement import gen_boxes_and_hovertext
+from align.pnr.hpwl import gen_netlist
 
-def test_gen_boxes_and_hovertext():
+def test_gen_netlist():
     placement_verilog_d = {
         "modules": [
             { "abstract_name": "top",
@@ -12,13 +12,25 @@ def test_gen_boxes_and_hovertext():
                       "abstract_template_name": "a",
                       "concrete_template_name": "a",
                       "instance_name": "u0",
-                      "transformation": { "oX": 0, "oY": 0, "sX": 1, "sY": 1}
+                      "transformation": { "oX": 0, "oY": 0, "sX": 1, "sY": 1},
+                      "fa_map": [
+                          {
+                              "formal": "x",
+                              "actual": "y",
+                          }
+                      ]
                   },
                   {
                       "abstract_template_name": "a",
                       "concrete_template_name": "a",
                       "instance_name": "u1",
-                      "transformation": { "oX": 0, "oY": 20, "sX": 1, "sY": 1}
+                      "transformation": { "oX": 0, "oY": 20, "sX": 1, "sY": 1},
+                      "fa_map": [
+                          {
+                              "formal": "x",
+                              "actual": "y",
+                          }
+                      ]
                   }
               ]
               
@@ -37,14 +49,6 @@ def test_gen_boxes_and_hovertext():
         ]
     }
     
-    lst = list(gen_boxes_and_hovertext( placement_verilog_d, 'top'))
-    bbox_rects = [ tup[0] for tup in lst if tup[2] and not tup[4]]
-    term_rects = [ tup[0] for tup in lst if tup[2] and tup[4]]
+    nets_d = gen_netlist( placement_verilog_d, 'top')
 
-    assert bbox_rects[0] == [0,0,10,10]
-    assert bbox_rects[1] == [0,20,10,30]
-
-    assert term_rects[0] == [4,4,6,6]
-    assert term_rects[1] == [4,24,6,26]
-
-
+    assert nets_d[('y',)] == [ ('u0', 'x'), ('u1', 'x')]
