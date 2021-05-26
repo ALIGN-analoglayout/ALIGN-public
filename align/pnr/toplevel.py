@@ -432,7 +432,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
                     nets_d = gen_netlist( placement_verilog_d, concrete_name)
 
-                    #hpwl_alt = calculate_HPWL_from_placement_verilog_d( placement_verilog_d, concrete_name)
+                    hpwl_alt = calculate_HPWL_from_placement_verilog_d( placement_verilog_d, concrete_name, nets_d)
 
                     def r2wh( r):
                         return (round_to_angstroms(r[2]-r[0]), round_to_angstroms(r[3]-r[1]))
@@ -443,11 +443,18 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
                     hpwl = calculate_HPWL_from_hN( hN)
                     if hpwl != hN.HPWL:
-                        logger.error( f'hpwl: locally computed {hpwl} placer computed {hN.HPWL} differ!')
+                        logger.error( f'hpwl: locally computed from hN {hpwl}, placer computed {hN.HPWL} differ!')
+
+                    if hpwl_alt != hN.HPWL:
+                        logger.debug( f'hpwl: locally computed from netlist {hpwl_alt}, placer computed {hN.HPWL} differ!')
+
+                    reported_hpwl = hN.HPWL / 2000
+                    # This is a much better estimate but not what the placer is using
+                    #reported_hpwl = hpwl_alt / 2000
 
                     p = r2wh(modules[concrete_name]['bbox'])
                     d = { 'width': p[0], 'height': p[1],
-                          'hpwl': hN.HPWL / 2000, 'cost': hN.cost,
+                          'hpwl': reported_hpwl, 'cost': hN.cost,
                           'constraint_penalty': hN.constraint_penalty,
                           'area_norm': hN.area_norm, 'hpwl_norm': hN.HPWL_norm
                     }

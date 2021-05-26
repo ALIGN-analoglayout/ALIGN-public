@@ -3,8 +3,9 @@ import logging
 import pathlib
 from collections import defaultdict
 
-from .. import PnR
 
+from .. import PnR
+from ..cell_fabric.transformation import Transformation, Rect
 
 logger = logging.getLogger(__name__)
 
@@ -94,13 +95,55 @@ def gen_netlist( placement_verilog_d, concrete_name):
     return nets_d
 
 
-def calculate_HPWL_from_placement_verilog_d( placement_verilog_d, concrete_name):
+def calculate_HPWL_from_placement_verilog_d( placement_verilog_d, concrete_name, nets_d):
 
     """Two ways to do this. Compute hierarchically or virtually flat."""
 
     """Find all the leaf terminals"""
 
     nets_d = gen_netlist( placement_verilog_d, concrete_name)
+    modules = { module['concrete_name']: module for module in placement_verilog_d['modules']}
+    instances = { (module['concrete_name'],instance['instance_name']): instance for module in placement_verilog_d['modules'] for instance in module['instances']}
+
+    leaf_terminals = defaultdict(list)
+
+    for leaf in placement_verilog_d['leaves']:
+        ctn = leaf['concrete_name']
+        for terminal in leaf['terminals']:
+            leaf_terminals[(ctn,terminal['name'])].append( terminal['rect'])
+
+    logger_fn = logger.debug
 
     HPWL = 0
+
+    for hnet, hpins in nets_d.items():
+
+        mx, Mx, my, My = None, None, None, None
+
+        for hpin in hpins:
+            ctn = concrete_name
+            tr = Transformation()
+            for instance_name in hpin[:-1]:
+                instance = instances[(ctn,instance_name)]
+                ctn = instance['concrete_template_name']
+                tr = tr.postMult(Transformation( **instance['transformation']))
+            
+            for r in leaf_terminals[(ctn,hpin[-1])]:
+                [x0, y0, x1, y1] = tr.hitRect( Rect(*r)).canonical().toList()
+
+                #[x0, y0, x1, y1] = [ (x0+x1)//2, (y0+y1)//2, (x0+x1)//2, (y0+y1)//2]
+
+                logger_fn(f'terminal: {x0,y0,x1,y1}')
+
+                if mx is None or x0 < mx: mx = x0
+                if Mx is None or Mx < x1: Mx = x1
+                if my is None or y0 < my: my = y0
+                if My is None or My < y1: My = y1
+
+        local_HPWL = Mx-mx + My-my if mx is not None else 0
+
+        logger_fn( f"from netlist HPWL: {'/'.join(hnet)}: {local_HPWL}")
+
+        HPWL += local_HPWL
+
     return HPWL
