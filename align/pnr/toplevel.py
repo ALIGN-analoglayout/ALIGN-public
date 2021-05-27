@@ -406,8 +406,6 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
         def per_placement( placement_verilog_d, concrete_name, hN):
             scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, scale_factor)
 
-            logger.info( f'{scaled_placement_verilog_d}')
-
             (pathlib.Path(opath) / f'{concrete_name}.placement_verilog.json').write_text(scaled_placement_verilog_d.json(indent=2,sort_keys=True))
 
             standalone_overlap_checker( scaled_placement_verilog_d, concrete_name)
@@ -518,7 +516,6 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
                 placement_verilog_d = scale_placement_verilog( scaled_placement_verilog_d, scale_factor, invert=True)
 
-                logger.info(f'{concrete_name} {placement_verilog_d}')
                 per_placement( placement_verilog_d, concrete_name, None)
 
         if gui:

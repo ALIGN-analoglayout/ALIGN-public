@@ -61,7 +61,7 @@ def calculate_HPWL_from_hN( hN):
 
         sp = SemiPerimeter()
 
-        logger.info( f'Working on {neti.name}')
+        logger.debug( f'Working on {neti.name}')
 
         for connectedj in neti.connected:
             ntype,iter2,iter = connectedj.type, connectedj.iter2, connectedj.iter
@@ -75,7 +75,7 @@ def calculate_HPWL_from_hN( hN):
 
             gdsFile = pathlib.Path(inst.gdsFile).stem
 
-            logger.info( f'{hN.name} neti {ntype,iter2,iter} {inst.master} {inst.name} {gdsFile} {blk.selectedInstance}')
+            logger.debug( f'{hN.name} neti {ntype,iter2,iter} {inst.master} {inst.name} {gdsFile} {blk.selectedInstance}')
             for contact in inst.blockPins[iter].pinContacts:
                 ob = contact.originBox
                 new_b = tr.hitRect(Rect( ob.LL.x, ob.LL.y, ob.UR.x, ob.UR.y)).canonical().toList()
@@ -90,15 +90,15 @@ def calculate_HPWL_from_hN( hN):
                 assert 2*c.x == b.LL.x + b.UR.x
                 assert 2*c.y == b.LL.y + b.UR.y
 
-                logger.info( f'{c.x} {c.y} {bc.x} {bc.y}')
+                logger.debug( f'{c.x} {c.y} {bc.x} {bc.y}')
                 assert c.x == bc.x and c.y == bc.y
 
                 sp.addPoint( (c.x, c.y))
                     
         net_HPWL = sp.dist()
 
-        logger.info( f'{neti.name} {net_HPWL} {sp}')
-        logger.info( f'==========')
+        logger.debug( f'{neti.name} {net_HPWL} {sp}')
+        logger.debug( f'==========')
 
         HPWL += net_HPWL
     return HPWL
@@ -174,11 +174,11 @@ def calculate_HPWL_from_placement_verilog_d_top_down( placement_verilog_d, concr
             
             for r in leaf_terminals[(ctn,hpin[-1])]:
                 new_r = tr.hitRect( Rect(*r)).canonical().toList()
-                logger.info(f'terminal: {new_r}')
+                logger.debug(f'terminal: {new_r}')
                 sp.addRect( new_r)
 
         local_HPWL = sp.dist()
-        logger.info( f"from netlist HPWL: {'/'.join(hnet)}: {local_HPWL}")
+        logger.debug( f"from netlist HPWL: {'/'.join(hnet)}: {local_HPWL}")
         HPWL += local_HPWL
 
     return HPWL
