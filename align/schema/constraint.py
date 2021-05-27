@@ -609,11 +609,11 @@ class Boundary(HardConstraint):
 
         if self.max_width is not None:
             assert self.max_width >= 0, f'Boundary:max_width should be greater than zero {self.max_width}'
-            # checker.append(checker.cast(bvar.urx-bvar.llx, float) <= self.max_width) # in nanometer
+            checker.append(checker.cast(bvar.urx-bvar.llx, float) <= 1000*self.max_width) # in nanometer
 
         if self.max_height is not None:
             assert self.max_height >= 0, f'Boundary:max_height should be greater than zero {self.max_height}'
-            # checker.append(checker.cast(bvar.ury-bvar.lly, float) <= self.max_height) # in nanometer
+            checker.append(checker.cast(bvar.ury-bvar.lly, float) <= 1000*self.max_height, float) # in nanometer
 
 
 class MultiConnection(SoftConstraint):
