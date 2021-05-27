@@ -447,7 +447,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                 d = { 'width': p[0], 'height': p[1],
                       'hpwl': reported_hpwl, 'cost': cost,
                       'constraint_penalty': constraint_penalty,
-                      'area_norm': area_norm, 'hpwl_norm': HPWL_norm
+                      'area_norm': area_norm, 'hpwl_norm': hpwl_norm
                 }
 
                 logger.info( f"Working on {concrete_name}: {d}")
