@@ -109,7 +109,11 @@ PnRDB::hierNode PnRdatabase::CheckoutHierNode(int nodeID, int sel) {
     hN.gdsFile = p.gdsFile;
     hN.width = p.width;
     hN.height = p.height;
+    hN.constraint_penalty = p.constraint_penalty;
+    hN.cost = p.cost;
     hN.HPWL = p.HPWL;
+    hN.HPWL_norm = p.HPWL_norm;
+    hN.area_norm = p.area_norm;
     hN.Blocks = p.Blocks;
     hN.Terminals = p.Terminals;
     hN.Nets = p.Nets;
@@ -664,25 +668,6 @@ void PnRdatabase::TransformInterviasOriginToPlaced(std::vector<PnRDB::Via>& inte
     }
 }
 
-std::vector<int> PnRdatabase::UsedInstancesIdx(int nodeID) {
-  std::vector<int> ret;
-  for (unsigned int i = 0; i < hierTree[nodeID].PnRAS.size(); i++) {
-    bool found = false;
-    for (auto p : hierTree[nodeID].parent) {
-      for (auto b : hierTree[p].Blocks) {
-        if (b.instance[b.selectedInstance].master == hierTree[nodeID].name && b.selectedInstance == i) {
-          //if the instance is used in any parent node
-          ret.push_back(i);
-          found = true;
-          break;
-        }
-      }
-      if (found) break;
-    }
-  }
-  return ret;
-}
-
 void PnRdatabase::CheckinChildnodetoBlock(PnRDB::hierNode& parent, int blockID, const PnRDB::hierNode& child, PnRDB::Omark ort) {
   // update child into parent.blocks[blockID]
   // update (child.intermetal,intervia,blockpins) into blocks[blockid]
@@ -748,7 +733,11 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
   tmpL.gdsFile=updatedNode.gdsFile;
   tmpL.width=updatedNode.width;
   tmpL.height=updatedNode.height;
+  tmpL.constraint_penalty = updatedNode.constraint_penalty;
+  tmpL.cost = updatedNode.cost;
   tmpL.HPWL = updatedNode.HPWL;
+  tmpL.HPWL_norm = updatedNode.HPWL_norm;
+  tmpL.area_norm = updatedNode.area_norm;
   tmpL.Blocks = updatedNode.Blocks;
   tmpL.Terminals=updatedNode.Terminals;
   tmpL.Nets=updatedNode.Nets;

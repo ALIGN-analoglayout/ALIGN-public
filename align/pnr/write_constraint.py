@@ -51,6 +51,8 @@ class PnRConstraintWriter:
                     const["direction"] = 'V'
                 else:
                     raise NotImplementedError(f'PnR does not support direction {const["direction"]} yet')
+            elif const["const_name"] == 'SameTemplate':
+                logger.info( f'found a SameTemplate: {const}')
             elif const["const_name"] == 'MatchBlocks':
                 const["const_name"] = 'MatchBlock'
                 const['block1'] =  const['blocks'][0]

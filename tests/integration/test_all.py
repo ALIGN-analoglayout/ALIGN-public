@@ -19,14 +19,19 @@ pdks= [pdk for pdk in (ALIGN_HOME / 'pdks').iterdir() \
 @pytest.mark.nightly
 @pytest.mark.parametrize( "design_dir", examples, ids=lambda x: x.name)
 @pytest.mark.parametrize( "pdk_dir", pdks, ids=lambda x: x.name)
-def test_A( pdk_dir, design_dir, maxerrors, router_mode):
+def test_A( pdk_dir, design_dir, maxerrors, router_mode, skipGDS):
     nm = design_dir.name
     run_dir = pathlib.Path( os.environ['ALIGN_WORK_DIR']).resolve() / pdk_dir.name / nm
     run_dir.mkdir(parents=True, exist_ok=True)
     os.chdir(run_dir)
 
-    args = [str(design_dir), '-f', str(design_dir / f"{nm}.sp"), '-s', nm, '-p', str(pdk_dir), '-flat',  str(1 if nm in run_flat else 0), '--regression', '-l','WARNING','-v','INFO' ]
+    args = [str(design_dir), '-f', str(design_dir / f"{nm}.sp"), '-s', nm, '-p', str(pdk_dir), '-flat',  str(1 if nm in run_flat else 0), '-l','WARNING','-v','INFO' ]
     args.extend( ['--router_mode', router_mode])
+    if skipGDS:
+        args.extend( ['--skipGDS'])
+    else:
+        args.extend( ['--regression'])
+
     results = align.CmdlineParser().parse_args(args)
 
     assert results is not None, f"{nm} :No results generated"

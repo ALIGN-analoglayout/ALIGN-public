@@ -103,9 +103,6 @@ class CmdlineParser():
         parser.add_argument('--version',
                             action='version',
                             version='%(prog)s ' + __version__)
-#        parser.add_argument('--python_gds_json',
-#                            action='store_true',
-#                            help="Write out GDS after python postprocessing")
 
         parser.add_argument('--flow_start',
                             type=str,
@@ -123,6 +120,15 @@ class CmdlineParser():
         parser.add_argument('--gui',
                             action='store_true',
                             help='Run in GUI mode')
+
+        parser.add_argument('--skipGDS',
+                            action='store_true',
+                            help='Don\'t generate GDS files.')
+
+        parser.add_argument('--lambda_coeff',
+                            type=float,
+                            default=1.0,
+                            help='Multiplier for hpwl in placer cost function.')
 
         self.parser = parser
 

@@ -114,7 +114,9 @@ def write_verilog( j, ofp):
         print( file=ofp)
         for instance in module['instances']:
             pl = ', '.join( f".{fa['formal']}({fa['actual']})" for fa in instance['fa_map'])
-            print( f"{instance['template_name']} {instance['instance_name']} ( {pl} );", file=ofp)
+            tn = instance['template_name'] if 'template_name' in instance else instance['abstract_template_name']
+
+            print( f"{tn} {instance['instance_name']} ( {pl} );", file=ofp)
 
         print( file=ofp)
         print( 'endmodule', file=ofp)

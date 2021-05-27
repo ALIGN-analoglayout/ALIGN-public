@@ -6,6 +6,7 @@ import re
 import copy
 import math
 from collections import defaultdict
+import sys
 
 from .compiler import generate_hierarchy
 from .primitive import generate_primitive
@@ -19,19 +20,40 @@ logger = logging.getLogger(__name__)
 
 def build_steps( flow_start, flow_stop):
     steps = [ '1_topology', '2_primitives', '3_pnr']
+    sub_steps = { '3_pnr': ['prep', 'place', 'route', 'check']}
 
-    start_idx = 0
-    if flow_start is not None:
-        assert flow_start in steps
-        start_idx = steps.index( flow_start)
-    stop_idx = len(steps)
-    if flow_stop is not None:
-        assert flow_stop in steps
-        stop_idx = steps.index( flow_stop)+1
+    unimplemented_start_points = { '3_pnr:route', '3_pnr:check'}
+    unimplemented_stop_points = { '3_pnr:place'}
 
-    assert start_idx < stop_idx, f'No steps to run in the flow: {steps}[{start_idx}:{stop_idx}]'
+    if flow_start is None:
+        flow_start = steps[0]
+    if flow_start in unimplemented_start_points:
+        raise NotImplementedError(f'Don\'t know how to start from {flow_start}')
+    start_t = tuple(flow_start.split(':')) if ':' in flow_start else (flow_start,)
 
-    steps_to_run = steps[start_idx:stop_idx]
+    if flow_stop is None:
+        flow_stop = steps[-1]
+    if flow_stop in unimplemented_stop_points:
+        raise NotImplementedError(f'Don\'t know how to stop at {flow_stop}')
+    stop_t = tuple(flow_stop.split(':')) if ':' in flow_stop else (flow_stop,)
+
+    steps_to_run = []
+    enabled = False
+    for step in steps:
+        if (step,) == start_t: enabled = True
+        if step in sub_steps:
+            for sub_step in sub_steps[step]:
+                if (step,sub_step) == start_t: enabled = True
+                if enabled: steps_to_run.append( f'{step}:{sub_step}')
+                if (step,sub_step) == stop_t:
+                    assert enabled, f'Stopping flow before it started: {flow_start} {flow_stop}'
+                    enabled = False
+        else:
+            if enabled: steps_to_run.append( f'{step}')
+            if (step,) == stop_t:
+                assert enabled, f'Stopping flow before it started: {flow_start} {flow_stop}'
+                enabled = False
+
     logger.info( f'Running flow steps {steps_to_run}')
 
     return steps_to_run
@@ -41,58 +63,71 @@ def gen_more_primitives( primitives, topology_dir, subckt):
     """primitives dictionary updated in place"""
 
     #
-    # This code should be improved at moved to 2_primitives
+    # This code should be improved and moved to 2_primitives
     #
     map_d = defaultdict(list)
 
     # As a hack, add more primitives if it matches this pattern
     p = re.compile( r'^(\S+)_nfin(\d+)_n(\d+)_X(\d+)_Y(\d+)(|_\S+)$')
+    p_soner = re.compile( r'^(\S+)_nfin(\d+)_nf(\d+)_m(\d+)_n(\d+)_X(\d+)_Y(\d+)(|_\S+)$')
 
     more_primitives = {}
+
+    #
+    # Hack to limit aspect ratios when there are a lot of choices
+    #
+    def limit_pairs( pairs):
+        if len(pairs) > 12:
+            new_pairs = []
+            #log10_aspect_ratios = [ -1.0, -0.3, -0.1, 0, 0.1, 0.3, 1.0]
+            log10_aspect_ratios = [ -0.3, 0, 0.3]
+            for l in log10_aspect_ratios:
+                best_pair = min( (abs( math.log10(newy) - math.log10(newx) - l), (newx, newy))
+                                 for newx,newy in pairs)[1]
+                new_pairs.append( best_pair)
+            return new_pairs
+        else:
+            return pairs
+
+    def gen_pairs( n, nfin):
+        clusters = (nfin+n-1) // n
+
+        pairs = set()
+        for newx in range( 1, clusters+1):
+            newy = (nfin+newx*n-1)//(newx*n)
+            assert newx*newy*n >= nfin
+            pairs.add( (newx,newy))
+
+        by_y = defaultdict(list)
+        for x,y in pairs:
+            by_y[y].append( x)
+
+        pairs = set()
+        for y,xs in by_y.items():
+            pairs.add( (min(xs), y))
+
+        return limit_pairs( pairs.difference( { (X,Y)}))
 
     for k,v in primitives.items():
         m = p.match(k)
         if m:
-            logger.debug( f'Matched primitive {k}')
-            nfin,n,X,Y = tuple(int(x) for x in m.groups()[1:5])
-            abstract_name = f'{m.groups()[0]}_nfin{nfin}{m.groups()[5]}'
+            nfin,n,X,Y = tuple(int(x) for x in m.groups()[1:-1])
+            prefix = f'{m.groups()[0]}_nfin{nfin}'
+            suffix = m.groups()[-1]
+            pairs = gen_pairs( n, nfin)
 
+        mm = p_soner.match(k)
+        if mm:
+            nfin,nf,m,n,X,Y = tuple(int(x) for x in mm.groups()[1:-1])
+            prefix = f'{mm.groups()[0]}_nfin{nfin}_nf{nf}_m{m}'
+            suffix = mm.groups()[-1]
+            pairs = gen_pairs( n, nfin*nf*m)
+
+        if m or mm:
+            abstract_name = f'{prefix}{suffix}'
             map_d[abstract_name].append( k)
-
-            clusters = (nfin+n-1) // n
-
-            pairs = set()
-            for newx in range( 1, clusters+1):
-                newy = (nfin+newx*n-1)//(newx*n)
-                assert newx*newy*n >= nfin
-                pairs.add( (newx,newy))
-
-            by_y = defaultdict(list)
-            for x,y in pairs:
-                by_y[y].append( x)
-
-            pairs = set()
-            for y,xs in by_y.items():
-                pairs.add( (min(xs), y))
-
-            pairs = pairs.difference( { (X,Y)})
-
-            #
-            # Hack to limit aspect ratios when there are a lot of choices
-            #
-            if len(pairs) > 12:
-                new_pairs = []
-                #log10_aspect_ratios = [ -1.0, -0.3, -0.1, 0, 0.1, 0.3, 1.0]
-                log10_aspect_ratios = [ -0.3, 0, 0.3]
-                for l in log10_aspect_ratios:
-                    best_pair = min( (abs( math.log10(newy) - math.log10(newx) - l), (newx, newy)) for newx,newy in pairs)[1]
-                    new_pairs.append( best_pair)
-                pairs = new_pairs
-
-            logger.debug( f'Inject new primitive sizes: {pairs} for {nfin} {n} {X} {Y}')
-
             for newx,newy in pairs:
-                concrete_name = f'{m.groups()[0]}_nfin{nfin}_n{n}_X{newx}_Y{newy}{m.groups()[5]}'
+                concrete_name = f'{prefix}_n{n}_X{newx}_Y{newy}{suffix}'
                 map_d[abstract_name].append( concrete_name)             
                 if concrete_name not in primitives and \
                    concrete_name not in more_primitives:
@@ -128,30 +163,17 @@ def gen_more_primitives( primitives, topology_dir, subckt):
             if t in concrete2abstract:
                 del instance['template_name']
                 instance['abstract_template_name'] = concrete2abstract[t]
+            else:
+                # actually want all instances to use abstract_template_name, even the non-leaf ones
+                del instance['template_name']
+                instance['abstract_template_name'] = t
+
 
     with (topology_dir / f'{subckt}.verilog.json').open( 'wt') as fp:
         json.dump( verilog_json_d, fp=fp, indent=2)
 
 
-def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, extract=False, log_level=None, verbosity=None, generate=False, python_gds_json=True, regression=False, uniform_height=False, PDN_mode=False, flow_start=None, flow_stop=None, router_mode='top_down', gui=False):
-
-    steps_to_run = build_steps( flow_start, flow_stop)
-
-    reconfigure_loglevels(file_level=log_level, console_level=verbosity)
-
-    if working_dir is None:
-        working_dir = pathlib.Path.cwd().resolve()
-    else:
-        working_dir = pathlib.Path(working_dir).resolve()
-    if not working_dir.is_dir():
-        logger.error(f"Working directory {working_dir} doesn't exist. Please enter a valid directory path.")
-        raise FileNotFoundError(2, 'No such working directory', working_dir)
-
-    pdk_dir = pathlib.Path(pdk_dir).resolve()
-    if not pdk_dir.is_dir():
-        logger.error(f"PDK directory {pdk_dir} doesn't exist. Please enter a valid directory path")
-        raise FileNotFoundError(2, 'No such pdk directory', pdk_dir)
-
+def extract_netlist_files(netlist_dir,netlist_file):
     netlist_dir = pathlib.Path(netlist_dir).resolve()
     if not netlist_dir.is_dir():
         logger.error(f"Netlist directory {netlist_dir} doesn't exist. Please enter a valid directory path")
@@ -171,36 +193,58 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
                 f"No spice files {netlist_file} found in netlist directory. Exiting...")
             raise FileNotFoundError(2, 'No such netlist file', netlist_file)
 
-    if subckt is None:
-        assert len(netlist_files) == 1, "Encountered multiple spice files. Cannot infer top-level circuit"
-        subckt = netlist_files[0].stem
+    assert len(netlist_files) == 1, "Only one .sp file allowed"
+
+    return netlist_files[0]
+
+def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, extract=False, log_level=None, verbosity=None, generate=False, regression=False, uniform_height=False, PDN_mode=False, flow_start=None, flow_stop=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0):
+
+    steps_to_run = build_steps( flow_start, flow_stop)
+
+    reconfigure_loglevels(file_level=log_level, console_level=verbosity)
+
+    if working_dir is None:
+        working_dir = pathlib.Path.cwd().resolve()
+    else:
+        working_dir = pathlib.Path(working_dir).resolve()
+    if not working_dir.is_dir():
+        logger.error(f"Working directory {working_dir} doesn't exist. Please enter a valid directory path.")
+        raise FileNotFoundError(2, 'No such working directory', working_dir)
+
+    pdk_dir = pathlib.Path(pdk_dir).resolve()
+    if not pdk_dir.is_dir():
+        logger.error(f"PDK directory {pdk_dir} doesn't exist. Please enter a valid directory path")
+        raise FileNotFoundError(2, 'No such pdk directory', pdk_dir)
 
     if regression:
         # Copy regression results in one dir
         regression_dir = working_dir / 'regression'
         regression_dir.mkdir(exist_ok=True)
 
-    assert len(netlist_files) == 1, "Only one .sp file allowed"
-    netlist = netlist_files[0]
-
     results = []
-
-    logger.info(f"READ file: {netlist} subckt={subckt}, flat={flatten}")
 
     # Generate hierarchy
     topology_dir = working_dir / '1_topology'
     if '1_topology' in steps_to_run:
+        netlist = extract_netlist_files(netlist_dir,netlist_file)
+        if subckt is None:
+            subckt = netlist.stem
+
+        logger.info(f"READ file: {netlist} subckt={subckt}, flat={flatten}")
+
         topology_dir.mkdir(exist_ok=True)
         primitives = generate_hierarchy(netlist, subckt, topology_dir, flatten, pdk_dir, uniform_height)
 
         gen_more_primitives( primitives, topology_dir, subckt)
 
-        with (topology_dir / 'primitives.json').open( 'wt') as fp:
+        with (topology_dir / '__primitives__.json').open( 'wt') as fp:
             json.dump( primitives, fp=fp, indent=2)
     else:
-        with (topology_dir / 'primitives.json').open( 'rt') as fp:
+        if subckt is None:
+            subckt = extract_netlist_files(netlist_dir,netlist_file).stem
+
+        with (topology_dir / '__primitives__.json').open( 'rt') as fp:
             primitives = json.load(fp)
-        
 
     # Generate primitives
     primitive_dir = (working_dir / '2_primitives')
@@ -212,37 +256,48 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
 
     # run PNR tool
     pnr_dir = working_dir / '3_pnr'
-    if '3_pnr' in steps_to_run:
+
+    sub_steps = [step for step in steps_to_run if '3_pnr:' in step]
+    if sub_steps:
         pnr_dir.mkdir(exist_ok=True)
-        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort, extract=extract, gds_json=python_gds_json, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui)
-        results.append( (netlist, variants))
-        assert router_mode == 'no_op' or len(variants) > 0, f"No layouts were generated for {netlist}. Cannot proceed further. See LOG/align.log for last error."
+        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort, extract=extract, gds_json=not skipGDS, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui, skipGDS=skipGDS, steps_to_run=sub_steps, lambda_coeff=lambda_coeff)
+        results.append( (subckt, variants))
+
+        assert gui or router_mode == 'no_op' or '3_pnr:check' not in sub_steps or len(variants) > 0, f"No layouts were generated for {subckt}. Cannot proceed further. See LOG/align.log for last error."
 
         # Generate necessary output collateral into current directory
         for variant, filemap in variants.items():
-            convert_GDSjson_GDS(filemap['gdsjson'], working_dir / f'{variant}.gds')
-            print("Use KLayout to visualize the generated GDS:",working_dir / f'{variant}.gds')
+            if filemap['errors'] > 0:
+                (working_dir / filemap['errfile'].name).write_text(filemap['errfile'].read_text())
 
             if os.getenv('ALIGN_HOME', False):
                 shutil.copy(pnr_dir/f'{variant}.json',
                             pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/f'{variant}.json')
 
+            assert skipGDS or 'gdsjson' in filemap
+            if 'gdsjson' in filemap:
+                convert_GDSjson_GDS(filemap['gdsjson'], working_dir / f'{variant}.gds')
+                print("Use KLayout to visualize the generated GDS:",working_dir / f'{variant}.gds')
+
+            assert skipGDS or 'python_gds_json' in filemap
             if 'python_gds_json' in filemap:
                 convert_GDSjson_GDS(filemap['python_gds_json'], working_dir / f'{variant}.python.gds')
                 print("Use KLayout to visualize the python generated GDS:",working_dir / f'{variant}.python.gds')
 
-
-            (working_dir / filemap['lef'].name).write_text(filemap['lef'].read_text())
-            if filemap['errors'] > 0:
-                (working_dir / filemap['errfile'].name).write_text(filemap['errfile'].read_text())
+            assert skipGDS or 'lef' in filemap
+            if 'lef' in filemap:
+                (working_dir / filemap['lef'].name).write_text(filemap['lef'].read_text())
 
             if extract:
                 (working_dir / filemap['cir'].name).write_text(filemap['cir'].read_text())
+
             # Generate PNG
             if generate:
                 generate_png(working_dir, variant)
+
+            # Copy regression results in one dir
+            # SMB: Do we use this; let's get rid of it
             if regression:
-                # Copy regression results in one dir
                 (regression_dir / filemap['gdsjson'].name).write_text(filemap['gdsjson'].read_text())
                 (regression_dir / filemap['python_gds_json'].name).write_text(filemap['python_gds_json'].read_text())
                 convert_GDSjson_GDS(filemap['python_gds_json'], regression_dir / f'{variant}.python.gds')                
@@ -252,5 +307,6 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
                 for file_ in topology_dir.iterdir():
                     if file_.suffix == '.const':
                         (regression_dir / file_.name).write_text(file_.read_text())
+
     return results
 
