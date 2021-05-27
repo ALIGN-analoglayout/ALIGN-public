@@ -439,18 +439,16 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                 # This is a much better estimate but not what the placer is using
                 reported_hpwl = hpwl_alt / 2000
 
+                cost, constraint_penalty, area_norm, hpwl_norm = 0, 0, 0, 0
                 if hN is not None:
-                    d = { 'width': p[0], 'height': p[1],
-                          'hpwl': reported_hpwl, 'cost': hN.cost,
-                          'constraint_penalty': hN.constraint_penalty,
-                          'area_norm': hN.area_norm, 'hpwl_norm': hN.HPWL_norm
-                    }
-                else:
-                    d = { 'width': p[0], 'height': p[1],
-                          'hpwl': reported_hpwl, 'cost': 0,
-                          'constraint_penalty': 0,
-                          'area_norm': 0, 'hpwl_norm': 0
-                    }
+                    cost, constraint_penalty = hN.cost, hN.constraint_penalty
+                    area_norm, hpwl_norm = hN.area_norm, hN.HPWL_norm
+
+                d = { 'width': p[0], 'height': p[1],
+                      'hpwl': reported_hpwl, 'cost': cost,
+                      'constraint_penalty': constraint_penalty,
+                      'area_norm': area_norm, 'hpwl_norm': HPWL_norm
+                }
 
                 logger.info( f"Working on {concrete_name}: {d}")
 
