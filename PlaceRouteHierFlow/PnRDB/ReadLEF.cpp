@@ -10,12 +10,10 @@
 
 static double parse_and_scale(const std::string& s, double unitScale) {
   auto logger = spdlog::default_logger()->clone("PnRDB.parse_and_scale");
-
   double scaled = stod(s) * unitScale;
   double result = round(scaled);
   if (fabs(scaled - result) > 0.001) {
-    logger->error( "ERROR: parse_and_scale {0} {1} Rounded result differs too much from unrounded result ( {2} {3} )" , s , unitScale , result
-              , scaled );
+    logger->error( "{0}*{1} Rounded result ({2}) differs too much from unrounded result ({3})", s , unitScale , result, scaled);
   }
   return result;
 }
@@ -46,7 +44,7 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
 
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase._ReadLEF");
 
-  logger->info( "PnRDB-Info: reading LEF file {0}" , leffile);
+  logger->debug( "Reading LEF file {0}" , leffile);
   string def;
   size_t found;
   vector<string> temp;
@@ -58,6 +56,8 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
   string obsEnd = "END";
   string pinEnd;
   string macroEnd;
+  string unitsEnd;
+  double units = 2.0;
   int width = -1, height = -1;
   vector<PnRDB::pin> macroPins;
   vector<PnRDB::contact> interMetals;  // metal within each MACRO
@@ -84,12 +84,22 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
           interVias.clear();
           stage = 1;
         }
+      } else if (stage == 5) {  // within UNITS
+        if ((found = def.find(unitsEnd)) != string::npos) {
+          stage = 1;
+        } else if ((found = def.find("DATABASE")) != string::npos) {
+          temp = get_true_word(found, def, 0, ';', p);
+          units = unitScale / stod(temp[3]);
+        }
       } else if (stage == 1) {  // within MACRO
         if ((found = def.find("SIZE")) != string::npos) {
           temp = get_true_word(found, def, 0, ';', p);
-          width = parse_and_scale(temp[1], unitScale);
-          height = parse_and_scale(temp[3], unitScale);
+          width = parse_and_scale(temp[1], units);
+          height = parse_and_scale(temp[3], units);
           // cout<<"Stage "<<stage<<" @ W "<<width<<"; H "<<height<<endl;
+        } else if ((found = def.find("UNITS")) != string::npos) {
+          stage = 5;
+          unitsEnd = "END UNITS";
         } else if ((found = def.find("PIN")) != string::npos) {
           temp = get_true_word(found, def, 0, ';', p);
           macroPins.resize(macroPins.size() + 1);
@@ -127,7 +137,7 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
           stage = 0;
         }
       } else if (stage == 4) {  // within OBS
-         logger->debug("stage4.Def: {0}", def);
+        logger->debug("stage4.Def: {0}", def);
         if ((found = def.find("LAYER")) != string::npos) {
           skip_the_rest_of_stage_4 = false;
           temp = get_true_word(found, def, 0, ';', p);
@@ -144,10 +154,10 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
         } else if ((found = def.find("RECT")) != string::npos) {
           char rect_type = temp[1].front();
           temp = get_true_word(found, def, 0, ';', p);
-          int LLx = parse_and_scale(temp[1], unitScale);
-          int LLy = parse_and_scale(temp[2], unitScale);
-          int URx = parse_and_scale(temp[3], unitScale);
-          int URy = parse_and_scale(temp[4], unitScale);
+          int LLx = parse_and_scale(temp[1], units);
+          int LLy = parse_and_scale(temp[2], units);
+          int URx = parse_and_scale(temp[3], units);
+          int URy = parse_and_scale(temp[4], units);
           PnRDB::bbox oBox;
           PnRDB::point tp;
           tp.x = LLx;
@@ -218,10 +228,10 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
         } else if ((found = def.find("RECT")) != string::npos && Metal_Flag) {
           // Metal_Flag = true;
           temp = get_true_word(found, def, 0, ';', p);
-          int LLx = parse_and_scale(temp[1], unitScale);
-          int LLy = parse_and_scale(temp[2], unitScale);
-          int URx = parse_and_scale(temp[3], unitScale);
-          int URy = parse_and_scale(temp[4], unitScale);
+          int LLx = parse_and_scale(temp[1], units);
+          int LLy = parse_and_scale(temp[2], units);
+          int URx = parse_and_scale(temp[3], units);
+          int URy = parse_and_scale(temp[4], units);
           PnRDB::bbox oBox;
           PnRDB::point tp;
           tp.x = LLx;

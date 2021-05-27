@@ -103,19 +103,26 @@ void PnRdatabase::TraverseDFS(deque<int>& Q, vector<string>& color, int idx) {
 }
 
 PnRDB::hierNode PnRdatabase::CheckoutHierNode(int nodeID, int sel) {
-  if (sel >= 0 && hierTree.at(nodeID).PnRAS.size() > 0) {
-    hierTree.at(nodeID).gdsFile = hierTree.at(nodeID).PnRAS[sel].gdsFile;
-    hierTree.at(nodeID).width = hierTree.at(nodeID).PnRAS[sel].width;
-    hierTree.at(nodeID).height = hierTree.at(nodeID).PnRAS[sel].height;
-    hierTree.at(nodeID).Blocks = hierTree.at(nodeID).PnRAS[sel].Blocks;
-    hierTree.at(nodeID).Terminals = hierTree.at(nodeID).PnRAS[sel].Terminals;
-    hierTree.at(nodeID).Nets = hierTree.at(nodeID).PnRAS[sel].Nets;
-    hierTree.at(nodeID).LL = hierTree.at(nodeID).PnRAS[sel].LL;
-    hierTree.at(nodeID).UR = hierTree.at(nodeID).PnRAS[sel].UR;
-    hierTree.at(nodeID).PowerNets = hierTree.at(nodeID).PnRAS[sel].PowerNets;
-    hierTree.at(nodeID).GuardRings = hierTree.at(nodeID).PnRAS[sel].GuardRings;
+  auto& hN = hierTree.at(nodeID);
+  if (sel >= 0 && hN.PnRAS.size() > 0) {
+    const auto& p = hN.PnRAS[sel];
+    hN.gdsFile = p.gdsFile;
+    hN.width = p.width;
+    hN.height = p.height;
+    hN.constraint_penalty = p.constraint_penalty;
+    hN.cost = p.cost;
+    hN.HPWL = p.HPWL;
+    hN.HPWL_norm = p.HPWL_norm;
+    hN.area_norm = p.area_norm;
+    hN.Blocks = p.Blocks;
+    hN.Terminals = p.Terminals;
+    hN.Nets = p.Nets;
+    hN.LL = p.LL;
+    hN.UR = p.UR;
+    hN.PowerNets = p.PowerNets;
+    hN.GuardRings = p.GuardRings;
   }
-  return hierTree.at(nodeID);
+  return hN;
 }
 
 void PnRdatabase::AppendToHierTree(const PnRDB::hierNode& hN) {
@@ -661,23 +668,26 @@ void PnRdatabase::TransformInterviasOriginToPlaced(std::vector<PnRDB::Via>& inte
     }
 }
 
-void PnRdatabase::CheckinChildnodetoBlock(PnRDB::hierNode& parent, int blockID, const PnRDB::hierNode& child) {
+void PnRdatabase::CheckinChildnodetoBlock(PnRDB::hierNode& parent, int blockID, const PnRDB::hierNode& child, PnRDB::Omark ort) {
   // update child into parent.blocks[blockID]
   // update (child.intermetal,intervia,blockpins) into blocks[blockid]
-  PnRDB::Omark ort = child.abs_orient;
+  //PnRDB::Omark ort = child.abs_orient;
   int width = child.UR.x - child.LL.x;
   int height = child.UR.y - child.LL.y;
-  PnRDB::point translate = parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].placedBox.LL;
-  parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].gdsFile = child.gdsFile;
+
+  auto& pi = parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance];
+
+  PnRDB::point translate = pi.placedBox.LL;
+  pi.gdsFile = child.gdsFile;
 
   // transform child blockpins orginals into placed in parent coordinate
   std::vector<PnRDB::pin> blockPins = child.blockPins;
   TransformBlockPinsOriginToPlaced(blockPins, translate, width, height, ort);
-  for (unsigned int p = 0; p < parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins.size(); p++) {
+  for (unsigned int p = 0; p < pi.blockPins.size(); p++) {
     for (unsigned int q = 0; q < child.blockPins.size(); q++) {
-      if (parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins[p].name == blockPins[q].name) {
-        parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins[p].pinContacts = blockPins[q].pinContacts;
-        parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins[p].pinVias = blockPins[q].pinVias;
+      if (pi.blockPins[p].name == blockPins[q].name) {
+        pi.blockPins[p].pinContacts = blockPins[q].pinContacts;
+        pi.blockPins[p].pinVias = blockPins[q].pinVias;
         break;
       }
     }
@@ -686,12 +696,12 @@ void PnRdatabase::CheckinChildnodetoBlock(PnRDB::hierNode& parent, int blockID, 
   //transform child intermetals originals into placed in parent coordinate
   std::vector<PnRDB::contact> interMetals = child.interMetals;
   TransformIntermetalsOriginToPlaced(interMetals, translate, width, height, ort);
-  parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].interMetals = interMetals;
+  pi.interMetals = interMetals;
 
   //transform child intervias originals into placed in parent coordinate
   std::vector<PnRDB::Via> interVias = child.interVias;
   TransformInterviasOriginToPlaced(interVias, translate, width, height, ort);
-  parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].interVias = interVias;
+  pi.interVias = interVias;
 
   //checkin childnode router report
   for (unsigned int i = 0; i < child.router_report.size();++i){
@@ -718,12 +728,17 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
 
   //In fact, the original node, do not need to be updated. Just update father node is fine.
   //update the original node
-  logger->info("CheckinHierNode");
+  logger->debug("CheckinHierNode");
   PnRDB::layoutAS tmpL;
   tmpL.gdsFile=updatedNode.gdsFile;
   tmpL.width=updatedNode.width;
   tmpL.height=updatedNode.height;
-  tmpL.Blocks=updatedNode.Blocks;
+  tmpL.constraint_penalty = updatedNode.constraint_penalty;
+  tmpL.cost = updatedNode.cost;
+  tmpL.HPWL = updatedNode.HPWL;
+  tmpL.HPWL_norm = updatedNode.HPWL_norm;
+  tmpL.area_norm = updatedNode.area_norm;
+  tmpL.Blocks = updatedNode.Blocks;
   tmpL.Terminals=updatedNode.Terminals;
   tmpL.Nets=updatedNode.Nets;
   tmpL.LL = updatedNode.LL;
@@ -2197,7 +2212,7 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
 
   bool missing_lef_file = 0;
 
-  logger->info("merge LEF/map data on node {0}", node.name);  
+  logger->debug("merge LEF/map data on node {0}", node.name);  
   for (unsigned int i = 0; i < node.Blocks.size(); i++) {
     const string abstract_template_name = node.Blocks[i].instance.front().master;
 

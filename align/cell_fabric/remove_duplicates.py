@@ -221,7 +221,7 @@ class RemoveDuplicates():
                         if layer not in skip_layers_for_different_widths:
                             different_widths_in_bin = True
                             tup = (f"Rectangles on layer {layer} with the same 2x centerline {twice_center} but different widths {widths}:", (indices,v))
-                            logger.warning( f"{tup}")
+                            #logger.warning( f"{tup}")
                             self.different_widths.append( tup)
 
                 sl = self.store_scan_lines[layer][twice_center] = Scanline( indices, dIndex)
@@ -243,7 +243,8 @@ class RemoveDuplicates():
                     assert current_slr == sl.rects[-1]
 
                 if different_widths_in_bin:
-                    logger.warning( f"Different widths: {layer} {sl}")
+                    pass
+                    #logger.warning( f"Different widths: {layer} {sl}")
 
     def check_shorts_induced_by_vias( self):
 
@@ -324,12 +325,18 @@ class RemoveDuplicates():
         self.check_shorts_induced_by_terminals()
         self.check_opens()
 
-        for short in self.shorts:
-            logger.warning("SHORT" + pprint.pformat(short))
-        for opn in self.opens:
-            logger.warning( "OPEN" + pprint.pformat(opn))
-        for dif in self.different_widths:
-            logger.warning( "DIFFERENT WIDTH" + pprint.pformat(dif))
+        # Trying fewer error messages
+        if True:
+            if self.shorts or self.opens or self.different_widths:
+                logger.error(f'Found errors: SHORT: {len(self.shorts)} OPEN: {len(self.opens)} DIFFERENT WIDTH: {len(self.different_widths)}')
+        else:
+            for short in self.shorts:
+                logger.warning("SHORT" + pprint.pformat(short))
+            for opn in self.opens:
+                logger.warning( "OPEN" + pprint.pformat(opn))
+            for dif in self.different_widths:
+                logger.warning( "DIFFERENT WIDTH" + pprint.pformat(dif))
+
         for subinst in self.subinsts:
             logger.debug("SUBINST" + pprint.pformat(subinst))
 

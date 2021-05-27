@@ -282,13 +282,14 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
     else:
         raise NotImplementedError(f"Unrecognized primitive {primitive}")
 
-    with open(outputdir / (block_name + '.debug.json'), "wt") as fp:
-        uc.computeBbox()
-        json.dump( { 'bbox' : uc.bbox.toList(),
-                     'globalRoutes' : [],
-                     'globalRouteGrid' : [],
-                     'terminals' : uc.terminals}
-                    , fp, indent=2)
+    uc.computeBbox()
+    if False:
+        with open(outputdir / (block_name + '.debug.json'), "wt") as fp:
+            json.dump( { 'bbox' : uc.bbox.toList(),
+                         'globalRoutes' : [],
+                         'globalRouteGrid' : [],
+                         'terminals' : uc.terminals}
+                        , fp, indent=2)
 
     with open(outputdir / (block_name + '.json'), "wt") as fp:
         uc.writeJSON( fp)
@@ -298,6 +299,7 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
         blockM = 0
     positive_coord.json_pos(outputdir / (block_name + '.json'))
     gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, cell_pin, bodyswitch, blockM, uc.pdk)
+
     with open( outputdir / (block_name + ".json"), "rt") as fp0, \
          open( outputdir / (block_name + ".gds.json"), 'wt') as fp1:
         gen_gds_json.translate(block_name, '', pinswitch, fp0, fp1, datetime.datetime( 2019, 1, 1, 0, 0, 0), uc.pdk)

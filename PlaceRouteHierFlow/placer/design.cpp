@@ -2276,3 +2276,37 @@ int design::GetBlockSymmGroupDnode(int i) {
   if(i<0 || i>=(int)SBlocks.size()) {return -1;}
   return SBlocks.at(i).dnode;
 }
+
+double design::GetMaxBlockAreaSum()
+{
+  if (maxBlockAreaSum < 1.) {
+    for (unsigned i = 0; i < Blocks.size(); i++) {
+      double area = 0;
+      for (unsigned j = 0; j < Blocks[i].size(); ++j) {
+        double jarea = double(Blocks[i][j].width) * double(Blocks[i][j].height);
+        if (area < jarea) area = jarea;
+      }
+      maxBlockAreaSum += area;
+    }
+  }
+  return maxBlockAreaSum;
+}
+
+double design::GetMaxBlockHPWLSum()
+{
+  if (maxBlockHPWLSum < 1.) {
+    for (unsigned i = 0; i < Blocks.size(); i++) {
+      double width = 0, height = 0;
+      for (unsigned j = 0; j < Blocks[i].size(); ++j) {
+        if (width < Blocks[i][j].width) {
+          width = Blocks[i][j].width;
+        }
+        if (height < Blocks[i][j].height) {
+          height = Blocks[i][j].height;
+        }
+      }
+      maxBlockHPWLSum += (width + height);
+    }
+  }
+  return maxBlockHPWLSum;
+}

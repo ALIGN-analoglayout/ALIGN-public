@@ -2,8 +2,10 @@ from ..schema import constraint, types
 from ..cell_fabric import transformation
 
 def check_placement(placement_verilog_d):
-    leaf_bboxes = { x['name'] : x['bbox'] for x in placement_verilog_d['leaves']}
-    internal_bboxes = { x['name'] : x['bbox'] for x in placement_verilog_d['modules']}
+    leaf_bboxes = { x['concrete_name'] : x['bbox'] for x in placement_verilog_d['leaves']}
+    internal_bboxes = { x['concrete_name'] : x['bbox'] for x in placement_verilog_d['modules']}
+
+    non_leaves = { module['concrete_name'] for module in placement_verilog_d['modules']}
 
     for module in placement_verilog_d['modules']:
         if len(module['constraints']) == 0:
@@ -14,7 +16,7 @@ def check_placement(placement_verilog_d):
         with types.set_context(constraints):
             constraints.append(
                 constraint.SetBoundingBox(
-                    instance=module['name'],
+                    instance=module['abstract_name'],
                     llx=bbox.llx,
                     lly=bbox.lly,
                     urx=bbox.urx,
@@ -24,12 +26,11 @@ def check_placement(placement_verilog_d):
             )
         for inst in module['instances']:
             t = inst['transformation']
-            if 'template_name' in inst:
-                r = internal_bboxes[inst['template_name']]
-            elif 'concrete_template_name' in inst:
-                r = leaf_bboxes[inst['concrete_template_name']]
+            ctn = inst['concrete_template_name']
+            if ctn in non_leaves:
+                r = internal_bboxes[ctn]
             else:
-                assert False, f'Neither \'template_name\' or \'concrete_template_name\' in inst {inst}.'
+                r = leaf_bboxes[ctn]
 
             bbox = transformation.Transformation(**t).hitRect(transformation.Rect(*r)).canonical()
             with types.set_context(constraints):

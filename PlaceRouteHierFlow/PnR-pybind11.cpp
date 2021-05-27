@@ -74,6 +74,8 @@ PYBIND11_MODULE(PnR, m) {
     .def( py::init<int, int, int, int>())
     .def( py::init<const bbox&>())
     .def( py::init<const point&, const point&>())
+    .def( py::init<const point&, const point&>())
+    .def( "center", &bbox::center)
     .def_readwrite("LL", &bbox::LL)
     .def_readwrite("UR", &bbox::UR);
   py::class_<contact>( m, "contact")
@@ -203,6 +205,7 @@ PYBIND11_MODULE(PnR, m) {
     .def( py::init<>())
     .def_readwrite("width", &layoutAS::width)
     .def_readwrite("height", &layoutAS::height)
+    .def_readwrite("HPWL", &layoutAS::HPWL)
     .def_readwrite("gdsFile", &layoutAS::gdsFile)
     .def_readwrite("Blocks", &layoutAS::Blocks)
     .def_readwrite("Nets", &layoutAS::Nets)
@@ -249,6 +252,11 @@ PYBIND11_MODULE(PnR, m) {
       .def_readwrite("bias_Hgraph", &hierNode::bias_Hgraph)
       .def_readwrite("bias_Vgraph", &hierNode::bias_Vgraph)
       .def_readwrite("router_report", &hierNode::router_report)
+      .def_readonly("HPWL", &hierNode::HPWL)
+      .def_readonly("HPWL_norm", &hierNode::HPWL_norm)
+      .def_readonly("area_norm", &hierNode::area_norm)
+      .def_readonly("cost", &hierNode::cost)
+      .def_readonly("constraint_penalty", &hierNode::constraint_penalty)
       .def_readwrite("GuardRings", &hierNode::GuardRings);
   py::class_<Guardring_Const>( m, "Guardring_Const")
     .def( py::init<>())
@@ -460,6 +468,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("hierTree", &PnRdatabase::hierTree)
     .def_readwrite("topidx", &PnRdatabase::topidx)
     .def_readwrite("gdsData2", &PnRdatabase::gdsData2)
+    .def_readwrite("lefData", &PnRdatabase::lefData)
     .def_readwrite("DRC_info", &PnRdatabase::DRC_info)
   ;
 
@@ -472,6 +481,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("T_MIN", &PlacerHyperparameters::T_MIN)
     .def_readwrite("ALPHA", &PlacerHyperparameters::ALPHA)
     .def_readwrite("COUNT_LIMIT", &PlacerHyperparameters::COUNT_LIMIT)
+    .def_readwrite("LAMBDA", &PlacerHyperparameters::LAMBDA)
     ;
 
   py::class_<PlacerIfc>( m, "PlacerIfc")

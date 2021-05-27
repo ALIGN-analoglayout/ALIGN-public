@@ -1,6 +1,6 @@
 {
   "_comment": "FinFET 22nm Mock PDK. This PDK uses align/schema/pdk.py. This file is manually added for backward compatibility. ",
-  "ScaleFactor":1,
+  "ScaleFactor":10,
   "design_info": {
     "vt_type":["SLVT", "HVT","LVT","RVT"],
     "top_signal_routing_layer": "M5",
