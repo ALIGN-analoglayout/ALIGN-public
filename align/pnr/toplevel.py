@@ -10,6 +10,7 @@ from .render_placement import gen_placement_verilog, scale_placement_verilog, ge
 from .build_pnr_model import *
 from .checker import check_placement
 from ..gui.mockup import run_gui
+from ..schema.hacks import VerilogJsonTop
 from .hpwl import calculate_HPWL_from_hN, calculate_HPWL_from_placement_verilog_d, gen_netlist
 
 logger = logging.getLogger(__name__)
@@ -405,14 +406,14 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
         def per_placement( placement_verilog_d, concrete_name, hN):
             scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, scale_factor)
 
-            # Doesn't work because this can be a dict, not something with a .json method
-            #(pathlib.Path(opath) / f'{concrete_name}.placement_verilog.json').write_text(scaled_placement_verilog_d.json(indent=2,sort_keys=True))
+            logger.info( f'{scaled_placement_verilog_d}')
+
+            (pathlib.Path(opath) / f'{concrete_name}.placement_verilog.json').write_text(scaled_placement_verilog_d.json(indent=2,sort_keys=True))
 
             standalone_overlap_checker( scaled_placement_verilog_d, concrete_name)
-            check_placement( scaled_placement_verilog_d)
+            check_placement( scaled_placement_verilog_d, scale_factor)
 
             if gui:
-
                 nets_d = gen_netlist( placement_verilog_d, concrete_name)
 
                 hpwl_alt = calculate_HPWL_from_placement_verilog_d( placement_verilog_d, concrete_name, nets_d)
@@ -423,6 +424,8 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                 gui_scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, 0.001)
 
                 modules = { x['concrete_name']: x for x in gui_scaled_placement_verilog_d['modules']}
+
+                p = r2wh(modules[concrete_name]['bbox'])
 
                 if hN is not None:
                     hpwl = calculate_HPWL_from_hN( hN)
@@ -435,8 +438,6 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                 #reported_hpwl = hN.HPWL / 2000
                 # This is a much better estimate but not what the placer is using
                 reported_hpwl = hpwl_alt / 2000
-
-                p = r2wh(modules[concrete_name]['bbox'])
 
                 if hN is not None:
                     d = { 'width': p[0], 'height': p[1],
@@ -511,7 +512,8 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                 logger.error( f"Could not find {reference_placement_verilog_json}")
             else:
                 with fn.open("rt") as fp:
-                    scaled_placement_verilog_d = json.load( fp)
+                    scaled_placement_verilog_d = VerilogJsonTop.parse_obj(json.load( fp))
+
                 concrete_name = scaled_placement_verilog_d['modules'][0]['concrete_name']
 
                 #scale to hN units
