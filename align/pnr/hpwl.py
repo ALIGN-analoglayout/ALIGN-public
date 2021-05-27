@@ -6,6 +6,7 @@ from collections import defaultdict
 
 from .. import PnR
 from ..cell_fabric.transformation import Transformation, Rect
+from .render_placement import gen_transformation
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +61,7 @@ def calculate_HPWL_from_hN( hN):
 
         sp = SemiPerimeter()
 
-        logger.debug( f'Working on {neti.name}')
+        logger.info( f'Working on {neti.name}')
 
         for connectedj in neti.connected:
             ntype,iter2,iter = connectedj.type, connectedj.iter2, connectedj.iter
@@ -70,22 +71,34 @@ def calculate_HPWL_from_hN( hN):
             blk = hN.Blocks[iter2]
             inst = blk.instance[blk.selectedInstance]
 
+            tr = Transformation( **gen_transformation(inst).toDict())
+
             gdsFile = pathlib.Path(inst.gdsFile).stem
 
-            logger.debug( f'{hN.name} neti {ntype,iter2,iter} {inst.master} {inst.name} {gdsFile} {blk.selectedInstance}')
+            logger.info( f'{hN.name} neti {ntype,iter2,iter} {inst.master} {inst.name} {gdsFile} {blk.selectedInstance}')
             for contact in inst.blockPins[iter].pinContacts:
+                ob = contact.originBox
+                new_b = tr.hitRect(Rect( ob.LL.x, ob.LL.y, ob.UR.x, ob.UR.y)).canonical().toList()
+
                 b = contact.placedBox
+
+                assert new_b[0] == b.LL.x and new_b[1] == b.LL.y and new_b[2] == b.UR.x and new_b[3] == b.UR.y
+
                 bc = b.center()
                 c = contact.placedCenter
-                logger.debug( f'{c.x} {c.y} {bc.x} {bc.y}')
+
+                assert 2*c.x == b.LL.x + b.UR.x
+                assert 2*c.y == b.LL.y + b.UR.y
+
+                logger.info( f'{c.x} {c.y} {bc.x} {bc.y}')
                 assert c.x == bc.x and c.y == bc.y
 
                 sp.addPoint( (c.x, c.y))
                     
         net_HPWL = sp.dist()
 
-        logger.debug( f'{net_HPWL}')
-        logger.debug( f'==========')
+        logger.info( f'{neti.name} {net_HPWL} {sp}')
+        logger.info( f'==========')
 
         HPWL += net_HPWL
     return HPWL
@@ -131,6 +144,12 @@ def gen_netlist( placement_verilog_d, concrete_name):
 
     return nets_d
 
+def to_center( r):
+    #xc = (r[0]+r[2])//2
+    #yc = (r[1]+r[3])//2
+    #return [xc,yc,xc,yc]
+    return r
+
 def calculate_HPWL_from_placement_verilog_d_top_down( placement_verilog_d, concrete_name, nets_d):
     modules = { module['concrete_name']: module for module in placement_verilog_d['modules']}
     instances = { (module['concrete_name'],instance['instance_name']): instance for module in placement_verilog_d['modules'] for instance in module['instances']}
@@ -140,7 +159,7 @@ def calculate_HPWL_from_placement_verilog_d_top_down( placement_verilog_d, concr
     for leaf in placement_verilog_d['leaves']:
         ctn = leaf['concrete_name']
         for terminal in leaf['terminals']:
-            leaf_terminals[(ctn,terminal['name'])].append( terminal['rect'])
+            leaf_terminals[(ctn,terminal['name'])].append( to_center(terminal['rect']))
 
     HPWL = 0
     for hnet, hpins in nets_d.items():
@@ -155,11 +174,11 @@ def calculate_HPWL_from_placement_verilog_d_top_down( placement_verilog_d, concr
             
             for r in leaf_terminals[(ctn,hpin[-1])]:
                 new_r = tr.hitRect( Rect(*r)).canonical().toList()
-                logger.debug(f'terminal: {new_r}')
+                logger.info(f'terminal: {new_r}')
                 sp.addRect( new_r)
 
         local_HPWL = sp.dist()
-        logger.debug( f"from netlist HPWL: {'/'.join(hnet)}: {local_HPWL}")
+        logger.info( f"from netlist HPWL: {'/'.join(hnet)}: {local_HPWL}")
         HPWL += local_HPWL
 
     return HPWL
@@ -181,7 +200,7 @@ def compute_topoorder( modules, concrete_name):
     aux(concrete_name)
     return order, found_modules, found_leaves
 
-def calculate_HPWL_from_placement_verilog_d_bottom_up( placement_verilog_d, concrete_name, nets_d):
+def calculate_HPWL_from_placement_verilog_d_bottom_up( placement_verilog_d, concrete_name):
 
     modules = { module['concrete_name']: module for module in placement_verilog_d['modules']}
     instances = { (module['concrete_name'],instance['instance_name']): instance for module in placement_verilog_d['modules'] for instance in module['instances']}
@@ -191,7 +210,7 @@ def calculate_HPWL_from_placement_verilog_d_bottom_up( placement_verilog_d, conc
     for leaf in placement_verilog_d['leaves']:
         ctn = leaf['concrete_name']
         for terminal in leaf['terminals']:
-            leaf_terminals[(ctn,terminal['name'])].append( terminal['rect'])
+            leaf_terminals[(ctn,terminal['name'])].append( to_center(terminal['rect']))
 
     order, found_modules, found_leaves = compute_topoorder( modules, concrete_name)
     logger.debug( f'{found_modules} {found_leaves} {order}')
@@ -250,7 +269,7 @@ def calculate_HPWL_from_placement_verilog_d_bottom_up( placement_verilog_d, conc
 
 def calculate_HPWL_from_placement_verilog_d( placement_verilog_d, concrete_name, nets_d):
     hpwl_top_down = calculate_HPWL_from_placement_verilog_d_top_down( placement_verilog_d, concrete_name, nets_d)
-    hpwl_bottom_up = calculate_HPWL_from_placement_verilog_d_bottom_up( placement_verilog_d, concrete_name, nets_d)
+    hpwl_bottom_up = calculate_HPWL_from_placement_verilog_d_bottom_up( placement_verilog_d, concrete_name)
 
     logger.debug( f'Calculate two ways: {hpwl_top_down} {hpwl_bottom_up}')
     assert hpwl_top_down == hpwl_bottom_up

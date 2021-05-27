@@ -1,4 +1,5 @@
 #include "ILP_solver.h"
+#include <stdexcept>
 
 ILP_solver::ILP_solver() {}
 
@@ -1378,19 +1379,26 @@ void ILP_solver::UpdateBlockinHierNode(design& mydesign, placerDB::Omark ort, Pn
 
 void ILP_solver::UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo) {
   for (int i = 0; i < (int)mydesign.GetSizeofTerminals(); i++) {
-    node.Terminals.at(i).termContacts.clear();
-    node.Terminals.at(i).termContacts.resize(node.Terminals.at(i).termContacts.size() + 1);
-    node.Terminals.at(i).termContacts.back().placedCenter = ConvertPointData(mydesign.GetTerminalCenter(i));
+    auto& tC = node.Terminals.at(i).termContacts;
+    tC.clear();
+    tC.resize(1);
+    auto c = ConvertPointData(mydesign.GetTerminalCenter(i));
+    tC.back().placedCenter = c;
+    // tC.back() has other fields that remain at their default values: originBox, placedBox, originCenter
+    tC.back().originCenter = c;
+    tC.back().originBox.LL = c;
+    tC.back().originBox.UR = c;
+    tC.back().placedBox.LL = c;
+    tC.back().placedBox.UR = c;
   }
-  PnRDB::pin temp_pin;
   for (int i = 0; i < (int)mydesign.GetSizeofTerminals(); i++) {
-    temp_pin.name = node.Terminals.at(i).name;
-    temp_pin.type = node.Terminals.at(i).type;
-    temp_pin.netIter = node.Terminals.at(i).netIter;
-    temp_pin.pinContacts = node.Terminals.at(i).termContacts;
+    const auto& t = node.Terminals.at(i);
+    PnRDB::pin temp_pin;
+    temp_pin.name = t.name;
+    temp_pin.type = t.type;
+    temp_pin.netIter = t.netIter;
+    temp_pin.pinContacts = t.termContacts;
     for (int j = 0; j < temp_pin.pinContacts.size(); j++) temp_pin.pinContacts[j].metal = drcInfo.Metal_info[0].name;
-    temp_pin.name = node.Terminals.at(i).name;
-    temp_pin.type = node.Terminals.at(i).type;
     node.blockPins.push_back(temp_pin);
   }
 }
