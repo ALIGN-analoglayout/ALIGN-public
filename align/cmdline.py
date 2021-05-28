@@ -130,6 +130,11 @@ class CmdlineParser():
                             default=1.0,
                             help='Multiplier for hpwl in placer cost function.')
 
+        parser.add_argument('--reference_placement_verilog_json',
+                            type=str,
+                            default=None,
+                            help='JSON file for adding a reference placement to GUI.')
+
         self.parser = parser
 
     def parse_args(self, *args, **kwargs):

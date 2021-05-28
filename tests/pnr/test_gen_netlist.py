@@ -2,6 +2,7 @@ from align.pnr.hpwl import gen_netlist
 
 def test_gen_netlist():
     placement_verilog_d = {
+        "global_signals": [],
         "modules": [
             { "abstract_name": "top",
               "concrete_name": "top",
