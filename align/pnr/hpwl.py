@@ -107,6 +107,7 @@ def gen_netlist( placement_verilog_d, concrete_name):
     nets_d = defaultdict(list)
 
     modules = { module['concrete_name']: module for module in placement_verilog_d['modules']}
+    global_actuals = { gs['actual'] for gs in placement_verilog_d['global_signals']}
 
     def aux( module, prefix_path, translate_d):
 
@@ -120,23 +121,18 @@ def gen_netlist( placement_verilog_d, concrete_name):
                 assert p in translate_d
 
         for inst in module['instances']:
+            def gen_pair():
+                for fa in inst['fa_map']:
+                    f,a = fa['formal'], fa['actual']
+                    new_a = (a,) if a in global_actuals else translate_d.get(a,prefix_path + (a,))
+                    yield f, new_a
+
             instance_name = inst['instance_name']
             ctn = inst['concrete_template_name']
             if ctn in modules: # non-leaf
-                new_translate_d = {}
-                for fa in inst['fa_map']:
-                    f = fa['formal']
-                    a = fa['actual']
-                    new_a = translate_d.get(a,prefix_path + (a,))
-                    new_translate_d[f] = new_a
-
-                aux( modules[ctn], prefix_path + (instance_name,), new_translate_d)
-
+                aux( modules[ctn], prefix_path + (instance_name,), dict( gen_pair()))
             else: #leaf
-                for fa in inst['fa_map']:
-                    f = fa['formal']
-                    a = fa['actual']
-                    new_a = translate_d.get(a,prefix_path + (a,))
+                for f,new_a in gen_pair():
                     nets_d[new_a].append(prefix_path + (instance_name,f))
 
 
@@ -151,7 +147,6 @@ def to_center( r):
     return r
 
 def calculate_HPWL_from_placement_verilog_d_top_down( placement_verilog_d, concrete_name, nets_d):
-    modules = { module['concrete_name']: module for module in placement_verilog_d['modules']}
     instances = { (module['concrete_name'],instance['instance_name']): instance for module in placement_verilog_d['modules'] for instance in module['instances']}
 
     leaf_terminals = defaultdict(list)
@@ -174,7 +169,8 @@ def calculate_HPWL_from_placement_verilog_d_top_down( placement_verilog_d, concr
             
             for r in leaf_terminals[(ctn,hpin[-1])]:
                 new_r = tr.hitRect( Rect(*r)).canonical().toList()
-                logger.debug(f'terminal: {new_r}')
+                if hnet == ('vss',):
+                    logger.debug(f'terminal: {new_r}')
                 sp.addRect( new_r)
 
         local_HPWL = sp.dist()
@@ -203,7 +199,8 @@ def compute_topoorder( modules, concrete_name):
 def calculate_HPWL_from_placement_verilog_d_bottom_up( placement_verilog_d, concrete_name):
 
     modules = { module['concrete_name']: module for module in placement_verilog_d['modules']}
-    instances = { (module['concrete_name'],instance['instance_name']): instance for module in placement_verilog_d['modules'] for instance in module['instances']}
+
+    global_actuals = { gs['actual'] for gs in placement_verilog_d['global_signals']}
 
     leaf_terminals = defaultdict(list)
 
@@ -213,7 +210,6 @@ def calculate_HPWL_from_placement_verilog_d_bottom_up( placement_verilog_d, conc
             leaf_terminals[(ctn,terminal['name'])].append( to_center(terminal['rect']))
 
     order, found_modules, found_leaves = compute_topoorder( modules, concrete_name)
-    logger.debug( f'{found_modules} {found_leaves} {order}')
 
     net_bboxes = defaultdict(SemiPerimeter)
     net_local_hpwls = {}
@@ -238,17 +234,20 @@ def calculate_HPWL_from_placement_verilog_d_bottom_up( placement_verilog_d, conc
 
                 tr = Transformation( **instance['transformation'])
                 for fa in instance['fa_map']:
-                    f = fa['formal']
-                    a = fa['actual']
+                    f, a = fa['formal'], fa['actual']
+                    new_r = tr.hitRect(Rect(*net_bboxes[(ctn,f)].toList())).canonical().toList()
                     local_a.add(a)
-                    r = net_bboxes[(ctn,f)].toList()
 
-                    new_r = tr.hitRect( Rect( *r)).canonical().toList()
-                    net_bboxes[ (cn,a)].addRect( new_r)
+                    net_bboxes[(cn,a)].addRect( new_r)
 
-            for a in local_a.difference(set( module['parameters'])):
+                for a in global_actuals:
+                    if (ctn,a) in net_bboxes:
+                        new_r = tr.hitRect(Rect(*net_bboxes[(ctn,a)].toList())).canonical().toList()
+                        net_bboxes[(cn,a)].addRect( new_r)
+
+            for a in local_a.difference(set( module['parameters']).union(global_actuals)):
                 net_hpwl = net_bboxes[(cn,a)].dist()
-                logger.debug( f'Accounting for hidden net {a} {net_hpwl}')
+                logger.debug( f'Accounting for hidden net {a} {net_hpwl} in {cn}')
                 local_hpwl += net_hpwl
             
             net_local_hpwls[cn] = local_hpwl
@@ -260,9 +259,9 @@ def calculate_HPWL_from_placement_verilog_d_bottom_up( placement_verilog_d, conc
     module = modules[cn]
 
     HPWL = net_local_hpwls[cn]
-    for a in module['parameters']:
+    for a in set(module['parameters']).union(global_actuals):
         net_hpwl = net_bboxes[(cn,a)].dist()
-        logger.debug( f'Accounting for top-level net {a} {net_hpwl}')
+        logger.debug( f'Accounting for top-level (or global) net {a} {net_hpwl} in {cn}')
         HPWL += net_hpwl
         
     return HPWL
@@ -271,7 +270,7 @@ def calculate_HPWL_from_placement_verilog_d( placement_verilog_d, concrete_name,
     hpwl_top_down = calculate_HPWL_from_placement_verilog_d_top_down( placement_verilog_d, concrete_name, nets_d)
     hpwl_bottom_up = calculate_HPWL_from_placement_verilog_d_bottom_up( placement_verilog_d, concrete_name)
 
-    logger.debug( f'Calculate two ways: {hpwl_top_down} {hpwl_bottom_up}')
-    assert hpwl_top_down == hpwl_bottom_up
+    if hpwl_top_down != hpwl_bottom_up:
+        logger.warning( f'HPWL calculated in different ways differ: top_down: {hpwl_top_down} bottom_up: {hpwl_bottom_up}')
 
     return hpwl_bottom_up
