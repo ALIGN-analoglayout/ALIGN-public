@@ -1950,7 +1950,7 @@ bool SeqPair::RotateSymmetryGroup(design& caseNL) {
 vector<int> SeqPair::GetFlip(const bool hor) const
 {
   if (_seqPairEnum) {
-    _seqPairEnum->GetFlip(hor);
+    return _seqPairEnum->GetFlip(hor);
   }
   vector<int> ret;
   return ret;
