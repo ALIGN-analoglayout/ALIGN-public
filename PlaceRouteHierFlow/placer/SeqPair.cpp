@@ -21,6 +21,8 @@ SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl)
   _hflip = 0;
   _vflip = 0;
   _maxFlip = (1 << casenl.GetSizeofBlocks());
+  auto logger = spdlog::default_logger()->clone("placer.SeqPairEnumerator.SeqPairEnumerator");
+  logger->info("maxflip : {0}", _maxFlip);
 }
 
 const bool SeqPairEnumerator::IncrementSelected()
@@ -56,27 +58,27 @@ vector<int> SeqPairEnumerator::GetFlip(const bool hor) const
 
 
 bool SeqPairEnumerator::EnumFlip() {
-  if (_hflip++ >= _maxFlip) {
+  if (++_hflip >= _maxFlip) {
     _hflip = 0;
-    if (_vflip++ >= _maxFlip) {
+    if (++_vflip >= _maxFlip) {
       _vflip = 0;
-      return true;
+      return false;
     }
   }
-  return false;
+  return true;
 }
 
 void SeqPairEnumerator::Permute()
 {
   auto logger = spdlog::default_logger()->clone("placer.SeqPairEnumerator.Permute");
-  if (!IncrementSelected()) {
-    if (_enumIndex.second >= _maxEnum - 1) {
-      _enumIndex.second = 0;
-      ++_enumIndex.first;
-      std::sort(_negPair.begin(), _negPair.end());
-      std::next_permutation(std::begin(_posPair), std::end(_posPair));
-    } else {
-      if (EnumFlip()) {
+  if (!EnumFlip()) {
+    if (!IncrementSelected()) {
+      if (_enumIndex.second >= _maxEnum - 1) {
+        _enumIndex.second = 0;
+        ++_enumIndex.first;
+        std::sort(_negPair.begin(), _negPair.end());
+        std::next_permutation(std::begin(_posPair), std::end(_posPair));
+      } else {
         std::next_permutation(std::begin(_negPair), std::end(_negPair));
         ++_enumIndex.second;
       }
