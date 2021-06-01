@@ -601,6 +601,7 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
   }
 
   KeepOrdering(caseNL);
+  SameSelected(caseNL);
 
   bool enumerate(false);
   if (maxIter > 0 && posPair.size() <= 6) {
@@ -663,6 +664,13 @@ void SeqPair::PrintSeqPair() {
     logger->debug("{0}",selected.at(i));
   }
   //cout<<endl;
+}
+
+void SeqPair::SameSelected(design& caseNL) { 
+  for(auto group:caseNL.Same_Template_Constraints){
+    int id = selected[*group.begin()];
+    for (auto i : group) selected[i] = id;
+  }
 }
 
 int SeqPair::GetBlockSelected(int blockNo) {
@@ -1025,6 +1033,7 @@ void SeqPair::PerturbationNew(design& caseNL) {
   //logger->info("seq pair {0} {1} {2}", pos, neg, sel);
 
   KeepOrdering(caseNL);
+  SameSelected(caseNL);
 }
 
 void SeqPair::Perturbation(design& caseNL) {

@@ -83,6 +83,7 @@ class SeqPair
     vector<int> GetBelowBlock(int blockNo);
     placerDB::Omark GetBlockOrient(int blockNo);
     void PrintSeqPair();
+    void SameSelected(design& caseNL);
     void ChangeOrient(int blockNo, placerDB::Omark ort );
     void FlipOrient(int blockNo);
     void AdjustOrient(int blockNo, placerDB::Omark ort);
