@@ -25,7 +25,58 @@
         "X4_M",
         "X4_P"
       ],
-      "constraints": [],
+      "constraints": [
+	  {
+	      "constraint": "order",
+	      "instances": [ "XC1", "XR0", "XC0", "XR1", "XC2", "XR2", "XC3", "XR3", "XR18", "XC8"],
+	      "direction": "top_to_bottom"
+	  },
+	  {
+	      "constraint": "order",
+	      "instances": [ "XC4", "XR8", "XC5", "XR9", "XC6", "XR10", "XC7", "XR11", "XR16", "XC9"],
+	      "direction": "top_to_bottom"
+	  },
+	  {
+	      "constraint": "align",
+	      "instances": [ "XC1", "XC4"],
+	      "line": "h_bottom"
+	  },
+	  {
+	      "constraint": "order",
+	      "instances": [ "XC1", "XC4"],
+	      "direction": "left_to_right"
+	  },
+	  {
+	      "constraint": "align",
+	      "instances": [ "XC0", "XC5"],
+	      "line": "h_bottom"
+	  },
+	  {
+	      "constraint": "order",
+	      "instances": [ "XC0", "XC5"],
+	      "direction": "left_to_right"
+	  },
+	  {
+	      "constraint": "align",
+	      "instances": [ "XC2", "XC6"],
+	      "line": "h_bottom"
+	  },
+	  {
+	      "constraint": "order",
+	      "instances": [ "XC2", "XC6"],
+	      "direction": "left_to_right"
+	  },
+	  {
+	      "constraint": "align",
+	      "instances": [ "XC8", "XI0", "XC9"],
+	      "line": "h_bottom"
+	  },
+	  {
+	      "constraint": "order",
+	      "instances": [ "XC8", "XI0", "XC9"],
+	      "direction": "left_to_right"
+	  }
+      ],
       "instances": [
         {
           "instance_name": "XR18",
