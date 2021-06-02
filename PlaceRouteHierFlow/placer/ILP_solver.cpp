@@ -377,6 +377,14 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     Blocks[i].H_flip = var[i * 4 + 2];
     Blocks[i].V_flip = var[i * 4 + 3];
   }
+  auto hflipVec = curr_sp.GetFlip(true);
+  auto vflipVec = curr_sp.GetFlip(false);
+  if (!hflipVec.empty() && !vflipVec.empty()) {
+    for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
+      Blocks[i].H_flip = hflipVec[i];
+      Blocks[i].V_flip = vflipVec[i];
+    }
+  }
 
   // calculate LL and UR
   LL.x = INT_MAX, LL.y = INT_MAX;
