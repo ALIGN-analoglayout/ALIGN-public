@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 
 class instance_wrapper:
     def __init__(self, inst):
@@ -13,7 +15,7 @@ class instance_wrapper:
 
     def __getattr__(self, nm):
         assert False, nm
-        logger.info( f'instance_wrapper: accessing {nm}')
+        #logger.info( f'instance_wrapper: accessing {nm}')
         #return getattr(self.inst, nm)
 
 class block_wrapper:

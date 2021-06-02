@@ -66,7 +66,7 @@ class Instance(types.BaseModel):
         if parameters:
             parameters = {k.upper(): v.upper() for k, v in parameters.items()}
             assert model.parameters and set(parameters.keys()).issubset(model.parameters.keys()), \
-                f"{self.__class__.__name__} parameters must be a subset of {model.__class__.__name__} parameters"
+                f"{cls.__name__} parameters must be a subset of {model.__class__.__name__} parameters"
             parameters = {k: parameters[k] if k in parameters else v \
                 for k, v in model.parameters.items()}
         elif model.parameters:
