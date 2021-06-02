@@ -28,6 +28,91 @@
       "constraints": [
 	  {
 	      "constraint": "order",
+	      "instances": [ "XM0", "XM4", "XR0"],
+	      "direction": "top_to_bottom"
+	  },
+	  {
+	      "constraint": "order",
+	      "instances": [ "XM8", "XM12", "XR8"],
+	      "direction": "top_to_bottom"
+	  },
+	  {
+	      "constraint": "order",
+	      "instances": [ "XC1", "XM0", "XM8", "XC4"],
+	      "direction": "left_to_right"
+	  },
+	  {
+	      "constraint": "order",
+	      "instances": [ "XC1", "XM4", "XM12", "XC4"],
+	      "direction": "left_to_right"
+	  },
+
+	  {
+	      "constraint": "order",
+	      "instances": [ "XR0", "XM1", "XM5", "XR1"],
+	      "direction": "top_to_bottom"
+	  },
+	  {
+	      "constraint": "order",
+	      "instances": [ "XR8", "XM9", "XM13", "XR9"],
+	      "direction": "top_to_bottom"
+	  },
+	  {
+	      "constraint": "order",
+	      "instances": [ "XC0", "XM1", "XM9", "XC5"],
+	      "direction": "left_to_right"
+	  },
+	  {
+	      "constraint": "order",
+	      "instances": [ "XC0", "XM5", "XM13", "XC5"],
+	      "direction": "left_to_right"
+	  },
+
+	  {
+	      "constraint": "order",
+	      "instances": [ "XR1", "XM2", "XM6", "XR2"],
+	      "direction": "top_to_bottom"
+	  },
+	  {
+	      "constraint": "order",
+	      "instances": [ "XR9", "XM10", "XM14", "XR10"],
+	      "direction": "top_to_bottom"
+	  },
+	  {
+	      "constraint": "order",
+	      "instances": [ "XC2", "XM2", "XM10", "XC6"],
+	      "direction": "left_to_right"
+	  },
+	  {
+	      "constraint": "order",
+	      "instances": [ "XC2", "XM6", "XM14", "XC6"],
+	      "direction": "left_to_right"
+	  },
+
+
+	  {
+	      "constraint": "order",
+	      "instances": [ "XR2", "XM3", "XM7", "XR3"],
+	      "direction": "top_to_bottom"
+	  },
+	  {
+	      "constraint": "order",
+	      "instances": [ "XR10", "XM11", "XM15", "XR11"],
+	      "direction": "top_to_bottom"
+	  },
+	  {
+	      "constraint": "order",
+	      "instances": [ "XC3", "XM3", "XM11", "XC7"],
+	      "direction": "left_to_right"
+	  },
+	  {
+	      "constraint": "order",
+	      "instances": [ "XC3", "XM7", "XM15", "XC7"],
+	      "direction": "left_to_right"
+	  },
+
+	  {
+	      "constraint": "order",
 	      "instances": [ "XC1", "XR0", "XC0", "XR1", "XC2", "XR2", "XC3", "XR3", "XR18", "XC8"],
 	      "direction": "top_to_bottom"
 	  },
