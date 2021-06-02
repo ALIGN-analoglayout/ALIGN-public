@@ -62,6 +62,24 @@ void ILP_solver::lpsolve_logger(lprec* lp, void* userhandle, char* buf) {
 double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
 
+  auto roundup = [](int& v, int pitch) { v = pitch * ((v + pitch - 1) / pitch); };
+  int v_metal_index = -1;
+  int h_metal_index = -1;
+  for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
+    if (drcInfo.Metal_info[i].direct == 0) {
+      v_metal_index = i;
+      break;
+    }
+  }
+  for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
+    if (drcInfo.Metal_info[i].direct == 1) {
+      h_metal_index = i;
+      break;
+    }
+  }
+  int x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
+  int y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
+
   // each block has 4 vars, x, y, H_flip, V_flip;
   unsigned int N_var = mydesign.Blocks.size() * 4 + mydesign.Nets.size() * 2;
   // i*4+1: x
@@ -83,6 +101,10 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     set_binary(lp, i * 4 + 4, TRUE);
   }
 
+  int bias_Hgraph = mydesign.bias_Hgraph, bias_Vgraph = mydesign.bias_Vgraph;
+  roundup(bias_Hgraph, x_pitch);
+  roundup(bias_Vgraph, y_pitch);
+
   // overlap constraint
   for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
     int i_pos_index = find(curr_sp.posPair.begin(), curr_sp.posPair.end(), i) - curr_sp.posPair.begin();
@@ -95,24 +117,24 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
           // i is left of j
           double sparserow[2] = {1, -1};
           int colno[2] = {int(i) * 4 + 1, int(j) * 4 + 1};
-          if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[i][curr_sp.selected[i]].width - mydesign.bias_Hgraph)) logger->error("error");
+          if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[i][curr_sp.selected[i]].width - bias_Hgraph)) logger->error("error");
         } else {
           // i is above j
           double sparserow[2] = {1, -1};
           int colno[2] = {int(i) * 4 + 2, int(j) * 4 + 2};
-          if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].height + mydesign.bias_Vgraph)) logger->error("error");
+          if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].height + bias_Vgraph)) logger->error("error");
         }
       } else {
         if (i_neg_index < j_neg_index) {
           // i is be low j
           double sparserow[2] = {1, -1};
           int colno[2] = {int(i) * 4 + 2, int(j) * 4 + 2};
-          if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[i][curr_sp.selected[i]].height - mydesign.bias_Vgraph)) logger->error("error");
+          if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[i][curr_sp.selected[i]].height - bias_Vgraph)) logger->error("error");
         } else {
           // i is right of j
           double sparserow[2] = {1, -1};
           int colno[2] = {int(i) * 4 + 1, int(j) * 4 + 1};
-          if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].width + mydesign.bias_Hgraph)) logger->error("error");
+          if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].width + bias_Hgraph)) logger->error("error");
         }
       }
     }
@@ -352,23 +374,6 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   double var[N_var];
   get_variables(lp, var);
   delete_lp(lp);
-  auto roundup = [](int& v, int pitch) { v = pitch * ((v + pitch - 1) / pitch); };
-  int v_metal_index = -1;
-  int h_metal_index = -1;
-  for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
-    if (drcInfo.Metal_info[i].direct == 0) {
-      v_metal_index = i;
-      break;
-    }
-  }
-  for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
-    if (drcInfo.Metal_info[i].direct == 1) {
-      h_metal_index = i;
-      break;
-    }
-  }
-  int x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
-  int y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
     Blocks[i].x = var[i * 4];
     Blocks[i].y = var[i * 4 + 1];
