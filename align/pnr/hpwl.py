@@ -270,7 +270,7 @@ def calculate_HPWL_from_placement_verilog_d( placement_verilog_d, concrete_name,
     hpwl_top_down = calculate_HPWL_from_placement_verilog_d_top_down( placement_verilog_d, concrete_name, nets_d)
     hpwl_bottom_up = calculate_HPWL_from_placement_verilog_d_bottom_up( placement_verilog_d, concrete_name)
 
-    if hpwl_top_down != hpwl_bottom_up:
-        logger.warning( f'HPWL calculated in different ways differ: top_down: {hpwl_top_down} bottom_up: {hpwl_bottom_up}')
+    #if hpwl_top_down != hpwl_bottom_up:
+        #logger.warning( f'HPWL calculated in different ways differ: top_down: {hpwl_top_down} bottom_up: {hpwl_bottom_up}')
 
-    return hpwl_bottom_up
+    return hpwl_top_down
