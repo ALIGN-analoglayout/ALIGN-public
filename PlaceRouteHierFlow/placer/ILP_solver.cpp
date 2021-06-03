@@ -106,6 +106,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   roundup(bias_Vgraph, y_pitch);
 
   // overlap constraint
+  /**
   for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
     int i_pos_index = find(curr_sp.posPair.begin(), curr_sp.posPair.end(), i) - curr_sp.posPair.begin();
     int i_neg_index = find(curr_sp.negPair.begin(), curr_sp.negPair.end(), i) - curr_sp.negPair.begin();
@@ -137,6 +138,20 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
           if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].width + bias_Hgraph)) logger->error("error");
         }
       }
+    }
+  }**/
+
+  for(auto order:mydesign.Ordering_Constraints){
+    if(order.second==placerDB::V){
+      double sparserow[2] = {1, -1};
+      int colno[2] = {int(order.first.first) * 4 + 2, int(order.first.second) * 4 + 2};
+      if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[order.first.second][curr_sp.selected[order.first.second]].height + bias_Vgraph))
+        logger->error("error");
+    }else{
+      double sparserow[2] = {1, -1};
+      int colno[2] = {int(order.first.first) * 4 + 1, int(order.first.second) * 4 + 1};
+      if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[order.first.first][curr_sp.selected[order.first.first]].width - bias_Hgraph))
+        logger->error("error");
     }
   }
 
@@ -363,7 +378,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
 
     set_obj_fn(lp, row);
     set_minim(lp);
-    set_timeout(lp, 1);
+    set_timeout(lp, 10);
     int ret = solve(lp);
     if (ret != 0 && ret != 1) {
       delete_lp(lp);

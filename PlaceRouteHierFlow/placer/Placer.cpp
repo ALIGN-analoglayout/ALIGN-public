@@ -629,7 +629,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       // Trival moves
       SeqPair trial_sp(curr_sp);
       // cout<<"before per"<<endl; trial_sp.PrintSeqPair();
-      trial_sp.PerturbationNew(designData);
+      //trial_sp.PerturbationNew(designData);
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ILP_solver trial_sol(designData);
       double trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo);
