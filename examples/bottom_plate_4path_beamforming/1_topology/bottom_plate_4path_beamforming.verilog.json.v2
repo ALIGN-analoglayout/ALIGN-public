@@ -43,9 +43,7 @@
         {"constraint": "AlignInOrder", "direction": "horizontal", "line": "bottom", 
           "instances": [ "XC2", "XM6", "XM14", "XC6"]},
         {"constraint": "AlignInOrder", "direction": "horizontal", "line": "bottom",
-          "instances": [ "XC3", "XM7", "XM15", "XC7"]},
-        {"constraint": "AlignInOrder", "direction": "vertical", "line": "left",
-          "instances": [ "XM0", "XM4"]}
+          "instances": [ "XC3", "XM7", "XM15", "XC7"]}
           ],
       "instances": [
         {
