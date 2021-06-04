@@ -56,20 +56,18 @@ def gen_placement_verilog(hN, idx, sel, DB, verilog_d):
                     assert used_internal[abstract_template_name][concrete_template_name] == (child_idx,blk.selectedInstance,new_r)
             else:
                 
-                centers = []
                 pinterminals = defaultdict(list)
                 for pin in inst.blockPins:
                     pinname = pin.name
                     for contact in pin.pinContacts:
-                        centers.append( (pinname, (contact.originCenter.x, contact.originCenter.y)))
                         b = contact.originBox
                         pinterminals[pinname].append( (b.LL.x, b.LL.y, b.UR.x, b.UR.y))
 
                 concrete_template_name = pathlib.Path(inst.gdsFile).stem
                 if concrete_template_name not in used_leaves[abstract_template_name]:                
-                    used_leaves[abstract_template_name][concrete_template_name] = (new_r, centers, pinterminals)
+                    used_leaves[abstract_template_name][concrete_template_name] = (new_r, pinterminals)
                 else:
-                    assert used_leaves[abstract_template_name][concrete_template_name] == (new_r, centers, pinterminals)
+                    assert used_leaves[abstract_template_name][concrete_template_name] == (new_r, pinterminals)
 
     traverse( hN, sel)
     logger.debug( f'used_leaves: {used_leaves} used_internal: {used_internal}')
@@ -110,17 +108,13 @@ def gen_placement_verilog(hN, idx, sel, DB, verilog_d):
 
     leaves = []
     for a, v in used_leaves.items():
-        for c, (r,centers_lst,pinterminals) in v.items():
-            centers = []
-            for k, center in centers_lst:
-                centers.append( { 'name': k, 'center': center})
-
+        for c, (r,pinterminals) in v.items():
             terminals = []
             for k, lst in pinterminals.items():
                 for rr in lst:
                     terminals.append( { 'name': k, 'rect': rr})
 
-            leaves.append( {'abstract_name': a, 'concrete_name': c, 'bbox': r, 'terminal_centers': centers, 'terminals': terminals})
+            leaves.append( {'abstract_name': a, 'concrete_name': c, 'bbox': r, 'terminals': terminals})
 
 
     d['leaves'] = leaves
@@ -167,8 +161,6 @@ def scale_placement_verilog( placement_verilog_d, scale_factor, invert=False):
 
     for leaf in d['leaves']:
         leaf['bbox'] = array_rational_scaling(leaf['bbox'], mul=mul, div=div)
-        leaf['terminal_centers'] = [ { 'name': tc['name'], 'center': array_rational_scaling( tc['center'], mul=mul, div=div)}
-                                     for tc in leaf['terminal_centers']]
         leaf['terminals'] = [ { 'name': t['name'], 'rect': array_rational_scaling( t['rect'], mul=mul, div=div)}
                                 for t in leaf['terminals']]
             
