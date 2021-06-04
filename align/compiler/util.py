@@ -28,7 +28,7 @@ def get_next_level(G, tree_l1):
                 G.get_edge_data(node, nbr)['weight']!=2:
                     tree_next.append(nbr)
                 elif 'mos' not in G.nodes[nbr]["inst_type"]:
-                    tree_next.append(nbr)               
+                    tree_next.append(nbr)
         else:
             tree_next.extend(list(G.neighbors(node)))
     # logger.debug(f"next nodes {tree_next} ")
@@ -44,7 +44,7 @@ def compare_two_nodes(G,node1:str,node2:str ,ports_weight):
     node1, node2 : TYPE  string
         DESCRIPTION. node name
     ports_weight : TYPE list
-        DESCRIPTION. port weights 
+        DESCRIPTION. port weights
 
     Returns
     -------
@@ -59,13 +59,13 @@ def compare_two_nodes(G,node1:str,node2:str ,ports_weight):
     logger.debug(f"comparing_nodes: {node1},{node2},{nbrs1},{nbrs2}")
 
     # Add some heuristic here in future
-    
+
     nbrs1_type= sorted([G.nodes[nbr]["inst_type"] for nbr in nbrs1]) + [G.nodes[node1]["inst_type"]]
     nbrs2_type= sorted([G.nodes[nbr]["inst_type"] for nbr in nbrs2]) + [G.nodes[node2]["inst_type"]]
     if nbrs1_type != nbrs2_type:
         logger.debug(f"type mismatch {nbrs1}:{nbrs1_type} {nbrs2}:{sorted(nbrs2_type)}")
         return False
-    if G.nodes[node1]["inst_type"]=="net": 
+    if G.nodes[node1]["inst_type"]=="net":
         if G.nodes[node1]["net_type"] == G.nodes[node2]["net_type"] == 'external':
             if not ports_weight:
                 return True
@@ -84,15 +84,15 @@ def compare_two_nodes(G,node1:str,node2:str ,ports_weight):
             else:
                 logger.debug(f'internal port weight mismatch {weight1},{weight2}')
                 return False
-    else: 
+    else:
         if 'values' in G.nodes[node1].keys() and \
         G.nodes[node1]["values"]==G.nodes[node2]["values"]:
             logger.debug(" True")
             return True
         else:
             logger.debug(" False, value mismatch")
-            return False  
-  
+            return False
+
 def max_connectivity(G):
     conn_value =0
     #internal_nets =[x for x,y in G.nodes(data=True) if y['inst_type']=='net' and len(G.edges(x)) > 1]

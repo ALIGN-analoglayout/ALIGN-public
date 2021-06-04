@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 def remove_pg_pins(hier_graph_dict:dict,circuit_name, pg_pins):
     """
-    removes power pins to be sent as signal by recursively finding all connections to power pins 
+    removes power pins to be sent as signal by recursively finding all connections to power pins
     and removing them from subcircuit defination and instance calls
     for each circuit different power connection creates an extra subcircuit
     Required by PnR as it does not make power connections as ports
@@ -57,14 +57,14 @@ def remove_pg_pins(hier_graph_dict:dict,circuit_name, pg_pins):
                 #create a new subcircuit and changes its ports to power ports
                 #power ports are not written during verilog
                 updated_name = modify_pg_conn_subckt(hier_graph_dict,attr["inst_type"], pg_conn)
-                attr["inst_type"] = updated_name
+                attr["instance"].model = updated_name
                 remove_pg_pins(hier_graph_dict,updated_name, pg_pins)
-                
+
 def modify_pg_conn_subckt(hier_graph_dict:dict,circuit_name, pg_conn):
     """
-    creates a new subcircuit by removing power pins from a subcircuit defination 
+    creates a new subcircuit by removing power pins from a subcircuit defination
     and change internal connections within the subcircuit
-   
+
     Parameters
     ----------
     hier_graph_dict : dict
@@ -98,7 +98,7 @@ def modify_pg_conn_subckt(hier_graph_dict:dict,circuit_name, pg_conn):
             new["graph"] = nx.relabel_nodes(new["graph"],{k:v},copy=False)
 
         for node,attr in new["graph"].nodes(data=True):
-            if attr["inst_type"]=='net':
+            if attr["instance"].model=='net':
                 continue
             #if k in attr["ports"]:
             #logger.debug(f"updating node {node} {attr}")
@@ -108,7 +108,7 @@ def modify_pg_conn_subckt(hier_graph_dict:dict,circuit_name, pg_conn):
                     if b==k:
                         attr["connection"][a]=v
                         logger.debug(f"updated attributes of {node}: {attr}")
-                
+
     i=1
     updated_ckt_name = circuit_name+'pg'+str(i)
     while updated_ckt_name in hier_graph_dict.keys():
@@ -117,11 +117,11 @@ def modify_pg_conn_subckt(hier_graph_dict:dict,circuit_name, pg_conn):
         else:
             i = i+1
             updated_ckt_name = circuit_name+'pg'+str(i)
-    hier_graph_dict[ updated_ckt_name] = new   
+    hier_graph_dict[ updated_ckt_name] = new
     return updated_ckt_name
 
 
-def preprocess_stack_parallel(hier_graph_dict:dict,circuit_name,G):
+def preprocess_stack_parallel(ckt_parser, hier_graph_dict:dict,circuit_name,G):
     """
     Preprocess the input graph by reducing parallel caps, series resistance, identify stacking, adding parallel transistors.
 
@@ -139,24 +139,25 @@ def preprocess_stack_parallel(hier_graph_dict:dict,circuit_name,G):
     None.
 
     """
+
     logger.debug(f"no of nodes: {len(G)}")
-    add_parallel_caps(G)
-    add_series_res(G)
-    add_stacked_transistor(G)
-    add_parallel_transistor(G)
+    add_parallel_caps(G,ckt_parser,circuit_name)
+    add_series_res(G,ckt_parser,circuit_name)
+    add_stacked_transistor(G,ckt_parser,circuit_name)
+    add_parallel_transistor(G,ckt_parser,circuit_name)
     initial_size=len(G)
     delta =1
     while delta > 0:
         logger.debug(f"CHECKING stacked transistors {circuit_name} {G}")
-        add_stacked_transistor(G)
-        add_parallel_transistor(G)
+        add_stacked_transistor(G,ckt_parser,circuit_name)
+        add_parallel_transistor(G,ckt_parser,circuit_name)
         delta = initial_size - len(G)
         initial_size = len(G)
-    #remove single instance subcircuits 
-    attributes = [attr for node, attr in G.nodes(data=True) if 'net' not in attr["inst_type"]]
-    if len(attributes)==1:
+    #remove single instance subcircuits
+    subckt = ckt_parser.library.find(circuit_name)
+    if len(subckt.elements)==1:
         #Check any existing hier
-        if 'sub_graph' in attributes[0].keys() and attributes[0]['sub_graph'] is not None:
+        if 'sub_graph' in subckt.elements[0].keys() and attributes[0]['sub_graph'] is not None:
             logger.debug(f"sub_graph nodes {attributes[0]['sub_graph'].nodes()}")
             stacked_ckt = preprocess_stack_parallel(hier_graph_dict,attributes[0]["real_inst_type"],attributes[0]["sub_graph"])
             if stacked_ckt ==None:
@@ -173,12 +174,12 @@ def preprocess_stack_parallel(hier_graph_dict:dict,circuit_name,G):
                     attr["ports"] =[attr["connection"][port] for port in attributes[0]["ports"] if port in attr["connection"]]
                     attr["edge_weight"] = attributes[0]["edge_weight"]
                     attr["connection"]= None
-                                                                   
+
         return circuit_name
     else:
         return None
-        
-   
+
+
 def change_SD(G,node):
     nbr = list(G.neighbors(node))
     #No gate change
@@ -192,7 +193,7 @@ def change_SD(G,node):
         w2 = w2 -3
     elif w1 & 4:
         w1 = w1-3
-        w2 = w2 +3 
+        w2 = w2 +3
 
     G.get_edge_data(node, nbr[0])['weight'] = w1
     G.get_edge_data(node, nbr[1])['weight'] = w2
@@ -210,7 +211,7 @@ def define_SD(circuit,power,gnd,clk):
         return False
     if not high or not low:
         logger.info('no power and gnd in this circuit')
-        return 
+        return
     probable_changes_p=[]
     if high[0] in G.nodes():
         traversed = high.copy()
@@ -223,13 +224,13 @@ def define_SD(circuit,power,gnd,clk):
                     # if set(G.neighbors(node)) & set(clk):
                     #     continue
                     logger.debug("VDD:checking node: %s %s %s ", node, high,traversed)
-                    if 'pmos' == G.nodes[node]["inst_type"] and \
+                    if 'pmos' == G.nodes[node]["instance"].model and \
                         node not in traversed:
                         weight =G.get_edge_data(node, nxt)['weight'] & ~ 8
                         if weight == 1 or weight==3 :
                             # logger.debug("VDD:probable change source drain:%s",node)
                             probable_changes_p.append(node)
-                    elif 'nmos' == G.nodes[node]["inst_type"] and \
+                    elif 'nmos' == G.nodes[node]["instance"].model and \
                     node not in traversed:
                         weight =G.get_edge_data(node, nxt)['weight'] & ~ 8
                         if weight == 4 or weight==6 :
@@ -253,13 +254,13 @@ def define_SD(circuit,power,gnd,clk):
                     # if set(G.neighbors(node)) & set(clk):
                     #     continue
                     logger.debug("GND:checking node: %s %s %s ", node, low,traversed)
-                    if 'pmos' == G.nodes[node]["inst_type"] and \
+                    if 'pmos' == G.nodes[node]["instance"].model and \
                         node not in traversed:
                         weight =G.get_edge_data(node, nxt)['weight'] & ~ 8
                         if weight == 4 or weight==6 :
                             # logger.debug("GND:probable change source drain:%s",node)
                             probable_changes_n.append(node)
-                    elif 'nmos' == G.nodes[node]["inst_type"] and \
+                    elif 'nmos' == G.nodes[node]["instance"].model and \
                     node not in traversed:
                         weight =G.get_edge_data(node, nxt)['weight'] & ~ 8
                         if weight == 1 or weight==3 :
@@ -276,53 +277,57 @@ def define_SD(circuit,power,gnd,clk):
         change_SD(G,node)
 
 
-def add_parallel_caps(G):
+def add_parallel_caps(G,parser,name):
     logger.debug(f"merging all caps, initial graph size: {len(G)}")
     remove_nodes = []
-    for node, attr in G.nodes(data=True):
-        if 'cap' in attr["inst_type"] and node not in remove_nodes:
+    subckt = parser.library.find(name)
+    for element in subckt.elements:
+        node=element.name
+        if 'CAP'== parser.library.find(element.model).base \
+             and node not in remove_nodes:
             for net in G.neighbors(node):
                 for next_node in G.neighbors(net):
-                    if not next_node == node  and next_node not in remove_nodes and G.nodes[next_node][
-                        "inst_type"] == G.nodes[node]["inst_type"] and\
-                        len(set(G.neighbors(node)) & set(G.neighbors(next_node)))==2:
-                        for param, value in G.nodes[node]["values"].items():
-                            if param == 'cap':
+                    if not next_node == node  and next_node not in remove_nodes \
+                        and G.nodes[next_node]['instance'].model == G.nodes[node]["instance"].model \
+                        and len(set(G.neighbors(node)) & set(G.neighbors(next_node)))==2:
+                        for param, value in G.nodes[node]["instance"].parameters.items():
+                            if param == 'CAP':
                                 c_val = float(convert_unit(value))+ \
-                                float(convert_unit(G.nodes[next_node]["values"]['cap']))
+                                float(convert_unit(G.nodes[next_node]["instance"].parameters['cap']))
                                 remove_nodes.append(next_node)
-                                G.nodes[node]["values"]['cap']=c_val
-                            elif param == 'c':
+                                G.nodes[node]["instance"].parameters['cap']=c_val
+                            elif param == 'VALUE':
                                 c_val = float(convert_unit(value))+ \
-                                float(convert_unit(G.nodes[next_node]["values"]['c']))
+                                float(convert_unit(G.nodes[next_node]["instance"].parameters['c']))
                                 remove_nodes.append(next_node)
-                                G.nodes[node]["values"]['c']=c_val
+                                G.nodes[node]["instance"].parameters['VALUE']=c_val
     if len(remove_nodes)>0:
         logger.debug(f"removed parallel caps: {remove_nodes}")
         for node in remove_nodes:
             G.remove_node(node)
-            
-def add_series_res(G):
+
+def add_series_res(G,parser,name):
     logger.debug(f"merging all series res, initial graph size: {len(G)}")
     remove_nodes = []
-    for net, attr in G.nodes(data=True):
-        if 'net' in attr["inst_type"] and len(set(G.neighbors(net)))==2 \
-            and net not in remove_nodes and attr["net_type"]!="external":
-            nbr_type =[G.nodes[nbr]["inst_type"] for nbr in list(G.neighbors(net))]
+    subckt = parser.library.find(name)
+    for net in set(subckt.nets)-set(subckt.pins):
+        if len(set(G.neighbors(net)))==2 \
+            and net not in remove_nodes:
+            nbr_type =[parser.library.find(G.nodes[nbr]["instance"].model).base for nbr in list(G.neighbors(net))]
             combined_r,remove_r=list(G.neighbors(net))
-            if nbr_type[0]==nbr_type[1]=='res':
+            if nbr_type[0]==nbr_type[1]=='RES':
                 remove_nodes+=[net,remove_r]
                 new_net=list(set(G.neighbors(remove_r))-set(net)-set(remove_nodes))[0]
-                for param, value in G.nodes[combined_r]["values"].items():
+                for param, value in G.nodes[combined_r]["instance"].parameters.items():
                     if param == 'res':
                         r_val = float(convert_unit(value))+ \
-                        float(convert_unit(G.nodes[remove_r]["values"]['res']))
-                        G.nodes[combined_r]["values"]['res']=r_val
+                        float(convert_unit(G.nodes[remove_r]["instance"].parameters['res']))
+                        G.nodes[combined_r]["instance"].parameters['res']=r_val
                         G.add_edge(combined_r, new_net, weight=G[combined_r][net]["weight"])
                     elif param == 'r':
                         r_val = float(convert_unit(value))+ \
-                        float(convert_unit(G.nodes[remove_r]["values"]['r']))
-                        G.nodes[combined_r]["values"]['r']=r_val
+                        float(convert_unit(G.nodes[remove_r]["instance"].parameters['r']))
+                        G.nodes[combined_r]["instance"].parameters['r']=r_val
                         G.add_edge(combined_r, new_net, weight=G[combined_r][net]["weight"])
     if len(remove_nodes)>0:
         logger.debug(f"removed series r: {remove_nodes}")
@@ -330,34 +335,35 @@ def add_series_res(G):
             G.remove_node(node)
         #to remove 3 in series
         add_series_res(G)
-def add_parallel_transistor(G):
+def add_parallel_transistor(G,parser,name):
     logger.debug(f"CHECKING parallel transistors, initial graph size: {len(G)}")
     remove_nodes = []
-    for node, attr in G.nodes(data=True):
-        if 'mos' in attr["inst_type"] and node not in remove_nodes:
+    subckt = parser.library.find(name)
+    for element in subckt.elements:
+        node = element.name
+        if "MOS" in parser.library.find(element.model).base and node not in remove_nodes:
             for net in G.neighbors(node):
                 for next_node in G.neighbors(net):
-                    
                     if not next_node == node  and next_node not in remove_nodes and G.nodes[next_node][
-                        "inst_type"] == G.nodes[node]["inst_type"] and G.nodes[next_node][
-                        "values"] == G.nodes[node]["values"] and \
+                        "instance"].model == G.nodes[node]["instance"].model and G.nodes[next_node][
+                        "instance"].parameters == G.nodes[node]["instance"].parameters and \
                         set(G.neighbors(node)) == set(G.neighbors(next_node)):
                         nbr_wt_node=[G.get_edge_data(node, nbr)['weight'] for nbr in G.neighbors(node)]
                         nbr_wt_next_node=[G.get_edge_data(next_node, nbr)['weight'] for nbr in G.neighbors(node)]
                         if nbr_wt_node != nbr_wt_next_node:
                             #cross connections
                             continue
-                        if 'm' in G.nodes[node]["values"]:
+                        if 'm' in G.nodes[node]["instance"].parameters:
                             remove_nodes.append(next_node)
-                            G.nodes[node]["values"]['m']=2*float(convert_unit(G.nodes[node]["values"]['m']))
+                            G.nodes[node]["instance"].parameters['m']=2*float(convert_unit(G.nodes[node]["instance"].parameters['m']))
                         else:
                             remove_nodes.append(next_node)
-                            G.nodes[node]["values"]['m']=2
+                            G.nodes[node]["instance"].parameters['m']=2
     if len(remove_nodes)>0:
         logger.debug(f"removed parallel transistors: {remove_nodes}")
         for node in remove_nodes:
             G.remove_node(node)
-def add_stacked_transistor(G):
+def add_stacked_transistor(G,parser,name):
     """
     Reduce stacked transistors
     Parameters
@@ -375,21 +381,22 @@ def add_stacked_transistor(G):
     remove_nodes = []
     modified_edges = {}
     modified_nodes = {}
-    for node, attr in G.nodes(data=True):
-        if 'mos' in attr["inst_type"] and node not in remove_nodes:
+    subckt = parser.library.find(name)
+    for element in subckt.elements:
+        node = element.name
+        if "MOS" in parser.library.find(element.model).base and node not in remove_nodes:
             for net in G.neighbors(node):
-                edge_wt = G.get_edge_data(node, net)['weight'] & ~8
+                edge_wt = G.get_edge_data(node, net)['pin']-{'B'}
                 #for source nets with only two connections
-                if edge_wt == 4 and len(list(G.neighbors(net))) == 2:
+                if edge_wt == {'G'}  and len(list(G.neighbors(net))) == 2:
                     for next_node in G.neighbors(net):
                         logger.debug(f" checking nodes: {node}, {next_node} {net} {modified_nodes} {remove_nodes} ")
                         if len( {node,next_node}- (set(modified_nodes.keys()) | set(remove_nodes)) )!=2:
                             logger.debug(f"skipping {node} {next_node} as they are same or accessed before")
                             continue
-                        elif not next_node == node and G.nodes[next_node][
-                                "inst_type"] == G.nodes[node][
-                                    "inst_type"] and G.get_edge_data(
-                                        next_node, net)['weight'] == 1:
+                        elif not next_node == node and G.nodes[next_node]["instance"].model \
+                            == G.nodes[node]["instance"].model and G.get_edge_data(
+                                        next_node, net)['pin'] == {'D'}:
                             common_nets = set(G.neighbors(node)) & set( G.neighbors(next_node))
                             # source net of neighbor
                             source_net = [snet for snet in G.neighbors(next_node) if  G.get_edge_data( next_node, snet)['weight']&~8 == 4]
@@ -412,15 +419,15 @@ def add_stacked_transistor(G):
                             if G.nodes[net]["net_type"]!="external" :
                                 if G.get_edge_data( node, gate_net)['weight'] >= 2 :
                                     logger.debug(f"checking values {G.nodes[next_node]},{G.nodes[next_node]}")
-                                    if 'stack' in G.nodes[next_node]["values"]:
-                                        stack=G.nodes[next_node]["values"].pop("stack")
+                                    if 'stack' in G.nodes[next_node]["instance"].parameters:
+                                        stack=G.nodes[next_node]["instance"].parameters.pop("stack")
                                     else:
                                         stack=1
-                                    if 'stack' in G.nodes[node]["values"]:
-                                        stack=stack+G.nodes[node]["values"].pop("stack")
+                                    if 'stack' in G.nodes[node]["instance"].parameters:
+                                        stack=stack+G.nodes[node]["instance"].parameters.pop("stack")
                                     else:
                                         stack =stack+1
-                                    if G.nodes[next_node]["values"]==G.nodes[node]["values"]:
+                                    if G.nodes[next_node]["instance"].parameters==G.nodes[node]["instance"].parameters:
                                         modified_nodes[node] = stack
                                     remove_nodes.append(net)
                                     if G.has_edge(node,source_net):
@@ -437,7 +444,7 @@ def add_stacked_transistor(G):
         G.nodes[node]["ports"][2]=attr[0]
 
     for node, attr in modified_nodes.items():
-        G.nodes[node]["values"]['stack'] = attr
+        G.nodes[node]["instance"].parameters['stack'] = attr
 
     for node in remove_nodes:
         G.remove_node(node)

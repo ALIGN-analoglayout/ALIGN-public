@@ -22,7 +22,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 def generate_hierarchy(netlist, subckt, output_dir, flatten_heirarchy, pdk_dir, uniform_height):
-    hier_graph_dict = compiler(netlist, subckt, pdk_dir, flatten_heirarchy)
+    config_path =  pathlib.Path(__file__).resolve().parent.parent / 'config'
+    hier_graph_dict = compiler(netlist, subckt, pdk_dir, config_path, flatten_heirarchy)
     return compiler_output(netlist, hier_graph_dict, subckt, output_dir, pdk_dir, uniform_height)
 
 def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, config_path: pathlib.Path, flat=0, Debug=False):
@@ -54,7 +55,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, conf
     #
     # TODO: flatten should be separate pass
     #
-    parser = SpiceParser()
+    ckt_parser = SpiceParser()
     lib_parser = SpiceParser()
     #Read model file to map devices
     # TODO: add pdk specific model files
@@ -62,14 +63,13 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, conf
     design_name = design_name.upper()
     with open(model_statemenets) as f:
         lines = f.read()
-    parser.parse(lines)
+    ckt_parser.parse(lines)
     lib_parser.parse(lines)
 
     with open(input_ckt) as f:
         lines =  f.read()
-    parser.parse(lines)
-    circuit = parser.library[design_name]
-
+    ckt_parser.parse(lines)
+    # circuit = ckt_parser.library.find(design_name)
 
     lib_files = ['basic_template.sp', 'user_template.sp']
     for lib_file in lib_files:
@@ -80,41 +80,41 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, conf
     library = lib_parser.library
 
     # sp = SpiceParser(input_ckt, design_name, flat)
-    circuit_graphs = sp.sp_parser()
-    assert circuit_graphs !=None  , f"No subcircuit with name {design_name} found in spice {input_ckt}"
-    circuit = circuit_graphs[0]
+    # circuit_graphs = sp.sp_parser()
+    # assert circuit_graphs !=None  , f"No subcircuit with name {design_name} found in spice {input_ckt}"
+    # circuit = circuit_graphs[0]
 
     design_setup = read_setup(input_dir / f'{design_name}.setup')
     logger.debug(f"template parent path: {pathlib.Path(__file__).parent}")
-    lib_path = pathlib.Path(__file__).resolve().parent.parent / 'config' / 'basic_template.sp'
-    logger.debug(f"template library path: {lib_path}")
-    basic_lib = SpiceParser(lib_path)
-    library = basic_lib.sp_parser()
-    lib_path=pathlib.Path(__file__).resolve().parent.parent / 'config' / 'user_template.sp'
-    user_lib = SpiceParser(lib_path)
-    library += user_lib.sp_parser()
-    library = [HierDictNode(**x, constraints=[], ports_weight={}) for x in library]
-    library=sorted(library, key=lambda k: max_connectivity(k.graph), reverse=True)
-
+    # lib_path = pathlib.Path(__file__).resolve().parent.parent / 'config' / 'basic_template.sp'
+    # logger.debug(f"template library path: {lib_path}")
+    # basic_lib = SpiceParser(lib_path)
+    # library = basic_lib.sp_parser()
+    # lib_path=pathlib.Path(__file__).resolve().parent.parent / 'config' / 'user_template.sp'
+    # user_lib = SpiceParser(lib_path)
+    # library += user_lib.sp_parser()
+    # library = [HierDictNode(**x, constraints=[], ports_weight={}) for x in library]
+    # library = sorted(library, key=lambda k: max_connectivity(k), reverse=True)
+    primitives = [v for v in library if isinstance(v, SubCircuit) and v.name not in design_setup['DONT_USE_CELLS']]
+    primitives.sort(key=lambda x: len(x.elements) + len(x.nets), reverse=True)
     logger.debug(f"dont use cells: {design_setup['DONT_USE_CELLS']}")
-    logger.debug(f"all library elements: {[ele['name'] for ele in library]}")
-    if len(design_setup['DONT_USE_CELLS'])>0:
-        library=[lib_ele for lib_ele in library if lib_ele['name'] not in design_setup['DONT_USE_CELLS']]
+    logger.debug(f"all library elements: {[ele.name for ele in primitives]}")
+    # if len(design_setup['DONT_USE_CELLS'])>0:
+    #     library=[lib_ele for lib_ele in library if lib_ele['name'] not in design_setup['DONT_USE_CELLS']]
     #read lef to not write those modules as macros
-    lef_path = pathlib.Path(__file__).resolve().parent.parent / 'config'
-    all_lef = read_lef(lef_path)
+    all_lef = read_lef(config_path)
     logger.debug(f"Available library cells: {', '.join(all_lef)}")
 
-    if Debug==True:
-        _write_circuit_graph(circuit["name"], circuit["graph"],
-                                     "./circuit_graphs/")
-        for lib_circuit in library:
-            _write_circuit_graph(lib_circuit["name"], lib_circuit["graph"],
-                                         "./circuit_graphs/")
+    # if Debug==True:
+    #     _write_circuit_graph(circuit["name"], circuit["graph"],
+    #                                  "./circuit_graphs/")
+    #     for lib_circuit in library:
+    #         _write_circuit_graph(lib_circuit["name"], lib_circuit["graph"],
+    #                                      "./circuit_graphs/")
     #Converting graph to dict
     const_parse = ConstraintParser(pdk_dir, input_dir)
-    create_data = CreateDatabase(circuit["graph"], const_parse)
-    hier_graph_dict = create_data.read_inputs(circuit["name"])
+    create_data = CreateDatabase(ckt_parser, const_parse)
+    hier_graph_dict = create_data.read_inputs(design_name)
     logger.debug("START preprocessing")
     stacked_subcircuit=[]
 
@@ -126,7 +126,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, conf
         G1 = circuit["graph"]
         if circuit_name not in design_setup['DIGITAL']:
             define_SD(circuit,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
-            stacked_subcircuit.append(preprocess_stack_parallel(hier_graph_dict,circuit_name,G1))
+            stacked_subcircuit.append(preprocess_stack_parallel(ckt_parser,hier_graph_dict,circuit_name,G1))
     for circuit_name in stacked_subcircuit:
         if circuit_name in hier_graph_dict.keys() and circuit_name is not design_name:
             logger.debug(f"removing stacked subcircuit {circuit_name}")
@@ -139,12 +139,13 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, conf
     remove_pg_pins(hier_graph_dict,design_name, pg_pins)
 
     logger.debug( "\n################### FINAL CIRCUIT AFTER preprocessing #################### \n")
-    for circuit in hier_graph_dict.values():
-        for node in circuit["graph"].nodes(data=True):
-            if node[1]["inst_type"]!='net':
-                logger.debug(node)
-
-    annotate = Annotate(hier_graph_dict, design_setup, library, all_lef)
+    # for circuit in hier_graph_dict.values():
+    #     for node in circuit["graph"].nodes(data=True):
+    #         if node[1]["inst_type"]!='net':
+    #             logger.debug(node)
+    # print(hier_graph_dict)
+    # print(primitives)
+    annotate = Annotate(hier_graph_dict, design_setup, primitives, all_lef, ckt_parser)
     annotate.annotate()
     return hier_graph_dict
 

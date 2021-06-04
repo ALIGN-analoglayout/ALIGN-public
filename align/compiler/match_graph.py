@@ -16,7 +16,7 @@ import pprint
 import logging
 from ..schema import constraint
 from ..schema.hacks import HierDictNode
-
+from align.schema.graph import Graph
 logger = logging.getLogger(__name__)
 
 
@@ -27,7 +27,7 @@ class Annotate:
     Creates hierarchies in the graph based on a library or user defined groupblock constraint
     Boundries (clk,digital, etc) are defined from setup file
     """
-    def __init__(self,hier_graph_dict,design_setup,library,existing_generator):
+    def __init__(self,hier_graph_dict,design_setup,library,existing_generator,ckt_parser):
         """
         Args:
             hier_graph_dict (dict): all subckt graph, names and port
@@ -43,6 +43,7 @@ class Annotate:
         self.all_lef = existing_generator
         self.stop_points = self.pg+self.clk
         self.no_array = design_setup['NO_ARRAY']+design_setup['DIGITAL']
+        self.ckt_parser = ckt_parser
 
     def annotate(self):
         """
@@ -118,14 +119,16 @@ class Annotate:
         else:
             pg = self.pg
         G1 = circuit_graph
-        num = len([key for key in Gsub
-                        if 'net' not in G1.nodes[key]["inst_type"]])
+        num = len([key for key in Gsub if 'instance' in G1.nodes[key]])
         # Define ports for subblock
         matched_ports = {}
         ports_weight = {}
-        G2 = lib_graph.copy()
+        G2 = lib_graph #TBD: needed a copy here
+        pins = self.ckt_parser.library.find(name).pins
+        print("Hello")
+        print(pins)
         for g1_n, g2_n in Gsub.items():
-            if 'net' in G2.nodes[g2_n]["inst_type"]:
+            if 'instance' not in G2.nodes[g2_n]:
                 if 'external' in G2.nodes[g2_n]["net_type"]:
                     if num > 1 and g1_n in pg:
                         # remove power connections
@@ -319,9 +322,10 @@ class Annotate:
         merge matched graphs
         """
         logger.debug("START reducing graph: ")
-        G1 = circuit_graph.copy()
+        #TBD copy causes an error __init__() missing 1 required positional argument: 'subckt'
+        G1 = circuit_graph
         for lib_ele in self.lib:
-            lib_name = lib_ele['name']
+            lib_name = lib_ele.name
             if lib_name in mapped_graph_list:
                 logger.debug(f"Reducing ISOMORPHIC sub_block: {lib_name}{mapped_graph_list[lib_name]}")
 
@@ -330,14 +334,14 @@ class Annotate:
                         continue
                     remove_nodes = [
                         key for key in Gsub
-                        if 'net' not in G1.nodes[key]["inst_type"]]
+                        if 'instance' in G1.nodes[key]]
                     logger.debug(f"Reduce nodes: {', '.join(remove_nodes)}")
 
-                    matched_ports,ports_weight,G2 = self._update_attributes(G1,name,lib_name, lib_ele["graph"],Gsub)
+                    matched_ports,ports_weight,G2 = self._update_attributes(G1,name,lib_name, Graph(lib_ele),Gsub)
 
                     if len(remove_nodes) == 1:
                         logger.debug(f"One node element: {lib_name}")
-                        G1.nodes[remove_nodes[0]]["inst_type"] = lib_name
+                        G1.nodes[remove_nodes[0]]["instance"].model = lib_name
                         G1.nodes[remove_nodes[0]]["ports_match"] = matched_ports
                         updated_values = merged_value({}, G1.nodes[remove_nodes[0]]["values"])
                         G1.nodes[remove_nodes[0]]["values"] = updated_values
@@ -376,10 +380,20 @@ class Annotate:
             logger.debug(f"Finished one branch: {lib_name}")
         return G1
 
-    def _is_small(self,g1,g2):
-        nd2 = [g2.nodes[node]["inst_type"] for node in g2.nodes()]
+    def _is_small(self,ckt_graph,subckt_graph):
+        """_is_small [summary]
+        checks that subckt has less number of instances of each type than ckt
+        Args:
+            ckt ([type]): [graph] TBD: change to schema, also check nets
+            subckt ([type]): [graph]
+
+        Returns:
+            [type]: [description]
+        """
+        nd2 = [self.ckt_parser.library.find(attr["instance"].model).base for node,attr in subckt_graph.nodes(data=True) if 'instance' in attr]
+        # nd2 = [self.ckt_parser.library.find(node["instance"].model).base for node in subckt.nodes()]
         nd2 = {i:nd2.count(i) for i in nd2}
-        nd1 = [g1.nodes[node]["inst_type"] for node in g1.nodes()]
+        nd1 = [self.ckt_parser.library.find(attr["instance"].model).base for node,attr in ckt_graph.nodes(data=True) if 'instance' in attr]
         nd1 = {i:nd1.count(i) for i in nd1}
         is_small = True
         for k,v in nd2.items():
@@ -390,7 +404,7 @@ class Annotate:
         return is_small
 
     def _is_digital(self,g2,name):
-        nd = [node for node in g2.nodes() if 'net' not in g2.nodes[node]["inst_type"]]
+        nd = [node for node in g2.nodes() if 'instance' in g2.nodes[node]]
         if name in self.digital and len(nd)>1:
             return True
         else:
@@ -408,10 +422,10 @@ class Annotate:
         logger.debug(f"Matching circuit Graph nodes: {G1.nodes} edges:{G1.edges(data=True)}")
         mapped_graph_list = {}
         for lib_ele in self.lib:
-            block_name = lib_ele['name']
+            block_name = lib_ele.name
             if block_name==name:
                 continue
-            G2 = lib_ele['graph']
+            G2 = Graph(lib_ele)
 
             # Digital instances only transistors:
             if self._is_digital(G2,name):
@@ -431,8 +445,7 @@ class Annotate:
                 map_list = []
 
                 for Gsub in GM.subgraph_isomorphisms_iter():
-
-                    all_nd = [key for key in Gsub.keys() if 'net' not in G1.nodes[key]["inst_type"]]
+                    all_nd = [key for key in Gsub.keys() if 'instance' in G1.nodes[key]]
                     logger.debug(f"matched inst: {all_nd}")
                     if len(all_nd)>1 and self._is_clk(Gsub):
                         logger.debug("Discarding match due to clock")
@@ -481,14 +494,14 @@ class Annotate:
             inst_copy = '<'+ str(self.hier_graph_dict[block_name]['id'].index(val_n_type))+'>'
             if inst_copy != '<0>':
                 update_name = block_name + inst_copy
-                G1.nodes[new_node]["inst_type"] = block_name
+                G1.nodes[new_node]["instance"].model = block_name
                 G1.nodes[new_node]["inst_copy"] = inst_copy
                 logger.debug(f"adding modified sub_ckt: {update_name} {self.hier_graph_dict.keys()}")
                 self.hier_graph_dict[update_name]=subckt.copy(update={'name': update_name})
         else:
             inst_copy = '<'+ str(len(self.hier_graph_dict[block_name]['id'])) + '>'
             update_name = block_name + inst_copy
-            G1.nodes[new_node]["inst_type"] = block_name
+            G1.nodes[new_node]["instance"].model = block_name
             G1.nodes[new_node]["inst_copy"] = inst_copy
             logger.debug(f"different size inst {self.hier_graph_dict[block_name]['id']} {val_n_type} {inst_copy}")
             self.hier_graph_dict[update_name]=subckt.copy(update={'name': update_name})
@@ -560,7 +573,7 @@ def check_nodes(graph_dict):
         if not 'ports_match' in local_subckt:
             continue
         for node, attr in local_subckt["graph"].nodes(data=True):
-            if  not attr["inst_type"] == "net":
+            if  not attr["instance"].model == "net":
                 for param,value in attr["values"].items():
                     if param == 'model': continue
                     assert (isinstance(value, int) or isinstance(value, float)) or value=="unit_size", \
