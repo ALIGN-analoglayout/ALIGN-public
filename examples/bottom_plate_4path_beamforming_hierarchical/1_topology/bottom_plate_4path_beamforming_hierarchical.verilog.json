@@ -11,6 +11,11 @@
         "M",
         "P"
       ],
+      "constraints": [
+	  {
+	      "constraint": "SymmetricBlocks", "direction": "H", "pairs": [["C"],["M", "P"],["R"]]
+	  }
+      ],
       "instances": [
         {
           "abstract_template_name": "SW_NMOS_wr2u_lr60n_nr16",
@@ -63,9 +68,8 @@
         "P"
       ],
       "constraints": [
-	  {
-	      "constraint": "SymmetricBlocks", "direction": "V", "pairs": [["M", "P"]]
-	  }
+	  { "constraint": "SymmetricBlocks", "direction": "V", "pairs": [["M", "P"]]},
+	  { "constraint": "SameTemplate", "instances": ["P","M"]}
       ],
       "instances": [
         {
@@ -122,8 +126,9 @@
         "X4_P"
       ],
 	"constraints": [
-	    {"constraint": "Order", "direction": "top_to_bottom", "instances": ["X1","X2","X3","X4","XI0"]},
-	    {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["X1"],["X2"],["X3"],["X4"],["CPtoM","CMtoP"],["RPtoM","RMtoP"],["XI0"]]}
+	  {"constraint": "Order", "direction": "top_to_bottom", "instances": ["X1","X2","X3","X4","XI0"]},
+	  {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["X1"],["X2"],["X3"],["X4"],["CPtoM","CMtoP"],["RPtoM","RMtoP"],["XI0"]]},
+          { "constraint": "SameTemplate", "instances": ["X1","X2","X3","X4"]}
 	],
       "instances": [
         {
