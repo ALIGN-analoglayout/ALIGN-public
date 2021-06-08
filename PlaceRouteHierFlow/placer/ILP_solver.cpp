@@ -8,10 +8,6 @@ ILP_solver::ILP_solver(design& mydesign) {
   LL.y = INT_MAX;
   UR.x = INT_MIN;
   UR.x = INT_MIN;
-  LLcp.x = INT_MAX;
-  LLcp.y = INT_MAX;
-  URcp.x = INT_MIN;
-  URcp.x = INT_MIN;
   Blocks.resize(mydesign.Blocks.size());
   Aspect_Ratio_weight = mydesign.Aspect_Ratio_weight;
   memcpy(Aspect_Ratio, mydesign.Aspect_Ratio, sizeof(mydesign.Aspect_Ratio));
@@ -22,9 +18,6 @@ ILP_solver::ILP_solver(const ILP_solver& solver) {
   Blocks = solver.Blocks;
   LL = solver.LL;
   UR = solver.UR;
-  BlocksCopy = solver.BlocksCopy;
-  LLcp = solver.LLcp;
-  URcp = solver.URcp;
   area = solver.area;
   HPWL = solver.HPWL;
   cost = solver.cost;
@@ -43,9 +36,6 @@ ILP_solver& ILP_solver::operator=(const ILP_solver& solver) {
   Blocks = solver.Blocks;
   LL = solver.LL;
   UR = solver.UR;
-  BlocksCopy = solver.BlocksCopy;
-  LLcp = solver.LLcp;
-  URcp = solver.URcp;
   area = solver.area;
   cost = solver.cost;
   constraint_penalty = solver.constraint_penalty;
@@ -68,24 +58,6 @@ void ILP_solver::lpsolve_logger(lprec* lp, void* userhandle, char* buf) {
   // Log non-empty lines
   if (*buf != '\0') logger->debug("Placer lpsolve: {0}", buf);
 }
-
-void ILP_solver::SaveBlocks()
-{
-  BlocksCopy = Blocks; 
-  LLcp = LL;
-  URcp = UR;
-}
-
-void ILP_solver::RestoreBlocks()
-{
-  //auto logger = spdlog::default_logger()->clone("placer.ILP_solver.RestoreBlocks");
-  if (!BlocksCopy.empty()) {
-    std::swap(Blocks, BlocksCopy);
-    std::swap(LL, LLcp);
-    std::swap(UR, URcp);
-  }
-}
-
 
 int ILP_solver::CompactPlacement(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.CompactPlacement");
@@ -430,75 +402,85 @@ int ILP_solver::CompactPlacement(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_
   return 0;
 }
 
+bool ILP_solver::RemoveAllTaps(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo)
+{
+  bool retVal(false);
+  //auto logger = spdlog::default_logger()->clone("placer.ILP_solver.RemoveAllTaps");
+  if (mydesign.RemoveTaps() && !mydesign.isTop) {
+    PrimitiveData::PlMap plmap;
+    for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
+      const auto& index = curr_sp.selected[i];
+      const auto& master = mydesign.Blocks[i][index].master;
+      const auto& instName = mydesign.Blocks[i][index].name;
+      //logger->info("plmap {0} {1} {2}", instName, i, index);
+      plmap.insert(std::make_pair(std::make_pair(instName, static_cast<unsigned>(index)),
+            PrimitiveData::PlInfo(master,
+              geom::Point(Blocks[i].x, Blocks[i].y),
+              Blocks[i].H_flip, Blocks[i].V_flip)));
+    }
+    mydesign.RebuildTapInstances(plmap, false); // incremental rebuild
+    map<string, int> swappedIndices;
+    auto tapdist = mydesign.TapDeltaArea(&swappedIndices, true); // remove all taps
+    if (!swappedIndices.empty() && tapdist >= 0.) {
+      for (int i = 0; i < mydesign.Blocks.size(); i++) {
+        auto& index = curr_sp.selected[i];
+        auto it = swappedIndices.find(mydesign.Blocks[i][index].name);
+        if (it != swappedIndices.end() && index != it->second) {
+          index = it->second;
+        }
+      }
+      if (CompactPlacement(mydesign, curr_sp, drcInfo) < 0) {
+        retVal = false;
+      } else {
+        retVal = true;
+      }
+    }
+    //logger->info("maximum delta area from tap removal : {0} {1} {2}", delArea, swappedIndices.size(), Blocks.size());
+  }
+
+  return retVal;
+}
+
 double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
 
   // each block has 4 vars, x, y, H_flip, V_flip;
   PrimitiveData::PlMap plmap;
-  for (int iterCompact : {0, 1, 2}) {
-    switch (iterCompact) {
-      case 0 :
-      default :
-        if (CompactPlacement(mydesign, curr_sp, drcInfo) < 0) return -1.;
-        break;
-      case 1 :
-        if (mydesign.RemoveTaps()) {
-          for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
-            const auto& index = curr_sp.selected[i];
-            const auto& master = mydesign.Blocks[i][index].master;
-            const auto& instName = mydesign.Blocks[i][index].name;
-            //logger->info("plmap {0} {1} {2}", instName, i, index);
-            plmap.insert(std::make_pair(std::make_pair(instName, static_cast<unsigned>(index)),
-                  PrimitiveData::PlInfo(master,
-                    geom::Point(Blocks[i].x, Blocks[i].y),
-                    Blocks[i].H_flip, Blocks[i].V_flip)));
-          }
-          mydesign.RebuildTapInstances(plmap);
-          map<string, int> swappedIndices;
-          auto delArea = mydesign.TapDeltaArea(&swappedIndices);
-          if (!swappedIndices.empty()) {
-            curr_sp.BackupSelected(true);
-            for (int i = 0; i < mydesign.Blocks.size(); i++) {
-              auto& index = curr_sp.selected[i];
-              auto it = swappedIndices.find(mydesign.Blocks[i][index].name);
-              if (it != swappedIndices.end() && index != it->second) {
-                index = it->second;
-              }
-            }
-            if (CompactPlacement(mydesign, curr_sp, drcInfo) < 0) {
-              curr_sp.RestoreSelected(true);
-              return -1.;
-            }
-          }
-          SaveBlocks();
-          curr_sp.RestoreSelected(true);
-          //logger->info("Max delta area from tap removal : {0} {1}", delArea, swappedIndices.size());
+  for (auto iterCompact : {false, true}) {
+    if (!iterCompact) {
+      if (CompactPlacement(mydesign, curr_sp, drcInfo) < 0) return -1.;
+    } else {
+      if (mydesign.RemoveTaps()) {
+        for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
+          const auto& index = curr_sp.selected[i];
+          const auto& master = mydesign.Blocks[i][index].master;
+          const auto& instName = mydesign.Blocks[i][index].name;
+          //logger->info("plmap {0} {1} {2}", instName, i, index);
+          plmap.insert(std::make_pair(std::make_pair(instName, static_cast<unsigned>(index)),
+                PrimitiveData::PlInfo(master,
+                  geom::Point(Blocks[i].x, Blocks[i].y),
+                  Blocks[i].H_flip, Blocks[i].V_flip)));
         }
-        break;
-      case 2 :
-        if (mydesign.RemoveTaps() && !mydesign.isTop) {
-          mydesign.RebuildTapInstances(plmap, false); // incremental rebuild
-          map<string, int> swappedIndices;
-          auto delArea = mydesign.TapDeltaArea(&swappedIndices, true); // remove all taps
-          if (!swappedIndices.empty()) {
-            curr_sp.BackupSelected(false);
-            for (int i = 0; i < mydesign.Blocks.size(); i++) {
-              auto& index = curr_sp.selected[i];
-              auto it = swappedIndices.find(mydesign.Blocks[i][index].name);
-              if (it != swappedIndices.end() && index != it->second) {
-                index = it->second;
-              }
-            }
-            if (CompactPlacement(mydesign, curr_sp, drcInfo) < 0) {
-              curr_sp.RestoreSelected(false);
-              return -1.;
+        mydesign.RebuildTapInstances(plmap);
+        map<string, int> swappedIndices;
+        auto delArea = mydesign.TapDeltaArea(&swappedIndices);
+        if (!swappedIndices.empty()) {
+          curr_sp.BackupSelected();
+          for (int i = 0; i < mydesign.Blocks.size(); i++) {
+            auto& index = curr_sp.selected[i];
+            auto it = swappedIndices.find(mydesign.Blocks[i][index].name);
+            if (it != swappedIndices.end() && index != it->second) {
+              index = it->second;
             }
           }
-          RestoreBlocks();
-          curr_sp.RestoreSelected(false);
-          //logger->info("maximum delta area from tap removal : {0} {1} {2}", delArea, swappedIndices.size(), Blocks.size());
+          if (CompactPlacement(mydesign, curr_sp, drcInfo) < 0) {
+            curr_sp.RestoreSelected();
+            return -1.;
+          }
         }
-        break;
+        curr_sp.SwapSelected();
+        //logger->info("Max delta area from tap removal : {0} {1}", delArea, swappedIndices.size());
+      }
     }
   }
 

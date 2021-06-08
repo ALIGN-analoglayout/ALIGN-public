@@ -59,7 +59,7 @@ class SeqPair
     vector<int> negPair;
     vector<placerDB::Omark> orient;
     vector<placerDB::Smark> symAxis;
-    vector<int> selected, selectedOptTaps, selectedNoTaps;
+    vector<int> selected, selectedOptTaps;
     std::shared_ptr<SeqPairEnumerator> _seqPairEnum;
     vector<int> FindShortSeq(design& caseNL, vector<int>& seq, int idx);
     int GetVertexIndexinSeq(vector<int>& seq, int v);
@@ -111,19 +111,9 @@ class SeqPair
     int GetBlockSelected(int blockNo);
     bool ChangeSelectedBlock(design& caseNL);
     void KeepOrdering(design& caseNL);
-    void BackupSelected(const bool opt = true) 
-    {
-      if (opt) selectedOptTaps = selected;
-      else selectedNoTaps = selected;
-    }
-    void RestoreSelected(const bool opt = true)
-    {
-      if (opt) {
-        if (!selectedOptTaps.empty()) std::swap(selected, selectedOptTaps);
-      } else {
-        if (!selectedNoTaps.empty()) std::swap(selected, selectedNoTaps);
-      }
-    }
+    void BackupSelected() { selectedOptTaps = selected; }
+    void RestoreSelected() { if (!selectedOptTaps.empty()) selected = selectedOptTaps; }
+    void SwapSelected() { if (!selectedOptTaps.empty()) std::swap(selected, selectedOptTaps); }
     void CompactSeq();
 
     vector<int> GetFlip(const bool hor) const;

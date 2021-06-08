@@ -746,19 +746,19 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   }
   if (!nodeVec.empty()) nodeVec.resize(nodeSize, nodeVec.back());
   int idx=0;
-  for (bool optTap : {true, false}) {
-    if (!optTap && (!designData.RemoveTaps() || designData.isTop)) continue;
+  for (bool removeTaps : {false, true}) {
+    if (removeTaps && (!designData.RemoveTaps() || designData.isTop)) continue;
     for(std::map<double, std::pair<SeqPair, ILP_solver>>::iterator it=spVec.begin(); it!=spVec.end() and idx<nodeSize; ++it, ++idx) {
-      if (designData.RemoveTaps()) it->second.first.RestoreSelected(optTap);
-      if (!optTap) {
-        it->second.second.RestoreBlocks();
+      if (removeTaps) {
+        if (!it->second.second.RemoveAllTaps(designData, it->second.first, drcInfo)) continue;
+      } else {
+        if (designData.RemoveTaps()) it->second.first.RestoreSelected();
       }
       it->second.first.PrintSeqPair();
       it->second.second.updateTerminalCenter(designData, it->second.first);
       it->second.second.WritePlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".pl");
       it->second.second.PlotPlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".plt");
       it->second.second.UpdateHierNode(designData, it->second.first, nodeVec[idx], drcInfo);
-      it->second.first.RestoreSelected(optTap);
     }
   }
 }
