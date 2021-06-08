@@ -517,7 +517,7 @@ void TapRemoval::rebuildInstances(const PrimitiveData::PlMap& plmap)
     if (primWoTapIt != _primitivesWoTap.end() && index < primWoTapIt->second.size()) primWoTap = primWoTapIt->second[index];
     //logger->info("adding {0} {1} {2} {3}", it.second._primName, index, prim ? prim->name() : "", primWoTap ? primWoTap->name() : "");
     if (prim != nullptr) {
-      //logger->info("adding {0} {1}", prim->name(), primWoTap ? primWoTap->name() : "");
+      //logger->info("adding {0} {1} {2} {3}", prim->name(), primWoTap ? primWoTap->name() : "", (primWoTap != nullptr ? static_cast<int>(index + primIt->second.size()) : static_cast<int>(index)), it.first.first);
       auto inst = new PrimitiveData::Instance(prim, primWoTap, it.first.first, it.second._tr,
           primWoTap != nullptr ? static_cast<int>(index + primIt->second.size()) : static_cast<int>(index));
       _instances.push_back(inst);

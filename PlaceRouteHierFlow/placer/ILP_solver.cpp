@@ -418,14 +418,15 @@ bool ILP_solver::RemoveAllTaps(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_in
               geom::Point(Blocks[i].x, Blocks[i].y),
               Blocks[i].H_flip, Blocks[i].V_flip)));
     }
-    mydesign.RebuildTapInstances(plmap, false); // incremental rebuild
+    mydesign.RebuildTapInstances(plmap); // incremental rebuild
     map<string, int> swappedIndices;
     auto tapdist = mydesign.TapDeltaArea(&swappedIndices, true); // remove all taps
     if (!swappedIndices.empty() && tapdist >= 0.) {
-      for (int i = 0; i < mydesign.Blocks.size(); i++) {
+      for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
         auto& index = curr_sp.selected[i];
         auto it = swappedIndices.find(mydesign.Blocks[i][index].name);
         if (it != swappedIndices.end() && index != it->second) {
+          //logger->info("swapped {0} {1} {2} {3}", i, it->second, index, mydesign.Blocks[i][index].name);
           index = it->second;
         }
       }
