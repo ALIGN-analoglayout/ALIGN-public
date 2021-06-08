@@ -471,7 +471,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                 for atn, v in atns.items():
                     for (ctn, p) in v:
                         if ctn in leaf_map[atn]:
-                            assert leaf_map[atn][ctn][0] == { 'width': p[0], 'height': p[1]}, (atn,ctn,leaf_map[atn][ctn][0], p)
+                            logger.error(f'{leaf_map[atn][ctn][0]} == {p[0]}, {p[1]} {ctn} {atn}')
                         else:
                             leaf_map[atn][ctn] = gen_leaf_bbox_and_hovertext( ctn, p)
 

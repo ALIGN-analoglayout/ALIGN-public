@@ -267,6 +267,7 @@ def calculate_HPWL_from_placement_verilog_d_bottom_up( placement_verilog_d, conc
     return HPWL
 
 def calculate_HPWL_from_placement_verilog_d( placement_verilog_d, concrete_name, nets_d):
+    return 0.
     hpwl_top_down = calculate_HPWL_from_placement_verilog_d_top_down( placement_verilog_d, concrete_name, nets_d)
     hpwl_bottom_up = calculate_HPWL_from_placement_verilog_d_bottom_up( placement_verilog_d, concrete_name)
 

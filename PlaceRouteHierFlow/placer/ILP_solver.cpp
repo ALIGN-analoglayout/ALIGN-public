@@ -402,8 +402,6 @@ int ILP_solver::CompactPlacement(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_
   return 0;
 }
 
-
-
 bool ILP_solver::RemoveAllTaps(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo)
 {
   bool retVal(false);
@@ -420,7 +418,7 @@ bool ILP_solver::RemoveAllTaps(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_in
               geom::Point(Blocks[i].x, Blocks[i].y),
               Blocks[i].H_flip, Blocks[i].V_flip)));
     }
-    mydesign.RebuildTapInstances(plmap, false); // incremental rebuild
+    mydesign.RebuildTapInstances(plmap); // incremental rebuild
     map<string, int> swappedIndices;
     auto tapdist = mydesign.TapDeltaArea(&swappedIndices, true); // remove all taps
     if (!swappedIndices.empty() && tapdist >= 0.) {
