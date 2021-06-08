@@ -74,6 +74,8 @@ PYBIND11_MODULE(PnR, m) {
     .def( py::init<int, int, int, int>())
     .def( py::init<const bbox&>())
     .def( py::init<const point&, const point&>())
+    .def( py::init<const point&, const point&>())
+    .def( "center", &bbox::center)
     .def_readwrite("LL", &bbox::LL)
     .def_readwrite("UR", &bbox::UR);
   py::class_<contact>( m, "contact")

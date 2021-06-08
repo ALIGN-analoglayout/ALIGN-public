@@ -60,8 +60,27 @@ div#module-name.dash-dropdown {
     width: 350px;
 }
 
+div#display-type {
+    display: inline-block;   
+}
+
+div#display-pins-type {
+    display: inline-block;   
+    padding-left: 20px;
+}
+
 div#display-type label {
     display: inline-block;   
 }
 
+div#display-pins-type label {
+    display: inline-block;   
+}
+
+div#netname.dash-dropdown {
+    width: 350px;
+    display: inline-block;
+    padding-left: 20px;
+    vertical-align: top;
+}
 

@@ -351,7 +351,7 @@ colorscales = ['Blugrn'] + px.colors.named_colorscales()
 
 class AppWithCallbacksAndState:
     def gen_dataframe( self):
-        data = [ { 'abstract_template_name': atn, 'concrete_template_name': ctn, **m} for atn, v in self.tagged_bboxes.items() for ctn, (m, _) in v.items()]
+        data = [ { 'abstract_template_name': atn, 'concrete_template_name': ctn, **m} for atn, v in self.tagged_bboxes.items() for ctn, (m, _, _) in v.items()]
 
         df = pd.DataFrame( data=data)
         df['area'] = df['width']*df['height']
@@ -375,6 +375,8 @@ class AppWithCallbacksAndState:
         self.module_name = module_name
         self.lambda_coeff = lambda_coeff
 
+        self.nets_d = None
+
         self.sel = f'{module_name}_0'
         self.title = None
 
@@ -385,11 +387,9 @@ class AppWithCallbacksAndState:
 
         self.gen_dataframe()
         self.tradeoff = make_tradeoff_fig(self.axes, self.df, log=True, lambda_coeff=lambda_coeff)
-        self.placement_graph = self.make_placement_graph()
+        self.make_placement_graph()
 
         self.app = dash.Dash(__name__, assets_ignore=r'.*\.#.*')
-
-
 
         self.app.layout = html.Div(
             id='frame',
@@ -436,6 +436,17 @@ class AppWithCallbacksAndState:
                             options=[{'label': i, 'value': i} for i in ['All', 'Direct', 'Leaves Only']],
                             value='Direct'
                         ),
+                        dcc.RadioItems(
+                            id='display-pins-type',
+                            options=[{'label': i, 'value': i} for i in ['No Pins', 'Pins']],
+                            value='Pins'
+                        ),
+                        dcc.Dropdown(
+                            id='netname', 
+                            options=[],
+                            multi=True,
+                            value=[]
+                        ),
                         dcc.Graph(
                             id='Placement',
                             figure = self.placement_graph
@@ -452,10 +463,13 @@ class AppWithCallbacksAndState:
         )
 
         self.app.callback( (Output('Placement', 'figure'),
-                            Output('tradeoff-graph', 'clickData')),
+                            Output('tradeoff-graph', 'clickData'),
+                            Output('netname', 'options')),
                       [Input('tradeoff-graph', 'clickData'),
                        Input('tradeoff-graph', 'hoverData'),
-                       Input('display-type', 'value')])(self.display_hover_data)
+                       Input('display-type', 'value'),
+                       Input('display-pins-type', 'value'),
+                       Input('netname', 'value')])(self.display_hover_data)
 
         self.app.callback( (Output('tradeoff-graph', 'figure'),),
                            [Input('colorscale', 'value'),
@@ -463,7 +477,7 @@ class AppWithCallbacksAndState:
                             Input('axes-type', 'value'),
                             Input('module-name', 'value')])(self.change_colorscale)
 
-    def make_placement_graph( self, *, display_type='Direct'):
+    def make_placement_graph( self, *, display_type='Direct', display_pins_type='Pins', netname=None):
         sel = self.sel
         title = self.title
 
@@ -483,19 +497,26 @@ class AppWithCallbacksAndState:
         title_d = {}
 
         if sel is not None:
-            _, d = self.tagged_bboxes[self.module_name][sel]
-            dump_blocks( fig, d, leaves_only, levels)
+            _, d, self.nets_d = self.tagged_bboxes[self.module_name][sel]
+
+            if netname is not None:
+                for net in netname:
+                    net_tuple = tuple( net.split('/'))
+                    if net_tuple not in self.nets_d:
+                        print( f'Error Unknown net: {net} {list(self.nets_d.keys())}')
+
+            dump_blocks( fig, d, leaves_only, levels, netname if display_pins_type == 'Pins' else None)
             title_d = dict(text=sel if title is None else title)
 
         fig.update_layout(
             autosize=False,
-            width=800,
-            height=800,
+            width=1024,
+            height=1024,
             title=title_d
         )
 
-        max_x = max( m['width']  for _, (m, _) in self.tagged_bboxes[self.module_name].items())
-        max_y = max( m['height'] for _, (m, _) in self.tagged_bboxes[self.module_name].items())
+        max_x = max( m['width']  for _, (m, _, _) in self.tagged_bboxes[self.module_name].items())
+        max_y = max( m['height'] for _, (m, _, _) in self.tagged_bboxes[self.module_name].items())
 
         fig.update_xaxes(
             tickvals=[0,max_x],
@@ -507,7 +528,7 @@ class AppWithCallbacksAndState:
             range=[0,max(max_x,max_y)]
         )
 
-        return fig
+        self.placement_graph = fig
 
     def change_colorscale(self, scale, tradeoff_type, axes_type, module_name):
         # if module_name changes
@@ -523,7 +544,7 @@ class AppWithCallbacksAndState:
         self.tradeoff = make_tradeoff_fig(self.axes, self.df, log=axes_type == 'loglog', scale=scale, lambda_coeff=self.lambda_coeff)
         return (self.tradeoff,)
 
-    def display_hover_data(self,clickData,hoverData,display_type):
+    def display_hover_data(self,clickData,hoverData,display_type,display_pins_type,netname):
         display_type_change = False
 
         ctx = dash.callback_context
@@ -531,7 +552,10 @@ class AppWithCallbacksAndState:
             d = ctx.triggered[0]
             if d['prop_id'] == 'display-type.value':
                 display_type_change = True
-                pass
+            if d['prop_id'] == 'display-pins-type.value':
+                display_type_change = True
+            if d['prop_id'] == 'netname.value':
+                display_type_change = True
             if d['prop_id'] == 'tradeoff-graph.clickData':
                 pass
             if d['prop_id'] == 'tradeoff-graph.hoverData':
@@ -544,7 +568,7 @@ class AppWithCallbacksAndState:
             [idx, curve_idx, x, y] = [hoverData['points'][0][t] for t in ['pointNumber', 'curveNumber', 'x', 'y']]
 
         if display_type_change:
-            self.placement_graph = self.make_placement_graph(display_type=display_type)
+            self.make_placement_graph(display_type=display_type,display_pins_type=display_pins_type,netname=netname)
         elif (clickData is not None or hoverData is not None) and \
              curve_idx == 0:
 
@@ -559,9 +583,16 @@ class AppWithCallbacksAndState:
 
             self.title = f'{self.sel} {self.subindex}/{len(lst)}'
 
-            self.placement_graph = self.make_placement_graph(display_type=display_type)
+            self.make_placement_graph(display_type=display_type,display_pins_type=display_pins_type,netname=netname)
 
-        return self.placement_graph, None
+
+        if self.nets_d is not None:
+            options = []
+            for k, v in self.nets_d.items():
+                net = '/'.join(k)
+                options.append( {"value": net, "label": net})
+
+        return self.placement_graph, None, options
 
 
 def run_gui( *, tagged_bboxes, module_name, lambda_coeff):
