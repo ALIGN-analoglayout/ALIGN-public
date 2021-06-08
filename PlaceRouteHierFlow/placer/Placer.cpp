@@ -526,14 +526,17 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   curr_sp.PrintSeqPair();
   double curr_cost = 0;
   int trial_count = 0;
+  int max_trial_count = 10000;
   while ((curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo)) < 0) {
-    curr_sp.PerturbationNew(designData);
-    trial_count++;
-    if (trial_count > 100) {
-      logger->warn("please check constraint");
+    if (++trial_count > max_trial_count) {
+      logger->error("Couldn't generate a feasible solution even after {0} perturbations.", max_trial_count);
       curr_cost = __DBL_MAX__;
       break;
     }
+    curr_sp.PerturbationNew(designData);
+  }
+  if (0 < trial_count && trial_count <= max_trial_count) {
+    logger->info("Required {0} perturbations to generate a feasible solution.", trial_count);
   }
   curr_sol.cost = curr_cost;
   oData[curr_cost] = std::make_pair(curr_sp, curr_sol);

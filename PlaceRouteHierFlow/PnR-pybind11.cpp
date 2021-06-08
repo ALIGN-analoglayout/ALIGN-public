@@ -74,6 +74,8 @@ PYBIND11_MODULE(PnR, m) {
     .def( py::init<int, int, int, int>())
     .def( py::init<const bbox&>())
     .def( py::init<const point&, const point&>())
+    .def( py::init<const point&, const point&>())
+    .def( "center", &bbox::center)
     .def_readwrite("LL", &bbox::LL)
     .def_readwrite("UR", &bbox::UR);
   py::class_<contact>( m, "contact")
@@ -250,6 +252,7 @@ PYBIND11_MODULE(PnR, m) {
       .def_readwrite("bias_Hgraph", &hierNode::bias_Hgraph)
       .def_readwrite("bias_Vgraph", &hierNode::bias_Vgraph)
       .def_readwrite("router_report", &hierNode::router_report)
+      .def_readwrite("Block_name_map", &hierNode::Block_name_map)
       .def_readonly("HPWL", &hierNode::HPWL)
       .def_readonly("HPWL_norm", &hierNode::HPWL_norm)
       .def_readonly("area_norm", &hierNode::area_norm)

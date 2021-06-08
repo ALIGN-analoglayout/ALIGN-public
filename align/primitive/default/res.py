@@ -51,9 +51,9 @@ class ResGenerator(DefaultCanvas):
 
         y_length = self.finsPerUnitCell * self.pdk['Fin']['Pitch'] * height
         assert y_length != 0, (self.finsPerUnitCell, self.pdk['Fin']['Pitch'], height)
+        # SMB ??? Hard coded value
         res_per_length = 67
-        x_number = int(round(((1000*unit_res)/(res_per_length*y_length))))
-        assert x_number >= 1, (unit_res, res_per_length, y_length)
+        x_number = max( 1, int(round(((1000*unit_res)/(res_per_length*y_length)))))
 
         # ga = 2 if x_number == 1 else 1 ## when number of wires is 2 then large spacing req. so contact can be placed without a DRC error 
         # x_length = (x_number - 1) *ga*self.pdk['Cap']['m1Pitch']
