@@ -38,6 +38,8 @@ def lef_from_layout_d(layout_d, fp, out_lef, cell_pin, bodyswitch, blockM, *, ex
                     cx = (obj['rect'][0]+obj['rect'][2])//2
                     assert cx % m1pitch == 0, "M1 pin is not on grid {cx} {cx%m1pitch}"
 
+        fp.write("    END\n")
+        fp.write("  END %s\n" % i)
     fp.write("  OBS\n")
     cap_layers = ['M1', 'M2', 'M3']
     for obj in layout_d['terminals']:
@@ -55,14 +57,14 @@ def lef_from_layout_d(layout_d, fp, out_lef, cell_pin, bodyswitch, blockM, *, ex
         if ('layer' in obj and obj['layer'] == "Nwell") :
             fp.write("    LAYER %s ;\n" % obj['layer'])
             fp.write("      RECT %s %s %s %s ;\n" %
-                     tuple([s(x) for x in obj['rect']]))
+                     tuple(obj['rect']))
         if ('terminal' in obj and ("B" in obj['terminal'] or "G" in obj['terminal'])) and obj['layer'] == "V0":
             if ("B" in obj['terminal']):
                 fp.write("    LAYER %s ;\n" % "V0_tap")
             if ("G" in obj['terminal']):
                 fp.write("    LAYER %s ;\n" % "V0_active")
             fp.write("      RECT %s %s %s %s ;\n" %
-                     tuple([s(x) for x in obj['rect']]))
+                     tuple(obj['rect']))
         else:
             pass
     fp.write("  END\n")
