@@ -36,6 +36,8 @@ class SeqPairEnumerator
     size_t _maxEnum;
     int _maxSize;
     unsigned _exhausted : 1;
+    size_t _hflip, _vflip;
+    size_t _maxFlip;
   public:
     SeqPairEnumerator(const vector<int>& pair, design& casenl);
     void Permute();
@@ -44,6 +46,8 @@ class SeqPairEnumerator
     const vector<int>& Selected() const { return _selected; }
     const bool EnumExhausted() const { return _exhausted; }
     const bool IncrementSelected();
+    bool EnumFlip();
+    vector<int> GetFlip(const bool hor) const;
 };
 
 
@@ -83,6 +87,7 @@ class SeqPair
     vector<int> GetBelowBlock(int blockNo);
     placerDB::Omark GetBlockOrient(int blockNo);
     void PrintSeqPair();
+    void SameSelected(design& caseNL);
     void ChangeOrient(int blockNo, placerDB::Omark ort );
     void FlipOrient(int blockNo);
     void AdjustOrient(int blockNo, placerDB::Omark ort);
@@ -120,6 +125,8 @@ class SeqPair
       }
     }
     void CompactSeq();
+
+    vector<int> GetFlip(const bool hor) const;
 };
 
 #endif
