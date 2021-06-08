@@ -58,7 +58,7 @@ def gen_placement_verilog(hN, idx, sel, DB, verilog_d):
                 if concrete_template_name not in used_leaves[abstract_template_name]:                
                     used_leaves[abstract_template_name][concrete_template_name] = new_r
                 else:
-                    assert used_leaves[abstract_template_name][concrete_template_name] == new_r
+                    logger.error(f'mismatch in name {abstract_template_name} {concrete_template_name} { used_leaves[abstract_template_name][concrete_template_name]} {new_r}')
 
     traverse( hN, sel)
     logger.debug( f'used_leaves: {used_leaves} used_internal: {used_internal}')
