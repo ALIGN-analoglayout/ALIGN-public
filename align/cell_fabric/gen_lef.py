@@ -46,14 +46,14 @@ def lef_from_layout_d(layout_d, fp, out_lef, cell_pin, bodyswitch, blockM, *, ex
         if ('layer' in obj and obj['layer'] == "Nwell") :
             fp.write("    LAYER %s ;\n" % obj['layer'])
             fp.write("      RECT %s %s %s %s ;\n" %
-                     tuple([s(x) for x in obj['rect']]))
+                     tuple(obj['rect']))
         if ('terminal' in obj and ("B" in obj['terminal'] or "G" in obj['terminal'])) and obj['layer'] == "V0":
             if ("B" in obj['terminal']):
                 fp.write("    LAYER %s ;\n" % "V0_tap")
             if ("G" in obj['terminal']):
                 fp.write("    LAYER %s ;\n" % "V0_active")
             fp.write("      RECT %s %s %s %s ;\n" %
-                     tuple([s(x) for x in obj['rect']]))
+                     tuple(obj['rect']))
         if ('pin' not in obj or obj['pin'] not in cell_pin) and blockM == 0 and obj['layer'] not in exclude_layers:
             fp.write("    LAYER %s ;\n" % obj['layer'])
             fp.write("      RECT %s %s %s %s ;\n" % tuple(obj['rect']))
