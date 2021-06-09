@@ -167,12 +167,12 @@ def gen_leaf_collateral( leaves, primitives, primitive_dir):
             if fn.is_file():
                 files[suffix] = str(fn)
             else:
-                logger.error( f'Collateral {suffix} for leaf {leaf} not found in {primitive_dir}')
+                logger.warning( f'Collateral {suffix} for leaf {leaf} not found in {primitive_dir}')
         leaf_collateral[leaf] = files
 
     return leaf_collateral
 
-def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False, gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False, steps_to_run,lambda_coeff):
+def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False, gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False, steps_to_run,lambda_coeff, reference_placement_verilog_json):
 
     logger.info(f"Running Place & Route for {subckt} {router_mode} {steps_to_run}")
 
@@ -229,7 +229,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                 a = v['abstract_template_name']
                 c = v['concrete_template_name']
                 if c in leaf_collateral:
-                    assert '.gds.json' in leaf_collateral[c]
+                    assert '.lef' in leaf_collateral[c]
                 else:
                     logger.warning( f'Unused primitive: {a} {c} excluded from map file')
                 print( f'{a} {c}.gds', file=mp)
@@ -252,14 +252,14 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         # Copy primitive json files
         for k,v in leaf_collateral.items():
             for suffix in ['.gds.json', '.json']:
-                (input_dir / f'{k}{suffix}').write_text(pathlib.Path(v[suffix]).read_text())
-                fl = v[suffix]
-                index = fl.rfind('/', 0)
-                if (index >= 0) :
-                    flsuffix = fl[0:index] + '/wo_tap/' + fl[index+1:]
-                    if (pathlib.Path(flsuffix).is_file()):
-                        (input_dir_wotap / f'{k}{suffix}').write_text(pathlib.Path(flsuffix).read_text())
-
+                if suffix in v:
+                    (input_dir / f'{k}{suffix}').write_text(pathlib.Path(v[suffix]).read_text())
+                    fl = v[suffix]
+                    index = fl.rfind('/', 0)
+                    if (index >= 0) :
+                        flsuffix = fl[0:index] + '/wo_tap/' + fl[index+1:]
+                        if (pathlib.Path(flsuffix).is_file()):
+                            (input_dir_wotap / f'{k}{suffix}').write_text(pathlib.Path(flsuffix).read_text())
 
     else:
         with (working_dir / "__capacitors__.json").open("rt") as fp:
@@ -276,7 +276,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
         current_working_dir = os.getcwd()
         os.chdir(working_dir)
-        DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, results_dir=None, router_mode=router_mode, gui=gui, skipGDS=skipGDS, lambda_coeff=lambda_coeff, scale_factor=scale_factor)
+        DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, results_dir=None, router_mode=router_mode, gui=gui, skipGDS=skipGDS, lambda_coeff=lambda_coeff, scale_factor=scale_factor, reference_placement_verilog_json=reference_placement_verilog_json)
         os.chdir(current_working_dir)
 
         # Copy generated cap jsons from results_dir to working_dir

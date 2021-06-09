@@ -29,20 +29,21 @@
 #include "Lexer.h"
 #include "spdlog/spdlog.h"
 
-using std::map;
-using std::unordered_map;
-using std::vector;
-using std::deque;
-using std::string;
-using std::cout;
-using std::endl;
-using std::pair;
-using std::tuple;
 using std::cerr;
+using std::cout;
+using std::deque;
+using std::endl;
 using std::ifstream;
 using std::istream;
-using std::ostream;
+using std::map;
 using std::max_element;
+using std::ostream;
+using std::pair;
+using std::set;
+using std::string;
+using std::tuple;
+using std::unordered_map;
+using std::vector;
 
 using namespace nlohmann;
 class PnRdatabase;

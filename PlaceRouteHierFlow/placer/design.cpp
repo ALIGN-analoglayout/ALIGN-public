@@ -347,6 +347,7 @@ design::design(PnRDB::hierNode& node) {
   Aspect_Ratio_weight = node.Aspect_Ratio_weight;
   memcpy(Aspect_Ratio, node.Aspect_Ratio, sizeof(node.Aspect_Ratio));
   memcpy(placement_box, node.placement_box, sizeof(node.placement_box));
+  Same_Template_Constraints = node.Same_Template_Constraints;
   mixFlag = false;
   double averageWL=0;
   double macroThreshold=0.5; // threshold to filter out small blocks
