@@ -36,6 +36,22 @@ class Point {
     Point transform(const Transform& tr, const int width, const int height) const;
 };
 
+class Range {
+  private:
+    int _min, _max;
+  public:
+    Range(const int mn = INT_MAX, const int mx = INT_MIN) : _min(mn), _max(mx) {}
+    const bool valid() const { return _min <= _max; }
+    const bool overlaps(const Range& r) const { return _max >= r._min && r._max >= _min; }
+    void merge(const Range& r)
+    {
+      _min = std::min(_min, r._min);
+      _max = std::max(_max, r._max);
+    }
+    const int& min() const { return _min; }
+    const int& max() const { return _max; }
+};
+
 class Transform {
   private:
     Point _origin;

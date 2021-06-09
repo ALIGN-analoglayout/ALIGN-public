@@ -61,6 +61,7 @@ class ILP_solver {
   double GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
   bool RemoveAllTaps(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
   int CompactPlacement(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
+  int IncrementalCompactPlacement(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
   double CalculateCost(design& mydesign, SeqPair& curr_sp, double tapdist = 0.);
   void WritePlacement(design& caseNL, SeqPair& curr_sp, string outfile);
   void PlotPlacement(design& caseNL, SeqPair& curr_sp, string outfile);

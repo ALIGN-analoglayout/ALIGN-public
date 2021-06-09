@@ -402,6 +402,100 @@ int ILP_solver::CompactPlacement(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_
   return 0;
 }
 
+int ILP_solver::IncrementalCompactPlacement(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
+  typedef std::pair<geom::Range, unsigned> RangeIndexPair;
+  typedef std::pair<geom::Range, std::vector<unsigned>> RangeIndexVecPair;
+
+  auto roundup = [](const int v, const int pitch) { return pitch * ((v + pitch - 1) / pitch); };
+  int v_metal_index = -1;
+  int h_metal_index = -1;
+  for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
+    if (drcInfo.Metal_info[i].direct == 0) {
+      v_metal_index = i;
+      break;
+    }
+  }
+  for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
+    if (drcInfo.Metal_info[i].direct == 1) {
+      h_metal_index = i;
+      break;
+    }
+  }
+
+  int x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
+  int y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
+  geom::Rects rects;
+  rects.reserve(mydesign.Blocks.size());
+  for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
+    const auto& x(Blocks[i].x);
+    const auto& y(Blocks[i].y);
+    const auto& index = curr_sp.selected[i];
+    rects.emplace_back(geom::Rect(x, y,
+        x + mydesign.Blocks[i][index].width, y + mydesign.Blocks[i][index].height));
+  }
+
+  std::vector<RangeIndexPair> rangeIndexVec;
+  for (unsigned i = 0; i < rects.size(); ++i) {
+    const auto& r = rects[i];
+    rangeIndexVec.emplace_back(geom::Range(r.ymin(), roundup(r.ymax(), y_pitch)), i);
+  }
+
+  std::sort(rangeIndexVec.begin(), rangeIndexVec.end(), [](const RangeIndexPair& r1, const RangeIndexPair& r2)
+      {
+      return (r1.first.min() == r2.first.min()) ?
+      (r1.first.max() < r2.first.max()) : (r1.first.min() < r2.first.min());
+      });
+
+
+  //merge cells that overlap vetically or have range separation within the y_pitch
+  std::vector<RangeIndexVecPair> mergedRanges;
+  mergedRanges.reserve(rangeIndexVec.size());
+  RangeIndexVecPair rn;
+  bool merged(false);
+  auto it = rangeIndexVec.begin();
+  while (it != rangeIndexVec.end()) {
+    if (rn.first.overlaps(it->first) || !rn.first.valid()) {
+      rn.first.merge(it->first);
+      rn.second.push_back(it->second);
+      merged = true;
+    }
+    if (!merged) {
+      mergedRanges.push_back(rn);
+      rn.first = it->first;
+      rn.second.clear();
+      rn.second.push_back(it->second);
+    }
+    ++it;
+    merged = false;
+  }
+  rangeIndexVec.clear();
+  mergedRanges.push_back(rn);
+
+  auto itm2 = mergedRanges.begin();
+  auto itm1 = itm2++;
+  int disp(0);
+  while (itm2 != mergedRanges.end()) {
+    disp += (itm2->first.min() - itm1->first.max());
+    for (auto& r : itm2->second) {
+      rects[r].ymin() -= disp;
+      rects[r].ymax() -= disp;
+    }
+    itm1 = itm2;
+    ++itm2;
+  }
+  LL.x = INT_MAX, LL.y = INT_MAX;
+  UR.x = INT_MIN, UR.y = INT_MIN;
+  for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
+    const auto& index = curr_sp.selected[i];
+    if (Blocks[i].y != rects[i].ymin()) Blocks[i].y = rects[i].ymin();
+    LL.x = std::min(LL.x, Blocks[i].x);
+    LL.y = std::min(LL.y, Blocks[i].y);
+    UR.x = std::max(UR.x, Blocks[i].x + mydesign.Blocks[i][index].width);
+    UR.y = std::max(UR.y, Blocks[i].y + mydesign.Blocks[i][index].height);
+  }
+  return 0;
+}
+
 bool ILP_solver::RemoveAllTaps(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo)
 {
   bool retVal(false);
@@ -422,14 +516,15 @@ bool ILP_solver::RemoveAllTaps(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_in
     map<string, int> swappedIndices;
     auto tapdist = mydesign.TapDeltaArea(&swappedIndices, true); // remove all taps
     if (!swappedIndices.empty() && tapdist >= 0.) {
-      for (int i = 0; i < mydesign.Blocks.size(); i++) {
+      for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
         auto& index = curr_sp.selected[i];
         auto it = swappedIndices.find(mydesign.Blocks[i][index].name);
         if (it != swappedIndices.end() && index != it->second) {
+          //logger->info("swapped {0} {1} {2} {3}", i, it->second, index, mydesign.Blocks[i][index].name);
           index = it->second;
         }
       }
-      if (CompactPlacement(mydesign, curr_sp, drcInfo) < 0) {
+      if (IncrementalCompactPlacement(mydesign, curr_sp, drcInfo) < 0) {
         retVal = false;
       } else {
         retVal = true;
