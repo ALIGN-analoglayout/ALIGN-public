@@ -510,7 +510,7 @@ double TapRemoval::deltaArea(map<string, int>* swappedIndices, bool removeAllTap
     if (!name.empty()) {
       names.insert(name);
     }
-    dist += (1.0*n->dist()/_bbox.height());
+    dist += (1.0*n->dist());
   }
   if (swappedIndices != nullptr) swappedIndices->clear();
   for (const auto& b : _instances) {

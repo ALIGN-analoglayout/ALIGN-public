@@ -64,6 +64,20 @@ def lef_from_layout_d(layout_d, fp, out_lef, cell_pin, bodyswitch, blockM, *, ex
         else:
             pass
 
+    for obj in layout_d['terminals']:
+        if ('layer' in obj and obj['layer'] == "Nwell") :
+            fp.write("    LAYER %s ;\n" % obj['layer'])
+            fp.write("      RECT %s %s %s %s ;\n" %
+                     tuple(obj['rect']))
+        if ('terminal' in obj and ("B" in obj['terminal'] or "G" in obj['terminal'])) and obj['layer'] == "V0":
+            if ("B" in obj['terminal']):
+                fp.write("    LAYER %s ;\n" % "V0_tap")
+            if ("G" in obj['terminal']):
+                fp.write("    LAYER %s ;\n" % "V0_active")
+            fp.write("      RECT %s %s %s %s ;\n" %
+                     tuple(obj['rect']))
+        else:
+            pass
     fp.write("  END\n")
 
     fp.write("END %s\n" % out_lef)
