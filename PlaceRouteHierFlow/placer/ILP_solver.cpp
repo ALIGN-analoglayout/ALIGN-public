@@ -20,6 +20,7 @@ ILP_solver::ILP_solver(const ILP_solver& solver) {
   UR = solver.UR;
   area = solver.area;
   HPWL = solver.HPWL;
+  HPWL_extend = solver.HPWL_extend;
   cost = solver.cost;
   constraint_penalty = solver.constraint_penalty;
   area_norm = solver.area_norm;
@@ -40,6 +41,7 @@ ILP_solver& ILP_solver::operator=(const ILP_solver& solver) {
   cost = solver.cost;
   constraint_penalty = solver.constraint_penalty;
   HPWL = solver.HPWL;
+  HPWL_extend = solver.HPWL_extend;
   area_norm = solver.area_norm;
   HPWL_norm = solver.HPWL_norm;
   ratio = solver.ratio;
@@ -411,8 +413,10 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   if (placement_box[0] > 0 && (UR.x - LL.x > placement_box[0]) || placement_box[1] > 0 && (UR.y - LL.y > placement_box[1])) return -1;
   // calculate HPWL
   HPWL = 0;
+  HPWL_extend = 0;
   for (auto neti : mydesign.Nets) {
     int HPWL_min_x = UR.x, HPWL_min_y = UR.y, HPWL_max_x = 0, HPWL_max_y = 0;
+    int HPWL_extend_min_x = UR.x, HPWL_extend_min_y = UR.y, HPWL_extend_max_x = 0, HPWL_extend_max_y = 0;
     for (auto connectedj : neti.connected) {
       if (connectedj.type == placerDB::Block) {
         int iter2 = connectedj.iter2, iter = connectedj.iter;
@@ -429,9 +433,30 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
           HPWL_min_y = std::min(HPWL_min_y, pin_y);
           HPWL_max_y = std::max(HPWL_max_y, pin_y);
         }
+        for(auto boundaryk:mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].boundary){
+          int pin_llx = boundaryk.polygon[0].x, pin_urx = boundaryk.polygon[2].x;
+          int pin_lly = boundaryk.polygon[0].y, pin_ury = boundaryk.polygon[2].y;
+          if (Blocks[iter2].H_flip){
+            pin_llx = mydesign.Blocks[iter2][curr_sp.selected[iter2]].width - pin_urx;
+            pin_urx = mydesign.Blocks[iter2][curr_sp.selected[iter2]].width - pin_llx;
+          } 
+          if (Blocks[iter2].V_flip){
+            pin_lly = mydesign.Blocks[iter2][curr_sp.selected[iter2]].height - pin_ury;
+            pin_ury = mydesign.Blocks[iter2][curr_sp.selected[iter2]].height - pin_lly;
+          } 
+          pin_llx += Blocks[iter2].x;
+          pin_urx += Blocks[iter2].x;
+          pin_lly += Blocks[iter2].y;
+          pin_ury += Blocks[iter2].y;
+          HPWL_extend_min_x = std::min(HPWL_extend_min_x, pin_llx);
+          HPWL_extend_max_x = std::max(HPWL_extend_max_x, pin_urx);
+          HPWL_extend_min_y = std::min(HPWL_extend_min_y, pin_lly);
+          HPWL_extend_max_y = std::max(HPWL_extend_max_y, pin_ury);
+        }
       }    
     }
-    HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);  
+    HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);
+    HPWL_extend += (HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x);
   }
 
   //HPWL norm
@@ -1284,6 +1309,7 @@ void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierN
   node.width = UR.x;
   node.height = UR.y;
   node.HPWL = HPWL;
+  node.HPWL_extend = HPWL_extend;
   node.area_norm = area_norm;
   node.HPWL_norm = HPWL_norm;
   node.constraint_penalty = constraint_penalty;
