@@ -148,45 +148,6 @@ def gen_netlist( placement_verilog_d, concrete_name):
 
     return nets_d
 
-def flatten_placement_verilog_d( placement_verilog_d, concrete_name):
-    modules = { module['concrete_name']: module for module in placement_verilog_d['modules']}
-    global_actuals = { gs['actual'] for gs in placement_verilog_d['global_signals']}
-
-    nets_d = defaultdict(list)
-    def aux( module, prefix_path, translate_d):
-
-        parameters = { net for net in module['parameters']}
-
-        for k, _ in translate_d.items():
-            assert k in parameters
-
-        if prefix_path != ():
-            for p in parameters:
-                assert p in translate_d
-
-        for inst in module['instances']:
-            def gen_pair():
-                for fa in inst['fa_map']:
-                    f,a = fa['formal'], fa['actual']
-                    new_a = (a,) if a in global_actuals else translate_d.get(a,prefix_path + (a,))
-                    yield f, new_a
-
-            instance_name = inst['instance_name']
-            ctn = inst['concrete_template_name']
-            if ctn in modules: # non-leaf
-                aux( modules[ctn], prefix_path + (instance_name,), dict( gen_pair()))
-            else: #leaf
-                for f,new_a in gen_pair():
-                    nets_d[new_a].append(prefix_path + (instance_name,f))
-
-
-    aux( modules[concrete_name], (), {})
-
-    flat_placement_verilog_d = placement_verilog_d
-
-    return flat_placement_verilog_d
-    
-
 def to_center( r):
     #xc = (r[0]+r[2])//2
     #yc = (r[1]+r[3])//2
