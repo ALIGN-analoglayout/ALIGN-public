@@ -18,10 +18,11 @@ SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl)
     if (casenl.RemoveTaps()) {
       for (unsigned j = 0; j < casenl.Blocks.at(i).size(); ++j) {
         if (!casenl.Blocks.at(i).at(j).wtap) {
-          s = static_cast<int>(j);
+          s = static_cast<int>(j) - 1;
           break;
         }
       }
+      if (s < 0) s = 1;
     }
     _maxSize = std::max(_maxSize, s);
     _maxSelected.push_back(s);
