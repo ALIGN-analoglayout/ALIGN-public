@@ -49,9 +49,16 @@ class SemiPerimeter:
     def __repr__(self):
         return f'SemiPerimeter(dist={self.dist()},ix={self.ix},iy={self.iy})'
 
+    def isEmpty(self):
+        return self.ix.m is None
+
     def toList(self):
-        assert self.ix.m is not None
+        assert not self.isEmpty()
         return [self.ix.m,self.iy.m,self.ix.M,self.iy.M]
+
+    def update(self, other, tr):
+        if not other.isEmpty():
+            self.addRect(tr.hitRect(Rect(*other.toList())).canonical().toList())
 
 def gen_netlist( placement_verilog_d, concrete_name):
     nets_d = defaultdict(list)
@@ -189,15 +196,12 @@ def calculate_HPWL_from_placement_verilog_d_bottom_up( placement_verilog_d, conc
                 tr = Transformation( **instance['transformation'])
                 for fa in instance['fa_map']:
                     f, a = fa['formal'], fa['actual']
-                    new_r = tr.hitRect(Rect(*net_bboxes[(ctn,f)].toList())).canonical().toList()
                     local_a.add(a)
-
-                    net_bboxes[(cn,a)].addRect( new_r)
+                    net_bboxes[(cn,a)].update(net_bboxes[(ctn,f)], tr)
 
                 for a in global_actuals:
-                    if (ctn,a) in net_bboxes:
-                        new_r = tr.hitRect(Rect(*net_bboxes[(ctn,a)].toList())).canonical().toList()
-                        net_bboxes[(cn,a)].addRect( new_r)
+                    if (ctn,a) not in net_bboxes: continue
+                    net_bboxes[(cn,a)].update(net_bboxes[(ctn,a)], tr)
 
             for a in local_a.difference(set( module['parameters']).union(global_actuals)):
                 net_hpwl = net_bboxes[(cn,a)].dist()
@@ -228,4 +232,4 @@ def calculate_HPWL_from_placement_verilog_d( placement_verilog_d, concrete_name,
     if hpwl_top_down != hpwl_bottom_up:
         logger.warning( f'HPWL calculated in different ways differ: top_down: {hpwl_top_down} bottom_up: {hpwl_bottom_up}')
 
-    return hpwl_bottom_up
+    return hpwl_top_down
