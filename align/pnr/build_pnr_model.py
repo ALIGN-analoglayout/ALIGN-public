@@ -35,6 +35,7 @@ def ReadVerilogJson( DB, j):
 
         Blocks = []
         Nets = []
+        Block_name_map = {}
 
         Connecteds = []
 
@@ -50,6 +51,7 @@ def ReadVerilogJson( DB, j):
                 assert False, f'Missing template_name (abstract or otherwise) in instance {instance}'
 
             current_instance.name = instance['instance_name']
+            Block_name_map[current_instance.name] = len(Blocks)
 
             blockPins = []
 
@@ -91,6 +93,7 @@ def ReadVerilogJson( DB, j):
 
         temp_node.Blocks = Blocks
         temp_node.Nets = Nets
+        temp_node.Block_name_map = Block_name_map
 
         hierTree.append( temp_node)
 

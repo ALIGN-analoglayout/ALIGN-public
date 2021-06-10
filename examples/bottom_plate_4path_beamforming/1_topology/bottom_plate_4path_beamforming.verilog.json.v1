@@ -1,0 +1,718 @@
+{
+  "modules": [
+    {
+      "name": "bottom_plate_4path_beamforming",
+      "parameters": [
+        "CLK_X1_M",
+        "CLK_X1_P",
+        "CLK_X2_M",
+        "CLK_X2_P",
+        "CLK_X3_M",
+        "CLK_X3_P",
+        "CLK_X4_M",
+        "CLK_X4_P",
+        "OUT_M",
+        "OUT_P",
+        "VCMBIAS",
+        "VDDA",
+        "VSSA",
+        "X1_M",
+        "X1_P",
+        "X2_M",
+        "X2_P",
+        "X3_M",
+        "X3_P",
+        "X4_M",
+        "X4_P"
+      ],
+      "constraints": [
+        {"constraint": "SymmetricBlocks", "direction" : "V",
+          "pairs": [["XC1", "XC4"], ["XC0", "XC5"], ["XC2", "XC6"], ["XC3", "XC7"], ["XC8", "XC9"], ["XI0"],
+                    ["XM0", "XM8"], ["XM4", "XM12"], ["XM1", "XM9"], ["XM5", "XM13"], 
+                    ["XM2", "XM10"], ["XM6", "XM14"], ["XM3", "XM11"], ["XM7", "XM15"]]},
+        {"constraint": "AlignInOrder", "direction": "vertical", "line": "left",
+          "instances": [ "XC1", "XR0", "XC0", "XR1", "XC2", "XR2", "XC3", "XR3", "XR18", "XC8"]},
+        {"constraint": "AlignInOrder", "direction": "vertical", "line": "left",
+          "instances": [ "XC4", "XR8", "XC5", "XR9", "XC6", "XR10", "XC7", "XR11", "XR16", "XC9"]},
+        {"constraint": "AlignInOrder", "direction": "horizontal", "line": "bottom",
+          "instances": [ "XC8", "XI0", "XC9"]},
+        {"constraint": "AlignInOrder", "direction": "horizontal", "line": "bottom", 
+          "instances": [ "XC1", "XM4", "XM12", "XC4"]},
+        {"constraint": "AlignInOrder", "direction": "horizontal", "line": "bottom",
+          "instances": [ "XC0", "XM5", "XM13", "XC5"]},
+        {"constraint": "AlignInOrder", "direction": "horizontal", "line": "bottom", 
+          "instances": [ "XC2", "XM6", "XM14", "XC6"]},
+        {"constraint": "AlignInOrder", "direction": "horizontal", "line": "bottom",
+          "instances": [ "XC3", "XM7", "XM15", "XC7"]},
+        {"constraint": "AlignInOrder", "direction": "vertical", "line": "left",
+          "instances": [ "XM0", "XM4", "XM1", "XM5", "XM2", "XM6", "XM3", "XM7"]}
+          ],
+      "instances": [
+        {
+          "instance_name": "XR18",
+          "fa_map": [
+            {
+              "formal": "MINUS",
+              "actual": "OUT_M"
+            },
+            {
+              "formal": "PLUS",
+              "actual": "IN_P"
+            }
+          ],
+          "abstract_template_name": "RES_w1u_l14u"
+        },
+        {
+          "instance_name": "XR16",
+          "fa_map": [
+            {
+              "formal": "MINUS",
+              "actual": "OUT_P"
+            },
+            {
+              "formal": "PLUS",
+              "actual": "IN_M"
+            }
+          ],
+          "abstract_template_name": "RES_w1u_l14u"
+        },
+        {
+          "instance_name": "XR11",
+          "fa_map": [
+            {
+              "formal": "MINUS",
+              "actual": "X4_IN_M"
+            },
+            {
+              "formal": "PLUS",
+              "actual": "IN_M"
+            }
+          ],
+          "abstract_template_name": "RES_w1u_l14u"
+        },
+        {
+          "instance_name": "XR10",
+          "fa_map": [
+            {
+              "formal": "MINUS",
+              "actual": "X3_IN_M"
+            },
+            {
+              "formal": "PLUS",
+              "actual": "IN_M"
+            }
+          ],
+          "abstract_template_name": "RES_w1u_l14u"
+        },
+        {
+          "instance_name": "XR9",
+          "fa_map": [
+            {
+              "formal": "MINUS",
+              "actual": "X2_IN_M"
+            },
+            {
+              "formal": "PLUS",
+              "actual": "IN_M"
+            }
+          ],
+          "abstract_template_name": "RES_w1u_l14u"
+        },
+        {
+          "instance_name": "XR8",
+          "fa_map": [
+            {
+              "formal": "MINUS",
+              "actual": "X1_IN_M"
+            },
+            {
+              "formal": "PLUS",
+              "actual": "IN_M"
+            }
+          ],
+          "abstract_template_name": "RES_w1u_l14u"
+        },
+        {
+          "instance_name": "XR3",
+          "fa_map": [
+            {
+              "formal": "MINUS",
+              "actual": "X4_IN_P"
+            },
+            {
+              "formal": "PLUS",
+              "actual": "IN_P"
+            }
+          ],
+          "abstract_template_name": "RES_w1u_l14u"
+        },
+        {
+          "instance_name": "XR2",
+          "fa_map": [
+            {
+              "formal": "MINUS",
+              "actual": "X3_IN_P"
+            },
+            {
+              "formal": "PLUS",
+              "actual": "IN_P"
+            }
+          ],
+          "abstract_template_name": "RES_w1u_l14u"
+        },
+        {
+          "instance_name": "XR1",
+          "fa_map": [
+            {
+              "formal": "MINUS",
+              "actual": "X2_IN_P"
+            },
+            {
+              "formal": "PLUS",
+              "actual": "IN_P"
+            }
+          ],
+          "abstract_template_name": "RES_w1u_l14u"
+        },
+        {
+          "instance_name": "XR0",
+          "fa_map": [
+            {
+              "formal": "MINUS",
+              "actual": "X1_IN_P"
+            },
+            {
+              "formal": "PLUS",
+              "actual": "IN_P"
+            }
+          ],
+          "abstract_template_name": "RES_w1u_l14u"
+        },
+        {
+          "abstract_template_name": "TIA_1",
+          "instance_name": "XI0",
+          "fa_map": [
+            {
+              "formal": "IN_M",
+              "actual": "IN_M"
+            },
+            {
+              "formal": "IN_P",
+              "actual": "IN_P"
+            },
+            {
+              "formal": "OUT_M",
+              "actual": "OUT_M"
+            },
+            {
+              "formal": "OUT_P",
+              "actual": "OUT_P"
+            },
+            {
+              "formal": "VDDA",
+              "actual": "VDDA"
+            },
+            {
+              "formal": "VSSA",
+              "actual": "VSSA"
+            }
+          ]
+        },
+        {
+          "instance_name": "XC8",
+          "fa_map": [
+            {
+              "formal": "MINUS",
+              "actual": "OUT_M"
+            },
+            {
+              "formal": "PLUS",
+              "actual": "IN_P"
+            }
+          ],
+          "abstract_template_name": "CAP_MIM_wt32_lt32"
+        },
+        {
+          "instance_name": "XC9",
+          "fa_map": [
+            {
+              "formal": "MINUS",
+              "actual": "OUT_P"
+            },
+            {
+              "formal": "PLUS",
+              "actual": "IN_M"
+            }
+          ],
+          "abstract_template_name": "CAP_MIM_wt32_lt32"
+        },
+        {
+          "instance_name": "XC4",
+          "fa_map": [
+            {
+              "formal": "MINUS",
+              "actual": "X1_IN_M"
+            },
+            {
+              "formal": "PLUS",
+              "actual": "VCMBIAS"
+            }
+          ],
+          "abstract_template_name": "CAP_MIM_wt32_lt32"
+        },
+        {
+          "instance_name": "XC5",
+          "fa_map": [
+            {
+              "formal": "MINUS",
+              "actual": "X2_IN_M"
+            },
+            {
+              "formal": "PLUS",
+              "actual": "VCMBIAS"
+            }
+          ],
+          "abstract_template_name": "CAP_MIM_wt32_lt32"
+        },
+        {
+          "instance_name": "XC7",
+          "fa_map": [
+            {
+              "formal": "MINUS",
+              "actual": "X4_IN_M"
+            },
+            {
+              "formal": "PLUS",
+              "actual": "VCMBIAS"
+            }
+          ],
+          "abstract_template_name": "CAP_MIM_wt32_lt32"
+        },
+        {
+          "instance_name": "XC6",
+          "fa_map": [
+            {
+              "formal": "MINUS",
+              "actual": "X3_IN_M"
+            },
+            {
+              "formal": "PLUS",
+              "actual": "VCMBIAS"
+            }
+          ],
+          "abstract_template_name": "CAP_MIM_wt32_lt32"
+        },
+        {
+          "instance_name": "XC2",
+          "fa_map": [
+            {
+              "formal": "MINUS",
+              "actual": "X3_IN_P"
+            },
+            {
+              "formal": "PLUS",
+              "actual": "VCMBIAS"
+            }
+          ],
+          "abstract_template_name": "CAP_MIM_wt32_lt32"
+        },
+        {
+          "instance_name": "XC3",
+          "fa_map": [
+            {
+              "formal": "MINUS",
+              "actual": "X4_IN_P"
+            },
+            {
+              "formal": "PLUS",
+              "actual": "VCMBIAS"
+            }
+          ],
+          "abstract_template_name": "CAP_MIM_wt32_lt32"
+        },
+        {
+          "instance_name": "XC1",
+          "fa_map": [
+            {
+              "formal": "MINUS",
+              "actual": "X1_IN_P"
+            },
+            {
+              "formal": "PLUS",
+              "actual": "VCMBIAS"
+            }
+          ],
+          "abstract_template_name": "CAP_MIM_wt32_lt32"
+        },
+        {
+          "instance_name": "XC0",
+          "fa_map": [
+            {
+              "formal": "MINUS",
+              "actual": "X2_IN_P"
+            },
+            {
+              "formal": "PLUS",
+              "actual": "VCMBIAS"
+            }
+          ],
+          "abstract_template_name": "CAP_MIM_wt32_lt32"
+        },
+        {
+          "instance_name": "XM15",
+          "fa_map": [
+            {
+              "formal": "D",
+              "actual": "X4_M"
+            },
+            {
+              "formal": "G",
+              "actual": "CLK_X4_P"
+            },
+            {
+              "formal": "S",
+              "actual": "X4_IN_M"
+            },
+            {
+              "formal": "DNWP",
+              "actual": "VDDA"
+            }
+          ],
+          "abstract_template_name": "SW_NMOS_wr2u_lr60n_nr16"
+        },
+        {
+          "instance_name": "XM14",
+          "fa_map": [
+            {
+              "formal": "D",
+              "actual": "X3_M"
+            },
+            {
+              "formal": "G",
+              "actual": "CLK_X3_P"
+            },
+            {
+              "formal": "S",
+              "actual": "X3_IN_M"
+            },
+            {
+              "formal": "DNWP",
+              "actual": "VDDA"
+            }
+          ],
+          "abstract_template_name": "SW_NMOS_wr2u_lr60n_nr16"
+        },
+        {
+          "instance_name": "XM13",
+          "fa_map": [
+            {
+              "formal": "D",
+              "actual": "X2_M"
+            },
+            {
+              "formal": "G",
+              "actual": "CLK_X2_P"
+            },
+            {
+              "formal": "S",
+              "actual": "X2_IN_M"
+            },
+            {
+              "formal": "DNWP",
+              "actual": "VDDA"
+            }
+          ],
+          "abstract_template_name": "SW_NMOS_wr2u_lr60n_nr16"
+        },
+        {
+          "instance_name": "XM12",
+          "fa_map": [
+            {
+              "formal": "D",
+              "actual": "X1_M"
+            },
+            {
+              "formal": "G",
+              "actual": "CLK_X1_P"
+            },
+            {
+              "formal": "S",
+              "actual": "X1_IN_M"
+            },
+            {
+              "formal": "DNWP",
+              "actual": "VDDA"
+            }
+          ],
+          "abstract_template_name": "SW_NMOS_wr2u_lr60n_nr16"
+        },
+        {
+          "instance_name": "XM11",
+          "fa_map": [
+            {
+              "formal": "D",
+              "actual": "X4_P"
+            },
+            {
+              "formal": "G",
+              "actual": "CLK_X4_M"
+            },
+            {
+              "formal": "S",
+              "actual": "X4_IN_M"
+            },
+            {
+              "formal": "DNWP",
+              "actual": "VDDA"
+            }
+          ],
+          "abstract_template_name": "SW_NMOS_wr2u_lr60n_nr16"
+        },
+        {
+          "instance_name": "XM10",
+          "fa_map": [
+            {
+              "formal": "D",
+              "actual": "X3_P"
+            },
+            {
+              "formal": "G",
+              "actual": "CLK_X3_M"
+            },
+            {
+              "formal": "S",
+              "actual": "X3_IN_M"
+            },
+            {
+              "formal": "DNWP",
+              "actual": "VDDA"
+            }
+          ],
+          "abstract_template_name": "SW_NMOS_wr2u_lr60n_nr16"
+        },
+        {
+          "instance_name": "XM9",
+          "fa_map": [
+            {
+              "formal": "D",
+              "actual": "X2_P"
+            },
+            {
+              "formal": "G",
+              "actual": "CLK_X2_M"
+            },
+            {
+              "formal": "S",
+              "actual": "X2_IN_M"
+            },
+            {
+              "formal": "DNWP",
+              "actual": "VDDA"
+            }
+          ],
+          "abstract_template_name": "SW_NMOS_wr2u_lr60n_nr16"
+        },
+        {
+          "instance_name": "XM8",
+          "fa_map": [
+            {
+              "formal": "D",
+              "actual": "X1_P"
+            },
+            {
+              "formal": "G",
+              "actual": "CLK_X1_M"
+            },
+            {
+              "formal": "S",
+              "actual": "X1_IN_M"
+            },
+            {
+              "formal": "DNWP",
+              "actual": "VDDA"
+            }
+          ],
+          "abstract_template_name": "SW_NMOS_wr2u_lr60n_nr16"
+        },
+        {
+          "instance_name": "XM7",
+          "fa_map": [
+            {
+              "formal": "D",
+              "actual": "X4_M"
+            },
+            {
+              "formal": "G",
+              "actual": "CLK_X4_M"
+            },
+            {
+              "formal": "S",
+              "actual": "X4_IN_P"
+            },
+            {
+              "formal": "DNWP",
+              "actual": "VDDA"
+            }
+          ],
+          "abstract_template_name": "SW_NMOS_wr2u_lr60n_nr16"
+        },
+        {
+          "instance_name": "XM6",
+          "fa_map": [
+            {
+              "formal": "D",
+              "actual": "X3_M"
+            },
+            {
+              "formal": "G",
+              "actual": "CLK_X3_M"
+            },
+            {
+              "formal": "S",
+              "actual": "X3_IN_P"
+            },
+            {
+              "formal": "DNWP",
+              "actual": "VDDA"
+            }
+          ],
+          "abstract_template_name": "SW_NMOS_wr2u_lr60n_nr16"
+        },
+        {
+          "instance_name": "XM5",
+          "fa_map": [
+            {
+              "formal": "D",
+              "actual": "X2_M"
+            },
+            {
+              "formal": "G",
+              "actual": "CLK_X2_M"
+            },
+            {
+              "formal": "S",
+              "actual": "X2_IN_P"
+            },
+            {
+              "formal": "DNWP",
+              "actual": "VDDA"
+            }
+          ],
+          "abstract_template_name": "SW_NMOS_wr2u_lr60n_nr16"
+        },
+        {
+          "instance_name": "XM4",
+          "fa_map": [
+            {
+              "formal": "D",
+              "actual": "X1_M"
+            },
+            {
+              "formal": "G",
+              "actual": "CLK_X1_M"
+            },
+            {
+              "formal": "S",
+              "actual": "X1_IN_P"
+            },
+            {
+              "formal": "DNWP",
+              "actual": "VDDA"
+            }
+          ],
+          "abstract_template_name": "SW_NMOS_wr2u_lr60n_nr16"
+        },
+        {
+          "instance_name": "XM3",
+          "fa_map": [
+            {
+              "formal": "D",
+              "actual": "X4_P"
+            },
+            {
+              "formal": "G",
+              "actual": "CLK_X4_P"
+            },
+            {
+              "formal": "S",
+              "actual": "X4_IN_P"
+            },
+            {
+              "formal": "DNWP",
+              "actual": "VDDA"
+            }
+          ],
+          "abstract_template_name": "SW_NMOS_wr2u_lr60n_nr16"
+        },
+        {
+          "instance_name": "XM2",
+          "fa_map": [
+            {
+              "formal": "D",
+              "actual": "X3_P"
+            },
+            {
+              "formal": "G",
+              "actual": "CLK_X3_P"
+            },
+            {
+              "formal": "S",
+              "actual": "X3_IN_P"
+            },
+            {
+              "formal": "DNWP",
+              "actual": "VDDA"
+            }
+          ],
+          "abstract_template_name": "SW_NMOS_wr2u_lr60n_nr16"
+        },
+        {
+          "instance_name": "XM1",
+          "fa_map": [
+            {
+              "formal": "D",
+              "actual": "X2_P"
+            },
+            {
+              "formal": "G",
+              "actual": "CLK_X2_P"
+            },
+            {
+              "formal": "S",
+              "actual": "X2_IN_P"
+            },
+            {
+              "formal": "DNWP",
+              "actual": "VDDA"
+            }
+          ],
+          "abstract_template_name": "SW_NMOS_wr2u_lr60n_nr16"
+        },
+        {
+          "instance_name": "XM0",
+          "fa_map": [
+            {
+              "formal": "D",
+              "actual": "X1_P"
+            },
+            {
+              "formal": "G",
+              "actual": "CLK_X1_P"
+            },
+            {
+              "formal": "S",
+              "actual": "X1_IN_P"
+            },
+            {
+              "formal": "DNWP",
+              "actual": "VDDA"
+            }
+          ],
+          "abstract_template_name": "SW_NMOS_wr2u_lr60n_nr16"
+        }
+      ]  
+   } 
+    
+  ],
+  "global_signals": []
+}
