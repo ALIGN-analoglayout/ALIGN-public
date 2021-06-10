@@ -430,8 +430,8 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                     if hpwl != hN.HPWL:
                         logger.error( f'hpwl: locally computed from hN {hpwl}, placer computed {hN.HPWL} differ!')
 
-                    if hpwl_alt != hN.HPWL:
-                        logger.debug( f'hpwl: locally computed from netlist {hpwl_alt}, placer computed {hN.HPWL} differ!')
+                    if hpwl_alt != hN.HPWL_extend:
+                        logger.warning( f'hpwl: locally computed from netlist {hpwl_alt}, placer computed {hN.HPWL_extend} differ!')
 
                 #reported_hpwl = hN.HPWL / 2000
                 # This is a much better estimate but not what the placer is using
