@@ -437,12 +437,12 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
           int pin_llx = boundaryk.polygon[0].x, pin_urx = boundaryk.polygon[2].x;
           int pin_lly = boundaryk.polygon[0].y, pin_ury = boundaryk.polygon[2].y;
           if (Blocks[iter2].H_flip){
-            pin_llx = mydesign.Blocks[iter2][curr_sp.selected[iter2]].width - pin_urx;
-            pin_urx = mydesign.Blocks[iter2][curr_sp.selected[iter2]].width - pin_llx;
+            pin_llx = mydesign.Blocks[iter2][curr_sp.selected[iter2]].width - boundaryk.polygon[2].x;
+            pin_urx = mydesign.Blocks[iter2][curr_sp.selected[iter2]].width - boundaryk.polygon[0].x;
           } 
           if (Blocks[iter2].V_flip){
-            pin_lly = mydesign.Blocks[iter2][curr_sp.selected[iter2]].height - pin_ury;
-            pin_ury = mydesign.Blocks[iter2][curr_sp.selected[iter2]].height - pin_lly;
+            pin_lly = mydesign.Blocks[iter2][curr_sp.selected[iter2]].height - boundaryk.polygon[2].y;
+            pin_ury = mydesign.Blocks[iter2][curr_sp.selected[iter2]].height - boundaryk.polygon[0].y;
           } 
           pin_llx += Blocks[iter2].x;
           pin_urx += Blocks[iter2].x;
