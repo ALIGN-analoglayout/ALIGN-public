@@ -102,7 +102,7 @@ def build_example(work_dir, name, netlist, netlist_setup, constraints):
     return example
 
 
-def run_example(example, n=8):
+def run_example(example, n=8, cleanup=True):
     run_dir = my_dir / f'run_{example.name}'
     if run_dir.exists() and run_dir.is_dir():
         shutil.rmtree(run_dir)
@@ -113,5 +113,6 @@ def run_example(example, n=8):
     results = align.CmdlineParser().parse_args(args)
     assert results is not None, f"{example.name}: No results generated"
     
-    shutil.rmtree(run_dir)
-    shutil.rmtree(example)
+    if cleanup:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(example)

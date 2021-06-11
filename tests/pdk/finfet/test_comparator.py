@@ -5,17 +5,24 @@ except:
     from helper import *
 
 
-
-
 @pytest.mark.nightly
-def test_case_1():
+def test_order1():
     constraints = """[
-    {"constraint": "GroupBlocks", "instances": ["mmn1", "mmn2"], "name": "dp"},
-    {"constraint": "SymmetricBlocks", "direction" : "V", "pairs": [["mmn0"], ["dp"]]},
-    {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mmn0", "dp"]}
+    {"constraint": "Order", "direction": "left_to_right", "instances": ["mmp7", "mmp8"]}
 ]
 """
-    name = f'comparator_{get_test_id()[5:]}'
+    name = f'ckt_{get_test_id()[5:]}'
     netlist, netlist_setup = comparator(name)
     example = build_example(my_dir, name, netlist, netlist_setup, constraints)
-    run_example(example, n=1)
+    run_example(example, n=1, cleanup=False)
+
+@pytest.mark.nightly
+def test_order2():
+    constraints = """[
+    {"constraint": "Order", "direction": "left_to_right", "instances": ["mmp7", "mmp9"]}
+]
+"""
+    name = f'ckt_{get_test_id()[5:]}'
+    netlist, netlist_setup = comparator(name)
+    example = build_example(my_dir, name, netlist, netlist_setup, constraints)
+    run_example(example, n=1, cleanup=False)
