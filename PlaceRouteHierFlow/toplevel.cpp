@@ -288,6 +288,7 @@ int toplevel( const std::vector<std::string>& argv) {
   bool skip_saving_state = getenv( "PNRDB_SAVE_STATE") == NULL;
   bool adr_mode = getenv( "PNRDB_ADR_MODE") != NULL;
   bool multi_thread = getenv( "PNRDB_multi_thread") != NULL;;  // run multi layouts in multi threads
+  bool disable_io = getenv( "PNRDB_disable_io") != NULL;; //turn off window outputs
   //bool multi_thread = false;  // run multi layouts in multi threads
 
   string opath="./Results/";
@@ -350,17 +351,23 @@ int toplevel( const std::vector<std::string>& argv) {
     #define analytical_placer
     #ifdef analytical_placer
     // EA placer
+    if(disable_io)std::cout.setstate(std::ios_base::failbit);
     Placement EA_placer;
     EA_placer.set_dummy_net_weight(dummy_init_weight,dummy_init_rate,dummy_init_weight);
     EA_placer.place(current_node);
+    if(disable_io)std::cout.clear();
     PlacerIfc curr_plc1(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
     current_node = curr_plc1.getNode(0);
     // AFTER FIRST ILP, RUN THE FOLLOWING LINE
+    if(disable_io)std::cout.setstate(std::ios_base::failbit);
     EA_placer.restore_MS(current_node);
     // Do the ILP again
+    if(disable_io)std::cout.clear();
     PlacerIfc curr_plc(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
     current_node = curr_plc.getNode(0);
+    if(disable_io)std::cout.setstate(std::ios_base::failbit);
     EA_placer.break_merged_cc(current_node);
+    if(disable_io)std::cout.clear();
     return 0;
     // Placement
     std::vector<PnRDB::hierNode>& nodeVec(curr_plc.get());
