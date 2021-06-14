@@ -168,5 +168,9 @@ public:
     void cal_dummy_net_weight(float &weight, float &rate, float &increase);
 
     void set_dummy_net_weight(float init_weight, float rate, float targe);
+    
+    void break_merged_cc(PnRDB::hierNode &current_node);
+    
+    void update_pos(PnRDB::hierNode &current_node);
 };
 #endif

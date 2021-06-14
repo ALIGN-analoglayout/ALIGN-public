@@ -299,9 +299,9 @@ int toplevel( const std::vector<std::string>& argv) {
   string topcell=argv[6];
   int numLayout=std::stoi(argv[7]);
   int effort=std::stoi(argv[8]);
-  float dummy_init_weight = std::stof(argv[9]);
-  float dummy_init_rate = std::stof(argv[10]);
-  float dummy_target = std::stof(argv[11]);
+  float dummy_init_weight = std::stof(argv[9]);//default:
+  float dummy_init_rate = std::stof(argv[10]);//default:
+  float dummy_target = std::stof(argv[11]);//default:
   if(fpath.back()=='/') {fpath.erase(fpath.end()-1);}
   if(opath.back()!='/') {opath+="/";}
 
@@ -347,8 +347,9 @@ int toplevel( const std::vector<std::string>& argv) {
 
     logger->debug("Checkpoint : before place");
     DB.PrintHierNode(current_node);
-    #ifdef analytical_placer
-    //EA placer
+    // #define analytical_placer
+    // #ifdef analytical_placer
+    // EA placer
     Placement EA_placer;
     EA_placer.set_dummy_net_weight(dummy_init_weight,dummy_init_rate,dummy_init_weight);
     EA_placer.place(current_node);
@@ -358,15 +359,17 @@ int toplevel( const std::vector<std::string>& argv) {
     EA_placer.restore_MS(current_node);
     // Do the ILP again
     PlacerIfc curr_plc(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
+    current_node = curr_plc.getNode(0);
+    EA_placer.break_merged_cc(current_node);
     return 0;
     // Placement
     std::vector<PnRDB::hierNode>& nodeVec(curr_plc.get());
     logger->debug("Checkpoint: generated {0} placements",nodeVec.size());
-    #endif
+    // #endif
     // Placement
-    PlacerIfc curr_plc(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo));
-    std::vector<PnRDB::hierNode>& nodeVec(curr_plc.get());
-    logger->debug("Checkpoint: generated {0} placements",nodeVec.size());
+    // PlacerIfc curr_plc(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo));
+    // std::vector<PnRDB::hierNode>& nodeVec(curr_plc.get());
+    // logger->debug("Checkpoint: generated {0} placements",nodeVec.size());
     //insert guard ring
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
       if (nodeVec[lidx].Guardring_Consts.size()>0){

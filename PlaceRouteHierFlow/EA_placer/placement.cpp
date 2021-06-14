@@ -2215,7 +2215,7 @@ Ppoint_F Placement::find_uni_cell()
       uni_cell_Dpoint.y = Blocks[i].Dpoint.y;
     }
   }
-  uni_cell_Dpoint = Blocks[id].Dpoint;
+  // uni_cell_Dpoint = Blocks[id].Dpoint;
   return uni_cell_Dpoint;
 }
 
@@ -3541,4 +3541,118 @@ void Placement::set_dummy_net_weight(float init_weight, float rate, float targe)
 {
   dummy_net_weight = init_weight;
 
+}
+
+
+void Placement::break_merged_cc(PnRDB::hierNode &current_node)
+{
+  //find out the uni cell
+  Ppoint_I uni_cell_I;
+  uni_cell_I.x = current_node.Blocks[0].instance[0].width;
+  uni_cell_I.y = current_node.Blocks[0].instance[0].height;
+
+  update_pos(current_node);
+  std::cout<<"restore ms debug:0"<<std::endl;
+
+  string mark_of_cc = "CC_merge_cell";
+  for(int i = 0;i <  current_node.Blocks.size();++i)
+  {
+    std::cout<<"restore ms debug:1"<<std::endl;
+    for(int j = 0;j <  current_node.Blocks[i].instance.size();++j)
+    {
+      std::cout<<"restore ms debug:2"<<std::endl;
+      if(current_node.Blocks[i].instance[j].name.find(mark_of_cc)!=string::npos)
+      { 
+        std::cout<<"restore ms debug:3"<<std::endl;
+        //break the cc into its shape
+        int pos = current_node.Blocks[i].instance[j].name.find(mark_of_cc);//bug 1
+
+        char ccID = current_node.Blocks[i].instance[j].name[pos+15];//bug 1
+        int ccID_int = ccID -48-1;//bug 2
+        std::cout<<"restore ms debug:4"<<std::endl;
+        //determine the period and center
+        Ppoint_F center, period,LL;
+        center.x = (float)current_node.Blocks[i].instance[j].placedCenter.x/est_Size.x;
+        center.y = (float)current_node.Blocks[i].instance[j].placedCenter.y/est_Size.y;
+
+        // LL.x = center.x - 1/2*(float)current_node.Blocks[i].instance[j].width/est_Size.x;
+        // LL.y = center.y - 1/2*(float)current_node.Blocks[i].instance[j].height/est_Size.y;
+        LL.x = (float)(current_node.Blocks[i].instance[j].placedCenter.x - current_node.Blocks[i].instance[j].width/2)/est_Size.x;//bug 
+        LL.y = (float)(current_node.Blocks[i].instance[j].placedCenter.y - current_node.Blocks[i].instance[j].height/2)/est_Size.y;//bug 
+
+        // LL.x = center.x - 1/2 *uni_cell.x * commonCentroids[ccID_int].shape.x;
+        // LL.y = center.y - 1/2 *uni_cell.y * commonCentroids[ccID_int].shape.y;
+        std::cout<<"width of CC "<<ccID_int<<" ="<<current_node.Blocks[i].instance[j].width<<endl;//bug 
+        std::cout<<"height of CC "<<ccID_int<<" ="<<current_node.Blocks[i].instance[j].height<<endl;//bug 
+
+        std::cout<<"LL:="<<LL.x*est_Size.x<<", "<<LL.y*est_Size.y<<endl;
+        // std::cout<<"width *0.5:= center -LL "<<current_node.Blocks[i].instance[j].placedCenter.x - <<", "<<center.y-LL.y<<endl;
+
+        if(commonCentroids[ccID_int].shape.x>1)
+        {
+          std::cout<<"restore ms debug:5"<<std::endl;
+          period.x = (float)current_node.Blocks[i].instance[j].width/est_Size.x/(commonCentroids[ccID_int].shape.x);//bug 
+          // period.x = 0;
+        }
+        else{
+          period.x = 0;
+        }
+        if(commonCentroids[ccID_int].shape.y>1)
+        {
+          std::cout<<"restore ms debug:6"<<std::endl;
+          period.y = (float)current_node.Blocks[i].instance[j].height/est_Size.y/(commonCentroids[ccID_int].shape.y);//bug 
+          // period.y = 0;
+        }
+        else{
+          period.y = 0;
+        }
+        // period = uni_cell;
+        std::cout<<"restore ms debug:7:"<<ccID_int<<std::endl;
+        //range the pos of each cell
+        for(int ii = 0;ii <  commonCentroids[ccID_int].shape.x;++ii)
+        {
+          for(int jj = 0;jj < commonCentroids[ccID_int].shape.y;++jj)
+          {
+            // if(commonCentroids[ccID_int].fillin_matrix[ii][jj]>=0)
+            // {
+              int id = commonCentroids[ccID_int].fillin_matrix[ii][jj];
+              std::cout<<"restore ms debug:7a:"<<id<<std::endl;
+              Blocks[id].Cpoint.x = LL.x + ii * period.x + 0.5*period.x;//bug 3
+              Blocks[id].Cpoint.y = LL.y + jj * period.y + 0.5*period.y;; 
+              Blocks[id].Dpoint.x = period.x;
+              Blocks[id].Dpoint.y = period.y;
+            // }
+          }
+        }
+      }
+    }
+    
+  }
+  PlotPlacement(604);
+}
+
+void Placement::update_pos(PnRDB::hierNode &current_node)
+{
+  int idx = 0;
+  
+  for(int i = 0;i < current_node.Blocks.size();++i)
+  {
+    for(int j = 0;j < current_node.Blocks[i].instance.size();++j)
+    {
+      if(current_node.Blocks[i].instance[j].isRead)
+      {
+        Blocks[idx].Cpoint.x = (float)current_node.Blocks[i].instance[j].placedCenter.x / est_Size.x;
+        Blocks[idx].Cpoint.y = (float)current_node.Blocks[i].instance[j].placedCenter.y / est_Size.y;
+        std::cout<<"update_pos: "<<Blocks[idx].blockname<<" Cpoint:="<<current_node.Blocks[i].instance[j].placedCenter.x<<" "<<current_node.Blocks[i].instance[j].placedCenter.y<<endl;
+      }
+      
+      // Blocks[idx].Cpoint.x = 0;
+      // Blocks[idx].Cpoint.y = 0;
+      idx++;
+      if(idx==originalBlockCNT)//bug 
+      {
+        return;//bug 
+      }
+    }
+  }
 }
