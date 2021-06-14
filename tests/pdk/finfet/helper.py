@@ -57,9 +57,12 @@ def place(cv, c, ox, oy):
 
 
 def get_test_id():
-    t = os.environ.get('PYTEST_CURRENT_TEST')
-    t = t.split(' ')[0].split(':')[-1]
-    t = t.replace('[', '_').replace(']', '').replace('-', '_')
+    try:
+        t = os.environ.get('PYTEST_CURRENT_TEST')
+        t = t.split(' ')[0].split(':')[-1]
+        t = t.replace('[', '_').replace(']', '').replace('-', '_')
+    except:
+        t = 'debug_run'
     return t
 
 
@@ -109,7 +112,7 @@ def run_example(example, n=8, cleanup=True):
     run_dir.mkdir(parents=True)
     os.chdir(run_dir)
 
-    args = [str(example), '-p', str(pdk_dir), '-l','INFO', '-n', str(n)]
+    args = [str(example), '-p', str(pdk_dir), '-l','DEBUG', '-n', str(n)]
     results = align.CmdlineParser().parse_args(args)
     assert results is not None, f"{example.name}: No results generated"
     
