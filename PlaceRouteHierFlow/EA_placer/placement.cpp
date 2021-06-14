@@ -2110,9 +2110,9 @@ void Placement::addNet_for_one_split_Blocks(int blockID, Ppoint_I num)
   std::cout << "add net for one splited blocks: debug 0" << std::endl;
   vector<vector<int>> ID_array;
   ID_array.clear();
-  int id = 0;
   for (int i = 0; i < num.x; ++i)
   {
+    int id = 0;
     vector<int> row;
     row.clear();
     for (int j = 0; j < num.y; ++j)
