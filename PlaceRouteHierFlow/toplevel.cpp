@@ -347,27 +347,25 @@ int toplevel( const std::vector<std::string>& argv) {
 
     logger->debug("Checkpoint : before place");
     DB.PrintHierNode(current_node);
+    #ifdef analytical_placer
     //EA placer
     Placement EA_placer;
-
     EA_placer.set_dummy_net_weight(dummy_init_weight,dummy_init_rate,dummy_init_weight);
     EA_placer.place(current_node);
-
     PlacerIfc curr_plc1(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
     current_node = curr_plc1.getNode(0);
-
-
     // AFTER FIRST ILP, RUN THE FOLLOWING LINE
     EA_placer.restore_MS(current_node);
-
     // Do the ILP again
-
     PlacerIfc curr_plc(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
-    
     return 0;
     // Placement
     std::vector<PnRDB::hierNode>& nodeVec(curr_plc.get());
-
+    logger->debug("Checkpoint: generated {0} placements",nodeVec.size());
+    #endif
+    // Placement
+    PlacerIfc curr_plc(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo));
+    std::vector<PnRDB::hierNode>& nodeVec(curr_plc.get());
     logger->debug("Checkpoint: generated {0} placements",nodeVec.size());
     //insert guard ring
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
