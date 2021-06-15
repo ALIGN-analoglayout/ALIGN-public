@@ -8,7 +8,7 @@ Created on Fri Nov  2 21:33:22 2018
 import networkx as nx
 from networkx.algorithms import isomorphism
 
-from .merge_nodes import merge_nodes, merged_value
+from .merge_nodes import merge_nodes, merged_value,convert_unit
 from .util import get_next_level
 from .find_constraint import FindSymmetry
 from .common_centroid_cap_constraint import merge_caps
@@ -274,7 +274,7 @@ class Annotate:
                             for x in const.__fields_set__}
                         assert 'constraint' in sconst
                         logger.debug(f"transferred constraint instances {Gsub} from {const} to {sconst}")
-                        if len(sconst['instances']) > 0:
+                        if len(sconst['instances']) > 1:
                             sub_const.append(sconst)
         else:
             sub_const = []
@@ -358,10 +358,12 @@ class Annotate:
                             Grest = self._reduce_graph(
                                 G2, lib_name,mapped_subgraph_list, sconst)
                         else:
-                            Grest = subgraph
-
-                        check_nodes(self.hier_graph_dict)
-
+                            Grest = G2
+                            for n in remove_nodes:
+                                logger.debug(Grest.nodes[Gsub[n]]["values"])
+                                for p,v in Grest.nodes[Gsub[n]]["values"].items():
+                                    Grest.nodes[Gsub[n]]["values"][p] = convert_unit(v)
+                                
                         subckt = HierDictNode(
                             name = 'undefined',
                             graph = Grest,
@@ -370,7 +372,8 @@ class Annotate:
                             ports_weight = ports_weight,
                             constraints = sconst,
                             size = len(subgraph.nodes())
-                        )
+                            )
+
                         self.multiple_instances(G1,new_node,lib_name,subckt)
                         check_nodes(self.hier_graph_dict)
             logger.debug(f"Finished one branch: {lib_name}")
@@ -476,6 +479,7 @@ class Annotate:
         if block_name not in self.hier_graph_dict.keys():
             logger.debug(f"adding sub_ckt: {update_name} {val_n_type} ")
             self.hier_graph_dict[block_name]=subckt.copy(update={'name': block_name})
+            check_nodes(self.hier_graph_dict)
             self.hier_graph_dict[block_name]['id']=[val_n_type]
         elif val_n_type in self.hier_graph_dict[block_name]['id']:
             inst_copy = '<'+ str(self.hier_graph_dict[block_name]['id'].index(val_n_type))+'>'
@@ -564,4 +568,4 @@ def check_nodes(graph_dict):
                 for param,value in attr["values"].items():
                     if param == 'model': continue
                     assert (isinstance(value, int) or isinstance(value, float)) or value=="unit_size", \
-                        "ERROR: Parameter value %r not defined" %(str(value)+' of '+ node)
+                        "ERROR: Parameter value %r not defined" %(str(value)+' of '+str(type(value))+' of'+ node)
