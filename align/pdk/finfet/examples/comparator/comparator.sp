@@ -1,26 +1,17 @@
-.subckt comparator clk vcc vin vip von vop vss
-
-mn0 vcom clk vss vss n nfin=6 nf=2 l=14e-9 m=8
-
-mn1 vin_d vin vcom vss n nfin=6 nf=2 l=14e-9 m=16
-mn2 vip_d vip vcom vss n nfin=6 nf=2 l=14e-9 m=16
-
-mn3 vin_o vip_o vin_d vss n nfin=6 nf=2 l=14e-9 m=8
-mn4 vip_o vin_o vip_d vss n nfin=6 nf=2 l=14e-9 m=8
-
-mp5 vin_o vip_o vcc vcc p nfin=6 nf=2 l=14e-9 m=4
-mp6 vip_o vin_o vcc vcc p nfin=6 nf=2 l=14e-9 m=4
-
-mp7 vin_d clk vcc vcc p nfin=6 nf=2 l=14e-9 m=1
-mp8 vip_d clk vcc vcc p nfin=6 nf=2 l=14e-9 m=1
-
-mp9 vin_o clk vcc vcc p nfin=6 nf=2 l=14e-9 m=1
-mp10 vip_o clk vcc vcc p nfin=6 nf=2 l=14e-9 m=1
-
-mp11 vop vip_o vcc vcc p nfin=6 nf=2 l=14e-9 m=1
-mn13 vop vip_o vss vss n nfin=6 nf=2 l=14e-9 m=1
-
-mp12 von vin_o vcc vcc p nfin=6 nf=2 l=14e-9 m=1
-mn14 von vin_o vss vss n nfin=6 nf=2 l=14e-9 m=1
-
+.subckt comparator clk vcc_0p9 vin vip von vop vssx
+mmp8 vip_d clk vcc_0p9 vcc_0p9 p w=360e-9 l=40e-9 m=1 nf=2
+mmp5 vin_o vip_o vcc_0p9 vcc_0p9 p w=360e-9 l=40e-9 m=5 nf=2
+mmp14 vop vip_o vcc_0p9 vcc_0p9 p w=360e-9 l=40e-9 m=1 nf=2
+mmp10 vip_o clk vcc_0p9 vcc_0p9 p w=360e-9 l=40e-9 m=2 nf=2
+mmp13 von vin_o vcc_0p9 vcc_0p9 p w=360e-9 l=40e-9 m=1 nf=2
+mmp7 vin_d clk vcc_0p9 vcc_0p9 p w=360e-9 l=40e-9 m=1 nf=2
+mmp9 vin_o clk vcc_0p9 vcc_0p9 p w=360e-9 l=40e-9 m=2 nf=2
+mmp6 vip_o vin_o vcc_0p9 vcc_0p9 p w=360e-9 l=40e-9 m=5 nf=2
+mmn0 vcom clk vssx vssx n w=2.88e-6 l=40e-9 m=1 nf=16
+mmn11 von vin_o vssx vssx n w=360e-9 l=40e-9 m=1 nf=2
+mmn12 vop vip_o vssx vssx n w=360e-9 l=40e-9 m=1 nf=2
+mmn2 vip_d vip vcom vssx n w=360e-9 l=40e-9 m=18 nf=2
+mmn3 vin_o vip_o vin_d vssx n w=360e-9 l=40e-9 m=8 nf=2
+mmn4 vip_o vin_o vip_d vssx n w=360e-9 l=40e-9 m=8 nf=2
+mmn1 vin_d vin vcom vssx n w=360e-9 l=40e-9 m=18 nf=2
 .ends comparator

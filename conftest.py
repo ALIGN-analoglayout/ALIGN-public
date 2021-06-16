@@ -1,6 +1,6 @@
 import pytest
-from align.utils.logging import reconfigure_loglevels
-reconfigure_loglevels(console_level='WARNING')
+from align.utils import logmanager
+logmanager.reconfigure_loglevels(console_level='WARNING')
 
 def pytest_addoption(parser):
     parser.addoption(
