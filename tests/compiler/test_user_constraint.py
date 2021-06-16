@@ -5,10 +5,6 @@ import json
 from align.compiler.compiler import compiler, compiler_output
 from align.schema.checker import Z3Checker, CheckerError
 
-@pytest.fixture
-def test_compiler_hsc(dir_name):
-    return (updated_ckt, dir_name)
-
 @pytest.mark.parametrize('dir_name', ['high_speed_comparator_orderblock', \
     'high_speed_comparator_symmblock', 'high_speed_comparator_portlocation', 'high_speed_comparator_multiconnection', \
         'high_speed_comparator_align', 'high_speed_comparator_symmnet'])
