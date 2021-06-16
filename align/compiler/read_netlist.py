@@ -246,7 +246,7 @@ class SpiceParser:
         logger.debug(f'Finished reading subckt: {subckt_name}')
 
     def _parse_subckt(self, line, fp_l):
-        """ Read all lines in subckt"""
+        """ Read all lines in subckt""" # TODO sy: Check there exists a generator in PDK for this instance
         insts = []
         subckt_param_all = {}
         while not (line.lower().startswith('end')
