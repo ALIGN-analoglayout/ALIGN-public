@@ -5,6 +5,7 @@
 #include <string>
 #include <climits>
 #include <set>
+#include <cmath>
 
 #include "../PnRDB/datatype.h"
 
@@ -82,6 +83,9 @@ class Rect {
     const int xcenter() const { return (_ll.x() + _ur.x())/2; }
     const int ycenter() const { return (_ll.y() + _ur.y())/2; }
 
+    const bool xoverlap(const Rect& r) const { return xmin() <= r.xmax() && xmax() >= r.xmin(); }
+    const bool yoverlap(const Rect& r) const { return ymin() <= r.ymax() && ymax() >= r.ymin(); }
+
     void fix()
     {
       if (xmin() > xmax()) std::swap(xmin(), xmax());
@@ -156,13 +160,21 @@ class Rect {
 
     int xdist(const Rect& r) const
     {
-      return std::min(std::abs(r.xmin() - xmin()), std::abs(r.xmax() - xmax()));
+      return std::min(std::min(std::abs(r.xmin() - xmin()), std::abs(r.xmax() - xmax())),
+          std::min(std::abs(r.xmin() - xmax()), std::abs(r.xmax() - xmin())));
     }
     int ydist(const Rect& r) const
     {
-      return std::min(std::abs(r.ymin() - ymin()), std::abs(r.ymax() - ymax()));
+      return std::min(std::min(std::abs(r.ymin() - ymin()), std::abs(r.ymax() - ymax())),
+          std::min(std::abs(r.ymin() - ymax()), std::abs(r.ymax() - ymin())));
     }
-    int dist(const Rect&r) const { return std::min(xdist(r), ydist(r)); }
+    int dist(const Rect&r, const bool euc = true) const
+    {
+      auto dx(xdist(r));
+      auto dy(ydist(r));
+      if (euc) return sqrt(dx * dx + dy * dy);
+      return dx + dy;
+    }
 };
 
 typedef vector<Rect> Rects;
@@ -286,19 +298,19 @@ enum class NodeColor {
 
 class Node {
   private:
-    string _name;
-    NodeType _nt;
+    const string _name;
+    const NodeType _nt;
     ConstEdges _edges;
     unsigned _span;
     NodeColor _nc;
     long _deltaarea;
     bool _black;
-    int _dist;
+    int _dist, _maxdist;
+    const geom::Rect _bbox;
 
   public:
-    Node(const string& name, const NodeType nt = NodeType::Tap, const long& deltaarea = 0, const bool& isb = false, const int dist = 0) : _name(name), _nt(nt), _span(0), _nc(NodeColor::White), _deltaarea(deltaarea), _black(isb), _dist(dist) {}
+    Node(const string& name, const NodeType nt, const long& deltaarea, const bool& isb, const int dist, const geom::Rect& bbox) : _name(name), _nt(nt), _span(0), _nc(NodeColor::White), _deltaarea(deltaarea), _black(isb), _dist(dist), _bbox(bbox), _maxdist(0) {}
     const NodeType& nodeType() const { return _nt; }
-    NodeType& nodeType() { return _nt; }
 
     const string type() const { return (_nt == NodeType::Tap) ? "T" : "A"; }
     const string& name() const { return _name; }
@@ -311,6 +323,9 @@ class Node {
     void setSpan(const unsigned n) { _span = n; }
     unsigned span() const { return _span; }
 
+    int radius() const { return _maxdist; }
+    void computeRadius();
+
     void setColor(const NodeColor& nc) { _nc = nc; }
     const NodeColor& nodeColor() const { return _nc; }
 
@@ -320,24 +335,30 @@ class Node {
 };
 
 struct NodeComp {
+  const bool _top;
+  NodeComp(const bool top = false) : _top(top) {}
   bool operator() (const Node* const& n1, const Node* const& n2) const {
     if (n1 == nullptr) return false;
     if (n2 == nullptr) return true;
-    if (n1->dist() == n2->dist()) {
-      if (n1->deltaArea() == n2->deltaArea()) return n1->name() < n2->name();
-      return n1->deltaArea() < n2->deltaArea();
+    if (!_top || n1->radius() == n2->radius()) {
+      if (n1->dist() == n2->dist()) {
+        if (n1->deltaArea() == n2->deltaArea()) return n1->name() < n2->name();
+        return n1->deltaArea() < n2->deltaArea();
+      }
+      return n1->dist() < n2->dist();
     }
-    return n1->dist() < n2->dist();
+    return n1->radius() < n2->radius();
   }
 };
 
-typedef set<const Node*, NodeComp> NodeSet;
+typedef set<const Node*, NodeComp> NodeSetWComp;
+typedef set<const Node*> NodeSet;
 
 class Edge {
   private:
     const Node *_u, *_v;
     string _name;
-  
+
   public:
     Edge(const Node* n1, const Node* n2, const string& name) : _u(n1), _v(n2), _name(name) {}
     const string& name() const { return _name; }
@@ -358,14 +379,14 @@ class Graph {
     Graph();
     ~Graph();
 
-    void addNode(const string& name, const NodeType& nt, const long& da = 0, const bool isb = false, const int dist = 0);
+    void addNode(const string& name, const NodeType& nt, const long& da = 0, const geom::Rect& bbox = geom::Rect(), const bool isb = false, const int dist = 0);
     void addEdge(const string& u, const string& v, const string& name = "");
 
     const Edge* findEdge(const string& u, const string& v) const;
 
     void print() const;
 
-    NodeSet dominatingSet(bool removeAlltaps) const;
+    NodeSet dominatingSet(const bool removeAlltaps, const bool isTop) const;
 
     void addSymPairs(const std::map<std::string, std::string>& counterparts);
 
@@ -393,7 +414,7 @@ class TapRemoval {
     ~TapRemoval();
     bool valid() const { return !_primitives.empty() && !_primitivesWoTap.empty(); }
     //void createInstances(const PrimitiveData::PlMap& plmap);
-    long deltaArea(std::map<std::string, int>* swappedIndices = nullptr, bool removeAllTaps = false) const;
+    long deltaArea(std::map<std::string, int>* swappedIndices = nullptr, const bool removeAllTaps = false, const bool isTop = false) const;
     void setSymPairs(const std::map<std::string, std::string>& sympairs) { _symPairs = std::move(sympairs); }
     void rebuildInstances(const PrimitiveData::PlMap& plmap);
     bool containsPrimitive(const string& prim) const { return _primitives.find(prim) != _primitives.end(); }
