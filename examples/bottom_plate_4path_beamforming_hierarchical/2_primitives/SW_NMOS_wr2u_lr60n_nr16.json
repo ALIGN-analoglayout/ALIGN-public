@@ -1,0 +1,86 @@
+{
+  "bbox": [
+    0,
+    0,
+    10000,
+    7540
+  ],
+  "globalRoutes": [],
+  "globalRouteGrid": [],
+  "terminals": [
+    {
+      "netName": "S",
+      "pin": "S",
+      "layer": "M4",
+      "rect": [
+        2435,
+        2240,
+        7565,
+        4410
+      ]
+    },
+    {
+      "netName": "G",
+      "pin": "G",
+      "layer": "M3",
+      "rect": [
+        8020,
+        2695,
+        8200,
+        4780
+      ]
+    },
+    {
+      "netName": "D",
+      "pin": "D",
+      "layer": "M2",
+      "rect": [
+        2650,
+        5240,
+        7350,
+        6540
+      ]
+    },
+    {
+      "netName": "DNWP",
+      "pin": "DNWP",
+      "layer": "M1",
+      "rect": [
+        8760,
+        1030,
+        8970,
+        6290
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "M1",
+      "rect": [
+        1000,
+        1000,
+        8610,
+        6510
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "M2",
+      "rect": [
+        1785,
+        1530,
+        8200,
+        5040
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "M3",
+      "rect": [
+        1785,
+        2500,
+        7930,
+        5040
+      ]
+    }
+  ]
+}

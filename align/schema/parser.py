@@ -104,8 +104,9 @@ class SpiceParser:
             assert False
 
     def _queue_constraint(self, annotation):
-        assert self._constraints is not None
         constraint = annotation.split('@:')[1].strip()
+        assert self._constraints is not None, \
+            f'Constraint {constraint} can only be defined within a .SUBCKT \nCurrent scope:{self._scope[-1]}'
         self._constraints.append(constraint)
 
     @staticmethod
@@ -152,8 +153,6 @@ class SpiceParser:
             self._scope[-1].elements.append(Instance(name=name, model=model.name, pins=pins, parameters=kwargs))
 
     def _process_constraints(self):
-        assert hasattr(self._scope[-1], 'constraints'), \
-            f'Constraint {repr(constraint)} can only be defined within a .SUBCKT \nCurrent scope:{self._scope[-1]}'
         with set_context(self._scope[-1].constraints):
             for constraint in self._constraints:
                 self._scope[-1].constraints.append(eval(constraint, {}, constraint_dict))

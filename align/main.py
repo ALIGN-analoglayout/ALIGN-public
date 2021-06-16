@@ -13,7 +13,7 @@ from .primitive import generate_primitive
 from .pnr import generate_pnr
 from .gdsconv.json2gds import convert_GDSjson_GDS
 from .utils.gds2png import generate_png
-from .utils.logging import reconfigure_loglevels
+from .utils import logmanager
 
 import logging
 logger = logging.getLogger(__name__)
@@ -201,7 +201,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
 
     steps_to_run = build_steps( flow_start, flow_stop)
 
-    reconfigure_loglevels(file_level=log_level, console_level=verbosity)
+    logmanager.reconfigure_loglevels(file_level=log_level, console_level=verbosity)
 
     if working_dir is None:
         working_dir = pathlib.Path.cwd().resolve()
