@@ -335,12 +335,15 @@ design::design(design& other, int mode) {
 }
 
 
-unsigned envTrDist = (getenv("TR_DIST_UU") != nullptr) ? std::atof(getenv("TR_DIST_UU")) : 0;
+const float envTrDist = (getenv("TR_DIST_UU") != nullptr) ? std::atof(getenv("TR_DIST_UU")) : -1.;
+const float envTrXDist = (getenv("TR_DIST_X_UU") != nullptr) ? std::atof(getenv("TR_DIST_X_UU")) : envTrDist;
+const float envTrYDist = (getenv("TR_DIST_Y_UU") != nullptr) ? std::atof(getenv("TR_DIST_Y_UU")) : envTrDist;
+
 design::design(PnRDB::hierNode& node) {
 
   auto logger = spdlog::default_logger()->clone("placer.design.design");
 
-  _tapRemover = std::make_shared<TapRemoval>(node, (envTrDist == 0 ? 60000 : envTrDist*2000));
+  _tapRemover = std::make_shared<TapRemoval>(node, (envTrXDist < 0 ? 60000 : envTrXDist*2000), (envTrYDist < 0 ? 60000 : envTrXDist*2000));
   bias_Vgraph=node.bias_Vgraph; // from node
   bias_Hgraph=node.bias_Hgraph; // from node
   isTop=node.isTop;
