@@ -409,7 +409,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
             (pathlib.Path(opath) / f'{concrete_name}.placement_verilog.json').write_text(scaled_placement_verilog_d.json(indent=2,sort_keys=True))
 
             standalone_overlap_checker( scaled_placement_verilog_d, concrete_name)
-            check_placement( scaled_placement_verilog_d, scale_factor)
+            #check_placement( scaled_placement_verilog_d, scale_factor)
 
             if gui:
                 nets_d = gen_netlist( placement_verilog_d, concrete_name)

@@ -7,6 +7,10 @@
 #include <boost/geometry.hpp>
 #include <boost/geometry/index/rtree.hpp>
 
+#include "lp_lib.h"
+
+#define DEBUG_LP_TAP 0
+
 namespace bg = boost::geometry;
 namespace bgi = boost::geometry::index;
 typedef bg::model::point<int, 2, bg::cs::cartesian> bgPt;
@@ -15,19 +19,6 @@ typedef std::pair<bgBox, size_t> bgVal;
 typedef bgi::rtree<bgVal, bgi::quadratic<8, 4> > RTree;
 
 using namespace std;
-typedef std::vector<std::string> Strings;
-
-static Strings splitString(const std::string& s)
-{
-  Strings strs;
-  std::istringstream iss(s);
-  std::string tmps;
-  while (iss >> tmps) {
-    strs.push_back(tmps);
-  }
-  return move(strs);
-}
-
 
 namespace geom {
 
@@ -314,6 +305,125 @@ NodeSet Graph::dominatingSet(const bool removeAllTaps, const bool isTop) const
   return dom;
 }
 
+NodeSet Graph::dominatingSetILP(const bool isTop) const
+{
+  auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.dominatingSet");
+  if (isTop) {
+    for (auto& n : _nodes) {
+      n->computeRadius();
+      //logger->info("name : {0} rad {1} {2}", n->name(), n->radius(), n->bbox().toString());
+    }
+    //logger->info("");
+  }
+  auto ncomp = NodeComp(isTop);
+  NodeSetWComp rankedNodes(ncomp);
+  NodeSet dom;
+  size_t isoActive(0);
+  for (auto& n : _nodes) {
+    //logger->info("node : {0} {1}", n->name(), n->isBlack());
+    if (n->isBlack()) {
+      dom.insert(n);
+      const_cast<Node*>(n)->setColor(NodeColor::Black);
+      for (auto& e : n->edges()) {
+        const Node* nbr = (e->v() == n) ? e->u() : e->v();
+        if (NodeColor::Black != nbr->nodeColor()) {
+          const_cast<Node*>(nbr)->setColor(NodeColor::Gray);
+        }
+      }
+    }
+  }
+
+  //Nodes tapNodes;
+  //tapNodes.reserve(_nodes.size() - dom.size());
+  for (auto& n : _nodes) {
+    rankedNodes.insert(n);
+  }
+  unsigned rankctr(0);
+  map<const Node*, unsigned> nodeRank;
+  for (auto& n : rankedNodes) {
+    nodeRank[n] = rankctr++;
+  }
+  std::unique_ptr<lprec> lp(make_lp(0, _nodes.size()));
+  set_verbose(lp.get(), IMPORTANT);
+  map<const Node*, int> nodeIndex;
+  for (unsigned i = 0; i < _nodes.size(); ++i) {
+    set_binary(lp.get(), i + 1, TRUE);
+    nodeIndex[_nodes[i]] = static_cast<int>(i + 1);
+    char nm[_nodes[i]->name().size() + 1];
+    std::strcpy(nm, _nodes[i]->name().c_str());
+#if DEBUG_LP_TAP
+    set_col_name(lp.get(), i + 1, nm);
+#endif
+  }
+
+  for (unsigned i = 0; i < _nodes.size(); ++i) {
+    const auto& n = _nodes[i];
+    const auto numE = n->edges().size() + 1;
+    int col[numE];
+    double row[numE];
+    unsigned j = 0;
+    row[j] = 1.;
+    const int index = static_cast<int>(i + 1);
+    col[j++] = index;
+    for (auto& e : n->edges()) {
+      const auto& other = (e->u() == n) ? e->v() : e->u();
+      row[j] = 1.;
+      col[j++] = nodeIndex[other];
+    }
+    if (!add_constraintex(lp.get(), numE, row, col, GE, 1.)) {
+      logger->error("error in adding constrint for {0}", n->name());
+    }
+    auto itSym = _nodeSymPairs.find(n);
+    if (itSym != _nodeSymPairs.end()) {
+      int c[2] = {index, nodeIndex[itSym->second]};
+      double r[2] = {1., -1.};
+      if (!add_constraintex(lp.get(), 2, r, c, EQ, 0.)) {
+        logger->error("error in adding constrint for {0}", n->name(), itSym->second->name());
+      }
+    }
+  }
+
+  for (auto& n : dom) {
+    int col[1] = {nodeIndex[n]};
+    double row[1] = {1.};
+    if (!add_constraintex(lp.get(), 1, row, col, EQ, 1.)) {
+      logger->error("error in adding constrint for {0}", n->name());
+    }
+  }
+
+  double rowObj[_nodes.size()];
+  for (unsigned i = 0; i < _nodes.size(); ++i) {
+    const auto& n = _nodes[i];
+    if (dom.find(n) == dom.end() && n->nodeType() == NodeType::Tap) {
+      rowObj[i] = nodeRank[n];
+    } else {
+      rowObj[i] = 0;
+    }
+  }
+  set_obj_fn(lp.get(), rowObj);
+#if DEBUG_LP_TAP
+  print_lp(lp.get());
+  set_outputfile(lp.get(), "lp.txt");
+#endif
+  set_minim(lp.get());
+  set_timeout(lp.get(), 1);
+  double solution[_nodes.size()];
+  int ret = solve(lp.get());
+  if (ret != 0 && ret != 1) {
+    dom.clear();
+    return dom;
+  }
+
+  get_variables(lp.get(), solution);
+  for (unsigned i = 0; i < _nodes.size(); ++i) {
+    if (solution[i] > 0 && _nodes[i]->nodeType() == NodeType::Tap) {
+      dom.insert(_nodes[i]);
+    }
+  }
+
+  return dom;
+}
+
 void Graph::addSymPairs(const std::map<std::string, std::string>& counterparts)
 {
   for (auto& n : _nodes) {
@@ -495,7 +605,21 @@ long TapRemoval::deltaArea(map<string, int>* swappedIndices, const bool removeAl
   long deltaarea(0);
   if (_instances.empty()) return deltaarea;
   if (_graph == nullptr || (_xdist == 0 && _ydist == 0) || !valid()) return deltaarea;
-  auto nodes = _graph->dominatingSet(removeAllTaps, isTop);
+  DomSetGraph::NodeSet nodes;
+  if (removeAllTaps) {
+    nodes = _graph->dominatingSet(removeAllTaps, isTop);
+  } else {
+      nodes = _graph->dominatingSetILP(isTop);
+      if (nodes.empty()) {
+        nodes = _graph->dominatingSet(removeAllTaps, isTop);
+      }
+      /*for (auto& n : nodes) {
+        logger->info("dom set : {0}", n->name());
+        }
+        for (auto& n : ilpnodes) {
+        logger->info("ilp dom set : {0}", n->name());
+        }*/
+  }
 
   //logger->info("Found {0} nodes in dominating set {1} {2}", nodes.size(), _xdist, _ydist);
 

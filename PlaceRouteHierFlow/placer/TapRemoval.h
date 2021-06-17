@@ -387,6 +387,7 @@ class Graph {
     void print() const;
 
     NodeSet dominatingSet(const bool removeAlltaps, const bool isTop) const;
+    NodeSet dominatingSetILP(const bool isTop) const;
 
     void addSymPairs(const std::map<std::string, std::string>& counterparts);
 
