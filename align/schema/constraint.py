@@ -508,7 +508,12 @@ class MatchBlocks(SoftConstraint):
     TODO: Can be replicated by Enclose??
     '''
     instances: List[str]
-
+    
+class DontTouch(SoftConstraint):
+    '''
+    TODO: Can be replicated by Enclose??
+    '''
+    instances: List[str]
 
 class SymmetricBlocks(SoftConstraint):
     pairs: List[List[str]]
@@ -634,6 +639,7 @@ ConstraintType = Union[
     CreateAlias,
     GroupBlocks,
     MatchBlocks,
+    DontTouch,
     BlockDistance,
     HorizontalDistance,
     VerticalDistance,
@@ -658,6 +664,9 @@ class ConstraintDB(types.List[ConstraintType]):
 
     def _check(self, constraint):
         assert constraint.parent is not None, 'parent is not set'
+        print("kunal",constraint)
+        print("kunal parent",constraint.parent)
+        print("kunal parent parent",constraint.parent.parent)
         assert constraint.parent.parent is not None, 'parent.parent is not set'
         if self._checker and hasattr(constraint, 'check'):
             try:

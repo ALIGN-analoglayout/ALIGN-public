@@ -49,6 +49,23 @@ class ConstraintParser:
                 node.constraints.extend(
                     constraint.ConstraintDB.parse_file(json_path)
                 )
+                inst_list = []
+                
+                for const in node.constraints:
+                    if hasattr(const, 'instances') and len(const.instances) > 1:
+                        inst_list.extend(const.instances)
+                        x = const.instances
+                    elif hasattr(const, 'pairs'):
+                        for pair in const.pairs:
+                            inst_list.extend(pair)
+                    elif hasattr(const, 'pins1') and hasattr(const, 'pins2'):
+                        for pin in const.pins1:
+                            inst_list.append(pin.split('/')[0])
+                        for pin in const.pins2:
+                            inst_list.append(pin.split('/')[0])
+                node.constraints.append({'instances':list(set(inst_list)),
+                   'constraint':'DontTouch'})
+
         elif (self.input_dir / (design_name+'.const')).is_file():
             # TODO: Reimplement using pydantic-cli if you really want this
             raise NotImplementedError(
