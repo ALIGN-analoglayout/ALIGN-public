@@ -1698,7 +1698,7 @@ float Placement::readInputNode(PnRDB::hierNode &current_node)
 
   for (vector<PnRDB::blockComplex>::iterator it = current_node.Blocks.begin(); it != current_node.Blocks.end(); ++it)
   {
-    for (int i = 0; i < it->instNum; ++i)
+    for (int i = 0; i < 1; ++i)
     {
       block tempblock;
       //update block name
@@ -2201,6 +2201,17 @@ void Placement::Unify_blocks(float area, float scale_factor)
 Ppoint_F Placement::find_uni_cell()
 {
   Ppoint_F uni_cell_Dpoint;
+  float min_x = Blocks[0].Dpoint.x, min_y = Blocks[0].Dpoint.y;
+  float max_x = Blocks[0].Dpoint.x, max_y = Blocks[0].Dpoint.y;
+  for (int i = 1; i < originalBlockCNT; ++i){
+    min_x = min(min_x, Blocks[i].Dpoint.x);
+    min_y = min(min_y, Blocks[i].Dpoint.y);
+    max_x = max(max_x, Blocks[i].Dpoint.x);
+    max_y = max(max_y, Blocks[i].Dpoint.y);
+  }
+  uni_cell_Dpoint.x = (max_x / min_x <= 2) ? min_x : (max_x / 2);
+  uni_cell_Dpoint.y = (max_y / min_y <= 2) ? min_y : (max_y / 2);
+  /**
   uni_cell_Dpoint.x = Blocks[0].Dpoint.x;
   uni_cell_Dpoint.y = Blocks[0].Dpoint.y;
   int id = 0;
@@ -2215,6 +2226,7 @@ Ppoint_F Placement::find_uni_cell()
       uni_cell_Dpoint.y = Blocks[i].Dpoint.y;
     }
   }
+  **/
   // uni_cell_Dpoint = Blocks[id].Dpoint;
   return uni_cell_Dpoint;
 }
@@ -2227,11 +2239,11 @@ void Placement::readCC()
     string name = Blocks[i].blockname;
     std::size_t pos = name.find("_c");
 
-    std::cout << "find out cc in block" << name << std::endl;
     
     // int length_of_label = label.length();
-    if (pos!= string::npos)
+    if ((pos=name.find("_c"))!= string::npos || (pos=name.find("_C"))!= string::npos)
     {
+      std::cout << "find out cc in block" << name << std::endl;
       std::cout << "readCC: debug 0"  << std::endl;
       string label = name.substr(pos);
       Blocks[i].commonCentroid = 1;
@@ -2528,7 +2540,7 @@ void Placement::match_pairs(commonCentroid &CC, int dummyNum)
     //match the last piece of Standard cell and the center piece of standard cell into one pair
     {
       pair<int,int> cur_pair;
-      cur_pair.first = Blocks[id].spiltBlock[Blocks[id].spiltBlock.size()-1];
+      cur_pair.first = Blocks[id].spiltBlock.back();
       cur_pair.second = id;
       temp.push_back(cur_pair);
     }
@@ -3381,7 +3393,7 @@ void Placement::update_hiernode(PnRDB::hierNode &current_node, Ppoint_F uni_cell
   int idx=0;
   for(int i = 0;i < current_node.Blocks.size();++i)
   {
-    for(int j = 0;j < current_node.Blocks[i].instance.size();++j)
+    for(int j = 0;j < 1;++j)
     {
       if(Blocks[idx].splited)
       {

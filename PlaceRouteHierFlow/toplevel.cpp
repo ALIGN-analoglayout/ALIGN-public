@@ -279,7 +279,7 @@ int route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::bbox 
 int toplevel( const std::vector<std::string>& argv) {
   
   auto logger = spdlog::default_logger()->clone("toplevel");
-  spdlog::set_level(spdlog::level::debug);
+  spdlog::set_level(spdlog::level::info);
 
   //
   // Enable or disable state saving in json at intermediate points
