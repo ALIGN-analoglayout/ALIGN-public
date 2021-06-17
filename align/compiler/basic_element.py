@@ -295,6 +295,6 @@ def _parse_inst(line):
     elif line.startswith('*'):
         logger.debug(f"comment: {line}")
     else:
-        logger.warning(f"Extraction error: {line} (unidentified line)")
+        logger.warning(f"Unidentified line: {line}")
 
     return device
