@@ -10,6 +10,52 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
   UR.x = INT_MIN;
   Blocks.resize(mydesign.Blocks.size());
   Aspect_Ratio_weight = mydesign.Aspect_Ratio_weight;
+  //first correct global placement result
+  for (auto symmetry : mydesign.SPBlocks) {
+    if (symmetry.axis_dir == placerDB::V) {
+      int center_x = 0;
+      for (auto i_selfsym:symmetry.selfsym){
+        center_x += node.Blocks[i_selfsym.first].instance[0].placedCenter.x;
+      }
+      for(auto i_sympair:symmetry.sympair){
+        center_x += node.Blocks[i_sympair.first].instance[0].placedCenter.x;
+        center_x += node.Blocks[i_sympair.second].instance[0].placedCenter.x;
+      }
+      center_x /= (symmetry.selfsym.size() + symmetry.sympair.size() * 2);
+      for (auto i_selfsym:symmetry.selfsym){
+         node.Blocks[i_selfsym.first].instance[0].placedCenter.x=center_x;
+      }
+      for(auto i_sympair:symmetry.sympair){
+        int diff = center_x - (node.Blocks[i_sympair.first].instance[0].placedCenter.x + node.Blocks[i_sympair.second].instance[0].placedCenter.x) / 2;
+        node.Blocks[i_sympair.first].instance[0].placedCenter.x += diff;
+        node.Blocks[i_sympair.second].instance[0].placedCenter.x += diff;
+        int center_y = (node.Blocks[i_sympair.first].instance[0].placedCenter.y + node.Blocks[i_sympair.second].instance[0].placedCenter.y) / 2;
+        node.Blocks[i_sympair.first].instance[0].placedCenter.y = center_y;
+        node.Blocks[i_sympair.second].instance[0].placedCenter.y = center_y;
+      }
+    } else {
+      int center_y = 0;
+      for (auto i_selfsym:symmetry.selfsym){
+        center_y += node.Blocks[i_selfsym.first].instance[0].placedCenter.y;
+      }
+      for(auto i_sympair:symmetry.sympair){
+        center_y += node.Blocks[i_sympair.first].instance[0].placedCenter.y;
+        center_y += node.Blocks[i_sympair.second].instance[0].placedCenter.y;
+      }
+      center_y/=(symmetry.selfsym.size() + symmetry.sympair.size() * 2);
+      for (auto i_selfsym:symmetry.selfsym){
+         node.Blocks[i_selfsym.first].instance[0].placedCenter.y=center_y;
+      }
+      for(auto i_sympair:symmetry.sympair){
+        int diff = center_y - (node.Blocks[i_sympair.first].instance[0].placedCenter.y + node.Blocks[i_sympair.second].instance[0].placedCenter.y) / 2;
+        node.Blocks[i_sympair.first].instance[0].placedCenter.y += diff;
+        node.Blocks[i_sympair.second].instance[0].placedCenter.y += diff;
+        int center_x = (node.Blocks[i_sympair.first].instance[0].placedCenter.x + node.Blocks[i_sympair.second].instance[0].placedCenter.x) / 2;
+        node.Blocks[i_sympair.first].instance[0].placedCenter.x = center_x;
+        node.Blocks[i_sympair.second].instance[0].placedCenter.x = center_x;
+      }
+    }
+  }
   block_order = vector<vector<int>>(mydesign.Blocks.size(), vector<int>(mydesign.Blocks.size(), 0));
   // from LSB to MSB: at the left, align to left, the same x center, align to right, at the right, reserved, reserved, reserved
   // below, align to the bottom, the same y center, align to the top, above, reserved, reserved, reserved
@@ -99,6 +145,17 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
           block_order[first][second] |= 0x0400;  // i and j have the same y center
         }
       }
+      for (unsigned int i = 0; i < symmetry.selfsym.size();i++){
+        for (unsigned int j = i + 1; j < symmetry.selfsym.size(); j++) {
+          int first = symmetry.selfsym[i].first, second = symmetry.selfsym[j].first;
+          if (first > second) std::swap(first, second);
+          block_order[first][second] |= 0x0004;
+          if (node.Blocks[first].instance[0].placedCenter.y < node.Blocks[second].instance[0].placedCenter.y)
+            block_order[first][second] |= 0x0100;
+          else
+            block_order[first][second] |= 0x1000;
+        }
+      }
     } else {
       for (auto pair : symmetry.sympair) {
         int first = pair.first, second = pair.second;
@@ -110,6 +167,17 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
         else {
           block_order[first][second] &= 0xff00;
           block_order[first][second] |= 0x0004;  // i and j have the same x center
+        }
+      }
+      for (unsigned int i = 0; i < symmetry.selfsym.size();i++){
+        for (unsigned int j = i + 1; j < symmetry.selfsym.size(); j++) {
+          int first = symmetry.selfsym[i].first, second = symmetry.selfsym[j].first;
+          if (first > second) std::swap(first, second);
+          block_order[first][second] |= 0x0400;
+          if (node.Blocks[first].instance[0].placedCenter.x < node.Blocks[second].instance[0].placedCenter.x)
+            block_order[first][second] |= 0x0001;
+          else
+            block_order[first][second] |= 0x0010;
         }
       }
     }
@@ -628,7 +696,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcI
     set_obj_fn(lp, row);
     set_minim(lp);
     set_timeout(lp, 10);
-    //print_lp(lp);
+    print_lp(lp);
     int ret = solve(lp);
     if (ret != 0 && ret != 1 && ret!= 25) return -1;
   }

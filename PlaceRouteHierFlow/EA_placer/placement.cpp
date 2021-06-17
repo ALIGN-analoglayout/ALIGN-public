@@ -2891,7 +2891,7 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
   std::cout<<"restore ms debug:4"<<std::endl;
   for(int i = 0;i < current_node.Blocks.size();++i)
   {
-    for(int j = 0;j < current_node.Blocks[i].instance.size();++j)
+    for(int j = 0;j < 1;++j)
     {
       if(Blocks[idx].splited)
       {
@@ -2949,7 +2949,7 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
       //find that id
       for(int ii=0;ii<current_node.Blocks.size();++ii)
       {
-        for(int jj=0;jj<current_node.Blocks[ii].instance.size();++jj)
+        for(int jj=0;jj<1;++jj)
         {
           if(id==cur_id)
           {
@@ -3276,7 +3276,7 @@ void Placement::writeback(PnRDB::hierNode &current_node)
   int idx = 0;
   for (vector<PnRDB::blockComplex>::iterator it = current_node.Blocks.begin(); it != current_node.Blocks.end(); ++it)
   {
-    for (int i = 0; i < it->instNum; ++i)
+    for (int i = 0; i < 1; ++i)
     {
       it->instance[i].placedCenter.x = (int)(est_Size.x * Blocks[idx].Cpoint.x);
       it->instance[i].placedCenter.y = (int)(est_Size.y * Blocks[idx].Cpoint.y);
@@ -3570,7 +3570,7 @@ void Placement::break_merged_cc(PnRDB::hierNode &current_node)
   for(int i = 0;i <  current_node.Blocks.size();++i)
   {
     std::cout<<"restore ms debug:1"<<std::endl;
-    for(int j = 0;j <  current_node.Blocks[i].instance.size();++j)
+    for(int j = 0;j <  1;++j)
     {
       std::cout<<"restore ms debug:2"<<std::endl;
       if(current_node.Blocks[i].instance[j].name.find(mark_of_cc)!=string::npos)
@@ -3649,7 +3649,7 @@ void Placement::update_pos(PnRDB::hierNode &current_node)
   
   for(int i = 0;i < current_node.Blocks.size();++i)
   {
-    for(int j = 0;j < current_node.Blocks[i].instance.size();++j)
+    for(int j = 0;j < 1;++j)
     {
       if(current_node.Blocks[i].instance[j].isRead)
       {
