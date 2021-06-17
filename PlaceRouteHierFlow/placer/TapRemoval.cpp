@@ -193,7 +193,7 @@ NodeSet Graph::dominatingSet(const bool removeAllTaps, const bool isTop) const
   if (isTop) {
     for (auto& n : _nodes) {
       n->computeRadius();
-      //logger->info("name : {0} rad {1} {2} {3}", n->name(), n->radius(), n->center().x(), n->center().y());
+      //logger->info("name : {0} rad {1} {2}", n->name(), n->radius(), n->bbox().toString());
     }
     //logger->info("");
   }
@@ -243,6 +243,10 @@ NodeSet Graph::dominatingSet(const bool removeAllTaps, const bool isTop) const
     //}
   }
 
+  //for (auto& n : whiteNodes) {
+  //  logger->info("{0}", n->name());
+  //}
+
 
   while (!whiteNodes.empty()) {
     //logger->info("white nodes : {0}", whiteNodes.size());
@@ -266,7 +270,7 @@ NodeSet Graph::dominatingSet(const bool removeAllTaps, const bool isTop) const
         maxW = n->span();
       }
     }
-    NodeSet maxNbrWhites;
+    NodeSetWComp maxNbrWhites(ncomp);
     for (auto& n : _nodes) {
       if (n->nodeType() != NodeType::Tap) continue;
       if (n->span() == maxW) {
@@ -303,6 +307,10 @@ NodeSet Graph::dominatingSet(const bool removeAllTaps, const bool isTop) const
   }
 
   //logger->info("dom size : {0}", dom.size());
+  //for (auto& n : dom) {
+  //  logger->info("dom {0}", n->name());
+  //}
+
   return dom;
 }
 
@@ -624,8 +632,8 @@ void TapRemoval::plot(const string& pltfile, const map<string, int>* swappedIndi
         ofs << "\t" << t.xmin() << ' ' << t.ymax() << "\n";
         ofs << "\t" << t.xmin() << ' ' << t.ymin() << "\n\n";
       }
+      ofs << "EOF\n\n";
     }
-    ofs << "EOF\n\n";
 
 
     ofs << endl << "pause -1 \'Press any key\'";
