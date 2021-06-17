@@ -49,22 +49,24 @@ class ConstraintParser:
                 node.constraints.extend(
                     constraint.ConstraintDB.parse_file(json_path)
                 )
-                inst_list = []
-                
-                for const in node.constraints:
-                    if hasattr(const, 'instances') and len(const.instances) > 1:
-                        inst_list.extend(const.instances)
-                        x = const.instances
-                    elif hasattr(const, 'pairs'):
-                        for pair in const.pairs:
-                            inst_list.extend(pair)
-                    elif hasattr(const, 'pins1') and hasattr(const, 'pins2'):
-                        for pin in const.pins1:
-                            inst_list.append(pin.split('/')[0])
-                        for pin in const.pins2:
-                            inst_list.append(pin.split('/')[0])
-                node.constraints.append({'instances':list(set(inst_list)),
-                   'constraint':'DontTouch'})
+
+            do_not_identify = []                
+            for const in node.constraints:
+                if hasattr(const, 'instances') and len(const.instances) > 1:
+                    do_not_identify.extend(const.instances)
+                elif hasattr(const, 'pairs'):
+                    for pair in const.pairs:
+                        do_not_identify.extend(pair)
+                elif hasattr(const, 'pins1') and hasattr(const, 'pins2'):
+                    for pin in const.pins1:
+                        do_not_identify.append(pin.split('/')[0])
+                    for pin in const.pins2:
+                        do_not_identify.append(pin.split('/')[0])
+            if len(do_not_identify) > 0:
+                do_not_identify = list(set(do_not_identify))
+                logger.debug(f'Following instances will be excluded from subcircuit identification: {do_not_identify} ')
+                with types.set_context(node.constraints):
+                    node.constraints.append({'instances': do_not_identify, 'constraint':'DoNotIdentify'})
 
         elif (self.input_dir / (design_name+'.const')).is_file():
             # TODO: Reimplement using pydantic-cli if you really want this

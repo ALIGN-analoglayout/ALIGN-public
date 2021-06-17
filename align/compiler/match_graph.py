@@ -70,7 +70,7 @@ class Annotate:
             mapped_graph_list = self._mapped_graph_list(G1, circuit_name, self.pg )
             const_list = self.hier_graph_dict[circuit_name]['constraints']
             self.hier_graph_dict[circuit_name]["graph"] = self._reduce_graph(G1, circuit_name, mapped_graph_list, const_list)
-            #Removing single instances of instances. TODO from sy: Generate might be a single instance constraint. The logic below will fail.
+            #Removing single instances of instances. TODO from sy: Generate or DoNotIdentify might be a single instance constraint. The logic below will fail.
             self.hier_graph_dict[circuit_name] = self.hier_graph_dict[circuit_name].copy(
                 update={"constraints" : [
                     const
@@ -175,7 +175,7 @@ class Annotate:
                     )
                 self._update_sym_const(name, G1, [const.name, *const.instances], inst_name, const_list)
                 self._update_block_const(name, G1, [const.name, *const.instances], inst_name, const_list)
-            #Removing single instances of instances. TODO from sy: Generate might be a single instance constraint. The logic below will fail.
+            #Removing single instances of instances. TODO from sy: DoNotIdentify might have a single instance!
             self.hier_graph_dict[name] = self.hier_graph_dict[name].copy(
                 update={"constraints" : [
                     const
@@ -274,7 +274,7 @@ class Annotate:
                             for x in const.__fields_set__}
                         assert 'constraint' in sconst
                         logger.debug(f"transferred constraint instances {Gsub} from {const} to {sconst}")
-                        if len(sconst['instances']) > 1:
+                        if len(sconst['instances']) > 1:    # TODO: sy Why this limitation?
                             sub_const.append(sconst)
         else:
             sub_const = []

@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 def remove_pg_pins(hier_graph_dict:dict,circuit_name, pg_pins):
     """
     removes power pins to be sent as signal by recursively finding all connections to power pins 
-    and removing them from subcircuit defination and instance calls
+    and removing them from subcircuit definition and instance calls
     for each circuit different power connection creates an extra subcircuit
     Required by PnR as it does not make power connections as ports
     Parameters
@@ -62,7 +62,7 @@ def remove_pg_pins(hier_graph_dict:dict,circuit_name, pg_pins):
                 
 def modify_pg_conn_subckt(hier_graph_dict:dict,circuit_name, pg_conn):
     """
-    creates a new subcircuit by removing power pins from a subcircuit defination 
+    creates a new subcircuit by removing power pins from a subcircuit definition 
     and change internal connections within the subcircuit
    
     Parameters
@@ -206,7 +206,7 @@ def define_SD(circuit,power,gnd,clk):
         low = list(set(gnd).intersection(set(ports)))
         logger.debug(f"using power: {high} and ground: {low}")
     else:
-        logger.warning("no power and gnd defination")
+        logger.warning("Power and ground nets not specified")
         return False
     if not high or not low:
         logger.info('no power and gnd in this circuit')
