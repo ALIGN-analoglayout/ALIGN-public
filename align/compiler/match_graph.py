@@ -348,8 +348,8 @@ class Annotate:
                             G1, lib_name, remove_nodes, matched_ports)
 
                         sconst = self._top_to_bottom_translation(name, G1, Gsub, new_node, lib_name, const_list)
-                        self._update_sym_const(name, G1, remove_nodes, new_node, const_list)
-                        self._update_block_const(name, G1, remove_nodes, new_node, const_list)
+                        # self._update_sym_const(name, G1, remove_nodes, new_node, const_list)
+                        # self._update_block_const(name, G1, remove_nodes, new_node, const_list)
 
                         logger.debug(f"adding new sub_ckt: {lib_name} {sconst}")
                         if lib_name not in self.all_lef:
@@ -403,6 +403,12 @@ class Annotate:
             if clk in Gsub:
                 return True
         return False
+    def _is_do_not_identify(self,Gsub,block_name):
+        di_const = [const for const in self.hier_graph_dict[block_name].constraints if isinstance(const, constraint.DoNotIdentify)]
+        for const in di_const:
+            if set(Gsub) & set(const.instances):
+                return True
+        return False
 
     def _mapped_graph_list(self,G1, name, POWER=None):
         """
@@ -437,9 +443,13 @@ class Annotate:
 
                     all_nd = [key for key in Gsub.keys() if 'net' not in G1.nodes[key]["inst_type"]]
                     logger.debug(f"matched inst: {all_nd}")
-                    if len(all_nd)>1 and self._is_clk(Gsub):
-                        logger.debug("Discarding match due to clock")
+                    if len(all_nd)>1 and self._is_clk(Gsub) :
+                        logger.debug(f"Discarding match due to clock {Gsub}")
                         continue
+                    elif len(all_nd)>1 and self._is_do_not_identify(Gsub,name):
+                        logger.debug(f"Discarding match due to user constraint {Gsub}")
+                        continue
+                    
                     if block_name.startswith('DP')  or block_name.startswith('CMC'):
                         if G1.nodes[all_nd[0]]['values'] == G1.nodes[all_nd[1]]['values'] and \
                             compare_balanced_tree(G1,get_key(Gsub,'DA'),get_key(Gsub,'DB'),[all_nd[0]],[all_nd[1]]) :
