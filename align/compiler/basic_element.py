@@ -7,6 +7,7 @@ Created on Wed Oct 10 13:18:49 2018
 
 import logging
 logger = logging.getLogger(__name__)
+from align.primitive import main
 
 class BasicElement:
     """
@@ -189,6 +190,25 @@ class BasicElement:
         }
 
 
+    def generic(self, generator):
+        """
+            Generic device/subcircuit for which PDK has a generator:
+            <instance name> <pins> <generator class> <parameters in key=value>
+            Example: xi0 p1 .. pN generic_type param1=val1 .. paramK=valK 
+        """
+        logger.debug(f"Querying generic {self.line}")
+        self.get_elements()
+        assert self.pins, f'Pins not found on {self.line}'
+        return {
+            "inst": self.inst,
+            "inst_type": "generic",
+            "real_inst_type": self.real_inst_type,
+            "ports": self.pins,
+            "edge_weight": self.pin_weight,
+            "values": parse_value(self.value)
+        }
+
+
 def parse_value(all_param, vtype=None):
     """ parse the value parameters for each block and returns a dict"""
     device_param_list = {}
@@ -207,15 +227,34 @@ def parse_value(all_param, vtype=None):
     return device_param_list
 
 
-def _parse_inst(line):
+def pdk_generator_exists(line, pdk_dir):
+    # Extract subcircuit name from the line
+    fields = line.strip().split()
+    if len(fields) == 1:
+        subckt_name = fields
+    else:
+        for idx, field in enumerate(fields):
+            if '=' in field:
+                break
+        subckt_name = fields[idx-1]
+    # Check if PDK has a generator for this line
+    try:
+        primitive_generator = main.get_generator(subckt_name, pdk_dir)
+        return primitive_generator
+    except:
+        return False
+
+
+def _parse_inst(line, pdk_dir=None):
     """ PARSE instance lines"""
 
     #line = line.replace("(", "").replace(")", "")
     element = BasicElement(line)
-    #logger.debug('READ line:'+line)
     device = None
     if not line.strip():
         return device
+    elif line.startswith('*'):
+        logger.debug(f"comment: {line}")
     elif line.strip().lower().startswith('m'):
         logger.debug(f'FOUND transistor : {line.strip()}')
         device = element.transistor()
@@ -245,40 +284,49 @@ def _parse_inst(line):
         device = element.inductor()
     elif line.strip().lower().startswith('x') \
             or line.strip().startswith('I'):
-        #split the line into four fileds instance name,ports,instance type,parameters
-        device_param_list = {}
 
-        if ' / ' in line:
-            line = line.replace(' / ', ' ')
-        if '(' in line:
-            line = line.replace('(', '').replace(')', '')
+        if pdk_dir is not None and pdk_generator_exists(line, pdk_dir):
+            logger.debug(f"FOUND generic: {line.strip()}")
+            device = element.generic(pdk_generator_exists(line, pdk_dir))
 
-        if line:
-            fields = line.strip().split()
-            hier_nodes = []
-            for idx, field in enumerate(fields):
-                if '=' in field:
-                    [param, value] = field.split('=')
-                    if not param:
-                        param = fields[idx - 1]
-                        del (hier_nodes[-1])
-                    if not value:
-                        value = fields[idx + 1]
-                        pass
-                    logger.debug(f'Found subckt parameter values: {param}, value: {value}')
-                    device_param_list[param] = value
+        else:
+            #split the line into four fields instance name,ports,instance type,parameters
+            device_param_list = {}
 
-                else:
-                    hier_nodes.append(field)
+            if ' / ' in line:
+                line = line.replace(' / ', ' ')
+            if '(' in line:
+                line = line.replace('(', '').replace(')', '')
 
-        device = {
-            "inst": hier_nodes[0][0:],
-            "inst_type": hier_nodes[-1],
-            "real_inst_type": hier_nodes[-1],
-            "ports": hier_nodes[1:-1],
-            "values": device_param_list
-        }
-        logger.debug(f'FOUND subckt instance: {device["inst"]}, type {device["inst_type"]}')
+            if line:
+                fields = line.strip().split()
+                hier_nodes = []
+                for idx, field in enumerate(fields):
+                    if '=' in field:
+                        [param, value] = field.split('=')
+                        if not param:
+                            param = fields[idx - 1]
+                            del (hier_nodes[-1])
+                        if not value:
+                            value = fields[idx + 1]
+                            pass
+                        logger.debug(f'Found subckt parameter values: {param}, value: {value}')
+                        device_param_list[param] = value
+
+                    else:
+                        hier_nodes.append(field)
+
+            device = {
+                "inst": hier_nodes[0][0:],
+                "inst_type": hier_nodes[-1],
+                "real_inst_type": hier_nodes[-1],
+                "ports": hier_nodes[1:-1],
+                "values": device_param_list
+            }
+            logger.debug(f'FOUND subckt instance: {device["inst"]}, type {device["inst_type"]}')
+    
+    else:
+        logger.error(f"Unidentified line in netlist: {line}")
 
     if device:
         if '=' in device["inst"] or '=' in device[
@@ -291,10 +339,5 @@ def _parse_inst(line):
         #added to avoid assertion for string in PnR
         if device["inst_type"][0].isdigit():
             device["inst_type"] = "align_"+device["inst_type"]
-
-    elif line.startswith('*'):
-        logger.debug(f"comment: {line}")
-    else:
-        logger.warning(f"Unidentified line: {line}")
 
     return device
