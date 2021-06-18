@@ -343,16 +343,16 @@ NodeSet Graph::dominatingSetILP(const bool isTop) const
   for (auto& n : rankedNodes) {
     nodeRank[n] = rankctr++;
   }
-  std::unique_ptr<lprec> lp(make_lp(0, _nodes.size()));
-  set_verbose(lp.get(), IMPORTANT);
+  lprec* lp(make_lp(0, _nodes.size()));
+  set_verbose(lp, IMPORTANT);
   map<const Node*, int> nodeIndex;
   for (unsigned i = 0; i < _nodes.size(); ++i) {
-    set_binary(lp.get(), i + 1, TRUE);
+    set_binary(lp, i + 1, TRUE);
     nodeIndex[_nodes[i]] = static_cast<int>(i + 1);
     char nm[_nodes[i]->name().size() + 1];
     std::strcpy(nm, _nodes[i]->name().c_str());
 #if DEBUG_LP_TAP
-    set_col_name(lp.get(), i + 1, nm);
+    set_col_name(lp, i + 1, nm);
 #endif
   }
 
@@ -370,14 +370,14 @@ NodeSet Graph::dominatingSetILP(const bool isTop) const
       row[j] = 1.;
       col[j++] = nodeIndex[other];
     }
-    if (!add_constraintex(lp.get(), numE, row, col, GE, 1.)) {
+    if (!add_constraintex(lp, numE, row, col, GE, 1.)) {
       logger->error("error in adding constrint for {0}", n->name());
     }
     auto itSym = _nodeSymPairs.find(n);
     if (itSym != _nodeSymPairs.end()) {
       int c[2] = {index, nodeIndex[itSym->second]};
       double r[2] = {1., -1.};
-      if (!add_constraintex(lp.get(), 2, r, c, EQ, 0.)) {
+      if (!add_constraintex(lp, 2, r, c, EQ, 0.)) {
         logger->error("error in adding constrint for {0}", n->name(), itSym->second->name());
       }
     }
@@ -386,7 +386,7 @@ NodeSet Graph::dominatingSetILP(const bool isTop) const
   for (auto& n : dom) {
     int col[1] = {nodeIndex[n]};
     double row[1] = {1.};
-    if (!add_constraintex(lp.get(), 1, row, col, EQ, 1.)) {
+    if (!add_constraintex(lp, 1, row, col, EQ, 1.)) {
       logger->error("error in adding constrint for {0}", n->name());
     }
   }
@@ -400,22 +400,24 @@ NodeSet Graph::dominatingSetILP(const bool isTop) const
       rowObj[i] = 0;
     }
   }
-  set_obj_fn(lp.get(), rowObj);
+  set_obj_fn(lp, rowObj);
 #if DEBUG_LP_TAP
-  print_lp(lp.get());
-  set_outputfile(lp.get(), "lp.txt");
+  print_lp(lp);
+  set_outputfile(lp, "lp.txt");
 #endif
-  set_minim(lp.get());
-  set_timeout(lp.get(), 1);
+  set_minim(lp);
+  set_timeout(lp, 1);
   double solution[_nodes.size()];
-  int ret = solve(lp.get());
+  int ret = solve(lp);
   if (ret != 0 && ret != 1) {
+    delete_lp(lp);
     dom.clear();
     logger->error("ILP failed to find dom set!");
     return dom;
   }
 
-  get_variables(lp.get(), solution);
+  get_variables(lp, solution);
+  delete_lp(lp);
   for (unsigned i = 0; i < _nodes.size(); ++i) {
     if (solution[i] > 0 && _nodes[i]->nodeType() == NodeType::Tap) {
       dom.insert(_nodes[i]);
