@@ -5,7 +5,11 @@ Created on Thu Nov 29 19:38:43 2018
 @author: kunal
 """
 
+import logging
 import os
+
+logger = logging.getLogger(__name__)
+
 
 def read_lef(lef_dir):
     """ Reads available lef in LEF dir

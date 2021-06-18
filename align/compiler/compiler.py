@@ -200,7 +200,7 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
                     for nm in list(hier_graph_dict.keys()):
                         if nm == lef_name + attr['inst_copy']:
                             if block_name not in hier_graph_dict.keys():
-                                logger.warning('Trying to modify a dictionary while iterating over it!')
+                                logger.debug('Trying to modify a dictionary while iterating over it!')
                                 hier_graph_dict[block_name] = hier_graph_dict.pop(nm)
                             else:
                                 #For cells with extra parameters than current primitive naming convention
@@ -272,7 +272,7 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
     with (result_dir / f'{design_name}.v').open( 'wt') as fp:
         write_verilog( verilog_tbl, fp)
 
-    logger.info("Topology identification done !!!")
+    logger.info("Completed topology identification.")
     logger.debug(f"OUTPUT verilog json netlist at: {result_dir}/{design_name}.verilog.json")
     logger.debug(f"OUTPUT verilog netlist at: {result_dir}/{design_name}.v")
     logger.debug(f"OUTPUT const file at: {result_dir}/{design_name}.pnr.const.json")
