@@ -249,7 +249,7 @@ void Placement::place(PnRDB::hierNode &current_node)
 
   //only for plot
 
-  restore_MS();
+  //restore_MS();
   PlotPlacement(603);
   //setp 4: write back to HierNode
   writeback(current_node);
