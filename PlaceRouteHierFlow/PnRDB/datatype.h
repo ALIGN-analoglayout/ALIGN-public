@@ -3,14 +3,16 @@
 
 #include <vector>
 #include <string>
+#include <set>
 #include "limits.h"
 #include <map>
 #include <utility>
 //#include "../router/Rdatatype.h"
-using std::vector;
-using std::string;
 using std::map;
 using std::pair;
+using std::set;
+using std::string;
+using std::vector;
 
 namespace PnRDB {
 
@@ -375,6 +377,7 @@ struct hierNode {
   string gdsFile="";
   vector<int> parent;
   vector<blockComplex> Blocks;
+  map<string, int> Block_name_map;//map from block name to block index
   vector<tile> tiles_total;
   vector<net> Nets;
   vector<terminal> Terminals;
@@ -410,6 +413,7 @@ struct hierNode {
   vector<LinearConst> L_Constraints;
   vector<Multi_LinearConst> ML_Constraints;
   vector<pair<vector<int>, Smark>> Ordering_Constraints;
+  vector<set<int>> Same_Template_Constraints;
   int bias_Hgraph = 0;
   int bias_Vgraph=0;
   double Aspect_Ratio_weight = 1000;

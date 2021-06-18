@@ -56,20 +56,18 @@ def gen_placement_verilog(hN, idx, sel, DB, verilog_d):
                     assert used_internal[abstract_template_name][concrete_template_name] == (child_idx,blk.selectedInstance,new_r)
             else:
                 
-                centers = []
                 pinterminals = defaultdict(list)
                 for pin in inst.blockPins:
                     pinname = pin.name
                     for contact in pin.pinContacts:
-                        centers.append( (pinname, (contact.originCenter.x, contact.originCenter.y)))
                         b = contact.originBox
                         pinterminals[pinname].append( (b.LL.x, b.LL.y, b.UR.x, b.UR.y))
 
                 concrete_template_name = pathlib.Path(inst.gdsFile).stem
                 if concrete_template_name not in used_leaves[abstract_template_name]:                
-                    used_leaves[abstract_template_name][concrete_template_name] = (new_r, centers, pinterminals)
+                    used_leaves[abstract_template_name][concrete_template_name] = (new_r, pinterminals)
                 else:
-                    assert used_leaves[abstract_template_name][concrete_template_name] == (new_r, centers, pinterminals)
+                    assert used_leaves[abstract_template_name][concrete_template_name] == (new_r, pinterminals)
 
     traverse( hN, sel)
     logger.debug( f'used_leaves: {used_leaves} used_internal: {used_internal}')
@@ -110,17 +108,13 @@ def gen_placement_verilog(hN, idx, sel, DB, verilog_d):
 
     leaves = []
     for a, v in used_leaves.items():
-        for c, (r,centers_lst,pinterminals) in v.items():
-            centers = []
-            for k, center in centers_lst:
-                centers.append( { 'name': k, 'center': center})
-
+        for c, (r,pinterminals) in v.items():
             terminals = []
             for k, lst in pinterminals.items():
                 for rr in lst:
                     terminals.append( { 'name': k, 'rect': rr})
 
-            leaves.append( {'abstract_name': a, 'concrete_name': c, 'bbox': r, 'terminal_centers': centers, 'terminals': terminals})
+            leaves.append( {'abstract_name': a, 'concrete_name': c, 'bbox': r, 'terminals': terminals})
 
 
     d['leaves'] = leaves
@@ -134,7 +128,7 @@ def round_to_angstroms(x):
 
 def scalar_rational_scaling( v, *, mul=1, div=1):
     if type(mul) == float:
-        assert mul == 0.001
+        assert mul == 0.001 or mul == 0.002
         # round to angstroms
         return round_to_angstroms(mul*v/div)
     else:
@@ -147,22 +141,27 @@ def scalar_rational_scaling( v, *, mul=1, div=1):
 def array_rational_scaling( a, *, mul=1, div=1):
     return [ scalar_rational_scaling(v, mul=mul, div=div) for v in a]
 
-def scale_placement_verilog( placement_verilog_d, scale_factor):
+def scale_placement_verilog( placement_verilog_d, scale_factor, invert=False):
     # Convert from 0.5 nm to 0.1 nm if the scale_factor is 10
     d = copy.deepcopy(placement_verilog_d)
 
+    if invert:
+        mul = 2
+        div = scale_factor
+    else:
+        mul = scale_factor
+        div = 2
+
     for module in d['modules']:
-        module['bbox'] = array_rational_scaling(module['bbox'], mul=scale_factor, div=2)
+        module['bbox'] = array_rational_scaling(module['bbox'], mul=mul, div=div)
         for instance in module['instances']:
             tr = instance['transformation'] 
             for field in ['oX','oY']:
-                tr[field] = scalar_rational_scaling(tr[field], mul=scale_factor, div=2)
+                tr[field] = scalar_rational_scaling(tr[field], mul=mul, div=div)
 
     for leaf in d['leaves']:
-        leaf['bbox'] = array_rational_scaling(leaf['bbox'], mul=scale_factor, div=2)
-        leaf['terminal_centers'] = [ { 'name': tc['name'], 'center': array_rational_scaling( tc['center'], mul=scale_factor, div=2)}
-                                     for tc in leaf['terminal_centers']]
-        leaf['terminals'] = [ { 'name': t['name'], 'rect': array_rational_scaling( t['rect'], mul=scale_factor, div=2)}
+        leaf['bbox'] = array_rational_scaling(leaf['bbox'], mul=mul, div=div)
+        leaf['terminals'] = [ { 'name': t['name'], 'rect': array_rational_scaling( t['rect'], mul=mul, div=div)}
                                 for t in leaf['terminals']]
             
 
@@ -256,9 +255,12 @@ def standalone_overlap_checker( placement_verilog_d, top_cell):
 
     leaves = [ (r, hovertext) for r, hovertext, isleaf, _, ispin in gen_boxes_and_hovertext( placement_verilog_d, top_cell) if isleaf and not ispin]
     logger.debug( f'Checking {len(leaves)} bboxes for overlap')
+    ok = True
     for a,b in combinations(leaves,2):
         if rects_overlap( a[0], b[0]):
+            ok = False
             logger.error( f'Leaves {a} and {b} intersect')
+    return ok
 
 def dump_blocks( fig, boxes_and_hovertext, leaves_only, levels, netnames):
     lst = list(boxes_and_hovertext)
@@ -275,8 +277,10 @@ def dump_blocks( fig, boxes_and_hovertext, leaves_only, levels, netnames):
         x = [x0, x1, x1, x0, x0]
         y = [y0, y0, y1, y1, y0]
 
+        opacity=0.8 if isleaf else 0.4
+
         if not ispin:
-            fig.add_trace(go.Scatter(x=x, y=y, mode='lines',
+            fig.add_trace(go.Scatter(x=x, y=y, mode='lines', opacity=opacity,
                                      name=hovertext, fill="toself", showlegend=False))
 
     for r, hovertext, isleaf, lvl, ispin in lst:

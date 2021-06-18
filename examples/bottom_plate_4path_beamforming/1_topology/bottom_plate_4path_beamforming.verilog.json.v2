@@ -25,7 +25,26 @@
         "X4_M",
         "X4_P"
       ],
-      "constraints": [],
+      "constraints": [
+        {"constraint": "SymmetricBlocks", "direction" : "V",
+          "pairs": [["XC1", "XC4"], ["XC0", "XC5"], ["XC2", "XC6"], ["XC3", "XC7"], ["XC8", "XC9"], ["XI0"],
+                    ["XM0", "XM8"], ["XM4", "XM12"], ["XM1", "XM9"], ["XM5", "XM13"], 
+                    ["XM2", "XM10"], ["XM6", "XM14"], ["XM3", "XM11"], ["XM7", "XM15"]]},
+        {"constraint": "AlignInOrder", "direction": "vertical", "line": "left",
+          "instances": [ "XC1", "XR0", "XC0", "XR1", "XC2", "XR2", "XC3", "XR3", "XR18", "XC8"]},
+        {"constraint": "AlignInOrder", "direction": "vertical", "line": "left",
+          "instances": [ "XC4", "XR8", "XC5", "XR9", "XC6", "XR10", "XC7", "XR11", "XR16", "XC9"]},
+        {"constraint": "AlignInOrder", "direction": "horizontal", "line": "bottom",
+          "instances": [ "XC8", "XI0", "XC9"]},
+        {"constraint": "AlignInOrder", "direction": "horizontal", "line": "bottom", 
+          "instances": [ "XC1", "XM4", "XM12", "XC4"]},
+        {"constraint": "AlignInOrder", "direction": "horizontal", "line": "bottom",
+          "instances": [ "XC0", "XM5", "XM13", "XC5"]},
+        {"constraint": "AlignInOrder", "direction": "horizontal", "line": "bottom", 
+          "instances": [ "XC2", "XM6", "XM14", "XC6"]},
+        {"constraint": "AlignInOrder", "direction": "horizontal", "line": "bottom",
+          "instances": [ "XC3", "XM7", "XM15", "XC7"]}
+          ],
       "instances": [
         {
           "instance_name": "XR18",

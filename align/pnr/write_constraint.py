@@ -70,6 +70,11 @@ class PnRConstraintWriter:
             elif const["const_name"] == 'AspectRatio':
                 const["const_name"] = 'Aspect_Ratio'
                 del const['subcircuit']
+            elif const["const_name"] == 'Boundary':
+                del const['subcircuit']
+                for key in ['max_width', 'max_height']:
+                    if const[key] is None:
+                        del const[key]
             elif const["const_name"] == 'SymmetricBlocks':
                 const["const_name"] = 'SymmBlock'
                 const["axis_dir"] = const.pop("direction")

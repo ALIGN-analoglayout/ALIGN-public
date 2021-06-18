@@ -60,7 +60,7 @@ class VerilogJsonInstance(DictEmulator):
 
 
 class VerilogJsonModule(DictEmulator):
-    name: str
+    #name: str
     parameters: List[str]
     constraints: ConstraintDB
     instances: List[VerilogJsonInstance]

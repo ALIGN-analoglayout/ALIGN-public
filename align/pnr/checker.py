@@ -1,8 +1,9 @@
 from ..schema import constraint, types
 from ..cell_fabric import transformation
 
-def check_placement(placement_verilog_d):
+def check_placement(placement_verilog_d, scale_factor):
     leaf_bboxes = { x['concrete_name'] : x['bbox'] for x in placement_verilog_d['leaves']}
+
     internal_bboxes = { x['concrete_name'] : x['bbox'] for x in placement_verilog_d['modules']}
 
     non_leaves = { module['concrete_name'] for module in placement_verilog_d['modules']}
@@ -16,11 +17,11 @@ def check_placement(placement_verilog_d):
         with types.set_context(constraints):
             constraints.append(
                 constraint.SetBoundingBox(
-                    instance=module['abstract_name'],
-                    llx=bbox.llx,
-                    lly=bbox.lly,
-                    urx=bbox.urx,
-                    ury=bbox.ury,
+                    instance=module['concrete_name'],
+                    llx=bbox.llx/scale_factor,
+                    lly=bbox.lly/scale_factor,
+                    urx=bbox.urx/scale_factor,
+                    ury=bbox.ury/scale_factor,
                     is_subcircuit=True
                 )
             )
@@ -37,9 +38,9 @@ def check_placement(placement_verilog_d):
                 constraints.append(
                     constraint.SetBoundingBox(
                         instance=inst['instance_name'],
-                        llx=bbox.llx,
-                        lly=bbox.lly,
-                        urx=bbox.urx,
-                        ury=bbox.ury
+                        llx=bbox.llx/scale_factor,
+                        lly=bbox.lly/scale_factor,
+                        urx=bbox.urx/scale_factor,
+                        ury=bbox.ury/scale_factor
                     )
                 )

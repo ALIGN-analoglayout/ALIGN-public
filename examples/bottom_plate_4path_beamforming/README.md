@@ -42,19 +42,19 @@ If you want to perform DRC and LVS checking of the result, you'll need the layou
 
 # Commandline
 
-This will start the flow, skipping the checking and GDS generation phases.
+This will start the flow, skipping the routing, checking and GDS generation phases.
 ```
 cd $ALIGN_WORK_DIR
-cp -rf $ALIGN_HOME/examples/test_spacial_filter_working_v1 .
-cd test_spacial_filter_working_v1
+cp -rf $ALIGN_HOME/examples/bottom_plate_4path_beamforming .
+cd bottom_plate_4path_beamforming
 
-schematic2layout.py dummy_design_dir -s bottom_plate_4path_beamforming  -p ../../pdks/Bulk65nm_Mock_PDK/ --gui --flow_start 3_pnr --flow_stop 3_pnr:route -n 40 --skipGDS
+schematic2layout.py dummy_design_dir -s bottom_plate_4path_beamforming  -p ../../pdks/Bulk65nm_Mock_PDK/ --gui --flow_start 3_pnr --flow_stop 3_pnr:route -n 1 --skipGDS --router_mode no_op
 ```
 
 If you want to perform checking you need to generated the layout json files.
 You can do this by running the `convert_lef_to_layout_json.py` script on each file that needs to be converted.
 ```
-cd $ALIGN_WORK_DIR/test_spacial_filter_working_v1/2_primitives
+cd $ALIGN_WORK_DIR/bottom_plate_4path_beamforming/2_primitives
 convert_lef_to_layout_json.py -p $ALIGN_HOME/pdks/Bulk65nm_Mock_PDK/ -n CAP_MIM_wt32_lt32
 convert_lef_to_layout_json.py -p $ALIGN_HOME/pdks/Bulk65nm_Mock_PDK/ -n RES_w1u_l14u
 convert_lef_to_layout_json.py -p $ALIGN_HOME/pdks/Bulk65nm_Mock_PDK/ -n TIA_1
@@ -119,9 +119,9 @@ align.cell_fabric.lef_to_json WARNING : bbox width not on grid 8970 130
 
 Now we can try to get the checking performed as well:
 ```
-cd $ALIGN_WORK_DIR/test_spacial_filter_working_v1
+cd $ALIGN_WORK_DIR/bottom_plate_4path_beamforming
 
-schematic2layout.py dummy_design_dir -s bottom_plate_4path_beamforming  -p ../../pdks/Bulk65nm_Mock_PDK/ --gui --flow_start 3_pnr -n 40 --skipGDS
+schematic2layout.py dummy_design_dir -s bottom_plate_4path_beamforming  -p ../../pdks/Bulk65nm_Mock_PDK/ --gui --flow_start 3_pnr -n 1 --skipGDS
 ```
 
 The run goes through with a bunch of off grid errors and opens because of the bad input collateral.
@@ -130,7 +130,7 @@ The run goes through with a bunch of off grid errors and opens because of the ba
 align.cell_fabric.remove_duplicates ERROR : Found errors: SHORT: 0 OPEN: 30 DIFFERENT WIDTH: 21
 align.cell_fabric.drc ERROR : Found errors: DRC 71
 align.cell_fabric.postprocess INFO : Running PostProcessor...
-align.pnr.main INFO : OUTPUT json at /home/smburns/DARPA/ALIGN-public/work/test_spatial_filter_working_v1/3_pnr/bottom_plate_4path_beamforming_0.json
+align.pnr.main INFO : OUTPUT json at /home/smburns/DARPA/ALIGN-public/work/bottom_plate_4path_beamforming/3_pnr/bottom_plate_4path_beamforming_0.json
 align.pnr.main ERROR : 222 LVS / DRC errors found !!!
-align.pnr.main INFO : OUTPUT error file at /home/smburns/DARPA/ALIGN-public/work/test_spatial_filter_working_v1/3_pnr/bottom_plate_4path_beamforming_0.errors
+align.pnr.main INFO : OUTPUT error file at /home/smburns/DARPA/ALIGN-public/work/bottom_plate_4path_beamforming/3_pnr/bottom_plate_4path_beamforming_0.errors
 ```
