@@ -411,6 +411,7 @@ NodeSet Graph::dominatingSetILP(const bool isTop) const
   int ret = solve(lp.get());
   if (ret != 0 && ret != 1) {
     dom.clear();
+    logger->error("ILP failed to find dom set!");
     return dom;
   }
 
