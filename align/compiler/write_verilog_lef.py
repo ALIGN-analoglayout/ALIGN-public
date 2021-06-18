@@ -151,7 +151,7 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
             val = values[key].replace('-','')
             value_str += f'_{key}_{val}'
         block_name = attr['real_inst_type'] + value_str
-        block_parameters = {"parameters": deepcopy(attr), "primitive": attr["real_inst_type"]}      
+        block_parameters = {"parameters": deepcopy(attr), "primitive": name.lower()}      
         return block_name, block_parameters
 
     elif name.lower().startswith('cap'):
