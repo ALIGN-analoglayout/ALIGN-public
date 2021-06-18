@@ -2994,13 +2994,13 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
           tempNode.iter2 = id_new_block;
           tempNode.type = PnRDB::Block;
           tempNode.iter = 0;
-          current_node.Nets[netid].connected.push_back(tempNode);
+          //current_node.Nets[netid].connected.push_back(tempNode);
 
           for(int ii=0;ii < current_node.Nets[netid].connected.size();++ii)
           {
             if(current_node.Nets[netid].connected[ii].iter2 == id)
             {
-              current_node.Nets[netid].connected.erase(current_node.Nets[netid].connected.begin()+ii);
+              current_node.Nets[netid].connected[ii].iter2=id_new_block;
               break;
             }
           }
