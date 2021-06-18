@@ -2859,7 +2859,7 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
   for(int i = 0;i < current_node.SPBlocks.size();++i)
   {
     int j=0;
-    while(current_node.SPBlocks[i].selfsym[j].first<originalBlockCNT and j < current_node.SPBlocks[i].selfsym.size())
+    while(j < current_node.SPBlocks[i].selfsym.size() && current_node.SPBlocks[i].selfsym[j].first<originalBlockCNT)
     {
       ++j;
     }
@@ -2870,7 +2870,7 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
     }
 
     j = 0;
-    while(current_node.SPBlocks[i].sympair[j].first<originalBlockCNT  and current_node.SPBlocks[i].sympair[j].second<originalBlockCNT and j < current_node.SPBlocks[i].selfsym.size())
+    while(j < current_node.SPBlocks[i].sympair.size() && current_node.SPBlocks[i].sympair[j].first<originalBlockCNT  && current_node.SPBlocks[i].sympair[j].second<originalBlockCNT)
     {
       ++j;
     }
@@ -2935,6 +2935,19 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
     }
     tempBlock.placedCenter.x /= float(commonCentroids[i].blocks.size());
     tempBlock.placedCenter.y /= float(commonCentroids[i].blocks.size());
+    tempBlock.placedBox.LL.x = tempBlock.placedCenter.x - tempBlock.width / 2;
+    tempBlock.placedBox.UR.x = tempBlock.placedCenter.x + tempBlock.width / 2;
+    tempBlock.placedBox.LL.y = tempBlock.placedCenter.y - tempBlock.height / 2;
+    tempBlock.placedBox.UR.y = tempBlock.placedCenter.y + tempBlock.height / 2;
+    tempBlock.gdsFile = copy_node.Blocks[commonCentroids[i].blocks[0]].instance[0].gdsFile;
+    tempBlock.PowerNets = copy_node.Blocks[commonCentroids[i].blocks[0]].instance[0].PowerNets;
+    tempBlock.blockPins = copy_node.Blocks[commonCentroids[i].blocks[0]].instance[0].blockPins;
+    tempBlock.interMetals = copy_node.Blocks[commonCentroids[i].blocks[0]].instance[0].interMetals;
+    tempBlock.interVias = copy_node.Blocks[commonCentroids[i].blocks[0]].instance[0].interVias;
+    tempBlock.master = copy_node.Blocks[commonCentroids[i].blocks[0]].instance[0].master;
+    tempBlock.lefmaster = copy_node.Blocks[commonCentroids[i].blocks[0]].instance[0].lefmaster;
+    tempBlock.dummy_power_pin = copy_node.Blocks[commonCentroids[i].blocks[0]].instance[0].dummy_power_pin;
+    tempBlock.GuardRings = copy_node.Blocks[commonCentroids[i].blocks[0]].instance[0].GuardRings;
 
     PnRDB::blockComplex tempBlockComplex;
     
