@@ -52,7 +52,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, flat
     #
     # TODO: flatten should be separate pass
     #
-    sp = SpiceParser(input_ckt, design_name, flat)
+    sp = SpiceParser(input_ckt, design_name, flat, pdk_dir)
     circuit_graphs = sp.sp_parser()
     assert circuit_graphs !=None  , f"No subcircuit with name {design_name} found in spice {input_ckt}"
     circuit = circuit_graphs[0]

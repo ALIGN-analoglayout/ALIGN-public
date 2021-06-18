@@ -57,9 +57,12 @@ def place(cv, c, ox, oy):
 
 
 def get_test_id():
-    t = os.environ.get('PYTEST_CURRENT_TEST')
-    t = t.split(' ')[0].split(':')[-1]
-    t = t.replace('[', '_').replace(']', '').replace('-', '_')
+    try:
+        t = os.environ.get('PYTEST_CURRENT_TEST')
+        t = t.split(' ')[0].split(':')[-1]
+        t = t.replace('[', '_').replace(']', '').replace('-', '_')
+    except:
+        t = 'debug_run'
     return t
 
 
@@ -102,7 +105,7 @@ def build_example(work_dir, name, netlist, netlist_setup, constraints):
     return example
 
 
-def run_example(example, n=8):
+def run_example(example, n=8, cleanup=True):
     run_dir = my_dir / f'run_{example.name}'
     if run_dir.exists() and run_dir.is_dir():
         shutil.rmtree(run_dir)
