@@ -51,6 +51,7 @@ private:
     //estimated required height y and width x, generally x = y
     Ppoint_F est_Size;
     Ppoint_F uni_cell;
+    Ppoint_F uni_cell_Dpoint;
 
     float dummy_net_weight;
     float dummy_net_rate;
@@ -139,7 +140,7 @@ public:
     void merge_two_vectors(vector<pair<int,int>> &v1,vector<pair<int,int>> &v2);//merge v1,v2 into v1
     void refine_CC();//need to change
 
-    void update_hiernode(PnRDB::hierNode &current_node, Ppoint_F uni_cell_Dpoint);
+    void update_hiernode(PnRDB::hierNode &current_node);
 
     void split_net();
 

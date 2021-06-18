@@ -627,32 +627,36 @@ double ILP_solver::GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcI
       // min abs(LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)=HPWLx
       //-> (LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)<=HPWLx
       //  -(LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)<=HPWLx
-      {
-        double sparserow[5] = {const_graph.LAMBDA, (Lblock_width - 2 * Lpin_x) * const_graph.LAMBDA, -const_graph.LAMBDA,
-                               -(Rblock_width - 2 * Rpin_x) * const_graph.LAMBDA, -1};
-        int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, mydesign.Blocks.size() * 4 + i * 2 + 1};
-        add_constraintex(lp, 5, sparserow, colno, LE, -Lpin_x + Rpin_x);
+      if(Lblock_id!=Rblock_id){
+        {
+          double sparserow[5] = {const_graph.LAMBDA, (Lblock_width - 2 * Lpin_x) * const_graph.LAMBDA, -const_graph.LAMBDA,
+                                -(Rblock_width - 2 * Rpin_x) * const_graph.LAMBDA, -1};
+          int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, mydesign.Blocks.size() * 4 + i * 2 + 1};
+          add_constraintex(lp, 5, sparserow, colno, LE, -Lpin_x + Rpin_x);
+        }
+        {
+          double sparserow[5] = {-const_graph.LAMBDA, -(Lblock_width - 2 * Lpin_x) * const_graph.LAMBDA, const_graph.LAMBDA,
+                                (Rblock_width - 2 * Rpin_x) * const_graph.LAMBDA, -1};
+          int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, mydesign.Blocks.size() * 4 + i * 2 + 1};
+          add_constraintex(lp, 5, sparserow, colno, LE, Lpin_x - Rpin_x);
+        }
+        row[mydesign.Blocks.size() * 4 + i * 2 + 1] = 1;
       }
-      {
-        double sparserow[5] = {-const_graph.LAMBDA, -(Lblock_width - 2 * Lpin_x) * const_graph.LAMBDA, const_graph.LAMBDA,
-                               (Rblock_width - 2 * Rpin_x) * const_graph.LAMBDA, -1};
-        int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, mydesign.Blocks.size() * 4 + i * 2 + 1};
-        add_constraintex(lp, 5, sparserow, colno, LE, Lpin_x - Rpin_x);
+      if(Dblock_id!=Ublock_id){
+        {
+          double sparserow[5] = {const_graph.LAMBDA, (Dblock_height - 2 * Dpin_y) * const_graph.LAMBDA, -const_graph.LAMBDA,
+                                -(Ublock_height - 2 * Upin_y) * const_graph.LAMBDA, -1};
+          int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, mydesign.Blocks.size() * 4 + i * 2 + 2};
+          add_constraintex(lp, 5, sparserow, colno, LE, -Dpin_y + Upin_y);
+        }
+        {
+          double sparserow[5] = {-const_graph.LAMBDA, -(Dblock_height - 2 * Dpin_y) * const_graph.LAMBDA, const_graph.LAMBDA,
+                                (Ublock_height - 2 * Upin_y) * const_graph.LAMBDA, -1};
+          int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, mydesign.Blocks.size() * 4 + i * 2 + 2};
+          add_constraintex(lp, 5, sparserow, colno, LE, Dpin_y - Upin_y);
+        }
+        row[mydesign.Blocks.size() * 4 + i * 2 + 2] = 1;
       }
-      row[mydesign.Blocks.size() * 4 + i * 2 + 1] = 1;
-      {
-        double sparserow[5] = {const_graph.LAMBDA, (Dblock_height - 2 * Dpin_y) * const_graph.LAMBDA, -const_graph.LAMBDA,
-                               -(Ublock_height - 2 * Upin_y) * const_graph.LAMBDA, -1};
-        int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, mydesign.Blocks.size() * 4 + i * 2 + 2};
-        add_constraintex(lp, 5, sparserow, colno, LE, -Dpin_y + Upin_y);
-      }
-      {
-        double sparserow[5] = {-const_graph.LAMBDA, -(Dblock_height - 2 * Dpin_y) * const_graph.LAMBDA, const_graph.LAMBDA,
-                               (Ublock_height - 2 * Upin_y) * const_graph.LAMBDA, -1};
-        int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, mydesign.Blocks.size() * 4 + i * 2 + 2};
-        add_constraintex(lp, 5, sparserow, colno, LE, Dpin_y - Upin_y);
-      }
-      row[mydesign.Blocks.size() * 4 + i * 2 + 2] = 1;
     }
 
     vector<pair<int, int>> block_pos_x;
@@ -696,7 +700,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcI
     set_obj_fn(lp, row);
     set_minim(lp);
     set_timeout(lp, 10);
-    print_lp(lp);
+    //print_lp(lp);
     int ret = solve(lp);
     if (ret != 0 && ret != 1 && ret!= 25) return -1;
   }
@@ -1616,6 +1620,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign) {
         int distTerm = INT_MAX;
         for (auto ci : mydesign.Nets.at(netIdx).connected) {
           if (ci.type == placerDB::Block) {
+            if (mydesign.Blocks[ci.iter2][0].blockPins.size() == 0) continue;
             bp = placerDB::point(Blocks[ci.iter2].x, Blocks[ci.iter2].y);
             for (unsigned int k = 0; k < mydesign.Blocks[ci.iter2][0].blockPins[ci.iter].center.size(); k++) {
               p = mydesign.Blocks[ci.iter2][0].blockPins[ci.iter].center[k];

@@ -134,7 +134,7 @@ Placement::Placement(PnRDB::hierNode &current_node)
   std::cout << "Unify the block coordinate" << std::endl;
   scale_factor = 40.0;
   Unify_blocks(area, scale_factor);
-  Ppoint_F uni_cell_Dpoint = find_uni_cell();
+  find_uni_cell();
   readCC();
   //Initilize_Placement();
   //PlotPlacement(600);
@@ -143,7 +143,7 @@ Placement::Placement(PnRDB::hierNode &current_node)
   addNet_after_split_Blocks(tol_diff,uni_cell_Dpoint.y, uni_cell_Dpoint.x);
   split_net();
   modify_symm_after_split(current_node);
-  update_hiernode(current_node,uni_cell_Dpoint);
+  update_hiernode(current_node);
 
   //read alignment constrains
   read_alignment(current_node);
@@ -221,7 +221,7 @@ void Placement::place(PnRDB::hierNode &current_node)
   std::cout << "Unify the block coordinate" << std::endl;
   scale_factor = 40.0;
   Unify_blocks(area, scale_factor);
-  Ppoint_F uni_cell_Dpoint = find_uni_cell();
+  find_uni_cell();
   readCC();
   //Initilize_Placement();
   //PlotPlacement(600);
@@ -230,7 +230,7 @@ void Placement::place(PnRDB::hierNode &current_node)
   addNet_after_split_Blocks(tol_diff,uni_cell_Dpoint.y, uni_cell_Dpoint.x);
   split_net();
   modify_symm_after_split(current_node);
-  update_hiernode(current_node,uni_cell_Dpoint);
+  update_hiernode(current_node);
 
   //read alignment constrains
   read_alignment(current_node);
@@ -2200,7 +2200,7 @@ void Placement::Unify_blocks(float area, float scale_factor)
 
 Ppoint_F Placement::find_uni_cell()
 {
-  Ppoint_F uni_cell_Dpoint;
+  //Ppoint_F uni_cell_Dpoint;
   float min_x = Blocks[0].Dpoint.x, min_y = Blocks[0].Dpoint.y;
   float max_x = Blocks[0].Dpoint.x, max_y = Blocks[0].Dpoint.y;
   for (int i = 1; i < originalBlockCNT; ++i){
@@ -2228,7 +2228,7 @@ Ppoint_F Placement::find_uni_cell()
   }
   **/
   // uni_cell_Dpoint = Blocks[id].Dpoint;
-  return uni_cell_Dpoint;
+  //return uni_cell_Dpoint;
 }
 
 void Placement::readCC()
@@ -2910,9 +2910,9 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
   //merge CC block
   //make origin block in CC size to zero
   int id_new_block = originalBlockCNT;
-  Ppoint_F uni_cell_Dpoint;
-  uni_cell_Dpoint.x = Blocks[0].Dpoint.x;
-  uni_cell_Dpoint.y = Blocks[0].Dpoint.y;
+  //Ppoint_F uni_cell_Dpoint;
+  //uni_cell_Dpoint.x = Blocks[0].Dpoint.x;
+  //uni_cell_Dpoint.y = Blocks[0].Dpoint.y;
   Ppoint_I uni_cell_shape;
   uni_cell_shape.x = (int)(est_Size.x*uni_cell_Dpoint.x);
   uni_cell_shape.y = (int)(est_Size.y*uni_cell_Dpoint.y);
@@ -3349,7 +3349,7 @@ bool Placement::symCheck(float tol)
 }
 
 
-void Placement::update_hiernode(PnRDB::hierNode &current_node, Ppoint_F uni_cell_Dpoint)
+void Placement::update_hiernode(PnRDB::hierNode &current_node)
 {
   //update blocks
   Ppoint_I uni_cell_shape;
