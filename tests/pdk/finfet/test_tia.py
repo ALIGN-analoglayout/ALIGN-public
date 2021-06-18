@@ -20,7 +20,6 @@ xi0 vin vop pcell_tfr_0
     return netlist, netlist_setup
     
 
-@pytest.mark.nightly
 def test_tia():
     constraints = """[]"""
     name = f'ckt_{get_test_id()[5:]}'
@@ -28,4 +27,3 @@ def test_tia():
     example = build_example(my_dir, name, netlist, netlist_setup, constraints)
     run_example(example, n=1)
 
-test_tia()

@@ -116,5 +116,6 @@ def run_example(example, n=8, cleanup=True):
     results = align.CmdlineParser().parse_args(args)
     assert results is not None, f"{example.name}: No results generated"
     
-    shutil.rmtree(run_dir)
-    shutil.rmtree(example)
+    if cleanup:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(example)
