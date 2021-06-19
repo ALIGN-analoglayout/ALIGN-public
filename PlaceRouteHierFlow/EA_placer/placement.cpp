@@ -2954,7 +2954,8 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
     tempBlockComplex.instNum=1;
     tempBlockComplex.instance.push_back(tempBlock);
     current_node.Blocks.push_back(tempBlockComplex);
-    std::cout<<"restore ms debug:6"<<std::endl;
+    new_to_original_block_map[current_node.Blocks.size() - 1] = commonCentroids[i].blocks[0];
+    std::cout << "restore ms debug:6" << std::endl;
     for(int j=0;j<commonCentroids[i].blocks.size();++j)
     {
       int id = commonCentroids[i].blocks[j];
@@ -3652,6 +3653,23 @@ void Placement::break_merged_cc(PnRDB::hierNode &current_node)
       }
     }
     
+  }
+  for(auto b:new_to_original_block_map){
+    current_node.Blocks[b.first].instance[0].name = current_node.Blocks[b.second].instance[0].name;
+  }
+  for(auto &n:current_node.Nets){
+    for(auto &c:n.connected){
+      if(c.type==PnRDB::Block && c.iter2 >= originalNetCNT){
+        c.iter2 = new_to_original_block_map[c.iter2];
+      }
+    }
+  }
+  for (auto b = current_node.Blocks.begin(); b != current_node.Blocks.end();) {
+    if(b->instance[0].isRead==false){
+      b = current_node.Blocks.erase(b);
+    }else{
+      ++b;
+    }
   }
   PlotPlacement(604);
 }

@@ -368,7 +368,7 @@ int toplevel( const std::vector<std::string>& argv) {
     if(disable_io)std::cout.setstate(std::ios_base::failbit);
     EA_placer.break_merged_cc(current_node);
     if(disable_io)std::cout.clear();
-    return 0;
+    //return 0;
     // Placement
     std::vector<PnRDB::hierNode>& nodeVec(curr_plc.get());
     logger->debug("Checkpoint: generated {0} placements",nodeVec.size());

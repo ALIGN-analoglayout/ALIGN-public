@@ -28,6 +28,7 @@ private:
     vector<pair<vector<int>, PnRDB::Smark>> Ordering_Constraints;//as same in PnRDB
     vector<originBlock> OriginBlocks;
     vector<commonCentroid> commonCentroids;
+    map<int, int> new_to_original_block_map;
     int originalBlockCNT;
     int originalNetCNT;
     float gammar = 1.0f; //Q: need to ajust
