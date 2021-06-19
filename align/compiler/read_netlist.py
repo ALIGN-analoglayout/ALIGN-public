@@ -21,7 +21,7 @@ class SpiceParser:
     The final graph is stored in a yaml file in circuit_graphs folder.
     """
 
-    def __init__(self, netlistPath, top_ckt_name=None, flat=0):
+    def __init__(self, netlistPath, top_ckt_name=None, flat=0, pdk_dir=None):
         self.netlist = netlistPath
         self.subckts = {}
         self.circuits_list = []
@@ -35,6 +35,7 @@ class SpiceParser:
         self.next_line = None
         self.prev_line = None
         self.check_next_line = None
+        self.pdk_dir = pdk_dir
         logger.debug(f'creating an instance of SpiceParser: {self.top_ckt_name} flat={self.flat}')
 
     def sp_parser(self):
@@ -52,6 +53,8 @@ class SpiceParser:
                     #line = fp_l.readline()
                     pass
                 elif not line.strip():
+                    pass
+                elif line.startswith('*'):
                     pass
                 elif "global" in line.lower():
                     self._parse_global(line, fp_l)
@@ -72,7 +75,7 @@ class SpiceParser:
                         else:
                             self.params = check_param
                 else:
-                    parsed_inst = _parse_inst(line)
+                    parsed_inst = _parse_inst(line, pdk_dir=self.pdk_dir)
                     if parsed_inst:
                         self.top_insts.append(parsed_inst)
                 line = self.get_next_line(fp_l, 1)
@@ -88,7 +91,6 @@ class SpiceParser:
                 self._global = filter(lambda a: a != '+', self._global)
             logger.debug(f"List of subckts in design: {' '.join(self.subckts)}")
 
-# %%
             ## remove source from testbench circuit
             self._remove_source()
 
@@ -152,6 +154,7 @@ class SpiceParser:
                 logger.debug(node)
 
             return self.circuits_list
+    
     def resolve_hierarchy(self):
         if self.flat:
             logger.debug(f"Flatten circuit: {self.top_ckt_name}")
@@ -185,6 +188,7 @@ class SpiceParser:
                             f'assigning top parameter {param} value {self.top_insts[index]["values"][param]} to node: {node["inst"]}')
             else:
                 logger.error(f'No sizing info:{node["inst"]}')
+    
     def _remove_source(self):
         no_of_source = 0
         for ckt_name, elements in self.subckts.items():
@@ -265,7 +269,7 @@ class SpiceParser:
                         logger.debug('Found subckt param: %s, value:%s', param, value);
                 line = self.get_next_line(fp_l, 1)
             else:
-                node1 = _parse_inst(line)
+                node1 = _parse_inst(line, pdk_dir=self.pdk_dir)
                 if node1:
                     insts.append(node1)
                 line = self.get_next_line(fp_l, 1)
