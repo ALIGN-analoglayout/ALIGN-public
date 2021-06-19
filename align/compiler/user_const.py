@@ -52,19 +52,24 @@ class ConstraintParser:
 
             do_not_identify = []                
             for const in node.constraints:
+                if const.constraint == 'group_blocks':
+                    continue
+                if const.constraint == 'group_caps':
+                    continue
                 if hasattr(const, 'instances') and len(const.instances) > 1:
                     do_not_identify.extend(const.instances)
                 elif hasattr(const, 'pairs'):
                     for pair in const.pairs:
                         do_not_identify.extend(pair)
-                elif hasattr(const, 'pins1') and hasattr(const, 'pins2'):
+                elif hasattr(const, 'pins1') and hasattr(const, 'pins2') \
+                    and const.pins1 is not None and const.pins2 is not None:
                     for pin in const.pins1:
                         do_not_identify.append(pin.split('/')[0])
                     for pin in const.pins2:
                         do_not_identify.append(pin.split('/')[0])
             if len(do_not_identify) > 0:
-                do_not_identify = list(set(do_not_identify))
-                logger.debug(f'Following instances will be excluded from subcircuit identification: {do_not_identify} ')
+                do_not_identify = list(sorted(set(do_not_identify)))
+                logger.warning(f'Following instances will be excluded from subcircuit identification: {do_not_identify} ')
                 with types.set_context(node.constraints):
                     node.constraints.append({'instances': do_not_identify, 'constraint':'DoNotIdentify'})
 

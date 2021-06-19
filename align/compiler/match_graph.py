@@ -274,7 +274,9 @@ class Annotate:
                             for x in const.__fields_set__}
                         assert 'constraint' in sconst
                         logger.debug(f"transferred constraint instances {Gsub} from {const} to {sconst}")
-                        if len(sconst['instances']) > 1:    # TODO: sy Why this limitation?
+                        if sconst['constraint'] == 'order' and len(sconst['instances']) > 1:
+                            sub_const.append(sconst)
+                        elif len(sconst['instances']) > 0:    # TODO: sy Why this limitation?
                             sub_const.append(sconst)
         else:
             sub_const = []
@@ -404,13 +406,15 @@ class Annotate:
                 return True
         return False
     def _is_do_not_identify(self,Gsub,block_name):
-        di_const = [const for const in self.hier_graph_dict[block_name].constraints if isinstance(const, constraint.DoNotIdentify)]
+        if block_name not in self.hier_graph_dict:
+            return False
+        di_const = [const for const in self.hier_graph_dict[block_name]["constraints"] if isinstance(const, constraint.DoNotIdentify)]
         for const in di_const:
             if set(Gsub) & set(const.instances):
                 return True
         return False
 
-    def _mapped_graph_list(self,G1, name, POWER=None):
+    def _mapped_graph_list(self,G1, sname, POWER=None):
         """
         find all matches of library element in the graph
         """
@@ -418,12 +422,12 @@ class Annotate:
         mapped_graph_list = {}
         for lib_ele in self.lib:
             block_name = lib_ele['name']
-            if block_name==name:
+            if block_name==sname:
                 continue
             G2 = lib_ele['graph']
 
             # Digital instances only transistors:
-            if self._is_digital(G2,name):
+            if self._is_digital(G2,sname):
                 continue
             if not self._is_small(G1, G2):
                 continue
@@ -446,7 +450,7 @@ class Annotate:
                     if len(all_nd)>1 and self._is_clk(Gsub) :
                         logger.debug(f"Discarding match due to clock {Gsub}")
                         continue
-                    elif len(all_nd)>1 and self._is_do_not_identify(Gsub,name):
+                    elif len(all_nd)>1 and self._is_do_not_identify(Gsub,sname):
                         logger.debug(f"Discarding match due to user constraint {Gsub}")
                         continue
                     

@@ -5,9 +5,9 @@ import json
 from align.compiler.compiler import compiler, compiler_output
 from align.schema.checker import Z3Checker, CheckerError
 
-@pytest.fixture
-def test_compiler_hsc(dir_name):
-    return (updated_ckt, dir_name)
+# @pytest.fixture
+# def test_compiler_hsc(dir_name):
+#     return (updated_ckt, dir_name)
 
 @pytest.mark.parametrize('dir_name', ['high_speed_comparator_orderblock', \
     'high_speed_comparator_symmblock', 'high_speed_comparator_portlocation', 'high_speed_comparator_multiconnection', \
@@ -17,10 +17,6 @@ def test_group_block_hsc(dir_name):
     test_path = pathlib.Path(__file__).resolve().parent.parent / 'files' / 'test_circuits' / dir_name / (circuit_name + '.sp')
     pdk_dir = pathlib.Path(__file__).resolve().parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK'
     updated_ckt = compiler(test_path, circuit_name, pdk_dir)
-    assert 'DP_NMOS_B' in updated_ckt.keys()
-    assert 'CCP_S_NMOS_B' in updated_ckt.keys()
-    assert 'CCP_PMOS' in updated_ckt.keys()
-    assert 'DP_NMOS_B' in updated_ckt.keys()
     assert 'INV' in updated_ckt.keys()
     assert 'dp' in updated_ckt.keys()
     assert 'ccn' in updated_ckt.keys()
@@ -49,7 +45,7 @@ def test_constraint_checking(dir_name):
     test_path = pathlib.Path(__file__).resolve().parent.parent / 'files' / 'test_circuits' / dir_name / (circuit_name + '.sp')
     pdk_dir = pathlib.Path(__file__).resolve().parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK'
     with pytest.raises(CheckerError):
-        updated_ckt = compiler(test_path, circuit_name, pdk_dir)
+        compiler(test_path, circuit_name, pdk_dir)
 
 def test_scf():
     mydir = pathlib.Path(__file__).resolve()
