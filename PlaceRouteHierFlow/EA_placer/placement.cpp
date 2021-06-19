@@ -2922,6 +2922,7 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
     PnRDB::block tempBlock;
     tempBlock.name = "CC_merge_cell"+commonCentroids[i].label;
     tempBlock.orient = PnRDB::N;
+    cc_name_to_id_map[tempBlock.name] = i;
 
     tempBlock.height = uni_cell_shape.y*commonCentroids[i].shape.y;
     tempBlock.width = uni_cell_shape.x*commonCentroids[i].shape.x;
@@ -3572,10 +3573,6 @@ void Placement::set_dummy_net_weight(float init_weight, float rate, float targe)
 
 void Placement::break_merged_cc(PnRDB::hierNode &current_node)
 {
-  //find out the uni cell
-  Ppoint_I uni_cell_I;
-  uni_cell_I.x = current_node.Blocks[0].instance[0].width;
-  uni_cell_I.y = current_node.Blocks[0].instance[0].height;
 
   update_pos(current_node);
   std::cout<<"restore ms debug:0"<<std::endl;
@@ -3594,7 +3591,8 @@ void Placement::break_merged_cc(PnRDB::hierNode &current_node)
         int pos = current_node.Blocks[i].instance[j].name.find(mark_of_cc);//bug 1
 
         char ccID = current_node.Blocks[i].instance[j].name[pos+15];//bug 1
-        int ccID_int = ccID -48-1;//bug 2
+        int ccID_int = cc_name_to_id_map[current_node.Blocks[i].instance[j].name];
+        //int ccID_int = ccID - 48 - 1;  // bug 2
         std::cout<<"restore ms debug:4"<<std::endl;
         //determine the period and center
         Ppoint_F center, period,LL;
@@ -3659,7 +3657,7 @@ void Placement::break_merged_cc(PnRDB::hierNode &current_node)
   }
   for(auto &n:current_node.Nets){
     for(auto &c:n.connected){
-      if(c.type==PnRDB::Block && c.iter2 >= originalNetCNT){
+      if(c.type==PnRDB::Block && c.iter2 >= originalBlockCNT){
         c.iter2 = new_to_original_block_map[c.iter2];
       }
     }
