@@ -896,6 +896,8 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
           lhs.instNum++;
           b.gdsFile = updatedNode.gdsFile;
           //update terminal to pin information
+
+          b.HPWL_extend_wo_terminal = updatedNode.HPWL_extend_wo_terminal;
           
           for(unsigned int p=0;p<b.blockPins.size();p++){
               for(unsigned int q=0;q<updatedNode.blockPins.size();q++){

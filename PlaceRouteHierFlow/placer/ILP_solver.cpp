@@ -21,6 +21,7 @@ ILP_solver::ILP_solver(const ILP_solver& solver) {
   area = solver.area;
   HPWL = solver.HPWL;
   HPWL_extend = solver.HPWL_extend;
+  HPWL_extend_terminal = solver.HPWL_extend_terminal;
   cost = solver.cost;
   constraint_penalty = solver.constraint_penalty;
   area_norm = solver.area_norm;
@@ -42,6 +43,7 @@ ILP_solver& ILP_solver::operator=(const ILP_solver& solver) {
   constraint_penalty = solver.constraint_penalty;
   HPWL = solver.HPWL;
   HPWL_extend = solver.HPWL_extend;
+  HPWL_extend_terminal = solver.HPWL_extend_terminal;
   area_norm = solver.area_norm;
   HPWL_norm = solver.HPWL_norm;
   ratio = solver.ratio;
@@ -414,6 +416,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   // calculate HPWL
   HPWL = 0;
   HPWL_extend = 0;
+  HPWL_extend_terminal = 0;
   for (auto neti : mydesign.Nets) {
     int HPWL_min_x = UR.x, HPWL_min_y = UR.y, HPWL_max_x = 0, HPWL_max_y = 0;
     int HPWL_extend_min_x = UR.x, HPWL_extend_min_y = UR.y, HPWL_extend_max_x = 0, HPWL_extend_max_y = 0;
@@ -457,6 +460,14 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     }
     HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);
     HPWL_extend += (HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x);
+    bool is_terminal_net = false;
+    for(auto c:neti.connected){
+      if(c.type==PnRDB::Terminal){
+      is_terminal_net = true;
+      break;
+      }
+    }
+    if (is_terminal_net) HPWL_extend_terminal += (HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x);
   }
 
   //HPWL norm
@@ -1310,6 +1321,7 @@ void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierN
   node.height = UR.y;
   node.HPWL = HPWL;
   node.HPWL_extend = HPWL_extend;
+  node.HPWL_extend_wo_terminal = node.HPWL_extend - HPWL_extend_terminal;  // HPWL without terminal nets' HPWL
   node.area_norm = area_norm;
   node.HPWL_norm = HPWL_norm;
   node.constraint_penalty = constraint_penalty;
@@ -1317,6 +1329,8 @@ void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierN
 
   for (unsigned int i = 0; i < mydesign.Blocks.size(); ++i) {
     node.Blocks.at(i).selectedInstance = curr_sp.GetBlockSelected(i);
+    node.HPWL_extend += node.Blocks[i].instance[node.Blocks.at(i).selectedInstance].HPWL_extend_wo_terminal;
+    node.HPWL_extend_wo_terminal += node.Blocks[i].instance[node.Blocks.at(i).selectedInstance].HPWL_extend_wo_terminal;
     placerDB::Omark ort;
     if (Blocks[i].H_flip) {
       if (Blocks[i].V_flip)
@@ -1417,6 +1431,28 @@ void ILP_solver::UpdateBlockinHierNode(design& mydesign, placerDB::Omark ort, Pn
 }
 
 void ILP_solver::UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo) {
+  map<int, int> terminal_to_net;
+  for (unsigned int i = 0; i < node.Nets.size();i++){
+    for(auto c:node.Nets[i].connected){
+      if (c.type == PnRDB::Terminal){
+        terminal_to_net[c.iter] = i;
+        break;
+      }
+    }
+  }
+  for (int i = 0; i < (int)mydesign.GetSizeofTerminals(); i++) {
+    auto& tC = node.Terminals.at(i).termContacts;
+    tC.clear();
+    for (auto c : node.Nets[terminal_to_net[i]].connected) {
+      if (c.type == PnRDB::Terminal) continue;
+      for(auto con:node.Blocks[c.iter2].instance[node.Blocks[c.iter2].selectedInstance].blockPins[c.iter].pinContacts){
+        tC.push_back(con);
+        tC.back().originBox = tC.back().placedBox;
+        tC.back().originCenter = tC.back().placedCenter;
+      }
+    }
+  }
+  /**
   for (int i = 0; i < (int)mydesign.GetSizeofTerminals(); i++) {
     auto& tC = node.Terminals.at(i).termContacts;
     tC.clear();
@@ -1429,7 +1465,7 @@ void ILP_solver::UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& nod
     tC.back().originBox.UR = c;
     tC.back().placedBox.LL = c;
     tC.back().placedBox.UR = c;
-  }
+  }**/
   for (int i = 0; i < (int)mydesign.GetSizeofTerminals(); i++) {
     const auto& t = node.Terminals.at(i);
     PnRDB::pin temp_pin;

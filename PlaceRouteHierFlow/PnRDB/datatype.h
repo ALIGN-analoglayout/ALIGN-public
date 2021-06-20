@@ -307,6 +307,7 @@ struct block {
   vector<Via> interVias;
   vector<pin> dummy_power_pin; //power pins below to this block, but needs updated hierachy
   vector<GuardRing> GuardRings;
+  int HPWL_extend_wo_terminal = 0;
 };  // structure of block
 
 struct terminal {
@@ -421,7 +422,7 @@ struct hierNode {
   double placement_box[2] = {-1, -1};
   vector<Router_report> router_report;
   vector<Multi_connection> Multi_connections;
-  int HPWL = -1, HPWL_extend = -1;
+  int HPWL = -1, HPWL_extend = -1, HPWL_extend_wo_terminal = -1;
   double area_norm = -1;
   double HPWL_norm = -1;
   double constraint_penalty = -1;
