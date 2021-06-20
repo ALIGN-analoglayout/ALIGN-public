@@ -3,7 +3,6 @@ import pprint
 import json
 
 from .util import _write_circuit_graph, max_connectivity
-# from .read_netlist import SpiceParser
 from align.schema.subcircuit import SubCircuit
 from align.schema.parser import SpiceParser
 from .preprocess import define_SD, preprocess_stack_parallel, remove_pg_pins
@@ -13,11 +12,10 @@ from .read_setup import read_setup
 from .write_verilog_lef import write_verilog, WriteVerilog, generate_lef
 from .common_centroid_cap_constraint import CapConst
 from .find_constraint import FindConst
-from .read_lef import read_lef
 from .user_const import ConstraintParser
 from ..schema import constraint
 from ..schema.hacks import HierDictNode
-
+from ..schema.graph import Graph
 import logging
 logger = logging.getLogger(__name__)
 
@@ -57,7 +55,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, conf
     #
     ckt_parser = SpiceParser()
     lib_parser = SpiceParser()
-    #Read model file to map devices
+    # Read model file to map devices
     # TODO: add pdk specific model files
     model_statemenets = config_path / 'model.txt'
     design_name = design_name.upper()
@@ -69,7 +67,6 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, conf
     with open(input_ckt) as f:
         lines =  f.read()
     ckt_parser.parse(lines)
-    # circuit = ckt_parser.library.find(design_name)
 
     lib_files = ['basic_template.sp', 'user_template.sp']
     for lib_file in lib_files:
@@ -78,49 +75,35 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, conf
         lib_parser.parse(lines)
 
     library = lib_parser.library
-
-    # sp = SpiceParser(input_ckt, design_name, flat)
-    # circuit_graphs = sp.sp_parser()
-    # assert circuit_graphs !=None  , f"No subcircuit with name {design_name} found in spice {input_ckt}"
-    # circuit = circuit_graphs[0]
+    logger.debug(f"all library elements {library}")
 
     design_setup = read_setup(input_dir / f'{design_name}.setup')
     logger.debug(f"template parent path: {pathlib.Path(__file__).parent}")
-    # lib_path = pathlib.Path(__file__).resolve().parent.parent / 'config' / 'basic_template.sp'
-    # logger.debug(f"template library path: {lib_path}")
-    # basic_lib = SpiceParser(lib_path)
-    # library = basic_lib.sp_parser()
-    # lib_path=pathlib.Path(__file__).resolve().parent.parent / 'config' / 'user_template.sp'
-    # user_lib = SpiceParser(lib_path)
-    # library += user_lib.sp_parser()
-    # library = [HierDictNode(**x, constraints=[], ports_weight={}) for x in library]
-    # library = sorted(library, key=lambda k: max_connectivity(k), reverse=True)
+
     primitives = [v for v in library if isinstance(v, SubCircuit) and v.name not in design_setup['DONT_USE_CELLS']]
+    #TODO: Future improvement
     primitives.sort(key=lambda x: len(x.elements) + len(x.nets), reverse=True)
     logger.debug(f"dont use cells: {design_setup['DONT_USE_CELLS']}")
     logger.debug(f"all library elements: {[ele.name for ele in primitives]}")
-    # if len(design_setup['DONT_USE_CELLS'])>0:
-    #     library=[lib_ele for lib_ele in library if lib_ele['name'] not in design_setup['DONT_USE_CELLS']]
-    #read lef to not write those modules as macros
-    all_lef = read_lef(config_path)
-    logger.debug(f"Available library cells: {', '.join(all_lef)}")
+    if len(design_setup['DONT_USE_CELLS'])>0:
+        primitives=[v for v in primitives if v.name not in design_setup['DONT_USE_CELLS']]
 
-    # if Debug==True:
-    #     _write_circuit_graph(circuit["name"], circuit["graph"],
-    #                                  "./circuit_graphs/")
-    #     for lib_circuit in library:
-    #         _write_circuit_graph(lib_circuit["name"], lib_circuit["graph"],
-    #                                      "./circuit_graphs/")
-    #Converting graph to dict
-    #print(ckt_parser)
+    #read generator will be called for these elments
+    with open(pdk_dir /'generators.json') as fp:
+        generators = json.load(fp).keys()
+    logger.debug(f"Available generator for cells: {generators}")
+
+    if Debug==True:
+        _write_circuit_graph(design_name, Graph(ckt_parser.library.find(design_name)),
+                                     "./circuit_graphs/")
+
     const_parse = ConstraintParser(pdk_dir, input_dir)
+    #TODO FLAT implementation
     create_data = CreateDatabase(ckt_parser, const_parse)
     ckt_data= create_data.read_inputs(design_name)
     logger.debug("START preprocessing")
-    stacked_subcircuit=[]
-    # print(ckt_data)
 
-    #
+    stacked_subcircuit=[]
     # TODO: Re-implement stacked transistor detection using new passes
     #
     # for circuit_name, circuit in ckt_data.items():
@@ -148,7 +131,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, conf
     #             logger.debug(node)
     #print(ckt_data)
     # print(primitives)
-    annotate = Annotate(ckt_data, design_setup, primitives, all_lef)
+    annotate = Annotate(ckt_data, design_setup, primitives, generators)
     annotate.annotate()
     return ckt_data
 
@@ -203,8 +186,9 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
 
     #read lef to not write those modules as macros
     lef_path = pathlib.Path(__file__).resolve().parent.parent / 'config'
-    all_lef = read_lef(lef_path)
-    logger.debug(f"Available library cells: {', '.join(all_lef)}")
+    with open(pdk_dir /'generators.json') as fp:
+        generators = json.load(fp).keys()
+    logger.debug(f"Available library cells: {', '.join(generators)}")
 
     primitives = {}
     for ckt in ckt_data:
@@ -222,9 +206,9 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
             #Dropping floating ports
             lef_name = ele.model
             print(lef_name)
-            if lef_name in all_lef:
+            if lef_name in generators:
                 subckt= ckt_data.find(lef_name)
-                block_name, block_args = generate_lef(ele, subckt,all_lef, design_config, uniform_height)
+                block_name, block_args = generate_lef(ele, subckt,generators, design_config, uniform_height)
                 #block_name_ext = block_name.replace(lef_name,'')
                 logger.debug(f"Created new lef for: {block_name} {lef_name}")
                 #Multiple instances of same module
@@ -236,9 +220,9 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
                 #                 ckt_data[block_name] = ckt_data.pop(nm)
                 #             else:
                 #                 #For cells with extra parameters than current primitive naming convention
-                #                 all_lef.append(nm)
+                #                 generators.append(nm)
                 #     graph.nodes[node]["inst_type"] = block_name
-                #     all_lef.append(block_name)
+                #     generators.append(block_name)
 
                 # Only unit caps are generated
                 # if  block_name.lower().startswith('cap'):
@@ -254,12 +238,12 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
                     primitives[block_name] = block_args
             # elif "values" in attr and 'inst_copy' in attr:
             #     member["graph"].nodes[node]["inst_type"]= lef_name + attr["inst_copy"]
-            #     all_lef.append(block_name)
+            #     generators.append(block_name)
 
             else:
                 logger.debug(f"No physical information found for: {ele.name}")
         logger.debug(f"generated data for {ele.name} : {pprint.pformat(primitives, indent=4)}")
-    logger.debug(f"All available cell generator with updates: {all_lef}")
+    logger.debug(f"All available cell generator with updates: {generators}")
     for ckt in ckt_data:
         if not isinstance(ckt, SubCircuit):
             continue
@@ -279,7 +263,7 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
         #             raise SystemExit('Please remove floating ports')
         # else:
         #     inoutpin = member["ports"]
-        if ckt.name not in  all_lef:
+        if ckt.name not in  generators:
 
             ## Removing constraints to fix cascoded cmc
             if ckt.name not in design_setup['DIGITAL']:

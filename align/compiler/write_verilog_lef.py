@@ -9,6 +9,8 @@ from math import sqrt, ceil,floor
 
 from .util import convert_to_unit
 from .merge_nodes import merge_subckt_param
+from align.schema.subcircuit import SubCircuit
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -208,9 +210,10 @@ def generate_lef(element,subckt,all_lef, design_config:dict, uniform_height=Fals
             unit_size_mos = design_config["unit_size_nmos"]
         else:
             unit_size_mos = design_config["unit_size_pmos"]
-        print(subckt)
-        values = merge_subckt_param(subckt)
-
+        if isinstance(subckt,SubCircuit):
+            values = merge_subckt_param(subckt)
+        else:
+            values = subckt.parameters
         if "NFIN" in values.keys():
             #FinFET design
             if isinstance(values["NFIN"],str):
