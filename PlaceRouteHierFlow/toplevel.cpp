@@ -370,9 +370,9 @@ int toplevel( const std::vector<std::string>& argv) {
     if(disable_io)std::cout.clear();
     //return 0;
     // Placement
-    std::vector<PnRDB::hierNode>& nodeVec(curr_plc.get());
-    logger->debug("Checkpoint: generated {0} placements",nodeVec.size());
-    #else
+    std::vector<PnRDB::hierNode> nodeVec={current_node};
+    logger->debug("Checkpoint: generated {0} placements", nodeVec.size());
+#else
     //Placement
     PlacerIfc curr_plc(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo));
     std::vector<PnRDB::hierNode>& nodeVec(curr_plc.get());
