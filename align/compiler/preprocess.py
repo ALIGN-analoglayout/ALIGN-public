@@ -15,7 +15,7 @@ import copy
 
 logger = logging.getLogger(__name__)
 
-def remove_pg_pins(hier_graph_dict:dict,circuit_name, pg_pins):
+def remove_pg_pins(ckt_data:dict,circuit_name, pg_pins):
     """
     removes power pins to be sent as signal by recursively finding all connections to power pins
     and removing them from subcircuit defination and instance calls
@@ -23,7 +23,7 @@ def remove_pg_pins(hier_graph_dict:dict,circuit_name, pg_pins):
     Required by PnR as it does not make power connections as ports
     Parameters
     ----------
-    hier_graph_dict : dict
+    ckt_data : dict
         dictionary of all circuit in spice file
     circuit_name : str
         name of circuit to be processed.
@@ -36,7 +36,7 @@ def remove_pg_pins(hier_graph_dict:dict,circuit_name, pg_pins):
     None.
 
     """
-    G = hier_graph_dict[circuit_name]["graph"]
+    G = ckt_data[circuit_name]["graph"]
     logger.debug(f"checking pg ports in {circuit_name} {pg_pins}")
     for node, attr in G.nodes(data=True):
         if 'sub_graph' not in attr or attr['inst_type'] =='net' or not attr["connection"]:
@@ -56,18 +56,18 @@ def remove_pg_pins(hier_graph_dict:dict,circuit_name, pg_pins):
                     attr["ports"].remove(v)
                 #create a new subcircuit and changes its ports to power ports
                 #power ports are not written during verilog
-                updated_name = modify_pg_conn_subckt(hier_graph_dict,attr["inst_type"], pg_conn)
+                updated_name = modify_pg_conn_subckt(ckt_data,attr["inst_type"], pg_conn)
                 attr["instance"].model = updated_name
-                remove_pg_pins(hier_graph_dict,updated_name, pg_pins)
+                remove_pg_pins(ckt_data,updated_name, pg_pins)
 
-def modify_pg_conn_subckt(hier_graph_dict:dict,circuit_name, pg_conn):
+def modify_pg_conn_subckt(ckt_data:dict,circuit_name, pg_conn):
     """
     creates a new subcircuit by removing power pins from a subcircuit defination
     and change internal connections within the subcircuit
 
     Parameters
     ----------
-    hier_graph_dict : dict
+    ckt_data : dict
         dictionary of all circuit in spice file
     circuit_name : str
         name of circuit to be processed.
@@ -79,7 +79,7 @@ def modify_pg_conn_subckt(hier_graph_dict:dict,circuit_name, pg_conn):
 
     """
 
-    new = copy.deepcopy(hier_graph_dict[circuit_name])
+    new = copy.deepcopy(ckt_data[circuit_name])
     logger.debug(f"modifying subckt {circuit_name} {new} {pg_conn}")
     for k,v in pg_conn.items():
         logger.debug(f"fixing port {k} to {v} for all inst in {circuit_name}")
@@ -111,23 +111,23 @@ def modify_pg_conn_subckt(hier_graph_dict:dict,circuit_name, pg_conn):
 
     i=1
     updated_ckt_name = circuit_name+'pg'+str(i)
-    while updated_ckt_name in hier_graph_dict.keys():
-        if hier_graph_dict[updated_ckt_name]["ports"]==new["ports"]:
+    while updated_ckt_name in ckt_data.keys():
+        if ckt_data[updated_ckt_name]["ports"]==new["ports"]:
             break
         else:
             i = i+1
             updated_ckt_name = circuit_name+'pg'+str(i)
-    hier_graph_dict[ updated_ckt_name] = new
+    ckt_data[ updated_ckt_name] = new
     return updated_ckt_name
 
 
-def preprocess_stack_parallel(ckt_parser, hier_graph_dict:dict,circuit_name,G):
+def preprocess_stack_parallel(ckt_parser, ckt_data:dict,circuit_name,G):
     """
     Preprocess the input graph by reducing parallel caps, series resistance, identify stacking, adding parallel transistors.
 
     Parameters
     ----------
-    hier_graph_dict : dict
+    ckt_data : dict
         dictionary of all circuit in spice file
     circuit_name : str
         name of circuit to be processed.
@@ -159,11 +159,11 @@ def preprocess_stack_parallel(ckt_parser, hier_graph_dict:dict,circuit_name,G):
         #Check any existing hier
         if 'sub_graph' in subckt.elements[0].keys() and attributes[0]['sub_graph'] is not None:
             logger.debug(f"sub_graph nodes {attributes[0]['sub_graph'].nodes()}")
-            stacked_ckt = preprocess_stack_parallel(hier_graph_dict,attributes[0]["real_inst_type"],attributes[0]["sub_graph"])
+            stacked_ckt = preprocess_stack_parallel(ckt_data,attributes[0]["real_inst_type"],attributes[0]["sub_graph"])
             if stacked_ckt ==None:
                 return None
 
-        for ckt in hier_graph_dict.values():
+        for ckt in ckt_data.values():
             for node,attr in ckt["graph"].nodes(data=True):
                 if 'net' not in attr["inst_type"] and attr["inst_type"]==circuit_name:
                     logger.debug(f"updating instance {node} {attr} with stacked device {attributes}")

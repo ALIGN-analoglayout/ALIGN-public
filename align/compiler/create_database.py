@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class CreateDatabase:
     def __init__(self, ckt_parser, const_parse):
-        self.hier_graph_dict = {}
+        self.ckt_data = {}
         self.const_parse = const_parse
         self.ckt_parser = ckt_parser
 
@@ -22,35 +22,36 @@ class CreateDatabase:
         """
         read circuit graphs
         """
-        G=Graph(self.ckt_parser.library.find(name))
+        # G = Graph(self.ckt_parser.library.find(name))
         # self.ckt_parser.library.find(name)
         # top_ports = []
-        ports_weight = {}
-        for port in self.ckt_parser.library.find(name).pins:
-            # # if 'source' in attr['inst_type']:
-            # #     for source_nets in self.G.neighbors(node):
-            # #         top_ports.append(source_nets)
-            # if 'net_type' in attr:
-            #     if attr['net_type'] == "external":
-            #         top_ports.append(node)
-            ports_weight[port] = []
-            for nbr in list(G.neighbors(port)):
-                pin = G.get_edge_data(nbr,port)["pin"]
-                wt=[2**i for i,p in enumerate(['D', 'G', 'S', 'B']) if p in pin]
-                ports_weight[port].append(wt)
-
+        # ports_weight = {}
+        # for port in self.ckt_parser.library.find(name).pins:
+        #     # # if 'source' in attr['inst_type']:
+        #     # #     for source_nets in self.G.neighbors(node):
+        #     # #         top_ports.append(source_nets)
+        #     # if 'net_type' in attr:
+        #     #     if attr['net_type'] == "external":
+        #     #         top_ports.append(node)
+        #     ports_weight[port] = []
+        #     for nbr in list(G.neighbors(port)):
+        #         pin = G.get_edge_data(nbr,port)["pin"]
+        #         wt=[2**i for i,p in enumerate(['D', 'G', 'S', 'B']) if p in pin]
+        #         ports_weight[port].append(wt)
         logger.debug("Merging nested graph hierarchies to dictionary: ")
-        self.hier_graph_dict[name] = HierDictNode(
-            name=name,
-            graph=G,
-            ports=self.ckt_parser.library.find(name).pins,
-            ports_weight=ports_weight,
-            constraints=[]
-        )
-        self.const_parse.annotate_user_constraints(self.hier_graph_dict[name])
-        self._traverse_hier_in_graph(G)
-        logger.debug(f"read graph {self.hier_graph_dict}")
-        return self.hier_graph_dict
+        # self.ckt_data[name] = HierDictNode(
+        #     # name=name,
+        #     subckt=self.ckt_parser.library.find(name),
+        #     # ports=self.ckt_parser.library.find(name).pins,
+        #     # ports_weight=ports_weight,
+        #     constraints=[]
+        # )
+
+        self.const_parse.annotate_user_constraints(self.ckt_parser.library.find(name))
+        # self._traverse_hier_in_graph(G) TBD
+        logger.debug(f"read graph {self.ckt_data}")
+        #return self.ckt_data
+        return self.ckt_parser.library
 
     def _traverse_hier_in_graph(self, G):
         """
@@ -73,7 +74,7 @@ class CreateDatabase:
 
                 logger.debug(
                     f'external ports: {sub_ports}, {attr["connection"]}, {ports_weight}')
-                self.hier_graph_dict[attr["inst_type"]] = HierDictNode(
+                self.ckt_data[attr["inst_type"]] = HierDictNode(
                     name=attr["inst_type"],
                     graph=attr["sub_graph"],
                     ports=sub_ports,
@@ -81,6 +82,6 @@ class CreateDatabase:
                     ports_weight=ports_weight
                 )
                 self.const_parse.annotate_user_constraints(
-                    self.hier_graph_dict[attr["inst_type"]])
+                    self.ckt_data[attr["inst_type"]])
 
                 self._traverse_hier_in_graph(attr["sub_graph"])

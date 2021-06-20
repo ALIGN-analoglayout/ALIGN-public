@@ -21,10 +21,10 @@ from ..schema.hacks import HierDictNode
 import logging
 logger = logging.getLogger(__name__)
 
-def generate_hierarchy(netlist, subckt, output_dir, flatten_heirarchy, pdk_dir, uniform_height):
+def generate_hierarchy(netlist_path, subckt, output_dir, flatten_heirarchy, pdk_dir, uniform_height):
     config_path =  pathlib.Path(__file__).resolve().parent.parent / 'config'
-    hier_graph_dict = compiler(netlist, subckt, pdk_dir, config_path, flatten_heirarchy)
-    return compiler_output(netlist, hier_graph_dict, subckt, output_dir, pdk_dir, uniform_height)
+    ckt_data = compiler(netlist_path, subckt, pdk_dir, config_path, flatten_heirarchy)
+    return compiler_output(netlist_path, ckt_data, subckt, output_dir, pdk_dir, uniform_height)
 
 def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, config_path: pathlib.Path, flat=0, Debug=False):
     """
@@ -112,44 +112,47 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, conf
     #         _write_circuit_graph(lib_circuit["name"], lib_circuit["graph"],
     #                                      "./circuit_graphs/")
     #Converting graph to dict
+    #print(ckt_parser)
     const_parse = ConstraintParser(pdk_dir, input_dir)
     create_data = CreateDatabase(ckt_parser, const_parse)
-    hier_graph_dict = create_data.read_inputs(design_name)
+    ckt_data= create_data.read_inputs(design_name)
     logger.debug("START preprocessing")
     stacked_subcircuit=[]
+    # print(ckt_data)
 
     #
     # TODO: Re-implement stacked transistor detection using new passes
     #
-    for circuit_name, circuit in hier_graph_dict.items():
-        logger.debug(f"preprocessing circuit name: {circuit_name}")
-        G1 = circuit["graph"]
-        if circuit_name not in design_setup['DIGITAL']:
-            define_SD(circuit,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
-            stacked_subcircuit.append(preprocess_stack_parallel(ckt_parser,hier_graph_dict,circuit_name,G1))
-    for circuit_name in stacked_subcircuit:
-        if circuit_name in hier_graph_dict.keys() and circuit_name is not design_name:
-            logger.debug(f"removing stacked subcircuit {circuit_name}")
-            del hier_graph_dict[circuit_name]
+    # for circuit_name, circuit in ckt_data.items():
+    #     logger.debug(f"preprocessing circuit name: {circuit_name}")
+    #     G1 = circuit["graph"]
+    #     if circuit_name not in design_setup['DIGITAL']:
+    #         define_SD(circuit,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
+    #         stacked_subcircuit.append(preprocess_stack_parallel(ckt_parser,ckt_data,circuit_name,G1))
+    # for circuit_name in stacked_subcircuit:
+    #     if circuit_name in ckt_data.keys() and circuit_name is not design_name:
+    #         logger.debug(f"removing stacked subcircuit {circuit_name}")
+    #         del ckt_data[circuit_name]
     #
     # TODO: pg_pins should be marked using constraints. Not manipulating netlist
     #
     logger.debug("Modifying pg pins in design for PnR")
     pg_pins = design_setup['POWER']+design_setup['GND']
-    remove_pg_pins(hier_graph_dict,design_name, pg_pins)
+    # remove_pg_pins(ckt_data,design_name, pg_pins) TBD
 
     logger.debug( "\n################### FINAL CIRCUIT AFTER preprocessing #################### \n")
-    # for circuit in hier_graph_dict.values():
+    logger.debug(ckt_parser)
+    # for circuit in ckt_data.values():
     #     for node in circuit["graph"].nodes(data=True):
     #         if node[1]["inst_type"]!='net':
     #             logger.debug(node)
-    # print(hier_graph_dict)
+    #print(ckt_data)
     # print(primitives)
-    annotate = Annotate(hier_graph_dict, design_setup, primitives, all_lef, ckt_parser)
+    annotate = Annotate(ckt_data, design_setup, primitives, all_lef)
     annotate.annotate()
-    return hier_graph_dict
+    return ckt_data
 
-def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:pathlib.Path, pdk_dir:pathlib.Path, uniform_height=False):
+def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Path, pdk_dir:pathlib.Path, uniform_height=False):
     """
     search for constraints and write output in verilog format
     Parameters
@@ -158,7 +161,7 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
         DESCRIPTION.Used to take designer provided constraints
     library : TYPE. list of library graphs used
         DESCRIPTION.
-    hier_graph_dict : TYPE. dict of reduced circuit graph
+    ckt_data : TYPE. dict of reduced circuit graph
         DESCRIPTION. this list is used to generate constraints
     design_name : TYPE. name of top level design
         DESCRIPTION.
@@ -186,7 +189,7 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
 
     if not result_dir.exists():
         result_dir.mkdir()
-    logger.debug(f"Writing results in dir: {result_dir} {hier_graph_dict}")
+    logger.debug(f"Writing results in dir: {result_dir} {ckt_data}")
     input_dir = input_ckt.parents[0]
 
     verilog_tbl = { 'modules': [], 'global_signals': []}
@@ -204,91 +207,94 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
     logger.debug(f"Available library cells: {', '.join(all_lef)}")
 
     primitives = {}
-    for name,member in hier_graph_dict.items():
-        logger.debug(f"Found module: {name} {member['graph'].nodes()}")
-        graph = member["graph"]
-        constraints = member["constraints"]
+    for ckt in ckt_data:
+        if not isinstance(ckt, SubCircuit):
+            continue
+        logger.debug(f"Found module: {ckt.name} {ckt.elements}")
+        # constraints = member["constraints"]
 
-        for const in constraints:
-            if isinstance(const, constraint.GuardRing):
-                primitives['guard_ring'] = {'primitive':'guard_ring'}
+        # for const in constraints:
+        #     if isinstance(const, constraint.GuardRing):
+        #         primitives['guard_ring'] = {'primitive':'guard_ring'}
 
-        logger.debug(f"Reading nodes from graph: {name}")
-        for node, attr in graph.nodes(data=True):
-            if 'net' in attr['inst_type']: continue
+        # logger.debug(f"Reading nodes from graph: {name}")
+        for ele in ckt.elements:
             #Dropping floating ports
-            lef_name = attr['inst_type']
-
-            if "values" in attr and (lef_name in all_lef):
-                block_name, block_args = generate_lef(lef_name, attr, primitives, design_config, uniform_height)
+            lef_name = ele.model
+            print(lef_name)
+            if lef_name in all_lef:
+                subckt= ckt_data.find(lef_name)
+                block_name, block_args = generate_lef(ele, subckt,all_lef, design_config, uniform_height)
                 #block_name_ext = block_name.replace(lef_name,'')
                 logger.debug(f"Created new lef for: {block_name} {lef_name}")
                 #Multiple instances of same module
-                if 'inst_copy' in attr:
-                    for nm in list(hier_graph_dict.keys()):
-                        if nm == lef_name + attr['inst_copy']:
-                            if block_name not in hier_graph_dict.keys():
-                                logger.warning('Trying to modify a dictionary while iterating over it!')
-                                hier_graph_dict[block_name] = hier_graph_dict.pop(nm)
-                            else:
-                                #For cells with extra parameters than current primitive naming convention
-                                all_lef.append(nm)
-                    graph.nodes[node]["inst_type"] = block_name
-                    all_lef.append(block_name)
+                # if 'inst_copy' in attr:
+                #     for nm in list(ckt_data.keys()):
+                #         if nm == lef_name + attr['inst_copy']:
+                #             if block_name not in ckt_data.keys():
+                #                 logger.warning('Trying to modify a dictionary while iterating over it!')
+                #                 ckt_data[block_name] = ckt_data.pop(nm)
+                #             else:
+                #                 #For cells with extra parameters than current primitive naming convention
+                #                 all_lef.append(nm)
+                #     graph.nodes[node]["inst_type"] = block_name
+                #     all_lef.append(block_name)
 
                 # Only unit caps are generated
-                if  block_name.lower().startswith('cap'):
-                    graph.nodes[node]['inst_type'] = block_args['primitive']
-                    block_args['primitive'] = block_name
-                else:
-                    graph.nodes[node]['inst_type'] = block_name
+                # if  block_name.lower().startswith('cap'):
+                #     graph.nodes[node]['inst_type'] = block_args['primitive']
+                #     block_args['primitive'] = block_name
+                # else:
+                #     graph.nodes[node]['inst_type'] = block_name
 
                 if block_name in primitives:
                     if block_args != primitives[block_name]:
                         logging.warning(f"two different primitve {block_name} of size {primitives[block_name]} {block_args}got approximated to same unit size")
                 else:
                     primitives[block_name] = block_args
-            elif "values" in attr and 'inst_copy' in attr:
-                member["graph"].nodes[node]["inst_type"]= lef_name + attr["inst_copy"]
-                all_lef.append(block_name)
+            # elif "values" in attr and 'inst_copy' in attr:
+            #     member["graph"].nodes[node]["inst_type"]= lef_name + attr["inst_copy"]
+            #     all_lef.append(block_name)
 
             else:
-                logger.debug(f"No physical information found for: {name}")
-        logger.debug(f"generated data for {name} : {pprint.pformat(primitives, indent=4)}")
+                logger.debug(f"No physical information found for: {ele.name}")
+        logger.debug(f"generated data for {ele.name} : {pprint.pformat(primitives, indent=4)}")
     logger.debug(f"All available cell generator with updates: {all_lef}")
-    for name,member in hier_graph_dict.items():
-        graph = member["graph"]
-        logger.debug(f"Found module: {name} {graph.nodes()}")
-        inoutpin = []
-        floating_ports=[]
-        if "ports_match" in member and member["ports_match"]:
-            for key in member["ports_match"].keys():
-                if key not in POWER_PINS:
-                    inoutpin.append(key)
-            if member["ports"]:
-                logger.debug(f'Found module ports: {member["ports"]} {member["name"]}')
-                floating_ports = set(inoutpin) - set(member["ports"]) - set(design_setup['POWER']) -set(design_setup['GND'])
-                if len(list(floating_ports))> 0:
-                    logger.error(f"floating ports found: {name} {floating_ports}")
-                    raise SystemExit('Please remove floating ports')
-        else:
-            inoutpin = member["ports"]
-        if name not in  all_lef:
+    for ckt in ckt_data:
+        if not isinstance(ckt, SubCircuit):
+            continue
+        # graph = member["graph"]
+        # logger.debug(f"Found module: {name} {graph.nodes()}")
+        # inoutpin = []
+        # floating_ports=[]
+        # if "ports_match" in member and member["ports_match"]:
+        #     for key in member["ports_match"].keys():
+        #         if key not in POWER_PINS:
+        #             inoutpin.append(key)
+        #     if member["ports"]:
+        #         logger.debug(f'Found module ports: {member["ports"]} {member["name"]}')
+        #         floating_ports = set(inoutpin) - set(member["ports"]) - set(design_setup['POWER']) -set(design_setup['GND'])
+        #         if len(list(floating_ports))> 0:
+        #             logger.error(f"floating ports found: {name} {floating_ports}")
+        #             raise SystemExit('Please remove floating ports')
+        # else:
+        #     inoutpin = member["ports"]
+        if ckt.name not in  all_lef:
 
             ## Removing constraints to fix cascoded cmc
-            if name not in design_setup['DIGITAL']:
-                logger.debug(f"call constraint generator writer for block: {name}")
+            if ckt.name not in design_setup['DIGITAL']:
+                logger.debug(f"call constraint generator writer for block: {ckt.name}")
                 stop_points = design_setup['POWER'] + design_setup['GND'] + design_setup['CLOCK']
-                constraints = member["constraints"]
-                if name not in design_setup['NO_CONST']:
-                    constraints = FindConst(graph, name, inoutpin, member["ports_weight"], constraints, stop_points)
-                constraints = CapConst(graph, name, design_config["unit_size_cap"], constraints, design_setup['MERGE_SYMM_CAPS'])
-                hier_graph_dict[name] = hier_graph_dict[name].copy(
-                    update={'constraints': constraints}
-                )
+                constraints = ckt.constraints
+                # if ckt.name not in design_setup['NO_CONST']:
+                #     constraints = FindConst(graph, name, inoutpin, member["ports_weight"], constraints, stop_points)
+                # constraints = CapConst(graph, name, design_config["unit_size_cap"], constraints, design_setup['MERGE_SYMM_CAPS'])
+                # ckt_data[name] = ckt_data[name].copy(
+                #     update={'constraints': constraints}
+                # )
             ## Write out modified netlist & constraints as JSON
-            logger.debug(f"call verilog writer for block: {name}")
-            wv = WriteVerilog(name, inoutpin, hier_graph_dict, POWER_PINS)
+            logger.debug(f"call verilog writer for block: {ckt.name}")
+            wv = WriteVerilog(ckt.name, ckt.pins, ckt_data, POWER_PINS)
             verilog_tbl['modules'].append( wv.gen_dict())
     if len(POWER_PINS)>0:
         for i, nm in enumerate(POWER_PINS):
@@ -304,4 +310,5 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
     logger.info(f"OUTPUT verilog json netlist at: {result_dir}/{design_name}.verilog.json")
     logger.info(f"OUTPUT verilog netlist at: {result_dir}/{design_name}.v")
     logger.info(f"OUTPUT const file at: {result_dir}/{design_name}.pnr.const.json")
+    exit()
     return primitives

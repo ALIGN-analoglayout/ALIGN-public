@@ -4,18 +4,19 @@ Created on Wed Nov 21 13:12:15 2018
 
 @author: kunal
 """
+from align.schema import model
 from math import sqrt, ceil,floor
 
 from .util import convert_to_unit
-
+from .merge_nodes import merge_subckt_param
 import logging
 logger = logging.getLogger(__name__)
 
 
 class WriteVerilog:
     """ write hierarchical verilog file """
-    def __init__(self, circuit_name, inout_pin_names, hier_graph_dict, power_pins):
-        self.hier_graph_dict = hier_graph_dict
+    def __init__(self, circuit_name, inout_pin_names, ckt_data, power_pins):
+        self.ckt_data = ckt_data
         self.circuit_name = circuit_name
         self.inout_pins = inout_pin_names
         self.pins = []
@@ -24,8 +25,8 @@ class WriteVerilog:
                 self.pins.append(port)
         self.power_pins=power_pins
 
-        self.circuit_graph = self.hier_graph_dict[self.circuit_name].graph
-        self.constraints = self.hier_graph_dict[self.circuit_name].constraints
+        self.subckt_data = self.ckt_data.find(circuit_name)
+        self.constraints = self.ckt_data.find(circuit_name).constraints
 
     def gen_dict( self):
         d = {}
@@ -34,48 +35,52 @@ class WriteVerilog:
         d['constraints'] = self.constraints.dict()['__root__']
         d['instances'] = []
 
-        for node, attr in self.circuit_graph.nodes(data=True):
+        for ele in self.subckt_data.elements:
+            instance = {}
+            instance['template_name'] = ele.model
+            instance['instance_name'] = ele.name
+            print(ele)
+            instance['fa_map']= self.gen_dict_fa(ele.pins.keys(), ele.pins.values())
+            d['instances'].append( instance)
+        #     # if 'source' in attr['inst_type']:
+        #     #     logger.debug(f"Skipping source nodes : {node}")
+        #     #     continue
+        #     if 'net' not in attr['inst_type']:
+        #         logger.debug(f"Writing node: {node} {attr}")
 
+        #         instance = {}
 
-            if 'source' in attr['inst_type']:
-                logger.debug(f"Skipping source nodes : {node}")
-                continue
-            if 'net' not in attr['inst_type']:
-                logger.debug(f"Writing node: {node} {attr}")
+        #         instance['template_name'] = attr['inst_type']
+        #         instance['instance_name'] = node
 
-                instance = {}
+        #         ports = []
+        #         nets = []
+        #         if "ports_match" in attr:
+        #             logger.debug(f'Nets connected to ports: {attr["ports_match"]}')
+        #             for key, value in attr["ports_match"].items():
+        #                 ports.append(key)
+        #                 nets.append(value)
+        #             if 'Switch_NMOS_G' in attr['inst_type']:
+        #                 ports.append('B')
+        #                 nets.append(nets[1])
+        #             elif 'Switch_PMOS_G' in attr['inst_type']:
+        #                 ports.append('B')
+        #                 nets.append(nets[1])
+        #         elif "connection" in attr and attr["connection"]:
+        #             for key, value in attr["connection"].items():
+        #                 if attr['inst_type'] in self.ckt_data and key in self.ckt_data[attr['inst_type']]['ports']:
+        #                     ports.append(key)
+        #                     nets.append(value)
+        #         else:
+        #             logger.error(f"No connectivity info found : {', '.join(attr['ports'])}")
+        #             ports = attr["ports"]
+        #             nets = list(self.circuit_graph.neighbors(node))
 
-                instance['template_name'] = attr['inst_type']
-                instance['instance_name'] = node
+        #         instance['fa_map'] = self.gen_dict_fa(ports, nets)
+        #         if not instance['fa_map']:
+        #             logger.warning(f"Unconnected module, only power/gnd conenction found {node}")
 
-                ports = []
-                nets = []
-                if "ports_match" in attr:
-                    logger.debug(f'Nets connected to ports: {attr["ports_match"]}')
-                    for key, value in attr["ports_match"].items():
-                        ports.append(key)
-                        nets.append(value)
-                    if 'Switch_NMOS_G' in attr['inst_type']:
-                        ports.append('B')
-                        nets.append(nets[1])
-                    elif 'Switch_PMOS_G' in attr['inst_type']:
-                        ports.append('B')
-                        nets.append(nets[1])
-                elif "connection" in attr and attr["connection"]:
-                    for key, value in attr["connection"].items():
-                        if attr['inst_type'] in self.hier_graph_dict and key in self.hier_graph_dict[attr['inst_type']]['ports']:
-                            ports.append(key)
-                            nets.append(value)
-                else:
-                    logger.error(f"No connectivity info found : {', '.join(attr['ports'])}")
-                    ports = attr["ports"]
-                    nets = list(self.circuit_graph.neighbors(node))
-
-                instance['fa_map'] = self.gen_dict_fa(ports, nets)
-                if not instance['fa_map']:
-                    logger.warning(f"Unconnected module, only power/gnd conenction found {node}")
-
-                d['instances'].append( instance)
+        #         d['instances'].append( instance)
 
         return d
 
@@ -109,8 +114,8 @@ class WriteVerilog:
 def write_verilog( j, ofp):
 
     for module in j['modules']:
-        print( f"module {module['name']} ( {', '.join( module['parameters'])} );", file=ofp) 
-        print( f"input {', '.join( module['parameters'])};", file=ofp) 
+        print( f"module {module['name']} ( {', '.join( module['parameters'])} );", file=ofp)
+        print( f"input {', '.join( module['parameters'])};", file=ofp)
         print( file=ofp)
         for instance in module['instances']:
             pl = ', '.join( f".{fa['formal']}({fa['actual']})" for fa in instance['fa_map'])
@@ -118,7 +123,7 @@ def write_verilog( j, ofp):
 
         print( file=ofp)
         print( 'endmodule', file=ofp)
-        
+
     if 'global_signals' in j and j['global_signals']:
         prefixes = set()
         for s in j['global_signals']:
@@ -135,13 +140,14 @@ def write_verilog( j, ofp):
         print( "`endcelldefine", file=ofp)
 
 
-def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:dict, uniform_height=False):
+def generate_lef(element,subckt,all_lef, design_config:dict, uniform_height=False):
     """ Return commands to generate parameterized lef"""
-    values=attr["values"]
-    logger.debug(f"checking lef for: {name}, {values}")
+    name = element.model
+    values = element.parameters
+    available_block_lef = all_lef
+    logger.debug(f"checking lef for: {name}, {element}")
     #for param, value in size.items():
-
-    if name.lower().startswith('cap'):
+    if not isinstance(name,str) and name.base.name=='CAP':
         #print("all val",values)
         if 'cap' in values.keys():
             if values["cap"]=="unit_size":
@@ -172,7 +178,7 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
                 'primitive': block_name,
                 'value': design_config["unit_size_cap"]
             }
-    elif name.lower().startswith('res'):
+    elif not isinstance(name,str) and name.base.name=='RES':
         if 'res' in values.keys():
             if values["res"]=="unit_size":
                 size = design_config["unit_height_res"]
@@ -197,23 +203,27 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
                 'value': (1, design_config["unit_height_res"])
             }
     else:
+
         if 'nmos' in name.lower():
             unit_size_mos = design_config["unit_size_nmos"]
         else:
             unit_size_mos = design_config["unit_size_pmos"]
-        if "nfin" in values.keys():
+        print(subckt)
+        values = merge_subckt_param(subckt)
+
+        if "NFIN" in values.keys():
             #FinFET design
-            if values["nfin"]=="unit_size":
+            if isinstance(values["NFIN"],str):
                 size = unit_size_mos
             else:
-                size = int(values["nfin"])
+                size = int(values["NFIN"])
             name_arg ='nfin'+str(size)
-        elif "w" in values.keys():
+        elif "W" in values.keys():
             #Bulk design
-            if values["w"]=="unit_size":
+            if isinstance(values["W"],str):
                 size = unit_size_mos
             else:
-                size = int(values["w"]*1E+9/design_config["Gate_pitch"])                
+                size = int(values["w"]*1E+9/design_config["Gate_pitch"])
             values["nfin"]=size
             name_arg ='nfin'+str(size)
         else:
@@ -255,7 +265,7 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
                 name = 'Switch_PMOS_B'
 
             logger.debug(f"Generating parametric lef of:  {block_name} {name}")
-            values["real_inst_type"]=attr["real_inst_type"]
+            # values["real_inst_type"]=attr["real_inst_type"]
             cell_gen_parameters= {
                 'primitive': name,
                 'value': unit_size_mos,
@@ -268,15 +278,15 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
                 block_name = block_name+'_ST'+str(int(values["stack"]))
             #cell generator takes only one VT so doing a string search
             #To be fixed:
-            if isinstance(attr["real_inst_type"],list):
-                merged_vt='_'.join(attr["real_inst_type"])
-            else:
-                merged_vt=attr["real_inst_type"]
+            # if isinstance(attr["real_inst_type"],list):
+            #     merged_vt='_'.join(attr["real_inst_type"])
+            # else:
+            #     merged_vt=attr["real_inst_type"]
 
-            vt= [vt for vt in design_config["vt_type"] if vt.lower() in  merged_vt]
-            if vt:
-                block_name = block_name+'_'+vt[0]
-                cell_gen_parameters['vt_type']=vt[0]
+            # vt= [vt for vt in design_config["vt_type"] if vt.lower() in  merged_vt]
+            # if vt:
+            #     block_name = block_name+'_'+vt[0]
+            #     cell_gen_parameters['vt_type']=vt[0]
             return block_name, cell_gen_parameters
         else:
             logger.debug("No proper parameters found for cell generation")
