@@ -5,6 +5,10 @@ from align.cell_fabric import transformation
 from align.schema.transistor import Transistor, TransistorArray
 from . import CanvasPDK, MOS
 
+import logging
+logger = logging.getLogger(__name__)
+logger_func = logger.debug
+
 
 class MOSGenerator(CanvasPDK):
 
@@ -23,6 +27,9 @@ class MOSGenerator(CanvasPDK):
 
 
     def mos_array_temporary_wrapper(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
+
+        logger_func(f'MOS array: pattern={pattern}, ports={ports}, parameters={parameters}')
+
         #################################################################################################
         # TODO: All of below goes away when TransistorArray is passed to mos_array as shown below
         for key in ['m', 'real_inst_type']:
@@ -39,8 +46,14 @@ class MOSGenerator(CanvasPDK):
             nf = device_type = None
             assert False, f'Either nf or stack parameter should be defined {parameters}'
 
-        assert 'nfin' in parameters, f'nfin should be defined {parameters}'
-        nfin = parameters['nfin']
+        if 'w' in parameters:
+            nfin = parameters['w'] * 1e10 // self.pdk['Fin']['Pitch']
+            # w in the netlist is the effective total width for a single transistor 
+            nfin = nfin // parameters[nf]
+        elif 'nfin' in parameters:
+            nfin = parameters['nfin']
+        else:
+            assert False, f'Either nfin or w parameter should be defined {parameters}'
 
         unit_transistor = Transistor(device_type=device_type,
                                      nf=parameters[nf],
@@ -72,7 +85,7 @@ class MOSGenerator(CanvasPDK):
         )
         # TODO: All of above goes away when TransistorArray is passed to mos_array as shown below
         #################################################################################################
-        m = 2*parameters['m'] if pattern == 1 else parameters['m']
+        m = 2*parameters['m'] if pattern > 0 else parameters['m']
         self.n_row, self.n_col = self.validate_array(m, y_cells, x_cells)
         self.ports = ports
         self.mos_array()
@@ -228,6 +241,9 @@ class MOSGenerator(CanvasPDK):
     def place(self, rows):
         x_offset = 0
         y_offset = 0
+
+        x_offset += 0*self.pdk['Poly']['Pitch'] # whitespace for feol rules
+
         for row in rows:
             x_offset = 0
             for device in row:
@@ -236,7 +252,10 @@ class MOSGenerator(CanvasPDK):
                 x_offset += cell['bbox'][2] - cell['bbox'][0]
             y_offset += cell['bbox'][3] - cell['bbox'][1]
 
+        x_offset += 0*self.pdk['Poly']['Pitch'] # whitespace for feol rules
+
         self.bbox = transformation.Rect(*[0, 0, x_offset, y_offset])
+        logger_func(f'bounding box: {self.bbox}')
 
 
     def route(self):
@@ -301,7 +320,7 @@ class MOSGenerator(CanvasPDK):
 
         # Expose pins
         for term in self.terminals:
-            if term['netName'] is not None and term['layer'] in ['M1', 'M2', 'M3']:
+            if term['netName'] is not None and term['layer'] in ['M2', 'M3']:
                 term['pin'] = term['netName']
 
 
@@ -331,8 +350,10 @@ class MOSGenerator(CanvasPDK):
             A B A B 
             B A B A
         """
-        assert (n_row * n_col) % 2 == 0, f'Odd number of transistors: {n_row}, {n_col}'
-        assert n_col >= 2, 'Single column transistor array not supported'
+        if n_row * n_col > 1:
+            assert (n_row * n_col) % 2 == 0, f'Odd number of transistors: {n_row}, {n_col}'
+        if n_row == 1:
+            assert n_col >= 2, 'Illegal combination'
         lst = []
         for y in range(n_row):
             if y % 2 == 0:

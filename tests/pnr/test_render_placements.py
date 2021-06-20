@@ -1,11 +1,10 @@
+from align.pnr.render_placement import gen_boxes_and_hovertext
 
-from align.pnr.render_placement import dump_blocks2
-
-
-def test_dump_blocks2():
+def test_gen_boxes_and_hovertext():
     placement_verilog_d = {
         "modules": [
-            { "name": "top",
+            { "abstract_name": "top",
+              "concrete_name": "top",
               "bbox": [0,0,100,100],
               "parameters": [],
               "instances": [
@@ -26,10 +25,26 @@ def test_dump_blocks2():
             }
         ],
         "leaves": [
-            { "name": "a",
-              "bbox": [0,0,10,10]
+            { "abstract_name": "a",
+              "concrete_name": "a",
+              "bbox": [0,0,10,10],
+              "terminals": [
+                  { "name": "x",
+                    "rect": [4,4,6,6]
+                  }
+              ]
             }
         ]
     }
     
-    dump_blocks2( placement_verilog_d, 'top', 0, show=False)
+    lst = list(gen_boxes_and_hovertext( placement_verilog_d, 'top'))
+    bbox_rects = [ tup[0] for tup in lst if tup[2] and not tup[4]]
+    term_rects = [ tup[0] for tup in lst if tup[2] and tup[4]]
+
+    assert bbox_rects[0] == [0,0,10,10]
+    assert bbox_rects[1] == [0,20,10,30]
+
+    assert term_rects[0] == [4,4,6,6]
+    assert term_rects[1] == [4,24,6,26]
+
+

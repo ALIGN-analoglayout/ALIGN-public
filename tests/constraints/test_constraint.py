@@ -45,7 +45,7 @@ def run_example(example):
     run_dir.mkdir(parents=True)
     os.chdir(run_dir)
 
-    args = [str(example), '-p', str(pdk_dir), '--check', '-l','INFO']
+    args = [str(example), '-p', str(pdk_dir), '-l','INFO']
     results = align.CmdlineParser().parse_args(args)
     assert results is not None, f"{example.name}: No results generated"
     
@@ -74,3 +74,24 @@ def test_aspect_ratio_max():
     name = "example_aspect_ratio_max"
     run_example(cascode_amplifier(my_dir, name, constraints))
 
+
+def test_boundary_max_width():
+    constraints = """[
+    {"constraint": "HorizontalDistance", "abs_distance":0},
+    {"constraint": "VerticalDistance",   "abs_distance":0},
+    {"constraint": "Boundary", "subcircuit": "example_boundary_max_width", "max_width": 3.5}
+]
+"""
+    name = "example_boundary_max_width"
+    run_example(cascode_amplifier(my_dir, name, constraints))
+
+
+def test_boundary_max_height():
+    constraints = """[
+    {"constraint": "HorizontalDistance", "abs_distance":0},
+    {"constraint": "VerticalDistance",   "abs_distance":0},
+    {"constraint": "Boundary", "subcircuit": "example_boundary_max_height", "max_height": 1.3}
+]
+"""
+    name = "example_boundary_max_height"
+    run_example(cascode_amplifier(my_dir, name, constraints))

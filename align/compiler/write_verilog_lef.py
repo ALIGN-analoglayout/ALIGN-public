@@ -14,6 +14,7 @@ from align.schema.subcircuit import SubCircuit
 import logging
 logger = logging.getLogger(__name__)
 
+from copy import deepcopy
 
 class WriteVerilog:
     """ write hierarchical verilog file """
@@ -121,7 +122,9 @@ def write_verilog( j, ofp):
         print( file=ofp)
         for instance in module['instances']:
             pl = ', '.join( f".{fa['formal']}({fa['actual']})" for fa in instance['fa_map'])
-            print( f"{instance['template_name']} {instance['instance_name']} ( {pl} );", file=ofp)
+            tn = instance['template_name'] if 'template_name' in instance else instance['abstract_template_name']
+
+            print( f"{tn} {instance['instance_name']} ( {pl} );", file=ofp)
 
         print( file=ofp)
         print( 'endmodule', file=ofp)
@@ -148,8 +151,17 @@ def generate_lef(element,subckt,all_lef, design_config:dict, uniform_height=Fals
     values = element.parameters
     available_block_lef = all_lef
     logger.debug(f"checking lef for: {name}, {element}")
+    if name.lower() == 'generic':
+        # TODO: how about hashing for unique names?        
+        value_str = ''
+        for key in sorted(values):
+            val = values[key].replace('-','')
+            value_str += f'_{key}_{val}'
+        block_name = attr['real_inst_type'] + value_str
+        block_parameters = {"parameters": deepcopy(values), "primitive": name.lower()}      
+        return block_name, block_parameters
 
-    if name=='CAP':
+    elif name=='CAP':
         if 'VALUE' in values.keys():
             if isinstance(values["VALUE"],str):
                 size = design_config["unit_size_cap"]

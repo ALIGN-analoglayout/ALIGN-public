@@ -63,6 +63,11 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
                             'D': [('M1', 'D')],
                             'G': [('M1', 'G')]})
 
+    elif primitive in ["Switch_GB_NMOS", "Switch_GB_PMOS"]:
+        cell_pin = gen( 0, {'S': [('M1', 'S')],
+                            'D': [('M1', 'D')],
+                            'G': [('M1', 'G'), ('M1', 'B')]})
+
     elif primitive in ["DCL_NMOS_B", "DCL_PMOS_B"]:
         cell_pin = gen( 0, {'S': [('M1', 'S')],
                             'D': [('M1', 'G'), ('M1', 'D')],
@@ -258,12 +263,26 @@ def get_generator(name, pdkdir):
             return getattr(module, name)
 
 
+def generate_generic(pdkdir, parameters):
+
+    pdk = Pdk().load(pdkdir / 'layers.json')
+    primitive = get_generator(parameters["real_inst_type"], pdkdir)
+    uc = primitive()
+    uc.generate(
+        ports=parameters["ports"],
+        netlist_parameters=parameters["values"]
+    )
+    return uc, parameters["ports"]
+
+
 # WARNING: Bad code. Changing these default values breaks functionality.
 def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None, pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd(), abstract_template_name=None, concrete_template_name=None):
 
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
 
-    if 'MOS' in primitive:
+    if primitive == 'generic':
+        uc, cell_pin = generate_generic(pdkdir, parameters)
+    elif 'MOS' in primitive:
         uc, cell_pin = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
     elif 'cap' in primitive.lower():
         uc, cell_pin = generate_Cap(pdkdir, block_name, value)
@@ -277,13 +296,14 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
     else:
         raise NotImplementedError(f"Unrecognized primitive {primitive}")
 
-    with open(outputdir / (block_name + '.debug.json'), "wt") as fp:
-        uc.computeBbox()
-        json.dump( { 'bbox' : uc.bbox.toList(),
-                     'globalRoutes' : [],
-                     'globalRouteGrid' : [],
-                     'terminals' : uc.terminals}
-                    , fp, indent=2)
+    uc.computeBbox()
+    if False:
+        with open(outputdir / (block_name + '.debug.json'), "wt") as fp:
+            json.dump( { 'bbox' : uc.bbox.toList(),
+                         'globalRoutes' : [],
+                         'globalRouteGrid' : [],
+                         'terminals' : uc.terminals}
+                        , fp, indent=2)
 
     with open(outputdir / (block_name + '.json'), "wt") as fp:
         uc.writeJSON( fp)
@@ -293,6 +313,7 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
         blockM = 0
     positive_coord.json_pos(outputdir / (block_name + '.json'))
     gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, cell_pin, bodyswitch, blockM, uc.pdk)
+
     with open( outputdir / (block_name + ".json"), "rt") as fp0, \
          open( outputdir / (block_name + ".gds.json"), 'wt') as fp1:
         gen_gds_json.translate(block_name, '', pinswitch, fp0, fp1, datetime.datetime( 2019, 1, 1, 0, 0, 0), uc.pdk)

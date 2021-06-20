@@ -1,4 +1,5 @@
 #include "ILP_solver.h"
+#include <stdexcept>
 
 ILP_solver::ILP_solver() {}
 
@@ -19,10 +20,11 @@ ILP_solver::ILP_solver(const ILP_solver& solver) {
   UR = solver.UR;
   area = solver.area;
   HPWL = solver.HPWL;
+  cost = solver.cost;
+  constraint_penalty = solver.constraint_penalty;
   area_norm = solver.area_norm;
   HPWL_norm = solver.HPWL_norm;
   ratio = solver.ratio;
-  dead_area = solver.dead_area;
   linear_const = solver.linear_const;
   multi_linear_const = solver.multi_linear_const;
   Aspect_Ratio_weight = solver.Aspect_Ratio_weight;
@@ -35,11 +37,12 @@ ILP_solver& ILP_solver::operator=(const ILP_solver& solver) {
   LL = solver.LL;
   UR = solver.UR;
   area = solver.area;
+  cost = solver.cost;
+  constraint_penalty = solver.constraint_penalty;
   HPWL = solver.HPWL;
   area_norm = solver.area_norm;
   HPWL_norm = solver.HPWL_norm;
   ratio = solver.ratio;
-  dead_area = solver.dead_area;
   multi_linear_const = solver.multi_linear_const;
   Aspect_Ratio_weight = solver.Aspect_Ratio_weight;
   memcpy(Aspect_Ratio, solver.Aspect_Ratio, sizeof(solver.Aspect_Ratio));
@@ -58,6 +61,24 @@ void ILP_solver::lpsolve_logger(lprec* lp, void* userhandle, char* buf) {
 
 double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
+
+  auto roundup = [](int& v, int pitch) { v = pitch * ((v + pitch - 1) / pitch); };
+  int v_metal_index = -1;
+  int h_metal_index = -1;
+  for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
+    if (drcInfo.Metal_info[i].direct == 0) {
+      v_metal_index = i;
+      break;
+    }
+  }
+  for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
+    if (drcInfo.Metal_info[i].direct == 1) {
+      h_metal_index = i;
+      break;
+    }
+  }
+  int x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
+  int y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
 
   // each block has 4 vars, x, y, H_flip, V_flip;
   unsigned int N_var = mydesign.Blocks.size() * 4 + mydesign.Nets.size() * 2;
@@ -80,6 +101,10 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     set_binary(lp, i * 4 + 4, TRUE);
   }
 
+  int bias_Hgraph = mydesign.bias_Hgraph, bias_Vgraph = mydesign.bias_Vgraph;
+  roundup(bias_Hgraph, x_pitch);
+  roundup(bias_Vgraph, y_pitch);
+
   // overlap constraint
   for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
     int i_pos_index = find(curr_sp.posPair.begin(), curr_sp.posPair.end(), i) - curr_sp.posPair.begin();
@@ -92,24 +117,24 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
           // i is left of j
           double sparserow[2] = {1, -1};
           int colno[2] = {int(i) * 4 + 1, int(j) * 4 + 1};
-          if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[i][curr_sp.selected[i]].width - mydesign.bias_Hgraph)) logger->error("error");
+          if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[i][curr_sp.selected[i]].width - bias_Hgraph)) logger->error("error");
         } else {
           // i is above j
           double sparserow[2] = {1, -1};
           int colno[2] = {int(i) * 4 + 2, int(j) * 4 + 2};
-          if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].height + mydesign.bias_Vgraph)) logger->error("error");
+          if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].height + bias_Vgraph)) logger->error("error");
         }
       } else {
         if (i_neg_index < j_neg_index) {
           // i is be low j
           double sparserow[2] = {1, -1};
           int colno[2] = {int(i) * 4 + 2, int(j) * 4 + 2};
-          if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[i][curr_sp.selected[i]].height - mydesign.bias_Vgraph)) logger->error("error");
+          if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[i][curr_sp.selected[i]].height - bias_Vgraph)) logger->error("error");
         } else {
           // i is right of j
           double sparserow[2] = {1, -1};
           int colno[2] = {int(i) * 4 + 1, int(j) * 4 + 1};
-          if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].width + mydesign.bias_Hgraph)) logger->error("error");
+          if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].width + bias_Hgraph)) logger->error("error");
         }
       }
     }
@@ -307,45 +332,6 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
       }
       if (blockids.size() < 2) continue;
       sort(blockids.begin(), blockids.end(), [](const pair<int, int>& a, const pair<int, int>& b) { return a.first <= b.first; });
-      //int LLblock_id = curr_sp.negPair[blockids.front().first], LLpin_id = blockids.front().second;
-      //int LLblock_width = mydesign.Blocks[LLblock_id][curr_sp.selected[LLblock_id]].width,
-          //LLblock_height = mydesign.Blocks[LLblock_id][curr_sp.selected[LLblock_id]].height;
-      //int LLpin_x = mydesign.Blocks[LLblock_id][curr_sp.selected[LLblock_id]].blockPins[LLpin_id].center.front().x,
-          //LLpin_y = mydesign.Blocks[LLblock_id][curr_sp.selected[LLblock_id]].blockPins[LLpin_id].center.front().y;
-      //int URblock_id = curr_sp.negPair[blockids.back().first], URpin_id = blockids.back().second;
-      //int URblock_width = mydesign.Blocks[URblock_id][curr_sp.selected[URblock_id]].width,
-          //URblock_height = mydesign.Blocks[URblock_id][curr_sp.selected[URblock_id]].height;
-      //int URpin_x = mydesign.Blocks[URblock_id][curr_sp.selected[URblock_id]].blockPins[URpin_id].center.front().x,
-          //URpin_y = mydesign.Blocks[URblock_id][curr_sp.selected[URblock_id]].blockPins[URpin_id].center.front().y;
-      // min abs(LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)=HPWLx
-      //-> (LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)<=HPWLx
-      //  -(LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)<=HPWLx
-      {
-        //double sparserow[5] = {const_graph.LAMBDA, (LLblock_width - 2 * LLpin_x) * const_graph.LAMBDA, -const_graph.LAMBDA,
-                               //-(URblock_width - 2 * URpin_x) * const_graph.LAMBDA, -1};
-        //int colno[5] = {LLblock_id * 4 + 1, LLblock_id * 4 + 3, URblock_id * 4 + 1, URblock_id * 4 + 3, int(mydesign.Blocks.size() * 4 + i * 2 + 1)};
-        // add_constraintex(lp, 5, sparserow, colno, LE, -LLpin_x + URpin_x);
-      }
-      {
-        //double sparserow[5] = {-const_graph.LAMBDA, -(LLblock_width - 2 * LLpin_x) * const_graph.LAMBDA, const_graph.LAMBDA,
-                               //(URblock_width - 2 * URpin_x) * const_graph.LAMBDA, -1};
-        //int colno[5] = {LLblock_id * 4 + 1, LLblock_id * 4 + 3, URblock_id * 4 + 1, URblock_id * 4 + 3, int(mydesign.Blocks.size() * 4 + i * 2 + 1)};
-        // add_constraintex(lp, 5, sparserow, colno, LE, LLpin_x - URpin_x);
-      }
-      // row[mydesign.Blocks.size() * 4 + i * 2 + 1] = 1;
-      {
-        //double sparserow[5] = {const_graph.LAMBDA, (LLblock_height - 2 * LLpin_y) * const_graph.LAMBDA, -const_graph.LAMBDA,
-                               //-(URblock_height - 2 * URpin_y) * const_graph.LAMBDA, -1};
-        //int colno[5] = {LLblock_id * 4 + 2, LLblock_id * 4 + 4, URblock_id * 4 + 2, URblock_id * 4 + 4, int(mydesign.Blocks.size() * 4 + i * 2 + 2)};
-        // add_constraintex(lp, 5, sparserow, colno, LE, -LLpin_y + URpin_y);
-      }
-      {
-        //double sparserow[5] = {-const_graph.LAMBDA, -(LLblock_height - 2 * LLpin_y) * const_graph.LAMBDA, const_graph.LAMBDA,
-                               //(URblock_height - 2 * URpin_y) * const_graph.LAMBDA, -1};
-        //int colno[5] = {LLblock_id * 4 + 2, LLblock_id * 4 + 4, URblock_id * 4 + 2, URblock_id * 4 + 4, int(mydesign.Blocks.size() * 4 + i * 2 + 2)};
-        // add_constraintex(lp, 5, sparserow, colno, LE, LLpin_y - URpin_y);
-      }
-      // row[mydesign.Blocks.size() * 4 + i * 2 + 2] = 1;
     }
 
     // add area in cost
@@ -379,29 +365,15 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     set_minim(lp);
     set_timeout(lp, 1);
     int ret = solve(lp);
-    if (ret != 0 && ret != 1) return -1;
+    if (ret != 0 && ret != 1) {
+      delete_lp(lp);
+      return -1;
+    }
   }
 
   double var[N_var];
   get_variables(lp, var);
   delete_lp(lp);
-  auto roundup = [](int& v, int pitch) { v = pitch * ((v + pitch - 1) / pitch); };
-  int v_metal_index = -1;
-  int h_metal_index = -1;
-  for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
-    if (drcInfo.Metal_info[i].direct == 0) {
-      v_metal_index = i;
-      break;
-    }
-  }
-  for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
-    if (drcInfo.Metal_info[i].direct == 1) {
-      h_metal_index = i;
-      break;
-    }
-  }
-  int x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
-  int y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
     Blocks[i].x = var[i * 4];
     Blocks[i].y = var[i * 4 + 1];
@@ -409,6 +381,14 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     roundup(Blocks[i].y, y_pitch);
     Blocks[i].H_flip = var[i * 4 + 2];
     Blocks[i].V_flip = var[i * 4 + 3];
+  }
+  auto hflipVec = curr_sp.GetFlip(true);
+  auto vflipVec = curr_sp.GetFlip(false);
+  if (!hflipVec.empty() && !vflipVec.empty()) {
+    for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
+      Blocks[i].H_flip = hflipVec[i];
+      Blocks[i].V_flip = vflipVec[i];
+    }
   }
 
   // calculate LL and UR
@@ -422,13 +402,8 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   }
   // calculate area
   area = double(UR.x - LL.x) * double(UR.y - LL.y);
-  // calculate dead area
-  dead_area = area;
-  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
-    dead_area -= double(mydesign.Blocks[i][curr_sp.selected[i]].width) * double(mydesign.Blocks[i][curr_sp.selected[i]].height);
-  }
   //calculate norm area
-  area_norm = area * 0.1 / (area - dead_area);
+  area_norm = area * 0.1 / mydesign.GetMaxBlockAreaSum();
   // calculate ratio
   // ratio = std::max(double(UR.x - LL.x) / double(UR.y - LL.y), double(UR.y - LL.y) / double(UR.x - LL.x));
   ratio = double(UR.x - LL.x) / double(UR.y - LL.y);
@@ -458,12 +433,9 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     }
     HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);  
   }
+
   //HPWL norm
-  double block_HPWL = 0;
-  for (int i = 0; i < mydesign.Blocks.size(); i++) {
-    block_HPWL += double(mydesign.Blocks[i][curr_sp.selected[i]].width) + double(mydesign.Blocks[i][curr_sp.selected[i]].height);
-  }
-  if (!mydesign.Nets.empty()) HPWL_norm = HPWL / block_HPWL / double(mydesign.Nets.size());
+  if (!mydesign.Nets.empty()) HPWL_norm = HPWL / mydesign.GetMaxBlockHPWLSum() / double(mydesign.Nets.size());
   // calculate linear constraint
   linear_const = 0;
   std::vector<std::vector<double>> feature_value;
@@ -495,7 +467,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     linear_const += temp_sum;
   }
 
-  if (!mydesign.Nets.empty()) linear_const /= (block_HPWL * double(mydesign.Nets.size()));
+  if (!mydesign.Nets.empty()) linear_const /= (mydesign.GetMaxBlockHPWLSum() * double(mydesign.Nets.size()));
 
   // calculate multi linear constraint
   multi_linear_const = 0;
@@ -521,15 +493,27 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     multi_linear_const += temp_sum;
   }
 
-  double cost = CalculateCost(mydesign, curr_sp);
-  return cost;
+  double calculated_cost = CalculateCost(mydesign, curr_sp);
+  cost = calculated_cost;
+  return calculated_cost;
 }
 
 double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
+  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.CalculateCost");
+
   ConstGraph const_graph;
   double cost = 0;
-  cost += area_norm;
-  cost += HPWL_norm * const_graph.LAMBDA;
+
+  if (false) {
+    cost += area_norm;
+    cost += HPWL_norm * const_graph.LAMBDA;
+  } else {
+    cost += log( area);
+    if (HPWL > 0) {
+      cost += log( HPWL) * const_graph.LAMBDA;
+    }
+  }
+
   double match_cost = 0;
   double max_dim = std::max(UR.x - LL.x, UR.y - LL.y);
   for (auto mbi : mydesign.Match_blocks) {
@@ -539,11 +523,11 @@ double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
                       mydesign.Blocks[mbi.blockid2][curr_sp.selected[mbi.blockid2]].height / 2)) / max_dim ;
   }
   if (!mydesign.Match_blocks.empty()) match_cost /= (mydesign.Match_blocks.size());
-  cost += match_cost * const_graph.BETA;
-  // cost += abs(log(ratio) - log(Aspect_Ratio[0])) * Aspect_Ratio_weight;
-  cost += dead_area / area * const_graph.PHI;
-  cost += linear_const * const_graph.PI;
-  cost += multi_linear_const * const_graph.PII;
+  constraint_penalty =
+    match_cost * const_graph.BETA +
+    linear_const * const_graph.PI +
+    multi_linear_const * const_graph.PII;
+  cost += constraint_penalty;
   return cost;
 }
 
@@ -1299,6 +1283,12 @@ void ILP_solver::updateTerminalCenter(design& mydesign, SeqPair& curr_sp) {
 void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo) {
   node.width = UR.x;
   node.height = UR.y;
+  node.HPWL = HPWL;
+  node.area_norm = area_norm;
+  node.HPWL_norm = HPWL_norm;
+  node.constraint_penalty = constraint_penalty;
+  node.cost = cost;
+
   for (unsigned int i = 0; i < mydesign.Blocks.size(); ++i) {
     node.Blocks.at(i).selectedInstance = curr_sp.GetBlockSelected(i);
     placerDB::Omark ort;
@@ -1402,19 +1392,26 @@ void ILP_solver::UpdateBlockinHierNode(design& mydesign, placerDB::Omark ort, Pn
 
 void ILP_solver::UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo) {
   for (int i = 0; i < (int)mydesign.GetSizeofTerminals(); i++) {
-    node.Terminals.at(i).termContacts.clear();
-    node.Terminals.at(i).termContacts.resize(node.Terminals.at(i).termContacts.size() + 1);
-    node.Terminals.at(i).termContacts.back().placedCenter = ConvertPointData(mydesign.GetTerminalCenter(i));
+    auto& tC = node.Terminals.at(i).termContacts;
+    tC.clear();
+    tC.resize(1);
+    auto c = ConvertPointData(mydesign.GetTerminalCenter(i));
+    tC.back().placedCenter = c;
+    // tC.back() has other fields that remain at their default values: originBox, placedBox, originCenter
+    tC.back().originCenter = c;
+    tC.back().originBox.LL = c;
+    tC.back().originBox.UR = c;
+    tC.back().placedBox.LL = c;
+    tC.back().placedBox.UR = c;
   }
-  PnRDB::pin temp_pin;
   for (int i = 0; i < (int)mydesign.GetSizeofTerminals(); i++) {
-    temp_pin.name = node.Terminals.at(i).name;
-    temp_pin.type = node.Terminals.at(i).type;
-    temp_pin.netIter = node.Terminals.at(i).netIter;
-    temp_pin.pinContacts = node.Terminals.at(i).termContacts;
+    const auto& t = node.Terminals.at(i);
+    PnRDB::pin temp_pin;
+    temp_pin.name = t.name;
+    temp_pin.type = t.type;
+    temp_pin.netIter = t.netIter;
+    temp_pin.pinContacts = t.termContacts;
     for (int j = 0; j < temp_pin.pinContacts.size(); j++) temp_pin.pinContacts[j].metal = drcInfo.Metal_info[0].name;
-    temp_pin.name = node.Terminals.at(i).name;
-    temp_pin.type = node.Terminals.at(i).type;
     node.blockPins.push_back(temp_pin);
   }
 }

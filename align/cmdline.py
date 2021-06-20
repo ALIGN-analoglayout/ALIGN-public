@@ -2,7 +2,7 @@ import argparse
 from .main import schematic2layout
 from . import __version__
 
-from .utils.logging import get_loglevels
+from .utils import logmanager
 
 import logging
 logger = logging.getLogger(__name__)
@@ -70,10 +70,6 @@ class CmdlineParser():
                             type=int,
                             default=0,
                             help='Amount of effort to dedicate to alternate layouts')
-        parser.add_argument("-c",
-                            "--check",
-                            action='store_true',
-                            help='Set to true to run LVS / DRC checks (Default False)')
         parser.add_argument("-x",
                             "--extract",
                             action='store_true',
@@ -81,7 +77,7 @@ class CmdlineParser():
         # parser.add_argument( "-g", "--generate",
         #                     action='store_true',
         #                     help="Set the true to generate png")
-        log_level, verbosity = get_loglevels()
+        log_level, verbosity = logmanager.get_loglevels()
         parser.add_argument( "-l", "--log",
                             dest="log_level",
                             choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'],
@@ -100,10 +96,6 @@ class CmdlineParser():
                             "--uniform_height",
                             action='store_true',
                             help='Set to true to use cells of uniform height (Default False)')
-        parser.add_argument("-rp",
-                            "--render_placements",
-                            action='store_true',
-                            help='Set to true to render placements using plotly (Default False)')
         parser.add_argument("-pdn",
                             "--PDN_mode",
                             action='store_true',
@@ -111,9 +103,6 @@ class CmdlineParser():
         parser.add_argument('--version',
                             action='version',
                             version='%(prog)s ' + __version__)
-#        parser.add_argument('--python_gds_json',
-#                            action='store_true',
-#                            help="Write out GDS after python postprocessing")
 
         parser.add_argument('--flow_start',
                             type=str,
@@ -131,6 +120,20 @@ class CmdlineParser():
         parser.add_argument('--gui',
                             action='store_true',
                             help='Run in GUI mode')
+
+        parser.add_argument('--skipGDS',
+                            action='store_true',
+                            help='Don\'t generate GDS files.')
+
+        parser.add_argument('--lambda_coeff',
+                            type=float,
+                            default=1.0,
+                            help='Multiplier for hpwl in placer cost function.')
+
+        parser.add_argument('--reference_placement_verilog_json',
+                            type=str,
+                            default=None,
+                            help='JSON file for adding a reference placement to GUI.')
 
         self.parser = parser
 

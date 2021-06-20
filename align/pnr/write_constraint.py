@@ -23,7 +23,7 @@ class PnRConstraintWriter:
         Maps input format to pnr format
 
         """
-        logger.info(f"input constraints {all_const}")
+        logger.debug(f"input constraints {all_const}")
         #Start mapping
         pnr_const=[]
         for input_const in constraint.expand_user_constraints(all_const):
@@ -51,6 +51,8 @@ class PnRConstraintWriter:
                     const["direction"] = 'V'
                 else:
                     raise NotImplementedError(f'PnR does not support direction {const["direction"]} yet')
+            elif const["const_name"] == 'SameTemplate':
+                logger.info( f'found a SameTemplate: {const}')
             elif const["const_name"] == 'MatchBlocks':
                 const["const_name"] = 'MatchBlock'
                 const['block1'] =  const['blocks'][0]
@@ -68,6 +70,11 @@ class PnRConstraintWriter:
             elif const["const_name"] == 'AspectRatio':
                 const["const_name"] = 'Aspect_Ratio'
                 del const['subcircuit']
+            elif const["const_name"] == 'Boundary':
+                del const['subcircuit']
+                for key in ['max_width', 'max_height']:
+                    if const[key] is None:
+                        del const[key]
             elif const["const_name"] == 'SymmetricBlocks':
                 const["const_name"] = 'SymmBlock'
                 const["axis_dir"] = const.pop("direction")
@@ -170,7 +177,7 @@ class PnRConstraintWriter:
                             "priority" : const["criticality"]
                             }
                         pnr_const.append(extra)
-        logger.info(f"Const mapped to PnR const format {pnr_const}")
+        logger.debug(f"Const mapped to PnR const format {pnr_const}")
         return {'constraints': pnr_const}
 
 

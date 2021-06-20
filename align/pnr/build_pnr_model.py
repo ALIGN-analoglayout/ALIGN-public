@@ -35,6 +35,7 @@ def ReadVerilogJson( DB, j):
 
         Blocks = []
         Nets = []
+        Block_name_map = {}
 
         Connecteds = []
 
@@ -50,6 +51,7 @@ def ReadVerilogJson( DB, j):
                 assert False, f'Missing template_name (abstract or otherwise) in instance {instance}'
 
             current_instance.name = instance['instance_name']
+            Block_name_map[current_instance.name] = len(Blocks)
 
             blockPins = []
 
@@ -91,6 +93,7 @@ def ReadVerilogJson( DB, j):
 
         temp_node.Blocks = Blocks
         temp_node.Nets = Nets
+        temp_node.Block_name_map = Block_name_map
 
         hierTree.append( temp_node)
 
@@ -128,7 +131,7 @@ def _attach_constraint_files( DB, fpath):
             with fp.open( "rt") as fp:
                 jsonStr = fp.read()
             DB.ReadConstraint_Json( curr_node, jsonStr)
-            logger.info(f"Finished reading contraint json file {curr_node.name}.pnr.const.json")
+            logger.debug(f"Finished reading contraint json file {curr_node.name}.pnr.const.json")
         else:
             logger.warning(f"No constraint file for module {curr_node.name}")
                 

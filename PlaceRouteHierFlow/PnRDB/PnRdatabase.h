@@ -29,20 +29,21 @@
 #include "Lexer.h"
 #include "spdlog/spdlog.h"
 
-using std::map;
-using std::unordered_map;
-using std::vector;
-using std::deque;
-using std::string;
-using std::cout;
-using std::endl;
-using std::pair;
-using std::tuple;
 using std::cerr;
+using std::cout;
+using std::deque;
+using std::endl;
 using std::ifstream;
 using std::istream;
-using std::ostream;
+using std::map;
 using std::max_element;
+using std::ostream;
+using std::pair;
+using std::set;
+using std::string;
+using std::tuple;
+using std::unordered_map;
+using std::vector;
 
 using namespace nlohmann;
 class PnRdatabase;
@@ -80,8 +81,8 @@ class PnRdatabase
   private:
     int maxNode;
     int unitScale;
-    map<string, vector<PnRDB::lefMacro> > lefData;  //map from Macro name to Macro Instance
   public:
+    map<string, vector<PnRDB::lefMacro> > lefData;  //map from Macro name to Macro Instance
     map<string, vector<string> > gdsData2; //map from gds name to multiple gds file (abstract to multiple concrete)
   private:
     PnRDB::designRule drData;
@@ -118,7 +119,7 @@ class PnRdatabase
     std::vector<PnRDB::hierNode> CheckoutHierNodeVec(int nodeID);//checkout nodeVec, which consists of different placement
     void AppendToHierTree( const PnRDB::hierNode& updatedNode); // append node to end of hierTree
     void CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode); // check out data of specific hierarchical node
-    void CheckinChildnodetoBlock(PnRDB::hierNode &parent, int blockID, const PnRDB::hierNode &updatedNode);
+    void CheckinChildnodetoBlock(PnRDB::hierNode &parent, int blockID, const PnRDB::hierNode &updatedNode, PnRDB::Omark ort);
     void updatePowerPins(PnRDB::pin &temp_pin);
 
     //these functions are used to transform internal info of nodes

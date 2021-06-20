@@ -3,14 +3,16 @@
 
 #include <vector>
 #include <string>
+#include <set>
 #include "limits.h"
 #include <map>
 #include <utility>
 //#include "../router/Rdatatype.h"
-using std::vector;
-using std::string;
 using std::map;
 using std::pair;
+using std::set;
+using std::string;
+using std::vector;
 
 namespace PnRDB {
 
@@ -305,7 +307,7 @@ struct block {
   vector<Via> interVias;
   vector<pin> dummy_power_pin; //power pins below to this block, but needs updated hierachy
   vector<GuardRing> GuardRings;
-}; // structure of block
+};  // structure of block
 
 struct terminal {
   string name="";
@@ -331,7 +333,12 @@ struct PowerGrid{
 struct layoutAS {
   int width=0;
   int height=0;
-  string gdsFile="";
+  int HPWL = -1;
+  double HPWL_norm=-1;
+  double area_norm = -1;
+  double constraint_penalty = -1;
+  double cost = -1;
+  string gdsFile = "";
   vector<blockComplex> Blocks;
   vector<net> Nets;
   vector<terminal> Terminals;
@@ -370,6 +377,7 @@ struct hierNode {
   string gdsFile="";
   vector<int> parent;
   vector<blockComplex> Blocks;
+  map<string, int> Block_name_map;//map from block name to block index
   vector<tile> tiles_total;
   vector<net> Nets;
   vector<terminal> Terminals;
@@ -405,6 +413,7 @@ struct hierNode {
   vector<LinearConst> L_Constraints;
   vector<Multi_LinearConst> ML_Constraints;
   vector<pair<vector<int>, Smark>> Ordering_Constraints;
+  vector<set<int>> Same_Template_Constraints;
   int bias_Hgraph = 0;
   int bias_Vgraph=0;
   double Aspect_Ratio_weight = 1000;
@@ -412,7 +421,11 @@ struct hierNode {
   double placement_box[2] = {-1, -1};
   vector<Router_report> router_report;
   vector<Multi_connection> Multi_connections;
-
+  int HPWL = -1;
+  double area_norm = -1;
+  double HPWL_norm = -1;
+  double constraint_penalty = -1;
+  double cost = -1;
 }; // structure of vertex in heirarchical tree
 
 

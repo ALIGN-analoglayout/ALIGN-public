@@ -340,6 +340,7 @@ design::design(PnRDB::hierNode& node) {
   Aspect_Ratio_weight = node.Aspect_Ratio_weight;
   memcpy(Aspect_Ratio, node.Aspect_Ratio, sizeof(node.Aspect_Ratio));
   memcpy(placement_box, node.placement_box, sizeof(node.placement_box));
+  Same_Template_Constraints = node.Same_Template_Constraints;
   mixFlag = false;
   double averageWL=0;
   double macroThreshold=0.5; // threshold to filter out small blocks
@@ -1309,6 +1310,7 @@ void design::PrintSymmGroup() {
       logger->debug("self-symmetric {0} at {1}",pi->first,pi->second);
     }
   }
+
 }
 
 void design::PrintBlocks() {
@@ -1697,6 +1699,65 @@ placerDB::point design::GetMultPolyCenterPoint(vector<placerDB::point>& pL) {
   return newp;
 }
 
+void design::checkselfsym(vector< pair<int,int> > &tmpsympair, vector< pair<int,placerDB::Smark> > &tmpselfsym, placerDB::Smark tsmark){
+
+  auto logger = spdlog::default_logger()->clone("placer.design.constructSymmGroup");
+
+  vector< pair<int,int> > tmpsympair_temp;
+
+  pair<int,int> temp_pair;
+  pair<int,placerDB::Smark> temp_selfpair;
+
+  for(unsigned int i=0;i<tmpsympair.size();++i){
+     bool found_redundant = false;
+     int redundant_index = 0;
+     for(unsigned int j=i+1;j<tmpsympair.size();++j){
+        if(tmpsympair[i].first==tmpsympair[j].first or tmpsympair[i].first==tmpsympair[j].second or tmpsympair[i].second==tmpsympair[j].first or tmpsympair[i].second==tmpsympair[j].second){
+          found_redundant = true;
+          redundant_index = j;
+          break;
+        }
+     }
+     if(found_redundant){
+        int j = redundant_index;
+        if(tmpsympair[i].first==tmpsympair[j].first){
+           temp_selfpair = make_pair(tmpsympair[i].first, tsmark);
+           temp_pair = (tmpsympair[i].second<tmpsympair[j].second)?make_pair(tmpsympair[i].second,tmpsympair[j].second):make_pair(tmpsympair[j].second,tmpsympair[i].second);
+        }
+        if(tmpsympair[i].first==tmpsympair[j].second){
+           temp_selfpair = make_pair(tmpsympair[i].first, tsmark);
+           temp_pair = (tmpsympair[i].second<tmpsympair[j].first)?make_pair(tmpsympair[i].second,tmpsympair[j].first):make_pair(tmpsympair[j].first,tmpsympair[i].second);
+        }
+        if(tmpsympair[i].second==tmpsympair[j].first){
+           temp_selfpair = make_pair(tmpsympair[i].second, tsmark);
+           temp_pair = (tmpsympair[i].first<tmpsympair[j].second)?make_pair(tmpsympair[i].first,tmpsympair[j].second):make_pair(tmpsympair[j].second,tmpsympair[i].first);
+        }
+        if(tmpsympair[i].second==tmpsympair[j].second){
+           temp_selfpair = make_pair(tmpsympair[i].second, tsmark);
+           temp_pair = (tmpsympair[i].first<tmpsympair[j].first)?make_pair(tmpsympair[i].first,tmpsympair[j].first):make_pair(tmpsympair[j].first,tmpsympair[i].first);
+        }
+        tmpsympair_temp.push_back(temp_pair);
+        tmpsympair.erase(tmpsympair.begin()+redundant_index);
+        bool found_slef = false;
+        for(unsigned int k=0;k<tmpselfsym.size();++k){
+           if(tmpselfsym[k].first == temp_selfpair.first){
+             found_slef = true;
+           }
+        }
+        if(found_slef){
+           logger->debug("Placer-Warning: symmetey net bug exist");
+        }else{
+           tmpselfsym.push_back(temp_selfpair);
+        }
+     }else{
+        tmpsympair_temp.push_back(tmpsympair[i]);
+     }
+  }
+
+  tmpsympair = tmpsympair_temp;
+
+}
+
 void design::constructSymmGroup() {
 
   auto logger = spdlog::default_logger()->clone("placer.design.constructSymmGroup");
@@ -1760,6 +1821,7 @@ void design::constructSymmGroup() {
     for(unsigned int i=0;i<tmpselfsym.size();++i) {
       logger->debug("self-symmectric: {0} {1}",tmpselfsym.at(i).first,tmpselfsym.at(i).second);
     }
+    checkselfsym(tmpsympair,tmpselfsym,axis_dir);
     int sbidx=MergeNewBlockstoSymmetryGroup(tmpsympair, tmpselfsym, SBs, this->SNets, axis_dir);
     //std::cout<<"Placer-Info: symmetry net "<<sni-SNets.begin()<<" sbidx "<<sbidx<<"SBs size()"<<SBs.size()<<std::endl;
     sni->SBidx=sbidx;
@@ -2214,4 +2276,38 @@ int design::GetBlockMargin(int i, int j) {
 int design::GetBlockSymmGroupDnode(int i) {
   if(i<0 || i>=(int)SBlocks.size()) {return -1;}
   return SBlocks.at(i).dnode;
+}
+
+double design::GetMaxBlockAreaSum()
+{
+  if (maxBlockAreaSum < 1.) {
+    for (unsigned i = 0; i < Blocks.size(); i++) {
+      double area = 0;
+      for (unsigned j = 0; j < Blocks[i].size(); ++j) {
+        double jarea = double(Blocks[i][j].width) * double(Blocks[i][j].height);
+        if (area < jarea) area = jarea;
+      }
+      maxBlockAreaSum += area;
+    }
+  }
+  return maxBlockAreaSum;
+}
+
+double design::GetMaxBlockHPWLSum()
+{
+  if (maxBlockHPWLSum < 1.) {
+    for (unsigned i = 0; i < Blocks.size(); i++) {
+      double width = 0, height = 0;
+      for (unsigned j = 0; j < Blocks[i].size(); ++j) {
+        if (width < Blocks[i][j].width) {
+          width = Blocks[i][j].width;
+        }
+        if (height < Blocks[i][j].height) {
+          height = Blocks[i][j].height;
+        }
+      }
+      maxBlockHPWLSum += (width + height);
+    }
+  }
+  return maxBlockHPWLSum;
 }

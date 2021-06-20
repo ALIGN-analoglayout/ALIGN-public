@@ -23,28 +23,13 @@ from ..schema.hacks import VerilogJsonTop
 logger = logging.getLogger(__name__)
 
 
-def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False, input_dir=None, toplevel=True, gds_json=True):
+def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, extract=False, input_dir=None, toplevel=True, gds_json=True):
 
     logger.debug(
-        f"_generate_json: {hN} {variant} {primitive_dir} {pdk_dir} {output_dir} {check} {extract} {input_dir} {toplevel} {gds_json}")
+        f"_generate_json: {hN} {variant} {primitive_dir} {pdk_dir} {output_dir} {extract} {input_dir} {toplevel} {gds_json}")
 
-    ret = {}
-
-    if not toplevel:
-        # Check name matches n_copy number (top down flow)
-        p2 = re.compile(r"^(\S+)_(\d+)_(\d+)$")
-        m = p2.match(variant)
-        assert m
-        ncpy = int(m.groups()[1])
-        assert ncpy == hN.n_copy, f"n_copy {hN.n_copy} should be same as in the variant name {variant} {ncpy}"
-
-    res = gen_viewer_json(hN, pdkdir=pdk_dir, draw_grid=True, json_dir=str(primitive_dir), checkOnly=(
-        check or extract or gds_json), extract=extract, input_dir=input_dir, toplevel=toplevel)
-
-    if check or extract or gds_json:
-        cnv, d = res
-    else:
-        d = res
+    cnv, d = gen_viewer_json(hN, pdkdir=pdk_dir, draw_grid=True, json_dir=str(primitive_dir),
+                             extract=extract, input_dir=input_dir, toplevel=toplevel)
 
     if gds_json and toplevel:
         # Hack in Outline layer
@@ -52,26 +37,30 @@ def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, check=Fal
         d['terminals'].append(
             {"layer": "Outline", "netName": None, "rect": d['bbox']})
 
+    ret = {}
+
     ret['json'] = output_dir / f'{variant}.json'
     with open(ret['json'], 'wt') as fp:
         json.dump(d, fp=fp, indent=2)
     logger.info(f"OUTPUT json at {ret['json']}")
 
-    if check:
-        ret['errfile'] = output_dir / f'{variant}.errors'
-        with open(ret['errfile'], 'wt') as fp:
-            for x in cnv.rd.shorts:
-                fp.write(f'SHORT {x}\n')
-            for x in cnv.rd.opens:
-                fp.write(f'OPEN {x}\n')
-            #for x in cnv.rd.different_widths: fp.write( f'DIFFERENT WIDTH {x}\n')
-            for x in cnv.drc.errors:
-                fp.write(f'DRC ERROR {x}\n')
-        ret['errors'] = len(cnv.rd.shorts) + \
-            len(cnv.rd.opens) + len(cnv.drc.errors)
-        if ret['errors'] > 0:
-            logger.error(f"{ret['errors']} LVS / DRC errors found !!!")
-            logger.info(f"OUTPUT error file at {ret['errors']}")
+    ret['errfile'] = output_dir / f'{variant}.errors'
+    with open(ret['errfile'], 'wt') as fp:
+        for x in cnv.rd.shorts:
+            fp.write(f'SHORT {x}\n')
+        for x in cnv.rd.opens:
+            fp.write(f'OPEN {x}\n')
+        for x in cnv.rd.different_widths:
+            fp.write( f'DIFFERENT WIDTH {x}\n')
+        for x in cnv.drc.errors:
+            fp.write(f'DRC ERROR {x}\n')
+        for x in cnv.postprocessor.errors:
+            fp.write(f'POSTPROCESSOR ERROR {x}\n')
+    ret['errors'] = len(cnv.rd.shorts) + \
+        len(cnv.rd.opens) + len(cnv.drc.errors)
+    if ret['errors'] > 0:
+        logger.error(f"{ret['errors']} LVS / DRC errors found !!!")
+        logger.info(f"OUTPUT error file at {ret['errfile']}")
 
     if extract:
         ret['cir'] = output_dir / f'{variant}.cir'
@@ -113,55 +102,36 @@ def extract_capacitor_constraints( pnr_const_ds):
 
     return cap_constraints
 
-def hack_capacitor_instances( verilog_d, pnr_const_ds):
-    cap_constraints = extract_capacitor_constraints( pnr_const_ds)
-
-    # Hack capacitor instances from template_name to abstract_template_name
-    # Should move to earlier in flow
-    # Only needed because Capacitors to not considered primitives
-    for module in verilog_d['modules']:
-        nm = module['name']
-        for instance in module['instances']:
-            if instance['instance_name'] in cap_constraints[nm]:
-                instance['abstract_template_name'] = instance['template_name']
-                del instance['template_name']
-
 def gen_leaf_cell_info( verilog_d, pnr_const_ds):
 
-    non_leaves = set()
-    templates_called_in_an_instance = defaultdict(list)
-    abstract_templates_called_in_an_instance = defaultdict(list)
+    non_leaves = { module['name'] for module in verilog_d['modules'] }
+    leaves_called_in_an_instance = defaultdict(list)
 
     for module in verilog_d['modules']:
         nm = module['name']
-        non_leaves.add( nm)
         for instance in module['instances']:
-            if 'template_name' in instance:
-                templates_called_in_an_instance[instance['template_name']].append( (nm,instance['instance_name']))
             if 'abstract_template_name' in instance:
-                abstract_templates_called_in_an_instance[instance['abstract_template_name']].append( (nm,instance['instance_name']))
-
-
-    leaves = set(abstract_templates_called_in_an_instance.keys())
+                atn = instance['abstract_template_name']
+                if atn not in non_leaves:
+                    leaves_called_in_an_instance[atn].append( (nm,instance['instance_name']))
 
     logger.debug( f'non_leaves: {non_leaves}')
-    logger.debug( f'templates: {templates_called_in_an_instance}')
-    logger.debug( f'abstract_templates: {abstract_templates_called_in_an_instance}')
+    logger.debug( f'abstract_templates: {leaves_called_in_an_instance}')
 
     #
     # Capacitor hack --- Should be able to remove eventally
     #
     cap_constraints = extract_capacitor_constraints( pnr_const_ds)
     capacitors = defaultdict(list)
-    for leaf in leaves:
-        for parent, instance_name in abstract_templates_called_in_an_instance[leaf]:
+    for leaf, v in leaves_called_in_an_instance.items():
+        for parent, instance_name in v:
             if parent in cap_constraints:
                 if instance_name in cap_constraints[parent]:
                     logger.debug( f'parent: {parent} instance_name: {instance_name} leaf: {leaf} cap_constraints: {cap_constraints}')
                     capacitors[leaf].append( (parent,instance_name))
 
     # Remove generated capacitors
-    leaves = leaves.difference( set(capacitors.keys()))
+    leaves = set(leaves_called_in_an_instance.keys()).difference( set(capacitors.keys()))
 
     # Add unit caps to leaves
     for _, v in cap_constraints.items():
@@ -197,21 +167,14 @@ def gen_leaf_collateral( leaves, primitives, primitive_dir):
             if fn.is_file():
                 files[suffix] = str(fn)
             else:
-                logger.error( f'Collateral {suffix} for leaf {leaf} not found in {primitive_dir}')
+                logger.warning( f'Collateral {suffix} for leaf {leaf} not found in {primitive_dir}')
         leaf_collateral[leaf] = files
 
     return leaf_collateral
 
-def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, check=False, extract=False, gds_json=False, render_placements=False, PDN_mode=False, router_mode='top_down', gui=False):
+def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False, gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False, steps_to_run,lambda_coeff, reference_placement_verilog_json):
 
-    logger.info(f"Running Place & Route for {subckt} {router_mode}")
-
-    # Create working & input directories
-    working_dir = output_dir
-    working_dir.mkdir(exist_ok=True)
-    input_dir = working_dir / 'inputs'
-    input_dir.mkdir(exist_ok=True)
-    results_dir = working_dir / 'Results'
+    logger.info(f"Running Place & Route for {subckt} {router_mode} {steps_to_run}")
 
     # Generate file name inputs
     map_file = f'{subckt}.map'
@@ -219,139 +182,116 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
     verilog_file = f'{subckt}.verilog.json'
     pdk_file = 'layers.json'
 
-    verilog_d = VerilogJsonTop.parse_file((topology_dir / verilog_file))
+    working_dir = output_dir
+    input_dir = working_dir / 'inputs'
+    results_dir = working_dir / 'Results'
 
-    # SMB: I want this to be in main (perhaps), or in the topology stage
-    constraint_files, pnr_const_ds = gen_constraint_files( verilog_d, input_dir)
-    logger.debug( f'constraint_files: {constraint_files}')
+    if '3_pnr:prep' in steps_to_run:
+        # Create working & input directories
+        working_dir.mkdir(exist_ok=True)
+        input_dir.mkdir(exist_ok=True)
 
-    # SMB: I want this in the topology stage
-    hack_capacitor_instances( verilog_d, pnr_const_ds)
+        verilog_d = VerilogJsonTop.parse_file((topology_dir / verilog_file))
 
-    leaves, capacitors = gen_leaf_cell_info( verilog_d, pnr_const_ds)
+        # SMB: I want this to be in main (perhaps), or in the topology stage
+        constraint_files, pnr_const_ds = gen_constraint_files( verilog_d, input_dir)
+        logger.debug( f'constraint_files: {constraint_files}')
 
-    leaf_collateral = gen_leaf_collateral( leaves, primitives, primitive_dir)
+        leaves, capacitors = gen_leaf_cell_info( verilog_d, pnr_const_ds)
 
-    logger.debug( f'leaf_collateral: {leaf_collateral}')
-    logger.debug( f'capacitors: {dict(capacitors)}')
+        with (working_dir / "__capacitors__.json").open("wt") as fp:
+            json.dump( capacitors, fp=fp, indent=2)
 
-    # Generate .map file for PnR
-    with (input_dir / map_file).open(mode='wt') as mp:
-        for _,v in primitives.items():
-            a = v['abstract_template_name']
-            c = v['concrete_template_name']
-            if c in leaf_collateral:
-                assert '.gds.json' in leaf_collateral[c]
-            else:
-                logger.warning( f'Unused primitive: {a} {c} excluded from map file')
-            print( f'{a} {c}.gds', file=mp)
+        leaf_collateral = gen_leaf_collateral( leaves, primitives, primitive_dir)
 
-    # Generate .lef inputs for PnR
-    with (input_dir / lef_file).open(mode='wt') as lp:
+        logger.debug( f'leaf_collateral: {leaf_collateral}')
+        logger.debug( f'capacitors: {dict(capacitors)}')
+
+        # Generate .map file for PnR
+        with (input_dir / map_file).open(mode='wt') as mp:
+            for _,v in primitives.items():
+                a = v['abstract_template_name']
+                c = v['concrete_template_name']
+                if c in leaf_collateral:
+                    assert '.lef' in leaf_collateral[c]
+                else:
+                    logger.warning( f'Unused primitive: {a} {c} excluded from map file')
+                print( f'{a} {c}.gds', file=mp)
+
+        # Generate .lef inputs for PnR
+        with (input_dir / lef_file).open(mode='wt') as lp:
+            for k,v in leaf_collateral.items():
+                lp.write(pathlib.Path(v['.lef']).read_text())
+
+        #
+        # TODO: Copying is bad ! Consider rewriting C++ code to accept fully qualified paths
+        #
+
+        # Copy verilog
+        (input_dir / verilog_file).write_text((topology_dir / verilog_file).read_text())
+
+        # Copy pdk file
+        (input_dir / pdk_file).write_text((pdk_dir / pdk_file).read_text())
+
+        # Copy primitive json files
         for k,v in leaf_collateral.items():
-            lp.write(pathlib.Path(v['.lef']).read_text())
+            for suffix in ['.gds.json', '.json']:
+                if suffix in v:
+                    (input_dir / f'{k}{suffix}').write_text(pathlib.Path(v[suffix]).read_text())
 
-    #
-    # TODO: Copying is bad ! Consider rewriting C++ code to accept fully qualified paths
-    #
+    else:
+        with (working_dir / "__capacitors__.json").open("rt") as fp:
+            capacitors = json.load(fp)
 
-    # Copy verilog
-    (input_dir / verilog_file).write_text((topology_dir / verilog_file).read_text())
+    if '3_pnr:place' in steps_to_run or '3_pnr:route' in steps_to_run:
 
-    # Copy pdk file
-    (input_dir / pdk_file).write_text((pdk_dir / pdk_file).read_text())
+        with (pdk_dir / pdk_file).open( 'rt') as fp:
+            scale_factor = json.load(fp)["ScaleFactor"]
 
-    # Copy primitive json files
-    for k,v in leaf_collateral.items():
-        for suffix in ['.gds.json', '.json']:
-            (input_dir / f'{k}{suffix}').write_text(pathlib.Path(v[suffix]).read_text())
+        # Run pnr_compiler
+        cmd = [str(x) for x in ('align.PnR', input_dir, lef_file,
+                                verilog_file, map_file, pdk_file, subckt, nvariants, effort)]
 
-    # Run pnr_compiler
-    cmd = [str(x) for x in ('align.PnR', input_dir, lef_file,
-                            verilog_file, map_file, pdk_file, subckt, nvariants, effort)]
+        current_working_dir = os.getcwd()
+        os.chdir(working_dir)
+        DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, results_dir=None, router_mode=router_mode, gui=gui, skipGDS=skipGDS, lambda_coeff=lambda_coeff, scale_factor=scale_factor, reference_placement_verilog_json=reference_placement_verilog_json)
+        os.chdir(current_working_dir)
 
-    current_working_dir = os.getcwd()
-    os.chdir(working_dir)
-    DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, render_placements=render_placements, results_dir=None, router_mode=router_mode, gui=gui)
-    os.chdir(current_working_dir)
+        # Copy generated cap jsons from results_dir to working_dir
+        # TODO: Cap arrays should eventually be generated by align.primitive
+        #       at which point this hack will no longer be needed
 
-    # Copy generated cap jsons from results_dir to working_dir
-    # TODO: Cap arrays should eventually be generated by align.primitive
-    #       at which point this hack will no longer be needed
+        for cap_template_name in capacitors.keys():
+            for fn in results_dir.glob( f'{cap_template_name}_AspectRatio_*.json'):
+                (working_dir / fn.name).write_text(fn.read_text())
 
-    for cap_template_name in capacitors.keys():
-        for fn in results_dir.glob( f'{cap_template_name}_AspectRatio_*.json'):
-            (working_dir / fn.name).write_text(fn.read_text())
 
-    if check or extract or gds_json:
+    variants = collections.defaultdict(collections.defaultdict)
+    if '3_pnr:check' in steps_to_run:
+        for variant, ( path_name, layout_idx) in results_name_map.items():
 
-        def TraverseHierTree(topidx):
-            """Find topoorder of routing copies: (start from topidx)"""
-            q = []
-            visited = set()
-            def TraverseDFS(idx):
-                visited.add(idx)
-                for bit in DB.hierTree[idx].Blocks:
-                    if bit.child != -1 and bit.child not in visited:
-                        TraverseDFS(bit.child)
-                q.append(idx)
-            TraverseDFS(topidx)
-            return q
+            hN = DB.hierTree[layout_idx]
+            result = _generate_json(hN=hN,
+                                    variant=variant,
+                                    pdk_dir=pdk_dir,
+                                    primitive_dir=input_dir,
+                                    input_dir=working_dir,
+                                    output_dir=working_dir,
+                                    extract=extract,
+                                    gds_json=gds_json,
+                                    toplevel=hN.isTop)
 
-        possible_final_circuits = [(i, hN) for i, hN in enumerate(DB.hierTree) if hN.name == subckt]
-        assert router_mode == 'no_op' or len(possible_final_circuits) > 1
+            if hN.isTop:
+                variants[variant].update(result)
 
-        variants = collections.defaultdict(collections.defaultdict)
-        for lidx, (topidx, _) in enumerate(possible_final_circuits[1:]):
+                if not skipGDS:
+                    for tag, suffix in [('lef', '.lef'), ('gdsjson', '.gds.json')]:
+                        path = results_dir / (variant + suffix)
+                        assert path.exists()
+                        variants[variant][tag] = path
 
-            order = [(i, DB.CheckoutHierNode(i, -1).name) for i in TraverseHierTree(topidx)]
-            assert order[-1][1] == subckt, f"Last in topological order should be the subckt {subckt} {order}"
-
-            logger.info(f'order={order}')
-
-            for idx, nm in order[:-1]:
-                n_copy = DB.hierTree[idx].n_copy
-                #assert 1 == DB.hierTree[idx].numPlacement
-                i_placement = lidx
-
-                variant_name = f'{nm}_{n_copy}_{i_placement}'
-                _generate_json(hN=DB.hierTree[idx],
-                               variant=variant_name,
-                               pdk_dir=pdk_dir,
-                               primitive_dir=input_dir,
-                               input_dir=working_dir,
-                               output_dir=working_dir,
-                               check=check,
-                               extract=extract,
-                               gds_json=gds_json,
-                               toplevel=False)
-
-            # toplevel
-            (idx, nm) = order[-1]
-            assert idx == topidx
-
-            variant = f'{nm}_{lidx}'
-
-            logger.info( f'Processing top-down generated blocks: lidx={lidx} topidx={topidx} nm={nm} variant={variant}')
-
-            variants[variant].update(
-                _generate_json(hN=DB.hierTree[idx],
-                               variant=variant,
-                               pdk_dir=pdk_dir,
-                               primitive_dir=input_dir,
-                               input_dir=working_dir,
-                               output_dir=working_dir,
-                               check=check,
-                               extract=extract,
-                               gds_json=gds_json,
-                               toplevel=True))
-
-            for tag, suffix in [('lef', '.lef'), ('gdsjson', '.gds.json')]:
-                path = results_dir / (variant + suffix)
-                assert path.exists()
-                variants[variant][tag] = path
-
-    logger.info('Explicitly deleting DB...')
-    del DB
+    if '3_pnr:place' in steps_to_run or '3_pnr:route' in steps_to_run:
+        logger.debug('Explicitly deleting DB...')
+        del DB
 
     return variants

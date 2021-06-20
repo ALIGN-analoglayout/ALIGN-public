@@ -43,7 +43,7 @@ class ConstraintParser:
                     node.constraints.append(const)
         json_path = self.input_dir / (design_name+'.const.json')
         if json_path.is_file():
-            logger.info(
+            logger.debug(
                 f"JSON input const file for block {design_name} {json_path}")
             with types.set_context(node):
                 node.constraints.extend(
@@ -54,5 +54,5 @@ class ConstraintParser:
             raise NotImplementedError(
                 'Command-line interface has not been upgraded. Please use json constraints')
         else:
-            logger.info(
+            logger.warning(
                 f"No user constraints found for block {design_name} in path {self.input_dir}")

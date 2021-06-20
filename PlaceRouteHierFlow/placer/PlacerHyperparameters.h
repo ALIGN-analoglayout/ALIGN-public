@@ -7,6 +7,8 @@ public:
   double T_MIN = 1e-6;
   double ALPHA = 0.995;
   int COUNT_LIMIT = 200;
+
+  double LAMBDA = 1.0;
 };
 
 #endif

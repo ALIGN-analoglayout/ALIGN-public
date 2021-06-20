@@ -526,15 +526,19 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   curr_sp.PrintSeqPair();
   double curr_cost = 0;
   int trial_count = 0;
+  int max_trial_count = 10000;
   while ((curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo)) < 0) {
-    curr_sp.PerturbationNew(designData);
-    trial_count++;
-    if (trial_count > 100) {
-      logger->warn("please check constraint");
+    if (++trial_count > max_trial_count) {
+      logger->error("Couldn't generate a feasible solution even after {0} perturbations.", max_trial_count);
       curr_cost = __DBL_MAX__;
       break;
     }
+    curr_sp.PerturbationNew(designData);
   }
+  if (0 < trial_count && trial_count <= max_trial_count) {
+    logger->info("Required {0} perturbations to generate a feasible solution.", trial_count);
+  }
+  curr_sol.cost = curr_cost;
   oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
   ReshapeSeqPairMap(oData, nodeSize);
   //cout << "Placer-Info: initial cost = " << curr_cost << endl;
@@ -630,22 +634,15 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       ILP_solver trial_sol(designData);
       double trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo);
       if (trial_cost >= 0) {
+        oData[trial_cost] = std::make_pair(trial_sp, trial_sol);
         bool Smark = false;
         delta_cost = trial_cost - curr_cost;
         if (delta_cost <= 0) {
           Smark = true;
         } else {
-          if (trial_sp.Enumerate()) {
-            if (!oData.empty() && 
-                (oData.rbegin()->first > trial_cost 
-                  || static_cast<int>(oData.size()) < nodeSize)) {
-              Smark = true;
-            }
-          } else {
-            double r = (double)rand() / RAND_MAX;
-            if (r < exp((-1.0 * delta_cost) / T)) {
-              Smark = true;
-            }
+          double r = (double)rand() / RAND_MAX;
+          if (r < exp((-1.0 * delta_cost) / T)) {
+            Smark = true;
           }
         }
         if (Smark) {
@@ -655,15 +652,11 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
           curr_sol = trial_sol;
           // if(update_index>updateThrd) {
           //std::cout << "Insert\n";
-          oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
-          ReshapeSeqPairMap(oData, nodeSize);
+          curr_sol.cost = curr_cost;
           //}
         }
       }
-
-      if (trial_sp.Enumerate() && static_cast<int>(oData.size()) > nodeSize) {
-        oData.erase(std::prev(oData.end()));
-      }
+      ReshapeSeqPairMap(oData, nodeSize);
 
 #endif
 
@@ -737,7 +730,8 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   design designData(nodeVec.back());
   designData.PrintDesign();
   // Initialize simulate annealing with initial solution
-  SeqPair curr_sp(designData, size_t(1. * log(hyper.T_MIN/hyper.T_INT)/log(hyper.ALPHA)));
+  SeqPair curr_sp(designData, size_t(1. * log(hyper.T_MIN/hyper.T_INT)/log(hyper.ALPHA) *
+        ((effort == 0) ? 1. : ((effort == 1) ? 4. : 8.)) ));
   curr_sp.PrintSeqPair();
   ILP_solver curr_sol(designData);
   std::map<double, std::pair<SeqPair, ILP_solver>> spVec=PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo);
