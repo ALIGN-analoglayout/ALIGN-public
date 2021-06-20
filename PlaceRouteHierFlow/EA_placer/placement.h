@@ -29,6 +29,7 @@ private:
     vector<originBlock> OriginBlocks;
     vector<commonCentroid> commonCentroids;
     map<int, int> new_to_original_block_map;
+    map<int, int> original_to_new_block_map;
     map<string, int> cc_name_to_id_map;
     int originalBlockCNT;
     int originalNetCNT;

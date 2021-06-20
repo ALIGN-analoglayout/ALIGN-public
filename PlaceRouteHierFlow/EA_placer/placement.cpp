@@ -218,6 +218,10 @@ void Placement::place(PnRDB::hierNode &current_node)
   // need to estimate a area to do placement
   // scale into 1x1
   // initial position for each block
+  for (unsigned int i = 0; i < originalBlockCNT;i++){
+    Blocks[i].original_Dpoint.x = current_node.Blocks[i].instance[0].width;
+    Blocks[i].original_Dpoint.y = current_node.Blocks[i].instance[0].height;
+  }
   std::cout << "Unify the block coordinate" << std::endl;
   scale_factor = 40.0;
   Unify_blocks(area, scale_factor);
@@ -2924,8 +2928,8 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
     tempBlock.orient = PnRDB::N;
     cc_name_to_id_map[tempBlock.name] = i;
 
-    tempBlock.height = uni_cell_shape.y*commonCentroids[i].shape.y;
-    tempBlock.width = uni_cell_shape.x*commonCentroids[i].shape.x;
+    tempBlock.height = Blocks[commonCentroids[i].blocks[0]].original_Dpoint.y;
+    tempBlock.width = Blocks[commonCentroids[i].blocks[0]].original_Dpoint.x;
     tempBlock.originBox.UR.x = tempBlock.width;
     tempBlock.originBox.UR.y = tempBlock.height;
     tempBlock.originCenter.x = tempBlock.width / 2;
@@ -2956,6 +2960,7 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
     tempBlockComplex.instance.push_back(tempBlock);
     current_node.Blocks.push_back(tempBlockComplex);
     new_to_original_block_map[current_node.Blocks.size() - 1] = commonCentroids[i].blocks[0];
+    original_to_new_block_map[commonCentroids[i].blocks[0]] = current_node.Blocks.size() - 1;
     std::cout << "restore ms debug:6" << std::endl;
     for(int j=0;j<commonCentroids[i].blocks.size();++j)
     {
@@ -3012,7 +3017,15 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
     std::cout<<"restore ms debug:8"<<std::endl;
     id_new_block++;
   }
-
+  for(auto & s:current_node.SPBlocks){
+    for(auto &p:s.sympair){
+      if (original_to_new_block_map.find(p.first) != original_to_new_block_map.end()) p.first = original_to_new_block_map[p.first];
+      if (original_to_new_block_map.find(p.second) != original_to_new_block_map.end()) p.second = original_to_new_block_map[p.second];
+    }
+    for(auto &p:s.selfsym){
+      if (original_to_new_block_map.find(p.first) != original_to_new_block_map.end()) p.first = original_to_new_block_map[p.first];
+    }
+  }
   PlotPlacement(601);
 }
 //donghao end
@@ -3655,6 +3668,21 @@ void Placement::break_merged_cc(PnRDB::hierNode &current_node)
   for(auto b:new_to_original_block_map){
     current_node.Blocks[b.first].instance[0].name = current_node.Blocks[b.second].instance[0].name;
   }
+  for(auto b:original_to_new_block_map){
+    current_node.Blocks[b.first].instance[0].originBox = current_node.Blocks[b.second].instance[0].originBox;
+    current_node.Blocks[b.first].instance[0].originCenter = current_node.Blocks[b.second].instance[0].originCenter;
+    current_node.Blocks[b.first].instance[0].placedBox = current_node.Blocks[b.second].instance[0].placedBox;
+    current_node.Blocks[b.first].instance[0].placedCenter = current_node.Blocks[b.second].instance[0].placedCenter;
+    current_node.Blocks[b.first].instance[0].orient = current_node.Blocks[b.second].instance[0].orient;
+    current_node.Blocks[b.first].instance[0].PowerNets = current_node.Blocks[b.second].instance[0].PowerNets;
+    current_node.Blocks[b.first].instance[0].blockPins = current_node.Blocks[b.second].instance[0].blockPins;
+    current_node.Blocks[b.first].instance[0].interMetals = current_node.Blocks[b.second].instance[0].interMetals;
+    current_node.Blocks[b.first].instance[0].interVias = current_node.Blocks[b.second].instance[0].interVias;
+    current_node.Blocks[b.first].instance[0].dummy_power_pin = current_node.Blocks[b.second].instance[0].dummy_power_pin;
+    current_node.Blocks[b.first].instance[0].GuardRings = current_node.Blocks[b.second].instance[0].GuardRings;
+    current_node.Blocks[b.first].instance[0].width = current_node.Blocks[b.second].instance[0].width;
+    current_node.Blocks[b.first].instance[0].height = current_node.Blocks[b.second].instance[0].height;
+  }
   for(auto &n:current_node.Nets){
     for(auto &c:n.connected){
       if(c.type==PnRDB::Block && c.iter2 >= originalBlockCNT){
@@ -3662,13 +3690,14 @@ void Placement::break_merged_cc(PnRDB::hierNode &current_node)
       }
     }
   }
-  for (auto b = current_node.Blocks.begin(); b != current_node.Blocks.end();) {
+  current_node.Blocks.erase(current_node.Blocks.begin() + originalBlockCNT, current_node.Blocks.end());
+  /**for (auto b = current_node.Blocks.begin(); b != current_node.Blocks.end();) {
     if(b->instance[0].isRead==false){
       b = current_node.Blocks.erase(b);
     }else{
       ++b;
     }
-  }
+  }**/
   PlotPlacement(604);
 }
 
