@@ -10,7 +10,7 @@ def test_parser1():
     sp = SpiceParser(test_path,"test1",0)
     g = sp.sp_parser()[0]
     assert len(g["graph"].nodes()) == 10
-    assert len(g["ports"]) == 4 
+    assert len(g["ports"]) == 4
     assert 'vss' in g["ports"] # A port name 0 should be changed to vss
 
 def test_parser2():
@@ -39,8 +39,8 @@ def test_match_ota():
     all_lef = ['Switch_NMOS','Switch_PMOS','CMC_PMOS','CMC_S_NMOS_B','DP_NMOS_B','SCM_NMOS']
     const_parse = ConstraintParser(pdk_dir, input_dir)
     create_data = CreateDatabase(g,const_parse)
-    hier_graph_dict = create_data.read_inputs("ota")
-    annotate = Annotate(hier_graph_dict, design_setup,lib_list,all_lef)
+    ckt_data = create_data.read_inputs("ota")
+    annotate = Annotate(ckt_data, design_setup,lib_list,all_lef)
     mapped_graph_list = annotate._mapped_graph_list(g, lib_list,['vdd!','vss'])
     assert 'Switch_NMOS' in mapped_graph_list.keys()
     assert 'Switch_PMOS' in mapped_graph_list.keys()
@@ -48,9 +48,9 @@ def test_match_ota():
     assert 'CMC_S_NMOS_B' in mapped_graph_list.keys()
     assert 'DP_NMOS_B' in mapped_graph_list.keys()
 
-    hier_graph_dict['ota']['graph'] = annotate._reduce_graph(g, "ota", mapped_graph_list, hier_graph_dict['ota']['constraints'])
-    assert len( hier_graph_dict['ota']['graph'].nodes()) == 19
-    return hier_graph_dict
+    ckt_data['ota']['graph'] = annotate._reduce_graph(g, "ota", mapped_graph_list, ckt_data['ota']['constraints'])
+    assert len( ckt_data['ota']['graph'].nodes()) == 19
+    return ckt_data
 
 def find_ports(graph):
     ports = []

@@ -194,6 +194,7 @@ def _write_circuit_graph(filename, graph,dir_path):
     nx.write_yaml(graph, dir_path+'/' + filename + ".yaml")
 
 def convert_to_unit(values):
+    print(values)
     for param in values:
         if values[param]>= 1 :
             values[param]=int(values[param])

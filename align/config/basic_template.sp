@@ -1,26 +1,26 @@
-.subckt Switch_NMOS_B  D G S B
-M0 D G S B NMOS w=w1 l=l1
-.ends Switch_NMOS_B
+* .subckt Switch_NMOS_B  D G S B
+* M0 D G S B NMOS w=w1 l=l1
+* .ends Switch_NMOS_B
 
-.subckt Switch_PMOS_B D G S B
-M0 D G S B PMOS w=w1 l=l1
-.ends Switch_PMOS_B
+* .subckt Switch_PMOS_B D G S B
+* M0 D G S B PMOS w=w1 l=l1
+* .ends Switch_PMOS_B
 
-.subckt Switch_NMOS  D G S
-M0 D G S S NMOS w=w1 l=l1
-.ends Switch_NMOS
+* .subckt Switch_NMOS  D G S
+* M0 D G S S NMOS w=w1 l=l1
+* .ends Switch_NMOS
 
-.subckt Switch_PMOS D G S
-M0 D G S S PMOS w=w1 l=l1
-.ends Switch_PMOS
+* .subckt Switch_PMOS D G S
+* M0 D G S S PMOS w=w1 l=l1
+* .ends Switch_PMOS
 
-.subckt Switch_NMOS_G  D G S
-M0 D G S G NMOS w=w1 l=l1
-.ends Switch_NMOS_G
+* .subckt Switch_NMOS_G  D G S
+* M0 D G S G NMOS w=w1 l=l1
+* .ends Switch_NMOS_G
 
-.subckt Switch_PMOS_G D G S
-M0 D G S G PMOS w=w1 l=l1
-.ends Switch_PMOS_G
+* .subckt Switch_PMOS_G D G S
+* M0 D G S G PMOS w=w1 l=l1
+* .ends Switch_PMOS_G
 
 .subckt SCM_NMOS_B DA DB S B
 M0 DA DA S B NMOS w=w l=90n
@@ -185,70 +185,70 @@ M1 DB DA SB B PMOS w=w l=90n
 **transmission gate
 **ccp `
 
-.subckt DCL_NMOS_B D S B
-M0 D D S B NMOS w=w l=90n
-.ends DCL_NMOS_B
+* .subckt DCL_NMOS_B D S B
+* M0 D D S B NMOS w=w l=90n
+* .ends DCL_NMOS_B
 
-.subckt DCL_PMOS_B D S B
-M0 D D S B PMOS w=w l=90n
-.ends DCL_PMOS_B
+* .subckt DCL_PMOS_B D S B
+* M0 D D S B PMOS w=w l=90n
+* .ends DCL_PMOS_B
 
 
-.subckt DCL_NMOS D S
-M0 D D S S NMOS w=w l=90n
-.ends DCL_NMOS
+* .subckt DCL_NMOS D S
+* M0 D D S S NMOS w=w l=90n
+* .ends DCL_NMOS
 
-.subckt DCL_PMOS D S
-M0 D D S S PMOS w=w l=90n
-.ends DCL_PMOS
+* .subckt DCL_PMOS D S
+* M0 D D S S PMOS w=w l=90n
+* .ends DCL_PMOS
 
-.subckt Dummy_NMOS_B D S B
-M0 D S S B NMOS w=w l=90n
-.ends Dummy_NMOS_B
+* .subckt Dummy_NMOS_B D S B
+* M0 D S S B NMOS w=w l=90n
+* .ends Dummy_NMOS_B
 
-.subckt Dummy_PMOS_B D S B
-M0 D S S B PMOS w=w l=90n
-.ends Dummy_PMOS_B
+* .subckt Dummy_PMOS_B D S B
+* M0 D S S B PMOS w=w l=90n
+* .ends Dummy_PMOS_B
 
-.subckt Dummy_NMOS D S
-M0 D S S S NMOS w=w l=90n
-.ends Dummy_NMOS
+* .subckt Dummy_NMOS D S
+* M0 D S S S NMOS w=w l=90n
+* .ends Dummy_NMOS
 
-.subckt Dummy_PMOS D S
-M0 D S S S PMOS w=w l=90n
-.ends Dummy_PMOS
+* .subckt Dummy_PMOS D S
+* M0 D S S S PMOS w=w l=90n
+* .ends Dummy_PMOS
 
-.subckt Dcap_NMOS_B G S B
-M0 S G S B NMOS w=w l=90n
-.ends Dcap_NMOS_B
+* .subckt Dcap_NMOS_B G S B
+* M0 S G S B NMOS w=w l=90n
+* .ends Dcap_NMOS_B
 
-.subckt Dcap_PMOS_B G S B
-M0 S G S B PMOS w=w l=90n
-.ends Dcap_PMOS_B
+* .subckt Dcap_PMOS_B G S B
+* M0 S G S B PMOS w=w l=90n
+* .ends Dcap_PMOS_B
 
-.subckt Dcap_NMOS G S
-M0 S G S S NMOS w=w l=90n
-.ends Dcap_NMOS
+* .subckt Dcap_NMOS G S
+* M0 S G S S NMOS w=w l=90n
+* .ends Dcap_NMOS
 
-.subckt Dcap_PMOS G S
-M0 S G S S PMOS w=w l=90n
-.ends Dcap_PMOS
+* .subckt Dcap_PMOS G S
+* M0 S G S S PMOS w=w l=90n
+* .ends Dcap_PMOS
 
-.subckt Dummy1_NMOS_B S B
-M0 S S S B NMOS w=w l=90n
-.ends Dummy1_NMOS_B
+* .subckt Dummy1_NMOS_B S B
+* M0 S S S B NMOS w=w l=90n
+* .ends Dummy1_NMOS_B
 
-.subckt Dummy1_PMOS_B S B
-M0 S S S B PMOS w=w l=90n
-.ends Dummy1_PMOS_B
+* .subckt Dummy1_PMOS_B S B
+* M0 S S S B PMOS w=w l=90n
+* .ends Dummy1_PMOS_B
 
-.subckt Dummy1_NMOS S
-M0 S S S S NMOS w=w l=90n
-.ends Dummy1_NMOS
+* .subckt Dummy1_NMOS S
+* M0 S S S S NMOS w=w l=90n
+* .ends Dummy1_NMOS
 
-.subckt Dummy1_PMOS S
-M0 S S S S PMOS w=w l=90n
-.ends Dummy1_PMOS
+* .subckt Dummy1_PMOS S
+* M0 S S S S PMOS w=w l=90n
+* .ends Dummy1_PMOS
 
 * Will be handles using model files now
 * .subckt resistor PLUS MINUS

@@ -121,7 +121,7 @@ def modify_pg_conn_subckt(ckt_data:dict,circuit_name, pg_conn):
     return updated_ckt_name
 
 
-def preprocess_stack_parallel(ckt_parser, ckt_data:dict,circuit_name,G):
+def preprocess_stack_parallel(ckt_data:dict,circuit_name):
     """
     Preprocess the input graph by reducing parallel caps, series resistance, identify stacking, adding parallel transistors.
 
@@ -139,25 +139,26 @@ def preprocess_stack_parallel(ckt_parser, ckt_data:dict,circuit_name,G):
     None.
 
     """
-
-    logger.debug(f"no of nodes: {len(G)}")
-    add_parallel_caps(G,ckt_parser,circuit_name)
-    add_series_res(G,ckt_parser,circuit_name)
-    add_stacked_transistor(G,ckt_parser,circuit_name)
-    add_parallel_transistor(G,ckt_parser,circuit_name)
-    initial_size=len(G)
+    ckt = ckt_data.find(circuit_name)
+    logger.debug(f"no of nodes: {len(ckt.elements)}")
+    add_parallel_caps(ckt)
+    add_series_res(ckt)
+    add_stacked_transistor(ckt)
+    add_parallel_transistor(ckt)
+    initial_size=len(ckt.elements)
     delta =1
     while delta > 0:
-        logger.debug(f"CHECKING stacked transistors {circuit_name} {G}")
-        add_stacked_transistor(G,ckt_parser,circuit_name)
-        add_parallel_transistor(G,ckt_parser,circuit_name)
-        delta = initial_size - len(G)
-        initial_size = len(G)
+        logger.debug(f"CHECKING stacked transistors {circuit_name} {ckt.elements}")
+        add_stacked_transistor(ckt_data)
+        add_parallel_transistor(ckt_data)
+        delta = initial_size - len(ckt.elements)
+        initial_size = len(ckt.elements)
     #remove single instance subcircuits
-    subckt = ckt_parser.library.find(circuit_name)
+    subckt = ckt_data.find(circuit_name)
     if len(subckt.elements)==1:
         #Check any existing hier
-        if 'sub_graph' in subckt.elements[0].keys() and attributes[0]['sub_graph'] is not None:
+        print(subckt.elements[0])
+        if 'sub_graph' in subckt.elements[0].keys() and subckt.elements[0]['sub_graph'] is not None:
             logger.debug(f"sub_graph nodes {attributes[0]['sub_graph'].nodes()}")
             stacked_ckt = preprocess_stack_parallel(ckt_data,attributes[0]["real_inst_type"],attributes[0]["sub_graph"])
             if stacked_ckt ==None:
@@ -277,7 +278,7 @@ def define_SD(circuit,power,gnd,clk):
         change_SD(G,node)
 
 
-def add_parallel_caps(G,parser,name):
+def add_parallel_caps(ckt):
     logger.debug(f"merging all caps, initial graph size: {len(G)}")
     remove_nodes = []
     subckt = parser.library.find(name)

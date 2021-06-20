@@ -21,6 +21,9 @@ class SubCircuit(Model):
             nets.extend(x for x in element.pins.values() if x not in nets)
         return nets
 
+    def get_element(self, name):
+        return next((x for x in self.elements if x.name == name.upper()), None)
+
     def __init__(self, *args, **kwargs):
         # make elements optional in __init__
         # TODO: Replace with default factory

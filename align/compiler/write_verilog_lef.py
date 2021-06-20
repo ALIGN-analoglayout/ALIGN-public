@@ -148,14 +148,13 @@ def generate_lef(element,subckt,all_lef, design_config:dict, uniform_height=Fals
     values = element.parameters
     available_block_lef = all_lef
     logger.debug(f"checking lef for: {name}, {element}")
-    #for param, value in size.items():
-    if not isinstance(name,str) and name.base.name=='CAP':
-        #print("all val",values)
-        if 'cap' in values.keys():
-            if values["cap"]=="unit_size":
+
+    if name=='CAP':
+        if 'VALUE' in values.keys():
+            if isinstance(values["VALUE"],str):
                 size = design_config["unit_size_cap"]
             else:
-                size = float('%g' % (round(values["cap"] * 1E15,4)))
+                size = float('%g' % (round(values["VALUE"] * 1E15,4)))
             num_of_unit = float(size)/design_config["unit_size_cap"]
             block_name = name + '_' + str(int(size)) + 'f'
         else:
@@ -180,10 +179,10 @@ def generate_lef(element,subckt,all_lef, design_config:dict, uniform_height=Fals
                 'primitive': block_name,
                 'value': design_config["unit_size_cap"]
             }
-    elif not isinstance(name,str) and name.base.name=='RES':
+    elif name=='RES':
         if 'res' in values.keys():
-            if values["res"]=="unit_size":
-                size = design_config["unit_height_res"]
+            if isinstance(values["VALUE"],str):
+                size = design_config["unit_size_cap"]
             else:
                 size = '%g'%(round(values["res"],2))
         else :
@@ -206,7 +205,7 @@ def generate_lef(element,subckt,all_lef, design_config:dict, uniform_height=Fals
             }
     else:
 
-        if 'nmos' in name.lower():
+        if 'NMOS' in name:
             unit_size_mos = design_config["unit_size_nmos"]
         else:
             unit_size_mos = design_config["unit_size_pmos"]

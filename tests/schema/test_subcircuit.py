@@ -61,6 +61,7 @@ def test_subckt_instantiation(library, test_ckt):
     assert subckt.elements == [X1, X2]
     assert subckt.elements[0] == X1
     assert subckt.elements[1] == X2
+    assert subckt.get_element('x1') == X1
     assert subckt.nets == ['NET1', 'NET2', 'NET3']
     with set_context(test_ckt.elements):
         with pytest.raises(Exception):

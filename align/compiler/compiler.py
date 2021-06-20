@@ -105,18 +105,18 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, conf
 
     stacked_subcircuit=[]
     # TODO: Re-implement stacked transistor detection using new passes
-    #
-    # for circuit_name, circuit in ckt_data.items():
-    #     logger.debug(f"preprocessing circuit name: {circuit_name}")
-    #     G1 = circuit["graph"]
-    #     if circuit_name not in design_setup['DIGITAL']:
-    #         define_SD(circuit,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
-    #         stacked_subcircuit.append(preprocess_stack_parallel(ckt_parser,ckt_data,circuit_name,G1))
-    # for circuit_name in stacked_subcircuit:
-    #     if circuit_name in ckt_data.keys() and circuit_name is not design_name:
-    #         logger.debug(f"removing stacked subcircuit {circuit_name}")
-    #         del ckt_data[circuit_name]
-    #
+
+    for ckt in ckt_data:
+        if isinstance(ckt, SubCircuit):
+            logger.debug(f"preprocessing circuit name: {ckt}")
+            if ckt.name not in design_setup['DIGITAL']:
+                define_SD(ckt,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
+                stacked_subcircuit.append(preprocess_stack_parallel(ckt_parser,ckt_data,ckt.name))
+    for circuit_name in stacked_subcircuit:
+        if circuit_name in ckt_data.keys() and circuit_name is not design_name:
+            logger.debug(f"removing stacked subcircuit {circuit_name}")
+            del ckt_data[circuit_name]
+
     # TODO: pg_pins should be marked using constraints. Not manipulating netlist
     #
     logger.debug("Modifying pg pins in design for PnR")
