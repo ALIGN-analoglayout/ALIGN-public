@@ -11,6 +11,7 @@ from .util import convert_to_unit
 import logging
 logger = logging.getLogger(__name__)
 
+from copy import deepcopy
 
 class WriteVerilog:
     """ write hierarchical verilog file """
@@ -143,7 +144,17 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
     logger.debug(f"checking lef for: {name}, {values}")
     #for param, value in size.items():
 
-    if name.lower().startswith('cap'):
+    if name.lower() == 'generic':
+        # TODO: how about hashing for unique names?        
+        value_str = ''
+        for key in sorted(values):
+            val = values[key].replace('-','')
+            value_str += f'_{key}_{val}'
+        block_name = attr['real_inst_type'] + value_str
+        block_parameters = {"parameters": deepcopy(attr), "primitive": name.lower()}      
+        return block_name, block_parameters
+
+    elif name.lower().startswith('cap'):
         #print("all val",values)
         if 'cap' in values.keys():
             if values["cap"]=="unit_size":

@@ -317,7 +317,7 @@ class RemoveDuplicates():
 
         return terminals
 
-    def remove_duplicates( self):
+    def remove_duplicates( self, silence_errors=False):
 
         self.build_scan_lines( self.build_centerline_tbl())
 
@@ -328,7 +328,10 @@ class RemoveDuplicates():
         # Trying fewer error messages
         if True:
             if self.shorts or self.opens or self.different_widths:
-                logger.error(f'Found errors: SHORT: {len(self.shorts)} OPEN: {len(self.opens)} DIFFERENT WIDTH: {len(self.different_widths)}')
+                if silence_errors:
+                    logger.debug(f'Found errors: SHORT: {len(self.shorts)} OPEN: {len(self.opens)} DIFFERENT WIDTH: {len(self.different_widths)}')
+                else:
+                    logger.error(f'Found errors: SHORT: {len(self.shorts)} OPEN: {len(self.opens)} DIFFERENT WIDTH: {len(self.different_widths)}')
         else:
             for short in self.shorts:
                 logger.warning("SHORT" + pprint.pformat(short))
