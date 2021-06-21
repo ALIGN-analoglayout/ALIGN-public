@@ -43,7 +43,7 @@ mp1 von von vccx vccx p nfin=4 nf=4 m=5
 mp2 vop von vccx vccx p nfin=4 nf=4 m=5
 mn1 von vip vcom vssx n nfin=4 nf=4 m=5
 mn2 vop vin vcom vssx n nfin=4 nf=4 m=5
-mn0 vmd vbn vssx vssx n nfin=4 nf=4 m=5
+mn0 vcom vbn vssx vssx n nfin=4 nf=4 m=5
 .ends {name}
 """
     netlist_setup = f""""""
