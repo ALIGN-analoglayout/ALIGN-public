@@ -13,7 +13,7 @@ def check_placement(placement_verilog_d, scale_factor):
             continue  # No constraints
         constraints = module['constraints']
 
-        # TODO: DoNotIdentify constraint does not arrive here, debug!
+        # The check below is at the mercy of constraint translation
         do_not_identify = []
         for const in constraints:
             if isinstance(const, constraint.DoNotIdentify):
@@ -22,7 +22,6 @@ def check_placement(placement_verilog_d, scale_factor):
         all_inst = [inst['instance_name'] for inst in  module['instances']]
         for inst in do_not_identify:
             assert inst in all_inst, f'Instance not found {inst}'
-
 
         # Set module (i.e. subcircuit) bounding box parameters
         bbox = transformation.Rect(*module['bbox'])
