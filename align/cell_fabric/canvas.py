@@ -399,9 +399,9 @@ class Canvas:
         self.trStack.pop()
         assert self.trStack != []
 
-    def removeDuplicates( self, *, nets_allowed_to_be_open=None, allow_opens=False):
+    def removeDuplicates( self, *, nets_allowed_to_be_open=None, allow_opens=False, silence_errors=False):
         self.rd = RemoveDuplicates( self, nets_allowed_to_be_open=nets_allowed_to_be_open, allow_opens=allow_opens)
-        return self.rd.remove_duplicates()
+        return self.rd.remove_duplicates(silence_errors=silence_errors)
 
     def gen_data( self, *, draw_grid=False, run_drc=True, run_pex=True, nets_allowed_to_be_open=None, postprocess=False):
 

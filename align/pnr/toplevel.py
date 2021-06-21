@@ -314,7 +314,7 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff):
     actualNumLayout = curr_plc.getNodeVecSize()
 
     if actualNumLayout != numLayout:
-        logger.warning( f'Placer did not provide numLayout ({numLayout} > {actualNumLayout}) layouts')
+        logger.debug( f'Placer did not provide numLayout ({numLayout} > {actualNumLayout}) layouts for {DB.hierTree[idx].name}')
 
     for lidx in range(actualNumLayout):
         node = curr_plc.getNode(lidx)
@@ -444,7 +444,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                       'area_norm': area_norm, 'hpwl_norm': hpwl_norm
                 }
 
-                logger.info( f"Working on {concrete_name}: {d}")
+                logger.debug( f"Working on {concrete_name}: {d}")
 
                 tagged_bboxes[nm][concrete_name] = d, list(gen_boxes_and_hovertext( gui_scaled_placement_verilog_d, concrete_name, nets_d)), nets_d
 
