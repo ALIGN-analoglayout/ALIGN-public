@@ -14,6 +14,7 @@ def test_no_constraints():
     run_example(example, n=1, cleanup=False)
 
 
+@pytest.mark.nightly
 def test_order_1():
     """ mp7 and mp8 should not bypass subcircuit identification """
     constraints = """[

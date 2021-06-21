@@ -129,6 +129,5 @@ def test_do_not_identify():
 ]
 """
     name = "example_do_not_identify"
-    results = run_example(five_t_ota(my_dir, name, constraints), cleanup=False)
+    results = run_example(five_t_ota(my_dir, name, constraints))
 
-test_do_not_identify()
