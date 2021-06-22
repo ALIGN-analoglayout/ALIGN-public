@@ -1,78 +1,10 @@
 from .cktgen import *
 
-#
-# Need to rename these or the router crashes with an stoi error?
-#
-from ..cell_fabric.transformation import Rect as tRect
 from ..cell_fabric.transformation import Transformation
 
 import json
 from collections import defaultdict
 import re
-
-
-def extend( u, rng):
-  if rng[0] is None or u < rng[0]: rng[0] = u
-  if rng[1] is None or u > rng[1]: rng[1] = u
-    
-
-def trivial_gr( actual, v):
-
-  x_rng = [ None,None]
-  y_rng = [ None,None]
-
-  for x in v:
-    pin = (x[0],x[1])
-    lst = x[2]
-
-    for r in lst:
-      extend( r[0], x_rng)
-      extend( r[2], x_rng)
-      extend( r[1], y_rng)
-      extend( r[3], y_rng)
-
-      
-
-  last_count = 0
-  tag = '+'
-  for xc in range( x_rng[0], x_rng[1]+1):
-    count = len( list(r for x in v for r in x[2] if r[0] <= xc <= r[2]))
-    print( actual, xc, last_count, count, tag)
-
-    if tag == '+' and last_count <= count: # still non-decreasing
-      pass
-    elif tag == '+' and last_count > count: # now decreasing
-      print( "event")
-      tag = '-'
-    elif tag == '-' and last_count >= count: # still non-increasing
-      pass
-    elif tag == '-' and last_count < count: # now increasing 
-      tag = '+'
-
-    last_count = count
-
-  if tag == '+':
-    print("event")
-
-
-  wires = []
-  if False:
-
-    xc0 = (2*x_rng[0]+x_rng[1])//3
-    xc1 = (x_rng[0]+2*x_rng[1])//3
-
-    if y_rng[1] > y_rng[0]:
-      if xc1 > xc0:
-        wires = [ {"layer": "metal3", "net_name": actual, "width": 320, "rect": [xc0, y_rng[0], xc0, y_rng[1]]},
-                  {"layer": "metal3", "net_name": actual, "width": 320, "rect": [xc1, y_rng[0], xc1, y_rng[1]]}]
-      else:
-        wires = [ {"layer": "metal3", "net_name": actual, "width": 320, "rect": [xc0, y_rng[0], xc0, y_rng[1]]}]
-
-    print( actual, pin, lst, x_rng, y_rng, wires)
-
-  return wires
-
-
 
 def main(args, tech):
   if args.consume_results: return
