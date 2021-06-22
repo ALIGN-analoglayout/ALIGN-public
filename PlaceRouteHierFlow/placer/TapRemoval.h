@@ -170,8 +170,8 @@ class Rect {
     }
     int dist(const Rect&r, const bool euc = true) const
     {
-      auto dx(xdist(r));
-      auto dy(ydist(r));
+      auto dx(xoverlap(r) ? 0 : xdist(r));
+      auto dy(yoverlap(r) ? 0 : ydist(r));
       if (euc) return sqrt(dx * dx + dy * dy);
       return dx + dy;
     }

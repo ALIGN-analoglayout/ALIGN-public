@@ -391,13 +391,13 @@ NodeSet Graph::dominatingSetILP(const bool isTop) const
     }
   }
 
-  double rowObj[_nodes.size()];
+  double rowObj[_nodes.size() + 1];
   for (unsigned i = 0; i < _nodes.size(); ++i) {
     const auto& n = _nodes[i];
     if (dom.find(n) == dom.end() && n->nodeType() == NodeType::Tap) {
-      rowObj[i] = nodeRank[n];
+      rowObj[i + 1] = nodeRank[n];
     } else {
-      rowObj[i] = 0;
+      rowObj[i + 1] = 0;
     }
   }
   set_obj_fn(lp, rowObj);
