@@ -9,7 +9,6 @@
             "distance": 0
         },
         {
-            "const_name": "SymmBlock",
             "pairs": [
                 {
                     "type": "selfsym",
@@ -43,11 +42,25 @@
                     "block2": "mp12_mn14"
                 }
             ],
+            "const_name": "SymmBlock",
             "axis_dir": "V"
         },
         {
-            "const_name": "SymmNet",
-            "axis_dir": "V",
+            "const_name": "DoNotIdentify",
+            "blocks": [
+                "mn3_mn4",
+                "mp5_mp6",
+                "mn1_mn2",
+                "mp11_mn13",
+                "mp12_mn14",
+                "mn0",
+                "mp10",
+                "mp7",
+                "mp8",
+                "mp9"
+            ]
+        },
+        {
             "net1": {
                 "name": "vin",
                 "blocks": [
@@ -77,11 +90,11 @@
                         "pin": null
                     }
                 ]
-            }
+            },
+            "const_name": "SymmNet",
+            "axis_dir": "V"
         },
         {
-            "const_name": "SymmNet",
-            "axis_dir": "V",
             "net1": {
                 "name": "vin_d",
                 "blocks": [
@@ -111,7 +124,9 @@
                         "pin": "vip_d"
                     }
                 ]
-            }
+            },
+            "const_name": "SymmNet",
+            "axis_dir": "V"
         }
     ]
 }

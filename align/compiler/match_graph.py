@@ -8,6 +8,7 @@ Created on Fri Nov  2 21:33:22 2018
 import networkx as nx
 from networkx.algorithms import isomorphism
 
+from ..schema.types import set_context
 from .merge_nodes import merge_nodes, merged_value,convert_unit
 from .util import get_next_level
 from .find_constraint import FindSymmetry
@@ -70,13 +71,9 @@ class Annotate:
             mapped_graph_list = self._mapped_graph_list(G1, circuit_name, self.pg )
             const_list = self.hier_graph_dict[circuit_name]['constraints']
             self.hier_graph_dict[circuit_name]["graph"] = self._reduce_graph(G1, circuit_name, mapped_graph_list, const_list)
-            #Removing single instances of instances. TODO from sy: Generate or DoNotIdentify might be a single instance constraint. The logic below will fail.
-            self.hier_graph_dict[circuit_name] = self.hier_graph_dict[circuit_name].copy(
-                update={"constraints" : [
-                    const
-                    for const in const_list
-                    if (hasattr(const,'instances') and len(const.instances)>1)
-                        or not hasattr(const,'instances')]})
+            
+            for const in list(const_list):
+                self._check_const_length(self.hier_graph_dict[circuit_name].constraints,const)
             check_nodes(self.hier_graph_dict)
             logger.debug(f"Grest ckt is {circuit['graph'].nodes(data=True)}")
             if circuit_name not in self.no_array:
@@ -95,7 +92,29 @@ class Annotate:
                     copies = len(self.hier_graph_dict[ckt_name]['id'])
                     self.lib_names += [ckt_name + '_type' + str(n) for n in range(copies)]
         return self.lib_names
+    
+    def _check_const_length(self,const_list,const):
+        is_append = False
+        try:
+            with set_context(const_list):
+                if hasattr(const,'instances') and len(const.instances)>0:
+                    is_append = True
+                elif isinstance(const,dict) and 'instances' in const and len(const["instances"])>0:
+                    is_append = True
+                elif isinstance(const,dict) and 'instances' not in const:
+                    is_append = True
+                elif isinstance(const,dict) and 'instances' in const and len(const["instances"])==0:
+                    logger.info(f"skipping const of zero length: {const}")
+                elif not hasattr(const,'instances'):
+                    is_append = True
+                else:
+                    logger.warning(f"invalid constarint {const}")
+                if is_append == True and const not in const_list:
+                    const_list.append(const)
+        except:
+            logger.warning(f"skiping invalid constraint {const}")
 
+    
     def _update_attributes(self,circuit_graph,name,lib_name,lib_graph, Gsub):
         """
         Creates a copy of the library element
@@ -144,6 +163,7 @@ class Annotate:
         if self._if_const(name):
             gb_const = [const for const in self.hier_graph_dict[name]["constraints"] if isinstance(const, constraint.GroupBlocks)]
             const_list = [const for const in self.hier_graph_dict[name]["constraints"] if not isinstance(const, constraint.GroupBlocks)]
+            self.hier_graph_dict[name]["constraints"] = [const for const in const_list]
             for const in gb_const:
                 if not set(const.instances).issubset(set(G1.nodes)):
                     logger.error(f"Constraint instances: {const.instances} not in subcircuit {list(G1.nodes)}")
@@ -170,19 +190,17 @@ class Annotate:
                     name = const.name,
                     graph = subgraph,
                     ports = list(matched_ports.keys()),
-                    ports_weight = ports_weight,
-                    constraints = sconst
+                    ports_weight = ports_weight
                     )
+                for c in list(sconst):
+                    self._check_const_length(self.hier_graph_dict[const.name].constraints, c)
+
+
                 self._update_sym_const(name, G1, [const.name, *const.instances], inst_name, const_list)
                 self._update_block_const(name, G1, [const.name, *const.instances], inst_name, const_list)
             #Removing single instances of instances. TODO from sy: DoNotIdentify might have a single instance!
-            self.hier_graph_dict[name] = self.hier_graph_dict[name].copy(
-                update={"constraints" : [
-                    const
-                    for const in const_list
-                    if (hasattr(const,'instances') and len(const.instances)>1)
-                        or not hasattr(const,'instances')]})
-
+            for const in list(const_list):
+                self._check_const_length(self.hier_graph_dict[name].constraints,const)
 
     def _group_cap_const(self, G1, name):
         """
@@ -261,7 +279,7 @@ class Annotate:
                 sub_const = self.hier_graph_dict[sub_hierarchy_name]['constraints']
             else:
                 sub_const = []
-                for const in const_list:
+                for const in list(const_list):
                     if any(isinstance(const, x) for x in [constraint.HorizontalDistance,constraint.VerticalDistance,constraint.BlockDistance]):
                         sub_const.append(const)
                         logger.debug(f"transferring global const {const}")
@@ -274,10 +292,7 @@ class Annotate:
                             for x in const.__fields_set__}
                         assert 'constraint' in sconst
                         logger.debug(f"transferred constraint instances {Gsub} from {const} to {sconst}")
-                        if sconst['constraint'] == 'order' and len(sconst['instances']) > 1:
-                            sub_const.append(sconst)
-                        elif len(sconst['instances']) > 0:    # TODO: sy Why this limitation?
-                            sub_const.append(sconst)
+                        sub_const.append(sconst)
         else:
             sub_const = []
         return sub_const
