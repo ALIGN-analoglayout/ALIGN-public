@@ -360,7 +360,7 @@ void TapRemoval::buildGraph()
 
   for (auto& it : allTaps) {
     bool pmosTap = it.first.find("__tr_pmos_") != std::string::npos;
-    auto r = it.second.bloated(_dist);
+    auto r = it.second.bloated(_xdist, _ydist);
     bgBox box(bgPt(r.xmin(), r.ymin()), bgPt(r.xmax(), r.ymax()));
     vector<bgVal> overlapRects;
     rtree.query(bgi::covered_by(box), back_inserter(overlapRects));
@@ -392,7 +392,7 @@ void TapRemoval::buildGraph()
   _graph->addSymPairs(_symPairs);
 }
 
-TapRemoval::TapRemoval(const PnRDB::hierNode& node, const unsigned dist) : _dist(dist), _name(node.name), _graph(nullptr), _activesPresent(false)
+TapRemoval::TapRemoval(const PnRDB::hierNode& node, const unsigned xdist, const unsigned ydist) : _xdist(xdist), _ydist(ydist), _name(node.name), _graph(nullptr), _activesPresent(false)
 {
   auto logger = spdlog::default_logger()->clone("placer.TapRemoval.TapRemoval");
   for (unsigned i = 0; i < node.Blocks.size(); ++i) {
@@ -485,7 +485,7 @@ double TapRemoval::deltaArea(map<string, int>* swappedIndices, bool removeAllTap
   if (!_activesPresent) return -1;
   double deltaarea(0.);
   if (_instances.empty()) return deltaarea;
-  if (_graph == nullptr || _dist == 0 || !valid()) return deltaarea;
+  if (_graph == nullptr || (_xdist == 0 && _ydist == 0) || !valid()) return deltaarea;
   auto nodes = _graph->dominatingSet(removeAllTaps);
 
   //logger->info("Found {0} nodes in dominating set {1}", nodes.size(), _dist);

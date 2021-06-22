@@ -131,7 +131,7 @@ class Rect {
     }
 
     void bloat(const int c) { _ll.translate(-c); _ur.translate(c); }
-    Rect bloated(const int c) { return move(Rect(xmin() - c, ymin() - c, xmax() + c, ymax() + c)); }
+    Rect bloated(const int cx, const int cy) { return Rect(xmin() - cx, ymin() - cy, xmax() + cx, ymax() + cy); }
     
     int width() const { return xmax() - xmin(); }
     int height() const { return ymax() - ymin(); }
@@ -146,7 +146,7 @@ class Rect {
     {
       auto r = Rect(_ll, _ur);
       r.translate(pt.x(), pt.y());
-      return move(r);
+      return r;
     }
 
     Rect transform(const Transform& tr, const int width, const int height) const;
@@ -378,7 +378,7 @@ class Graph {
 
 class TapRemoval {
   private:
-    unsigned _dist;
+    unsigned _xdist, _ydist;
     string _name;
     DomSetGraph::Graph *_graph;
     PrimitiveData::Instances _instances;
@@ -390,7 +390,7 @@ class TapRemoval {
 
   public:
     void buildGraph();
-    TapRemoval(const PnRDB::hierNode& node, const unsigned dist);
+    TapRemoval(const PnRDB::hierNode& node, const unsigned xdist, const unsigned ydist);
     ~TapRemoval();
     bool valid() const { return !_primitives.empty() && !_primitivesWoTap.empty(); }
     //void createInstances(const PrimitiveData::PlMap& plmap);
