@@ -251,6 +251,8 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
         pair<int, PnRDB::Smark> temp_selfsym;
         for (auto pair : constraint["pairs"]) {
           if (pair["type"] == "sympair") {  // sympair
+            temp_pair.first = -1;
+            temp_pair.second = -1;
             for (int k = 0; k < (int)node.Blocks.size(); k++) {
               if (node.Blocks.at(k).instance.back().name.compare(pair["block1"]) == 0) {
                 temp_pair.first = k;
@@ -259,6 +261,8 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
                 temp_pair.second = k;
               }
             }
+            if (temp_pair.first == -1) logger->error("Block {0} not found", pair["block1"]);
+            if (temp_pair.second == -1) logger->error("Block {0} not found", pair["block2"]);
             int temp_int;
             if (temp_pair.first > temp_pair.second) {
               temp_int = temp_pair.second;
