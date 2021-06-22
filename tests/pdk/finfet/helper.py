@@ -105,7 +105,7 @@ def build_example(work_dir, name, netlist, netlist_setup, constraints):
     return example
 
 
-def run_example(example, n=8, cleanup=True):
+def run_example(example, n=8, cleanup=True, max_errors=0):
     run_dir = my_dir / f'run_{example.name}'
     if run_dir.exists() and run_dir.is_dir():
         shutil.rmtree(run_dir)
@@ -115,7 +115,13 @@ def run_example(example, n=8, cleanup=True):
     args = [str(example), '-p', str(pdk_dir), '-l','INFO', '-n', str(n)]
     results = align.CmdlineParser().parse_args(args)
     assert results is not None, f"{example.name}: No results generated"
-    
+
+    for result in results:
+        _, variants = result
+        for (k,v) in variants.items():
+            assert 'errors' in v, f"No Layouts were generated for {example.name} ({k})"
+            assert v['errors'] <= max_errors, f"{example.name} ({k}):Number of DRC errorrs: {str(v['errors'])}"
+        
     if cleanup:
         shutil.rmtree(run_dir)
         shutil.rmtree(example)
