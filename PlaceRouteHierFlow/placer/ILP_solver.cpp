@@ -13,6 +13,7 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
   //first correct global placement result
   for (auto symmetry : mydesign.SPBlocks) {
     if (symmetry.axis_dir == placerDB::V) {
+      set<int> center_y_set;
       int center_x = 0;
       for (auto i_selfsym:symmetry.selfsym){
         center_x += node.Blocks[i_selfsym.first].instance[0].placedCenter.x;
@@ -23,17 +24,23 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
       }
       center_x /= (symmetry.selfsym.size() + symmetry.sympair.size() * 2);
       for (auto i_selfsym:symmetry.selfsym){
-         node.Blocks[i_selfsym.first].instance[0].placedCenter.x=center_x;
+        while(center_y_set.find(node.Blocks[i_selfsym.first].instance[0].placedCenter.y)!=center_y_set.end())
+          node.Blocks[i_selfsym.first].instance[0].placedCenter.y++;
+        center_y_set.insert(node.Blocks[i_selfsym.first].instance[0].placedCenter.y);
+        node.Blocks[i_selfsym.first].instance[0].placedCenter.x = center_x;
       }
       for(auto i_sympair:symmetry.sympair){
         int diff = center_x - (node.Blocks[i_sympair.first].instance[0].placedCenter.x + node.Blocks[i_sympair.second].instance[0].placedCenter.x) / 2;
         node.Blocks[i_sympair.first].instance[0].placedCenter.x += diff-1;
         node.Blocks[i_sympair.second].instance[0].placedCenter.x += diff+1;
         int center_y = (node.Blocks[i_sympair.first].instance[0].placedCenter.y + node.Blocks[i_sympair.second].instance[0].placedCenter.y) / 2;
+        while (center_y_set.find(center_y) != center_y_set.end()) center_y++;
+        center_y_set.insert(center_y);
         node.Blocks[i_sympair.first].instance[0].placedCenter.y = center_y;
         node.Blocks[i_sympair.second].instance[0].placedCenter.y = center_y;
       }
     } else {
+      set<int> center_x_set;
       int center_y = 0;
       for (auto i_selfsym:symmetry.selfsym){
         center_y += node.Blocks[i_selfsym.first].instance[0].placedCenter.y;
@@ -44,13 +51,18 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
       }
       center_y/=(symmetry.selfsym.size() + symmetry.sympair.size() * 2);
       for (auto i_selfsym:symmetry.selfsym){
-         node.Blocks[i_selfsym.first].instance[0].placedCenter.y=center_y;
+        while(center_x_set.find(node.Blocks[i_selfsym.first].instance[0].placedCenter.x)!=center_x_set.end())
+          node.Blocks[i_selfsym.first].instance[0].placedCenter.x++;
+        center_x_set.insert(node.Blocks[i_selfsym.first].instance[0].placedCenter.x);
+        node.Blocks[i_selfsym.first].instance[0].placedCenter.y = center_y;
       }
       for(auto i_sympair:symmetry.sympair){
         int diff = center_y - (node.Blocks[i_sympair.first].instance[0].placedCenter.y + node.Blocks[i_sympair.second].instance[0].placedCenter.y) / 2;
         node.Blocks[i_sympair.first].instance[0].placedCenter.y += diff;
         node.Blocks[i_sympair.second].instance[0].placedCenter.y += diff;
         int center_x = (node.Blocks[i_sympair.first].instance[0].placedCenter.x + node.Blocks[i_sympair.second].instance[0].placedCenter.x) / 2;
+        while (center_x_set.find(center_x) != center_x_set.end()) center_x++;
+        center_x_set.insert(center_x);
         node.Blocks[i_sympair.first].instance[0].placedCenter.x = center_x;
         node.Blocks[i_sympair.second].instance[0].placedCenter.x = center_x;
       }
