@@ -10,29 +10,13 @@ import re
 from . import techfile
 
 class ADT:
-  def __init__( self, tech, nm, npp=10, nr=1, *, physical_bbox=None):
+  def __init__( self, tech, nm, *, physical_bbox=None):
     self.tech = tech
     self.nm = nm
-    if physical_bbox is None:
-      self.bbox = Rect( 0, 0, npp*self.tech.pitchPoly, nr*self.tech.dgPerRow*self.tech.pitchDG)
-    else:
-      self.bbox = Rect( *physical_bbox)
+    assert physical_bbox is not None
 
+    self.bbox = Rect( *physical_bbox)
     self.terminals = []
-
-  @property
-  def nrows( self):
-    """Computes number of ADT row heights."""
-    dy = self.bbox.ury-self.bbox.lly
-    assert dy % (self.tech.dgPerRow*self.tech.pitchDG) == 0
-    return dy // (self.tech.dgPerRow*self.tech.pitchDG)
-
-  @property
-  def npps( self):
-    """Computes number of poly pitches."""
-    dx = self.bbox.urx-self.bbox.llx
-    assert dx % self.tech.pitchDG == 0
-    return dx // self.tech.pitchDG
 
   def newWire( self, netName, rect, layer):
     w = Wire()
@@ -43,199 +27,10 @@ class ADT:
     self.terminals.append( w)
     return w
 
-  def addM1Terminal( self, netName, m1TracksOffset=None, rect=None, leaf_bbox=None):
-    """Add a m1 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell) or corresponds to rect"""
-    assert m1TracksOffset is None or rect is None
-    assert m1TracksOffset is not None or rect is not None
-
-    if m1TracksOffset is not None:
-      xc = self.tech.pitchM1*m1TracksOffset
-
-      y0 = self.bbox.lly+self.tech.halfMinETESpaceM1
-      y1 = self.bbox.ury-self.tech.halfMinETESpaceM1
-
-    if rect is not None:
-      assert rect[0] == rect[2]
-      assert leaf_bbox is not None
-
-      xc = self.tech.pitchM1*rect[0]
-
-      # HACK: This is different than the other odd layers
-      # We are using the "placer" level abstraction --- Needs to eventually change
-      height_fraction = (self.bbox.ury-self.bbox.lly) // leaf_bbox[3]
-      y0 = height_fraction*rect[1]+self.tech.halfMinETESpaceM1
-      y1 = height_fraction*rect[3]-self.tech.halfMinETESpaceM1
-
-    x0 = xc-self.tech.halfWidthM1[0]
-    x1 = xc+self.tech.halfWidthM1[0]
-
-    return self.newWire( netName, Rect( x0, y0, x1, y1), "metal1")
-
-  def addM2Terminal( self, netName, rect):
-    """Add a m2 terminal (horizontal) that corresponds to rect"""
-
-    assert rect[1] == rect[3]
-
-    yc = self.tech.pitchM3*rect[1]
-
-    # HACK: need to use the correct stopping point grid (assuming M2 and M3 pitches are the same.)
-    # expand from abstract grid
-    x0 = self.tech.pitchM3*rect[0]-self.tech.halfMinETESpaceM2
-    x1 = self.tech.pitchM3*rect[2]+self.tech.halfMinETESpaceM2
-
-    y0 = yc-self.tech.halfWidthM2[0]
-    y1 = yc+self.tech.halfWidthM2[0]
-
-    return self.newWire( netName, Rect( x0, y0, x1, y1), "metal2")
-
-  def addM3Terminal( self, netName, m3TracksOffset=None, rect=None):
-    """Add a m3 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell) or corresponds to rect"""
-    assert m3TracksOffset is None or rect is None
-    assert m3TracksOffset is not None or rect is not None
-
-    if m3TracksOffset is not None:
-      xc = self.tech.pitchM3*m3TracksOffset
-
-      y0 = self.bbox.lly+self.tech.halfMinETESpaceM3
-      y1 = self.bbox.ury-self.tech.halfMinETESpaceM3
-
-    if rect is not None:
-      assert rect[0] == rect[2]
-
-      xc = self.tech.pitchM3*rect[0]
-
-      # HACK: need to use the correct stopping point grid (assuming M2 and M3 pitches are the same.)
-      # expand from abstract grid
-      y0 = self.tech.pitchM3*rect[1]-self.tech.halfMinETESpaceM3
-      y1 = self.tech.pitchM3*rect[3]+self.tech.halfMinETESpaceM3
-
-    x0 = xc-self.tech.halfWidthM3[0]
-    x1 = xc+self.tech.halfWidthM3[0]
-
-    return self.newWire( netName, Rect( x0, y0, x1, y1), "metal3")
-
-  def addM4Terminal( self, netName, rect):
-    """Add a m4 terminal (horizontal) that corresponds to rect"""
-
-    assert rect[1] == rect[3]
-
-    yc = self.tech.pitchM3*rect[1]
-
-    # HACK: need to use the correct stopping point grid (assuming M4 and M5 pitches are the same.)
-    # expand from abstract grid
-    x0 = self.tech.pitchM5*rect[0]-self.tech.halfMinETESpaceM4
-    x1 = self.tech.pitchM5*rect[2]+self.tech.halfMinETESpaceM4
-
-    y0 = yc-self.tech.halfWidthM4[0]
-    y1 = yc+self.tech.halfWidthM4[0]
-
-    return self.newWire( netName, Rect( x0, y0, x1, y1), "metal4")
-
-  def addM5Terminal( self, netName, m5TracksOffset=None, rect=None):
-    """Add a m5 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell) or corresponds to rect"""
-    assert m5TracksOffset is None or rect is None
-    assert m5TracksOffset is not None or rect is not None
-
-    if m5TracksOffset is not None:
-      xc = self.tech.pitchM5*m5TracksOffset
-
-      y0 = self.bbox.lly+self.tech.halfMinETESpaceM5
-      y1 = self.bbox.ury-self.tech.halfMinETESpaceM5
-
-    if rect is not None:
-      assert rect[0] == rect[2]
-
-      xc = self.tech.pitchM5*rect[0]
-
-      # HACK: need to use the correct stopping point grid (assuming M4 and M5 pitches are the same.)
-      # expand from abstract grid
-      y0 = self.tech.pitchM5*rect[1]-self.tech.halfMinETESpaceM5
-      y1 = self.tech.pitchM5*rect[3]+self.tech.halfMinETESpaceM5
-
-    x0 = xc-self.tech.halfWidthM5[0]
-    x1 = xc+self.tech.halfWidthM5[0]
-
-    return self.newWire( netName, Rect( x0, y0, x1, y1), "metal5")
-
   def __repr__( self):
     return self.nm + "," + str(self.bbox) + "," + str(self.terminals)
 
-  @staticmethod
-  def parse_lgf( tech, fn):
-
-    p_cell = re.compile( r'^Cell\s+(\S+)\s+bbox=(\S+):(\S+):(\S+):(\S+)\s*$')
-    p_wire = re.compile( r'^Wire\s+net=(\S+)\s+(gid=(\S+)\s+|)layer=(\S+)\s+rect=(\S+):(\S+):(\S+):(\S+)\s*$')
-    p_obj = re.compile( r'^Obj\s+net=(\S+)\s+gen=(\S+)\s+x=(\S+)\s+y=(\S+)\s*$')
-    p_space = re.compile( r'^\s*$')
-    p_comment = re.compile( r'^#.*$')
-
-    with open( fn, "r") as fp:
-      adt = None
-
-      for line in fp:
-        line = line.rstrip( '\n')
-      
-        m = p_cell.match( line)
-        if m:
-          cell = m.groups()[0]
-          bbox = Rect( int(m.groups()[1]), int(m.groups()[2]), int(m.groups()[3]), int(m.groups()[4]))
-
-          adt = ADT( d, cell)
-          adt.bbox = bbox
-          continue
-
-        m = p_wire.match( line)
-        if m:
-          net = m.groups()[0]
-          gid = m.groups()[2]
-          if gid is not None: gid = int(gid)
-          layer = m.groups()[3]        
-          rect = Rect( int(m.groups()[4]), int(m.groups()[5]), int(m.groups()[6]), int(m.groups()[7]))
-
-          if True or layer in ["metalc2", "metal2"]:
-            w = adt.newWire( net, rect, layer)
-            w.gid = gid
-            print( w)
-          continue
-
-        m = p_obj.match( line)
-        if m:
-          net = m.groups()[0]
-          gen = m.groups()[1]
-          x = int(m.groups()[2])
-          y = int(m.groups()[3])
-          continue
-
-        m = p_space.match( line)
-        if m: continue
-
-        m = p_comment.match( line)
-        if m: continue
-
-        assert False, line
-
-      return adt
-
 class ADITransform:
-  @staticmethod
-  def translate( tx, ty):
-    trans = ADITransform()
-    trans.xOffset = tx
-    trans.yOffset = ty
-    return trans
-
-  @staticmethod
-  def mirrorAcrossXAxis():
-    trans = ADITransform()
-    trans.yScale = -1
-    return trans
-
-  @staticmethod
-  def mirrorAcrossYAxis():
-    trans = ADITransform()
-    trans.xScale = -1
-    return trans
-
   def __init__( self, oX=0, oY=0, sX=1, sY=1):
     self.xOffset = oX
     self.yOffset = oY
@@ -244,14 +39,6 @@ class ADITransform:
 
   def __repr__( self):
     return "xo yo xs ys: %d %d %d %d" % ( self.xOffset, self.yOffset, self.xScale, self.yScale)
-
-  def copy( self):
-    R = ADITransform()
-    R.xOffset = self.xOffset
-    R.yOffset = self.yOffset
-    R.xScale = self.xScale
-    R.yScale = self.yScale
-    return R
 
   def hit( self, p):
     ( x, y) = p
@@ -362,7 +149,7 @@ class Rect:
   def __repr__( self):
     return str(self)
 
-  def add( self, x, y):
+  def add_xxx( self, x, y):
     return Rect( min(x,self.llx), min(y,self.lly), max(x,self.urx), max(y,self.ury))
 
   def canonical( self):
@@ -938,133 +725,6 @@ def parse_lgf( fp):
 
   return netl
 
-from . import transformation
-
-class Scanline:
-    def __init__(self, proto, indices, dIndex):
-        self.proto = proto
-        self.indices = indices
-        self.dIndex = dIndex
-        self.rects = []
-        self.clear()
-
-    def clear(self):
-        self.start = None
-        self.end = None
-        self.currentNet = None
-
-    def isEmpty(self):
-        return self.start is None
-
-    def emit(self):
-        r = self.proto[:]
-        r[self.dIndex] = self.start
-        r[self.dIndex+2] = self.end
-        self.rects.append((r, self.currentNet))
-
-    def set(self, rect, netName):
-        self.start = rect[self.dIndex]
-        self.end = rect[self.dIndex+2]
-        self.currentNet = netName
-
-
-def removeDuplicates( data):
-
-    layers = [('metal0', 'h'), ('metal1', 'v'), ('metal2', 'h'),('metal3', 'v'),
-              ('metal4', 'h'), ('metal5', 'v'), ('metal6', 'h'),('metal7', 'v')]
-
-    viaLayers = {'via0','via1','via2','via3','via4','via5','via6'}
-
-    layersDict = dict(layers)
-
-    indicesTbl = {'h': ([1, 3], 0), 'v': ([0, 2], 1)}
-
-    tbl = {}
-
-    tblVia = {}
-
-    for d in data:
-        layer = d['layer']
-        rect = d['rect']
-        netName = d['net_name']
-
-        if layer in viaLayers:
-          twice_centers = ( rect[0]+rect[2], rect[1]+rect[3])
-          if layer not in tblVia:
-            tblVia[layer] = {}
-          if twice_centers not in tblVia[layer]:
-            tblVia[layer][twice_centers] = []
-          tblVia[layer][twice_centers].append((rect, netName))
-        elif layer not in layersDict:
-          if layer not in ["nwell"]:
-            print( "Skipping processing of unknown layer:", layer)
-        else:
-          twice_center = sum(rect[index] for index in indicesTbl[layersDict[layer]][0])
-          if layer not in tbl:
-            tbl[layer] = {}
-          if twice_center not in tbl[layer]:
-            tbl[layer][twice_center] = []
-          tbl[layer][twice_center].append((rect, netName))
-
-    terminals = []
-
-    for layer in viaLayers:
-      if layer not in tblVia:
-        continue
-
-      for (k,v) in tblVia[layer].items():
-        assert len(v) >= 0
-        for p in v[1:]:
-          if p[0] != v[0][0]:
-            print( "Via rectangles with same center differ:", layer, k, v)
-          if p[1] != v[0][1]:
-            print( "Via nets with same center differ:", layer, k, v)
-
-        # only the first one
-        for p in v[:1]:
-          terminals.append({'layer': layer, 'net_name': p[1], 'rect': p[0]})
-
-    for (layer, dirname) in layers:
-        if layer not in tbl:
-            continue
-        (indices, dIndex) = indicesTbl[dirname]
-
-        for (twice_center, v) in tbl[layer].items():
-
-            sl = Scanline(v[0][0], indices, dIndex)
-
-            if v:
-                (rect0, _) = v[0]
-                for (rect, netName) in v[1:]:
-                    assert all(rect[i] == rect0[i] for i in indices)
-
-                s = sorted(v, key=lambda p: p[0][dIndex])
-
-                for (rect, netName) in s:
-                    if sl.isEmpty():
-                        sl.set(rect, netName)
-                    elif rect[dIndex] <= sl.end:  # continue
-                        sl.end = max(sl.end, rect[dIndex+2])
-                        if sl.currentNet != netName:
-                            print( "Potential short:", (layer, sl.currentNet, netName))
-                        #assert sl.currentNet == netName, (layer, sl.currentNet, netName)
-                    else:  # gap
-                        sl.emit()
-                        sl.set(rect, netName)
-
-                if not sl.isEmpty():
-                    sl.emit()
-                    sl.clear()
-
-
-            # print( layer, twice_center, len(v), len(sl.rects))
-
-            for (rect, netName) in sl.rects:
-                terminals.append(
-                    {'layer': layer, 'net_name': netName, 'rect': rect})
-
-    return terminals
-
 from .consume_results import consume_results
 
 def parse_args( command_line_args=None):
@@ -1095,56 +755,3 @@ def parse_args( command_line_args=None):
     # exit()
 
   return args,tech
-
-
-if __name__ == "__main__":
-  args,tech = parse_args()
-
-  ndev = ADT( tech, "n",npp=6,nr=1)
-  ndev.addM1Terminal( "s", 1)
-  ndev.addM1Terminal( "g", 3)
-  ndev.addM1Terminal( "d", 5)
-
-  pdev = ADT( tech, "p",npp=6,nr=1)
-  pdev.addM1Terminal( "s", 1)
-  pdev.addM1Terminal( "g", 3)
-  pdev.addM1Terminal( "d", 5)
-
-  # python cktgen.py --block_name mydesign
-
-  def xg( x): 
-    return tech.pitchPoly*tech.halfXGRGrid*2*x
-  def yg( y): 
-    return tech.pitchDG  *tech.halfYGRGrid*2*y
-
-  def mirrorAcrossYAxis( adt):
-    return ADITransform.mirrorAcrossYAxis().preMult( ADITransform.translate( adt.bbox.urx, 0))    
-
-
-  netl = Netlist( nm=args.block_name, bbox=Rect( 0,0, xg(10), yg(10)))
-
-  adnetl =  ADNetlist( args.block_name)
-  
-  adnetl.addInstance( ADI( ndev, "un0", ADITransform.translate( xg(1), yg(1))))
-  adnetl.addInstance( ADI( pdev, "up0", mirrorAcrossYAxis( pdev).preMult( ADITransform.translate( xg(8), yg(8)))))
-
-  adnetl.connect('un0','g','i')
-  adnetl.connect('un0','d','o')
-  adnetl.connect('un0','s','vss')
-
-  adnetl.connect('up0','g','i')
-  adnetl.connect('up0','d','o')
-  adnetl.connect('up0','s','vcc')
-
-  adnetl.genNetlist( netl)
-
-  netl.newGR( 'i', Rect( 1, 8, 8, 8), "metal4", tech.halfWidthM4[0]*2)
-  netl.newGR( 'i', Rect( 1, 1, 1, 8), "metal3", tech.halfWidthM3[0]*2)
-
-  netl.newGR( 'o', Rect( 8, 1, 8, 8), "metal3", tech.halfWidthM3[0]*2)
-  netl.newGR( 'o', Rect( 1, 1, 8, 1), "metal4", tech.halfWidthM4[0]*2)
-
-  pathlib.Path("INPUT").mkdir(parents=True, exist_ok=True)
-
-  tech.write_files( "INPUT", netl.nm, netl.bbox.toList())
-  netl.write_files( tech, "INPUT", args)

@@ -1,7 +1,7 @@
 
 import json
 from .cktgen import parse_lgf, convert_align_to_adr
-from .transformation import Rect, Transformation
+from ..cell_fabric.transformation import Rect, Transformation
 
 def consume_results(args,tech):
     assert args.no_interface, "Removed support for 'interface'."

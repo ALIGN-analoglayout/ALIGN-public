@@ -3,8 +3,8 @@ from .cktgen import *
 #
 # Need to rename these or the router crashes with an stoi error?
 #
-from .transformation import Rect as tRect
-from .transformation import Transformation
+from ..cell_fabric.transformation import Rect as tRect
+from ..cell_fabric.transformation import Transformation
 
 import json
 from collections import defaultdict
@@ -72,188 +72,6 @@ def trivial_gr( actual, v):
 
   return wires
 
-def gr_hints(parser_results):
-  leaf_map = { x['template_name'] : x for x in placer_results['leaves'] }
-
-  net_map = defaultdict(list)
-  for inst in placer_results['instances']:
-    i = inst['instance_name']
-    t = inst['template_name']
-    assert t in leaf_map
-    leaf = leaf_map[t]
-    pin_map = defaultdict(list)
-    for terminal in leaf['terminals']:
-      pin_map[terminal['net_name']].append( terminal)
-
-    tr = inst['transformation']
-    trans = Transformation( tr['oX'], tr['oY'], tr['sX'], tr['sY'])
-
-    for (formal,actual) in inst['formal_actual_map'].items():
-      assert formal in pin_map
-      lst = [trans.hitRect( tRect( *terminal['rect'])).canonical() for terminal in pin_map[formal]]
-
-      gr_lst = [ [ int(t//(10*840)) for t in r.toList()] for r in lst]
-
-      net_map[actual].append( (i,formal,gr_lst))
-
-  wires = []
-  for (k,v) in net_map.items():
-    tmp = trivial_gr( k, v)
-    wires += tmp
-
-  return wires
-
-
-def hack_gr( results, bbox):
-  wires = results['wires']
-
-  print("SMB")
-
-  metal_layer_map = { f'M{i}' : f'metal{i}' for i in range(2,5) }
-  via_layer_map = { f'V{i}' : f'via{i}' for i in range(1,4) }
-  layer_map = dict(list(metal_layer_map.items()) + list(via_layer_map.items()))
-
-  print(layer_map)
-  
-# change metal2 grs to metal4 (big runtime issue otherwise)
-#  layer_map['M2'] = 'metal4'
-
-  horizontal_layers = ["metal2","metal4"]
-  vertical_layers = ["metal1","metal3"]
-
-  binsize = 84*2*10
-  def gbin(v):
-    return v//binsize
-
-  assert bbox[2] % 5 == 0
-  assert bbox[3] % 5 == 0
-
-  bbox_urx = bbox[2]//5
-  bbox_ury = bbox[3]//5
- 
-  print("bin of bbox_urx", gbin(bbox_urx))
-  print("bin of bbox_ury", gbin(bbox_ury))
-
-  def dnx(v):
-    return max(gbin(bbox[0]),gbin(v))
-
-  def dny(v):
-    return max(gbin(bbox[1]),gbin(v))
-
-  def upx(v):
-    return min(gbin(bbox_urx)-1,gbin(v))
-
-  def upy(v):
-    return min(gbin(bbox_ury)-1,gbin(v))
-
-  expand_null_routes = True
-
-  new_wires = []
-  for wire in wires:
-    r = [ v+0 for v in Rect( *wire['rect']).canonical().toList() ]
-
-    tuples = []
-    for v in r:
-      rem = v % binsize
-      gcd = math.gcd(rem,binsize)
-      tuples.append( (v//binsize, rem//gcd, binsize//gcd))
-
-    print( "module grid", tuples[1], tuples[3])
-
-    ly = layer_map[wire['layer']]
-
-    nr = [ gbin(r[0]), gbin(r[1]), gbin(r[2]), gbin(r[3])]
-
-    # Make sure everything is within bounds
-
-    if ly in vertical_layers:
-      if nr[2] >= gbin(bbox_urx)-1:
-        nr[0] = nr[2] = gbin(bbox_urx)-1
-      assert 0 <= nr[0] < gbin(bbox_urx), (nr, ly, gbin(bbox_urx))
-      assert 0 <= nr[2] < gbin(bbox_urx), (nr, ly, gbin(bbox_urx))
-
-      if nr[1] > gbin(bbox_ury)-1:
-        nr[1] = gbin(bbox_ury)-1
-      if nr[3] > gbin(bbox_ury)-1:
-        nr[3] = gbin(bbox_ury)-1
-
-    elif ly in horizontal_layers:
-      if nr[3] >= gbin(bbox_ury)-1:
-        nr[1] = nr[3] = gbin(bbox_ury)-1
-      assert 0 <= nr[1] < gbin(bbox_ury), (nr, ly, gbin(bbox_urx))
-      assert 0 <= nr[3] < gbin(bbox_ury), (nr, ly, gbin(bbox_urx))
-
-      if nr[0] > gbin(bbox_urx)-1:
-        nr[0] = gbin(bbox_urx)-1
-      if nr[2] > gbin(bbox_urx)-1:
-        nr[2] = gbin(bbox_urx)-1
-
-    else:
-      assert False, ly
-
-    # Make sure we don't have 2d routes
-    assert nr[0] == nr[2] or nr[1] == nr[3], (r,nr)
-
-#    if expand_null_routes and (nr[0] == nr[2] and nr[1] == nr[3]):
-    if expand_null_routes:
-      if ly in vertical_layers:
-        # extend the wire to be at least a grid long
-        dy = r[3]-r[1]
-        if dy < binsize:
-          extend = (binsize-dy)//2
-          nr = [ nr[0], dny(r[1]-extend), nr[2], upy(r[3]+extend)]
-
-        if nr[1] == nr[3]:
-          if nr[3] == 0:
-            nr[3] += 1
-          if nr[1] == gbin(bbox_ury)-1:
-            nr[1] -= 1
-
-        assert nr[1] != nr[3], (r,nr)
-
-      elif ly in horizontal_layers:
-
-        dx = r[2]-r[0]
-        if dx < binsize:
-          extend = (binsize-dx)//2
-          nr = [ dnx(r[0]-extend), nr[1], upx(r[2]+extend), nr[3]]
-
-        if nr[0] == nr[2]:
-          if nr[2] == 0:
-            nr[2] += 1
-          if nr[0] == gbin(bbox_urx)-1:
-            nr[0] -= 1
-
-        assert nr[0] != nr[2], (r,nr)
-
-      else:
-        assert False, ly
-
-    # Not a point
-    assert nr[0] != nr[2] or nr[1] != nr[3], (r,nr)
-    # Not 2D
-    assert nr[0] == nr[2] or nr[1] == nr[3], (r,nr)
-    # in range
-    assert 0 <= nr[0] < gbin(bbox_urx), (nr, ly, gbin(bbox_urx))
-    assert 0 <= nr[2] < gbin(bbox_urx), (nr, ly, gbin(bbox_urx))
-    assert 0 <= nr[1] < gbin(bbox_ury), (nr, ly, gbin(bbox_urx))
-    assert 0 <= nr[3] < gbin(bbox_ury), (nr, ly, gbin(bbox_urx))
-
-    new_wire = { 'layer': ly,
-                 'net_name': wire['net_name'],
-                 'width': 320,
-                 'rect': nr
-    }
-    if "connected_pins" in wire:
-      new_wire['connected_pins'] = wire['connected_pins']
-
-    if not expand_null_routes or nr[0] != nr[2] or nr[1] != nr[3]:
-      new_wires.append(new_wire)
-    else:
-      assert not expand_null_routes
-      print("Removing zero size global route", new_wire)
-
-  results['wires'] = new_wires
 
 
 def main(args, tech):
@@ -275,10 +93,9 @@ def main(args, tech):
   with open( gr_fn, "rt") as fp:
     global_router_results = json.load( fp)
 
-  #  hack_gr( global_router_results, placer_results['bbox'])
-  #  wires = gr_hints(placer_results)
-  #  global_router_results = { "wires": wires}
-
+  #
+  # Need to get this from layers.json
+  #
   metal_layer_map = { f'M{i}' : f'metal{i}' for i in range(0,7) }
   via_layer_map = { f'V{i}' : f'via{i}' for i in range(0,6) }
   layer_map = dict(list(metal_layer_map.items()) + list(via_layer_map.items()))
@@ -299,7 +116,7 @@ def main(args, tech):
 
   bbox = placer_results['bbox']
 
-  netl = Netlist( nm=args.block_name, bbox=Rect( *bbox))
+
   adnetl =  ADNetlist( args.block_name)
 
   for inst in placer_results['instances']:
@@ -324,6 +141,7 @@ def main(args, tech):
     for preroute in preroutes:
       adnetl.addPreroute(convert_align_to_adr(preroute))
 
+  netl = Netlist( nm=args.block_name, bbox=Rect( *bbox))
   adnetl.genNetlist( netl)
 
   for wire in global_router_results['wires']:
@@ -340,9 +158,3 @@ def main(args, tech):
 
   tech.write_files( "INPUT", netl.nm, netl.bbox.toList())
   netl.write_files( tech, "INPUT", args)
-  
-
-if __name__ == "__main__":
-
-  args,tech = parse_args()
-  main( args, tech)
