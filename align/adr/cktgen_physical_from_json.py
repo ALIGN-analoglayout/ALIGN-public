@@ -1,10 +1,6 @@
 from .cktgen import *
 
-from ..cell_fabric.transformation import Transformation
-
 import json
-from collections import defaultdict
-import re
 
 def main(args, tech):
   if args.consume_results: return
@@ -58,7 +54,7 @@ def main(args, tech):
 
     # print( tr)
 
-    adnetl.addInstance( ADI( adts[tN], iN, ADITransform( tr['oX'], tr['oY'], tr['sX'], tr['sY'])))
+    adnetl.addInstance( ADI( adts[tN], iN, Transformation( **tr)))
 
     for (f,a) in inst['formal_actual_map'].items():
       adnetl.connect( iN, f, a)
@@ -83,8 +79,6 @@ def main(args, tech):
     assert connected_pins is not None
 
     netl.newGR( wire['net_name'], Rect( *wire['rect']), wire['layer'], wire['width'], connected_pins=connected_pins)
-
-    # netl.semantic()
 
   pathlib.Path("INPUT").mkdir(parents=True, exist_ok=True)
 

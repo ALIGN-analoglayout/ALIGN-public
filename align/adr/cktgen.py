@@ -30,40 +30,14 @@ class ADT:
   def __repr__( self):
     return self.nm + "," + str(self.bbox) + "," + str(self.terminals)
 
-class ADITransform:
-  def __init__( self, oX=0, oY=0, sX=1, sY=1):
-    self.xOffset = oX
-    self.yOffset = oY
-    self.xScale = sX
-    self.yScale = sY
-
-  def __repr__( self):
-    return "xo yo xs ys: %d %d %d %d" % ( self.xOffset, self.yOffset, self.xScale, self.yScale)
-
-  def hit( self, p):
-    ( x, y) = p
-    return ( self.xScale * x + self.xOffset, self.yScale * y + self.yOffset)
-
-  def preMult( self, A):
-    # sx 0  tx
-    # 0  sy ty
-    # 0  0  1
-    C = ADITransform()
-    C.xOffset = A.xScale * self.xOffset + A.xOffset
-    C.yOffset = A.yScale * self.yOffset + A.yOffset
-    C.xScale = A.xScale * self.xScale
-    C.yScale = A.yScale * self.yScale
-    return C
+from ..cell_fabric.transformation import Transformation
 
 class ADI:
   def __init__( self, t, iName, trans=None):
     self.template = t
     self.instanceName = iName
     self.formalActualMap = OrderedDict()
-    if trans is None:
-      self.trans = ADITransform()
-    else:
-      self.trans = trans
+    self.trans = Transformation() if trans is None else trans
 
   def __repr__( self):
     return "template: %s instance: %s trans: %s" % (self.template, self.instanceName, self.trans)
@@ -84,14 +58,10 @@ class ADNetlist:
     self.nm = nm
     self.instances = OrderedDict()
     self.nets = OrderedDict()
-    self.ports = []
     self.preroutes = []
 
   def addInstance( self, i):
     self.instances[i.instanceName] = i
-
-  def addPort( self, p):
-    self.ports.append( p)
 
   def addPreroute( self, p):
     self.preroutes.append( p)
@@ -130,9 +100,6 @@ class ADNetlist:
       assert l.startswith('metal') or l.startswith('via'), l
       netl.newWire( '!kor', r, l)
       
-    # ports no longer used
-    assert self.ports == []
-
     for p in self.preroutes:
       netl.newWire( p['net_name'], Rect( *p['rect']), p['layer'])
 
@@ -148,9 +115,6 @@ class Rect:
 
   def __repr__( self):
     return str(self)
-
-  def add_xxx( self, x, y):
-    return Rect( min(x,self.llx), min(y,self.lly), max(x,self.urx), max(y,self.ury))
 
   def canonical( self):
     llx,lly,urx,ury = self.llx,self.lly,self.urx,self.ury
