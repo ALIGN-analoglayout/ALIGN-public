@@ -404,7 +404,7 @@ NodeSet Graph::dominatingSetILP(const bool isTop, const geom::Rect& bbox) const
   for (unsigned i = 0; i < _nodes.size(); ++i) {
     const auto& n = _nodes[i];
     if (dom.find(n) == dom.end() && n->isTap()) {
-      rowObj[i + 1] = nodeRank[n];
+      rowObj[i + 1] = n->radius();
     } else {
       //if (n->isTap()) {
       //  logger->info("not adding to obj : {0}", n->name());
