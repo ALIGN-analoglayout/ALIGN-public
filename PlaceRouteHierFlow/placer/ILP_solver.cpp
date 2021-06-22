@@ -471,7 +471,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   }
 
   //HPWL norm
-  if (!mydesign.Nets.empty()) HPWL_norm = HPWL / mydesign.GetMaxBlockHPWLSum() / double(mydesign.Nets.size());
+  if (!mydesign.Nets.empty()) HPWL_norm = HPWL_extend / mydesign.GetMaxBlockHPWLSum() / double(mydesign.Nets.size());
   // calculate linear constraint
   linear_const = 0;
   std::vector<std::vector<double>> feature_value;
@@ -545,8 +545,8 @@ double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
     cost += HPWL_norm * const_graph.LAMBDA;
   } else {
     cost += log( area);
-    if (HPWL > 0) {
-      cost += log( HPWL) * const_graph.LAMBDA;
+    if (HPWL_extend > 0) {
+      cost += log( HPWL_extend) * const_graph.LAMBDA;
     }
   }
 
@@ -608,7 +608,7 @@ void ILP_solver::PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfil
   fout.open(outfile.c_str());
   fout << "#Use this file as a script for gnuplot\n#(See http://www.gnuplot.info/ for details)" << endl;
   fout << "\nset title\" #Blocks= " << mydesign.Blocks.size() << ", #Terminals= " << mydesign.Terminals.size() << ", #Nets= " << mydesign.Nets.size()
-       << ",Area=" << area << ", HPWL= " << HPWL << " \"" << endl;
+       << ",Area=" << area << ", HPWL= " << HPWL_extend << " \"" << endl;
   fout << "\nset nokey" << endl;
   fout << "#   Uncomment these two lines starting with \"set\"" << endl;
   fout << "#   to save an EPS file for inclusion into a latex document" << endl;
