@@ -27,8 +27,8 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
       }
       for(auto i_sympair:symmetry.sympair){
         int diff = center_x - (node.Blocks[i_sympair.first].instance[0].placedCenter.x + node.Blocks[i_sympair.second].instance[0].placedCenter.x) / 2;
-        node.Blocks[i_sympair.first].instance[0].placedCenter.x += diff;
-        node.Blocks[i_sympair.second].instance[0].placedCenter.x += diff;
+        node.Blocks[i_sympair.first].instance[0].placedCenter.x += diff-1;
+        node.Blocks[i_sympair.second].instance[0].placedCenter.x += diff+1;
         int center_y = (node.Blocks[i_sympair.first].instance[0].placedCenter.y + node.Blocks[i_sympair.second].instance[0].placedCenter.y) / 2;
         node.Blocks[i_sympair.first].instance[0].placedCenter.y = center_y;
         node.Blocks[i_sympair.second].instance[0].placedCenter.y = center_y;
