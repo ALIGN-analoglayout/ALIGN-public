@@ -61,12 +61,7 @@ class ConstraintParser:
                 elif hasattr(const, 'pairs'):
                     for pair in const.pairs:
                         do_not_identify.extend(pair)
-                elif hasattr(const, 'pins1') and hasattr(const, 'pins2') \
-                    and const.pins1 is not None and const.pins2 is not None:
-                    for pin in const.pins1:
-                        do_not_identify.append(pin.split('/')[0])
-                    for pin in const.pins2:
-                        do_not_identify.append(pin.split('/')[0])
+
             if len(do_not_identify) > 0:
                 do_not_identify = list(sorted(set(do_not_identify)))
                 logger.warning(f'Following instances will be excluded from subcircuit identification: {do_not_identify} ')
