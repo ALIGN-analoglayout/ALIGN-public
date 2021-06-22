@@ -411,9 +411,8 @@ struct hierNode {
   double Aspect_Ratio_weight = 1000;
   vector<Router_report> router_report;
   vector<Multi_connection> Multi_connections;
-
-}; // structure of vertex in heirarchical tree
-
+  int placement_id = 0;
+};  // structure of vertex in heirarchical tree
 
 /// Part 3: declaration of structures for constraint data
 

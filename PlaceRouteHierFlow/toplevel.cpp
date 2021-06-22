@@ -303,7 +303,11 @@ int toplevel( const std::vector<std::string>& argv) {
   float dummy_init_weight = std::stof(argv[9]);//default:
   float dummy_init_rate = std::stof(argv[10]);//default:
   float dummy_target = std::stof(argv[11]);//default:
-  if(fpath.back()=='/') {fpath.erase(fpath.end()-1);}
+  int placement_id = 0;
+  if (argv.size() > 12) placement_id = std::stof(argv[12]);
+  if (fpath.back() == '/') {
+    fpath.erase(fpath.end() - 1);
+  }
   if(opath.back()!='/') {opath+="/";}
 
   // Following codes try to get the path of binary codes
@@ -356,13 +360,15 @@ int toplevel( const std::vector<std::string>& argv) {
     EA_placer.set_dummy_net_weight(dummy_init_weight,dummy_init_rate,dummy_init_weight);
     EA_placer.place(current_node);
     if(disable_io)std::cout.clear();
-    PlacerIfc curr_plc1(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
+    current_node.placement_id = placement_id;
+    PlacerIfc curr_plc1(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo));  // do placement and update data in current node
     current_node = curr_plc1.getNode(0);
     // AFTER FIRST ILP, RUN THE FOLLOWING LINE
     if(disable_io)std::cout.setstate(std::ios_base::failbit);
     EA_placer.restore_MS(current_node);
     // Do the ILP again
     if(disable_io)std::cout.clear();
+    current_node.placement_id = placement_id;
     PlacerIfc curr_plc(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
     current_node = curr_plc.getNode(0);
     if(disable_io)std::cout.setstate(std::ios_base::failbit);

@@ -182,6 +182,7 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
       }
     }
   }
+  int count = 0;
   for (unsigned int i = 0; i < node.Blocks.size() - 1; i++) {
     for (unsigned int j = i + 1; j < node.Blocks.size(); j++) {
       if ((block_order[i][j] & 0x000e) && (block_order[i][j] & 0x0e00))
@@ -194,7 +195,6 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
             block_order[i][j] |= 0x0100;
           else
             block_order[i][j] |= 0x1000;
-
         } else if (block_order[i][j] & 0xff00) {
           block_order[i][j] &= 0xff00;
           if (node.Blocks[i].instance[0].placedCenter.x < node.Blocks[j].instance[0].placedCenter.x)
@@ -202,20 +202,23 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
           else
             block_order[i][j] |= 0x0010;
         } else {
-          if (abs(node.Blocks[i].instance[0].placedCenter.x - node.Blocks[j].instance[0].placedCenter.x) <
-              abs(node.Blocks[i].instance[0].placedCenter.y - node.Blocks[j].instance[0].placedCenter.y)) {
+          if((!node.isFirstILP && ( node.placement_id & (1<<(count%16)))) 
+          || (node.isFirstILP && abs(node.Blocks[i].instance[0].placedCenter.x - node.Blocks[j].instance[0].placedCenter.x) <
+            abs(node.Blocks[i].instance[0].placedCenter.y - node.Blocks[j].instance[0].placedCenter.y))){
             block_order[i][j] &= 0x00ff;
             if (node.Blocks[i].instance[0].placedCenter.y < node.Blocks[j].instance[0].placedCenter.y)
               block_order[i][j] |= 0x0100;
             else
               block_order[i][j] |= 0x1000;
-          } else {
+          }
+          else {
             block_order[i][j] &= 0xff00;
             if (node.Blocks[i].instance[0].placedCenter.x < node.Blocks[j].instance[0].placedCenter.x)
               block_order[i][j] |= 0x0001;
             else
               block_order[i][j] |= 0x0010;
           }
+          count++;
         }
       }
     }
