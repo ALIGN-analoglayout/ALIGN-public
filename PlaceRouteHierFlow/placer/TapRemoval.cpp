@@ -88,17 +88,23 @@ void Instance::print() const
 namespace DomSetGraph {
 using namespace std;
 
-void Node::computeRadius()
+void Node::computeRadius(const bool isTop, const geom::Rect& bbox)
 {
-  _maxdist = 0;
-  unsigned cnt(0);
-  for (auto& e : _edges) {
-    const auto other = (e->u() == this) ? e->v() : e->u();
-    if (other->nodeType() == NodeType::Active) {
-      ++cnt;
-      _maxdist = std::max(_maxdist, _bbox.dist(other->_bbox));
+  //auto logger = spdlog::default_logger()->clone("PnRDB.Node.computeRadius");
+  _maxdist = 0.;
+  if (isTop) {
+    unsigned cnt(0);
+    for (auto& e : _edges) {
+      const auto other = (e->u() == this) ? e->v() : e->u();
+      if (other->nodeType() == NodeType::Active) {
+        ++cnt;
+        _maxdist = std::max(_maxdist, _bbox.dist(other->_bbox) * 1. / (bbox.width() + bbox.height()));
+      }
     }
   }
+  //auto x = _maxdist;
+  _maxdist = (10*_maxdist + 2*_dist + _deltaarea);
+  //logger->info("{0} {1} {2} {3} {4}", name(), _dist, _deltaarea, x, _maxdist);
 }
 
 Graph::Graph()
@@ -118,7 +124,7 @@ Graph::~Graph()
   _nodeMap.clear();
 }
 
-void Graph::addNode(const string& name, const NodeType& nt, const long& da, const geom::Rect& bbox, const bool isb, const int dist)
+void Graph::addNode(const string& name, const NodeType& nt, const double& da, const geom::Rect& bbox, const bool isb, const double& dist)
 {
   if (_nodeMap.find(name) != _nodeMap.end()) return;
   Node *n = new Node(name, nt, da, isb, dist, bbox);
@@ -177,17 +183,15 @@ void Graph::print() const
   }*/
 }
 
-NodeSet Graph::dominatingSet(const bool removeAllTaps, const bool isTop) const
+NodeSet Graph::dominatingSet(const bool removeAllTaps, const bool isTop, const geom::Rect& bbox) const
 {
 
   auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.dominatingSet");
-  if (isTop) {
-    for (auto& n : _nodes) {
-      n->computeRadius();
-      //logger->info("name : {0} rad {1} {2}", n->name(), n->radius(), n->bbox().toString());
-    }
-    //logger->info("");
+  for (auto& n : _nodes) {
+    if (n->isTap()) n->computeRadius(isTop, bbox);
+    //logger->info("name : {0} rad {1} {2}", n->name(), n->radius(), n->bbox().toString());
   }
+  //logger->info("");
   auto ncomp = NodeComp(isTop);
   NodeSetWComp whiteNodes(ncomp);
   NodeSet dom;
@@ -212,12 +216,12 @@ NodeSet Graph::dominatingSet(const bool removeAllTaps, const bool isTop) const
 
   for (auto& n : _nodes) {
     bool foundTap(false);
-    if (n->nodeType() == NodeType::Tap) {
+    if (n->isTap()) {
       foundTap = true;
     } else {
       for (auto& e : n->edges()) {
         const Node* nbr = (e->v() == n) ? e->u() : e->v();
-        if (nbr && nbr->nodeType() == NodeType::Tap) {
+        if (nbr && nbr->isTap()) {
           foundTap = true;
           break;
         }
@@ -305,12 +309,12 @@ NodeSet Graph::dominatingSet(const bool removeAllTaps, const bool isTop) const
   return dom;
 }
 
-NodeSet Graph::dominatingSetILP(const bool isTop) const
+NodeSet Graph::dominatingSetILP(const bool isTop, const geom::Rect& bbox) const
 {
   auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.dominatingSet");
   if (isTop) {
     for (auto& n : _nodes) {
-      n->computeRadius();
+      n->computeRadius(isTop, bbox);
       //logger->info("name : {0} rad {1} {2}", n->name(), n->radius(), n->bbox().toString());
     }
     //logger->info("");
@@ -336,12 +340,15 @@ NodeSet Graph::dominatingSetILP(const bool isTop) const
   //Nodes tapNodes;
   //tapNodes.reserve(_nodes.size() - dom.size());
   for (auto& n : _nodes) {
-    rankedNodes.insert(n);
+    if (n->isTap()) {
+      rankedNodes.insert(n);
+    }
   }
   unsigned rankctr(0);
   map<const Node*, unsigned> nodeRank;
   for (auto& n : rankedNodes) {
-    nodeRank[n] = rankctr++;
+    nodeRank[n] = ++rankctr;
+    //logger->info("node {0} rank {1}", n->name(), rankctr);
   }
   lprec* lp(make_lp(0, _nodes.size()));
   set_verbose(lp, IMPORTANT);
@@ -391,13 +398,18 @@ NodeSet Graph::dominatingSetILP(const bool isTop) const
     }
   }
 
-  double rowObj[_nodes.size()];
+  //logger->info("dom size : {0}", dom.size());
+
+  double rowObj[_nodes.size() + 1];
   for (unsigned i = 0; i < _nodes.size(); ++i) {
     const auto& n = _nodes[i];
-    if (dom.find(n) == dom.end() && n->nodeType() == NodeType::Tap) {
-      rowObj[i] = nodeRank[n];
+    if (dom.find(n) == dom.end() && n->isTap()) {
+      rowObj[i + 1] = nodeRank[n];
     } else {
-      rowObj[i] = 0;
+      //if (n->isTap()) {
+      //  logger->info("not adding to obj : {0}", n->name());
+      //}
+      rowObj[i + 1] = 0;
     }
   }
   set_obj_fn(lp, rowObj);
@@ -419,7 +431,7 @@ NodeSet Graph::dominatingSetILP(const bool isTop) const
   get_variables(lp, solution);
   delete_lp(lp);
   for (unsigned i = 0; i < _nodes.size(); ++i) {
-    if (solution[i] > 0 && _nodes[i]->nodeType() == NodeType::Tap) {
+    if (solution[i] > 0 && _nodes[i]->isTap()) {
       dom.insert(_nodes[i]);
     }
   }
@@ -468,13 +480,13 @@ void TapRemoval::buildGraph()
         rtree.insert(bgVal(b, _graph->nodes().size()));
         string nodeName(inst->name() + "__tap_" + mosString + to_string(i));
         allTaps[nodeName] = taps[i];
-        _graph->addNode(nodeName, DomSetGraph::NodeType::Tap, inst->deltaArea(), taps[i], inst->isBlack(), taps[i].ydist(_bbox));
+        _graph->addNode(nodeName, DomSetGraph::NodeType::Tap, inst->deltaArea() * 1./_bbox.area(), taps[i], inst->isBlack(), (double)taps[i].ydist(_bbox)/(double)_bbox.height());
       }
       auto& actives = inst->getActives(nmos);
       for (unsigned i = 0; i < actives.size(); ++i) {
         bgBox b(bgPt(actives[i].xmin(), actives[i].ymin()), bgPt(actives[i].xmax(), actives[i].ymax()));
         rtree.insert(bgVal(b, _graph->nodes().size()));
-        _graph->addNode(inst->name() + "__active_" + mosString + to_string(i), DomSetGraph::NodeType::Active, inst->deltaArea(), actives[i]);
+        _graph->addNode(inst->name() + "__active_" + mosString + to_string(i), DomSetGraph::NodeType::Active, inst->deltaArea() * 1./ _bbox.area(), actives[i]);
       }
     }
   }
@@ -610,11 +622,14 @@ long TapRemoval::deltaArea(map<string, int>* swappedIndices, const bool removeAl
   if (_graph == nullptr || (_xdist == 0 && _ydist == 0) || !valid()) return deltaarea;
   DomSetGraph::NodeSet nodes;
   if (removeAllTaps) {
-    nodes = _graph->dominatingSet(removeAllTaps, isTop);
+    nodes = _graph->dominatingSet(removeAllTaps, isTop, _bbox);
   } else {
-      nodes = _graph->dominatingSetILP(isTop);
+      nodes = _graph->dominatingSetILP(isTop, _bbox);
+      //for (auto& n : nodes) {
+      //  logger->info("dom set : {0}", n->name());
+      //}
       if (nodes.empty()) {
-        nodes = _graph->dominatingSet(removeAllTaps, isTop);
+        nodes = _graph->dominatingSet(removeAllTaps, isTop, _bbox);
       }
       /*for (auto& n : nodes) {
         logger->info("dom set : {0}", n->name());

@@ -170,8 +170,8 @@ class Rect {
     }
     int dist(const Rect&r, const bool euc = true) const
     {
-      auto dx(xdist(r));
-      auto dy(ydist(r));
+      auto dx(xoverlap(r) ? 0 : xdist(r));
+      auto dy(yoverlap(r) ? 0.: ydist(r));
       if (euc) return sqrt(dx * dx + dy * dy);
       return dx + dy;
     }
@@ -303,13 +303,13 @@ class Node {
     ConstEdges _edges;
     unsigned _span;
     NodeColor _nc;
-    long _deltaarea;
+    double _deltaarea;
     bool _black;
-    int _dist, _maxdist;
+    double _dist, _maxdist;
     const geom::Rect _bbox;
 
   public:
-    Node(const string& name, const NodeType nt, const long& deltaarea, const bool& isb, const int dist, const geom::Rect& bbox) : _name(name), _nt(nt), _span(0), _nc(NodeColor::White), _deltaarea(deltaarea), _black(isb), _dist(dist), _bbox(bbox), _maxdist(0) {}
+    Node(const string& name, const NodeType nt, const double& deltaarea, const bool& isb, const double& dist, const geom::Rect& bbox) : _name(name), _nt(nt), _span(0), _nc(NodeColor::White), _deltaarea(deltaarea), _black(isb), _dist(dist), _bbox(bbox), _maxdist(0.) {}
     const NodeType& nodeType() const { return _nt; }
 
     const string type() const { return (_nt == NodeType::Tap) ? "T" : "A"; }
@@ -323,15 +323,17 @@ class Node {
     void setSpan(const unsigned n) { _span = n; }
     unsigned span() const { return _span; }
 
-    int radius() const { return _maxdist; }
-    void computeRadius();
+    const double radius() const { return _maxdist; }
+    void computeRadius(const bool isTop, const geom::Rect& bbox);
 
     void setColor(const NodeColor& nc) { _nc = nc; }
     const NodeColor& nodeColor() const { return _nc; }
 
-    const long& deltaArea() const { return _deltaarea; }
+    const double& deltaArea() const { return _deltaarea; }
     bool isBlack() const { return _black; }
-    const int dist() const { return _dist; }
+    const double dist() const { return _dist; }
+
+    bool isTap() const { return _nt == NodeType::Tap; }
 };
 
 struct NodeComp {
@@ -340,13 +342,7 @@ struct NodeComp {
   bool operator() (const Node* const& n1, const Node* const& n2) const {
     if (n1 == nullptr) return false;
     if (n2 == nullptr) return true;
-    if (!_top || n1->radius() == n2->radius()) {
-      if (n1->dist() == n2->dist()) {
-        if (n1->deltaArea() == n2->deltaArea()) return n1->name() < n2->name();
-        return n1->deltaArea() < n2->deltaArea();
-      }
-      return n1->dist() < n2->dist();
-    }
+    if (n1->radius() == n2->radius()) return n1 < n2;
     return n1->radius() < n2->radius();
   }
 };
@@ -379,15 +375,15 @@ class Graph {
     Graph();
     ~Graph();
 
-    void addNode(const string& name, const NodeType& nt, const long& da = 0, const geom::Rect& bbox = geom::Rect(), const bool isb = false, const int dist = 0);
+    void addNode(const string& name, const NodeType& nt, const double& da = 0., const geom::Rect& bbox = geom::Rect(), const bool isb = false, const double& dist = 0.);
     void addEdge(const string& u, const string& v, const string& name = "");
 
     const Edge* findEdge(const string& u, const string& v) const;
 
     void print() const;
 
-    NodeSet dominatingSet(const bool removeAlltaps, const bool isTop) const;
-    NodeSet dominatingSetILP(const bool isTop) const;
+    NodeSet dominatingSet(const bool removeAlltaps, const bool isTop, const geom::Rect& bbox) const;
+    NodeSet dominatingSetILP(const bool isTop, const geom::Rect& bbox) const;
 
     void addSymPairs(const std::map<std::string, std::string>& counterparts);
 
