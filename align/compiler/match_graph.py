@@ -108,12 +108,12 @@ class Annotate:
                 elif not hasattr(const,'instances'):
                     is_append = True
                 else:
-                    logger.debug(f"invalid constarint {const}")
+                    logger.debug(f"invalid constraint {const}")
                 if is_append == True and const not in const_list:
                     logger.debug(f"constraint appended: {const}")
                     const_list.append(const)
         except:
-            logger.debug(f"skiping invalid constraint {const}")
+            logger.debug(f"skipping invalid constraint {const}")
 
     
     def _update_attributes(self,circuit_graph,name,lib_name,lib_graph, Gsub):
