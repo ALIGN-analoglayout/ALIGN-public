@@ -139,19 +139,24 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
     if (align.horizon) {
       vector<int> blocks(align.blocks);
       sort(blocks.begin(), blocks.end());
-      for (unsigned int i = 0; i < blocks.size() - 1; i++) {
-        if (block_order[blocks[i]][blocks[i + 1]] & 0xff00)
-          logger->error("wrong constraint between block {0} and {1}", mydesign.Blocks[blocks[i]][0].name, mydesign.Blocks[blocks[i + 1]][0].name);
-        block_order[blocks[i]][blocks[i + 1]] |= 0x0200;  // i and j align to the bottom
+      for (unsigned int i = 0; i < blocks.size(); i++) {
+        for (unsigned int j = i + 1; j < blocks.size(); j++){
+          if (block_order[blocks[i]][blocks[j]] & 0xff00)
+            logger->error("wrong constraint between block {0} and {1}", mydesign.Blocks[blocks[i]][0].name, mydesign.Blocks[blocks[j]][0].name);
+          else
+            block_order[blocks[i]][blocks[j]] |= 0x0200;  // i and j align to the bottom
+        }
       }
     } else {
       vector<int> blocks(align.blocks);
       sort(blocks.begin(), blocks.end());
-      for (unsigned int i = 0; i < blocks.size() - 1; i++) {
-        if (block_order[blocks[i]][blocks[i + 1]] & 0x00ff)
-          logger->error("wrong constraint between block {0} and {1}", mydesign.Blocks[blocks[i]][0].name, mydesign.Blocks[blocks[i + 1]][0].name);
-        else
-          block_order[blocks[i]][blocks[i + 1]] |= 0x0002;  // i and j align to the left
+      for (unsigned int i = 0; i < blocks.size(); i++) {
+        for (unsigned int j = i + 1; j < blocks.size(); j++){
+          if (block_order[blocks[i]][blocks[j]] & 0x00ff)
+            logger->error("wrong constraint between block {0} and {1}", mydesign.Blocks[blocks[i]][0].name, mydesign.Blocks[blocks[j]][0].name);
+          else
+            block_order[blocks[i]][blocks[j]] |= 0x0002;  // i and j align to the left
+        }
       }
     }
   }

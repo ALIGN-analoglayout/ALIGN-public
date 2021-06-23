@@ -326,12 +326,15 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
           alignment_unit.horizon = 0;
         }
         for (auto block : constraint["blocks"]) {
+          bool found = false;
           for (int i = 0; i < (int)node.Blocks.size(); i++) {
             if (node.Blocks.at(i).instance.back().name.compare(block) == 0) {
               alignment_unit.blocks.push_back(i);
+              found = true;
               break;
             }
           }
+          if (!found) logger->error("Block {0} in AlignBlock not found in netlist", block);
         }
         node.Align_blocks.push_back(alignment_unit);
       } else if (constraint["const_name"] == "PortLocation") {
