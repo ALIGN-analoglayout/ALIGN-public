@@ -111,7 +111,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, conf
             logger.debug(f"preprocessing circuit name: {subckt}")
             if subckt.name not in design_setup['DIGITAL']:
                 define_SD(subckt,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
-                stacked_subcircuit.append(preprocess_stack_parallel(ckt_parser,ckt_data,subckt.name))
+                stacked_subcircuit.append(preprocess_stack_parallel(ckt_data,subckt.name))
     for circuit_name in stacked_subcircuit:
         if circuit_name in ckt_data.keys() and circuit_name is not design_name:
             logger.debug(f"removing stacked subcircuit {circuit_name}")

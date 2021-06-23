@@ -6,6 +6,8 @@ Created on Thu Sep 17 15:49:33 2020
 @author: kunal001
 """
 
+from align.schema import model
+from align.schema.subcircuit import Circuit
 from .merge_nodes import convert_unit
 from .util import get_next_level, get_base_model
 from ..schema.graph import Graph
@@ -142,7 +144,7 @@ def preprocess_stack_parallel(ckt_data:dict,circuit_name):
     """
     ckt = ckt_data.find(circuit_name)
     logger.debug(f"no of nodes: {len(ckt.elements)}")
-    add_parallel_caps(ckt)
+    add_parallel_caps(ckt,update=True)
     add_series_res(ckt)
     add_stacked_transistor(ckt)
     add_parallel_transistor(ckt)
@@ -241,233 +243,124 @@ def define_SD(circuit,power,gnd,update=True):
     while high:
         nxt = high.pop(0)
         for node in get_next_level(circuit,G,[nxt]):
-            logger.warning(f"VDD:checking node: {node}, {high}, {traversed}")
-            if not set(G.get_edge_data(node, nxt)['pin'])-set({'G'}) or node in traversed:
-                logger.debug(f"skipping node {node} {set(G.get_edge_data(node, nxt)['pin'])}")
+            logger.debug(f"VDD:checking node: {node}, {high}, {traversed}")
+            edge_type = G.get_edge_data(node, nxt)['pin']
+            if not set(edge_type)-set({'G'}) or node in traversed:
                 continue
-            if circuit.get_element(node) and 'PMOS' == get_base_model(circuit,node) and \
-                node not in traversed:
-                if 'D' in G.get_edge_data(node, nxt)['pin'] :
+            if circuit.get_element(node):
+                base_model = get_base_model(circuit,node)
+            else:
+                assert node in circuit.nets
+                base_model = "net"
+            if 'PMOS' == base_model:
+                if 'D' in edge_type :
                     probable_changes_p.append(node)
-                    logger.warning(f"probable changes {probable_changes_p}")
-
-            elif circuit.get_element(node) and 'NMOS' == get_base_model(circuit,node) and \
-            node not in traversed:
-                if 'S' in G.get_edge_data(node, nxt)['pin'] :
+            elif 'NMOS' == base_model:
+                if 'S' in edge_type :
                     probable_changes_p.append(node)
-                    logger.warning(f"probable changes {probable_changes_p}")
-            if node not in traversed:
-                high.append(node)
+            high.append(node)
             traversed.append(node)
         print("high",high)
     if len(probable_changes_p)==0:
         return
     probable_changes_n=[]
-    if low[0] in G.nodes():
-        traversed = low.copy()
-        traversed.extend(list(set(power).intersection(set(ports))))
-        while low:
-            nxt = low.pop(0)
-            for node in get_next_level(circuit,G,[nxt]):
-                logger.debug(f"GND:checking node: {node}, {high}, {traversed}")
-                if not set(G.get_edge_data(node, nxt)['pin'])-set({'G'}) or node in traversed:
-                    continue
-                if circuit.get_element(node) and 'PMOS' == get_base_model(circuit,node) and \
-                node not in traversed:
-                    if 'S' in G.get_edge_data(node, nxt)['pin'] :
-                        probable_changes_n.append(node)
-                        logger.warning(f"probable changes {probable_changes_n}")
-                elif circuit.get_element(node) and 'NMOS' == get_base_model(circuit,node) and \
-                node not in traversed:
-                    if 'D' in G.get_edge_data(node, nxt)['pin'] :
-                        probable_changes_n.append(node)
-                        logger.warning(f"probable changes {probable_changes_n}")
-
-                if node not in traversed:
-                    low.append(node)
-                traversed.append(node)
+    traversed = low.copy()
+    traversed.extend(list(set(power).intersection(set(ports))))
+    while low:
+        nxt = low.pop(0)
+        for node in get_next_level(circuit,G,[nxt]):
+            edge_type = G.get_edge_data(node, nxt)['pin']
+            if not set(edge_type)-set({'G'}) or node in traversed:
+                continue
+            if circuit.get_element(node):
+                base_model = get_base_model(circuit,node)
+            else:
+                assert node in circuit.nets
+                base_model = "net"
+            if 'PMOS' == base_model:
+                if 'S' in edge_type :
+                    probable_changes_n.append(node)
+            elif 'NMOS' == base_model:
+                if 'D' in edge_type :
+                    probable_changes_n.append(node)
+            low.append(node)
+            traversed.append(node)
 
     for node in list (set(probable_changes_n) & set(probable_changes_p)):
         logger.warning(f"changing source drain: {node}")
         swap_SD(circuit,G,node)
 
 
-def add_parallel_caps(ckt):
-    logger.debug(f"merging all caps, initial graph size: {len(G)}")
-    remove_nodes = []
-    subckt = parser.library.find(name)
-    for element in subckt.elements:
-        node=element.name
-        if 'CAP'== parser.library.find(element.model).base \
-             and node not in remove_nodes:
-            for net in G.neighbors(node):
-                for next_node in G.neighbors(net):
-                    if not next_node == node  and next_node not in remove_nodes \
-                        and G.nodes[next_node]['instance'].model == G.nodes[node]["instance"].model \
-                        and len(set(G.neighbors(node)) & set(G.neighbors(next_node)))==2:
-                        for param, value in G.nodes[node]["instance"].parameters.items():
-                            if param == 'CAP':
-                                c_val = float(convert_unit(value))+ \
-                                float(convert_unit(G.nodes[next_node]["instance"].parameters['cap']))
-                                remove_nodes.append(next_node)
-                                G.nodes[node]["instance"].parameters['cap']=c_val
-                            elif param == 'VALUE':
-                                c_val = float(convert_unit(value))+ \
-                                float(convert_unit(G.nodes[next_node]["instance"].parameters['c']))
-                                remove_nodes.append(next_node)
-                                G.nodes[node]["instance"].parameters['VALUE']=c_val
-    if len(remove_nodes)>0:
-        logger.debug(f"removed parallel caps: {remove_nodes}")
-        for node in remove_nodes:
-            G.remove_node(node)
-
-def add_series_res(G,parser,name):
-    logger.debug(f"merging all series res, initial graph size: {len(G)}")
-    remove_nodes = []
-    subckt = parser.library.find(name)
-    for net in set(subckt.nets)-set(subckt.pins):
-        if len(set(G.neighbors(net)))==2 \
-            and net not in remove_nodes:
-            nbr_type =[parser.library.find(G.nodes[nbr]["instance"].model).base for nbr in list(G.neighbors(net))]
-            combined_r,remove_r=list(G.neighbors(net))
-            if nbr_type[0]==nbr_type[1]=='RES':
-                remove_nodes+=[net,remove_r]
-                new_net=list(set(G.neighbors(remove_r))-set(net)-set(remove_nodes))[0]
-                for param, value in G.nodes[combined_r]["instance"].parameters.items():
-                    if param == 'res':
-                        r_val = float(convert_unit(value))+ \
-                        float(convert_unit(G.nodes[remove_r]["instance"].parameters['res']))
-                        G.nodes[combined_r]["instance"].parameters['res']=r_val
-                        G.add_edge(combined_r, new_net, weight=G[combined_r][net]["weight"])
-                    elif param == 'r':
-                        r_val = float(convert_unit(value))+ \
-                        float(convert_unit(G.nodes[remove_r]["instance"].parameters['r']))
-                        G.nodes[combined_r]["instance"].parameters['r']=r_val
-                        G.add_edge(combined_r, new_net, weight=G[combined_r][net]["weight"])
-    if len(remove_nodes)>0:
-        logger.debug(f"removed series r: {remove_nodes}")
-        for node in remove_nodes:
-            G.remove_node(node)
-        #to remove 3 in series
-        add_series_res(G)
-def add_parallel_transistor(G,parser,name):
-    logger.debug(f"CHECKING parallel transistors, initial graph size: {len(G)}")
-    remove_nodes = []
-    subckt = parser.library.find(name)
-    for element in subckt.elements:
-        node = element.name
-        if "MOS" in parser.library.find(element.model).base and node not in remove_nodes:
-            for net in G.neighbors(node):
-                for next_node in G.neighbors(net):
-                    if not next_node == node  and next_node not in remove_nodes and G.nodes[next_node][
-                        "instance"].model == G.nodes[node]["instance"].model and G.nodes[next_node][
-                        "instance"].parameters == G.nodes[node]["instance"].parameters and \
-                        set(G.neighbors(node)) == set(G.neighbors(next_node)):
-                        nbr_wt_node=[G.get_edge_data(node, nbr)['weight'] for nbr in G.neighbors(node)]
-                        nbr_wt_next_node=[G.get_edge_data(next_node, nbr)['weight'] for nbr in G.neighbors(node)]
-                        if nbr_wt_node != nbr_wt_next_node:
-                            #cross connections
-                            continue
-                        if 'm' in G.nodes[node]["instance"].parameters:
-                            remove_nodes.append(next_node)
-                            G.nodes[node]["instance"].parameters['m']=2*float(convert_unit(G.nodes[node]["instance"].parameters['m']))
-                        else:
-                            remove_nodes.append(next_node)
-                            G.nodes[node]["instance"].parameters['m']=2
-    if len(remove_nodes)>0:
-        logger.debug(f"removed parallel transistors: {remove_nodes}")
-        for node in remove_nodes:
-            G.remove_node(node)
-def add_stacked_transistor(G,parser,name):
+def add_parallel_devices(ckt,update=True):
+    """add_parallel_devics
+        merge devices in parallel as single unit
+        Keeps 1st device out of sorted list
+        #TODO Optimize later
+    Args:
+        ckt ([type]): [description]
+        update (bool, optional): [description]. Defaults to True.
     """
-    Reduce stacked transistors
-    Parameters
-    ----------
-    G : networkx graph
-        input graph
+    if update == False:
+        return
+    logger.debug(f"merging all parallel devices, initial ckt size: {len(ckt.elements)}")
 
-    Returns
-    -------
-    None.
+    for net in set(ckt.nets):
+        pp_list = []
+        parallel_devices={}
+        G = Graph(ckt)
+        for node in G.neighbors(net):
+            logger.warning(f"checking node {node} {net}")
+            ele = ckt.get_element(node)
+            p = {**ele.pins, **ele.parameters}
+            p['model'] = ele.model
+            if p in pp_list:
+                parallel_devices[pp_list.index(p)].append(node)
+            else:
+                pp_list.append(p)
+                parallel_devices[pp_list.index(p)] = [node]
+        for pd in parallel_devices.values():
+            if len(pd)> 1:
+                logger.warning(f"removing parallel nodes {pd}")
+                pd0 = sorted(pd)[0]
+                ckt.get_element(pd0).parameters['PARALLEL']=len(set(pd))
+                for rn in pd[1:]:
+                    G.remove_node(rn)
 
+def add_series_devices(ckt,update=True):
+    """add_parallel_devics
+        merge devices in parallel as single unit
+        Keeps 1st device out of sorted list
+        #TODO Optimize later
+    Args:
+        ckt ([type]): [description]
+        update (bool, optional): [description]. Defaults to True.
     """
-    logger.debug(f"START reducing  stacks in graph: {G.nodes(data=True)} {G.edges()} ")
-    logger.debug(f"initial size of graph: {len(G)}")
+    if update == False:
+        return
+    logger.debug(f"merging all caps, initial ckt size: {len(ckt.elements)}")
     remove_nodes = []
-    modified_edges = {}
-    modified_nodes = {}
-    subckt = parser.library.find(name)
-    for element in subckt.elements:
-        node = element.name
-        if "MOS" in parser.library.find(element.model).base and node not in remove_nodes:
-            for net in G.neighbors(node):
-                edge_wt = G.get_edge_data(node, net)['pin']-{'B'}
-                #for source nets with only two connections
-                if edge_wt == {'G'}  and len(list(G.neighbors(net))) == 2:
-                    for next_node in G.neighbors(net):
-                        logger.debug(f" checking nodes: {node}, {next_node} {net} {modified_nodes} {remove_nodes} ")
-                        if len( {node,next_node}- (set(modified_nodes.keys()) | set(remove_nodes)) )!=2:
-                            logger.debug(f"skipping {node} {next_node} as they are same or accessed before")
-                            continue
-                        elif not next_node == node and G.nodes[next_node]["instance"].model \
-                            == G.nodes[node]["instance"].model and G.get_edge_data(
-                                        next_node, net)['pin'] == {'D'}:
-                            common_nets = set(G.neighbors(node)) & set( G.neighbors(next_node))
-                            # source net of neighbor
-                            source_net = [snet for snet in G.neighbors(next_node) if  G.get_edge_data( next_node, snet)['weight']&~8 == 4]
-                            gate_net =  [gnet for gnet in G.neighbors(next_node) if  G.get_edge_data( next_node, gnet)['weight'] == 2]
-                            logger.debug(f"neighbor gate: {gate_net} source:{source_net},all neighbors: {list(G.edges(node,data=True))} {len(common_nets)}")
-                            if len(gate_net)==len(source_net)==1:
-                                source_net=source_net[0]
-                                gate_net=gate_net[0]
-                                logger.debug(f"source net: {source_net}, gate net: {gate_net}")
-                            else:
-                                continue
+    for net in set(ckt.nets)-set(ckt.pins):
+        G = Graph(ckt)
+        nbrs = sorted(list(G.neighbors(net)))
+        logger.warning(f"net {net} {nbrs}")
+        if len(nbrs)==2 and net not in remove_nodes:
+            nbr1,nbr2 = [ckt.get_element(nbr) for nbr in nbrs]
+            connections = set([list(G.get_edge_data(nbr, net)['pin'])[0] for nbr in nbrs])
+            nbr1p = dict({'MODEL':nbr1.model},**nbr1.parameters,**nbr1.pins)
+            nbr2p = dict({'MODEL':nbr2.model},**nbr2.parameters,**nbr2.pins)
+            stack1 = nbr1p.pop('STACK',1)
+            stack2 = nbr2p.pop('STACK',1)
+            for connection in connections:
+                del nbr1p[connection[0]]
+                del nbr2p[connection[0]]
 
-                            if gate_net in G.neighbors(node) \
-                                and G.get_edge_data( node, gate_net)['weight'] == 2 \
-                                    and len(common_nets)>2:
-                                logger.debug(f"source net: {source_net}, gate net: {gate_net}")
-                            else:
-                                continue
-                            logger.debug(f"check stack transistors: {node}, {next_node}, {gate_net}, {source_net},{common_nets}")
-                            if G.nodes[net]["net_type"]!="external" :
-                                if G.get_edge_data( node, gate_net)['weight'] >= 2 :
-                                    logger.debug(f"checking values {G.nodes[next_node]},{G.nodes[next_node]}")
-                                    if 'stack' in G.nodes[next_node]["instance"].parameters:
-                                        stack=G.nodes[next_node]["instance"].parameters.pop("stack")
-                                    else:
-                                        stack=1
-                                    if 'stack' in G.nodes[node]["instance"].parameters:
-                                        stack=stack+G.nodes[node]["instance"].parameters.pop("stack")
-                                    else:
-                                        stack =stack+1
-                                    if G.nodes[next_node]["instance"].parameters==G.nodes[node]["instance"].parameters:
-                                        modified_nodes[node] = stack
-                                    remove_nodes.append(net)
-                                    if G.has_edge(node,source_net):
-                                        wt= G[next_node][source_net]["weight"] | G[node][source_net]["weight"]
-                                    else:
-                                         wt= G[next_node][source_net]["weight"]
-                                    modified_edges[node] = [ source_net, wt ]
-                                    logger.debug(f"successfully modified node {modified_nodes}")
-                                    remove_nodes.append(next_node)
-    for node, attr in modified_edges.items():
-        #Change source connection and port name
-        G.add_edge(node, attr[0], weight=attr[1])
-        logger.debug(f"updating port names{G.nodes[node]['ports']} with {attr}")
-        G.nodes[node]["ports"][2]=attr[0]
-
-    for node, attr in modified_nodes.items():
-        G.nodes[node]["instance"].parameters['stack'] = attr
-
-    for node in remove_nodes:
-        G.remove_node(node)
-    for node, attr in modified_nodes.items():
-        wt=[G.get_edge_data(node, net)['weight'] for net in G.neighbors(node)]
-        logger.debug(f"new neighbors of {node} {G.nodes[node]} {list(G.neighbors(node))} {wt}")
-
-    logger.debug(f"reduced_size after resolving stacked transistor: {len(G)} {G.nodes()}")
-    logger.debug(
-        "\n######################START CREATING HIERARCHY##########################\n"
-    )
+            logger.warning(f"{nbr1p} {nbr2p}")
+            if nbr1p == nbr2p and connections in [set(['D','S']),set(['+','-'])]:
+                logger.warning(f"stacking {nbrs}")
+                nbr1.parameters['STACK'] = stack1 +stack2
+                for p,n in nbr1.pins.items():
+                    if net ==n:
+                        nbr1.pins[p]=nbr2.pins[p]
+                ckt.remove(nbr2)
+                remove_nodes.append(nbrs[1])
+    # for ele in remove_nodes:
