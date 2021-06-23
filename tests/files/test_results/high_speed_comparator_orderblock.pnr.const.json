@@ -9,8 +9,8 @@
             "distance": 0
         },
         {
-            "const_name": "Ordering",
             "direction": "V",
+            "const_name": "Ordering",
             "blocks": [
                 "mn0",
                 "mn1_mn2",
@@ -19,8 +19,15 @@
             ]
         },
         {
-            "const_name": "SymmNet",
-            "axis_dir": "V",
+            "const_name": "DoNotIdentify",
+            "blocks": [
+                "mn3_mn4",
+                "mp5_mp6",
+                "mn1_mn2",
+                "mn0"
+            ]
+        },
+        {
             "net1": {
                 "name": "vin",
                 "blocks": [
@@ -50,11 +57,11 @@
                         "pin": null
                     }
                 ]
-            }
+            },
+            "const_name": "SymmNet",
+            "axis_dir": "V"
         },
         {
-            "const_name": "SymmNet",
-            "axis_dir": "V",
             "net1": {
                 "name": "vin_d",
                 "blocks": [
@@ -84,7 +91,9 @@
                         "pin": "vip_d"
                     }
                 ]
-            }
+            },
+            "const_name": "SymmNet",
+            "axis_dir": "V"
         }
     ]
 }
