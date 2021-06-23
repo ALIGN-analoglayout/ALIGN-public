@@ -7,7 +7,8 @@ Created on Thu Sep 17 15:49:33 2020
 """
 
 from .merge_nodes import convert_unit
-from .util import get_next_level
+from .util import get_next_level, get_base_model
+from ..schema.graph import Graph
 
 import logging
 import networkx as nx
@@ -181,101 +182,114 @@ def preprocess_stack_parallel(ckt_data:dict,circuit_name):
         return None
 
 
-def change_SD(G,node):
-    nbr = list(G.neighbors(node))
-    #No gate change
-    nbr = [nr for nr in nbr if G.get_edge_data(node, nr)['weight']!=2 and G.get_edge_data(node, nr)['weight']!=8]
+def swap_SD(circuit,G,node):
+    """change_SD
+    swap source drain nets of transistor]
+
+    Args:
+        circuit ([type]): [description]
+        G ([type]): [description]
+        node ([type]): [description]
+    """
+    for nbr in G.neighbors(node):
+        if 'D' in G.get_edge_data(node, nbr)['pin']:
+            nbrd = nbr
+        elif 'S' in G.get_edge_data(node, nbr)['pin']:
+            nbrs = nbr
+    assert nbrs and nbrd
     #Swapping D and S
-    w1 = G.get_edge_data(node, nbr[0])['weight']
-    w2 = G.get_edge_data(node, nbr[1])['weight']
-    logger.debug(f"Swapping D and S {nbr} {w1} {w2}")
-    if w1 & 1:
-        w1 = w1 +3
-        w2 = w2 -3
-    elif w1 & 4:
-        w1 = w1-3
-        w2 = w2 +3
+    logger.warning(f"Swapping D and S {node} {nbrd} {nbrs} {circuit.get_element(node)}")
+    circuit.get_element(node).pins.update({'D':nbrs,'S':nbrd})
 
-    G.get_edge_data(node, nbr[0])['weight'] = w1
-    G.get_edge_data(node, nbr[1])['weight'] = w2
+def define_SD(circuit,power,gnd,update=True):
+    """define_SD
+    Checks for scenarios where transistors D/S are flipped.
+    It is valid configuration in spice as transistors D and S are invertible
+    During subcircuit identification it becomes tricky as it requires multiple building blocks in the library
+    One with normal connection and one with flipped connections
+    Here, we traverses the circuit from power net to gnd and check
+    1. PMOS 'S' pin at high potential (comes first in traversal)
+    2. NMOS 'D' pin at high potential (comes first in traversal)
+    Next check for Transmission gate like structures where both cases:
+    We do another traversal from gnd net to power net and take a intersection of nodes to flip
 
-def define_SD(circuit,power,gnd,clk):
+    Args:
+        circuit ([type]): [description]
+        power ([type]): [description]
+        gnd ([type]): [description]
+        clk ([type]): [description]
+    """
+    if update ==False:
+        return
     logger.debug(f"START checking source and drain in graph ")
-    G= circuit["graph"]
-    ports = circuit["ports"]
+    G = Graph(circuit)
+    ports = circuit.pins
     if power and gnd:
+        assert set(power) & set(ports), f"Power net {power} is not in the list of ports {ports} of {circuit.name}"
+        assert set(gnd) & set(ports), f"Gnd net {power} is not in the list of ports {ports} of {circuit.name}"
         high= list(set(power).intersection(set(ports)))
         low = list(set(gnd).intersection(set(ports)))
-        logger.debug(f"using power: {high} and ground: {low}")
-    else:
-        logger.warning("no power and gnd defination")
-        return False
+        logger.debug(f"Using power: {high} and ground: {low}")
+
     if not high or not low:
-        logger.info('no power and gnd in this circuit')
+        logger.warning(f'No power and gnd in this circuit {circuit.name}')
         return
-    probable_changes_p=[]
-    if high[0] in G.nodes():
-        traversed = high.copy()
-        while high:
-            try:
-                nxt = high.pop(0)
-                for node in get_next_level(G,[nxt]):
-                    if G.get_edge_data(node,nxt)==2 or node in traversed:
-                        continue
-                    # if set(G.neighbors(node)) & set(clk):
-                    #     continue
-                    logger.debug("VDD:checking node: %s %s %s ", node, high,traversed)
-                    if 'pmos' == G.nodes[node]["instance"].model and \
-                        node not in traversed:
-                        weight =G.get_edge_data(node, nxt)['weight'] & ~ 8
-                        if weight == 1 or weight==3 :
-                            # logger.debug("VDD:probable change source drain:%s",node)
-                            probable_changes_p.append(node)
-                    elif 'nmos' == G.nodes[node]["instance"].model and \
-                    node not in traversed:
-                        weight =G.get_edge_data(node, nxt)['weight'] & ~ 8
-                        if weight == 4 or weight==6 :
-                            # logger.debug("VDD:probable change source drain:%s",node)
-                            probable_changes_p.append(node)
-                    if node not in traversed and node not in  gnd:
-                        high.append(node)
-                    traversed.append(node)
-            except (TypeError, ValueError):
-                logger.debug(f"All source drain checked: {high}")
-                break
+    probable_changes_p = []
+    assert high[0] in circuit.nets
+    traversed = high.copy()
+    traversed.extend(gnd)
+    while high:
+        nxt = high.pop(0)
+        for node in get_next_level(circuit,G,[nxt]):
+            logger.warning(f"VDD:checking node: {node}, {high}, {traversed}")
+            if not set(G.get_edge_data(node, nxt)['pin'])-set({'G'}) or node in traversed:
+                logger.debug(f"skipping node {node} {set(G.get_edge_data(node, nxt)['pin'])}")
+                continue
+            if circuit.get_element(node) and 'PMOS' == get_base_model(circuit,node) and \
+                node not in traversed:
+                if 'D' in G.get_edge_data(node, nxt)['pin'] :
+                    probable_changes_p.append(node)
+                    logger.warning(f"probable changes {probable_changes_p}")
+
+            elif circuit.get_element(node) and 'NMOS' == get_base_model(circuit,node) and \
+            node not in traversed:
+                if 'S' in G.get_edge_data(node, nxt)['pin'] :
+                    probable_changes_p.append(node)
+                    logger.warning(f"probable changes {probable_changes_p}")
+            if node not in traversed:
+                high.append(node)
+            traversed.append(node)
+        print("high",high)
+    if len(probable_changes_p)==0:
+        return
     probable_changes_n=[]
     if low[0] in G.nodes():
-        traversed=low.copy()
+        traversed = low.copy()
+        traversed.extend(list(set(power).intersection(set(ports))))
         while low:
-            try:
-                nxt = low.pop(0)
-                for node in get_next_level(G,[nxt]):
-                    if G.get_edge_data(node,nxt)==2 or node in traversed:
-                        continue
-                    # if set(G.neighbors(node)) & set(clk):
-                    #     continue
-                    logger.debug("GND:checking node: %s %s %s ", node, low,traversed)
-                    if 'pmos' == G.nodes[node]["instance"].model and \
-                        node not in traversed:
-                        weight =G.get_edge_data(node, nxt)['weight'] & ~ 8
-                        if weight == 4 or weight==6 :
-                            # logger.debug("GND:probable change source drain:%s",node)
-                            probable_changes_n.append(node)
-                    elif 'nmos' == G.nodes[node]["instance"].model and \
-                    node not in traversed:
-                        weight =G.get_edge_data(node, nxt)['weight'] & ~ 8
-                        if weight == 1 or weight==3 :
-                            # logger.debug("GND:probable change source drain:%s",node)
-                            probable_changes_n.append(node)
-                    if node not in traversed and node not in  power:
-                        low.append(node)
-                    traversed.append(node)
-            except (TypeError, ValueError):
-                logger.debug(f"All source drain checked: {low}")
-                break
+            nxt = low.pop(0)
+            for node in get_next_level(circuit,G,[nxt]):
+                logger.debug(f"GND:checking node: {node}, {high}, {traversed}")
+                if not set(G.get_edge_data(node, nxt)['pin'])-set({'G'}) or node in traversed:
+                    continue
+                if circuit.get_element(node) and 'PMOS' == get_base_model(circuit,node) and \
+                node not in traversed:
+                    if 'S' in G.get_edge_data(node, nxt)['pin'] :
+                        probable_changes_n.append(node)
+                        logger.warning(f"probable changes {probable_changes_n}")
+                elif circuit.get_element(node) and 'NMOS' == get_base_model(circuit,node) and \
+                node not in traversed:
+                    if 'D' in G.get_edge_data(node, nxt)['pin'] :
+                        probable_changes_n.append(node)
+                        logger.warning(f"probable changes {probable_changes_n}")
+
+                if node not in traversed:
+                    low.append(node)
+                traversed.append(node)
+
     for node in list (set(probable_changes_n) & set(probable_changes_p)):
-        logger.info(f"changing source drain: {node}")
-        change_SD(G,node)
+        logger.warning(f"changing source drain: {node}")
+        swap_SD(circuit,G,node)
 
 
 def add_parallel_caps(ckt):

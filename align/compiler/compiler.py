@@ -76,7 +76,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, conf
 
     library = lib_parser.library
     logger.debug(f"all library elements {library}")
-    
+
     design_setup = read_setup(input_dir / f'{design_name}.setup')
     logger.debug(f"template parent path: {pathlib.Path(__file__).parent}")
 
@@ -106,12 +106,12 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, conf
     stacked_subcircuit=[]
     # TODO: Re-implement stacked transistor detection using new passes
 
-    for ckt in ckt_data:
-        if isinstance(ckt, SubCircuit):
-            logger.debug(f"preprocessing circuit name: {ckt}")
-            if ckt.name not in design_setup['DIGITAL']:
-                define_SD(ckt,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
-                stacked_subcircuit.append(preprocess_stack_parallel(ckt_parser,ckt_data,ckt.name))
+    for subckt in ckt_data:
+        if isinstance(subckt, SubCircuit):
+            logger.debug(f"preprocessing circuit name: {subckt}")
+            if subckt.name not in design_setup['DIGITAL']:
+                define_SD(subckt,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
+                stacked_subcircuit.append(preprocess_stack_parallel(ckt_parser,ckt_data,subckt.name))
     for circuit_name in stacked_subcircuit:
         if circuit_name in ckt_data.keys() and circuit_name is not design_name:
             logger.debug(f"removing stacked subcircuit {circuit_name}")
@@ -212,7 +212,6 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
                 #block_name_ext = block_name.replace(lef_name,'')
                 logger.debug(f"Created new lef for: {block_name} {lef_name}")
                 #Multiple instances of same module
-<<<<<<< HEAD
                 # if 'inst_copy' in attr:
                 #     for nm in list(ckt_data.keys()):
                 #         if nm == lef_name + attr['inst_copy']:
@@ -224,19 +223,7 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
                 #                 generators.append(nm)
                 #     graph.nodes[node]["inst_type"] = block_name
                 #     generators.append(block_name)
-=======
-                if 'inst_copy' in attr:
-                    for nm in list(hier_graph_dict.keys()):
-                        if nm == lef_name + attr['inst_copy']:
-                            if block_name not in hier_graph_dict.keys():
-                                logger.debug('Trying to modify a dictionary while iterating over it!')
-                                hier_graph_dict[block_name] = hier_graph_dict.pop(nm)
-                            else:
-                                #For cells with extra parameters than current primitive naming convention
-                                all_lef.append(nm)
-                    graph.nodes[node]["inst_type"] = block_name
-                    all_lef.append(block_name)
->>>>>>> master
+
 
                 # Only unit caps are generated
                 # if  block_name.lower().startswith('cap'):
@@ -304,16 +291,9 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
     with (result_dir / f'{design_name}.v').open( 'wt') as fp:
         write_verilog( verilog_tbl, fp)
 
-<<<<<<< HEAD
-    logger.info("Topology identification done !!!")
-    logger.info(f"OUTPUT verilog json netlist at: {result_dir}/{design_name}.verilog.json")
-    logger.info(f"OUTPUT verilog netlist at: {result_dir}/{design_name}.v")
-    logger.info(f"OUTPUT const file at: {result_dir}/{design_name}.pnr.const.json")
-    exit()
-=======
+
     logger.info("Completed topology identification.")
     logger.debug(f"OUTPUT verilog json netlist at: {result_dir}/{design_name}.verilog.json")
     logger.debug(f"OUTPUT verilog netlist at: {result_dir}/{design_name}.v")
     logger.debug(f"OUTPUT const file at: {result_dir}/{design_name}.pnr.const.json")
->>>>>>> master
     return primitives

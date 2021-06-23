@@ -5,6 +5,7 @@ Created on Tue Dec 11 11:34:45 2018
 @author: kunal
 """
 import os
+from re import sub
 import networkx as nx
 import matplotlib.pyplot as plt
 from networkx.algorithms import bipartite
@@ -12,27 +13,38 @@ from networkx.algorithms import bipartite
 import logging
 logger = logging.getLogger(__name__)
 
-def get_next_level(G, tree_l1):
+def get_next_level(subckt,G, tree_l1):
     tree_next=[]
     for node in list(tree_l1):
-        if node not in G.nodes:
-            continue
-        # logger.debug(f"neighbors of {node}: {list(G.neighbors(node))}")
-        if 'mos' in G.nodes[node]["inst_type"]:
+        assert subckt.get_element(node) or node in subckt.nets, f"{node} not present in {subckt.elements} {subckt.nets}"
+        if subckt.get_element(node) and 'MOS' in get_base_model(subckt,node):
             for nbr in list(G.neighbors(node)):
-                if G.get_edge_data(node, nbr)['weight']!=2:
+                if set(G.get_edge_data(node, nbr)['pin']) - set({'G','B'}):
                     tree_next.append(nbr)
-        elif 'net' in G.nodes[node]["inst_type"]:
+        elif node in subckt.nets:
             for nbr in list(G.neighbors(node)):
-                if 'mos' in G.nodes[nbr]["inst_type"] and \
-                G.get_edge_data(node, nbr)['weight']!=2:
+                base_model=get_base_model(subckt,nbr)
+                logger.warning(G.get_edge_data(node, nbr))
+                logger.warning(subckt.get_element(nbr).model)
+                logger.warning(subckt.parent.find(subckt.get_element(nbr).model).base)
+                if 'MOS' in base_model and \
+                set(G.get_edge_data(node, nbr)['pin']) - set({'G','B'}):
                     tree_next.append(nbr)
-                elif 'mos' not in G.nodes[nbr]["inst_type"]:
+                else:
                     tree_next.append(nbr)
         else:
             tree_next.extend(list(G.neighbors(node)))
     # logger.debug(f"next nodes {tree_next} ")
     return tree_next
+def get_base_model(subckt,node):
+    assert subckt.get_element(node)
+    if subckt.get_element(node).model in ['NMOS','PMOS','RES','CAP']:
+        base_model = subckt.get_element(node).model
+    elif subckt.parent.find(subckt.get_element(node).model):
+        base_model = subckt.parent.find(subckt.get_element(node).model).base
+    else:
+        logger.warning(f"invalid device {node}")
+    return base_model
 def compare_two_nodes(G,node1:str,node2:str ,ports_weight):
     """
     compare two node properties. It uses 1st level of neighbourhood for comparison of nets

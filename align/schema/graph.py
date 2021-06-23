@@ -104,7 +104,7 @@ class Graph(networkx.Graph):
             # Cannot replace as some prior transformation has made the current one invalid
             assert all(x in self.nodes for x in match)
             removal_candidates = [
-                x for x, y in match.items() 
+                x for x, y in match.items()
                 if y not in subckt.pins]
             # Cannot replace if internal node is used elsewhere in subckt (Boundary elements / nets)
             if not all(x in match for node in removal_candidates for x in self.neighbors(node)):

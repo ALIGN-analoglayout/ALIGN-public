@@ -48,5 +48,6 @@
     "Dcap1_NMOS_B":"Dcap1_NMOS_B",
     "Dcap1_PMOS_B":"Dcap1_PMOS_B",
     "Dcap1_NMOS":"Dcap1_NMOS",
-    "Dcap1_PMOS":"Dcap1_PMOS"
+    "Dcap1_PMOS":"Dcap1_PMOS",
+    "generic":"generic"
 }

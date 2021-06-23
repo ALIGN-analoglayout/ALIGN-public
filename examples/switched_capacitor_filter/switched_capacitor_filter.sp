@@ -28,7 +28,7 @@ m1 net06 vbiasp1 vdd vdd pmos_rvt w=270e-9 l=20e-9 nfin=12
 ** Cell name: switched_capacitor_filter_spice
 ** View name: schematic
 
-.subckt switched_capacitor_filter voutn voutp vinp vinn id agnd vss 
+.subckt switched_capacitor_filter voutn voutp vinp vinn id agnd vss
 m0 voutn phi1 net67 vss nmos_rvt w=270e-9 l=20e-9 nfin=12
 m7 net66 phi1 net63 vss nmos_rvt w=270e-9 l=20e-9 nfin=12
 m6 net72 phi1 vinn vss nmos_rvt w=270e-9 l=20e-9 nfin=12

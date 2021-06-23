@@ -22,31 +22,8 @@ class CreateDatabase:
         """
         read circuit graphs
         """
-        # G = Graph(self.ckt_parser.library.find(name))
-        # self.ckt_parser.library.find(name)
-        # top_ports = []
-        # ports_weight = {}
-        # for port in self.ckt_parser.library.find(name).pins:
-        #     # # if 'source' in attr['inst_type']:
-        #     # #     for source_nets in self.G.neighbors(node):
-        #     # #         top_ports.append(source_nets)
-        #     # if 'net_type' in attr:
-        #     #     if attr['net_type'] == "external":
-        #     #         top_ports.append(node)
-        #     ports_weight[port] = []
-        #     for nbr in list(G.neighbors(port)):
-        #         pin = G.get_edge_data(nbr,port)["pin"]
-        #         wt=[2**i for i,p in enumerate(['D', 'G', 'S', 'B']) if p in pin]
-        #         ports_weight[port].append(wt)
-        logger.debug("Merging nested graph hierarchies to dictionary: ")
-        # self.ckt_data[name] = HierDictNode(
-        #     # name=name,
-        #     subckt=self.ckt_parser.library.find(name),
-        #     # ports=self.ckt_parser.library.find(name).pins,
-        #     # ports_weight=ports_weight,
-        #     constraints=[]
-        # )
 
+        logger.debug("Merging nested graph hierarchies to dictionary: ")
         self.const_parse.annotate_user_constraints(self.ckt_parser.library.find(name))
         # self._traverse_hier_in_graph(G) TBD
         logger.debug(f"read graph {self.ckt_data}")
