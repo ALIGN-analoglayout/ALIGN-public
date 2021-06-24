@@ -5729,7 +5729,7 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
   vector<placerDB::point> p_pin;
   fout.open(outfile.c_str());
   fout<<"#Use this file as a script for gnuplot\n#(See http://www.gnuplot.info/ for details)"<<endl;
-  fout<<"\nset title\" #Blocks= "<<caseNL.GetSizeofBlocks()<<", #Terminals= "<<caseNL.GetSizeofTerminals()<<", #Nets= "<<caseNL.GetSizeofNets()<<", Area="<<CalculateArea()<<", HPWL= "<<CalculateWireLength(caseNL, caseSP)<<" \""<<endl;
+  fout<<"\nset title\" "<< caseNL.name << " #Blocks= "<<caseNL.GetSizeofBlocks()<<", #Terminals= "<<caseNL.GetSizeofTerminals()<<", #Nets= "<<caseNL.GetSizeofNets()<<", Area="<<CalculateArea()<<", HPWL= "<<CalculateWireLength(caseNL, caseSP)<<" \""<<endl;
   fout<<"\nset nokey"<<endl;
   fout<<"#   Uncomment these two lines starting with \"set\""<<endl;
   fout<<"#   to save an EPS file for inclusion into a latex document"<<endl;

@@ -19,6 +19,7 @@
 #include <cstdlib>
 #include <sstream>
 #include <thread>
+#include <ctime>
 
 using std::string;
 using std::cout;
@@ -354,6 +355,8 @@ int toplevel( const std::vector<std::string>& argv) {
     DB.PrintHierNode(current_node);
 #define analytical_placer
 #ifdef analytical_placer
+    clock_t start, end;
+    start = clock();
     // EA placer
     if(disable_io)std::cout.setstate(std::ios_base::failbit);
     Placement EA_placer;
@@ -374,14 +377,20 @@ int toplevel( const std::vector<std::string>& argv) {
     if(disable_io)std::cout.setstate(std::ios_base::failbit);
     EA_placer.break_merged_cc(current_node);
     if(disable_io)std::cout.clear();
-    //return 0;
+    end = clock();
+    logger->info("Placement runtime: {0} s", (double)(end - start) / CLOCKS_PER_SEC);
+    // return 0;
     // Placement
     std::vector<PnRDB::hierNode> nodeVec={current_node};
     logger->debug("Checkpoint: generated {0} placements", nodeVec.size());
 #else
     //Placement
+    clock_t start, end;
+    start = clock();
     PlacerIfc curr_plc(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo));
     std::vector<PnRDB::hierNode>& nodeVec(curr_plc.get());
+    end = clock();
+    logger->info("Placement runtime: {0} s", (double)(end - start) / CLOCKS_PER_SEC);
     logger->debug("Checkpoint: generated {0} placements",nodeVec.size());
 #endif
     //insert guard ring

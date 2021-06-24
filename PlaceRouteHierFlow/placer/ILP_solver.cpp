@@ -951,7 +951,7 @@ void ILP_solver::PlotPlacement(design& mydesign, string outfile, bool plot_pin, 
   vector<placerDB::point> p_pin;
   fout.open(outfile.c_str());
   fout << "#Use this file as a script for gnuplot\n#(See http://www.gnuplot.info/ for details)" << endl;
-  fout << "\nset title\" #Blocks= " << mydesign.Blocks.size() << ", #Terminals= " << mydesign.Terminals.size() << ", #Nets= " << mydesign.Nets.size()
+  fout << "\nset title \" "<< mydesign.name << " #Blocks= " << mydesign.Blocks.size() << ", #Terminals= " << mydesign.Terminals.size() << ", #Nets= " << mydesign.Nets.size()
        << ",Area=" << area << ", HPWL= " << HPWL << " \"" << endl;
   fout << "\nset nokey" << endl;
   fout << "#   Uncomment these two lines starting with \"set\"" << endl;
@@ -963,7 +963,7 @@ void ILP_solver::PlotPlacement(design& mydesign, string outfile, bool plot_pin, 
   fout << "# set terminal postscript portrait color solid 20" << endl;
   fout << "# set output \"result.ps\"" << endl << endl;
 
-  int bias = 50;
+  int bias = 100;
   int range = std::max(UR.x, UR.y) + bias;
   fout << "\nset xrange [" << LL.x - bias << ":" << UR.x + bias << "]" << endl;
   fout << "\nset yrange [" << LL.y - bias << ":" << UR.y + bias << "]" << endl;
