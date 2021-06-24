@@ -22,7 +22,7 @@ xi0 vin vop pcell_tfr_0
 
 def test_tia():
     constraints = """[]"""
-    name = f'ckt_{get_test_id()[5:]}'
+    name = f'ckt_{get_test_id()}'
     netlist, netlist_setup = tia(name)
     example = build_example(my_dir, name, netlist, netlist_setup, constraints)
     run_example(example, n=1)

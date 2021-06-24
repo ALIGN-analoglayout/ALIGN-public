@@ -68,7 +68,7 @@ class WriteVerilog:
                             ports.append(key)
                             nets.append(value)
                 else:
-                    logger.error(f"No connectivity info found : {', '.join(attr['ports'])}")
+                    logger.error(f"No connectivity info found for block {d['name']}: {', '.join(attr['ports'])}")
                     ports = attr["ports"]
                     nets = list(self.circuit_graph.neighbors(node))
 
