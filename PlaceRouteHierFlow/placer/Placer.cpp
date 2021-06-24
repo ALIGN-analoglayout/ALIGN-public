@@ -14,8 +14,12 @@ Placer::Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info&
 }
 
 Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
+//#define analytical_placer
+#ifdef analytical_placer
   PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo);
-  //PlacementRegularAspectRatio(nodeVec, opath, effort, drcInfo);
+#else
+  PlacementRegularAspectRatio(nodeVec, opath, effort, drcInfo);
+#endif
   //PlacementMixSAAspectRatio(nodeVec, opath, effort);
   //PlacementMixAPAspectRatio(nodeVec, opath, effort);
 }
@@ -118,7 +122,7 @@ void Placer::PlacementRegular(PnRDB::hierNode& node, string opath, int effort, P
   ConstGraph curr_sol;
   PlacementCore(designData, curr_sp, curr_sol, mode, effort);
   curr_sol.WritePlacement(designData, curr_sp, opath+node.name+".pl");
-  curr_sol.PlotPlacement(designData, curr_sp, opath+node.name+".plt");
+  curr_sol.PlotPlacement(designData, curr_sp, opath+node.name+".plt", false, false, false);
   curr_sol.UpdateHierNode(designData, curr_sp, node, drcInfo);
 }
 
@@ -153,7 +157,7 @@ void Placer::PlacementMixSA(PnRDB::hierNode& node, string opath, int effort, PnR
   ConstGraph curr_sol;
   PlacementCore(designData, curr_sp, curr_sol, mode, effort);
   curr_sol.WritePlacement(designData, curr_sp, opath+node.name+"_reduced.pl");
-  curr_sol.PlotPlacement(designData, curr_sp, opath+node.name+"_reduced.plt");
+  curr_sol.PlotPlacement(designData, curr_sp, opath+node.name+"_reduced.plt", false, false, false);
 
   // Full design
   SeqPair curr_sp_full( designData_full, designData, curr_sp  );
@@ -162,7 +166,7 @@ void Placer::PlacementMixSA(PnRDB::hierNode& node, string opath, int effort, PnR
   ConstGraph curr_sol_full;
   PlacementCore(designData_full, curr_sp_full, curr_sol_full, mode, effort);
   curr_sol_full.WritePlacement(designData_full, curr_sp_full, opath+node.name+".pl");
-  curr_sol_full.PlotPlacement(designData_full, curr_sp_full, opath+node.name+".plt");
+  curr_sol_full.PlotPlacement(designData_full, curr_sp_full, opath+node.name+".plt", false, false, false);
   //cout<<"Test: before update node"<<endl;
   curr_sol_full.UpdateHierNode(designData_full, curr_sp_full, node, drcInfo);
   //cout<<"Test:: after update node"<<endl;
@@ -201,7 +205,7 @@ void Placer::PlacementMixAP(PnRDB::hierNode& node, string opath, int effort, PnR
   ConstGraph curr_sol;
   PlacementCore(designData, curr_sp, curr_sol, 1, effort);
   curr_sol.WritePlacement(designData, curr_sp, opath+node.name+"_reduced.pl");
-  curr_sol.PlotPlacement(designData, curr_sp, opath+node.name+"_reduced.plt");
+  curr_sol.PlotPlacement(designData, curr_sp, opath+node.name+"_reduced.plt", false, false, false);
   curr_sol.UpdateDesignHierNode4AP(designData_full, designData, curr_sp, node);
   logger->debug("Placer-Info: complete mixed-size placement - phase I SA");
   logger->debug("Placer-Info: start mixed-size placement - phase II AP");
@@ -787,7 +791,7 @@ void Placer::PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, 
     //it->second.PrintSeqPair();
     //std::cout<<"write design "<<idx<<std::endl;
     vec_sol.WritePlacement(designData, it->second, opath+nodeVec.back().name+"_"+std::to_string(idx)+".pl");
-    vec_sol.PlotPlacement(designData, it->second, opath+nodeVec.back().name+"_"+std::to_string(idx)+".plt");
+    vec_sol.PlotPlacement(designData, it->second, opath+nodeVec.back().name+"_"+std::to_string(idx)+".plt", false, false, false);
     vec_sol.UpdateHierNode(designData, it->second, nodeVec[idx], drcInfo);
   }
 }
@@ -846,7 +850,7 @@ void Placer::PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
     ConstGraph curr_sol_full;
     PlacementCore(designData_full, curr_sp_full, curr_sol_full, bias_mode, effort);
     curr_sol_full.WritePlacement(designData_full, curr_sp_full, opath+nodeVec.back().name+"_"+std::to_string(idx)+".pl");
-    curr_sol_full.PlotPlacement(designData_full, curr_sp_full, opath+nodeVec.back().name+"_"+std::to_string(idx)+".plt");
+    curr_sol_full.PlotPlacement(designData_full, curr_sp_full, opath+nodeVec.back().name+"_"+std::to_string(idx)+".plt", false, false, false);
     //cout<<"Test: before update node"<<endl;
     curr_sol_full.UpdateHierNode(designData_full, curr_sp_full, nodeVec.at(idx), drcInfo);
     //cout<<"Test:: after update node"<<endl;
@@ -901,7 +905,7 @@ void Placer::PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
     vec_sol.updateTerminalCenter(designData, it->second);
     vec_sol.PrintConstGraph();
     vec_sol.WritePlacement(designData, it->second, opath+nodeVec.back().name+"_"+std::to_string(idx)+"_reduced.pl");
-    vec_sol.PlotPlacement(designData, it->second, opath+nodeVec.back().name+"_"+std::to_string(idx)+"_reduced.plt");
+    vec_sol.PlotPlacement(designData, it->second, opath+nodeVec.back().name+"_"+std::to_string(idx)+"_reduced.plt", false, false, false);
     vec_sol.UpdateDesignHierNode4AP(designData_full, designData, it->second, nodeVec.at(idx));
 
     Aplace AP(nodeVec.at(idx), designData_full, opath);

@@ -353,7 +353,7 @@ int toplevel( const std::vector<std::string>& argv) {
 
     logger->debug("Checkpoint : before place");
     DB.PrintHierNode(current_node);
-#define analytical_placer
+//#define analytical_placer
 #ifdef analytical_placer
     clock_t start, end;
     start = clock();

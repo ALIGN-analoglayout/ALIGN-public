@@ -951,7 +951,7 @@ void ILP_solver::PlotPlacement(design& mydesign, string outfile, bool plot_pin, 
   vector<placerDB::point> p_pin;
   fout.open(outfile.c_str());
   fout << "#Use this file as a script for gnuplot\n#(See http://www.gnuplot.info/ for details)" << endl;
-  fout << "\nset title \" "<< mydesign.name << " #Blocks= " << mydesign.Blocks.size() << ", #Terminals= " << mydesign.Terminals.size() << ", #Nets= " << mydesign.Nets.size()
+  fout << "\nset title \" "<< mydesign.name << "\n #Blocks= " << mydesign.Blocks.size() << ", #Terminals= " << mydesign.Terminals.size() << ", #Nets= " << mydesign.Nets.size()
        << ",Area=" << area << ", HPWL= " << HPWL << " \"" << endl;
   fout << "\nset nokey" << endl;
   fout << "#   Uncomment these two lines starting with \"set\"" << endl;

@@ -170,7 +170,7 @@ class ConstGraph
     void updateTerminalCenterAPRetire(design& caseNL, Aplace& caseAP);
     void updateTerminalCenterAP(design& caseNL, Aplace& caseAP);
     void WritePlacement(design& caseNL, SeqPair& caseSP, string outfile);
-    void PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile);
+    void PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile, bool plot_pin, bool plot_terminal, bool plot_net);
     void WritePlacementAP(design& caseNL, Aplace& caseAP, string outfile);
     void PlotPlacementAP(design& caseNL, Aplace& caseAP, string outfile);
     void UpdateHierNode(design& caseNL, SeqPair& caseSP, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo);
