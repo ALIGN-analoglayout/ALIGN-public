@@ -108,11 +108,12 @@ class Annotate:
                 elif not hasattr(const,'instances'):
                     is_append = True
                 else:
-                    logger.warning(f"invalid constarint {const}")
+                    logger.debug(f"invalid constraint {const}")
                 if is_append == True and const not in const_list:
+                    logger.debug(f"constraint appended: {const}")
                     const_list.append(const)
         except:
-            logger.warning(f"skiping invalid constraint {const}")
+            logger.debug(f"skipping invalid constraint {const}")
 
     
     def _update_attributes(self,circuit_graph,name,lib_name,lib_graph, Gsub):
@@ -387,9 +388,10 @@ class Annotate:
                             ports = list(matched_ports.keys()),
                             ports_match = matched_ports,
                             ports_weight = ports_weight,
-                            constraints = sconst,
                             size = len(subgraph.nodes())
                             )
+                        for c in list(sconst):
+                            self._check_const_length(subckt.constraints, c)
 
                         self.multiple_instances(G1,new_node,lib_name,subckt)
                         check_nodes(self.hier_graph_dict)
