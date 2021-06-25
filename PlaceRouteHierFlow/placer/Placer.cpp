@@ -14,7 +14,7 @@ Placer::Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info&
 }
 
 Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
-//#define analytical_placer
+#define analytical_placer
 #ifdef analytical_placer
   PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo);
 #else
