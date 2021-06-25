@@ -8,33 +8,51 @@ import json
 import re
 
 from . import techfile
-from ..cell_fabric.transformation import Transformation
+from ..cell_fabric.transformation import Rect, Transformation
 
-class Rect:
-  def __init__( self, llx, lly, urx=None, ury=None):
-    self.llx = llx
-    self.lly = lly
-    self.urx = llx if urx is None else urx
-    self.ury = lly if ury is None else ury
+# SY: Syntax converter
+def convert_align_to_adr(term):
+    """ Convert align terminal to adr terminal (M -> colored metal, V -> colored via, netName -> net_name"""
+    assert 'netName' in term, term
+    new_term = dict()
+    new_term['net_name'] = term['netName']
+    new_term['rect'] = term['rect'].copy()
+    prefix = 'metal' if term['layer'][0] == 'M' else 'via'
+    if 'color' in term and term['color'] is not None:
+        color = term['color']
+    else:
+        color = ''
+    new_term['layer'] = prefix + color + term['layer'][1:]
+    if 'width' in term:
+        new_term['width'] = term['width']
+    if 'connected_pins' in term:
+        new_term['connected_pins'] = term['connected_pins'].copy()
+    return new_term
 
-  def toColonSepStr( self):
-    return "%d:%d:%d:%d" % (self.llx,self.lly,self.urx,self.ury)
+class Wire:
+  def __init__( self):
+    self.netName = None
+    self.rect = None
+    self.layer = None
+    self.gid = None
+    self.color = None
 
   def __str__( self):
-    return self.toColonSepStr()
+    return "Wire  net=%s%s layer=%s rect=%s" % ( self.netName, ("" if self.gid is None else ( " gid=%d" % self.gid)), self.layer, self.rect.toColonSepStr())
 
   def __repr__( self):
     return str(self)
 
-  def canonical( self):
-    llx,lly,urx,ury = self.llx,self.lly,self.urx,self.ury
-    if llx > urx: llx,urx = urx,llx
-    if lly > ury: lly,ury = ury,lly
-    return Rect( llx,lly,urx,ury)
+class GR:
+  def __init__( self):
+    self.netName = None
+    self.rect = None
+    self.layer = None
+    self.width = None
+    self.connected_pins = None
 
-  def toList( self):
-    return [self.llx,self.lly,self.urx,self.ury]
-
+  def __repr__(self):
+    return f"{self.netName} {self.rect} {self.layer} {self.width}"
 
 class ADT:
   def __init__( self, tech, nm, *, physical_bbox=None):
@@ -67,18 +85,34 @@ class ADI:
   def __repr__( self):
     return "template: %s instance: %s trans: %s" % (self.template, self.instanceName, self.trans)
 
-  def hit( self, r):
-    (llx,lly) = self.trans.hit( (r.llx, r.lly))
-    (urx,ury) = self.trans.hit( (r.urx, r.ury))
-    if ( llx > urx): llx, urx = urx, llx
-    if ( lly > ury): lly, ury = ury, lly
-    return Rect( llx, lly, urx, ury)
-
   @property
   def bbox( self):
-    return self.hit( self.template.bbox)
+    return self.trans.hitRect( self.template.bbox).canonical()
 
 class ADNetlist:
+  @staticmethod
+  def fromPlacerResults( nm, adts, placer_results):
+    adnetl =  ADNetlist( nm)
+
+    for inst in placer_results['instances']:
+      tN = inst['template_name']
+      iN = inst['instance_name']
+      tr = inst['transformation']
+
+      adnetl.addInstance( ADI( adts[tN], iN, Transformation( **tr)))
+
+      for (f,a) in inst['formal_actual_map'].items():
+        adnetl.connect( iN, f, a)
+
+    assert 'ports' not in placer_results
+
+    if 'preroutes' in placer_results:
+      for preroute in placer_results['preroutes']:
+        adnetl.addPreroute(convert_align_to_adr(preroute))
+
+    return adnetl.genNetlist( Rect( *placer_results['bbox']))
+
+
   def __init__( self, nm):
     self.nm = nm
     self.instances = OrderedDict()
@@ -97,7 +131,9 @@ class ADNetlist:
     self.nets[a].append( (instanceName,f))
     self.instances[instanceName].formalActualMap[f] = a
 
-  def genNetlist( self, netl): 
+  def genNetlist( self, bbox): 
+    netl = Netlist( nm=self.nm, bbox=bbox)
+
     self.ces = OrderedDict()
     self.kors = []
     for (_,v) in self.instances.items():
@@ -108,9 +144,9 @@ class ADNetlist:
           if aN not in self.ces: self.ces[aN] = {}
           pN = (v.instanceName, w.netName)
           if pN not in self.ces[aN]: self.ces[aN][pN] = []
-          self.ces[aN][pN].append( (v.hit( w.rect), w.layer))
+          self.ces[aN][pN].append( (v.trans.hitRect( w.rect).canonical(), w.layer))
         else:
-          self.kors.append( (v.hit(w.rect), w.layer))
+          self.kors.append( (v.trans.hitRect(w.rect).canonical(), w.layer))
 
     internally_connected = True
     for (aN,v) in self.ces.items():
@@ -128,31 +164,7 @@ class ADNetlist:
     for p in self.preroutes:
       netl.newWire( p['net_name'], Rect( *p['rect']), p['layer'])
 
-
-class Wire:
-  def __init__( self):
-    self.netName = None
-    self.rect = None
-    self.layer = None
-    self.gid = None
-    self.color = None
-
-  def __str__( self):
-    return "Wire  net=%s%s layer=%s rect=%s" % ( self.netName, ("" if self.gid is None else ( " gid=%d" % self.gid)), self.layer, self.rect.toColonSepStr())
-
-  def __repr__( self):
-    return str(self)
-
-class GR:
-  def __init__( self):
-    self.netName = None
-    self.rect = None
-    self.layer = None
-    self.width = None
-    self.connected_pins = None
-
-  def __repr__(self):
-    return f"{self.netName} {self.rect} {self.layer} {self.width}"
+    return netl
 
 def encode_GR( tech, obj):
   if isinstance(obj, GR):
@@ -192,17 +204,6 @@ def extract_layer_color(layer):
     clr = None
   return lyr, clr
 
-# # SY: Added for coloring
-# def extract_colored_layer(term):
-#   """ Returns colored layer from a terminal. Example: {'layer': 'V1', 'color:'a'} => viaa1"""
-#   if 'color' in term and term['color'] is not None:
-#     mg = re.match(r'(metal|via)(\d+)', term['layer'])
-#     assert mg, "Layer pattern not recognized"
-#     layer = mg.group(1) + term['color'] + mg.group(2)
-#   else:
-#     layer = term['layer']
-#   return layer
-
 # SY: Added for coloring
 def translate_layer(layer):
   """ Translates metal/via to M/V"""
@@ -210,8 +211,6 @@ def translate_layer(layer):
   via_layer_map = { f'via{i}' : f'V{i}' for i in range(0,6) }
   layer_map = dict(list(metal_layer_map.items()) + list(via_layer_map.items()))
   return layer_map.get(layer, layer)
-
-
 
 class Net:
   def __init__( self, nm):
@@ -476,24 +475,12 @@ Option name=upper_layer                          value={topmetal}
                  print( 'connected top-level pin not found for:', k, hier_name, cand)
 
 
-        if False:
-          for lst in ces:
-            if pin_ids:
-              nlst = [ gid for gid in lst if gid in pin_ids]
-            else:
-              nlst = lst
-
-            if not nlst:
-              nlst = lst
-
-            fp.write( "ConnectedEntity terms=%s\n" % (','.join( [ str(gid) for gid in nlst])))
-        else:
-          # connect everything (no via preroutes)
-          skip_via_set = set(["via0","via1","via2","via3","via4"])
-          for w in v.wires:
-            ly = w.layer
-            if ly in skip_via_set: continue
-            fp.write( "ConnectedEntity terms=%s\n" % w.gid)
+        # connect everything (no via preroutes)
+        skip_via_set = set(["via0","via1","via2","via3","via4"])
+        for w in v.wires:
+          ly = w.layer
+          if ly in skip_via_set: continue
+          fp.write( "ConnectedEntity terms=%s\n" % w.gid)
 
         grs = []
         for gr in v.grs:
@@ -510,51 +497,38 @@ Option name=upper_layer                          value={topmetal}
 
         fp.write( "GlobalRouting net=%s routes=%s\n" % (k,';'.join(grs)))
 
-        if False:
-          for gr in v.grs:
-            if not hasattr(gr,'gid'): continue
-            if gr.rect.llx == gr.rect.urx and gr.rect.lly == gr.rect.ury: continue
-            if gr.connected_pins is not None:
-              for cp in gr.connected_pins:
-                assert cp['layer'] == 'M2'
-                rect = [ v*5 for v in cp['rect']]
-                cand = ( gr.netName, tuple(rect), "metal2")
-                if cand in self.wire_cache:
-                  wire = self.wire_cache[cand]
-                  fp.write( "Tie term0=%d gr0=%d\n" % (wire.gid, gr.gid))
-        elif True:
-          dx = tech.pitchPoly*tech.halfXGRGrid*2
-          dy = tech.pitchDG  *tech.halfYGRGrid*2
-          def touching( r0, r1):
-            # (not touching) r0.lly > r1.ury or r1.lly > r0.ury
-            check1 = r0.lly <= r1.ury and r1.lly <= r0.ury
-            check2 = r0.llx <= r1.urx and r1.llx <= r0.urx
-            return check1 and check2
+        dx = tech.pitchPoly*tech.halfXGRGrid*2
+        dy = tech.pitchDG  *tech.halfYGRGrid*2
+        def touching( r0, r1):
+          # (not touching) r0.lly > r1.ury or r1.lly > r0.ury
+          check1 = r0.lly <= r1.ury and r1.lly <= r0.ury
+          check2 = r0.llx <= r1.urx and r1.llx <= r0.urx
+          return check1 and check2
 
-          for gr in v.grs:
-            x0 =   (gr.rect.llx)*dx + self.bbox.llx
-            x1 = (1+gr.rect.urx)*dx + self.bbox.llx
-            y0 =   (gr.rect.lly)*dy + self.bbox.lly
-            y1 = (1+gr.rect.ury)*dy + self.bbox.lly
-            gr_r = Rect( x0, y0, x1, y1)
-            print( "Metal GR:", gr, gr_r)
+        for gr in v.grs:
+          x0 =   (gr.rect.llx)*dx + self.bbox.llx
+          x1 = (1+gr.rect.urx)*dx + self.bbox.llx
+          y0 =   (gr.rect.lly)*dy + self.bbox.lly
+          y1 = (1+gr.rect.ury)*dy + self.bbox.lly
+          gr_r = Rect( x0, y0, x1, y1)
+          print( "Metal GR:", gr, gr_r)
 
-            tuples = [
-              ("metal1", ["metal1","metal0"]),
-              ("metal2", ["metal3","metal2","metal1"]),
-              ("metal3", ["metal4","metal3","metal2"]),
-              ("metal4", ["metal5","metal4","metal3"]),
-              ("metal5", ["metal6","metal5","metal4"]),
-              ("metal6", ["metal7","metal6","metal5"])
-              ]
+          tuples = [
+            ("metal1", ["metal1","metal0"]),
+            ("metal2", ["metal3","metal2","metal1"]),
+            ("metal3", ["metal4","metal3","metal2"]),
+            ("metal4", ["metal5","metal4","metal3"]),
+            ("metal5", ["metal6","metal5","metal4"]),
+            ("metal6", ["metal7","metal6","metal5"])
+            ]
 
-            for gr_layer, w_layers in tuples:
-              if gr.layer == gr_layer:
-                for w in v.wires:
-                  if extract_layer_color(w.layer)[0] in w_layers:
-                    if touching( gr_r, w.rect):
-                      fp.write( "Tie term0=%d gr0=%d\n" % (w.gid, gr.gid))
-                      print( "Tie", gr, gr_r, w)
+          for gr_layer, w_layers in tuples:
+            if gr.layer == gr_layer:
+              for w in v.wires:
+                if extract_layer_color(w.layer)[0] in w_layers:
+                  if touching( gr_r, w.rect):
+                    fp.write( "Tie term0=%d gr0=%d\n" % (w.gid, gr.gid))
+                    print( "Tie", gr, gr_r, w)
 
         fp.write( "#end of net %s\n" % k)
 
@@ -578,9 +552,6 @@ Option name=upper_layer                          value={topmetal}
     self.write_global_routing_file( tech, dirname + "/" + self.nm + "_dr_globalrouting.txt")
     self.dumpGR( tech, dirname + "/" + self.nm + "_dr_globalrouting.json", no_grid=True)
 
-
-from .consume_results import consume_results
-
 def parse_args( command_line_args=None):
   parser = argparse.ArgumentParser( description="Generates input files for amsr (Analog router)")
 
@@ -588,7 +559,6 @@ def parse_args( command_line_args=None):
   parser.add_argument( "--route", action='store_true')
   parser.add_argument( "--show_global_routes", action='store_true')
   parser.add_argument( "--show_metal_templates", action='store_true')
-  parser.add_argument( "--consume_results", action='store_true')
   parser.add_argument( "--no_interface", action='store_true')
   parser.add_argument( "--placer_json", type=str, default='')
   parser.add_argument( "--gr_json", type=str, default='')
@@ -603,9 +573,5 @@ def parse_args( command_line_args=None):
 
   with open( args.technology_file) as fp:
     tech = techfile.TechFile( fp)
-
-  if args.consume_results:
-    consume_results(args,tech)
-    # exit()
 
   return args,tech

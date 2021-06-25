@@ -1,10 +1,8 @@
 from .cktgen import *
-from .consume_results import convert_align_to_adr
 
 import json
 
 def main(args, tech):
-  if args.consume_results: return
   
   assert args.source != ''
   src = args.source
@@ -43,35 +41,7 @@ def main(args, tech):
         term = convert_align_to_adr(term)
         adt.newWire( term['net_name'], Rect( *term['rect']), term['layer'])
 
-  bbox = placer_results['bbox']
-
-
-  adnetl =  ADNetlist( args.block_name)
-
-  for inst in placer_results['instances']:
-    tN = inst['template_name']
-    iN = inst['instance_name']
-    tr = inst['transformation']
-
-    # print( tr)
-
-    adnetl.addInstance( ADI( adts[tN], iN, Transformation( **tr)))
-
-    for (f,a) in inst['formal_actual_map'].items():
-      adnetl.connect( iN, f, a)
-
-  if 'ports' in placer_results:  
-    ports = placer_results['ports']
-    for p in ports:
-      adnetl.addPort( p)
-
-  if 'preroutes' in placer_results:
-    preroutes = placer_results['preroutes']
-    for preroute in preroutes:
-      adnetl.addPreroute(convert_align_to_adr(preroute))
-
-  netl = Netlist( nm=args.block_name, bbox=Rect( *bbox))
-  adnetl.genNetlist( netl)
+  netl = ADNetlist.fromPlacerResults( args.block_name, adts, placer_results)
 
   for wire in global_router_results['wires']:
     wire = convert_align_to_adr(wire)

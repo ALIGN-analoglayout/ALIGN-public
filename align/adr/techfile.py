@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import json
 
 class MetalTemplate:
@@ -13,7 +11,14 @@ class MetalTemplate:
     self.stop_offset = stop_offset
 
   def __eq__( self, that):
-    return self.layer == that.layer and self.name == that.name and self.widths == that.widths and self.spaces == that.spaces and self.colors == that.colors
+    return \
+      self.layer == that.layer and \
+      self.name == that.name and \
+      self.widths == that.widths and \
+      self.spaces == that.spaces and \
+      self.colors == that.colors and \
+      self.stops == that.stops and \
+      self.stop_offset == that.stop_offset
 
   def __str__( self):
     result = "MetalTemplate layer=%s name=%s widths=%s spaces=%s" % ( self.layer, self.name, (",".join( str(i) for i in self.widths)), (",".join( str(i) for i in self.spaces)))
@@ -27,7 +32,7 @@ class MetalTemplate:
 class TechFile:
   def __init__( self, fp):
     self.json = json.load( fp)
-    self._metalTemplates = [ MetalTemplate( layer=d['layer'], name=d['name'], widths=d['widths'], spaces=d['spaces'], colors=d['colors'], stops=d['stops'], stop_offset=d['stop_offset']) for d in self.json['metalTemplates']]
+    self._metalTemplates = [ MetalTemplate( **d) for d in self.json['metalTemplates']]
 
   def __getattr__( self, nm):
     return self.json[nm]

@@ -1,9 +1,9 @@
 
 import json
 import re
-from ..cell_fabric.transformation import Transformation
+from ..cell_fabric.transformation import Rect, Transformation
 
-from .cktgen import Netlist, Rect
+from .cktgen import Netlist, convert_align_to_adr
 
 def parse_lgf( fp):
 
@@ -100,27 +100,7 @@ def parse_lgf( fp):
 
   return netl
 
-
-# SY: Syntax converter
-def convert_align_to_adr(term):
-    """ Convert align terminal to adr terminal (M -> colored metal, V -> colored via, netName -> net_name"""
-    assert 'netName' in term, term
-    new_term = dict()
-    new_term['net_name'] = term['netName']
-    new_term['rect'] = term['rect'].copy()
-    prefix = 'metal' if term['layer'][0] == 'M' else 'via'
-    if 'color' in term and term['color'] is not None:
-        color = term['color']
-    else:
-        color = ''
-    new_term['layer'] = prefix + color + term['layer'][1:]
-    if 'width' in term:
-        new_term['width'] = term['width']
-    if 'connected_pins' in term:
-        new_term['connected_pins'] = term['connected_pins'].copy()
-    return new_term
-
-def consume_results(args,tech):
+def main(args,tech):
     assert args.no_interface, "Removed support for 'interface'."
 
     with open( 'out/' + args.block_name + '.lgf', 'rt') as fp:  

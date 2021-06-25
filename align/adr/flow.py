@@ -6,7 +6,7 @@ import os
 import sys
 import logging
 
-from align.adr import cktgen, cktgen_physical_from_json
+from align.adr import cktgen, cktgen_physical_from_json, consume_results
 
 import logging
 logger = logging.getLogger(__name__)
@@ -125,7 +125,7 @@ def cmdline( argv):
             run_router_executable( args)
         else:
             run_router_in_container( args)
-        cktgen.consume_results( cktgen_args, tech)
+        consume_results.main( cktgen_args, tech)
         run_sh( f'cp INPUT/mydesign_dr_globalrouting.json {args.source + ".json"}')
 
     if args.viewer_input_dir and args.source:
