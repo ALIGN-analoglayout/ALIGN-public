@@ -5,7 +5,8 @@ class tfr_prim(CanvasPDK):
     
     def __init__(self, *args, **kwargs):
         super().__init__()
-        self.instantiated_cells = []
+        self.instances = []
+
 
     def generate(self, ports, netlist_parameters=None, layout_parameters=None):
 
@@ -23,5 +24,9 @@ class tfr_prim(CanvasPDK):
 
         t = {'layer': 'Boundary', 'netName': None, 'rect': bbox}
         self.terminals.append(t)
+
+        # Additional metadata for layout post-processing
+        i0 = {'sample_key': 'sample_value'}
+        self.instances.append(i0)
 
         return {"bbox": bbox, "instance": {}, "terminals": self.terminals}

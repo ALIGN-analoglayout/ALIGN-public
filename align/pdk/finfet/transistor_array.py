@@ -279,7 +279,7 @@ class MOSGenerator(CanvasPDK):
                         term['rect'][2] = x_max
 
         # M3
-        self.terminals = self.removeDuplicates()
+        self.terminals = self.removeDuplicates(silence_errors=True)
         if len(self.rd.opens) > 0:               
             open_pins = set()
             for t in self.rd.opens:
@@ -313,7 +313,7 @@ class MOSGenerator(CanvasPDK):
 
             self.drop_via(self.v2)
 
-            self.terminals = self.removeDuplicates()
+            self.terminals = self.removeDuplicates(silence_errors=True)
             if len(self.rd.opens) > 0:               
                 _stretch_m2_wires()
                 self.drop_via(self.v2)
