@@ -1,7 +1,124 @@
 
 import json
-from .cktgen import parse_lgf, convert_align_to_adr
-from ..cell_fabric.transformation import Rect, Transformation
+import re
+from ..cell_fabric.transformation import Transformation
+
+from .cktgen import Netlist, Rect
+
+def parse_lgf( fp):
+
+  netl = None
+
+  p_cell = re.compile( r'^Cell\s+(\S+)\s+bbox=(\S+):(\S+):(\S+):(\S+)\s*$')
+  p_wire = re.compile( r'^Wire\s+net=(\S+)\s+(gid=(\S+)\s+|)layer=(\S+)\s+rect=(\S+):(\S+):(\S+):(\S+)\s*$')
+
+  p_wire2 = re.compile( r'^Wire\s+net=(\S+)\s+layer=(\S+)\s+rect=(\S+):(\S+):(\S+):(\S+)(\s+gid=(\S+)|)\s*$')
+
+  p_wire_in_obj = re.compile( r'^\s+Wire\s+net=(\S+)\s+layer=(\S+)\s+rect=(\S+):(\S+):(\S+):(\S+)\s*$')
+
+  p_obj = re.compile( r'^Obj\s+net=(\S+)\s+gen=(\S+)\s+x=(\S+)\s+y=(\S+)\s*$')
+
+  p_obj_lbrace = re.compile( r'^Obj\s+net=(\S+)\s+gen=(\S+)\s+x=(\S+)\s+y=(\S+)\s*{\s*$')
+
+  p_rbrace = re.compile( r'^\s*}\s*$')
+
+  p_space = re.compile( r'^\s*$')
+
+  if True:
+    for line in fp:
+      line = line.rstrip( '\n')
+      
+      m = p_cell.match( line)
+      if m:
+        cell = m.groups()[0]
+        bbox = Rect( int(m.groups()[1]), int(m.groups()[2]), int(m.groups()[3]), int(m.groups()[4]))
+
+        netl = Netlist( cell, bbox)
+        continue
+
+      m = p_wire.match( line)
+      if m:
+        net = m.groups()[0]
+        gid = m.groups()[2]
+        if gid is not None: gid = int(gid)
+        layer = m.groups()[3]
+        rect = Rect( int(m.groups()[4]), int(m.groups()[5]), int(m.groups()[6]), int(m.groups()[7]))
+
+        # hack to get rid of large global routing visualization grid
+        if layer != "nwell":
+          w = netl.newWire( net, rect, layer)
+          w.gid = gid
+
+        continue
+
+      m = p_wire2.match( line)
+      if m:
+        net = m.groups()[0]
+        layer = m.groups()[1]
+        rect = Rect( int(m.groups()[2]), int(m.groups()[3]), int(m.groups()[4]), int(m.groups()[5]))
+        gid = m.groups()[7]
+        if gid is not None: gid = int(gid)
+
+        # hack to get rid of large global routing visualization grid
+        if layer != "nwell":
+          w = netl.newWire( net, rect, layer)
+          w.gid = gid
+
+        continue
+
+      m = p_obj.match( line)
+      if m:
+        net = m.groups()[0]
+        continue
+
+      m = p_obj_lbrace.match( line)
+      if m:
+        net = m.groups()[0]
+        continue
+
+      m = p_wire_in_obj.match( line)
+      if m:
+        net = m.groups()[0]
+        layer = m.groups()[1]
+        rect = Rect( int(m.groups()[2]), int(m.groups()[3]), int(m.groups()[4]), int(m.groups()[5]))
+
+        if True or layer in ["via0","via1","via2","via3","via4"]:
+          w = netl.newWire( net, rect, layer)
+          w.gid = None
+
+        continue
+
+      m = p_rbrace.match( line)
+      if m:
+
+        continue
+
+      m = p_space.match( line)
+      if m: continue
+
+      assert False, line
+
+  return netl
+
+
+# SY: Syntax converter
+def convert_align_to_adr(term):
+    """ Convert align terminal to adr terminal (M -> colored metal, V -> colored via, netName -> net_name"""
+    assert 'netName' in term, term
+    new_term = dict()
+    new_term['net_name'] = term['netName']
+    new_term['rect'] = term['rect'].copy()
+    prefix = 'metal' if term['layer'][0] == 'M' else 'via'
+    if 'color' in term and term['color'] is not None:
+        color = term['color']
+    else:
+        color = ''
+    new_term['layer'] = prefix + color + term['layer'][1:]
+    if 'width' in term:
+        new_term['width'] = term['width']
+    if 'connected_pins' in term:
+        new_term['connected_pins'] = term['connected_pins'].copy()
+    return new_term
 
 def consume_results(args,tech):
     assert args.no_interface, "Removed support for 'interface'."

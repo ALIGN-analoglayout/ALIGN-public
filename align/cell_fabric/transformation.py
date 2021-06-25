@@ -3,14 +3,20 @@ class Rect:
   def __init__( self, llx=None, lly=None, urx=None, ury=None):
       self.llx = llx
       self.lly = lly
-      self.urx = urx
-      self.ury = ury
+      self.urx = llx if urx is None else urx
+      self.ury = lly if ury is None else ury
 
   def canonical( self):
       [llx,lly,urx,ury] = self.toList()
       if llx > urx: llx,urx = urx,llx
       if lly > ury: lly,ury = ury,lly
       return Rect( llx,lly,urx,ury)
+
+  def toColonSepStr( self):
+    return ':'.join(str(i) for i in self.toList())
+
+  def __str__( self):
+    return self.toColonSepStr()
 
   def toList( self):
       return [self.llx, self.lly, self.urx, self.ury]
