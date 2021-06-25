@@ -39,14 +39,17 @@ def test_dependencies():
     run_dir.mkdir(parents=True)
     os.chdir(run_dir)
 
-    args = [str(example), '-p', str(pdk_dir), '--flow_stop', 'place']
+    args = [str(example), '-p', str(pdk_dir)]
     results = align.CmdlineParser().parse_args(args)
     assert results is not None, f"{example.name}: No results generated"
     
     with (run_dir / '2_primitives' / '__primitives__.json').open( 'rt') as fp:
-        primitives = json.load(fp)
-    
+        primitives = json.load(fp)    
     assert 'metadata' in primitives['tfr_prim_l_1e6_w_1e6'], f'Metadata not passed'
+
+    with (run_dir / '3_pnr' / 'Results' / f'{name}_0.placement_verilog.json').open( 'rt') as fp:
+        placement = json.load(fp)
 
     shutil.rmtree(run_dir)
     shutil.rmtree(example)
+
