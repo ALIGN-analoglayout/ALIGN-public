@@ -115,9 +115,6 @@ def calculate_HPWL_from_placement_verilog_d_top_down( placement_verilog_d, concr
         for terminal in leaf['terminals']:
             leaf_terminals[(ctn,terminal['name'])].append( to_center(terminal['rect']))
 
-    print(global_actuals)
-    print(nets_d)
-
     HPWL = 0
     for hnet, hpins in nets_d.items():
         if skip_globals and len(hnet) == 1 and hnet[0] in global_actuals: continue
@@ -205,7 +202,7 @@ def calculate_HPWL_from_placement_verilog_d_bottom_up( placement_verilog_d, conc
 
             for a in local_a.difference(set( module['parameters']).union(global_actuals)):
                 net_hpwl = net_bboxes[(cn,a)].dist()
-                logger.info( f'Accounting for hidden net {a} {net_hpwl} in {cn}')
+                logger.debug( f'Accounting for hidden net {a} {net_hpwl} in {cn}')
                 local_hpwl += net_hpwl
             
             net_local_hpwls[cn] = local_hpwl
@@ -220,7 +217,7 @@ def calculate_HPWL_from_placement_verilog_d_bottom_up( placement_verilog_d, conc
     for a in set(module['parameters']).union(global_actuals):
         if skip_globals and a in global_actuals: continue
         net_hpwl = net_bboxes[(cn,a)].dist()
-        logger.info( f'Accounting for top-level (or global) net {a} {net_hpwl} in {cn}')
+        logger.debug( f'Accounting for top-level (or global) net {a} {net_hpwl} in {cn}')
         HPWL += net_hpwl
         
     return HPWL
