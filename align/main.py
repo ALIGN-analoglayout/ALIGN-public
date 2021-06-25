@@ -256,7 +256,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
             if hasattr(uc, 'metadata'):
                 primitives[block_name]['metadata'] = copy.deepcopy(uc.metadata)
         
-        with (topology_dir / '__primitives__.json').open( 'wt') as fp:
+        with (primitive_dir / '__primitives__.json').open( 'wt') as fp:
             json.dump( primitives, fp=fp, indent=2)
 
     # run PNR tool
