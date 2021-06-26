@@ -8,30 +8,6 @@ class ADRWriter:
   def __init__(self, netl):
       self.netl = netl
 
-  @property
-  def nm(self):
-    return self.netl.nm
-
-  @property
-  def bbox(self):
-    return self.netl.bbox
-
-  @property
-  def nets(self):
-    return self.netl.nets
-
-  @property
-  def gidIndex(self):
-    return self.netl.gidIndex
-
-  @property
-  def instances(self):
-    return self.netl.instances
-
-  @property
-  def wire_cache(self):
-    return self.netl.wire_cache
-
   def write_ctrl_file( self, fn, route, show_global_routes, show_metal_templates, *, nets_to_route=None, nets_not_to_route=None, topmetal=''):
     if nets_to_route is not None:
       routes_str = f"Option name=nets_to_route value={','.join(nets_to_route)}"
@@ -52,12 +28,12 @@ Option name=pattern_file        value=DR_COLLATERAL/patterns.txt
 Option name=option_file         value=DR_COLLATERAL/design_rules.txt
 
 # technology collateral may vary for different circuits
-Option name=metal_template_file value=INPUT/{self.nm}_dr_metal_templates.txt
+Option name=metal_template_file value=INPUT/{self.netl.nm}_dr_metal_templates.txt
 
 # circuit-specific collateral
-Option name=global_routing_file value=INPUT/{self.nm}_dr_globalrouting.txt
-Option name=input_file          value=INPUT/{self.nm}_dr_netlist.txt
-Option name=option_file         value=INPUT/{self.nm}_dr_mti.txt
+Option name=global_routing_file value=INPUT/{self.netl.nm}_dr_globalrouting.txt
+Option name=input_file          value=INPUT/{self.netl.nm}_dr_netlist.txt
+Option name=option_file         value=INPUT/{self.netl.nm}_dr_mti.txt
 Option name=gr_merge_global_routes  value=0
 
 # primary synthesis options
@@ -115,8 +91,8 @@ Option name=upper_layer                          value={topmetal}
 
   def write_input_file( self, fn):
     with open( fn, "w") as fp:
-      fp.write( "Cell name=%s bbox=%s\n" % (self.nm, self.bbox.toColonSepStr()))
-      for (_,v) in self.nets.items():
+      fp.write( "Cell name=%s bbox=%s\n" % (self.netl.nm, self.netl.bbox.toColonSepStr()))
+      for (_,v) in self.netl.nets.items():
         for w in v.wires:
           fp.write( str(w) + "\n")
 
@@ -124,7 +100,7 @@ Option name=upper_layer                          value={topmetal}
     global_gr_id = 0
 
     with open( fn, "w") as fp:
-      for (k,v) in self.nets.items():
+      for (k,v) in self.netl.nets.items():
         print("write_global_routing_file:Net:", k)
         fp.write( "#start of regular net %s\n" % k)
 
@@ -162,9 +138,9 @@ Option name=upper_layer                          value={topmetal}
 
               hier_name = cp['sink_name'].split('/')
 
-              if cand in self.wire_cache:
+              if cand in self.netl.wire_cache:
                 print( 'connected pin found for:', k, hier_name, cand)
-                wire = self.wire_cache[cand]
+                wire = self.netl.wire_cache[cand]
                 pin_ids.add( wire.gid)
               elif len(hier_name)>1:
                 print( 'connected pin not found for:', k, hier_name, cand)
@@ -204,10 +180,10 @@ Option name=upper_layer                          value={topmetal}
           return check1 and check2
 
         for gr in v.grs:
-          x0 =   (gr.rect.llx)*dx + self.bbox.llx
-          x1 = (1+gr.rect.urx)*dx + self.bbox.llx
-          y0 =   (gr.rect.lly)*dy + self.bbox.lly
-          y1 = (1+gr.rect.ury)*dy + self.bbox.lly
+          x0 =   (gr.rect.llx)*dx + self.netl.bbox.llx
+          x1 = (1+gr.rect.urx)*dx + self.netl.bbox.llx
+          y0 =   (gr.rect.lly)*dy + self.netl.bbox.lly
+          y1 = (1+gr.rect.ury)*dy + self.netl.bbox.lly
           gr_r = Rect( x0, y0, x1, y1)
           print( "Metal GR:", gr, gr_r)
 
@@ -239,12 +215,12 @@ Option name=upper_layer                          value={topmetal}
 
       wire = Wire()
       wire.netName = 'top'
-      wire.rect = self.bbox
+      wire.rect = self.netl.bbox
       wire.layer = 'diearea'
       wire.gid = -1
       terminals.append( wire)
 
-      for (instanceName, rect) in self.instances.items():
+      for (instanceName, rect) in self.netl.instances.items():
         wire = Wire()
         wire.netName = instanceName
         wire.rect = rect
@@ -256,7 +232,7 @@ Option name=upper_layer                          value={topmetal}
         for ci in cell_instances:
           terminals.append( ci)
 
-      for (_,net) in self.nets.items():
+      for (_,net) in self.netl.nets.items():
         for gr in net.grs:
           grs.append(gr)
         for wire in net.wires:
@@ -266,11 +242,11 @@ Option name=upper_layer                          value={topmetal}
       if not no_grid:
         dx = tech.pitchPoly*tech.halfXGRGrid*2
         dy = tech.pitchDG*tech.halfYGRGrid*2
-        for x in range( self.bbox.llx, self.bbox.urx, dx):
-          for y in range( self.bbox.lly, self.bbox.ury, dy):
+        for x in range( self.netl.bbox.llx, self.netl.bbox.urx, dx):
+          for y in range( self.netl.bbox.lly, self.netl.bbox.ury, dy):
             grGrid.append( [x,y,x+dx,y+dy])
       else:
-        grGrid.append( self.bbox.toList())
+        grGrid.append( self.netl.bbox.toList())
 
       for term in terminals:
         # print('term::', type(term), term)
@@ -283,7 +259,7 @@ Option name=upper_layer                          value={topmetal}
           term.layer = translate_layer(lyr)
           term.color = clr
 
-      data = { "bbox" : [self.bbox.llx, self.bbox.lly, self.bbox.urx, self.bbox.ury], "globalRoutes" : grs, "globalRouteGrid" : grGrid, "terminals" : terminals}
+      data = { "bbox" : self.netl.bbox.toList(), "globalRoutes" : grs, "globalRouteGrid" : grGrid, "terminals" : terminals}
 
 
       def encode_GR( tech, obj):
@@ -311,6 +287,6 @@ Option name=upper_layer                          value={topmetal}
     self.write_ctrl_file( dirname + "/ctrl.txt", args.route, args.show_global_routes, args.show_metal_templates, nets_to_route=nets_to_route, nets_not_to_route=nets_not_to_route, topmetal=args.topmetal)
 
 
-    self.write_input_file( dirname + "/" + self.nm + "_dr_netlist.txt")
-    self.write_global_routing_file( tech, dirname + "/" + self.nm + "_dr_globalrouting.txt")
-    self.dumpGR( tech, dirname + "/" + self.nm + "_dr_globalrouting.json", no_grid=True)
+    self.write_input_file( dirname + "/" + self.netl.nm + "_dr_netlist.txt")
+    self.write_global_routing_file( tech, dirname + "/" + self.netl.nm + "_dr_globalrouting.txt")
+    self.dumpGR( tech, dirname + "/" + self.netl.nm + "_dr_globalrouting.json", no_grid=True)
