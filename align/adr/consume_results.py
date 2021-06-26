@@ -6,6 +6,8 @@ from ..cell_fabric.transformation import Rect, Transformation
 from .base import Netlist
 
 from .converters import convert_align_to_adr
+from .writer import ADRWriter
+
 
 def parse_lgf( fp):
 
@@ -143,7 +145,8 @@ def main(args,tech):
                                 "layer": term['layer'],
                                 "rect": r.toList()})
       
-    netl.write_input_file( netl.nm + "_xxx.txt")
+    aw = ADRWriter(netl)
 
-    netl.dumpGR( tech, "INPUT/" + args.block_name + "_dr_globalrouting.json", cell_instances=terminals, no_grid=args.small)
+    aw.write_input_file( netl.nm + "_xxx.txt")
+    aw.dumpGR( tech, "INPUT/" + args.block_name + "_dr_globalrouting.json", cell_instances=terminals, no_grid=args.small)
 

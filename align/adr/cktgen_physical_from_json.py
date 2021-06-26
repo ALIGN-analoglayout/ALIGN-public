@@ -4,6 +4,7 @@ import pathlib
 from .ad import ADNetlist
 from .converters import convert_align_to_adr
 from ..cell_fabric.transformation import Rect
+from .writer import ADRWriter
 
 def main(args, tech):
   #
@@ -39,4 +40,4 @@ def main(args, tech):
   pathlib.Path("INPUT").mkdir(parents=True, exist_ok=True)
 
   tech.write_files( "INPUT", netl.nm, netl.bbox.toList())
-  netl.write_files( tech, "INPUT", args)
+  ADRWriter(netl).write_files( tech, "INPUT", args)
