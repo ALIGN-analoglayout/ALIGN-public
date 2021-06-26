@@ -3,7 +3,9 @@ import json
 import re
 from ..cell_fabric.transformation import Rect, Transformation
 
-from .cktgen import Netlist, convert_align_to_adr
+from .base import Netlist
+
+from .converters import convert_align_to_adr
 
 def parse_lgf( fp):
 

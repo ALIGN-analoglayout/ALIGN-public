@@ -8,7 +8,6 @@ import logging
 
 from align.adr import cktgen, cktgen_physical_from_json, consume_results
 
-import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -35,7 +34,7 @@ def run_router_in_container( args):
     M_DR_COLLATERAL = f"--mount source={args.routervol},target=/Cktgen/DR_COLLATERAL"
 
     run_sh( f'docker volume rm -f {args.outputvol}', f'remove volume {args.outputvol}')
-    run_sh( f'rm -fr out', "Remove old out directory")        
+    run_sh(  'rm -fr out', "Remove old out directory")        
 
     run_sh( f'docker volume rm -f {args.inputvol}', f'remove volume {args.inputvol}')
     run_sh( f'(cd INPUT && tar cvf - .) | docker run --rm {M_INPUT} -i ubuntu bash -c "cd /Cktgen/INPUT && tar xvf -"', 'create INPUT')
@@ -51,8 +50,8 @@ def run_router_in_container( args):
 
     run_sh( f'docker run --name sam {M_out} {M_INPUT} {M_DR_COLLATERAL} {ROUTER_IMAGE} bash -c "cd /Cktgen && amsr.exe -file INPUT/ctrl.txt"', 'run detailed_router')
 
-    run_sh( f'docker cp sam:/Cktgen/out .', 'copy output directory')  
-    run_sh( f'docker rm sam', 'remove detailed_router container')
+    run_sh(  'docker cp sam:/Cktgen/out .', 'copy output directory')  
+    run_sh(  'docker rm sam', 'remove detailed_router container')
 
 def run_router_executable( args):
     run_sh( f'{args.router_executable} -file INPUT/ctrl.txt', 'run detailed_router')
@@ -110,10 +109,10 @@ def cmdline( argv):
     nets_to_route = c( args.nets_to_route, "--nets_to_route")
     nets_not_to_route = c( args.nets_not_to_route, "--nets_not_to_route")
 
-    run_sh( f'rm -rf DR_COLLATERAL', "Remove old DR_COLLATERAL directory")
+    run_sh(  'rm -rf DR_COLLATERAL', "Remove old DR_COLLATERAL directory")
     run_sh( f'cp -pr {args.techdir} DR_COLLATERAL')
 
-    run_sh( f'mkdir -p INPUT')
+    run_sh(  'mkdir -p INPUT')
 
     cmd = f'-n mydesign {route}{showglobalroutes}{showmetaltemplates}{source}{placer_json}{gr_json}{small}{nets_to_route}{nets_not_to_route}{topmetal}{no_interface}'
     cmdlist = list(filter( lambda x: x != '', cmd.split( ' ')))
