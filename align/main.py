@@ -258,6 +258,9 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         
         with (primitive_dir / '__primitives__.json').open( 'wt') as fp:
             json.dump( primitives, fp=fp, indent=2)
+    else:
+        with (primitive_dir / '__primitives__.json').open( 'rt') as fp:
+            primitives = json.load(fp)
 
     # run PNR tool
     pnr_dir = working_dir / '3_pnr'
