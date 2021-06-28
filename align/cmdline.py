@@ -135,6 +135,11 @@ class CmdlineParser():
                             default=None,
                             help='JSON file for adding a reference placement to GUI.')
 
+        parser.add_argument('--nroutings',
+                            type=int,
+                            default=1,
+                            help='Maximum number of routings to generate.')
+
         self.parser = parser
 
     def parse_args(self, *args, **kwargs):
