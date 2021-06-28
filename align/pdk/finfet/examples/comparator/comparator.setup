@@ -1,2 +1,2 @@
-POWER = vcc_0p9
+POWER = vccx
 GND = vssx

@@ -28,7 +28,7 @@ class MOSGenerator(CanvasPDK):
 
     def mos_array_temporary_wrapper(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
 
-        logger_func(f'MOS array: pattern={pattern}, ports={ports}, parameters={parameters}')
+        logger_func(f'x_cells={x_cells}, y_cells={x_cells}, pattern={pattern}, ports={ports}, parameters={parameters}')
 
         #################################################################################################
         # TODO: All of below goes away when TransistorArray is passed to mos_array as shown below
@@ -87,6 +87,7 @@ class MOSGenerator(CanvasPDK):
         #################################################################################################
         m = 2*parameters['m'] if pattern > 0 else parameters['m']
         self.n_row, self.n_col = self.validate_array(m, y_cells, x_cells)
+        logger_func(f'x_cells={self.n_col}, y_cells={self.n_row} after legalization')
         self.ports = ports
         self.mos_array()
 
