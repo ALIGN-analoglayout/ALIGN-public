@@ -526,11 +526,3 @@ def test_gen_netlist_matrix():
     assert hpwl5 > hpwl6
 
     print( hpwl6 / 27584 - 1)
-
-    placement_verilog_d['modules'][0]['concrete_name'] = 'matrix_ref'
-    placement_verilog_d['modules'][0]['bbox'][2] -= 80
-    placement_verilog_d['modules'][0]['bbox'][3] -= 2*84
-    placement_verilog_d['modules'][1]['bbox'][2] -= 80
-
-    with pathlib.Path( '__reference_placement_verilog_d__').open('wt') as fp:
-        json.dump( placement_verilog_d, fp=fp, indent=2)
