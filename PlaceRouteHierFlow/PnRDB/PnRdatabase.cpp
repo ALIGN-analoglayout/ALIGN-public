@@ -112,6 +112,7 @@ PnRDB::hierNode PnRdatabase::CheckoutHierNode(int nodeID, int sel) {
     hN.constraint_penalty = p.constraint_penalty;
     hN.cost = p.cost;
     hN.HPWL = p.HPWL;
+    hN.HPWL_extend = p.HPWL_extend;
     hN.HPWL_norm = p.HPWL_norm;
     hN.area_norm = p.area_norm;
     hN.Blocks = p.Blocks;
@@ -742,6 +743,7 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
   tmpL.constraint_penalty = updatedNode.constraint_penalty;
   tmpL.cost = updatedNode.cost;
   tmpL.HPWL = updatedNode.HPWL;
+  tmpL.HPWL_extend = updatedNode.HPWL_extend;
   tmpL.HPWL_norm = updatedNode.HPWL_norm;
   tmpL.area_norm = updatedNode.area_norm;
   tmpL.Blocks = updatedNode.Blocks;
@@ -888,6 +890,8 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
         lhs.instNum++;
         b.gdsFile = updatedNode.gdsFile;
         //update terminal to pin information
+
+          b.HPWL_extend_wo_terminal = updatedNode.HPWL_extend_wo_terminal;
 
         for(unsigned int p=0;p<b.blockPins.size();p++){
           for(unsigned int q=0;q<updatedNode.blockPins.size();q++){

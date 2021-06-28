@@ -338,6 +338,7 @@ struct block {
        || !_taVias->_ntapVias.empty() || !_taVias->_ptapVias.empty())
       : true; 
   }
+  int HPWL_extend_wo_terminal = 0;
 };  // structure of block
 
 struct terminal {
@@ -364,7 +365,7 @@ struct PowerGrid{
 struct layoutAS {
   int width=0;
   int height=0;
-  int HPWL = -1;
+  int HPWL = -1, HPWL_extend = -1;
   double HPWL_norm=-1;
   double area_norm = -1;
   double constraint_penalty = -1;
@@ -454,7 +455,7 @@ struct hierNode {
   vector<Multi_connection> Multi_connections;
   std::shared_ptr<taVias> _taVias;
 
-  int HPWL = -1;
+  int HPWL = -1, HPWL_extend = -1, HPWL_extend_wo_terminal = -1;
   double area_norm = -1;
   double HPWL_norm = -1;
   double constraint_penalty = -1;
