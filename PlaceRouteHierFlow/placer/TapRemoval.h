@@ -259,6 +259,7 @@ class Instance
     Rects _ptaps, _pactives;
     Rect _bbox;
     const int _woTapIndex;
+    Rect _deltabox;
 
   public:
     Instance(const Primitive* prim, const Primitive* primWoTap, const string& name, const Transform& tr, const int& wtIndex);
@@ -270,6 +271,7 @@ class Instance
     const Rects& getTaps(const bool nmos) const { return nmos ? _ntaps : _ptaps; }
     const Rects& getActives(const bool nmos) const { return nmos ? _nactives : _pactives; }
     const Rect& bbox() const { return _bbox; }
+    const Rect& deltabox() const { return _deltabox; }
     const int index() const { return _woTapIndex; }
 
     bool isBlack() const { return _prim != nullptr && _primWoTap == nullptr; }
@@ -321,9 +323,10 @@ class Node {
     bool _black;
     double _dist, _maxdist;
     const geom::Rect _bbox;
+    const geom::Rect& _deltabox;
 
   public:
-    Node(const string& name, const NodeType nt, const double& deltaarea, const bool& isb, const double& dist, const geom::Rect& bbox) : _name(name), _nt(nt), _span(0), _nc(NodeColor::White), _deltaarea(deltaarea), _black(isb), _dist(dist), _bbox(bbox), _maxdist(0.) {}
+    Node(const string& name, const NodeType nt, const geom::Rect& deltabox, const double& deltaarea, const bool& isb, const double& dist, const geom::Rect& bbox) : _name(name), _nt(nt), _span(0), _nc(NodeColor::White), _deltaarea(deltaarea), _black(isb), _dist(dist), _bbox(bbox), _maxdist(0.), _deltabox(deltabox) {}
     const NodeType& nodeType() const { return _nt; }
 
     const string type() const { return (_nt == NodeType::Tap) ? "T" : "A"; }
@@ -389,7 +392,7 @@ class Graph {
     Graph();
     ~Graph();
 
-    void addNode(const string& name, const NodeType& nt, const double& da = 0., const geom::Rect& bbox = geom::Rect(), const bool isb = false, const double& dist = 0.);
+    void addNode(const string& name, const NodeType& nt, const geom::Rect& dbox, const double& da = 0., const geom::Rect& bbox = geom::Rect(), const bool isb = false, const double& dist = 0.);
     void addEdge(const string& u, const string& v, const string& name = "");
 
     const Edge* findEdge(const string& u, const string& v) const;

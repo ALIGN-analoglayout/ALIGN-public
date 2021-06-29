@@ -41,7 +41,7 @@ Rect Rect::transform(const Transform& tr, const int width, const int height) con
 namespace PrimitiveData {
 
 Instance::Instance(const Primitive* prim, const Primitive* primWoTap, const string& name, const Transform& tr, const int& ind) :
-_prim(prim), _primWoTap(primWoTap), _name(name), _bbox(Rect()), _woTapIndex(ind)
+_prim(prim), _primWoTap(primWoTap), _name(name), _bbox(), _woTapIndex(ind), _deltabox()
 {
   if (_prim) {
     for (auto nmos : {true, false}) {
@@ -55,6 +55,19 @@ _prim(prim), _primWoTap(primWoTap), _name(name), _bbox(Rect()), _woTapIndex(ind)
       }
     }
     _bbox = _prim->bbox().transform(tr, _prim->width(), _prim->height());
+    if (_primWoTap) {
+      if (_prim->width() == _primWoTap->width()) {
+        if (_prim->height() > _primWoTap->height()) {
+          _deltabox.set(0, _primWoTap->height(), _prim->width(), _prim->height());
+          _deltabox.transform(tr, _prim->width(), _prim->height());
+        }
+      } else if (_prim->height() == _primWoTap->height()) {
+        if (_prim->width() > _primWoTap->width()) {
+          _deltabox.set(_primWoTap->width(), 0, _prim->width(), _prim->height());
+          _deltabox.transform(tr, _prim->width(), _prim->height());
+        }
+      }
+    }
   }
 }
 
@@ -92,6 +105,19 @@ void Node::computeRadius(const bool isTop, const geom::Rect& bbox, const Primiti
 {
   //auto logger = spdlog::default_logger()->clone("PnRDB.Node.computeRadius");
   _maxdist = 0.;
+  RTree rtree;
+  size_t cnt(0);
+  for (const auto& it : netBBox) {
+    rtree.insert(bgVal(bgBox(bgPt(it.second.xmin(), it.second.ymin()), bgPt(it.second.xmax(), it.second.ymax())), cnt++));
+  }
+  double dhpwl(0.);
+  bgBox box(bgPt(_deltabox.xmin(), _deltabox.ymin()), bgPt(_deltabox.xmax(), _deltabox.ymax()));
+  vector<bgVal> overlapRects;
+  rtree.query(bgi::overlaps(box), back_inserter(overlapRects));
+  for (auto& r : overlapRects) {
+    auto dy = r.first.max_corner().get<1>() - r.first.min_corner().get<1>();
+    if (dy > 0.) dhpwl += (dy * 1. / (bbox.width() + bbox.height()));
+  }
   if (isTop) {
     unsigned cnt(0);
     for (auto& e : _edges) {
@@ -103,8 +129,8 @@ void Node::computeRadius(const bool isTop, const geom::Rect& bbox, const Primiti
     }
   }
   //auto x = _maxdist;
-  _maxdist = (10*_maxdist + 2*_dist + _deltaarea);
-  //logger->info("{0} {1} {2} {3} {4}", name(), _dist, _deltaarea, x, _maxdist);
+  _maxdist = (10*_maxdist + 2*_dist + _deltaarea + 2*dhpwl);
+  //logger->info("{0} {1} {2} {3} {4} {5}", name(), _dist, _deltaarea, x, _maxdist, dhpwl);
 }
 
 Graph::Graph()
@@ -124,10 +150,10 @@ Graph::~Graph()
   _nodeMap.clear();
 }
 
-void Graph::addNode(const string& name, const NodeType& nt, const double& da, const geom::Rect& bbox, const bool isb, const double& dist)
+void Graph::addNode(const string& name, const NodeType& nt, const geom::Rect& dbox, const double& da, const geom::Rect& bbox, const bool isb, const double& dist)
 {
   if (_nodeMap.find(name) != _nodeMap.end()) return;
-  Node *n = new Node(name, nt, da, isb, dist, bbox);
+  Node *n = new Node(name, nt, dbox, da, isb, dist, bbox);
   _nodes.push_back(n);
   _nodeMap[name] = n;
 }
@@ -480,13 +506,13 @@ void TapRemoval::buildGraph()
         rtree.insert(bgVal(b, _graph->nodes().size()));
         string nodeName(inst->name() + "__tap_" + mosString + to_string(i));
         allTaps[nodeName] = taps[i];
-        _graph->addNode(nodeName, DomSetGraph::NodeType::Tap, inst->deltaArea() * 1./_bbox.area(), taps[i], inst->isBlack(), (double)taps[i].ydist(_bbox)/(double)_bbox.height());
+        _graph->addNode(nodeName, DomSetGraph::NodeType::Tap, inst->deltabox(), inst->deltaArea() * 1./_bbox.area(), taps[i], inst->isBlack(), (double)taps[i].ydist(_bbox)/(double)_bbox.height());
       }
       auto& actives = inst->getActives(nmos);
       for (unsigned i = 0; i < actives.size(); ++i) {
         bgBox b(bgPt(actives[i].xmin(), actives[i].ymin()), bgPt(actives[i].xmax(), actives[i].ymax()));
         rtree.insert(bgVal(b, _graph->nodes().size()));
-        _graph->addNode(inst->name() + "__active_" + mosString + to_string(i), DomSetGraph::NodeType::Active, inst->deltaArea() * 1./ _bbox.area(), actives[i]);
+        _graph->addNode(inst->name() + "__active_" + mosString + to_string(i), DomSetGraph::NodeType::Active, inst->deltabox(), inst->deltaArea() * 1./ _bbox.area(), actives[i]);
       }
     }
   }
