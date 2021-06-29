@@ -260,13 +260,9 @@ class design
     PnRDB::point GetPlacedBlockInterMetalRelPoint(int blockid, placerDB::Omark ort, PnRDB::point& originP, int sel);
 
     bool RemoveTaps() const { return (_tapRemover) ? _tapRemover->valid() : false; }
-    void RebuildTapInstances(const PrimitiveData::PlMap& plmap, const bool complete = true) {
+    void RebuildTapInstances(const PrimitiveData::DesignInfo& dinfo) {
       if (_tapRemover) {
-        if (complete) {
-          _tapRemover->rebuildInstances(plmap);
-        } else {
-          _tapRemover->buildGraph();
-        }
+        _tapRemover->rebuildInstances(dinfo);
       }
     }
     void PlotTapRemover(const string& pltfile) { if (_tapRemover) _tapRemover->plot(pltfile); }

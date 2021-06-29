@@ -234,7 +234,21 @@ struct PlInfo {
   PlInfo(const string& name, const geom::Point& ll, int hf, int vf) :
     _primName(name), _tr(ll, hf, vf) {}
 };
-typedef map<pair<string, unsigned>, PlInfo> PlMap;
+
+typedef map<const pair<string, unsigned>, const PlInfo> PlMap;
+typedef map<string, const geom::Rect> NetBBox;
+struct DesignInfo {
+  PlMap _plmap;
+  NetBBox _netBBox;
+  void insertPlInfo(const pair<string, unsigned>& key, const PlInfo& val)
+  {
+    _plmap.insert(make_pair(key, val));
+  }
+  void insertNetBBox(const string& name, const geom::Rect& r)
+  {
+    _netBBox.insert(std::make_pair(name, r));
+  }
+};
 
 class Instance
 {
@@ -324,7 +338,7 @@ class Node {
     unsigned span() const { return _span; }
 
     const double radius() const { return _maxdist; }
-    void computeRadius(const bool isTop, const geom::Rect& bbox);
+    void computeRadius(const bool isTop, const geom::Rect& bbox, const PrimitiveData::NetBBox& netBBox = PrimitiveData::NetBBox());
 
     void setColor(const NodeColor& nc) { _nc = nc; }
     const NodeColor& nodeColor() const { return _nc; }
@@ -383,7 +397,7 @@ class Graph {
     void print() const;
 
     NodeSet dominatingSet(const bool removeAlltaps, const bool isTop, const geom::Rect& bbox) const;
-    NodeSet dominatingSetILP(const bool isTop, const geom::Rect& bbox) const;
+    NodeSet dominatingSetILP(const bool isTop, const geom::Rect& bbox, const PrimitiveData::NetBBox& netBBox) const;
 
     void addSymPairs(const std::map<std::string, std::string>& counterparts);
 
@@ -404,19 +418,19 @@ class TapRemoval {
     std::map<std::string, PrimitiveData::Instance*> _instMap;
     std::map<std::string, std::string> _symPairs;
     geom::Rect _bbox;
+    PrimitiveData::NetBBox _netBBox;
 
   public:
     void buildGraph();
     TapRemoval(const PnRDB::hierNode& node, const unsigned xdist, const unsigned ydist);
     ~TapRemoval();
     bool valid() const { return !_primitives.empty() && !_primitivesWoTap.empty(); }
-    //void createInstances(const PrimitiveData::PlMap& plmap);
     long deltaArea(std::map<std::string, int>* swappedIndices = nullptr, const bool removeAllTaps = false, const bool isTop = false) const;
     void setSymPairs(const std::map<std::string, std::string>& sympairs) { _symPairs = std::move(sympairs); }
-    void rebuildInstances(const PrimitiveData::PlMap& plmap);
+    void rebuildInstances(const PrimitiveData::DesignInfo& dinfo);
     bool containsPrimitive(const string& prim) const { return _primitives.find(prim) != _primitives.end(); }
 
-    void plot(const string& pltfile, const map<string, int>* swappedIndices = nullptr) const;
+    void plot(const string& pltfile, const map<std::string, int>* swappedIndices = nullptr) const;
 
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

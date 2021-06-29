@@ -88,7 +88,7 @@ void Instance::print() const
 namespace DomSetGraph {
 using namespace std;
 
-void Node::computeRadius(const bool isTop, const geom::Rect& bbox)
+void Node::computeRadius(const bool isTop, const geom::Rect& bbox, const PrimitiveData::NetBBox& netBBox)
 {
   //auto logger = spdlog::default_logger()->clone("PnRDB.Node.computeRadius");
   _maxdist = 0.;
@@ -309,12 +309,12 @@ NodeSet Graph::dominatingSet(const bool removeAllTaps, const bool isTop, const g
   return dom;
 }
 
-NodeSet Graph::dominatingSetILP(const bool isTop, const geom::Rect& bbox) const
+NodeSet Graph::dominatingSetILP(const bool isTop, const geom::Rect& bbox, const PrimitiveData::NetBBox& netBBox) const
 {
   auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.dominatingSet");
   if (isTop) {
     for (auto& n : _nodes) {
-      n->computeRadius(isTop, bbox);
+      n->computeRadius(isTop, bbox, netBBox);
       //logger->info("name : {0} rad {1} {2}", n->name(), n->radius(), n->bbox().toString());
     }
     //logger->info("");
@@ -624,7 +624,7 @@ long TapRemoval::deltaArea(map<string, int>* swappedIndices, const bool removeAl
   if (removeAllTaps) {
     nodes = _graph->dominatingSet(removeAllTaps, isTop, _bbox);
   } else {
-      nodes = _graph->dominatingSetILP(isTop, _bbox);
+      nodes = _graph->dominatingSetILP(isTop, _bbox, _netBBox);
       //for (auto& n : nodes) {
       //  logger->info("dom set : {0}", n->name());
       //}
@@ -670,10 +670,10 @@ long TapRemoval::deltaArea(map<string, int>* swappedIndices, const bool removeAl
 }
 
 
-void TapRemoval::rebuildInstances(const PrimitiveData::PlMap& plmap)
+void TapRemoval::rebuildInstances(const PrimitiveData::DesignInfo& dinfo)
 {
   auto logger = spdlog::default_logger()->clone("PnRDB.TapRemoval.rebuildInstances");
-  //for (auto& p : plmap) logger->info("plmap {0} {1} {2} {3}", p.first.first, p.second._primName, p.second._tr.origin().x(), p.second._tr.origin().y());
+  //for (auto& p : dinfo) logger->info("dinfo {0} {1} {2} {3}", p.first.first, p.second._primName, p.second._tr.origin().x(), p.second._tr.origin().y());
   
   for (auto& x : _instances) {
     delete x;
@@ -681,7 +681,9 @@ void TapRemoval::rebuildInstances(const PrimitiveData::PlMap& plmap)
   _instances.clear();
   _bbox.set();
 
-  for (auto& it : plmap) {
+  _netBBox = dinfo._netBBox;
+
+  for (auto& it : dinfo._plmap) {
     auto primIt = _primitives.find(it.second._primName);
     auto primWoTapIt = _primitivesWoTap.find(it.second._primName);
     const PrimitiveData::Primitive *prim(nullptr), *primWoTap(nullptr);

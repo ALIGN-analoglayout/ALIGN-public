@@ -505,18 +505,18 @@ bool ILP_solver::RemoveAllTaps(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_in
   bool retVal(false);
   //auto logger = spdlog::default_logger()->clone("placer.ILP_solver.RemoveAllTaps");
   if (mydesign.RemoveTaps() && !mydesign.isTop) {
-    PrimitiveData::PlMap plmap;
+    PrimitiveData::DesignInfo dinfo;
     for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
       const auto& index = curr_sp.selected[i];
       const auto& master = mydesign.Blocks[i][index].master;
       const auto& instName = mydesign.Blocks[i][index].name;
-      //logger->info("plmap {0} {1} {2}", instName, i, index);
-      plmap.insert(std::make_pair(std::make_pair(instName, static_cast<unsigned>(index)),
+      //logger->info("dinfo {0} {1} {2}", instName, i, index);
+      dinfo.insertPlInfo(std::make_pair(instName, static_cast<unsigned>(index)),
             PrimitiveData::PlInfo(master,
               geom::Point(Blocks[i].x, Blocks[i].y),
-              Blocks[i].H_flip, Blocks[i].V_flip)));
+              Blocks[i].H_flip, Blocks[i].V_flip));
     }
-    mydesign.RebuildTapInstances(plmap); // incremental rebuild
+    mydesign.RebuildTapInstances(dinfo); // incremental rebuild
     map<string, int> swappedIndices;
     auto tapdist = mydesign.TapDeltaArea(&swappedIndices, true); // remove all taps
     if (!swappedIndices.empty() && tapdist >= 0.) {
@@ -544,7 +544,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
 
   // each block has 4 vars, x, y, H_flip, V_flip;
-  PrimitiveData::PlMap plmap;
+  PrimitiveData::DesignInfo dinfo;
   for (auto iterCompact : {false, true}) {
     if (!iterCompact) {
       if (CompactPlacement(mydesign, curr_sp, drcInfo) < 0) return -1.;
@@ -555,12 +555,34 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
           const auto& master = mydesign.Blocks[i][index].master;
           const auto& instName = mydesign.Blocks[i][index].name;
           //logger->info("plmap {0} {1} {2}", instName, i, index);
-          plmap.insert(std::make_pair(std::make_pair(instName, static_cast<unsigned>(index)),
+          dinfo.insertPlInfo(std::make_pair(instName, static_cast<unsigned>(index)),
                 PrimitiveData::PlInfo(master,
                   geom::Point(Blocks[i].x, Blocks[i].y),
-                  Blocks[i].H_flip, Blocks[i].V_flip)));
+                  Blocks[i].H_flip, Blocks[i].V_flip));
         }
-        mydesign.RebuildTapInstances(plmap);
+        for (auto neti : mydesign.Nets) {
+          int HPWL_min_x = INT_MAX, HPWL_min_y = INT_MAX, HPWL_max_x = 0, HPWL_max_y = 0;
+          for (auto connectedj : neti.connected) {
+            if (connectedj.type == placerDB::Block) {
+              int iter2 = connectedj.iter2, iter = connectedj.iter;
+              for (auto centerk : mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].center) {
+                // calculate contact center
+                int pin_x = centerk.x;
+                int pin_y = centerk.y;
+                if (Blocks[iter2].H_flip) pin_x = mydesign.Blocks[iter2][curr_sp.selected[iter2]].width - pin_x;
+                if (Blocks[iter2].V_flip) pin_y = mydesign.Blocks[iter2][curr_sp.selected[iter2]].height - pin_y;
+                pin_x += Blocks[iter2].x;
+                pin_y += Blocks[iter2].y;
+                HPWL_min_x = std::min(HPWL_min_x, pin_x);
+                HPWL_max_x = std::max(HPWL_max_x, pin_x);
+                HPWL_min_y = std::min(HPWL_min_y, pin_y);
+                HPWL_max_y = std::max(HPWL_max_y, pin_y);
+              }
+            }    
+          }
+          dinfo.insertNetBBox(neti.name, geom::Rect(HPWL_min_x, HPWL_min_y, HPWL_max_x, HPWL_max_y));
+        }
+        mydesign.RebuildTapInstances(dinfo);
         map<string, int> swappedIndices;
         auto delArea = mydesign.TapDeltaArea(&swappedIndices);
         if (!swappedIndices.empty()) {
