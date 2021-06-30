@@ -69,7 +69,8 @@ def gen_more_primitives( primitives, topology_dir, subckt):
 
     # As a hack, add more primitives if it matches this pattern
     p = re.compile( r'^(\S+)_nfin(\d+)_n(\d+)_X(\d+)_Y(\d+)(|_\S+)$')
-    p_soner = re.compile( r'^(\S+)_nfin(\d+)_nf(\d+)_m(\d+)_n(\d+)_X(\d+)_Y(\d+)(|_\S+)$')
+
+    p_2 = re.compile( r'^(\S+)_x(\d+)_y(\d+)$')
 
     more_primitives = {}
 
@@ -109,21 +110,16 @@ def gen_more_primitives( primitives, topology_dir, subckt):
         return limit_pairs( pairs.difference( { (X,Y)}))
 
     for k,v in primitives.items():
+
         m = p.match(k)
+        mm = p_2.match(k)
+
         if m:
             nfin,n,X,Y = tuple(int(x) for x in m.groups()[1:-1])
             prefix = f'{m.groups()[0]}_nfin{nfin}'
             suffix = m.groups()[-1]
             pairs = gen_pairs( n, nfin)
 
-        mm = p_soner.match(k)
-        if mm:
-            nfin,nf,m,n,X,Y = tuple(int(x) for x in mm.groups()[1:-1])
-            prefix = f'{mm.groups()[0]}_nfin{nfin}_nf{nf}_m{m}'
-            suffix = mm.groups()[-1]
-            pairs = gen_pairs( n, nfin*nf*m)
-
-        if m or mm:
             abstract_name = f'{prefix}{suffix}'
             map_d[abstract_name].append( k)
             for newx,newy in pairs:
@@ -134,6 +130,33 @@ def gen_more_primitives( primitives, topology_dir, subckt):
                     more_primitives[concrete_name] = copy.deepcopy(v)
                     more_primitives[concrete_name]['x_cells'] = newx
                     more_primitives[concrete_name]['y_cells'] = newy
+
+        elif mm:
+            prefix = mm.groups()[0]
+            x, y = tuple(int(x) for x in mm.groups()[1:])
+            prefix = mm.groups()[0]
+            pairs = set()
+            m = x*y
+            y_sqrt = math.floor(math.sqrt(x*y))
+            for y in range(y_sqrt, 0, -1):
+                if m % y == 0:
+                    pairs.add((y, m//y))
+                    pairs.add((m//y, y))
+                if y == 1:
+                    break
+
+            pairs = limit_pairs(pairs)
+
+            abstract_name = f'{prefix}'
+            map_d[abstract_name].append(k)
+            for newx,newy in pairs:
+                concrete_name = f'{prefix}_x{newx}_y{newy}'
+                map_d[abstract_name].append( concrete_name)             
+                if concrete_name not in primitives and concrete_name not in more_primitives:
+                    more_primitives[concrete_name] = copy.deepcopy(v)
+                    more_primitives[concrete_name]['x_cells'] = newx
+                    more_primitives[concrete_name]['y_cells'] = newy
+
         else:
             if not (k.startswith( "Res") or k.startswith( "Cap")): 
                 logger.warning( f'Didn\'t match primitive {k}')
@@ -197,7 +220,7 @@ def extract_netlist_files(netlist_dir,netlist_file):
 
     return netlist_files[0]
 
-def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, extract=False, log_level=None, verbosity=None, generate=False, regression=False, uniform_height=False, PDN_mode=False, flow_start=None, flow_stop=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0, reference_placement_verilog_json=None, nroutings=1):
+def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, nvariants=1, effort=0, extract=False, log_level=None, verbosity=None, generate=False, regression=False, uniform_height=False, PDN_mode=False, flow_start=None, flow_stop=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0, reference_placement_verilog_json=None, nroutings=1):
 
     steps_to_run = build_steps( flow_start, flow_stop)
 

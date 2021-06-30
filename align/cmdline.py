@@ -50,16 +50,6 @@ class CmdlineParser():
                             type=int,
                             default=0,
                             help='1 = flatten the netlist, 0= read as hierahical netlist')
-        parser.add_argument("-U_mos",
-                            "--unit_size_mos",
-                            type=int,
-                            default=12,
-                            help='no of fins in unit size')
-        parser.add_argument("-U_cap",
-                            "--unit_size_cap",
-                            type=int,
-                            default=12,
-                            help='no of fins in unit size')
         parser.add_argument("-n",
                             "--nvariants",
                             type=int,
