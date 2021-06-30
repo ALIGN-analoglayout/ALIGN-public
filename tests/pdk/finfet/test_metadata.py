@@ -17,8 +17,8 @@ def tia(name):
 xi0 a b tfr_prim w=1e-6 l=1e-6
 .ends pcell_tfr_0
 .subckt {name} vin vop vccx vss
-mp0 vop vin vccx vccx p nfin=4 nf=4 m=4
-mn0 vop vin vssx vssx n nfin=4 nf=4 m=4
+mp0 vop vin vccx vccx p w=720e-9 nf=4 m=4
+mn0 vop vin vssx vssx n w=720e-9 nf=4 m=4
 xi0 vin vop pcell_tfr_0
 .ends {name}
 """
