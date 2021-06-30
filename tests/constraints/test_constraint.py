@@ -115,6 +115,7 @@ def test_boundary_max_height():
     run_example(cascode_amplifier(my_dir, name, constraints))
 
 
+@pytest.mark.skip
 def test_do_not_identify():
     constraints = """[
     {"constraint": "AlignInOrder", "line": "left", "instances": ["mp1", "mn1"]}
