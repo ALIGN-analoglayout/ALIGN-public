@@ -7,6 +7,9 @@ import copy
 import math
 from collections import defaultdict
 import sys
+import http.server
+import socketserver
+import functools
 
 from .compiler import generate_hierarchy
 from .primitive import generate_primitive
@@ -220,7 +223,28 @@ def extract_netlist_files(netlist_dir,netlist_file):
 
     return netlist_files[0]
 
-def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, nvariants=1, effort=0, extract=False, log_level=None, verbosity=None, generate=False, regression=False, uniform_height=False, PDN_mode=False, flow_start=None, flow_stop=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0, reference_placement_verilog_json=None, nroutings=1):
+
+def start_viewer(working_dir, json_file):
+    viewer_dir = pathlib.Path(__file__).resolve().parent.parent / 'Viewer'
+    shutil.copytree(viewer_dir, working_dir/'Viewer')
+    shutil.copy(json_file, working_dir/'Viewer'/'INPUT')
+
+    stderr = sys.stderr
+    Handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(working_dir/'Viewer'))
+    with socketserver.TCPServer(('localhost', 0), Handler) as httpd:
+        logger.info(f'Please visit localhost:{httpd.server_address[1]} in your browser')
+        with open(os.devnull, 'w') as fp:
+            sys.stdout = sys.stderr = fp
+            try:
+                httpd.serve_forever()
+            except Exception:
+                pass
+    sys.stderr = stderr
+    logger.info(f'Viewer terminated')
+
+
+def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, nvariants=1, effort=0, extract=False, log_level=None, verbosity=None, generate=False, regression=False, uniform_height=False, PDN_mode=False, 
+                    flow_start=None, flow_stop=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0, reference_placement_verilog_json=None, nroutings=1, viewer=False):
 
     steps_to_run = build_steps( flow_start, flow_stop)
 
@@ -301,9 +325,12 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
             if filemap['errors'] > 0:
                 (working_dir / filemap['errfile'].name).write_text(filemap['errfile'].read_text())
 
-            if os.getenv('ALIGN_HOME', False):
+            if viewer:
+                start_viewer(working_dir, pnr_dir/f'{variant}.json')
+            elif os.getenv('ALIGN_HOME', False):
                 shutil.copy(pnr_dir/f'{variant}.json',
                             pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/f'{variant}.json')
+
 
             assert skipGDS or 'gdsjson' in filemap
             if 'gdsjson' in filemap:

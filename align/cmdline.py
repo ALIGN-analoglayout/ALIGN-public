@@ -130,6 +130,10 @@ class CmdlineParser():
                             default=1,
                             help='Maximum number of routings to generate.')
 
+        parser.add_argument('--viewer',
+                            action='store_true',
+                            help='Start lightweight viewer')
+
         self.parser = parser
 
     def parse_args(self, *args, **kwargs):
