@@ -58,7 +58,7 @@ PnRdatabase::PnRdatabase(string path, string topcell, string vname, string lefna
   this->ReadLEF(path+"/"+lefname);
   this->ReadMap(path, mapname);
   this->ReadVerilog(path, vname, topcell);
-  //this->extend_pin_function();
+  this->extend_pin_function();
 
   logger->info( "PnRDB-Info: complete reading");
 }

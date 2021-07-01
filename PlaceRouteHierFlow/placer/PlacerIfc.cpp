@@ -3,7 +3,7 @@
 #include "PlacerIfc.h"
 #include "Placer.h"
 
-double ConstGraph::LAMBDA=1000;
+double ConstGraph::LAMBDA=500;
 double ConstGraph::GAMAR=30;
 double ConstGraph::BETA=100;
 double ConstGraph::SIGMA=1000;

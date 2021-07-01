@@ -304,6 +304,33 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
           }
         }
         node.Ordering_Constraints.push_back(temp_order);
+      } else if (constraint["const_name"] == "OrderingList") {
+        PnRDB::Smark axis_dir = PnRDB::V;
+        pair<vector<int>, PnRDB::Smark> temp_order;
+        if (constraint["direction"] == "H") {
+          temp_order.second = PnRDB::H;
+        } else {
+          temp_order.second = PnRDB::V;
+        }
+        for (auto block1 : constraint["blocks1"]) {
+          for (int k = 0; k < (int)node.Blocks.size(); k++) {
+            if (node.Blocks.at(k).instance.back().name.compare(block1) == 0) {
+              for (auto block2 : constraint["blocks2"]) {
+                for (int l = 0; l < (int)node.Blocks.size(); l++) {
+                  if (node.Blocks.at(l).instance.back().name.compare(block2) == 0) {
+                    temp_order.first.clear();
+                    temp_order.first.push_back(k);
+                    temp_order.first.push_back(l);
+                    node.Ordering_Constraints.push_back(temp_order);
+                    break;
+                  }
+                }
+              }
+              break;
+            }
+          }
+        }
+        
       } else if (constraint["const_name"] == "CC") {
         PnRDB::CCCap temp_cccap;
         temp_cccap.CCCap_name = constraint["cap_name"];

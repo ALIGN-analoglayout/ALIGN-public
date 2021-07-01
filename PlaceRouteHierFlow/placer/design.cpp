@@ -334,8 +334,9 @@ design::design(design& other, int mode) {
 design::design(PnRDB::hierNode& node) {
 
   auto logger = spdlog::default_logger()->clone("placer.design.design");
-
+  is_first_ILP = node.isFirstILP;
   name = node.name;
+  placement_id = node.placement_id;
   bias_Vgraph = node.bias_Vgraph;  // from node
   bias_Hgraph=node.bias_Hgraph; // from node
   Aspect_Ratio_weight = node.Aspect_Ratio_weight;

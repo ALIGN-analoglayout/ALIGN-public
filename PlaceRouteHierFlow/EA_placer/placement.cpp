@@ -2976,10 +2976,18 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
             current_node.Blocks[ii].instance[jj].height=0;
             current_node.Blocks[ii].instance[jj].width = 0;
             current_node.Blocks[ii].instance[jj].originBox.UR.x = 0;
-            current_node.Blocks[ii].instance[jj].originBox.UR.y=0;
-            current_node.Blocks[ii].instance[jj].originCenter.x=0;
-            current_node.Blocks[ii].instance[jj].originCenter.y=0;
-            current_node.Blocks[ii].instance[jj].isRead=false;
+            current_node.Blocks[ii].instance[jj].originBox.UR.y = 0;
+            current_node.Blocks[ii].instance[jj].originBox.LL.x = 0;
+            current_node.Blocks[ii].instance[jj].originBox.LL.y = 0;
+            current_node.Blocks[ii].instance[jj].originCenter.x = 0;
+            current_node.Blocks[ii].instance[jj].originCenter.y = 0;
+            current_node.Blocks[ii].instance[jj].placedBox.UR.x = 0;
+            current_node.Blocks[ii].instance[jj].placedBox.UR.y = 0;
+            current_node.Blocks[ii].instance[jj].placedBox.LL.x = 0;
+            current_node.Blocks[ii].instance[jj].placedBox.LL.y = 0;
+            current_node.Blocks[ii].instance[jj].placedCenter.x = 0;
+            current_node.Blocks[ii].instance[jj].placedCenter.y = 0;
+            current_node.Blocks[ii].instance[jj].isRead = false;
           }
         }
         if(id==cur_id)
@@ -3024,6 +3032,16 @@ void Placement::restore_MS(PnRDB::hierNode &current_node)
     }
     for(auto &p:s.selfsym){
       if (original_to_new_block_map.find(p.first) != original_to_new_block_map.end()) p.first = original_to_new_block_map[p.first];
+    }
+  }
+  for(auto & a:current_node.Align_blocks){
+    for(auto & b:a.blocks){
+      if (original_to_new_block_map.find(b) != original_to_new_block_map.end()) b = original_to_new_block_map[b];
+    }
+  }
+  for(auto & order:current_node.Ordering_Constraints){
+    for(auto & b:order.first){
+      if (original_to_new_block_map.find(b) != original_to_new_block_map.end()) b = original_to_new_block_map[b];
     }
   }
   PlotPlacement(601);

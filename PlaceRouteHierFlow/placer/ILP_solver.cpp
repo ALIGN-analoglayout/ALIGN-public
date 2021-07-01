@@ -84,6 +84,8 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
   // from LSB to MSB: at the left, align to left, the same x center, align to right, at the right, reserved, reserved, reserved
   // below, align to the bottom, the same y center, align to the top, above, reserved, reserved, reserved
   // block[i][j]&0x0010==0x0010 means i is to the right of j
+
+  /**
   vector<pair<vector<vector<int>>, PnRDB::Smark>> ordering_alignblock;
   for (auto order : node.Ordering_Constraints) {
     pair<vector<vector<int>>, PnRDB::Smark> temp;
@@ -102,6 +104,37 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
     }
     ordering_alignblock.push_back(temp);
   }
+  **/
+  for(auto order:node.Ordering_Constraints){
+    if (order.second == PnRDB::H) {
+      for (unsigned int i = 0; i < order.first.size() - 1; i++) {
+        for (unsigned int j = i + 1; j < order.first.size(); j++) {
+          int blocki = order.first[i];
+          int blockj = order.first[j];
+          if (blocki < blockj)
+            // i is at the left of j
+            block_order[blocki][blockj] |= 0x0001;
+          else
+            // j is at the right of i
+            block_order[blockj][blocki] |= 0x0010;
+        }
+      }
+    }else{
+      for (unsigned int i = 0; i < order.first.size() - 1; i++) {
+        for (unsigned int j = i + 1; j < order.first.size(); j++) {
+          int blocki = order.first[i];
+          int blockj = order.first[j];
+          if (blocki < blockj)
+            // i is above j
+            block_order[blocki][blockj] |= 0x1000;
+          else
+            // j is below i
+            block_order[blockj][blocki] |= 0x0100;
+        }
+      }
+    }
+  }
+  /**
   for (auto order : ordering_alignblock) {
     if (order.second == PnRDB::H) {
       for (unsigned int i = 0; i < order.first.size() - 1; i++) {
@@ -135,6 +168,7 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
       }
     }
   }
+  **/
   for (auto align : mydesign.Align_blocks) {
     if (align.horizon) {
       vector<int> blocks(align.blocks);
@@ -216,14 +250,50 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
     for (unsigned int j = i + 1; j < node.Blocks.size(); j++) {
       if ((block_order[i][j] & 0x000e) && (block_order[i][j] & 0x0e00))
         logger->error("wrong constranit between block {0} and {1}", mydesign.Blocks[i][0].name, mydesign.Blocks[j][0].name);
+      if(node.Blocks[i].instance[0].width==0){
+        block_order[i][j] |= 0x0001;
+      }
       if ((block_order[i][j] & 0x1111) == 0) {  // neither left right below above
         if (block_order[i][j] & 0x00ff) {
           // align to left, x center, or right
           block_order[i][j] &= 0x00ff;
-          if (node.Blocks[i].instance[0].placedCenter.y < node.Blocks[j].instance[0].placedCenter.y)
+          if (node.Blocks[i].instance[0].placedCenter.y < node.Blocks[j].instance[0].placedCenter.y){
             block_order[i][j] |= 0x0100;
-          else
+            int i_counterpart = mydesign.SPBlocks[mydesign.Blocks[i][0].SBidx].axis_dir == placerDB::V ? mydesign.Blocks[i][0].counterpart : -1;
+            int j_counterpart = mydesign.SPBlocks[mydesign.Blocks[j][0].SBidx].axis_dir == placerDB::V ? mydesign.Blocks[j][0].counterpart : -1;
+            if (i_counterpart != -1) {
+              if (i_counterpart < j && ((block_order[i_counterpart][j] & 0x1111) == 0)) block_order[i_counterpart][j] |= 0x0100;
+              if (i_counterpart > j && ((block_order[j][i_counterpart] & 0x1111) == 0)) block_order[j][i_counterpart] |= 0x1000;
+            }
+            if(j_counterpart!=-1){
+              if (i < j_counterpart && ((block_order[i][j_counterpart] & 0x1111) == 0)) block_order[i][j_counterpart] |= 0x0100;
+              if (i > j_counterpart && ((block_order[j_counterpart][i] & 0x1111) == 0)) block_order[j_counterpart][i] |= 0x1000;
+            }
+            if(i_counterpart!=-1 && j_counterpart!=-1){
+              if (i_counterpart < j_counterpart && ((block_order[i_counterpart][j_counterpart] & 0x1111) == 0))
+                block_order[i_counterpart][j_counterpart] |= 0x0100;
+              if (i_counterpart > j_counterpart && ((block_order[j_counterpart][i_counterpart] & 0x1111) == 0))
+                block_order[j_counterpart][i_counterpart] |= 0x1000;
+            }
+          } else {
             block_order[i][j] |= 0x1000;
+            int i_counterpart = mydesign.SPBlocks[mydesign.Blocks[i][0].SBidx].axis_dir == placerDB::V ? mydesign.Blocks[i][0].counterpart : -1;
+            int j_counterpart = mydesign.SPBlocks[mydesign.Blocks[j][0].SBidx].axis_dir == placerDB::V ? mydesign.Blocks[j][0].counterpart : -1;
+            if (i_counterpart != -1) {
+              if (i_counterpart < j && ((block_order[i_counterpart][j] & 0x1111) == 0)) block_order[i_counterpart][j] |= 0x1000;
+              if (i_counterpart > j && ((block_order[j][i_counterpart] & 0x1111) == 0)) block_order[j][i_counterpart] |= 0x0100;
+            }
+            if(j_counterpart!=-1){
+              if (i < j_counterpart && ((block_order[i][j_counterpart] & 0x1111) == 0)) block_order[i][j_counterpart] |= 0x1000;
+              if (i > j_counterpart && ((block_order[j_counterpart][i] & 0x1111) == 0)) block_order[j_counterpart][i] |= 0x0100;
+            }
+            if(i_counterpart!=-1 && j_counterpart!=-1){
+              if (i_counterpart < j_counterpart && ((block_order[i_counterpart][j_counterpart] & 0x1111) == 0))
+                block_order[i_counterpart][j_counterpart] |= 0x1000;
+              if (i_counterpart > j_counterpart && ((block_order[j_counterpart][i_counterpart] & 0x1111) == 0))
+                block_order[j_counterpart][i_counterpart] |= 0x0100;
+            }
+          }
         } else if (block_order[i][j] & 0xff00) {
           block_order[i][j] &= 0xff00;
           if (node.Blocks[i].instance[0].placedCenter.x < node.Blocks[j].instance[0].placedCenter.x)
@@ -231,9 +301,11 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
           else
             block_order[i][j] |= 0x0010;
         } else {
-          if((!node.isFirstILP && ( node.placement_id & (1<<(count%16)))) 
-          || (node.isFirstILP && abs(node.Blocks[i].instance[0].placedCenter.x - node.Blocks[j].instance[0].placedCenter.x) <
-            abs(node.Blocks[i].instance[0].placedCenter.y - node.Blocks[j].instance[0].placedCenter.y))){
+          //if((!node.isFirstILP && ( node.placement_id & (1<<(count%30)))) 
+          //|| (node.isFirstILP && abs(node.Blocks[i].instance[0].placedCenter.x - node.Blocks[j].instance[0].placedCenter.x) <
+            //abs(node.Blocks[i].instance[0].placedCenter.y - node.Blocks[j].instance[0].placedCenter.y))){
+          if(abs(node.Blocks[i].instance[0].placedCenter.x - node.Blocks[j].instance[0].placedCenter.x) <
+            abs(node.Blocks[i].instance[0].placedCenter.y - node.Blocks[j].instance[0].placedCenter.y)){
             block_order[i][j] &= 0x00ff;
             if (node.Blocks[i].instance[0].placedCenter.y < node.Blocks[j].instance[0].placedCenter.y)
               block_order[i][j] |= 0x0100;
@@ -947,6 +1019,14 @@ void ILP_solver::WritePlacement(design& mydesign, SeqPair& curr_sp, string outfi
 void ILP_solver::PlotPlacement(design& mydesign, string outfile, bool plot_pin, bool plot_terminal, bool plot_net) {
   // cout << "Placer-Info: create gnuplot file" << endl;
   placerDB::point p, bp;
+  if(!mydesign.is_first_ILP){
+    ofstream f("Results/" + mydesign.name + "_gds/" + mydesign.name + ".csv", std::ios::app);
+    if(f.is_open()){
+      f << mydesign.placement_id << " " << area << " " << HPWL << endl;
+    }
+    f.close();
+  }
+
   ofstream fout;
   vector<placerDB::point> p_pin;
   fout.open(outfile.c_str());

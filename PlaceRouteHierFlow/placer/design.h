@@ -111,6 +111,8 @@ class design
     std::vector<pair<pair<int,int>, placerDB::Smark>> Ordering_Constraints;
     double Aspect_Ratio_weight = 1000;
     string name;
+    int placement_id = -1;
+    bool is_first_ILP = true;
 
     //added by ya
     

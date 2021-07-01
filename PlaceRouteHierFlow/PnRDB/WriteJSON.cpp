@@ -228,7 +228,7 @@ addTextElements (json& jsonElements, int cenX, int cenY, int layer, const PnRDB:
     json element;
     element["type"] = "text";
     element["layer"] = layer;
-    element["texttype"] = 32;
+    element["texttype"] = drc_info.Metal_info.at(layer_index).gds_datatype.Label;
     //std::cout << "add Text Elements Test" << layer_index << layer << element["texttype"] << std::endl;
     //reminder, layer_index is not metal layer number. It is the index of metal in drc_info.Metal_info
     element["presentation"] = JSON_Presentation (test_font, test_vp, test_hp);
@@ -482,7 +482,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     }
 
     //write out extend pins
-    int write_extend_pins = 0;
+    int write_extend_pins = 1;
     if(write_extend_pins){
        for(unsigned int i=0;i<node.Blocks.size();i++){
           int selected_block_index = node.Blocks[i].selectedInstance;
