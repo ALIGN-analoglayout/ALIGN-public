@@ -224,20 +224,32 @@ def extract_netlist_files(netlist_dir,netlist_file):
     return netlist_files[0]
 
 
-def start_viewer(working_dir, json_file):
+def start_viewer(working_dir, pnr_dir, variant):
+
     viewer_dir = pathlib.Path(__file__).resolve().parent.parent / 'Viewer'
-    shutil.copytree(viewer_dir, working_dir/'Viewer')
-    shutil.copy(json_file, working_dir/'Viewer'/'INPUT')
+    if not viewer_dir.exists():
+        logger.warning(f'Viewer could not be located.')
+        return
+
+    local_viewer_dir = working_dir/'Viewer'
+    if not local_viewer_dir.exists():
+        os.mkdir(local_viewer_dir)
+        os.mkdir(local_viewer_dir/'INPUT')
+        os.symlink(viewer_dir/'index.html', local_viewer_dir/'index.html')
+        os.symlink(viewer_dir/'js', local_viewer_dir/'js', target_is_directory=True)
+
+    shutil.copy(pnr_dir/f'{variant}.json', local_viewer_dir/'INPUT'/f'{variant}.json')
 
     stderr = sys.stderr
     Handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(working_dir/'Viewer'))
     with socketserver.TCPServer(('localhost', 0), Handler) as httpd:
-        logger.info(f'Please visit localhost:{httpd.server_address[1]} in your browser')
+        logger.info(f'Please view layout at http://localhost:{httpd.server_address[1]}/?design={variant}')
+        logger.info(f'Please type Ctrl + C to continue')
         with open(os.devnull, 'w') as fp:
             sys.stdout = sys.stderr = fp
             try:
                 httpd.serve_forever()
-            except Exception:
+            except KeyboardInterrupt:
                 pass
     sys.stderr = stderr
     logger.info(f'Viewer terminated')
@@ -326,7 +338,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
                 (working_dir / filemap['errfile'].name).write_text(filemap['errfile'].read_text())
 
             if viewer:
-                start_viewer(working_dir, pnr_dir/f'{variant}.json')
+                start_viewer(working_dir, pnr_dir, variant)
             elif os.getenv('ALIGN_HOME', False):
                 shutil.copy(pnr_dir/f'{variant}.json',
                             pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/f'{variant}.json')
