@@ -193,14 +193,14 @@ bool A_star::found_near_node(int current_node, Grid &grid, std::vector<int> &can
     east_found = expand_node(grid.vertices_total[current_node].east, east_node, grid);
     west_found = expand_node(grid.vertices_total[current_node].west, west_node, grid);
 
-    //if(grid.vertices_total[current_node].via_active_up){
-    if(1){
+    if(grid.vertices_total[current_node].via_active_up){
+    //if(1){
        up_found = expand_node_ud(grid.vertices_total[current_node].up, up_node, grid);
     }else{
        up_found = false;
     }
-    //if(grid.vertices_total[current_node].via_active_down){
-    if(1){
+    if(grid.vertices_total[current_node].via_active_down){
+    //if(1){
       down_found = expand_node_ud(grid.vertices_total[current_node].down, down_node, grid);
     }else{
       down_found = false;
