@@ -80,6 +80,36 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
       }
     }
   }
+  //correct alignblocks position
+  for (auto align : mydesign.Align_blocks) {
+    if (align.horizon) {
+      int LLy = 0;
+      set<int> center_x_set;
+      for (unsigned int i = 0; i < align.blocks.size(); i++) {
+        LLy += node.Blocks[align.blocks[i]].instance[0].placedCenter.y - node.Blocks[align.blocks[i]].instance[0].height / 2;
+      }
+      LLy /= align.blocks.size();
+      for (unsigned int i = 0; i < align.blocks.size(); i++) {
+        while(center_x_set.find(node.Blocks[align.blocks[i]].instance[0].placedCenter.x)!=center_x_set.end())
+          node.Blocks[align.blocks[i]].instance[0].placedCenter.x++;
+        center_x_set.insert(node.Blocks[align.blocks[i]].instance[0].placedCenter.x);
+        node.Blocks[align.blocks[i]].instance[0].placedCenter.y = LLy + node.Blocks[align.blocks[i]].instance[0].height / 2;
+      }
+    } else {
+      int LLx = 0;
+      set<int> center_y_set;
+      for (unsigned int i = 0; i < align.blocks.size(); i++) {
+        LLx += node.Blocks[align.blocks[i]].instance[0].placedCenter.x - node.Blocks[align.blocks[i]].instance[0].width / 2;
+      }
+      LLx /= align.blocks.size();
+      for (unsigned int i = 0; i < align.blocks.size(); i++) {
+        while(center_y_set.find(node.Blocks[align.blocks[i]].instance[0].placedCenter.y)!=center_y_set.end())
+          node.Blocks[align.blocks[i]].instance[0].placedCenter.y++;
+        center_y_set.insert(node.Blocks[align.blocks[i]].instance[0].placedCenter.y);
+        node.Blocks[align.blocks[i]].instance[0].placedCenter.x = LLx + node.Blocks[align.blocks[i]].instance[0].width / 2;
+      }
+    }
+  }
   block_order = vector<vector<int>>(mydesign.Blocks.size(), vector<int>(mydesign.Blocks.size(), 0));
   // from LSB to MSB: at the left, align to left, the same x center, align to right, at the right, reserved, reserved, reserved
   // below, align to the bottom, the same y center, align to the top, above, reserved, reserved, reserved
