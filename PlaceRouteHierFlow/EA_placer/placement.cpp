@@ -1211,6 +1211,73 @@ float Placement::Cal_Overlap()
   return max_overlap;
 }
 
+void Placement::UT_Placer(){
+
+  Cal_LSE_Net_Force();
+  Cal_sym_Force();
+  Cal_LSE_Area_Force();
+  //Cal_LSE_BND_Force();
+  //Cal_LSE_OL_Force();
+  //Cal_UT_Force();
+
+  //optimization or iteration algorithm
+  //stop condition{
+  // cal force or gradient
+  Cal_LSE_Net_Force();
+  Cal_sym_Force();
+  Cal_LSE_Area_Force();
+  //Cal_LSE_BND_Force();
+  //Cal_LSE_OL_Force();
+  //Cal_UT_Force();
+  //update postions
+
+  //}
+
+
+}
+
+
+void Placement::Cal_LSE_BND_Force(){
+
+  Chip_BND.x = 1.0f;
+  Chip_BND.y = 1.0f;
+
+  for(unsigned int i=0;i<Blocks.size();++i){
+     float x_gradient = 0.0;
+     if(Blocks[i].Cpoint.x - Blocks[i].Dpoint.x <= 0)
+       x_gradient += -1;
+     if(Blocks[i].Cpoint.x + Blocks[i].Dpoint.x >= Chip_BND.x)
+       x_gradient += 1;
+     Blocks[i].BND_Force.x = x_gradient;
+  }
+
+  for(unsigned int i=0;i<Blocks.size();++i){
+     float y_gradient = 0.0;
+     if(Blocks[i].Cpoint.y - Blocks[i].Dpoint.y <= 0)
+       y_gradient += -1;
+     if(Blocks[i].Cpoint.y + Blocks[i].Dpoint.y >= Chip_BND.y)
+       y_gradient += 1;
+     Blocks[i].BND_Force.y = y_gradient;
+  }
+
+}
+
+void Placement::Cal_LSE_OL_Force(){
+
+
+}
+
+void Placement::Cal_UT_Force(){
+
+  for(unsigned int i=0;i<Blocks.size();++i){
+
+    Blocks[i].Force.x = - beta * Blocks[i].Netforce.x - sym_beta * Blocks[i].Symmetricforce.x - area_beta*Blocks[i].Areaforce.x - BND_beta*Blocks[i].BND_Force.x - OL_beta*Blocks[i].OL_Force.x;
+    Blocks[i].Force.y = - beta * Blocks[i].Netforce.y - sym_beta * Blocks[i].Symmetricforce.y - area_beta*Blocks[i].Areaforce.y - BND_beta*Blocks[i].BND_Force.y - OL_beta*Blocks[i].OL_Force.y;
+
+  }
+
+}
+
 void Placement::E_Placer()
 {
 

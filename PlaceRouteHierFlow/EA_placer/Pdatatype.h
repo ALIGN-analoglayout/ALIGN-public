@@ -59,6 +59,10 @@ struct block {
     Ppoint_F Net_block_force_P; //Netforce in X/Y direction: exp(xi/gammer)
     Ppoint_F Net_block_force_N; //Netforce in X/Y direction: exp(-xi/gammer)
     Ppoint_F Areaforce; //area force in X/Y direction
+
+    Ppoint_F OL_Force; //overlap force for UT placer
+    Ppoint_F BND_Force; //boundary force for UT placer
+
     vector<int> connected_net;
     Ppoint_I original_Dpoint;
     int index;  // index in Blocks[i]

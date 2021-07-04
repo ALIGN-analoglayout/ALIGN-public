@@ -15,6 +15,7 @@ using namespace std;
 class Placement {
 
 private:
+    Ppoint_F Chip_BND; //chip bounday for UT placer
     int temp = 0; // for testing the code
     Ppoint_F Chip_D; //chip dimension for the placement
     Ppoint_F Bin_D; // Dimensions for each bin
@@ -38,6 +39,8 @@ private:
     float beta = 1.0f;
     float sym_beta = 0.01f;//weigth for sym force,  need to ajust
     float area_beta = 0.01f;//weight for area force, need to ajust
+    float BND_beta = 0.01f;//weight for area force, need to ajust
+    float OL_beta = 0.01f;//weight for area force, need to ajust
 
     // for blocks
     float unit_x;
@@ -181,5 +184,11 @@ public:
     float Area_SUM_P(bool x_or_y);
     float Area_SUM_N(bool x_or_y);
     void Cal_LSE_Area_Force();
+    
+    // for UT placer
+    void UT_Placer();
+    void Cal_LSE_BND_Force();
+    void Cal_LSE_OL_Force();
+    void Cal_UT_Force();
 };
 #endif
