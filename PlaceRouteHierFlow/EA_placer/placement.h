@@ -37,6 +37,7 @@ private:
     float lambda= 0.01f; //Q: need to ajust
     float beta = 1.0f;
     float sym_beta = 0.01f;//weigth for sym force,  need to ajust
+    float area_beta = 0.01f;//weight for area force, need to ajust
 
     // for blocks
     float unit_x;
@@ -176,5 +177,9 @@ public:
     void break_merged_cc(PnRDB::hierNode &current_node);
     
     void update_pos(PnRDB::hierNode &current_node);
+
+    float Area_SUM_P(bool x_or_y);
+    float Area_SUM_N(bool x_or_y);
+    void Cal_LSE_Area_Force();
 };
 #endif

@@ -820,6 +820,35 @@ float Placement::WA_Net_SUM_N(int net_index, bool x_or_y)
 }
 //End WA model
 
+//Area model
+void Placement::Cal_LSE_Area_Force()
+{
+
+
+  float Area_SUM_P_X = Area_SUM_P(1);
+  float Area_SUM_P_Y = Area_SUM_P(0);
+
+  float Area_SUM_N_X = Area_SUM_N(1);
+  float Area_SUM_N_Y = Area_SUM_N(0);
+
+  float LSE_X =  gammar * (log((double)Area_SUM_P_X)-log((double)Area_SUM_N_X));
+  float LSE_Y =  gammar * (log((double)Area_SUM_P_Y)-log((double)Area_SUM_N_Y));
+
+  for (unsigned int i = 0; i < Blocks.size(); ++i)
+  {
+    Blocks[i].Net_block_force_P.x = LSE_block_P(i, 1);
+    Blocks[i].Net_block_force_P.y = LSE_block_P(i, 0);
+    Blocks[i].Net_block_force_N.x = LSE_block_N(i, 1);
+    Blocks[i].Net_block_force_N.y = LSE_block_N(i, 0);
+  }
+
+  for (unsigned int i = 0; i < Blocks.size(); ++i)
+  {
+    Blocks[i].Areaforce.x = (Blocks[i].Net_block_force_P.x/Area_SUM_P_X - Blocks[i].Net_block_force_N.x/Area_SUM_N_X)* LSE_Y;
+    Blocks[i].Areaforce.y = (Blocks[i].Net_block_force_P.y/Area_SUM_P_Y - Blocks[i].Net_block_force_N.y/Area_SUM_N_Y)* LSE_X;
+  }
+}
+
 //LSE model
 void Placement::Cal_LSE_Net_Force()
 {
@@ -854,6 +883,41 @@ void Placement::Cal_LSE_Net_Force()
     }
   }
 }
+
+float Placement::Area_SUM_P(bool x_or_y){
+
+  float result = 0.0;
+
+  for (unsigned int i=0; i<Blocks.size(); ++i) {
+   
+     if(x_or_y){
+       result += Exp_Function(Blocks[i].Cpoint.x, gammar);
+     }else{
+       result += Exp_Function(Blocks[i].Cpoint.y, gammar);
+     }
+  }
+
+  return result;
+
+}
+
+float Placement::Area_SUM_N(bool x_or_y){
+
+  float result = 0.0;
+
+  for (unsigned int i=0; i<Blocks.size(); ++i) {
+   
+     if(x_or_y){
+       result += Exp_Function(-Blocks[i].Cpoint.x, gammar);
+     }else{
+       result += Exp_Function(-Blocks[i].Cpoint.y, gammar);
+     }
+  }
+
+  return result;
+
+}
+
 
 float Placement::LSE_Net_SUM_P(int net_index, bool x_or_y)
 {
@@ -1054,8 +1118,8 @@ void Placement::Cal_force()
     //  Blocks[i].Force.x = lambda*Blocks[i].Eforce.x - beta*Blocks[i].Netforce.x;
     //  Blocks[i].Force.y = lambda*Blocks[i].Eforce.y - beta*Blocks[i].Netforce.y;
 
-    Blocks[i].Force.x = lambda * Blocks[i].Eforce.x - beta * Blocks[i].Netforce.x - sym_beta * Blocks[i].Symmetricforce.x;
-    Blocks[i].Force.y = lambda * Blocks[i].Eforce.y - beta * Blocks[i].Netforce.y - sym_beta * Blocks[i].Symmetricforce.y;
+    Blocks[i].Force.x = lambda * Blocks[i].Eforce.x - beta * Blocks[i].Netforce.x - sym_beta * Blocks[i].Symmetricforce.x - area_beta*Blocks[i].Areaforce.x;
+    Blocks[i].Force.y = lambda * Blocks[i].Eforce.y - beta * Blocks[i].Netforce.y - sym_beta * Blocks[i].Symmetricforce.y - area_beta*Blocks[i].Areaforce.y;
     //  std::cout<<"symmetricforce/all"<<sym_beta*Blocks[i].Symmetricforce.x<<", "<<sym_beta*Blocks[i].Symmetricforce.y<<std::endl;
     //  if(isnan(Blocks[i].Force.x))
     //  {
@@ -1180,6 +1244,7 @@ void Placement::E_Placer()
 #ifdef DEBUG
   std::cout << "E_placer debug flage: 3.5" << std::endl;
 #endif
+  Cal_LSE_Area_Force();
   Cal_force();
 #ifdef DEBUG
   std::cout << "E_placer debug flage: 4" << std::endl;
@@ -1311,6 +1376,7 @@ void Placement::E_Placer()
     std::cout << "E_placer debug flag: 18" << std::endl;
 #endif
     Cal_sym_Force();
+    Cal_LSE_Area_Force();
     Cal_force();
 
 //WriteOut_Blocks(i);
@@ -1549,6 +1615,7 @@ void Placement::pre_conditioner(vector<float> &Pre_Conditioner, bool x_or_y)
   WA_pre_conditioner(HPWL_Pre_Conditioner, x_or_y);
   //LSE_Pre_Conditioner
   //LSE_Pre_Conditioner
+  // Yaguang (07/04/2021): found a bug - symmetry precondition pre_conditioner is missing actually. It can be calculated acctually
 
   vector<float> Desity_Pre_Conditioner;
   for (unsigned int i = 0; i < Blocks.size(); ++i)

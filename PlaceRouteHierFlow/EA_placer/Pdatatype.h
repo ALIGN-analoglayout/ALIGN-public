@@ -58,6 +58,7 @@ struct block {
     Ppoint_F Force; // Force = Eforce + Netforce
     Ppoint_F Net_block_force_P; //Netforce in X/Y direction: exp(xi/gammer)
     Ppoint_F Net_block_force_N; //Netforce in X/Y direction: exp(-xi/gammer)
+    Ppoint_F Areaforce; //area force in X/Y direction
     vector<int> connected_net;
     Ppoint_I original_Dpoint;
     int index;  // index in Blocks[i]
