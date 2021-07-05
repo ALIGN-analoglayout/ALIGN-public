@@ -1216,9 +1216,9 @@ void Placement::UT_Placer(){
   Cal_LSE_Net_Force();
   Cal_sym_Force();
   Cal_LSE_Area_Force();
-  //Cal_LSE_BND_Force();
-  //Cal_LSE_OL_Force();
-  //Cal_UT_Force();
+  Cal_LSE_BND_Force();
+  Cal_LSE_OL_Force();
+  Cal_UT_Force();
 
   //optimization or iteration algorithm
   //stop condition{
@@ -1226,9 +1226,9 @@ void Placement::UT_Placer(){
   Cal_LSE_Net_Force();
   Cal_sym_Force();
   Cal_LSE_Area_Force();
-  //Cal_LSE_BND_Force();
-  //Cal_LSE_OL_Force();
-  //Cal_UT_Force();
+  Cal_LSE_BND_Force();
+  Cal_LSE_OL_Force();
+  Cal_UT_Force();
   //update postions
 
   //}
@@ -1243,27 +1243,112 @@ void Placement::Cal_LSE_BND_Force(){
   Chip_BND.y = 1.0f;
 
   for(unsigned int i=0;i<Blocks.size();++i){
-     float x_gradient = 0.0;
-     if(Blocks[i].Cpoint.x - Blocks[i].Dpoint.x <= 0)
-       x_gradient += -1;
-     if(Blocks[i].Cpoint.x + Blocks[i].Dpoint.x >= Chip_BND.x)
-       x_gradient += 1;
-     Blocks[i].BND_Force.x = x_gradient;
+     float first_term = Exp_Function(0.0f-Blocks[i].Cpoint.x+Blocks[i].Dpoint.x/2, gammar)/(Exp_Function(0.0f-Blocks[i].Cpoint.x+Blocks[i].Dpoint.x/2, gammar)+1);
+     float second_term = Exp_Function(Blocks[i].Cpoint.x+Blocks[i].Dpoint.x/2-Chip_BND.x, gammar)/(Exp_Function(Blocks[i].Cpoint.x+Blocks[i].Dpoint.x/2-Chip_BND.x, gammar)+1);
+     Blocks[i].BND_Force.x = first_term + second_term;
   }
 
   for(unsigned int i=0;i<Blocks.size();++i){
-     float y_gradient = 0.0;
-     if(Blocks[i].Cpoint.y - Blocks[i].Dpoint.y <= 0)
-       y_gradient += -1;
-     if(Blocks[i].Cpoint.y + Blocks[i].Dpoint.y >= Chip_BND.y)
-       y_gradient += 1;
-     Blocks[i].BND_Force.y = y_gradient;
+     float first_term = Exp_Function(0.0f-Blocks[i].Cpoint.y+Blocks[i].Dpoint.y/2, gammar)/(Exp_Function(0.0f-Blocks[i].Cpoint.x+Blocks[i].Dpoint.x/2, gammar)+1);
+     float second_term = Exp_Function(Blocks[i].Cpoint.x+Blocks[i].Dpoint.x/2-Chip_BND.y, gammar)/(Exp_Function(Blocks[i].Cpoint.x+Blocks[i].Dpoint.x/2-Chip_BND.y, gammar)+1);
+     Blocks[i].BND_Force.x = first_term + second_term;
   }
 
 }
 
+float Placement::Cal_OL_MIN_SUM(bool x_or_y, int i, int j){
+  
+  float sum_min=0.0f;
+
+  if(x_or_y){
+  sum_min += Exp_Function(-(Blocks[i].Cpoint.x+Blocks[i].Dpoint.x/2-Blocks[j].Cpoint.x+Blocks[j].Dpoint.x/2), gammar);
+  sum_min += Exp_Function(-(Blocks[j].Cpoint.x+Blocks[j].Dpoint.x/2-Blocks[i].Cpoint.x+Blocks[i].Dpoint.x/2), gammar);
+  sum_min += Exp_Function(-Blocks[i].Dpoint.x, gammar);
+  sum_min += Exp_Function(-Blocks[j].Dpoint.x, gammar);
+  }else{
+  sum_min += Exp_Function(-(Blocks[i].Cpoint.y+Blocks[i].Dpoint.y/2-Blocks[j].Cpoint.y+Blocks[j].Dpoint.y/2), gammar);
+  sum_min += Exp_Function(-(Blocks[j].Cpoint.y+Blocks[j].Dpoint.y/2-Blocks[i].Cpoint.y+Blocks[i].Dpoint.y/2), gammar);
+  sum_min += Exp_Function(-Blocks[i].Dpoint.y, gammar);
+  sum_min += Exp_Function(-Blocks[j].Dpoint.y, gammar);
+  }
+  return sum_min;
+}
+
+
+
+float Placement::Cal_OL_Term(bool x_or_y, int i, int j){
+  
+  float result=0.0f;
+
+  if(x_or_y){
+  float sum_min = Cal_OL_MIN_SUM(1,i,j);
+  sum_min = -gammar*log(sum_min);
+  result = gammar*log(Exp_Function(sum_min, gammar)+1);
+  }else{
+  float sum_min = Cal_OL_MIN_SUM(0,i,j);
+  sum_min = -gammar*log(sum_min);
+  result = gammar*log(Exp_Function(sum_min, gammar)+1);
+  }
+  return result;
+}
+
+
+
+float Placement::Cal_OL_Term_Gradient(bool x_or_y, int i, int j){
+  
+  float result=0.0f;
+
+  if(x_or_y){
+  float sum_min = Cal_OL_MIN_SUM(1,i,j);
+  sum_min = -gammar*log(sum_min);
+  result = Exp_Function(sum_min, gammar)/(Exp_Function(sum_min, gammar)+1);
+  }else{
+  float sum_min = Cal_OL_MIN_SUM(0,i,j);
+  sum_min = -gammar*log(sum_min);
+  result = Exp_Function(sum_min, gammar)/(Exp_Function(sum_min, gammar)+1);
+  }
+  return result;
+}
+
+float Placement::Cal_OL_Gradient(bool x_or_y, int i, int j){
+  
+  float result=0.0f;
+
+  if(x_or_y){
+    float first_term = Cal_OL_Term_Gradient(1,i,j);
+    float sum_min = Cal_OL_MIN_SUM(1,i,j);
+    float frac_term = Exp_Function(-(Blocks[i].Cpoint.x+Blocks[i].Dpoint.x/2-Blocks[j].Cpoint.x+Blocks[j].Dpoint.x/2), gammar) - Exp_Function(-(Blocks[j].Cpoint.x+Blocks[j].Dpoint.x/2-Blocks[i].Cpoint.x+Blocks[i].Dpoint.x/2), gammar);
+    result = first_term*(frac_term/sum_min);
+  }else{
+    float first_term = Cal_OL_Term_Gradient(0,i,j);
+    float sum_min = Cal_OL_MIN_SUM(0,i,j);
+    float frac_term = Exp_Function(-(Blocks[i].Cpoint.y+Blocks[i].Dpoint.y/2-Blocks[j].Cpoint.y+Blocks[j].Dpoint.y/2), gammar) - Exp_Function(-(Blocks[j].Cpoint.y+Blocks[j].Dpoint.y/2-Blocks[i].Cpoint.y+Blocks[i].Dpoint.y/2), gammar);
+    result = first_term*(frac_term/sum_min);
+  }
+  return result;
+}
+
+
+
 void Placement::Cal_LSE_OL_Force(){
 
+  for(unsigned int i=0;i<Blocks.size();++i){
+     float gradient = 0.0f;
+     for(unsigned int j=0;j<Blocks.size();++i){
+        if(i!=j)
+        gradient += Cal_OL_Gradient(1, i,j)*Cal_OL_Term(0,i,j);
+     }
+     Blocks[i].OL_Force.x = gradient;
+  }
+
+  for(unsigned int i=0;i<Blocks.size();++i){
+     float gradient = 0.0f;
+     for(unsigned int j=0;j<Blocks.size();++i){
+        if(i!=j)
+        gradient += Cal_OL_Gradient(0, i,j)*Cal_OL_Term(1,i,j);
+     }
+     Blocks[i].OL_Force.y = gradient;
+  }
 
 }
 

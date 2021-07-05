@@ -190,5 +190,9 @@ public:
     void Cal_LSE_BND_Force();
     void Cal_LSE_OL_Force();
     void Cal_UT_Force();
+    float Cal_OL_MIN_SUM(bool x_or_y, int i, int j);
+    float Cal_OL_Term(bool x_or_y, int i, int j);
+    float Cal_OL_Term_Gradient(bool x_or_y, int i, int j);
+    float Cal_OL_Gradient(bool x_or_y, int i, int j);
 };
 #endif
