@@ -168,6 +168,97 @@ Placement::Placement(PnRDB::hierNode &current_node)
   writeback(current_node);
 }
 
+void Placement::place_ut(PnRDB::hierNode &current_node)
+{
+  //step 1: transfroming info. of current_node to Blocks and Nets
+  //create a small function for this
+  float area, scale_factor;
+  int max_block_number = 1000;
+  int max_net_number = 100;
+  int max_conection_number = 100;
+
+  // for bins
+  unit_x_bin = (float)1 / 16;
+  unit_y_bin = (float)1 / 16;
+  x_dimension_bin = 16; //number of bin, number of pe
+  y_dimension_bin = 16; //number of bin, number of pe
+
+  Bin_D.x = unit_x_bin;
+  Bin_D.y = unit_y_bin;
+  std::cout << "start reading node file" << std::endl;
+  area = readInputNode(current_node);
+
+  // for blocks
+  unit_x = (float)1 / Blocks.size();
+  unit_y = (float)1 / Blocks.size();
+  x_dimension = Blocks.size(); //number of pe
+  y_dimension = x_dimension;   //S number of pe
+  Chip_D.x = (float)1;
+  Chip_D.y = (float)1;
+
+  for (unsigned int i = 0; i < x_dimension_bin; ++i)
+  {
+    vector<bin> temp_bins;
+    for (unsigned int j = 0; j < y_dimension_bin; ++j)
+    {
+      bin temp_bin;
+      temp_bin.Dpoint.x = unit_x_bin;
+      temp_bin.Dpoint.y = unit_y_bin;
+      temp_bin.Cpoint.x = i * unit_x_bin + unit_x_bin / 2;
+      temp_bin.Cpoint.y = j * unit_y_bin + unit_y_bin / 2;
+      temp_bin.Index.x = i;
+      temp_bin.Index.y = j;
+      temp_bins.push_back(temp_bin);
+    }
+    Bins.push_back(temp_bins);
+  }
+
+  //step 2: Given a initial position for each block
+  //create a small function for this
+  // need to estimate a area to do placement
+  // scale into 1x1
+  // initial position for each block
+  for (unsigned int i = 0; i < originalBlockCNT;i++){
+    Blocks[i].original_Dpoint.x = current_node.Blocks[i].instance[0].width;
+    Blocks[i].original_Dpoint.y = current_node.Blocks[i].instance[0].height;
+  }
+  std::cout << "Unify the block coordinate" << std::endl;
+  scale_factor = 40.0;
+  Unify_blocks(area, scale_factor);
+  find_uni_cell();
+  readCC();
+  //Initilize_Placement();
+  //PlotPlacement(600);
+  splitNode_MS(uni_cell_Dpoint.y, uni_cell_Dpoint.x);
+  int tol_diff = 3;
+  addNet_after_split_Blocks(tol_diff,uni_cell_Dpoint.y, uni_cell_Dpoint.x);
+  split_net();
+  modify_symm_after_split(current_node);
+  update_hiernode(current_node);
+
+  //read alignment constrains
+  read_alignment(current_node);
+  read_order(current_node);
+  Initilize_Placement();
+
+  print_blocks_nets();
+  //step 3: call E_placer
+  std::cout << "start ePlacement" << std::endl;
+  PlotPlacement(602);
+  // restore_MS();
+  // PlotPlacement(601);
+  UT_Placer();
+  bool isCompact = true;
+  restore_CC_in_square(isCompact);
+
+  //only for plot
+
+  //restore_MS();
+  PlotPlacement(603);
+  //setp 4: write back to HierNode
+  writeback(current_node);
+}
+
 void Placement::place(PnRDB::hierNode &current_node)
 {
   //step 1: transfroming info. of current_node to Blocks and Nets

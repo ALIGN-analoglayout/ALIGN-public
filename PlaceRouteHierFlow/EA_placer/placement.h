@@ -201,6 +201,7 @@ public:
     void Cal_vn(vector<float> &vn, vector<float> &vl, float beta_2, vector<float> gradient);
     void Cal_vn_hat(vector<float> &vn_hat, vector<float> &vn, float beta_2);
     void Cal_new_position(vector<float> &mn_hat, vector<float> &vn_hat, float step_size, vector<float> position_old, vector<float> &position_new);
+    void place_ut(PnRDB::hierNode &current_node);
 
 };
 #endif
