@@ -12,7 +12,7 @@ class Wire:
     return "Wire  net=%s%s layer=%s rect=%s" % ( self.netName, ("" if self.gid is None else ( " gid=%d" % self.gid)), self.layer, self.rect.toColonSepStr())
 
   def __repr__( self):
-    return str(self)
+    return f"Wire(netName={self.netName}, rect={self.rect}, layer={self.layer}, gid={self.gid}, color={self.color}"
 
   def encode(self):
     return { "netName" : self.netName,
@@ -31,7 +31,7 @@ class GR:
     self.connected_pins = None
 
   def __repr__(self):
-    return f"{self.netName} {self.rect} {self.layer} {self.width}"
+    return f"GR(netName={self.netName}, rect={self.rect}, layer={self.layer}, width={self.width}"
 
   def encode(self, tech):
     # Convert global route coords to physical coords
@@ -65,14 +65,17 @@ class Net:
     self.grs = []
     self.ces = OrderedDict()
 
+  def __repr__(self):
+      return f"Net(nm={self.nm}, wires={self.wires}, grs={self.grs}, ces={self.ces})"
+
 class Netlist:
   def __init__( self, nm, bbox):
     self.nm = nm
     self.bbox = bbox
     self.nets = OrderedDict()
     self.gidIndex = 0
-    self.instances = OrderedDict()
     self.wire_cache = {}
+    self.instances = {}
 
   def newWire( self, netName, r, l, *, ceName=None):
     """The wire cache is used to make sure we don't generate gid's for two different occs of the same wire """

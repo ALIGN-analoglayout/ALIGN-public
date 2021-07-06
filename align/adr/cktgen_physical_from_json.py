@@ -18,7 +18,7 @@ def main(args, tech):
   with open( args.placer_json, "rt") as fp:
     placer_results = json.load( fp)
 
-  netl = ADNetlist.fromPlacerResults( args.block_name, tech, layer_map, placer_results)
+  netl = ADNetlist.fromPlacerResults( args.block_name, layer_map, placer_results)
 
   if args.gr_json != '':
     gr_fn = args.gr_json

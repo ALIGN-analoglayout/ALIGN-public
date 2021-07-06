@@ -5,8 +5,7 @@ from ..cell_fabric.transformation import Rect, Transformation
 from .base import Wire, Netlist
 
 class ADT:
-  def __init__( self, tech, nm, *, physical_bbox=None):
-    self.tech = tech
+  def __init__( self, nm, *, physical_bbox=None):
     self.nm = nm
     assert physical_bbox is not None
 
@@ -41,14 +40,14 @@ class ADI:
 
 class ADNetlist:
   @staticmethod
-  def fromPlacerResults( nm, tech, layer_map, placer_results):
+  def fromPlacerResults( nm, layer_map, placer_results):
     adnetl =  ADNetlist( nm)
 
     adts = {}
 
     for leaf in placer_results['leaves']:
       nm = leaf['template_name']
-      adt = ADT( tech, nm, physical_bbox=leaf['bbox'])
+      adt = ADT( nm, physical_bbox=leaf['bbox'])
       adts[nm] = adt
 
       for term in leaf['terminals']:
@@ -100,6 +99,9 @@ class ADNetlist:
     self.ces = OrderedDict()
     self.kors = []
     for (_,v) in self.instances.items():
+
+      netl.instances[v.instanceName] = v.bbox
+
       for w in v.template.terminals:
         fN = w.netName
         if fN in v.formalActualMap:

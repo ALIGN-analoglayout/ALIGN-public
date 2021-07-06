@@ -12,6 +12,7 @@
 #
 
 # Exclude files built by Dockerfile or install.sh
+align-venv/
 general/
 .venv/
 wheelhouse/
