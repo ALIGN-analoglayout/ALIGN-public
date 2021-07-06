@@ -49,3 +49,32 @@ def test_comparator_2():
         ]""")
     example = build_example(my_dir, name, netlist, ckt_setup, ckt_const)
     run_example(example, n=8, cleanup=False)
+
+
+def test_comparator_noconst_1():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.comparator(name)
+    ckt_setup = textwrap.dedent(f"""\
+        POWER = vccx
+        GND = vssx
+        NO_CONST = {name}
+        """)
+    ckt_const = textwrap.dedent(f"""[]""")
+    example = build_example(my_dir, name, netlist, ckt_setup, ckt_const)
+    run_example(example, n=8, cleanup=False)
+
+
+def test_comparator_noconst_2():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.comparator(name)
+    ckt_setup = textwrap.dedent(f"""\
+        POWER = vccx
+        GND = vssx
+        NO_CONST = {name}
+        """)
+    ckt_const = textwrap.dedent(f"""[\
+        {{"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"}},
+        {{"constraint": "SymmetricBlocks", "direction" : "V", "pairs": [["mn0"], ["dp"]]}}
+        ]""")
+    example = build_example(my_dir, name, netlist, ckt_setup, ckt_const)
+    run_example(example, n=8, cleanup=False)
