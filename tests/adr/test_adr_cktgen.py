@@ -21,7 +21,7 @@ def test_adr_cktgen():
     bn = "foo"
 
     placer_results = {
-        "bbox": [0,0,100,100],
+        "bbox": [0,0,200,100],
         "instances": [
             {
                 "template_name": "a",
@@ -58,11 +58,12 @@ def test_adr_cktgen():
     netl = ADNetlist.fromPlacerResults( bn, layer_map, placer_results)
 
     assert netl.nm == bn
-    assert netl.bbox.toList() == [0,0,100,100]
+    assert netl.bbox.toList() == [0,0,200,100]
     assert netl.gidIndex == 2
     assert len(netl.wire_cache) == 2
 
-    assert ('a', (1,1,3,3), 'metal1') in netl.wire_cache
+    assert ('a', (  1,1,  3,3), 'metal1') in netl.wire_cache
+    assert ('a', (101,1,103,3), 'metal1') in netl.wire_cache
 
     assert [  0,0,100,100] == netl.instances['u0'].toList()
     assert [100,0,200,100] == netl.instances['u1'].toList()
