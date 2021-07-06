@@ -59,6 +59,7 @@ pycharm/
 **/_cmake.py
 coverage-reports/
 Cktgen/cktgen/build/
+Cktgen/cktgen/dist/
 # Include files based on ALIGN naming conventions
 !**/*.const.json
 !tests/files/**/*.json
