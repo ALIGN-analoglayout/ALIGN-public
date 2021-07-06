@@ -30,6 +30,14 @@ def test_adr_cktgen():
                 "formal_actual_map": {
                     "inp": "a"
                 }
+            },
+            {
+                "template_name": "a",
+                "instance_name": "u1",
+                "transformation": { "oX": 100, "oY": 0, "sX": 1, "sY": 1},
+                "formal_actual_map": {
+                    "inp": "a"
+                }
             }
         ],
         "leaves": [
@@ -49,16 +57,14 @@ def test_adr_cktgen():
 
     netl = ADNetlist.fromPlacerResults( bn, layer_map, placer_results)
 
-
-
     assert netl.nm == bn
     assert netl.bbox.toList() == [0,0,100,100]
-    assert netl.gidIndex == 1
-    assert len(netl.wire_cache) == 1
+    assert netl.gidIndex == 2
+    assert len(netl.wire_cache) == 2
 
     assert ('a', (1,1,3,3), 'metal1') in netl.wire_cache
 
-    assert ('u0',Rect(0,0,100,100)) == (netl.instances[0][0], tuple(netl.instances[0][1]))
+    assert [0,0,100,100] == netl.instances['u0'].toList()
 
     assert len(netl.nets) == 1
     print(netl.nets)
