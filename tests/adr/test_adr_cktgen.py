@@ -64,7 +64,8 @@ def test_adr_cktgen():
 
     assert ('a', (1,1,3,3), 'metal1') in netl.wire_cache
 
-    assert [0,0,100,100] == netl.instances['u0'].toList()
+    assert [  0,0,100,100] == netl.instances['u0'].toList()
+    assert [100,0,200,100] == netl.instances['u1'].toList()
 
     assert len(netl.nets) == 1
     print(netl.nets)
