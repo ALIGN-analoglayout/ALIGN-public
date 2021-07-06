@@ -1211,6 +1211,20 @@ float Placement::Cal_Overlap()
   return max_overlap;
 }
 
+void Placement::Extract_Gradient(vector<float> &gradient, bool x_or_y){
+
+  if(x_or_y){
+    for(unsigned int i=0;i<Blocks.size();++i){
+       gradient.push_back(Blocks[i].Force.x);
+    }
+  }else{
+    for(unsigned int i=0;i<Blocks.size();++i){
+       gradient.push_back(Blocks[i].Force.y);
+    }
+  }
+
+}
+
 void Placement::UT_Placer(){
 
   Cal_LSE_Net_Force();
@@ -1220,22 +1234,109 @@ void Placement::UT_Placer(){
   Cal_LSE_OL_Force();
   Cal_UT_Force();
 
+  float step_size = 0.1f;
+  float beta_1 = 0.9f;
+  float beta_2 = 0.999f;
+  //x direction
+  vector<float> mlx(Blocks.size(),0.0f); // last 1st moment vector
+  vector<float> vlx(Blocks.size(),0.0f); // last 2nd moment vector
+  vector<float> mnx(Blocks.size(),0.0f); // next 1st moment vector
+  vector<float> vnx(Blocks.size(),0.0f); // next 2nd moment vector
+  vector<float> mn_hatx(Blocks.size(),0.0f); // next 1st moment vector
+  vector<float> vn_hatx(Blocks.size(),0.0f); // next 2nd moment vector
+  // y direction
+  vector<float> mly(Blocks.size(),0.0f); // last 1st moment vector
+  vector<float> vly(Blocks.size(),0.0f); // last 2nd moment vector
+  vector<float> mny(Blocks.size(),0.0f); // next 1st moment vector
+  vector<float> vny(Blocks.size(),0.0f); // next 2nd moment vector
+  vector<float> mn_haty(Blocks.size(),0.0f); // next 1st moment vector
+  vector<float> vn_haty(Blocks.size(),0.0f); // next 2nd moment vector
+
   //optimization or iteration algorithm
   //stop condition{
   // cal force or gradient
-  Cal_LSE_Net_Force();
-  Cal_sym_Force();
-  Cal_LSE_Area_Force();
-  Cal_LSE_BND_Force();
-  Cal_LSE_OL_Force();
-  Cal_UT_Force();
-  //update postions
+  int step = 0;
+  while(step<100){ //stop condition
+    step++;
+    //cal gradient for the placement
+    Cal_LSE_Net_Force();
+    Cal_sym_Force();
+    Cal_LSE_Area_Force();
+    Cal_LSE_BND_Force();
+    Cal_LSE_OL_Force();
+    Cal_UT_Force();
 
-  //}
+    //performance ADAM algorithm
+    vector<float> gradient_x;
+    Extract_Gradient(gradient_x, 1);
+    vector<float> gradient_y;
+    Extract_Gradient(gradient_y, 1);
 
+    vector<float> position_xl;
+    vector<float> position_yl;
+    Extract_Placement_Vectors(position_xl,1);
+    Extract_Placement_Vectors(position_yl,0);
+    vector<float> position_xn;
+    vector<float> position_yn;
+    Extract_Placement_Vectors(position_xn,1);
+    Extract_Placement_Vectors(position_yn,0);
+
+    Cal_mn(mnx,mlx,beta_1,gradient_x);
+    Cal_mn_hat(mn_hatx, mnx, beta_1);
+    Cal_vn(vnx,vlx,beta_2,gradient_x);
+    Cal_vn_hat(vn_hatx, vnx, beta_2);
+    Cal_new_position(mn_hatx,vn_hatx, step_size, position_xl, position_xn);
+
+    Cal_mn(mny,mly,beta_1,gradient_y);
+    Cal_mn_hat(mn_haty, mny, beta_1);
+    Cal_vn(vny,vly,beta_2,gradient_y);
+    Cal_vn_hat(vn_haty, vny, beta_2);
+    Cal_new_position(mn_haty,vn_haty, step_size, position_yl, position_yn);
+
+    Feedback_Placement_Vectors(position_xn,1);
+    Feedback_Placement_Vectors(position_yn,1);
+
+    mlx = mnx;
+    vlx = vnx;
+
+  }
 
 }
 
+void Placement::Cal_mn(vector<float> &mn, vector<float> &ml, float beta_1, vector<float> gradient){
+
+  for(unsigned int i=0;i<gradient.size();++i){
+     mn[i] = beta_1*ml[i]+(1.0-beta_1)*gradient[i];
+  }
+}
+
+void Placement::Cal_mn_hat(vector<float> &mn_hat, vector<float> &mn, float beta_1){
+
+  for(unsigned int i=0;i<mn.size();++i){
+     mn_hat[i] = mn[i]/(1-beta_1);
+  }
+}
+
+void Placement::Cal_vn(vector<float> &vn, vector<float> &vl, float beta_2, vector<float> gradient){
+
+  for(unsigned int i=0;i<gradient.size();++i){
+     vn[i] = beta_2*vl[i]+(1.0-beta_2)*gradient[i]*gradient[i];
+  }
+}
+
+void Placement::Cal_vn_hat(vector<float> &vn_hat, vector<float> &vn, float beta_2){
+
+  for(unsigned int i=0;i<vn.size();++i){
+     vn_hat[i] = vn[i]/(1-beta_2);
+  }
+}
+
+void Placement::Cal_new_position(vector<float> &mn_hat, vector<float> &vn_hat, float step_size, vector<float> position_old, vector<float> &position_new){
+
+  for(unsigned int i=0;i<mn_hat.size();++i){
+     position_new[i] = position_old[i] + step_size*mn_hat[i]/(sqrt(vn_hat[i])+1e-8);
+  }
+}
 
 void Placement::Cal_LSE_BND_Force(){
 

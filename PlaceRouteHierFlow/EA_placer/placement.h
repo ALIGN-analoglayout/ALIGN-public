@@ -194,5 +194,13 @@ public:
     float Cal_OL_Term(bool x_or_y, int i, int j);
     float Cal_OL_Term_Gradient(bool x_or_y, int i, int j);
     float Cal_OL_Gradient(bool x_or_y, int i, int j);
+
+    void Extract_Gradient(vector<float> &gradient, bool x_or_y);
+    void Cal_mn(vector<float> &mn, vector<float> &ml, float beta_1, vector<float> gradient);
+    void Cal_mn_hat(vector<float> &mn_hat, vector<float> &mn, float beta_1);
+    void Cal_vn(vector<float> &vn, vector<float> &vl, float beta_2, vector<float> gradient);
+    void Cal_vn_hat(vector<float> &vn_hat, vector<float> &vn, float beta_2);
+    void Cal_new_position(vector<float> &mn_hat, vector<float> &vn_hat, float step_size, vector<float> position_old, vector<float> &position_new);
+
 };
 #endif
