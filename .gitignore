@@ -58,6 +58,7 @@ pycharm/
 **/test_PnR
 **/_cmake.py
 coverage-reports/
+Cktgen/cktgen/build/
 # Include files based on ALIGN naming conventions
 !**/*.const.json
 !tests/files/**/*.json
