@@ -1249,8 +1249,8 @@ void Placement::Cal_LSE_BND_Force(){
   }
 
   for(unsigned int i=0;i<Blocks.size();++i){
-     float first_term = Exp_Function(0.0f-Blocks[i].Cpoint.y+Blocks[i].Dpoint.y/2, gammar)/(Exp_Function(0.0f-Blocks[i].Cpoint.x+Blocks[i].Dpoint.x/2, gammar)+1);
-     float second_term = Exp_Function(Blocks[i].Cpoint.x+Blocks[i].Dpoint.x/2-Chip_BND.y, gammar)/(Exp_Function(Blocks[i].Cpoint.x+Blocks[i].Dpoint.x/2-Chip_BND.y, gammar)+1);
+     float first_term = Exp_Function(0.0f-Blocks[i].Cpoint.y+Blocks[i].Dpoint.y/2, gammar)/(Exp_Function(0.0f-Blocks[i].Cpoint.y+Blocks[i].Dpoint.y/2, gammar)+1);
+     float second_term = Exp_Function(Blocks[i].Cpoint.y+Blocks[i].Dpoint.y/2-Chip_BND.y, gammar)/(Exp_Function(Blocks[i].Cpoint.y+Blocks[i].Dpoint.y/2-Chip_BND.y, gammar)+1);
      Blocks[i].BND_Force.x = first_term + second_term;
   }
 
