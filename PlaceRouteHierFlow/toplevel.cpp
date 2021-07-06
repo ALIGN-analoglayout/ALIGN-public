@@ -362,6 +362,7 @@ int toplevel( const std::vector<std::string>& argv) {
     Placement EA_placer;
     EA_placer.set_dummy_net_weight(dummy_init_weight,dummy_init_rate,dummy_init_weight);
     EA_placer.place(current_node);
+    //EA_placer.place_ut(current_node);
     if(disable_io)std::cout.clear();
     current_node.placement_id = placement_id;
     PlacerIfc curr_plc1(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo));  // do placement and update data in current node

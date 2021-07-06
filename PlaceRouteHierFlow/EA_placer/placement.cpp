@@ -1317,14 +1317,12 @@ void Placement::Extract_Gradient(vector<float> &gradient, bool x_or_y){
 }
 
 void Placement::UT_Placer(){
-
   Cal_LSE_Net_Force();
   Cal_sym_Force();
   Cal_LSE_Area_Force();
   Cal_LSE_BND_Force();
   Cal_LSE_OL_Force();
   Cal_UT_Force();
-
   float step_size = 0.1f;
   float beta_1 = 0.9f;
   float beta_2 = 0.999f;
@@ -1342,13 +1340,16 @@ void Placement::UT_Placer(){
   vector<float> vny(Blocks.size(),0.0f); // next 2nd moment vector
   vector<float> mn_haty(Blocks.size(),0.0f); // next 1st moment vector
   vector<float> vn_haty(Blocks.size(),0.0f); // next 2nd moment vector
-
   //optimization or iteration algorithm
   //stop condition{
   // cal force or gradient
   int step = 0;
-  while(step<100){ //stop condition
+  float current_overlap = Cal_Overlap();
+  float symmetricMin = 0.3;
+  int upper_count_number = 200;
+  while((current_overlap > 0.3 or symCheck(symmetricMin)) and step<upper_count_number){ //stop condition
     step++;
+    current_overlap = Cal_Overlap();
     //cal gradient for the placement
     Cal_LSE_Net_Force();
     Cal_sym_Force();
@@ -1356,7 +1357,6 @@ void Placement::UT_Placer(){
     Cal_LSE_BND_Force();
     Cal_LSE_OL_Force();
     Cal_UT_Force();
-
     //performance ADAM algorithm
     vector<float> gradient_x;
     Extract_Gradient(gradient_x, 1);
@@ -1371,25 +1371,21 @@ void Placement::UT_Placer(){
     vector<float> position_yn;
     Extract_Placement_Vectors(position_xn,1);
     Extract_Placement_Vectors(position_yn,0);
-
     Cal_mn(mnx,mlx,beta_1,gradient_x);
     Cal_mn_hat(mn_hatx, mnx, beta_1);
     Cal_vn(vnx,vlx,beta_2,gradient_x);
     Cal_vn_hat(vn_hatx, vnx, beta_2);
     Cal_new_position(mn_hatx,vn_hatx, step_size, position_xl, position_xn);
-
     Cal_mn(mny,mly,beta_1,gradient_y);
     Cal_mn_hat(mn_haty, mny, beta_1);
     Cal_vn(vny,vly,beta_2,gradient_y);
     Cal_vn_hat(vn_haty, vny, beta_2);
     Cal_new_position(mn_haty,vn_haty, step_size, position_yl, position_yn);
-
     Feedback_Placement_Vectors(position_xn,1);
     Feedback_Placement_Vectors(position_yn,1);
-
     mlx = mnx;
     vlx = vnx;
-
+   
   }
 
 }
@@ -1449,9 +1445,7 @@ void Placement::Cal_LSE_BND_Force(){
 }
 
 float Placement::Cal_OL_MIN_SUM(bool x_or_y, int i, int j){
-  
   float sum_min=0.0f;
-
   if(x_or_y){
   sum_min += Exp_Function(-(Blocks[i].Cpoint.x+Blocks[i].Dpoint.x/2-Blocks[j].Cpoint.x+Blocks[j].Dpoint.x/2), gammar);
   sum_min += Exp_Function(-(Blocks[j].Cpoint.x+Blocks[j].Dpoint.x/2-Blocks[i].Cpoint.x+Blocks[i].Dpoint.x/2), gammar);
@@ -1487,7 +1481,6 @@ float Placement::Cal_OL_Term(bool x_or_y, int i, int j){
 
 
 float Placement::Cal_OL_Term_Gradient(bool x_or_y, int i, int j){
-  
   float result=0.0f;
 
   if(x_or_y){
@@ -1503,7 +1496,6 @@ float Placement::Cal_OL_Term_Gradient(bool x_or_y, int i, int j){
 }
 
 float Placement::Cal_OL_Gradient(bool x_or_y, int i, int j){
-  
   float result=0.0f;
 
   if(x_or_y){
@@ -1526,7 +1518,7 @@ void Placement::Cal_LSE_OL_Force(){
 
   for(unsigned int i=0;i<Blocks.size();++i){
      float gradient = 0.0f;
-     for(unsigned int j=0;j<Blocks.size();++i){
+     for(unsigned int j=0;j<Blocks.size();++j){
         if(i!=j)
         gradient += Cal_OL_Gradient(1, i,j)*Cal_OL_Term(0,i,j);
      }
@@ -1535,7 +1527,7 @@ void Placement::Cal_LSE_OL_Force(){
 
   for(unsigned int i=0;i<Blocks.size();++i){
      float gradient = 0.0f;
-     for(unsigned int j=0;j<Blocks.size();++i){
+     for(unsigned int j=0;j<Blocks.size();++j){
         if(i!=j)
         gradient += Cal_OL_Gradient(0, i,j)*Cal_OL_Term(1,i,j);
      }
