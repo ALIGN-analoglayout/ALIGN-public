@@ -7,7 +7,7 @@ ILP_solver::ILP_solver(design& mydesign) {
   LL.x = INT_MAX;
   LL.y = INT_MAX;
   UR.x = INT_MIN;
-  UR.x = INT_MIN;
+  UR.y = INT_MIN;
   Blocks.resize(mydesign.Blocks.size());
   Aspect_Ratio_weight = mydesign.Aspect_Ratio_weight;
   memcpy(Aspect_Ratio, mydesign.Aspect_Ratio, sizeof(mydesign.Aspect_Ratio));
