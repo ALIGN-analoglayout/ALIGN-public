@@ -79,12 +79,6 @@ def test_comparator_noconst_2():
     example = build_example(my_dir, name, netlist, ckt_setup, ckt_const)
     run_example(example, n=8, cleanup=False)
 
-    <<<<<<< comparator_drc
-    ckt_setup = f"""POWER = vccx\nGND = vssx"""
-    ckt_const = """[]"""
-    example = build_example(my_dir, name, netlist, ckt_setup, ckt_const)
-    run_example(example, n=1)
-
 
 def test_ota_six_1():
     name = f'ckt_{get_test_id()}'
