@@ -77,36 +77,25 @@ std::vector<std::vector<RouterDB::point> > RawRouter::FindPlist(std::set<RouterD
 std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> RawRouter::findviaset(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, RouterDB::point LL, RouterDB::point UR){
 
   std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> set;
-  std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp2> Set_y;
-  std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp >::iterator itlowx, itupx, xitx;
-  std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp2 >::iterator itlowy, itupy, xity; 
+  std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp >::iterator itlowx, itupx, xitx; 
   
 
   //std::cout<<"set@@@@@set"<<std::endl;
   std::pair<int, RouterDB::point> temp_sink_up;
   std::pair<int, RouterDB::point> temp_sink_low;
   temp_sink_up.second=UR;
-  temp_sink_up.first=this->highest_metal-1;
+  temp_sink_up.first=this->highest_metal;
   //temp_sink_up.iterNet=this->Nets.size();
   itupx= Pset_via.upper_bound(temp_sink_up);//what if on the margin?
   temp_sink_low.second=LL;
   temp_sink_low.first=this->lowest_metal;
   //temp_sink_low.iterNet=-2;
   itlowx = Pset_via.lower_bound(temp_sink_low);
-  
-  //std::cout<<"LL,UR "<<"("<<LL.x<<","<<LL.y<<") ("<<UR.x<<","<<UR.y<<")"<<std::endl;
+
 
   for(xitx=itlowx; xitx!=itupx; ++xitx){
-      Set_y.insert(*xitx);
+      set.insert(*xitx);
      }
-
-  itupy = Set_y.upper_bound(temp_sink_up);
-  itlowy = Set_y.lower_bound(temp_sink_low);
-
-  //for(xitx=itlowx; xitx!=itupx; ++xitx){
-  for(xity=itlowy;xity!=itupy;++xity){
-       set.insert(*xity);
-  }
 
   return set;
 

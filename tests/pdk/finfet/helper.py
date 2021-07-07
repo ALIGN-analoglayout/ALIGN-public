@@ -138,8 +138,8 @@ def run_example(example, n=8, cleanup=True, max_errors=0):
         _, variants = result
         for (k,v) in variants.items():
             assert 'errors' in v, f"No Layouts were generated for {example.name} ({k})"
-            assert v['errors'] <= max_errors, f"{example.name} ({k}):Number of DRC errorrs: {str(v['errors'])}"    
-
+            assert v['errors'] <= max_errors, f"{example.name} ({k}):Number of DRC errorrs: {str(v['errors'])}"
+            
     if cleanup:
         shutil.rmtree(run_dir)
         shutil.rmtree(example)

@@ -16,7 +16,7 @@ skip_dirs = []
 examples = [p.parents[0] for p in examples_dir.rglob('*.sp') \
                 if all(x not in skip_dirs for x in p.relative_to(examples_dir).parts)]
 
-@pytest.mark.parametrize( "example", examples, ids=lambda x: x.name)
+@pytest.mark.skip(reason="Refactoring in test_circuits.py")
 def test_examples(example):
 
     maxerrors = 0
