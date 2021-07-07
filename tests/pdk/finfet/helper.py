@@ -61,21 +61,22 @@ def get_test_id():
         t = os.environ.get('PYTEST_CURRENT_TEST')
         t = t.split(' ')[0].split(':')[-1]
         t = t.replace('[', '_').replace(']', '').replace('-', '_')
+        t = t[5:]
     except:
-        t = 'debug_run'
+        t = 'debug'
     return t
 
 
 def comparator(name):
-    netlist = f""".subckt {name} clk vcc_0p9 vin vip von vop vssx
-mmp8 vip_d clk vcc_0p9 vcc_0p9 p w=360e-9 l=40e-9 m=1 nf=2
-mmp5 vin_o vip_o vcc_0p9 vcc_0p9 p w=360e-9 l=40e-9 m=5 nf=2
-mmp14 vop vip_o vcc_0p9 vcc_0p9 p w=360e-9 l=40e-9 m=1 nf=2
-mmp10 vip_o clk vcc_0p9 vcc_0p9 p w=360e-9 l=40e-9 m=2 nf=2
-mmp13 von vin_o vcc_0p9 vcc_0p9 p w=360e-9 l=40e-9 m=1 nf=2
-mmp7 vin_d clk vcc_0p9 vcc_0p9 p w=360e-9 l=40e-9 m=1 nf=2
-mmp9 vin_o clk vcc_0p9 vcc_0p9 p w=360e-9 l=40e-9 m=2 nf=2
-mmp6 vip_o vin_o vcc_0p9 vcc_0p9 p w=360e-9 l=40e-9 m=5 nf=2
+    netlist = f""".subckt {name} clk vccx vin vip von vop vssx
+mmp8 vip_d clk vccx vccx p w=360e-9 l=40e-9 m=1 nf=2
+mmp5 vin_o vip_o vccx vccx p w=360e-9 l=40e-9 m=5 nf=2
+mmp14 vop vip_o vccx vccx p w=360e-9 l=40e-9 m=1 nf=2
+mmp10 vip_o clk vccx vccx p w=360e-9 l=40e-9 m=2 nf=2
+mmp13 von vin_o vccx vccx p w=360e-9 l=40e-9 m=1 nf=2
+mmp7 vin_d clk vccx vccx p w=360e-9 l=40e-9 m=1 nf=2
+mmp9 vin_o clk vccx vccx p w=360e-9 l=40e-9 m=2 nf=2
+mmp6 vip_o vin_o vccx vccx p w=360e-9 l=40e-9 m=5 nf=2
 mmn0 vcom clk vssx vssx n w=2.88e-6 l=40e-9 m=1 nf=16
 mmn11 von vin_o vssx vssx n w=360e-9 l=40e-9 m=1 nf=2
 mmn12 vop vip_o vssx vssx n w=360e-9 l=40e-9 m=1 nf=2
@@ -85,8 +86,24 @@ mmn4 vip_o vin_o vip_d vssx n w=360e-9 l=40e-9 m=8 nf=2
 mmn1 vin_d vin vcom vssx n w=360e-9 l=40e-9 m=18 nf=2
 .ends {name}
 """
-    netlist_setup = f"""POWER = vcc_0p9
+    netlist_setup = f"""POWER = vccx
 GND = vssx
+"""
+    return netlist, netlist_setup
+
+
+def tia(name):
+    netlist = f""".subckt pcell_tfr_0 a b
+xi0 a b tfr_prim w=1e-6 l=1e-6
+.ends pcell_tfr_0
+.subckt {name} vin vop vccx vss
+mp0 vop vin vccx vccx p w=720e-9 nf=4 m=4
+mn0 vop vin vssx vssx n w=720e-9 nf=4 m=4
+xi0 vin vop pcell_tfr_0
+.ends {name}
+"""
+    netlist_setup = f"""POWER = vcc
+GND = vss
 """
     return netlist, netlist_setup
 
@@ -112,8 +129,9 @@ def run_example(example, n=8, cleanup=True, max_errors=0):
     run_dir.mkdir(parents=True)
     os.chdir(run_dir)
 
-    args = [str(example), '-p', str(pdk_dir), '-l','INFO', '-n', str(n)]
+    args = [str(example), '-p', str(pdk_dir), '-l','DEBUG', '-n', str(n)]
     results = align.CmdlineParser().parse_args(args)
+
     assert results is not None, f"{example.name}: No results generated"
 
     for result in results:
@@ -121,7 +139,7 @@ def run_example(example, n=8, cleanup=True, max_errors=0):
         for (k,v) in variants.items():
             assert 'errors' in v, f"No Layouts were generated for {example.name} ({k})"
             assert v['errors'] <= max_errors, f"{example.name} ({k}):Number of DRC errorrs: {str(v['errors'])}"
-        
+            
     if cleanup:
         shutil.rmtree(run_dir)
         shutil.rmtree(example)

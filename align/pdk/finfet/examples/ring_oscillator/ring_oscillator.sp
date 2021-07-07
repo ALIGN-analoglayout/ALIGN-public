@@ -1,6 +1,6 @@
 .subckt ring_oscillator_stage vi vo vssx vccx vctl
-mp0 vo vi vctl vccx p nfin=4 l=40n nf=4 m=1
-mn0 vo vi vssx vssx n nfin=4 l=40n nf=4 m=1
+mp0 vo vi vctl vccx p w=720e-9 l=40n nf=4 m=1
+mn0 vo vi vssx vssx n w=720e-9 l=40n nf=4 m=1
 .ends
 
 .subckt ring_oscillator vctl vo vccx vssx
