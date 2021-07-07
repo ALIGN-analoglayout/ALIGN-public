@@ -51,7 +51,6 @@ def test_comparator_2():
     run_example(example, n=8, cleanup=False)
 
 
-@pytest.mark.skip(reason="Resolve in another PR")
 def test_comparator_noconst_1():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
@@ -64,7 +63,6 @@ def test_comparator_noconst_1():
     example = build_example(my_dir, name, netlist, ckt_setup, ckt_const)
     run_example(example, n=8, cleanup=False)
 
-@pytest.mark.skip(reason="Resolve in another PR")
 def test_comparator_noconst_2():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
