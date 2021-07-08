@@ -5721,6 +5721,23 @@ void ConstGraph::WritePlacement(design& caseNL, SeqPair& caseSP, string outfile)
 
 void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile, bool plot_pin, bool plot_terminal, bool plot_net) {
 
+  ofstream jsonStream;
+  jsonStream.open("Results/" + caseNL.name + ".json");
+  json jsonLibAry = json::array();
+  for(int i=0;i<(int)caseNL.GetSizeofBlocks();++i) {
+    json block;
+    block["Name"] = caseNL.GetBlockName(i);
+    block["x"] = HGraph.at(i).position;
+    block["y"] = VGraph.at(i).position;
+    jsonLibAry.push_back(block);
+  }
+  json temp;
+  temp["Area"] = CalculateArea();
+  temp["HPWL"] = CalculateWireLength(caseNL, caseSP);
+  jsonLibAry.push_back(temp);
+  jsonStream << std::setw(4) << jsonLibAry;
+  jsonStream.close();
+
   auto logger = spdlog::default_logger()->clone("placer.ConstGraph.PlotPlacement");
 
   logger->debug("Placer-Info: create gnuplot file");
