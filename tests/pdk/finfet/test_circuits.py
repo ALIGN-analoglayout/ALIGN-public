@@ -1,9 +1,8 @@
-import pytest
 import textwrap
 try:
-    from .helper import *
+    from .helper import get_test_id, build_example, run_example
     from . import circuits
-except:
+except BaseException:
     from helper import *
     import circuits
 
@@ -11,11 +10,11 @@ except:
 def test_comparator_1():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    ckt_setup = textwrap.dedent(f"""\
+    setup = textwrap.dedent(f"""\
         POWER = vccx
         GND = vssx
         """)
-    ckt_const = textwrap.dedent(f"""[\
+    constraints = textwrap.dedent(f"""[\
         {{"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"}},
         {{"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"}},
         {{"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"}},
@@ -25,19 +24,19 @@ def test_comparator_1():
         {{"constraint": "Order", "direction": "top_to_bottom", "instances": ["ccp", "ccn"]}},
         {{"constraint": "AlignInOrder", "line": "bottom", "instances": ["dp",   "ccn"]}}
         ]""")
-    example = build_example(my_dir, name, netlist, ckt_setup, ckt_const)
-    run_example(example, n=8, cleanup=False)
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example)
 
 
 def test_comparator_2():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    ckt_setup = textwrap.dedent(f"""\
+    setup = textwrap.dedent(f"""\
         POWER = vccx
         GND = vssx
         CLOCK = clk
         """)
-    ckt_const = textwrap.dedent(f"""[\
+    constraints = textwrap.dedent(f"""[\
         {{"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"}},
         {{"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"}},
         {{"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"}},
@@ -47,46 +46,50 @@ def test_comparator_2():
         {{"constraint": "Order", "direction": "top_to_bottom", "instances": ["ccp", "ccn"]}},
         {{"constraint": "AlignInOrder", "line": "bottom", "instances": ["dp",   "ccn"]}}
         ]""")
-    example = build_example(my_dir, name, netlist, ckt_setup, ckt_const)
-    run_example(example, n=8, cleanup=False)
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example)
 
 
 def test_comparator_noconst_1():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    ckt_setup = textwrap.dedent(f"""\
+    setup = textwrap.dedent(f"""\
         POWER = vccx
         GND = vssx
         NO_CONST = {name}
         """)
-    ckt_const = textwrap.dedent(f"""[]""")
-    example = build_example(my_dir, name, netlist, ckt_setup, ckt_const)
-    run_example(example, n=8, cleanup=False)
+    constraints = textwrap.dedent(f"""[]""")
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example)
 
-    
+
 def test_comparator_noconst_2():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    ckt_setup = textwrap.dedent(f"""\
+    setup = textwrap.dedent(f"""\
         POWER = vccx
         GND = vssx
         NO_CONST = {name}
         """)
-    ckt_const = textwrap.dedent(f"""[\
+    constraints = textwrap.dedent(f"""[\
         {{"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"}},
         {{"constraint": "SymmetricBlocks", "direction" : "V", "pairs": [["mn0"], ["dp"]]}}
         ]""")
-    example = build_example(my_dir, name, netlist, ckt_setup, ckt_const)
-    run_example(example, n=8, cleanup=False)
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example)
 
 
-def test_ota_six_1():
+def test_ota_six():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ota_six(name)
-    ckt_setup = textwrap.dedent(f"""\
-        POWER = vccx
-        GND = vssx
-        """)
-    ckt_const = """[]"""
-    example = build_example(my_dir, name, netlist, ckt_setup, ckt_const)
-    run_example(example, n=1)
+    setup = constraints = """[]"""
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example)
+
+
+def test_tia():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.tia(name)
+    setup = constraints = """[]"""
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example)

@@ -2,10 +2,8 @@ from align.primitive import main
 import align.pdk.finfet
 try:
     from .helper import *
-except:
+except BaseException:
     from helper import *
-
-pdk_dir = pathlib.Path(align.pdk.finfet.__file__).parent
 
 
 def test_example(): 

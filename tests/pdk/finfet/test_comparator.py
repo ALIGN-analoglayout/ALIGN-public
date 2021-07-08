@@ -4,6 +4,9 @@ try:
 except:
     from helper import *
 
+# TODO: Soner EOL this file
+# TODO: Fix flake8 for helper import, rename helper as utils
+# TODO: Combine individual tests
 
 @pytest.mark.nightly
 def test_no_constraints():

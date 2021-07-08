@@ -1,5 +1,3 @@
-import os
-import json
 import pathlib
 from align.pdk.finfet import CanvasPDK
 from align.primitive.default import DefaultCanvas
@@ -7,7 +5,7 @@ from align.cell_fabric import Pdk
 import align.pdk.finfet
 try:
     from .helper import *
-except:
+except BaseException:
     from helper import *
 
 
