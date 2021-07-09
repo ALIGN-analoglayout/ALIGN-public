@@ -1,9 +1,9 @@
 import pytest
-from align.pdk.finfet import MOSGenerator, CanvasPDK
+from align.pdk.finfet import MOSGenerator
 try:
-    from .helper import *
-except:
-    from helper import *
+    from .utils import get_test_id, export_to_viewer
+except BaseException:
+    from utils import get_test_id, export_to_viewer
 import logging
 logger = logging.getLogger(__name__)
 
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 ports_uno = [
     # 3 terminal source body shorted
     {'S': [('M1', 'S'), ('M1', 'B')], 'D': [('M1', 'D')], 'G': [('M1', 'G')]},
-    # 3 terminal 
+    # 3 terminal
     {'S': [('M1', 'S')], 'D': [('M1', 'D')], 'G': [('M1', 'G')]},
     # diode connected
     {'S': [('M1', 'S')], 'D': [('M1', 'D'), ('M1', 'G')]},
@@ -37,9 +37,10 @@ ports_duo = [
     {'S': [('M1', 'S'), ('M2', 'S')], 'DA': [('M1', 'D'), ('M2', 'G')], 'DB': [('M2', 'D'), ('M1', 'G')]}
     ]
 
+
 @pytest.mark.nightly
-@pytest.mark.parametrize('n_row', range(1,4))
-@pytest.mark.parametrize('n_col', range(1,6))
+@pytest.mark.parametrize('n_row', range(1, 4))
+@pytest.mark.parametrize('n_col', range(1, 6))
 @pytest.mark.parametrize('nf', [2, 4, 6, 8])
 @pytest.mark.parametrize('device_type', ['parallel', 'stack'])
 @pytest.mark.parametrize('ports', ports_uno)
@@ -50,16 +51,17 @@ def test_uno_drc(n_row, n_col, nf, device_type, ports):
     if device_type == 'parallel':
         parameters['nf'] = nf
     else:
-        parameters['stack'] = nf 
+        parameters['stack'] = nf
     c.addNMOSArray(n_col, n_row, 0, None, ports, **parameters)
     c.gen_data(run_drc=True)
     if c.drc.num_errors > 0 or len(c.rd.opens) > 0 or len(c.rd.shorts) > 0:
         export_to_viewer(get_test_id(), c)
         assert False, f'{get_test_id()} DRC ports:{ports} type:{device_type} nf:{nf}, n_col:{n_col} n_row:{n_row}'
 
+
 @pytest.mark.nightly
-@pytest.mark.parametrize('n_row', range(1,4))
-@pytest.mark.parametrize('n_col', range(1,6))
+@pytest.mark.parametrize('n_row', range(1, 4))
+@pytest.mark.parametrize('n_col', range(1, 6))
 @pytest.mark.parametrize('nf', [2, 4, 6, 8])
 @pytest.mark.parametrize('device_type', ['parallel', 'stack'])
 @pytest.mark.parametrize('ports', ports_duo)
@@ -71,7 +73,7 @@ def test_duo_drc(n_row, n_col, nf, device_type, ports):
         if device_type == 'parallel':
             parameters['nf'] = nf
         else:
-            parameters['stack'] = nf 
+            parameters['stack'] = nf
         c.addNMOSArray(n_col, n_row, 1, None, ports, **parameters)
         c.gen_data(run_drc=True)
         if c.drc.num_errors > 0 or len(c.rd.opens) > 0 or len(c.rd.shorts) > 0:
@@ -87,7 +89,7 @@ def test_uno_one():
     c.gen_data(run_drc=True)
     export_to_viewer(get_test_id(), c)
     if c.drc.num_errors > 0 or len(c.rd.opens) > 0 or len(c.rd.shorts) > 0:
-        assert False, f'{get_test_id()} DRC ports:{ports} type:{device_type} nf:{nf}, n_col:{n_col} n_row:{n_row}'
+        assert False, f'{get_test_id()}'
 
 
 def test_duo_one():
@@ -98,10 +100,10 @@ def test_duo_one():
     c.gen_data(run_drc=True)
     export_to_viewer(get_test_id(), c)
     if c.drc.num_errors > 0 or len(c.rd.opens) > 0 or len(c.rd.shorts) > 0:
-        assert False, f'{get_test_id()} DRC ports:{ports} type:{device_type} nf:{nf}, n_col:{n_col} n_row:{n_row}'
+        assert False, f'{get_test_id()}'
 
 
-### Unit tests ###
+# Unit tests ###
 
 def test_unit_interleave_pattern():
     mg = MOSGenerator()

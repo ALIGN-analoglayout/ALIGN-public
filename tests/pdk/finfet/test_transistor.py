@@ -1,21 +1,18 @@
 from align.schema.transistor import Transistor
 from align.pdk.finfet import MOS, CanvasPDK
 try:
-    from .helper import *
-except:
-    from helper import *
-import logging
-logger = logging.getLogger(__name__)
+    from .utils import compare_with_golden, place
+except BaseException:
+    from utils import compare_with_golden, place
 
 
 def test_zero():
-    logger.info(f'running {get_test_id()}')
     cv = CanvasPDK()
     ox = oy = 0
-    track_pattern={'G':[6], 'S':[4], 'D':[2]}
+    track_pattern = {'G': [6], 'S': [4], 'D': [2]}
     for nfin in range(1, 9):
         ox = 0
-        for model_name in ['n','p']:
+        for model_name in ['n', 'p']:
             for device_type in ["stack", "parallel"]:
                 for nf in [2, 4, 6]:
                     mg = MOS()
@@ -25,4 +22,3 @@ def test_zero():
                     ox += data['bbox'][2]
         oy += data['bbox'][3]
     compare_with_golden("test_transistor_0", cv)
-

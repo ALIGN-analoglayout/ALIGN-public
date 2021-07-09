@@ -51,7 +51,7 @@ def place(cv, c, ox, oy):
     data = _canvas_to_data(c)
     for term in data["terminals"]:
         new_term = deepcopy(term)
-        x0, y0, x1, y1 = term['rect'] 
+        x0, y0, x1, y1 = term['rect']
         new_term['rect'] = [x0+ox, y0+oy, x1+ox, y1+oy]
         cv.terminals.append(new_term)
 
@@ -77,7 +77,7 @@ def build_example(name, netlist, netlist_setup, constraints):
     with open(example / f'{name}.setup', 'w') as fp:
         fp.write(netlist_setup)
     with open(example / f'{name}.const.json', 'w') as fp:
-        fp.write(constraints)
+        fp.write(json.dumps(constraints, indent=2))
     return example
 
 
@@ -103,4 +103,4 @@ def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO'):
         shutil.rmtree(run_dir)
         shutil.rmtree(example)
     else:
-        return (run_dir, example)
+        return (example, run_dir)
