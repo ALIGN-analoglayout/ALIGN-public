@@ -1,6 +1,5 @@
-import os
 import math
-from itertools import cycle, islice, chain
+from itertools import cycle, islice
 from align.cell_fabric import transformation
 from align.schema.transistor import Transistor, TransistorArray
 from . import CanvasPDK, MOS
@@ -90,7 +89,7 @@ class MOSGenerator(CanvasPDK):
         logger_func(f'x_cells={self.n_col}, y_cells={self.n_row} after legalization')
 
         if self.n_row * self.n_col != m:
-            assert False, f'x_cells {self.n_row} x y_cells {self.n_col} not equal to m {m}'
+            assert False, f'x_cells {self.n_row} by y_cells {self.n_col} not equal to m {m}'
 
         self.ports = ports
         self.mos_array()

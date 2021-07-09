@@ -1,14 +1,12 @@
-import os
-import json
 import pathlib
 from align.pdk.finfet import CanvasPDK
 from align.primitive.default import DefaultCanvas
 from align.cell_fabric import Pdk
 import align.pdk.finfet
 try:
-    from .helper import *
-except:
-    from helper import *
+    from .utils import compare_with_golden, export_to_viewer
+except BaseException:
+    from utils import compare_with_golden, export_to_viewer
 
 
 layers_json = pathlib.Path(align.pdk.finfet.__file__).parent / 'layers.json'
@@ -16,6 +14,7 @@ layers_json = pathlib.Path(align.pdk.finfet.__file__).parent / 'layers.json'
 
 def test_canvas_zero():
     c = CanvasPDK()
+    print(c)
 
 
 def test_canvas_one():
@@ -57,9 +56,9 @@ def test_canvas_two():
     c1.addVia(c1.v1,  'a', None, 2, 1)
     c1.computeBbox()
     c1.gen_data(run_drc=True)
-    assert c1.drc.num_errors == 1, f'horizontal via spacing'
+    assert c1.drc.num_errors == 1, 'horizontal via spacing'
 
-    c1 = CanvasPDK() # vertical via spacing
+    c1 = CanvasPDK()  # vertical via spacing
     c1.addWire(c1.m2, 'a', None, 1, (1, -1), (3, 1))
     c1.addWire(c1.m2, 'a', None, 2, (1, -1), (3, 1))
     c1.addWire(c1.m3, 'a', None, 1, (1, -1), (6, 1))
@@ -67,7 +66,7 @@ def test_canvas_two():
     c1.addVia(c1.v2,  'a', None, 1, 2)
     c1.computeBbox()
     c1.gen_data(run_drc=True)
-    assert c1.drc.num_errors == 1, f'vertical via spacing'
+    assert c1.drc.num_errors == 1, 'vertical via spacing'
 
 
 def test_canvas_three():
