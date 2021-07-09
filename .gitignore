@@ -80,6 +80,7 @@ Cktgen/cktgen/dist/
 PlaceRouteHierFlow/PnRDB/__json
 tests/gdsconv/from*
 tests/cell_fabric/Foo*.cir
+tests/schema/*.txt
 !build/native_build.log
 !Cktgen/cktgen/tests/vga*
 !Cktgen/cktgen/tests/merged.lef
