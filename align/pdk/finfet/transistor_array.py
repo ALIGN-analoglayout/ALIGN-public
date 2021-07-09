@@ -33,14 +33,14 @@ class MOSGenerator(CanvasPDK):
         # TODO: All of below goes away when TransistorArray is passed to mos_array as shown below
         for key in ['m', 'real_inst_type']:
             assert key in parameters, f'Missing transistor parameter {key}'
-        assert 'nf' or 'stack' in parameters, f'Missing transistor parameter nf or stack'
+        assert 'nf' or 'stack' in parameters, 'Missing transistor parameter nf or stack'
 
-        if 'nf' in parameters:
-            nf = 'nf'
-            device_type = 'parallel'
-        elif 'stack' in parameters:
+        if 'stack' in parameters:
             nf = 'stack'
             device_type = 'stack'
+        elif 'nf' in parameters:
+            nf = 'nf'
+            device_type = 'parallel'
         else:
             nf = device_type = None
             assert False, f'Either nf or stack parameter should be defined {parameters}'

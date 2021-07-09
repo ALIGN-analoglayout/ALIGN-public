@@ -84,7 +84,10 @@ def modify_pg_conn_subckt(hier_graph_dict:dict,circuit_name, pg_conn):
     for k,v in pg_conn.items():
         logger.debug(f"fixing port {k} to {v} for all inst in {circuit_name}")
         new["ports"].remove(k)
-        del new["ports_weight"][k]
+        # TODO: Remove this hack. Create a new hierdictnode instead of deepcopy
+        ports_weight = {k:v for k,v in new["ports_weight"].items()}
+        del ports_weight[k]
+        new["ports_weight"] = ports_weight
         if v in new["graph"].nodes():
             old_edge_wt=list(copy.deepcopy(new["graph"].edges(v,data=True)))
             new["graph"] = nx.relabel_nodes(new["graph"],{k:v},copy=False)
@@ -154,6 +157,10 @@ def preprocess_stack_parallel(hier_graph_dict:dict,circuit_name,G):
         initial_size = len(G)
     #remove single instance subcircuits 
     attributes = [attr for node, attr in G.nodes(data=True) if 'net' not in attr["inst_type"]]
+
+    # TODO: Below needs to be fixed
+    return None 
+
     if len(attributes)==1:
         #Check any existing hier
         if 'sub_graph' in attributes[0].keys() and attributes[0]['sub_graph'] is not None:
