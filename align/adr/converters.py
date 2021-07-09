@@ -1,6 +1,8 @@
 import re
 
 # SY: Syntax converter
+
+
 def convert_align_to_adr(term):
     """ Convert align terminal to adr terminal (M -> colored metal, V -> colored via, netName -> net_name"""
     assert 'netName' in term, term
@@ -20,21 +22,25 @@ def convert_align_to_adr(term):
     return new_term
 
 # SY: Added for coloring
+
+
 def extract_layer_color(layer):
-  """ Returns layer and color from colored layer. Example: viaa1 => via1, a"""
-  mg = re.match(r'(metal|via)(\D+)(\d+)', layer)
-  if mg:
-    lyr = mg.group(1) + mg.group(3)
-    clr = mg.group(2)
-  else:
-    lyr = layer
-    clr = None
-  return lyr, clr
+    """ Returns layer and color from colored layer. Example: viaa1 => via1, a"""
+    mg = re.match(r'(metal|via)(\D+)(\d+)', layer)
+    if mg:
+        lyr = mg.group(1) + mg.group(3)
+        clr = mg.group(2)
+    else:
+        lyr = layer
+        clr = None
+    return lyr, clr
 
 # SY: Added for coloring
+
+
 def translate_layer(layer):
-  """ Translates metal/via to M/V"""
-  metal_layer_map = { f'metal{i}' : f'M{i}' for i in range(0,7) }
-  via_layer_map = { f'via{i}' : f'V{i}' for i in range(0,6) }
-  layer_map = dict(list(metal_layer_map.items()) + list(via_layer_map.items()))
-  return layer_map.get(layer, layer)
+    """ Translates metal/via to M/V"""
+    metal_layer_map = {f'metal{i}': f'M{i}' for i in range(0, 7)}
+    via_layer_map = {f'via{i}': f'V{i}' for i in range(0, 6)}
+    layer_map = dict(list(metal_layer_map.items()) + list(via_layer_map.items()))
+    return layer_map.get(layer, layer)
