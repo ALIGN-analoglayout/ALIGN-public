@@ -1,14 +1,11 @@
 from align.primitive import main
-import align.pdk.finfet
 try:
-    from .helper import *
-except:
-    from helper import *
-
-pdk_dir = pathlib.Path(align.pdk.finfet.__file__).parent
+    from .utils import pdk_dir, export_to_viewer
+except BaseException:
+    from utils import pdk_dir, export_to_viewer
 
 
-def test_example(): 
+def test_example():
     name = "tfr_prim"
     try:
         primitive_generator = main.get_generator(name, pdk_dir)
@@ -18,5 +15,5 @@ def test_example():
             layout_parameters={'dummy': True}
             )
         export_to_viewer("test_example", data)
-    except:
-        assert False, f'This should not happen'
+    except BaseException:
+        assert False, 'This should not happen'

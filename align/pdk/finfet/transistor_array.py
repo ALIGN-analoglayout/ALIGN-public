@@ -1,6 +1,5 @@
-import os
 import math
-from itertools import cycle, islice, chain
+from itertools import cycle, islice
 from align.cell_fabric import transformation
 from align.schema.transistor import Transistor, TransistorArray
 from . import CanvasPDK, MOS
@@ -28,7 +27,7 @@ class MOSGenerator(CanvasPDK):
 
     def mos_array_temporary_wrapper(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
 
-        logger_func(f'MOS array: pattern={pattern}, ports={ports}, parameters={parameters}')
+        logger_func(f'x_cells={x_cells}, y_cells={y_cells}, pattern={pattern}, ports={ports}, parameters={parameters}')
 
         #################################################################################################
         # TODO: All of below goes away when TransistorArray is passed to mos_array as shown below
@@ -87,6 +86,11 @@ class MOSGenerator(CanvasPDK):
         #################################################################################################
         m = 2*parameters['m'] if pattern > 0 else parameters['m']
         self.n_row, self.n_col = self.validate_array(m, y_cells, x_cells)
+        logger_func(f'x_cells={self.n_col}, y_cells={self.n_row} after legalization')
+
+        if self.n_row * self.n_col != m:
+            assert False, f'x_cells {self.n_row} by y_cells {self.n_col} not equal to m {m}'
+
         self.ports = ports
         self.mos_array()
 
@@ -279,7 +283,7 @@ class MOSGenerator(CanvasPDK):
                         term['rect'][2] = x_max
 
         # M3
-        self.terminals = self.removeDuplicates()
+        self.terminals = self.removeDuplicates(silence_errors=True)
         if len(self.rd.opens) > 0:               
             open_pins = set()
             for t in self.rd.opens:
@@ -313,7 +317,7 @@ class MOSGenerator(CanvasPDK):
 
             self.drop_via(self.v2)
 
-            self.terminals = self.removeDuplicates()
+            self.terminals = self.removeDuplicates(silence_errors=True)
             if len(self.rd.opens) > 0:               
                 _stretch_m2_wires()
                 self.drop_via(self.v2)

@@ -295,6 +295,9 @@ def FindConst(graph, name, ports, ports_weight, input_const, stop_points=None):
                     pins2=s2
                 ))
                 continue
+        elif isinstance(const, constraint.DoNotIdentify):
+            written_symmetries +=','.join(const.instances)
+            
         output_const.append(const)
 
     ## ALIGN block constraints

@@ -60,57 +60,6 @@ class SemiPerimeter:
         if not other.isEmpty():
             self.addRect(tr.hitRect(Rect(*other.toList())).canonical().toList())
 
-
-def calculate_HPWL_from_hN( hN):
-
-    HPWL = 0
-
-    for neti in hN.Nets:
-
-        sp = SemiPerimeter()
-
-        logger.debug( f'Working on {neti.name}')
-
-        for connectedj in neti.connected:
-            ntype,iter2,iter = connectedj.type, connectedj.iter2, connectedj.iter
-
-            if ntype == PnR.NType.Terminal: continue
-
-            blk = hN.Blocks[iter2]
-            inst = blk.instance[blk.selectedInstance]
-
-            tr = Transformation( **gen_transformation(inst).toDict())
-
-            gdsFile = pathlib.Path(inst.gdsFile).stem
-
-            logger.debug( f'{hN.name} neti {ntype,iter2,iter} {inst.master} {inst.name} {gdsFile} {blk.selectedInstance}')
-            for contact in inst.blockPins[iter].pinContacts:
-                ob = contact.originBox
-                new_b = tr.hitRect(Rect( ob.LL.x, ob.LL.y, ob.UR.x, ob.UR.y)).canonical().toList()
-
-                b = contact.placedBox
-
-                assert new_b[0] == b.LL.x and new_b[1] == b.LL.y and new_b[2] == b.UR.x and new_b[3] == b.UR.y
-
-                bc = b.center()
-                c = contact.placedCenter
-
-                assert 2*c.x == b.LL.x + b.UR.x
-                assert 2*c.y == b.LL.y + b.UR.y
-
-                logger.debug( f'{c.x} {c.y} {bc.x} {bc.y}')
-                assert c.x == bc.x and c.y == bc.y
-
-                sp.addPoint( (c.x, c.y))
-                    
-        net_HPWL = sp.dist()
-
-        logger.debug( f'{neti.name} {net_HPWL} {sp}')
-        logger.debug( f'==========')
-
-        HPWL += net_HPWL
-    return HPWL
-
 def gen_netlist( placement_verilog_d, concrete_name):
     nets_d = defaultdict(list)
 
@@ -154,8 +103,10 @@ def to_center( r):
     #return [xc,yc,xc,yc]
     return r
 
-def calculate_HPWL_from_placement_verilog_d_top_down( placement_verilog_d, concrete_name, nets_d):
+def calculate_HPWL_from_placement_verilog_d_top_down( placement_verilog_d, concrete_name, nets_d, *, skip_globals=False):
     instances = { (module['concrete_name'],instance['instance_name']): instance for module in placement_verilog_d['modules'] for instance in module['instances']}
+
+    global_actuals = { gs['actual'] for gs in placement_verilog_d['global_signals']}
 
     leaf_terminals = defaultdict(list)
 
@@ -166,6 +117,7 @@ def calculate_HPWL_from_placement_verilog_d_top_down( placement_verilog_d, concr
 
     HPWL = 0
     for hnet, hpins in nets_d.items():
+        if skip_globals and len(hnet) == 1 and hnet[0] in global_actuals: continue
         sp = SemiPerimeter()
         for hpin in hpins:
             ctn = concrete_name
@@ -202,7 +154,7 @@ def compute_topoorder( modules, concrete_name):
     aux(concrete_name)
     return order, found_modules, found_leaves
 
-def calculate_HPWL_from_placement_verilog_d_bottom_up( placement_verilog_d, concrete_name):
+def calculate_HPWL_from_placement_verilog_d_bottom_up( placement_verilog_d, concrete_name, *, skip_globals=False):
 
     modules = { module['concrete_name']: module for module in placement_verilog_d['modules']}
 
@@ -263,15 +215,16 @@ def calculate_HPWL_from_placement_verilog_d_bottom_up( placement_verilog_d, conc
 
     HPWL = net_local_hpwls[cn]
     for a in set(module['parameters']).union(global_actuals):
+        if skip_globals and a in global_actuals: continue
         net_hpwl = net_bboxes[(cn,a)].dist()
         logger.debug( f'Accounting for top-level (or global) net {a} {net_hpwl} in {cn}')
         HPWL += net_hpwl
         
     return HPWL
 
-def calculate_HPWL_from_placement_verilog_d( placement_verilog_d, concrete_name, nets_d):
-    hpwl_top_down = calculate_HPWL_from_placement_verilog_d_top_down( placement_verilog_d, concrete_name, nets_d)
-    hpwl_bottom_up = calculate_HPWL_from_placement_verilog_d_bottom_up( placement_verilog_d, concrete_name)
+def calculate_HPWL_from_placement_verilog_d( placement_verilog_d, concrete_name, nets_d, *, skip_globals=False):
+    hpwl_top_down = calculate_HPWL_from_placement_verilog_d_top_down( placement_verilog_d, concrete_name, nets_d, skip_globals=skip_globals)
+    hpwl_bottom_up = calculate_HPWL_from_placement_verilog_d_bottom_up( placement_verilog_d, concrete_name, skip_globals=skip_globals)
 
     if hpwl_top_down != hpwl_bottom_up:
         logger.warning( f'HPWL calculated in different ways differ: top_down: {hpwl_top_down} bottom_up: {hpwl_bottom_up}')

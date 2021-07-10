@@ -50,16 +50,6 @@ class CmdlineParser():
                             type=int,
                             default=0,
                             help='1 = flatten the netlist, 0= read as hierahical netlist')
-        parser.add_argument("-U_mos",
-                            "--unit_size_mos",
-                            type=int,
-                            default=12,
-                            help='no of fins in unit size')
-        parser.add_argument("-U_cap",
-                            "--unit_size_cap",
-                            type=int,
-                            default=12,
-                            help='no of fins in unit size')
         parser.add_argument("-n",
                             "--nvariants",
                             type=int,
@@ -134,6 +124,15 @@ class CmdlineParser():
                             type=str,
                             default=None,
                             help='JSON file for adding a reference placement to GUI.')
+
+        parser.add_argument('--nroutings',
+                            type=int,
+                            default=1,
+                            help='Maximum number of routings to generate.')
+
+        parser.add_argument('--viewer',
+                            action='store_true',
+                            help='Start lightweight viewer')
 
         self.parser = parser
 

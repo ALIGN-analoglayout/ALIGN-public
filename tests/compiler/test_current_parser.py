@@ -41,7 +41,7 @@ def test_match_ota():
     create_data = CreateDatabase(g,const_parse)
     hier_graph_dict = create_data.read_inputs("ota")
     annotate = Annotate(hier_graph_dict, design_setup,lib_list,all_lef)
-    mapped_graph_list = annotate._mapped_graph_list(g, lib_list,['vdd!','vss'])
+    mapped_graph_list = annotate._mapped_graph_list(g, 'ota',['vdd!','vss'])
     assert 'Switch_NMOS' in mapped_graph_list.keys()
     assert 'Switch_PMOS' in mapped_graph_list.keys()
     assert 'CMC_PMOS' in mapped_graph_list.keys()

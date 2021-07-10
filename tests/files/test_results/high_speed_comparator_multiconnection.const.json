@@ -1,106 +1,93 @@
 [
-    {
-        "constraint": "align",
-        "instances": [
+        {
+          "constraint": "horizontal_distance",
+          "abs_distance": 0
+        },
+        {
+          "constraint": "vertical_distance",
+          "abs_distance": 0
+        },
+        {
+          "constraint": "symmetric_blocks",
+          "pairs": [
+            [
+              "mn0"
+            ],
+            [
+              "mn1_mn2"
+            ],
+            [
+              "mn3_mn4"
+            ],
+            [
+              "mp5_mp6"
+            ],
+            [
+              "mp7",
+              "mp8"
+            ],
+            [
+              "mp9",
+              "mp10"
+            ],
+            [
+              "mp11_mn13",
+              "mp12_mn14"
+            ]
+          ],
+          "direction": "V"
+        },
+        {
+          "constraint": "order",
+          "instances": [
+            "mn0",
+            "mn1_mn2",
+            "mn3_mn4",
+            "mp5_mp6"
+          ],
+          "direction": "top_to_bottom",
+          "abut": false
+        },
+        {
+          "constraint": "align",
+          "instances": [
             "mp9",
             "mp7",
             "mn1_mn2",
             "mp8",
             "mp10"
-        ],
-        "line": "h_bottom"
-    },
-    {
-        "constraint": "align",
-        "instances": [
+          ],
+          "line": "h_bottom"
+        },
+        {
+          "constraint": "align",
+          "instances": [
             "mp11_mn13",
             "mp5_mp6",
             "mp12_mn14"
-        ],
-        "line": "h_bottom"
-    },
-    {
-        "constraint": "horizontal_distance",
-        "abs_distance": 0
-    },
-    {
-        "constraint": "multi_connection",
-        "nets": [
+          ],
+          "line": "h_bottom"
+        },
+        {
+          "constraint": "multi_connection",
+          "nets": [
             "vcom"
-        ],
-        "multiplier": 3
-    },
-    {
-        "constraint": "order",
-        "instances": [
-            "mn0",
-            "mn1_mn2",
+          ],
+          "multiplier": 3
+        },
+        {
+          "constraint": "do_not_identify",
+          "instances": [
             "mn3_mn4",
-            "mp5_mp6"
-        ],
-        "direction": "top_to_bottom",
-        "abut": false
-    },
-    {
-        "constraint": "symmetric_blocks",
-        "pairs": [
-            [
-                "mn0"
-            ],
-            [
-                "mn1_mn2"
-            ],
-            [
-                "mn3_mn4"
-            ],
-            [
-                "mp5_mp6"
-            ],
-            [
-                "mp7",
-                "mp8"
-            ],
-            [
-                "mp9",
-                "mp10"
-            ],
-            [
-                "mp11_mn13",
-                "mp12_mn14"
-            ]
-        ],
-        "direction": "V"
-    },
-    {
-        "constraint": "symmetric_nets",
-        "net1": "vin",
-        "net2": "vip",
-        "pins1": [
-            "mn1_mn2/vin",
-            "vin"
-        ],
-        "pins2": [
-            "mn1_mn2/vip",
-            "vip"
-        ],
-        "direction": "V"
-    },
-    {
-        "constraint": "symmetric_nets",
-        "net1": "vin_d",
-        "net2": "vip_d",
-        "pins1": [
-            "mp7/D",
-            "mn3_mn4/vin_d"
-        ],
-        "pins2": [
-            "mp8/D",
-            "mn3_mn4/vip_d"
-        ],
-        "direction": "V"
-    },
-    {
-        "constraint": "vertical_distance",
-        "abs_distance": 0
-    }
+            "mp5_mp6",
+            "mn1_mn2",
+            "mp11_mn13",
+            "mp12_mn14",
+            "mn0",
+            "mp10",
+            "mp7",
+            "mp8",
+            "mp9"
+          ]
+        }
 ]

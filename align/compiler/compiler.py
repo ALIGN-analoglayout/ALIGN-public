@@ -168,7 +168,7 @@ def compiler_output(input_ckt, hier_graph_dict, design_name:str, result_dir:path
         POWER_PINS = [design_setup['GND'][0],design_setup['POWER'][0]]
     except (IndexError, ValueError):
         POWER_PINS = []
-        logger.error("no power and gnd defination, correct setup file")
+        logger.info("Power and ground nets not found. Power grid will not be constructed.")
 
     #read lef to not write those modules as macros
     lef_path = pathlib.Path(__file__).resolve().parent.parent / 'config'

@@ -11,7 +11,7 @@ from .build_pnr_model import *
 from .checker import check_placement
 from ..gui.mockup import run_gui
 from ..schema.hacks import VerilogJsonTop
-from .hpwl import calculate_HPWL_from_hN, calculate_HPWL_from_placement_verilog_d, gen_netlist
+from .hpwl import calculate_HPWL_from_placement_verilog_d, gen_netlist
 
 logger = logging.getLogger(__name__)
 
@@ -134,10 +134,10 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
 
     return return_name
 
-def route_bottom_up( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS, placements_to_run):
+def route_bottom_up( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS, placements_to_run, nroutings):
 
     if placements_to_run is None:
-        placements_to_run = list(range(DB.hierTree[idx].numPlacement))
+        placements_to_run = list(range(min(nroutings, DB.hierTree[idx].numPlacement)))
 
     # Compute all the needed subblocks
     subblocks_d = defaultdict(set)
@@ -207,7 +207,7 @@ def route_bottom_up( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS, placements_
 
     return results_name_map
 
-def route_no_op( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS, placements_to_run):
+def route_no_op( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS, placements_to_run, nroutings):
     results_name_map = {}
     return results_name_map
 
@@ -269,11 +269,11 @@ def route_top_down_aux( DB, drcInfo,
 
     return new_currentnode_idx
 
-def route_top_down( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS, placements_to_run):
+def route_top_down( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS, placements_to_run, nroutings):
     assert len(DB.hierTree[idx].PnRAS) == DB.hierTree[idx].numPlacement
 
     if placements_to_run is None:
-        placements_to_run = list(range(DB.hierTree[idx].numPlacement))
+        placements_to_run = list(range(min(nroutings,DB.hierTree[idx].numPlacement)))
 
     results_name_map = {}
     new_topnode_indices = []
@@ -326,7 +326,7 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff):
 
     DB.hierTree[idx].numPlacement = actualNumLayout
 
-def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode, skipGDS, placements_to_run):
+def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode, skipGDS, placements_to_run, nroutings):
     logger.info(f'Starting {router_mode} routing on {DB.hierTree[idx].name} {idx} restricted to {placements_to_run}')
 
     router_engines = { 'top_down': route_top_down,
@@ -334,7 +334,7 @@ def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode, skipGDS, placemen
                        'no_op': route_no_op
                        }
 
-    return router_engines[router_mode]( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, skipGDS=skipGDS, placements_to_run=placements_to_run)
+    return router_engines[router_mode]( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
 
 def subset_verilog_d( verilog_d, nm):
     # Should be an abstract verilog_d; no concrete_instance_names
@@ -367,7 +367,7 @@ def subset_verilog_d( verilog_d, nm):
 
     return new_verilog_d
 
-def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, verilog_d, router_mode, gui, skipGDS, lambda_coeff, scale_factor, reference_placement_verilog_json):
+def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, verilog_d, router_mode, gui, skipGDS, lambda_coeff, scale_factor, reference_placement_verilog_json, nroutings):
     TraverseOrder = DB.TraverseHierTree()
 
     for idx in TraverseOrder:
@@ -414,7 +414,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
             if gui:
                 nets_d = gen_netlist( placement_verilog_d, concrete_name)
 
-                hpwl_alt = calculate_HPWL_from_placement_verilog_d( placement_verilog_d, concrete_name, nets_d)
+                hpwl_alt = calculate_HPWL_from_placement_verilog_d( placement_verilog_d, concrete_name, nets_d, skip_globals=True)
 
                 def r2wh( r):
                     return (round_to_angstroms(r[2]-r[0]), round_to_angstroms(r[3]-r[1]))
@@ -426,12 +426,8 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                 p = r2wh(modules[concrete_name]['bbox'])
 
                 if hN is not None:
-                    hpwl = calculate_HPWL_from_hN( hN)
-                    if hpwl != hN.HPWL:
-                        logger.error( f'hpwl: locally computed from hN {hpwl}, placer computed {hN.HPWL} differ!')
-
-                    if hpwl_alt != hN.HPWL:
-                        logger.debug( f'hpwl: locally computed from netlist {hpwl_alt}, placer computed {hN.HPWL} differ!')
+                    if hpwl_alt != hN.HPWL_extend:
+                        logger.warning( f'hpwl: locally computed from netlist {hpwl_alt}, placer computed {hN.HPWL_extend} differ!')
 
                 #reported_hpwl = hN.HPWL / 2000
                 # This is a much better estimate but not what the placer is using
@@ -535,9 +531,9 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
                 if m.groups()[0] == top_level:
                     placements_to_run = [int(m.groups()[1])]
 
-    return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run)
+    return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
 
-def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0, scale_factor=2, reference_placement_verilog_json=None):
+def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0, scale_factor=2, reference_placement_verilog_json=None, nroutings=1):
 
     assert len(args) == 9
 
@@ -557,6 +553,6 @@ def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_m
 
     pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
 
-    results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, verilog_d=verilog_d, router_mode=router_mode, gui=gui, skipGDS=skipGDS, lambda_coeff=lambda_coeff, scale_factor=scale_factor, reference_placement_verilog_json=reference_placement_verilog_json)
+    results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, verilog_d=verilog_d, router_mode=router_mode, gui=gui, skipGDS=skipGDS, lambda_coeff=lambda_coeff, scale_factor=scale_factor, reference_placement_verilog_json=reference_placement_verilog_json, nroutings=nroutings)
 
     return DB, results_name_map
