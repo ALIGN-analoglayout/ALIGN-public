@@ -87,6 +87,7 @@ class WriteVerilog:
 
         #         d['instances'].append( instance)
 
+
         return d
 
     def gen_dict_fa(self, a, b):
@@ -230,6 +231,70 @@ def generate_lef(element,subckt,all_lef, design_config:dict, uniform_height=Fals
             values = subckt.parameters
         logger.debug(f" inst values {values}")
         if "NFIN" in values.keys():
+
+#        if unit_size_mos is None:
+#            """ 
+#            Transistor parameters:
+#                m:  number of instances
+#                nf: number of fingers
+#                w:  effective width of an instance (width of instance x number of fingers)
+#            """
+#            assert 'm' in values,  f'm: Number of instances not specified {values}'
+#            assert 'nf' in values, f'nf: Number of fingers not specified {values}'
+#            assert 'w' in values,  f'w: Width is not specified {values}'
+#            assert 'real_inst_type' in attr, f'vt: Transistor type is not specified {attr}'
+#
+#            def x_by_y(m):
+#                y_sqrt = floor(sqrt(m))
+#                for y in range(y_sqrt, 0, -1):
+#                    if y == 1:
+#                        return m, y
+#                    elif m % y == 0:
+#                        return m//y, y
+#
+#            m  = int(values['m'])
+#            nf = int(values['nf'])
+#            w = int(values['w']*1e9)
+#            vt = attr['real_inst_type']
+#
+#            x, y = x_by_y(m)
+#
+#            # TODO: Why is this needed???
+#            if name == 'Switch_NMOS_G':
+#                name = 'Switch_NMOS_B'
+#            elif name == 'Switch_PMOS_G':
+#                name = 'Switch_PMOS_B'
+#
+#            block_name = f'{name}_{vt}_w{w}_m{m}'
+#
+#            values['real_inst_type'] = vt
+#
+#            block_args= {
+#                'primitive': name,
+#                'value': unit_size_mos,
+#                'x_cells': x,
+#                'y_cells': y,
+#                'value': 1, # hack. This is used as nfin later.
+#                'parameters':values
+#            }
+#
+#            if 'stack' in values:
+#                assert nf == 1, f'Stacked transistor cannot have multiple fingers {nf}'
+#                block_args['stack']=int(values['stack'])
+#                block_name += f'_st'+str(int(values['stack']))
+#            else:
+#                block_name += f'_nf{nf}'
+#
+#            block_name += f'_x{x}_y{y}'
+#
+#            if block_name in available_block_lef:
+#                if block_args != available_block_lef[block_name]:
+#                    assert False, f'Two different transistors mapped to the same name {block_name}: {available_block_lef[block_name]} {block_args}'
+#
+#            return block_name, block_args
+#
+#
+#        if "nfin" in values.keys():
             #FinFET design
             assert int(values["NFIN"])
             size = int(values["NFIN"])

@@ -122,6 +122,63 @@ def test_gen_netlist_flip():
     placement_verilog_d['modules'][0]['instances'][0]['transformation'] = { "oX": 0, "oY": 10, "sX":  1, "sY": -1}
     assert 35 == calculate_HPWL_from_placement_verilog_d( placement_verilog_d, 'top', nets_d)
 
+
+def test_gen_netlist():
+    placement_verilog_d = {
+        "global_signals": [],
+        "modules": [
+            { "abstract_name": "top",
+              "concrete_name": "top",
+              "bbox": [0,0,100,100],
+              "parameters": [],
+              "instances": [
+                  {
+                      "abstract_template_name": "a",
+                      "concrete_template_name": "a",
+                      "instance_name": "u0",
+                      "transformation": { "oX": 0, "oY": 0, "sX": 1, "sY": 1},
+                      "fa_map": [{"formal": "x", "actual": "y"}]
+                  },
+                  {
+                      "abstract_template_name": "a",
+                      "concrete_template_name": "a",
+                      "instance_name": "u1",
+                      "transformation": { "oX": 0, "oY": 20, "sX": 1, "sY": 1},
+                      "fa_map": [{"formal": "x", "actual": "y"}]
+                  }
+              ]
+              
+            }
+        ],
+        "leaves": [
+            { "abstract_name": "a",
+              "concrete_name": "a",
+              "bbox": [0,0,10,10],
+              "terminals": [
+                  { "name": "x",
+                    "rect": [4,4,6,6]
+                  }
+              ]
+            }
+        ],
+        "global_signals": [
+            {
+                "actual": "y"
+            }
+        ]
+    }
+    
+    nets_d = gen_netlist( placement_verilog_d, 'top')
+
+    assert 24 == calculate_HPWL_from_placement_verilog_d( placement_verilog_d, 'top', nets_d, skip_globals=False)
+
+    assert 0 == calculate_HPWL_from_placement_verilog_d( placement_verilog_d, 'top', nets_d, skip_globals=True)
+
+    placement_verilog_d['global_signals'][0]['actual'] = "a"
+
+    assert 24 == calculate_HPWL_from_placement_verilog_d( placement_verilog_d, 'top', nets_d, skip_globals=True)
+
+
 def test_gen_netlist_matrix():
 
     txt = """{
@@ -469,11 +526,3 @@ def test_gen_netlist_matrix():
     assert hpwl5 > hpwl6
 
     print( hpwl6 / 27584 - 1)
-
-    placement_verilog_d['modules'][0]['concrete_name'] = 'matrix_ref'
-    placement_verilog_d['modules'][0]['bbox'][2] -= 80
-    placement_verilog_d['modules'][0]['bbox'][3] -= 2*84
-    placement_verilog_d['modules'][1]['bbox'][2] -= 80
-
-    with pathlib.Path( '__reference_placement_verilog_d__').open('wt') as fp:
-        json.dump( placement_verilog_d, fp=fp, indent=2)

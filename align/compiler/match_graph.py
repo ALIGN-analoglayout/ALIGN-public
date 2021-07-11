@@ -11,7 +11,8 @@ import networkx as nx
 from networkx.algorithms import isomorphism
 from align.schema.subcircuit import SubCircuit
 
-from .merge_nodes import merge_nodes, merged_value
+from ..schema.types import set_context
+from .merge_nodes import merge_nodes, merged_value,convert_unit
 from .util import get_next_level
 from .find_constraint import FindSymmetry
 from .common_centroid_cap_constraint import merge_caps
@@ -118,7 +119,30 @@ class Annotate:
         logger.info(f"Subcircuits after creating primitive hiearchy {[ckt.name for ckt in self.ckt_data if isinstance(ckt, SubCircuit)]}")
         return self.lib_names
 
-    def _update_attributes(self,circuit_graph,lib_ele, Gsub):
+    def _check_const_length(self,const_list,const):
+        is_append = False
+        try:
+            with set_context(const_list):
+                if hasattr(const,'instances') and len(const.instances)>0:
+                    is_append = True
+                elif isinstance(const,dict) and 'instances' in const and len(const["instances"])>0:
+                    is_append = True
+                elif isinstance(const,dict) and 'instances' not in const:
+                    is_append = True
+                elif isinstance(const,dict) and 'instances' in const and len(const["instances"])==0:
+                    logger.info(f"skipping const of zero length: {const}")
+                elif not hasattr(const,'instances'):
+                    is_append = True
+                else:
+                    logger.debug(f"invalid constraint {const}")
+                if is_append == True and const not in const_list:
+                    logger.debug(f"constraint appended: {const}")
+                    const_list.append(const)
+        except:
+            logger.debug(f"skipping invalid constraint {const}")
+
+    
+    def _update_attributes(self,circuit_graph,name,lib_name,lib_graph, Gsub):
         """
         Creates a copy of the library element
         Copies attributes from the netlist graph to copied library graph
@@ -176,11 +200,11 @@ class Annotate:
 
         return matched_ports,ports_weight,G2
 
-    def _group_block_const(self,subckt):
-        # assert 'constraints' in subckt
-        gb_const = [const for const in subckt.constraints if isinstance(const, constraint.GroupBlocks)]
-        if len(gb_const)>0:
-            const_list = [const for const in subckt.constraints if not isinstance(const, constraint.GroupBlocks)]
+    def _group_block_const(self,G1,name):
+        if self._if_const(name):
+            gb_const = [const for const in self.hier_graph_dict[name]["constraints"] if isinstance(const, constraint.GroupBlocks)]
+            const_list = [const for const in self.hier_graph_dict[name]["constraints"] if not isinstance(const, constraint.GroupBlocks)]
+            self.hier_graph_dict[name]["constraints"] = [const for const in const_list]
             for const in gb_const:
                 const_inst = [i.upper() for i in const.instances]
                 ckt_ele = set([ele.name for ele in subckt.elements])
@@ -207,19 +231,17 @@ class Annotate:
                     name = const.name,
                     graph = subgraph,
                     ports = list(matched_ports.keys()),
-                    ports_weight = ports_weight,
-                    constraints = sconst
+                    ports_weight = ports_weight
                     )
+                for c in list(sconst):
+                    self._check_const_length(self.hier_graph_dict[const.name].constraints, c)
+
+
                 self._update_sym_const(name, G1, [const.name, *const.instances], inst_name, const_list)
                 self._update_block_const(name, G1, [const.name, *const.instances], inst_name, const_list)
-            #Removing single instances of instances
-            self.ckt_data[name] = self.ckt_data[name].copy(
-                update={"constraints" : [
-                    const
-                    for const in const_list
-                    if (hasattr(const,'instances') and len(const.instances)>1)
-                        or not hasattr(const,'instances')]})
-
+            #Removing single instances of instances. TODO from sy: DoNotIdentify might have a single instance!
+            for const in list(const_list):
+                self._check_const_length(self.hier_graph_dict[name].constraints,const)
 
     def _group_cap_const(self, G1, name):
         """
@@ -298,7 +320,7 @@ class Annotate:
                 sub_const = self.ckt_data[sub_hierarchy_name]['constraints']
             else:
                 sub_const = []
-                for const in const_list:
+                for const in list(const_list):
                     if any(isinstance(const, x) for x in [constraint.HorizontalDistance,constraint.VerticalDistance,constraint.BlockDistance]):
                         sub_const.append(const)
                         logger.debug(f"transferring global const {const}")
@@ -311,8 +333,7 @@ class Annotate:
                             for x in const.__fields_set__}
                         assert 'constraint' in sconst
                         logger.debug(f"transferred constraint instances {Gsub} from {const} to {sconst}")
-                        if len(sconst['instances']) > 0:
-                            sub_const.append(sconst)
+                        sub_const.append(sconst)
         else:
             sub_const = []
         return sub_const
@@ -386,8 +407,8 @@ class Annotate:
                             G1, lib_name, remove_nodes, matched_ports)
 
                         sconst = self._top_to_bottom_translation(name, G1, Gsub, new_node, lib_name, const_list)
-                        self._update_sym_const(name, G1, remove_nodes, new_node, const_list)
-                        self._update_block_const(name, G1, remove_nodes, new_node, const_list)
+                        # self._update_sym_const(name, G1, remove_nodes, new_node, const_list)
+                        # self._update_block_const(name, G1, remove_nodes, new_node, const_list)
 
                         logger.debug(f"adding new sub_ckt: {lib_name} {sconst}")
                         if lib_name not in self.all_lef:
@@ -396,19 +417,23 @@ class Annotate:
                             Grest = self._reduce_graph(
                                 G2, lib_name,mapped_subgraph_list, sconst)
                         else:
-                            Grest = subgraph
-
-                        check_nodes(self.ckt_data)
-
+                            Grest = G2
+                            for n in remove_nodes:
+                                logger.debug(Grest.nodes[Gsub[n]]["values"])
+                                for p,v in Grest.nodes[Gsub[n]]["values"].items():
+                                    Grest.nodes[Gsub[n]]["values"][p] = convert_unit(v)
+                                
                         subckt = HierDictNode(
                             name = 'undefined',
                             graph = Grest,
                             ports = list(matched_ports.keys()),
                             ports_match = matched_ports,
                             ports_weight = ports_weight,
-                            constraints = sconst,
                             size = len(subgraph.nodes())
-                        )
+                            )
+                        for c in list(sconst):
+                            self._check_const_length(subckt.constraints, c)
+
                         self.multiple_instances(G1,new_node,lib_name,subckt)
                         check_nodes(self.ckt_data)
             logger.debug(f"Finished one branch: {lib_name}")
@@ -448,8 +473,16 @@ class Annotate:
             if clk in Gsub:
                 return True
         return False
+    def _is_do_not_identify(self,Gsub,block_name):
+        if block_name not in self.hier_graph_dict:
+            return False
+        di_const = [const for const in self.hier_graph_dict[block_name]["constraints"] if isinstance(const, constraint.DoNotIdentify)]
+        for const in di_const:
+            if set(Gsub) & set(const.instances):
+                return True
+        return False
 
-    def _mapped_graph_list(self,G1, name, POWER=None):
+    def _mapped_graph_list(self,G1, sname, POWER=None):
         """
         find all matches of library element in the graph
         """
@@ -462,7 +495,7 @@ class Annotate:
             G2 = Graph(lib_ele)
 
             # Digital instances only transistors:
-            if self._is_digital(G2,name):
+            if self._is_digital(G2,sname):
                 continue
             if not self._is_small(G1, G2):
                 continue
@@ -481,9 +514,13 @@ class Annotate:
                 for Gsub in GM.subgraph_isomorphisms_iter():
                     all_nd = [key for key in Gsub.keys() if 'instance' in G1.nodes[key]]
                     logger.debug(f"matched inst: {all_nd}")
-                    if len(all_nd)>1 and self._is_clk(Gsub):
-                        logger.debug("Discarding match due to clock")
+                    if len(all_nd)>1 and self._is_clk(Gsub) :
+                        logger.debug(f"Discarding match due to clock {Gsub}")
                         continue
+                    elif len(all_nd)>1 and self._is_do_not_identify(Gsub,sname):
+                        logger.debug(f"Discarding match due to user constraint {Gsub}")
+                        continue
+                    
                     if block_name.startswith('DP')  or block_name.startswith('CMC'):
                         if G1.nodes[all_nd[0]]['values'] == G1.nodes[all_nd[1]]['values'] and \
                             compare_balanced_tree(G1,get_key(Gsub,'DA'),get_key(Gsub,'DB'),[all_nd[0]],[all_nd[1]]) :
@@ -611,4 +648,4 @@ def check_nodes(graph_dict):
                 for param,value in attr["values"].items():
                     if param == 'model': continue
                     assert (isinstance(value, int) or isinstance(value, float)) or value=="unit_size", \
-                        "ERROR: Parameter value %r not defined" %(str(value)+' of '+ node)
+                        "ERROR: Parameter value %r not defined" %(str(value)+' of '+str(type(value))+' of'+ node)

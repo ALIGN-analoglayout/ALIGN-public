@@ -7,7 +7,7 @@ ILP_solver::ILP_solver(design& mydesign) {
   LL.x = INT_MAX;
   LL.y = INT_MAX;
   UR.x = INT_MIN;
-  UR.x = INT_MIN;
+  UR.y = INT_MIN;
   Blocks.resize(mydesign.Blocks.size());
   Aspect_Ratio_weight = mydesign.Aspect_Ratio_weight;
   memcpy(Aspect_Ratio, mydesign.Aspect_Ratio, sizeof(mydesign.Aspect_Ratio));
@@ -20,6 +20,8 @@ ILP_solver::ILP_solver(const ILP_solver& solver) {
   UR = solver.UR;
   area = solver.area;
   HPWL = solver.HPWL;
+  HPWL_extend = solver.HPWL_extend;
+  HPWL_extend_terminal = solver.HPWL_extend_terminal;
   cost = solver.cost;
   constraint_penalty = solver.constraint_penalty;
   area_norm = solver.area_norm;
@@ -40,6 +42,8 @@ ILP_solver& ILP_solver::operator=(const ILP_solver& solver) {
   cost = solver.cost;
   constraint_penalty = solver.constraint_penalty;
   HPWL = solver.HPWL;
+  HPWL_extend = solver.HPWL_extend;
+  HPWL_extend_terminal = solver.HPWL_extend_terminal;
   area_norm = solver.area_norm;
   HPWL_norm = solver.HPWL_norm;
   ratio = solver.ratio;
@@ -411,8 +415,11 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   if (placement_box[0] > 0 && (UR.x - LL.x > placement_box[0]) || placement_box[1] > 0 && (UR.y - LL.y > placement_box[1])) return -1;
   // calculate HPWL
   HPWL = 0;
+  HPWL_extend = 0;
+  HPWL_extend_terminal = 0;
   for (auto neti : mydesign.Nets) {
     int HPWL_min_x = UR.x, HPWL_min_y = UR.y, HPWL_max_x = 0, HPWL_max_y = 0;
+    int HPWL_extend_min_x = UR.x, HPWL_extend_min_y = UR.y, HPWL_extend_max_x = 0, HPWL_extend_max_y = 0;
     for (auto connectedj : neti.connected) {
       if (connectedj.type == placerDB::Block) {
         int iter2 = connectedj.iter2, iter = connectedj.iter;
@@ -429,13 +436,42 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
           HPWL_min_y = std::min(HPWL_min_y, pin_y);
           HPWL_max_y = std::max(HPWL_max_y, pin_y);
         }
+        for(auto boundaryk:mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].boundary){
+          int pin_llx = boundaryk.polygon[0].x, pin_urx = boundaryk.polygon[2].x;
+          int pin_lly = boundaryk.polygon[0].y, pin_ury = boundaryk.polygon[2].y;
+          if (Blocks[iter2].H_flip){
+            pin_llx = mydesign.Blocks[iter2][curr_sp.selected[iter2]].width - boundaryk.polygon[2].x;
+            pin_urx = mydesign.Blocks[iter2][curr_sp.selected[iter2]].width - boundaryk.polygon[0].x;
+          } 
+          if (Blocks[iter2].V_flip){
+            pin_lly = mydesign.Blocks[iter2][curr_sp.selected[iter2]].height - boundaryk.polygon[2].y;
+            pin_ury = mydesign.Blocks[iter2][curr_sp.selected[iter2]].height - boundaryk.polygon[0].y;
+          } 
+          pin_llx += Blocks[iter2].x;
+          pin_urx += Blocks[iter2].x;
+          pin_lly += Blocks[iter2].y;
+          pin_ury += Blocks[iter2].y;
+          HPWL_extend_min_x = std::min(HPWL_extend_min_x, pin_llx);
+          HPWL_extend_max_x = std::max(HPWL_extend_max_x, pin_urx);
+          HPWL_extend_min_y = std::min(HPWL_extend_min_y, pin_lly);
+          HPWL_extend_max_y = std::max(HPWL_extend_max_y, pin_ury);
+        }
       }    
     }
-    HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);  
+    HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);
+    HPWL_extend += (HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x);
+    bool is_terminal_net = false;
+    for(auto c:neti.connected){
+      if(c.type==PnRDB::Terminal){
+      is_terminal_net = true;
+      break;
+      }
+    }
+    if (is_terminal_net) HPWL_extend_terminal += (HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x);
   }
 
   //HPWL norm
-  if (!mydesign.Nets.empty()) HPWL_norm = HPWL / mydesign.GetMaxBlockHPWLSum() / double(mydesign.Nets.size());
+  if (!mydesign.Nets.empty()) HPWL_norm = HPWL_extend / mydesign.GetMaxBlockHPWLSum() / double(mydesign.Nets.size());
   // calculate linear constraint
   linear_const = 0;
   std::vector<std::vector<double>> feature_value;
@@ -509,8 +545,8 @@ double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
     cost += HPWL_norm * const_graph.LAMBDA;
   } else {
     cost += log( area);
-    if (HPWL > 0) {
-      cost += log( HPWL) * const_graph.LAMBDA;
+    if (HPWL_extend > 0) {
+      cost += log( HPWL_extend) * const_graph.LAMBDA;
     }
   }
 
@@ -572,7 +608,7 @@ void ILP_solver::PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfil
   fout.open(outfile.c_str());
   fout << "#Use this file as a script for gnuplot\n#(See http://www.gnuplot.info/ for details)" << endl;
   fout << "\nset title\" #Blocks= " << mydesign.Blocks.size() << ", #Terminals= " << mydesign.Terminals.size() << ", #Nets= " << mydesign.Nets.size()
-       << ",Area=" << area << ", HPWL= " << HPWL << " \"" << endl;
+       << ",Area=" << area << ", HPWL= " << HPWL_extend << " \"" << endl;
   fout << "\nset nokey" << endl;
   fout << "#   Uncomment these two lines starting with \"set\"" << endl;
   fout << "#   to save an EPS file for inclusion into a latex document" << endl;
@@ -1284,6 +1320,8 @@ void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierN
   node.width = UR.x;
   node.height = UR.y;
   node.HPWL = HPWL;
+  node.HPWL_extend = HPWL_extend;
+  node.HPWL_extend_wo_terminal = node.HPWL_extend - HPWL_extend_terminal;  // HPWL without terminal nets' HPWL
   node.area_norm = area_norm;
   node.HPWL_norm = HPWL_norm;
   node.constraint_penalty = constraint_penalty;
@@ -1291,6 +1329,8 @@ void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierN
 
   for (unsigned int i = 0; i < mydesign.Blocks.size(); ++i) {
     node.Blocks.at(i).selectedInstance = curr_sp.GetBlockSelected(i);
+    node.HPWL_extend += node.Blocks[i].instance[node.Blocks.at(i).selectedInstance].HPWL_extend_wo_terminal;
+    node.HPWL_extend_wo_terminal += node.Blocks[i].instance[node.Blocks.at(i).selectedInstance].HPWL_extend_wo_terminal;
     placerDB::Omark ort;
     if (Blocks[i].H_flip) {
       if (Blocks[i].V_flip)
@@ -1391,6 +1431,28 @@ void ILP_solver::UpdateBlockinHierNode(design& mydesign, placerDB::Omark ort, Pn
 }
 
 void ILP_solver::UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo) {
+  map<int, int> terminal_to_net;
+  for (unsigned int i = 0; i < node.Nets.size();i++){
+    for(auto c:node.Nets[i].connected){
+      if (c.type == PnRDB::Terminal){
+        terminal_to_net[c.iter] = i;
+        break;
+      }
+    }
+  }
+  for (int i = 0; i < (int)mydesign.GetSizeofTerminals(); i++) {
+    auto& tC = node.Terminals.at(i).termContacts;
+    tC.clear();
+    for (auto c : node.Nets[terminal_to_net[i]].connected) {
+      if (c.type == PnRDB::Terminal) continue;
+      for(auto con:node.Blocks[c.iter2].instance[node.Blocks[c.iter2].selectedInstance].blockPins[c.iter].pinContacts){
+        tC.push_back(con);
+        tC.back().originBox = tC.back().placedBox;
+        tC.back().originCenter = tC.back().placedCenter;
+      }
+    }
+  }
+  /**
   for (int i = 0; i < (int)mydesign.GetSizeofTerminals(); i++) {
     auto& tC = node.Terminals.at(i).termContacts;
     tC.clear();
@@ -1403,7 +1465,7 @@ void ILP_solver::UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& nod
     tC.back().originBox.UR = c;
     tC.back().placedBox.LL = c;
     tC.back().placedBox.UR = c;
-  }
+  }**/
   for (int i = 0; i < (int)mydesign.GetSizeofTerminals(); i++) {
     const auto& t = node.Terminals.at(i);
     PnRDB::pin temp_pin;

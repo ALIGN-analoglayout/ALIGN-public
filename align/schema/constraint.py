@@ -508,6 +508,13 @@ class MatchBlocks(SoftConstraint):
     TODO: Can be replicated by Enclose??
     '''
     instances: List[str]
+    
+
+class DoNotIdentify(SoftConstraint):
+    '''
+    TODO: Can be replicated by Enclose??
+    '''
+    instances: List[str]
 
 
 class SymmetricBlocks(SoftConstraint):
@@ -651,6 +658,7 @@ ConstraintType = Union[
     CreateAlias,
     GroupBlocks,
     MatchBlocks,
+    DoNotIdentify,
     BlockDistance,
     HorizontalDistance,
     VerticalDistance,

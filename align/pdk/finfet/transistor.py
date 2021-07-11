@@ -1,6 +1,5 @@
 from align.schema.transistor import Transistor
 from .canvas import CanvasPDK
-import math
 
 
 class MOS(CanvasPDK):

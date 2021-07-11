@@ -1,49 +1,31 @@
 [
-    {
-        "constraint": "horizontal_distance",
-        "abs_distance": 0
-    },
-    {
-        "constraint": "order",
-        "instances": [
+        {
+          "constraint": "horizontal_distance",
+          "abs_distance": 0
+        },
+        {
+          "constraint": "vertical_distance",
+          "abs_distance": 0
+        },
+        {
+          "constraint": "order",
+          "instances": [
             "mn0",
             "mn1_mn2",
             "mn3_mn4",
             "mp5_mp6"
-        ],
-        "direction": "top_to_bottom",
-        "abut": false
-    },
-    {
-        "constraint": "symmetric_nets",
-        "net1": "vin",
-        "net2": "vip",
-        "pins1": [
-            "mn1_mn2/vin",
-            "vin"
-        ],
-        "pins2": [
-            "mn1_mn2/vip",
-            "vip"
-        ],
-        "direction": "V"
-    },
-    {
-        "constraint": "symmetric_nets",
-        "net1": "vin_d",
-        "net2": "vip_d",
-        "pins1": [
-            "mp7/D",
-            "mn3_mn4/vin_d"
-        ],
-        "pins2": [
-            "mp8/D",
-            "mn3_mn4/vip_d"
-        ],
-        "direction": "V"
-    },
-    {
-        "constraint": "vertical_distance",
-        "abs_distance": 0
-    }
+          ],
+          "direction": "top_to_bottom",
+          "abut": false
+        },
+        {
+          "constraint": "do_not_identify",
+          "instances": [
+            "mn3_mn4",
+            "mp5_mp6",
+            "mn1_mn2",
+            "mn0"
+          ]
+        }
+        
 ]
