@@ -109,35 +109,38 @@ def gen_more_primitives( primitives, topology_dir, subckt):
         return limit_pairs( pairs.difference( { (X,Y)}))
 
     for k,v in primitives.items():
-        m = p.match(k)
-        if m:
-            nfin,n,X,Y = tuple(int(x) for x in m.groups()[1:-1])
-            prefix = f'{m.groups()[0]}_nfin{nfin}'
-            suffix = m.groups()[-1]
-            pairs = gen_pairs( n, nfin)
 
-        mm = p_soner.match(k)
-        if mm:
-            nfin,nf,m,n,X,Y = tuple(int(x) for x in mm.groups()[1:-1])
-            prefix = f'{mm.groups()[0]}_nfin{nfin}_nf{nf}_m{m}'
-            suffix = mm.groups()[-1]
-            pairs = gen_pairs( n, nfin*nf*m)
+        # print(k,v)
+        # m = p.match(k)
+        # if m:
+        #     nfin,n,X,Y = tuple(int(x) for x in m.groups()[1:-1])
+        #     prefix = f'{m.groups()[0]}_nfin{nfin}'
+        #     suffix = m.groups()[-1]
+        #     pairs = gen_pairs( n, nfin)
 
-        if m or mm:
-            abstract_name = f'{prefix}{suffix}'
-            map_d[abstract_name].append( k)
-            for newx,newy in pairs:
-                concrete_name = f'{prefix}_n{n}_X{newx}_Y{newy}{suffix}'
-                map_d[abstract_name].append( concrete_name)             
-                if concrete_name not in primitives and \
-                   concrete_name not in more_primitives:
-                    more_primitives[concrete_name] = copy.deepcopy(v)
-                    more_primitives[concrete_name]['x_cells'] = newx
-                    more_primitives[concrete_name]['y_cells'] = newy
-        else:
-            if not (k.startswith( "Res") or k.startswith( "Cap")): 
-                logger.warning( f'Didn\'t match primitive {k}')
-            map_d[k].append( k)
+        # mm = p_soner.match(k)
+        # if mm:
+        #     nfin,nf,m,n,X,Y = tuple(int(x) for x in mm.groups()[1:-1])
+        #     prefix = f'{mm.groups()[0]}_nfin{nfin}_nf{nf}_m{m}'
+        #     suffix = mm.groups()[-1]
+        #     pairs = gen_pairs( n, nfin*nf*m)
+
+        # if m or mm:
+            # abstract_name = f'{prefix}{suffix}'
+            # map_d[abstract_name].append( k)
+            # for newx,newy in pairs:
+            #     concrete_name = f'{prefix}_n{n}_X{newx}_Y{newy}{suffix}'
+            #     map_d[abstract_name].append( concrete_name)
+            #     if concrete_name not in primitives and \
+            #        concrete_name not in more_primitives:
+            #         more_primitives[concrete_name] = copy.deepcopy(v)
+            #         more_primitives[concrete_name]['x_cells'] = newx
+            #         more_primitives[concrete_name]['y_cells'] = newy
+        # else:
+        #     if not (k.startswith( "Res") or k.startswith( "Cap")):
+        #         logger.warning( f'Didn\'t match primitive {k}')
+        #     map_d[k].append( k)
+        map_d[k].append(k)
 
     primitives.update( more_primitives)
 
@@ -159,7 +162,7 @@ def gen_more_primitives( primitives, topology_dir, subckt):
 
     for module in verilog_json_d['modules']:
         for instance in module['instances']:
-            t = instance['template_name'] 
+            t = instance['template_name']
             if t in concrete2abstract:
                 del instance['template_name']
                 instance['abstract_template_name'] = concrete2abstract[t]
@@ -251,7 +254,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     if '2_primitives' in steps_to_run:
         primitive_dir.mkdir(exist_ok=True)
         for block_name, block_args in primitives.items():
-            logger.debug(f"Generating primitive: {block_name}")
+            logger.debug(f"Generating primitive: {block_name} {block_args}")
             generate_primitive(block_name, **block_args, pdkdir=pdk_dir, outputdir=primitive_dir)
 
     # run PNR tool
@@ -300,7 +303,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
             if regression:
                 (regression_dir / filemap['gdsjson'].name).write_text(filemap['gdsjson'].read_text())
                 (regression_dir / filemap['python_gds_json'].name).write_text(filemap['python_gds_json'].read_text())
-                convert_GDSjson_GDS(filemap['python_gds_json'], regression_dir / f'{variant}.python.gds')                
+                convert_GDSjson_GDS(filemap['python_gds_json'], regression_dir / f'{variant}.python.gds')
                 convert_GDSjson_GDS(filemap['gdsjson'], regression_dir / f'{variant}.gds')
                 (regression_dir / filemap['lef'].name).write_text(filemap['lef'].read_text())
                 (regression_dir / f'{subckt}.v').write_text((topology_dir / f'{subckt}.v').read_text())

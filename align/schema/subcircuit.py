@@ -1,6 +1,7 @@
 from .types import Optional, List, Dict
 
 from . import types
+from pydantic import validator
 
 from .model import Model
 from .instance import Instance
@@ -39,6 +40,8 @@ class SubCircuit(Model):
         # process constraints
         with types.set_context(self.constraints):
             self.constraints.extend(constraints)
+    #TODO: Add validator for duplicate name
+
 
     def xyce(self):
         ret = []

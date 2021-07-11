@@ -18,18 +18,18 @@ from copy import deepcopy
 
 class WriteVerilog:
     """ write hierarchical verilog file """
-    def __init__(self, circuit_name, inout_pin_names, ckt_data, power_pins):
+    def __init__(self, ckt, ckt_data, power_pins):
         self.ckt_data = ckt_data
-        self.circuit_name = circuit_name
-        self.inout_pins = inout_pin_names
+        self.circuit_name = ckt.name
+        self.inout_pins = ckt.pins
         self.pins = []
-        for port in sorted(inout_pin_names):
+        for port in sorted(ckt.pins):
             if port not in power_pins:
                 self.pins.append(port)
         self.power_pins=power_pins
 
-        self.subckt_data = self.ckt_data.find(circuit_name)
-        self.constraints = self.ckt_data.find(circuit_name).constraints
+        self.subckt_data = self.ckt_data.find(ckt.name)
+        self.constraints = self.ckt_data.find(ckt.name).constraints
 
     def gen_dict( self):
         d = {}
@@ -40,9 +40,11 @@ class WriteVerilog:
 
         for ele in self.subckt_data.elements:
             instance = {}
-            instance['template_name'] = ele.model
-            instance['instance_name'] = ele.name
             print(ele)
+            instance['template_name'] = ele.model
+            if ele.model in self.ckt_data:
+                print(self.ckt_data.find(ele.model))
+            instance['instance_name'] = ele.name
             instance['fa_map']= self.gen_dict_fa(ele.pins.keys(), ele.pins.values())
             d['instances'].append( instance)
         #     # if 'source' in attr['inst_type']:
@@ -152,13 +154,13 @@ def generate_lef(element,subckt,all_lef, design_config:dict, uniform_height=Fals
     available_block_lef = all_lef
     logger.debug(f"checking lef for: {name}, {element}")
     if name.lower() == 'generic':
-        # TODO: how about hashing for unique names?        
+        # TODO: how about hashing for unique names?
         value_str = ''
         for key in sorted(values):
             val = values[key].replace('-','')
             value_str += f'_{key}_{val}'
         block_name = attr['real_inst_type'] + value_str
-        block_parameters = {"parameters": deepcopy(values), "primitive": name.lower()}      
+        block_parameters = {"parameters": deepcopy(values), "primitive": name.lower()}
         return block_name, block_parameters
 
     elif name=='CAP':
@@ -222,38 +224,40 @@ def generate_lef(element,subckt,all_lef, design_config:dict, uniform_height=Fals
         else:
             unit_size_mos = design_config["unit_size_pmos"]
         if isinstance(subckt,SubCircuit):
+            ## Hack to get generator parameters based on max sized cell in subcircuit
             values = merge_subckt_param(subckt)
         else:
             values = subckt.parameters
+        logger.debug(f" inst values {values}")
         if "NFIN" in values.keys():
             #FinFET design
-            if isinstance(values["NFIN"],str):
-                size = unit_size_mos
-            else:
-                size = int(values["NFIN"])
-            name_arg ='nfin'+str(size)
+            assert int(values["NFIN"])
+            size = int(values["NFIN"])
+            name_arg ='NFIN'+str(size)
         elif "W" in values.keys():
             #Bulk design
             if isinstance(values["W"],str):
                 size = unit_size_mos
             else:
                 size = int(values["w"]*1E+9/design_config["Gate_pitch"])
-            values["nfin"]=size
-            name_arg ='nfin'+str(size)
+            values["NFIN"]=size
+            name_arg ='NFIN'+str(size)
         else:
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
-        if 'nf' in values.keys():
-            if values['nf'] == 'unit_size':
-                values['nf'] =size
-            size=size*int(values["nf"])
-            name_arg =name_arg+'_nf'+str(int(values["nf"]))
+        logger.debug(size)
 
-        if 'm' in values.keys():
-            if values['m'] == 'unit_size':
-                values['m'] = 1
-            size=size*int(values["m"])
-            name_arg =name_arg+'_m'+str(int(values["m"]))
+        if 'NF' in values.keys():
+            if values['NF'] == 'unit_size':
+                values['NF'] =size
+            size=size*int(values["NF"])
+            name_arg =name_arg+'_NF'+str(int(values["NF"]))
+        logger.debug(size)
+        if 'M' in values.keys():
+            if values['M'] == 'unit_size':
+                values['M'] = 1
+            size=size*int(values["M"])
+            name_arg =name_arg+'_M'+str(int(values["M"]))
 
         no_units = ceil(size / unit_size_mos)
 
@@ -290,6 +294,7 @@ def generate_lef(element,subckt,all_lef, design_config:dict, uniform_height=Fals
             if 'stack' in values.keys():
                 cell_gen_parameters['stack']=int(values["stack"])
                 block_name = block_name+'_ST'+str(int(values["stack"]))
+
             #cell generator takes only one VT so doing a string search
             #To be fixed:
             # if isinstance(attr["real_inst_type"],list):
@@ -301,7 +306,9 @@ def generate_lef(element,subckt,all_lef, design_config:dict, uniform_height=Fals
             # if vt:
             #     block_name = block_name+'_'+vt[0]
             #     cell_gen_parameters['vt_type']=vt[0]
-            return block_name, cell_gen_parameters
+            print(element,block_name)
+            #element.parameters['sized_name'] = block_name
+            return element.model, cell_gen_parameters
         else:
             logger.debug("No proper parameters found for cell generation")
             block_name = name+"_"+size

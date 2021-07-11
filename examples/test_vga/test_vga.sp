@@ -1,5 +1,3 @@
-.model nlvt nmos l=1 w=1 nf=1 m=1
-.model plvt pmos l=1 w=1 nf=1 m=1
 .model pulvt pmos l=1 w=1 nf=1 m=1
 
 .subckt nlvt_s_pcell_0 d g s b

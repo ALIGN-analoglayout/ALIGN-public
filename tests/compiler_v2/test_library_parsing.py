@@ -1,29 +1,35 @@
+from align.schema.types import set_context
 import pathlib
-
+import pytest
 from align.schema.parser import SpiceParser
+from align.schema import constraint
 
-
-def test_basic_lib():
-
+@pytest.fixture
+def library():
     parser = SpiceParser()
     align_home = pathlib.Path(__file__).resolve().parent.parent.parent / 'align'
-    model_statemenets = align_home / 'config' / 'model.txt'
-    with open(model_statemenets) as f:
-        lines = f.read()
-    parser.parse(lines)
     basic_lib_path = align_home / 'config' / 'basic_template.sp'
     with open(basic_lib_path) as f:
         lines = f.read()
     parser.parse(lines)
-    assert len(parser.library) == 76
-    assert 'DCL_PMOS' in parser.library
-    assert 'LS_S_NMOS_B' in parser.library
-    assert len(parser.library['DP_PMOS_B'].elements) == 2
-    assert len(parser.library['CASCODED_CMC_PMOS'].elements) == 4
-
     user_lib_path = align_home / 'config' / 'user_template.sp'
     with open(user_lib_path) as f:
         lines = f.read()
     parser.parse(lines)
-    assert len(parser.library) == 100
+    return parser.library
 
+def test_basic_lib(library):
+    assert len(library.find('DP_PMOS_B').elements) == 2
+    assert len(library.find('CASCODED_CMC_PMOS').elements) == 4
+    assert len(library.find('INV_B').elements)==2
+    assert len(library) == 54
+
+def test_constraint(library):
+    assert len(library.find('DP_PMOS_B').constraints)==1
+    print(library.find('DP_PMOS_B').constraints)
+    dp_const = library.find('DP_PMOS_B').constraints
+    with set_context(dp_const):
+        x=constraint.SymmetricBlocks(direction='V', pairs=[['M0', 'M1']])
+    assert x in dp_const
+    assert dp_const[0].constraint=='symmetric_blocks'
+    assert dp_const[0].pairs == [['M0', 'M1']]

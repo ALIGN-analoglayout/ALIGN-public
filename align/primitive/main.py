@@ -52,7 +52,7 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
             uc.addPMOSArray( x_cells, y_cells, pattern, vt_type, routing, **parameters)
         return routing.keys()
 
-    if primitive in ["Switch_NMOS_B", "Switch_PMOS_B"]:
+    if primitive in ["NMOS", "PMOS"]:
         cell_pin = gen( 0, {'S': [('M1', 'S')],
                             'D': [('M1', 'D')],
                             'G': [('M1', 'G')],

@@ -37,7 +37,7 @@ def test_Order_input_sanitation(db):
         x = constraint.Order(direction='left_to_right', instances=['M1', 'M2', 'M3'])
         with pytest.raises(Exception):
             x = constraint.Order(direction='lefta_to_rightb', instances=['M1', 'M2', 'M3'])
-  
+
 def test_Order_constraintname(db):
     with set_context(db):
         x = constraint.Order(direction='left_to_right', instances=['M1', 'M2'])

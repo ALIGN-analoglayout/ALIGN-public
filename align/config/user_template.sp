@@ -67,56 +67,56 @@ M4 DE DA S B PMOS w=w l=90n
 .ends CASCODED_CMB_PMOS_3
 
 .subckt CMB_NMOS_2 DA DB DC S
-M0 DA DA S S NMOS_VTL w=w l=90n
-M1 DB DA S S NMOS_VTL w=w l=90n
-M2 DC DA S S NMOS_VTL w=w l=90n
+M0 DA DA S S NMOS w=w l=90n
+M1 DB DA S S NMOS w=w l=90n
+M2 DC DA S S NMOS w=w l=90n
 .ends CMB_NMOS_2
 *TBF: parser fails in case of space at end of line in .end statement
 
 .subckt CMB_PMOS_2 DA DB DC S
-M0 DA DA S S PMOS_VTL w=w l=90n
-M1 DB DA S S PMOS_VTL w=w l=90n
-M2 DC DA S S PMOS_VTL w=w l=90n
+M0 DA DA S S PMOS w=w l=90n
+M1 DB DA S S PMOS w=w l=90n
+M2 DC DA S S PMOS w=w l=90n
 .ends CMB_PMOS_2
 
 .subckt CMB_NMOS_3 DA DB DC DD S
-M0 DA DA S S NMOS_VTL w=w l=90n
-M1 DB DA S S NMOS_VTL w=w l=90n
-M2 DC DA S S NMOS_VTL w=w l=90n
-M3 DD DA S S NMOS_VTL w=w l=90n
+M0 DA DA S S NMOS w=w l=90n
+M1 DB DA S S NMOS w=w l=90n
+M2 DC DA S S NMOS w=w l=90n
+M3 DD DA S S NMOS w=w l=90n
 .ends CMB_NMOS_3
 
 .subckt CMB_PMOS_3 DA DB DC DD S
-M0 DA DA S S PMOS_VTL w=w l=90n
-M1 DB DA S S PMOS_VTL w=w l=90n
-M2 DC DA S S PMOS_VTL w=w l=90n
-M3 DD DA S S PMOS_VTL w=w l=90n
+M0 DA DA S S PMOS w=w l=90n
+M1 DB DA S S PMOS w=w l=90n
+M2 DC DA S S PMOS w=w l=90n
+M3 DD DA S S PMOS w=w l=90n
 .ends CMB_PMOS_3
 
 .subckt CMB_NMOS_4 DA DB DC DD DE S
-M0 DA DA S S NMOS_VTL w=w l=90n
-M1 DB DA S S NMOS_VTL w=w l=90n
-M2 DC DA S S NMOS_VTL w=w l=90n
-M3 DD DA S S NMOS_VTL w=w l=90n
-M4 DE DA S S NMOS_VTL w=w l=90n
+M0 DA DA S S NMOS w=w l=90n
+M1 DB DA S S NMOS w=w l=90n
+M2 DC DA S S NMOS w=w l=90n
+M3 DD DA S S NMOS w=w l=90n
+M4 DE DA S S NMOS w=w l=90n
 .ends CMB_NMOS_4
 
 .subckt CMB_PMOS_4 DA DB DC DD DE S
-M0 DA DA S S PMOS_VTL w=w l=90n
-M1 DB DA S S PMOS_VTL w=w l=90n
-M2 DC DA S S PMOS_VTL w=w l=90n
-M3 DD DA S S PMOS_VTL w=w l=90n
-M4 DE DA S S PMOS_VTL w=w l=90n
+M0 DA DA S S PMOS w=w l=90n
+M1 DB DA S S PMOS w=w l=90n
+M2 DC DA S S PMOS w=w l=90n
+M3 DD DA S S PMOS w=w l=90n
+M4 DE DA S S PMOS w=w l=90n
 .ends CMB_PMOS_4
 
 .subckt INV i zn SN SP
-M0 zn i SN SN NMOS_VTL w=w0 l=l0
-M1 zn i SP SP PMOS_VTL w=w1 l=l0
+M0 zn i SN SN NMOS w=w0 l=l0
+M1 zn i SP SP PMOS w=w1 l=l0
 .ends INV
 
 .subckt INV_B i zn SN SP PB
-M0 zn i SN SN NMOS_VTL w=w0 l=l0
-M1 zn i SP PB PMOS_VTL w=w1 l=l0
+M0 zn i SN SN NMOS w=w0 l=l0
+M1 zn i SP PB PMOS w=w1 l=l0
 .ends INV_B
 
 .subckt stage2_inv G1 G2 SN SP
@@ -133,12 +133,12 @@ MM3 D G2 SP SP PMOS l=60n w=1u
 *TBF: Multi pin inverter
 
 .subckt switched_capacitor_combination Vin agnd Vin_ota Voutn phi1 phi2
-m0 Voutn phi1 net67 vss nmos_rvt w=270e-9 l=20e-9 nfin=5
-m7 Vin_ota phi1 net63 vss nmos_rvt w=270e-9 l=20e-9 nfin=5
-m6 net72 phi1 Vin vss nmos_rvt w=270e-9 l=20e-9 nfin=5
-m3 agnd phi2 net67 vss nmos_rvt w=270e-9 l=20e-9 nfin=5
-m5 agnd phi2 net63 vss nmos_rvt w=270e-9 l=20e-9 nfin=5
-m4 net72 phi2 agnd vss nmos_rvt w=270e-9 l=20e-9 nfin=5
+m0 Voutn phi1 net67 vss NMOS w=270e-9 l=20e-9 nfin=5
+m7 Vin_ota phi1 net63 vss NMOS w=270e-9 l=20e-9 nfin=5
+m6 net72 phi1 Vin vss NMOS w=270e-9 l=20e-9 nfin=5
+m3 agnd phi2 net67 vss NMOS w=270e-9 l=20e-9 nfin=5
+m5 agnd phi2 net63 vss NMOS w=270e-9 l=20e-9 nfin=5
+m4 net72 phi2 agnd vss NMOS w=270e-9 l=20e-9 nfin=5
 c3 Vin_ota Voutn 60e-15
 c1 net63 net67 30e-15
 c0 net72 net63 60e-15
@@ -182,8 +182,8 @@ R0 GB DA 1k
 .subckt SCM_PMOS_RC DA DB GA S
 M0 DA GA S B NMOS w=w l=90n
 M1 DB GB S B NMOS w=w l=90n
-C0 GB S capacitor c=1f
-R0 GB DA resistor r=1k
+C0 GB S 1f
+R0 GB DA 1k
 C1 DA net1 1f
 R1 net1 GA 1k
 .ends SCM_NMOS_RC

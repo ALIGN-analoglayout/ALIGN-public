@@ -9,33 +9,44 @@ from re import sub
 import networkx as nx
 import matplotlib.pyplot as plt
 from networkx.algorithms import bipartite
-
+from ..schema.graph import Graph
 import logging
 logger = logging.getLogger(__name__)
 
 def get_next_level(subckt,G, tree_l1):
+    """get_next_level traverse graph and get next connected element
+    Does not traverse Connections through Gate or Body of transistors identified as 'B','G' pins
+    TODO: check this skip hierarchically
+
+    [extended_summary]
+
+    Args:
+        subckt ([type]): [description]
+        G ([type]): [description]
+        tree_l1 ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
     tree_next=[]
     for node in list(tree_l1):
         assert subckt.get_element(node) or node in subckt.nets, f"{node} not present in {subckt.elements} {subckt.nets}"
-        if subckt.get_element(node) and 'MOS' in get_base_model(subckt,node):
+        if subckt.get_element(node) and get_base_model(subckt,node) and 'MOS' in get_base_model(subckt,node):
             for nbr in list(G.neighbors(node)):
                 if set(G.get_edge_data(node, nbr)['pin']) - set({'G','B'}):
                     tree_next.append(nbr)
         elif node in subckt.nets:
             for nbr in list(G.neighbors(node)):
-                base_model=get_base_model(subckt,nbr)
-                logger.warning(G.get_edge_data(node, nbr))
-                logger.warning(subckt.get_element(nbr).model)
-                logger.warning(subckt.parent.find(subckt.get_element(nbr).model).base)
-                if 'MOS' in base_model and \
+                base_model = get_base_model(subckt,nbr)
+                if base_model and 'MOS' in base_model and \
                 set(G.get_edge_data(node, nbr)['pin']) - set({'G','B'}):
                     tree_next.append(nbr)
                 else:
                     tree_next.append(nbr)
         else:
             tree_next.extend(list(G.neighbors(node)))
-    # logger.debug(f"next nodes {tree_next} ")
     return tree_next
+
 def get_base_model(subckt,node):
     assert subckt.get_element(node)
     if subckt.get_element(node).model in ['NMOS','PMOS','RES','CAP']:
@@ -203,7 +214,7 @@ def _show_bipartite_circuit_graph(filename, graph, dir_path):
 def _write_circuit_graph(filename, graph,dir_path):
     if not os.path.exists(dir_path):
         os.mkdir(dir_path)
-    nx.write_yaml(graph, dir_path+'/' + filename + ".yaml")
+    nx.write_yaml(Graph(graph), dir_path+'/' + filename + ".yaml")
 
 def convert_to_unit(values):
     print(values)

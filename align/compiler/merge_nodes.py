@@ -196,6 +196,7 @@ def convert_unit(value:str):
 def merge_subckt_param(ckt):
     max_value = {}
     for element in ckt.elements:
+        # print(element.parameters)
         max_value = merged_value(max_value, element.parameters)
     return max_value
 

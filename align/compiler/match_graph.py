@@ -5,6 +5,7 @@ Created on Fri Nov  2 21:33:22 2018
 @author: kunal
 """
 #%%
+from re import sub
 from align.schema import model
 import networkx as nx
 from networkx.algorithms import isomorphism
@@ -57,7 +58,7 @@ class Annotate:
         Returns:
             list: all updated circuit list
         """
-        logger.debug(f"found ckt:{self.ckt_data}")
+        logger.debug(f"ALl  subckt:{[ckt.name for ckt in self.ckt_data if isinstance(ckt, SubCircuit)]}")
 
         # names = list(self.ckt_data)
         for ckt in self.ckt_data:
@@ -66,13 +67,23 @@ class Annotate:
                 # G1 = self.ckt_data[name]["graph"]
                 #self._group_block_const(subckt)
                 #self._group_cap_const(subckt)
-
+        traversed = [] # libray gets appended, so only traverse subckt once
+        temp_match_dict ={} # To avoid iterative calls (search subckt in subckt)
         for ckt in self.ckt_data:
-            if isinstance(ckt, SubCircuit) and ckt.name not in self.all_lef:
-                logger.debug(f"START MATCHING in circuit: {ckt.name} {ckt.elements}")
+            if isinstance(ckt, SubCircuit) and ckt.name not in self.all_lef and ckt.name not in traversed:
+                logger.debug(f"START MATCHING in circuit: {ckt.name} {ckt.elements} traversed: {traversed}")
                 netlist_graph= Graph(ckt)
+                traversed.append(ckt.name)
                 for subckt in self.lib:
-                    netlist_graph.replace_matching_subgraph(Graph(subckt))
+                    if subckt.name == ckt.name or (subckt.name in temp_match_dict and ckt.name in temp_match_dict[subckt.name]):
+                        continue
+                    new_subckts = netlist_graph.replace_matching_subgraph(Graph(subckt))
+                    if subckt.name in temp_match_dict:
+                        temp_match_dict[subckt.name].extend(new_subckts)
+                    else:
+                        temp_match_dict[subckt.name] = new_subckts
+                    if len(new_subckts) >=1:
+                        logger.debug(f"Matching subckt {subckt.name}: {len(new_subckts)}")
                 # circuit = self.ckt_data[circuit_name]
                 # G1 = circuit["graph"]
                 # map and reduce graph to dictionary
@@ -103,6 +114,8 @@ class Annotate:
                 #     if 'id' in self.ckt_data[ckt_name] and len(self.ckt_data[ckt_name]['id']) > 1:
                 #         copies = len(self.ckt_data[ckt_name]['id'])
                 #         self.lib_names += [ckt_name + '_type' + str(n) for n in range(copies)]
+                logger.debug(f"Circuit after MATCHING: {ckt.name} {ckt.elements}")
+        logger.info(f"Subcircuits after creating primitive hiearchy {[ckt.name for ckt in self.ckt_data if isinstance(ckt, SubCircuit)]}")
         return self.lib_names
 
     def _update_attributes(self,circuit_graph,lib_ele, Gsub):

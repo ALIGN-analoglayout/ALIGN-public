@@ -57,5 +57,5 @@ def read_setup(setup_path):
             line=fp.readline()
         logger.debug(f"SETUP: {design_setup}")
     else:
-        logger.warning(f"no setup file found: {setup_path}")
+        logger.info(f"no setup file found: {setup_path}")
     return design_setup

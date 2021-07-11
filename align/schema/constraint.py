@@ -513,6 +513,23 @@ class MatchBlocks(SoftConstraint):
 class SymmetricBlocks(SoftConstraint):
     pairs: List[List[str]]
     direction: Literal['H', 'V']
+    def check(self, checker):
+        '''
+        X = Align(2, 3, 'h_center')
+        Y = Align(4, 5, 'h_center')
+        Align(1, X, Y, 6, 'center')
+
+        '''
+        assert all(len(pair) for pair in self.pairs) >= 1, 'Must contain at least one instance'
+        assert all(len(pair) for pair in self.pairs) <= 2, 'Must contain at most two instances'
+        for pair in self.pairs:
+            if len(pair)==2:
+                assert self.parent.parent.get_element(pair[0]).parameters == \
+                    self.parent.parent.get_element(pair[1]).parameters, \
+                        f"Incorrent symmetry pair {pair} in subckt {self.parent.parent.name}"
+
+    #TODO: Trace current path
+
 
 
 class BlockDistance(SoftConstraint):

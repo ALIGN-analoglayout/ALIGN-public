@@ -1,4 +1,5 @@
 .SUBCKT stack_of_three d g s b
+.param m=1
 Mi[0] d g  n0 b psvt w=180e-9 m=1 nf=1
 Mi[1] n0 g  n1 b psvt w=180e-9 m=1 nf=1
 Mi[2] n1 g  s   b  psvt w=180e-9 m=1 nf=1
