@@ -49,8 +49,17 @@ class ConstraintParser:
                 node.constraints.extend(
                     constraint.ConstraintDB.parse_file(json_path)
                 )
+            #ALL inst in caps
+            for const in node.constraints:
+                if hasattr(const, 'instances') and len(const.instances) > 1:
+                    for i,inst in enumerate(const.instances):
+                        const.instances[i] = inst.upper()
+                elif hasattr(const, 'pairs'):
+                    for pair in const.pairs:
+                        for i,inst in enumerate(pair):
+                            pair[i] = inst.upper()
 
-            do_not_identify = []                
+            do_not_identify = []
             for const in node.constraints:
                 if const.constraint == 'group_blocks':
                     continue

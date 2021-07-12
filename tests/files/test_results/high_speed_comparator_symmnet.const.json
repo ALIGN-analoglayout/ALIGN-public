@@ -11,28 +11,28 @@
           "constraint": "symmetric_blocks",
           "pairs": [
             [
-              "mn0"
+              "MN0"
             ],
             [
-              "mn1_mn2"
+              "XMN1_MN2"
             ],
             [
-              "mn3_mn4"
+              "XMN3_MN4"
             ],
             [
-              "mp5_mp6"
+              "XMP5_MP6"
             ],
             [
-              "mp7",
-              "mp8"
+              "MP7",
+              "MP8"
             ],
             [
-              "mp9",
-              "mp10"
+              "MP9",
+              "MP10"
             ],
             [
-              "mp11_mn13",
-              "mp12_mn14"
+              "XMP11_MN13",
+              "XMP12_MN14"
             ]
           ],
           "direction": "V"
@@ -40,10 +40,10 @@
         {
           "constraint": "order",
           "instances": [
-            "mn0",
-            "mn1_mn2",
-            "mn3_mn4",
-            "mp5_mp6"
+            "MN0",
+            "XMN1_MN2",
+            "XMN3_MN4",
+            "XMP5_MP6"
           ],
           "direction": "top_to_bottom",
           "abut": false
@@ -51,20 +51,20 @@
         {
           "constraint": "align",
           "instances": [
-            "mp9",
-            "mp7",
-            "mn1_mn2",
-            "mp8",
-            "mp10"
+            "MP9",
+            "MP7",
+            "XMN1_MN2",
+            "MP8",
+            "MP10"
           ],
           "line": "h_bottom"
         },
         {
           "constraint": "align",
           "instances": [
-            "mp11_mn13",
-            "mp5_mp6",
-            "mp12_mn14"
+            "XMP11_MN13",
+            "XMP5_MP6",
+            "XMP12_MN14"
           ],
           "line": "h_bottom"
         },
@@ -73,14 +73,14 @@
           "net1": "vin_d",
           "net2": "vip_d",
           "pins1": [
-            "mp7/D",
-            "mn1_mn2/vin_d",
-            "mn3_mn4/vin_d"
+            "MP7/D",
+            "XMN1_MN2/vin_d",
+            "XMN3_MN4/vin_d"
           ],
           "pins2": [
-            "mp8/D",
-            "mn1_mn2/vip_d",
-            "mn3_mn4/vip_d"
+            "MP8/D",
+            "XMN1_MN2/vip_d",
+            "XMN3_MN4/vip_d"
           ],
           "direction": "V"
         },
@@ -89,11 +89,11 @@
           "net1": "vin",
           "net2": "vip",
           "pins1": [
-            "mn1_mn2/vin",
+            "XMN1_MN2/vin",
             "vin"
           ],
           "pins2": [
-            "mn1_mn2/vip",
+            "XMN1_MN2/vip",
             "vip"
           ],
           "direction": "V"
@@ -101,16 +101,16 @@
         {
           "constraint": "do_not_identify",
           "instances": [
-            "mn3_mn4",
-            "mp5_mp6",
-            "mn1_mn2",
-            "mp11_mn13",
-            "mp12_mn14",
-            "mn0",
-            "mp10",
-            "mp7",
-            "mp8",
-            "mp9"
+            "XMN3_MN4",
+            "XMP5_MP6",
+            "XMN1_MN2",
+            "XMP11_MN13",
+            "XMP12_MN14",
+            "MN0",
+            "MP10",
+            "MP7",
+            "MP8",
+            "MP9"
           ]
         }
 ]

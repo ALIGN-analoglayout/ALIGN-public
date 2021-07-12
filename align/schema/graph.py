@@ -102,6 +102,7 @@ class Graph(networkx.Graph):
                     ret.append(match)
                 except:
                     #primitives with unsatisfied constraints will not be created
+                    logger.info(f"skipping match {graph.subckt.name} {match} due to unsatisfied constraints")
                     pass
         return ret
     def check_constraint_satisfiability(self,subgraph,match):
@@ -115,17 +116,32 @@ class Graph(networkx.Graph):
                     x = constraint.SymmetricBlocks(direction=d, pairs=t)
                     self.subckt.constraints.append(x)
                     self.subckt.constraints.remove(x)
+    def match_pin_distance(self,pair,pin):
+        # SYmmetric nets should have have position w.r.t gnd
+        logger.debug(f"checking port distance")
+        #TODO: focus on power pins
+        pin_dist2 = []
+        pin_dist1 = []
+        if networkx.has_path(self, source=pin, target=pair[0]):
+            pin_dist1.append(networkx.shortest_path_length(self, source=pin, target=pair[0]))
+            logger.debug(f"path exist: {pin} {pair[0]} {pin_dist1}")
+        if networkx.has_path(self, source=pin, target=pair[1]):
+            pin_dist2.append(networkx.shortest_path_length(self, source=pin, target=pair[1]))
+            logger.debug(f"path exist: {pin} {pair[1]} {pin_dist2}")
+        logger.debug(f"pin distance: {pin_dist1} {pin_dist2}")
+        assert sorted(pin_dist1) == sorted(pin_dist2), f"pin distance mismatch"
+
     def _get_key(self,val,dicta):
         for key, value in dicta.items():
             if val == value:
                 return key
         return "key doesn't exist"
 
-    def replace_matching_subgraph(self, subgraph, node_match=None, edge_match=None):
+    def replace_matching_subgraph(self, subgraph, skip=None, node_match=None, edge_match=None):
         matches = self.find_subgraph_matches(subgraph, node_match, edge_match)
-        return self._replace_matches_with_subckt(matches, subgraph.subckt)
+        return self._replace_matches_with_subckt(matches, subgraph.subckt, skip)
 
-    def _replace_matches_with_subckt(self, matches, subckt):
+    def _replace_matches_with_subckt(self, matches, subckt, skip=None):
         assert isinstance(subckt, SubCircuit)
         new_subckt = []
         for match in matches:
@@ -139,7 +155,8 @@ class Graph(networkx.Graph):
                 continue
             # Remove nodes not on subckt boundary
             # pp = self.resolve_subckt_param(removal_candidates)
-
+            if set(removal_candidates) & set(skip):
+                continue
             # Create a dummy instance of instance of subckt
             subckt_instance = self.create_subckt_instance(subckt, match, subckt.name)
             # check dummy is existing in library

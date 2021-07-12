@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 def preprocess_stack_parallel(ckt_data, design_setup, design_name):
     """
     Preprocess the input graph by reducing parallel device, series devices, remove dummy hierarchies.
-    removes power pins to be sent as signal by recursively finding all connections to power pins 
+    removes power pins to be sent as signal by recursively finding all connections to power pins
     and removing them from subcircuit definition and instance calls
     for each circuit different power connection creates an extra subcircuit
     Required by PnR as it does not make power connections as ports
@@ -55,24 +55,6 @@ def preprocess_stack_parallel(ckt_data, design_setup, design_name):
                         remove_dummy.append(subckt.name)
                 logger.debug(f"After preprocessing no of elements in subckt {subckt.name}: {len(subckt.elements)}")
 
-                
-def modify_pg_conn_subckt(hier_graph_dict:dict,circuit_name, pg_conn):
-    """
-    creates a new subcircuit by removing power pins from a subcircuit definition 
-    and change internal connections within the subcircuit
-   
-    Parameters
-    ----------
-    hier_graph_dict : dict
-        dictionary of all circuit in spice file
-    circuit_name : str
-        name of circuit to be processed.
-    pg_conn : dict
-        ports to be modified and corresponding pg pin.
-    Returns
-    -------
-    new subcircuit name
-    """
     if len(remove_dummy) >0:
         logger.info(f"Removing dummy hierarchies {remove_dummy}")
     with set_context(ckt_data):

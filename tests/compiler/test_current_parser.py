@@ -39,15 +39,9 @@ def test_match_ota():
     all_lef = ['Switch_NMOS','Switch_PMOS','CMC_PMOS','CMC_S_NMOS_B','DP_NMOS_B','SCM_NMOS']
     const_parse = ConstraintParser(pdk_dir, input_dir)
     create_data = CreateDatabase(g,const_parse)
-<<<<<<< HEAD
-    ckt_data = create_data.read_inputs("ota")
-    annotate = Annotate(ckt_data, design_setup,lib_list,all_lef)
-    mapped_graph_list = annotate._mapped_graph_list(g, lib_list,['vdd!','vss'])
-=======
     hier_graph_dict = create_data.read_inputs("ota")
     annotate = Annotate(hier_graph_dict, design_setup,lib_list,all_lef)
     mapped_graph_list = annotate._mapped_graph_list(g, 'ota',['vdd!','vss'])
->>>>>>> master
     assert 'Switch_NMOS' in mapped_graph_list.keys()
     assert 'Switch_PMOS' in mapped_graph_list.keys()
     assert 'CMC_PMOS' in mapped_graph_list.keys()

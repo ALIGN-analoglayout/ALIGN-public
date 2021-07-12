@@ -11,28 +11,28 @@
           "constraint": "symmetric_blocks",
           "pairs": [
             [
-              "mn0"
+              "MN0"
             ],
             [
-              "mn1_mn2"
+              "XMN1_MN2"
             ],
             [
-              "mn3_mn4"
+              "XMN3_MN4"
             ],
             [
-              "mp5_mp6"
+              "XMP5_MP6"
             ],
             [
-              "mp7",
-              "mp8"
+              "MP7",
+              "MP8"
             ],
             [
-              "mp9",
-              "mp10"
+              "MP9",
+              "MP10"
             ],
             [
-              "mp11_mn13",
-              "mp12_mn14"
+              "XMP11_MN13",
+              "XMP12_MN14"
             ]
           ],
           "direction": "V"
@@ -40,16 +40,16 @@
         {
           "constraint": "do_not_identify",
           "instances": [
-            "mn3_mn4",
-            "mp5_mp6",
-            "mn1_mn2",
-            "mp11_mn13",
-            "mp12_mn14",
-            "mn0",
-            "mp10",
-            "mp7",
-            "mp8",
-            "mp9"
+            "XMN3_MN4",
+            "XMP5_MP6",
+            "XMN1_MN2",
+            "XMP11_MN13",
+            "XMP12_MN14",
+            "MN0",
+            "MP10",
+            "MP7",
+            "MP8",
+            "MP9"
           ]
         }
 ]

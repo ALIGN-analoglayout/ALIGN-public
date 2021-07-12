@@ -114,7 +114,6 @@ def gen_more_primitives( primitives, topology_dir, subckt):
 
     for k,v in primitives.items():
 
-<<<<<<< HEAD
         # print(k,v)
         # m = p.match(k)
         # if m:
@@ -146,58 +145,58 @@ def gen_more_primitives( primitives, topology_dir, subckt):
         #         logger.warning( f'Didn\'t match primitive {k}')
         #     map_d[k].append( k)
         map_d[k].append(k)
-=======
-        m = p.match(k)
-        mm = p_2.match(k)
-
-        if m:
-            nfin,n,X,Y = tuple(int(x) for x in m.groups()[1:-1])
-            prefix = f'{m.groups()[0]}_nfin{nfin}'
-            suffix = m.groups()[-1]
-            pairs = gen_pairs( n, nfin)
-
-            abstract_name = f'{prefix}{suffix}'
-            map_d[abstract_name].append( k)
-            for newx,newy in pairs:
-                concrete_name = f'{prefix}_n{n}_X{newx}_Y{newy}{suffix}'
-                map_d[abstract_name].append( concrete_name)             
-                if concrete_name not in primitives and \
-                   concrete_name not in more_primitives:
-                    more_primitives[concrete_name] = copy.deepcopy(v)
-                    more_primitives[concrete_name]['x_cells'] = newx
-                    more_primitives[concrete_name]['y_cells'] = newy
-
-        elif mm:
-            prefix = mm.groups()[0]
-            x, y = tuple(int(x) for x in mm.groups()[1:])
-            prefix = mm.groups()[0]
-            pairs = set()
-            m = x*y
-            y_sqrt = math.floor(math.sqrt(x*y))
-            for y in range(y_sqrt, 0, -1):
-                if m % y == 0:
-                    pairs.add((y, m//y))
-                    pairs.add((m//y, y))
-                if y == 1:
-                    break
-
-            pairs = limit_pairs(pairs)
-
-            abstract_name = f'{prefix}'
-            map_d[abstract_name].append(k)
-            for newx,newy in pairs:
-                concrete_name = f'{prefix}_x{newx}_y{newy}'
-                map_d[abstract_name].append( concrete_name)             
-                if concrete_name not in primitives and concrete_name not in more_primitives:
-                    more_primitives[concrete_name] = copy.deepcopy(v)
-                    more_primitives[concrete_name]['x_cells'] = newx
-                    more_primitives[concrete_name]['y_cells'] = newy
-
-        else:
-            if not (k.startswith( "Res") or k.startswith( "Cap")): 
-                logger.warning( f'Didn\'t match primitive {k}')
-            map_d[k].append( k)
->>>>>>> master
+#=======
+#        m = p.match(k)
+#        mm = p_2.match(k)
+#
+#        if m:
+#            nfin,n,X,Y = tuple(int(x) for x in m.groups()[1:-1])
+#            prefix = f'{m.groups()[0]}_nfin{nfin}'
+#            suffix = m.groups()[-1]
+#            pairs = gen_pairs( n, nfin)
+#
+#            abstract_name = f'{prefix}{suffix}'
+#            map_d[abstract_name].append( k)
+#            for newx,newy in pairs:
+#                concrete_name = f'{prefix}_n{n}_X{newx}_Y{newy}{suffix}'
+#                map_d[abstract_name].append( concrete_name)             
+#                if concrete_name not in primitives and \
+#                   concrete_name not in more_primitives:
+#                    more_primitives[concrete_name] = copy.deepcopy(v)
+#                    more_primitives[concrete_name]['x_cells'] = newx
+#                    more_primitives[concrete_name]['y_cells'] = newy
+#
+#        elif mm:
+#            prefix = mm.groups()[0]
+#            x, y = tuple(int(x) for x in mm.groups()[1:])
+#            prefix = mm.groups()[0]
+#            pairs = set()
+#            m = x*y
+#            y_sqrt = math.floor(math.sqrt(x*y))
+#            for y in range(y_sqrt, 0, -1):
+#                if m % y == 0:
+#                    pairs.add((y, m//y))
+#                    pairs.add((m//y, y))
+#                if y == 1:
+#                    break
+#
+#            pairs = limit_pairs(pairs)
+#
+#            abstract_name = f'{prefix}'
+#            map_d[abstract_name].append(k)
+#            for newx,newy in pairs:
+#                concrete_name = f'{prefix}_x{newx}_y{newy}'
+#                map_d[abstract_name].append( concrete_name)             
+#                if concrete_name not in primitives and concrete_name not in more_primitives:
+#                    more_primitives[concrete_name] = copy.deepcopy(v)
+#                    more_primitives[concrete_name]['x_cells'] = newx
+#                    more_primitives[concrete_name]['y_cells'] = newy
+#
+#        else:
+#            if not (k.startswith( "Res") or k.startswith( "Cap")): 
+#                logger.warning( f'Didn\'t match primitive {k}')
+#            map_d[k].append( k)
+#>>>>>>> master
 
     primitives.update( more_primitives)
 
@@ -344,10 +343,6 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     if '2_primitives' in steps_to_run:
         primitive_dir.mkdir(exist_ok=True)
         for block_name, block_args in primitives.items():
-<<<<<<< HEAD
-            logger.debug(f"Generating primitive: {block_name} {block_args}")
-            generate_primitive(block_name, **block_args, pdkdir=pdk_dir, outputdir=primitive_dir)
-=======
             logger.debug(f"Generating primitive: {block_name}")
             uc = generate_primitive(block_name, **block_args, pdkdir=pdk_dir, outputdir=primitive_dir)
             if hasattr(uc, 'metadata'):
@@ -358,7 +353,6 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     else:
         with (primitive_dir / '__primitives__.json').open( 'rt') as fp:
             primitives = json.load(fp)
->>>>>>> master
 
     # run PNR tool
     pnr_dir = working_dir / '3_pnr'

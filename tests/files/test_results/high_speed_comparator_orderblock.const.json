@@ -10,10 +10,10 @@
         {
           "constraint": "order",
           "instances": [
-            "mn0",
-            "mn1_mn2",
-            "mn3_mn4",
-            "mp5_mp6"
+            "MN0",
+            "XMN1_MN2",
+            "XMN3_MN4",
+            "XMP5_MP6"
           ],
           "direction": "top_to_bottom",
           "abut": false
@@ -21,11 +21,11 @@
         {
           "constraint": "do_not_identify",
           "instances": [
-            "mn3_mn4",
-            "mp5_mp6",
-            "mn1_mn2",
-            "mn0"
+            "XMN3_MN4",
+            "XMP5_MP6",
+            "XMN1_MN2",
+            "MN0"
           ]
         }
-        
+
 ]
