@@ -9,13 +9,15 @@
 #include <set>
 #include <fstream>
 #include <string>
+#include <Python.h>
 
 using namespace std;
 
 class Placement {
 
 private:
-    Ppoint_F Chip_BND; //chip bounday for UT placer
+    string circuit_name = "";
+    Ppoint_F Chip_BND;  // chip bounday for UT placer
     int temp = 0; // for testing the code
     Ppoint_F Chip_D; //chip dimension for the placement
     Ppoint_F Bin_D; // Dimensions for each bin
@@ -111,6 +113,7 @@ public:
 
     //
     void E_Placer();
+    void performance_gradient(vector<float> &uc_x, vector<float> &uc_y);
     void Extract_Placement_Vectors(vector<float> &temp_vector, bool x_or_y);
     void Feedback_Placement_Vectors(vector<float> &temp_vector, bool x_or_y);
     void WriteOut_Blocks(int iteration);

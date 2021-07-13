@@ -267,6 +267,7 @@ void Placement::place(PnRDB::hierNode &current_node)
   int max_block_number = 1000;
   int max_net_number = 100;
   int max_conection_number = 100;
+  circuit_name = current_node.name;
 
   // for bins
   unit_x_bin = (float)1 / 16;
@@ -1652,10 +1653,18 @@ void Placement::E_Placer()
   // while((Stop_Condition(stop_density,current_max_density) or symCheck(symmetricMin)) and count_number<upper_count_number ){//Q: stop condition
 
 
-
-
-  while ((current_overlap > 0.3 or symCheck(symmetricMin)) and count_number < upper_count_number)
-  { //Q: stop condition
+  Py_Initialize();
+  if (!Py_IsInitialized()) std::cout << "Py_Initialize fails" << std::endl;
+  PyRun_SimpleString("import sys");
+  PyRun_SimpleString("sys.path.append('./')");
+  PyRun_SimpleString("import calgrad");
+  PyObject *pModule = NULL;
+  pModule = PyImport_ImportModule("calgrad");
+  PyObject *pFunc = PyObject_GetAttrString(pModule, "initialization");
+  PyObject *pArgs = PyTuple_New(1);                 
+  PyTuple_SetItem(pArgs, 0, Py_BuildValue("s", circuit_name));
+  PyObject *pReturn = PyEval_CallObject(pFunc, pArgs);
+  while ((current_overlap > 0.3 or symCheck(symmetricMin)) and count_number < upper_count_number) {  // Q: stop condition
     //Initilize_lambda();
     //Initilize_sym_beta();
     // while(i<20){//Q: stop condition
@@ -1748,6 +1757,7 @@ void Placement::E_Placer()
 #ifdef DEBUG
     std::cout << "test 3" << std::endl;
 #endif
+    performance_gradient(uc_x, uc_y);
     Pull_back_vector(uc_x, 1);
     Pull_back_vector(uc_y, 0);
     Feedback_Placement_Vectors(uc_x, 1);
@@ -1756,7 +1766,7 @@ void Placement::E_Placer()
     Pull_back_vector(vl_x, 1);
     Pull_back_vector(vc_y, 0);
     Pull_back_vector(vl_y, 0);
-    PlotPlacement(i);
+    //PlotPlacement(i);
 //Pull_back();
 #ifdef DEBUG
     std::cout << "test 4" << std::endl;
@@ -1770,6 +1780,29 @@ void Placement::E_Placer()
   // refine_CC();
   PlotPlacement(count_number);
   std::cout << "iter num when stop:=" << count_number << std::endl;
+}
+
+void Placement::performance_gradient(vector<float> &uc_x, vector<float> &uc_y) { 
+  vector<float> uc_x_ori(originalBlockCNT,0), uc_y_ori(originalBlockCNT,0);
+  vector<float> uc_x_ori_move(originalBlockCNT,0), uc_y_ori_move(originalBlockCNT,0);
+  for (int i = 0;i<originalBlockCNT;i++){
+    uc_x_ori[i] += uc_x[i];
+    uc_y_ori[i] += uc_y[i];
+    for(auto s:Blocks[i].spiltBlock){
+      uc_x_ori[i] += uc_x[s];
+      uc_y_ori[i] += uc_y[s];
+    }
+    uc_x_ori[i] /= Blocks[i].spiltBlock.size();
+    uc_y_ori[i] /= Blocks[i].spiltBlock.size();
+  }
+  for (int i = 0;i<originalBlockCNT;i++){
+    uc_x[i] += uc_x_ori_move[i];
+    uc_y[i] += uc_y_ori_move[i];
+    for(auto s:Blocks[i].spiltBlock){
+      uc_x[s] += uc_x_ori_move[i];
+      uc_y[s] += uc_x_ori_move[i];
+    }
+  }
 }
 
 void Placement::Extract_Placement_Vectors(vector<float> &temp_vector, bool x_or_y)
