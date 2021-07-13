@@ -116,8 +116,12 @@ class Graph(networkx.Graph):
                     x = constraint.SymmetricBlocks(direction=d, pairs=t)
                     self.subckt.constraints.append(x)
                     self.subckt.constraints.remove(x)
+                    for pair in const.pairs:
+                        if len(pair)==2:
+                            self.match_pin_distance(pair,self.subckt.pins[0])
     def match_pin_distance(self,pair,pin):
-        # SYmmetric nets should have have position w.r.t gnd
+        # Symmetric nets should have same position w.r.t gnd and power
+        return True
         logger.debug(f"checking port distance")
         #TODO: focus on power pins
         pin_dist2 = []
