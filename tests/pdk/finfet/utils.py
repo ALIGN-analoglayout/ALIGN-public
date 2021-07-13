@@ -81,7 +81,7 @@ def build_example(name, netlist, netlist_setup, constraints):
     return example
 
 
-def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO'):
+def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO', more_args=None):
     run_dir = my_dir / f'run_{example.name}'
     if run_dir.exists() and run_dir.is_dir():
         shutil.rmtree(run_dir)
@@ -89,6 +89,9 @@ def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO'):
     os.chdir(run_dir)
 
     args = [str(example), '-p', str(pdk_dir), '-l', log_level, '-n', str(n)]
+    if more_args is not None:
+        for e in more_args:
+            args.append(str(e))
     results = align.CmdlineParser().parse_args(args)
 
     assert results is not None, f"{example.name}: No results generated"
