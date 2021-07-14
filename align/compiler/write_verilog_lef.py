@@ -262,7 +262,7 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
             }
 
             if 'stack' in values:
-                # assert nf == 1, f'Stacked transistor cannot have multiple fingers {nf}'
+                assert nf == 1, f'Stacked transistor cannot have multiple fingers {nf}'
                 block_args['stack']=int(values['stack'])
                 block_name += f'_st'+str(int(values['stack']))
             else:
