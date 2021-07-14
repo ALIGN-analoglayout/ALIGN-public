@@ -33,7 +33,6 @@ def test_2():
     setup = textwrap.dedent("""\
         POWER = vccx
         GND = vssx
-        DONT_USE_CELLS = CASCODED_CMC_NMOS CMB_PMOS_2 LSB_PMOS_2 LSB_NMOS_2
         """)
     constraints = []
     example = build_example(name, netlist, setup, constraints)
@@ -42,7 +41,7 @@ def test_2():
     with (run_dir / '1_topology' / '__primitives__.json').open('rt') as fp:
         primitives = json.load(fp)
         for key, _ in primitives.items():
-            assert key.startswith('Switch'), 'Incorrect subcircuit identification'
+            assert key.startswith('Switch') or key.startswith('DCL'), 'Incorrect subcircuit identification'
 
     shutil.rmtree(run_dir)
     shutil.rmtree(ckt_dir)

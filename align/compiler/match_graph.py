@@ -471,7 +471,13 @@ class Annotate:
                         logger.debug(f"Discarding match due to user constraint {Gsub}")
                         continue
                     
-                    if block_name.startswith('DP')  or block_name.startswith('CMC'):
+                    block_prefix = block_name.split('_')[0]
+                    if block_prefix in ['SCM', 'DP', 'CMC', 'CCP', 'LS']:
+                        if G1.nodes[all_nd[0]]['values'] != G1.nodes[all_nd[1]]['values']:
+                            logger.debug(f"Discarding match {block_name} due to value mismatch")
+                            continue
+                    
+                    if block_name.startswith('DP') or block_name.startswith('CMC'):
                         if G1.nodes[all_nd[0]]['values'] == G1.nodes[all_nd[1]]['values'] and \
                             compare_balanced_tree(G1,get_key(Gsub,'DA'),get_key(Gsub,'DB'),[all_nd[0]],[all_nd[1]]) :
                             if 'SA' in Gsub.values() and \
