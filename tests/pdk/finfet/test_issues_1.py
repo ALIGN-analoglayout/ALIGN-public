@@ -42,7 +42,7 @@ def test_cmp_2():
         """)
     constraints = [
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
-        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},    
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
         {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
         {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
@@ -70,7 +70,7 @@ def test_cmp_3():
         """)
     constraints = [
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
-        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},    
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
         {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
         {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
@@ -111,3 +111,50 @@ def test_cmp_4():
     example = build_example(name, netlist, setup, constraints)
     run_example(example)
 
+
+def test_cmp_good():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.comparator(name)
+    setup = textwrap.dedent("""\
+        POWER = vccx
+        GND = vssx
+        """)
+    constraints = [
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
+        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
+        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
+        {"constraint": "SymmetricBlocks", "direction": "V",
+            "pairs": [["ccp"], ["ccn"], ["dp"], ["mn0"], ["invn", "invp"], ["mp7", "mp8"], ["mp9", "mp10"]]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["invn", "ccp", "ccn", "dp", "mn0"]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["invn", "mp9", "mp7", "mn0"]},
+        {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
+        {"constraint": "AspectRatio", "subcircuit": "comparator", "ratio_low": 0.5, "ratio_high": 1.5}
+    ]
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example, cleanup=False)
+
+
+def test_cmp_bad():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.comparator(name)
+    setup = textwrap.dedent("""\
+        POWER = vccx
+        GND = vssx
+        """)
+    constraints = [
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
+        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
+        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
+        {"constraint": "SymmetricBlocks", "direction": "V",
+            "pairs": [["ccp"], ["ccn"], ["dp"], ["mn0"], ["invn", "invp"], ["mp7", "mp8"], ["mp9", "mp10"]]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["invn", "ccp", "ccn", "dp", "mn0"]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["invn", "mp9", "mp7", "mn0"]},
+        {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
+        {"constraint": "AspectRatio", "subcircuit": "comparator", "ratio_low": 0.45, "ratio_high": 1.5}
+    ]
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example, cleanup=False)
