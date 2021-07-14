@@ -1657,13 +1657,19 @@ void Placement::E_Placer()
   if (!Py_IsInitialized()) std::cout << "Py_Initialize fails" << std::endl;
   PyRun_SimpleString("import sys");
   PyRun_SimpleString("sys.path.append('./')");
-  PyRun_SimpleString("import calgrad");
-  PyObject *pModule = NULL;
-  pModule = PyImport_ImportModule("calgrad");
-  PyObject *pFunc = PyObject_GetAttrString(pModule, "initialization");
-  PyObject *pArgs = PyTuple_New(1);                 
-  PyTuple_SetItem(pArgs, 0, Py_BuildValue("s", circuit_name));
-  PyObject *pReturn = PyEval_CallObject(pFunc, pArgs);
+  PyObject *pModule = PyImport_ImportModule("calgrad");
+  PyObject *pFun_initialization = PyObject_GetAttrString(pModule, "initialization");
+  PyObject *pFun_cal_grad = PyObject_GetAttrString(pModule, "cal_grad");
+  PyObject *pArgs_initialization = PyTuple_New(1);                 
+  PyTuple_SetItem(pArgs_initialization, 0, PyUnicode_FromString(circuit_name.c_str()));
+  PyObject *pyValue_initialization=PyEval_CallObject(pFun_initialization, pArgs_initialization);
+  PyObject *sess = NULL, *X = NULL, *grads = NULL;
+  PyArg_ParseTuple(pyValue_initialization, "O|O|O", &sess, &X, &grads);
+  if(!sess)std::cout<<"empty sess"<<std::endl;
+  if(!X)std::cout<<"empty X"<<std::endl;
+  if(!grads)std::cout<<"empty grads"<<std::endl;
+  
+  
   while ((current_overlap > 0.3 or symCheck(symmetricMin)) and count_number < upper_count_number) {  // Q: stop condition
     //Initilize_lambda();
     //Initilize_sym_beta();
@@ -1757,7 +1763,8 @@ void Placement::E_Placer()
 #ifdef DEBUG
     std::cout << "test 3" << std::endl;
 #endif
-    performance_gradient(uc_x, uc_y);
+    
+    performance_gradient(uc_x, uc_y, pFun_cal_grad, sess, X, grads);
     Pull_back_vector(uc_x, 1);
     Pull_back_vector(uc_y, 0);
     Feedback_Placement_Vectors(uc_x, 1);
@@ -1774,6 +1781,8 @@ void Placement::E_Placer()
     start_flag = 0;
     i++;
   }
+  Py_Finalize();
+  //exit(0);
   force_order(vc_x, vl_x, vc_y, vl_y);
   force_alignment(vc_x, vl_x, vc_y, vl_y);
   // restore_MS();
@@ -1782,9 +1791,9 @@ void Placement::E_Placer()
   std::cout << "iter num when stop:=" << count_number << std::endl;
 }
 
-void Placement::performance_gradient(vector<float> &uc_x, vector<float> &uc_y) { 
+void Placement::performance_gradient(vector<float> &uc_x, vector<float> &uc_y, PyObject *pFun_cal_grad, PyObject *sess, PyObject *X, PyObject *grads) { 
   vector<float> uc_x_ori(originalBlockCNT,0), uc_y_ori(originalBlockCNT,0);
-  vector<float> uc_x_ori_move(originalBlockCNT,0), uc_y_ori_move(originalBlockCNT,0);
+  //vector<float> uc_x_ori_move(originalBlockCNT,0), uc_y_ori_move(originalBlockCNT,0);
   for (int i = 0;i<originalBlockCNT;i++){
     uc_x_ori[i] += uc_x[i];
     uc_y_ori[i] += uc_y[i];
@@ -1792,15 +1801,41 @@ void Placement::performance_gradient(vector<float> &uc_x, vector<float> &uc_y) {
       uc_x_ori[i] += uc_x[s];
       uc_y_ori[i] += uc_y[s];
     }
-    uc_x_ori[i] /= Blocks[i].spiltBlock.size();
-    uc_y_ori[i] /= Blocks[i].spiltBlock.size();
+    uc_x_ori[i] /= (Blocks[i].spiltBlock.size()+1);
+    uc_y_ori[i] /= (Blocks[i].spiltBlock.size()+1);
+  }
+  PyObject *pArgs_cal_grad = PyTuple_New(6);
+  PyObject *pyParams_x = PyList_New(0), *pyParams_y = PyList_New(0);
+  for(int i = 0; i< originalBlockCNT; ++i){
+    PyList_Append(pyParams_x, Py_BuildValue("f", uc_x_ori[i]));
+    PyList_Append(pyParams_y, Py_BuildValue("f", uc_y_ori[i]));
+  }             
+  PyTuple_SetItem(pArgs_cal_grad, 0, sess);
+  PyTuple_SetItem(pArgs_cal_grad, 1, PyUnicode_FromString(circuit_name.c_str()));
+  PyTuple_SetItem(pArgs_cal_grad, 2, X);
+  PyTuple_SetItem(pArgs_cal_grad, 3, grads);
+  PyTuple_SetItem(pArgs_cal_grad, 4, pyParams_x);
+  PyTuple_SetItem(pArgs_cal_grad, 5, pyParams_y);
+  PyObject *pyValue_cal_grad=PyEval_CallObject(pFun_cal_grad, pArgs_cal_grad);
+  vector<float> grad_x(originalBlockCNT,0), grad_y(originalBlockCNT,0);
+  //int size = PyList_Size(pyValue_cal_grad);
+	//std::cout<<"List size: "<<size<<std::endl;
+  for(int i = 0; i< originalBlockCNT; ++i){
+    //PyObject *pRet = PyList_GetItem(pyValue_cal_grad, i);
+    PyArg_Parse(PyList_GetItem(pyValue_cal_grad, i), "f", &grad_x[i]);
+    //std::cout<<grad_x[i]<<std::endl;
+  }
+  for(int i = 0; i< originalBlockCNT; ++i){
+    //PyObject *pRet = PyList_GetItem(pyValue_cal_grad, i+originalBlockCNT);
+    PyArg_Parse(PyList_GetItem(pyValue_cal_grad, i+originalBlockCNT), "f", &grad_y[i]);
+    //std::cout<<grad_y[i]<<std::endl;
   }
   for (int i = 0;i<originalBlockCNT;i++){
-    uc_x[i] += uc_x_ori_move[i];
-    uc_y[i] += uc_y_ori_move[i];
+    uc_x[i] += grad_x[i];
+    uc_y[i] += grad_y[i];
     for(auto s:Blocks[i].spiltBlock){
-      uc_x[s] += uc_x_ori_move[i];
-      uc_y[s] += uc_x_ori_move[i];
+      uc_x[s] += grad_x[i];
+      uc_y[s] += grad_y[i];
     }
   }
 }

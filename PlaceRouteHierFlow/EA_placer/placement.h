@@ -113,7 +113,7 @@ public:
 
     //
     void E_Placer();
-    void performance_gradient(vector<float> &uc_x, vector<float> &uc_y);
+    void performance_gradient(vector<float> &uc_x, vector<float> &uc_y, PyObject *pFun_cal_grad, PyObject *sess, PyObject *X, PyObject *grads);
     void Extract_Placement_Vectors(vector<float> &temp_vector, bool x_or_y);
     void Feedback_Placement_Vectors(vector<float> &temp_vector, bool x_or_y);
     void WriteOut_Blocks(int iteration);
