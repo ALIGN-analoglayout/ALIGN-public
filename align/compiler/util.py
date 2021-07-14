@@ -75,52 +75,57 @@ def compare_two_nodes(G,node1:str,node2:str ,ports_weight):
         DESCRIPTION. True for matching node
 
     """
-    nbrs1= [nbr for nbr in G.neighbors(node1) if G.get_edge_data(node1, nbr)['weight'] !=2]
-    nbrs2= [nbr for nbr in G.neighbors(node2) if G.get_edge_data(node2, nbr)['weight'] !=2]
-    nbrs1= [nbr for nbr in nbrs1 if G.get_edge_data(node1, nbr)['weight'] !=7]
-    nbrs2= [nbr for nbr in nbrs2 if G.get_edge_data(node2, nbr)['weight'] !=7]
+    nbrs1= [nbr for nbr in G.neighbors(node1) if G.get_edge_data(node1, nbr)['pin']!= {'G'}]
+    nbrs2= [nbr for nbr in G.neighbors(node2) if G.get_edge_data(node2, nbr)['pin']!= {'G'}]
+    nbrs1= [nbr for nbr in nbrs1 if G.get_edge_data(node1, nbr)['pin'] !={'B'}]
+    nbrs2= [nbr for nbr in nbrs2 if G.get_edge_data(node2, nbr)['pin'] !={'B'}]
     logger.debug(f"comparing_nodes: {node1},{node2},{nbrs1},{nbrs2}")
 
     # Add some heuristic here in future
+    if G.nodes[node1].get('instance'):
+        print(f"nbrs1 {node1} {node2}")
 
-    nbrs1_type= sorted([G.nodes[nbr]["inst_type"] for nbr in nbrs1]) + [G.nodes[node1]["inst_type"]]
-    nbrs2_type= sorted([G.nodes[nbr]["inst_type"] for nbr in nbrs2]) + [G.nodes[node2]["inst_type"]]
-    if nbrs1_type != nbrs2_type:
-        logger.debug(f"type mismatch {nbrs1}:{nbrs1_type} {nbrs2}:{sorted(nbrs2_type)}")
-        return False
-    if G.nodes[node1]["inst_type"]=="net":
-        if G.nodes[node1]["net_type"] == G.nodes[node2]["net_type"] == 'external':
-            if not ports_weight:
-                return True
-            elif sorted(ports_weight[node1]) == sorted(ports_weight[node2]):
+        if G.nodes[node1].get('instance').model == G.nodes[node2].get('instance').model and\
+            G.nodes[node1].get('instance').parameters == G.nodes[node2].get('instance').parameters:
+            logger.debug(" True")
+            return True
+        else:
+            logger.debug(" False, value mismatch")
+            return False
+    else:
+        nbrs1_type= sorted([G.nodes[nbr].get('instance').model for nbr in nbrs1])
+        nbrs2_type= sorted([G.nodes[nbr].get('instance').model for nbr in nbrs2])
+        if nbrs1_type != nbrs2_type:
+            logger.debug(f"type mismatch {nbrs1}:{nbrs1_type} {nbrs2}:{sorted(nbrs2_type)}")
+            return False
+        if node1 in ports_weight and node2 in ports_weight:
+            if sorted(ports_weight[node1]) == sorted(ports_weight[node2]):
                 logger.debug("True")
                 return True
             else:
                 logger.debug(f'external port weight mismatch {ports_weight[node1]},{ports_weight[node2]}')
                 return False
-        elif G.nodes[node1]["net_type"] == 'internal':
-            weight1=[(G.get_edge_data(node1, nbr)['weight'] & ~2) for nbr in nbrs1]
-            weight2=[(G.get_edge_data(node2, nbr)['weight'] & ~2) for nbr in nbrs2]
+        else:
+            print([G.get_edge_data(node1, nbr)['pin'] for nbr in nbrs1])
+            weight1=[G.get_edge_data(node1, nbr)['pin'] for nbr in nbrs1]
+            weight2=[G.get_edge_data(node2, nbr)['pin'] for nbr in nbrs2]
+            if {'G'} in weight1:
+                weight1.remove({'G'})
+            if {'G'} in weight2:
+                weight2.remove({'G'})
             if weight2==weight1:
                 logger.debug("True")
                 return True
             else:
                 logger.debug(f'internal port weight mismatch {weight1},{weight2}')
                 return False
-    else:
-        if 'values' in G.nodes[node1].keys() and \
-        G.nodes[node1]["values"]==G.nodes[node2]["values"]:
-            logger.debug(" True")
-            return True
-        else:
-            logger.debug(" False, value mismatch")
-            return False
+
 
 def max_connectivity(G):
     conn_value =0
     #internal_nets =[x for x,y in G.nodes(data=True) if y['inst_type']=='net' and len(G.edges(x)) > 1]
     #Drain and source weights are equal
-    for (u, v, wt) in G.edges.data('weight'):
+    for (u, v, wt) in G.edges.data('pin'):
         if G.nodes[u]['inst_type']=='net' and len(G.edges(u)) >1 and wt<8:
             if 'mos' in G.nodes[v]['inst_type'] and wt >3:
                 conn_value-=3

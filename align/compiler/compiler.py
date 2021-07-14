@@ -203,18 +203,18 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
         if not isinstance(ckt, SubCircuit):
             continue
         if ckt.name not in  generators:
-
+            subckt = ckt_data.find(ckt.name)
             ## Removing constraints to fix cascoded cmc
             if ckt.name not in design_setup['DIGITAL']:
                 logger.debug(f"call constraint generator writer for block: {ckt.name}")
                 stop_points = design_setup['POWER'] + design_setup['GND'] + design_setup['CLOCK']
-                constraints = ckt.constraints
-                # if ckt.name not in design_setup['NO_CONST']:
-                #     constraints = FindConst(graph, name, inoutpin, member["ports_weight"], constraints, stop_points)
-                # constraints = CapConst(graph, name, design_config["unit_size_cap"], constraints, design_setup['MERGE_SYMM_CAPS'])
-                # ckt_data[name] = ckt_data[name].copy(
-                #     update={'constraints': constraints}
-                # )
+                if ckt.name not in design_setup['NO_CONST']:
+                    FindConst(ckt_data, ckt.name, stop_points)
+                constraints = CapConst(ckt_data, ckt.name, design_config["unit_size_cap"], design_setup['MERGE_SYMM_CAPS'])
+                print(constraints)
+                subckt = subckt.copy(
+                    update={'constraints': constraints}
+                )
             ## Write out modified netlist & constraints as JSON
             logger.debug(f"call verilog writer for block: {ckt.name}")
             wv = WriteVerilog(ckt, ckt_data, POWER_PINS)

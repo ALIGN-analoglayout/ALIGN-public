@@ -13,10 +13,11 @@ from .find_constraint import symmnet_device_pairs
 import logging
 import json
 from ..schema import constraint
+from ..schema.graph import Graph
 
 logger = logging.getLogger(__name__)
 
-def CapConst(graph,name,unit_size_cap,all_const,merge_caps):
+def CapConst(ckt_data,name,unit_size_cap,merge_caps):
     """
     Reads input graph and generates constraints for capacitors
     The constraints are defined such that caps are designed using a unit cap.
@@ -33,7 +34,9 @@ def CapConst(graph,name,unit_size_cap,all_const,merge_caps):
     None.
 
     """
-
+    subckt = ckt_data.find(name)
+    graph = Graph(subckt)
+    all_const = subckt.constraints
     available_cap_const = []
     for const in all_const:
         if isinstance(const, constraint.GroupCaps):
@@ -45,15 +48,15 @@ def CapConst(graph,name,unit_size_cap,all_const,merge_caps):
     else:
         cc_cap_size={}
     logger.debug(f"Writing constraints for remaining caps in the circuit graph {name}")
-    for node, attr in graph.nodes(data=True):
-        if attr['inst_type'].lower().startswith('cap_')  and node not in available_cap_const:
-            logger.debug(f"writing cap constraint for node {node} {cc_cap_size}")
-            if 'cap' in attr['values'].keys():
-                size = attr['values']["cap"]*1E15
+    for ele in subckt.elements:
+        if ele.name.startswith('CAP')  and ele.name not in available_cap_const:
+            logger.debug(f"writing cap constraint for node {ele.name} {cc_cap_size}")
+            if 'cap' in ele.parameters.keys():
+                size = ele.parameters["cap"]*1E15
             else:
                 size = unit_size_cap
-            if node in cc_cap_size:
-                n_cap = cc_cap_size[node]
+            if ele.name in cc_cap_size:
+                n_cap = cc_cap_size[ele.name]
             else:
                 n_cap = [ceil(size/unit_size_cap)]
             if not isinstance(n_cap,list) and n_cap > 128:
@@ -62,15 +65,15 @@ def CapConst(graph,name,unit_size_cap,all_const,merge_caps):
             else:
                 unit_block_name = 'Cap_' + str(unit_size_cap) + 'f'
             cap_const = constraint.GroupCaps(
-                        instances = [node],
-                        name = node,
+                        instances = [ele.name],
+                        name = ele.name,
                         num_units = n_cap,
                         unit_cap = unit_block_name,
                         dummy = False
                         )
             logger.debug(f"Cap constraint {cap_const}")
             all_const.append(cap_const)
-            available_cap_const.append(node)
+            available_cap_const.append(ele.name)
     logger.debug(f"Identified cap constraints of {name} are {all_const}")
 
     return all_const
@@ -95,10 +98,10 @@ def merge_symmetric_caps(all_const, graph, unit_size_cap, available_cap_const):
             for pair in const.pairs:
                 if len(pair) == 2:
                     inst = pair[0]
-                    if inst in graph and graph.nodes[inst]['inst_type'].lower().startswith('cap') \
-                        and len (graph.nodes[inst]['ports'])==2: #Not merge user provided const
+                    if inst in graph and graph.nodes[inst].get('instance').model.startswith('CAP') \
+                        and len (graph.nodes[inst].get('instance').pins)==2: #Not merge user provided const
                         logger.debug("Symmetric cap constraints:%s",b)
-                        p1, p2 = sorted(pair, key=lambda c: graph.nodes[c]['values']["cap"] * 1E15)
+                        p1, p2 = sorted(pair, key=lambda c: graph.nodes[c].get('instance').parameters["cap"] * 1E15)
                         cap_array[p1]={p1:[p1,p2]}
                         pair[0]= "_".join([p1,p2])
                         pair.pop()
