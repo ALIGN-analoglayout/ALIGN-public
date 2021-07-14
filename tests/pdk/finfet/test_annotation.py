@@ -10,7 +10,6 @@ except BaseException:
     import circuits
 
 
-@pytest.mark.skip
 def test_1():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ldo_amp(name)
@@ -21,7 +20,14 @@ def test_1():
         """)
     constraints = []
     example = build_example(name, netlist, setup, constraints)
-    run_example(example)
+    ckt_dir, run_dir = run_example(example, cleanup=False)
+
+    with (run_dir / '1_topology' / '__primitives__.json').open('rt') as fp:
+        primitives = json.load(fp)
+        print(primitives)
+
+    shutil.rmtree(run_dir)
+    shutil.rmtree(ckt_dir)
 
 
 def test_2():

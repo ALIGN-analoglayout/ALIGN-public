@@ -503,7 +503,9 @@ class Annotate:
                         logger.debug(f"Matched Circuit: {' '.join(Gsub)}")
                     if len(map_list)>1:
                         fix_order_for_multimatch(G1,map_list,map_list[-1])
-                mapped_graph_list[block_name] = map_list
+
+                if map_list:
+                    mapped_graph_list[block_name] = map_list
 
         return mapped_graph_list
 
