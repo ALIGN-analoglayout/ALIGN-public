@@ -8,7 +8,7 @@ except BaseException:
     import circuits
 
 
-def test_comparator():
+def test_cmp_vanilla():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = constraints = ""
@@ -16,8 +16,21 @@ def test_comparator():
     run_example(example)
 
 
+def test_cmp_noconst():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.comparator(name)
+    setup = textwrap.dedent(f"""\
+        POWER = vccx
+        GND = vssx
+        NO_CONST = {name}
+        """)
+    constraints = []
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example)
+
+
 @pytest.mark.nightly
-def test_comparator_1():
+def test_cmp_1():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = textwrap.dedent("""\
@@ -43,7 +56,7 @@ def test_comparator_1():
 
 
 @pytest.mark.nightly
-def test_comparator_2():
+def test_cmp_2():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = textwrap.dedent("""\
@@ -68,7 +81,7 @@ def test_comparator_2():
 
 
 @pytest.mark.nightly
-def test_comparator_clk():
+def test_cmp_clk():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = textwrap.dedent("""\
@@ -91,7 +104,33 @@ def test_comparator_clk():
 
 
 @pytest.mark.nightly
-def test_comparator_noconst():
+def test_cmp_1():
+    """ Single line of symmetry """
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.comparator(name)
+    setup = textwrap.dedent("""\
+        POWER = vccx
+        GND = vssx
+        """)
+    constraints = [
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
+        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
+        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
+        {"constraint": "SymmetricBlocks", "direction": "V", 
+            "pairs": [["ccp"], ["ccn"], ["dp"], ["mn0"], ["invn", "invp"], ["mp7", "mp8"], ["mp9", "mp10"]]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["invn", "ccp", "ccn", "dp", "mn0"]},
+        {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
+        {"constraint": "AspectRatio", "subcircuit": "comparator", "ratio_low": 0.5, "ratio_high": 2}
+    ]
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example)
+
+
+@pytest.mark.nightly
+def test_cmp_2():
+    """ Two lines of symmetry """
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = textwrap.dedent(f"""\
@@ -99,18 +138,111 @@ def test_comparator_noconst():
         GND = vssx
         NO_CONST = {name}
         """)
-    constraints = "[]"
+    constraints = [
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
+        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
+        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["dp"]]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["ccp"], ["ccn"]]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "dp"]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["ccp", "ccn"]},
+        {"constraint": "Order", "direction": "left_to_right", "instances": ["ccp", "invn", "invp"]},
+        {"constraint": "AlignInOrder", "line": "bottom", "instances": ["dp", "ccn"]},
+        {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
+        {"constraint": "AspectRatio", "subcircuit": "comparator", "ratio_low": 0.8, "ratio_high": 1.25}
+    ]
     example = build_example(name, netlist, setup, constraints)
     run_example(example)
 
 
 @pytest.mark.nightly
-def test_comparator_order():
+def test_cmp_3():
+    """ Another two lines of symmetry """
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.comparator(name)
+    setup = textwrap.dedent(f"""\
+        POWER = vccx
+        GND = vssx
+        NO_CONST = {name}
+        """)
+    constraints = [
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
+        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
+        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["dp"]]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["ccp"], ["ccn"], ["mp7", "mp8"], ["mp9", "mp10"]]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "dp"]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["ccp", "ccn"]},
+        {"constraint": "Order", "direction": "left_to_right", "instances": ["ccp", "invn", "invp"]},
+        {"constraint": "AlignInOrder", "line": "bottom", "instances": ["dp", "ccn"]},
+        {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
+        {"constraint": "AspectRatio", "subcircuit": "comparator", "ratio_low": 0.5, "ratio_high": 2}
+    ]
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example)
+
+
+@pytest.mark.nightly
+def test_cmp_good():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.comparator(name)
+    setup = textwrap.dedent("""\
+        POWER = vccx
+        GND = vssx
+        """)
+    constraints = [
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
+        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
+        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
+        {"constraint": "SymmetricBlocks", "direction": "V",
+            "pairs": [["ccp"], ["ccn"], ["dp"], ["mn0"], ["invn", "invp"], ["mp7", "mp8"], ["mp9", "mp10"]]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["invn", "ccp", "ccn", "dp", "mn0"]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["invn", "mp9", "mp7", "mn0"]},
+        {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
+        {"constraint": "AspectRatio", "subcircuit": "comparator", "ratio_low": 0.5, "ratio_high": 1.5}
+    ]
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example, cleanup=False)
+
+
+@pytest.mark.nightly
+def test_cmp_bad():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.comparator(name)
+    setup = textwrap.dedent("""\
+        POWER = vccx
+        GND = vssx
+        """)
+    constraints = [
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
+        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
+        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
+        {"constraint": "SymmetricBlocks", "direction": "V",
+            "pairs": [["ccp"], ["ccn"], ["dp"], ["mn0"], ["invn", "invp"], ["mp7", "mp8"], ["mp9", "mp10"]]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["invn", "ccp", "ccn", "dp", "mn0"]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["invn", "mp9", "mp7", "mn0"]},
+        {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
+        {"constraint": "AspectRatio", "subcircuit": "comparator", "ratio_low": 0.45, "ratio_high": 1.5}
+    ]
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example, cleanup=False)
+
+
+@pytest.mark.nightly
+def test_cmp_order():
     """ mp7 and mp8 should not bypass subcircuit identification """
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = ""
-    constraints = [{"constraint": "Order", "direction": "left_to_right", "instances": ["mmp7", "mmp8"]}]
+    constraints = [{"constraint": "Order", "direction": "left_to_right", "instances": ["mp7", "mp8"]}]
     name = f'ckt_{get_test_id()}'
     example = build_example(name, netlist, setup, constraints)
     run_example(example)
