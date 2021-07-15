@@ -962,15 +962,15 @@ void SeqPair::KeepOrdering(design& caseNL) {
         int first_counterpart = caseNL.Blocks[order.first.first][0].counterpart;
         int second_couterpart = caseNL.Blocks[order.first.second][0].counterpart;
         auto it = posPair.begin();
-        if (first_counterpart == -1) {
-          posPair.erase(it + first_it);
-          it = posPair.insert(it + second_it, order.first.first);
-          // move first to before second
-        } else if (second_couterpart == -1) {
+        if (second_couterpart == -1) {
           it = posPair.insert(it + first_it + 1, order.first.second);
           it = posPair.begin();
           posPair.erase(it + second_it);
           //move second to after first
+        } else if (first_counterpart == -1) {
+          posPair.erase(it + first_it);
+          it = posPair.insert(it + second_it, order.first.first);
+          // move first to before second
         } else {
           swap(posPair.at(first_it), posPair.at(second_it));
         }
@@ -995,15 +995,15 @@ void SeqPair::KeepOrdering(design& caseNL) {
           int first_counterpart = caseNL.Blocks[order.first.first][0].counterpart;
           int second_couterpart = caseNL.Blocks[order.first.second][0].counterpart;
           auto it = negPair.begin();
-          if (first_counterpart == -1) {
+          if (second_couterpart == -1) {
+            // mvoe second to before first
+            negPair.erase(it + second_it);
+            it = negPair.insert(it + first_it, order.first.second);
+          } else if (first_counterpart == -1) {
             //move first to after second
             it = negPair.insert(it + second_it + 1, order.first.first);
             it = negPair.begin();
             negPair.erase(it + first_it);
-          } else if (second_couterpart == -1) {
-            // mvoe second to before first
-            negPair.erase(it + second_it);
-            it = negPair.insert(it + first_it, order.first.second);
           } else {
             swap(negPair.at(first_it), negPair.at(second_it));
           }
@@ -1014,15 +1014,15 @@ void SeqPair::KeepOrdering(design& caseNL) {
         int first_counterpart = caseNL.Blocks[order.first.first][0].counterpart;
         int second_couterpart = caseNL.Blocks[order.first.second][0].counterpart;
         auto it = negPair.begin();
-        if (first_counterpart == -1) {
-          // move first to before second
-          negPair.erase(it + first_it);
-          it = negPair.insert(it + second_it, order.first.first);
-        } else if (second_couterpart == -1) {
+       if (second_couterpart == -1) {
           // mvoe second to after first
           it = negPair.insert(it + first_it + 1, order.first.second);
           it = negPair.begin();
           negPair.erase(it + second_it);
+        } else  if (first_counterpart == -1) {
+          // move first to before second
+          negPair.erase(it + first_it);
+          it = negPair.insert(it + second_it, order.first.first);
         } else {
           swap(negPair.at(first_it), negPair.at(second_it));
         }
