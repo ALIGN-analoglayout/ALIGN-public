@@ -55,6 +55,7 @@ class SeqPair
 {
   private:
     friend class ILP_solver;
+    friend class Placer;
     vector<int> posPair;
     vector<int> negPair;
     vector<placerDB::Omark> orient;

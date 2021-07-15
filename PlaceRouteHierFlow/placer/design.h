@@ -116,6 +116,7 @@ class design
     double placement_box[2] = {-1.0, -1.0};
     double maxBlockAreaSum = 0;
     double maxBlockHPWLSum = 0;
+    string name = "";
 
     //added by ya
     
