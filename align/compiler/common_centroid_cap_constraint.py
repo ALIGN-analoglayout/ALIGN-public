@@ -130,27 +130,28 @@ def merge_symmetric_caps(all_const, graph, unit_size_cap, available_cap_const):
     # updating any symmnet constraint
     for index, const in enumerate(all_const):
         if isinstance(const, constraint.SymmetricNets):
-            net1 = const.net1
-            net2 = const.net2
+            net1 = const.net1.upper()
+            net2 = const.net2.upper()
             existing = ""
             logger.debug(f"updating symmnet constraint {const}")
-            removed_blocks1 = [pin.split('/')[0]  for pin in const.pins1 if net1 in graph.nodes() \
-                and pin.split('/')[0] not in graph.nodes()]
-            removed_blocks2 = [pin.split('/')[0]  for pin in const.pins2 if net2 in graph.nodes() \
-                and pin.split('/')[0] not in graph.nodes()]
-            removed_blocks = removed_blocks1 + removed_blocks2
-            if removed_blocks:
-                pairs, s1, s2 = symmnet_device_pairs(graph, net1, net2, existing)
-                if pairs:
-                    symmNetj = constraint.SymmetricNets(
-                        direction = "V",
-                        net1 = net1,
-                        net2 = net2,
-                        pins1 = s1,
-                        pins2 = s2)
-                    all_const[index] =symmNetj
-                else:
-                    logger.debug("skipped symmnet on net1 {net1} and net2 {}")
+            if const.pins1:
+                removed_blocks1 = [pin.split('/')[0]  for pin in const.pins1 if net1 in graph.nodes() \
+                    and pin.split('/')[0] not in graph.nodes()]
+                removed_blocks2 = [pin.split('/')[0]  for pin in const.pins2 if net2 in graph.nodes() \
+                    and pin.split('/')[0] not in graph.nodes()]
+                removed_blocks = removed_blocks1 + removed_blocks2
+            pairs, s1, s2 = symmnet_device_pairs(graph, net1, net2, existing)
+            print(s1,s2)
+            if pairs:
+                symmNetj = constraint.SymmetricNets(
+                    direction = "V",
+                    net1 = net1,
+                    net2 = net2,
+                    pins1 = s1,
+                    pins2 = s2)
+                all_const[index] =symmNetj
+            else:
+                logger.debug("skipped symmnet on net1 {net1} and net2 {}")
     return cc_cap_size
 
 def merge_caps(graph, name, caps, inst):

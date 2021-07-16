@@ -81,7 +81,7 @@ def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, extract=F
 def gen_constraint_files( verilog_d, input_dir):
     pnr_const_ds = {}
     for module in verilog_d['modules']:
-        nm = module['name']
+        nm = module['name'].upper()
         pnr_const_ds[nm] = PnRConstraintWriter().map_valid_const(module.constraints)
 
     constraint_files = set()
@@ -175,7 +175,6 @@ def gen_leaf_collateral( leaves, primitives, primitive_dir):
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False, gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False, steps_to_run,lambda_coeff, reference_placement_verilog_json, nroutings=1):
 
     logger.info(f"Running Place & Route for {subckt} {router_mode} {steps_to_run}")
-
     # Generate file name inputs
     map_file = f'{subckt}.map'
     lef_file = f'{subckt}.lef'

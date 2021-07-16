@@ -16,6 +16,8 @@ from .util import compare_two_nodes
 import json
 from ..schema import constraint
 from ..schema.graph import Graph
+from align.schema.subcircuit import SubCircuit
+
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +72,7 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
     if not nbrs1 or not nbrs2:
         if compare_two_nodes(G, node1, node2, ports_weight):
             match_pair[node1] = node2
-        logger.debug(f"no new neihbours, returning recursion {match_pair}")
+        logger.debug(f"no new neighbours, returning recursion {match_pair}")
         return
     elif len(nbrs1)> 10:
         if "start_point" in match_pair.keys():
@@ -264,9 +266,11 @@ def FindSymmetry(subckt, stop_points:list):
     logger.debug(f"sorted ports: {non_power_ports}")
     ports_weight = {}
     for port in subckt.pins:
-        #TODO: get leaf level pin connections
-        ports_weight[port] = set(sorted([wt for nbr in graph.neighbors(port) for wt in graph.get_edge_data(port, nbr)['pin']]))
-    print(ports_weight)
+        leaf_conn = get_leaf_connection(subckt, port)
+        logger.debug(f"leaf connections of net ({port}): {leaf_conn}")
+        assert len(leaf_conn) > 0 , f'floating port are not allowed,  {port} in subckt {subckt.name}'
+        ports_weight[port] = set(sorted(leaf_conn))
+    # print(ports_weight)
     for port1,port2 in combinations_with_replacement(non_power_ports,2):
         traversed = stop_points.copy()
         # graph.get_edge_data(net, nbr)['pin']
@@ -277,6 +281,18 @@ def FindSymmetry(subckt, stop_points:list):
             logger.debug(f"all matches found starting from {port1} and {port2} pair: {pprint.pformat(all_match_pairs, indent=4)}")
 
     return all_match_pairs
+def get_leaf_connection(subckt,net):
+    graph = Graph(subckt)
+    conn = []
+    for nbr in graph.neighbors(net):
+        for pin in graph.get_edge_data(net, nbr)['pin']:
+            s = subckt.parent.find(graph.nodes[nbr].get('instance').model)
+            if isinstance(s, SubCircuit):
+                conn.extend(get_leaf_connection(s, pin))
+            else:
+                conn.append(pin)
+
+    return conn
 
 def FindConst(ckt_data, name, stop_points=None):
     logger.debug(f"Searching constraints for block {name}")
@@ -298,15 +314,17 @@ def FindConst(ckt_data, name, stop_points=None):
     logger.debug(f"input const {input_const}")
     for const in input_const:
         if isinstance(const, constraint.SymmetricNets):
-            SymmetricNets = const.net1 + ',' + const.net2
+            SymmetricNets = const.net1.upper() + ',' + const.net2.upper()
             written_symmetries += SymmetricNets
             if not getattr(const, 'pins1', None):
                 logger.debug(f"adding pins to user symmnet constraint {const}")
-                pairs, s1, s2 = symmnet_device_pairs(graph, const.net1,  const.net2, written_symmetries)
+                pairs, s1, s2 = symmnet_device_pairs(graph, const.net1.upper(),  const.net2.upper(), written_symmetries)
+                assert s1, f"no connections found to net {const.net1}, fix user const"
+                assert s2, f"no connections found to net {const.net2}, fix user const"
                 output_const.append(constraint.SymmetricNets(
                     direction=const.direction,
-                    net1=const.net1,
-                    net2=const.net2,
+                    net1=const.net1.upper(),
+                    net2=const.net2.upper(),
                     pins1=s1,
                     pins2=s2
                 ))
@@ -341,7 +359,7 @@ def FindConst(ckt_data, name, stop_points=None):
         logger.debug(f"All symmblock pairs: {pairs}")
         logger.debug(f"All written symmetric instances: {written_symmetries}")
         for key, value in pairs:
-            print("key,value,hier",key,value,new_hier_keys)
+            # print("key,value,hier",key,value,new_hier_keys)
             if key in stop_points:
                 logger.debug(f"skipping symmetry b/w {key} {value} as they are present in stop_points")
                 continue
@@ -368,7 +386,7 @@ def FindConst(ckt_data, name, stop_points=None):
                             pins1=s1,
                             pins2=s2)
                         output_const.append(symmNetj)
-                        logger.debug(f"adding symmetries: {symmNetj}")
+                        logger.debug(f"adding symmetric net const: {symmNetj}")
                     else:
                         logger.debug(f"skipping symmetry between large fanout nets {key} {value} {pairs}")
                         logger.debug("TBF:Need update in placer to simplify this")
@@ -409,29 +427,45 @@ def symmnet_device_pairs(G, net_A, net_B,existing_symmetry_blocks):
     """
     conn_A = connection(G,net_A)
     conn_B = connection(G,net_B)
+    logger.debug(f"net1 {net_A}, connections: {conn_A}, net2 {net_B}, connections {conn_B}")
+    assert conn_A
+    assert conn_B
 
     pairs = {}
     pinsA = []
     pinsB = []
     for ele_A in conn_A.keys():
         for ele_B in conn_B.keys():
-            blockA = ele_A.split('/')[0]
-            blockB = ele_B.split('/')[0]
+            #all instances will have instance_name/pin in conn
+            if '/' in ele_A and '/' in ele_B:
+                blockA = ele_A.split('/')[0]
+                blockB = ele_B.split('/')[0]
+                assert G.nodes[blockA].get('instance'), f"Block,{blockA} not found"
+                assert G.nodes[blockB].get('instance'), f"Block,{blockB} not found"
+                logger.debug(f"checking ele_a {ele_A}, ele_B {ele_B}, modelA:{G.nodes[blockA].get('instance').model} modelB:{G.nodes[blockB].get('instance').model}")
+                if conn_A[ele_A] == conn_B[ele_B] and G.nodes[blockA].get('instance').model == G.nodes[blockB].get('instance').model:
+                    logger.debug(f"checking symmetric instances {ele_A}, {ele_B}")
+                    if ele_B.split('/')[0] in pairs.values():
+                        logger.debug(f"skipping symmetry due to multiple possible matching of net {net_B} nbr {ele_B} to {pairs.values()} ")
+                        return [None,None,None]
+                    elif blockA+',' in existing_symmetry_blocks and blockA + ',' + blockB not in existing_symmetry_blocks:
+                        logger.debug(f"unsymmetrical instances {blockA} and {blockB}")
+                        continue
+                    elif blockB+',' in existing_symmetry_blocks and blockA + ',' + blockB not in existing_symmetry_blocks:
+                        logger.debug(f"unsymmetrical instances {blockA} and {blockB}")
+                        continue
+                    elif ele_A not in pinsA and ele_B not in pinsB:
+                        pairs[ele_A.split('/')[0]] = ele_B.split('/')[0]
+                        pinsA.append(ele_A)
+                        pinsB.append(ele_B)
+            elif conn_A[ele_A] == conn_B[ele_B] and ele_A not in pinsA and ele_B not in pinsB:
+                #Ports matching
+                pairs[ele_A] = ele_B
+                pinsA.append(ele_A)
+                pinsB.append(ele_B)
 
-            if conn_A[ele_A] == conn_B[ele_B] and G.nodes[blockA].get('instance').model == G.nodes[blockB].get('instance').model:
-                if ele_B.split('/')[0] in pairs.values():
-                    logger.debug(f"skipping symmetry due to multiple possible matching of net {net_B} nbr {ele_B} to {pairs.values()} ")
-                    return [None,None,None]
-                elif blockA+',' in existing_symmetry_blocks and blockA + ',' + blockB not in existing_symmetry_blocks:
-                    logger.debug(f"unsymmetrical instances {blockA} and {blockB}")
-                    continue
-                elif blockB+',' in existing_symmetry_blocks and blockA + ',' + blockB not in existing_symmetry_blocks:
-                    logger.debug(f"unsymmetrical instances {blockA} and {blockB}")
-                    continue
-                else:
-                    pairs[ele_A.split('/')[0]] = ele_B.split('/')[0]
-                    pinsA.append(ele_A)
-                    pinsB.append(ele_B)
+
+    #Atleast two pair of pins need to be matched
     if len(pairs.keys()) > 1:
         return pairs, pinsA, pinsB
     else:
@@ -456,24 +490,22 @@ def connection(graph,net:str):
         list of all pins and ports connected to a net.
 
     """
+    assert graph.nodes(net)
     conn = {}
     logger.debug(f"checking connections of net: {net}, {list(graph.neighbors(net))}")
     for nbr in list(graph.neighbors(net)):
-        conn[nbr] = graph.get_edge_data(net, nbr)['pin']
-        if {'B'} in conn[nbr]:
-            conn[nbr].remove({'B'})
-    #     if "ports_match" in graph.nodes[nbr] and graph.nodes[nbr]["ports_match"]:
-    #         logger.debug(f"ports match: {nbr}, {graph.nodes[nbr]['ports_match']}")
-    #         if net in graph.nodes[nbr]["ports_match"].values():
-    #             idx = list(graph.nodes[nbr]["ports_match"].values()).index(net)
-    #             conn[nbr + '/' + list(graph.nodes[nbr]["ports_match"].keys())[idx]] = (graph.get_edge_data(net, nbr)['pin'] & ~{'B'})
-    #     elif "connection" in graph.nodes[nbr] and graph.nodes[nbr]["connection"]:
-    #         logger.debug(f"connection: {nbr}, {graph.nodes[nbr]['connection']}")
-    #         if net in graph.nodes[nbr]["connection"].values():
-    #             idx = list(graph.nodes[nbr]["connection"].values()).index(net)
-    #             conn[nbr + '/' + list(graph.nodes[nbr]["connection"].keys())[idx]] = (graph.get_edge_data(net, nbr)['pin'] & ~{'B'})
-    #     else:
-    #         logger.debug("internal net")
-    # if graph.nodes[net]["net_type"]=="external":
-    #     conn[net] = sum(conn.values())
+        pins = graph.get_edge_data(net, nbr)['pin']
+        subckt =  graph.subckt.parent.find(graph.nodes[nbr].get('instance').model)
+        if isinstance(subckt, SubCircuit):
+            for pin in pins:
+                leaf_conn = set(sorted([c for c in get_leaf_connection(subckt, pin) if c !='B']))
+                if leaf_conn:
+                    conn[nbr+'/'+pin] = leaf_conn
+        else:
+            for pin in pins:
+                if pin!='B':
+                    conn[nbr+'/'+pin] = [pin]
+
+    if net in graph.subckt.pins:
+        conn[net] = set(sorted([c for c in get_leaf_connection(graph.subckt, net) if c !='B']))
     return conn

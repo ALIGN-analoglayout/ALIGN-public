@@ -70,31 +70,31 @@
         },
         {
           "constraint": "symmetric_nets",
-          "net1": "vin_d",
-          "net2": "vip_d",
+          "net1": "VIN_D",
+          "net2": "VIP_D",
           "pins1": [
             "MP7/D",
-            "XMN1_MN2/vin_d",
-            "XMN3_MN4/vin_d"
+            "XMN1_MN2/VIN_D",
+            "XMN3_MN4/VIN_D"
           ],
           "pins2": [
             "MP8/D",
-            "XMN1_MN2/vip_d",
-            "XMN3_MN4/vip_d"
+            "XMN1_MN2/VIP_D",
+            "XMN3_MN4/VIP_D"
           ],
           "direction": "V"
         },
         {
           "constraint": "symmetric_nets",
-          "net1": "vin",
-          "net2": "vip",
+          "net1": "VIN",
+          "net2": "VIP",
           "pins1": [
-            "XMN1_MN2/vin",
-            "vin"
+            "XMN1_MN2/VIN",
+            "VIN"
           ],
           "pins2": [
-            "XMN1_MN2/vip",
-            "vip"
+            "XMN1_MN2/VIP",
+            "VIP"
           ],
           "direction": "V"
         },

@@ -159,7 +159,7 @@ def gen_more_primitives( primitives, topology_dir, subckt):
 #            map_d[abstract_name].append( k)
 #            for newx,newy in pairs:
 #                concrete_name = f'{prefix}_n{n}_X{newx}_Y{newy}{suffix}'
-#                map_d[abstract_name].append( concrete_name)             
+#                map_d[abstract_name].append( concrete_name)
 #                if concrete_name not in primitives and \
 #                   concrete_name not in more_primitives:
 #                    more_primitives[concrete_name] = copy.deepcopy(v)
@@ -186,14 +186,14 @@ def gen_more_primitives( primitives, topology_dir, subckt):
 #            map_d[abstract_name].append(k)
 #            for newx,newy in pairs:
 #                concrete_name = f'{prefix}_x{newx}_y{newy}'
-#                map_d[abstract_name].append( concrete_name)             
+#                map_d[abstract_name].append( concrete_name)
 #                if concrete_name not in primitives and concrete_name not in more_primitives:
 #                    more_primitives[concrete_name] = copy.deepcopy(v)
 #                    more_primitives[concrete_name]['x_cells'] = newx
 #                    more_primitives[concrete_name]['y_cells'] = newy
 #
 #        else:
-#            if not (k.startswith( "Res") or k.startswith( "Cap")): 
+#            if not (k.startswith( "Res") or k.startswith( "Cap")):
 #                logger.warning( f'Didn\'t match primitive {k}')
 #            map_d[k].append( k)
 #>>>>>>> master
@@ -288,7 +288,7 @@ def start_viewer(working_dir, pnr_dir, variant):
     logger.info(f'Viewer terminated')
 
 
-def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, nvariants=1, effort=0, extract=False, log_level=None, verbosity=None, generate=False, regression=False, uniform_height=False, PDN_mode=False, 
+def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, nvariants=1, effort=0, extract=False, log_level=None, verbosity=None, generate=False, regression=False, uniform_height=False, PDN_mode=False,
                     flow_start=None, flow_stop=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0, reference_placement_verilog_json=None, nroutings=1, viewer=False):
 
     steps_to_run = build_steps( flow_start, flow_stop)
@@ -320,7 +320,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     if '1_topology' in steps_to_run:
         netlist = extract_netlist_files(netlist_dir,netlist_file)
         if subckt is None:
-            subckt = netlist.stem
+            subckt = netlist.stem.upper()
 
         logger.info(f"READ file: {netlist} subckt={subckt}, flat={flatten}")
 
@@ -333,7 +333,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
             json.dump( primitives, fp=fp, indent=2)
     else:
         if subckt is None:
-            subckt = extract_netlist_files(netlist_dir,netlist_file).stem
+            subckt = extract_netlist_files(netlist_dir,netlist_file).stem.upper()
 
         with (topology_dir / '__primitives__.json').open( 'rt') as fp:
             primitives = json.load(fp)
@@ -347,7 +347,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
             uc = generate_primitive(block_name, **block_args, pdkdir=pdk_dir, outputdir=primitive_dir)
             if hasattr(uc, 'metadata'):
                 primitives[block_name]['metadata'] = copy.deepcopy(uc.metadata)
-        
+
         with (primitive_dir / '__primitives__.json').open( 'wt') as fp:
             json.dump( primitives, fp=fp, indent=2)
     else:

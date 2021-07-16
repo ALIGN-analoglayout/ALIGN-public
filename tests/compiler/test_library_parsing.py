@@ -25,7 +25,7 @@ def test_basic_lib(library):
     assert len(library) == 54
 
 def test_constraint(library):
-    assert len(library.find('DP_PMOS_B').constraints)==1
+    assert len(library.find('DP_PMOS_B').constraints)==3
     print(library.find('DP_PMOS_B').constraints)
     dp_const = library.find('DP_PMOS_B').constraints
     with set_context(dp_const):
