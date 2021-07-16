@@ -4,14 +4,14 @@ from align.compiler.write_verilog_lef import write_verilog, WriteVerilog, genera
 from align.compiler.find_constraint import FindConst
 from align.schema.constraint import ConstraintDB
 from align.compiler.common_centroid_cap_constraint import CapConst
-from test_current_parser import test_match_ota
+from test_compiler import test_compiler
 
 def test_verilog_writer():
-    subckts = test_match_ota()
-    assert 'ota' in subckts
+    ckt_data = test_compiler()
+    assert ckt_data.find('OTA')
     result_dir = pathlib.Path(__file__).parent /'Results'
 
-    available_cell_generator = ['Switch_PMOS', 'CMC_NMOS', 'CMC_PMOS', 'DP_NMOS_B', 'CMC_S_NMOS_B', 'DCL_NMOS', 'SCM_NMOS']
+    available_cell_generator = ['PMOS', 'CMC_NMOS', 'CMC_PMOS', 'DP_NMOS_B', 'CMC_S_NMOS_B', 'DCL_NMOS', 'SCM_NMOS']
     design_config={
             "vt_type":["SLVT","HVT","LVT","RVT"],
             "unit_size_nmos":12,
@@ -22,7 +22,7 @@ def test_verilog_writer():
 
     verilog_tbl = { 'modules': [], 'global_signals': []}
 
-    for name, subckt in subckts.items():
+    for name, subckt in ckt_data.items():
         for _, attr in subckt['graph'].nodes(data=True):
             if 'values' in attr:
                 block_name, _ = generate_lef(attr['inst_type'], attr,
@@ -34,7 +34,7 @@ def test_verilog_writer():
         else:
             const = FindConst(subckt["graph"], name, subckt['ports'], subckt['ports_weight'], ConstraintDB(), ['vdd!'])
             const = CapConst(subckt["graph"], name, design_config["unit_size_cap"], const, True)
-            subckts[name] = subckt.copy(
+            ckt_data[name] = subckt.copy(
                 update={'constraints': const}
             )
 

@@ -9,12 +9,13 @@ from .preprocess import define_SD, preprocess_stack_parallel
 from .create_database import CreateDatabase
 from .match_graph import Annotate
 from .read_setup import read_setup
-from .write_verilog_lef import write_verilog, WriteVerilog, generate_lef
+from .write_verilog_lef import write_verilog, WriteVerilog
 from .common_centroid_cap_constraint import CapConst
 from .find_constraint import FindConst
 from .user_const import ConstraintParser
 from ..schema import constraint
 from ..schema.hacks import HierDictNode
+from ..primitive import generate_primitive_lef
 import logging
 logger = logging.getLogger(__name__)
 
@@ -181,15 +182,8 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
             if lef_name in generators:
                 subckt= ckt_data.find(lef_name)
                 logger.debug("check")
-                block_name, block_args = generate_lef(ele, subckt,generators, design_config, uniform_height)
+                block_name, block_args = generate_primitive_lef(ele, subckt, generators, design_config, uniform_height)
                 logger.debug(f"Created new lef for: {block_name} {lef_name}")
-                # Only unit caps are generated
-                # if  block_name.lower().startswith('cap'):
-                #     graph.nodes[node]['inst_type'] = block_args['primitive']
-                #     block_args['primitive'] = block_name
-                # else:
-                #     graph.nodes[node]['inst_type'] = block_name
-
                 if block_name in primitives:
                     if block_args != primitives[block_name]:
                         logging.warning(f"two different primitve {block_name} of size {primitives[block_name]} {block_args}got approximated to same unit size")

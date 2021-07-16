@@ -12,6 +12,7 @@ from ..schema.subcircuit import Model, SubCircuit, Circuit, Instance
 
 import logging
 logger = logging.getLogger(__name__)
+# TODO: rewrite this for caps, array, groupblocks, groupcaps
 
 def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: list, matched_ports: dict,new_inst_name=None):
 

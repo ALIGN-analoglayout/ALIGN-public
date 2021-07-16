@@ -4,6 +4,10 @@ import pathlib
 import logging
 import json
 import importlib.util
+from copy import deepcopy
+from math import sqrt, ceil,floor
+from ..compiler.util import convert_to_unit
+from ..schema.subcircuit import SubCircuit
 
 from ..cell_fabric import gen_lef
 from ..cell_fabric import positive_coord
@@ -273,6 +277,278 @@ def generate_generic(pdkdir, parameters):
         netlist_parameters=parameters["values"]
     )
     return uc, parameters["ports"]
+
+def merge_subckt_param(ckt):
+    max_value = {}
+    for element in ckt.elements:
+        max_value = merged_value(max_value, element.parameters)
+    return max_value
+
+def merged_value(values1, values2):
+    """
+    combines values of different devices:
+    (right now since primitive generator takes only one value we use max value)
+    try:
+    #val1={'res': '13.6962k', 'l': '8u', 'w': '500n', 'm': '1'}
+    #val2 = {'res': '13.6962k', 'l': '8u', 'w': '500n', 'm': '1'}
+    #merged_value(val1,val2)
+
+    Parameters
+    ----------
+    values1 : TYPE. dict
+        DESCRIPTION. dict of parametric values
+    values2 : TYPE. dict
+        DESCRIPTION.dict of parametric values
+
+    Returns
+    -------
+    merged_vals : TYPE dict
+        DESCRIPTION. max of each parameter value
+
+    """
+    merged_vals={}
+    if values1:
+        for param,value in values1.items():
+            merged_vals[param] = value
+    for param,value in values2.items():
+        if param in merged_vals.keys():
+            merged_vals[param] = max(value, merged_vals[param])
+        else:
+            merged_vals[param] = value
+    # check_values(merged_vals)
+    return merged_vals
+
+def generate_primitive_lef(element,subckt,all_lef, design_config:dict, uniform_height=False):
+    """ Return commands to generate parameterized lef"""
+    name = element.model
+    values = element.parameters
+    available_block_lef = all_lef
+    logger.debug(f"checking lef for: {name}, {element}")
+    if name.lower() == 'generic':
+        # TODO: how about hashing for unique names?
+        value_str = ''
+        for key in sorted(values):
+            val = values[key].replace('-','')
+            value_str += f'_{key}_{val}'
+        block_name = attr['real_inst_type'] + value_str
+        block_parameters = {"parameters": deepcopy(values), "primitive": name.lower()}
+        return block_name, block_parameters
+
+    elif name=='CAP':
+        if 'VALUE' in values.keys():
+            if isinstance(values["VALUE"],str):
+                size = design_config["unit_size_cap"]
+            else:
+                size = float('%g' % (round(values["VALUE"] * 1E15,4)))
+            num_of_unit = float(size)/design_config["unit_size_cap"]
+            block_name = name + '_' + str(int(size)) + 'f'
+        else:
+            convert_to_unit(values)
+            size = '_'.join(param+str(values[param]) for param in values)
+            size = size.replace('.','p').replace('-','_neg_')
+            num_of_unit=1
+            block_name = name + '_' + str(size)
+
+        logger.debug(f"Found cap with size: {size}, {design_config['unit_size_cap']}")
+        unit_block_name = 'Cap_' + str(design_config["unit_size_cap"]) + 'f'
+        if block_name in available_block_lef:
+            return block_name, available_block_lef[block_name]
+        logger.debug(f'Generating lef for: {name}, {size}')
+        if  num_of_unit > 128:
+            return block_name, {
+                'primitive': block_name,
+                'value': int(size)
+            }
+        else:
+            return unit_block_name, {
+                'primitive': block_name,
+                'value': design_config["unit_size_cap"]
+            }
+    elif name=='RES':
+        if 'res' in values.keys():
+            if isinstance(values["VALUE"],str):
+                size = design_config["unit_size_cap"]
+            else:
+                size = '%g'%(round(values["res"],2))
+        else :
+            convert_to_unit(values)
+            size = '_'.join(param+str(values[param]) for param in values)
+        block_name = name + '_' + str(size).replace('.','p')
+        try:
+            height = ceil(sqrt(float(size) / design_config["unit_height_res"]))
+            if block_name in available_block_lef:
+                return block_name, available_block_lef[block_name]
+            logger.debug(f'Generating lef for: {block_name} {size}')
+            return block_name, {
+                'primitive': name,
+                'value': (height, float(size))
+            }
+        except:
+            return block_name, {
+                'primitive': name,
+                'value': (1, design_config["unit_height_res"])
+            }
+    else:
+
+        if 'NMOS' in name:
+            unit_size_mos = design_config["unit_size_nmos"]
+        else:
+            unit_size_mos = design_config["unit_size_pmos"]
+        if isinstance(subckt,SubCircuit):
+            ## Hack to get generator parameters based on max sized cell in subcircuit
+            values = merge_subckt_param(subckt)
+        else:
+            values = subckt.parameters
+        logger.debug(f" inst values {values}")
+        if "NFIN" in values.keys():
+
+#        if unit_size_mos is None:
+#            """
+#            Transistor parameters:
+#                m:  number of instances
+#                nf: number of fingers
+#                w:  effective width of an instance (width of instance x number of fingers)
+#            """
+#            assert 'm' in values,  f'm: Number of instances not specified {values}'
+#            assert 'nf' in values, f'nf: Number of fingers not specified {values}'
+#            assert 'w' in values,  f'w: Width is not specified {values}'
+#            assert 'real_inst_type' in attr, f'vt: Transistor type is not specified {attr}'
+#
+#            def x_by_y(m):
+#                y_sqrt = floor(sqrt(m))
+#                for y in range(y_sqrt, 0, -1):
+#                    if y == 1:
+#                        return m, y
+#                    elif m % y == 0:
+#                        return m//y, y
+#
+#            m  = int(values['m'])
+#            nf = int(values['nf'])
+#            w = int(values['w']*1e9)
+#            vt = attr['real_inst_type']
+#
+#            x, y = x_by_y(m)
+#
+#            # TODO: Why is this needed???
+#            if name == 'Switch_NMOS_G':
+#                name = 'Switch_NMOS_B'
+#            elif name == 'Switch_PMOS_G':
+#                name = 'Switch_PMOS_B'
+#
+#            block_name = f'{name}_{vt}_w{w}_m{m}'
+#
+#            values['real_inst_type'] = vt
+#
+#            block_args= {
+#                'primitive': name,
+#                'value': unit_size_mos,
+#                'x_cells': x,
+#                'y_cells': y,
+#                'value': 1, # hack. This is used as nfin later.
+#                'parameters':values
+#            }
+#
+#            if 'stack' in values:
+#                assert nf == 1, f'Stacked transistor cannot have multiple fingers {nf}'
+#                block_args['stack']=int(values['stack'])
+#                block_name += f'_st'+str(int(values['stack']))
+#            else:
+#                block_name += f'_nf{nf}'
+#
+#            block_name += f'_x{x}_y{y}'
+#
+#            if block_name in available_block_lef:
+#                if block_args != available_block_lef[block_name]:
+#                    assert False, f'Two different transistors mapped to the same name {block_name}: {available_block_lef[block_name]} {block_args}'
+#
+#            return block_name, block_args
+#
+#
+#        if "nfin" in values.keys():
+            #FinFET design
+            assert int(values["NFIN"])
+            size = int(values["NFIN"])
+            name_arg ='NFIN'+str(size)
+        elif "W" in values.keys():
+            #Bulk design
+            if isinstance(values["W"],str):
+                size = unit_size_mos
+            else:
+                size = int(values["w"]*1E+9/design_config["Gate_pitch"])
+            values["NFIN"]=size
+            name_arg ='NFIN'+str(size)
+        else:
+            convert_to_unit(values)
+            size = '_'.join(param+str(values[param]) for param in values)
+        logger.debug(size)
+
+        if 'NF' in values.keys():
+            if values['NF'] == 'unit_size':
+                values['NF'] =size
+            size=size*int(values["NF"])
+            name_arg =name_arg+'_NF'+str(int(values["NF"]))
+        logger.debug(size)
+        if 'M' in values.keys():
+            if values['M'] == 'unit_size':
+                values['M'] = 1
+            size=size*int(values["M"])
+            name_arg =name_arg+'_M'+str(int(values["M"]))
+
+        no_units = ceil(size / unit_size_mos)
+
+        logger.debug('Generating lef for: %s %s', name, str(size))
+        if isinstance(size, int):
+            no_units = ceil(size / unit_size_mos)
+            if any(x in name for x in ['DP','_S']) and floor(sqrt(no_units/3))>=1:
+                square_y = floor(sqrt(no_units/3))
+            else:
+                square_y = floor(sqrt(no_units))
+            while no_units % square_y != 0:
+                square_y -= 1
+            yval = square_y
+            xval = int(no_units / square_y)
+            block_name = f"{name}_{name_arg}_n{unit_size_mos}_X{xval}_Y{yval}"
+
+            if block_name in available_block_lef:
+                return block_name, available_block_lef[block_name]
+            if name == 'Switch_NMOS_G':
+                #TBD in celll generator
+                name = 'Switch_NMOS_B'
+            elif name == 'Switch_PMOS_G':
+                name = 'Switch_PMOS_B'
+
+            logger.debug(f"Generating parametric lef of:  {block_name} {name}")
+            # values["real_inst_type"]=attr["real_inst_type"]
+            cell_gen_parameters= {
+                'primitive': name,
+                'value': unit_size_mos,
+                'x_cells': xval,
+                'y_cells': yval,
+                'parameters':values
+            }
+            if 'stack' in values.keys():
+                cell_gen_parameters['stack']=int(values["stack"])
+                block_name = block_name+'_ST'+str(int(values["stack"]))
+
+            #cell generator takes only one VT so doing a string search
+            #To be fixed:
+            # if isinstance(attr["real_inst_type"],list):
+            #     merged_vt='_'.join(attr["real_inst_type"])
+            # else:
+            #     merged_vt=attr["real_inst_type"]
+
+            # vt= [vt for vt in design_config["vt_type"] if vt.lower() in  merged_vt]
+            # if vt:
+            #     block_name = block_name+'_'+vt[0]
+            #     cell_gen_parameters['vt_type']=vt[0]
+            print(element,block_name)
+            #element.parameters['sized_name'] = block_name
+            return element.model, cell_gen_parameters
+        else:
+            logger.debug("No proper parameters found for cell generation")
+            block_name = name+"_"+size
+
+    raise NotImplementedError(f"Could not generate LEF for {name}")
 
 
 # WARNING: Bad code. Changing these default values breaks functionality.

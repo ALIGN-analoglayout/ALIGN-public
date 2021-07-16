@@ -12,7 +12,7 @@ from networkx.algorithms import isomorphism
 from align.schema.subcircuit import SubCircuit
 
 from ..schema.types import set_context
-from .merge_nodes import merge_nodes, merged_value,convert_unit
+# from .merge_nodes import merge_nodes, merged_value,convert_unit
 from .util import get_next_level
 from .find_constraint import FindSymmetry
 from .common_centroid_cap_constraint import merge_caps

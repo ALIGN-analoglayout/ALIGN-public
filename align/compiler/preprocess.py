@@ -10,7 +10,7 @@ from os import replace
 from align.schema.types import set_context
 from align.schema import model
 from align.schema.subcircuit import Circuit,SubCircuit
-from .merge_nodes import convert_unit
+# from .merge_nodes import convert_unit
 from .util import get_next_level, get_base_model
 from ..schema.graph import Graph
 from ..schema.visitor import Transformer
@@ -253,12 +253,23 @@ def add_series_devices(ckt,update=True):
         nbrs = sorted(list(G.neighbors(net)))
         if len(nbrs)==2 and net not in remove_nodes:
             nbr1,nbr2 = [ckt.get_element(nbr) for nbr in nbrs]
+            #Same instance type
+            if nbr1.model !=nbr2.model:
+                continue
+            #Single pin connection
+            if len(G.get_edge_data(nbr1.name, net)['pin']) !=1 and \
+                len(G.get_edge_data(nbr2.name, net)['pin']) !=1:
+                continue
+
             connections = set([list(G.get_edge_data(nbr, net)['pin'])[0] for nbr in nbrs])
-            nbr1p = dict({'MODEL':nbr1.model},**nbr1.parameters,**nbr1.pins)
-            nbr2p = dict({'MODEL':nbr2.model},**nbr2.parameters,**nbr2.pins)
+            assert len(connections) ==2, f'Not a stack {nbrs} as connections are diff {connections}'
+            nbr1p = dict(**nbr1.parameters,**nbr1.pins)
+            nbr2p = dict(**nbr2.parameters,**nbr2.pins)
             stack1 = int(nbr1p.pop('STACK',1))
             stack2 = int(nbr2p.pop('STACK',1))
             for connection in connections:
+                assert connection[0] in nbr1p, f"pin {connection[0]} not found in {nbr1p}"
+                assert connection[0] in nbr2p, f"pin {connection[0]} not found in {nbr2p}"
                 del nbr1p[connection[0]]
                 del nbr2p[connection[0]]
 
