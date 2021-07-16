@@ -1249,7 +1249,9 @@ design::design(const design& other):Port_Location(other.Port_Location) {
   this->noAsymBlock4Move=other.noAsymBlock4Move;
   this->noSymGroup4PartMove=other.noSymGroup4PartMove;
   this->noSymGroup4FullMove=other.noSymGroup4FullMove;
-  //this->Port_Location=other.Port_Location;
+  this->SPBlocks = other.SPBlocks;
+  this->Ordering_Constraints = other.Ordering_Constraints;
+  // this->Port_Location=other.Port_Location;
 }
 
 design& design::operator= (const design& other) {

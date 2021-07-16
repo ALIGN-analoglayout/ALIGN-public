@@ -515,14 +515,14 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
   return oData;
 }
 
-std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRatio_ILP(design& designData, SeqPair& curr_sp, ILP_solver& curr_sol, int mode,
-                                                                                      int nodeSize, int effort, PnRDB::Drc_info& drcInfo) {
+void Placer::PlacementCoreAspectRatio_ILP(design& designData, SeqPair& curr_sp, ILP_solver& curr_sol, int mode,
+                                                                                      int nodeSize, int effort, PnRDB::Drc_info &drcInfo, std::map<double, std::pair<SeqPair, ILP_solver>> &spVec) {
 
   auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementCoreAspectRatio_ILP");
 
   // Mode 0: graph bias; Mode 1: graph bias + net margin; Others: no bias/margin
   // cout<<"PlacementCore\n";
-  std::map<double, std::pair<SeqPair, ILP_solver>> oData;
+  //std::map<double, std::pair<SeqPair, ILP_solver>> oData;
   curr_sp.PrintSeqPair();
   double curr_cost = 0;
   int trial_count = 0;
@@ -539,8 +539,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     logger->info("Required {0} perturbations to generate a feasible solution.", trial_count);
   }
   curr_sol.cost = curr_cost;
-  oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
-  ReshapeSeqPairMap(oData, nodeSize);
+  spVec[curr_cost] = std::make_pair(curr_sp, curr_sol);
+  ReshapeSeqPairMap(spVec, nodeSize);
   //cout << "Placer-Info: initial cost = " << curr_cost << endl;
 
   //cout << "Placer-Info: status ";
@@ -617,8 +617,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
           curr_sol = td[good_idx].thread_trial_sol;
           if (update_index > updateThrd) {
             // std::cout<<"Insert\n";
-            oData[curr_cost] = curr_sp;
-            ReshapeSeqPairMap(oData, nodeSize);
+            spVec[curr_cost] = curr_sp;
+            ReshapeSeqPairMap(spVec, nodeSize);
           }
         }
       }
@@ -636,7 +636,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       curr_sp = trial_sp;
       double r = (double)rand() / RAND_MAX;
       if (trial_cost >= 0) {
-        oData[trial_cost] = std::make_pair(trial_sp, trial_sol);
+        spVec[trial_cost] = std::make_pair(trial_sp, trial_sol);
         bool Smark = false;
         delta_cost = trial_cost - curr_cost;
         if (delta_cost <= 0) {
@@ -656,7 +656,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
           //}
         }
       }
-      ReshapeSeqPairMap(oData, nodeSize);
+      ReshapeSeqPairMap(spVec, nodeSize);
 
 #endif
 
@@ -668,8 +668,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
         curr_sol.Update_parameters(designData, curr_sp);
         curr_cost = curr_sol.CalculateCost(designData, curr_sp);
         std::cout<<"updated cost: "<<curr_cost<<std::endl;
-        oData[curr_cost]=curr_sp;
-        ReshapeSeqPairMap(oData, nodeSize);
+        spVec[curr_cost]=curr_sp;
+        ReshapeSeqPairMap(spVec, nodeSize);
       }
       **/
       if (trial_sp.EnumExhausted()) {
@@ -693,7 +693,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   // curr_sol.PrintConstGraph();
   curr_sp.PrintSeqPair();
   // curr_sol.updateTerminalCenter(designData, curr_sp);
-  return oData;
+  //return oData;
 }
 
 void Placer::ReshapeSeqPairMap(std::map<double, SeqPair>& spMap, int nodeSize) {
@@ -714,30 +714,47 @@ void Placer::ReshapeSeqPairMap(std::map<double, std::pair<SeqPair, ILP_solver>>&
   if(it!=Map.end()) {Map.erase(it, Map.end());}
 }
 
-void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo){
-  int nodeSize=nodeVec.size();
-  //cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
+void Placer::PlacementRegularAspectRatio_ILP_core(int seed, design designData, int effort, PnRDB::Drc_info &drcInfo, int nodeSize, std::map<double, std::pair<SeqPair, ILP_solver>> &spVec){
   #ifdef RFLAG
   //cout<<"Placer-Info: run in random mode..."<<endl;
   srand (time(NULL));
   #endif
   #ifndef RFLAG
   //cout<<"Placer-Info: run in normal mode..."<<endl;
-  srand(0);
+  srand(seed);
   #endif
   int mode=0;
-  // Read design netlist and constraints
-  design designData(nodeVec.back());
-  designData.PrintDesign();
   // Initialize simulate annealing with initial solution
   SeqPair curr_sp(designData, size_t(1. * log(hyper.T_MIN/hyper.T_INT)/log(hyper.ALPHA) *
         ((effort == 0) ? 1. : ((effort == 1) ? 4. : 8.)) ));
   curr_sp.PrintSeqPair();
   ILP_solver curr_sol(designData);
-  std::map<double, std::pair<SeqPair, ILP_solver>> spVec=PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo);
-  //curr_sol.updateTerminalCenter(designData, curr_sp);
-  //curr_sol.PlotPlacement(designData, curr_sp, opath+nodeVec.back().name+"opt.plt");
-  if((int)spVec.size()<nodeSize) {
+  //std::map<double, std::pair<SeqPair, ILP_solver>> spVec;
+  PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo, spVec);
+}
+
+void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo){
+  int nodeSize=nodeVec.size();
+  //cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
+  // Read design netlist and constraints
+  design designData(nodeVec.back());
+  designData.PrintDesign();
+  int n_threads = 1;
+  std::vector<std::thread> t;
+  std::vector<std::map<double, std::pair<SeqPair, ILP_solver>>> spVecs(n_threads);
+  if(designData.name=="ckt_cmp_good"){
+    int a = 1;
+  }
+  for (int i = 0; i < n_threads;i++){
+    t.push_back(std::thread(&Placer::PlacementRegularAspectRatio_ILP_core, this, i, designData, effort, std::ref(drcInfo), nodeSize, std::ref(spVecs[i])));
+  }
+  for (int i = 0; i < n_threads; i++) t[i].join();
+  // curr_sol.updateTerminalCenter(designData, curr_sp);
+  // curr_sol.PlotPlacement(designData, curr_sp, opath+nodeVec.back().name+"opt.plt");
+  std::map<double, std::pair<SeqPair, ILP_solver>> spVec;
+  for (auto s : spVecs) spVec.insert(s.begin(), s.end());
+  
+  if ((int)spVec.size() < nodeSize) {
     nodeSize=spVec.size();
     nodeVec.resize(nodeSize);
   }
