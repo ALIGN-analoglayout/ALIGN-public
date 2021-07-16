@@ -1251,7 +1251,17 @@ design::design(const design& other):Port_Location(other.Port_Location) {
   this->noSymGroup4FullMove=other.noSymGroup4FullMove;
   this->SPBlocks = other.SPBlocks;
   this->Ordering_Constraints = other.Ordering_Constraints;
-  // this->Port_Location=other.Port_Location;
+  this->Align_blocks = other.Align_blocks;
+  this->mixFlag = other.mixFlag;
+  this->name = other.name;
+  this->maxBlockAreaSum = other.maxBlockAreaSum;
+  this->maxBlockHPWLSum = other.maxBlockHPWLSum;
+  memcpy(this->placement_box, other.placement_box, sizeof(other.placement_box));
+  memcpy(this->Aspect_Ratio, other.Aspect_Ratio, sizeof(other.Aspect_Ratio));
+  this->Aspect_Ratio_weight = other.Aspect_Ratio_weight;
+  this->Same_Template_Constraints = other.Same_Template_Constraints;
+  this->ML_Constraints = other.ML_Constraints;
+  this->Port_Location = other.Port_Location;
 }
 
 design& design::operator= (const design& other) {
