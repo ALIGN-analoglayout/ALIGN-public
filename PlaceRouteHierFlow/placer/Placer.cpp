@@ -731,7 +731,8 @@ void Placer::PlacementRegularAspectRatio_ILP_core(int seed, design designData, i
   ILP_solver curr_sol(designData);
   //std::map<double, std::pair<SeqPair, ILP_solver>> spVec;
   PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo, spVec);
-}
+}  
+
 
 void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo){
   int nodeSize=nodeVec.size();
@@ -742,18 +743,15 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   int n_threads = 1;
   std::vector<std::thread> t;
   std::vector<std::map<double, std::pair<SeqPair, ILP_solver>>> spVecs(n_threads);
-  if(designData.name=="ckt_cmp_good"){
-    int a = 1;
-  }
   for (int i = 0; i < n_threads;i++){
     t.push_back(std::thread(&Placer::PlacementRegularAspectRatio_ILP_core, this, i, designData, effort, std::ref(drcInfo), nodeSize, std::ref(spVecs[i])));
   }
-  for (int i = 0; i < n_threads; i++) t[i].join();
+  for (int i = 0; i < n_threads; i++)t[i].join();
   // curr_sol.updateTerminalCenter(designData, curr_sp);
   // curr_sol.PlotPlacement(designData, curr_sp, opath+nodeVec.back().name+"opt.plt");
   std::map<double, std::pair<SeqPair, ILP_solver>> spVec;
   for (auto s : spVecs) spVec.insert(s.begin(), s.end());
-  
+
   if ((int)spVec.size() < nodeSize) {
     nodeSize=spVec.size();
     nodeVec.resize(nodeSize);

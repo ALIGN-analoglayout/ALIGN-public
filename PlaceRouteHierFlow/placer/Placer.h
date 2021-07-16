@@ -50,7 +50,7 @@ class Placer {
 
     PlacerHyperparameters hyper;
 
-  public:
+public:
     Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in);
     Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in);
     //Placer(PnRDB::hierNode& input_node); // Constructor
