@@ -121,7 +121,7 @@ class Annotate:
                 elif isinstance(const,dict) and 'instances' not in const:
                     is_append = True
                 elif isinstance(const,dict) and 'instances' in const and len(const["instances"])==0:
-                    logger.info(f"skipping const of zero length: {const}")
+                    logger.debug(f"skipping const of zero length: {const}")
                 elif not hasattr(const,'instances'):
                     is_append = True
                 else:

@@ -1,3 +1,17 @@
+.subckt CASCODED_CMC_PMOS DA GA DB S
+M0 DA GA SA S PMOS w=27e-9 l=20e-9 nfin=120
+M1 DB GA SB S PMOS w=27e-9 l=20e-9 nfin=60
+M2 SA DB S S PMOS w=27e-9 l=20e-9 nfin=10
+M3 SB DB S S PMOS w=27e-9 l=20e-9 nfin=5
+.ends CASCODED_CMC_PMOS
+
+.subckt CASCODED_CMC_NMOS DA GA DB S
+M0 DA GA SA S NMOS w=27e-9 l=20e-9 nfin=24
+M1 DB GA SB S NMOS w=27e-9 l=20e-9 nfin=24
+M2 SA DA S S NMOS w=27e-9 l=20e-9 nfin=30
+M3 SB DA S S NMOS w=27e-9 l=20e-9 nfin=30
+.ends CASCODED_CMC_NMOS
+
 .subckt CASCODED_SCM_NMOS DA DC GA S
 M0 DA GA DB B NMOS w=w l=90n
 M1 DB DA S B NMOS w=w l=90n
@@ -144,17 +158,6 @@ c1 net63 net67 30e-15
 c0 net72 net63 60e-15
 .ends switched_capacitor_combination
 
-**.subckt res_array_8 MINUS0 PLUS0 PLUS1 PLUS2 PLUS3 PLUS4 PLUS5 PLUS6 PLUS7
-**r0 PLUS0 MINUS0 500
-**r1 PLUS1 PLUS0 1e3
-**r2 PLUS2 PLUS1 1e3
-**r3 PLUS3 PLUS2 1e3
-**r4 PLUS4 PLUS3 1e3
-**r5 PLUS5 PLUS4 1e3
-**r6 PLUS6 PLUS5 1e3
-**r7 PLUS7 PLUS6 500
-**.ends res_array_8
-
 .subckt tgate GA GB D S BN BP
 M0 D GA S BN NMOS w=w l=90n
 M1 D GB S BP PMOS w=w l=90n
@@ -187,12 +190,3 @@ R0 GB DA 1k
 C1 DA net1 1f
 R1 net1 GA 1k
 .ends SCM_NMOS_RC
-
-**.subckt SCM_PMOS_RC DA DB GA S
-**M0 DA GA S B NMOS w=w l=90n
-**M1 DB GB S B NMOS w=w l=90n
-**C0 GB S cap
-**R0 GB DA res
-**C1 DA net1 cap
-**R1 net1 GA res
-**.ends SCM_NMOS_RC
