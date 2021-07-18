@@ -165,8 +165,9 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
         match_pair[node1]=node2
         traversed+=[node1,node2]
         logger.debug(f"Traversing parallel branches from {node1},{node2} {nbrs1}, {nbrs2}")
-        nbrs1_wt = [G.get_edge_data(node1, nbr)['pin'] for nbr in nbrs1]
-        nbrs2_wt = [G.get_edge_data(node2, nbr)['pin'] for nbr in nbrs2]
+        nbrs1_wt = [pin for nbr in nbrs1 for pin in G.get_edge_data(node1, nbr)['pin']]
+        nbrs2_wt = [pin for nbr in nbrs2 for pin in G.get_edge_data(node2, nbr)['pin'] ]
+        logger.debug(f"nbr1 conn: {nbrs1_wt}, nbr2 {nbrs2_wt}")
         unique_match=find_unique_matching_branches(G,nbrs1,nbrs2,ports_weight)
         if  len(nbrs1)==0 or len(nbrs2)==0:
             logger.debug(f"no new SD neihbours, returning recursion {match_pair}")
@@ -203,6 +204,7 @@ def recursive_start_points(G,all_match_pairs,traversed,node1,node2, ports_weight
     if not pair:
         logger.debug(f"no pair found from {node1} {node2}")
         return
+    #TODO: use tuple instead of string
     all_match_pairs[node1+node2]=pair
     logger.debug(f"updating match pairs (start): {pprint.pformat(all_match_pairs, indent=4)}")
     #CHECk for array start points
@@ -216,9 +218,9 @@ def recursive_start_points(G,all_match_pairs,traversed,node1,node2, ports_weight
             del pair["start_point"]
             logger.debug(f"New symmetrical start points {pair}")
     logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
-    if not 'hier_start_points':
+    if not hier_start_points:
         return
-
+    assert hier_start_points
     logger.debug(f"Creating new node from binary branch: {hier_start_points}")
     for sp in sorted(set(hier_start_points)):
         logger.debug(f"starting new node from binary branch:{sp} {hier_start_points} traversed {traversed} existing {pprint.pformat(all_match_pairs, indent=4)}")
@@ -270,10 +272,11 @@ def FindSymmetry(subckt, stop_points:list):
         logger.debug(f"leaf connections of net ({port}): {leaf_conn}")
         assert len(leaf_conn) > 0 , f'floating port are not allowed,  {port} in subckt {subckt.name}'
         ports_weight[port] = set(sorted(leaf_conn))
-    # print(ports_weight)
+    #TODO start from primitives
     for port1,port2 in combinations_with_replacement(non_power_ports,2):
         traversed = stop_points.copy()
         # graph.get_edge_data(net, nbr)['pin']
+        #TODO: traverse a pair only once
         if ports_weight[port1] == ports_weight[port2] and ports_weight[port2]:
             traversed+=[port1,port2]
             recursive_start_points(graph,all_match_pairs,traversed,port1,port2,ports_weight)
@@ -390,7 +393,7 @@ def FindConst(ckt_data, name, stop_points=None):
                         logger.debug(f"adding symmetric net const: {symmNetj}")
                     else:
                         logger.debug(f"skipping symmetry between large fanout nets {key} {value} {pairs}")
-                        logger.debug("TBF:Need update in placer to simplify this")
+                        #TODO Need update in placer to simplify this
                 else:
                     logger.debug(f"skipping self symmetric nets {key} {value}")
             elif 'Dcap' in graph.nodes[key].get('instance').model:

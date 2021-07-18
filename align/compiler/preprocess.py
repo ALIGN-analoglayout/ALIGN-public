@@ -256,13 +256,16 @@ def add_series_devices(ckt,update=True):
             #Same instance type
             if nbr1.model !=nbr2.model:
                 continue
-            #Single pin connection
-            if len(G.get_edge_data(nbr1.name, net)['pin']) !=1 and \
+            #Valid only for Single pin connection e.g, set(D,S) or (+,-)
+            if len(G.get_edge_data(nbr1.name, net)['pin']) !=1 or \
                 len(G.get_edge_data(nbr2.name, net)['pin']) !=1:
                 continue
-
+            # Filter (D,D) or (S,S) or (G,G) connection
+            if G.get_edge_data(nbr1.name, net)['pin'] == G.get_edge_data(nbr2.name, net)['pin']:
+                continue
+            logger.debug(f" conn1: {G.get_edge_data(nbr1.name, net)['pin']}, conn2: {G.get_edge_data(nbr2.name, net)['pin']}")
             connections = set([list(G.get_edge_data(nbr, net)['pin'])[0] for nbr in nbrs])
-            assert len(connections) ==2, f'Not a stack {nbrs} as connections are diff {connections}'
+            assert len(connections) ==2, f"Not a stack {nbrs} as connections: {connections} are not allowed"
             nbr1p = dict(**nbr1.parameters,**nbr1.pins)
             nbr2p = dict(**nbr2.parameters,**nbr2.pins)
             stack1 = int(nbr1p.pop('STACK',1))

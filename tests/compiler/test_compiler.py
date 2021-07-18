@@ -12,7 +12,7 @@ def test_compiler():
     assert updated_ckt.find('SCM_NMOS')
     assert updated_ckt.find('CMC_S_NMOS_B')
     assert updated_ckt.find('DP_NMOS_B')
-    assert updated_ckt.find('ota')
+    assert updated_ckt.find('OTA')
 
     return(updated_ckt)
 

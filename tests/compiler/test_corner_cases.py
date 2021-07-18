@@ -52,6 +52,7 @@ def get_parser():
 #     ''')
 #
 # TBF: fix spacings at end of line in the parser; Uncomment this testcase to check if it is working
+# Parameters are not being replaced
 # def test_spacing_at_EOL(get_parser):
 #     get_parser.parse(f'''
 #     .subckt check d g s b
@@ -61,6 +62,7 @@ def get_parser():
 #         R0 d n1 resistor res=rb
 #     .ends check
 #     ''')
+# asset mno.parameter[p1] == 2
 
 # def test_top_level():
 #     test_path = (pathlib.Path(__file__).parent / 'test_circuits' / 'test1.sp').resolve()

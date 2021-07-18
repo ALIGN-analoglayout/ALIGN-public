@@ -22,9 +22,12 @@ class CreateDatabase:
         """
         read circuit graphs
         """
-
+        subckt = self.ckt_parser.library.find(name)
         logger.debug("Merging nested graph hierarchies to dictionary: ")
-        self.const_parse.annotate_user_constraints(self.ckt_parser.library.find(name))
+        self.const_parse.annotate_user_constraints(subckt)
+        for pin in subckt.pins:
+            assert pin in subckt.nets, f"Floating pin: {pin} found for subckt {subckt.name}"
+
         logger.debug(f"read graph {self.ckt_data}")
         #TODO remove redundant library model
         return self.ckt_parser.library

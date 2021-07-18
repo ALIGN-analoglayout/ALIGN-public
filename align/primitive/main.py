@@ -280,8 +280,10 @@ def generate_generic(pdkdir, parameters):
 
 def merge_subckt_param(ckt):
     max_value = {}
-    for element in ckt.elements:
-        max_value = merged_value(max_value, element.parameters)
+    logger.debug(f"creating generator parameters: {ckt.name}")
+    for ele in ckt.elements:
+        logger.debug(f"merging element {ele.name}, {ele.parameters} to {max_value}")
+        max_value = merged_value(max_value, ele.parameters)
     return max_value
 
 def merged_value(values1, values2):
@@ -306,6 +308,8 @@ def merged_value(values1, values2):
         DESCRIPTION. max of each parameter value
 
     """
+    if not values1:
+        return values2
     merged_vals={}
     if values1:
         for param,value in values1.items():
@@ -315,7 +319,6 @@ def merged_value(values1, values2):
             merged_vals[param] = max(value, merged_vals[param])
         else:
             merged_vals[param] = value
-    # check_values(merged_vals)
     return merged_vals
 
 def generate_primitive_lef(element,subckt,all_lef, design_config:dict, uniform_height=False):

@@ -5,6 +5,7 @@ Created on Sat Feb 29 12:02:52 2020
 
 @author: kunal001
 """
+from align.schema.types import set_context
 import os
 from math import ceil
 
@@ -41,18 +42,18 @@ def CapConst(ckt_data,name,unit_size_cap,merge_caps):
     for const in all_const:
         if isinstance(const, constraint.GroupCaps):
             available_cap_const.append(const.name)
-
-    logger.debug(f"Available cap constraints, input const: {available_cap_const}")
+    if available_cap_const:
+        logger.debug(f"Available cap constraints, input const: {available_cap_const}")
     if merge_caps:
         cc_cap_size = merge_symmetric_caps(all_const, graph, unit_size_cap, available_cap_const)
     else:
         cc_cap_size={}
     logger.debug(f"Writing constraints for remaining caps in the circuit graph {name}")
     for ele in subckt.elements:
-        if ele.name.startswith('CAP')  and ele.name not in available_cap_const:
-            logger.debug(f"writing cap constraint for node {ele.name} {cc_cap_size}")
-            if 'cap' in ele.parameters.keys():
-                size = ele.parameters["cap"]*1E15
+        if ele.model == 'CAP'  and ele.name not in available_cap_const:
+            logger.debug(f"writing cap constraint for node {ele} {cc_cap_size}")
+            if 'VALUE' in ele.parameters.keys():
+                size = float(ele.parameters["VALUE"])*1E15
             else:
                 size = unit_size_cap
             if ele.name in cc_cap_size:
@@ -64,15 +65,16 @@ def CapConst(ckt_data,name,unit_size_cap,merge_caps):
                 n_cap = [1]
             else:
                 unit_block_name = 'Cap_' + str(unit_size_cap) + 'f'
-            cap_const = constraint.GroupCaps(
-                        instances = [ele.name],
-                        name = ele.name,
-                        num_units = n_cap,
-                        unit_cap = unit_block_name,
-                        dummy = False
-                        )
-            logger.debug(f"Cap constraint {cap_const}")
-            all_const.append(cap_const)
+            with set_context(subckt.constraints):
+                cap_const = constraint.GroupCaps(
+                            instances = [ele.name],
+                            name = ele.name,
+                            num_units = n_cap,
+                            unit_cap = unit_block_name,
+                            dummy = False
+                            )
+                logger.debug(f"Cap constraint {cap_const}")
+                all_const.append(cap_const)
             available_cap_const.append(ele.name)
     logger.debug(f"Identified cap constraints of {name} are {all_const}")
 
