@@ -250,7 +250,13 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
 
             block_name = f'{name}_{vt}_w{w}_m{m}'
 
-            values['real_inst_type'] = vt
+            # Keep only the relevant parameters
+            values_subset = {}
+            values_subset['real_inst_type'] = vt
+            for k in ['w', 'l', 'm', 'nf', 'nfin', 'stack']:
+                if k in values:
+                    values_subset[k] = values[k]
+            values_subset['real_inst_type'] = vt
 
             block_args= {
                 'primitive': name,
@@ -258,7 +264,7 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
                 'x_cells': x,
                 'y_cells': y,
                 'value': 1, # hack. This is used as nfin later.
-                'parameters':values
+                'parameters': values_subset
             }
 
             if 'stack' in values:
