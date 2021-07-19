@@ -64,8 +64,9 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, flat
     basic_lib = SpiceParser(lib_path)
     library = basic_lib.sp_parser()
     lib_path=pathlib.Path(__file__).resolve().parent.parent / 'config' / 'user_template.sp'
-    user_lib = SpiceParser(lib_path)
-    library += user_lib.sp_parser()
+    if lib_path.is_file():
+        user_lib = SpiceParser(lib_path)
+        library += user_lib.sp_parser()
     library = [HierDictNode(**x, constraints=[], ports_weight={}) for x in library]
     library=sorted(library, key=lambda k: max_connectivity(k.graph), reverse=True)
 
