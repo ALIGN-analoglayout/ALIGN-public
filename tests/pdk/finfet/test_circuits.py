@@ -142,6 +142,6 @@ def test_ldo_amp():
         GND = vssx
         DONT_USE_CELLS = CASCODED_CMC_NMOS CMB_PMOS_2 LSB_PMOS_2 LSB_NMOS_2
         """)
-    constraints = []
+    constraints = [{"constraint": "AspectRatio", "subcircuit": "ldo_opamp", "ratio_low": 0.5, "ratio_high": 2.0}]
     example = build_example(name, netlist, setup, constraints)
     run_example(example)
