@@ -19,6 +19,11 @@ def lef_from_layout_d(layout_d, fp, out_lef, cell_pin, bodyswitch, blockM, *, ex
     fp.write("  SIZE %s BY %s ;\n" % (bbox[2], bbox[3]))
     cell_pin = list(cell_pin)
 
+    cell_pin = set()
+    for obj in layout_d['terminals']:
+        if 'pin' in obj:
+            cell_pin.add(obj['pin'])
+
     for i in cell_pin:
         if i == 'B' and bodyswitch==0:continue
         fp.write("  PIN %s\n" % i)

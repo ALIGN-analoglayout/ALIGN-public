@@ -110,9 +110,9 @@ class MOSGenerator(CanvasPDK):
             tap_map = {'B': 'B'}
 
         # Assign M2 tracks to prevent adjacent V2 violation
-        track_pattern_1 = {'G':[6], 'S':[4], 'D':[2]}
+        track_pattern_1 = {'G': [6], 'S': [4], 'D': [2]}
         mg = MOS()
-        tx_a_1 = mg.mos(self.transistor_array.unit_transistor, track_pattern=track_pattern_1)
+        tx_a_1 = mg.mos(self.transistor_array.unit_transistor, track_pattern=None)
 
         if is_dual:
             track_pattern_2 = {}
@@ -135,6 +135,8 @@ class MOSGenerator(CanvasPDK):
                 track_pattern_2['D'] = [2]
             else:
                 track_pattern_2['D'] = [1]
+
+            track_pattern_1 = track_pattern_2 = None
 
             # Alternate m2 tracks for device A and device B for improved matching
             mg = MOS()
@@ -211,9 +213,19 @@ class MOSGenerator(CanvasPDK):
         self.place(rows)
 
         # Route
-        self.route()
+        # self.route()
 
-        self.terminals = self.removeDuplicates()
+        self.terminals = self.removeDuplicates(silence_errors=True)
+
+        counters = {}
+        for term in self.terminals:
+            if term['netName'] and term['layer'].startswith('M'):
+                if term['netName'] not in counters:
+                    counters[term['netName']] = 0
+                counters[term['netName']] += 1
+                term['netName'] = term['netName'] + '__' + str(counters[term['netName']])
+                term['pin'] = term['netName']
+        pass
 
 
     def stamp_cell(self, template, instance_name, pin_map, x_offset, y_offset, flip_x):
