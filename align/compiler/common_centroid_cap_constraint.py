@@ -44,10 +44,10 @@ def CapConst(ckt_data,name,unit_size_cap,merge_caps):
             available_cap_const.append(const.name)
     if available_cap_const:
         logger.debug(f"Available cap constraints, input const: {available_cap_const}")
-    if merge_caps:
-        cc_cap_size = merge_symmetric_caps(all_const, graph, unit_size_cap, available_cap_const)
-    else:
-        cc_cap_size={}
+    # if merge_caps:
+    #     cc_cap_size = merge_symmetric_caps(all_const, graph, unit_size_cap, available_cap_const)
+    # else:
+    cc_cap_size={}
     logger.debug(f"Writing constraints for remaining caps in the circuit graph {name}")
     for ele in subckt.elements:
         if ele.model == 'CAP'  and ele.name not in available_cap_const:
@@ -100,10 +100,10 @@ def merge_symmetric_caps(all_const, graph, unit_size_cap, available_cap_const):
             for pair in const.pairs:
                 if len(pair) == 2:
                     inst = pair[0]
-                    if inst in graph and graph.nodes[inst].get('instance').model.startswith('CAP') \
+                    if inst in graph and graph.nodes[inst].get('instance').model=='CAP' \
                         and len (graph.nodes[inst].get('instance').pins)==2: #Not merge user provided const
                         logger.debug("Symmetric cap constraints:%s",b)
-                        p1, p2 = sorted(pair, key=lambda c: graph.nodes[c].get('instance').parameters["cap"] * 1E15)
+                        p1, p2 = sorted(pair, key=lambda c: float(graph.nodes[c].get('instance').parameters["VALUE"]) * 1E15)
                         cap_array[p1]={p1:[p1,p2]}
                         pair[0]= "_".join([p1,p2])
                         pair.pop()
@@ -115,10 +115,10 @@ def merge_symmetric_caps(all_const, graph, unit_size_cap, available_cap_const):
         cc_caps=[]
         for arr in array.values():
             for ele in arr:
-                if ele in graph.nodes() and graph.nodes[ele]['inst_type'].lower().startswith('cap') and \
+                if ele in graph.nodes() and graph.nodes[ele].get('instance').model=='CAP' and \
                     ele not in available_cap_const:
-                    if 'cap' in graph.nodes[ele]['values'].keys():
-                        size = graph.nodes[ele]['values']["cap"]*1E15
+                    if 'VALUE' in graph.nodes[ele].get('instance').parameters.keys():
+                        size = float(graph.nodes[ele].get('instance').parameters["VALUE"])*1E15
                     else:
                         size = unit_size_cap
                     n_cap.append( ceil(size/unit_size_cap))
@@ -134,7 +134,6 @@ def merge_symmetric_caps(all_const, graph, unit_size_cap, available_cap_const):
         if isinstance(const, constraint.SymmetricNets):
             net1 = const.net1.upper()
             net2 = const.net2.upper()
-            existing = ""
             logger.debug(f"updating symmnet constraint {const}")
             if const.pins1:
                 removed_blocks1 = [pin.split('/')[0]  for pin in const.pins1 if net1 in graph.nodes() \
@@ -142,7 +141,7 @@ def merge_symmetric_caps(all_const, graph, unit_size_cap, available_cap_const):
                 removed_blocks2 = [pin.split('/')[0]  for pin in const.pins2 if net2 in graph.nodes() \
                     and pin.split('/')[0] not in graph.nodes()]
                 removed_blocks = removed_blocks1 + removed_blocks2
-            pairs, s1, s2 = symmnet_device_pairs(graph, net1, net2, existing)
+            pairs, s1, s2 = symmnet_device_pairs(graph, net1, net2)
             print(s1,s2)
             if pairs:
                 symmNetj = constraint.SymmetricNets(

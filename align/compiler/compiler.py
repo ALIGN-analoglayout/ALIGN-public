@@ -1,3 +1,4 @@
+from align.schema.types import set_context
 import pathlib
 import pprint
 import json
@@ -14,7 +15,6 @@ from .common_centroid_cap_constraint import CapConst
 from .find_constraint import FindConst
 from .user_const import ConstraintParser
 from ..schema import constraint
-from ..schema.hacks import HierDictNode
 from ..primitive import generate_primitive_lef
 import logging
 logger = logging.getLogger(__name__)
@@ -86,7 +86,7 @@ def compiler_input(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path
     if len(design_setup['DONT_USE_CELLS'])>0:
         primitives=[v for v in primitives if v.name not in design_setup['DONT_USE_CELLS']]
 
-    #read generator will be called for these elments
+    #generator will be called for these elments
     with open(pdk_dir /'generators.json') as fp:
         generators = json.load(fp).keys()
     logger.debug(f"Available generator for cells: {generators}")
@@ -104,8 +104,6 @@ def compiler_input(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path
 
     # TODO: pg_pins should be marked using constraints. Not manipulating netlist
     logger.debug("Modifying pg pins in design for PnR")
-    pg_pins = design_setup['POWER']+design_setup['GND']
-    # TODO move remove_pg_pins(ckt_data,design_name, pg_pins) as post processing step
 
     logger.debug( "\n################### FINAL CIRCUIT AFTER preprocessing #################### \n")
     logger.debug(ckt_parser)
@@ -178,19 +176,21 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
                 primitives['guard_ring'] = {'primitive':'guard_ring'}
 
         for ele in ckt.elements:
-            lef_name = ele.model
-            if lef_name in generators:
-                subckt= ckt_data.find(lef_name)
+            model = str(ele.model)
+            if model not in generators and not isinstance(ckt_data.find(model), SubCircuit):
+                model = str(ckt_data.find(model).base)
+            logger.warning(f"Checking generator for {ele}, {model}")
+            if model in generators:
                 logger.debug("check")
-                block_name, block_args = generate_primitive_lef(ele, subckt, generators, design_config, uniform_height)
-                logger.debug(f"Created new lef for: {block_name} {lef_name}")
+                block_name, block_args = generate_primitive_lef(ele, model, generators, design_config, uniform_height)
+                logger.debug(f"Created new lef for: {block_name} {model} {block_args}")
                 if block_name in primitives:
                     if block_args != primitives[block_name]:
                         logging.warning(f"two different primitve {block_name} of size {primitives[block_name]} {block_args}got approximated to same unit size")
                 else:
                     primitives[block_name] = block_args
             else:
-                logger.debug(f"No physical information found for: {ele.name}")
+                logger.debug(f"No physical information found for: {ele.name} of type : {model}")
         logger.debug(f"generated data for {ele.name} : {pprint.pformat(primitives, indent=4)}")
     logger.debug(f"All available cell generator with updates: {generators}")
     for ckt in ckt_data:
@@ -204,11 +204,9 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
                 stop_points = design_setup['POWER'] + design_setup['GND'] + design_setup['CLOCK']
                 if ckt.name not in design_setup['NO_CONST']:
                     FindConst(ckt_data, ckt.name, stop_points)
-                constraints = CapConst(ckt_data, ckt.name, design_config["unit_size_cap"], design_setup['MERGE_SYMM_CAPS'])
-                print(constraints)
-                subckt = subckt.copy(
-                    update={'constraints': constraints}
-                )
+
+                CapConst(ckt_data, ckt.name, design_config["unit_size_cap"], design_setup['MERGE_SYMM_CAPS'])
+
             ## Write out modified netlist & constraints as JSON
             logger.debug(f"call verilog writer for block: {ckt.name}")
             wv = WriteVerilog(ckt, ckt_data, POWER_PINS)

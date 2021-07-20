@@ -30,7 +30,7 @@ def test_verilog_writer():
         name = subckt.name
         for ele in subckt.elements:
             if ele.model in available_cell_generator:
-                block_name, _ = generate_primitive_lef(ele, ckt_data.find(ele.model),
+                block_name, _ = generate_primitive_lef(ele, str(ckt_data.find(ele.model)),
                             available_cell_generator, design_config )
 
         if name in available_cell_generator or name.split('_type')[0] in available_cell_generator:

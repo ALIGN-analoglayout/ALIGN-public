@@ -250,6 +250,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         # Run pnr_compiler
         cmd = [str(x) for x in ('align.PnR', input_dir, lef_file,
                                 verilog_file, map_file, pdk_file, subckt, nvariants, effort)]
+        print(cmd)
 
         current_working_dir = os.getcwd()
         os.chdir(working_dir)

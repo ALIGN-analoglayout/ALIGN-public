@@ -141,6 +141,7 @@ class SpiceParser:
             else: #to allow cap/res parameters
                 model = args.pop()
         elif any(name.startswith(x) for x in ('M', 'X')):
+            assert args, f"empty arguments found {name} {args} {kwargs}"
             model = args.pop()
         else:
             raise NotImplementedError(name, args, kwargs, "is not yet recognized by parser")

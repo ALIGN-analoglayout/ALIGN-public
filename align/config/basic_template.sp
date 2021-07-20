@@ -173,17 +173,17 @@ M0 DA DA SA B PMOS w=w l=90n
 M1 DB DA SB B PMOS w=w l=90n
 .ends LS_S_PMOS_B
 
-.subckt DCL_NMOS_B D S B
-M0 (D D S B) NMOS w=w l=90n
-.ends DCL_NMOS_B
+* .subckt DCL_NMOS_B D S B
+* M0 D D S B NMOS w=w l=90n
+* .ends DCL_NMOS_B
 
 * .subckt DCL_PMOS_B D S B
 * M0 D D S B PMOS w=w l=90n
 * .ends DCL_PMOS_B
 
-.subckt DCL_NMOS D S
-M0 (D D S S) NMOS w=w l=90n
-.ends DCL_NMOS
+* .subckt DCL_NMOS D S
+* M0 D D S S NMOS w=w l=90n
+* .ends DCL_NMOS
 
 * .subckt DCL_PMOS D S
 * M0 D D S S PMOS w=w l=90n
@@ -229,22 +229,22 @@ M0 (D D S S) NMOS w=w l=90n
 * M0 S S S B PMOS w=w l=90n
 * .ends Dummy1_PMOS_B
 
-.subckt Dummy1_NMOS S
-M0 (S S S S) NMOS w=w l=90n
-.ends Dummy1_NMOS
+* .subckt Dummy1_NMOS S
+* M0 (S S S S) NMOS w=w l=90n
+* .ends Dummy1_NMOS
 
-.subckt Dummy1_PMOS S
-M0 (S S S S) PMOS w=w l=90n
-.ends Dummy1_PMOS
+* .subckt Dummy1_PMOS S
+* M0 (S S S S) PMOS w=w l=90n
+* .ends Dummy1_PMOS
 
-.subckt Res PLUS MINUS
-RR1 PLUS MINUS res res=10k
-.ends Res
+* .subckt Res PLUS MINUS
+* RR1 PLUS MINUS res res=10k
+* .ends Res
 
-.subckt Cap_b PLUS MINUS BULK
-CC1 PLUS MINUS BULK cap cap=60f
-.ends Cap_b
+* .subckt Cap_b PLUS MINUS BULK
+* CC1 PLUS MINUS BULK cap cap=60f
+* .ends Cap_b
 
-.subckt Cap PLUS MINUS
-CC1 PLUS MINUS cap cap=60f
-.ends Cap
+* .subckt Cap PLUS MINUS
+* CC1 PLUS MINUS cap cap=60f
+* .ends Cap

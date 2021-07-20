@@ -115,6 +115,7 @@ class Graph(networkx.Graph):
                     d = const.direction
                     x = constraint.SymmetricBlocks(direction=d, pairs=t)
                     self.subckt.constraints.append(x)
+                    assert x in self.subckt.constraints, f"constraint: {x} not found in {self.subckt.constraints}"
                     self.subckt.constraints.remove(x)
                     for pair in const.pairs:
                         if len(pair)==2:

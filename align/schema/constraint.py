@@ -531,7 +531,10 @@ class SymmetricBlocks(SoftConstraint):
         assert all(len(pair) for pair in self.pairs) <= 2, 'Must contain at most two instances'
         for pair in self.pairs:
             #and condition skips the check while reading user constraints
-            if len(pair)==2 and self.parent.parent.get_element(pair[0]):
+            if len(pair)==2 and 'get_element' in dir(self.parent.parent) \
+                and self.parent.parent.get_element(pair[0]) \
+                and self.parent.parent.get_element(pair[1]): #Handle groupblock objects in symmetry const
+                assert self.parent.parent.get_element(pair[0])
                 assert self.parent.parent.get_element(pair[0]).parameters == \
                     self.parent.parent.get_element(pair[1]).parameters, \
                         f"Incorrent symmetry pair {pair} in subckt {self.parent.parent.name}"
@@ -704,6 +707,9 @@ class ConstraintDB(types.List[ConstraintType]):
     def append(self, constraint: ConstraintType):
         super().append(constraint)
         self._check_recursive([self.__root__[-1]])
+    @types.validate_arguments
+    def remove(self, constraint: ConstraintType):
+        super().remove(constraint)
 
     def __init__(self, *args, check=True, **kwargs):
         super().__init__()

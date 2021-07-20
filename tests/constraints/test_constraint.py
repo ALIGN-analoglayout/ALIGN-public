@@ -18,8 +18,8 @@ mn1 vop nbs vmd vss n w=720e-9 nf=4 m=5
 mn0 vmd vin vss vss n w=720e-9 nf=4 m=5
 .ends {name}
 """
-    netlist_setup = f"""POWER = 
-GND = 
+    netlist_setup = f"""POWER =
+GND =
 CLOCK =
 DIGITAL =
 """
@@ -33,7 +33,7 @@ DIGITAL =
         fp.write(netlist_setup)
     with open(example / f'{name}.const.json' ,'w') as fp:
         fp.write(constraints)
-    
+
     return example
 
 
@@ -57,7 +57,7 @@ mn0 vcom vbn vssx vssx n w=720e-9 nf=4 m=5
         fp.write(netlist_setup)
     with open(example / f'{name}.const.json' ,'w') as fp:
         fp.write(constraints)
-    
+
     return example
 
 
@@ -70,12 +70,13 @@ def run_example(example, cleanup=True):
     os.chdir(run_dir)
 
     args = [str(example), '-p', str(pdk_dir), '-l','INFO', '--nvariants', '4']
+    print(args)
     results = align.CmdlineParser().parse_args(args)
     assert results is not None, f"{example.name}: No results generated"
-    
+
     if cleanup:
         shutil.rmtree(run_dir)
-        shutil.rmtree(example)
+        # shutil.rmtree(example)
     return(results)
 
 
@@ -87,7 +88,7 @@ def test_aspect_ratio_min():
     name = "example_aspect_ratio_min"
     run_example(cascode_amplifier(my_dir, name, constraints))
 
-    
+
 def test_aspect_ratio_max():
     constraints = """[
     {"constraint": "AspectRatio", "subcircuit": "example_aspect_ratio_max", "ratio_high": 1}

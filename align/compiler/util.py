@@ -83,10 +83,12 @@ def compare_two_nodes(G,node1:str,node2:str ,ports_weight):
 
     # Add some heuristic here in future
     if G.nodes[node1].get('instance'):
-        print(f"nbrs1 {node1} {node2}")
-
-        if G.nodes[node1].get('instance').model == G.nodes[node2].get('instance').model and\
-            G.nodes[node1].get('instance').parameters == G.nodes[node2].get('instance').parameters:
+        logger.debug(f"checking mathc between {node1} {node2}")
+        in1 = G.nodes[node1].get('instance')
+        in2 = G.nodes[node2].get('instance')
+        if in1.model == in2.model and\
+            len(set(in1.pins.values())) == len(set(in2.pins.values()))  and \
+            in1.parameters == in2.parameters:
             logger.debug(" True")
             return True
         else:

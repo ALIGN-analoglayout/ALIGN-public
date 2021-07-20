@@ -1,5 +1,35 @@
 [
         {
+          "constraint": "symmetric_nets",
+          "net1": "OUT1",
+          "net2": "OUT2",
+          "pins1": [
+            "C2/-",
+            "OUT1"
+          ],
+          "pins2": [
+            "C1/-",
+            "OUT2"
+          ],
+          "direction": "V"
+        },
+        {
+          "constraint": "symmetric_blocks",
+          "pairs": [
+            [
+              "C0"
+            ],
+            [
+              "C2",
+              "C1"
+            ],
+            [
+              "M0"
+            ]
+          ],
+          "direction": "V"
+        },
+        {
           "constraint": "group_caps",
           "name": "C2",
           "instances": [
@@ -35,4 +65,4 @@
           ],
           "dummy": false
         }
-]
+      ]
