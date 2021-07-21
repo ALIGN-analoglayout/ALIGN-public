@@ -1,3 +1,5 @@
+import json
+import shutil
 import pytest
 import textwrap
 try:
@@ -134,9 +136,9 @@ def test_tia():
     run_example(example)
 
 
-def test_ldo_amp():
+def test_ldo_opamp():
     name = f'ckt_{get_test_id()}'
-    netlist = circuits.ldo_amp(name)
+    netlist = circuits.ldo_opamp(name)
     setup = textwrap.dedent("""\
         POWER = vccx
         GND = vssx
@@ -145,3 +147,27 @@ def test_ldo_amp():
     constraints = [{"constraint": "AspectRatio", "subcircuit": "ldo_opamp", "ratio_low": 0.5, "ratio_high": 2.0}]
     example = build_example(name, netlist, setup, constraints)
     run_example(example)
+
+
+def test_ldo_opamp_annotation_pass():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.ldo_opamp(name)
+    setup = textwrap.dedent("""\
+        POWER = vccx
+        GND = vssx
+        DONT_USE_CELLS = CASCODED_CMC_NMOS CMB_PMOS_2 LSB_PMOS_2 LSB_NMOS_2
+        """)
+    constraints = [
+        {"constraint": "AspectRatio", "subcircuit": "ldo_opamp", "ratio_low": 0.5, "ratio_high": 2.0}
+        # ,{"constraint": "GroupBlocks", "instances": ["mp29", "mp30"], "name": "cp2"}
+        ]
+    example = build_example(name, netlist, setup, constraints)
+    ckt_dir, run_dir = run_example(example, cleanup=False, max_errors=100, n=1)
+    with (run_dir / '3_pnr' / 'Results' / f'{name}_0.placement_verilog.json').open('rt') as fp:
+        placement = json.load(fp)
+        abstract_names = set([instance['abstract_name'] for instance in placement['leaves']])
+        prim = 'CMC_S_PMOS_B_plplvt_w2160_m1_nf12'
+        assert prim in abstract_names, f'{prim} not found in placement'
+
+    shutil.rmtree(run_dir)
+    shutil.rmtree(ckt_dir)

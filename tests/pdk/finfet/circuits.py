@@ -63,7 +63,7 @@ def tia(name):
     return netlist
 
 
-def ldo_amp(name):
+def ldo_opamp(name):
     netlist = textwrap.dedent(f"""\
         .subckt nlplvt_s_pcell_0 d g s b
         mi1 d g inet1 b nlplvt w=180e-9 m=1 nf=1
