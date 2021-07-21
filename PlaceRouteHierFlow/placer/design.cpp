@@ -445,6 +445,11 @@ design::design(PnRDB::hierNode& node) {
       Ordering_Constraints.push_back(make_pair(make_pair(order.first[i], order.first[i+1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
     }
   }
+  for (auto order: node.Abut_Constraints) {
+    for (unsigned int i = 0; i < order.first.size() - 1;i++){
+      Abut_Constraints.push_back(make_pair(make_pair(order.first[i], order.first[i+1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
+    }
+  }
 
   // Add symmetry block constraint, axis direction is determined by user
   for(vector<PnRDB::SymmPairBlock>::iterator it=node.SPBlocks.begin(); it!=node.SPBlocks.end();++it) {
@@ -1249,6 +1254,7 @@ design::design(const design& other):Port_Location(other.Port_Location) {
   this->noAsymBlock4Move=other.noAsymBlock4Move;
   this->noSymGroup4PartMove=other.noSymGroup4PartMove;
   this->noSymGroup4FullMove=other.noSymGroup4FullMove;
+  this->Abut_Constraints = other.Abut_Constraints;
   //this->Port_Location=other.Port_Location;
 }
 

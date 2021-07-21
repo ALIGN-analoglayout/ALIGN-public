@@ -414,6 +414,7 @@ struct hierNode {
   vector<LinearConst> L_Constraints;
   vector<Multi_LinearConst> ML_Constraints;
   vector<pair<vector<int>, Smark>> Ordering_Constraints;
+  vector<pair<vector<int>, Smark>> Abut_Constraints;
   vector<set<int>> Same_Template_Constraints;
   int bias_Hgraph = 0;
   int bias_Vgraph=0;
