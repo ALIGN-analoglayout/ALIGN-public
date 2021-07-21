@@ -8,7 +8,7 @@ class tfr_prim(CanvasPDK):
         self.metadata = {'instances': []}
 
 
-    def generate(self, ports, netlist_parameters=None, layout_parameters=None):
+    def generate(self, ports, netlist_parameters=None, layout_parameters=None, *args, **kwargs):
 
         assert len(ports) == 2
 
