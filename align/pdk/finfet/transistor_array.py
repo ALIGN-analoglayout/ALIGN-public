@@ -15,7 +15,7 @@ class MOSGenerator(CanvasPDK):
     def __init__(self, *args, **kwargs):
         super().__init__()
         self.instantiated_cells = []
-
+        self.metadata = {'pins': {}}
 
     def addNMOSArray(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
         self.mos_array_temporary_wrapper(x_cells, y_cells, pattern, vt_type, ports, **parameters)
@@ -217,14 +217,24 @@ class MOSGenerator(CanvasPDK):
 
         self.terminals = self.removeDuplicates(silence_errors=True)
 
+        # Find connected entities and generate a unique pin name
+        def find_update_term(layer, rect, new_name):
+            for term in self.terminals:
+                if term['layer'] == layer and term['rect'] == rect:
+                    term['netName'] = term['pin'] = new_name
+
         counters = {}
-        for term in self.terminals:
-            if term['netName'] and term['layer'].startswith('M'):
-                if term['netName'] not in counters:
-                    counters[term['netName']] = 0
-                counters[term['netName']] += 1
-                term['netName'] = term['netName'] + '__' + str(counters[term['netName']])
-                term['pin'] = term['netName']
+        for net_opens in self.rd.opens:
+            net_name = net_opens[0]
+            for open_group in net_opens[1]:
+                if net_name not in counters:
+                    counters[net_name] = 0
+                counters[net_name] += 1
+                new_name = net_name + '__' + str(counters[net_name])
+                self.metadata['pins'][new_name] = net_name
+                for term in open_group:
+                    find_update_term(term[0], term[1], new_name)
+
         pass
 
 

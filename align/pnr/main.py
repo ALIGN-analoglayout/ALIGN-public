@@ -1,3 +1,4 @@
+from align.schema.types import List
 import pathlib
 import os
 import io
@@ -18,7 +19,9 @@ from ..cell_fabric import gen_gds_json, transformation
 from .write_constraint import PnRConstraintWriter
 from .. import PnR
 from .toplevel import toplevel
-from ..schema.hacks import VerilogJsonTop
+from ..schema.hacks import FormalActualMap, VerilogJsonTop
+
+import copy
 
 logger = logging.getLogger(__name__)
 
@@ -193,6 +196,18 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
         verilog_d = VerilogJsonTop.parse_file((topology_dir / verilog_file))
 
+        # Update connectivity for partially routed primitives
+        for module in verilog_d['modules']:
+            for instance in module['instances']:
+                for _, v in primitives.items():
+                    if instance['abstract_template_name'] == v['abstract_template_name']:
+                        if 'metadata' in v and 'pins' in v['metadata']:
+                            fa_map = {fa['formal']: fa['actual'] for fa in instance['fa_map']}
+                            new_fa_map = List[FormalActualMap]()
+                            for f, a in v['metadata']['pins'].items():
+                                new_fa_map.append(FormalActualMap(formal=f, actual=fa_map[a]))
+                            instance['fa_map'] = copy.deepcopy(new_fa_map)
+
         # SMB: I want this to be in main (perhaps), or in the topology stage
         constraint_files, pnr_const_ds = gen_constraint_files( verilog_d, input_dir)
         logger.debug( f'constraint_files: {constraint_files}')
@@ -227,8 +242,9 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         # TODO: Copying is bad ! Consider rewriting C++ code to accept fully qualified paths
         #
 
-        # Copy verilog
-        (input_dir / verilog_file).write_text((topology_dir / verilog_file).read_text())
+        # Save updated verilog        
+        with (input_dir/verilog_file).open( 'wt') as fp:
+            json.dump(verilog_d.dict(), fp=fp, indent=2)
 
         # Copy pdk file
         (input_dir / pdk_file).write_text((pdk_dir / pdk_file).read_text())

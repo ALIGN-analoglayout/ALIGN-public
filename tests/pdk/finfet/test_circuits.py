@@ -147,7 +147,7 @@ def test_ldo_amp():
     run_example(example)
 
 
-def test_css():
+def test_cs_1():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
         .subckt {name} vin vop vccx vssx
@@ -160,4 +160,16 @@ def test_css():
     example = build_example(name, netlist, setup, constraints)
     run_example(example, cleanup=False)
 
-test_css()
+
+def test_cs_2():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+        .subckt {name} vin vop vccx vssx
+        mp0 vop vop vccx vccx p w=180e-9 nf=4 m=2
+        mn0 vop vin vssx vssx n w=180e-9 nf=4 m=2
+        .ends {name}
+        """)
+    setup = ""
+    constraints = []
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example, cleanup=False)
