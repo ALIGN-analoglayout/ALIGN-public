@@ -216,7 +216,7 @@ def generate_Cap(pdkdir, block_name, unit_cap):
 
     uc.addCap(unit_cap)
 
-    return uc, ['PLUS', 'MINUS']
+    return uc, ['+', '-']
 
 def generate_Res(pdkdir, block_name, height, x_cells, y_cells, nfin, unit_res):
 
@@ -230,7 +230,7 @@ def generate_Res(pdkdir, block_name, height, x_cells, y_cells, nfin, unit_res):
 
     uc.addResArray(x_cells, y_cells, nfin, unit_res)
 
-    return uc, ['PLUS', 'MINUS']
+    return uc, ['+', '-']
 
 def generate_Ring(pdkdir, block_name, x_cells, y_cells):
 
@@ -340,58 +340,34 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
 
     elif name=='CAP':
         if 'VALUE' in values.keys():
-            if isinstance(values["VALUE"],str):
-                size = design_config["unit_size_cap"]
-            else:
+            try:
                 size = float('%g' % (round(values["VALUE"] * 1E15,4)))
-            num_of_unit = float(size)/design_config["unit_size_cap"]
-            block_name = name + '_' + str(int(size)) + 'f'
-        else:
-            convert_to_unit(values)
-            size = '_'.join(param+str(values[param]) for param in values)
-            size = size.replace('.','p').replace('-','_neg_')
-            num_of_unit=1
-            block_name = name + '_' + str(size)
-
-        logger.debug(f"Found cap with size: {size}, {design_config['unit_size_cap']}")
-        unit_block_name = 'Cap_' + str(design_config["unit_size_cap"]) + 'f'
-        if block_name in available_block_lef:
-            return block_name, available_block_lef[block_name]
-        logger.debug(f'Generating lef for: {name}, {size}')
-        if  num_of_unit > 128:
-            return block_name, {
-                'primitive': block_name,
-                'value': int(size)
-            }
-        else:
-            return unit_block_name, {
-                'primitive': block_name,
-                'value': design_config["unit_size_cap"]
-            }
-    elif name=='RES':
-        if 'res' in values.keys():
-            if isinstance(values["VALUE"],str):
+            except:
                 size = design_config["unit_size_cap"]
-            else:
-                size = '%g'%(round(values["res"],2))
-        else :
-            convert_to_unit(values)
-            size = '_'.join(param+str(values[param]) for param in values)
-        block_name = name + '_' + str(size).replace('.','p')
-        try:
-            height = ceil(sqrt(float(size) / design_config["unit_height_res"]))
-            if block_name in available_block_lef:
-                return block_name, available_block_lef[block_name]
-            logger.debug(f'Generating lef for: {block_name} {size}')
-            return block_name, {
-                'primitive': name,
-                'value': (height, float(size))
-            }
-        except:
-            return block_name, {
-                'primitive': name,
-                'value': (1, design_config["unit_height_res"])
-            }
+            block_name = name + '_' + str(int(size)) + 'f'
+        logger.debug(f"Found cap with size: {size}")
+        return name, {
+            'primitive': 'cap',
+            'value': int(size)
+        }
+
+    elif name=='RES':
+        if 'VALUE' in values.keys():
+            try:
+                size = float('%g' % (round(values["res"],2)))
+            except:
+                size = design_config["unit_size_cap"]
+
+        # block_name = name + '_' + str(size).replace('.','p')
+        height = ceil(sqrt(float(size) / design_config["unit_height_res"]))
+        # if block_name in available_block_lef:
+        #     return block_name, available_block_lef[block_name]
+        logger.debug(f'Generating lef for: {name} {size}')
+        return name, {
+            'primitive': 'Res',
+            'value': (height, float(size))
+        }
+
     else:
 
         if 'NMOS' in name:
@@ -552,7 +528,7 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
         uc, cell_pin = generate_generic(pdkdir, parameters)
     elif 'MOS' in primitive:
         uc, cell_pin = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
-    elif 'cap' in primitive.lower():
+    elif 'cap' in primitive:
         uc, cell_pin = generate_Cap(pdkdir, block_name, value)
         uc.setBboxFromBoundary()
     elif 'Res' in primitive:

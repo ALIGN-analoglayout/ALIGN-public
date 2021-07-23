@@ -36,7 +36,6 @@ def CapConst(ckt_data,name,unit_size_cap,merge_caps):
 
     """
     subckt = ckt_data.find(name)
-    graph = Graph(subckt)
     all_const = subckt.constraints
     available_cap_const = []
     for const in all_const:
@@ -49,33 +48,33 @@ def CapConst(ckt_data,name,unit_size_cap,merge_caps):
     # else:
     cc_cap_size={}
     logger.debug(f"Writing constraints for remaining caps in the circuit graph {name}")
-    for ele in subckt.elements:
-        if ele.model == 'CAP'  and ele.name not in available_cap_const:
-            logger.debug(f"writing cap constraint for node {ele} {cc_cap_size}")
-            if 'VALUE' in ele.parameters.keys():
-                size = float(ele.parameters["VALUE"])*1E15
-            else:
-                size = unit_size_cap
-            if ele.name in cc_cap_size:
-                n_cap = cc_cap_size[ele.name]
-            else:
-                n_cap = [ceil(size/unit_size_cap)]
-            if not isinstance(n_cap,list) and n_cap > 128:
-                unit_block_name = 'Cap_' + str(int(round(size,1))) + 'f'
-                n_cap = [1]
-            else:
-                unit_block_name = 'Cap_' + str(unit_size_cap) + 'f'
-            with set_context(subckt.constraints):
-                cap_const = constraint.GroupCaps(
-                            instances = [ele.name],
-                            name = ele.name,
-                            num_units = n_cap,
-                            unit_cap = unit_block_name,
-                            dummy = False
-                            )
-                logger.debug(f"Cap constraint {cap_const}")
-                all_const.append(cap_const)
-            available_cap_const.append(ele.name)
+    # for ele in subckt.elements:
+    #     if ele.model == 'CAP'  and ele.name not in available_cap_const:
+    #         logger.debug(f"writing cap constraint for node {ele} {cc_cap_size}")
+    #         if 'VALUE' in ele.parameters.keys():
+    #             size = float(ele.parameters["VALUE"])*1E15
+    #         else:
+    #             size = unit_size_cap
+    #         if ele.name in cc_cap_size:
+    #             n_cap = cc_cap_size[ele.name]
+    #         else:
+    #             n_cap = [ceil(size/unit_size_cap)]
+    #         if not isinstance(n_cap,list) and n_cap > 128:
+    #             unit_block_name = 'Cap_' + str(int(round(size,1))) + 'f'
+    #             n_cap = [1]
+    #         else:
+    #             unit_block_name = 'Cap_' + str(unit_size_cap) + 'f'
+    #         with set_context(subckt.constraints):
+    #             cap_const = constraint.GroupCaps(
+    #                         instances = [ele.name],
+    #                         name = ele.name,
+    #                         num_units = n_cap,
+    #                         unit_cap = unit_block_name,
+    #                         dummy = False
+    #                         )
+    #             logger.debug(f"Cap constraint {cap_const}")
+    #             all_const.append(cap_const)
+    #         available_cap_const.append(ele.name)
     logger.debug(f"Identified cap constraints of {name} are {all_const}")
 
     return all_const

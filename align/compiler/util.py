@@ -226,17 +226,17 @@ def _write_circuit_graph(filename, graph,dir_path):
 def convert_to_unit(values):
     print(values)
     for param in values:
-        if values[param]>= 1 :
+        if float(values[param])>= 1 :
             values[param]=int(values[param])
-        elif values[param]*1E3> 1 :
+        elif float(values[param])*1E3> 1 :
             values[param]=str(int(values[param]*1E3))+'m'
-        elif values[param]*1E6>1 :
+        elif float(values[param])*1E6>1 :
             values[param]=str(int(values[param]*1E6))+'u'
-        elif values[param]*1E9>1:
+        elif float(values[param])*1E9>1:
             values[param]=str(int(values[param]*1E9))+'n'
-        elif values[param]*1E12>1:
+        elif float(values[param])*1E12>1:
             values[param]=str(int(values[param]*1E12))+'p'
-        elif values[param]*1E15>1:
+        elif float(values[param])*1E15>1:
             values[param]=str(int(values[param]*1E15))+'f'
         else:
             logger.error(f"WRONG value, {values}")

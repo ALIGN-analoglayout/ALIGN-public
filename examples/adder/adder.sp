@@ -16,7 +16,7 @@
 
     xI0 vout vbn1 vgnd vgnd nfet2x p1=nfpf
     xI1 vout vbp1 vps vps pfet2x p1=nfpf
-    R0 vbn1 n1 resistor r=rb
+    R0 vbn1 n1 rb
     C0 vin vbn1 cc
     R1 vbp1 n2 rb
     C1 vin vbp1 cc

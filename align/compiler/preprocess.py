@@ -69,7 +69,6 @@ def remove_dummy_hier(library,ckt,update=True):
         remove_dummy_hier(library,library.find(ckt.elements[0].model))
     for other_ckt in library:
         if isinstance(other_ckt, SubCircuit):
-            G = Graph(other_ckt)
             replace = {}
             for inst in other_ckt.elements:
                 if inst.model == ckt.name:
@@ -83,14 +82,12 @@ def remove_dummy_hier(library,ckt,update=True):
                     pins = {}
                     for p,v in y.pins.items():
                         pins[p] = ele.pins[v]
-                    assert ele.parameters.keys() & y.parameters.keys(), \
-                        f"cannot remove dummy hierarchy {ele.model}, as parameters cannot be propogated"
-                    logger.debug(y.parameters, ele.parameters)
+                    logger.debug(y.parameters, ele)
                     other_ckt.elements.append(Instance(
                         name = ele.name.replace('X','M'),
                         model = y.model,
                         pins = pins,
-                        parameters={**y.parameters, **ele.parameters}))
+                        parameters=y.parameters))
                     other_ckt.elements.remove(ele)
     return True
 
@@ -284,107 +281,4 @@ def add_series_devices(ckt,update=True):
                         nbr1.pins[p]=nbr2.pins[p]
                 G.remove(nbr2)
 
-# def remove_pg_pins(ckt_data:dict,circuit_name, pg_pins):
-#     """
-#     removes power pins to be sent as signal by recursively finding all connections to power pins
-#     and removing them from subcircuit defination and instance calls
-#     for each circuit different power connection creates an extra subcircuit
-#     Required by PnR as it does not make power connections as ports
-#     Parameters
-#     ----------
-#     ckt_data : dict
-#         dictionary of all circuit in spice file
-#     circuit_name : str
-#         name of circuit to be processed.
-#     G : networkx graph
-#         graph of circuit.
-#     pg_pins : list
-#         graph of circuit.
-#     Returns
-#     -------
-#     None.
 
-#     """
-#     G = ckt_data[circuit_name]["graph"]
-#     logger.debug(f"checking pg ports in {circuit_name} {pg_pins}")
-#     for node, attr in G.nodes(data=True):
-#         if 'sub_graph' not in attr or attr['inst_type'] =='net' or not attr["connection"]:
-#             continue
-#         elif len(set(attr["connection"].values()) & set(pg_pins))>0:
-#             logger.debug(f"node: {node} connections {attr['connection']} {attr['ports']}")
-#             pg_conn = {}
-#             for k,v in attr["connection"].items():
-#                 if v in pg_pins and k not in pg_pins:
-#                     pg_conn[k]=v
-#             if pg_conn:
-#                 logger.debug(f"removing power pin connected as signal net {pg_conn} in {node}")
-#                 #deleting power connections to subcircuits
-#                 for k,v in pg_conn.items():
-#                     del attr["connection"][k]
-#                     del attr['edge_weight'][attr["ports"].index(v)]
-#                     attr["ports"].remove(v)
-#                 #create a new subcircuit and changes its ports to power ports
-#                 #power ports are not written during verilog
-#                 updated_name = modify_pg_conn_subckt(ckt_data,attr["inst_type"], pg_conn)
-#                 attr["instance"].model = updated_name
-#                 remove_pg_pins(ckt_data,updated_name, pg_pins)
-
-# def modify_pg_conn_subckt(ckt_data:dict,circuit_name, pg_conn):
-#     """
-#     creates a new subcircuit by removing power pins from a subcircuit defination
-#     and change internal connections within the subcircuit
-
-#     Parameters
-#     ----------
-#     ckt_data : dict
-#         dictionary of all circuit in spice file
-#     circuit_name : str
-#         name of circuit to be processed.
-#     pg_conn : dict
-#         ports to be modified and corresponding pg pin.
-#     Returns
-#     -------
-#     new subcircuit name
-
-#     """
-
-#     new = copy.deepcopy(ckt_data[circuit_name])
-#     logger.debug(f"modifying subckt {circuit_name} {new} {pg_conn}")
-#     for k,v in pg_conn.items():
-#         logger.debug(f"fixing port {k} to {v} for all inst in {circuit_name}")
-#         new["ports"].remove(k)
-#         del new["ports_weight"][k]
-#         if v in new["graph"].nodes():
-#             old_edge_wt=list(copy.deepcopy(new["graph"].edges(v,data=True)))
-#             new["graph"] = nx.relabel_nodes(new["graph"],{k:v},copy=False)
-#             for n1,n2,v1 in new["graph"].edges(v,data=True):
-#                 for n11,n21,v11 in old_edge_wt:
-#                     if n1 == n11 and n2 ==n21:
-#                         v1["weight"] = v1["weight"] | v11["weight"]
-#             logger.debug(f"updated weights {old_edge_wt} {new['graph'].edges(v,data=True)}")
-
-#         else:
-#             new["graph"] = nx.relabel_nodes(new["graph"],{k:v},copy=False)
-
-#         for node,attr in new["graph"].nodes(data=True):
-#             if attr["instance"].model=='net':
-#                 continue
-#             #if k in attr["ports"]:
-#             #logger.debug(f"updating node {node} {attr}")
-#             attr["ports"]=[v if x==k else x for x in attr["ports"]]
-#             if "connection" in attr and attr["connection"]:
-#                 for a,b in attr["connection"].items():
-#                     if b==k:
-#                         attr["connection"][a]=v
-#                         logger.debug(f"updated attributes of {node}: {attr}")
-
-#     i=1
-#     updated_ckt_name = circuit_name+'pg'+str(i)
-#     while updated_ckt_name in ckt_data.keys():
-#         if ckt_data[updated_ckt_name]["ports"]==new["ports"]:
-#             break
-#         else:
-#             i = i+1
-#             updated_ckt_name = circuit_name+'pg'+str(i)
-#     ckt_data[ updated_ckt_name] = new
-#     return updated_ckt_name
