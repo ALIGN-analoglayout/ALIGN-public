@@ -91,7 +91,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   // i*4+3:H_flip
   // i*4+4:V_flip
   lprec* lp = make_lp(0, N_var);
-  set_verbose(lp, IMPORTANT);
+  set_verbose(lp, CRITICAL);
   put_logfunc(lp, &ILP_solver::lpsolve_logger, NULL);
   //set_outputfile(lp, const_cast<char*>("/dev/null"));
 
