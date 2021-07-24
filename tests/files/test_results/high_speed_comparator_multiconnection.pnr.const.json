@@ -48,6 +48,7 @@
         {
             "direction": "V",
             "const_name": "Ordering",
+            "abut": false,
             "blocks": [
                 "mn0",
                 "mn1_mn2",

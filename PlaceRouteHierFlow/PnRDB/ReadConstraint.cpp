@@ -299,6 +299,7 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
           }
         }
       }
+      if (constraint["abut"]) node.Abut_Constraints.push_back(temp_order);
       node.Ordering_Constraints.push_back(temp_order);
     } else if (constraint["const_name"] == "CC") {
       PnRDB::CCCap temp_cccap;
