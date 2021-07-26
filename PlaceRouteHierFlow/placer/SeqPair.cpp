@@ -2,7 +2,89 @@
 #include "spdlog/spdlog.h"
 #include <exception>
 
-SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl)
+void OrderedEnumerator::TopoSortUtil(vector<int>& res, map<int, bool>& visited)
+{
+  bool flag = false;
+  for (auto& it : _seq) {
+    if (_indegree[it] == 0 && !visited[it]) {
+      for (auto& adjit : _adj[it]) {
+        _indegree[adjit]--;
+      }
+      res.push_back(it);
+      visited[it] = true;
+      TopoSortUtil(res, visited);
+
+      visited[it] = false;
+      res.erase(res.end() - 1);
+      for (auto& adjit : _adj[it]) {
+        _indegree[adjit]++;
+      }
+      flag = true;
+    }
+  }
+
+  if (!flag) {
+    _sequences.push_back(res);
+  }
+}
+
+OrderedEnumerator::OrderedEnumerator(const vector<int>& seq, const vector<pair<pair<int, int>, placerDB::Smark>>& constraints, const bool pos) : _seq(seq), _cnt(0), _valid(constraints.empty())
+{
+  if (constraints.empty()) return;
+  std::sort(_seq.begin(), _seq.end());
+
+  for (auto& it : _seq) {
+    _indegree[it] = 0;
+    _adj[it].clear();
+  }
+
+  auto logger = spdlog::default_logger()->clone("placer.OrderedEnumerator.OrderedEnumerator");
+  for (auto& it : constraints) {
+    int first(-1), second(-1);
+    if (it.second == placerDB::V) { // vertical
+      if (pos) {
+        first = it.first.first;
+        second = it.first.second;
+      } else {
+        first = it.first.second;
+        second = it.first.first;
+      }
+    } else { // horizontal
+      first = it.first.first;
+      second = it.first.second;
+    }
+    //logger->info("ordering {0} {1}", first, second);
+    _adj[first].push_back(second);
+    ++_indegree[second];
+  }
+  map<int, bool> visited;
+  for (auto& it : seq) {
+    visited[it] = false;
+  }
+  vector<int> res;
+  TopoSortUtil(res, visited);
+  _seq.clear();
+  _indegree.clear();
+  _adj.clear();
+  logger->info("num sequences {0} {1}", _sequences.size(), constraints.size());
+  /*string str;
+  for (auto& it : _sequences) {
+    str.clear();
+    for (auto& r : it) {
+      str += (std::to_string(r) + " ");
+    }
+    logger->info("seq : {0} {1}", pos, str);
+  }*/
+}
+
+bool OrderedEnumerator::NextPermutation(vector<int>& seq)
+{
+  if (_cnt < _sequences.size()) seq = _sequences[_cnt];
+  return (++_cnt < _sequences.size());
+}
+
+SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl) : _posEnumerator(pair, casenl.Ordering_Constraints, true),
+  _negEnumerator(pair, casenl.Ordering_Constraints, false)
 {
   _enumIndex = std::make_pair(0, 0);
   _exhausted = 0;
@@ -27,6 +109,7 @@ SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl)
 
 const bool SeqPairEnumerator::IncrementSelected()
 {
+  return false;
   if (_maxSize <= 1) return false;
   int i = _selected.size() - 1;
   int rem = 1;
@@ -71,19 +154,25 @@ bool SeqPairEnumerator::EnumFlip() {
 void SeqPairEnumerator::Permute()
 {
   auto logger = spdlog::default_logger()->clone("placer.SeqPairEnumerator.Permute");
-  if (!EnumFlip()) {
+  //if (!EnumFlip()) {
     if (!IncrementSelected()) {
       if (_enumIndex.second >= _maxEnum - 1) {
         _enumIndex.second = 0;
         ++_enumIndex.first;
         std::sort(_negPair.begin(), _negPair.end());
-        std::next_permutation(std::begin(_posPair), std::end(_posPair));
+        if (_posEnumerator.valid())
+          _posEnumerator.NextPermutation(_posPair);
+        else
+          std::next_permutation(std::begin(_posPair), std::end(_posPair));
       } else {
-        std::next_permutation(std::begin(_negPair), std::end(_negPair));
+        if (_negEnumerator.valid())
+          _negEnumerator.NextPermutation(_negPair);
+        else
+          std::next_permutation(std::begin(_negPair), std::end(_negPair));
         ++_enumIndex.second;
       }
     }
-  }
+  //}
   if (_enumIndex.first >= _maxEnum) _exhausted = true;
 }
 
@@ -634,8 +723,8 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
   KeepOrdering(caseNL);
   SameSelected(caseNL);
 
-  bool enumerate(false);
-  if (maxIter > 0 && posPair.size() <= 6) {
+  bool enumerate(true);
+  /*if (maxIter > 0 && posPair.size() <= 6) {
     size_t totEnum = SeqPair::Factorial(posPair.size());
     totEnum *= totEnum;
     totEnum *= (1 << (2*caseNL.GetSizeofBlocks()));
@@ -646,7 +735,7 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
       }
       enumerate = 2 * maxIter > totEnum;
     }
-  }
+  }*/
 
   if (enumerate) {
     _seqPairEnum = std::make_shared<SeqPairEnumerator>(posPair, caseNL);

@@ -26,6 +26,22 @@ using std::string;
 using std::swap;
 using std::vector;
 
+class OrderedEnumerator {
+  private:
+    vector<vector<int>> _sequences;
+    unsigned _cnt;
+    void TopoSortUtil(vector<int>& res, map<int, bool>& visited);
+    vector<int> _seq;
+    map<int, vector<int>> _adj;
+    map<int, int> _indegree;
+    bool _valid;
+    
+  public:
+    OrderedEnumerator(const vector<int>& seq, const vector<pair<pair<int, int>, placerDB::Smark>>& constraints, const bool pos = true);
+    bool NextPermutation(vector<int>& seq);
+    void print();
+    bool valid() const { return _valid; }
+};
 
 class SeqPairEnumerator
 {
@@ -38,6 +54,7 @@ class SeqPairEnumerator
     unsigned _exhausted : 1;
     size_t _hflip, _vflip;
     size_t _maxFlip;
+    OrderedEnumerator _posEnumerator, _negEnumerator;
   public:
     SeqPairEnumerator(const vector<int>& pair, design& casenl);
     void Permute();
@@ -49,7 +66,6 @@ class SeqPairEnumerator
     bool EnumFlip();
     vector<int> GetFlip(const bool hor) const;
 };
-
 
 class SeqPair 
 {
