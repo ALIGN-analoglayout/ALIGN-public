@@ -263,25 +263,26 @@ def get_generator(name, pdkdir):
             return getattr(module, name)
 
 
-def generate_generic(pdkdir, parameters):
+def generate_generic(pdkdir, parameters, netlistdir=None):
 
     pdk = Pdk().load(pdkdir / 'layers.json')
     primitive = get_generator(parameters["real_inst_type"], pdkdir)
     uc = primitive()
     uc.generate(
         ports=parameters["ports"],
-        netlist_parameters=parameters["values"]
+        netlist_parameters=parameters["values"],
+        netlistdir=netlistdir
     )
     return uc, parameters["ports"]
 
 
 # WARNING: Bad code. Changing these default values breaks functionality.
-def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None, pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd(), abstract_template_name=None, concrete_template_name=None):
+def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None, pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd(), netlistdir=pathlib.Path.cwd(), abstract_template_name=None, concrete_template_name=None):
 
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
 
     if primitive == 'generic':
-        uc, cell_pin = generate_generic(pdkdir, parameters)
+        uc, cell_pin = generate_generic(pdkdir, parameters, netlistdir=netlistdir)
     elif 'MOS' in primitive:
         uc, cell_pin = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
     elif 'cap' in primitive.lower():
