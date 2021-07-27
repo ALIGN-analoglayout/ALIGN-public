@@ -125,6 +125,34 @@ def test_ota_six():
     run_example(example)
 
 
+def test_ota_six_noconst():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.ota_six(name)
+    setup = textwrap.dedent(f"""\
+        NO_CONST = {name}
+        """)
+    constraints = []
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example)
+
+
+def test_ota_six_constrained():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.ota_six(name)
+    setup = textwrap.dedent(f"""\
+        NO_CONST = {name}
+        """)
+    constraints = [
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "scmn"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "dp"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "scmp"},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["scmn"], ["dp"], ["scmp"]]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["scmp", "dp", "scmn"]}
+    ]
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example)
+
+
 def test_tia():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.tia(name)
