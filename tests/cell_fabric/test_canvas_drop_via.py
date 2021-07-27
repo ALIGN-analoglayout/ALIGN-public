@@ -108,8 +108,8 @@ def test_two():
     c.addWire(c.M2, 'a', None, 1, (4, 1), (6, 3))
 
     # enclosure violation
-    c.terminals.append({"layer": "M1", "netName": "a", "rect": [6200, 750, 6600, 2250]})
-    c.terminals.append({"layer": "M2", "netName": "a", "rect": [6200, 1600, 7000, 2000]})
+    c.terminals.append({"layer": "M1", "netName": "a", "rect": [6200, 750, 6600, 2250], "netType": "drawing"})
+    c.terminals.append({"layer": "M2", "netName": "a", "rect": [6200, 1600, 7000, 2000], "netType": "drawing"})
     c.addWire(c.M2, 'a', None, 1, (7, 1), (8, 3))
 
     c.drop_via(c.V1)

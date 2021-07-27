@@ -425,9 +425,9 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
                 p = r2wh(modules[concrete_name]['bbox'])
 
-                #if hN is not None:
-                #    if hpwl_alt != hN.HPWL_extend:
-                #        logger.warning( f'hpwl: locally computed from netlist {hpwl_alt}, placer computed {hN.HPWL_extend} differ!')
+                if hN is not None:
+                    if hpwl_alt != hN.HPWL_extend:
+                        logger.warning( f'hpwl: locally computed from netlist {hpwl_alt}, placer computed {hN.HPWL_extend} differ!')
 
                 #reported_hpwl = hN.HPWL / 2000
                 # This is a much better estimate but not what the placer is using
