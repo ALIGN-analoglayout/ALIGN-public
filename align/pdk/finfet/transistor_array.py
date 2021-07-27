@@ -222,7 +222,7 @@ class MOSGenerator(CanvasPDK):
 
         # bounding box as visual aid
         t = {'layer': 'Boundary', 'netName': None,
-             'rect': [bbox[0]+x_offset, bbox[1]+y_offset, bbox[2]+x_offset, bbox[3]+y_offset]}
+             'rect': [bbox[0]+x_offset, bbox[1]+y_offset, bbox[2]+x_offset, bbox[3]+y_offset], 'netType': 'drawing'}
         self.terminals.append(t)
 
         if flip_x < 0:
@@ -239,6 +239,7 @@ class MOSGenerator(CanvasPDK):
 
             t['layer'] = term['layer']
             t['netName'] = pin_map.get(term['netName'], None)
+            t['netType'] = term['netType']
             self.terminals.append(t)
 
 
