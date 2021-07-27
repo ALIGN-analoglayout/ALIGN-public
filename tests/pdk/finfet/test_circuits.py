@@ -198,6 +198,6 @@ def test_cs_2():
         .ends {name}
         """)
     setup = ""
-    constraints = []
+    constraints = [{"constraint": "MultiConnection", "nets": ["vop"], "multiplier": 2}]
     example = build_example(name, netlist, setup, constraints)
     run_example(example, cleanup=False)
