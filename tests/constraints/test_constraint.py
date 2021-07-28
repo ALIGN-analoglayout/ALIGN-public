@@ -75,3 +75,15 @@ def test_order_abut():
     ]
     example = build_example(name, netlist, setup, constraints)
     run_example(example)
+
+
+def test_align_top_right():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.cascode_amplifier(name)
+    setup = ""
+    constraints = [
+        {"constraint": "AlignInOrder", "direction": "vertical", "line": "right", "instances": ["mn0", "mn1"]},
+        {"constraint": "AlignInOrder", "direction": "horizontal", "line": "top", "instances": ["mn1", "mp1"]}
+    ]
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example)
