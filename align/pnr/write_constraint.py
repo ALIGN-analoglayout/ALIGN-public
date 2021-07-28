@@ -104,7 +104,7 @@ class PnRConstraintWriter:
                 del const["blocks"]
             elif const["const_name"] == 'Align':
                 const["const_name"] = 'AlignBlock'
-                if const['line'] not in ['h_bottom', 'h_top', 'h_center', 'v_right', 'v_left', 'v_center']:
+                if const['line'] not in ['h_bottom', 'h_top', 'v_right', 'v_left', 'v_center']:
                     raise NotImplementedError(f'PnR does not support edge {const["line"]} yet')
             elif const["const_name"] == 'SymmetricNets':
                 const["const_name"] = 'SymmNet'
