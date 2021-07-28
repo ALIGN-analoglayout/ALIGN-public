@@ -33,7 +33,7 @@ def test_A(setup):
     c.terminals = []
     for i in range( 100000):
         c.terminals.append( 
-            {'layer': 'M2', 'netName': f'x{i}', 'rect': gr( i*(l+e)-dx, i*(l+e)+l-dx)}
+            {'layer': 'M2', 'netName': f'x{i}', 'rect': gr( i*(l+e)-dx, i*(l+e)+l-dx), "netType": "drawing"}
             )
 
     c.computeBbox()

@@ -22,8 +22,8 @@ def setup():
     py = m2['Pitch']
 
     c.terminals = [
-        {'layer': 'M2', 'netName': 'x', 'rect': [   0, 0*py-dy, 200, 0*py+dy]},
-        {'layer': 'M2', 'netName': 'y', 'rect': [ 200, 1*py-dy, 400, 1*py+dy]}
+        {'layer': 'M2', 'netName': 'x', 'rect': [   0, 0*py-dy, 200, 0*py+dy], "netType": "drawing"},
+        {'layer': 'M2', 'netName': 'y', 'rect': [ 200, 1*py-dy, 400, 1*py+dy], "netType": "drawing"}
     ]
 
     return c

@@ -68,7 +68,7 @@ def test_two():
     c.addWire(m1, 'a',  None, 1, (4, 1), (5, 3))
 
     # Append different width
-    c.terminals.append({'layer': 'M1', 'netName': 'a', 'rect': [540, 4680, 900, 5400]})
+    c.terminals.append({'layer': 'M1', 'netName': 'a', 'rect': [540, 4680, 900, 5400], 'netType': 'drawing'})
 
     c.addWire(m1, None, None, 1, (8, 1), (9, 3))
 
