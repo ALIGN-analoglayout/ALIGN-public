@@ -234,8 +234,8 @@ class RemoveDuplicates():
                     if not sl.isEmpty() and \
                         rect[dIndex] <= current_slr.rect[dIndex+2] and \
                         all(rect[i] == current_slr.rect[i] for i in indices):  # continuation
-                        if (potential_slr.netType not in ['blockage'] and current_slr.netType not in ['blockage']):
-                            if self.connectPair(layer,current_slr, potential_slr):
+                        if self.connectPair(layer,current_slr, potential_slr):
+                            if (potential_slr.netType not in ['blockage'] and current_slr.netType not in ['blockage']):
                                 sl.merge_slr(current_slr, potential_slr)
                             else:
                                 current_slr = sl.add_slr( potential_slr)

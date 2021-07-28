@@ -225,9 +225,9 @@ def test_via_multi_terminal_connection():
     c.addGen( Wire( nm='m1', layer='M1', direction='v', clg=None, spg=None))
     c.addGen( Wire( nm='m2', layer='M2', direction='h', clg=None, spg=None))
     c.addGen( Via( nm="v1", layer="via1", h_clg=None, v_clg=None))
-    c.terminals = [{'layer': 'M2', 'netName': 'x', 'rect':   [  0,  -50, 300,  50], 'netType': 'drawing'},
-                   {'layer': 'M1', 'netName': 'M1:S', 'rect':   [100, -150, 200, 150], 'netType': 'drawing'},
-                   {'layer': 'M1', 'netName': 'M1:D', 'rect':   [0, -150, 50, 150], 'netType': 'drawing'},
+    c.terminals = [{'layer': 'M2', 'netName': 'x', 'rect':  [ 0, -50, 300,  50], 'netType': 'drawing'},
+                   {'layer': 'M1', 'netName': 'M1:S', 'rect': [100, -150, 200, 150], 'netType': 'drawing'},
+                   {'layer': 'M1', 'netName': 'M1:D', 'rect': [0, -150, 50, 150], 'netType': 'drawing'},
                    {'layer': 'via1', 'netName': None, 'rect': [100,  -50, 200,  50], 'netType': 'drawing'},
                    {'layer': 'via1', 'netName': None, 'rect': [0,  -50, 50,  50], 'netType': 'drawing'}
     ]
@@ -242,9 +242,9 @@ def test_via_multi_terminal_open():
     c.addGen( Wire( nm='m1', layer='M1', direction='v', clg=None, spg=None))
     c.addGen( Wire( nm='m2', layer='M2', direction='h', clg=None, spg=None))
     c.addGen( Via( nm="v1", layer="via1", h_clg=None, v_clg=None))
-    c.terminals = [{'layer': 'M2', 'netName': None, 'rect':   [  0,  -50, 300,  50], 'netType': 'drawing'},
-                   {'layer': 'M1', 'netName': 'M1:S', 'rect':   [100, -150, 200, 150], 'netType': 'drawing'},
-                   {'layer': 'M1', 'netName': 'M1:D', 'rect':   [0, -150, 50, 150], 'netType': 'drawing'},
+    c.terminals = [{'layer': 'M2', 'netName': None, 'rect': [0,  -50, 300,  50], 'netType': 'drawing'},
+                   {'layer': 'M1', 'netName': 'M1:S', 'rect': [100, -150, 200, 150], 'netType': 'drawing'},
+                   {'layer': 'M1', 'netName': 'M1:D', 'rect': [0, -150, 50, 150], 'netType': 'drawing'},
                    {'layer': 'via1', 'netName': None, 'rect': [100,  -50, 200,  50], 'netType': 'drawing'},
                    {'layer': 'via1', 'netName': None, 'rect': [0,  -50, 50,  50], 'netType': 'drawing'}
     ]
@@ -267,5 +267,27 @@ def test_via_multi_terminal_short():
     c.removeDuplicates()
     assert len(c.rd.subinsts) == 1, c.rd.subinsts
     assert len(c.rd.subinsts['M1'].pins) == 1, c.rd.subinsts
+    assert len(c.rd.shorts) == 1, c.rd.shorts
+    assert len(c.rd.opens) == 0, c.rd.opens
+
+def test_blockage_not_merging():
+    c = Canvas()
+    c.addGen( Wire( nm='m2', layer='M2', direction='h', clg=None, spg=None))
+    c.terminals = [{'layer': 'M2', 'netName': 'a', 'rect': [ 0, -50, 300, 50], 'netType': 'pin'},
+                   {'layer': 'M2', 'netName': None, 'rect': [ 150, -50, 750, 50], 'netType': 'blockage'}
+    ]
+    newTerminals = c.removeDuplicates()
+    assert len(c.rd.shorts) == 0, c.rd.shorts
+    assert len(c.rd.opens) == 0, c.rd.opens
+    assert len(newTerminals) == 2, len(newTerminals)
+
+def test_overlapping_drawings_through_blockage():
+    c = Canvas()
+    c.addGen( Wire( nm='m2', layer='M2', direction='h', clg=None, spg=None))
+    c.terminals = [ {'layer': 'M2', 'netName': 'a', 'rect': [ 0, -50, 300, 50], 'netType': 'pin'},
+                    {'layer': 'M2', 'netName': None, 'rect': [ 150, -50, 750, 50], 'netType': 'blockage'},
+                    {'layer': 'M2', 'netName': 'b', 'rect': [ 600, -50, 900, 50], 'netType': 'pin'}
+    ]
+    newTerminals = c.removeDuplicates()
     assert len(c.rd.shorts) == 1, c.rd.shorts
     assert len(c.rd.opens) == 0, c.rd.opens
