@@ -321,6 +321,7 @@ def _parse_inst(line, pdk_dir=None):
                 "inst_type": hier_nodes[-1],
                 "real_inst_type": hier_nodes[-1],
                 "ports": hier_nodes[1:-1],
+                "edge_weight": [2**i for i in range(len(hier_nodes[1:-1]))],
                 "values": device_param_list
             }
             logger.debug(f'FOUND subckt instance: {device["inst"]}, type {device["inst_type"]}')
