@@ -21,7 +21,7 @@ class SpiceParser:
     The final graph is stored in a yaml file in circuit_graphs folder.
     """
 
-    def __init__(self, netlistPath, top_ckt_name=None, flat=0, pdk_dir=None):
+    def __init__(self, netlistPath, pdk_dir=None, top_ckt_name=None, flat=0):
         self.netlist = netlistPath
         self.subckts = {}
         self.circuits_list = []
@@ -445,17 +445,12 @@ class SpiceParser:
             if inherited_param:
                 self._resolve_param(inherited_param, node, values)
                 logger.debug(f"updated circuit params are: {inherited_param}")
-            if node["inst_type"] in self.subckts:
+            if node["inst_type"] in self.subckts and not node["inst_type"] ==subckt_name:
                 logger.debug(f'FOUND hier_node: {node["inst_type"]}')
+                hier_node = node
+                hier_node["values"] = values
+                hier_node["hier_nodes"] = self._hier_circuit(node["inst_type"], self.subckts[subckt_name]["ports"], values)
 
-                hier_node = {
-                    "inst": node["inst"],
-                    "inst_type": node["inst_type"],
-                    "real_inst_type": node["real_inst_type"],
-                    "ports": node["ports"],
-                    "values": values,
-                    "hier_nodes": self._hier_circuit(node["inst_type"], self.subckts[subckt_name]["ports"], values)
-                }
                 hier_design.append(hier_node)
                 logger.debug(f"updated node info: {node}")
             else:

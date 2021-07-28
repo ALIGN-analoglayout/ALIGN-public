@@ -212,3 +212,7 @@ CC1 PLUS MINUS BULK cap cap=60f
 .subckt Cap PLUS MINUS
 CC1 PLUS MINUS cap cap=60f
 .ends Cap
+
+.subckt tfr_prim n1 n2
+xi0 n1 n2 tfr_prim w=1e-6 l=1e-6
+.ends tfr_prim

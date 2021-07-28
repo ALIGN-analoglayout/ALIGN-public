@@ -52,6 +52,7 @@ class WriteVerilog:
                 ports = []
                 nets = []
                 if "ports_match" in attr:
+                    #Auto-annotation generated subcircuits will have ports_match
                     logger.debug(f'Nets connected to ports: {attr["ports_match"]}')
                     for key, value in attr["ports_match"].items():
                         ports.append(key)
@@ -63,16 +64,22 @@ class WriteVerilog:
                         ports.append('B')
                         nets.append(nets[1])
                 elif "connection" in attr and attr["connection"]:
+                    #Hierarchies from input circuit
                     for key, value in attr["connection"].items():
                         if attr['inst_type'] in self.hier_graph_dict and key in self.hier_graph_dict[attr['inst_type']]['ports']:
                             ports.append(key)
                             nets.append(value)
+                            
                 else:
-                    logger.error(f"No connectivity info found for block {d['name']}: {', '.join(attr['ports'])}")
+                    #Unknown
                     ports = attr["ports"]
                     nets = list(self.circuit_graph.neighbors(node))
-
+                    logger.error(f"No connectivity info found for block {node}: \
+                                 ports:{ports}, nets: {nets}")
+                    assert 0, f"No logical mapping of instance {node} "
+                    
                 instance['fa_map'] = self.gen_dict_fa(ports, nets)
+                logger.debug(f"pin map: {instance['fa_map']}")
                 if not instance['fa_map']:
                     logger.warning(f"Unconnected module, only power/gnd conenction found {node}")
 

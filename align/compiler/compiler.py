@@ -52,7 +52,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, flat
     #
     # TODO: flatten should be separate pass
     #
-    sp = SpiceParser(input_ckt, design_name, flat, pdk_dir)
+    sp = SpiceParser(input_ckt, pdk_dir, design_name)
     circuit_graphs = sp.sp_parser()
     assert circuit_graphs !=None  , f"No subcircuit with name {design_name} found in spice {input_ckt}"
     circuit = circuit_graphs[0]
@@ -61,11 +61,11 @@ def compiler(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path, flat
     logger.debug(f"template parent path: {pathlib.Path(__file__).parent}")
     lib_path = pathlib.Path(__file__).resolve().parent.parent / 'config' / 'basic_template.sp'
     logger.debug(f"template library path: {lib_path}")
-    basic_lib = SpiceParser(lib_path)
+    basic_lib = SpiceParser(lib_path, pdk_dir)
     library = basic_lib.sp_parser()
     lib_path=pathlib.Path(__file__).resolve().parent.parent / 'config' / 'user_template.sp'
     if lib_path.is_file():
-        user_lib = SpiceParser(lib_path)
+        user_lib = SpiceParser(lib_path, pdk_dir)
         library += user_lib.sp_parser()
     library = [HierDictNode(**x, constraints=[], ports_weight={}) for x in library]
     library=sorted(library, key=lambda k: max_connectivity(k.graph), reverse=True)
