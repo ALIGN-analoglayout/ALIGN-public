@@ -200,7 +200,6 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
 
     else:
         raise NotImplementedError(f"Unrecognized primitive {primitive}")
-
     return uc, cell_pin
 
 def generate_Cap(pdkdir, block_name, unit_cap):
@@ -296,7 +295,6 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
         #uc.setBboxFromBoundary()
     else:
         raise NotImplementedError(f"Unrecognized primitive {primitive}")
-
     uc.computeBbox()
     if False:
         with open(outputdir / (block_name + '.debug.json'), "wt") as fp:

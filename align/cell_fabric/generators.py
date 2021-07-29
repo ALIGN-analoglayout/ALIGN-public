@@ -8,7 +8,7 @@ class Wire:
         self.clg = clg
         self.spg = spg
 
-    def segment( self, netName, pinName, center, bIdx, eIdx, *, bS=None, eS=None):
+    def segment( self, netName, pinName, center, bIdx, eIdx, *, bS=None, eS=None, netType="drawing"):
         if bS is None: bS=self.spg
         if eS is None: eS=self.spg
 
@@ -28,7 +28,11 @@ class Wire:
 
         if clr is not None:
             data['color'] = clr
-
+        
+        if netType in ['drawing', 'pin', 'blockage']:
+            data['netType'] = netType
+        else:
+            assert "Invalid net type, valid net types include drawing, pin, and blockage"
         return data
 
 class Region:
@@ -44,7 +48,7 @@ class Region:
     def physical_y( self, grid_y):
         return self.h_grid.value( grid_y)[0]
 
-    def segment( self, netName, pinName, grid_x0, grid_y0, grid_x1, grid_y1):
+    def segment( self, netName, pinName, grid_x0, grid_y0, grid_x1, grid_y1, netType="drawing"):
 
         rect = [self.physical_x(grid_x0), self.physical_y(grid_y0),
                 self.physical_x(grid_x1), self.physical_y(grid_y1)]
@@ -53,6 +57,7 @@ class Region:
 
         if pinName is not None:
             data['pin'] = pinName
+        data['netType'] = netType
 
         return data
 
@@ -89,7 +94,7 @@ class Via:
         c = self.h_clg.value( p)[0]
         return (c-self.WidthY//2,c+self.WidthY//2)
 
-    def segment( self, netName, pinName, grid_cx, grid_cy):
+    def segment( self, netName, pinName, grid_cx, grid_cy, netType="drawing"):
         (x0,x1) = self.physical_xs( grid_cx)
         (y0,y1) = self.physical_ys( grid_cy)
         rect = [ x0, y0, x1, y1]
@@ -98,6 +103,7 @@ class Via:
 
         if pinName is not None:
             data['pin'] = pinName
+        data['netType'] = netType
 
         return data
 

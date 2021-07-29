@@ -46,14 +46,14 @@ class Canvas:
         s['rect'] = self.trStack[-1].hitRect(r).canonical().toList()
         self.terminals.append( s)
 
-    def addWire( self, wire, netName, pinName, c, bIdx, eIdx, *, bS=None, eS=None):
-        self.transform_and_add( wire.segment( netName, pinName, c, bIdx, eIdx, bS=bS, eS=eS))
+    def addWire( self, wire, netName, pinName, c, bIdx, eIdx, *, bS=None, eS=None, netType="drawing"):
+        self.transform_and_add( wire.segment( netName, pinName, c, bIdx, eIdx, bS=bS, eS=eS, netType=netType))
 
     def addRegion( self, region, netName, pinName, grid_x0, grid_y0, grid_x1, grid_y1):
-        self.transform_and_add( region.segment( netName, pinName, grid_x0, grid_y0, grid_x1, grid_y1))
+        self.transform_and_add( region.segment( netName, pinName, grid_x0, grid_y0, grid_x1, grid_y1, netType="drawing"))
 
     def addVia( self, via, netName, pinName, cx, cy):
-        self.transform_and_add( via.segment( netName, pinName, cx, cy))
+        self.transform_and_add( via.segment( netName, pinName, cx, cy, netType="drawing"))
 
     def addWireAndViaSet( self, netName, pinName, wire, via, c, listOfIndices, *, bIdx=None, eIdx=None):
         """March through listOfIdx, compute physical coords (including via extensions), keep bounding box, draw wire."""

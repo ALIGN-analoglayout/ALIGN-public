@@ -16,7 +16,8 @@
         720,
         2160,
         2160
-      ]
+      ],
+      "netType": "drawing"
     },
     {
       "netName": null,
@@ -26,7 +27,8 @@
         2880,
         2160,
         4320
-      ]
+      ],
+      "netType": "drawing"
     },
     {
       "layer": "poly",
@@ -36,7 +38,8 @@
         704,
         -332,
         2176
-      ]
+      ],
+      "netType": "drawing"
     },
     {
       "layer": "poly",
@@ -46,7 +49,8 @@
         2864,
         -332,
         4336
-      ]
+      ],
+      "netType": "drawing"
     },
     {
       "layer": "poly",
@@ -56,7 +60,8 @@
         704,
         532,
         2176
-      ]
+      ],
+      "netType": "drawing"
     },
     {
       "layer": "poly",
@@ -66,7 +71,8 @@
         2864,
         532,
         4336
-      ]
+      ],
+      "netType": "drawing"
     },
     {
       "layer": "poly",
@@ -76,7 +82,8 @@
         704,
         1396,
         2176
-      ]
+      ],
+      "netType": "drawing"
     },
     {
       "layer": "poly",
@@ -86,7 +93,8 @@
         2864,
         1396,
         4336
-      ]
+      ],
+      "netType": "drawing"
     },
     {
       "layer": "poly",
@@ -96,7 +104,8 @@
         704,
         2260,
         2176
-      ]
+      ],
+      "netType": "drawing"
     },
     {
       "layer": "poly",
@@ -106,7 +115,8 @@
         2864,
         2260,
         4336
-      ]
+      ],
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -116,7 +126,8 @@
         520,
         200,
         4520
-      ]
+      ],
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -126,7 +137,8 @@
         520,
         1064,
         4520
-      ]
+      ],
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -136,7 +148,8 @@
         520,
         1928,
         4520
-      ]
+      ],
+      "netType": "drawing"
     },
     {
       "layer": "M2",
@@ -146,7 +159,8 @@
         -200,
         2160,
         200
-      ]
+      ],
+      "netType": "drawing"
     },
     {
       "layer": "M2",
@@ -156,7 +170,8 @@
         520,
         2160,
         920
-      ]
+      ],
+      "netType": "drawing"
     },
     {
       "layer": "M2",
@@ -166,7 +181,8 @@
         1240,
         2160,
         1640
-      ]
+      ],
+      "netType": "drawing"
     },
     {
       "layer": "M2",
@@ -176,7 +192,8 @@
         1960,
         2160,
         2360
-      ]
+      ],
+      "netType": "drawing"
     },
     {
       "layer": "M2",
@@ -186,7 +203,8 @@
         2680,
         2160,
         3080
-      ]
+      ],
+      "netType": "drawing"
     },
     {
       "layer": "M2",
@@ -196,7 +214,8 @@
         3400,
         2160,
         3800
-      ]
+      ],
+      "netType": "drawing"
     },
     {
       "layer": "M2",
@@ -206,7 +225,8 @@
         4120,
         2160,
         4520
-      ]
+      ],
+      "netType": "drawing"
     },
     {
       "layer": "M2",
@@ -216,7 +236,8 @@
         4840,
         2160,
         5240
-      ]
+      ],
+      "netType": "drawing"
     },
     {
       "layer": "diffcon",
@@ -226,7 +247,8 @@
         720,
         100,
         2160
-      ]
+      ],
+      "netType": "drawing"
     },
     {
       "layer": "diffcon",
@@ -236,7 +258,8 @@
         2880,
         100,
         4320
-      ]
+      ],
+      "netType": "drawing"
     },
     {
       "layer": "diffcon",
@@ -246,7 +269,8 @@
         720,
         1828,
         2160
-      ]
+      ],
+      "netType": "drawing"
     },
     {
       "layer": "diffcon",
@@ -256,7 +280,8 @@
         2880,
         1828,
         4320
-      ]
+      ],
+      "netType": "drawing"
     }
   ]
 }
