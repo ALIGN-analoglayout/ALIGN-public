@@ -67,6 +67,9 @@ OrderedEnumerator::OrderedEnumerator(const vector<int>& seq, const vector<pair<p
   vector<int> res;
   TopoSortUtil(res, visited);
   _valid = (_sequences.size() <= _maxSeq);
+  if (!_valid) {
+    _sequences.clear();
+  }
   _seq.clear();
   _indegree.clear();
   _adj.clear();
