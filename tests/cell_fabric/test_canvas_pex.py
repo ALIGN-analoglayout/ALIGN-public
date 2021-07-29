@@ -18,13 +18,13 @@ def setup():
 
 def test_m1_pex(setup):
     c = setup
-    c.terminals = [{'layer': 'M1', 'netName': 'x', 'rect': [0, 0, 100, 300]}]
+    c.terminals = [{'layer': 'M1', 'netName': 'x', 'rect': [0, 0, 100, 300], 'netType': 'drawing'}]
     c.gen_data()
     assert len(c.pex.netCells) == math.ceil(300 / c.pdk['Poly']['Pitch'])
 
 def test_m2_pex(setup):
     c = setup
-    c.terminals = [{'layer': 'M2', 'netName': 'x', 'rect': [0, 0, 300, 100]}]
+    c.terminals = [{'layer': 'M2', 'netName': 'x', 'rect': [0, 0, 300, 100], 'netType': 'drawing'}]
     c.gen_data()
     assert len(c.pex.netCells) == math.ceil(300 / c.pdk['Poly']['Pitch'])
 

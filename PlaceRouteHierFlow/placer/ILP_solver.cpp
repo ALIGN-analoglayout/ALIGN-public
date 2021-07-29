@@ -121,24 +121,32 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
           // i is left of j
           double sparserow[2] = {1, -1};
           int colno[2] = {int(i) * 4 + 1, int(j) * 4 + 1};
-          if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[i][curr_sp.selected[i]].width - bias_Hgraph)) logger->error("error");
+          if(find(mydesign.Abut_Constraints.begin(),mydesign.Abut_Constraints.end(), make_pair(make_pair(int(i), int(j)), placerDB::H))!=mydesign.Abut_Constraints.end()){
+            if (!add_constraintex(lp, 2, sparserow, colno, EQ, -mydesign.Blocks[i][curr_sp.selected[i]].width - 0)) logger->error("error");
+          } else if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[i][curr_sp.selected[i]].width - bias_Hgraph)) logger->error("error");
         } else {
           // i is above j
           double sparserow[2] = {1, -1};
           int colno[2] = {int(i) * 4 + 2, int(j) * 4 + 2};
-          if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].height + bias_Vgraph)) logger->error("error");
+          if(find(mydesign.Abut_Constraints.begin(),mydesign.Abut_Constraints.end(), make_pair(make_pair(int(i), int(j)), placerDB::V))!=mydesign.Abut_Constraints.end()){
+             if (!add_constraintex(lp, 2, sparserow, colno, EQ, mydesign.Blocks[j][curr_sp.selected[j]].height + 0)) logger->error("error");
+          } else if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].height + bias_Vgraph)) logger->error("error");
         }
       } else {
         if (i_neg_index < j_neg_index) {
           // i is be low j
           double sparserow[2] = {1, -1};
           int colno[2] = {int(i) * 4 + 2, int(j) * 4 + 2};
-          if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[i][curr_sp.selected[i]].height - bias_Vgraph)) logger->error("error");
+          if(find(mydesign.Abut_Constraints.begin(),mydesign.Abut_Constraints.end(), make_pair(make_pair(int(j), int(i)), placerDB::V))!=mydesign.Abut_Constraints.end()){
+            if (!add_constraintex(lp, 2, sparserow, colno, EQ, -mydesign.Blocks[i][curr_sp.selected[i]].height - 0)) logger->error("error");
+          } else if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[i][curr_sp.selected[i]].height - bias_Vgraph)) logger->error("error");
         } else {
           // i is right of j
           double sparserow[2] = {1, -1};
           int colno[2] = {int(i) * 4 + 1, int(j) * 4 + 1};
-          if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].width + bias_Hgraph)) logger->error("error");
+          if(find(mydesign.Abut_Constraints.begin(),mydesign.Abut_Constraints.end(), make_pair(make_pair(int(j), int(i)), placerDB::H))!=mydesign.Abut_Constraints.end()){
+            if (!add_constraintex(lp, 2, sparserow, colno, EQ, mydesign.Blocks[j][curr_sp.selected[j]].width + 0)) logger->error("error");
+          } else if(!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].width + bias_Hgraph)) logger->error("error");
         }
       }
     }
@@ -462,9 +470,9 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     HPWL_extend += (HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x);
     bool is_terminal_net = false;
     for(auto c:neti.connected){
-      if(c.type==PnRDB::Terminal){
-      is_terminal_net = true;
-      break;
+      if(c.type==placerDB::Terminal){
+        is_terminal_net = true;
+        break;
       }
     }
     if (is_terminal_net) HPWL_extend_terminal += (HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x);

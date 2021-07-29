@@ -8,7 +8,7 @@ class tfr_prim(CanvasPDK):
         self.metadata = {'instances': []}
 
 
-    def generate(self, ports, netlist_parameters=None, layout_parameters=None):
+    def generate(self, ports, netlist_parameters=None, layout_parameters=None, *args, **kwargs):
 
         assert len(ports) == 2
 
@@ -22,7 +22,7 @@ class tfr_prim(CanvasPDK):
         y1 = self.pdk['M2']['Pitch']*(14)
         bbox = [0, 0, x1, y1]
 
-        t = {'layer': 'Boundary', 'netName': None, 'rect': bbox}
+        t = {'layer': 'Boundary', 'netName': None, 'rect': bbox, 'netType': 'drawing'}
         self.terminals.append(t)
 
         # Additional metadata for layout post-processing
