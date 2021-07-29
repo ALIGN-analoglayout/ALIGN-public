@@ -136,7 +136,26 @@ def test_tia():
     run_example(example)
 
 
-def test_ldo_opamp():
+def test_ldo_opamp_1():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.ldo_opamp(name)
+    setup = textwrap.dedent("""\
+        POWER = vccx
+        GND = vssx
+        """)
+    constraints = [{"constraint": "AspectRatio", "subcircuit": "ldo_opamp", "ratio_low": 0.5, "ratio_high": 2.0}]
+    example = build_example(name, netlist, setup, constraints)
+    ckt_dir, run_dir = run_example(example, cleanup=False)
+    with (run_dir / '3_pnr' / f'{name}_0.json').open('rt') as fp:
+        data = json.load(fp)
+        for term in data['terminals']:
+            if term['layer'].startswith('M') and term['netName'] is not None:
+                assert '/' not in term['netName'], f'Broken connectivity: {term}'
+    shutil.rmtree(run_dir)
+    shutil.rmtree(ckt_dir)
+
+
+def test_ldo_opamp_2():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ldo_opamp(name)
     setup = textwrap.dedent("""\
@@ -146,16 +165,24 @@ def test_ldo_opamp():
         """)
     constraints = [{"constraint": "AspectRatio", "subcircuit": "ldo_opamp", "ratio_low": 0.5, "ratio_high": 2.0}]
     example = build_example(name, netlist, setup, constraints)
-    run_example(example)
+    ckt_dir, run_dir = run_example(example, cleanup=False)
+    with (run_dir / '3_pnr' / f'{name}_0.json').open('rt') as fp:
+        data = json.load(fp)
+        for term in data['terminals']:
+            if term['layer'].startswith('M') and term['netName'] is not None:
+                assert '/' not in term['netName'], f'Broken connectivity: {term}'
+    shutil.rmtree(run_dir)
+    shutil.rmtree(ckt_dir)
 
 
-def test_ldo_opamp_annotation_pass():
+def test_ldo_opamp_3():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ldo_opamp(name)
-    setup = textwrap.dedent("""\
+    setup = textwrap.dedent(f"""\
         POWER = vccx
         GND = vssx
         DONT_USE_CELLS = CASCODED_CMC_NMOS CMB_PMOS_2 LSB_PMOS_2 LSB_NMOS_2
+        NO_CONST = {name}
         """)
     constraints = [
         {"constraint": "AspectRatio", "subcircuit": "ldo_opamp", "ratio_low": 0.5, "ratio_high": 2.0}
@@ -168,6 +195,38 @@ def test_ldo_opamp_annotation_pass():
         abstract_names = set([instance['abstract_name'] for instance in placement['leaves']])
         prim = 'CMC_S_PMOS_B_plplvt_w2160_m1_nf12'
         assert prim in abstract_names, f'{prim} not found in placement'
+    shutil.rmtree(run_dir)
+    shutil.rmtree(ckt_dir)
 
+
+def test_ldo_opamp_4():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.ldo_opamp(name)
+    setup = textwrap.dedent("""\
+        POWER = vccx
+        GND = vssx
+        DONT_USE_CELLS = CASCODED_CMC_NMOS CMB_PMOS_2 LSB_PMOS_2 LSB_NMOS_2
+        """)
+    constraints = [
+        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2.0},
+        {"constraint": "GroupBlocks", "instances": ["xmn1", "xmn2"], "name": "dp"},
+        {"constraint": "GroupBlocks", "instances": ["xmp3", "xmp4"], "name": "cm1"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "cm2"},
+        {"constraint": "GroupBlocks", "instances": ["xmn7", "xmn8"], "name": "cm3"},
+        {"constraint": "GroupBlocks", "instances": ["xmn9", "xmn10"], "name": "cm4"},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["cm1"], ["cm2"], ["cm3"], ["cm4"]]},
+        {"constraint": "Order", "direction": "top_to_bottom", "abut": True, "instances": ["cm1", "cm2", "cm3", "cm4"]},
+        {"constraint": "GroupBlocks", "instances": ["mp11", "xmp12", "xmp13", "xmn14", "xmn15","mn16", "mp17", "mn18", "mp19", "mp20", "xmn40"], "name": "buf"},
+        {"constraint": "GroupBlocks", "instances": ["xmn105", "xmn101", "mn102", "xmn103", "mp103", "xmp104"], "name": "bias"},
+        {"constraint": "Order", "direction": "left_to_right", "instances": ["dp", "cm1", "buf"]},
+        {"constraint": "Order", "direction": "top_to_bottom", "abut": True, "instances": ["dp", "bias"]}
+    ]
+    example = build_example(name, netlist, setup, constraints)
+    ckt_dir, run_dir = run_example(example, cleanup=False)
+    with (run_dir / '3_pnr' / f'{name}_0.json').open('rt') as fp:
+        data = json.load(fp)
+        for term in data['terminals']:
+            if term['layer'].startswith('M') and term['netName'] is not None:
+                assert '/' not in term['netName'], f'Broken connectivity: {term}'
     shutil.rmtree(run_dir)
     shutil.rmtree(ckt_dir)

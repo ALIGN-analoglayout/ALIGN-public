@@ -110,36 +110,37 @@ def ldo_opamp(name):
         .ends plplvt_s_pcell_7
 
         .subckt {name} vbias_an vccx vfb vg v1 vref vssx vbias_bf en
-        xmn56 vbias6 vbias_bf vssx vssx nlplvt_s_pcell_0 m=4
-        xmn20 v5 v4 vssx vssx nlplvt_s_pcell_1 m=8
+        xmn14 vbias6 vbias_bf vssx vssx nlplvt_s_pcell_0 m=4
+        xmn10 v5 v4 vssx vssx nlplvt_s_pcell_1 m=8
         xmn40 vssx vbias_bf vssx vssx nlplvt_s_pcell_0 m=4
-        xmn41 vbias4 vbias_an vssx vssx nlplvt_s_pcell_0 m=4
-        xmn21 vbias2 vbias1 vbias3 vssx nlplvt_s_pcell_2 m=4
-        xmn37 v6 v4 vssx vssx nlplvt_s_pcell_1 m=8
-        xmn22 v1 vref vcom1 vssx nlplvt_s_pcell_3 m=20
-        xmn23 v2 vfb vcom1 vssx nlplvt_s_pcell_3 m=20
-        xmn38 v4 vbias3 v6 vssx nlplvt_s_pcell_1 m=8
-        xmn39 v3 vbias3 v5 vssx nlplvt_s_pcell_1 m=8
-        xmn55 v3_d vbias_bf vssx vssx nlplvt_s_pcell_4 m=8
-        xmn3 vssx vbias_an vssx vssx nlplvt_s_pcell_0 m=4
-        xmn2 vcom1 vbias_an vssx vssx nlplvt_s_pcell_4 m=8
-        mp23 vg en vccx vccx plplvt w=360e-9 m=1 nf=2
-        mp221 v3 en vccx vccx plplvt w=360e-9 m=1 nf=2
-        mp24 enb en vccx vccx plplvt w=360e-9 m=1 nf=2
-        mp5 vg vg vccx vccx plplvt w=720e-9 m=1 nf=4
-        mp29 v4 vbias2 v2 vccx plplvt w=2.16e-6 m=1 nf=12
-        mp30 v3 vbias2 v1 vccx plplvt w=2.16e-6 m=1 nf=12
-        mp33 vbias2 vbias2 vbias1 vccx plplvt w=1.44e-6 m=1 nf=8
-        mp1 v3_d v3 vg vccx plplvt w=1.44e-6 m=1 nf=8
-        xmp41 vbias6 vbias6 vccx vccx plplvt_s_pcell_5 m=4
-        xmp4 vg vbias6 vccx vccx plplvt_s_pcell_6 m=8
-        xmp22 v1 vbias1 vccx vccx plplvt_s_pcell_7 m=12
-        xmp34 vbias1 vbias1 vccx vccx plplvt_s_pcell_5 m=4
-        xmp28 v2 vbias1 vccx vccx plplvt_s_pcell_7 m=12
-        mn11 v3_d enb vssx vssx nlplvt w=360e-9 m=1 nf=2
-        mn12 enb en vssx vssx nlplvt w=360e-9 m=1 nf=2
-        mn322 vg v3_d vssx vssx nlplvt w=720e-9 m=1 nf=4
-        mn42 vbias3 vbias3 vbias4 vssx nlplvt w=1.44e-6 m=2 nf=8
+        xmn101 vbias4 vbias_an vssx vssx nlplvt_s_pcell_0 m=4
+        xmn103 vbias2 vbias1 vbias3 vssx nlplvt_s_pcell_2 m=4
+        xmn9 v6 v4 vssx vssx nlplvt_s_pcell_1 m=8
+        xmn1 v1 vref vcom1 vssx nlplvt_s_pcell_3 m=20
+        xmn2 v2 vfb vcom1 vssx nlplvt_s_pcell_3 m=20
+        xmn7 v4 vbias3 v6 vssx nlplvt_s_pcell_1 m=8
+        xmn8 v3 vbias3 v5 vssx nlplvt_s_pcell_1 m=8
+        xmn15 v3_d vbias_bf vssx vssx nlplvt_s_pcell_4 m=8
+        xmn105 vssx vbias_an vssx vssx nlplvt_s_pcell_0 m=4
+        xmn0 vcom1 vbias_an vssx vssx nlplvt_s_pcell_4 m=8
+        mp19 vg en vccx vccx plplvt w=360e-9 m=1 nf=2
+        mp20 v3 en vccx vccx plplvt w=360e-9 m=1 nf=2
+        mp22 enb en vccx vccx plplvt w=360e-9 m=1 nf=2
+        mp17 vg vg vccx vccx plplvt w=720e-9 m=1 nf=4
+        mp5 v4 vbias2 v2 vccx plplvt w=2.16e-6 m=1 nf=12
+        mp6 v3 vbias2 v1 vccx plplvt w=2.16e-6 m=1 nf=12
+        mp103 vbias2 vbias2 vbias1 vccx plplvt w=1.44e-6 m=1 nf=8
+        mp11 v3_d v3 vg vccx plplvt w=1.44e-6 m=1 nf=8
+        xmp13 vbias6 vbias6 vccx vccx plplvt_s_pcell_5 m=4
+        xmp12 vg vbias6 vccx vccx plplvt_s_pcell_6 m=8
+        xmp4 v1 vbias1 vccx vccx plplvt_s_pcell_7 m=12
+        xmp104 vbias1 vbias1 vccx vccx plplvt_s_pcell_5 m=4
+        xmp3 v2 vbias1 vccx vccx plplvt_s_pcell_7 m=12
+        mn18 v3_d enb vssx vssx nlplvt w=360e-9 m=1 nf=2
+        mn21 enb en vssx vssx nlplvt w=360e-9 m=1 nf=2
+        mn16 vg v3_d vssx vssx nlplvt w=720e-9 m=1 nf=4
+        mn102 vbias3 vbias3 vbias4 vssx nlplvt w=1.44e-6 m=2 nf=8
         .ends {name}
+        .END
     """)
     return netlist
