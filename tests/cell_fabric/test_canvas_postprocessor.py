@@ -16,9 +16,9 @@ def setup():
 
 def test_multi_via_postprocessor_v12(setup):
     c = setup
-    c.addWire( c.m12, 'a', None, 2, (1,-1), (13,1))
-    c.addWire( c.m13, None, None, 1, (1,-1), (3,1))
-    c.addVia(c.v12, None, None, 1, 2)
+    c.addWire( c.m12, 'a', 2, (1,-1), (13,1))
+    c.addWire( c.m13, None, 1, (1,-1), (3,1))
+    c.addVia(c.v12, None, 1, 2)
 
     fn = '__json_multi_via_postprocessor_v12'
 

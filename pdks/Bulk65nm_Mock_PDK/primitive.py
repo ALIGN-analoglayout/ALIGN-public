@@ -8,25 +8,25 @@ class MOSGenerator(default.MOSGenerator):
         super()._addMOS(x, y, x_cells, vt_type, name, reflect, **parameters) 
         def _addRVT(x, y, x_cells):
             if self.shared_diff == 0:
-                self.addWire( self.RVT,  None, None, y,          (x, 1), (x+1, -1))
+                self.addWire( self.RVT,  None, y,          (x, 1), (x+1, -1))
             elif self.shared_diff == 1 and x == x_cells-1:
-                self.addWire( self.RVT_diff,  None, None, y, 0, self.gate*x_cells+1)
+                self.addWire( self.RVT_diff,  None, y, 0, self.gate*x_cells+1)
             else:
                 pass
     
         def _addLVT(x, y, x_cells):
             if self.shared_diff == 0:
-                self.addWire( self.LVT,  None, None, y,          (x, 1), (x+1, -1))
+                self.addWire( self.LVT,  None, y,          (x, 1), (x+1, -1))
             elif self.shared_diff == 1 and x == x_cells-1:
-                self.addWire( self.LVT_diff,  None, None, y, 0, self.gate*x_cells+1)
+                self.addWire( self.LVT_diff,  None, y, 0, self.gate*x_cells+1)
             else:
                 pass
     
         def _addHVT(x, y, x_cells):
             if self.shared_diff == 0:
-                self.addWire( self.HVT,  None, None, y,          (x, 1), (x+1, -1))
+                self.addWire( self.HVT,  None, y,          (x, 1), (x+1, -1))
             elif self.shared_diff == 1 and x == x_cells-1:
-                self.addWire( self.HVT_diff,  None, None, y, 0, self.gate*x_cells+1)
+                self.addWire( self.HVT_diff,  None, y, 0, self.gate*x_cells+1)
             else:
                 pass
         if vt_type == 'RVT':

@@ -137,7 +137,7 @@ class Canvas:
                     if slr.netName == next_slr.netName and w == next_w and new_length <= max_l:
                         (b_idx, _) = wire.spg.inverseBounds(slr.rect[iy])
                         (_, e_idx) = wire.spg.inverseBounds(next_slr.rect[iy+2])
-                        self.addWire(wire, slr.netName, None, c_idx, b_idx, e_idx)
+                        self.addWire(wire, slr.netName, c_idx, b_idx, e_idx)
                         new_length -= next_slr.rect[iy+2] - next_slr.rect[iy]
                     else:
                         new_length = 0
@@ -269,7 +269,7 @@ class Canvas:
                     if (r[1] > via_rect[3]) and (r[1] < via_rect[3]+via_def["SpaceY"]):
                         return
 
-        self.addVia(via, mh_slr.netName, None,
+        self.addVia(via, mh_slr.netName,
                     mv.clg.inverseBounds(mv_cl // 2)[0],
                     mh.clg.inverseBounds(mh_cl//2)[0])
 
@@ -309,7 +309,7 @@ class Canvas:
                     if started:
                         # close off wire
                         # assert nm is not None
-                        self.addWireAndMultiViaSet( nm, None, m2, y, [ (v1, via1s), (v2, via2s)])
+                        self.addWireAndMultiViaSet( nm, m2, y, [ (v1, via1s), (v2, via2s)])
                         started = False
                         nm = None
                         via1s = []
@@ -345,7 +345,7 @@ class Canvas:
                     if started:
                         # close off wire
                         # assert nm is not None
-                        self.addWireAndMultiViaSet( nm, None, m3, x, [ (v2, via2s)])
+                        self.addWireAndMultiViaSet( nm, m3, x, [ (v2, via2s)])
                         started = False
                         nm = None
                         via1s = []
