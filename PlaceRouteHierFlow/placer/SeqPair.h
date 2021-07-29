@@ -30,7 +30,7 @@ class OrderedEnumerator {
   private:
     vector<vector<int>> _sequences;
     unsigned _cnt;
-    void TopoSortUtil(vector<int>& res, map<int, bool>& visited);
+    bool TopoSortUtil(vector<int>& res, map<int, bool>& visited);
     vector<int> _seq;
     map<int, vector<int>> _adj;
     map<int, int> _indegree;

@@ -8,11 +8,19 @@
     {"constraint": "GroupBlocks", "instances": ["mp12", "mn14"], "name": "inv_p"},
     {"constraint": "SymmetricBlocks",
         "direction" : "V",
-        "pairs": [["mn0"], ["dp"], ["ccn"], ["ccp"], ["mp7", "mp8"]]
+        "pairs": [["mn0"], ["dp"], ["ccn"], ["ccp"], ["mp7", "mp8"], ["mp9", "mp10"], ["inv_n", "inv_p"]]
     },
     {"constraint": "Order",
         "direction" : "top_to_bottom",
-        "instances": ["mn0", "dp", "ccn", "ccp", "inv_n", "inv_p", "mp9", "mp10"]
+        "instances": ["mn0", "dp", "ccn", "ccp"]
+    },
+    {"constraint": "align",
+        "line" : "h_bottom",
+        "instances": ["mp9", "mp7", "dp", "mp8", "mp10"]
+    },
+    {"constraint": "align",
+        "line" : "h_bottom",
+        "instances": ["inv_n", "ccp", "inv_p"]
     },
     {
         "constraint": "SymmetricNets",

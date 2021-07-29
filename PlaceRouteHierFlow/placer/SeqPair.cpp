@@ -2,10 +2,10 @@
 #include "spdlog/spdlog.h"
 #include <exception>
 
-void OrderedEnumerator::TopoSortUtil(vector<int>& res, map<int, bool>& visited)
+bool OrderedEnumerator::TopoSortUtil(vector<int>& res, map<int, bool>& visited)
 {
   if (_sequences.size() > _maxSeq) {
-    return;
+    return false;
   }
   bool flag = false;
   for (auto& it : _seq) {
@@ -15,7 +15,7 @@ void OrderedEnumerator::TopoSortUtil(vector<int>& res, map<int, bool>& visited)
       }
       res.push_back(it);
       visited[it] = true;
-      TopoSortUtil(res, visited);
+      if (!TopoSortUtil(res, visited)) return false;
 
       visited[it] = false;
       res.erase(res.end() - 1);
@@ -29,6 +29,7 @@ void OrderedEnumerator::TopoSortUtil(vector<int>& res, map<int, bool>& visited)
   if (!flag) {
     _sequences.push_back(res);
   }
+  return (_sequences.size() <= _maxSeq);
 }
 
 OrderedEnumerator::OrderedEnumerator(const vector<int>& seq, const vector<pair<pair<int, int>, placerDB::Smark>>& constraints, const int maxSeq, const bool pos) : _seq(seq), _cnt(0), _maxSeq(maxSeq), _valid(!constraints.empty())
@@ -56,7 +57,6 @@ OrderedEnumerator::OrderedEnumerator(const vector<int>& seq, const vector<pair<p
       first = it.first.first;
       second = it.first.second;
     }
-    //logger->info("ordering {0} {1}", first, second);
     _adj[first].push_back(second);
     ++_indegree[second];
   }
