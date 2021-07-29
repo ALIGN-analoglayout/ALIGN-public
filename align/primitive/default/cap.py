@@ -78,19 +78,19 @@ class CapGenerator(DefaultCanvas):
         for i in range(x_number-1):
             grid_x = i
             net = 'PLUS' if i%2 == 1 else 'MINUS'
-            self.addWire( self.m1n, net, None, grid_x, (grid_y0, -1), (grid_y1, 1))
-            self.addWire( self.m3n, net, None, grid_x, (grid_y0, -1), (grid_y1, 1))
+            self.addWire( self.m1n, net, grid_x, (grid_y0, -1), (grid_y1, 1))
+            self.addWire( self.m3n, net, grid_x, (grid_y0, -1), (grid_y1, 1))
 
             grid_y = ((i+1)%2)*grid_y1
 
-            self.addVia( self.v1_nx, net, None, grid_x, grid_y)
-            self.addVia( self.v2_nx, net, None, grid_x, grid_y)
+            self.addVia( self.v1_nx, net, grid_x, grid_y)
+            self.addVia( self.v2_nx, net, grid_x, grid_y)
 
         pin = 'PLUS'
         # Don't port m1 per Yaguang instructions
-        self.addWire( self.m1, 'PLUS', None, last_x1_track, (grid_y0, -1), (grid_y1, 1))
+        self.addWire( self.m1, 'PLUS', last_x1_track, (grid_y0, -1), (grid_y1, 1))
         # don't port m3 (or port one or the other)
-        self.addWire( self.m3, 'PLUS', None, last_x1_track, (grid_y0, -1), (grid_y1, 1))
+        self.addWire( self.m3, 'PLUS', last_x1_track, (grid_y0, -1), (grid_y1, 1))
 
         grid_x0 = 0
         grid_x1 = grid_x0 + last_x1_track
@@ -98,20 +98,19 @@ class CapGenerator(DefaultCanvas):
         for i in range(y_number-1):
             grid_x = ((i+1)%2)*grid_x1
             net = 'PLUS' if i%2 == 0 else 'MINUS'
-            self.addVia( self.v1_xn, net, None, grid_x, i)
-            self.addVia( self.v2_xn, net, None, grid_x, i)
+            self.addVia( self.v1_xn, net, grid_x, i)
+            self.addVia( self.v2_xn, net, grid_x, i)
             pin = 'PLUS' if i == 0 else None
             if i == 0:
                 netType = 'pin'
             else:
                 netType = 'drawing'
-            self.addWire( self.m2n, net, pin, i, (grid_x0, -1), (grid_x1, 1), netType = netType)
+            self.addWire( self.m2n, net, i, (grid_x0, -1), (grid_x1, 1), netType = netType)
 
         pin = 'MINUS'
-        self.addWire( self.m2, 'MINUS', pin, last_y1_track, (grid_x0, -1), (grid_x1, 1), netType = 'pin')
+        self.addWire( self.m2, 'MINUS', last_y1_track, (grid_x0, -1), (grid_x1, 1), netType = 'pin')
 
-        self.addRegion( self.boundary, 'Boundary', None,
-                        0, 0,
+        self.addRegion( self.boundary, 'Boundary', 0, 0,
                         last_x1_track,
                         last_y1_track)
 

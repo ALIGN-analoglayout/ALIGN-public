@@ -82,10 +82,10 @@ class ResGenerator(DefaultCanvas):
             (k, p) = (2*i, 1) if x_number==2 else (i, 0)
             grid_x = k + x*grid_cell_x_pitch
 
-            self.addWire( self.m1res, None, None, grid_x, (grid_y0, -1), (grid_y1, 1))
+            self.addWire( self.m1res, None, grid_x, (grid_y0, -1), (grid_y1, 1))
             if i < x_number-1:
                 grid_yh = ((i+1)%2)*last_y1_track
-                self.addWire( self.m1res2, None, None, grid_yh, (i, -1), (i+p+1, 1))
+                self.addWire( self.m1res2, None, grid_yh, (i, -1), (i+p+1, 1))
 
 #
 # Build the narrow m2 pitch grid starting at grid_cell_y_pitch*y in standard m2 pitch grids (m2.clg)
@@ -99,19 +99,17 @@ class ResGenerator(DefaultCanvas):
         grid_y = (x_number%2)*last_y1_track
 
         pin = 'PLUS'
-        self.addWire( m2n, 'PLUS', pin, 0, (-4, -1), (0, 1), netType = 'pin')
-        self.addVia( self.v1res, None, None, 0, 0)
+        self.addWire( m2n, 'PLUS', 0, (-4, -1), (0, 1), netType = 'pin')
+        self.addVia( self.v1res, None, 0, 0)
         pin = 'MINUS'
-        self.addWire( self.m2res, 'MINUS', pin, grid_y, (grid_x1+p, -1), (grid_x1+p+4, 1), netType = 'pin')
-        self.addVia( self.v1res, None, None, grid_x1+p, grid_y)
+        self.addWire( self.m2res, 'MINUS', grid_y, (grid_x1+p, -1), (grid_x1+p+4, 1), netType = 'pin')
+        self.addVia( self.v1res, None, grid_x1+p, grid_y)
 
         if draw_boundary:
-            self.addRegion( self.boundary, 'boundary', None,
-                            -4, -1,
+            self.addRegion( self.boundary, 'boundary', -4, -1,
                             last_x_track  + x * grid_cell_x_pitch + 4 + p,
                             last_y1_track + y * grid_cell_y_pitch + 1)
 
-            self.addRegion( self.Rboundary, 'Rboundary', None,
-                            -1, -1,
+            self.addRegion( self.Rboundary, 'Rboundary', -1, -1,
                             last_x_track  + x * grid_cell_x_pitch + 4 + p,
                             last_y1_track + y * grid_cell_y_pitch + 1)

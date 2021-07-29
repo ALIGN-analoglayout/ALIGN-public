@@ -126,7 +126,6 @@ def gen_primitives(run_dir):
             {
                 "layer": "M2",
                 "netName": "inp",
-                "pin": "inp",
                 "rect": [sx*xpitch-xstopdelta, inp_y*ypitch-yhalfwidth,
                          ex*xpitch+xstopdelta, inp_y*ypitch+yhalfwidth],
                 "netType": "pin"
@@ -134,7 +133,6 @@ def gen_primitives(run_dir):
             {
                 "layer": "M2",
                 "netName": "out",
-                "pin": "out",
                 "rect": [sx*xpitch-xstopdelta, out_y*ypitch-yhalfwidth,
                          ex*xpitch+xstopdelta, out_y*ypitch+yhalfwidth],
                 "netType": "pin"
