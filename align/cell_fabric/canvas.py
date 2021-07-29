@@ -55,11 +55,11 @@ class Canvas:
     def addVia( self, via, netName, pinName, cx, cy):
         self.transform_and_add( via.segment( netName, pinName, cx, cy, netType="drawing"))
 
-    def addWireAndViaSet( self, netName, pinName, wire, via, c, listOfIndices, *, bIdx=None, eIdx=None):
+    def addWireAndViaSet( self, netName, pinName, wire, via, c, listOfIndices, *, bIdx=None, eIdx=None, netType="drawing"):
         """March through listOfIdx, compute physical coords (including via extensions), keep bounding box, draw wire."""
-        self.addWireAndMultiViaSet( netName, pinName, wire, c, [ (via, listOfIndices)], bIdx=bIdx, eIdx=eIdx)
+        self.addWireAndMultiViaSet( netName, pinName, wire, c, [ (via, listOfIndices)], bIdx=bIdx, eIdx=eIdx, netType=netType)
 
-    def addWireAndMultiViaSet( self, netName, pinName, wire, c, listOfPairs, *, bIdx=None, eIdx=None):
+    def addWireAndMultiViaSet( self, netName, pinName, wire, c, listOfPairs, *, bIdx=None, eIdx=None, netType="drawing"):
         """March through listOfPairs (via, idx), compute physical coords (including via extensions), keep bounding box, draw wire."""
 
         # Get minimum & maximum via centerpoints (in terms of physical coords)
@@ -87,7 +87,7 @@ class Canvas:
                 else:
                     self.addVia( via, netName, None, q, c)
 
-        self.addWire( wire, netName, pinName, c, mn, mx)
+        self.addWire( wire, netName, pinName, c, mn, mx, netType=netType)
 
     def join_wires(self, wire, exclude_nets=None, include_nets=None, max_length=None):
         """

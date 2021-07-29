@@ -99,10 +99,10 @@ class ResGenerator(DefaultCanvas):
         grid_y = (x_number%2)*last_y1_track
 
         pin = 'PLUS'
-        self.addWire( m2n, 'PLUS', pin, 0, (-4, -1), (0, 1))
+        self.addWire( m2n, 'PLUS', pin, 0, (-4, -1), (0, 1), netType = 'pin')
         self.addVia( self.v1res, None, None, 0, 0)
         pin = 'MINUS'
-        self.addWire( self.m2res, 'MINUS', pin, grid_y, (grid_x1+p, -1), (grid_x1+p+4, 1))
+        self.addWire( self.m2res, 'MINUS', pin, grid_y, (grid_x1+p, -1), (grid_x1+p+4, 1), netType = 'pin')
         self.addVia( self.v1res, None, None, grid_x1+p, grid_y)
 
         if draw_boundary:

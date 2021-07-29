@@ -94,17 +94,21 @@ class CapGenerator(DefaultCanvas):
 
         grid_x0 = 0
         grid_x1 = grid_x0 + last_x1_track
-
+        netType = 'drawing'
         for i in range(y_number-1):
             grid_x = ((i+1)%2)*grid_x1
             net = 'PLUS' if i%2 == 0 else 'MINUS'
             self.addVia( self.v1_xn, net, None, grid_x, i)
             self.addVia( self.v2_xn, net, None, grid_x, i)
             pin = 'PLUS' if i == 0 else None
-            self.addWire( self.m2n, net, pin, i, (grid_x0, -1), (grid_x1, 1))
+            if i == 0:
+                netType = 'pin'
+            else:
+                netType = 'drawing'
+            self.addWire( self.m2n, net, pin, i, (grid_x0, -1), (grid_x1, 1), netType = netType)
 
         pin = 'MINUS'
-        self.addWire( self.m2, 'MINUS', pin, last_y1_track, (grid_x0, -1), (grid_x1, 1))
+        self.addWire( self.m2, 'MINUS', pin, last_y1_track, (grid_x0, -1), (grid_x1, 1), netType = 'pin')
 
         self.addRegion( self.boundary, 'Boundary', None,
                         0, 0,
