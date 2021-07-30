@@ -324,10 +324,9 @@ class MOSGenerator(CanvasPDK):
                 self.drop_via(self.v2)
 
         # Expose pins
-        #for term in self.terminals:
-        #    if term['netName'] is not None and term['layer'] in ['M2', 'M3']:
-        #        term['pin'] = term['netName']
-
+        for term in self.terminals:
+            if term['netName'] is not None and term['layer'] in ['M2', 'M3']:
+                term['netType'] = 'pin'
 
     @staticmethod
     def validate_array(m, n_row, n_col):

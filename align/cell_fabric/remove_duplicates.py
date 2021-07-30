@@ -187,8 +187,8 @@ class RemoveDuplicates():
             netName = d['netName']
             netType = d['netType']
             isPorted = 'pin' in d['netType']
-            #if isPorted:
-            #    assert netName == d['pin'], f"{netName} does not match {d['pin']}"
+            if isPorted:
+                assert netName != None, f'netName for pin rectange {rect} on layer {layer} is None'
             if layer in self.skip_layers: continue
             if layer in self.layers:
                 twice_center = sum(rect[index]
@@ -316,9 +316,7 @@ class RemoveDuplicates():
                     root = slr.root()
                     terminals.append( {'layer': layer, 'netName': root.netName, 'rect': slr.rect, 'netType':slr.netType})
                     if slr.isPorted:
-                        #terminals[-1]['pin'] = root.netName
                         terminals[-1]['netType'] = 'pin'
-                        #assert slr.netType == "pin", f'netType is not pin for a pin {slr}'
                     if slr.terminal is not None:
                         terminals[-1]['terminal'] = slr.terminal
 
