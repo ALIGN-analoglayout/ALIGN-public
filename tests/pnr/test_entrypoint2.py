@@ -49,7 +49,8 @@ def gen_row_module(nm, n=3):
             {
                 'constraint': 'Order',
                 'direction': 'left_to_right',
-                'instances': [ f'u{i}' for i in range(n)]
+                'instances': [ f'u{i}' for i in range(n)],
+                'abut': False
             },
             {
                 'constraint': 'SameTemplate',
@@ -81,7 +82,8 @@ def gen_matrix_module(nm, n=3):
             {
                 'constraint': 'Order',
                 'direction': 'top_to_bottom',
-                'instances': [ f'u{i}' for i in range(n)]
+                'instances': [ f'u{i}' for i in range(n)],
+                'abut': False
             },
             {
                 'constraint': 'SameTemplate',
@@ -103,6 +105,9 @@ def gen_primitives(run_dir):
                               'concrete_template_name': ctn}
 
     with (run_dir / '1_topology' / f'__primitives__.json').open('wt') as fp:
+        json.dump( primitives_d, fp=fp, indent=2)
+
+    with (run_dir / '2_primitives' / f'__primitives__.json').open('wt') as fp:
         json.dump( primitives_d, fp=fp, indent=2)
     
 
@@ -128,14 +133,16 @@ def gen_primitives(run_dir):
                 "netName": "inp",
                 "pin": "inp",
                 "rect": [sx*xpitch-xstopdelta, inp_y*ypitch-yhalfwidth,
-                         ex*xpitch+xstopdelta, inp_y*ypitch+yhalfwidth]
+                         ex*xpitch+xstopdelta, inp_y*ypitch+yhalfwidth],
+                "netType": None
             },
             {
                 "layer": "M2",
                 "netName": "out",
                 "pin": "out",
                 "rect": [sx*xpitch-xstopdelta, out_y*ypitch-yhalfwidth,
-                         ex*xpitch+xstopdelta, out_y*ypitch+yhalfwidth]
+                         ex*xpitch+xstopdelta, out_y*ypitch+yhalfwidth],
+                "netType": None
             }
         ]
 
@@ -188,6 +195,8 @@ def test_row():
     args = [ 'dummy_input_directory_can_be_anything', '-s', nm, '--flow_start', '3_pnr', '--skipGDS']
     results = align.CmdlineParser().parse_args(args)
 
+    assert results is not None
+
 
 def test_matrix():
     nm = 'matrix'
@@ -219,3 +228,5 @@ def test_matrix():
 
     args = [ 'dummy_input_directory_can_be_anything', '-s', nm, '--flow_start', '3_pnr', '--skipGDS']
     results = align.CmdlineParser().parse_args(args)
+
+    assert results is not None
