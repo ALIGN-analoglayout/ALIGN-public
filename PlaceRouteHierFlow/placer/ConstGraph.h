@@ -20,6 +20,7 @@
 #include "ILP_solver.h"
 #include "../PnRDB/datatype.h"
 #include <nlohmann/json.hpp>
+#include <Python.h>
 
 using std::vector;
 using std::string;
@@ -167,6 +168,7 @@ class ConstGraph
     bool ConstraintGraph(design& caseNL, SeqPair& caseSP);
     bool ConstraintGraphAP(design& caseNL, Aplace& caseAP);
     double CalculateCost(design& caseNL, SeqPair& caseSP);
+    double performance_fom(double curr_cost, design& caseNL, SeqPair& caseSP, PyObject *pFun_cal_fom, PyObject *sess, PyObject *X, PyObject *pred_op);
     double CalculateMatchCost(design& caseNL, SeqPair& caseSP);
     void updateTerminalCenterRetire(design& caseNL, SeqPair& caseSP);
     void updateTerminalCenter(design& caseNL, SeqPair& caseSP);

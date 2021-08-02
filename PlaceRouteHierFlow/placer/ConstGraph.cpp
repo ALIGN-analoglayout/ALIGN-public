@@ -2748,6 +2748,31 @@ double ConstGraph::CalculateCost(design& caseNL, SeqPair& caseSP) {
   return cost;
 }
 
+double ConstGraph::performance_fom(double curr_cost, design& caseNL, SeqPair& caseSP, PyObject *pFun_cal_fom, PyObject *sess, PyObject *X, PyObject *pred_op) {
+  vector<float> uc_x_ori(caseNL.Blocks.size(),0), uc_y_ori(caseNL.Blocks.size(),0);
+  float width = 0, height = 0;
+  for(int i = 0; i< caseNL.Blocks.size(); ++i){
+    if(this->HGraph.at(i).position > width) width = this->HGraph.at(i).position;
+    if(this->VGraph.at(i).position > height) height = this->VGraph.at(i).position;
+  }
+  PyObject *pArgs_cal_fom = PyTuple_New(6);
+  PyObject *pyParams_x = PyList_New(0), *pyParams_y = PyList_New(0);
+  for(int i = 0; i< caseNL.Blocks.size(); ++i){
+    PyList_Append(pyParams_x, Py_BuildValue("f", this->HGraph.at(i).position / width));
+    PyList_Append(pyParams_y, Py_BuildValue("f", this->VGraph.at(i).position / height));
+  }             
+  PyTuple_SetItem(pArgs_cal_fom, 0, sess);
+  PyTuple_SetItem(pArgs_cal_fom, 1, PyUnicode_FromString(caseNL.name.c_str()));
+  PyTuple_SetItem(pArgs_cal_fom, 2, X);
+  PyTuple_SetItem(pArgs_cal_fom, 3, pred_op);
+  PyTuple_SetItem(pArgs_cal_fom, 4, pyParams_x);
+  PyTuple_SetItem(pArgs_cal_fom, 5, pyParams_y);
+  PyObject *pyValue_cal_fom=PyEval_CallObject(pFun_cal_fom, pArgs_cal_fom);
+  double performance_cost = 0;
+  PyArg_Parse(PyList_GetItem(pyValue_cal_fom, 0), "f", performance_cost);
+  return curr_cost + performance_cost;
+}
+
 void ConstGraph::Update_parameters(design& caseNL, SeqPair& caseSP) {
   //cout<<"Placer-Info: Update parameters"<<endl;
   //cout<<"OLD GAMAR:"<<GAMAR<<" BETA:"<<BETA<<" LAMBDA:"<<LAMBDA<<" SIGMA:"<<SIGMA<<endl;

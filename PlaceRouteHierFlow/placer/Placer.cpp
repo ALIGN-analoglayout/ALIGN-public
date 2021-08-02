@@ -14,7 +14,7 @@ Placer::Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info&
 }
 
 Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
-#define analytical_placer
+//#define analytical_placer
 #ifdef analytical_placer
   PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo);
 #else
@@ -380,7 +380,21 @@ void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& cur
 std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, SeqPair& curr_sp, ConstGraph& curr_sol, int mode, int nodeSize, int effort) {
 
   auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementCoreAspectRatio");
-
+  Py_Initialize();
+  if (!Py_IsInitialized()) std::cout << "Py_Initialize fails" << std::endl;
+  PyRun_SimpleString("import sys");
+  PyRun_SimpleString("sys.path.append('./')");
+  PyObject *pModule = PyImport_ImportModule("calfom");
+  PyObject *pFun_initialization = PyObject_GetAttrString(pModule, "initialization");
+  PyObject *pFun_cal_fom = PyObject_GetAttrString(pModule, "cal_fom");
+  PyObject *pArgs_initialization = PyTuple_New(1);                 
+  PyTuple_SetItem(pArgs_initialization, 0, PyUnicode_FromString(designData.name.c_str()));
+  PyObject *pyValue_initialization=PyEval_CallObject(pFun_initialization, pArgs_initialization);
+  PyObject *sess = NULL, *X = NULL, *pred_op = NULL;
+  PyArg_ParseTuple(pyValue_initialization, "O|O|O", &sess, &X, &pred_op);
+  if(!sess)std::cout<<"empty sess"<<std::endl;
+  if(!X)std::cout<<"empty X"<<std::endl;
+  if(!pred_op)std::cout<<"empty pred_op"<<std::endl;
 // Mode 0: graph bias; Mode 1: graph bias + net margin; Others: no bias/margin
   //cout<<"PlacementCore\n";
   std::map<double, SeqPair> oData;
@@ -388,6 +402,7 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
   GenerateValidSolution(designData, curr_sp, curr_sol, mode);
   //curr_sol.PrintConstGraph();
   double curr_cost=curr_sol.CalculateCost(designData, curr_sp);
+  curr_cost=curr_sol.performance_fom(curr_cost, designData, curr_sp, pFun_cal_fom, sess, X, pred_op);
   logger->debug("Placer-Info: initial cost = ",curr_cost);
   logger->debug("Placer-Info: status ");
   // Aimulate annealing
@@ -514,6 +529,7 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
   //cout<<endl<<"Placer-Info: optimal cost = "<<curr_cost<<endl;
   //curr_sol.PrintConstGraph();
   curr_sp.PrintSeqPair();
+  Py_Finalize();
   //curr_sol.updateTerminalCenter(designData, curr_sp);
   return oData;
 }

@@ -11,6 +11,7 @@
 #include "ConstGraph.h"
 #include "ILP_solver.h"
 #include "../PnRDB/datatype.h"
+#include <Python.h>
 using std::cout;
 using std::endl;
 
