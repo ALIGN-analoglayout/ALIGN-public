@@ -317,10 +317,27 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
       node.CC_Caps.push_back(temp_cccap);
     } else if (constraint["const_name"] == "AlignBlock") {
       PnRDB::AlignBlock alignment_unit;
-      if (constraint["direction"] == "H") {
+      size_t found;
+      if(constraint["line"] == "h_bottom") {
         alignment_unit.horizon = 1;
-      } else {
+        alignment_unit.line = 0;
+      } else if (constraint["line"] == "h_center") {
+        alignment_unit.horizon = 1;
+        alignment_unit.line = 1;
+      } else if (constraint["line"] == "h_top") {
+        alignment_unit.horizon = 1;
+        alignment_unit.line = 2;
+      } else if (constraint["line"] == "v_left") {
         alignment_unit.horizon = 0;
+        alignment_unit.line = 0;
+      } else if (constraint["line"] == "v_center") {
+        alignment_unit.horizon = 0;
+        alignment_unit.line = 1;
+      } else if (constraint["line"] == "v_right") {
+        alignment_unit.horizon = 0;
+        alignment_unit.line = 2;
+      } else {
+        logger->error("PnRDB-Error: wrong AlignBlock constraint: line {0}", constraint["line"]);
       }
       for (auto block : constraint["blocks"]) {
         for (int i = 0; i < (int)node.Blocks.size(); i++) {

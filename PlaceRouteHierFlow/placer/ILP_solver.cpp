@@ -315,15 +315,43 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     for (unsigned int j = 0; j < alignment_unit.blocks.size() - 1; j++) {
       int first_id = alignment_unit.blocks[j], second_id = alignment_unit.blocks[j + 1];
       if (alignment_unit.horizon == 1) {
-        // same y
-        double sparserow[2] = {1, -1};
-        int colno[2] = {first_id * 4 + 2, second_id * 4 + 2};
-        add_constraintex(lp, 2, sparserow, colno, EQ, 0);
+        if(alignment_unit.line == 0){
+          // align to bottom
+          double sparserow[2] = {1, -1};
+          int colno[2] = {first_id * 4 + 2, second_id * 4 + 2};
+          add_constraintex(lp, 2, sparserow, colno, EQ, 0);
+        } else if (alignment_unit.line == 1){
+          // align center y
+          double sparserow[2] = {1, -1};
+          int colno[2] = {first_id * 4 + 2, second_id * 4 + 2};
+          int bias = - mydesign.Blocks[first_id][curr_sp.selected[first_id]].height / 2 + mydesign.Blocks[second_id][curr_sp.selected[second_id]].height / 2;
+          add_constraintex(lp, 2, sparserow, colno, EQ, bias);
+        } else {
+          // align to top
+          double sparserow[2] = {1, -1};
+          int colno[2] = {first_id * 4 + 2, second_id * 4 + 2};
+          int bias = - mydesign.Blocks[first_id][curr_sp.selected[first_id]].height + mydesign.Blocks[second_id][curr_sp.selected[second_id]].height;
+          add_constraintex(lp, 2, sparserow, colno, EQ, bias);
+        }
       } else {
-        // same x
-        double sparserow[2] = {1, -1};
-        int colno[2] = {first_id * 4 + 1, second_id * 4 + 1};
-        add_constraintex(lp, 2, sparserow, colno, EQ, 0);
+        if(alignment_unit.line == 0){
+          // align to left
+          double sparserow[2] = {1, -1};
+          int colno[2] = {first_id * 4 + 1, second_id * 4 + 1};
+          add_constraintex(lp, 2, sparserow, colno, EQ, 0);
+        } else if (alignment_unit.line == 1){
+          // align center x
+          double sparserow[2] = {1, -1};
+          int colno[2] = {first_id * 4 + 1, second_id * 4 + 1};
+          int bias = - mydesign.Blocks[first_id][curr_sp.selected[first_id]].width / 2 + mydesign.Blocks[second_id][curr_sp.selected[second_id]].width / 2;
+          add_constraintex(lp, 2, sparserow, colno, EQ, bias);
+        } else {
+          // align to right
+          double sparserow[2] = {1, -1};
+          int colno[2] = {first_id * 4 + 1, second_id * 4 + 1};
+          int bias = - mydesign.Blocks[first_id][curr_sp.selected[first_id]].width + mydesign.Blocks[second_id][curr_sp.selected[second_id]].width;
+          add_constraintex(lp, 2, sparserow, colno, EQ, bias);
+        }
       }
     }
   }
