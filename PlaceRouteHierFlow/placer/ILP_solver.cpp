@@ -91,7 +91,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   // i*4+3:H_flip
   // i*4+4:V_flip
   lprec* lp = make_lp(0, N_var);
-  set_verbose(lp, IMPORTANT);
+  set_verbose(lp, CRITICAL);
   put_logfunc(lp, &ILP_solver::lpsolve_logger, NULL);
   //set_outputfile(lp, const_cast<char*>("/dev/null"));
 
@@ -344,6 +344,104 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
       }
       if (blockids.size() < 2) continue;
       sort(blockids.begin(), blockids.end(), [](const pair<int, int>& a, const pair<int, int>& b) { return a.first <= b.first; });
+    }
+
+    // add HPWL in cost
+    for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
+      vector<pair<int, int>> blockids;
+      /// for (int j = 0; j < mydesign.Nets[i].connected.size(); j++) {
+      /// if (mydesign.Nets[i].connected[j].type == placerDB::Block &&
+      ///(blockids.size() == 0 || mydesign.Nets[i].connected[j].iter2 != curr_sp.negPair[blockids.back().first]))
+      /// blockids.push_back(std::make_pair(find(curr_sp.negPair.begin(), curr_sp.negPair.end(), mydesign.Nets[i].connected[j].iter2) - curr_sp.negPair.begin(),
+      /// mydesign.Nets[i].connected[j].iter));
+      //}
+      set<pair<pair<int, int>, int>> block_pos_x_set;
+      set<pair<pair<int, int>, int>> block_pos_y_set;
+      for (unsigned int j = 0; j < mydesign.Nets[i].connected.size(); j++) {
+        if (mydesign.Nets[i].connected[j].type == placerDB::Block) {
+          block_pos_x_set.insert(std::make_pair(std::make_pair(mydesign.Nets[i].connected[j].iter2, mydesign.Nets[i].connected[j].iter),
+                                               find(curr_sp.negPair.begin(), curr_sp.negPair.end(), mydesign.Nets[i].connected[j].iter2) - curr_sp.negPair.begin()));
+          block_pos_y_set.insert(std::make_pair(std::make_pair(mydesign.Nets[i].connected[j].iter2, mydesign.Nets[i].connected[j].iter),
+                                               find(curr_sp.negPair.begin(), curr_sp.negPair.end(), mydesign.Nets[i].connected[j].iter2) - curr_sp.negPair.begin()));
+        }
+        // blockids.push_back(std::make_pair(find(curr_sp.negPair.begin(), curr_sp.negPair.end(), mydesign.Nets[i].connected[j].iter2) -
+        // curr_sp.negPair.begin(), mydesign.Nets[i].connected[j].iter));
+      }
+      vector<pair<pair<int, int>, int>> block_pos_x(block_pos_x_set.begin(), block_pos_x_set.end());
+      vector<pair<pair<int, int>, int>> block_pos_y(block_pos_y_set.begin(), block_pos_y_set.end());
+      if (block_pos_x.size() < 2) continue;
+      sort(block_pos_x.begin(), block_pos_x.end(), [](const pair<pair<int, int>, int>& a, const pair<pair<int, int>, int>& b) { return a.second < b.second; });
+      sort(block_pos_y.begin(), block_pos_y.end(), [](const pair<pair<int, int>, int>& a, const pair<pair<int, int>, int>& b) { return a.second < b.second; });
+      // sort(blockids.begin(), blockids.end(), [](const pair<int, int>& a, const pair<int, int>& b) { return a.first <= b.first; });
+      /**int LLblock_id = curr_sp.negPair[blockids.front().first], LLpin_id = blockids.front().second;
+      int LLblock_width = mydesign.Blocks[LLblock_id][curr_sp.selected[LLblock_id]].width,
+          LLblock_height = mydesign.Blocks[LLblock_id][curr_sp.selected[LLblock_id]].height;
+      int LLpin_x = mydesign.Blocks[LLblock_id][curr_sp.selected[LLblock_id]].blockPins[LLpin_id].center.front().x,
+          LLpin_y = mydesign.Blocks[LLblock_id][curr_sp.selected[LLblock_id]].blockPins[LLpin_id].center.front().y;
+      int URblock_id = curr_sp.negPair[blockids.back().first], URpin_id = blockids.back().second;
+      int URblock_width = mydesign.Blocks[URblock_id][curr_sp.selected[URblock_id]].width,
+          URblock_height = mydesign.Blocks[URblock_id][curr_sp.selected[URblock_id]].height;
+      int URpin_x = mydesign.Blocks[URblock_id][curr_sp.selected[URblock_id]].blockPins[URpin_id].center.front().x,
+          URpin_y = mydesign.Blocks[URblock_id][curr_sp.selected[URblock_id]].blockPins[URpin_id].center.front().y;**/
+      int Lblock_id = block_pos_x.front().first.first, Lpin_id = block_pos_x.front().first.second;
+      int Rblock_id = block_pos_x.back().first.first, Rpin_id = block_pos_x.back().first.second;
+      int Lblock_width = mydesign.Blocks[Lblock_id][curr_sp.selected[Lblock_id]].width, Lblock_height = mydesign.Blocks[Lblock_id][curr_sp.selected[Lblock_id]].height;
+      int Rblock_width = mydesign.Blocks[Rblock_id][curr_sp.selected[Rblock_id]].width, Rblock_height = mydesign.Blocks[Rblock_id][curr_sp.selected[Rblock_id]].height;
+      int Lpin_x = mydesign.Blocks[Lblock_id][curr_sp.selected[Lblock_id]].blockPins.size() > 0 ? mydesign.Blocks[Lblock_id][curr_sp.selected[Lblock_id]].blockPins[Lpin_id].center.front().x
+                                                                      : mydesign.Blocks[Lblock_id][curr_sp.selected[Lblock_id]].width / 2,
+          Lpin_y = mydesign.Blocks[Lblock_id][curr_sp.selected[Lblock_id]].blockPins.size() > 0 ? mydesign.Blocks[Lblock_id][curr_sp.selected[Lblock_id]].blockPins[Lpin_id].center.front().y
+                                                                      : mydesign.Blocks[Lblock_id][curr_sp.selected[Lblock_id]].height / 2;
+      int Rpin_x = mydesign.Blocks[Rblock_id][curr_sp.selected[Rblock_id]].blockPins.size() > 0 ? mydesign.Blocks[Rblock_id][curr_sp.selected[Rblock_id]].blockPins[Rpin_id].center.front().x
+                                                                      : mydesign.Blocks[Rblock_id][curr_sp.selected[Rblock_id]].width / 2,
+          Rpin_y = mydesign.Blocks[Rblock_id][curr_sp.selected[Rblock_id]].blockPins.size() > 0 ? mydesign.Blocks[Rblock_id][curr_sp.selected[Rblock_id]].blockPins[Rpin_id].center.front().y
+                                                                      : mydesign.Blocks[Rblock_id][curr_sp.selected[Rblock_id]].height / 2;
+
+      int Dblock_id = block_pos_y.front().first.first, Dpin_id = block_pos_y.front().first.second;
+      int Ublock_id = block_pos_y.back().first.first, Upin_id = block_pos_y.back().first.second;
+      int Dblock_width = mydesign.Blocks[Dblock_id][curr_sp.selected[Dblock_id]].width, Dblock_height = mydesign.Blocks[Dblock_id][curr_sp.selected[Dblock_id]].height;
+      int Ublock_width = mydesign.Blocks[Ublock_id][curr_sp.selected[Ublock_id]].width, Ublock_height = mydesign.Blocks[Ublock_id][curr_sp.selected[Ublock_id]].height;
+      int Dpin_x = mydesign.Blocks[Dblock_id][curr_sp.selected[Dblock_id]].blockPins.size() > 0 ? mydesign.Blocks[Dblock_id][curr_sp.selected[Dblock_id]].blockPins[Dpin_id].center.front().x
+                                                                      : mydesign.Blocks[Dblock_id][curr_sp.selected[Dblock_id]].width / 2,
+          Dpin_y = mydesign.Blocks[Dblock_id][curr_sp.selected[Dblock_id]].blockPins.size() > 0 ? mydesign.Blocks[Dblock_id][curr_sp.selected[Dblock_id]].blockPins[Dpin_id].center.front().y
+                                                                      : mydesign.Blocks[Dblock_id][curr_sp.selected[Ublock_id]].height / 2;
+      int Upin_x = mydesign.Blocks[Ublock_id][curr_sp.selected[Ublock_id]].blockPins.size() > 0 ? mydesign.Blocks[Ublock_id][curr_sp.selected[Ublock_id]].blockPins[Upin_id].center.front().x
+                                                                      : mydesign.Blocks[Ublock_id][curr_sp.selected[Ublock_id]].width / 2,
+          Upin_y = mydesign.Blocks[Ublock_id][curr_sp.selected[Ublock_id]].blockPins.size() > 0 ? mydesign.Blocks[Ublock_id][curr_sp.selected[Ublock_id]].blockPins[Upin_id].center.front().y
+                                                                      : mydesign.Blocks[Ublock_id][curr_sp.selected[Ublock_id]].height / 2;
+
+      // min abs(LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)=HPWLx
+      //-> (LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)<=HPWLx
+      //  -(LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)<=HPWLx
+      if(Lblock_id!=Rblock_id){
+        {
+          double sparserow[5] = {const_graph.LAMBDA, (Lblock_width - 2 * Lpin_x) * const_graph.LAMBDA, -const_graph.LAMBDA,
+                                -(Rblock_width - 2 * Rpin_x) * const_graph.LAMBDA, -1};
+          int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, int(mydesign.Blocks.size() * 4 + i * 2 + 1)};
+          add_constraintex(lp, 5, sparserow, colno, LE, -Lpin_x + Rpin_x);
+        }
+        {
+          double sparserow[5] = {-const_graph.LAMBDA, -(Lblock_width - 2 * Lpin_x) * const_graph.LAMBDA, const_graph.LAMBDA,
+                                (Rblock_width - 2 * Rpin_x) * const_graph.LAMBDA, -1};
+          int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, int(mydesign.Blocks.size() * 4 + i * 2 + 1)};
+          add_constraintex(lp, 5, sparserow, colno, LE, Lpin_x - Rpin_x);
+        }
+        row[mydesign.Blocks.size() * 4 + i * 2 + 1] = 1;
+      }
+      if(Dblock_id!=Ublock_id){
+        {
+          double sparserow[5] = {const_graph.LAMBDA, (Dblock_height - 2 * Dpin_y) * const_graph.LAMBDA, -const_graph.LAMBDA,
+                                -(Ublock_height - 2 * Upin_y) * const_graph.LAMBDA, -1};
+          int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, int(mydesign.Blocks.size() * 4 + i * 2 + 2)};
+          add_constraintex(lp, 5, sparserow, colno, LE, -Dpin_y + Upin_y);
+        }
+        {
+          double sparserow[5] = {-const_graph.LAMBDA, -(Dblock_height - 2 * Dpin_y) * const_graph.LAMBDA, const_graph.LAMBDA,
+                                (Ublock_height - 2 * Upin_y) * const_graph.LAMBDA, -1};
+          int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, int(mydesign.Blocks.size() * 4 + i * 2 + 2)};
+          add_constraintex(lp, 5, sparserow, colno, LE, Dpin_y - Upin_y);
+        }
+        row[mydesign.Blocks.size() * 4 + i * 2 + 2] = 1;
+      }
     }
 
     // add area in cost
