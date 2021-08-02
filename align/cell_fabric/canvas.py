@@ -46,20 +46,20 @@ class Canvas:
         s['rect'] = self.trStack[-1].hitRect(r).canonical().toList()
         self.terminals.append( s)
 
-    def addWire( self, wire, netName, pinName, c, bIdx, eIdx, *, bS=None, eS=None, netType="drawing"):
-        self.transform_and_add( wire.segment( netName, pinName, c, bIdx, eIdx, bS=bS, eS=eS, netType=netType))
+    def addWire( self, wire, netName, c, bIdx, eIdx, *, bS=None, eS=None, netType="drawing"):
+        self.transform_and_add( wire.segment( netName, c, bIdx, eIdx, bS=bS, eS=eS, netType=netType))
 
-    def addRegion( self, region, netName, pinName, grid_x0, grid_y0, grid_x1, grid_y1):
-        self.transform_and_add( region.segment( netName, pinName, grid_x0, grid_y0, grid_x1, grid_y1, netType="drawing"))
+    def addRegion( self, region, netName, grid_x0, grid_y0, grid_x1, grid_y1):
+        self.transform_and_add( region.segment( netName, grid_x0, grid_y0, grid_x1, grid_y1, netType="drawing"))
 
-    def addVia( self, via, netName, pinName, cx, cy):
-        self.transform_and_add( via.segment( netName, pinName, cx, cy, netType="drawing"))
+    def addVia( self, via, netName, cx, cy):
+        self.transform_and_add( via.segment( netName, cx, cy, netType="drawing"))
 
-    def addWireAndViaSet( self, netName, pinName, wire, via, c, listOfIndices, *, bIdx=None, eIdx=None):
+    def addWireAndViaSet( self, netName, wire, via, c, listOfIndices, *, bIdx=None, eIdx=None, netType="drawing"):
         """March through listOfIdx, compute physical coords (including via extensions), keep bounding box, draw wire."""
-        self.addWireAndMultiViaSet( netName, pinName, wire, c, [ (via, listOfIndices)], bIdx=bIdx, eIdx=eIdx)
+        self.addWireAndMultiViaSet( netName, wire, c, [ (via, listOfIndices)], bIdx=bIdx, eIdx=eIdx, netType=netType)
 
-    def addWireAndMultiViaSet( self, netName, pinName, wire, c, listOfPairs, *, bIdx=None, eIdx=None):
+    def addWireAndMultiViaSet( self, netName, wire, c, listOfPairs, *, bIdx=None, eIdx=None, netType="drawing"):
         """March through listOfPairs (via, idx), compute physical coords (including via extensions), keep bounding box, draw wire."""
 
         # Get minimum & maximum via centerpoints (in terms of physical coords)
@@ -83,11 +83,11 @@ class Canvas:
         for (via,listOfIndices) in listOfPairs:
             for q in listOfIndices:
                 if wire.direction == 'v':
-                    self.addVia( via, netName, None, c, q)
+                    self.addVia( via, netName, c, q)
                 else:
-                    self.addVia( via, netName, None, q, c)
+                    self.addVia( via, netName, q, c)
 
-        self.addWire( wire, netName, pinName, c, mn, mx)
+        self.addWire( wire, netName, c, mn, mx, netType=netType)
 
     def join_wires(self, wire, exclude_nets=None, include_nets=None, max_length=None):
         """
@@ -137,7 +137,7 @@ class Canvas:
                     if slr.netName == next_slr.netName and w == next_w and new_length <= max_l:
                         (b_idx, _) = wire.spg.inverseBounds(slr.rect[iy])
                         (_, e_idx) = wire.spg.inverseBounds(next_slr.rect[iy+2])
-                        self.addWire(wire, slr.netName, None, c_idx, b_idx, e_idx)
+                        self.addWire(wire, slr.netName, c_idx, b_idx, e_idx)
                         new_length -= next_slr.rect[iy+2] - next_slr.rect[iy]
                     else:
                         new_length = 0
@@ -269,7 +269,7 @@ class Canvas:
                     if (r[1] > via_rect[3]) and (r[1] < via_rect[3]+via_def["SpaceY"]):
                         return
 
-        self.addVia(via, mh_slr.netName, None,
+        self.addVia(via, mh_slr.netName,
                     mv.clg.inverseBounds(mv_cl // 2)[0],
                     mh.clg.inverseBounds(mh_cl//2)[0])
 
@@ -309,7 +309,7 @@ class Canvas:
                     if started:
                         # close off wire
                         # assert nm is not None
-                        self.addWireAndMultiViaSet( nm, None, m2, y, [ (v1, via1s), (v2, via2s)])
+                        self.addWireAndMultiViaSet( nm, m2, y, [ (v1, via1s), (v2, via2s)])
                         started = False
                         nm = None
                         via1s = []
@@ -345,7 +345,7 @@ class Canvas:
                     if started:
                         # close off wire
                         # assert nm is not None
-                        self.addWireAndMultiViaSet( nm, None, m3, x, [ (v2, via2s)])
+                        self.addWireAndMultiViaSet( nm, m3, x, [ (v2, via2s)])
                         started = False
                         nm = None
                         via1s = []
