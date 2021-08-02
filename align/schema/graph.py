@@ -159,7 +159,6 @@ class Graph(networkx.Graph):
             if not all(x in match for node in removal_candidates for x in self.neighbors(node)):
                 continue
             # Remove nodes not on subckt boundary
-            # pp = self.resolve_subckt_param(removal_candidates)
             if set(removal_candidates) & set(skip):
                 continue
             # Create a dummy instance of instance of subckt
@@ -168,14 +167,15 @@ class Graph(networkx.Graph):
             inst_name = self.instance_counter(subckt_instance)
             # Create correct instance
             new_subckt.append(inst_name)
-            logger.info(f"Creating new instance {inst_name} of subckt: {subckt.name}")
+            logger.info(f"Creating new subckt of type: {subckt.name} from {removal_candidates}")
             subckt_instance = self.create_subckt_instance(subckt, match, inst_name)
-
-            for node in removal_candidates:
+            merged_inst_name = 'X_'+inst_name
+            for node in sorted(removal_candidates):
                 # Elements only
                 if node in self.nodes and self._is_element(self.nodes[node]):
                     # Takes care of nets attached to element too
                     self.remove(self.element(node))
+                    merged_inst_name = merged_inst_name +'_'+node
             assert subckt_instance not in self.elements
             pin2net_map = {pin: net for net,
                            pin in match.items() if pin in subckt.pins}
@@ -186,9 +186,11 @@ class Graph(networkx.Graph):
                 with set_context(self.subckt.parent):
                     self.subckt.parent.append(SubCircuit(**subckt_instance.dict(exclude_unset=True)))
             # attach instance to current graph
+            logger.debug(f"adding instance {merged_inst_name} of type {inst_name} in subckt {self.name}")
             self.add_instance(
-                name='X_'+inst_name,
+                name=merged_inst_name,
                 model=inst_name,
+                abstract_name=inst_name,
                 pins=pin2net_map
             )
         return new_subckt
@@ -207,20 +209,11 @@ class Graph(networkx.Graph):
                 subckt_instance.elements.append(Instance(
                     name=element.name,
                     model=self.nodes[x].get('instance').model,
+                    abstract_name=self.nodes[x].get('instance').model,
                     pins=element.pins,
                     parameters=self.nodes[x].get('instance').parameters))
         return subckt_instance
-    # def resolve_subckt_param(self,removal_candidates):
-    #     assert len(removal_candidates) >= 1
-    #     for x in removal_candidates:
-    #         # Elements only
-    #         if x in self.nodes and self._is_element(self.nodes[x]):
-    #             if 'parameters' in locals():
-    #                 parameters.update(self.nodes[x].get('instance').parameters)
-    #             else:
-    #                 parameters = self.nodes[x].get('instance').parameters
-    #     return parameters
-    # Algorithms to find & replace repeated subgraphs
+
     def instance_counter(self, subckt ,counter=0):
         if counter == 0:
             name = subckt.name

@@ -41,7 +41,7 @@ class WriteVerilog:
         for ele in self.subckt_data.elements:
             instance = {}
             print(ele)
-            instance['template_name'] = ele.model
+            instance['template_name'] = ele.abstract_name
             if ele.model in self.ckt_data:
                 print(self.ckt_data.find(ele.model))
             instance['instance_name'] = ele.name

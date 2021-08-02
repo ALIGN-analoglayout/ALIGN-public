@@ -41,50 +41,50 @@ def test_simple_circuit():
     assert circuit.elements[3].model == 'RES'
     model = lib.find(circuit.elements[3].model)
     assert model.base == None # Using base model
-    assert model.pins == ['+','-']
+    assert model.pins == ['PLUS','MINUS']
     assert model.parameters == {'VALUE':'0'}
     assert model.prefix == 'R'
-    assert circuit.elements[3].pins == {'+': 'VBIAS', '-': 'NET5'}
+    assert circuit.elements[3].pins == {'PLUS': 'VBIAS', 'MINUS': 'NET5'}
     assert circuit.elements[3].parameters == {'VALUE': '5000'}
 
     assert circuit.elements[4].name == 'CC0'
     model = lib.find(circuit.elements[4].model)
     assert circuit.elements[4].model == 'CAP'
     assert model.base == None
-    assert circuit.elements[4].pins == {'+': 'VIN', '-': 'NET5'}
+    assert circuit.elements[4].pins == {'PLUS': 'VIN', 'MINUS': 'NET5'}
     assert circuit.elements[4].parameters == {'VALUE': '1.0000000000000002E-14'} # TBF: remove multiple zeros
 
     assert circuit.elements[5].name == 'LL0'
     assert circuit.elements[5].model == 'IND'
     model = lib.find(circuit.elements[5].model)
     assert model.base == None
-    assert circuit.elements[5].pins == {'+': 'VDD!', '-': 'VOUT'}
+    assert circuit.elements[5].pins == {'PLUS': 'VDD!', 'MINUS': 'VOUT'}
     assert circuit.elements[5].parameters == {'VALUE': '0.002'} #TBF: change to scientific nomenclature?
 
     assert circuit.elements[6].name == 'RR1'
     assert circuit.elements[6].model == 'RESISTOR'
     model = lib.find(circuit.elements[6].model)
     assert model.name == 'RESISTOR'
-    assert model.pins == ['+', '-']
+    assert model.pins == ['PLUS', 'MINUS']
     assert model.parameters == {'R':'1','VALUE':'0'}
-    assert circuit.elements[6].pins == {'+': 'VBIAS', '-': 'NET6'}
+    assert circuit.elements[6].pins == {'PLUS': 'VBIAS', 'MINUS': 'NET6'}
     assert circuit.elements[6].parameters == {'R':'5000','VALUE': '0'}
 
     assert circuit.elements[7].name == 'CC1'
     assert circuit.elements[7].model == 'CAPACITOR'
     model = lib.find(circuit.elements[7].model)
     assert model.name == 'CAPACITOR'
-    assert model.pins == ['+', '-']
+    assert model.pins == ['PLUS', 'MINUS']
     assert model.parameters == {'C':'1','VALUE':'0'}
-    assert circuit.elements[7].pins == {'+': 'VIN', '-': 'NET6'}
+    assert circuit.elements[7].pins == {'PLUS': 'VIN', 'MINUS': 'NET6'}
     assert circuit.elements[7].parameters == {'C': '1.0000000000000002E-14', 'VALUE': '0'}
 
     assert circuit.elements[8].name == 'LL1'
     assert circuit.elements[8].model == 'INDUCTOR'
     model = lib.find(circuit.elements[8].model)
     assert model.name == 'INDUCTOR'
-    assert model.pins == ['+', '-']
+    assert model.pins == ['PLUS', 'MINUS']
     assert model.parameters == {'IND':'1','VALUE':'0'}
-    assert circuit.elements[8].pins == {'+': 'VDD!', '-': 'NET6'}
+    assert circuit.elements[8].pins == {'PLUS': 'VDD!', 'MINUS': 'NET6'}
     assert circuit.elements[8].parameters == {'IND': '0.002', 'VALUE': '0'}
 

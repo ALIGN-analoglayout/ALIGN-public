@@ -172,11 +172,11 @@ class Annotate:
                 for e in const_inst:
                     new_subckt.elements.append(subckt.get_element(e))
             #Remove elements from subckt then Add new_subckt instance
-            inst_name = 'X'+'_'.join(const_inst)
+            inst_name = 'X_'+const.name.upper()+'_'+'_'.join(const_inst)
             with set_context(subckt.elements):
                 for e in const_inst:
                     subckt.elements.remove(subckt.get_element(e))
-                X1 = Instance(name=inst_name, model=const.name.upper(), pins={x:x for x in ac_nets})
+                X1 = Instance(name=inst_name, model=const.name.upper(), pins={x:x for x in ac_nets}, abstract_name=const.name.upper())
                 subckt.elements.append(X1)
             #Translate any constraints defined on the groupblock elements to subckt
             self._top_to_bottom_translation(name, {inst:inst for inst in const_inst}, const.name)

@@ -159,7 +159,6 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
                         all_match_pairs[nbr1+'_'+nbr2] = new_pair
                         logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
 
-
     elif compare_two_nodes(G,node1,node2,ports_weight):
         nbrs1 = sorted(set([nbr for nbr in nbrs1 if G.get_edge_data(node1, nbr)['pin'] !={'B'}]))
         nbrs2 = sorted(set([nbr for nbr in nbrs2 if G.get_edge_data(node2, nbr)['pin'] != {'B'}]))

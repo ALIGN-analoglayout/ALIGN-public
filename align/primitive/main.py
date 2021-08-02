@@ -216,7 +216,7 @@ def generate_Cap(pdkdir, block_name, unit_cap):
 
     uc.addCap(unit_cap)
 
-    return uc, ['+', '-']
+    return uc, ['PLUS', 'MINUS']
 
 def generate_Res(pdkdir, block_name, height, x_cells, y_cells, nfin, unit_res):
 
@@ -230,7 +230,7 @@ def generate_Res(pdkdir, block_name, height, x_cells, y_cells, nfin, unit_res):
 
     uc.addResArray(x_cells, y_cells, nfin, unit_res)
 
-    return uc, ['+', '-']
+    return uc, ['PLUS', 'MINUS']
 
 def generate_Ring(pdkdir, block_name, x_cells, y_cells):
 
@@ -339,31 +339,30 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
         return block_name, block_parameters
 
     elif name=='CAP':
-        if 'VALUE' in values.keys():
-            try:
-                size = float('%g' % (round(values["VALUE"] * 1E15,4)))
-            except:
-                size = design_config["unit_size_cap"]
-            block_name = name + '_' + str(int(size)) + 'f'
+        assert float(values["VALUE"]), f"unidentified size {values['VALUE']} for {element.name}"
+        size = round(float(values["VALUE"]) * 1E15,4)
+        #TODO: use float in name
+        block_name = name + '_' + str(int(size)) + 'f'
         logger.debug(f"Found cap with size: {size}")
-        return name, {
+        element.add_abs_name(block_name)
+        return block_name, {
             'primitive': 'cap',
             'value': int(size)
         }
 
     elif name=='RES':
-        if 'VALUE' in values.keys():
-            try:
-                size = float('%g' % (round(values["res"],2)))
-            except:
-                size = design_config["unit_size_cap"]
-
-        # block_name = name + '_' + str(size).replace('.','p')
+        assert float(values["VALUE"]), f"unidentified size {values['VALUE']} for {element.name}"
+        size = round(float(values["VALUE"]),2)
+        #TODO: use float in name
+        if size.is_integer():
+            size=int(size)
+        block_name = name + '_' + str(size).replace('.','p')
         height = ceil(sqrt(float(size) / design_config["unit_height_res"]))
-        # if block_name in available_block_lef:
-        #     return block_name, available_block_lef[block_name]
+        if block_name in available_block_lef:
+            return block_name, available_block_lef[block_name]
         logger.debug(f'Generating lef for: {name} {size}')
-        return name, {
+        element.add_abs_name(block_name)
+        return block_name, {
             'primitive': 'Res',
             'value': (height, float(size))
         }
@@ -433,8 +432,8 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
             if block_name in available_block_lef:
                 if block_args != available_block_lef[block_name]:
                     assert False, f'Two different transistors mapped to the same name {block_name}: {available_block_lef[block_name]} {block_args}'
-
-            return element.model, block_args
+            element.add_abs_name(block_name)
+            return block_name, block_args
 
 
         if "NFIN" in values.keys():
@@ -494,9 +493,9 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
                 'y_cells': yval,
                 'parameters':values
             }
-            if 'stack' in values.keys():
-                cell_gen_parameters['stack']=int(values["stack"])
-                block_name = block_name+'_ST'+str(int(values["stack"]))
+            if 'STACK' in values.keys():
+                cell_gen_parameters['stack']=int(values["STACK"])
+                block_name = block_name+'_ST'+str(int(values["STACK"]))
 
             #cell generator takes only one VT so doing a string search
             #To be fixed:
@@ -511,7 +510,8 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
             #     cell_gen_parameters['vt_type']=vt[0]
             print(element,block_name)
             #element.parameters['sized_name'] = block_name
-            return element.model, cell_gen_parameters
+            element.add_abs_name(block_name)
+            return block_name, cell_gen_parameters
         else:
             logger.debug("No proper parameters found for cell generation")
             block_name = name+"_"+size

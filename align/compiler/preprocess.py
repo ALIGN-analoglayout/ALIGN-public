@@ -82,12 +82,11 @@ def remove_dummy_hier(library,ckt,update=True):
                     pins = {}
                     for p,v in y.pins.items():
                         pins[p] = ele.pins[v]
-                    logger.debug(y.parameters, ele)
                     other_ckt.elements.append(Instance(
                         name = ele.name.replace('X','M'),
                         model = y.model,
                         pins = pins,
-                        parameters=y.parameters))
+                        parameters = {k : ele.parameters.get(k, v)  for k, v in y.parameters.items()}))
                     other_ckt.elements.remove(ele)
     return True
 
@@ -243,7 +242,7 @@ def add_series_devices(ckt,update=True):
     """
     if update == False:
         return
-    logger.debug(f"merging all caps, initial ckt size: {len(ckt.elements)}")
+    logger.debug(f"merging all stacked/series devices, initial ckt size: {len(ckt.elements)}")
     remove_nodes = []
     for net in set(ckt.nets)-set(ckt.pins):
         G = Graph(ckt)
@@ -262,18 +261,19 @@ def add_series_devices(ckt,update=True):
                 continue
             logger.debug(f" conn1: {G.get_edge_data(nbr1.name, net)['pin']}, conn2: {G.get_edge_data(nbr2.name, net)['pin']}")
             connections = set([list(G.get_edge_data(nbr, net)['pin'])[0] for nbr in nbrs])
+            logger.debug(f"connection with neighbors: {connections}")
             assert len(connections) ==2, f"Not a stack {nbrs} as connections: {connections} are not allowed"
             nbr1p = dict(**nbr1.parameters,**nbr1.pins)
             nbr2p = dict(**nbr2.parameters,**nbr2.pins)
             stack1 = int(nbr1p.pop('STACK',1))
             stack2 = int(nbr2p.pop('STACK',1))
             for connection in connections:
-                assert connection[0] in nbr1p, f"pin {connection[0]} not found in {nbr1p}"
-                assert connection[0] in nbr2p, f"pin {connection[0]} not found in {nbr2p}"
-                del nbr1p[connection[0]]
-                del nbr2p[connection[0]]
+                assert connection in nbr1p, f"pin {connection} not found in {nbr1p}"
+                assert connection in nbr2p, f"pin {connection} not found in {nbr2p}"
+                del nbr1p[connection]
+                del nbr2p[connection]
 
-            if nbr1p == nbr2p and connections in [set(['D','S']),set(['+','-'])]:
+            if nbr1p == nbr2p and connections in [set(['D','S']),set(['PLUS','MINUS'])]:
                 logger.warning(f"stacking {nbrs} {stack1 + stack2}")
                 nbr1.parameters['STACK'] = stack1 +stack2
                 for p,n in nbr1.pins.items():

@@ -14,13 +14,13 @@
               "MN0"
             ],
             [
-              "XMN1_MN2"
+              "X_DP_MN1_MN2"
             ],
             [
-              "XMN3_MN4"
+              "X_CCN_MN3_MN4"
             ],
             [
-              "XMP5_MP6"
+              "X_CCP_MP5_MP6"
             ],
             [
               "MP7",
@@ -31,8 +31,8 @@
               "MP10"
             ],
             [
-              "XMP11_MN13",
-              "XMP12_MN14"
+              "X_INV_N_MP11_MN13",
+              "X_INV_P_MP12_MN14"
             ]
           ],
           "direction": "V"
@@ -40,11 +40,11 @@
         {
           "constraint": "do_not_identify",
           "instances": [
-            "XMN3_MN4",
-            "XMP5_MP6",
-            "XMN1_MN2",
-            "XMP11_MN13",
-            "XMP12_MN14",
+            "X_CCN_MN3_MN4",
+            "X_CCP_MP5_MP6",
+            "X_DP_MN1_MN2",
+            "X_INV_N_MP11_MN13",
+            "X_INV_P_MP12_MN14",
             "MN0",
             "MP10",
             "MP7",
@@ -52,4 +52,4 @@
             "MP9"
           ]
         }
-]
+      ]

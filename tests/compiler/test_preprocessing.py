@@ -10,13 +10,13 @@ def db():
     with set_context(library):
         cmodel = Model(
             name = 'CAP',
-            pins = ['+', '-'],
+            pins = ['PLUS', 'MINUS'],
             parameters = {
                 'VALUE': '5.0'
             })
         rmodel = Model(
             name = 'RES',
-            pins = ['+', '-'],
+            pins = ['PLUS', 'MINUS'],
             parameters = {
                 'VALUE': '5.0'
             })
@@ -33,15 +33,15 @@ def db():
         library.append(model_nmos)
         subckt = SubCircuit(
             name = 'SUBCKT',
-            pins = ['+', '-','D','G','S','B'],
+            pins = ['PLUS', 'MINUS','D','G','S','B'],
             parameters = None)
         library.append(subckt)
     with set_context(subckt.elements):
-        subckt.elements.append(Instance(name='C1', model='CAP', pins={'+': '+', '-': '-'}, parameters ={'VALUE':'2'}))
-        subckt.elements.append(Instance(name='C2', model='CAP', pins={'+': '+', '-': '-'}, parameters ={'VALUE':'2'}))
-        subckt.elements.append(Instance(name='R1', model='RES', pins={'+': '+', '-': '-'}, parameters ={'VALUE':'10'}))
-        subckt.elements.append(Instance(name='R2', model='RES', pins={'+': '+', '-': '-'}, parameters ={'VALUE':'10'}))
-        subckt.elements.append(Instance(name='R3', model='RES', pins={'+': '+', '-': '-'}, parameters ={'VALUE':'10'}))
+        subckt.elements.append(Instance(name='C1', model='CAP', pins={'PLUS': 'PLUS', 'MINUS': 'MINUS'}, parameters ={'VALUE':'2'}))
+        subckt.elements.append(Instance(name='C2', model='CAP', pins={'PLUS': 'PLUS', 'MINUS': 'MINUS'}, parameters ={'VALUE':'2'}))
+        subckt.elements.append(Instance(name='R1', model='RES', pins={'PLUS': 'PLUS', 'MINUS': 'MINUS'}, parameters ={'VALUE':'10'}))
+        subckt.elements.append(Instance(name='R2', model='RES', pins={'PLUS': 'PLUS', 'MINUS': 'MINUS'}, parameters ={'VALUE':'10'}))
+        subckt.elements.append(Instance(name='R3', model='RES', pins={'PLUS': 'PLUS', 'MINUS': 'MINUS'}, parameters ={'VALUE':'10'}))
         subckt.elements.append(Instance(name='M1', model='TESTMOS', pins={'D': 'D', 'G': 'G', 'S': 'S', 'B': 'B'}))
         subckt.elements.append(Instance(name='M2', model='TESTMOS', pins={'D': 'D', 'G': 'G', 'S': 'S', 'B': 'B'}))
 
@@ -62,13 +62,13 @@ def dbs():
     with set_context(library):
         cmodel = Model(
             name = 'CAP',
-            pins = ['+', '-'],
+            pins = ['PLUS', 'MINUS'],
             parameters = {
                 'VALUE': '5.0'
             })
         rmodel = Model(
             name = 'RES',
-            pins = ['+', '-'],
+            pins = ['PLUS', 'MINUS'],
             parameters = {
                 'VALUE': '5.0'
             })
@@ -85,15 +85,15 @@ def dbs():
         library.append(model_nmos)
         subckt = SubCircuit(
             name = 'SUBCKT',
-            pins = ['+', '-','D','G','S','B'],
+            pins = ['PLUS', 'MINUS','D','G','S','B'],
             parameters = None)
         library.append(subckt)
     with set_context(subckt.elements):
-        subckt.elements.append(Instance(name='C1', model='CAP', pins={'+': '+', '-': 'netc1'}, parameters ={'VALUE':'2'}))
-        subckt.elements.append(Instance(name='C2', model='CAP', pins={'+': 'netc1', '-': '-'}, parameters ={'VALUE':'2'}))
-        subckt.elements.append(Instance(name='R1', model='RES', pins={'+': '+', '-': 'netr1'}, parameters ={'VALUE':'10'}))
-        subckt.elements.append(Instance(name='R2', model='RES', pins={'+': 'netr1', '-': 'netr2'}, parameters ={'VALUE':'10'}))
-        subckt.elements.append(Instance(name='R3', model='RES', pins={'+': 'netr2', '-': '-'}, parameters ={'VALUE':'10'}))
+        subckt.elements.append(Instance(name='C1', model='CAP', pins={'PLUS': 'PLUS', 'MINUS': 'netc1'}, parameters ={'VALUE':'2'}))
+        subckt.elements.append(Instance(name='C2', model='CAP', pins={'PLUS': 'netc1', 'MINUS': 'MINUS'}, parameters ={'VALUE':'2'}))
+        subckt.elements.append(Instance(name='R1', model='RES', pins={'PLUS': 'PLUS', 'MINUS': 'netr1'}, parameters ={'VALUE':'10'}))
+        subckt.elements.append(Instance(name='R2', model='RES', pins={'PLUS': 'netr1', 'MINUS': 'netr2'}, parameters ={'VALUE':'10'}))
+        subckt.elements.append(Instance(name='R3', model='RES', pins={'PLUS': 'netr2', 'MINUS': 'MINUS'}, parameters ={'VALUE':'10'}))
         subckt.elements.append(Instance(name='M1', model='TESTMOS', pins={'D': 'D', 'G': 'G', 'S': 'netm1', 'B': 'B'}))
         subckt.elements.append(Instance(name='M2', model='TESTMOS', pins={'D': 'netm1', 'G': 'G', 'S': 'S', 'B': 'B'}))
         subckt.elements.append(Instance(name='M3', model='TESTMOS', pins={'D': 'D', 'G': 'G1', 'S': 'netm2', 'B': 'B'}))

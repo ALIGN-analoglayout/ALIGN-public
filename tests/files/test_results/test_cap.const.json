@@ -4,11 +4,11 @@
           "net1": "OUT1",
           "net2": "OUT2",
           "pins1": [
-            "C2/-",
+            "C2/MINUS",
             "OUT1"
           ],
           "pins2": [
-            "C1/-",
+            "C1/MINUS",
             "OUT2"
           ],
           "direction": "V"
@@ -28,41 +28,5 @@
             ]
           ],
           "direction": "V"
-        },
-        {
-          "constraint": "group_caps",
-          "name": "C2",
-          "instances": [
-            "C2"
-          ],
-          "unit_cap": "Cap_12f",
-          "num_units": [
-            3
-          ],
-          "dummy": false
-        },
-        {
-          "constraint": "group_caps",
-          "name": "C1",
-          "instances": [
-            "C1"
-          ],
-          "unit_cap": "Cap_12f",
-          "num_units": [
-            3
-          ],
-          "dummy": false
-        },
-        {
-          "constraint": "group_caps",
-          "name": "C0",
-          "instances": [
-            "C0"
-          ],
-          "unit_cap": "Cap_12f",
-          "num_units": [
-            5
-          ],
-          "dummy": false
         }
-      ]
+]
