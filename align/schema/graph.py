@@ -152,6 +152,7 @@ class Graph(networkx.Graph):
         for match in matches:
             # Cannot replace as some prior transformation has made the current one invalid
             assert all(x in self.nodes for x in match)
+            assert len(subckt.pins) == len(set(subckt.pins)), f"duplicate pins found in module {subckt.name}, {subckt.pins}"
             removal_candidates = [
                 x for x, y in match.items()
                 if y not in subckt.pins]

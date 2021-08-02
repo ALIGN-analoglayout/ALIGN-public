@@ -104,6 +104,7 @@ def extract_capacitor_constraints( pnr_const_ds):
     return cap_constraints
 
 def remove_pg_pins(verilog_d, subckt, pg_pins):
+    logger.debug(f"removing power pins {pg_pins} from subckt {subckt}")
     modules_dict = {module.name: module.parameters for module in verilog_d['modules']}
     assert subckt in modules_dict, f"{subckt} not found in design. {modules_dict}"
     module = [module for module in verilog_d['modules'] if module.name==subckt][0]
@@ -111,17 +112,21 @@ def remove_pg_pins(verilog_d, subckt, pg_pins):
     for inst in module.instances:
         if inst.abstract_template_name in modules_dict:
             pg_conn = [conn["formal"] for conn in inst.fa_map if conn["actual"] in pg_pins]
-            inst.fa_map = [conn for conn in inst.fa_map if conn["formal"] not in pg_conn]
-            new_name = modify_pg_conn_subckt(verilog_d, inst.abstract_template_name, pg_conn)
-            inst.abstract_template_name = new_name
-            remove_pg_pins(verilog_d, new_name, pg_conn)
+            logger.debug(f"subckt instance {inst.instance_name} is connected to {pg_conn}")
+            if len(pg_conn)>0:
+                inst.fa_map = [conn for conn in inst.fa_map if conn["formal"] not in pg_conn]
+                new_name = modify_pg_conn_subckt(verilog_d, inst.abstract_template_name, pg_conn)
+                inst.abstract_template_name = new_name
+                remove_pg_pins(verilog_d, new_name, pg_conn)
+        else:
+            logging.debug(f"leaf level node {inst.instance_name} {inst.abstract_template_name}")
 def clean_if_extra(verilog_d, subckt):
     #Remove modules which are not instantiated
     all_inst = [inst.abstract_template_name for module in verilog_d['modules'] for inst in module["instances"]]
     all_inst.append(subckt)
     verilog_d['modules'] = [m for m in verilog_d['modules'] if m.name in all_inst]
 
-def modify_pg_conn_subckt(verilog_d, subckt, pg_pins):
+def modify_pg_conn_subckt(verilog_d, subckt, pp):
     """
     creates a new subcircuit by removing power pins from a subcircuit defination
     and change internal connections within the subcircuit
@@ -129,8 +134,8 @@ def modify_pg_conn_subckt(verilog_d, subckt, pg_pins):
     """
 
     nm = deepcopy([module for module in verilog_d['modules'] if module.name==subckt][0])
-    nm.parameters = [p for p in nm.parameters if p not in pg_pins]
-    logger.debug(f"modifying subckt {nm.name} {pg_pins}")
+    nm.parameters = [p for p in nm.parameters if p not in pp]
+    logger.debug(f"modifying subckt {nm.name} {pp}")
     modules_dict = {module.name: module.parameters for module in verilog_d['modules']}
     i=0
     updated_ckt_name = subckt+'_pg'+str(i)
@@ -141,6 +146,7 @@ def modify_pg_conn_subckt(verilog_d, subckt, pg_pins):
             i = i+1
             updated_ckt_name = subckt+'_pg'+str(i)
     nm.name = updated_ckt_name
+    logger.debug(f"new module is added: {nm}")
     verilog_d.modules.append(nm)
     return updated_ckt_name
 def gen_leaf_cell_info( verilog_d, pnr_const_ds):
@@ -211,6 +217,17 @@ def gen_leaf_collateral( leaves, primitives, primitive_dir):
 
     return leaf_collateral
 
+def check_modules(verilog_d):
+    all_module_pins = {}
+    for mod in verilog_d.modules:
+        all_module_pins[mod.name]=mod.parameters
+    for mod in verilog_d.modules:
+        for inst in mod.instances:
+            if inst.abstract_template_name in all_module_pins:
+                assert all(fm.formal in all_module_pins[inst.abstract_template_name] for fm in inst.fa_map), \
+                    f"incorrect instantiation {inst.instance_name} of module {inst.abstract_template_name}, \
+                     instance_pins: {inst.fa_map}, module pins: {all_module_pins[inst.abstract_template_name]}"
+
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False, gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False, steps_to_run,lambda_coeff, reference_placement_verilog_json, nroutings=1):
     subckt=subckt.upper()
     logger.info(f"Running Place & Route for {subckt} {router_mode} {steps_to_run}")
@@ -228,14 +245,16 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         # Create working & input directories
         working_dir.mkdir(exist_ok=True)
         input_dir.mkdir(exist_ok=True)
-
         verilog_d = VerilogJsonTop.parse_file((topology_dir / verilog_file))
+        check_modules(verilog_d)
         pg_pins = [p["actual"] for p in verilog_d.global_signals]
         remove_pg_pins(verilog_d, subckt, pg_pins)
         clean_if_extra(verilog_d, subckt)
+        check_modules(verilog_d)
+
         logger.debug(f"updated verilog: {verilog_d}")
-        # with (input_dir/"updated_verilog").open("wt") as fp:
-        #     json.dump(verilog_d.modules, fp=fp, indent=2)
+        with (input_dir/"updated_verilog.json").open("wt") as fp:
+            json.dump(verilog_d.modules, fp=fp, indent=2, default=str)
         # SMB: I want this to be in main (perhaps), or in the topology stage
         constraint_files, pnr_const_ds = gen_constraint_files( verilog_d, input_dir)
         logger.debug( f'constraint_files: {constraint_files}')

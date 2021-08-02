@@ -27,6 +27,7 @@ class CreateDatabase:
         """
         subckt = self.ckt_parser.library.find(name)
         self.const_parse.annotate_user_constraints(subckt)
+        logger.debug(f"creating database for {subckt}")
         for pin in subckt.pins:
             assert pin in subckt.nets, f"Floating pin: {pin} found for subckt {subckt.name}"
         self.resolve_parameters(name, subckt.parameters)

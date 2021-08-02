@@ -41,7 +41,7 @@ class SubCircuit(Model):
         with types.set_context(self.constraints):
             self.constraints.extend(constraints)
     #TODO: Add validator for duplicate name
-
+    #TODO: Add validator for duplicate pins
 
     def xyce(self):
         ret = []

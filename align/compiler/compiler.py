@@ -109,6 +109,15 @@ def compiler_input(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path
     logger.debug(ckt_parser)
     annotate = Annotate(ckt_data, design_setup, primitives, generators)
     annotate.annotate()
+    for ckt in ckt_data:
+        if isinstance(ckt, SubCircuit):
+            #Check no repeated ports
+            assert ckt.pins, f"floating module found {ckt.name}"
+            assert len(ckt.pins) == len(set(ckt.pins)), f"duplicate pins found in module {ckt.name}, {ckt.pins}"
+            for ele in ckt.elements:
+                if isinstance(ckt_data.find(ele.model), SubCircuit):
+                    assert len(ele.pins) == len(ckt_data.find(ele.model).pins)
+
     return ckt_data
 
 def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Path, pdk_dir:pathlib.Path, uniform_height=False):
@@ -170,7 +179,7 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
     for ckt in ckt_data:
         if not isinstance(ckt, SubCircuit):
             continue
-        logger.debug(f"Found module: {ckt.name} {ckt.elements}")
+        logger.debug(f"Found module: {ckt.name} {ckt.elements} {ckt.pins}")
         for const in ckt.constraints:
             if isinstance(const, constraint.GuardRing):
                 primitives['guard_ring'] = {'primitive':'guard_ring'}

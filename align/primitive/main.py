@@ -493,7 +493,7 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
                 'y_cells': yval,
                 'parameters':values
             }
-            if 'STACK' in values.keys():
+            if 'STACK' in values.keys() and int(values["STACK"])>1:
                 cell_gen_parameters['stack']=int(values["STACK"])
                 block_name = block_name+'_ST'+str(int(values["STACK"]))
 

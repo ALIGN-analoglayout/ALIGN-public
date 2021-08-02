@@ -21,12 +21,8 @@ class WriteVerilog:
     def __init__(self, ckt, ckt_data, power_pins):
         self.ckt_data = ckt_data
         self.circuit_name = ckt.name
-        self.inout_pins = ckt.pins
-        self.pins = []
-        for port in sorted(ckt.pins):
-            if port not in power_pins:
-                self.pins.append(port)
-        self.power_pins=power_pins
+        self.pins = ckt.pins
+        self.power_pins = power_pins
 
         self.subckt_data = self.ckt_data.find(ckt.name)
         self.constraints = self.ckt_data.find(ckt.name).constraints
@@ -61,8 +57,8 @@ class WriteVerilog:
         if len(a) == len(b):
             mapped_pins = []
             for ai, bi in zip(a, b):
-                if ai not in self.power_pins:
-                    mapped_pins.append( { "formal" : ai, "actual" : bi})
+                # if ai not in self.power_pins:
+                mapped_pins.append( { "formal" : ai, "actual" : bi})
             return list(sorted(mapped_pins,key=lambda x:x['formal']))
         elif len(set(a)) == len(set(b)):
             if len(a) > len(b):
@@ -76,7 +72,8 @@ class WriteVerilog:
                     else:
                         mapped_pins.append( { "formal" : a[i], "actual": b[i - no_of_short]})
                         check_short.append(a[i])
-                mapped_pins = [x for x in mapped_pins if x['formal'] not in self.power_pins]
+                # mapped_pins = [x for x in mapped_pins if x['formal'] not in self.power_pins]
+                # mapped_pins = [x for x in mapped_pins]
 
                 return list(sorted(mapped_pins,key=lambda x:x['formal']))
 

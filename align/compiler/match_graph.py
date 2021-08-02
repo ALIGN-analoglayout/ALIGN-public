@@ -155,9 +155,11 @@ class Annotate:
             # ac_nets : all nets connected to group block instances
             ac_nets = [ele.pins.values() for ele in subckt.elements if ele.name in const_inst]
             ac_nets = set([x for y in ac_nets for x in y])
+            #Filter internal nets but skip internal net connected to port
             ac_nets = [net for net in ac_nets \
                 if any(net in ele.pins.values() for ele in subckt.elements \
-                    if not ele.name in const_inst)] + list(ac_nets & set(subckt.pins))
+                    if not ele.name in const_inst)]+ list(ac_nets & set(subckt.pins))
+            ac_nets = list(set(ac_nets))
 
             logger.debug(f"Grouping instances {const_inst} in subckt {const.name.upper()} pins: {ac_nets}")
             #Create a subckt and add to library
