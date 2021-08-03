@@ -2,6 +2,7 @@ import logging
 import pathlib
 import json
 import copy
+import time
 from itertools import chain
 
 from .. import PnR
@@ -370,8 +371,12 @@ def subset_verilog_d( verilog_d, nm):
 def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, verilog_d, router_mode, gui, skipGDS, lambda_coeff, scale_factor, reference_placement_verilog_json, nroutings):
     TraverseOrder = DB.TraverseHierTree()
 
+    placer_start_time = time.process_time()
     for idx in TraverseOrder:
         place( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx, lambda_coeff=lambda_coeff)
+    placer_end_time = time.process_time()
+    logger.info(f'Placer runtime {placer_end_time - placer_start_time}')
+
 
     placements_to_run = None
 
