@@ -3,12 +3,7 @@ from align.schema.parser import SpiceParser
 import pathlib
 import os
 
-ALIGN_HOME = pathlib.Path(__file__).resolve().parent.parent.parent
-
-if 'ALIGN_HOME' in os.environ:
-    assert pathlib.Path(os.environ['ALIGN_HOME']).resolve() == ALIGN_HOME
-else:
-    os.environ['ALIGN_HOME'] = str(ALIGN_HOME)
+ALIGN_HOME = pathlib.Path(os.environ['ALIGN_HOME']).resolve()
 
 skip_dirs = ['tb_single_SAR','TI_SAR','Sanitized_TX_8l12b','Sanitized_DLPF_RCFilter','Sanitized_TempSensor',\
     'SW_Cres_v3_5','Sanitized_5b_ADC','Sanitized_CDAC_SW_Coarse','Santized_12b_ADC_TOP',\
