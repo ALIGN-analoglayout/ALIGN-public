@@ -229,6 +229,7 @@ def check_modules(verilog_d):
         all_module_pins[mod["name"]]=mod["parameters"]
     for mod in verilog_d["modules"]:
         for inst in mod["instances"]:
+            assert 'abstract_template_name' in inst, f'no generated data for {inst}'
             if inst["abstract_template_name"] in all_module_pins:
                 assert all(fm["formal"] in all_module_pins[inst["abstract_template_name"]] for fm in inst["fa_map"]), \
                     f"incorrect instantiation {inst['instance_name']} of module {inst['abstract_template_name']}, \

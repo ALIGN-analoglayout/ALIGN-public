@@ -31,7 +31,6 @@ def test_group_block_hsc(dir_name):
     gen_const_path = result_path / 'high_speed_comparator.verilog.json'
     gold_const_path = pathlib.Path(__file__).resolve().parent.parent / 'files' / 'test_results' / (dir_name + '.const.json')
     with open(gen_const_path, "r") as const_fp:
-        print(f"generated const {const_fp}")
         gen_const = next(x for x in json.load(const_fp)['modules'] if x['name'] == 'HIGH_SPEED_COMPARATOR')["constraints"]
         gen_const.sort(key=lambda item: item.get("constraint"))
     with open(gold_const_path, "r") as const_fp:

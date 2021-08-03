@@ -137,7 +137,6 @@ def plt_graph(subgraph,sub_block_name):
     plt.title(Title, fontsize=20)
 
 def _show_circuit_graph(filename, graph, dir_path):
-    #print(graph)
     no_of_subgraph = 0
     for subgraph in nx.connected_component_subgraphs(graph):
         no_of_subgraph += 1
@@ -206,7 +205,6 @@ def _write_circuit_graph(filename, graph,dir_path):
     nx.write_yaml(Graph(graph), dir_path+'/' + filename + ".yaml")
 
 def convert_to_unit(values):
-    print(values)
     for param in values:
         if float(values[param])>= 1 :
             values[param]=int(values[param])
