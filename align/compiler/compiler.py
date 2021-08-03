@@ -227,6 +227,6 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
         json.dump( verilog_tbl, fp=fp, indent=2)
 
     logger.info("Completed topology identification.")
-    logger.debug(f"OUTPUT verilog json netlist at: {result_dir}/{design_name.upper()}.verilog.json")
+    logger.info(f"OUTPUT verilog json netlist at: {result_dir}/{design_name.upper()}.verilog.json")
     logger.debug(f"OUTPUT const file at: {result_dir}/{design_name.upper()}.pnr.const.json")
     return primitives

@@ -5,7 +5,7 @@ from align.compiler.compiler import compiler_input, compiler_output
 def test_compiler():
     test_path=pathlib.Path(__file__).resolve().parent.parent / 'files' / 'test_circuits' / 'ota' / 'ota.sp'
     pdk_dir = pathlib.Path(__file__).resolve().parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK'
-    config_path =  pathlib.Path(__file__).resolve().parent.parent.parent / 'align' / 'config'
+    config_path =  pathlib.Path(__file__).resolve().parent.parent / 'files'
 
     updated_ckt = compiler_input(test_path, "ota", pdk_dir, config_path )
     assert updated_ckt.find('CMC_PMOS')

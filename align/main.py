@@ -213,7 +213,7 @@ def gen_more_primitives( primitives, topology_dir, subckt):
 
     # now hack the netlist to replace the template names using the concrete2abstract mapping
 
-    with (topology_dir / f'{subckt}.verilog.json').open( 'rt') as fp:
+    with (topology_dir / f'{subckt.upper()}.verilog.json').open( 'rt') as fp:
         verilog_json_d = json.load(fp)
 
     for module in verilog_json_d['modules']:

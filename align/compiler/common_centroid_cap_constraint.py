@@ -141,7 +141,6 @@ def merge_symmetric_caps(all_const, graph, unit_size_cap, available_cap_const):
                     and pin.split('/')[0] not in graph.nodes()]
                 removed_blocks = removed_blocks1 + removed_blocks2
             pairs, s1, s2 = symmnet_device_pairs(graph, net1, net2)
-            print(s1,s2)
             if pairs:
                 symmNetj = constraint.SymmetricNets(
                     direction = "V",
