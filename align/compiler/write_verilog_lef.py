@@ -14,7 +14,6 @@ from align.schema.subcircuit import SubCircuit
 import logging
 logger = logging.getLogger(__name__)
 
-from copy import deepcopy
 
 class WriteVerilog:
     """ write hierarchical verilog file """
@@ -36,20 +35,10 @@ class WriteVerilog:
 
         for ele in self.subckt_data.elements:
             instance = {}
-            print(ele)
             instance['template_name'] = ele.abstract_name
-            if ele.model in self.ckt_data:
-                print(self.ckt_data.find(ele.model))
             instance['instance_name'] = ele.name
             instance['fa_map']= self.gen_dict_fa(ele.pins.keys(), ele.pins.values())
             d['instances'].append( instance)
-
-        #         instance['fa_map'] = self.gen_dict_fa(ports, nets)
-        #         if not instance['fa_map']:
-        #             logger.warning(f"Unconnected module, only power/gnd conenction found {node}")
-
-        #         d['instances'].append( instance)
-
 
         return d
 
@@ -57,7 +46,6 @@ class WriteVerilog:
         if len(a) == len(b):
             mapped_pins = []
             for ai, bi in zip(a, b):
-                # if ai not in self.power_pins:
                 mapped_pins.append( { "formal" : ai, "actual" : bi})
             return list(sorted(mapped_pins,key=lambda x:x['formal']))
         elif len(set(a)) == len(set(b)):
@@ -72,43 +60,10 @@ class WriteVerilog:
                     else:
                         mapped_pins.append( { "formal" : a[i], "actual": b[i - no_of_short]})
                         check_short.append(a[i])
-                # mapped_pins = [x for x in mapped_pins if x['formal'] not in self.power_pins]
-                # mapped_pins = [x for x in mapped_pins]
-
                 return list(sorted(mapped_pins,key=lambda x:x['formal']))
 
         else:
             logger.error( f"unmatched ports found: {a} {b}")
             assert False
-
-def write_verilog( j, ofp):
-
-    for module in j['modules']:
-        print( f"module {module['name']} ( {', '.join( module['parameters'])} );", file=ofp)
-        print( f"input {', '.join( module['parameters'])};", file=ofp)
-        print( file=ofp)
-        for instance in module['instances']:
-            pl = ', '.join( f".{fa['formal']}({fa['actual']})" for fa in instance['fa_map'])
-            tn = instance['template_name'] if 'template_name' in instance else instance['abstract_template_name']
-
-            print( f"{tn} {instance['instance_name']} ( {pl} );", file=ofp)
-
-        print( file=ofp)
-        print( 'endmodule', file=ofp)
-
-    if 'global_signals' in j and j['global_signals']:
-        prefixes = set()
-        for s in j['global_signals']:
-            prefixes.add( s['prefix'])
-        assert 1 == len(prefixes)
-        prefix = list(prefixes)[0]
-        print( file=ofp)
-        print( "`celldefine", file=ofp)
-        print( f"module {prefix};", file=ofp)
-        for s in j['global_signals']:
-            formal, actual = s['formal'], s['actual']
-            print( f'{formal} {actual};', file=ofp)
-        print( "endmodule", file=ofp)
-        print( "`endcelldefine", file=ofp)
 
 

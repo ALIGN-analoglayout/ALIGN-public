@@ -3,14 +3,14 @@ import pathlib
 import pprint
 import json
 
-from .util import _write_circuit_graph, max_connectivity
+from .util import _write_circuit_graph
 from ..schema.subcircuit import SubCircuit
 from ..schema.parser import SpiceParser
-from .preprocess import define_SD, preprocess_stack_parallel
+from .preprocess import preprocess_stack_parallel
 from .create_database import CreateDatabase
 from .match_graph import Annotate
 from .read_setup import read_setup
-from .write_verilog_lef import write_verilog, WriteVerilog
+from .write_verilog_lef import WriteVerilog
 from .common_centroid_cap_constraint import CapConst
 from .find_constraint import FindConst
 from .user_const import ConstraintParser
@@ -58,7 +58,6 @@ def compiler_input(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path
     # Read model file to map devices
     # TODO: add pdk specific model files
     model_statemenets = config_path / 'model.txt'
-    design_name = design_name.upper()
     with open(model_statemenets) as f:
         lines = f.read()
     ckt_parser.parse(lines)
@@ -98,9 +97,9 @@ def compiler_input(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path
     const_parse = ConstraintParser(pdk_dir, input_dir)
     #TODO FLAT implementation
     create_data = CreateDatabase(ckt_parser, const_parse)
-    ckt_data= create_data.read_inputs(design_name)
+    ckt_data= create_data.read_inputs(design_name.upper())
     logger.debug("START preprocessing")
-    preprocess_stack_parallel(ckt_data, design_setup, design_name)
+    preprocess_stack_parallel(ckt_data, design_setup, design_name.upper())
 
     # TODO: pg_pins should be marked using constraints. Not manipulating netlist
     logger.debug("Modifying pg pins in design for PnR")
@@ -224,15 +223,10 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
         for i, nm in enumerate(POWER_PINS):
             verilog_tbl['global_signals'].append( { 'prefix' :'global_power', 'formal' : f'supply{i}', 'actual' : nm})
 
-    with (result_dir / f'{design_name}.verilog.json').open( 'wt') as fp:
+    with (result_dir / f'{design_name.upper()}.verilog.json').open( 'wt') as fp:
         json.dump( verilog_tbl, fp=fp, indent=2)
 
-    with (result_dir / f'{design_name}.v').open( 'wt') as fp:
-        write_verilog( verilog_tbl, fp)
-
-
     logger.info("Completed topology identification.")
-    logger.debug(f"OUTPUT verilog json netlist at: {result_dir}/{design_name}.verilog.json")
-    logger.debug(f"OUTPUT verilog netlist at: {result_dir}/{design_name}.v")
-    logger.debug(f"OUTPUT const file at: {result_dir}/{design_name}.pnr.const.json")
+    logger.debug(f"OUTPUT verilog json netlist at: {result_dir}/{design_name.upper()}.verilog.json")
+    logger.debug(f"OUTPUT const file at: {result_dir}/{design_name.upper()}.pnr.const.json")
     return primitives

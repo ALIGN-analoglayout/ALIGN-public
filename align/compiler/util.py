@@ -108,7 +108,6 @@ def compare_two_nodes(G,node1:str,node2:str ,ports_weight):
                 logger.debug(f'external port weight mismatch {ports_weight[node1]},{ports_weight[node2]}')
                 return False
         else:
-            print([G.get_edge_data(node1, nbr)['pin'] for nbr in nbrs1])
             weight1=[G.get_edge_data(node1, nbr)['pin'] for nbr in nbrs1]
             weight2=[G.get_edge_data(node2, nbr)['pin'] for nbr in nbrs2]
             if {'G'} in weight1:
@@ -122,23 +121,6 @@ def compare_two_nodes(G,node1:str,node2:str ,ports_weight):
                 logger.debug(f'internal port weight mismatch {weight1},{weight2}')
                 return False
 
-
-def max_connectivity(G):
-    conn_value =0
-    #internal_nets =[x for x,y in G.nodes(data=True) if y['inst_type']=='net' and len(G.edges(x)) > 1]
-    #Drain and source weights are equal
-    for (u, v, wt) in G.edges.data('pin'):
-        if G.nodes[u]['inst_type']=='net' and len(G.edges(u)) >1 and wt<8:
-            if 'mos' in G.nodes[v]['inst_type'] and wt >3:
-                conn_value-=3
-            conn_value +=wt
-            #print (u,conn_value)
-        elif G.nodes[v]['inst_type']=='net' and len(G.edges(v)) >1 and wt<8:
-            if 'mos' in G.nodes[u]['inst_type'] and wt >3:
-                conn_value-=3
-            conn_value +=wt
-            #print (v,conn_value)
-    return conn_value
 def plt_graph(subgraph,sub_block_name):
     copy_graph=subgraph
     for node,attr in list(copy_graph.nodes(data=True)):

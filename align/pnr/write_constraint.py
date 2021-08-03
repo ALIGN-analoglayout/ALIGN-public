@@ -30,7 +30,7 @@ class PnRConstraintWriter:
             # Create dict for PnR constraint
             # and handle common field aliasing
             const = input_const.dict(
-                exclude={'constraint'},
+                exclude = {'constraint'},
                 exclude_unset=True)
             const['const_name'] = input_const.__class__.__name__
             if 'instances' in const:
@@ -60,7 +60,7 @@ class PnRConstraintWriter:
                 del const['blocks']
             elif const["const_name"] == 'BlockDistance':
                 const["const_name"] = 'bias_graph'
-                const["distance"] = const.pop('abs_distance')               
+                const["distance"] = const.pop('abs_distance')
             elif const["const_name"] == 'HorizontalDistance':
                 const["const_name"] = 'bias_Hgraph'
                 const["distance"] = const.pop('abs_distance')
@@ -169,7 +169,7 @@ class PnRConstraintWriter:
                             "shield_net" : const["shield"]
                             }
                         pnr_const.append(extra)
-    
+
                     elif 'criticality' in const and const['shield'] =="None":
                         extra = {
                             "const_name" : 'CritNet',
@@ -193,7 +193,7 @@ class PnRConstraintWriter:
             else:
                 temp = {
                     "type":"terminal",
-                    "name":pin, 
+                    "name":pin,
                     "pin":None
                     }
             blocks.append(temp)
