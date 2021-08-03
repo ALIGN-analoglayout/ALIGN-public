@@ -133,7 +133,7 @@ def test_tia():
     example = build_example(name, netlist, setup, constraints)
     run_example(example)
 
-
+@pytest.mark.skip
 def test_ldo_amp():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ldo_amp(name)

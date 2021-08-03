@@ -27,7 +27,7 @@ def lef_from_layout_d(layout_d, fp, out_lef, cell_pin, bodyswitch, blockM, *, ex
         fp.write("    USE SIGNAL ;\n")
         fp.write("    PORT\n")
         for obj in layout_d['terminals']:
-            if 'pin' in obj and obj['pin'] == i:
+            if obj['netType'] == 'pin' and obj['netName'] == i:
                 fp.write("      LAYER %s ;\n" % obj['layer'])
                 fp.write("        RECT %s %s %s %s ;\n" % tuple(obj['rect']))
                 # Check Pins are on grid or not
@@ -43,7 +43,7 @@ def lef_from_layout_d(layout_d, fp, out_lef, cell_pin, bodyswitch, blockM, *, ex
     fp.write("  OBS\n")
     cap_layers = ['M1', 'M2', 'M3']
     for obj in layout_d['terminals']:
-        if ('pin' not in obj or obj['pin'] not in cell_pin) and blockM == 0 and obj['layer'] not in exclude_layers:
+        if (obj['netType'] != 'pin' or obj['netName'] not in cell_pin) and blockM == 0 and obj['layer'] not in exclude_layers:
             fp.write("    LAYER %s ;\n" % obj['layer'])
             fp.write("      RECT %s %s %s %s ;\n" % tuple(obj['rect']))
         elif (blockM == 1) and obj['layer'] == 'Boundary':

@@ -222,7 +222,7 @@ class MOSGenerator(CanvasPDK):
 
         # bounding box as visual aid
         t = {'layer': 'Boundary', 'netName': None,
-             'rect': [bbox[0]+x_offset, bbox[1]+y_offset, bbox[2]+x_offset, bbox[3]+y_offset]}
+             'rect': [bbox[0]+x_offset, bbox[1]+y_offset, bbox[2]+x_offset, bbox[3]+y_offset], 'netType': 'drawing'}
         self.terminals.append(t)
 
         if flip_x < 0:
@@ -239,6 +239,7 @@ class MOSGenerator(CanvasPDK):
 
             t['layer'] = term['layer']
             t['netName'] = pin_map.get(term['netName'], None)
+            t['netType'] = term['netType']
             self.terminals.append(t)
 
 
@@ -312,7 +313,7 @@ class MOSGenerator(CanvasPDK):
                 (e1, e2) = self.m3.spg.inverseBounds(y_max)
                 if b1[0] + 1 == e2[0]:
                     b1 = (b1[0]-1, b1[1])  #  Satisfy min length
-                self.addWire(self.m3, pin, None, c_idx, b1, e2)
+                self.addWire(self.m3, pin, c_idx, b1, e2)
                 c_idx +=1
 
             self.drop_via(self.v2)
@@ -325,8 +326,7 @@ class MOSGenerator(CanvasPDK):
         # Expose pins
         for term in self.terminals:
             if term['netName'] is not None and term['layer'] in ['M2', 'M3']:
-                term['pin'] = term['netName']
-
+                term['netType'] = 'pin'
 
     @staticmethod
     def validate_array(m, n_row, n_col):
