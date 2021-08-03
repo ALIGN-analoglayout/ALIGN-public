@@ -228,7 +228,7 @@ def gen_more_primitives( primitives, topology_dir, subckt):
                 instance['abstract_template_name'] = t
 
 
-    with (topology_dir / f'{subckt}.verilog.json').open( 'wt') as fp:
+    with (topology_dir / f'{subckt.upper()}.verilog.json').open( 'wt') as fp:
         json.dump( verilog_json_d, fp=fp, indent=2)
 
 
