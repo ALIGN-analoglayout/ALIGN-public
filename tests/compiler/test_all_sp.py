@@ -22,7 +22,11 @@ examples =  [p for p in examples_dir.rglob('*.sp') \
 @pytest.fixture
 def get_parser():
     parser = SpiceParser()
+    assert ALIGN_HOME.is_dir()
+    cfg = ALIGN_HOME/ 'align' / 'config'
+    assert cfg.is_dir()
     model_statemenets = ALIGN_HOME/ 'align' / 'config' / 'model.txt'
+    assert model_statemenets.is_file()
     with open(model_statemenets) as f:
         lines = f.read()
     parser.parse(lines)
