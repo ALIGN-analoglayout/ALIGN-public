@@ -90,33 +90,5 @@
             "mp8",
             "mp9"
           ]
-        },
-        {
-          "constraint": "symmetric_nets",
-          "net1": "vin",
-          "net2": "vip",
-          "pins1": [
-            "mn1_mn2/vin",
-            "vin"
-          ],
-          "pins2": [
-            "mn1_mn2/vip",
-            "vip"
-          ],
-          "direction": "V"
-        },
-        {
-          "constraint": "symmetric_nets",
-          "net1": "vin_d",
-          "net2": "vip_d",
-          "pins1": [
-            "mp7/D",
-            "mn3_mn4/vin_d"
-          ],
-          "pins2": [
-            "mp8/D",
-            "mn3_mn4/vip_d"
-          ],
-          "direction": "V"
         }
 ]

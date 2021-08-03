@@ -48,6 +48,7 @@
         {
             "direction": "V",
             "const_name": "Ordering",
+            "abut": false,
             "blocks": [
                 "mn0",
                 "mn1_mn2",
@@ -99,74 +100,6 @@
                 "mp8",
                 "mp9"
             ]
-        },
-        {
-            "net1": {
-                "name": "vin",
-                "blocks": [
-                    {
-                        "type": "pin",
-                        "name": "mn1_mn2",
-                        "pin": "vin"
-                    },
-                    {
-                        "type": "terminal",
-                        "name": "vin",
-                        "pin": null
-                    }
-                ]
-            },
-            "net2": {
-                "name": "vip",
-                "blocks": [
-                    {
-                        "type": "pin",
-                        "name": "mn1_mn2",
-                        "pin": "vip"
-                    },
-                    {
-                        "type": "terminal",
-                        "name": "vip",
-                        "pin": null
-                    }
-                ]
-            },
-            "const_name": "SymmNet",
-            "axis_dir": "V"
-        },
-        {
-            "net1": {
-                "name": "vin_d",
-                "blocks": [
-                    {
-                        "type": "pin",
-                        "name": "mp7",
-                        "pin": "D"
-                    },
-                    {
-                        "type": "pin",
-                        "name": "mn3_mn4",
-                        "pin": "vin_d"
-                    }
-                ]
-            },
-            "net2": {
-                "name": "vip_d",
-                "blocks": [
-                    {
-                        "type": "pin",
-                        "name": "mp8",
-                        "pin": "D"
-                    },
-                    {
-                        "type": "pin",
-                        "name": "mn3_mn4",
-                        "pin": "vip_d"
-                    }
-                ]
-            },
-            "const_name": "SymmNet",
-            "axis_dir": "V"
         }
     ]
 }

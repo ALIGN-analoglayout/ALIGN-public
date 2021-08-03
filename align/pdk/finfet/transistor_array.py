@@ -1,6 +1,5 @@
-import os
 import math
-from itertools import cycle, islice, chain
+from itertools import cycle, islice
 from align.cell_fabric import transformation
 from align.schema.transistor import Transistor, TransistorArray
 from . import CanvasPDK, MOS
@@ -28,7 +27,7 @@ class MOSGenerator(CanvasPDK):
 
     def mos_array_temporary_wrapper(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
 
-        logger_func(f'x_cells={x_cells}, y_cells={x_cells}, pattern={pattern}, ports={ports}, parameters={parameters}')
+        logger_func(f'x_cells={x_cells}, y_cells={y_cells}, pattern={pattern}, ports={ports}, parameters={parameters}')
 
         #################################################################################################
         # TODO: All of below goes away when TransistorArray is passed to mos_array as shown below
@@ -36,12 +35,12 @@ class MOSGenerator(CanvasPDK):
             assert key in parameters, f'Missing transistor parameter {key}'
         assert 'nf' or 'stack' in parameters, f'Missing transistor parameter nf or stack'
 
-        if 'nf' in parameters:
-            nf = 'nf'
-            device_type = 'parallel'
-        elif 'stack' in parameters:
+        if 'stack' in parameters:
             nf = 'stack'
             device_type = 'stack'
+        elif 'nf' in parameters:
+            nf = 'nf'
+            device_type = 'parallel'
         else:
             nf = device_type = None
             assert False, f'Either nf or stack parameter should be defined {parameters}'
@@ -88,6 +87,10 @@ class MOSGenerator(CanvasPDK):
         m = 2*parameters['m'] if pattern > 0 else parameters['m']
         self.n_row, self.n_col = self.validate_array(m, y_cells, x_cells)
         logger_func(f'x_cells={self.n_col}, y_cells={self.n_row} after legalization')
+
+        if self.n_row * self.n_col != m:
+            assert False, f'x_cells {self.n_row} by y_cells {self.n_col} not equal to m {m}'
+
         self.ports = ports
         self.mos_array()
 
@@ -219,7 +222,7 @@ class MOSGenerator(CanvasPDK):
 
         # bounding box as visual aid
         t = {'layer': 'Boundary', 'netName': None,
-             'rect': [bbox[0]+x_offset, bbox[1]+y_offset, bbox[2]+x_offset, bbox[3]+y_offset]}
+             'rect': [bbox[0]+x_offset, bbox[1]+y_offset, bbox[2]+x_offset, bbox[3]+y_offset], 'netType': 'drawing'}
         self.terminals.append(t)
 
         if flip_x < 0:
@@ -236,6 +239,7 @@ class MOSGenerator(CanvasPDK):
 
             t['layer'] = term['layer']
             t['netName'] = pin_map.get(term['netName'], None)
+            t['netType'] = term['netType']
             self.terminals.append(t)
 
 
@@ -309,7 +313,7 @@ class MOSGenerator(CanvasPDK):
                 (e1, e2) = self.m3.spg.inverseBounds(y_max)
                 if b1[0] + 1 == e2[0]:
                     b1 = (b1[0]-1, b1[1])  #  Satisfy min length
-                self.addWire(self.m3, pin, None, c_idx, b1, e2)
+                self.addWire(self.m3, pin, c_idx, b1, e2)
                 c_idx +=1
 
             self.drop_via(self.v2)
@@ -322,8 +326,7 @@ class MOSGenerator(CanvasPDK):
         # Expose pins
         for term in self.terminals:
             if term['netName'] is not None and term['layer'] in ['M2', 'M3']:
-                term['pin'] = term['netName']
-
+                term['netType'] = 'pin'
 
     @staticmethod
     def validate_array(m, n_row, n_col):

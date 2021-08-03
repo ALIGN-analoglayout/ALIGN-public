@@ -1,55 +1,28 @@
-import os
 import json
-import pathlib
-import pytest
 import shutil
-import align.pdk.finfet
 try:
-    from .helper import *
-except:
-    from helper import *
+    from .utils import get_test_id, build_example, run_example
+    from . import circuits
+except BaseException:
+    from utils import get_test_id, build_example, run_example
+    import circuits
 
-pdk_dir = pathlib.Path(align.pdk.finfet.__file__).parent
-
-def tia(name):
-    netlist = f"""*
-.subckt pcell_tfr_0 a b
-xi0 a b tfr_prim w=1e-6 l=1e-6
-.ends pcell_tfr_0
-.subckt {name} vin vop vccx vss
-mp0 vop vin vccx vccx p nfin=4 nf=4 m=4
-mn0 vop vin vssx vssx n nfin=4 nf=4 m=4
-xi0 vin vop pcell_tfr_0
-.ends {name}
-"""
-    netlist_setup = f""""""
-    return netlist, netlist_setup
-    
 
 def test_dependencies():
-    constraints = """[]"""
     name = f'ckt_{get_test_id()}'
-    netlist, netlist_setup = tia(name)
-    example = build_example(my_dir, name, netlist, netlist_setup, constraints)
-    # run_example(example, n=1, cleanup=False)
+    netlist = circuits.tia(name)
+    setup = ""
+    constraints = []
+    example = build_example(name, netlist, setup, constraints)
+    ckt_dir, run_dir = run_example(example, cleanup=False)
 
-    run_dir = my_dir / f'run_{example.name}'
-    if run_dir.exists() and run_dir.is_dir():
-        shutil.rmtree(run_dir)
-    run_dir.mkdir(parents=True)
-    os.chdir(run_dir)
+    with (run_dir / '2_primitives' / '__primitives__.json').open('rt') as fp:
+        primitives = json.load(fp)
+        assert 'metadata' in primitives['tfr_prim_l_1e6_w_1e6'], 'Metadata not found'
 
-    args = [str(example), '-p', str(pdk_dir)]
-    results = align.CmdlineParser().parse_args(args)
-    assert results is not None, f"{example.name}: No results generated"
-    
-    with (run_dir / '2_primitives' / '__primitives__.json').open( 'rt') as fp:
-        primitives = json.load(fp)    
-    assert 'metadata' in primitives['tfr_prim_l_1e6_w_1e6'], f'Metadata not passed'
-
-    with (run_dir / '3_pnr' / 'Results' / f'{name}_0.placement_verilog.json').open( 'rt') as fp:
+    with (run_dir / '3_pnr' / 'Results' / f'{name}_0.placement_verilog.json').open('rt') as fp:
         placement = json.load(fp)
+        assert 'modules' in placement, 'modules not in placement'
 
     shutil.rmtree(run_dir)
-    shutil.rmtree(example)
-
+    shutil.rmtree(ckt_dir)
