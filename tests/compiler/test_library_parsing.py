@@ -7,12 +7,12 @@ from align.schema import constraint
 @pytest.fixture
 def library():
     parser = SpiceParser()
-    align_home = pathlib.Path(__file__).resolve().parent.parent.parent / 'align'
-    basic_lib_path = align_home / 'config' / 'basic_template.sp'
+    align_home = pathlib.Path(__file__).resolve().parent.parent / 'files'
+    basic_lib_path = align_home /  'basic_template.sp'
     with open(basic_lib_path) as f:
         lines = f.read()
     parser.parse(lines)
-    user_lib_path = align_home / 'config' / 'user_template.sp'
+    user_lib_path = align_home / 'user_template.sp'
     with open(user_lib_path) as f:
         lines = f.read()
     parser.parse(lines)
