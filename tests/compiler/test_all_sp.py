@@ -16,6 +16,7 @@ skip_dirs = ['tb_single_SAR','TI_SAR','Sanitized_TX_8l12b','Sanitized_DLPF_RCFil
     'vco_dtype_12_hierarchical_res_constrained', 'ldo_error_amp_v2','VCO_type2_65']
 
 examples_dir =  ALIGN_HOME / 'examples'
+assert examples_dir.is_dir()
 examples =  [p for p in examples_dir.rglob('*.sp') \
                 if all(x not in skip_dirs for x in p.relative_to(examples_dir).parts)]
 
@@ -23,7 +24,9 @@ examples =  [p for p in examples_dir.rglob('*.sp') \
 def get_parser():
     parser = SpiceParser()
     assert ALIGN_HOME.is_dir()
-    cfg = ALIGN_HOME/ 'align' / 'config'
+    ah = ALIGN_HOME / 'align'
+    assert ah.is_dir(), f"{ALIGN_HOME.glob('**/*')}"
+    cfg = ALIGN_HOME / 'align' / 'config'
     assert cfg.is_dir()
     model_statemenets = ALIGN_HOME/ 'align' / 'config' / 'model.txt'
     assert model_statemenets.is_file()
