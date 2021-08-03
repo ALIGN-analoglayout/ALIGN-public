@@ -1,3 +1,4 @@
+from align.schema import model
 import pytest
 from align.schema.parser import SpiceParser
 import pathlib
@@ -20,15 +21,19 @@ assert examples_dir.is_dir()
 examples =  [p for p in examples_dir.rglob('*.sp') \
                 if all(x not in skip_dirs for x in p.relative_to(examples_dir).parts)]
 
+for root, dirs, files in os.walk(os.environ['ALIGN_HOME']):
+    for file in files:
+        if file.endswith("model.txt"):
+             model_path = os.path.join(root, file)
+
 @pytest.fixture
 def get_parser():
     parser = SpiceParser()
     assert ALIGN_HOME.is_dir()
-    ah = ALIGN_HOME / 'align'
-    assert ah.is_dir(), f"{ALIGN_HOME.glob('**/*')}"
-    cfg = ALIGN_HOME / 'align' / 'config'
-    assert cfg.is_dir()
+    ah = ALIGN_HOME / 'align' # There is no align dir in ALIGN HOME in CI
+
     model_statemenets = ALIGN_HOME/ 'align' / 'config' / 'model.txt'
+    assert model_statemenets == model_path
     assert model_statemenets.is_file()
     with open(model_statemenets) as f:
         lines = f.read()
