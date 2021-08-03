@@ -508,7 +508,6 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
             # if vt:
             #     block_name = block_name+'_'+vt[0]
             #     cell_gen_parameters['vt_type']=vt[0]
-            print(element,block_name)
             #element.parameters['sized_name'] = block_name
             element.add_abs_name(block_name)
             return block_name, cell_gen_parameters
