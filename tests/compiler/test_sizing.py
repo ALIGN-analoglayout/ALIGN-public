@@ -6,7 +6,7 @@ from align.schema import SubCircuit
 def ckt(cn):
     mydir = pathlib.Path(__file__).resolve()
     pdk_path = mydir.parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK'
-    config_path =  mydir.parent.parent.parent / 'files'
+    config_path =  mydir.parent.parent / 'files'
     test_path = mydir.parent.parent / 'files' / 'test_circuits' / (cn+'.sp')
     ckt_library = compiler_input(test_path, cn, pdk_path, config_path)
     assert ckt_library.find(cn)
@@ -16,7 +16,7 @@ def ckt(cn):
 def path(cn):
     mydir = pathlib.Path(__file__).resolve()
     pdk_path = mydir.parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK'
-    config_path =  mydir.parent.parent.parent / 'files'
+    config_path =  mydir.parent.parent / 'files'
     test_path = mydir.parent.parent / 'files' / 'test_circuits' / (cn+'.sp')
     return test_path, pdk_path, config_path
 
