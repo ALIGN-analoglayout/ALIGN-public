@@ -28,7 +28,7 @@ def get_parser():
     parser = SpiceParser()
     assert ALIGN_HOME.is_dir()
     ah = ALIGN_HOME / 'align' # There is no align dir in ALIGN HOME in CI
-    model_statemenets = ALIGN_HOME/ 'files' / 'test_circuits' / 'model.txt'
+    model_statemenets = ALIGN_HOME/ 'files' / 'model.txt'
     assert model_statemenets.is_file()
     with open(model_statemenets) as f:
         lines = f.read()
