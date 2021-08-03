@@ -1,6 +1,6 @@
 import pathlib
 
-from align.compiler.write_verilog_lef import write_verilog, WriteVerilog
+from align.compiler.write_verilog_lef import WriteVerilog
 from align.primitive import generate_primitive_lef
 from align.compiler.find_constraint import FindConst
 from align.schema.constraint import ConstraintDB
@@ -11,7 +11,6 @@ from test_compiler import test_compiler
 def test_verilog_writer():
     ckt_data = test_compiler()
     assert ckt_data.find('OTA')
-    result_dir = pathlib.Path(__file__).parent /'Results'
 
     available_cell_generator = ['NMOS','PMOS', 'CMC_NMOS', 'CMC_PMOS', 'DP_NMOS_B', 'CMC_S_NMOS_B', 'DCL_NMOS', 'SCM_NMOS']
     design_config={
@@ -44,7 +43,4 @@ def test_verilog_writer():
 
         wv = WriteVerilog(subckt, ckt_data, ['vdd!','vss'])
         verilog_tbl['modules'].append( wv.gen_dict())
-
-    with (result_dir / 'ota.v').open( 'wt') as fp:
-        write_verilog( verilog_tbl, fp)
 

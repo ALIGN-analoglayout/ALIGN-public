@@ -4,7 +4,6 @@ import io
 import pytest
 import os
 import shutil
-from align.compiler.write_verilog_lef import write_verilog
 
 from align.pnr.cmdline import cmdline
 import align
@@ -17,7 +16,7 @@ else:
     os.environ['ALIGN_HOME'] = str(ALIGN_HOME)
 
 if 'ALIGN_WORK_DIR' in os.environ:
-    ALIGN_WORK_DIR = pathlib.Path( os.environ['ALIGN_WORK_DIR']).resolve() 
+    ALIGN_WORK_DIR = pathlib.Path( os.environ['ALIGN_WORK_DIR']).resolve()
 else:
     ALIGN_WORK_DIR = ALIGN_HOME / 'tests' / 'tmp'
 
@@ -43,9 +42,6 @@ def test_verilog():
 
     with (run_dir / '3_pnr' / 'inputs' / f"{nm}.verilog.json").open("rt") as fp:
         j = json.load( fp)
-
-    with (run_dir / '3_pnr' / 'inputs' / f"{nm}.v").open("wt") as fp:
-        write_verilog( j, fp)
 
     os.chdir(run_dir / "3_pnr")
 
