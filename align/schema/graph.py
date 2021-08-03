@@ -160,7 +160,7 @@ class Graph(networkx.Graph):
             if not all(x in match for node in removal_candidates for x in self.neighbors(node)):
                 continue
             # Remove nodes not on subckt boundary
-            if set(removal_candidates) & set(skip):
+            if skip and (set(removal_candidates) & set(skip)):
                 continue
             # Create a dummy instance of instance of subckt
             subckt_instance = self.create_subckt_instance(subckt, match, subckt.name)

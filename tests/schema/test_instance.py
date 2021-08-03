@@ -155,4 +155,4 @@ def test_instance_json(circuit):
         model='testmos',
         pins={'D': 'NET01', 'G': 'NET02', 'S': 'NET03', 'B': 'NET04'},
         parameters={'PARAM1':'NF*4'})
-    assert M1.json() == '{"model": "TESTMOS", "name": "M1", "pins": {"D": "NET01", "G": "NET02", "S": "NET03", "B": "NET04"}, "parameters": {"PARAM1": "NF*4", "PARAM2": "2"}}'
+    assert M1.json() == '{"model": "TESTMOS", "name": "M1", "pins": {"D": "NET01", "G": "NET02", "S": "NET03", "B": "NET04"}, "parameters": {"PARAM1": "NF*4", "PARAM2": "2"}, "generator": null, "abstract_name": null}'

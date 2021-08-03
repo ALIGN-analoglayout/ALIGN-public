@@ -15,7 +15,7 @@ def setup_basic():
 @pytest.fixture
 def setup_multiline():
     return '''
-    X1 a b  testdev x =1f y= 0.1 
+    X1 a b  testdev x =1f y= 0.1
     X2 a  b testdev x = {capval*2}
     '''
 
@@ -183,4 +183,4 @@ def test_basic_template_parsing(parser):
     libsize = len(parser.library)
     with open((pathlib.Path(__file__).parent.parent / 'files' / 'basic_template.sp').resolve()) as fp:
         parser.parse(fp.read())
-    assert len(parser.library) - libsize == 31
+    assert len(parser.library) - libsize == 23

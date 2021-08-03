@@ -95,38 +95,38 @@ def test_res(library, test_ckt):
     assert any(x.name == 'RES' for x in library)
     with set_context(test_ckt.elements):
         with pytest.raises(Exception):
-            inst = Instance(name='R1', model='RES', pins={'+': 'NET10'})
+            inst = Instance(name='R1', model='RES', pins={'PLUS': 'NET10'})
         with pytest.raises(Exception):
-            inst = Instance(name='X1', model='RES', pins={'+': 'NET10', '-':'NET12'}, parameters={'VALUE': '1.3'})
-        inst = Instance(name='R1', model='RES', pins={'+': 'NET10', '-':'NET12'}, parameters={'VALUE': '1.3'})
+            inst = Instance(name='X1', model='RES', pins={'PLUS': 'NET10', 'MINUS':'NET12'}, parameters={'VALUE': '1.3'})
+        inst = Instance(name='R1', model='RES', pins={'PLUS': 'NET10', 'MINUS':'NET12'}, parameters={'VALUE': '1.3'})
     assert inst.name == 'R1'
     assert inst.model == 'RES'
-    assert inst.pins == {'+': 'NET10', '-': 'NET12'}
+    assert inst.pins == {'PLUS': 'NET10', 'MINUS': 'NET12'}
     assert inst.parameters['VALUE'] == '1.3'
 
 def test_cap(library, test_ckt):
     assert any(x.name == 'CAP' for x in library)
     with set_context(test_ckt.elements):
         with pytest.raises(Exception):
-            inst = Instance(name='C1', model='CAP', pins={'+': 'NET10'})
+            inst = Instance(name='C1', model='CAP', pins={'PLUS': 'NET10'})
         with pytest.raises(Exception):
-            inst = Instance(name='X1', model='CAP', pins={'+': 'NET10', '-':'NET12'}, parameters={'VALUE': '1.3'})
-        inst = Instance(name='C1', model='CAP', pins={'+': 'NET10', '-':'NET12'}, parameters={'VALUE': '1.3'})
+            inst = Instance(name='X1', model='CAP', pins={'PLUS': 'NET10', 'MINUS':'NET12'}, parameters={'VALUE': '1.3'})
+        inst = Instance(name='C1', model='CAP', pins={'PLUS': 'NET10', 'MINUS':'NET12'}, parameters={'VALUE': '1.3'})
     assert inst.name == 'C1'
     assert inst.model == 'CAP'
-    assert inst.pins == {'+': 'NET10', '-': 'NET12'}
+    assert inst.pins == {'PLUS': 'NET10', 'MINUS': 'NET12'}
     assert inst.parameters['VALUE'] == '1.3'
 
 def test_ind(library, test_ckt):
     assert any(x.name == 'IND' for x in library)
     with set_context(test_ckt.elements):
         with pytest.raises(Exception):
-            inst = Instance(name='L1', model='IND', pins={'+': 'NET10'})
+            inst = Instance(name='L1', model='IND', pins={'PLUS': 'NET10'})
         with pytest.raises(Exception):
-            inst = Instance(name='X1', model='IND', pins={'+': 'NET10', '-':'NET12'}, parameters={'VALUE': '1.3'})
-        inst = Instance(name='L1', model='IND', pins={'+': 'NET10', '-':'NET12'}, parameters={'VALUE': '1.3'})
+            inst = Instance(name='X1', model='IND', pins={'PLUS': 'NET10', 'MINUS':'NET12'}, parameters={'VALUE': '1.3'})
+        inst = Instance(name='L1', model='IND', pins={'PLUS': 'NET10', 'MINUS':'NET12'}, parameters={'VALUE': '1.3'})
     assert inst.name == 'L1'
     assert inst.model == 'IND'
-    assert inst.pins == {'+': 'NET10', '-': 'NET12'}
+    assert inst.pins == {'PLUS': 'NET10', 'MINUS': 'NET12'}
     assert inst.parameters['VALUE'] == '1.3'
 

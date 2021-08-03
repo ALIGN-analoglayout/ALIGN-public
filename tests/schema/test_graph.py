@@ -159,8 +159,8 @@ def test_replace_matching_subgraph(simple_circuit, matching_subckt):
     matches = [{'X3': 'X1', 'NET3': 'PIN3', 'NET1': 'PIN1', 'X4': 'X2', 'NET2': 'PIN2'}]
     netlist.replace_matching_subgraph(matching_netlist)
     assert all(x not in netlist.nodes for x in matches[0].keys() if x.startswith('X'))
-    assert 'X_TEST_SUBCKT_0' in netlist.nodes
-    new_edges = [('X_TEST_SUBCKT_0', 'NET3', {'PIN3'}), ('X_TEST_SUBCKT_0', 'NET1', {'PIN1'}), ('X_TEST_SUBCKT_0', 'NET2', {'PIN2'})]
+    assert 'X_TEST_SUBCKT_1_X3_X4' in netlist.nodes
+    new_edges = [('X_TEST_SUBCKT_1_X3_X4', 'NET3', {'PIN3'}), ('X_TEST_SUBCKT_1_X3_X4', 'NET1', {'PIN1'}), ('X_TEST_SUBCKT_1_X3_X4', 'NET2', {'PIN2'})]
     assert all(x in netlist.edges.data('pin') for x in new_edges), netlist.edges.data('pin')
 
 def test_replace_repeated_subckts(ota):
@@ -185,8 +185,7 @@ def test_replace_matching_subckts(ota, primitives):
     # Perform subgraph matching & replacement
     for subckt in primitives:
         netlist.replace_matching_subgraph(Graph(subckt))
-    assert len(ckt.elements) == 5
-    assert all(x.name.startswith('X') for x in ckt.elements)
+    assert len(ckt.elements) == 6
 
 def test_flatten(heirarchical_ckt):
     ckt = heirarchical_ckt

@@ -12,7 +12,7 @@ def test_group_block_hsc(dir_name):
     circuit_name = 'high_speed_comparator'
     test_path = pathlib.Path(__file__).resolve().parent.parent / 'files' / 'test_circuits' / dir_name / (circuit_name + '.sp')
     pdk_dir = pathlib.Path(__file__).resolve().parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK'
-    config_path =  pathlib.Path(__file__).resolve().parent.parent.parent / 'align' / 'config'
+    config_path =  pathlib.Path(__file__).resolve().parent.parent / 'files'
 
     updated_cktlib = compiler_input(test_path, circuit_name, pdk_dir, config_path)
     assert updated_cktlib.find('DP')

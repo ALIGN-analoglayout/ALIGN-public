@@ -6,8 +6,7 @@ from align.compiler.compiler import compiler_input, compiler_output
 def test_cap():
     mydir = pathlib.Path(__file__).resolve()
     pdk_path = mydir.parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK'
-    config_path =  pathlib.Path(__file__).resolve().parent.parent.parent / 'align' / 'config'
-
+    config_path = mydir.parent.parent  / 'files' /
     test_path = mydir.parent.parent / 'files' / 'test_circuits' / 'test_cap.sp'
     gen_const_path = mydir.parent / 'Results' / 'test_cap.verilog.json'
     gold_const_path = mydir.parent.parent / 'files' / 'test_results' / 'test_cap.const.json'
