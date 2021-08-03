@@ -98,7 +98,15 @@ def gen_matrix_module(nm, n=3):
 def gen_primitives(run_dir):
     primitives_d = {}
     
-    for suffix in ['_a', '_b', '_c']:
+    sizes = [ ('_an', (10,10,1)),
+              ('_bn', ( 5,20,1)),
+              ('_cn', (20, 5,1)),
+              ('_af', (10,10,-1)),
+              ('_bf', ( 5,20,-1)),
+              ('_cf', (20, 5,-1))]
+             
+
+    for suffix, _ in sizes:
         atn = 'slice'
         ctn = f'{atn}{suffix}'
         primitives_d[ctn] = { 'abstract_template_name': atn,
@@ -116,16 +124,13 @@ def gen_primitives(run_dir):
     xstopdelta = 36
     yhalfwidth = 16
 
-    sizes = [ ('_a', (10,10)),
-              ('_b', ( 5,20)),
-              ('_c', (20, 5))]
 
-    for suffix, (nx,ny) in sizes:
+    for suffix, (nx,ny,sY) in sizes:
 
         bbox = [0,0,nx*xpitch,ny*ypitch]
 
         sx,ex = 2,nx-2
-        inp_y,out_y = 2,ny-2
+        inp_y,out_y = (2, ny-2) if sY == 1 else (ny-2, 2)
 
         terminals = [
             {
