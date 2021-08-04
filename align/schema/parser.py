@@ -148,6 +148,7 @@ class SpiceParser:
 
         if self.library.find(model):
             model = self.library.find(model)
+            abn = model.name
         else:
             #TODO generic model need to get pins from generator
             logger.info(f"unknown device found {model}, creating a generic model for this")
@@ -156,11 +157,11 @@ class SpiceParser:
                     Model(name=model, pins=args, parameters=kwargs, prefix='XI')
                 )
             model = self.library.find(model)
+            abn = 'generic'
             #Get template name from generator
 
 
         assert model is not None, (model, name, args, kwargs)
-        abn = model.name
         assert len(args) == len(model.pins), \
                 f"Model {model.name} has {len(model.pins)} pins {model.pins}. " \
                 + f"{len(args)} nets {args} were passed when instantiating {name}."

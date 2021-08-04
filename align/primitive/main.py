@@ -330,7 +330,7 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
     values = element.parameters
     available_block_lef = all_lef
     logger.info(f"checking lef for: {name}, {element}")
-    if name.lower() == 'generic':
+    if element.abstract_name.lower() == 'generic':
         # TODO: how about hashing for unique names?
         value_str = ''
         for key in sorted(values):
@@ -338,6 +338,7 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
             value_str += f'_{key}_{val}'
         block_name = element.name
         block_parameters = {"parameters": deepcopy(values), "primitive": name.lower()}
+        logger.debug(f"creating generic primitive {block_name} {block_parameters}")
         return block_name, block_parameters
 
     elif name=='CAP':
