@@ -97,7 +97,7 @@ def compiler_input(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path
     const_parse = ConstraintParser(pdk_dir, input_dir)
     #TODO FLAT implementation
     create_data = CreateDatabase(ckt_parser, const_parse)
-    ckt_data= create_data.read_inputs(design_name.upper())
+    ckt_data= create_data.read_inputs(design_name)
     logger.debug("START preprocessing")
     preprocess_stack_parallel(ckt_data, design_setup, design_name.upper())
 
@@ -205,7 +205,6 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
         if not isinstance(ckt, SubCircuit):
             continue
         if ckt.name not in  generators:
-            subckt = ckt_data.find(ckt.name)
             ## Removing constraints to fix cascoded cmc
             if ckt.name not in design_setup['DIGITAL']:
                 logger.debug(f"call constraint generator writer for block: {ckt.name}")

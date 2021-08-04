@@ -25,8 +25,8 @@ class CreateDatabase:
         """
         Add user constraints to the design
         """
-        subckt = self.ckt_parser.library.find(name)
-        assert subckt, f"Design {name} not found in library {[e.name for e in self.ckt_parser.library]}"
+        subckt = self.ckt_parser.library.find(name.upper())
+        assert subckt, f"Design {name.upper()} not found in library {[e.name for e in self.ckt_parser.library]}"
         self.const_parse.annotate_user_constraints(subckt)
         logger.debug(f"creating database for {subckt}")
         for pin in subckt.pins:
@@ -35,10 +35,10 @@ class CreateDatabase:
         #TODO remove redundant library model
         return self.ckt_parser.library
     def resolve_parameters(self, name, param):
-        subckt = self.ckt_parser.library.find(name)
+        subckt = self.ckt_parser.library.find(name.upper())
         if not isinstance(subckt, SubCircuit):
             return
-        if name in self.multi_param_instantiation:
+        if name.upper() in self.multi_param_instantiation:
             #Second time instantiation of this circuit with same parameters
             if all(v==param[p] for p,v in subckt.parameters if p in param):
                 return
@@ -67,6 +67,7 @@ class CreateDatabase:
             name = subckt.name
         else:
             name = f'{subckt.name}_{counter}'
+        name = name.upper()
         existing_ckt = self.subckt.parent.find(name)
         if existing_ckt:
             if subckt.pins == existing_ckt.pins and \
