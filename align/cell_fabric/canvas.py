@@ -134,7 +134,7 @@ class Canvas:
                     next_w = next_slr.rect[ix + 2] - next_slr.rect[ix]
                     w = slr.rect[ix + 2] - slr.rect[ix]
                     new_length += next_slr.rect[iy+2] - slr.rect[iy]
-                    if slr.netName == next_slr.netName and w == next_w and new_length <= max_l and slr.netType == next_slr.netType:
+                    if slr.netName == next_slr.netName and w == next_w and new_length <= max_l and slr.netType == next_slr.netType and slr.netType != "blockage":
                         (b_idx, _) = wire.spg.inverseBounds(slr.rect[iy])
                         (_, e_idx) = wire.spg.inverseBounds(next_slr.rect[iy+2])
                         self.addWire(wire, slr.netName, c_idx, b_idx, e_idx)
