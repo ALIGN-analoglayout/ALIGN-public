@@ -8,7 +8,7 @@ def test_cap():
     pdk_path = mydir.parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK'
     config_path = mydir.parent.parent  / 'files'
     test_path = mydir.parent.parent / 'files' / 'test_circuits' / 'test_cap.sp'
-    gen_const_path = mydir.parent / 'Results' / 'test_cap.verilog.json'
+    gen_const_path = mydir.parent / 'Results' / 'TEST_CAP.verilog.json'
     gold_const_path = mydir.parent.parent / 'files' / 'test_results' / 'test_cap.const.json'
 
     updated_ckt = compiler_input(test_path, "test_cap", pdk_path, config_path)

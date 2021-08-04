@@ -7,7 +7,7 @@ from align.compiler.compiler import compiler_input
 def test_simple_circuit():
     test_path = (pathlib.Path(__file__).parent / 'test_circuits' / 'test2.sp').resolve()
     pdk_dir = pathlib.Path(__file__).resolve().parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK'
-    config_path =  pathlib.Path(__file__).resolve().parent.parent.parent / 'align' / 'config'
+    config_path =  pathlib.Path(__file__).resolve().parent.parent / 'files'
     lib = compiler_input(test_path, "test2", pdk_dir, config_path)
     circuit = lib.find('TEST2')
 

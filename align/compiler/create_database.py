@@ -28,7 +28,7 @@ class CreateDatabase:
         self.const_parse.annotate_user_constraints(subckt)
         logger.debug(f"creating database for {subckt}")
         for pin in subckt.pins:
-            assert pin in subckt.nets, f"Floating pin: {pin} found for subckt {subckt.name}"
+            assert pin in subckt.nets, f"Floating pin: {pin} found for subckt {subckt.name} nets: {subckt.nets}"
         self.resolve_parameters(name, subckt.parameters)
         #TODO remove redundant library model
         return self.ckt_parser.library
