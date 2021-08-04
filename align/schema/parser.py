@@ -157,9 +157,8 @@ class SpiceParser:
                     Model(name=model, pins=args, parameters=kwargs, prefix='XI')
                 )
             model = self.library.find(model)
+            #TODO: get it from generator
             abn = 'generic'
-            #Get template name from generator
-
 
         assert model is not None, (model, name, args, kwargs)
         assert len(args) == len(model.pins), \

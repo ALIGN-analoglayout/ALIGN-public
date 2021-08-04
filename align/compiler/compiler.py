@@ -185,8 +185,13 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
 
         for ele in ckt.elements:
             model = str(ele.model)
-            if model not in generators and not isinstance(ckt_data.find(model), SubCircuit):
+            assert 'generic' in generators
+            if model not in generators and ele.abstract_name in generators:
+                #Hack for generic primitive
+                model = 'generic'
+            elif model not in generators and not isinstance(ckt_data.find(model), SubCircuit):
                 model = str(ckt_data.find(model).base)
+
             logger.warning(f"Checking generator for {ele}, {model}")
             if model in generators:
                 logger.debug("check")
