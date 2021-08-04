@@ -146,14 +146,29 @@ class SpiceParser:
         else:
             raise NotImplementedError(name, args, kwargs, "is not yet recognized by parser")
 
-        model = self.library.find(model)
+        if self.library.find(model):
+            model = self.library.find(model)
+        else:
+            #TODO generic model need to get pins from generator
+            logger.info(f"unknown device found {model}, creating a generic model for this")
+            with set_context(self.library):
+                self.library.append(
+                    Model(name=model, pins=args, parameters=kwargs, prefix='XI')
+                )
+            model = self.library.find(model)
+            #Get template name from generator
+
+
         assert model is not None, (model, name, args, kwargs)
+        abn = model.name
         assert len(args) == len(model.pins), \
                 f"Model {model.name} has {len(model.pins)} pins {model.pins}. " \
                 + f"{len(args)} nets {args} were passed when instantiating {name}."
         pins = {pin:net for pin, net in zip(model.pins, args)}
         with set_context(self._scope[-1].elements):
-            self._scope[-1].elements.append(Instance(name=name, model=model.name, pins=pins, parameters=kwargs))
+            self._scope[-1].elements.append(Instance(name=name, model=model.name, \
+                pins=pins, parameters=kwargs, abstract_name=abn
+                ))
 
     def _process_constraints(self):
         with set_context(self._scope[-1].constraints):

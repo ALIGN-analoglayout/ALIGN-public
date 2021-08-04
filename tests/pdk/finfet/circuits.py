@@ -51,13 +51,17 @@ def common_source(name):
 
 def tia(name):
     netlist = textwrap.dedent(f"""\
+        .subckt pcell_mos d g s b
+        M0 d g s b n w=720e-9 nf=4 m=4
+        .ends pcell_mos
         .subckt pcell_tfr_0 a b
         xi0 a b tfr_prim w=1e-6 l=1e-6
         .ends pcell_tfr_0
-        .subckt {name} vin vop vccx vss
+        .subckt {name} vin vop vccx vssx
         mp0 vop vin vccx vccx p w=720e-9 nf=4 m=4
         mn0 vop vin vssx vssx n w=720e-9 nf=4 m=4
         xi0 vin vop pcell_tfr_0
+        xi1 vin vop vssx vssx pcell_mos
         .ends {name}
     """)
     return netlist

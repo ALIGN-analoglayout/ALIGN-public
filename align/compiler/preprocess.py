@@ -82,11 +82,17 @@ def remove_dummy_hier(library,ckt,update=True):
                     pins = {}
                     for p,v in y.pins.items():
                         pins[p] = ele.pins[v]
+                    print("parameter type",y.model, type(ele.parameters), y.parameters)
+                    y.parameters.update({k : v for k,v in y.parameters.items() if k in ele.parameters})
+                    logger.info(f"new instance parameters: {y.parameters}")
                     other_ckt.elements.append(Instance(
-                        name = ele.name.replace('X','M'),
+                        name = ele.name.replace('X',library.find(y.model).prefix),
                         model = y.model,
                         pins = pins,
-                        parameters = {k : ele.parameters.get(k, v)  for k, v in y.parameters.items()}))
+                        parameters = y.parameters,
+                        abstract_name = y.abstract_name,
+                        generator = y.generator
+                        ))
                     other_ckt.elements.remove(ele)
     return True
 

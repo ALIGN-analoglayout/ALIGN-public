@@ -329,7 +329,7 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
     name = model
     values = element.parameters
     available_block_lef = all_lef
-    logger.debug(f"checking lef for: {name}, {element}")
+    logger.info(f"checking lef for: {name}, {element}")
     if name.lower() == 'generic':
         # TODO: how about hashing for unique names?
         value_str = ''
@@ -444,6 +444,7 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
                 if block_args != available_block_lef[block_name]:
                     assert False, f'Two different transistors mapped to the same name {block_name}: {available_block_lef[block_name]} {block_args}'
             element.add_abs_name(block_name)
+            logger.info(f"found primitive {block_name} with {block_args}")
             return block_name, block_args
 
 

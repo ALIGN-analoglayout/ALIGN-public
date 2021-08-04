@@ -43,7 +43,7 @@ class MOSGenerator(CanvasPDK):
             device_type = 'parallel'
         else:
             nf = device_type = None
-            assert False, f'Either nf or stack parameter should be defined {parameters}'
+            assert False, f'Either nf>1 or stack>1 parameter should be defined {parameters}'
 
         if 'W' in parameters:
             nfin = int(float(parameters['W']) * 1e10) // self.pdk['Fin']['Pitch']
