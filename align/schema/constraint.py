@@ -728,6 +728,7 @@ class ConstraintDB(types.List[ConstraintType]):
             data = []
         with set_context(self):
             for x in data:
+                logger.info(f'reading data {x}')
                 self.append(x)
 
     def checkpoint(self):

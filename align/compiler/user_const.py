@@ -41,8 +41,10 @@ class ConstraintParser:
             with types.set_context(node.constraints):
                 for const in self.constraint_dict[design_name]:
                     node.constraints.append(const)
-        json_path = self.input_dir / (design_name+'.const.json')
-        if json_path.is_file():
+        json_path = [cf for cf in self.input_dir.rglob('*.const.json') if cf.stem.upper()==design_name+'.CONST']
+        logger.info(f"json path {json_path} {self.input_dir}")
+        if json_path and json_path[0].is_file():
+            json_path = json_path[0]
             logger.debug(
                 f"JSON input const file for block {design_name} {json_path}")
             with types.set_context(node):
