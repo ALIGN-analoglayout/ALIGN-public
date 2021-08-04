@@ -281,10 +281,12 @@ def generate_generic(pdkdir, parameters):
 def merge_subckt_param(ckt):
     max_value = {}
     logger.debug(f"creating generator parameters: {ckt.name}")
+    vt_types=[]
     for ele in ckt.elements:
         logger.debug(f"merging element {ele.name}, {ele.parameters} to {max_value}")
         max_value = merged_value(max_value, ele.parameters)
-    return max_value
+        vt_types.append(ele.model)
+    return max_value, ','.join(vt_types)
 
 def merged_value(values1, values2):
     """
@@ -375,12 +377,16 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
             unit_size_mos = design_config["unit_size_pmos"]
 
         subckt = element.parent.parent.parent.find(element.model)
+        vt = None
         if isinstance(subckt,SubCircuit):
             ## Hack to get generator parameters based on max sized cell in subcircuit
-            values = merge_subckt_param(subckt)
+            values,vt_types = merge_subckt_param(subckt)
+            if "vt_type" in design_config:
+                vt= [vt.upper() for vt in design_config["vt_type"] if vt.upper() in  vt_types]
         else:
             values = element.parameters
-        logger.debug(f" inst values {values}")
+            if "vt_type" in design_config:
+                vt = [vt.upper() for vt in design_config["vt_type"] if vt.upper() in  element.model]
 
         if unit_size_mos is None:
             """
@@ -404,7 +410,12 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
             m  = int(values['M'])
             nf = int(values['NF'])
             w = int(float(values['W'])*1e9)
-            vt = element.model
+            if isinstance(subckt,SubCircuit):
+                for e in subckt.elements:
+                    vt = e.model
+                    break
+            else:
+                vt = element.model
 
             x, y = x_by_y(m)
 
@@ -485,7 +496,6 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
                 return block_name, available_block_lef[block_name]
 
             logger.debug(f"Generating parametric lef of:  {block_name} {name}")
-            # values["real_inst_type"]=attr["real_inst_type"]
             cell_gen_parameters= {
                 'primitive': name,
                 'value': unit_size_mos,
@@ -496,19 +506,10 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
             if 'STACK' in values.keys() and int(values["STACK"])>1:
                 cell_gen_parameters['stack']=int(values["STACK"])
                 block_name = block_name+'_ST'+str(int(values["STACK"]))
+            if vt:
+                cell_gen_parameters['vt_type']=vt[0]
+                block_name = block_name+'_'+vt[0]
 
-            #cell generator takes only one VT so doing a string search
-            #To be fixed:
-            # if isinstance(attr["real_inst_type"],list):
-            #     merged_vt='_'.join(attr["real_inst_type"])
-            # else:
-            #     merged_vt=attr["real_inst_type"]
-
-            # vt= [vt for vt in design_config["vt_type"] if vt.lower() in  merged_vt]
-            # if vt:
-            #     block_name = block_name+'_'+vt[0]
-            #     cell_gen_parameters['vt_type']=vt[0]
-            #element.parameters['sized_name'] = block_name
             element.add_abs_name(block_name)
             return block_name, cell_gen_parameters
         else:

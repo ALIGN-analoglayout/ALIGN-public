@@ -16,6 +16,7 @@ def test_1():
         mp29 v4 vbias2 v2 vccx p w=2.16e-6 m=1 nf=12
         mp33 vbias2 vbias2 vbias1 vccx p w=1.44e-6 m=1 nf=8
         """)
+    netlist = f".subckt {name} vbias2 vccx\n"+ netlist + ".ends"
     setup = textwrap.dedent("""\
         POWER = vccx
         GND = vssx
@@ -27,7 +28,7 @@ def test_1():
     with (run_dir / '1_topology' / '__primitives__.json').open('rt') as fp:
         primitives = json.load(fp)
         for key, _ in primitives.items():
-            assert key.startswith('Switch') or key.startswith('DCL'), 'Incorrect subcircuit identification'
+            assert key.startswith('PMOS') or key.startswith('DCL'), 'Incorrect subcircuit identification'
 
     shutil.rmtree(run_dir)
     shutil.rmtree(ckt_dir)

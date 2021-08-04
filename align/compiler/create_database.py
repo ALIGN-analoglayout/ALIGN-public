@@ -26,6 +26,7 @@ class CreateDatabase:
         Add user constraints to the design
         """
         subckt = self.ckt_parser.library.find(name)
+        assert subckt, f"Design {name} not found in library {[e.name for e in self.ckt_parser.library]}"
         self.const_parse.annotate_user_constraints(subckt)
         logger.debug(f"creating database for {subckt}")
         for pin in subckt.pins:
