@@ -5,11 +5,9 @@ Created on Fri Jan 15 10:38:14 2021
 
 @author: kunal001
 """
-from align.schema import constraint, model
 from align.schema.types import set_context
 from networkx.algorithms.shortest_paths.weighted import multi_source_dijkstra
 from ..schema.subcircuit import SubCircuit
-from ..schema.instance import Instance
 
 import logging
 logger = logging.getLogger(__name__)

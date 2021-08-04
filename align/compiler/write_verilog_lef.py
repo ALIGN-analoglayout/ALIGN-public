@@ -61,7 +61,6 @@ class WriteVerilog:
                         mapped_pins.append( { "formal" : a[i], "actual": b[i - no_of_short]})
                         check_short.append(a[i])
                 return list(sorted(mapped_pins,key=lambda x:x['formal']))
-
         else:
             logger.error( f"unmatched ports found: {a} {b}")
             assert False
