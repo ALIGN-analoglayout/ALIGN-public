@@ -80,63 +80,63 @@ class CanvasNMOS(Canvas):
 
     def nunit( self, x, y):
         for o in range(self.finsPerUnitCell//2):
-            self.addWire( self.nd, '_', None, (y,  (2+o)), (x, 0), (x, 1))
-            self.addWire( self.nd, '_', None, (y, -(2+o)), (x, 0), (x, 1))
+            self.addWire( self.nd, '_', (y,  (2+o)), (x, 0), (x, 1))
+            self.addWire( self.nd, '_', (y, -(2+o)), (x, 0), (x, 1))
 
         (ds0,ds1) = ('s', 'd') if x % 2 == 0 else ('d','s')
 
-        self.addWire( self.dc, ds0, None, x+0, (y,-2), (y,-1))
-        self.addWire( self.dc, ds0, None, x+0, (y, 1), (y, 2))
+        self.addWire( self.dc, ds0, x+0, (y,-2), (y,-1))
+        self.addWire( self.dc, ds0, x+0, (y, 1), (y, 2))
 
-        self.addWire( self.pl, 'g', None, (x, 0), (y,-1), (y, 1))
-        self.addWire( self.pl, 'g', None, (x, 1), (y,-1), (y, 1))
+        self.addWire( self.pl, 'g', (x, 0), (y,-1), (y, 1))
+        self.addWire( self.pl, 'g', (x, 1), (y,-1), (y, 1))
 
-        self.addWire( self.dc, ds1, None, x+1, (y,-2), (y,-1))
-        self.addWire( self.dc, ds1, None, x+1, (y, 1), (y, 2))
+        self.addWire( self.dc, ds1, x+1, (y,-2), (y,-1))
+        self.addWire( self.dc, ds1, x+1, (y, 1), (y, 2))
 
-        self.addWire( self.pc, 'g', None, (y, 0), (x, 1), ((x+1),-1))
+        self.addWire( self.pc, 'g', (y, 0), (x, 1), ((x+1),-1))
 
-        self.addWire( self.m1, ds0, None, (x+0, 0), (y,-1), (y, 1))
-        self.addWire( self.m1, 'g', None, (x+0, 1), (y,-1), (y, 1))
-        self.addWire( self.m1, ds1, None, (x+1, 0), (y,-1), (y, 1))
+        self.addWire( self.m1, ds0, (x+0, 0), (y,-1), (y, 1))
+        self.addWire( self.m1, 'g', (x+0, 1), (y,-1), (y, 1))
+        self.addWire( self.m1, ds1, (x+1, 0), (y,-1), (y, 1))
 
         assert self.m2PerUnitCell % 2 == 1
 
         h = self.m2PerUnitCell//2
         for o in range(-h,h+1):
-            self.addWire( self.m2, '_', None, (y, o), (x, -1), (x+1, 1))
+            self.addWire( self.m2, '_', (y, o), (x, -1), (x+1, 1))
 
     def cunit( self, x, y):
 
         for o in range(self.finsPerUnitCell//2):
-            self.addWire( self.nd, '_', None, (y,  (2+o)), (x, 0), (x, 1))
-            self.addWire( self.nd, '_', None, (y, -(2+o)), (x, 0), (x, 1))
+            self.addWire( self.nd, '_', (y,  (2+o)), (x, 0), (x, 1))
+            self.addWire( self.nd, '_', (y, -(2+o)), (x, 0), (x, 1))
 
-        self.addWire( self.dc, 't0', None, x+0, (y,-2), (y,-1))
-        self.addWire( self.dc, 't0', None, x+0, (y, 1), (y, 2))
+        self.addWire( self.dc, 't0', x+0, (y,-2), (y,-1))
+        self.addWire( self.dc, 't0', x+0, (y, 1), (y, 2))
 
-        self.addWire( self.pl, 't1', None, (x, 0), (y,-1), (y, 1))
-        self.addWire( self.pl, 't1', None, (x, 1), (y,-1), (y, 1))
+        self.addWire( self.pl, 't1', (x, 0), (y,-1), (y, 1))
+        self.addWire( self.pl, 't1', (x, 1), (y,-1), (y, 1))
 
-        self.addWire( self.dc, 't0', None, x+1, (y,-2), (y,-1))
-        self.addWire( self.dc, 't0', None, x+1, (y, 1), (y, 2))
+        self.addWire( self.dc, 't0', x+1, (y,-2), (y,-1))
+        self.addWire( self.dc, 't0', x+1, (y, 1), (y, 2))
 
-        self.addWire( self.pc, 't1', None, (y, 0), (x, 1), ((x+1),-1))
+        self.addWire( self.pc, 't1', (y, 0), (x, 1), ((x+1),-1))
 
-        self.addWire( self.m1, 't0', None, (x+0, 0), (y,-1), (y, 1))
-        self.addWire( self.m1, 't1', None, (x+0, 1), (y,-1), (y, 1))
-        self.addWire( self.m1, 't0', None, (x+1, 0), (y,-1), (y, 1))
+        self.addWire( self.m1, 't0', (x+0, 0), (y,-1), (y, 1))
+        self.addWire( self.m1, 't1', (x+0, 1), (y,-1), (y, 1))
+        self.addWire( self.m1, 't0', (x+1, 0), (y,-1), (y, 1))
 
-        self.addWire( self.m3, 't0', None, (x+0, 0), (y,-1), (y, 1))
-        self.addWire( self.m3, 't1', None, (x+0, 1), (y,-1), (y, 1))
-        self.addWire( self.m3, 't0', None, (x+1, 0), (y,-1), (y, 1))
+        self.addWire( self.m3, 't0', (x+0, 0), (y,-1), (y, 1))
+        self.addWire( self.m3, 't1', (x+0, 1), (y,-1), (y, 1))
+        self.addWire( self.m3, 't0', (x+1, 0), (y,-1), (y, 1))
 
         assert self.m2PerUnitCell % 2 == 1
 
         h = self.m2PerUnitCell//2
         for o in range(-h,h+1):
             net = 't1' if o % 2 == 0 else 't0'
-            self.addWire( self.m2, net, None, (y, o), (x, -1), (x+1, 1))
+            self.addWire( self.m2, net, (y, o), (x, -1), (x+1, 1))
 
 
 import argparse

@@ -11,6 +11,7 @@
         {
             "direction": "V",
             "const_name": "Ordering",
+            "abut": false,
             "blocks": [
                 "MN0",
                 "X_DP_MN1_MN2",

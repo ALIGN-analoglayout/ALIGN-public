@@ -39,9 +39,9 @@ def setup():
         assert y%2 == 0
         return [ -x//2, -y//2, x//2, y//2]
 
-    c.terminals = [{'layer': 'M2', 'netName': 'x', 'rect': cr( v2['WidthX']+2*v2['VencA_L'], m2['Width'])},
-                   {'layer': 'M3', 'netName': 'x', 'rect': cr( m3['Width'], v2['WidthY']+2*v2['VencA_H'])},
-                   {'layer': 'V2', 'netName': 'x', 'rect': cr( v2['WidthX'], v2['WidthY'])}]
+    c.terminals = [{'layer': 'M2', 'netName': 'x', 'rect': cr( v2['WidthX']+2*v2['VencA_L'], m2['Width']), "netType": "drawing"},
+                   {'layer': 'M3', 'netName': 'x', 'rect': cr( m3['Width'], v2['WidthY']+2*v2['VencA_H']), "netType": "drawing"},
+                   {'layer': 'V2', 'netName': 'x', 'rect': cr( v2['WidthX'], v2['WidthY']), "netType": "drawing"}]
 
     return c
 

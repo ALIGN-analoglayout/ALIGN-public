@@ -251,6 +251,8 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
       pair<int, PnRDB::Smark> temp_selfsym;
       for (auto pair : constraint["pairs"]) {
         if (pair["type"] == "sympair") {  // sympair
+          temp_pair.first = -1;
+          temp_pair.second = -1;
           for (int k = 0; k < (int)node.Blocks.size(); k++) {
             if (node.Blocks.at(k).instance.back().name.compare(pair["block1"]) == 0) {
               temp_pair.first = k;
@@ -259,6 +261,8 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
               temp_pair.second = k;
             }
           }
+          if (temp_pair.first == -1) logger->error("Block {0} not found", pair["block1"]);
+          if (temp_pair.second == -1) logger->error("Block {0} not found", pair["block2"]);
           int temp_int;
           if (temp_pair.first > temp_pair.second) {
             temp_int = temp_pair.second;
@@ -299,6 +303,7 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
           }
         }
       }
+      if (constraint["abut"]) node.Abut_Constraints.push_back(temp_order);
       node.Ordering_Constraints.push_back(temp_order);
     } else if (constraint["const_name"] == "CC") {
       PnRDB::CCCap temp_cccap;
@@ -322,12 +327,15 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
         alignment_unit.horizon = 0;
       }
       for (auto block : constraint["blocks"]) {
+        bool found = false;
         for (int i = 0; i < (int)node.Blocks.size(); i++) {
           if (node.Blocks.at(i).instance.back().name.compare(block) == 0) {
             alignment_unit.blocks.push_back(i);
+            found = true;
             break;
           }
         }
+        if (!found) logger->error("Block {0} in AlignBlock not found in netlist", block);
       }
       node.Align_blocks.push_back(alignment_unit);
     } else if (constraint["const_name"] == "PortLocation") {

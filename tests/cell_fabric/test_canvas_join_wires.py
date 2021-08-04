@@ -19,14 +19,14 @@ def test_one():
                        spg=EnclosureGrid(pitch=720, stoppoint=360)))
 
     # These three should be merged
-    c.addWire(m1, 'a', None, 0, (0, 1), (3, 3))
-    c.addWire(m1, 'a', None, 0, (4, 1), (5, 3))
-    c.addWire(m1, 'a', None, 0, (6, 1), (50, 3))
+    c.addWire(m1, 'a', 0, (0, 1), (3, 3))
+    c.addWire(m1, 'a', 0, (4, 1), (5, 3))
+    c.addWire(m1, 'a', 0, (6, 1), (50, 3))
 
     # Only the first two should be merged
-    c.addWire(m2, 'a', None, 1, (0, 1), (3, 3))
-    c.addWire(m2, 'a', None, 1, (4, 1), (5, 3))
-    c.addWire(m2, 'a', None, 1, (6, 1), (50, 3))
+    c.addWire(m2, 'a', 1, (0, 1), (3, 3))
+    c.addWire(m2, 'a', 1, (4, 1), (5, 3))
+    c.addWire(m2, 'a', 1, (6, 1), (50, 3))
 
     new_terminals = c.removeDuplicates(allow_opens=True)
     print('OLD:', new_terminals)
@@ -63,14 +63,14 @@ def test_two():
                          spg=EnclosureGrid(pitch=720, stoppoint=360)))
 
     # None of the below should merge
-    c.addWire(m1, 'a',  None, 1, (0, 1), (1, 3))
-    c.addWire(m1, 'b',  None, 1, (2, 1), (3, 3))
-    c.addWire(m1, 'a',  None, 1, (4, 1), (5, 3))
+    c.addWire(m1, 'a',  1, (0, 1), (1, 3))
+    c.addWire(m1, 'b',  1, (2, 1), (3, 3))
+    c.addWire(m1, 'a',  1, (4, 1), (5, 3))
 
     # Append different width
-    c.terminals.append({'layer': 'M1', 'netName': 'a', 'rect': [540, 4680, 900, 5400]})
+    c.terminals.append({'layer': 'M1', 'netName': 'a', 'rect': [540, 4680, 900, 5400], 'netType': 'drawing'})
 
-    c.addWire(m1, None, None, 1, (8, 1), (9, 3))
+    c.addWire(m1, None, 1, (8, 1), (9, 3))
 
     new_terminals = c.removeDuplicates(allow_opens=True)
     print(new_terminals)
@@ -106,14 +106,14 @@ def test_three():
                        spg=EnclosureGrid(pitch=720, stoppoint=360)))
 
     # Below should be merged
-    c.addWire(m1, 'a', None, 0, (0, 1), (3, 3))
-    c.addWire(m1, 'a', None, 0, (4, 1), (5, 3))
+    c.addWire(m1, 'a', 0, (0, 1), (3, 3))
+    c.addWire(m1, 'a', 0, (4, 1), (5, 3))
     # Below should be merged (but not with above)
-    c.addWire(m1, 'a', None, 0, (6, 1), (8, 3))
-    c.addWire(m1, 'a', None, 0, (10, 1), (11, 3))
+    c.addWire(m1, 'a', 0, (6, 1), (8, 3))
+    c.addWire(m1, 'a', 0, (10, 1), (11, 3))
 
-    c.addWire(m1, 'b', None, 0, (12, 1), (13, 3))
-    c.addWire(m1, 'a', None, 0, (14, 1), (15, 3))
+    c.addWire(m1, 'b', 0, (12, 1), (13, 3))
+    c.addWire(m1, 'a', 0, (14, 1), (15, 3))
 
     new_terminals = c.removeDuplicates(allow_opens=True)
     print('OLD:', new_terminals)

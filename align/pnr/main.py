@@ -37,7 +37,7 @@ def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, extract=F
         # Hack in Outline layer
         # Should be part of post processor
         d['terminals'].append(
-            {"layer": "Outline", "netName": None, "rect": d['bbox']})
+            {"layer": "Outline", "netName": None, "netType": "drawing", "rect": d['bbox']})
 
     ret = {}
 
