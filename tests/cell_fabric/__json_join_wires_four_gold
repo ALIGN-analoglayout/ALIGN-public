@@ -1,0 +1,100 @@
+{
+  "bbox": [
+    520,
+    360,
+    3800,
+    2520
+  ],
+  "globalRoutes": [],
+  "globalRouteGrid": [],
+  "terminals": [
+    {
+      "layer": "M1",
+      "netName": "a",
+      "rect": [
+        520,
+        360,
+        920,
+        1080
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": "a",
+      "rect": [
+        520,
+        1800,
+        920,
+        2520
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": "a",
+      "rect": [
+        1240,
+        360,
+        1640,
+        1080
+      ],
+      "netType": "drawing"
+    },
+    {
+      "layer": "M1",
+      "netName": "a",
+      "rect": [
+        1240,
+        1800,
+        1640,
+        2520
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M1",
+      "netName": "a",
+      "rect": [
+        2680,
+        360,
+        3080,
+        1080
+      ],
+      "netType": "drawing"
+    },
+    {
+      "layer": "M1",
+      "netName": "a",
+      "rect": [
+        2680,
+        1800,
+        3080,
+        2520
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": "a",
+      "rect": [
+        1960,
+        360,
+        2360,
+        2520
+      ],
+      "netType": "drawing"
+    },
+    {
+      "layer": "M1",
+      "netName": "a",
+      "rect": [
+        3400,
+        360,
+        3800,
+        2520
+      ],
+      "netType": "pin"
+    }
+  ]
+}
