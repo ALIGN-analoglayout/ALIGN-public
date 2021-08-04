@@ -433,7 +433,7 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
 
             if 'STACK' in values and int(values['STACK']) >1:
                 assert nf == 1, f'Stacked transistor cannot have multiple fingers {nf}'
-                block_args['STACK']=int(values['STACK'])
+                block_args['stack']=int(values['STACK'])
                 block_name += f'_st'+str(int(values['STACK']))
             else:
                 block_name += f'_nf{nf}'

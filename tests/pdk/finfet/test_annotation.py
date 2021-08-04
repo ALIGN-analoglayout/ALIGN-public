@@ -12,11 +12,12 @@ except BaseException:
 
 def test_1():
     name = f'ckt_{get_test_id()}'
-    netlist = textwrap.dedent("""\
+    netlist = textwrap.dedent(f"""\
+        .subckt {name} vbias2 vccx
         mp29 v4 vbias2 v2 vccx p w=2.16e-6 m=1 nf=12
         mp33 vbias2 vbias2 vbias1 vccx p w=1.44e-6 m=1 nf=8
+        .ends {name}
         """)
-    netlist = f".subckt {name} vbias2 vccx\n"+ netlist + ".ends"
     setup = textwrap.dedent("""\
         POWER = vccx
         GND = vssx
