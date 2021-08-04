@@ -28,7 +28,7 @@ def test_group_block_hsc(dir_name):
     result_path = out_path / 'Results'/ dir_name
     pdk_path = pathlib.Path(__file__).parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK'
     compiler_output(test_path, updated_cktlib, 'high_speed_comparator', result_path, pdk_path)
-    gen_const_path = result_path / 'high_speed_comparator.verilog.json'
+    gen_const_path = result_path / 'HIGH_SPEED_COMPARATOR.verilog.json'
     gold_const_path = pathlib.Path(__file__).resolve().parent.parent / 'files' / 'test_results' / (dir_name + '.const.json')
     with open(gen_const_path, "r") as const_fp:
         gen_const = next(x for x in json.load(const_fp)['modules'] if x['name'] == 'HIGH_SPEED_COMPARATOR')["constraints"]
