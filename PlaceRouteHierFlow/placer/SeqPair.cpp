@@ -111,6 +111,8 @@ SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl, co
       _valid = 0;
     }
     logger->debug("enumeration check valid : {0}\n maxIter : {1} seq pair size : {2} total enumerations : {3}", (_valid ? 1 : 0), maxIter, _posPair.size(), totEnum);
+  } else {
+    _maxEnum = _posEnumerator.NumSequences() * _negEnumerator.NumSequences();
   }
   if (!_valid) return;
   std::sort(_posPair.begin(), _posPair.end());
