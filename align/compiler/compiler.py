@@ -191,10 +191,7 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
                 model = 'generic'
             elif model not in generators and not isinstance(ckt_data.find(model), SubCircuit):
                 model = str(ckt_data.find(model).base)
-
-            logger.warning(f"Checking generator for {ele}, {model}")
             if model in generators:
-                logger.debug("check")
                 block_name, block_args = generate_primitive_lef(ele, model, generators, design_config, uniform_height)
                 logger.debug(f"Created new lef for: {block_name} {model} {block_args}")
                 if block_name in primitives:

@@ -82,7 +82,6 @@ def remove_dummy_hier(library,ckt,update=True):
                     pins = {}
                     for p,v in y.pins.items():
                         pins[p] = ele.pins[v]
-                    print("parameter type",y.model, type(ele.parameters), y.parameters)
                     y.parameters.update({k : v for k,v in ele.parameters.items() if k in y.parameters})
                     logger.info(f"new instance parameters: {y.parameters}")
                     _prefix= library.find(y.model).prefix
@@ -159,7 +158,6 @@ def define_SD(circuit,power,gnd,update=True):
     while high:
         nxt = high.pop(0)
         for node in get_next_level(circuit,G,[nxt]):
-            logger.debug(f"VDD:checking node: {node}, {high}, {traversed}")
             edge_type = G.get_edge_data(node, nxt)['pin']
             if not set(edge_type)-set({'G'}) or node in traversed:
                 continue
@@ -268,9 +266,7 @@ def add_series_devices(ckt,update=True):
             # Filter (D,D) or (S,S) or (G,G) connection
             if G.get_edge_data(nbr1.name, net)['pin'] == G.get_edge_data(nbr2.name, net)['pin']:
                 continue
-            logger.debug(f" conn1: {G.get_edge_data(nbr1.name, net)['pin']}, conn2: {G.get_edge_data(nbr2.name, net)['pin']}")
             connections = set([list(G.get_edge_data(nbr, net)['pin'])[0] for nbr in nbrs])
-            logger.debug(f"connection with neighbors: {connections}")
             assert len(connections) ==2, f"Not a stack {nbrs} as connections: {connections} are not allowed"
             nbr1p = dict(**nbr1.parameters,**nbr1.pins)
             nbr2p = dict(**nbr2.parameters,**nbr2.pins)

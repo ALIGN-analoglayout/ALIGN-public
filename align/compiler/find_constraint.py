@@ -366,21 +366,21 @@ def FindConst(ckt_data, name, stop_points=None):
     for pairs in all_pairs:
         pairsj = []
         pairs = sorted(pairs.items(), key=lambda k: k[0])
-        logger.debug(f"All symmblock pairs: {pairs}")
+        logger.debug(f"All symmblock pairs: {pairs}, existing symmetries: {written_symmetries}")
         logger.debug(f"All written symmetric instances: {written_symmetries}")
         for key, value in pairs:
             # print("key,value,hier",key,value,new_hier_keys)
             if key in stop_points:
-                logger.debug(f"skipping symmetry b/w {key} {value} as they are present in stop_points")
+                #logger.debug(f"skipping symmetry b/w {key} {value} as they are present in stop_points")
                 continue
             elif key in written_symmetries or value in written_symmetries:
-                logger.debug(f"skipping symmetry b/w {key} {value} as already written {written_symmetries}")
+                #logger.debug(f"skipping symmetry b/w {key} {value} as already written {written_symmetries}")
                 continue
             elif key in new_hier_keys:
-                logger.debug(f"skipping symmetry b/w {key} {value} as {key} is merged to another hierarchy")
+                #logger.debug(f"skipping symmetry b/w {key} {value} as {key} is merged to another hierarchy")
                 continue
             elif key not in graph.nodes():
-                logger.debug(f"skipping symmetry b/w {key} {value} as {key} is not in graph")
+                #logger.debug(f"skipping symmetry b/w {key} {value} as {key} is not in graph")
                 continue
             if not graph.nodes[key].get('instance'):
                 if key!=value  :

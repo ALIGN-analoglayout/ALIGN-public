@@ -74,4 +74,4 @@ def test_order_abut():
         {"constraint": "Order", "abut": True, "direction": "left_to_right", "instances": ["invn", "invp"]}
     ]
     example = build_example(name, netlist, setup, constraints)
-    run_example(example)
+    run_example(example, cleanup=False)

@@ -280,10 +280,9 @@ def generate_generic(pdkdir, parameters, netlistdir=None):
 
 def merge_subckt_param(ckt):
     max_value = {}
-    logger.debug(f"creating generator parameters: {ckt.name}")
+    logger.debug(f"creating generator parameters for subcircuit: {ckt.name}")
     vt_types=[]
     for ele in ckt.elements:
-        logger.debug(f"merging element {ele.name}, {ele.parameters} to {max_value}")
         max_value = merged_value(max_value, ele.parameters)
         vt_types.append(ele.model)
     return max_value, ','.join(vt_types)
@@ -470,14 +469,11 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
         else:
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
-        logger.debug(size)
-
         if 'NF' in values.keys():
             if values['NF'] == 'unit_size':
                 values['NF'] =size
             size=size*int(values["NF"])
             name_arg =name_arg+'_NF'+str(int(values["NF"]))
-        logger.debug(size)
         if 'M' in values.keys():
             if values['M'] == 'unit_size':
                 values['M'] = 1

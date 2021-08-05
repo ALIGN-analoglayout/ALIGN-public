@@ -102,7 +102,7 @@ class Graph(networkx.Graph):
                     ret.append(match)
                 except:
                     #primitives with unsatisfied constraints will not be created
-                    logger.info(f"skipping match {graph.subckt.name} {match} due to unsatisfied constraints")
+                    logger.info(f"skipping match {graph.subckt.name} {match.keys()} due to unsatisfied constraints")
                     pass
         return ret
     def check_constraint_satisfiability(self,subgraph,match):
@@ -120,6 +120,7 @@ class Graph(networkx.Graph):
                     for pair in const.pairs:
                         if len(pair)==2:
                             self.match_pin_distance(pair,self.subckt.pins[0])
+        logger.debug(f"subckt const {subckt_const}")
     def match_pin_distance(self,pair,pin):
         # Symmetric nets should have same position w.r.t gnd and power
         return True

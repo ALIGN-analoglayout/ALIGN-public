@@ -527,6 +527,7 @@ class SymmetricBlocks(SoftConstraint):
         Align(1, X, Y, 6, 'center')
 
         '''
+        #TODO: remove constraint if not satisfied, right now still keeps it "critical"
         assert all(len(pair) for pair in self.pairs) >= 1, 'Must contain at least one instance'
         assert all(len(pair) for pair in self.pairs) <= 2, 'Must contain at most two instances'
         for pair in self.pairs:
@@ -534,10 +535,11 @@ class SymmetricBlocks(SoftConstraint):
             if len(pair)==2 and 'get_element' in dir(self.parent.parent) \
                 and self.parent.parent.get_element(pair[0]) \
                 and self.parent.parent.get_element(pair[1]): #Handle groupblock objects in symmetry const
-                assert self.parent.parent.get_element(pair[0])
-                assert self.parent.parent.get_element(pair[0]).parameters == \
-                    self.parent.parent.get_element(pair[1]).parameters, \
-                        f"Incorrent symmetry pair {pair} in subckt {self.parent.parent.name}"
+                if not self.parent.parent.get_element(pair[0]).parameters == \
+                    self.parent.parent.get_element(pair[1]).parameters:
+                    self.parent =self.parent[:-1]
+                    logger.debug(f"Incorrent symmetry pair {pair} in subckt {self.parent.parent.name}")
+                    assert False
     #TODO: Trace current path
 
 
