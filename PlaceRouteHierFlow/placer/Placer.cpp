@@ -635,14 +635,16 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       double trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo);
       if (trial_cost >= 0) {
         oData[trial_cost] = std::make_pair(trial_sp, trial_sol);
-        bool Smark = false;
-        delta_cost = trial_cost - curr_cost;
-        if (delta_cost <= 0) {
-          Smark = true;
-        } else {
-          double r = (double)rand() / RAND_MAX;
-          if (r < exp((-1.0 * delta_cost) / T)) {
+        bool Smark = trial_sp.Enumerate();
+        if (!Smark) {
+          delta_cost = trial_cost - curr_cost;
+          if (delta_cost <= 0) {
             Smark = true;
+          } else {
+            double r = (double)rand() / RAND_MAX;
+            if (r < exp((-1.0 * delta_cost) / T)) {
+              Smark = true;
+            }
           }
         }
         if (Smark) {

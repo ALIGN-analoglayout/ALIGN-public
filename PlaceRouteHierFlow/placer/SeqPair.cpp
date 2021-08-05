@@ -112,7 +112,7 @@ SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl, co
     }
     logger->debug("enumeration check valid : {0}\n maxIter : {1} seq pair size : {2} total enumerations : {3}", (_valid ? 1 : 0), maxIter, _posPair.size(), totEnum);
   } else {
-    _maxEnum = _posEnumerator.NumSequences() * _negEnumerator.NumSequences();
+    _maxEnum = _posEnumerator.NumSequences();
   }
   if (!_valid) return;
   std::sort(_posPair.begin(), _posPair.end());
@@ -134,7 +134,7 @@ SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl, co
 
 const bool SeqPairEnumerator::IncrementSelected()
 {
-  return false;
+  //auto logger = spdlog::default_logger()->clone("placer.SeqPairEnumerator.IncrementSelected");
   if (_maxSize <= 1) return false;
   int i = _selected.size() - 1;
   int rem = 1;
@@ -198,6 +198,7 @@ void SeqPairEnumerator::Permute()
     }
   }
   if (_enumIndex.first >= _maxEnum) _exhausted = true;
+  //logger->info("enum index : {0} {1}", _enumIndex.first, _enumIndex.second);
 }
 
 SeqPair::SeqPair() {
