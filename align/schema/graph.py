@@ -95,6 +95,7 @@ class Graph(networkx.Graph):
         matcher = networkx.algorithms.isomorphism.GraphMatcher(
             self, graph, node_match=node_match, edge_match=edge_match)
         ret = []
+        _temp = len(self.subckt.constraints)
         for match in matcher.subgraph_isomorphisms_iter():
             if not any(self._is_element(self.nodes[node]) and any(node in x for x in ret) for node in match):
                 try:
@@ -104,6 +105,9 @@ class Graph(networkx.Graph):
                     #primitives with unsatisfied constraints will not be created
                     logger.info(f"skipping match {graph.subckt.name} {match.keys()} due to unsatisfied constraints")
                     pass
+        #revert any added const TODO: add checker here
+        while len(self.subckt.constraints) > _temp:
+            self.subckt.constraints.pop()
         return ret
     def check_constraint_satisfiability(self,subgraph,match):
         #Check if the constraints defined at primitive stage are valid for subckt

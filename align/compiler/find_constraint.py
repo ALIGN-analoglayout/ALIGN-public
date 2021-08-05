@@ -109,7 +109,7 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
             traversed.append(node1)
             compare_nodes(G,all_match_pairs,match_pair,traversed,SD_nbrs[0],SD_nbrs[0],ports_weight)
         else:
-            logger.debug(f" multiple nodes diverging {SD_nbrs}")
+            logger.debug(f"multiple nodes diverging {SD_nbrs}")
             logger.debug(f"nbr weights: {SD_nbrs} {[G.get_edge_data(node1, nbr)['pin'] for nbr in SD_nbrs  ]}")
             match_pair[node1]=node1
             traversed.append(node1)
@@ -416,6 +416,7 @@ def FindConst(ckt_data, name, stop_points=None):
                     pairsj.append([key])
         logger.debug(f"filterd symmetry pairs: {pairsj}")
         if len(pairsj) > 1 or (len(pairsj) > 0 and len(pairsj[0]) == 2):
+            _temp = len(input_const)
             try:
                 with set_context(input_const):
                     symmBlock = constraint.SymmetricBlocks(direction='V',pairs=pairsj)
@@ -423,6 +424,8 @@ def FindConst(ckt_data, name, stop_points=None):
                     written_symmetries.extend([str(ele) for pair in pairsj for ele in pair])
                     logger.debug(f"one axis of written symmetries: {symmBlock}")
             except:
+                while len(input_const) > _temp:
+                    input_const.pop()
                 logger.info(f"skipping match {pairsj} due to unsatisfied constraints")
                 pass
 

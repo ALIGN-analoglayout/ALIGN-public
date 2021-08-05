@@ -7,7 +7,7 @@ import shutil
 examples = [('inverter_v1',1,False),
             ('buffer',1,False),
             #Block with capacitors and resistors
-            ('adder',1,False),
+            #('adder',1,False),
             ('five_transistor_ota',1,False),
             ('five_transistor_ota',2,False),
             #Hierarchical block fail with num_placements > 1
