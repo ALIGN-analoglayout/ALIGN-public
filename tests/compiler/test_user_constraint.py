@@ -1,6 +1,7 @@
 import pathlib
 import pytest
 import json
+import shutil
 
 from align.compiler.compiler import compiler_input, compiler_output
 from align.schema.checker import Z3Checker, CheckerError
@@ -26,6 +27,8 @@ def test_group_block_hsc(dir_name):
     assert updated_cktlib.find('INV')
     out_path = pathlib.Path(__file__).resolve().parent
     result_path = out_path / 'Results'/ dir_name
+    if result_path.exists() and result_path.is_dir():
+        shutil.rmtree(result_path)
     result_path.mkdir(parents=True, exist_ok=False)
     pdk_path = pathlib.Path(__file__).parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK'
     compiler_output(test_path, updated_cktlib, 'high_speed_comparator', result_path, pdk_path)
