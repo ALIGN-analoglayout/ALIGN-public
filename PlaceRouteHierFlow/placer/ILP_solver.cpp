@@ -461,7 +461,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
       }
     }
     // add estimated area
-    row[curr_sp.negPair[URblock_neg_id] * 4 + 2] += estimated_width / 2;
+    for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) row[curr_sp.negPair[i] * 4 + 2] += estimated_width / 2;
     // estimate height
     for (unsigned int i = URblock_pos_id; i < curr_sp.posPair.size(); i++) {
       if (curr_sp.posPair[i] < int(mydesign.Blocks.size())) {
@@ -469,7 +469,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
       }
     }
     // add estimated area
-    row[curr_sp.negPair[URblock_neg_id] * 4 + 1] += estimated_height / 2;
+    for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) row[curr_sp.negPair[i] * 4 + 1] += estimated_height / 2;
 
     set_obj_fn(lp, row);
     set_minim(lp);
