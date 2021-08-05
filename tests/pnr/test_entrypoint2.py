@@ -70,7 +70,7 @@ def gen_matrix_module(nm, n=3):
         out = 'out' if i == n - 1 else f'x{i+1}'
         instance = {
             'instance_name': f'u{i}',
-            'abstract_template_name': 'row',
+            'abstract_template_name': 'ROW',
             'fa_map': [{'formal': 'inp', 'actual': inp},
                        {'formal': 'out', 'actual': out}]
         }
@@ -175,7 +175,7 @@ def gen_primitives(run_dir):
 
 
 def test_row():
-    nm = 'row'
+    nm = 'ROW'
 
     run_dir = ALIGN_WORK_DIR / f'{nm}_entrypoint2'
 
@@ -188,7 +188,7 @@ def test_row():
     (run_dir / '1_topology').mkdir(parents=False, exist_ok=False)
     (run_dir / '2_primitives').mkdir(parents=False, exist_ok=False)
 
-    topmodule = gen_row_module(nm.upper())
+    topmodule = gen_row_module(nm)
 
     verilog_d = {'modules': [topmodule], 'global_signals': []}
 
@@ -208,7 +208,7 @@ def test_row():
 
 
 def test_matrix():
-    nm = 'matrix'
+    nm = 'MATRIX'
 
     run_dir = ALIGN_WORK_DIR / f'{nm}_entrypoint2'
 
@@ -221,8 +221,8 @@ def test_matrix():
     (run_dir / '1_topology').mkdir(parents=False, exist_ok=False)
     (run_dir / '2_primitives').mkdir(parents=False, exist_ok=False)
 
-    rowmodule = gen_row_module('row', n=3)
-    topmodule = gen_matrix_module(nm.upper(), n=4)
+    rowmodule = gen_row_module('ROW', n=3)
+    topmodule = gen_matrix_module(nm, n=4)
 
     verilog_d = {'modules': [topmodule, rowmodule], 'global_signals': []}
 
