@@ -416,11 +416,15 @@ def FindConst(ckt_data, name, stop_points=None):
                     pairsj.append([key])
         logger.debug(f"filterd symmetry pairs: {pairsj}")
         if len(pairsj) > 1 or (len(pairsj) > 0 and len(pairsj[0]) == 2):
-            written_symmetries.extend([str(ele) for pair in pairsj for ele in pair])
-            with set_context(input_const):
-                symmBlock = constraint.SymmetricBlocks(direction='V',pairs=pairsj)
-                input_const.append(symmBlock)
-            logger.debug(f"one axis of written symmetries: {symmBlock}")
+            try:
+                with set_context(input_const):
+                    symmBlock = constraint.SymmetricBlocks(direction='V',pairs=pairsj)
+                    input_const.append(symmBlock)
+                    written_symmetries.extend([str(ele) for pair in pairsj for ele in pair])
+                    logger.debug(f"one axis of written symmetries: {symmBlock}")
+            except:
+                logger.info(f"skipping match {pairsj} due to unsatisfied constraints")
+                pass
 
     logger.debug(f"Identified constraints of {name} are {input_const}")
 
