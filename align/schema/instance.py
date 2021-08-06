@@ -34,7 +34,6 @@ class Instance(types.BaseModel):
             self.generator = gen
     def add_abs_name(self,abn):
         with set_context(self.parent):
-            print(self.parent)
             self.abstract_name = abn
     def add_actual_name(self, acn):
         with set_context(self.parent):

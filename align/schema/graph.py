@@ -103,7 +103,7 @@ class Graph(networkx.Graph):
                     ret.append(match)
                 except:
                     #primitives with unsatisfied constraints will not be created
-                    logger.info(f"skipping match {graph.subckt.name} {match.keys()} due to unsatisfied constraints")
+                    logger.debug(f"skipping match {graph.subckt.name} {match.keys()} due to unsatisfied constraints")
                     pass
         #revert any added const TODO: add checker here
         while len(self.subckt.constraints) > _temp:
@@ -124,7 +124,7 @@ class Graph(networkx.Graph):
                     for pair in const.pairs:
                         if len(pair)==2:
                             self.match_pin_distance(pair,self.subckt.pins[0])
-        logger.debug(f"subckt const {subckt_const}")
+
     def match_pin_distance(self,pair,pin):
         # Symmetric nets should have same position w.r.t gnd and power
         return True
@@ -173,7 +173,7 @@ class Graph(networkx.Graph):
             inst_name = self.instance_counter(subckt_instance)
             # Create correct instance
             new_subckt.append(inst_name)
-            logger.info(f"Creating new subckt of type: {subckt.name} from {removal_candidates}")
+            logger.debug(f"Creating new subckt of type: {subckt.name} from {removal_candidates}")
             subckt_instance = self.create_subckt_instance(subckt, match, inst_name)
             merged_inst_name = 'X_'+inst_name
             for node in sorted(removal_candidates):

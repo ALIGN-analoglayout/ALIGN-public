@@ -74,7 +74,12 @@ def compiler_input(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path
         lib_parser.parse(lines)
 
     library = lib_parser.library
-    design_setup = read_setup(input_dir / f'{design_name}.setup')
+    spath = [cf for cf in input_dir.rglob('*.setup') if cf.stem.upper()==design_name]
+    if spath:
+        logger.info(f"Reading setup file {spath[0]}")
+        design_setup = read_setup(spath[0])
+    else:
+        logger.info(f"no setup file found for design{design_name} in {input_dir}")
     logger.debug(f"template parent path: {pathlib.Path(__file__).parent}")
 
     primitives = [v for v in library if isinstance(v, SubCircuit) and v.name not in design_setup['DONT_USE_CELLS']]
@@ -228,6 +233,6 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
         json.dump( verilog_tbl, fp=fp, indent=2)
 
     logger.info("Completed topology identification.")
-    logger.info(f"OUTPUT verilog json netlist at: {result_dir}/{design_name.upper()}.verilog.json")
+    logger.debug(f"OUTPUT verilog json netlist at: {result_dir}/{design_name.upper()}.verilog.json")
     logger.debug(f"OUTPUT const file at: {result_dir}/{design_name.upper()}.pnr.const.json")
     return primitives

@@ -369,7 +369,6 @@ def FindConst(ckt_data, name, stop_points=None):
         logger.debug(f"All symmblock pairs: {pairs}, existing symmetries: {written_symmetries}")
         logger.debug(f"All written symmetric instances: {written_symmetries}")
         for key, value in pairs:
-            # print("key,value,hier",key,value,new_hier_keys)
             if key in stop_points:
                 #logger.debug(f"skipping symmetry b/w {key} {value} as they are present in stop_points")
                 continue
@@ -426,7 +425,7 @@ def FindConst(ckt_data, name, stop_points=None):
             except:
                 while len(input_const) > _temp:
                     input_const.pop()
-                logger.info(f"skipping match {pairsj} due to unsatisfied constraints")
+                logger.debug(f"skipping match {pairsj} due to unsatisfied constraints")
                 pass
 
     logger.debug(f"Identified constraints of {name} are {input_const}")

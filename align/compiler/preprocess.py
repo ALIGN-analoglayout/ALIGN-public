@@ -72,7 +72,7 @@ def remove_dummy_hier(library,ckt,update=True):
             replace = {}
             for inst in other_ckt.elements:
                 if inst.model == ckt.name:
-                    logger.info(f"removing instance {inst} with instance {ckt.elements[0].model}")
+                    logger.debug(f"removing instance {inst} with instance {ckt.elements[0].model}")
                     replace[inst.name] = ckt.elements[0]
                     #@Parijat, is there a better way to modify?
             with set_context(other_ckt.elements):
@@ -83,7 +83,7 @@ def remove_dummy_hier(library,ckt,update=True):
                     for p,v in y.pins.items():
                         pins[p] = ele.pins[v]
                     y.parameters.update({k : v for k,v in ele.parameters.items() if k in y.parameters})
-                    logger.info(f"new instance parameters: {y.parameters}")
+                    logger.debug(f"new instance parameters: {y.parameters}")
                     _prefix= library.find(y.model).prefix
                     if not _prefix:
                         _prefix = 'M' #default value, used in testing
@@ -147,7 +147,7 @@ def define_SD(circuit,power,gnd,update=True):
         low = list(set(gnd).intersection(set(ports)))
         logger.debug(f"Using power: {high} and ground: {low}")
     if not high or not low:
-        logger.warning(f'No power and gnd in this circuit {circuit.name}')
+        logger.warning(f'No power and gnd in this circuit {circuit.name} or power ports are not defined as subckt ports')
         return
     logger.debug(f"START checking source and drain in graph ")
 

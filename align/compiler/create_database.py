@@ -76,7 +76,7 @@ class CreateDatabase:
                     if (not existing_ckt.get_element(x.name).model == x.model) or \
                         (not existing_ckt.get_element(x.name).parameters == x.parameters) or \
                             (not existing_ckt.get_element(x.name).pins == x.pins):
-                        logger.info(f"multiple instance of same subcircuit found {subckt.name} {counter+1}")
+                        logger.debug(f"multiple instance of same subcircuit found {subckt.name} {counter+1}")
                         name = self.instance_counter(subckt,counter+1)
                         break #Break after first mismatch
         return name

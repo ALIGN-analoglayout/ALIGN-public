@@ -167,7 +167,7 @@ def merge_caps(graph, name, caps, inst):
     None.
 
     """
-    logger.info(f"creating common-centorid cap {caps}")
+    logger.debug(f"creating common-centorid cap {caps}")
     matched_ports ={}
     for idx,cap in enumerate(caps):
         #cc_pair.update({cap_block: updated_cap})
