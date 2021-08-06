@@ -80,6 +80,7 @@ def compiler_input(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path
         design_setup = read_setup(spath[0])
     else:
         logger.info(f"no setup file found for design{design_name} in {input_dir}")
+        design_setup = read_setup(input_dir/ 'dummy')
     logger.debug(f"template parent path: {pathlib.Path(__file__).parent}")
 
     primitives = [v for v in library if isinstance(v, SubCircuit) and v.name not in design_setup['DONT_USE_CELLS']]
