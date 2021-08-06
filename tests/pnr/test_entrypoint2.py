@@ -177,11 +177,11 @@ def test_row():
     (run_dir / '1_topology').mkdir(parents=False, exist_ok=False)
     (run_dir / '2_primitives').mkdir(parents=False, exist_ok=False)
 
-    topmodule = gen_row_module(nm.upper())
+    topmodule = gen_row_module(nm)
 
     verilog_d = { 'modules': [topmodule], 'global_signals': []}
 
-    with (run_dir / '1_topology' / f'{nm.upper()}.verilog.json').open('wt') as fp:
+    with (run_dir / '1_topology' / f'{nm}.verilog.json').open('wt') as fp:
         json.dump( verilog_d, fp=fp, indent=2)
 
     gen_primitives(run_dir)
@@ -211,11 +211,11 @@ def test_matrix():
     (run_dir / '2_primitives').mkdir(parents=False, exist_ok=False)
 
     rowmodule = gen_row_module('row', n=3)
-    topmodule = gen_matrix_module(nm.upper(), n=4)
+    topmodule = gen_matrix_module(nm, n=4)
 
     verilog_d = { 'modules': [topmodule,rowmodule], 'global_signals': []}
 
-    with (run_dir / '1_topology' / f'{nm.upper()}.verilog.json').open('wt') as fp:
+    with (run_dir / '1_topology' / f'{nm}.verilog.json').open('wt') as fp:
         json.dump( verilog_d, fp=fp, indent=2)
 
     gen_primitives(run_dir)

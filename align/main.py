@@ -314,6 +314,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         regression_dir.mkdir(exist_ok=True)
 
     results = []
+    logger.info(f"subckt {subckt}")
 
     # Generate hierarchy
     topology_dir = working_dir / '1_topology'
@@ -333,10 +334,11 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
             json.dump( primitives, fp=fp, indent=2)
     else:
         if subckt is None:
-            subckt = extract_netlist_files(netlist_dir,netlist_file).stem.upper()
+            subckt = extract_netlist_files(netlist_dir,netlist_file).stem
 
         with (topology_dir / '__primitives__.json').open( 'rt') as fp:
             primitives = json.load(fp)
+    logger.info(f"subckt {subckt}")
 
     # Generate primitives
     primitive_dir = (working_dir / '2_primitives')
@@ -356,7 +358,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
 
     # run PNR tool
     pnr_dir = working_dir / '3_pnr'
-
+    logger.info(f"subckt {subckt}")
     sub_steps = [step for step in steps_to_run if '3_pnr:' in step]
     if sub_steps:
         pnr_dir.mkdir(exist_ok=True)

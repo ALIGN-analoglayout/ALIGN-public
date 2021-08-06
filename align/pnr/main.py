@@ -83,7 +83,7 @@ def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, extract=F
 def gen_constraint_files( verilog_d, input_dir):
     pnr_const_ds = {}
     for module in verilog_d['modules']:
-        nm = module['name'].upper()
+        nm = module['name']
         pnr_const_ds[nm] = PnRConstraintWriter().map_valid_const(module['constraints'])
 
     constraint_files = set()
@@ -107,7 +107,13 @@ def extract_capacitor_constraints( pnr_const_ds):
 def remove_pg_pins(verilog_d, subckt, pg_pins):
     logger.debug(f"removing power pins {pg_pins} from subckt {subckt}")
     modules_dict = {module['name']: module['parameters'] for module in verilog_d['modules']}
-    assert subckt in modules_dict, f"{subckt} not found in design {modules_dict}"
+
+    if subckt in modules_dict:
+        pass
+    elif subckt.upper() in modules_dict:
+        subckt=subckt.upper()
+    else:
+        assert False, f"{subckt} not found in design {modules_dict}"
     module = [module for module in verilog_d['modules'] if module['name']==subckt][0]
     #Remove port from subckt level
     module['parameters'] = [p for p in module['parameters'] if p not in pg_pins]
@@ -242,9 +248,20 @@ def write_verilog_json(verilog_d):
                         } for m in verilog_d.modules],
         "global_signals":verilog_d.global_signals}
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False, gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False, steps_to_run,lambda_coeff, reference_placement_verilog_json, nroutings=1):
-    subckt=subckt.upper()
     logger.info(f"Running Place & Route for {subckt} {router_mode} {steps_to_run}")
     # Generate file name inputs
+    for cf in topology_dir.rglob('*.verilog.json'):
+        if cf.stem == subckt+'.verilog':
+            #File name and module name are small
+            assert subckt in [m.name for m in VerilogJsonTop.parse_file(cf).modules], f"file name {cf} does nto match module {subckt}"
+        elif cf.stem.upper()==subckt+'.VERILOG':
+            #File name and module name are small
+            assert subckt in [m.name for m in VerilogJsonTop.parse_file(cf).modules], f"file name {cf} does nto match module {subckt}"
+        elif cf.stem == subckt.upper()+'.verilog':
+            #Uppercase subckt and file
+            subckt = subckt.upper()
+            assert subckt in [m.name for m in VerilogJsonTop.parse_file(cf).modules], f"file name {cf} does nto match module {subckt}"
+
     map_file = f'{subckt}.map'
     lef_file = f'{subckt}.lef'
     verilog_file = f'{subckt}.verilog.json'
