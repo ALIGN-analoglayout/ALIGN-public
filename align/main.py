@@ -320,6 +320,8 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         netlist = extract_netlist_files(netlist_dir,netlist_file)
         if subckt is None:
             subckt = netlist.stem.upper()
+        else:
+            subckt = subckt.upper()
 
         logger.info(f"READ file: {netlist} subckt={subckt}, flat={flatten}")
 
@@ -355,7 +357,6 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
 
     # run PNR tool
     pnr_dir = working_dir / '3_pnr'
-    logger.info(f"subckt {subckt}")
     sub_steps = [step for step in steps_to_run if '3_pnr:' in step]
     if sub_steps:
         pnr_dir.mkdir(exist_ok=True)

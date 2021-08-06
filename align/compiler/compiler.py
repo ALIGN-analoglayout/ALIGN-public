@@ -79,7 +79,7 @@ def compiler_input(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path
         logger.info(f"Reading setup file {spath[0]}")
         design_setup = read_setup(spath[0])
     else:
-        logger.info(f"no setup file found for design{design_name} in {input_dir}")
+        logger.info(f"no setup file found for design {design_name} in {input_dir}, other setup files {[cf for cf in input_dir.rglob('*.setup')]}")
         design_setup = read_setup(input_dir/ 'dummy')
     logger.debug(f"template parent path: {pathlib.Path(__file__).parent}")
 
