@@ -265,7 +265,7 @@ def FindSymmetry(subckt, stop_points:list):
     ports = subckt.pins
     all_match_pairs={}
     non_power_ports = sorted(set(sorted(ports)) - set(stop_points))
-    logger.debug(f"subckt: {subckt.name} sorted ports: {non_power_ports}")
+    logger.debug(f"subckt: {subckt.name} sorted signal ports: {non_power_ports}")
     ports_weight = {}
     for port in subckt.pins:
         leaf_conn = get_leaf_connection(subckt, port)
@@ -286,6 +286,7 @@ def FindSymmetry(subckt, stop_points:list):
     return all_match_pairs
 
 def get_leaf_connection(subckt,net):
+    assert net in subckt.nets, f"Net {net} not found in subckt {subckt}"
     graph = Graph(subckt)
     conn = []
     for nbr in graph.neighbors(net):

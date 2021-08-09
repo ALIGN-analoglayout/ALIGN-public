@@ -11,7 +11,6 @@ from .create_database import CreateDatabase
 from .match_graph import Annotate
 from .read_setup import read_setup
 from .write_verilog_lef import WriteVerilog
-from .common_centroid_cap_constraint import CapConst
 from .find_constraint import FindConst
 from .user_const import ConstraintParser
 from ..schema import constraint
@@ -188,6 +187,8 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
         for const in ckt.constraints:
             if isinstance(const, constraint.GuardRing):
                 primitives['guard_ring'] = {'primitive':'guard_ring'}
+            if isinstance(const, constraint.GroupCaps):
+                primitives[const.unit_cap] = {'primitive': 'cap', 'value':int(const.unit_cap.split('_')[1].replace('f',''))}
 
         for ele in ckt.elements:
             model = str(ele.model)
@@ -219,8 +220,6 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
                 stop_points = design_setup['POWER'] + design_setup['GND'] + design_setup['CLOCK']
                 if ckt.name not in design_setup['NO_CONST']:
                     FindConst(ckt_data, ckt.name, stop_points)
-
-                CapConst(ckt_data, ckt.name, design_config["unit_size_cap"], design_setup['MERGE_SYMM_CAPS'])
 
             ## Write out modified netlist & constraints as JSON
             logger.debug(f"call verilog writer for block: {ckt.name}")

@@ -99,7 +99,7 @@ def gen_constraint_files( verilog_d, input_dir):
 def extract_capacitor_constraints( pnr_const_ds):
     cap_constraints = {}
     for nm, pnr_const_d in pnr_const_ds.items():
-        cap_constraints[nm] = { const['cap_name'] : const for const in pnr_const_d['constraints'] if const['const_name'] == "CC"}
+        cap_constraints[nm] = { const['cap_name'].upper() : const for const in pnr_const_d['constraints'] if const['const_name'] == "CC"}
     logger.debug( f'cap_constraints: {cap_constraints}')
 
     return cap_constraints
@@ -181,6 +181,7 @@ def gen_leaf_cell_info( verilog_d, pnr_const_ds):
     cap_constraints = extract_capacitor_constraints( pnr_const_ds)
     capacitors = defaultdict(list)
     for leaf, v in leaves_called_in_an_instance.items():
+        logger.debug(f"checking v {v}")
         for parent, instance_name in v:
             if parent in cap_constraints:
                 if instance_name in cap_constraints[parent]:
@@ -337,7 +338,6 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
     else:
         with (working_dir / "__capacitors__.json").open("rt") as fp:
             capacitors = json.load(fp)
-
     if '3_pnr:place' in steps_to_run or '3_pnr:route' in steps_to_run:
 
         with (pdk_dir / pdk_file).open( 'rt') as fp:

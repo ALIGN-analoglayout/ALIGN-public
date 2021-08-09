@@ -53,7 +53,7 @@ class ConstraintParser:
                 )
             #ALL inst in caps
             for const in node.constraints:
-                if hasattr(const, 'instances') and len(const.instances) > 1:
+                if hasattr(const, 'instances') and len(const.instances) > 0:
                     for i,inst in enumerate(const.instances):
                         const.instances[i] = inst.upper()
                 elif hasattr(const, 'pairs'):

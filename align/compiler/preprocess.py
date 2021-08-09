@@ -136,8 +136,13 @@ def define_SD(circuit,power,gnd,update=True):
         gnd ([type]): [description]
         clk ([type]): [description]
     """
+
     if update ==False:
         return
+    if not power or not gnd:
+        logger.warning(f"No power and gnd in this circuit {circuit.name}, please check setup file")
+        return
+
     G = Graph(circuit)
     ports = circuit.pins
     high = []
@@ -146,9 +151,9 @@ def define_SD(circuit,power,gnd,update=True):
         high= list(set(power).intersection(set(ports)))
         low = list(set(gnd).intersection(set(ports)))
         logger.debug(f"Using power: {high} and ground: {low}")
-    if not high or not low:
-        logger.warning(f'No power and gnd in this circuit {circuit.name} or power ports are not defined as subckt ports')
-        return
+    assert high, f"VDD port {power} not defined as subckt port"
+    assert low, f"GND port {gnd} not defined as subckt port"
+
     logger.debug(f"START checking source and drain in graph ")
 
     probable_changes_p = []

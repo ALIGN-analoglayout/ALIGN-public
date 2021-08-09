@@ -94,7 +94,7 @@ class PnRConstraintWriter:
                 const["pairs"] = pairs
             elif const["const_name"] == 'GroupCaps':
                 const["const_name"] = 'CC'
-                const["cap_name"] = const.pop("name")
+                const["cap_name"] = const.pop("name").upper()
                 const["unit_capacitor"] = const.pop("unit_cap")
                 const["size"] = const.pop("num_units")
                 const["nodummy"] = not const["dummy"]
