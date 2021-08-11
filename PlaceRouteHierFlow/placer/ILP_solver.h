@@ -58,6 +58,7 @@ class ILP_solver {
   ILP_solver(const ILP_solver& solver);
   ILP_solver& operator=(const ILP_solver& solver);
   double GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
+  double GenerateValidSolution_row(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
   double CalculateCost(design& mydesign, SeqPair& curr_sp);
   void WritePlacement(design& caseNL, SeqPair& curr_sp, string outfile);
   void PlotPlacement(design& caseNL, SeqPair& curr_sp, string outfile);
