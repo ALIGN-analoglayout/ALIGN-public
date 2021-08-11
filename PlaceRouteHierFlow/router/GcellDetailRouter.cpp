@@ -3257,8 +3257,8 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
   RouterDB::point tmpP;
   int obs_l=0;
   int obs_h=this->layerNo-1;
-  logger->debug("Enter converter");
-  logger->debug("rect info {0} {1} {2} {3} {4}", mIdx,LLx,LLy,URx,URy); 
+  //logger->debug("Enter converter");
+  //logger->debug("rect info {0} {1} {2} {3} {4}", mIdx,LLx,LLy,URx,URy); 
 
   int enclose_length =0;  
 /*
@@ -3313,7 +3313,7 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         //int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
         int boundY=ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
         //newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
-        logger->debug( "converter check point 1");
+        //logger->debug( "converter check point 1");
         //fix bug for power grid construction YG: 4/30/2020
         if(boundY>newURy){
           newLLy = floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
@@ -3350,7 +3350,7 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
           boundY = newLLy;
         }
 
-        logger->debug( "converter check point 2");
+        //logger->debug( "converter check point 2");
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
           if(x>=newLLx && x<=newURx && y>=newLLy && y<=newURy){
              //std::cout<<"Plist problem"<<std::endl;
@@ -3388,7 +3388,7 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
           boundX = newLLx;
         }
 
-         logger->debug( "converter check point 3");
+         //logger->debug( "converter check point 3");
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
           if(x>=newLLx && x<=newURx && y>=newLLy && y<=newURy){
              //std::cout<<"Plist problem"<<std::endl;
@@ -3417,7 +3417,7 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
           boundX = newLLx;
         }
 
-        logger->debug( "converter check point 4");
+        //logger->debug( "converter check point 4");
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
           if(x>=newLLx && x<=newURx && y>=newLLy && y<=newURy){
              //std::cout<<"Plist problem"<<std::endl;
@@ -3440,7 +3440,7 @@ void GcellDetailRouter::ConvertRect2GridPoints_Via(std::vector<std::vector<Route
   RouterDB::point tmpP;
   int obs_l=0;
   int obs_h=this->layerNo-1;
-  logger->debug("Enter converter");
+  //logger->debug("Enter converter");
   //int direction = drc_info.Metal_info[mIdx].direct;
 
   if(drc_info.Metal_info[mIdx].direct==0) { // vertical metal layer
@@ -3462,7 +3462,7 @@ void GcellDetailRouter::ConvertRect2GridPoints_Via(std::vector<std::vector<Route
         //int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
         int boundY=ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
         //newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
-	logger->debug( "converter check point 1");
+	      //logger->debug( "converter check point 1");
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
           if(x>=LLx && x<=URx && y>=LLy && y<=URy){
             logger->debug( "Plist problem");
@@ -3484,7 +3484,7 @@ void GcellDetailRouter::ConvertRect2GridPoints_Via(std::vector<std::vector<Route
         //int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
         int boundY=ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
         //newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
-	logger->debug( "converter check point 2");
+	      //logger->debug( "converter check point 2");
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
           if(x>=LLx && x<=URx && y>=LLy && y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
@@ -3512,7 +3512,7 @@ void GcellDetailRouter::ConvertRect2GridPoints_Via(std::vector<std::vector<Route
         //int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
         int boundX=ceil((double)newLLx/nexlayer_unit)*nexlayer_unit;
         //newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
-	logger->debug( "converter check point 3");
+	      //logger->debug( "converter check point 3");
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
            if(x>=LLx && x<=URx && y>=LLy && y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
@@ -3533,7 +3533,7 @@ void GcellDetailRouter::ConvertRect2GridPoints_Via(std::vector<std::vector<Route
         //int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
         int boundX=ceil((double)newLLx/nexlayer_unit)*nexlayer_unit;
         //newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
-	logger->debug( "converter check point 4");
+	      //logger->debug( "converter check point 4");
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
           if(x>=LLx && x<=URx && y>=LLy && y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
