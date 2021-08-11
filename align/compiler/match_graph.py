@@ -167,7 +167,7 @@ class Annotate:
             with set_context(subckt.elements):
                 for e in const_inst:
                     subckt.elements.remove(subckt.get_element(e))
-                X1 = Instance(name=inst_name, model=const.name.upper(), pins={x:x for x in ac_nets}, abstract_name=const.name.upper())
+                X1 = Instance(name=inst_name, model=const.name.upper(), pins={x:x for x in ac_nets}, generator=const.name.upper())
                 subckt.elements.append(X1)
             #Translate any constraints defined on the groupblock elements to subckt
             self._top_to_bottom_translation(name, {inst:inst for inst in const_inst}, const.name)
@@ -204,9 +204,9 @@ class Annotate:
             return
 
         for const in gc_const:
-            const_inst = [i.upper() for i in const.instances]
             for i in range(len(const.instances)):
                 const.instances[i]=const.instances[i].upper()
+            const_inst = [i for i in const.instances]
 
             assert set(const_inst).issubset(set([e.name for e in subckt.elements])), f"const instances{const_inst} are not in subckt {name}"
             #all nets connected to common centroid cap constraints
@@ -214,7 +214,7 @@ class Annotate:
             for i,e in enumerate(const_inst):
                 sc_pins = subckt.get_element(e).pins #single cap pins
                 new_pins.update({k+str(i):v for k,v in sc_pins.items()})
-            cc_name = 'Cap_'+"_".join([str(x) for x in const.num_units])
+            cc_name = 'CAP_CC_'+"_".join([str(x) for x in const.num_units])
             if not self.ckt_data.find(const.name.upper()):
                 #Create a subckt and add to library
                 #Ideally Create a subckt initially but did not work at PnR capcitor hack are not compatible
@@ -231,7 +231,7 @@ class Annotate:
                 #         X0 = Instance(name=te.name, model=te.model, \
                 #             pins={k:k+str(i) for k,v in te.pins.items()}, \
                 #             parameters = te.parameters,
-                #             abstract_name=te.abstract_name)
+                #             generator=te.generator)
                 #         new_subckt.elements.append(X0)
 
             #Remove elements from subckt then Add new_subckt instance
@@ -240,7 +240,7 @@ class Annotate:
                 for e in const_inst:
                     subckt.elements.remove(subckt.get_element(e))
                 logger.debug(f"pins {new_pins} {new_subckt.pins}")
-                X1 = Instance(name=const.name.upper(), model=const.name.upper(), pins=new_pins, abstract_name=cc_name)
+                X1 = Instance(name=const.name.upper(), model=const.name.upper(), pins=new_pins, generator=cc_name)
                 subckt.elements.append(X1)
             #Translate any constraints defined on the groupblock elements to subckt
             # self._top_to_bottom_translation(name, {inst:inst for inst in const_inst}, cc_name)

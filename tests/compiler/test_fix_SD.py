@@ -22,11 +22,11 @@ def db():
             parameters = None)
         library.append(subckt)
     with set_context(subckt.elements):
-        subckt.elements.append(Instance(name='M1', model='PMOS', pins={'D': 'VDD', 'G': 'G', 'S': 'GND', 'B': 'B'}))
-        subckt.elements.append(Instance(name='M2', model='PMOS', pins={'D': 'NET1', 'G': 'G', 'S': 'VDD', 'B': 'B'}))
-        subckt.elements.append(Instance(name='M3', model='PMOS', pins={'D': 'NET1', 'G': 'G', 'S': 'GND', 'B': 'B'}))
-        subckt.elements.append(Instance(name='M4', model='NMOS', pins={'D': 'VDD', 'G': 'G', 'S': 'GND', 'B': 'B'}))
-        subckt.elements.append(Instance(name='M5', model='NMOS', pins={'D': 'GND', 'G': 'G', 'S': 'VDD', 'B': 'B'}))
+        subckt.elements.append(Instance(name='M1', model='PMOS', pins={'D': 'VDD', 'G': 'G', 'S': 'GND', 'B': 'B'}, generator='PMOS'))
+        subckt.elements.append(Instance(name='M2', model='PMOS', pins={'D': 'NET1', 'G': 'G', 'S': 'VDD', 'B': 'B'}, generator='PMOS'))
+        subckt.elements.append(Instance(name='M3', model='PMOS', pins={'D': 'NET1', 'G': 'G', 'S': 'GND', 'B': 'B'}, generator='PMOS'))
+        subckt.elements.append(Instance(name='M4', model='NMOS', pins={'D': 'VDD', 'G': 'G', 'S': 'GND', 'B': 'B'}, generator='PMOS'))
+        subckt.elements.append(Instance(name='M5', model='NMOS', pins={'D': 'GND', 'G': 'G', 'S': 'VDD', 'B': 'B'}, generator='PMOS'))
     return subckt
 
 def test_swap(db):

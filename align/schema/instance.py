@@ -10,8 +10,9 @@ class Instance(types.BaseModel):
     name: str
     pins : Dict[str, str]
     parameters : Optional[Dict[str, str]]
-    generator: Optional[str]
-    abstract_name: Optional[str]
+    #TODO: associate a generator for eacj primitive during instantiation
+    generator: str #Handles different sized instantiation of same subcircuit to same generator
+    abstract_name: Optional[str] # Added during primitive generator, in case no primitive generator found = generator
     class Config:
         allow_mutation = True
 

@@ -181,7 +181,6 @@ def gen_leaf_cell_info( verilog_d, pnr_const_ds):
     cap_constraints = extract_capacitor_constraints( pnr_const_ds)
     capacitors = defaultdict(list)
     for leaf, v in leaves_called_in_an_instance.items():
-        logger.debug(f"checking v {v}")
         for parent, instance_name in v:
             if parent in cap_constraints:
                 if instance_name in cap_constraints[parent]:

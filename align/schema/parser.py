@@ -148,7 +148,11 @@ class SpiceParser:
 
         if self.library.find(model):
             model = self.library.find(model)
-            abn = model.name
+            if model.base:
+                generator= model.base
+            else:
+                generator = model.name
+            #TODO assert generator is available in primitive generator
         else:
             #TODO generic model need to get pins from generator
             logger.info(f"unknown device found {model}, creating a generic model for this")
@@ -158,7 +162,7 @@ class SpiceParser:
                 )
             model = self.library.find(model)
             #TODO: get it from generator
-            abn = 'generic'
+            generator = 'generic'
 
         assert model is not None, (model, name, args, kwargs)
         assert len(args) == len(model.pins), \
@@ -167,7 +171,7 @@ class SpiceParser:
         pins = {pin:net for pin, net in zip(model.pins, args)}
         with set_context(self._scope[-1].elements):
             self._scope[-1].elements.append(Instance(name=name, model=model.name, \
-                pins=pins, parameters=kwargs, abstract_name=abn
+                pins=pins, parameters=kwargs, generator=generator
                 ))
 
     def _process_constraints(self):

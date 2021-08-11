@@ -16,6 +16,8 @@ from .user_const import ConstraintParser
 from ..schema import constraint
 from ..primitive import generate_primitive_lef
 import logging
+
+from align import primitive
 logger = logging.getLogger(__name__)
 
 def generate_hierarchy(netlist_path, subckt, output_dir, flatten_heirarchy, pdk_dir, uniform_height):
@@ -176,8 +178,8 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
     #read lef to not write those modules as macros
     lef_path = pathlib.Path(__file__).resolve().parent.parent / 'config'
     with open(pdk_dir /'generators.json') as fp:
-        generators = json.load(fp).keys()
-    logger.debug(f"Available library cells: {', '.join(generators)}")
+        generators = json.load(fp)
+    logger.debug(f"Available library cells: {', '.join(generators.keys())}")
 
     primitives = {}
     for ckt in ckt_data:
@@ -188,26 +190,29 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
             if isinstance(const, constraint.GuardRing):
                 primitives['guard_ring'] = {'primitive':'guard_ring'}
             if isinstance(const, constraint.GroupCaps):
-                primitives[const.unit_cap] = {'primitive': 'cap', 'value':int(const.unit_cap.split('_')[1].replace('f',''))}
+                primitives[const.unit_cap.upper()] = {'primitive': 'cap', 'value':int(const.unit_cap.split('_')[1].replace('f',''))}
 
         for ele in ckt.elements:
-            model = str(ele.model)
+            primitive_generator = ele.generator
             assert 'generic' in generators
-            if model not in generators and ele.abstract_name in generators:
-                #Hack for generic primitive
-                model = 'generic'
-            elif model not in generators and not isinstance(ckt_data.find(model), SubCircuit):
-                model = str(ckt_data.find(model).base)
-            if model in generators:
-                block_name, block_args = generate_primitive_lef(ele, model, generators, design_config, uniform_height)
-                logger.debug(f"Created new lef for: {block_name} {model} {block_args}")
+            # if model not in generators and ele.abstract_name in generators:
+            #     #Hack for generic primitive
+            #     model = 'generic'
+            #Hack check at subckt parsing stage only
+            # if ele.generator not in generators and not isinstance(ckt_data.find(ele.model), SubCircuit):
+            #     primitive_generator = str(ckt_data.find(ele.model).base)
+            if primitive_generator in generators:
+                generators[str(ele.model)] = primitive_generator
+                block_name, block_args = generate_primitive_lef(ele, primitive_generator, generators, design_config, uniform_height)
+                logger.debug(f"Created new lef for: {block_name} {primitive_generator} {block_args}")
                 if block_name in primitives:
                     if block_args != primitives[block_name]:
                         logging.warning(f"two different primitve {block_name} of size {primitives[block_name]} {block_args}got approximated to same unit size")
                 else:
                     primitives[block_name] = block_args
             else:
-                logger.debug(f"No physical information found for: {ele.name} of type : {model}")
+                ele.add_abs_name(ele.generator)
+                logger.debug(f"No physical information found for: {ele.name} of type : {ele.model}")
         logger.debug(f"generated data for {ele.name} : {pprint.pformat(primitives, indent=4)}")
     logger.debug(f"All available cell generator with updates: {generators}")
     for ckt in ckt_data:

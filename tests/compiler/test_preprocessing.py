@@ -37,13 +37,13 @@ def db():
             parameters = None)
         library.append(subckt)
     with set_context(subckt.elements):
-        subckt.elements.append(Instance(name='C1', model='CAP', pins={'PLUS': 'PLUS', 'MINUS': 'MINUS'}, parameters ={'VALUE':'2'}))
-        subckt.elements.append(Instance(name='C2', model='CAP', pins={'PLUS': 'PLUS', 'MINUS': 'MINUS'}, parameters ={'VALUE':'2'}))
-        subckt.elements.append(Instance(name='R1', model='RES', pins={'PLUS': 'PLUS', 'MINUS': 'MINUS'}, parameters ={'VALUE':'10'}))
-        subckt.elements.append(Instance(name='R2', model='RES', pins={'PLUS': 'PLUS', 'MINUS': 'MINUS'}, parameters ={'VALUE':'10'}))
-        subckt.elements.append(Instance(name='R3', model='RES', pins={'PLUS': 'PLUS', 'MINUS': 'MINUS'}, parameters ={'VALUE':'10'}))
-        subckt.elements.append(Instance(name='M1', model='TESTMOS', pins={'D': 'D', 'G': 'G', 'S': 'S', 'B': 'B'}))
-        subckt.elements.append(Instance(name='M2', model='TESTMOS', pins={'D': 'D', 'G': 'G', 'S': 'S', 'B': 'B'}))
+        subckt.elements.append(Instance(name='C1', model='CAP', pins={'PLUS': 'PLUS', 'MINUS': 'MINUS'}, parameters ={'VALUE':'2'}, generator='CAP'))
+        subckt.elements.append(Instance(name='C2', model='CAP', pins={'PLUS': 'PLUS', 'MINUS': 'MINUS'}, parameters ={'VALUE':'2'}, generator='CAP'))
+        subckt.elements.append(Instance(name='R1', model='RES', pins={'PLUS': 'PLUS', 'MINUS': 'MINUS'}, parameters ={'VALUE':'10'}, generator='RES'))
+        subckt.elements.append(Instance(name='R2', model='RES', pins={'PLUS': 'PLUS', 'MINUS': 'MINUS'}, parameters ={'VALUE':'10'}, generator='RES'))
+        subckt.elements.append(Instance(name='R3', model='RES', pins={'PLUS': 'PLUS', 'MINUS': 'MINUS'}, parameters ={'VALUE':'10'}, generator='RES'))
+        subckt.elements.append(Instance(name='M1', model='TESTMOS', pins={'D': 'D', 'G': 'G', 'S': 'S', 'B': 'B'}, generator='MOS'))
+        subckt.elements.append(Instance(name='M2', model='TESTMOS', pins={'D': 'D', 'G': 'G', 'S': 'S', 'B': 'B'}, generator='MOS'))
 
     return subckt
 
@@ -89,16 +89,16 @@ def dbs():
             parameters = None)
         library.append(subckt)
     with set_context(subckt.elements):
-        subckt.elements.append(Instance(name='C1', model='CAP', pins={'PLUS': 'PLUS', 'MINUS': 'netc1'}, parameters ={'VALUE':'2'}))
-        subckt.elements.append(Instance(name='C2', model='CAP', pins={'PLUS': 'netc1', 'MINUS': 'MINUS'}, parameters ={'VALUE':'2'}))
-        subckt.elements.append(Instance(name='R1', model='RES', pins={'PLUS': 'PLUS', 'MINUS': 'netr1'}, parameters ={'VALUE':'10'}))
-        subckt.elements.append(Instance(name='R2', model='RES', pins={'PLUS': 'netr1', 'MINUS': 'netr2'}, parameters ={'VALUE':'10'}))
-        subckt.elements.append(Instance(name='R3', model='RES', pins={'PLUS': 'netr2', 'MINUS': 'MINUS'}, parameters ={'VALUE':'10'}))
-        subckt.elements.append(Instance(name='M1', model='TESTMOS', pins={'D': 'D', 'G': 'G', 'S': 'netm1', 'B': 'B'}))
-        subckt.elements.append(Instance(name='M2', model='TESTMOS', pins={'D': 'netm1', 'G': 'G', 'S': 'S', 'B': 'B'}))
-        subckt.elements.append(Instance(name='M3', model='TESTMOS', pins={'D': 'D', 'G': 'G1', 'S': 'netm2', 'B': 'B'}))
-        subckt.elements.append(Instance(name='M4', model='TESTMOS', pins={'D': 'netm2', 'G': 'G1', 'S': 'netm3', 'B': 'B'}))
-        subckt.elements.append(Instance(name='M5', model='TESTMOS', pins={'D': 'netm3', 'G': 'G1', 'S': 'S', 'B': 'B'}))
+        subckt.elements.append(Instance(name='C1', model='CAP', pins={'PLUS': 'PLUS', 'MINUS': 'netc1'}, parameters ={'VALUE':'2'}, generator='CAP'))
+        subckt.elements.append(Instance(name='C2', model='CAP', pins={'PLUS': 'netc1', 'MINUS': 'MINUS'}, parameters ={'VALUE':'2'}, generator='CAP'))
+        subckt.elements.append(Instance(name='R1', model='RES', pins={'PLUS': 'PLUS', 'MINUS': 'netr1'}, parameters ={'VALUE':'10'}, generator='RES'))
+        subckt.elements.append(Instance(name='R2', model='RES', pins={'PLUS': 'netr1', 'MINUS': 'netr2'}, parameters ={'VALUE':'10'}, generator='RES'))
+        subckt.elements.append(Instance(name='R3', model='RES', pins={'PLUS': 'netr2', 'MINUS': 'MINUS'}, parameters ={'VALUE':'10'}, generator='RES'))
+        subckt.elements.append(Instance(name='M1', model='TESTMOS', pins={'D': 'D', 'G': 'G', 'S': 'netm1', 'B': 'B'}, generator='MOS'))
+        subckt.elements.append(Instance(name='M2', model='TESTMOS', pins={'D': 'netm1', 'G': 'G', 'S': 'S', 'B': 'B'}, generator='MOS'))
+        subckt.elements.append(Instance(name='M3', model='TESTMOS', pins={'D': 'D', 'G': 'G1', 'S': 'netm2', 'B': 'B'}, generator='MOS'))
+        subckt.elements.append(Instance(name='M4', model='TESTMOS', pins={'D': 'netm2', 'G': 'G1', 'S': 'netm3', 'B': 'B'}, generator='MOS'))
+        subckt.elements.append(Instance(name='M5', model='TESTMOS', pins={'D': 'netm3', 'G': 'G1', 'S': 'S', 'B': 'B'}, generator='MOS'))
 
     return subckt
 
@@ -142,12 +142,12 @@ def dbr():
             parameters = {'PARAM':1})
         library.append(top_subckt)
     with set_context(leaf_subckt.elements):
-        leaf_subckt.elements.append(Instance(name='M1', model='TESTMOS', pins={'D': 'LD', 'G': 'LG', 'S': 'LS', 'B': 'LB'}))
+        leaf_subckt.elements.append(Instance(name='M1', model='TESTMOS', pins={'D': 'LD', 'G': 'LG', 'S': 'LS', 'B': 'LB'}, generator='MOS'))
     with set_context(trunk_subckt.elements):
-        trunk_subckt.elements.append(Instance(name='XT1', model='LEAF_CKT', pins={'LD': 'TD', 'LG': 'TG', 'LS': 'TS', 'LB': 'TB'},parameters={'PARAM':4}))
+        trunk_subckt.elements.append(Instance(name='XT1', model='LEAF_CKT', pins={'LD': 'TD', 'LG': 'TG', 'LS': 'TS', 'LB': 'TB'},parameters={'PARAM':4}, generator='LEAF_CKT'))
     with set_context(top_subckt.elements):
-        top_subckt.elements.append(Instance(name='X1', model='TRUNK_CKT', pins={'TD': 'D', 'TG': 'D', 'TS': 'S', 'TB': 'B'}))
-        top_subckt.elements.append(Instance(name='M1', model='TESTMOS', pins={'D': 'D', 'G': 'G', 'S': 'S', 'B': 'B'}))
+        top_subckt.elements.append(Instance(name='X1', model='TRUNK_CKT', pins={'TD': 'D', 'TG': 'D', 'TS': 'S', 'TB': 'B'},generator='TRUNK_CKT'))
+        top_subckt.elements.append(Instance(name='M1', model='TESTMOS', pins={'D': 'D', 'G': 'G', 'S': 'S', 'B': 'B'}, generator='None'))
 
     return library
 

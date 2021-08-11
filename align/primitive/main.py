@@ -346,7 +346,7 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
         return block_name, block_parameters
 
     elif name=='CAP':
-        assert float(values["VALUE"]), f"unidentified size {values['VALUE']} for {element.name}"
+        assert float(values["VALUE"]), f"unidentified size {values} for {element.name}"
         size = round(float(values["VALUE"]) * 1E15,4)
         #TODO: use float in name
         block_name = name + '_' + str(int(size)) + 'f'

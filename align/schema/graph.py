@@ -196,8 +196,8 @@ class Graph(networkx.Graph):
             self.add_instance(
                 name=merged_inst_name,
                 model=inst_name,
-                abstract_name=inst_name,
-                pins=pin2net_map
+                pins=pin2net_map,
+                generator = subckt.name
             )
         return new_subckt
     #TODO: in future use paramaters from generator
@@ -215,7 +215,7 @@ class Graph(networkx.Graph):
                 subckt_instance.elements.append(Instance(
                     name=element.name,
                     model=self.nodes[x].get('instance').model,
-                    abstract_name=self.nodes[x].get('instance').model,
+                    generator=self.nodes[x].get('instance').generator,
                     pins=element.pins,
                     parameters=self.nodes[x].get('instance').parameters))
         return subckt_instance
@@ -224,7 +224,7 @@ class Graph(networkx.Graph):
         if counter == 0:
             name = subckt.name
         else:
-            name = f'{subckt.name}_{counter}'
+            name = f'{subckt.name}_I{counter}'
         existing_ckt = self.subckt.parent.find(name)
         if existing_ckt:
             if subckt.pins == existing_ckt.pins and \

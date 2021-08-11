@@ -92,7 +92,6 @@ def remove_dummy_hier(library,ckt,update=True):
                         model = y.model,
                         pins = pins,
                         parameters = y.parameters,
-                        abstract_name = y.abstract_name,
                         generator = y.generator
                         ))
                     other_ckt.elements.remove(ele)
