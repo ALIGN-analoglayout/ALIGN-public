@@ -9,7 +9,6 @@ examples = [('inverter_v1',1,False),
             #Block with capacitors and resistors
             ('adder',1,False),
             ('five_transistor_ota',1,False),
-            ('five_transistor_ota',2,False),
             #Hierarchical block fail with num_placements > 1
             ('cascode_current_mirror_ota',2,False),
             #Test PDN_mode
@@ -26,7 +25,7 @@ else:
     os.environ['ALIGN_HOME'] = str(ALIGN_HOME)
 
 if 'ALIGN_WORK_DIR' in os.environ:
-    ALIGN_WORK_DIR = pathlib.Path( os.environ['ALIGN_WORK_DIR']).resolve() 
+    ALIGN_WORK_DIR = pathlib.Path( os.environ['ALIGN_WORK_DIR']).resolve()
 else:
     ALIGN_WORK_DIR = ALIGN_HOME / 'tests' / 'tmp'
 
@@ -50,7 +49,7 @@ def test_cmdline(design,num_placements,PDN_mode):
     results = align.CmdlineParser().parse_args(args)
 
     assert results is not None, "ALIGN exception encountered"
-    
+
     for result in results:
         _, variants = result
         for (k,v) in variants.items():
