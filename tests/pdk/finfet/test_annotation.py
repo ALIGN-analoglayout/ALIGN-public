@@ -20,7 +20,7 @@ def test_1():
         """)
     setup = textwrap.dedent("""\
         POWER = vccx
-        GND = vssx
+        GND =
         """)
     constraints = []
     example = build_example(name, netlist, setup, constraints)

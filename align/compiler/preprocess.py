@@ -31,71 +31,88 @@ def preprocess_stack_parallel(ckt_data, design_setup, design_name):
     for each circuit different power connection creates an extra subcircuit
     Required by PnR as it does not make power connections as ports
     """
-    remove_dummy = []
     design_setup['KEEP_DUMMY'] = False
     design_setup['SERIES'] = True
     design_setup['PARALLEL'] = True
+    top = ckt_data.find(design_name)
+    if top.name not in design_setup['DIGITAL']:
+        define_SD(top, design_setup['POWER'], design_setup['GND'], design_setup['DIGITAL'])
+
     for subckt in ckt_data:
         if isinstance(subckt, SubCircuit):
-            logger.debug(f"preprocessing circuit name: {subckt}")
+            logger.debug(f"Preprocessing stack/parallel circuit name: {subckt.name}")
             if subckt.name not in design_setup['DIGITAL']:
-                define_SD(subckt,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
                 logger.debug(f"Starting no of elements in subckt {subckt.name}: {len(subckt.elements)}")
-                if 'PARALLEL' in design_setup and design_setup['PARALLEL'] == True:
+                if 'PARALLEL' in design_setup:
                     #Find parallel devices and add a parameter parallel to them, all other parameters should be equal
-                    add_parallel_devices(subckt,True)
-                if 'SERIES' in design_setup and design_setup['SERIES'] == True:
+                    add_parallel_devices(subckt, design_setup['PARALLEL'])
+                if 'SERIES' in design_setup:
                     #Find parallel devices and add a parameter parallel to them, all other parameters should be equal
-                    add_series_devices(subckt,True)
-                if 'KEEP_DUMMY' in design_setup \
-                    and design_setup['KEEP_DUMMY'] == False\
-                    and not subckt.name == design_name:
-                    #remove single instance subcircuits
-                    if remove_dummy_hier(ckt_data,subckt,True):
-                        remove_dummy.append(subckt.name)
-                logger.debug(f"After preprocessing no of elements in subckt {subckt.name}: {len(subckt.elements)}")
+                    add_series_devices(subckt, design_setup['SERIES'])
+                logger.debug(f"After reducing series/parallel, elements count in subckt {subckt.name}: {len(subckt.elements)}")
 
-    if len(remove_dummy) >0:
-        logger.info(f"Removing dummy hierarchies {remove_dummy}")
-    with set_context(ckt_data):
-        for ckt in remove_dummy:
-            ckt_data.remove(ckt_data.find(ckt))
-            assert ckt_data.find(ckt) == None
+    if isinstance(top, SubCircuit):
+        if top.name not in design_setup['DIGITAL']:
+            if 'KEEP_DUMMY' in design_setup:
+                #remove single instance subcircuits
+                dummy_hiers = []
+                find_dummy_hier(ckt_data, top, dummy_hiers, design_setup['KEEP_DUMMY'])
+                if len(dummy_hiers)>0:
+                    logger.info(f"Removing dummy hierarchies {dummy_hiers}")
+                    remove_dummies(ckt_data, dummy_hiers, top.name)
 
-def remove_dummy_hier(library,ckt,update=True):
-    if update == True and not len(ckt.elements) ==1:
-        return False
-    if  library.find(ckt.elements[0].model) and isinstance(library.find(ckt.elements[0].model), SubCircuit):
-        remove_dummy_hier(library,library.find(ckt.elements[0].model))
-    for other_ckt in library:
-        if isinstance(other_ckt, SubCircuit):
-            replace = {}
-            for inst in other_ckt.elements:
-                if inst.model == ckt.name:
-                    logger.debug(f"removing instance {inst} with instance {ckt.elements[0].model}")
-                    replace[inst.name] = ckt.elements[0]
-                    #@Parijat, is there a better way to modify?
-            with set_context(other_ckt.elements):
-                for x,y in replace.items():
-                    ele = other_ckt.get_element(x)
-                    assert ele
-                    pins = {}
-                    for p,v in y.pins.items():
-                        pins[p] = ele.pins[v]
-                    y.parameters.update({k : v for k,v in ele.parameters.items() if k in y.parameters})
-                    logger.debug(f"new instance parameters: {y.parameters}")
-                    _prefix= library.find(y.model).prefix
-                    if not _prefix:
-                        _prefix = 'M' #default value, used in testing
-                    other_ckt.elements.append(Instance(
-                        name = ele.name.replace('X',_prefix),
-                        model = y.model,
-                        pins = pins,
-                        parameters = y.parameters,
-                        generator = y.generator
-                        ))
-                    other_ckt.elements.remove(ele)
-    return True
+def remove_dummies(library, dummy_hiers, top):
+    for h in dummy_hiers:
+        if h==top:
+            logger.debug("Cant delete top hierarchy {top}")
+            return
+        ckt = library.find(h)
+        assert ckt
+        with set_context(library):
+            logger.info(f"Flattening dummy hierarchy {ckt.name}")
+            for other_ckt in library:
+                if isinstance(other_ckt, SubCircuit) and not other_ckt.name == ckt.name:
+                    replace = {}
+                    for inst in other_ckt.elements:
+                        if inst.model == ckt.name:
+                            logger.debug(f"removing instance {inst} with instance {ckt.elements[0].model}")
+                            replace[inst.name] = ckt.elements[0]
+                            #@Parijat, is there a better way to modify?
+                    with set_context(other_ckt.elements):
+                        for x,y in replace.items():
+                            ele = other_ckt.get_element(x)
+                            assert ele
+                            pins = {}
+                            for p,v in y.pins.items():
+                                pins[p] = ele.pins[v]
+                            y.parameters.update({k : v for k,v in ele.parameters.items() if k in y.parameters})
+                            logger.debug(f"new instance parameters: {y.parameters}")
+                            _prefix= library.find(y.model).prefix
+                            if not _prefix:
+                                _prefix = 'M' #default value, used in testing
+                            other_ckt.elements.append(Instance(
+                                name = ele.name.replace('X',_prefix),
+                                model = y.model,
+                                pins = pins,
+                                parameters = y.parameters,
+                                generator = y.generator
+                                ))
+                            other_ckt.elements.remove(ele)
+            logger.info(f'Removing hierarchy {h}')
+            library.remove(ckt)
+            assert library.find(h) == None
+
+def find_dummy_hier(library, ckt, dummy_hiers, update=False):
+    if update == True:
+        return
+    assert isinstance(dummy_hiers, list)
+    all_subckts = [str(e.model) for e in ckt.elements if isinstance(library.find(e.model), SubCircuit)]
+    logger.info(f"Checking hiearchy {ckt.name} subckts {all_subckts} filter: {dummy_hiers}")
+    for m in set(all_subckts)-set(dummy_hiers):
+        find_dummy_hier(library, library.find(m), dummy_hiers)
+    if len(ckt.elements) ==1:
+        dummy_hiers.append(ckt.name)
+
 
 
 def swap_SD(circuit,G,node):
@@ -117,7 +134,7 @@ def swap_SD(circuit,G,node):
     logger.warning(f"Swapping D and S {node} {nbrd} {nbrs} {circuit.get_element(node)}")
     circuit.get_element(node).pins.update({'D':nbrs,'S':nbrd})
 
-def define_SD(circuit,power,gnd,update=True):
+def define_SD(circuit,power,gnd,digital):
     """define_SD
     Checks for scenarios where transistors D/S are flipped.
     It is valid configuration in spice as transistors D and S are invertible
@@ -136,7 +153,7 @@ def define_SD(circuit,power,gnd,update=True):
         clk ([type]): [description]
     """
 
-    if update ==False:
+    if circuit.name in digital:
         return
     if not power or not gnd:
         logger.warning(f"No power and gnd in this circuit {circuit.name}, please check setup file")
@@ -150,8 +167,8 @@ def define_SD(circuit,power,gnd,update=True):
         high= list(set(power).intersection(set(ports)))
         low = list(set(gnd).intersection(set(ports)))
         logger.debug(f"Using power: {high} and ground: {low}")
-    assert high, f"VDD port {power} not defined as subckt port"
-    assert low, f"GND port {gnd} not defined as subckt port"
+    assert high, f"VDD port {power} not defined in subckt port {circuit.pins}"
+    assert low, f"GND port {gnd} not defined in subckt port {circuit.pins}"
 
     logger.debug(f"START checking source and drain in graph ")
 
@@ -207,6 +224,14 @@ def define_SD(circuit,power,gnd,update=True):
         logger.warning(f"changing source drain: {node}")
         swap_SD(circuit,G,node)
 
+    for inst in circuit.elements:
+        inst_ckt = circuit.parent.find(inst.model)
+        if isinstance(inst_ckt, SubCircuit):
+            pp = [p for p,c in inst.pins if c in power]
+            gp = [p for p,c in inst.pins if c in gnd]
+            define_SD(inst_ckt, pp, gp, digital)
+
+
 
 def add_parallel_devices(ckt,update=True):
     """add_parallel_devics
@@ -219,7 +244,7 @@ def add_parallel_devices(ckt,update=True):
     """
     if update == False:
         return
-    logger.debug(f"merging all parallel devices, initial ckt size: {len(ckt.elements)}")
+    logger.debug(f"Checking parallel devices in {ckt.name}, initial ckt size: {len(ckt.elements)}")
 
     for net in set(ckt.nets):
         pp_list = []
@@ -253,7 +278,7 @@ def add_series_devices(ckt,update=True):
     """
     if update == False:
         return
-    logger.debug(f"merging all stacked/series devices, initial ckt size: {len(ckt.elements)}")
+    logger.debug(f"Checking stacked/series devices, initial ckt size: {len(ckt.elements)}")
     remove_nodes = []
     for net in set(ckt.nets)-set(ckt.pins):
         G = Graph(ckt)
@@ -283,7 +308,7 @@ def add_series_devices(ckt,update=True):
                 del nbr2p[connection]
 
             if nbr1p == nbr2p and connections in [set(['D','S']),set(['PLUS','MINUS'])]:
-                logger.warning(f"stacking {nbrs} {stack1 + stack2}")
+                logger.info(f"stacking {nbrs} {stack1 + stack2}")
                 nbr1.parameters['STACK'] = stack1 +stack2
                 for p,n in nbr1.pins.items():
                     if net ==n:

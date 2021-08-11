@@ -3,7 +3,7 @@ import pytest
 import pathlib
 from align.schema import Model, Instance, SubCircuit, Library
 from align.schema.types import set_context, List, Dict
-from align.compiler.preprocess import add_parallel_devices, add_series_devices, remove_dummy_hier
+from align.compiler.preprocess import add_parallel_devices, add_series_devices, find_dummy_hier, remove_dummies
 @pytest.fixture
 def db():
     library = Library()
@@ -144,10 +144,9 @@ def dbr():
     with set_context(leaf_subckt.elements):
         leaf_subckt.elements.append(Instance(name='M1', model='TESTMOS', pins={'D': 'LD', 'G': 'LG', 'S': 'LS', 'B': 'LB'}, generator='MOS'))
     with set_context(trunk_subckt.elements):
-        trunk_subckt.elements.append(Instance(name='XT1', model='LEAF_CKT', pins={'LD': 'TD', 'LG': 'TG', 'LS': 'TS', 'LB': 'TB'},parameters={'PARAM':4}, generator='LEAF_CKT'))
+        trunk_subckt.elements.append(Instance(name='XTR1', model='LEAF_CKT', pins={'LD': 'TD', 'LG': 'TG', 'LS': 'TS', 'LB': 'TB'},parameters={'PARAM':4}, generator='LEAF_CKT'))
     with set_context(top_subckt.elements):
-        top_subckt.elements.append(Instance(name='X1', model='TRUNK_CKT', pins={'TD': 'D', 'TG': 'D', 'TS': 'S', 'TB': 'B'},generator='TRUNK_CKT'))
-        top_subckt.elements.append(Instance(name='M1', model='TESTMOS', pins={'D': 'D', 'G': 'G', 'S': 'S', 'B': 'B'}, generator='None'))
+        top_subckt.elements.append(Instance(name='XTT1', model='TRUNK_CKT', pins={'TD': 'D', 'TG': 'G', 'TS': 'S', 'TB': 'B'},generator='TRUNK_CKT'))
 
     return library
 
@@ -161,8 +160,17 @@ def test_remove_dummy_hier(dbr):
     leaf = dbr.find('LEAF_CKT')
     assert leaf.elements[0].name == 'M1'
     assert leaf.elements[0].model == 'TESTMOS'
-    remove_dummy_hier(dbr,leaf,update=True)
-    assert trunk.elements[0].name == 'MT1'
+    dummy_hiers = []
+    find_dummy_hier(dbr,top, dummy_hiers, False)
+    assert 'LEAF_CKT' in dummy_hiers
+    assert 'TRUNK_CKT' in dummy_hiers
+    remove_dummies(dbr, ['LEAF_CKT'], 'TOP_CKT')
+    assert trunk.elements[0].name == 'MTR1'
     assert trunk.elements[0].model == 'TESTMOS'
     assert trunk.elements[0].parameters == {'PARAM1': '1.0', 'M': '1', 'PARAM2': '2', 'PARAM': '4'}
     assert trunk.elements[0].pins == {'D': 'TD', 'G': 'TG', 'S': 'TS', 'B': 'TB'}
+    remove_dummies(dbr, ['TRUNK_CKT'], 'TOP_CKT')
+    assert top.elements[0].name == 'MTT1'
+    assert top.elements[0].model == 'TESTMOS'
+    assert top.elements[0].parameters == {'PARAM1': '1.0', 'M': '1', 'PARAM2': '2', 'PARAM': '1'}
+    assert top.elements[0].pins == {'D': 'D', 'G': 'G', 'S': 'S', 'B': 'B'}

@@ -105,11 +105,8 @@ def compiler_input(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path
     #TODO FLAT implementation
     create_data = CreateDatabase(ckt_parser, const_parse)
     ckt_data= create_data.read_inputs(design_name)
-    logger.debug("START preprocessing")
+    logger.debug(f"START preprocessing from top {design_name.upper()}")
     preprocess_stack_parallel(ckt_data, design_setup, design_name.upper())
-
-    # TODO: pg_pins should be marked using constraints. Not manipulating netlist
-    logger.debug("Modifying pg pins in design for PnR")
 
     logger.debug( "\n################### FINAL CIRCUIT AFTER preprocessing #################### \n")
     logger.debug(ckt_parser)
@@ -123,7 +120,6 @@ def compiler_input(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path
             for ele in ckt.elements:
                 if isinstance(ckt_data.find(ele.model), SubCircuit):
                     assert len(ele.pins) == len(ckt_data.find(ele.model).pins)
-
     return ckt_data
 
 def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Path, pdk_dir:pathlib.Path, uniform_height=False):
