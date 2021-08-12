@@ -108,7 +108,7 @@ class Graph(networkx.Graph):
         #revert any added const TODO: add checker here
         while len(self.subckt.constraints) > _temp:
             self.subckt.constraints.pop()
-        return ret
+        return sorted(ret, key= lambda i: '_'.join(sorted(i.keys())))
     def check_constraint_satisfiability(self,subgraph,match):
         #Check if the constraints defined at primitive stage are valid for subckt
         subckt_const = subgraph.subckt.constraints

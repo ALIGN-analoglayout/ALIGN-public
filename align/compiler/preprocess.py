@@ -134,7 +134,7 @@ def swap_SD(circuit,G,node):
     logger.warning(f"Swapping D and S {node} {nbrd} {nbrs} {circuit.get_element(node)}")
     circuit.get_element(node).pins.update({'D':nbrs,'S':nbrd})
 
-def define_SD(circuit,power,gnd,digital):
+def define_SD(circuit,power,gnd,digital=None):
     """define_SD
     Checks for scenarios where transistors D/S are flipped.
     It is valid configuration in spice as transistors D and S are invertible
@@ -153,7 +153,7 @@ def define_SD(circuit,power,gnd,digital):
         clk ([type]): [description]
     """
 
-    if circuit.name in digital:
+    if digital and circuit.name in digital:
         return
     if not power or not gnd:
         logger.warning(f"No power and gnd in this circuit {circuit.name}, please check setup file")

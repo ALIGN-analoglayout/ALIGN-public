@@ -32,9 +32,9 @@ def db():
 def test_swap(db):
 
     assert db.get_element('M1').name =='M1'
-    define_SD(db,['VDD'],['GND'],update=False)
+    define_SD(db,['VDD'],['GND'],digital=['SUBCKT'])
     assert db.get_element('M1').pins== {'D': 'VDD', 'G': 'G', 'S': 'GND', 'B': 'B'}
-    define_SD(db,['VDD'],['GND'],update=True)
+    define_SD(db,['VDD'],['GND'])
     assert db.get_element('M1').pins== {'D': 'GND', 'G': 'G', 'S': 'VDD', 'B': 'B'}
     assert db.get_element('M2').pins== {'D': 'NET1', 'G': 'G', 'S': 'VDD', 'B': 'B'}
     assert db.get_element('M3').pins== {'D': 'GND', 'G': 'G', 'S': 'NET1', 'B': 'B'}

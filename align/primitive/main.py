@@ -322,13 +322,23 @@ def merged_value(values1, values2):
             merged_vals[param] = value
     return merged_vals
 
-def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_height=False):
+def add_primitive(primitives, block_name, block_args):
+    if block_name in primitives:
+        logging.warning(f"Two different primitve {block_name} of size {primitives[block_name]}\
+            with args {block_args} got approximated to same unit size")
+        assert primitives[block_name] == block_args
+    else:
+        logger.debug(f"Found primitive {block_name} with {block_args}")
+        primitives[block_name]= block_args
+
+def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict, uniform_height=False):
     """ Return commands to generate parameterized lef"""
     #TODO model parameter can be improved
     name = model
     values = element.parameters
     available_block_lef = all_lef
     logger.debug(f"checking lef for: {name}, {element}")
+
     if name == 'generic':
         # TODO: how about hashing for unique names?
         value_str = ''
@@ -341,9 +351,10 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
             }
         block_name = element.model + value_str
         element.add_abs_name(block_name)
-        block_parameters = {"parameters": deepcopy(attr), "primitive": 'generic'}
-        logger.debug(f"creating generic primitive {block_name} {block_parameters}")
-        return block_name, block_parameters
+        block_args = {"parameters": deepcopy(attr), "primitive": 'generic'}
+        logger.debug(f"creating generic primitive {block_name} {block_args}")
+        add_primitive(primitives, block_name, block_args)
+        return True
 
     elif name=='CAP':
         assert float(values["VALUE"]), f"unidentified size {values} for {element.name}"
@@ -352,10 +363,12 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
         block_name = name + '_' + str(int(size)) + 'f'
         logger.debug(f"Found cap with size: {size}")
         element.add_abs_name(block_name)
-        return block_name, {
+        block_args = {
             'primitive': 'cap',
             'value': int(size)
         }
+        add_primitive(primitives, block_name, block_args)
+        return True
 
     elif name=='RES':
         assert float(values["VALUE"]), f"unidentified size {values['VALUE']} for {element.name}"
@@ -369,10 +382,12 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
             return block_name, available_block_lef[block_name]
         logger.debug(f'Generating lef for: {name} {size}')
         element.add_abs_name(block_name)
-        return block_name, {
+        block_args = {
             'primitive': 'Res',
             'value': (height, float(size))
         }
+        add_primitive(primitives, block_name, block_args)
+        return True
 
     else:
 
@@ -449,9 +464,8 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
                 if block_args != available_block_lef[block_name]:
                     assert False, f'Two different transistors mapped to the same name {block_name}: {available_block_lef[block_name]} {block_args}'
             element.add_abs_name(block_name)
-            logger.debug(f"found primitive {block_name} with {block_args}")
-            return block_name, block_args
-
+            add_primitive(primitives, block_name, block_args)
+            return True
 
         if "NFIN" in values.keys():
             #FinFET design
@@ -482,7 +496,7 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
 
         no_units = ceil(size / unit_size_mos)
 
-        logger.debug('Generating lef for: %s %s', name, str(size))
+        logger.debug(f"Generating lef for {name} , with size {size}")
         if isinstance(size, int):
             no_units = ceil(size / unit_size_mos)
             if any(x in name for x in ['DP','_S']) and floor(sqrt(no_units/3))>=1:
@@ -499,7 +513,7 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
                 return block_name, available_block_lef[block_name]
 
             logger.debug(f"Generating parametric lef of:  {block_name} {name}")
-            cell_gen_parameters= {
+            block_args= {
                 'primitive': name,
                 'value': unit_size_mos,
                 'x_cells': xval,
@@ -507,19 +521,16 @@ def generate_primitive_lef(element,model,all_lef, design_config:dict, uniform_he
                 'parameters':values
             }
             if 'STACK' in values.keys() and int(values["STACK"])>1:
-                cell_gen_parameters['stack']=int(values["STACK"])
+                block_args['stack']=int(values["STACK"])
                 block_name = block_name+'_ST'+str(int(values["STACK"]))
             if vt:
-                cell_gen_parameters['vt_type']=vt[0]
+                block_args['vt_type']=vt[0]
                 block_name = block_name+'_'+vt[0]
 
             element.add_abs_name(block_name)
-            return block_name, cell_gen_parameters
-        else:
-            logger.debug("No proper parameters found for cell generation")
-            block_name = name+"_"+size
-
-    raise NotImplementedError(f"Could not generate LEF for {name}")
+            add_primitive(primitives, block_name, block_args)
+            return True
+    raise NotImplementedError(f"Could not generate LEF for {name} parameters: {values}")
 
 
 # WARNING: Bad code. Changing these default values breaks functionality.

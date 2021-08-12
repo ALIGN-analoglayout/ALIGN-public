@@ -1,4 +1,5 @@
 import pathlib
+from align import primitive
 
 from align.compiler.write_verilog_lef import WriteVerilog
 from align.primitive import generate_primitive_lef
@@ -26,10 +27,11 @@ def test_verilog_writer():
         if not isinstance(subckt, SubCircuit):
             continue
         name = subckt.name
+        primitives = {}
         for ele in subckt.elements:
             if ele.model in available_cell_generator:
-                block_name, _ = generate_primitive_lef(ele, str(ckt_data.find(ele.model)),
-                            available_cell_generator, design_config )
+                assert generate_primitive_lef(ele, str(ckt_data.find(ele.model)),
+                            available_cell_generator, primitives, design_config )
 
         if name in available_cell_generator or name.split('_type')[0] in available_cell_generator:
             const = ConstraintDB()

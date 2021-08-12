@@ -163,8 +163,12 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
     input_dir = input_ckt.parents[0]
 
     verilog_tbl = { 'modules': [], 'global_signals': []}
-
-    design_setup = read_setup(input_dir / (design_name + '.setup'))
+    spath = [cf for cf in input_dir.rglob('*.setup') if cf.stem.upper()==design_name]
+    if spath:
+        logger.info(f"Reading setup file {spath[0]}")
+        design_setup = read_setup(spath[0])
+    else:
+        design_setup = read_setup(input_dir/ 'dummy')
     try:
         POWER_PINS = [design_setup['GND'][0],design_setup['POWER'][0]]
     except (IndexError, ValueError):
@@ -172,7 +176,6 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
         logger.info("Power and ground nets not found. Power grid will not be constructed.")
 
     #read lef to not write those modules as macros
-    lef_path = pathlib.Path(__file__).resolve().parent.parent / 'config'
     with open(pdk_dir /'generators.json') as fp:
         generators = json.load(fp)
     logger.debug(f"Available library cells: {', '.join(generators.keys())}")
@@ -191,21 +194,9 @@ def compiler_output(input_ckt, ckt_data, design_name:str, result_dir:pathlib.Pat
         for ele in ckt.elements:
             primitive_generator = ele.generator
             assert 'generic' in generators
-            # if model not in generators and ele.abstract_name in generators:
-            #     #Hack for generic primitive
-            #     model = 'generic'
-            #Hack check at subckt parsing stage only
-            # if ele.generator not in generators and not isinstance(ckt_data.find(ele.model), SubCircuit):
-            #     primitive_generator = str(ckt_data.find(ele.model).base)
             if primitive_generator in generators:
                 generators[str(ele.model)] = primitive_generator
-                block_name, block_args = generate_primitive_lef(ele, primitive_generator, generators, design_config, uniform_height)
-                logger.debug(f"Created new lef for: {block_name} {primitive_generator} {block_args}")
-                if block_name in primitives:
-                    if block_args != primitives[block_name]:
-                        logging.warning(f"two different primitve {block_name} of size {primitives[block_name]} {block_args}got approximated to same unit size")
-                else:
-                    primitives[block_name] = block_args
+                assert generate_primitive_lef(ele, primitive_generator, generators, primitives, design_config, uniform_height)
             else:
                 ele.add_abs_name(ele.generator)
                 logger.debug(f"No physical information found for: {ele.name} of type : {ele.model}")
