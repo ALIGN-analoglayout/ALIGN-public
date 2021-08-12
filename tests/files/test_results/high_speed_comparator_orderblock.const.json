@@ -31,8 +31,8 @@
           "constraint": "symmetric_blocks",
           "pairs": [
             [
-              "X_CMC_PMOS_MP10_MP8",
-              "X_CMC_PMOS_MP7_MP9"
+              "X_CMC_PMOS_MP10_MP7",
+              "X_CMC_PMOS_MP8_MP9"
             ]
           ],
           "direction": "V"

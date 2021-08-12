@@ -96,7 +96,7 @@ class Graph(networkx.Graph):
             self, graph, node_match=node_match, edge_match=edge_match)
         ret = []
         _temp = len(self.subckt.constraints)
-        for match in matcher.subgraph_isomorphisms_iter():
+        for match in sorted(matcher.subgraph_isomorphisms_iter(), key= lambda i: '_'.join(sorted(i.keys()))):
             if not any(self._is_element(self.nodes[node]) and any(node in x for x in ret) for node in match):
                 try:
                     self.check_constraint_satisfiability(graph,match)
@@ -108,7 +108,7 @@ class Graph(networkx.Graph):
         #revert any added const TODO: add checker here
         while len(self.subckt.constraints) > _temp:
             self.subckt.constraints.pop()
-        return sorted(ret, key= lambda i: '_'.join(sorted(i.keys())))
+        return ret
     def check_constraint_satisfiability(self,subgraph,match):
         #Check if the constraints defined at primitive stage are valid for subckt
         subckt_const = subgraph.subckt.constraints
