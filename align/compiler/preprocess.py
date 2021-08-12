@@ -227,11 +227,9 @@ def define_SD(circuit,power,gnd,digital=None):
     for inst in circuit.elements:
         inst_ckt = circuit.parent.find(inst.model)
         if isinstance(inst_ckt, SubCircuit):
-            pp = [p for p,c in inst.pins if c in power]
-            gp = [p for p,c in inst.pins if c in gnd]
+            pp = [p for p,c in inst.pins.items() if c in power]
+            gp = [p for p,c in inst.pins.items() if c in gnd]
             define_SD(inst_ckt, pp, gp, digital)
-
-
 
 def add_parallel_devices(ckt,update=True):
     """add_parallel_devics

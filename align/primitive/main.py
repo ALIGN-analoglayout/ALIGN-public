@@ -324,9 +324,8 @@ def merged_value(values1, values2):
 
 def add_primitive(primitives, block_name, block_args):
     if block_name in primitives:
-        logging.warning(f"Two different primitve {block_name} of size {primitives[block_name]}\
-            with args {block_args} got approximated to same unit size")
-        assert primitives[block_name] == block_args
+        assert primitives[block_name] == block_args, f"Two different primitve {block_name} of size {primitives[block_name]}\
+            with args {block_args} got approximated to same unit size"
     else:
         logger.debug(f"Found primitive {block_name} with {block_args}")
         primitives[block_name]= block_args
