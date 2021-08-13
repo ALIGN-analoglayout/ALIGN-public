@@ -358,7 +358,11 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
 
   // set_add_rowmode(lp, FALSE);
   {
-    double row[N_var + 1] = {0};
+    double row[N_var + 1];
+    for (unsigned int i = 0; i<N_var+1; ++i) {
+      row[i] = 0;
+    }
+
     ConstGraph const_graph;
 
     // add HPWL in cost
@@ -510,6 +514,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   }
 
   double var[N_var];
+
   get_variables(lp, var);
   delete_lp(lp);
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
@@ -520,6 +525,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     Blocks[i].H_flip = var[i * 4 + 2];
     Blocks[i].V_flip = var[i * 4 + 3];
   }
+
   /*auto hflipVec = curr_sp.GetFlip(true);
   auto vflipVec = curr_sp.GetFlip(false);
   if (!hflipVec.empty() && !vflipVec.empty()) {
