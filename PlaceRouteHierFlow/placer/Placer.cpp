@@ -527,7 +527,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   double curr_cost = 0;
   int trial_count = 0;
   int max_trial_count = 10000;
-  while ((curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo)) < 0) {
+  while ((curr_cost = curr_sol.GenerateValidSolution_row(designData, curr_sp, drcInfo)) < 0) {
     if (++trial_count > max_trial_count) {
       logger->error("Couldn't generate a feasible solution even after {0} perturbations.", max_trial_count);
       curr_cost = __DBL_MAX__;
@@ -632,7 +632,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       trial_sp.PerturbationNew(designData);
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ILP_solver trial_sol(designData);
-      double trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo);
+      double trial_cost = trial_sol.GenerateValidSolution_row(designData, trial_sp, drcInfo);
       if (trial_cost >= 0) {
         oData[trial_cost] = std::make_pair(trial_sp, trial_sol);
         bool Smark = trial_sp.Enumerate();
