@@ -65,7 +65,6 @@ void ILP_solver::lpsolve_logger(lprec* lp, void* userhandle, char* buf) {
 
 double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
-
   auto roundup = [](int& v, int pitch) { v = pitch * ((v + pitch - 1) / pitch); };
   int v_metal_index = -1;
   int h_metal_index = -1;
@@ -670,7 +669,30 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
 
 double ILP_solver::GenerateValidSolution_row(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
-
+  for (unsigned int i = 0; i < curr_sp.selected.size(); i++) curr_sp.selected[i] = 0;
+  map<int, int> block_id_2_row;
+  unsigned int N_row = 3;
+  vector<vector<int>> row_order(N_row);
+  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+    int row_id = rand() % 3;
+    row_order[row_id].push_back(i);
+    block_id_2_row[i] = row_id;
+  }
+  for (unsigned int i = 0; i < N_row;i++){
+    std::random_shuffle ( row_order[i].begin(), row_order[i].end());
+  }
+  for (unsigned int i = 0; i < mydesign.Blocks.size();i++){
+    if(mydesign.Blocks[i][0].counterpart>=0){
+      if(block_id_2_row[i]!=block_id_2_row[mydesign.Blocks[i][0].counterpart]){
+        int counterpart_row = block_id_2_row[mydesign.Blocks[i][0].counterpart];
+        row_order[counterpart_row].erase(std::remove(row_order[counterpart_row].begin(), row_order[counterpart_row].end(), mydesign.Blocks[i][0].counterpart),
+                                         row_order[counterpart_row].end());
+        block_id_2_row[mydesign.Blocks[i][0].counterpart] = block_id_2_row[i];
+        row_order[block_id_2_row[i]].push_back(mydesign.Blocks[i][0].counterpart);
+      }
+    }
+  } 
+  int height = mydesign.Blocks[0][0].height;
   auto roundup = [](int& v, int pitch) { v = pitch * ((v + pitch - 1) / pitch); };
   int v_metal_index = -1;
   int h_metal_index = -1;
@@ -714,7 +736,24 @@ double ILP_solver::GenerateValidSolution_row(design& mydesign, SeqPair& curr_sp,
   roundup(bias_Hgraph, x_pitch);
   roundup(bias_Vgraph, y_pitch);
 
-  // overlap constraint
+  for(unsigned int i=0;i<N_row;i++){
+    for (unsigned int j = 0; j < row_order[i].size(); j++) {
+      //y position constraint
+      double sparserow[1] = {1};
+      int colno[1] = {int(row_order[i][j]) * 4 + 2};
+      if (!add_constraintex(lp, 1, sparserow, colno, EQ, i * height)) logger->error("error");
+    }
+  }
+
+  // overlap constraint 
+  for(unsigned int i=0;i<N_row;i++){
+    for (unsigned int j = 0;j+1<row_order[i].size();j++){
+      double sparserow[2] = {1, -1};
+      int colno[2] = {int(row_order[i][j]) * 4 + 1, int(row_order[i][j + 1]) * 4 + 1};
+      if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[row_order[i][j]][curr_sp.selected[row_order[i][j]]].width - bias_Hgraph)) logger->error("error");
+    } 
+  }
+  /**
   for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
     int i_pos_index = find(curr_sp.posPair.begin(), curr_sp.posPair.end(), i) - curr_sp.posPair.begin();
     int i_neg_index = find(curr_sp.negPair.begin(), curr_sp.negPair.end(), i) - curr_sp.negPair.begin();
@@ -756,7 +795,7 @@ double ILP_solver::GenerateValidSolution_row(design& mydesign, SeqPair& curr_sp,
       }
     }
   }
-
+  **/
   // x>=0, y>=0
   for (auto id : curr_sp.negPair) {
     if (id < int(mydesign.Blocks.size())) {
@@ -1078,6 +1117,7 @@ double ILP_solver::GenerateValidSolution_row(design& mydesign, SeqPair& curr_sp,
     }
 
     // add area in cost
+    /**
     int URblock_pos_id = 0, URblock_neg_id = 0;
     int estimated_width = 0, estimated_height = 0;
     for (unsigned int i = curr_sp.negPair.size() - 1; i >= 0; i--) {
@@ -1103,7 +1143,10 @@ double ILP_solver::GenerateValidSolution_row(design& mydesign, SeqPair& curr_sp,
     }
     // add estimated area
     for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) row[curr_sp.negPair[i] * 4 + 1] += estimated_height / 2;
-
+    **/
+    for (unsigned int i = 0; i < N_row; i++){
+      if (row_order[i].size()) row[row_order[i].back() * 4 + 1] = height;  // make the right block have minimum x
+    }
     set_obj_fn(lp, row);
     set_minim(lp);
     set_timeout(lp, 1);
