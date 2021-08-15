@@ -65,6 +65,8 @@ void ILP_solver::lpsolve_logger(lprec* lp, void* userhandle, char* buf) {
 
 double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
+  for (unsigned int i = 0; i < curr_sp.selected.size(); i++) curr_sp.selected[i] = 0;
+  
   auto roundup = [](int& v, int pitch) { v = pitch * ((v + pitch - 1) / pitch); };
   int v_metal_index = -1;
   int h_metal_index = -1;
@@ -668,7 +670,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
 }
 
 double ILP_solver::GenerateValidSolution_row(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
-  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
+  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution_row");
   for (unsigned int i = 0; i < curr_sp.selected.size(); i++) curr_sp.selected[i] = 0;
   map<int, int> block_id_2_row;
   unsigned int N_row = 3;
