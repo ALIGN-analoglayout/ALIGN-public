@@ -1,0 +1,4 @@
+POWER = vdd
+GND = gnd
+CLOCK =
+DIGITAL = vco_4_stage vco_unit inv_unit1 inv_unit_latch1
