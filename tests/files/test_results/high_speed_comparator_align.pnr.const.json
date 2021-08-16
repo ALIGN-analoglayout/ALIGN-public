@@ -57,6 +57,7 @@
             ]
         },
         {
+            "line": "h_bottom",
             "const_name": "AlignBlock",
             "blocks": [
                 "MP9",
@@ -68,6 +69,7 @@
             "direction": "H"
         },
         {
+            "line": "h_bottom",
             "const_name": "AlignBlock",
             "blocks": [
                 "X_INV_N_MP11_MN13",
