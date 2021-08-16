@@ -586,8 +586,8 @@ class AppWithCallbacksAndState:
             self.make_placement_graph(display_type=display_type,display_pins_type=display_pins_type,netname=netname)
 
 
+        options = []
         if self.nets_d is not None:
-            options = []
             for k, v in self.nets_d.items():
                 net = '/'.join(k)
                 options.append( {"value": net, "label": net})

@@ -42,9 +42,6 @@ class PnRConstraintWriter:
             # Constraint-specific field transformations
             if const["const_name"] == 'Order':
                 const["const_name"] = 'Ordering'
-                if 'abut' in const:
-                    assert not const["abut"], 'PnR does not support abutment yet'
-                    del const["abut"]
                 if const["direction"] in ("left_to_right", "horizontal"):
                     const["direction"] = 'H'
                 elif const["direction"] in ("top_to_bottom", "vertical"):
@@ -107,13 +104,8 @@ class PnRConstraintWriter:
                 del const["blocks"]
             elif const["const_name"] == 'Align':
                 const["const_name"] = 'AlignBlock'
-                if const["line"] in ('h_bottom', 'h_any'):
-                    const["direction"] = 'H'
-                elif const["line"] in ('v_left', 'v_any'):
-                    const["direction"] = 'V'
-                else:
+                if const['line'] not in ['h_bottom', 'h_top', 'v_right', 'v_left', 'v_center']:
                     raise NotImplementedError(f'PnR does not support edge {const["line"]} yet')
-                del const["line"]
             elif const["const_name"] == 'SymmetricNets':
                 const["const_name"] = 'SymmNet'
                 const["axis_dir"] = const.pop("direction")

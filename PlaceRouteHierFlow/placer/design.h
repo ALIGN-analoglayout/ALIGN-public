@@ -110,6 +110,7 @@ class design
     std::vector<PortPos> Port_Location;
     std::vector<PnRDB::Multi_LinearConst> ML_Constraints;
     std::vector<pair<pair<int,int>, placerDB::Smark>> Ordering_Constraints;
+    std::vector<pair<pair<int,int>, placerDB::Smark>> Abut_Constraints;
     vector<set<int>> Same_Template_Constraints;
     double Aspect_Ratio_weight = 1000;
     double Aspect_Ratio[2] = {0, 100};
@@ -141,6 +142,7 @@ class design
     struct AlignBlock {
       std::vector<int> blocks;
       int horizon; // 1 is h, 0 is v.
+      int line; // 0 is left or bottom, 1 is center, 2 is right or top
     };
     vector<AlignBlock> Align_blocks;
 

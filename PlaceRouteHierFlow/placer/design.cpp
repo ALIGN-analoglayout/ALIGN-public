@@ -274,6 +274,7 @@ design::design(design& other, int mode) {
         this->Align_blocks.resize( this->Align_blocks.size() );
         this->Align_blocks.back().blocks=tmpB;
         this->Align_blocks.back().horizon=it->horizon;
+        this->Align_blocks.back().line = it->line;
       }
     }
     logger->debug("Test: add paramenter");
@@ -445,6 +446,11 @@ design::design(PnRDB::hierNode& node) {
       Ordering_Constraints.push_back(make_pair(make_pair(order.first[i], order.first[i+1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
     }
   }
+  for (auto order: node.Abut_Constraints) {
+    for (unsigned int i = 0; i < order.first.size() - 1;i++){
+      Abut_Constraints.push_back(make_pair(make_pair(order.first[i], order.first[i+1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
+    }
+  }
 
   // Add symmetry block constraint, axis direction is determined by user
   for(vector<PnRDB::SymmPairBlock>::iterator it=node.SPBlocks.begin(); it!=node.SPBlocks.end();++it) {
@@ -532,6 +538,7 @@ design::design(PnRDB::hierNode& node) {
   for(vector<PnRDB::AlignBlock>::iterator it=node.Align_blocks.begin();it!=node.Align_blocks.end();++it) {
     this->Align_blocks.resize(this->Align_blocks.size()+1);
     this->Align_blocks.back().horizon=it->horizon;
+    this->Align_blocks.back().line=it->line;
     for(std::vector<int>::iterator it2=it->blocks.begin();it2!=it->blocks.end();++it2) {
       this->Align_blocks.back().blocks.push_back(*it2);
     }
@@ -1249,6 +1256,7 @@ design::design(const design& other):Port_Location(other.Port_Location) {
   this->noAsymBlock4Move=other.noAsymBlock4Move;
   this->noSymGroup4PartMove=other.noSymGroup4PartMove;
   this->noSymGroup4FullMove=other.noSymGroup4FullMove;
+  this->Abut_Constraints = other.Abut_Constraints;
   //this->Port_Location=other.Port_Location;
 }
 

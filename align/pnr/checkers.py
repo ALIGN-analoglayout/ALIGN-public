@@ -50,7 +50,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     def add_terminal( netName, layer, b, tag=None):
 
         r = [ b.LL.x, b.LL.y, b.UR.x, b.UR.y]
-        terminals.append( { "netName": netName, "layer": layer, "rect": r})
+        terminals.append( { "netName": netName, "netType": "drawing", "layer": layer, "rect": r})
 
         def f( gen, value, tag=None):
             # value is in units of 0.5nm
@@ -233,8 +233,8 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                         r[q], r[q+2] = min(r[q],r[q+2]), max(r[q],r[q+2])
 
                     if ly != "":
-                        d0 = {"netName": k+"_tm", "layer": ly, "rect": r}
-                        d1 = {"netName": conn['sink_name'], "layer": ly, "rect": r}
+                        d0 = {"netName": k+"_tm", "netType": "drawing", "layer": ly, "rect": r}
+                        d1 = {"netName": conn['sink_name'], "netType": "drawing", "layer": ly, "rect": r}
                         logger.debug( f"Add two terminals: {d0} {d1}")
                         terminals.append( d0)
                         terminals.append( d1)
@@ -260,7 +260,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                         r[q]   -= 20
                         r[q+2] += 20
 
-                terminals.append( {"netName": k+"_gr", "layer": ly, "rect": r})
+                terminals.append( {"netName": k+"_gr", "netType": "drawing", "layer": ly, "rect": r})
 
         if draw_grid:
             m1_pitch = 2*10*cnv.pdk['M1']['Pitch']
@@ -268,12 +268,12 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
             for ix in range( (hN.width+m1_pitch-1)//m1_pitch):
                 x = m1_pitch*ix
                 r = [ x-2, 0, x+2, hN.height]
-                terminals.append( { "netName": 'm1_bin', "layer": 'M1', "rect": r})
+                terminals.append( { "netName": 'm1_bin', "netType": "drawing", "layer": 'M1', "rect": r})
 
             for iy in range( (hN.height+m2_pitch-1)//m2_pitch):
                 y = m2_pitch*iy
                 r = [ 0, y-2, hN.width, y+2]
-                terminals.append( { "netName": 'm2_bin', "layer": 'M2', "rect": r})
+                terminals.append( { "netName": 'm2_bin', "netType": "drawing", "layer": 'M2', "rect": r})
 
     # Create viewer dictionary
 

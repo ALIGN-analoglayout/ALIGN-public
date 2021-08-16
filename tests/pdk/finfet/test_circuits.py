@@ -132,3 +132,16 @@ def test_tia():
     constraints = []
     example = build_example(name, netlist, setup, constraints)
     run_example(example)
+
+@pytest.mark.skip
+def test_ldo_amp():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.ldo_amp(name)
+    setup = textwrap.dedent("""\
+        POWER = vccx
+        GND = vssx
+        DONT_USE_CELLS = CASCODED_CMC_NMOS CMB_PMOS_2 LSB_PMOS_2 LSB_NMOS_2
+        """)
+    constraints = []
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example)

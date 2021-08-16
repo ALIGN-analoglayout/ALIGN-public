@@ -1,124 +1,112 @@
-import os
-import pytest
-import pathlib
-from align.schema import constraint
-from align.schema.checker import Z3Checker, CheckerError
-import shutil
-import align.pdk.finfet
-
-my_dir = pathlib.Path(__file__).resolve().parent
-
-pdk_dir = pathlib.Path(align.pdk.finfet.__file__).parent
+import textwrap
+try:
+    from .utils import get_test_id, build_example, run_example
+    from . import circuits
+except BaseException:
+    from utils import get_test_id, build_example, run_example
+    import circuits
 
 
-def cascode_amplifier(a_path, name, constraints):
-    netlist = f""".subckt {name} vin vop vcc vss nbs pbs
-mp1 vop pbs vcc vcc p w=720e-9 nf=4 m=5
-mn1 vop nbs vmd vss n w=720e-9 nf=4 m=5
-mn0 vmd vin vss vss n w=720e-9 nf=4 m=5
-.ends {name}
-"""
-    netlist_setup = f"""POWER = 
-GND = 
-CLOCK =
-DIGITAL =
-"""
-    example = a_path / name
-    if example.exists() and example.is_dir():
-        shutil.rmtree(example)
-    example.mkdir(parents=True)
-    with open(example / f'{name}.sp' ,'w') as fp:
-        fp.write(netlist)
-    with open(example / f'{name}.setup' ,'w') as fp:
-        fp.write(netlist_setup)
-    with open(example / f'{name}.const.json' ,'w') as fp:
-        fp.write(constraints)
-    
-    return example
+def test_aspect_ratio_low():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.cascode_amplifier(name)
+    setup = ""
+    constraints = [{"constraint": "AspectRatio", "subcircuit": "example_aspect_ratio_min", "ratio_low": 3}]
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example)
 
 
-def five_t_ota(a_path, name, constraints):
-    netlist = f""".subckt {name} vin vip vop vccx vssx vbn
-mp1 von von vccx vccx p w=720e-9 nf=4 m=5
-mp2 vop von vccx vccx p w=720e-9 nf=4 m=5
-mn1 von vip vcom vssx n w=720e-9 nf=4 m=5
-mn2 vop vin vcom vssx n w=720e-9 nf=4 m=5
-mn0 vcom vbn vssx vssx n w=720e-9 nf=4 m=5
-.ends {name}
-"""
-    netlist_setup = f""""""
-    example = a_path / name
-    if example.exists() and example.is_dir():
-        shutil.rmtree(example)
-    example.mkdir(parents=True)
-    with open(example / f'{name}.sp' ,'w') as fp:
-        fp.write(netlist)
-    with open(example / f'{name}.setup' ,'w') as fp:
-        fp.write(netlist_setup)
-    with open(example / f'{name}.const.json' ,'w') as fp:
-        fp.write(constraints)
-    
-    return example
-
-
-def run_example(example, cleanup=True):
-
-    run_dir = my_dir / f'run_{example.name}'
-    if run_dir.exists() and run_dir.is_dir():
-        shutil.rmtree(run_dir)
-    run_dir.mkdir(parents=True)
-    os.chdir(run_dir)
-
-    args = [str(example), '-p', str(pdk_dir), '-l','INFO', '--nvariants', '4']
-    results = align.CmdlineParser().parse_args(args)
-    assert results is not None, f"{example.name}: No results generated"
-    
-    if cleanup:
-        shutil.rmtree(run_dir)
-        shutil.rmtree(example)
-    return(results)
-
-
-def test_aspect_ratio_min():
-    constraints = """[
-    {"constraint": "AspectRatio", "subcircuit": "example_aspect_ratio_min", "ratio_low": 3}
-]
-"""
-    name = "example_aspect_ratio_min"
-    run_example(cascode_amplifier(my_dir, name, constraints))
-
-    
-def test_aspect_ratio_max():
-    constraints = """[
-    {"constraint": "AspectRatio", "subcircuit": "example_aspect_ratio_max", "ratio_high": 1}
-]
-"""
-    name = "example_aspect_ratio_max"
-    run_example(cascode_amplifier(my_dir, name, constraints))
+def test_aspect_ratio_high():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.cascode_amplifier(name)
+    setup = ""
+    constraints = [{"constraint": "AspectRatio", "subcircuit": "example_aspect_ratio_max", "ratio_high": 1}]
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example)
 
 
 def test_boundary_max_width():
-    constraints = """[
-    {"constraint": "Boundary", "subcircuit": "example_boundary_max_width", "max_width": 3.5}
-]
-"""
-    name = "example_boundary_max_width"
-    run_example(cascode_amplifier(my_dir, name, constraints))
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.cascode_amplifier(name)
+    setup = ""
+    constraints = [{"constraint": "Boundary", "subcircuit": "example_boundary_max_width", "max_width": 3.5}]
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example)
 
 
 def test_boundary_max_height():
-    constraints = """[
-    {"constraint": "Boundary", "subcircuit": "example_boundary_max_height", "max_height": 1.3}
-]
-"""
-    name = "example_boundary_max_height"
-    run_example(cascode_amplifier(my_dir, name, constraints))
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.cascode_amplifier(name)
+    setup = ""
+    constraints = [{"constraint": "Boundary", "subcircuit": "example_boundary_max_height", "max_height": 1.3}]
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example)
 
 
 def test_do_not_identify():
-    constraints = """[
-    {"constraint": "AlignInOrder", "line": "left", "instances": ["mp1", "mn1"]}
-]
-"""
-    name = "example_do_not_identify"
-    results = run_example(five_t_ota(my_dir, name, constraints))
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.ota_five(name)
+    setup = ""
+    constraints = [{"constraint": "AlignInOrder", "line": "left", "instances": ["mp1", "mn1"]}]
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example)
+
+
+def test_order_abut():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.comparator(name)
+    setup = textwrap.dedent("""\
+        POWER = vccx
+        GND = vssx
+        """)
+    constraints = [
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
+        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
+        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
+        {"constraint": "SymmetricBlocks", "direction": "V",
+            "pairs": [["ccp"], ["ccn"], ["dp"], ["mn0"], ["invn", "invp"], ["mp7", "mp8"], ["mp9", "mp10"]]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["invn", "ccp", "ccn", "dp", "mn0"]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["invn", "mp9", "mp7", "mn0"]},
+        {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
+        {"constraint": "AspectRatio", "subcircuit": "comparator", "ratio_low": 0.5, "ratio_high": 1.5},
+        {"constraint": "Order", "abut": True, "direction": "left_to_right", "instances": ["invn", "invp"]}
+    ]
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example)
+
+
+def test_align_top_right():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+        .subckt {name} vin vop vcc vss nbs pbs
+        mp1 vop pbs vcc vcc p w=720e-9 nf=4 m=8
+        mn1 vop nbs vmd vss n w=720e-9 nf=4 m=6
+        mn0 vmd vin vss vss n w=720e-9 nf=4 m=4
+        .ends {name}
+        """)
+    setup = ""
+    constraints = [
+        {"constraint": "AlignInOrder", "direction": "vertical", "line": "right", "instances": ["mn0", "mn1"]},
+        {"constraint": "AlignInOrder", "direction": "horizontal", "line": "top", "instances": ["mn1", "mp1"]}
+    ]
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example)
+
+
+def test_align_center():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+        .subckt {name} vin vop vcc vss nbs pbs
+        mp1 vop pbs vcc vcc p w=720e-9 nf=4 m=8
+        mn1 vop nbs vmd vss n w=720e-9 nf=4 m=6
+        mn0 vmd vin vss vss n w=720e-9 nf=4 m=16
+        .ends {name}
+        """)
+    setup = ""
+    constraints = [
+        {"constraint": "AlignInOrder", "direction": "vertical", "line": "center", "instances": ["mn0", "mn1", "mp1"]}
+        ]
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example)
