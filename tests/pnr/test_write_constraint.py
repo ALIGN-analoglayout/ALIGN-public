@@ -30,6 +30,7 @@ def mock_circuit():
                     Instance(
                         name=instance,
                         model='nmos',
+                        generator='',
                         pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET11', 'B': 'NET13'})
                 )
             else:
@@ -37,6 +38,7 @@ def mock_circuit():
                     Instance(
                         name=instance,
                         model='dummy',
+                        generator='',
                         pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET11', 'B': 'NET13'})
                 )
 
