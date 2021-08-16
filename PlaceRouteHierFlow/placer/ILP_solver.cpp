@@ -455,12 +455,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
           int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, int(mydesign.Blocks.size() * 4 + i * 2 + 1)};
           add_constraintex(lp, 5, sparserow, colno, LE, Lpin_x - Rpin_x);
         }
-	unsigned int idx = mydesign.Blocks.size() * 4 + i * 2 + 1;
-	if ( idx >= row.size()) {
-	  std::cout << "out of bounds" << std::endl;
-	  assert(0);
-	}
-        row.at(idx) = 1;
+        row.at(mydesign.Blocks.size() * 4 + i * 2 + 1) = 1;
       }
       if(Dblock_id!=Ublock_id){
         {
@@ -475,12 +470,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
           int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, int(mydesign.Blocks.size() * 4 + i * 2 + 2)};
           add_constraintex(lp, 5, sparserow, colno, LE, Dpin_y - Upin_y);
         }
-	unsigned int idx = mydesign.Blocks.size() * 4 + i * 2 + 2;
-	if ( idx >= row.size()) {
-	  std::cout << "out of bounds" << std::endl;
-	  assert(0);
-	}
-        row.at(idx) = 1;
+        row.at(mydesign.Blocks.size() * 4 + i * 2 + 2) = 1;
       }
     }
 
@@ -502,12 +492,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     }
     // add estimated area
     for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
-      unsigned int idx = curr_sp.negPair[i] * 4 + 2;
-      if ( idx >= row.size()) {
-	std::cout << "out of bounds" << std::endl;
-	assert(0);
-      }
-      row.at(idx) += estimated_width / 2;
+      row.at(curr_sp.negPair[i] * 4 + 2) += estimated_width / 2;
     }
     // estimate height
     for (unsigned int i = URblock_pos_id; i < curr_sp.posPair.size(); i++) {
@@ -517,13 +502,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     }
     // add estimated area
     for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
-      unsigned int idx = curr_sp.negPair[i] * 4 + 1;
-      if ( idx >= row.size()) {
-	std::cout << "out of bounds" << std::endl;
-	assert(0);
-      }
-      assert(idx < row.size());
-      row.at(idx) += estimated_height / 2;
+      row.at(curr_sp.negPair[i] * 4 + 1) += estimated_height / 2;
     }
 
     set_obj_fn(lp, row.data());
@@ -536,25 +515,21 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     }
   }
 
-  std::vector<double> var(N_var);
+  {
+    std::vector<double> var(N_var);
 
-  get_variables(lp, var.data());
-  delete_lp(lp);
+    get_variables(lp, var.data());
+    delete_lp(lp);
 
-  for (int i = 0; i < mydesign.Blocks.size(); i++) {
-    if (i*4+3 >= var.size()) {
-      std::cout << "out of bounds" << std::endl;      
-      assert(0);
+    for (int i = 0; i < mydesign.Blocks.size(); i++) {
+      Blocks[i].x = var.at(i * 4);
+      Blocks[i].y = var.at(i * 4 + 1);
+      roundup(Blocks[i].x, x_pitch);
+      roundup(Blocks[i].y, y_pitch);
+      Blocks[i].H_flip = var.at(i * 4 + 2);
+      Blocks[i].V_flip = var.at(i * 4 + 3);
     }
-
-    Blocks[i].x = var.at(i * 4);
-    Blocks[i].y = var.at(i * 4 + 1);
-    roundup(Blocks[i].x, x_pitch);
-    roundup(Blocks[i].y, y_pitch);
-    Blocks[i].H_flip = var.at(i * 4 + 2);
-    Blocks[i].V_flip = var.at(i * 4 + 3);
   }
-
   /*auto hflipVec = curr_sp.GetFlip(true);
   auto vflipVec = curr_sp.GetFlip(false);
   if (!hflipVec.empty() && !vflipVec.empty()) {
