@@ -359,7 +359,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   // set_add_rowmode(lp, FALSE);
   {
 
-    std::vector<double> row( N_var+3, 0);
+    std::vector<double> row( N_var+1, 0);
 
     ConstGraph const_graph;
 
@@ -492,6 +492,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     }
     // add estimated area
     for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+      if (curr_sp.negPair[i] >= mydesign.Blocks.size()) continue;
       row.at(curr_sp.negPair[i] * 4 + 2) += estimated_width / 2;
     }
     // estimate height
@@ -502,6 +503,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     }
     // add estimated area
     for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+      if (curr_sp.negPair[i] >= mydesign.Blocks.size()) continue;
       row.at(curr_sp.negPair[i] * 4 + 1) += estimated_height / 2;
     }
 
