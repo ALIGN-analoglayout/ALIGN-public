@@ -277,6 +277,7 @@ design::design(design& other, int mode) {
         this->Align_blocks.resize( this->Align_blocks.size() );
         this->Align_blocks.back().blocks=tmpB;
         this->Align_blocks.back().horizon=it->horizon;
+        this->Align_blocks.back().line = it->line;
       }
     }
     logger->debug("Test: add paramenter");
@@ -536,6 +537,7 @@ design::design(PnRDB::hierNode& node) {
   for(vector<PnRDB::AlignBlock>::iterator it=node.Align_blocks.begin();it!=node.Align_blocks.end();++it) {
     this->Align_blocks.resize(this->Align_blocks.size()+1);
     this->Align_blocks.back().horizon=it->horizon;
+    this->Align_blocks.back().line=it->line;
     for(std::vector<int>::iterator it2=it->blocks.begin();it2!=it->blocks.end();++it2) {
       this->Align_blocks.back().blocks.push_back(*it2);
     }

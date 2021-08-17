@@ -516,6 +516,7 @@ struct MatchBlock {
 struct AlignBlock {
   std::vector<int> blocks;
   int horizon; // 1 is h, 0 is v.
+  int line; // 0 is left or bottom, 1 is center, 2 is right or top
 };
 
 struct PortPos {

@@ -297,7 +297,8 @@ PYBIND11_MODULE(PnR, m) {
   py::class_<AlignBlock>( m, "AlignBlock")
     .def( py::init<>())
     .def_readwrite("blocks", &AlignBlock::blocks)
-    .def_readwrite("horizon", &AlignBlock::horizon);
+    .def_readwrite("horizon", &AlignBlock::horizon)
+    .def_readwrite("line", &AlignBlock::line);
   py::class_<PortPos>( m, "PortPos")
     .def( py::init<>())
     .def_readwrite("tid", &PortPos::tid)
