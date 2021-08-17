@@ -122,6 +122,8 @@ class Canvas:
             new_length = 0
             c_idx = wire.clg.inverseBounds(cl//2)[0]
             for (idx, slr) in enumerate(sl.rects):
+                if slr.netType == "blockage":
+                    continue
                 if slr.netName is None or slr.netName in exclude_nets:
                     new_length = 0
                     continue
@@ -134,7 +136,7 @@ class Canvas:
                     next_w = next_slr.rect[ix + 2] - next_slr.rect[ix]
                     w = slr.rect[ix + 2] - slr.rect[ix]
                     new_length += next_slr.rect[iy+2] - slr.rect[iy]
-                    if slr.netName == next_slr.netName and w == next_w and new_length <= max_l:
+                    if slr.netName == next_slr.netName and w == next_w and new_length <= max_l and slr.netType == next_slr.netType:
                         (b_idx, _) = wire.spg.inverseBounds(slr.rect[iy])
                         (_, e_idx) = wire.spg.inverseBounds(next_slr.rect[iy+2])
                         self.addWire(wire, slr.netName, c_idx, b_idx, e_idx)

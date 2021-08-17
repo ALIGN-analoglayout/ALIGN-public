@@ -42,6 +42,7 @@ class OrderedEnumerator {
     bool NextPermutation(vector<int>& seq);
     void print();
     bool valid() const { return _valid; }
+    size_t NumSequences() const { return _sequences.size(); }
 };
 
 class SeqPairEnumerator
