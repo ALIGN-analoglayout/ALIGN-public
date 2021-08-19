@@ -115,7 +115,7 @@ class Graph(networkx.Graph):
         with set_context(self.subckt.constraints):
             for const in subckt_const:
                 if const.constraint == 'symmetric_blocks':
-                    logger.info(f"checking symmblock constraint of the subcircuit {subgraph.subckt.name} {const} at {self.subckt.name}")
+                    logger.info(f"checking symmblock constraint of the subcircuit {subgraph.subckt.name} {const.pairs} at {self.subckt.name}")
                     t = [[self._get_key(ele,match) for ele in pair] for pair in const.pairs]
                     d = const.direction
                     x = constraint.SymmetricBlocks(direction=d, pairs=t)
