@@ -29,7 +29,7 @@ def test_1():
     with (run_dir / '1_topology' / '__primitives__.json').open('rt') as fp:
         primitives = json.load(fp)
         for key, _ in primitives.items():
-            assert key.startswith('PMOS') or key.startswith('DCL'), 'Incorrect subcircuit identification'
+            assert key.startswith('PMOS') or key.startswith('DCL'), f"Incorrect subcircuit identification {key}"
 
     shutil.rmtree(run_dir)
     shutil.rmtree(ckt_dir)

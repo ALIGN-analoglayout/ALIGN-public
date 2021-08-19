@@ -535,7 +535,7 @@ class SymmetricBlocks(SoftConstraint):
             if len(pair)==2 and 'get_element' in dir(self.parent.parent) \
                 and self.parent.parent.get_element(pair[0]) \
                 and self.parent.parent.get_element(pair[1]): #Handle groupblock objects in symmetry const
-                assert self.parent.parent.get_element(pair[0])
+                logger.info(f"Checking symmetric block constr for {pair}")
                 assert self.parent.parent.get_element(pair[0]).parameters == \
                     self.parent.parent.get_element(pair[1]).parameters, \
                         f"Incorrent symmetry pair {pair} in subckt {self.parent.parent.name}"
