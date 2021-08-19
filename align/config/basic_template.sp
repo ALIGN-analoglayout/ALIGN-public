@@ -90,7 +90,7 @@ M0 DA G S B NMOS w=w l=90n
 M1 DB G S B NMOS w=w l=90n
 .ends CMC_NMOS_B
 
-.subckt CMC_S_PMOS  DA DB G S
+.subckt CMC_S_PMOS  DA DB G SA SB
 * @: SymmetricBlocks(pairs=[['M0','M1']], direction='V')
 * @: SymmetricNets(net1='DA',net2='DB',  direction='V')
 * @: SymmetricNets(net1='SA',net2='SB',  direction='V')
@@ -178,7 +178,7 @@ M0 DA DB S B PMOS w=w l=90n
 M1 DB DA S B PMOS w=w l=90n
 .ends CCP_PMOS_B
 
-.subckt LS_S_NMOS_B DA DB SA SB
+.subckt LS_S_NMOS_B DA DB SA SB B
 * @: SymmetricBlocks(pairs=[['M0','M1']], direction='V')
 * @: SymmetricNets(net1='DA',net2='DB',  direction='V')
 * @: SymmetricNets(net1='SA',net2='SB',  direction='V')
@@ -186,7 +186,7 @@ M0 DA DA SA B NMOS w=w l=90n
 M1 DB DA SB B NMOS w=w l=90n
 .ends LS_NMOS_B
 
-.subckt LS_S_PMOS_B DA DB SA SB
+.subckt LS_S_PMOS_B DA DB SA SB B
 * @: SymmetricBlocks(pairs=[['M0','M1']], direction='V')
 * @: SymmetricNets(net1='DA',net2='DB',  direction='V')
 * @: SymmetricNets(net1='SA',net2='SB',  direction='V')

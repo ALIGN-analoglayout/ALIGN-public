@@ -65,7 +65,7 @@ def get_parser():
 # asset mno.parameter[p1] == 2
 
 # def test_top_level():
-#     test_path = (pathlib.Path(__file__).parent / 'test_circuits' / 'test1.sp').resolve()
+#     test_path = (pathlib.Path(__file__).parent.parent / 'files'/ 'test_circuits' / 'test1.sp').resolve()
 #     pdk_dir = pathlib.Path(__file__).resolve().parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK'
 #     config_path =  pathlib.Path(__file__).resolve().parent.parent.parent / 'align' / 'config'
 #     circuit = compiler(test_path, "test1", pdk_dir, config_path) # Not able to parse spice files with no top level names

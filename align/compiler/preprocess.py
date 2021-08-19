@@ -97,6 +97,7 @@ def remove_dummies(library, dummy_hiers, top):
                                 parameters = y.parameters,
                                 generator = y.generator
                                 ))
+                            logger.info(f"updating {other_ckt.name} element {other_ckt.elements[-1]}")
                             other_ckt.elements.remove(ele)
             logger.info(f'Removing hierarchy {h}')
             library.remove(ckt)

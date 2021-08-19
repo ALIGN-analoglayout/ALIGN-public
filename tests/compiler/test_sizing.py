@@ -48,7 +48,7 @@ def test_sizing2(ckt):
 @pytest.mark.parametrize('cn',['intel_circuit3'])
 def test_sizing3(ckt):
     assert ckt.elements[3]
-    assert len(ckt.elements) == 5
+    assert len(ckt.elements) == 5, f"{[ele.name for ele in ckt.elements]}"
     assert ckt.get_element('X_DP_NMOS_B_MN2_MN3')
     assert ckt.parent.find('DP_NMOS_B').elements[0].parameters['W']== '3.6E-07'
     assert ckt.get_element('MI1').parameters['STACK'] == '3'
