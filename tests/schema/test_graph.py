@@ -189,7 +189,7 @@ def test_replace_matching_subckts(ota, primitives):
     # Perform subgraph matching & replacement
     for subckt in primitives:
         netlist.replace_matching_subgraph(Graph(subckt))
-    assert len(ckt.elements) == 6
+    assert len(ckt.elements) == 5, f"{[ele.name for ele in ckt.elements]}"
 
 def test_flatten(heirarchical_ckt):
     ckt = heirarchical_ckt
