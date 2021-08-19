@@ -34,16 +34,19 @@ def test_NMOS(library, test_ckt):
             inst = Instance(
                 name='M1',
                 model='NMOS',
-                pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET13'})
+                pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET13'},
+                generator='MOS')
         with pytest.raises(Exception):
             inst = Instance(
                 name='X1',
                 model='NMOS',
-                pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET13', 'B': 'VSS'})
+                pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET13', 'B': 'VSS'},
+                generator='MOS')
         inst = Instance(
             name='M1',
             model='NMOS',
-            pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET13', 'B': 'VSS'})
+            pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET13', 'B': 'VSS'},
+            generator='MOS')
     assert inst.name == 'M1'
     assert inst.model == 'NMOS'
     assert inst.pins == {'D': 'NET10', 'G': 'NET12', 'S': 'NET13', 'B': 'VSS'}
@@ -56,7 +59,8 @@ def test_NMOS(library, test_ckt):
             name='M1',
             model='NMOS',
             pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET13', 'B': 'VSS'},
-            parameters={'NFIN': 2})
+            parameters={'NFIN': 2},
+            generator='MOS')
     assert inst.parameters['NFIN'] == '2'
 
 def test_PMOS(library, test_ckt):
@@ -66,16 +70,19 @@ def test_PMOS(library, test_ckt):
             inst = Instance(
                 name='M1',
                 model='PMOS',
-                pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET13'})
+                pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET13'},
+                generator='MOS')
         with pytest.raises(Exception):
             inst = Instance(
                 name='X1',
                 model='PMOS',
-                pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET13', 'B': 'VSS'})
+                pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET13', 'B': 'VSS'},
+                generator='MOS')
         inst = Instance(
             name='M1',
             model='PMOS',
-            pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET13', 'B': 'VSS'})
+            pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET13', 'B': 'VSS'},
+            generator='MOS')
     assert inst.name == 'M1'
     assert inst.model == 'PMOS'
     assert inst.pins == {'D': 'NET10', 'G': 'NET12', 'S': 'NET13', 'B': 'VSS'}
@@ -88,17 +95,18 @@ def test_PMOS(library, test_ckt):
             name='M1',
             model='PMOS',
             pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET13', 'B': 'VSS'},
-            parameters={'NFIN': 2})
+            parameters={'NFIN': 2},
+            generator='MOS')
     assert inst.parameters['NFIN'] == '2'
 
 def test_res(library, test_ckt):
     assert any(x.name == 'RES' for x in library)
     with set_context(test_ckt.elements):
         with pytest.raises(Exception):
-            inst = Instance(name='R1', model='RES', pins={'PLUS': 'NET10'})
+            inst = Instance(name='R1', model='RES', pins={'PLUS': 'NET10'},generator='MOS')
         with pytest.raises(Exception):
-            inst = Instance(name='X1', model='RES', pins={'PLUS': 'NET10', 'MINUS':'NET12'}, parameters={'VALUE': '1.3'})
-        inst = Instance(name='R1', model='RES', pins={'PLUS': 'NET10', 'MINUS':'NET12'}, parameters={'VALUE': '1.3'})
+            inst = Instance(name='X1', model='RES', pins={'PLUS': 'NET10', 'MINUS':'NET12'}, parameters={'VALUE': '1.3'},generator='MOS')
+        inst = Instance(name='R1', model='RES', pins={'PLUS': 'NET10', 'MINUS':'NET12'}, parameters={'VALUE': '1.3'},generator='MOS')
     assert inst.name == 'R1'
     assert inst.model == 'RES'
     assert inst.pins == {'PLUS': 'NET10', 'MINUS': 'NET12'}
@@ -108,10 +116,10 @@ def test_cap(library, test_ckt):
     assert any(x.name == 'CAP' for x in library)
     with set_context(test_ckt.elements):
         with pytest.raises(Exception):
-            inst = Instance(name='C1', model='CAP', pins={'PLUS': 'NET10'})
+            inst = Instance(name='C1', model='CAP', pins={'PLUS': 'NET10'},generator='MOS')
         with pytest.raises(Exception):
-            inst = Instance(name='X1', model='CAP', pins={'PLUS': 'NET10', 'MINUS':'NET12'}, parameters={'VALUE': '1.3'})
-        inst = Instance(name='C1', model='CAP', pins={'PLUS': 'NET10', 'MINUS':'NET12'}, parameters={'VALUE': '1.3'})
+            inst = Instance(name='X1', model='CAP', pins={'PLUS': 'NET10', 'MINUS':'NET12'}, parameters={'VALUE': '1.3'},generator='MOS')
+        inst = Instance(name='C1', model='CAP', pins={'PLUS': 'NET10', 'MINUS':'NET12'}, parameters={'VALUE': '1.3'},generator='MOS')
     assert inst.name == 'C1'
     assert inst.model == 'CAP'
     assert inst.pins == {'PLUS': 'NET10', 'MINUS': 'NET12'}
@@ -121,10 +129,10 @@ def test_ind(library, test_ckt):
     assert any(x.name == 'IND' for x in library)
     with set_context(test_ckt.elements):
         with pytest.raises(Exception):
-            inst = Instance(name='L1', model='IND', pins={'PLUS': 'NET10'})
+            inst = Instance(name='L1', model='IND', pins={'PLUS': 'NET10'},generator='MOS')
         with pytest.raises(Exception):
-            inst = Instance(name='X1', model='IND', pins={'PLUS': 'NET10', 'MINUS':'NET12'}, parameters={'VALUE': '1.3'})
-        inst = Instance(name='L1', model='IND', pins={'PLUS': 'NET10', 'MINUS':'NET12'}, parameters={'VALUE': '1.3'})
+            inst = Instance(name='X1', model='IND', pins={'PLUS': 'NET10', 'MINUS':'NET12'}, parameters={'VALUE': '1.3'},generator='MOS')
+        inst = Instance(name='L1', model='IND', pins={'PLUS': 'NET10', 'MINUS':'NET12'}, parameters={'VALUE': '1.3'},generator='MOS')
     assert inst.name == 'L1'
     assert inst.model == 'IND'
     assert inst.pins == {'PLUS': 'NET10', 'MINUS': 'NET12'}

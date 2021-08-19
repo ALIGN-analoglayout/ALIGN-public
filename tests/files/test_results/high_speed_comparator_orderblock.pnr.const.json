@@ -27,6 +27,17 @@
                 "X_DP_MN1_MN2",
                 "MN0"
             ]
+        },
+        {
+            "pairs": [
+                {
+                    "type": "sympair",
+                    "block1": "X_CMC_PMOS_MP10_MP7",
+                    "block2": "X_CMC_PMOS_MP8_MP9"
+                }
+            ],
+            "const_name": "SymmBlock",
+            "axis_dir": "V"
         }
     ]
 }

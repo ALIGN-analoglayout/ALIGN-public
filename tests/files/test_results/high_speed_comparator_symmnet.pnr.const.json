@@ -65,8 +65,7 @@
                 "X_DP_MN1_MN2",
                 "MP8",
                 "MP10"
-            ],
-            "direction": "H"
+            ]
         },
         {
             "line": "h_bottom",
@@ -75,8 +74,7 @@
                 "X_INV_N_MP11_MN13",
                 "X_CCP_MP5_MP6",
                 "X_INV_P_MP12_MN14"
-            ],
-            "direction": "H"
+            ]
         },
         {
             "const_name": "DoNotIdentify",

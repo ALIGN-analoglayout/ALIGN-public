@@ -276,7 +276,8 @@ class Graph(networkx.Graph):
                                 pins={
                                     pin: net2pin_map[net]
                                     if net in net2pin_map else net
-                                    for pin, net in element.pins.items()}
+                                    for pin, net in element.pins.items()},
+                                generator=element.generator
                             )
                         )
                 subckts.append(subckt)
@@ -324,5 +325,6 @@ class Graph(networkx.Graph):
                 pins={
                     pin: subcktinst.pins[net] if net in subcktinst.pins else f'{subcktinst.name}_{net}' for pin, net in element.pins.items()},
                 parameters={key: eval(val, {}, subcktinst.parameters)
-                            for key, val in element.parameters.items()}
+                            for key, val in element.parameters.items()},
+                generator = element.generator
             )

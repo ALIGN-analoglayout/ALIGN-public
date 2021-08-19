@@ -30,10 +30,10 @@ def test_subckt_definition(library, test_ckt):
         library.append(subckt)
     with set_context(test_ckt.elements):
         with pytest.raises(Exception):
-            inst = Instance(name='X1', model='subckt')
+            inst = Instance(name='X1', model='subckt',generator='Dummy')
         with pytest.raises(Exception):
-            inst = Instance(name='X1', model='subckt', pins={'PIN1': 'NET10'})
-        inst = Instance(name='X1', model='subckt', pins={'PIN1': 'NET10', 'PIN2': 'NET12'})
+            inst = Instance(name='X1', model='subckt', pins={'PIN1': 'NET10'},generator='Dummy')
+        inst = Instance(name='X1', model='subckt', pins={'PIN1': 'NET10', 'PIN2': 'NET12'},generator='Dummy')
     assert inst.name == 'X1'
     assert inst.model == 'SUBCKT'
     assert inst.pins == {'PIN1': 'NET10', 'PIN2': 'NET12'}
@@ -44,8 +44,8 @@ def test_subckt_definition(library, test_ckt):
     assert inst.parameters['PARAM4'] == 'HELLO'
     with set_context(test_ckt.elements):
         with pytest.raises(Exception):
-            inst = subckt(name='X1', model='subckt', pins={'PIN1': 'NET10', 'PIN2': 'NET12'}, parameters={'garbage':''})
-        inst = Instance(name='X1', model='subckt', pins={'PIN1': 'NET10', 'PIN2': 'NET12'}, parameters={'param1': '2', 'param3': '1e-16'})
+            inst = subckt(name='X1', model='subckt', pins={'PIN1': 'NET10', 'PIN2': 'NET12'}, parameters={'garbage':''},generator='Dummy')
+        inst = Instance(name='X1', model='subckt', pins={'PIN1': 'NET10', 'PIN2': 'NET12'}, parameters={'param1': '2', 'param3': '1e-16'},generator='Dummy')
     assert inst.parameters['PARAM1'] == '2'
     assert inst.parameters['PARAM3'] == '1E-16'
 
@@ -54,8 +54,8 @@ def test_subckt_instantiation(library, test_ckt):
         subckt = SubCircuit(name='SUBCKT', pins=['PIN1', 'PIN2'], parameters={'PARAM1':1, 'PARAM2':1e-3, 'PARAM3':1E-16, 'PARAM4':"HELLO"})
         library.append(subckt)
     with set_context(subckt.elements):
-        X1 = Instance(name='X1', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'})
-        X2 = Instance(name='X2', model='TwoTerminalDevice', pins={'A': 'NET2', 'B': 'NET3'})
+        X1 = Instance(name='X1', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'},generator='Dummy')
+        X2 = Instance(name='X2', model='TwoTerminalDevice', pins={'A': 'NET2', 'B': 'NET3'},generator='Dummy')
     subckt.elements.append(X1)
     subckt.elements.append(X2)
     assert subckt.elements == [X1, X2]
@@ -65,10 +65,10 @@ def test_subckt_instantiation(library, test_ckt):
     assert subckt.nets == ['NET1', 'NET2', 'NET3']
     with set_context(test_ckt.elements):
         with pytest.raises(Exception):
-            inst = Instance(name='X1', model='subckt')
+            inst = Instance(name='X1', model='subckt',generator='Dummy')
         with pytest.raises(Exception):
-            inst = Instance(name='X1', model='subckt', pins={'PIN1': 'NET10'})
-        inst = Instance(name='X1', model='subckt', pins={'PIN1': 'NET10', 'PIN2': 'NET12'})
+            inst = Instance(name='X1', model='subckt', pins={'PIN1': 'NET10'},generator='Dummy')
+        inst = Instance(name='X1', model='subckt', pins={'PIN1': 'NET10', 'PIN2': 'NET12'},generator='Dummy')
     assert inst.name == 'X1'
     assert inst.model == 'SUBCKT'
     assert inst.pins == {'PIN1': 'NET10', 'PIN2': 'NET12'}

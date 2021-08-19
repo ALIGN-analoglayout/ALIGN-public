@@ -27,12 +27,12 @@
           "net2": "VINP",
           "pins1": [
             "C5/PLUS",
-            "X_CMC_S_NMOS_B_I1_M14_M6/SA",
+            "X_CMC_S_NMOS_B_I1_M6_M7/SB",
             "VINN"
           ],
           "pins2": [
             "C2/PLUS",
-            "X_CMC_S_NMOS_B_I1_M0_M12/SB",
+            "X_CMC_S_NMOS_B_I1_M12_M14/SA",
             "VINP"
           ],
           "direction": "V"
@@ -45,8 +45,8 @@
               "C2"
             ],
             [
-              "X_CMC_S_NMOS_B_I1_M14_M6",
-              "X_CMC_S_NMOS_B_I1_M0_M12"
+              "X_CMC_S_NMOS_B_I1_M6_M7",
+              "X_CMC_S_NMOS_B_I1_M12_M14"
             ]
           ],
           "direction": "V"
