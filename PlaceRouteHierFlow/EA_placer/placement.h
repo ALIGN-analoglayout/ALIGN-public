@@ -75,7 +75,8 @@ public:
     void place(PnRDB::hierNode &current_node);
     void Read_In_Blocks_Nets();
     void Create_Placement_Bins();
-    void Initilize_Placement();
+    void Initilize_Placement(PnRDB::hierNode &current_node);
+    void Initilize_Placement_Rand(PnRDB::hierNode &current_node);
     void Cal_Density_Eforce();
     void Cal_Net_force();
     void Cal_force();

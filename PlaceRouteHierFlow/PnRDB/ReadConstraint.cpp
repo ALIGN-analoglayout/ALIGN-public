@@ -396,13 +396,14 @@ bool PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, string fpath, strin
         else if (constraint["location"] == "LT")
           tmp_portpos.pos = PnRDB::LT;
         string name = constraint["termianl_name"];
+        tmp_portpos.tid = -1;
         for (int k = 0; k < (int)node.Terminals.size(); ++k) {
           if (node.Terminals.at(k).name.compare(name) == 0) {
             tmp_portpos.tid = k;
             break;
           }
         }
-        node.Port_Location.push_back(tmp_portpos);
+        if(tmp_portpos.tid != -1)node.Port_Location.push_back(tmp_portpos);
       } else if (constraint["const_name"] == "R_Const") {
         PnRDB::R_const temp_r_const;
         temp_r_const.net_name = constraint["net_name"];

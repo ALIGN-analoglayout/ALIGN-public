@@ -136,7 +136,7 @@ Placement::Placement(PnRDB::hierNode &current_node)
   Unify_blocks(area, scale_factor);
   find_uni_cell();
   readCC();
-  //Initilize_Placement();
+  //Initilize_Placement(current_node);
   //PlotPlacement(600);
   splitNode_MS(uni_cell_Dpoint.y, uni_cell_Dpoint.x);
   int tol_diff = 3;
@@ -148,7 +148,11 @@ Placement::Placement(PnRDB::hierNode &current_node)
   //read alignment constrains
   read_alignment(current_node);
   read_order(current_node);
-  Initilize_Placement();
+  #ifdef quadratic_placement
+  Initilize_Placement(current_node);
+  #else
+  Initilize_Placement_Rand(current_node);
+  #endif
 
   print_blocks_nets();
   //step 3: call E_placer
@@ -227,7 +231,7 @@ void Placement::place_ut(PnRDB::hierNode &current_node)
   Unify_blocks(area, scale_factor);
   find_uni_cell();
   readCC();
-  //Initilize_Placement();
+  //Initilize_Placement(current_node);
   //PlotPlacement(600);
   splitNode_MS(uni_cell_Dpoint.y, uni_cell_Dpoint.x);
   int tol_diff = 3;
@@ -239,7 +243,11 @@ void Placement::place_ut(PnRDB::hierNode &current_node)
   //read alignment constrains
   read_alignment(current_node);
   read_order(current_node);
-  Initilize_Placement();
+  #ifdef quadratic_placement
+  Initilize_Placement(current_node);
+  #else
+  Initilize_Placement_Rand(current_node);
+  #endif
 
   print_blocks_nets();
   //step 3: call E_placer
@@ -319,7 +327,7 @@ void Placement::place(PnRDB::hierNode &current_node)
   Unify_blocks(area, scale_factor);
   find_uni_cell();
   readCC();
-  //Initilize_Placement();
+  //Initilize_Placement(current_node);
   //PlotPlacement(600);
   splitNode_MS(uni_cell_Dpoint.y, uni_cell_Dpoint.x);
   int tol_diff = 3;
@@ -331,7 +339,11 @@ void Placement::place(PnRDB::hierNode &current_node)
   //read alignment constrains
   read_alignment(current_node);
   read_order(current_node);
-  Initilize_Placement();
+  #ifdef quadratic_placement
+  Initilize_Placement(current_node);
+  #else
+  Initilize_Placement_Rand(current_node);
+  #endif
 
   print_blocks_nets();
   //step 3: call E_placer
@@ -369,7 +381,7 @@ void Placement::generate_testing_data()
 #ifdef DEBUG
   std::cout << "generating test 2" << std::endl;
 #endif
-  Initilize_Placement();
+  //Initilize_Placement();
 #ifdef DEBUG
   std::cout << "generating test 3" << std::endl;
 #endif
@@ -517,7 +529,211 @@ void Placement::Pull_back_vector(vector<float> &temp_vector, bool x_or_y)
   }
 }
 
-void Placement::Initilize_Placement()
+void Placement::Initilize_Placement(PnRDB::hierNode &current_node)
+{
+  int MaxElement = originalBlockCNT + current_node.Terminals.size();
+  int n,m;
+  vector<vector<float>> xa(MaxElement, vector<float>(MaxElement + 1, 0));
+  vector<vector<float>> ya(MaxElement, vector<float>(MaxElement + 1, 0));
+  vector<pair<float, float>> port(current_node.Terminals.size());
+  for (unsigned int i= 0; i < current_node.Port_Location.size(); i++) {
+    switch(current_node.Port_Location[i].pos){
+      case PnRDB::TL:
+        port[current_node.Port_Location[i].tid].first=0;
+        port[current_node.Port_Location[i].tid].second=1;
+        break;
+      case PnRDB::TC:
+        port[current_node.Port_Location[i].tid].first=0.5;
+        port[current_node.Port_Location[i].tid].second=1;
+        break;
+      case PnRDB::TR:
+        port[current_node.Port_Location[i].tid].first=1;
+        port[current_node.Port_Location[i].tid].second=1;
+        break;
+      case PnRDB::BL:
+        port[current_node.Port_Location[i].tid].first=0;
+        port[current_node.Port_Location[i].tid].second=0;
+        break;
+      case PnRDB::BC:
+        port[current_node.Port_Location[i].tid].first=0.5;
+        port[current_node.Port_Location[i].tid].second=0;
+        break;
+      case PnRDB::BR:
+        port[current_node.Port_Location[i].tid].first=1;
+        port[current_node.Port_Location[i].tid].second=0;
+        break;
+      case PnRDB::RT:
+        port[current_node.Port_Location[i].tid].first=1;
+        port[current_node.Port_Location[i].tid].second=1;
+        break;
+      case PnRDB::RC:
+        port[current_node.Port_Location[i].tid].first=1;
+        port[current_node.Port_Location[i].tid].second=0.5;
+        break;
+      case PnRDB::RB:
+        port[current_node.Port_Location[i].tid].first=1;
+        port[current_node.Port_Location[i].tid].second=0;
+        break;
+      case PnRDB::LT:
+        port[current_node.Port_Location[i].tid].first=0;
+        port[current_node.Port_Location[i].tid].second=1;
+        break;
+      case PnRDB::LC:
+        port[current_node.Port_Location[i].tid].first=0;
+        port[current_node.Port_Location[i].tid].second=0.5;
+        break;
+      case PnRDB::LB:
+        port[current_node.Port_Location[i].tid].first=0;
+        port[current_node.Port_Location[i].tid].second=0;
+        break;
+      default:
+        break;
+    }
+  }
+  for (int i = 0; i < originalNetCNT;i++){
+    for (unsigned int j = 0; j < current_node.Nets[i].connected.size();j++){
+      for (unsigned int k = j+1; k < current_node.Nets[i].connected.size();k++){
+        if(current_node.Nets[i].connected[j].iter2>=0 && current_node.Nets[i].connected[k].iter2>=0){
+          xa[current_node.Nets[i].connected[j].iter2][current_node.Nets[i].connected[k].iter2] -= 1;
+          xa[current_node.Nets[i].connected[k].iter2][current_node.Nets[i].connected[j].iter2] -= 1;
+          xa[current_node.Nets[i].connected[k].iter2][current_node.Nets[i].connected[k].iter2] += 1;
+          xa[current_node.Nets[i].connected[j].iter2][current_node.Nets[i].connected[j].iter2] += 1;
+          ya[current_node.Nets[i].connected[j].iter2][current_node.Nets[i].connected[k].iter2] -= 1;
+          ya[current_node.Nets[i].connected[k].iter2][current_node.Nets[i].connected[j].iter2] -= 1;
+          ya[current_node.Nets[i].connected[k].iter2][current_node.Nets[i].connected[k].iter2] += 1;
+          ya[current_node.Nets[i].connected[j].iter2][current_node.Nets[i].connected[j].iter2] += 1;
+        }else if(current_node.Nets[i].connected[j].iter2==-1){
+          xa[current_node.Nets[i].connected[j].iter + originalBlockCNT][current_node.Nets[i].connected[j].iter + originalBlockCNT] = 1;
+          xa[current_node.Nets[i].connected[j].iter + originalBlockCNT][MaxElement] = port[current_node.Nets[i].connected[j].iter].first;
+          xa[current_node.Nets[i].connected[k].iter2][current_node.Nets[i].connected[k].iter2] += 1;
+          xa[current_node.Nets[i].connected[k].iter2][MaxElement] += port[current_node.Nets[i].connected[j].iter].first;
+          ya[current_node.Nets[i].connected[j].iter + originalBlockCNT][current_node.Nets[i].connected[j].iter + originalBlockCNT] = 1;
+          ya[current_node.Nets[i].connected[j].iter + originalBlockCNT][MaxElement] = port[current_node.Nets[i].connected[j].iter].second;
+          ya[current_node.Nets[i].connected[k].iter2][current_node.Nets[i].connected[k].iter2] += 1;
+          ya[current_node.Nets[i].connected[k].iter2][MaxElement] += port[current_node.Nets[i].connected[j].iter].second;
+        }else if(current_node.Nets[i].connected[k].iter2==-1){
+          xa[current_node.Nets[i].connected[j].iter2][current_node.Nets[i].connected[j].iter2] += 1;
+          xa[current_node.Nets[i].connected[j].iter2][MaxElement] += port[current_node.Nets[i].connected[k].iter].first;
+          xa[current_node.Nets[i].connected[k].iter + originalBlockCNT][current_node.Nets[i].connected[k].iter + originalBlockCNT] = 1;
+          xa[current_node.Nets[i].connected[k].iter + originalBlockCNT][MaxElement] = port[current_node.Nets[i].connected[k].iter].first;
+          ya[current_node.Nets[i].connected[j].iter2][current_node.Nets[i].connected[j].iter2] += 1;
+          ya[current_node.Nets[i].connected[j].iter2][MaxElement] += port[current_node.Nets[i].connected[k].iter].second;
+          ya[current_node.Nets[i].connected[k].iter + originalBlockCNT][current_node.Nets[i].connected[k].iter + originalBlockCNT] = 1;
+          ya[current_node.Nets[i].connected[k].iter + originalBlockCNT][MaxElement] = port[current_node.Nets[i].connected[k].iter].second;
+        }
+      } 
+    } 
+  }
+  int i, j;
+  n = MaxElement;
+  for(j = 0; j < n; j++)
+  {
+      float max = 0; 
+      float imax = 0; 
+      for(i = j; i < n; i++)
+      { 
+          if(imax < abs(xa[i][j])){ 
+              imax = abs(xa[i][j]);
+              max = xa[i][j];
+              m = i;
+          } 
+      } 
+      if(abs(xa[j][j]) != max) 
+      { 
+          float b = 0; 
+          for(int k = j;k < n + 1; k++){ 
+              b = xa[j][k]; 
+              xa[j][k] = xa[m][k]; 
+              xa[m][k] = b; 
+          } 
+      } 
+      for(int r = j;r < n + 1;r++)
+      { 
+          xa[j][r] = xa[j][r] / max;
+      } 
+      for(i = j + 1;i < n; i++)
+      { 
+          float c = xa[i][j]; 
+          if(c == 0) continue; 
+          for(int s = j;s < n + 1;s++){ 
+              float tempdata = xa[i][s]; 
+              xa[i][s] = xa[i][s] - xa[j][s] * c;
+          }  
+      } 
+  }
+  for(i = n - 2; i >= 0; i--)
+  { 
+      for(j = i + 1;j < n; j++)
+      { 
+          float tempData = xa[i][j]; 
+          float data1 = xa[i][n]; 
+          float data2 = xa[j][n]; 
+          xa[i][n] = xa[i][n] - xa[j][n] * xa[i][j]; 
+      } 
+  } 
+  for(j = 0; j < n; j++)
+  {
+      float max = 0; 
+      float imax = 0; 
+      for(i = j; i < n; i++)
+      { 
+          if(imax < abs(ya[i][j])){ 
+              imax = abs(ya[i][j]);
+              max = ya[i][j];
+              m = i;
+          } 
+      } 
+      if(abs(ya[j][j]) != max) 
+      { 
+          float b = 0; 
+          for(int k = j;k < n + 1; k++){ 
+              b = ya[j][k]; 
+              ya[j][k] = ya[m][k]; 
+              ya[m][k] = b; 
+          } 
+      } 
+      for(int r = j;r < n + 1;r++)
+      { 
+          ya[j][r] = ya[j][r] / max;
+      } 
+      for(i = j + 1;i < n; i++)
+      { 
+          float c = ya[i][j]; 
+          if(c == 0) continue; 
+          for(int s = j;s < n + 1;s++){ 
+              float tempdata = ya[i][s]; 
+              ya[i][s] = ya[i][s] - ya[j][s] * c;
+          }  
+      } 
+  }
+  for(i = n - 2; i >= 0; i--)
+  { 
+      for(j = i + 1;j < n; j++)
+      { 
+          float tempData = ya[i][j]; 
+          float data1 = ya[i][n]; 
+          float data2 = ya[j][n]; 
+          ya[i][n] = ya[i][n] - ya[j][n] * ya[i][j]; 
+      } 
+  } 
+  for (unsigned int i = 0; i < originalBlockCNT; ++i)
+  {
+      Blocks[i].Cpoint.x = xa[i][MaxElement];
+      Blocks[i].Cpoint.y = ya[i][MaxElement];  
+  }
+  for (int i = originalBlockCNT; i < Blocks.size(); ++i)
+  {
+    int id = Blocks[i].splitedsource;
+    Blocks[i].Cpoint.x = Blocks[id].Cpoint.x  - 0.1+ (float)(rand() % 200) / 1000;
+    Blocks[i].Cpoint.y = Blocks[id].Cpoint.y - 0.1+ (float)(rand() % 200) / 1000;
+    // Blocks[i].Cpoint.x = 0.45 + (float)(rand() % 100) / 1000;
+    // Blocks[i].Cpoint.y = 0.45 + (float)(rand() % 100) / 1000;
+  }
+  // refine_CC();
+  restore_CC_in_square(true);
+}
+
+void Placement::Initilize_Placement_Rand(PnRDB::hierNode &current_node)
 {
 
   for (unsigned int i = 0; i < originalBlockCNT; ++i)

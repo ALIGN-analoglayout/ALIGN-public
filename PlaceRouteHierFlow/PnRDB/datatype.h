@@ -12,6 +12,8 @@ using std::string;
 using std::map;
 using std::pair;
 //#define PERFORMANCE_DRIVEN
+#define analytical_placer
+//#define quadratic_placement
 
 namespace PnRDB {
 
