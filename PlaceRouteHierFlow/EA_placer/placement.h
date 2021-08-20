@@ -9,7 +9,9 @@
 #include <set>
 #include <fstream>
 #include <string>
+#ifdef PERFORMANCE_DRIVEN
 #include <Python.h>
+#endif
 
 using namespace std;
 
@@ -113,7 +115,9 @@ public:
 
     //
     void E_Placer();
+    #ifdef PERFORMANCE_DRIVEN
     void performance_gradient(vector<float> &uc_x, vector<float> &uc_y, PyObject *pFun_cal_grad, PyObject *sess, PyObject *X, PyObject *grads);
+    #endif
     void Extract_Placement_Vectors(vector<float> &temp_vector, bool x_or_y);
     void Feedback_Placement_Vectors(vector<float> &temp_vector, bool x_or_y);
     void WriteOut_Blocks(int iteration);

@@ -2748,6 +2748,7 @@ double ConstGraph::CalculateCost(design& caseNL, SeqPair& caseSP) {
   return cost;
 }
 
+#ifdef PERFORMANCE_DRIVEN
 double ConstGraph::performance_fom(double curr_cost, design& caseNL, SeqPair& caseSP, PyObject *pFun_cal_fom, PyObject *sess, PyObject *X, PyObject *pred_op) {
   vector<float> uc_x_ori(caseNL.Blocks.size(),0), uc_y_ori(caseNL.Blocks.size(),0);
   float width = 0, height = 0;
@@ -2772,6 +2773,7 @@ double ConstGraph::performance_fom(double curr_cost, design& caseNL, SeqPair& ca
   PyArg_Parse(PyList_GetItem(pyValue_cal_fom, 0), "f", performance_cost);
   return curr_cost + performance_cost;
 }
+#endif
 
 void ConstGraph::Update_parameters(design& caseNL, SeqPair& caseSP) {
   //cout<<"Placer-Info: Update parameters"<<endl;

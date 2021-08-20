@@ -380,6 +380,7 @@ void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& cur
 std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, SeqPair& curr_sp, ConstGraph& curr_sol, int mode, int nodeSize, int effort) {
 
   auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementCoreAspectRatio");
+#ifdef PERFORMANCE_DRIVEN
   Py_Initialize();
   if (!Py_IsInitialized()) std::cout << "Py_Initialize fails" << std::endl;
   PyRun_SimpleString("import sys");
@@ -395,6 +396,7 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
   if(!sess)std::cout<<"empty sess"<<std::endl;
   if(!X)std::cout<<"empty X"<<std::endl;
   if(!pred_op)std::cout<<"empty pred_op"<<std::endl;
+#endif
 // Mode 0: graph bias; Mode 1: graph bias + net margin; Others: no bias/margin
   //cout<<"PlacementCore\n";
   std::map<double, SeqPair> oData;
@@ -402,7 +404,9 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
   GenerateValidSolution(designData, curr_sp, curr_sol, mode);
   //curr_sol.PrintConstGraph();
   double curr_cost=curr_sol.CalculateCost(designData, curr_sp);
+  #ifdef PERFORMANCE_DRIVEN
   curr_cost=curr_sol.performance_fom(curr_cost, designData, curr_sp, pFun_cal_fom, sess, X, pred_op);
+  #endif
   logger->debug("Placer-Info: initial cost = ",curr_cost);
   logger->debug("Placer-Info: status ");
   // Aimulate annealing
@@ -482,6 +486,9 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
       if(GenerateValidSolution(designData, trial_sp, trial_sol, mode)) {
         fail_number = 0;
         double trial_cost=trial_sol.CalculateCost(designData, trial_sp);
+        #ifdef PERFORMANCE_DRIVEN
+        trial_cost=curr_sol.performance_fom(trial_cost, designData, trial_sp, pFun_cal_fom, sess, X, pred_op);
+        #endif
         bool Smark=false;
         delta_cost=trial_cost-curr_cost;
         if(delta_cost<0) {Smark=true;
@@ -529,7 +536,9 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
   //cout<<endl<<"Placer-Info: optimal cost = "<<curr_cost<<endl;
   //curr_sol.PrintConstGraph();
   curr_sp.PrintSeqPair();
+  #ifdef PERFORMANCE_DRIVEN
   Py_Finalize();
+  #endif
   //curr_sol.updateTerminalCenter(designData, curr_sp);
   return oData;
 }

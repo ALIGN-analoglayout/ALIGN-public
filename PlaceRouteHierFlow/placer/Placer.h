@@ -11,7 +11,9 @@
 #include "ConstGraph.h"
 #include "ILP_solver.h"
 #include "../PnRDB/datatype.h"
+#ifdef PERFORMANCE_DRIVEN
 #include <Python.h>
+#endif
 using std::cout;
 using std::endl;
 

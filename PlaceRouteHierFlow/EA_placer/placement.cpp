@@ -1652,7 +1652,7 @@ void Placement::E_Placer()
   current_overlap = Cal_Overlap();
   // while((Stop_Condition(stop_density,current_max_density) or symCheck(symmetricMin)) and count_number<upper_count_number ){//Q: stop condition
 
-
+#ifdef PERFORMANCE_DRIVEN
   Py_Initialize();
   if (!Py_IsInitialized()) std::cout << "Py_Initialize fails" << std::endl;
   PyRun_SimpleString("import sys");
@@ -1668,6 +1668,7 @@ void Placement::E_Placer()
   if(!sess)std::cout<<"empty sess"<<std::endl;
   if(!X)std::cout<<"empty X"<<std::endl;
   if(!grads)std::cout<<"empty grads"<<std::endl;
+#endif
   
   
   while ((current_overlap > 0.3 or symCheck(symmetricMin)) and count_number < upper_count_number) {  // Q: stop condition
@@ -1763,8 +1764,9 @@ void Placement::E_Placer()
 #ifdef DEBUG
     std::cout << "test 3" << std::endl;
 #endif
-    
+#ifdef PERFORMANCE_DRIVEN
     performance_gradient(uc_x, uc_y, pFun_cal_grad, sess, X, grads);
+#endif
     Pull_back_vector(uc_x, 1);
     Pull_back_vector(uc_y, 0);
     Feedback_Placement_Vectors(uc_x, 1);
@@ -1781,7 +1783,9 @@ void Placement::E_Placer()
     start_flag = 0;
     i++;
   }
+#ifdef PERFORMANCE_DRIVEN
   Py_Finalize();
+#endif
   //exit(0);
   force_order(vc_x, vl_x, vc_y, vl_y);
   force_alignment(vc_x, vl_x, vc_y, vl_y);
@@ -1791,6 +1795,7 @@ void Placement::E_Placer()
   std::cout << "iter num when stop:=" << count_number << std::endl;
 }
 
+#ifdef PERFORMANCE_DRIVEN
 void Placement::performance_gradient(vector<float> &uc_x, vector<float> &uc_y, PyObject *pFun_cal_grad, PyObject *sess, PyObject *X, PyObject *grads) { 
   vector<float> uc_x_ori(originalBlockCNT,0), uc_y_ori(originalBlockCNT,0);
   //vector<float> uc_x_ori_move(originalBlockCNT,0), uc_y_ori_move(originalBlockCNT,0);
@@ -1839,6 +1844,7 @@ void Placement::performance_gradient(vector<float> &uc_x, vector<float> &uc_y, P
     }
   }
 }
+#endif
 
 void Placement::Extract_Placement_Vectors(vector<float> &temp_vector, bool x_or_y)
 { //1 is x, 0 is y

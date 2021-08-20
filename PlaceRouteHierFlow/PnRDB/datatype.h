@@ -11,6 +11,7 @@ using std::vector;
 using std::string;
 using std::map;
 using std::pair;
+//#define PERFORMANCE_DRIVEN
 
 namespace PnRDB {
 
