@@ -182,16 +182,6 @@ workflows:
                 - "quay.io/pypa/manylinux_2_24_x86_64" # PEP 600
               python-tags:
                 - "cp38-cp38" # Python 3.8
-      - build-wheel:
-          name: "build-wheel-cp37-manylinux1"
-          requires:
-            - build-wheel-cp38-manylinux_2_24
-          matrix:
-            parameters:
-              platform:
-                - "skhep/manylinuxgcc-x86_64"          # PEP 513
-              python-tags:
-                - "cp37-cp37m" # Python 3.7
       - test-integration:
           name: "test-integration-cp38-minimal"
           requires:
