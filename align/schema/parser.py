@@ -42,6 +42,7 @@ token_re_map = {
     'NLCOMMENT': r'(^|[\n\r])+\*[^\n\r]*',
     'COMMENT': fr'(^|\s)*{commentchars}[^\n\r]*',
     'CONTINUE': r'(^|[\n\r])+\+',
+    'CONTINUEBACKSLASH': r'\\\s*[\n\r]',
     'NEWL': r'[\n\r]+',
     'EQUALS': r'\s*=\s*',
     'EXPR': fr"""(?P<quote>['"]){exprcontent}(?P=quote)|({{){exprcontent}(}})""",

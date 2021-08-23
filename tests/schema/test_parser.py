@@ -86,6 +86,17 @@ def test_lexer_multiline(setup_multiline):
              'NAME', 'NAME', 'NAME', 'NAME', 'NAME', 'EQUALS', 'EXPR', 'NEWL']
     assert [tok.type for tok in SpiceParser._generate_tokens(str_)] == types
 
+def test_lexer_continuation(setup_basic):
+    str_ = "param fin_p_diff2sing=6 \\  \nwidth_n_diff2sing=10\n"
+    types = ['NAME', 'NAME', 'EQUALS', 'NUMBER', 'NAME', 'EQUALS', 'NUMBER', 'NEWL']
+    tokens = list(SpiceParser._generate_tokens(str_))
+    assert [tok.type for tok in tokens] == types
+
+    str_ = "param fin_p_diff2sing=6 \\\nwidth_n_diff2sing=10\n"
+    types = ['NAME', 'NAME', 'EQUALS', 'NUMBER', 'NAME', 'EQUALS', 'NUMBER', 'NEWL']
+    tokens = list(SpiceParser._generate_tokens(str_))
+    assert [tok.type for tok in tokens] == types
+
 def test_lexer_annotation(setup_annotation):
     str_ = setup_annotation
     types = ['NEWL', 'DECL', 'NAME', 'NAME', 'NAME', 'NAME', 'NAME', 'NAME', 'NUMBER', 'NAME',
