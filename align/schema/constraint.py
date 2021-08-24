@@ -532,7 +532,6 @@ class SymmetricBlocks(SoftConstraint):
         assert all(len(pair) for pair in self.pairs) <= 2, 'Must contain at most two instances'
         for pair in self.pairs:
             #and condition skips the check while reading user constraints
-            logger.info(f"Checking symmetric block constr for {pair} {self.parent.parent}")
             if len(pair)==2 and 'get_element' in dir(self.parent.parent) \
                 and self.parent.parent.get_element(pair[0]) \
                 and self.parent.parent.get_element(pair[1]): #Handle groupblock objects in symmetry const

@@ -19,6 +19,11 @@
 .PARAM
 
 
+.SUBCKT nmoscap PLUS MINUS
+*.PININFO  PLUS:B MINUS:B
+.param lr=1 wr=1 m=1
+c0 PLUS MINUS 1f
+.ENDS
 
 ************************************************************************
 * Library Name: ADC_Layout
@@ -237,12 +242,12 @@ XICres11<26> VRP<11> VRN<11> nmoscap lr=3u wr=3u m=1
 XICres11<27> VRP<11> VRN<11> nmoscap lr=3u wr=3u m=1
 XICres11<28> VRP<11> VRN<11> nmoscap lr=3u wr=3u m=1
 XICres11<29> VRP<11> VRN<11> nmoscap lr=3u wr=3u m=1
-XC0<0> VRP<9> VRN<9> nmoscap lr=3u wr=3u m=1
-XC0<1> VRP<9> VRN<9> nmoscap lr=3u wr=3u m=1
-XC0<2> VRP<9> VRN<9> nmoscap lr=3u wr=3u m=1
-XC0<3> VRP<9> VRN<9> nmoscap lr=3u wr=3u m=1
-XC0<4> VRP<9> VRN<9> nmoscap lr=3u wr=3u m=1
-XC0<5> VRP<9> VRN<9> nmoscap lr=3u wr=3u m=1
+XIC0<0> VRP<9> VRN<9> nmoscap lr=3u wr=3u m=1
+XIC0<1> VRP<9> VRN<9> nmoscap lr=3u wr=3u m=1
+XIC0<2> VRP<9> VRN<9> nmoscap lr=3u wr=3u m=1
+XIC0<3> VRP<9> VRN<9> nmoscap lr=3u wr=3u m=1
+XIC0<4> VRP<9> VRN<9> nmoscap lr=3u wr=3u m=1
+XIC0<5> VRP<9> VRN<9> nmoscap lr=3u wr=3u m=1
 XICres8<0> VRP<8> VRN<8> nmoscap lr=3u wr=3u m=1
 XICres8<1> VRP<8> VRN<8> nmoscap lr=3u wr=3u m=1
 XICres8<2> VRP<8> VRN<8> nmoscap lr=3u wr=3u m=1
@@ -278,8 +283,3 @@ XI5 CKS CKSB DVDD DVSS VCM VCP TG_Top_Coarse
 .ENDS
 
 
-.SUBCKT nmoscap PLUS MINUS
-*.PININFO  PLUS:B MINUS:B
-.param lr=1 wr=1 m=1
-c0 PLUS MINUS 1f
-.ENDS

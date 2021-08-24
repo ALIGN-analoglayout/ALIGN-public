@@ -194,7 +194,7 @@ class SpiceParser:
             self._process_constraints()
             self._scope.pop()
         elif decl == '.PARAM':
-            assert len(args) == 0
+            assert len(args) == 0, f"unsupported arguments {args}, probably missing default values"
             self._scope[-1].parameters.update({
                 k.upper() : str(v).upper() for k, v in kwargs.items()
             })

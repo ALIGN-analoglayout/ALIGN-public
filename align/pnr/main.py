@@ -104,7 +104,17 @@ def extract_capacitor_constraints( pnr_const_ds):
 
     return cap_constraints
 
-def remove_pg_pins(verilog_d, subckt, pg_pins):
+def remove_pg_pins(verilog_d:dict, subckt:str, pg_pins:list):
+    """remove_pg_pins [summary]
+
+    Removes any ports related to power pins. PnR engine cannot connect to subcircuit power pins.
+    It can connect to a primitive power pin
+
+    Args:
+        verilog_d (dict): spice dict from compiler
+        subckt (str): name of sub-circuit
+        pg_pins (list): list of power pins in subckt to be removed
+    """
     logger.debug(f"removing power pins {pg_pins} from subckt {subckt}")
     modules_dict = {module['name']: module['parameters'] for module in verilog_d['modules']}
 
@@ -114,7 +124,9 @@ def remove_pg_pins(verilog_d, subckt, pg_pins):
         subckt=subckt.upper()
     else:
         assert False, f"{subckt} not found in design {modules_dict}"
-    module = [module for module in verilog_d['modules'] if module['name']==subckt][0]
+    modules = [module for module in verilog_d['modules'] if module['name']==subckt]
+    assert len(modules) ==1, f"dupicate modules are found {modules}"
+    module = modules[0]
     #Remove port from subckt level
     module['parameters'] = [p for p in module['parameters'] if p not in pg_pins]
     for inst in module['instances']:
@@ -132,8 +144,7 @@ def remove_pg_pins(verilog_d, subckt, pg_pins):
             logging.debug(f"leaf level node {inst['instance_name']} {inst['abstract_template_name']}")
 def clean_if_extra(verilog_d, subckt):
     #Remove modules which are not instantiated
-    all_inst = [inst['abstract_template_name'] for module in verilog_d['modules'] for inst in module["instances"]]
-    all_inst.append(subckt)
+    all_inst = set([inst['abstract_template_name'] for module in verilog_d['modules'] for inst in module["instances"]]+[subckt])
     logger.debug(f"All used modules: {all_inst}")
     verilog_d['modules'] = [m for m in verilog_d['modules'] if m['name'] in all_inst]
 
@@ -152,7 +163,8 @@ def modify_pg_conn_subckt(verilog_d, subckt, pp):
     updated_ckt_name = subckt+'_PG'+str(i)
     while updated_ckt_name in modules_dict.keys():
         if modules_dict[updated_ckt_name] == nm['parameters']:
-            break
+            logger.debug(f"using existing module {updated_ckt_name}")
+            return updated_ckt_name
         else:
             i = i+1
             updated_ckt_name = subckt+'_PG'+str(i)

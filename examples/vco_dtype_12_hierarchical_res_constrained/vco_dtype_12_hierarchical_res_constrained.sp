@@ -7,7 +7,7 @@
 // Cell name: diff2sing_v1
 // View name: schematic
 .subckt diff2sing_v1 VDD VSS in1 in2 o
-.param _ar0 _ar1 _ar2 _ar3
+.param _ar0=1 _ar1=1 _ar2=1 _ar3=1
     MP2 net3 VSS net1 VDD lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
     MP5 net1 VSS VDD VDD lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
     MP1 o in2 net2 VDD lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
@@ -21,7 +21,7 @@
 .ends diff2sing_v1
 
 .subckt three_terminal_inv VDD VSS VBIAS VIN VOUT
-.param _ar0 _ar1 _ar2 _ar3 _ar4 _ar5
+.param _ar0=1 _ar1=1 _ar2=1 _ar3=1 _ar4=1 _ar5=1
     MN34 VOUT VIN net1 VSS lvtnfet m=1 l=14n nfin=_ar0 nf=_ar2
     MN33 net1 VIN VSS VSS lvtnfet m=1 l=14n nfin=_ar0 nf=_ar2
     MP34 VOUT VBIAS net2 VDD lvtpfet m=1 l=14n nfin=_ar3 nf=_ar4
@@ -34,7 +34,7 @@
 // View name: schematic
 .subckt VCO_type2_65 VDD VSS o\<1\> o\<2\> o\<3\> o\<4\> o\<5\> o\<6\> \
         o\<7\> o\<8\> op\<1\> VBIAS
-.param _ar0 _ar1 _ar2 _ar3 _ar4 _ar5
+.param _ar0=1 _ar1=1 _ar2=1 _ar3=1 _ar4=1 _ar5=1
     xI1\<1\> VDD VSS VBIAS o\<1\> o\<2\> three_terminal_inv _ar0=_ar0 \
         _ar1=_ar1 _ar2=_ar2 _ar3=_ar3 _ar4=_ar4 _ar5=_ar5
     xI1\<2\> VDD VSS VBIAS o\<2\> o\<3\> three_terminal_inv _ar0=_ar0 \
@@ -55,20 +55,20 @@
 // End of subcircuit definition.
 
 .subckt vco_res on\<1\> on\<2\> on\<3\> on\<4\> on\<5\> on\<6\> on\<7\> on\<8\> op\<1\> op\<2\> op\<3\> op\<4\> op\<5\> op\<6\> op\<7\> op\<8\>
-    R0\<1\> op\<1\> on\<2\> resistor r=5000
-    R0\<2\> op\<2\> on\<3\> resistor r=5000
-    R0\<3\> op\<3\> on\<4\> resistor r=5000
-    R0\<4\> op\<4\> on\<5\> resistor r=5000
-    R0\<5\> op\<5\> on\<6\> resistor r=5000
-    R0\<6\> op\<6\> on\<7\> resistor r=5000
-    R0\<7\> op\<7\> on\<8\> resistor r=5000
-    R1\<1\> on\<1\> op\<2\> resistor r=5000
-    R1\<2\> on\<2\> op\<3\> resistor r=5000
-    R1\<3\> on\<3\> op\<4\> resistor r=5000
-    R1\<4\> on\<4\> op\<5\> resistor r=5000
-    R1\<5\> on\<5\> op\<6\> resistor r=5000
-    R1\<6\> on\<6\> op\<7\> resistor r=5000
-    R1\<7\> on\<7\> op\<8\> resistor r=5000
+    R0\<1\> op\<1\> on\<2\> 5000
+    R0\<2\> op\<2\> on\<3\> 5000
+    R0\<3\> op\<3\> on\<4\> 5000
+    R0\<4\> op\<4\> on\<5\> 5000
+    R0\<5\> op\<5\> on\<6\> 5000
+    R0\<6\> op\<6\> on\<7\> 5000
+    R0\<7\> op\<7\> on\<8\> 5000
+    R1\<1\> on\<1\> op\<2\> 5000
+    R1\<2\> on\<2\> op\<3\> 5000
+    R1\<3\> on\<3\> op\<4\> 5000
+    R1\<4\> on\<4\> op\<5\> 5000
+    R1\<5\> on\<5\> op\<6\> 5000
+    R1\<6\> on\<6\> op\<7\> 5000
+    R1\<7\> on\<7\> op\<8\> 5000
 .ends vco_res
 
 .subckt vco_buffer_amp VDD VSS oo\<1\> oo\<2\> oo\<3\> oo\<4\> oo\<5\> oo\<6\> oo\<7\> \

@@ -7,7 +7,7 @@
 // Cell name: diff2sing_v1
 // View name: schematic
 .subckt diff2sing_v1 B VDD VSS in1 in2 o
-.param _ar0 _ar1 _ar2 _ar3
+.param _ar0=1 _ar1=1 _ar2=1 _ar3=1
     MP2 net3 B net1 VDD lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
     MP5 net1 B VDD VDD lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
     MP1 o in2 net2 VDD lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
@@ -21,7 +21,7 @@
 .ends diff2sing_v1
 
 .subckt three_terminal_inv VDD VSS VBIAS VIN VOUT
-.param _ar0 _ar1 _ar2 _ar3 _ar4 _ar5
+.param _ar0=1 _ar1=1 _ar2=1 _ar3=1 _ar4=1 _ar5=0
     MN34 VOUT VIN net1 VSS lvtnfet m=1 l=14n nfin=_ar0 nf=_ar2
     MN33 net1 VIN VSS VSS lvtnfet m=1 l=14n nfin=_ar0 nf=_ar2
     MP34 VOUT VBIAS net2 VDD lvtpfet m=1 l=14n nfin=_ar3 nf=_ar4
@@ -34,7 +34,7 @@
 // View name: schematic
 .subckt VCO_type2_65 VDD VSS o\<1\> o\<2\> o\<3\> o\<4\> o\<5\> o\<6\> \
         o\<7\> o\<8\> op\<1\> VBIAS
-.param _ar0 _ar1 _ar2 _ar3 _ar4 _ar5
+.param _ar0=1 _ar1=1 _ar2=1 _ar3=1 _ar4=1 _ar5=0
     xI1\<1\> VDD VSS VBIAS o\<1\> o\<2\> three_terminal_inv _ar0=_ar0 \
         _ar1=_ar1 _ar2=_ar2 _ar3=_ar3 _ar4=_ar4 _ar5=_ar5
     xI1\<2\> VDD VSS VBIAS o\<2\> o\<3\> three_terminal_inv _ar0=_ar0 \
@@ -59,7 +59,6 @@
 .subckt vco_dtype_12_hierarchical VDD VSS vbias oo\<1\> oo\<2\> oo\<3\> oo\<4\> oo\<5\> oo\<6\> oo\<7\> \
 oo\<8\> on\<1\> on\<2\> on\<3\> on\<4\> on\<5\> on\<6\> on\<7\> on\<8\> op\<1\> op\<2\> op\<3\> op\<4\> op\<5\> \
 op\<6\> op\<7\> op\<8\>
-
 
 xI6\<1\> VSS VDD VSS on\<1\> op\<1\> oo\<1\> diff2sing_v1 \
         _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \

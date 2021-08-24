@@ -325,8 +325,8 @@ def merged_value(values1, values2):
 def add_primitive(primitives, block_name, block_args):
     if block_name in primitives:
         if not primitives[block_name] == block_args:
-            logger.error(f"Two different primitve {block_name} of size {primitives[block_name]}\
-            with args {block_args} got approximated to same unit size")
+            logger.warning(f"Primitve {block_name} of size {primitives[block_name]}\
+            with args got approximated to size {block_args}")
     else:
         logger.debug(f"Found primitive {block_name} with {block_args}")
         primitives[block_name]= block_args
@@ -469,7 +469,7 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
 
         if "NFIN" in values.keys():
             #FinFET design
-            assert int(values["NFIN"])
+            assert int(values["NFIN"]), f"unrecognized size {values['NFIN']}"
             size = int(values["NFIN"])
             name_arg ='NFIN'+str(size)
         elif "W" in values.keys():
@@ -488,9 +488,13 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
                 values['NF'] =size
             size=size*int(values["NF"])
             name_arg =name_arg+'_NF'+str(int(values["NF"]))
+
         if 'M' in values.keys():
             if values['M'] == 'unit_size':
                 values['M'] = 1
+            if "PARALLEL" in values.keys() and int(values['PARALLEL'])>1:
+                values["PARALLEL"]=int(values['PARALLEL'])
+                values['M'] = int(values['M'])*int(values['PARALLEL'])
             size=size*int(values["M"])
             name_arg =name_arg+'_M'+str(int(values["M"]))
 

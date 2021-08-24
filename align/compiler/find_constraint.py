@@ -221,6 +221,8 @@ def recursive_start_points(G,all_match_pairs,traversed,node1,node2, ports_weight
     if not hier_start_points:
         return
     assert hier_start_points
+    #TODO array hieararchy to be reimplemented
+    return
     logger.debug(f"Creating new node from binary branch: {hier_start_points}")
     for sp in sorted(set(hier_start_points)):
         logger.debug(f"starting new node from binary branch:{sp} {hier_start_points} traversed {traversed} existing {pprint.pformat(all_match_pairs, indent=4)}")

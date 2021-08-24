@@ -108,7 +108,7 @@ def find_dummy_hier(library, ckt, dummy_hiers, update=False):
         return
     assert isinstance(dummy_hiers, list)
     all_subckts = [str(e.model) for e in ckt.elements if isinstance(library.find(e.model), SubCircuit)]
-    logger.info(f"Checking hiearchy {ckt.name} subckts {all_subckts} filter: {dummy_hiers}")
+    logger.debug(f"Checking hiearchy {ckt.name} subckts {all_subckts} filter: {dummy_hiers}")
     for m in set(all_subckts)-set(dummy_hiers):
         find_dummy_hier(library, library.find(m), dummy_hiers)
     if len(ckt.elements) ==1:

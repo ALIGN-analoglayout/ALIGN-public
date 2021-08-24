@@ -29,7 +29,10 @@ class CreateDatabase:
         logger.debug(f"creating database for {subckt}")
         for pin in subckt.pins:
             assert pin in subckt.nets, f"Floating pin: {pin} found for subckt {subckt.name} nets: {subckt.nets}"
-        self.resolve_parameters(name, subckt.parameters)
+        if self.ckt_parser.circuit.parameters:
+            self.resolve_parameters(name, self.ckt_parser.circuit.parameters)
+        else:
+            self.resolve_parameters(name, subckt.parameters)
         #TODO remove redundant library model
         return self.ckt_parser.library
     def resolve_parameters(self, name, param):
@@ -58,6 +61,8 @@ class CreateDatabase:
             for p,v in inst.parameters.items():
                 if v in subckt.parameters:
                     inst.parameters[p]=subckt.parameters[v]
+                elif v in self.ckt_parser.circuit.parameters:
+                    inst.parameters[p] = self.ckt_parser.circuit.parameters[v]
             self.resolve_parameters(inst.model, inst.parameters)
 
     def model_instance(self, subckt, counter=0):
