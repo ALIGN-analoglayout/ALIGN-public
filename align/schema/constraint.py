@@ -508,7 +508,7 @@ class MatchBlocks(SoftConstraint):
     TODO: Can be replicated by Enclose??
     '''
     instances: List[str]
-    
+
 
 class DoNotIdentify(SoftConstraint):
     '''
@@ -520,6 +520,26 @@ class DoNotIdentify(SoftConstraint):
 class SymmetricBlocks(SoftConstraint):
     pairs: List[List[str]]
     direction: Literal['H', 'V']
+    def check(self, checker):
+        '''
+        X = Align(2, 3, 'h_center')
+        Y = Align(4, 5, 'h_center')
+        Align(1, X, Y, 6, 'center')
+
+        '''
+        #TODO:function to check before adding, right now it adds and then check
+        assert all(len(pair) for pair in self.pairs) >= 1, 'Must contain at least one instance'
+        assert all(len(pair) for pair in self.pairs) <= 2, 'Must contain at most two instances'
+        for pair in self.pairs:
+            #and condition skips the check while reading user constraints
+            if len(pair)==2 and 'get_element' in dir(self.parent.parent) \
+                and self.parent.parent.get_element(pair[0]) \
+                and self.parent.parent.get_element(pair[1]): #Handle groupblock objects in symmetry const
+                assert self.parent.parent.get_element(pair[0]).parameters == \
+                    self.parent.parent.get_element(pair[1]).parameters, \
+                        f"Incorrent symmetry pair {pair} in subckt {self.parent.parent.name}"
+    #TODO: Trace current path
+
 
 
 class BlockDistance(SoftConstraint):
@@ -687,6 +707,9 @@ class ConstraintDB(types.List[ConstraintType]):
     def append(self, constraint: ConstraintType):
         super().append(constraint)
         self._check_recursive([self.__root__[-1]])
+    @types.validate_arguments
+    def remove(self, constraint: ConstraintType):
+        super().remove(constraint)
 
     def __init__(self, *args, check=True, **kwargs):
         super().__init__()
@@ -705,6 +728,7 @@ class ConstraintDB(types.List[ConstraintType]):
             data = []
         with set_context(self):
             for x in data:
+                logger.info(f'reading data {x}')
                 self.append(x)
 
     def checkpoint(self):

@@ -2221,7 +2221,7 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
     const string abstract_template_name = node.Blocks[i].instance.front().master;
 
     if (gdsData2.find(abstract_template_name) == gdsData2.end()) {
-      if (abstract_template_name.find("Cap") != std::string::npos || abstract_template_name.find("cap") != std::string::npos || !node.Blocks[i].instance.back().isLeaf) continue;
+      if (abstract_template_name.find("Cap") != std::string::npos || abstract_template_name.find("CAP") != std::string::npos || abstract_template_name.find("cap") != std::string::npos || !node.Blocks[i].instance.back().isLeaf) continue;
       logger->error("The key does not exist in map: {0}", abstract_template_name);
     }
 

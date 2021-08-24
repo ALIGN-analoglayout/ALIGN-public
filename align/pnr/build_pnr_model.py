@@ -21,6 +21,8 @@ def ReadVerilogJson( DB, j):
         temp_node = PnR.hierNode()
         temp_node.name = module['name']
         temp_node.isCompleted = 0
+        print(temp_node)
+        print(temp_node.Block_name_map)
 
         Terminals = []
         for parameter in module['parameters']:
@@ -64,7 +66,7 @@ def ReadVerilogJson( DB, j):
                     Nets.append( PnR.net())
                     Connecteds.append( [])
                     Nets[-1].name = net_name
-                    
+
                     net_map[net_name] = net_index
 
                 # Use a python list of list to workaround not being able to append to a C++ vector
@@ -82,7 +84,7 @@ def ReadVerilogJson( DB, j):
                 net_name = fa['actual']
                 temp_pin.netIter = process_connection( i, net_name)
                 blockPins.append( temp_pin)
-                
+
             current_instance.blockPins = blockPins
             temp_blockComplex.instance = [ current_instance ]
             Blocks.append( temp_blockComplex)
@@ -134,7 +136,7 @@ def _attach_constraint_files( DB, fpath):
             logger.debug(f"Finished reading contraint json file {curr_node.name}.pnr.const.json")
         else:
             logger.warning(f"No constraint file for module {curr_node.name}")
-                
+
 def _ReadLEF( DB, path, lefname):
     p = pathlib.Path(path) / lefname
     if p.exists():

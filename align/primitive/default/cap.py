@@ -110,9 +110,9 @@ class CapGenerator(DefaultCanvas):
         pin = 'MINUS'
         self.addWire( self.m2, 'MINUS', last_y1_track, (grid_x0, -1), (grid_x1, 1), netType = 'pin')
 
-        self.addRegion( self.boundary, 'Boundary', 0, 0,
-                        last_x1_track,
-                        last_y1_track)
+        self.addRegion( self.boundary, 'Boundary', -2, -2,
+                        last_x1_track+2,
+                        last_y1_track+2)
 
         #self.addRegion( self.Cboundary, 'Cboundary', None,
         #                    -1, -1,

@@ -41,16 +41,27 @@ class ConstraintParser:
             with types.set_context(node.constraints):
                 for const in self.constraint_dict[design_name]:
                     node.constraints.append(const)
-        json_path = self.input_dir / (design_name+'.const.json')
-        if json_path.is_file():
+        json_path = [cf for cf in self.input_dir.rglob('*.const.json') if cf.stem.upper()==design_name+'.CONST']
+        logger.debug(f"constraint json path {json_path} {self.input_dir}")
+        if json_path and json_path[0].is_file():
+            json_path = json_path[0]
             logger.debug(
                 f"JSON input const file for block {design_name} {json_path}")
             with types.set_context(node):
                 node.constraints.extend(
                     constraint.ConstraintDB.parse_file(json_path)
                 )
+            #ALL inst in caps
+            for const in node.constraints:
+                if hasattr(const, 'instances') and len(const.instances) > 0:
+                    for i,inst in enumerate(const.instances):
+                        const.instances[i] = inst.upper()
+                elif hasattr(const, 'pairs'):
+                    for pair in const.pairs:
+                        for i,inst in enumerate(pair):
+                            pair[i] = inst.upper()
 
-            do_not_identify = []                
+            do_not_identify = []
             for const in node.constraints:
                 if const.constraint == 'group_blocks':
                     continue
@@ -73,5 +84,5 @@ class ConstraintParser:
             raise NotImplementedError(
                 'Command-line interface has not been upgraded. Please use json constraints')
         else:
-            logger.warning(
+            logger.info(
                 f"No user constraints found for block {design_name} in path {self.input_dir}")

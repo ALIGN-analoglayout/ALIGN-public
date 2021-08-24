@@ -5,34 +5,57 @@ Created on Tue Dec 11 11:34:45 2018
 @author: kunal
 """
 import os
+from re import sub
 import networkx as nx
 import matplotlib.pyplot as plt
 from networkx.algorithms import bipartite
-
+from ..schema.graph import Graph
 import logging
 logger = logging.getLogger(__name__)
 
-def get_next_level(G, tree_l1):
+def get_next_level(subckt,G, tree_l1):
+    """get_next_level traverse graph and get next connected element
+    Does not traverse Connections through Gate or Body of transistors identified as 'B','G' pins
+    TODO: check this skip hierarchically
+
+    [extended_summary]
+
+    Args:
+        subckt ([type]): [description]
+        G ([type]): [description]
+        tree_l1 ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
     tree_next=[]
     for node in list(tree_l1):
-        if node not in G.nodes:
-            continue
-        # logger.debug(f"neighbors of {node}: {list(G.neighbors(node))}")
-        if 'mos' in G.nodes[node]["inst_type"]:
+        assert subckt.get_element(node) or node in subckt.nets, f"{node} not present in {subckt.elements} {subckt.nets}"
+        if subckt.get_element(node) and get_base_model(subckt,node) and 'MOS' in get_base_model(subckt,node):
             for nbr in list(G.neighbors(node)):
-                if G.get_edge_data(node, nbr)['weight']!=2:
+                if set(G.get_edge_data(node, nbr)['pin']) - set({'G','B'}):
                     tree_next.append(nbr)
-        elif 'net' in G.nodes[node]["inst_type"]:
+        elif node in subckt.nets:
             for nbr in list(G.neighbors(node)):
-                if 'mos' in G.nodes[nbr]["inst_type"] and \
-                G.get_edge_data(node, nbr)['weight']!=2:
+                base_model = get_base_model(subckt,nbr)
+                if base_model and 'MOS' in base_model and \
+                set(G.get_edge_data(node, nbr)['pin']) - set({'G','B'}):
                     tree_next.append(nbr)
-                elif 'mos' not in G.nodes[nbr]["inst_type"]:
-                    tree_next.append(nbr)               
+                else:
+                    tree_next.append(nbr)
         else:
             tree_next.extend(list(G.neighbors(node)))
-    # logger.debug(f"next nodes {tree_next} ")
     return tree_next
+
+def get_base_model(subckt,node):
+    assert subckt.get_element(node)
+    if subckt.get_element(node).model in ['NMOS','PMOS','RES','CAP']:
+        base_model = subckt.get_element(node).model
+    elif subckt.parent.find(subckt.get_element(node).model):
+        base_model = subckt.parent.find(subckt.get_element(node).model).base
+    else:
+        logger.warning(f"invalid device {node}")
+    return base_model
 def compare_two_nodes(G,node1:str,node2:str ,ports_weight):
     """
     compare two node properties. It uses 1st level of neighbourhood for comparison of nets
@@ -44,7 +67,7 @@ def compare_two_nodes(G,node1:str,node2:str ,ports_weight):
     node1, node2 : TYPE  string
         DESCRIPTION. node name
     ports_weight : TYPE list
-        DESCRIPTION. port weights 
+        DESCRIPTION. port weights
 
     Returns
     -------
@@ -52,63 +75,52 @@ def compare_two_nodes(G,node1:str,node2:str ,ports_weight):
         DESCRIPTION. True for matching node
 
     """
-    nbrs1= [nbr for nbr in G.neighbors(node1) if G.get_edge_data(node1, nbr)['weight'] !=2]
-    nbrs2= [nbr for nbr in G.neighbors(node2) if G.get_edge_data(node2, nbr)['weight'] !=2]
-    nbrs1= [nbr for nbr in nbrs1 if G.get_edge_data(node1, nbr)['weight'] !=7]
-    nbrs2= [nbr for nbr in nbrs2 if G.get_edge_data(node2, nbr)['weight'] !=7]
+    nbrs1= [nbr for nbr in G.neighbors(node1) if G.get_edge_data(node1, nbr)['pin']!= {'G'}]
+    nbrs2= [nbr for nbr in G.neighbors(node2) if G.get_edge_data(node2, nbr)['pin']!= {'G'}]
+    nbrs1= [nbr for nbr in nbrs1 if G.get_edge_data(node1, nbr)['pin'] !={'B'}]
+    nbrs2= [nbr for nbr in nbrs2 if G.get_edge_data(node2, nbr)['pin'] !={'B'}]
     logger.debug(f"comparing_nodes: {node1},{node2},{nbrs1},{nbrs2}")
 
     # Add some heuristic here in future
-    
-    nbrs1_type= sorted([G.nodes[nbr]["inst_type"] for nbr in nbrs1]) + [G.nodes[node1]["inst_type"]]
-    nbrs2_type= sorted([G.nodes[nbr]["inst_type"] for nbr in nbrs2]) + [G.nodes[node2]["inst_type"]]
-    if nbrs1_type != nbrs2_type:
-        logger.debug(f"type mismatch {nbrs1}:{nbrs1_type} {nbrs2}:{sorted(nbrs2_type)}")
-        return False
-    if G.nodes[node1]["inst_type"]=="net": 
-        if G.nodes[node1]["net_type"] == G.nodes[node2]["net_type"] == 'external':
-            if not ports_weight:
-                return True
-            elif sorted(ports_weight[node1]) == sorted(ports_weight[node2]):
+    if G.nodes[node1].get('instance'):
+        logger.debug(f"checking mathc between {node1} {node2}")
+        in1 = G.nodes[node1].get('instance')
+        in2 = G.nodes[node2].get('instance')
+        if in1.model == in2.model and\
+            len(set(in1.pins.values())) == len(set(in2.pins.values()))  and \
+            in1.parameters == in2.parameters:
+            logger.debug(" True")
+            return True
+        else:
+            logger.debug(" False, value mismatch")
+            return False
+    else:
+        nbrs1_type= sorted([G.nodes[nbr].get('instance').model for nbr in nbrs1])
+        nbrs2_type= sorted([G.nodes[nbr].get('instance').model for nbr in nbrs2])
+        if nbrs1_type != nbrs2_type:
+            logger.debug(f"type mismatch {nbrs1}:{nbrs1_type} {nbrs2}:{sorted(nbrs2_type)}")
+            return False
+        if node1 in ports_weight and node2 in ports_weight:
+            if sorted(ports_weight[node1]) == sorted(ports_weight[node2]):
                 logger.debug("True")
                 return True
             else:
                 logger.debug(f'external port weight mismatch {ports_weight[node1]},{ports_weight[node2]}')
                 return False
-        elif G.nodes[node1]["net_type"] == 'internal':
-            weight1=[(G.get_edge_data(node1, nbr)['weight'] & ~2) for nbr in nbrs1]
-            weight2=[(G.get_edge_data(node2, nbr)['weight'] & ~2) for nbr in nbrs2]
+        else:
+            weight1=[G.get_edge_data(node1, nbr)['pin'] for nbr in nbrs1]
+            weight2=[G.get_edge_data(node2, nbr)['pin'] for nbr in nbrs2]
+            if {'G'} in weight1:
+                weight1.remove({'G'})
+            if {'G'} in weight2:
+                weight2.remove({'G'})
             if weight2==weight1:
                 logger.debug("True")
                 return True
             else:
                 logger.debug(f'internal port weight mismatch {weight1},{weight2}')
                 return False
-    else: 
-        if 'values' in G.nodes[node1].keys() and \
-        G.nodes[node1]["values"]==G.nodes[node2]["values"]:
-            logger.debug(" True")
-            return True
-        else:
-            logger.debug(" False, value mismatch")
-            return False  
-  
-def max_connectivity(G):
-    conn_value =0
-    #internal_nets =[x for x,y in G.nodes(data=True) if y['inst_type']=='net' and len(G.edges(x)) > 1]
-    #Drain and source weights are equal
-    for (u, v, wt) in G.edges.data('weight'):
-        if G.nodes[u]['inst_type']=='net' and len(G.edges(u)) >1 and wt<8:
-            if 'mos' in G.nodes[v]['inst_type'] and wt >3:
-                conn_value-=3
-            conn_value +=wt
-            #print (u,conn_value)
-        elif G.nodes[v]['inst_type']=='net' and len(G.edges(v)) >1 and wt<8:
-            if 'mos' in G.nodes[u]['inst_type'] and wt >3:
-                conn_value-=3
-            conn_value +=wt
-            #print (v,conn_value)
-    return conn_value
+
 def plt_graph(subgraph,sub_block_name):
     copy_graph=subgraph
     for node,attr in list(copy_graph.nodes(data=True)):
@@ -125,7 +137,6 @@ def plt_graph(subgraph,sub_block_name):
     plt.title(Title, fontsize=20)
 
 def _show_circuit_graph(filename, graph, dir_path):
-    #print(graph)
     no_of_subgraph = 0
     for subgraph in nx.connected_component_subgraphs(graph):
         no_of_subgraph += 1
@@ -191,21 +202,21 @@ def _show_bipartite_circuit_graph(filename, graph, dir_path):
 def _write_circuit_graph(filename, graph,dir_path):
     if not os.path.exists(dir_path):
         os.mkdir(dir_path)
-    nx.write_yaml(graph, dir_path+'/' + filename + ".yaml")
+    nx.write_yaml(Graph(graph), dir_path+'/' + filename + ".yaml")
 
 def convert_to_unit(values):
     for param in values:
-        if values[param]>= 1 :
+        if float(values[param])>= 1 :
             values[param]=int(values[param])
-        elif values[param]*1E3> 1 :
+        elif float(values[param])*1E3> 1 :
             values[param]=str(int(values[param]*1E3))+'m'
-        elif values[param]*1E6>1 :
+        elif float(values[param])*1E6>1 :
             values[param]=str(int(values[param]*1E6))+'u'
-        elif values[param]*1E9>1:
+        elif float(values[param])*1E9>1:
             values[param]=str(int(values[param]*1E9))+'n'
-        elif values[param]*1E12>1:
+        elif float(values[param])*1E12>1:
             values[param]=str(int(values[param]*1E12))+'p'
-        elif values[param]*1E15>1:
+        elif float(values[param])*1E15>1:
             values[param]=str(int(values[param]*1E15))+'f'
         else:
             logger.error(f"WRONG value, {values}")

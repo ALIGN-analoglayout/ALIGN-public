@@ -7,7 +7,7 @@ Created on Wed July 08 13:12:15 2020
 
 from collections import Counter
 from itertools import combinations
-from .merge_nodes import merge_nodes
+# from .merge_nodes import merge_nodes
 from .util import compare_two_nodes
 from ..schema import constraint
 from ..schema.hacks import HierDictNode
@@ -33,7 +33,7 @@ def matching_groups(G,level1,ports_weight):
         DESCRIPTION.
 
     """
-    
+
     similar_groups=[]
     logger.debug(f"creating groups for all neighbors: {level1}")
     #modify this best case complexity from n*(n-1) to n complexity
@@ -76,7 +76,7 @@ def trace_template(graph, similar_node_groups,visited,template,array):
         for source in array.keys():
             if source in next_match.keys():
                 array[source]+=next_match[source]
-         
+
         template +=next_match[list(next_match.keys())[0]]
         logger.debug("found matching level: %s,%s,%s",template,similar_node_groups,visited)
         if check_convergence(next_match):
@@ -141,7 +141,7 @@ def create_hierarchy(graph,node:str,traversed:list,ports_weight:dict):
 
     hier_of_node ={}
     level1 = list(set(graph.neighbors(node))-set(traversed))
-    
+
     hier_of_node[node]=matching_groups(graph,level1,None)
     logger.debug(f"new hierarchy points {hier_of_node} from node {node}")
 
@@ -157,7 +157,7 @@ def create_hierarchy(graph,node:str,traversed:list,ports_weight:dict):
                 array = similar_node_groups.copy()
                 trace_template(graph,similar_node_groups,visited,templates[node],array)
                 logger.debug(f"similar groups final from {node}:{array}")
-        
+
         #check number of levels in detected array
         #single hierarchy arrays can be handled using simple approaches
         all_inst = []
@@ -168,9 +168,9 @@ def create_hierarchy(graph,node:str,traversed:list,ports_weight:dict):
                 for node_hier in branch:
                     if graph.nodes[node_hier]['inst_type'] != 'net' \
                         and node_hier not in all_inst \
-                        and not graph.nodes[node_hier]['inst_type'].lower().startswith('cap'):  
+                        and not graph.nodes[node_hier]['inst_type'].lower().startswith('cap'):
                         all_inst.append(node_hier)
-                
+
         else:
             hier_of_node[node]=[]
             for inst in array.keys():
@@ -187,11 +187,11 @@ def create_hierarchy(graph,node:str,traversed:list,ports_weight:dict):
                             h_ports_weight[node_hier] = []
                             for nbr in list(graph.neighbors(node_hier)):
                                 h_ports_weight[node_hier].append(graph.get_edge_data(node_hier, nbr)['weight'])
-                       
-            logger.debug(f"creating a new hierarchy for {node}, {all_inst}, {matched_ports}")
-            subgraph,_ = merge_nodes(
-                    graph, 'array_hier_'+node,all_inst , matched_ports)
 
+            logger.debug(f"creating a new hierarchy for {node}, {all_inst}, {matched_ports}")
+            # subgraph,_ = merge_nodes(graph, 'array_hier_'+node,all_inst , matched_ports)
+            subgraph = None
+            #TODO rewrite this code and tests
             hier_of_node[node] = HierDictNode(
                         name = 'array_hier_'+node,
                         graph = subgraph,
