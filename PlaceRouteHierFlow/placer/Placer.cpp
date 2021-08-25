@@ -550,7 +550,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   double delta_cost;
   int update_index = 0;
   int T_index = 0;
-  float per = 0.1;
+  float per = 0.2;
   //int updateThrd = 100;
   float total_update_number = log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA);
   bool exhausted(false);
@@ -682,9 +682,9 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     }
     T_index++;
     if (total_update_number * per < T_index) {
-      logger->debug( "..... {0} %" , per * 100);
+      logger->info( "..... {0} %\r" , per * 100);
       //cout.flush();
-      per = per + 0.1;
+      per = per + 0.2;
     }
     if (exhausted) break;
     T *= hyper.ALPHA;
@@ -717,6 +717,7 @@ void Placer::ReshapeSeqPairMap(std::map<double, std::pair<SeqPair, ILP_solver>>&
 }
 
 void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo){
+  auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementRegularAspectRatio_ILP");
   int nodeSize=nodeVec.size();
   //cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
   #ifdef RFLAG
@@ -736,7 +737,13 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
         ((effort == 0) ? 1. : ((effort == 1) ? 4. : 8.)) ));
   curr_sp.PrintSeqPair();
   ILP_solver curr_sol(designData);
+  //clock_t start, finish;
+  //double   duration;
+  //start = clock();
   std::map<double, std::pair<SeqPair, ILP_solver>> spVec=PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo);
+  //finish = clock();
+  //duration = (double)(finish - start) / CLOCKS_PER_SEC;
+  //logger->info("lpsolve time: {0}", duration);
   //curr_sol.updateTerminalCenter(designData, curr_sp);
   //curr_sol.PlotPlacement(designData, curr_sp, opath+nodeVec.back().name+"opt.plt");
   if((int)spVec.size()<nodeSize) {
