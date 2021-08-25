@@ -1,5 +1,6 @@
 
 .subckt phvt_cell_4 d g s b
+.param m=1
 mi4 inet3 g s b phvt w=180n l=40n m=1
 mi3 inet2 g inet3 b phvt w=180n l=40n m=1
 mi2 inet1 g inet2 b phvt w=180n l=40n m=1
@@ -7,6 +8,7 @@ mi1 d g inet1 b phvt w=180n l=40n m=1
 .ends
 
 .subckt phvt_cell_3 d g s b
+.param m=1
 mi4 inet3 g s b phvt w=180n l=40n m=1
 mi3 inet2 g inet3 b phvt w=180n l=40n m=1
 mi2 inet1 g inet2 b phvt w=180n l=40n m=1
@@ -14,6 +16,7 @@ mi1 d g inet1 b phvt w=180n l=40n m=1
 .ends
 
 .subckt n_cell_3 d g s b
+.param m=1
 mi1 d g inet1 b nhvt w=270n l=40n m=1
 mi2 inet1 g inet2 b nhvt w=270n l=40n m=1
 mi3 inet2 g inet3 b nhvt w=270n l=40n m=1
@@ -23,6 +26,7 @@ mi6 inet5 g s b nhvt w=270n l=40n m=1
 .ends
 
 .subckt n_cell_2 d g s b
+.param m=1
 mi1 d g inet1 b n w=270n l=40n m=1
 mi2 inet1 g inet2 b n w=270n l=40n m=1
 mi3 inet2 g inet3 b n w=270n l=40n m=1
@@ -32,6 +36,7 @@ mi6 inet5 g s b n w=270n l=40n m=1
 .ends
 
 .subckt n_cell_1 d g s b
+.param m=1
 mi1 d g inet1 b n w=270n l=40n m=1
 mi2 inet1 g inet2 b n w=270n l=40n m=1
 mi3 inet2 g inet3 b n w=270n l=40n m=1
@@ -41,6 +46,7 @@ mi6 inet5 g s b n w=270n l=40n m=1
 .ends
 
 .subckt plvt_cell_0 d g s b
+.param m=1
 mi6 inet5 g s b plvt w=270n l=40n m=1
 mi5 inet4 g inet5 b plvt w=270n l=40n m=1
 mi4 inet3 g inet4 b plvt w=270n l=40n m=1
@@ -50,6 +56,8 @@ mi1 d g inet1 b plvt w=270n l=40n m=1
 .ends
 
 .subckt intel_circuit4 iref vcca vcm vinn vinp voun voup vssa
+** INV: (xmn1,xmp1), (xmn0,xmp0)
+** CMB_PMOS_2 (xmp11,xmp12,xmp13)
 xmp3 vcm vcm net021 vcca plvt_cell_0 m=4
 xmp0 voun vinp net36 vcca plvt_cell_0 m=4
 xmp1 voup vinn net36 vcca plvt_cell_0 m=4

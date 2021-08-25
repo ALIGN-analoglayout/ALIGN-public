@@ -1,8 +1,14 @@
+from re import sub
 import networkx
+# from networkx.algorithms.structuralholes import constraint
+from networkx.classes.function import subgraph
+import logging
+logger = logging.getLogger(__name__)
 
 from .instance import Instance
 from .subcircuit import SubCircuit, Circuit
 from .types import set_context
+from align.schema import instance, constraint, model
 
 
 class Graph(networkx.Graph):
@@ -71,6 +77,7 @@ class Graph(networkx.Graph):
 
     @staticmethod
     def default_node_match(x, y):
+        # Assumes all library (y) definitions are in base class
         if isinstance(x.get('instance'), Instance) and isinstance(y.get('instance'), Instance):
             return y.get('instance').model in x.get('instance').mclass.bases + [x.get('instance').model]
         else:
@@ -88,51 +95,151 @@ class Graph(networkx.Graph):
         matcher = networkx.algorithms.isomorphism.GraphMatcher(
             self, graph, node_match=node_match, edge_match=edge_match)
         ret = []
-        for match in matcher.subgraph_isomorphisms_iter():
+        _temp = len(self.subckt.constraints)
+        for match in sorted(matcher.subgraph_isomorphisms_iter(), key= lambda i: '_'.join(sorted(i.keys()))):
             if not any(self._is_element(self.nodes[node]) and any(node in x for x in ret) for node in match):
-                ret.append(match)
+                try:
+                    self.check_constraint_satisfiability(graph,match)
+                    ret.append(match)
+                except:
+                    #primitives with unsatisfied constraints will not be created
+                    logger.debug(f"skipping match {graph.subckt.name} {match.keys()} due to unsatisfied constraints")
+                    pass
+        #revert any added const TODO: add checker here
+        while len(self.subckt.constraints) > _temp:
+            self.subckt.constraints.pop()
         return ret
+    def check_constraint_satisfiability(self,subgraph,match):
+        #Check if the constraints defined at primitive stage are valid for subckt
+        subckt_const = subgraph.subckt.constraints
+        with set_context(self.subckt.constraints):
+            for const in subckt_const:
+                if const.constraint == 'symmetric_blocks':
+                    logger.info(f"checking symmblock constraint of the subcircuit {subgraph.subckt.name} {const.pairs} at {self.subckt.name}")
+                    t = [[self._get_key(ele,match) for ele in pair] for pair in const.pairs]
+                    d = const.direction
+                    x = constraint.SymmetricBlocks(direction=d, pairs=t)
+                    self.subckt.constraints.append(x)
+                    assert x in self.subckt.constraints, f"constraint: {x} not found in {self.subckt.constraints}"
+                    self.subckt.constraints.remove(x)
+                    for pair in const.pairs:
+                        if len(pair)==2:
+                            self.match_pin_distance(pair,self.subckt.pins[0])
 
-    def replace_matching_subgraph(self, subgraph, node_match=None, edge_match=None):
+    def match_pin_distance(self,pair,pin):
+        # Symmetric nets should have same position w.r.t gnd and power
+        return True
+        logger.debug(f"checking port distance")
+        #TODO: focus on power pins
+        pin_dist2 = []
+        pin_dist1 = []
+        if networkx.has_path(self, source=pin, target=pair[0]):
+            pin_dist1.append(networkx.shortest_path_length(self, source=pin, target=pair[0]))
+            logger.debug(f"path exist: {pin} {pair[0]} {pin_dist1}")
+        if networkx.has_path(self, source=pin, target=pair[1]):
+            pin_dist2.append(networkx.shortest_path_length(self, source=pin, target=pair[1]))
+            logger.debug(f"path exist: {pin} {pair[1]} {pin_dist2}")
+        logger.debug(f"pin distance: {pin_dist1} {pin_dist2}")
+        assert sorted(pin_dist1) == sorted(pin_dist2), f"pin distance mismatch"
+
+    def _get_key(self,val,dicta):
+        for key, value in dicta.items():
+            if val == value:
+                return key
+        return "key doesn't exist"
+
+    def replace_matching_subgraph(self, subgraph, skip=None, node_match=None, edge_match=None):
         matches = self.find_subgraph_matches(subgraph, node_match, edge_match)
-        self._replace_matches_with_subckt(matches, subgraph.subckt)
+        return self._replace_matches_with_subckt(matches, subgraph.subckt, skip)
 
-    def _replace_matches_with_subckt(self, matches, subckt):
+    def _replace_matches_with_subckt(self, matches, subckt, skip=None):
         assert isinstance(subckt, SubCircuit)
-        counter = 0
+        new_subckt = []
         for match in matches:
             # Cannot replace as some prior transformation has made the current one invalid
             assert all(x in self.nodes for x in match)
+            assert len(subckt.pins) == len(set(subckt.pins)), f"duplicate pins found in module {subckt.name}, {subckt.pins}"
             removal_candidates = [
-                x for x, y in match.items() 
+                x for x, y in match.items()
                 if y not in subckt.pins]
             # Cannot replace if internal node is used elsewhere in subckt (Boundary elements / nets)
             if not all(x in match for node in removal_candidates for x in self.neighbors(node)):
                 continue
             # Remove nodes not on subckt boundary
-            for node in removal_candidates:
+            if skip and (set(removal_candidates) & set(skip)):
+                continue
+            # Create a dummy instance of instance of subckt
+            subckt_instance = self.create_subckt_instance(subckt, match, subckt.name)
+            # check dummy is existing in library
+            inst_name = self.instance_counter(subckt_instance)
+            # Create correct instance
+            new_subckt.append(inst_name)
+            logger.debug(f"Creating new subckt of type: {subckt.name} from {removal_candidates}")
+            subckt_instance = self.create_subckt_instance(subckt, match, inst_name)
+            merged_inst_name = 'X_'+inst_name
+            for node in sorted(removal_candidates):
                 # Elements only
                 if node in self.nodes and self._is_element(self.nodes[node]):
                     # Takes care of nets attached to element too
                     self.remove(self.element(node))
-            # Create new instance of subckt
-            name, counter = f'X_{subckt.name}_{counter}', counter + 1
-            assert name not in self.elements
+                    merged_inst_name = merged_inst_name +'_'+node
+            assert subckt_instance not in self.elements
             pin2net_map = {pin: net for net,
                            pin in match.items() if pin in subckt.pins}
             assert all(x in pin2net_map for x in subckt.pins), (match, subckt)
             # Model may need to be copied to current library
-            if subckt not in self.subckt.parent:
+            if subckt_instance not in self.subckt.parent:
+                # self.subckt.parent.append(subckt_instance)
                 with set_context(self.subckt.parent):
-                    self.subckt.parent.append(SubCircuit(**subckt.dict(exclude_unset=True)))
+                    self.subckt.parent.append(SubCircuit(**subckt_instance.dict(exclude_unset=True)))
             # attach instance to current graph
+            logger.debug(f"adding instance {merged_inst_name} of type {inst_name} in subckt {self.name}")
             self.add_instance(
-                name=name,
-                model=subckt.name,
-                pins=pin2net_map
+                name=merged_inst_name,
+                model=inst_name,
+                pins=pin2net_map,
+                generator = subckt.name
             )
+        return new_subckt
+    #TODO: in future use paramaters from generator
+    # HACK can also be moved to end of flow
+    def create_subckt_instance(self, subckt, match, instance_name):
+        with set_context(self.subckt.parent):
+            subckt_instance = SubCircuit(name=instance_name,
+                                pins=subckt.pins,
+                                parameters=subckt.parameters)
+        with set_context(subckt_instance.elements):
+            for x, y in match.items():
+                element = subckt.get_element(y)
+                if not element:
+                    continue #copying only elements
+                subckt_instance.elements.append(Instance(
+                    name=element.name,
+                    model=self.nodes[x].get('instance').model,
+                    generator=self.nodes[x].get('instance').generator,
+                    pins=element.pins,
+                    parameters=self.nodes[x].get('instance').parameters))
+        return subckt_instance
 
-    # Algorithms to find & replace repeated subgraphs
+    def instance_counter(self, subckt ,counter=0):
+        if counter == 0:
+            name = subckt.name
+        else:
+            name = f'{subckt.name}_I{counter}'
+        existing_ckt = self.subckt.parent.find(name)
+        if existing_ckt:
+            if subckt.pins == existing_ckt.pins and \
+                subckt.parameters == existing_ckt.parameters and \
+                subckt.constraints == existing_ckt.constraints:
+                # logger.debug(f"Existing ckt defnition found, checking all elements")
+                for x in subckt.elements:
+                    if (not existing_ckt.get_element(x.name).model == x.model) or \
+                        (not existing_ckt.get_element(x.name).parameters == x.parameters) or \
+                            (not existing_ckt.get_element(x.name).pins == x.pins):
+                        logger.info(f"multiple instance of same subcircuit found {subckt.name} {counter+1}")
+                        name = self.instance_counter(subckt,counter+1)
+                        break #Break after first mismatch
+        return name
 
     def find_repeated_subckts(self, replace=False):
         index = 0
@@ -170,7 +277,8 @@ class Graph(networkx.Graph):
                                 pins={
                                     pin: net2pin_map[net]
                                     if net in net2pin_map else net
-                                    for pin, net in element.pins.items()}
+                                    for pin, net in element.pins.items()},
+                                generator=element.generator
                             )
                         )
                 subckts.append(subckt)
@@ -218,5 +326,6 @@ class Graph(networkx.Graph):
                 pins={
                     pin: subcktinst.pins[net] if net in subcktinst.pins else f'{subcktinst.name}_{net}' for pin, net in element.pins.items()},
                 parameters={key: eval(val, {}, subcktinst.parameters)
-                            for key, val in element.parameters.items()}
+                            for key, val in element.parameters.items()},
+                generator = element.generator
             )

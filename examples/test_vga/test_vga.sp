@@ -1,35 +1,41 @@
+.model pulvt pmos l=1 w=1 nf=1 m=1
+
 .subckt nlvt_s_pcell_0 d g s b
-mi1 d g inet1 b nlvt w=180e-9 l=40e-9 m=1 nf=1 
-mi2 inet1 g inet2 b nlvt w=180e-9 l=40e-9 m=1 nf=1 
-mi3 inet2 g inet3 b nlvt w=180e-9 l=40e-9 m=1 nf=1 
-mi4 inet3 g inet4 b nlvt w=180e-9 l=40e-9 m=1 nf=1 
-mi5 inet4 g inet5 b nlvt w=180e-9 l=40e-9 m=1 nf=1 
-mi6 inet5 g s b nlvt w=180e-9 l=40e-9 m=1 nf=1 
+.param m=1
+mi1 d g inet1 b nlvt w=180e-9 l=40e-9 m=1 nf=1
+mi2 inet1 g inet2 b nlvt w=180e-9 l=40e-9 m=1 nf=1
+mi3 inet2 g inet3 b nlvt w=180e-9 l=40e-9 m=1 nf=1
+mi4 inet3 g inet4 b nlvt w=180e-9 l=40e-9 m=1 nf=1
+mi5 inet4 g inet5 b nlvt w=180e-9 l=40e-9 m=1 nf=1
+mi6 inet5 g s b nlvt w=180e-9 l=40e-9 m=1 nf=1
 .ends nlvt_s_pcell_0
 
 .subckt plvt_s_pcell_1 d g s b
-mi8 inet7 g s b plvt w=360e-9 l=40e-9 m=1 nf=1 
-mi7 inet6 g inet7 b plvt w=360e-9 l=40e-9 m=1 nf=1 
-mi6 inet5 g inet6 b plvt w=360e-9 l=40e-9 m=1 nf=1 
-mi5 inet4 g inet5 b plvt w=360e-9 l=40e-9 m=1 nf=1 
-mi4 inet3 g inet4 b plvt w=360e-9 l=40e-9 m=1 nf=1 
-mi3 inet2 g inet3 b plvt w=360e-9 l=40e-9 m=1 nf=1 
-mi2 inet1 g inet2 b plvt w=360e-9 l=40e-9 m=1 nf=1 
-mi1 d g inet1 b plvt w=360e-9 l=40e-9 m=1 nf=1 
+.param m=1
+mi8 inet7 g s b plvt w=360e-9 l=40e-9 m=1 nf=1
+mi7 inet6 g inet7 b plvt w=360e-9 l=40e-9 m=1 nf=1
+mi6 inet5 g inet6 b plvt w=360e-9 l=40e-9 m=1 nf=1
+mi5 inet4 g inet5 b plvt w=360e-9 l=40e-9 m=1 nf=1
+mi4 inet3 g inet4 b plvt w=360e-9 l=40e-9 m=1 nf=1
+mi3 inet2 g inet3 b plvt w=360e-9 l=40e-9 m=1 nf=1
+mi2 inet1 g inet2 b plvt w=360e-9 l=40e-9 m=1 nf=1
+mi1 d g inet1 b plvt w=360e-9 l=40e-9 m=1 nf=1
 .ends plvt_s_pcell_1
 
 .subckt plvt_s_pcell_2 d g s b
-mi4 inet3 g s b plvt w=360e-9 l=40e-9 m=1 nf=1 
-mi3 inet2 g inet3 b plvt w=360e-9 l=40e-9 m=1 nf=1 
-mi2 inet1 g inet2 b plvt w=360e-9 l=40e-9 m=1 nf=1 
-mi1 d g inet1 b plvt w=360e-9 l=40e-9 m=1 nf=1 
+.param m=1
+mi4 inet3 g s b plvt w=360e-9 l=40e-9 m=1 nf=1
+mi3 inet2 g inet3 b plvt w=360e-9 l=40e-9 m=1 nf=1
+mi2 inet1 g inet2 b plvt w=360e-9 l=40e-9 m=1 nf=1
+mi1 d g inet1 b plvt w=360e-9 l=40e-9 m=1 nf=1
 .ends plvt_s_pcell_2
 
 .subckt plvt_s_pcell_3 d g s b
-mi4 inet3 g s b plvt w=360e-9 l=40e-9 m=1 nf=1 
-mi3 inet2 g inet3 b plvt w=360e-9 l=40e-9 m=1 nf=1 
-mi2 inet1 g inet2 b plvt w=360e-9 l=40e-9 m=1 nf=1 
-mi1 d g inet1 b plvt w=360e-9 l=40e-9 m=1 nf=1 
+.param m=1
+mi4 inet3 g s b plvt w=360e-9 l=40e-9 m=1 nf=1
+mi3 inet2 g inet3 b plvt w=360e-9 l=40e-9 m=1 nf=1
+mi2 inet1 g inet2 b plvt w=360e-9 l=40e-9 m=1 nf=1
+mi1 d g inet1 b plvt w=360e-9 l=40e-9 m=1 nf=1
 .ends plvt_s_pcell_3
 
 .subckt test_vga_inv_als in in_b vcca vssa

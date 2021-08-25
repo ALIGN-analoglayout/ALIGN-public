@@ -51,13 +51,17 @@ def common_source(name):
 
 def tia(name):
     netlist = textwrap.dedent(f"""\
+        .subckt pcell_mos d g s b
+        M0 d g s b n w=720e-9 nf=4 m=4
+        .ends pcell_mos
         .subckt pcell_tfr_0 a b
         xi0 a b tfr_prim w=1e-6 l=1e-6
         .ends pcell_tfr_0
-        .subckt {name} vin vop vccx vss
+        .subckt {name} vin vop vccx vssx
         mp0 vop vin vccx vccx p w=720e-9 nf=4 m=4
         mn0 vop vin vssx vssx n w=720e-9 nf=4 m=4
         xi0 vin vop pcell_tfr_0
+        xi1 vin vop vssx vssx pcell_mos
         .ends {name}
     """)
     return netlist
@@ -65,7 +69,10 @@ def tia(name):
 
 def ldo_amp(name):
     netlist = textwrap.dedent(f"""\
+        .model nlplvt nmos l=1 w=1 nf=1 m=1 stack=1 parallel=1
+        .model plplvt pmos l=1 w=1 nf=1 m=1 stack=1 parallel=1
         .subckt nlplvt_s_pcell_0 d g s b
+        .param m=1
         mi1 d g inet1 b nlplvt w=180e-9 m=1 nf=1
         mi2 inet1 g inet2 b nlplvt w=180e-9 m=1 nf=1
         mi3 inet2 g inet3 b nlplvt w=180e-9 m=1 nf=1
@@ -73,21 +80,25 @@ def ldo_amp(name):
         .ends nlplvt_s_pcell_0
 
         .subckt nlplvt_s_pcell_1 d g s b
+        .param m=1
         mi1 d g inet1 b nlplvt w=180e-9 m=1 nf=1
         mi2 inet1 g s b nlplvt w=180e-9 m=1 nf=1
         .ends nlplvt_s_pcell_1
 
         .subckt nlplvt_s_pcell_2 d g s b
+        .param m=1
         mi1 d g inet1 b nlplvt w=180e-9 m=1 nf=1
         mi2 inet1 g s b nlplvt w=180e-9 m=1 nf=1
         .ends nlplvt_s_pcell_2
 
         .subckt nlplvt_s_pcell_3 d g s b
+        .param m=1
         mi1 d g inet1 b nlplvt w=180e-9 m=1 nf=1
         mi2 inet1 g s b nlplvt w=180e-9 m=1 nf=1
         .ends nlplvt_s_pcell_3
 
         .subckt nlplvt_s_pcell_4 d g s b
+        .param m=1
         mi1 d g inet1 b nlplvt w=180e-9 m=1 nf=1
         mi2 inet1 g inet2 b nlplvt w=180e-9 m=1 nf=1
         mi3 inet2 g inet3 b nlplvt w=180e-9 m=1 nf=1
@@ -95,16 +106,19 @@ def ldo_amp(name):
         .ends nlplvt_s_pcell_4
 
         .subckt plplvt_s_pcell_5 d g s b
+        .param m=1
         mi2 inet1 g s b plplvt w=180e-9 m=1 nf=1
         mi1 d g inet1 b plplvt w=180e-9 m=1 nf=1
         .ends plplvt_s_pcell_5
 
         .subckt plplvt_s_pcell_6 d g s b
+        .param m=1
         mi2 inet1 g s b plplvt w=180e-9 m=1 nf=1
         mi1 d g inet1 b plplvt w=180e-9 m=1 nf=1
         .ends plplvt_s_pcell_6
 
         .subckt plplvt_s_pcell_7 d g s b
+        .param m=1
         mi2 inet1 g s b plplvt w=180e-9 m=1 nf=1
         mi1 d g inet1 b plplvt w=180e-9 m=1 nf=1
         .ends plplvt_s_pcell_7

@@ -2,7 +2,7 @@ from .canvas import CanvasPDK
 
 
 class tfr_prim(CanvasPDK):
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__()
         self.metadata = {'instances': []}

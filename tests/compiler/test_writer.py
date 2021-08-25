@@ -1,17 +1,18 @@
 import pathlib
+from align import primitive
 
-from align.compiler.write_verilog_lef import write_verilog, WriteVerilog, generate_lef
+from align.compiler.write_verilog_lef import WriteVerilog
+from align.primitive import generate_primitive_lef
 from align.compiler.find_constraint import FindConst
 from align.schema.constraint import ConstraintDB
-from align.compiler.common_centroid_cap_constraint import CapConst
-from test_current_parser import test_match_ota
+from align.schema.subcircuit import SubCircuit
+from test_compiler import test_compiler
 
 def test_verilog_writer():
-    subckts = test_match_ota()
-    assert 'ota' in subckts
-    result_dir = pathlib.Path(__file__).parent /'Results'
+    ckt_data = test_compiler()
+    assert ckt_data.find('OTA')
 
-    available_cell_generator = ['Switch_PMOS', 'CMC_NMOS', 'CMC_PMOS', 'DP_NMOS_B', 'CMC_S_NMOS_B', 'DCL_NMOS', 'SCM_NMOS']
+    available_cell_generator = ['NMOS','PMOS', 'CMC_NMOS', 'CMC_PMOS', 'DP_NMOS_B', 'CMC_S_NMOS_B', 'DCL_NMOS', 'SCM_NMOS']
     design_config={
             "vt_type":["SLVT","HVT","LVT","RVT"],
             "unit_size_nmos":12,
@@ -22,33 +23,22 @@ def test_verilog_writer():
 
     verilog_tbl = { 'modules': [], 'global_signals': []}
 
-    for name, subckt in subckts.items():
-        for _, attr in subckt['graph'].nodes(data=True):
-            if 'values' in attr:
-                block_name, _ = generate_lef(attr['inst_type'], attr,
-                            available_cell_generator, design_config )
-                block_name_ext = block_name.replace(attr['inst_type'],'')
+    for subckt in ckt_data:
+        if not isinstance(subckt, SubCircuit):
+            continue
+        name = subckt.name
+        primitives = {}
+        for ele in subckt.elements:
+            if ele.model in available_cell_generator:
+                assert generate_primitive_lef(ele, str(ckt_data.find(ele.model)),
+                            available_cell_generator, primitives, design_config )
 
         if name in available_cell_generator or name.split('_type')[0] in available_cell_generator:
             const = ConstraintDB()
         else:
-            const = FindConst(subckt["graph"], name, subckt['ports'], subckt['ports_weight'], ConstraintDB(), ['vdd!'])
-            const = CapConst(subckt["graph"], name, design_config["unit_size_cap"], const, True)
-            subckts[name] = subckt.copy(
-                update={'constraints': const}
-            )
+            FindConst(ckt_data, name, ['vdd!'])
 
-        wv = WriteVerilog(name, subckt["ports"], subckts, ['vdd!','vss'])
+
+        wv = WriteVerilog(subckt, ckt_data, ['vdd!','vss'])
         verilog_tbl['modules'].append( wv.gen_dict())
 
-    with (result_dir / 'ota.v').open( 'wt') as fp:
-        write_verilog( verilog_tbl, fp)
-
-
-def find_ports(graph):
-    ports = []
-    for node, attr in graph.nodes(data=True):
-        if 'net_type' in attr:
-            if attr['net_type'] == "external":
-                ports.append(node)
-    return ports

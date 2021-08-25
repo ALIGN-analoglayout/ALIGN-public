@@ -6,22 +6,26 @@ Created on Thu Nov 29 22:19:39 2018
 
 """
 import networkx as nx
+from ..schema.instance import Instance
+from ..schema.types import set_context
+from ..schema.subcircuit import Model, SubCircuit, Circuit, Instance
 
 import logging
 logger = logging.getLogger(__name__)
+# TODO: rewrite this for caps, array, groupblocks, groupcaps
 
 def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: list, matched_ports: dict,new_inst_name=None):
 
     """
     Merges the  given nodes in list_of_nodes and returns a
      reduced graph.
-     
+
     Parameters
     ----------
     G : netowrkx graph
         DESCRIPTION. Bipartite graph of circuit
     new_inst_type : str
-        DESCRIPTION. name of new subckt to be created, 
+        DESCRIPTION. name of new subckt to be created,
         A super node is created in graph havinge a subgraph in its values
     list_of_nodes : list
         DESCRIPTION.
@@ -40,65 +44,28 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
             return G, nx.Graph
     logger.debug(f"Is input bipartite: {nx.is_bipartite(G)}")
     assert len(list_of_nodes) > 1
-    #  print("Merging nodes",list_of_nodes)
     new_node = []
     real_inst_types = []
     ports = {}
-    subgraph = nx.Graph()
+    subckt = SubCircuit(
+        name = new_inst_type,
+        pins = list(matched_ports.keys()),
+        parameters = {'PARAM':1})
     max_value = {}
     for node in list_of_nodes:
         new_node.append ( node)
-        if G.nodes[node]["real_inst_type"] not in real_inst_types:
-            real_inst_types.append (G.nodes[node]["real_inst_type"])
-        subgraph.add_node(node,
-                          inst_type=G.nodes[node]["inst_type"],
-                          real_inst_type=G.nodes[node]["real_inst_type"],
-                          ports=G.nodes[node]['ports'],
-                          edge_weight=G.nodes[node]['edge_weight'],
-                          values=merged_value({},G.nodes[node]['values']))
+        if G.nodes[node]["instance"].model not in real_inst_types:
+            real_inst_types.append (G.nodes[node]["instance"].model)
+        subckt.elements.append(G.nodes[node]["instance"])
 
-        if 'ports_match' in G.nodes[node].keys():
-            subgraph.nodes[node]["ports_match"]= G.nodes[node]['ports_match']
-        elif 'connection' in G.nodes[node].keys():
-            subgraph.nodes[node]["connection"]= G.nodes[node]['connection']
-        elif 'sub_graph' in G.nodes[node].keys():
-            subgraph.nodes[node]["sub_graph"]= G.nodes[node]['sub_graph']            
         logger.debug(f"removing node: {node}: attr: {G.nodes[node]}")
-        max_value = merged_value(max_value, G.nodes[node]['values'])
+        max_value = merged_value(max_value, G.nodes[node]["instance"].parameters)
 
-        nbr = G.neighbors(node)
-        for ele in nbr:
-            if ele not in subgraph.nodes():
-                if ele in matched_ports.keys():
-                    subgraph.add_node(ele,
-                                  inst_type=G.nodes[ele]["inst_type"],
-                                  net_type="external")
-                else:
-                    subgraph.add_node(ele,
-                                  inst_type=G.nodes[ele]["inst_type"],
-                                  net_type=G.nodes[ele]["net_type"])                    
-                
-            subgraph.add_edge(node, ele, weight=G[node][ele]["weight"])
-
-            if ele in ports:
-                # had to remove addition as combination of weight for cmc caused gate to be considered source
-                # changed to bitwise and as all connections of CMB were considered as gate
-                ports[ele] = ports[ele] | G[node][ele]["weight"]
-                
-            else:
-                ports[ele] = G[node][ele]["weight"]
     if len(real_inst_types)==1:
         real_inst_types=real_inst_types[0]
     new_node='_'.join(new_node)
     if new_inst_name:
         new_node=new_inst_name
-    G.add_node(new_node,
-               inst_type=new_inst_type,
-               real_inst_type=real_inst_types,
-               ports=list(matched_ports.keys()),
-               edge_weight=list(ports.values()),
-               ports_match=matched_ports,
-               values=max_value)
     logger.debug(f"creating a super node of: {new_inst_type} type: {real_inst_types}")
     for pins in list(ports):
         if set(G.neighbors(pins)) <= set(list_of_nodes) and G.nodes[pins]["net_type"]=='internal':
@@ -108,10 +75,7 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
         G.remove_node(node)
     for pins in ports:
         G.add_edge(new_node, pins, weight=ports[pins])
-
-    check_nodes(subgraph)
-
-    return subgraph, new_node
+    return  subckt,new_node
 
 #%%
 def convert_unit(value:str):
@@ -175,19 +139,11 @@ def convert_unit(value:str):
             value = "unit_size"
     return mult*value
 
-def check_values(values):
-    for value in values.values():
-        assert(type(value)==int or type(value)==float) or value=="unit_size"
-
-def check_nodes(graph):
-    """ 
-    Checking node paramters to be dict type
-
-    """
-    for node, attr in graph.nodes(data=True):
-        logger.debug(f"checking node {node} {attr}")
-        if  not attr["inst_type"] == "net":
-            check_values(attr["values"])
+def merge_subckt_param(ckt):
+    max_value = {}
+    for element in ckt.elements:
+        max_value = merged_value(max_value, element.parameters)
+    return max_value
 
 def merged_value(values1, values2):
     """
@@ -196,7 +152,7 @@ def merged_value(values1, values2):
     try:
     #val1={'res': '13.6962k', 'l': '8u', 'w': '500n', 'm': '1'}
     #val2 = {'res': '13.6962k', 'l': '8u', 'w': '500n', 'm': '1'}
-    #merged_value(val1,val2)   
+    #merged_value(val1,val2)
 
     Parameters
     ----------
@@ -214,12 +170,12 @@ def merged_value(values1, values2):
     merged_vals={}
     if values1:
         for param,value in values1.items():
-            merged_vals[param] = convert_unit(value)
+            merged_vals[param] = value
     for param,value in values2.items():
         if param in merged_vals.keys():
-            merged_vals[param] = max(convert_unit(value), merged_vals[param])
+            merged_vals[param] = max(value, merged_vals[param])
         else:
-            merged_vals[param] = convert_unit(value)
-    check_values(merged_vals)
+            merged_vals[param] = value
+    # check_values(merged_vals)
     return merged_vals
 

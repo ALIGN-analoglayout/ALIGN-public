@@ -1,5 +1,5 @@
 from . import types
-from .types import Union, Dict, Optional, List
+from .types import Union, Dict, Optional, List, set_context
 
 import logging
 logger = logging.getLogger(__name__)
@@ -10,6 +10,11 @@ class Instance(types.BaseModel):
     name: str
     pins : Dict[str, str]
     parameters : Optional[Dict[str, str]]
+    #TODO: associate a generator for eacj primitive during instantiation
+    generator: str #Handles different sized instantiation of same subcircuit to same generator
+    abstract_name: Optional[str] # Added during primitive generator, in case no primitive generator found = generator
+    class Config:
+        allow_mutation = True
 
     def xyce(self):
         return f'{self.name} ' + \
@@ -25,7 +30,15 @@ class Instance(types.BaseModel):
     def _get_model(library, name):
         return next((x for x in library if x.name == name), None)
 
-
+    def add_generator(self,gen):
+        with set_context(self.parent):
+            self.generator = gen
+    def add_abs_name(self,abn):
+        with set_context(self.parent):
+            self.abstract_name = abn
+    def add_actual_name(self, acn):
+        with set_context(self.parent):
+            self.actual_name = acn
     @property
     def mclass(self):
         model = self._get_model(self.parent.parent.parent, self.model)

@@ -5,72 +5,96 @@ Created on Fri Jan 15 10:38:14 2021
 
 @author: kunal001
 """
-from ..schema.hacks import HierDictNode
+from align.schema.types import set_context
+from networkx.algorithms.shortest_paths.weighted import multi_source_dijkstra
+from ..schema.subcircuit import SubCircuit
+
 import logging
 logger = logging.getLogger(__name__)
 
+
 class CreateDatabase:
-    def __init__(self,hier_graph,const_parse):
-        self.hier_graph_dict = {}
+    def __init__(self, ckt_parser, const_parse):
         self.const_parse = const_parse
-        self.G = hier_graph
-        
-    def read_inputs(self,name:str):
+        self.ckt_parser = ckt_parser
+        self.multi_param_instantiation = []
+
+    def read_inputs(self, name: str):
         """
-        read circuit graphs
+        Add user constraints to the design
         """
-        top_ports = []
-        ports_weight = {}
-        for node, attr in self.G.nodes(data=True):
-            if 'source' in attr['inst_type']:
-                for source_nets in self.G.neighbors(node):
-                    top_ports.append(source_nets)
-            elif 'net_type' in attr:
-                if attr['net_type'] == "external":
-                    top_ports.append(node)
-                    ports_weight[node]=[]
-                    for nbr in list(self.G.neighbors(node)):
-                        ports_weight[node].append(self.G.get_edge_data(node, nbr)['weight'])
-    
-        logger.debug("Merging nested graph hierarchies to dictionary: ")
-        self.hier_graph_dict[name] = HierDictNode(
-            name = name,
-            graph = self.G,
-            ports = top_ports,
-            ports_weight = ports_weight,
-            constraints = []
-        )
-        self.const_parse.annotate_user_constraints(self.hier_graph_dict[name])
-        self._traverse_hier_in_graph(self.G)
-        logger.debug(f"read graph {self.hier_graph_dict}")
-        return self.hier_graph_dict
-    
-    def _traverse_hier_in_graph(self,G):
-        """
-        Recusively reads all hierachies in the graph and convert them to dictionary
-        """
-        for node, attr in G.nodes(data=True):
-            if "sub_graph" in attr and attr["sub_graph"]:
-                logger.debug(f'Traversing sub graph: {node} {attr["inst_type"]} {attr["ports"]}')
-                sub_ports = []
-                ports_weight = {}
-                for sub_node, sub_attr in attr["sub_graph"].nodes(data=True):
-                    if 'net_type' in sub_attr:
-                        if sub_attr['net_type'] == "external":
-                            sub_ports.append(sub_node)
-                            ports_weight[sub_node] = []
-                            for nbr in list(attr["sub_graph"].neighbors(sub_node)):
-                                ports_weight[sub_node].append(attr["sub_graph"].get_edge_data(sub_node, nbr)['weight'])
-    
-                logger.debug(f'external ports: {sub_ports}, {attr["connection"]}, {ports_weight}')
-                self.hier_graph_dict[attr["inst_type"]] = HierDictNode(
-                    name = attr["inst_type"],
-                    graph = attr["sub_graph"],
-                    ports = sub_ports,
-                    constraints = [],
-                    ports_weight = ports_weight
-                )
-                self.const_parse.annotate_user_constraints(self.hier_graph_dict[attr["inst_type"]]) 
-       
-                self._traverse_hier_in_graph(attr["sub_graph"])
-                
+        subckt = self.ckt_parser.library.find(name.upper())
+        assert subckt, f"Design {name.upper()} not found in library {[e.name for e in self.ckt_parser.library]}"
+        self.const_parse.annotate_user_constraints(subckt)
+        logger.debug(f"creating database for {subckt}")
+        for pin in subckt.pins:
+            assert pin in subckt.nets, f"Floating pin: {pin} found for subckt {subckt.name} nets: {subckt.nets}"
+        if self.ckt_parser.circuit.parameters:
+            self.resolve_parameters(name, self.ckt_parser.circuit.parameters)
+        else:
+            self.resolve_parameters(name, subckt.parameters)
+        #TODO remove redundant library model
+        return self.ckt_parser.library
+    def resolve_parameters(self, name, param):
+        subckt = self.ckt_parser.library.find(name.upper())
+        if not isinstance(subckt, SubCircuit):
+            return
+        if name.upper() in self.multi_param_instantiation:
+            #Second time instantiation of this circuit with same parameters
+            if all(v==param[p] for p,v in subckt.parameters if p in param):
+                return
+            #Second time instantiation of this circuit with different parameters
+            new_name = self.model_instance(subckt)
+            with set_context(self.ckt_parser):
+                subckt_new = SubCircuit(name=new_name,
+                                pins=subckt.pins,
+                                parameters=subckt.parameters,
+                                constraints=subckt.constraints,
+                                elements = subckt.elements)
+                self.ckt_parser.append(subckt_new)
+            subckt = subckt_new
+        logger.debug(f"resolving subckt {name} parameters {param} default values: {subckt.parameters}")
+        for p,v in subckt.parameters.items():
+            if p in param:
+                subckt.parameters[p]=param[p]
+        for inst in subckt.elements:
+            for p,v in inst.parameters.items():
+                if v in subckt.parameters:
+                    inst.parameters[p]=subckt.parameters[v]
+                elif v in self.ckt_parser.circuit.parameters:
+                    inst.parameters[p] = self.ckt_parser.circuit.parameters[v]
+            self.resolve_parameters(inst.model, inst.parameters)
+
+    def model_instance(self, subckt, counter=0):
+        if counter == 0:
+            name = subckt.name
+        else:
+            name = f'{subckt.name}_{counter}'
+        name = name.upper()
+        existing_ckt = self.subckt.parent.find(name)
+        if existing_ckt:
+            if subckt.pins == existing_ckt.pins and \
+                subckt.parameters == existing_ckt.parameters and \
+                subckt.constraints == existing_ckt.constraints:
+                # logger.debug(f"Existing ckt defnition found, checking all elements")
+                for x in subckt.elements:
+                    if (not existing_ckt.get_element(x.name).model == x.model) or \
+                        (not existing_ckt.get_element(x.name).parameters == x.parameters) or \
+                            (not existing_ckt.get_element(x.name).pins == x.pins):
+                        logger.debug(f"multiple instance of same subcircuit found {subckt.name} {counter+1}")
+                        name = self.instance_counter(subckt,counter+1)
+                        break #Break after first mismatch
+        return name
+
+    def create_subckt_instance(self, subckt, match, instance_name):
+        with set_context(self.subckt.parent):
+            subckt_instance = SubCircuit(name=instance_name,
+                                pins=subckt.pins,
+                                parameters=subckt.parameters,
+                                constraints=subckt.constraints,
+                                elements = subckt.elements)
+        return subckt_instance
+
+
+
+
