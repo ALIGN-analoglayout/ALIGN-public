@@ -1050,7 +1050,7 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
           double sparserow[4] = {1, -1, 0.5, -0.5};
           int colno[4] = {i_id * 6 + 2, j_id * 6 + 2, i_id * 6 + 6, j_id * 6 + 6};
           // int bias = -i_y_center + j_y_center;
-          add_constraintex(lp, 8, sparserow, colno, EQ, 0);
+          add_constraintex(lp, 4, sparserow, colno, EQ, 0);
         }
       }
     } else {
@@ -1159,13 +1159,13 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
           double sparserow[4] = {1, -1, 0.5, -0.5};
           int colno[4] = {first_id * 6 + 1, second_id * 6 + 1, first_id * 6 + 5, second_id * 6 + 5};
           // int bias = -mydesign.Blocks[first_id][curr_sp.selected[first_id]].width / 2 + mydesign.Blocks[second_id][curr_sp.selected[second_id]].width / 2;
-          add_constraintex(lp, 2, sparserow, colno, EQ, 0);
+          add_constraintex(lp, 4, sparserow, colno, EQ, 0);
         } else {
           // align to right
           double sparserow[4] = {1, -1, 1, -1};
           int colno[4] = {first_id * 6 + 1, second_id * 6 + 1, first_id * 6 + 5, second_id * 6 + 5};
           // int bias = -mydesign.Blocks[first_id][curr_sp.selected[first_id]].width + mydesign.Blocks[second_id][curr_sp.selected[second_id]].width;
-          add_constraintex(lp, 2, sparserow, colno, EQ, 0);
+          add_constraintex(lp, 4, sparserow, colno, EQ, 0);
         }
       }
     }
