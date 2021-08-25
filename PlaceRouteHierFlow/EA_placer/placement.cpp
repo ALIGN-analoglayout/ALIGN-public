@@ -724,8 +724,8 @@ void Placement::Initilize_Placement(PnRDB::hierNode &current_node)
   for (int i = originalBlockCNT; i < Blocks.size(); ++i)
   {
     int id = Blocks[i].splitedsource;
-    Blocks[i].Cpoint.x = Blocks[id].Cpoint.x  - 0.1+ (float)(rand() % 200) / 1000;
-    Blocks[i].Cpoint.y = Blocks[id].Cpoint.y - 0.1+ (float)(rand() % 200) / 1000;
+    Blocks[i].Cpoint.x = Blocks[id].Cpoint.x  + (float)(rand() % 200) / 1000;
+    Blocks[i].Cpoint.y = Blocks[id].Cpoint.y + (float)(rand() % 20) / 1000;
     // Blocks[i].Cpoint.x = 0.45 + (float)(rand() % 100) / 1000;
     // Blocks[i].Cpoint.y = 0.45 + (float)(rand() % 100) / 1000;
   }
@@ -1852,7 +1852,7 @@ void Placement::E_Placer()
   float max_density = 1.0;
   float current_max_density = 10.0;
   int count_number = 0;
-  int upper_count_number = 200;
+  int upper_count_number = 2000;
   float current_overlap = 1.0;
   float symmetricMin = 0.3; //need to tune
   // initialize dummy net weight
@@ -1861,6 +1861,7 @@ void Placement::E_Placer()
   // float dummy_net_target = 3.0;
   float dummy_net_weight_increase = cal_weight_init_increase(dummy_net_rate,dummy_net_weight,dummy_net_target,100);
   vector<float> Density;
+  vector<float> Overlap;
 #ifdef DEBUG
   std::cout << "E_placer debug flage: 14" << std::endl;
 #endif
@@ -1893,6 +1894,7 @@ void Placement::E_Placer()
     // while(i<20){//Q: stop condition
     Density.push_back(current_max_density);
     current_overlap = Cal_Overlap();
+    Overlap.push_back(current_overlap);
     if (current_max_density < max_density)
     {
       max_density = current_max_density;
