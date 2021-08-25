@@ -1349,7 +1349,7 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
     set_obj_fn(lp, row);
     set_minim(lp);
     set_timeout(lp, 1);
-    // print_lp(lp);
+    set_presolve(lp, PRESOLVE_ROWS | PRESOLVE_COLS | PRESOLVE_LINDEP, get_presolveloops(lp));
     int ret = solve(lp);
     if (ret != 0 && ret != 1) {
       delete_lp(lp);
@@ -1358,8 +1358,16 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
   }
 
   double var[N_var];
-  get_variables(lp, var);
+  int Norig_columns, Norig_rows, i;
+  REAL value;
+  Norig_columns = get_Norig_columns(lp);
+  Norig_rows = get_Norig_rows(lp);
+  for(i = 1; i <= Norig_columns; i++) {
+    var[i - 1] = get_var_primalresult(lp, Norig_rows + i);
+  }
+  //get_variables(lp, var);
   delete_lp(lp);
+  
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
     Blocks[i].x = var[i * 6];
     Blocks[i].y = var[i * 6 + 1];
