@@ -1358,11 +1358,11 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
   }
 
   double var[N_var];
-  int Norig_columns, Norig_rows, i;
+  int Norig_columns, Norig_rows;
   REAL value;
   Norig_columns = get_Norig_columns(lp);
   Norig_rows = get_Norig_rows(lp);
-  for(i = 1; i <= Norig_columns; i++) {
+  for(int i = 1; i <= Norig_columns; i++) {
     var[i - 1] = get_var_primalresult(lp, Norig_rows + i);
   }
   //get_variables(lp, var);
