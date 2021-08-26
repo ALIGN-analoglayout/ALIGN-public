@@ -729,7 +729,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   logger->info("Variants: {0}", designData.Blocks.at(0).size());
   if (_debugCostCompStream.is_open()) {
     _debugCostCompStream << "EOD\n" << designData._costHeader << '\n';
-    _debugCostCompStream << "set xr [GPVAL_DATA_X_MAX:GPVAL_DATA_X_MIN]\nset log x\nrepl\n";
+    _debugCostCompStream << "set xr [GPVAL_DATA_X_MAX:GPVAL_DATA_X_MIN]\nset log x\nrepl\npause -1";
   }
   if (_debugCFCompStream.is_open()) _debugCFCompStream << "EOD\n" << designData._cfCostHeader << endl;
   // Write out placement results
