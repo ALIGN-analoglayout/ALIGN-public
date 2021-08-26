@@ -807,7 +807,8 @@ double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
       cost += log( HPWL_extend) * const_graph.LAMBDA;
     }
     if (cf_cost > 0) {
-      cost += log(cf_cost);
+      cf_cost = log(cf_cost);
+      cost += cf_cost;
     }
   }
 
@@ -830,7 +831,7 @@ double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
 	  }
   }
   if (getenv("DETAIL_PLOT_GEN") != nullptr) {
-	  mydesign._costComponentsIP = std::to_string(area_norm) + ", " + std::to_string(HPWL_norm * const_graph.LAMBDA) + ", " + std::to_string( match_cost * const_graph.BETA) + ", ";
+	  mydesign._costComponentsIP = std::to_string(log(area)) + ", " + std::to_string(log(HPWL_extend) * const_graph.LAMBDA) + ", " + std::to_string( match_cost * const_graph.BETA) + ", ";
 	  mydesign._costComponentsIP += std::to_string(linear_const * const_graph.PI) + ", " + std::to_string(multi_linear_const * const_graph.PII) + ", " + std::to_string(cf_cost) + ", " + std::to_string(cost);
 	  if (mydesign._costHeaderIP.empty()) {
 		  mydesign._costHeaderIP = "'Area', 'HPWL', 'match_cost', 'linear_const', 'mult_linear_const', 'CF_cost', 'Total_cost'";
