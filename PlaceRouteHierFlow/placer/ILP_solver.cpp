@@ -1,5 +1,5 @@
 #include "ILP_solver.h"
-
+#include "spdlog/spdlog.h"
 #include <stdexcept>
 
 ILP_solver::ILP_solver() {}

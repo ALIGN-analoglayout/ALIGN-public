@@ -292,7 +292,7 @@ def route_top_down( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS, placements_t
     return results_name_map
 
 
-def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff):
+def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP = False):
     logger.info(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
 
     current_node = DB.CheckoutHierNode(idx,-1)
@@ -309,7 +309,7 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff):
     #hyper.COUNT_LIMIT = 200
     hyper.LAMBDA = lambda_coeff
 
-    curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, DB.getDrc_info(), hyper)
+    curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, DB.getDrc_info(), hyper, select_in_ILP)
 
     actualNumLayout = curr_plc.getNodeVecSize()
 
