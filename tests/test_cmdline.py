@@ -8,7 +8,6 @@ examples = [('inverter_v1',1,False,False),
             ('buffer',1,False,False),
             #Block with capacitors and resistors
             #('adder',1,False,False),
-            ('five_transistor_ota',1,False,False),
             #Test select_in_ILP with something small
             ('five_transistor_ota',1,False,True),
             #Hierarchical block fail with num_placements > 1
