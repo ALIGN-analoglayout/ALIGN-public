@@ -3,6 +3,7 @@
 
 #include <queue>
 #include <set>
+#include <map>
 #include <vector>
 #include <string>
 #include <sstream>
@@ -22,6 +23,8 @@ using std::ofstream;
 using std::endl;
 using std::cout;
 using std::cerr;
+using std::set;
+using std::map;
 
 class design
 {
@@ -32,6 +35,7 @@ class design
     friend class Aplace;
     friend class Placer;
     friend class ILP_solver;
+    friend class MatPlotGen;
     //    enum NType {Block, Terminal};
     //    struct Node {
     //      NType type; // 1: blockPin; 2. Terminal
@@ -165,6 +169,14 @@ class design
     int bias_Hgraph;
     int bias_Vgraph;
     bool mixFlag;
+
+	struct CFData {
+		set<string> _nets;
+		map<pair<string, string>, pair<double, double> > _pinPairWeights; //first : rms, second : peak
+	};
+
+	CFData _cfdata;
+    
     void readRandConstFile(string random_const_file);
     //above is added by yg
 
@@ -183,7 +195,10 @@ class design
     int GetSizeSymGroup4PartMove(int mode);
     int GetSizeSymGroup4FullMove(int mode);
     int GetSizeBlock4Move(int mode);
+
+	void readCFConstraints();
   public:
+    std::string name;
     design();
     design(PnRDB::hierNode& node);
     design(string blockfile, string netfile);
@@ -251,6 +266,11 @@ class design
     PnRDB::bbox GetPlacedBlockInterMetalAbsBox(int blockid, placerDB::Omark ort, PnRDB::bbox& originBox, placerDB::point LL, int sel); 
     PnRDB::point GetPlacedBlockInterMetalAbsPoint(int blockid, placerDB::Omark ort, PnRDB::point& originP, placerDB::point LL, int sel);
     PnRDB::point GetPlacedBlockInterMetalRelPoint(int blockid, placerDB::Omark ort, PnRDB::point& originP, int sel);
+
+    const bool IsNetInCF(const string& name) { return _cfdata._nets.find(name) != _cfdata._nets.end(); }
+    const map<pair<string, string>, pair<double, double> >& GetCFPinPairWeights() const { return _cfdata._pinPairWeights; }
+    string _costComponents, _costHeader, _cfCostComponents, _cfCostHeader;
+    string _costComponentsIP, _costHeaderIP;
     void checkselfsym(vector< pair<int,int> > &tmpsympair, vector< pair<int,placerDB::Smark> > &tmpselfsym, placerDB::Smark tsmark);
 
     double GetMaxBlockAreaSum();
