@@ -1,6 +1,8 @@
 #include "ILP_solver.h"
 #include <stdexcept>
+#include <regex>
 
+bool distType = getenv("CF_DIST_TYPE") != nullptr && string(getenv("CF_DIST_TYPE")) == "center";
 ILP_solver::ILP_solver() {}
 
 ILP_solver::ILP_solver(design& mydesign) {
@@ -680,19 +682,132 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   return calculated_cost;
 }
 
+double ILP_solver::CalculateCostFromSim(design& mydesign, SeqPair& curr_sp)
+{
+	auto logger = spdlog::default_logger()->clone("placer.cost.Cost");
+	map<string, PnRDB::bbox> pinCoords;
+	for (auto neti : mydesign.Nets) {
+		if (!mydesign.IsNetInCF(neti.name))  continue;
+		for (auto connectedj : neti.connected) {
+			if (connectedj.type == placerDB::Block) {
+				int iter2 = connectedj.iter2, iter = connectedj.iter;
+				PnRDB::bbox box;
+				bool first(true);
+				for (auto& bnd : mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].boundary) {
+					// calculate contact center
+					int x1(INT_MAX), y1(INT_MAX), x2(INT_MIN), y2(INT_MIN);
+					for (auto& pt : bnd.polygon) {
+						int ptx = pt.x, pty = pt.y;
+						if (Blocks[iter2].H_flip) {
+							ptx = mydesign.Blocks[iter2][curr_sp.selected[iter2]].width - ptx;
+						}
+						if (Blocks[iter2].V_flip) {
+							pty = mydesign.Blocks[iter2][curr_sp.selected[iter2]].height - pty;
+						}
+						ptx += Blocks[iter2].x;
+						pty += Blocks[iter2].y;
+						x1 = std::min(ptx, x1);
+						y1 = std::min(pty, y1);
+						x2 = std::max(ptx, x2);
+						y2 = std::max(pty, y2);
+					}
+					if (first) {
+						box = PnRDB::bbox(std::min(x1, x2), std::min(y1, y2), std::max(x1, x2), std::max(y1, y2));
+						first = false;
+					} else {
+						box.unionBox(PnRDB::bbox(std::min(x1, x2), std::min(y1, y2), std::max(x1, x2), std::max(y1, y2)));
+					}
+				}
+				pinCoords[mydesign.GetBlockName(iter2) + "/" + mydesign.GetBlockPinName(iter2, iter, curr_sp.selected[iter2])] = box;
+			}
+		}
+	}
+
+	//for (auto& it : pinCoords) {
+	//	logger->info("DEBUG  {0} : {1} {2}", it.first, it.second.LL.x, it.second.LL.y);
+	//}
+
+	double cost(0.);
+	if (getenv("DEBUG_PLOT") != nullptr) {
+		if (mydesign._cfCostHeader.empty()) {
+			unsigned cnt(0);
+			mydesign._cfCostHeader = "p ";
+			for (auto& it : mydesign.GetCFPinPairWeights()) {
+				mydesign._cfCostHeader += "$x u " + std::to_string((++cnt) * 2) + " w lp t '" + std::regex_replace(it.first.first, std::regex("_"), "\\_") + " " + std::regex_replace(it.first.second, std::regex("_"), "\\_") + "',\\\n";
+			}
+		}
+		mydesign._cfCostComponents.clear();
+	}
+
+	for (auto& it : mydesign.GetCFPinPairWeights()) {
+		double dist(0.);
+		auto it1 = pinCoords.find(it.first.first);
+		auto it2 = pinCoords.find(it.first.second);
+		PnRDB::bbox b1, b2;
+		if (it1 != pinCoords.end() && it2 != pinCoords.end()) {
+			b1 = it1->second;
+			b2 = it2->second;
+			if (distType) {
+				auto center1 = it1->second.center();
+				auto center2 = it2->second.center();
+				double dx = center1.x - center2.x;
+				double dy = center1.y - center2.y;
+				dist = sqrt(dx*dx + dy*dy);
+			} else {
+				double xprl = std::min(it1->second.UR.x, it2->second.UR.x) - std::max(it1->second.LL.x, it2->second.LL.x);
+				double yprl = std::min(it1->second.UR.y, it2->second.UR.y) - std::max(it1->second.LL.y, it2->second.LL.y);
+				dist = (xprl < 0 ? abs(xprl) : 0) + (yprl < 0 ? abs(yprl) : 0);
+			}
+		} else {
+			it1 = pinCoords.find(it.first.second);
+			it2 = pinCoords.find(it.first.first);
+			if (it1 != pinCoords.end() && it2 != pinCoords.end()) {
+				b1 = it1->second;
+				b2 = it2->second;
+				if (distType) {
+					auto center1 = it1->second.center();
+					auto center2 = it2->second.center();
+					double dx = center1.x - center2.x;
+					double dy = center1.y - center2.y;
+					dist = sqrt(dx*dx + dy*dy);
+				} else {
+					double xprl = std::min(it1->second.UR.x, it2->second.UR.x) - std::max(it1->second.LL.x, it2->second.LL.x);
+					double yprl = std::min(it1->second.UR.y, it2->second.UR.y) - std::max(it1->second.LL.y, it2->second.LL.y);
+					dist = (xprl < 0 ? abs(xprl) : 0) + (yprl < 0 ? abs(yprl) : 0);
+				}
+			}
+		}
+		double dcost = dist * it.second.first / mydesign.GetMaxBlockHPWLSum() / static_cast<double>(mydesign.Blocks.size());
+		if (getenv("DEBUG_PLOT") != nullptr) {
+			mydesign._cfCostComponents += std::to_string(dist) + " " + std::to_string(dcost) + " " ;
+		}
+		//logger->info("DEBUG_delta_cost_pin_pair : {0} {1} {2} {3} {4} {5}", it.first.first, it.first.second, dist, it.second.first, dcost, mydesign.GetMaxBlockHPWLSum());
+		//logger->info("DEBUG_delta_cost_pin_pos : {0} {1} {2} {3} {4} {5} {6} {7} {8} {9}", it.first.first, it.first.second,
+		//		b1.LL.x, b1.LL.y, b1.UR.x, b1.UR.y, b2.LL.x, b2.LL.y, b2.UR.x, b2.UR.y);
+		cost += dcost;
+	}
+
+	return cost;
+}
+
 double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.CalculateCost");
 
   ConstGraph const_graph;
   double cost = 0;
 
+  double cf_cost =  CalculateCostFromSim(mydesign, curr_sp);
   if (false) {
     cost += area_norm;
     cost += HPWL_norm * const_graph.LAMBDA;
+    cost += cf_cost * 10;
   } else {
     cost += log( area);
     if (HPWL_extend > 0) {
       cost += log( HPWL_extend) * const_graph.LAMBDA;
+    }
+    if (cf_cost > 0) {
+      cost += log(cf_cost);
     }
   }
 
@@ -705,6 +820,22 @@ double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
                       mydesign.Blocks[mbi.blockid2][curr_sp.selected[mbi.blockid2]].height / 2)) / max_dim ;
   }
   if (!mydesign.Match_blocks.empty()) match_cost /= (mydesign.Match_blocks.size());
+  if (getenv("DEBUG_PLOT") != nullptr) {
+	  mydesign._costComponents = std::to_string(log(area)) + " " + std::to_string(log(HPWL_extend) * const_graph.LAMBDA) + " " + std::to_string( match_cost * const_graph.BETA) + " ";
+	  mydesign._costComponents += std::to_string(linear_const * const_graph.PI) + " " + std::to_string(multi_linear_const * const_graph.PII) + " " + std::to_string(cf_cost) + " " + std::to_string(cost);
+	  if (mydesign._costHeader.empty()) {
+		  mydesign._costHeader  = "p $x u 1:2 w lp t 'Area', $x u 1:3 w lp t 'HPWL', $x u 1:4 w lp t 'match\\_cost',\\\n";
+		  mydesign._costHeader += "$x u 1:5 w lp t 'linear\\_const',\\\n";
+		  mydesign._costHeader += "$x u 1:6 w lp t 'mult\\_linear\\_const', $x u 1:7 w lp t 'CF\\_cost', $x u 1:8 w lp t 'Total\\_cost'";
+	  }
+  }
+  if (getenv("DETAIL_PLOT_GEN") != nullptr) {
+	  mydesign._costComponentsIP = std::to_string(area_norm) + ", " + std::to_string(HPWL_norm * const_graph.LAMBDA) + ", " + std::to_string( match_cost * const_graph.BETA) + ", ";
+	  mydesign._costComponentsIP += std::to_string(linear_const * const_graph.PI) + ", " + std::to_string(multi_linear_const * const_graph.PII) + ", " + std::to_string(cf_cost) + ", " + std::to_string(cost);
+	  if (mydesign._costHeaderIP.empty()) {
+		  mydesign._costHeaderIP = "'Area', 'HPWL', 'match_cost', 'linear_const', 'mult_linear_const', 'CF_cost', 'Total_cost'";
+	  }
+  }
   constraint_penalty =
     match_cost * const_graph.BETA +
     linear_const * const_graph.PI +

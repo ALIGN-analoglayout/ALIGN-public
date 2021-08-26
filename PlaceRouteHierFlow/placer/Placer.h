@@ -5,6 +5,8 @@
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
 #include <cmath>
+#include <ctime>
+#include <chrono>
 #include "PlacerHyperparameters.h"
 #include "design.h"
 #include "Aplace.h"
@@ -12,6 +14,9 @@
 #include "ConstGraph.h"
 #include "ILP_solver.h"
 #include "../PnRDB/datatype.h"
+
+#include "IntPlot.h"
+
 using std::cout;
 using std::endl;
 
@@ -32,6 +37,7 @@ class Placer {
     };
     //design designData;
     //PnRDB::hierNode node;
+    MatPlotGen *_mpgen;
     bool GenerateValidSolution(design& mydesign, SeqPair& curr_sp, ConstGraph& curr_sol, int mode);
     void PlacementRegular(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo); // do placement with simulated annealing 
     void PlacementMixSA(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo); // do placement with mix-sized simulated annealing
@@ -54,6 +60,8 @@ class Placer {
     Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in);
     //Placer(PnRDB::hierNode& input_node); // Constructor
     //PnRDB::hierNode CheckoutHierNode(); // Output hier Node after placement
+	ofstream _debugCostCompStream, _debugCFCompStream;
+	~Placer();
 };
 
 #endif
