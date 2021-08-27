@@ -694,7 +694,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcI
   {
     double row[N_var + 1] = {0};
     ConstGraph const_graph;
-
+    #ifndef min_displacement
     // add HPWL in cost
     for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
       vector<pair<int, int>> blockids;
@@ -792,45 +792,27 @@ double ILP_solver::GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcI
         row[mydesign.Blocks.size() * 4 + i * 2 + 2] = 1;
       }
     }
+    #endif
 
-    vector<pair<int, int>> block_pos_x;
-    vector<pair<int, int>> block_pos_y;
-    for (unsigned int i = 0; i < node.Blocks.size(); i++) {
-      block_pos_x.push_back(std::make_pair(i, node.Blocks[i].instance[0].placedCenter.x));
-      block_pos_y.push_back(std::make_pair(i, node.Blocks[i].instance[0].placedCenter.y));
-    }
-    sort(block_pos_x.begin(), block_pos_x.end(), [](const pair<int, int>& a, const pair<int, int>& b) { return a.second < b.second; });
-    sort(block_pos_y.begin(), block_pos_y.end(), [](const pair<int, int>& a, const pair<int, int>& b) { return a.second < b.second; });
     // add area in cost
-    int Lblock_id = block_pos_x.front().second, Rblock_id = block_pos_x.back().second;
-    int Dblock_id = block_pos_y.front().second, Ublock_id = block_pos_y.back().second;
-    /**
-    int URblock_pos_id = 0, URblock_neg_id = 0;
     int estimated_width = 0, estimated_height = 0;
-    for (int i = curr_sp.negPair.size() - 1; i >= 0; i--) {
-      if (curr_sp.negPair[i] < mydesign.Blocks.size()) {
-        URblock_neg_id = i;
-        break;
-      }
-    }
-    URblock_pos_id = find(curr_sp.posPair.begin(), curr_sp.posPair.end(), curr_sp.negPair[URblock_neg_id]) - curr_sp.posPair.begin();
     // estimate width
-    for (int i = URblock_pos_id; i >= 0; i--) {
-      if (curr_sp.posPair[i] < mydesign.Blocks.size()) {
-        estimated_width += mydesign.Blocks[curr_sp.posPair[i]][curr_sp.selected[curr_sp.posPair[i]]].width;
-      }
+    for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+      estimated_width += mydesign.Blocks[i][0].width;
     }
     // add estimated area
-    row[curr_sp.negPair[URblock_neg_id] * 4 + 2] += estimated_width / 2;
+    for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+      row[i * 4 + 2] += estimated_width / 2;
+    }
     // estimate height
-    for (int i = URblock_pos_id; i < curr_sp.posPair.size(); i++) {
-      if (curr_sp.posPair[i] < mydesign.Blocks.size()) {
-        estimated_height += mydesign.Blocks[curr_sp.posPair[i]][curr_sp.selected[curr_sp.posPair[i]]].height;
-      }
+    for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+      estimated_height += mydesign.Blocks[i][0].height;
     }
     // add estimated area
-    row[curr_sp.negPair[URblock_neg_id] * 4 + 1] += estimated_height / 2;
-    **/
+    for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+      row[i * 4 + 1] += estimated_height / 2;
+    }
+
     set_obj_fn(lp, row);
     set_minim(lp);
     set_timeout(lp, 10);
