@@ -105,7 +105,7 @@ def extract_capacitor_constraints( pnr_const_ds):
     return cap_constraints
 
 def remove_pg_pins(verilog_d:dict, subckt:str, pg_pins:list):
-    """remove_pg_pins [summary]
+    """remove_pg_pins
 
     Removes any ports related to power pins. PnR engine cannot connect to subcircuit power pins.
     It can connect to a primitive power pin
@@ -264,13 +264,13 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
     # Generate file name inputs
     for cf in topology_dir.rglob('*.verilog.json'):
         if cf.stem == subckt+'.verilog':
-            #File name and module name are small
+            #File name and module name are small or both are capital letters
             assert subckt in [m.name for m in VerilogJsonTop.parse_file(cf).modules], f"file name {cf} does nto match module {subckt}"
-        elif cf.stem.upper()==subckt+'.VERILOG':
-            #File name and module name are small
+        elif cf.stem.upper()==subckt+'.verilog':
+            #File name is small and module name is caps
             assert subckt in [m.name for m in VerilogJsonTop.parse_file(cf).modules], f"file name {cf} does nto match module {subckt}"
         elif cf.stem == subckt.upper()+'.verilog':
-            #Uppercase subckt and file
+            #File name is caps and module name is small
             subckt = subckt.upper()
             assert subckt in [m.name for m in VerilogJsonTop.parse_file(cf).modules], f"file name {cf} does nto match module {subckt}"
 

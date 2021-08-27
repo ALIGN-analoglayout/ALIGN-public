@@ -31,11 +31,9 @@ def preprocess_stack_parallel(ckt_data, design_setup, design_name):
     for each circuit different power connection creates an extra subcircuit
     Required by PnR as it does not make power connections as ports
     """
-    design_setup['KEEP_DUMMY'] = False
-    design_setup['SERIES'] = True
-    design_setup['PARALLEL'] = True
     top = ckt_data.find(design_name)
-    if top.name not in design_setup['DIGITAL']:
+    if top.name not in design_setup['DIGITAL'] and \
+        (("FIX_SD" in design_setup and design_setup["FIX_SD"]==True) or "FIX_SD" not in design_setup):
         define_SD(top, design_setup['POWER'], design_setup['GND'], design_setup['DIGITAL'])
 
     for subckt in ckt_data:
@@ -43,12 +41,12 @@ def preprocess_stack_parallel(ckt_data, design_setup, design_name):
             logger.debug(f"Preprocessing stack/parallel circuit name: {subckt.name}")
             if subckt.name not in design_setup['DIGITAL']:
                 logger.debug(f"Starting no of elements in subckt {subckt.name}: {len(subckt.elements)}")
-                if 'PARALLEL' in design_setup:
+                if 'MERGE_PARALLEL' in design_setup:
                     #Find parallel devices and add a parameter parallel to them, all other parameters should be equal
-                    add_parallel_devices(subckt, design_setup['PARALLEL'])
-                if 'SERIES' in design_setup:
+                    add_parallel_devices(subckt, design_setup['MERGE_PARALLEL'])
+                if 'MERGE_SERIES' in design_setup:
                     #Find parallel devices and add a parameter parallel to them, all other parameters should be equal
-                    add_series_devices(subckt, design_setup['SERIES'])
+                    add_series_devices(subckt, design_setup['MERGE_PARALLEL'])
                 logger.debug(f"After reducing series/parallel, elements count in subckt {subckt.name}: {len(subckt.elements)}")
 
     if isinstance(top, SubCircuit):
@@ -125,12 +123,10 @@ def swap_SD(circuit,G,node):
         G ([type]): [description]
         node ([type]): [description]
     """
-    for nbr in G.neighbors(node):
-        if 'D' in G.get_edge_data(node, nbr)['pin']:
-            nbrd = nbr
-        elif 'S' in G.get_edge_data(node, nbr)['pin']:
-            nbrs = nbr
-    assert nbrs and nbrd
+    nbrd = [nbr for nbr in G.neighbors(node) if 'D' in G.get_edge_data(node, nbr)['pin']][0]
+    assert nbrd, f'incorrect node connections {circuit.get_element(node)}'
+    nbrs = [nbr for nbr in G.neighbors(node) if 'S' in G.get_edge_data(node, nbr)['pin']][0]
+    assert nbrs, f'incorrect node connections {circuit.get_element(node)}'
     #Swapping D and S
     logger.warning(f"Swapping D and S {node} {nbrd} {nbrs} {circuit.get_element(node)}")
     circuit.get_element(node).pins.update({'D':nbrs,'S':nbrd})
@@ -157,7 +153,7 @@ def define_SD(circuit,power,gnd,digital=None):
     if digital and circuit.name in digital:
         return
     if not power or not gnd:
-        logger.warning(f"No power and gnd in this circuit {circuit.name}, please check setup file")
+        logger.warning(f"No power or gnd in this circuit {circuit.name}, please check setup file")
         return
 
     G = Graph(circuit)

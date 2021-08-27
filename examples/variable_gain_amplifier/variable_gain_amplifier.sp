@@ -17,6 +17,6 @@
 		MI32 net6p vmirror_vga vgnd vgnd nfet nfin=nfpf_cm_4
 		MI31 vout_vga2 vin2 net6 vgnd nfet nfin=nfpf_dp_4
 		MI30 vout_vga1 vin1 net6 vgnd nfet nfin=nfpf_dp_4
-		R5 vps vout_vga2 resistor r=rl
-		R6 vps vout_vga1 resistor r=rl
+		R5 vps vout_vga2 rl
+		R6 vps vout_vga1 rl
 .ends variable_gain_amplifier
