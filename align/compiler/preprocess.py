@@ -125,12 +125,10 @@ def swap_SD(circuit,G,node):
         G ([type]): [description]
         node ([type]): [description]
     """
-    for nbr in G.neighbors(node):
-        if 'D' in G.get_edge_data(node, nbr)['pin']:
-            nbrd = nbr
-        elif 'S' in G.get_edge_data(node, nbr)['pin']:
-            nbrs = nbr
-    assert nbrs and nbrd
+    nbrd = [nbr for nbr in G.neighbors(node) if 'D' in G.get_edge_data(node, nbr)['pin']][0]
+    assert nbrd, f'incorrect node connections {circuit.get_element(node)}'
+    nbrs = [nbr for nbr in G.neighbors(node) if 'S' in G.get_edge_data(node, nbr)['pin']][0]
+    assert nbrs, f'incorrect node connections {circuit.get_element(node)}'
     #Swapping D and S
     logger.warning(f"Swapping D and S {node} {nbrd} {nbrs} {circuit.get_element(node)}")
     circuit.get_element(node).pins.update({'D':nbrs,'S':nbrd})
@@ -157,7 +155,7 @@ def define_SD(circuit,power,gnd,digital=None):
     if digital and circuit.name in digital:
         return
     if not power or not gnd:
-        logger.warning(f"No power and gnd in this circuit {circuit.name}, please check setup file")
+        logger.warning(f"No power or gnd in this circuit {circuit.name}, please check setup file")
         return
 
     G = Graph(circuit)

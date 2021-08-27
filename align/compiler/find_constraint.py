@@ -35,6 +35,33 @@ def find_unique_matching_branches(G,nbrs1,nbrs2,ports_weight):
         if node1 not in match:
             return False
     return match
+def reduced_neighbors(G, node, nbr):
+    subckt = G.subckt
+    if subckt.get_element(node):
+        assert nbr in subckt.nets, f"net {nbr} not in {subckt.name}"
+        n = subckt.get_element(node)
+        s = subckt.parent.find(n.model)
+        assert nbr in n.pins.values(), f"net {nbr} not connected to {n.name}, {n.pins}"
+        p = list(n.pins.keys())[list(n.pins.values()).index(nbr)]
+        if isinstance(s, SubCircuit):
+            conn_type = set(get_leaf_connection(s, p))
+        else:
+            conn_type = G.get_edge_data(node, nbr)['pin']
+    else:
+        assert node in subckt.nets, f"net {node} not in {subckt.name}"
+        n = subckt.get_element(nbr)
+        s = subckt.parent.find(n.model)
+        assert node in n.pins.values(), f"net {node} not connected to {n.name}, {n.pins}"
+        p = list(n.pins.keys())[list(n.pins.values()).index(node)]
+        if isinstance(s, SubCircuit):
+            conn_type = set(get_leaf_connection(s, p))
+        else:
+            conn_type = G.get_edge_data(node, nbr)['pin']
+
+    if conn_type !={'B'}:
+        return True
+    else:
+        return False
 
 def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weight):
     """
@@ -63,11 +90,12 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
     """
     logger.debug(f"comparing {node1},{node2}, traversed {traversed}")
     nbrs1 = sorted(set(G.neighbors(node1)) - set(traversed))
-    #remove dummies
-    nbrs1 = sorted(set([nbr for nbr in nbrs1 if G.get_edge_data(node1, nbr)['pin'] !={'B'}]))
+    #remove dummies get_leaf_connection(subckt, port)
+
+    nbrs1 = sorted(set([nbr for nbr in nbrs1 if reduced_neighbors(G, node1, nbr)]))
     nbrs2 = sorted(set(G.neighbors(node2)) - set(traversed))
     #remove dummies
-    nbrs2 = sorted(set([nbr for nbr in nbrs2 if G.get_edge_data(node2, nbr)['pin'] !={'B'}]))
+    nbrs2 = sorted(set([nbr for nbr in nbrs2 if reduced_neighbors(G, node2, nbr)]))
     logger.debug(f"node1:{node1},property: {G.nodes[node1]},neigbors1: {nbrs1}")
     logger.debug(f"node2:{node2},property: {G.nodes[node2]},neigbors2: {nbrs2}")
     if not nbrs1 or not nbrs2:
@@ -452,8 +480,8 @@ def symmnet_device_pairs(G, net_A, net_B,existing_symmetry_blocks=None, skip_blo
     logger.debug(f"Identifying match pairs for symmnet, \
         net1 {net_A}, connections: {conn_A}, net2 {net_B}, \
             connections {conn_B}, existing: {existing_symmetry_blocks}, skip: {skip_blocks}")
-    assert conn_A
-    assert conn_B
+    assert conn_A, f"no connection to net {net_A} found in {G.subckt.name}"
+    assert conn_B, f"no connection to net {net_A} found in {G.subckt.name}"
 
     pairs = {}
     pinsA = []

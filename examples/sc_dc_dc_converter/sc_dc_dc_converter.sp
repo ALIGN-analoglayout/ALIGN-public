@@ -1,4 +1,4 @@
-.subckt sc_dc_dc_converter phi1 phi2 vout vin vss 
+.subckt sc_dc_dc_converter phi1 phi2 vout vin vss
 m8 vout phi1 net7 vss nmos_rvt w=270e-6 l=20e-9 nfin=10e3
 m7 net7 phi2 vss vss nmos_rvt w=270e-6 l=20e-9 nfin=10e3
 m6 vout phi2 net8 vss nmos_rvt w=270e-6 l=20e-9 nfin=10e3
