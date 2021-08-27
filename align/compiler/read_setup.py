@@ -18,7 +18,11 @@ def read_setup(setup_path):
             "DONT_USE_CELLS":[],
             "NO_CONST":[],
             "NO_ARRAY": [],
-            "MERGE_SYMM_CAPS":True
+            "MERGE_SYMM_CAPS":True,
+            "FIX_SD": True,
+            "KEEP_DUMMY": False,
+            "MERGE_SERIES": True,
+            "MERGE_PARALLEL": True
             }
     if setup_path.is_file():
         logger.debug(f'Reading setup file: {setup_path}')
@@ -49,9 +53,18 @@ def read_setup(setup_path):
             elif line.strip().upper().startswith("MERGE_SYMM_CAPS"):
                 MERGE_SYMM_CAPS = (line.strip().upper().split('=')[1].strip() == "True")
                 design_setup['MERGE_SYMM_CAPS'] = MERGE_SYMM_CAPS
-            elif line.strip().upper().startswith("MERGE_SYMM_CAPS"):
+            elif line.strip().upper().startswith("FIX_SOURCE_DRAIN"):
                 FIX_SOURCE_DRAIN = (line.strip().upper().split('=')[1].strip() == "True")
-                design_setup['fix_SD'] = FIX_SOURCE_DRAIN
+                design_setup['FIX_SD'] = FIX_SOURCE_DRAIN
+            elif line.strip().upper().startswith("KEEP_DUMMY"):
+                KEEP_DUMMY = (line.strip().upper().split('=')[1].strip() == "True")
+                design_setup['KEEP_DUMMY'] = KEEP_DUMMY
+            elif line.strip().upper().startswith("MERGE_SERIES"):
+                MERGE_SERIES = (line.strip().upper().split('=')[1].strip() == "True")
+                design_setup['MERGE_SERIES'] = MERGE_SERIES
+            elif line.strip().upper().startswith("MERGE_PARALLEL"):
+                MERGE_PARALLEL = (line.strip().upper().split('=')[1].strip() == "True")
+                design_setup['MERGE_PARALLEL'] = MERGE_PARALLEL
             else:
                 logger.warning(f"Non identified values found in setup file{line}")
             line=fp.readline()
