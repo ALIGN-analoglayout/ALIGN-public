@@ -269,7 +269,6 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         elif cf.stem.upper()==subckt+'.verilog':
             #File name is small and module name is caps
             assert subckt in [m.name for m in VerilogJsonTop.parse_file(cf).modules], f"file name {cf} does nto match module {subckt}"
-
         elif cf.stem == subckt.upper()+'.verilog':
             #File name is caps and module name is small
             subckt = subckt.upper()

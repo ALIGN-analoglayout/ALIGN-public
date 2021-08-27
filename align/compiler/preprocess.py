@@ -43,10 +43,10 @@ def preprocess_stack_parallel(ckt_data, design_setup, design_name):
                 logger.debug(f"Starting no of elements in subckt {subckt.name}: {len(subckt.elements)}")
                 if 'MERGE_PARALLEL' in design_setup:
                     #Find parallel devices and add a parameter parallel to them, all other parameters should be equal
-                    add_parallel_devices(subckt, design_setup['PARALLEL'])
+                    add_parallel_devices(subckt, design_setup['MERGE_PARALLEL'])
                 if 'MERGE_SERIES' in design_setup:
                     #Find parallel devices and add a parameter parallel to them, all other parameters should be equal
-                    add_series_devices(subckt, design_setup['SERIES'])
+                    add_series_devices(subckt, design_setup['MERGE_PARALLEL'])
                 logger.debug(f"After reducing series/parallel, elements count in subckt {subckt.name}: {len(subckt.elements)}")
 
     if isinstance(top, SubCircuit):
