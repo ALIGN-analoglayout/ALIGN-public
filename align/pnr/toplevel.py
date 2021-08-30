@@ -292,7 +292,7 @@ def route_top_down( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS, placements_t
     return results_name_map
 
 
-def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff):
+def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP):
     logger.info(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
 
     current_node = DB.CheckoutHierNode(idx,-1)
@@ -309,7 +309,7 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff):
     #hyper.COUNT_LIMIT = 200
     hyper.LAMBDA = lambda_coeff
 
-    curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, DB.getDrc_info(), hyper)
+    curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, DB.getDrc_info(), hyper, select_in_ILP)
 
     actualNumLayout = curr_plc.getNodeVecSize()
 
@@ -367,11 +367,11 @@ def subset_verilog_d( verilog_d, nm):
 
     return new_verilog_d
 
-def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, verilog_d, router_mode, gui, skipGDS, lambda_coeff, scale_factor, reference_placement_verilog_json, nroutings):
+def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, verilog_d, router_mode, gui, skipGDS, lambda_coeff, scale_factor, reference_placement_verilog_json, nroutings, select_in_ILP):
     TraverseOrder = DB.TraverseHierTree()
 
     for idx in TraverseOrder:
-        place( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx, lambda_coeff=lambda_coeff)
+        place( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx, lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP)
 
     placements_to_run = None
 
@@ -533,7 +533,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
     return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
 
-def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0, scale_factor=2, reference_placement_verilog_json=None, nroutings=1):
+def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0, scale_factor=2, reference_placement_verilog_json=None, nroutings=1, select_in_ILP=False):
 
     assert len(args) == 9
 
@@ -553,6 +553,6 @@ def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_m
 
     pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
 
-    results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, verilog_d=verilog_d, router_mode=router_mode, gui=gui, skipGDS=skipGDS, lambda_coeff=lambda_coeff, scale_factor=scale_factor, reference_placement_verilog_json=reference_placement_verilog_json, nroutings=nroutings)
+    results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, verilog_d=verilog_d, router_mode=router_mode, gui=gui, skipGDS=skipGDS, lambda_coeff=lambda_coeff, scale_factor=scale_factor, reference_placement_verilog_json=reference_placement_verilog_json, nroutings=nroutings, select_in_ILP=select_in_ILP)
 
     return DB, results_name_map
