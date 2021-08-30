@@ -11,13 +11,13 @@ logger = logging.getLogger(__name__)
 
 def read_setup(setup_path):
     design_setup = {
-            "POWER":['vdd'],
-            "GND":[],
-            "CLOCK":[],
-            "DIGITAL":[],
-            "DONT_USE_CELLS":[],
-            "NO_CONST":[],
-            "NO_ARRAY": [],
+            "POWER":list(),
+            "GND":list(),
+            "CLOCK":list(),
+            "DIGITAL":list(),
+            "DONT_USE_LIB":list(),
+            "DONT_CONST":list(),
+            "IDENTIFY_ARRAY": True,
             "MERGE_SYMM_CAPS":True,
             "FIX_SD": True,
             "KEEP_DUMMY": False,
@@ -41,29 +41,29 @@ def read_setup(setup_path):
             elif line.strip().upper().startswith("DIGITAL"):
                 DIGITAL = line.strip().upper().split('=')[1].split()
                 design_setup['DIGITAL']=DIGITAL
-            elif line.strip().upper().startswith("DONT_USE_CELLS"):
+            elif line.strip().upper().startswith("DONT_USE_LIB"):
                 DONT_USE_CELLS = line.strip().upper().split('=')[1].split()
-                design_setup['DONT_USE_CELLS']=DONT_USE_CELLS
-            elif line.strip().upper().startswith("NO_CONST"):
+                design_setup['DONT_USE_LIB']=DONT_USE_CELLS
+            elif line.strip().upper().startswith("DONT_CONST"):
                 NO_CONST = line.strip().upper().split('=')[1].split()
-                design_setup['NO_CONST']=NO_CONST
-            elif line.strip().upper().startswith("NO_ARRAY"):
-                NO_CONST = line.strip().upper().split('=')[1].split()
-                design_setup['NO_ARRAY'] = NO_CONST
+                design_setup['DONT_CONST']=NO_CONST
+            elif line.strip().upper().startswith("IDENTIFY_ARRAY"):
+                NO_CONST = (line.strip().upper().split('=')[1].strip() == "TRUE")
+                design_setup['IDENTIFY_ARRAY'] = NO_CONST
             elif line.strip().upper().startswith("MERGE_SYMM_CAPS"):
-                MERGE_SYMM_CAPS = (line.strip().upper().split('=')[1].strip() == "True")
+                MERGE_SYMM_CAPS = (line.strip().upper().split('=')[1].strip() == "TRUE")
                 design_setup['MERGE_SYMM_CAPS'] = MERGE_SYMM_CAPS
             elif line.strip().upper().startswith("FIX_SOURCE_DRAIN"):
-                FIX_SOURCE_DRAIN = (line.strip().upper().split('=')[1].strip() == "True")
+                FIX_SOURCE_DRAIN = (line.strip().upper().split('=')[1].strip() == "TRUE")
                 design_setup['FIX_SD'] = FIX_SOURCE_DRAIN
             elif line.strip().upper().startswith("KEEP_DUMMY"):
-                KEEP_DUMMY = (line.strip().upper().split('=')[1].strip() == "True")
+                KEEP_DUMMY = (line.strip().upper().split('=')[1].strip() == "TRUE")
                 design_setup['KEEP_DUMMY'] = KEEP_DUMMY
             elif line.strip().upper().startswith("MERGE_SERIES"):
-                MERGE_SERIES = (line.strip().upper().split('=')[1].strip() == "True")
+                MERGE_SERIES = (line.strip().upper().split('=')[1].strip() == "TRUE")
                 design_setup['MERGE_SERIES'] = MERGE_SERIES
             elif line.strip().upper().startswith("MERGE_PARALLEL"):
-                MERGE_PARALLEL = (line.strip().upper().split('=')[1].strip() == "True")
+                MERGE_PARALLEL = (line.strip().upper().split('=')[1].strip() == "TRUE")
                 design_setup['MERGE_PARALLEL'] = MERGE_PARALLEL
             else:
                 logger.warning(f"Non identified values found in setup file{line}")

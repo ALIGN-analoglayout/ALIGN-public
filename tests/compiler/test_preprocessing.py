@@ -42,14 +42,16 @@ def db():
         subckt.elements.append(Instance(name='R1', model='RES', pins={'PLUS': 'PLUS', 'MINUS': 'MINUS'}, parameters ={'VALUE':'10'}, generator='RES'))
         subckt.elements.append(Instance(name='R2', model='RES', pins={'PLUS': 'PLUS', 'MINUS': 'MINUS'}, parameters ={'VALUE':'10'}, generator='RES'))
         subckt.elements.append(Instance(name='R3', model='RES', pins={'PLUS': 'PLUS', 'MINUS': 'MINUS'}, parameters ={'VALUE':'10'}, generator='RES'))
-        subckt.elements.append(Instance(name='M1', model='TESTMOS', pins={'D': 'D', 'G': 'G', 'S': 'S', 'B': 'B'}, generator='MOS'))
-        subckt.elements.append(Instance(name='M2', model='TESTMOS', pins={'D': 'D', 'G': 'G', 'S': 'S', 'B': 'B'}, generator='MOS'))
+        subckt.elements.append(Instance(name='M1', model='TESTMOS', pins={'D': 'D', 'G': 'G', 'S': 'S', 'B': 'B'}, generator='TESTMOS'))
+        subckt.elements.append(Instance(name='M2', model='TESTMOS', pins={'D': 'D', 'G': 'G', 'S': 'S', 'B': 'B'}, generator='TESTMOS'))
 
     return subckt
 
 def test_parallel(db):
 
     assert db.get_element('C1').name =='C1'
+    add_parallel_devices(db,update=False)
+    assert db.get_element('C1').parameters == {'VALUE':'2'}
     add_parallel_devices(db,update=True)
     assert db.get_element('C1').parameters == {'VALUE':'2', 'PARALLEL':2}
     assert db.get_element('R1').parameters == {'VALUE':'10', 'PARALLEL':3}
@@ -94,17 +96,18 @@ def dbs():
         subckt.elements.append(Instance(name='R1', model='RES', pins={'PLUS': 'PLUS', 'MINUS': 'netr1'}, parameters ={'VALUE':'10'}, generator='RES'))
         subckt.elements.append(Instance(name='R2', model='RES', pins={'PLUS': 'netr1', 'MINUS': 'netr2'}, parameters ={'VALUE':'10'}, generator='RES'))
         subckt.elements.append(Instance(name='R3', model='RES', pins={'PLUS': 'netr2', 'MINUS': 'MINUS'}, parameters ={'VALUE':'10'}, generator='RES'))
-        subckt.elements.append(Instance(name='M1', model='TESTMOS', pins={'D': 'D', 'G': 'G', 'S': 'netm1', 'B': 'B'}, generator='MOS'))
-        subckt.elements.append(Instance(name='M2', model='TESTMOS', pins={'D': 'netm1', 'G': 'G', 'S': 'S', 'B': 'B'}, generator='MOS'))
-        subckt.elements.append(Instance(name='M3', model='TESTMOS', pins={'D': 'D', 'G': 'G1', 'S': 'netm2', 'B': 'B'}, generator='MOS'))
-        subckt.elements.append(Instance(name='M4', model='TESTMOS', pins={'D': 'netm2', 'G': 'G1', 'S': 'netm3', 'B': 'B'}, generator='MOS'))
-        subckt.elements.append(Instance(name='M5', model='TESTMOS', pins={'D': 'netm3', 'G': 'G1', 'S': 'S', 'B': 'B'}, generator='MOS'))
+        subckt.elements.append(Instance(name='M1', model='TESTMOS', pins={'D': 'D', 'G': 'G', 'S': 'netm1', 'B': 'B'}, generator='TESTMOS'))
+        subckt.elements.append(Instance(name='M2', model='TESTMOS', pins={'D': 'netm1', 'G': 'G', 'S': 'S', 'B': 'B'}, generator='TESTMOS'))
+        subckt.elements.append(Instance(name='M3', model='TESTMOS', pins={'D': 'D', 'G': 'G1', 'S': 'netm2', 'B': 'B'}, generator='TESTMOS'))
+        subckt.elements.append(Instance(name='M4', model='TESTMOS', pins={'D': 'netm2', 'G': 'G1', 'S': 'netm3', 'B': 'B'}, generator='TESTMOS'))
+        subckt.elements.append(Instance(name='M5', model='TESTMOS', pins={'D': 'netm3', 'G': 'G1', 'S': 'S', 'B': 'B'}, generator='TESTMOS'))
 
     return subckt
 
 def test_series(dbs):
-
     assert dbs.get_element('C1').name =='C1'
+    add_series_devices(dbs,update=False)
+    assert dbs.get_element('M1').parameters == {'PARAM1':'1.0', 'M':'1', 'PARAM2':'2'}
     add_series_devices(dbs,update=True)
     assert dbs.get_element('C1').parameters == {'VALUE':'2', 'STACK':2}
     assert dbs.get_element('R1').parameters == {'VALUE':'10', 'STACK':3}
@@ -142,7 +145,7 @@ def dbr():
             parameters = {'PARAM':1})
         library.append(top_subckt)
     with set_context(leaf_subckt.elements):
-        leaf_subckt.elements.append(Instance(name='M1', model='TESTMOS', pins={'D': 'LD', 'G': 'LG', 'S': 'LS', 'B': 'LB'}, generator='MOS'))
+        leaf_subckt.elements.append(Instance(name='M1', model='TESTMOS', pins={'D': 'LD', 'G': 'LG', 'S': 'LS', 'B': 'LB'}, generator='TESTMOS'))
     with set_context(trunk_subckt.elements):
         trunk_subckt.elements.append(Instance(name='XTR1', model='LEAF_CKT', pins={'LD': 'TD', 'LG': 'TG', 'LS': 'TS', 'LB': 'TB'},parameters={'PARAM':4}, generator='LEAF_CKT'))
     with set_context(top_subckt.elements):
@@ -151,7 +154,6 @@ def dbr():
     return library
 
 def test_remove_dummy_hier(dbr):
-
     assert dbr.find('TOP_CKT').name =='TOP_CKT'
     top = dbr.find('TOP_CKT')
     assert dbr.find('TRUNK_CKT').name =='TRUNK_CKT'
@@ -161,7 +163,7 @@ def test_remove_dummy_hier(dbr):
     assert leaf.elements[0].name == 'M1'
     assert leaf.elements[0].model == 'TESTMOS'
     dummy_hiers = []
-    find_dummy_hier(dbr,top, dummy_hiers, False)
+    find_dummy_hier(dbr,top, dummy_hiers)
     assert 'LEAF_CKT' in dummy_hiers
     assert 'TRUNK_CKT' in dummy_hiers
     remove_dummies(dbr, ['LEAF_CKT'], 'TOP_CKT')

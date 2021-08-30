@@ -84,13 +84,13 @@ def compiler_input(input_ckt:pathlib.Path, design_name:str, pdk_dir:pathlib.Path
         design_setup = read_setup(input_dir/ 'dummy')
     logger.debug(f"template parent path: {pathlib.Path(__file__).parent}")
 
-    primitives = [v for v in library if isinstance(v, SubCircuit) and v.name not in design_setup['DONT_USE_CELLS']]
+    primitives = [v for v in library if isinstance(v, SubCircuit) and v.name not in design_setup['DONT_USE_LIB']]
     #TODO: update the order based on weighing mechanism
     primitives.sort(key=lambda x: len(x.elements) + 1/len(x.nets) + len(set([e.model for e in x.elements])), reverse=True)
-    logger.debug(f"dont use cells: {design_setup['DONT_USE_CELLS']}")
+    logger.debug(f"dont use library cells: {design_setup['DONT_USE_LIB']}")
     logger.debug(f"all library elements: {[ele.name for ele in primitives]}")
-    if len(design_setup['DONT_USE_CELLS'])>0:
-        primitives=[v for v in primitives if v.name not in design_setup['DONT_USE_CELLS']]
+    if len(design_setup['DONT_USE_LIB'])>0:
+        primitives=[v for v in primitives if v.name not in design_setup['DONT_USE_LIB']]
 
     #generator will be called for these elments
     with open(pdk_dir /'generators.json') as fp:
@@ -210,7 +210,7 @@ def compiler_output(input_ckt:pathlib.Path, ckt_data, design_name:str, result_di
             if ckt.name not in design_setup['DIGITAL']:
                 logger.debug(f"call constraint generator writer for block: {ckt.name}")
                 stop_points = design_setup['POWER'] + design_setup['GND'] + design_setup['CLOCK']
-                if ckt.name not in design_setup['NO_CONST']:
+                if ckt.name not in design_setup['DONT_CONST']:
                     FindConst(ckt_data, ckt.name, stop_points)
 
             ## Write out modified netlist & constraints as JSON

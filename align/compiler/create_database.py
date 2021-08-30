@@ -5,6 +5,7 @@ Created on Fri Jan 15 10:38:14 2021
 
 @author: kunal001
 """
+from align.schema.instance import Instance
 from align.schema.types import set_context
 from networkx.algorithms.shortest_paths.weighted import multi_source_dijkstra
 from ..schema.subcircuit import SubCircuit
@@ -33,68 +34,97 @@ class CreateDatabase:
             self.resolve_parameters(name, self.ckt_parser.circuit.parameters)
         else:
             self.resolve_parameters(name, subckt.parameters)
-        #TODO remove redundant library model
+        self._update_leaf_instances()
         return self.ckt_parser.library
+
     def resolve_parameters(self, name, param):
         subckt = self.ckt_parser.library.find(name.upper())
-        if not isinstance(subckt, SubCircuit):
-            return
+        assert subckt, f"No subckt found with name: {name}"
+        assert isinstance(subckt, SubCircuit), f"subckt {subckt.name} is not a subcircuit"
+        logger.debug(f"Resolving subckt {name} parameters {param} default values: {subckt.parameters}")
+
         if name.upper() in self.multi_param_instantiation:
             #Second time instantiation of this circuit with same parameters
-            if all(v==param[p] for p,v in subckt.parameters if p in param):
-                return
+            if all(v==param[p] for p,v in subckt.parameters.items() if p in param):
+                self.multi_param_instantiation.append(name.upper())
+                logger.debug(f"Same parameters found {param} {subckt.parameters}")
+                return name.upper()
             #Second time instantiation of this circuit with different parameters
-            new_name = self.model_instance(subckt)
-            with set_context(self.ckt_parser):
-                subckt_new = SubCircuit(name=new_name,
-                                pins=subckt.pins,
-                                parameters=subckt.parameters,
-                                constraints=subckt.constraints,
-                                elements = subckt.elements)
-                self.ckt_parser.append(subckt_new)
-            subckt = subckt_new
-        logger.debug(f"resolving subckt {name} parameters {param} default values: {subckt.parameters}")
-        for p,v in subckt.parameters.items():
-            if p in param:
-                subckt.parameters[p]=param[p]
-        for inst in subckt.elements:
-            for p,v in inst.parameters.items():
-                if v in subckt.parameters:
-                    inst.parameters[p]=subckt.parameters[v]
-                elif v in self.ckt_parser.circuit.parameters:
-                    inst.parameters[p] = self.ckt_parser.circuit.parameters[v]
-            self.resolve_parameters(inst.model, inst.parameters)
-
-    def model_instance(self, subckt, counter=0):
-        if counter == 0:
-            name = subckt.name
+            new_name,updated_param = self._find_new_inst_name(subckt, param)
+            if new_name == subckt.name or self.ckt_parser.library.find(new_name):
+                logger.debug(f"Second similar instance found of module {new_name},{self.multi_param_instantiation} ")
+            else:
+                logger.debug(f"New instance found of module {name} assigning name {new_name}, {self.multi_param_instantiation}")
+                self.multi_param_instantiation.append(new_name)
+                with set_context(self.ckt_parser.library):
+                    subckt_new = SubCircuit(name=new_name,
+                                    pins=subckt.pins,
+                                    parameters=updated_param,
+                                    constraints=subckt.constraints)
+                assert self.ckt_parser.library.find(new_name) is None, f"Redefining subckt with name {new_name}"
+                self.ckt_parser.library.append(subckt_new)
+                with set_context(subckt_new.elements):
+                    for ele in subckt.elements:
+                        subckt_new.elements.append(ele.copy())
+                self._update_instances(subckt_new)
+            return new_name
         else:
-            name = f'{subckt.name}_{counter}'
-        name = name.upper()
-        existing_ckt = self.subckt.parent.find(name)
+            self.multi_param_instantiation.append(name.upper())
+            logger.debug(f"New module found {subckt.name} {subckt.parameters}")
+            for p in subckt.parameters.keys():
+                if p in param:
+                    subckt.parameters[p]=param[p]
+            self._update_instances(subckt)
+            return name.upper()
+
+    def _update_instances(self, subckt):
+        logger.debug(f"Updating instance parameters of module {subckt.name} as {subckt.parameters}")
+        for inst in subckt.elements:
+            if isinstance(self.ckt_parser.library.find(inst.model.upper()), SubCircuit):
+                logger.debug(f"checking subckt inst {inst.name} {inst.parameters}")
+                new_name = self.resolve_parameters(inst.model.upper(), inst.parameters)
+                logger.debug(f"New model name of instance {inst.name} is {new_name}")
+                assert self.ckt_parser.library.find(new_name), f" Model not found in library {new_name}"
+                subckt.update_element(inst.name, {'model':new_name})
+                assert subckt.get_element(inst.name).model==new_name, f"new_model {new_name} inst: {inst}"
+
+    def _update_leaf_instances(self):
+        for subckt in self.ckt_parser.library:
+            if isinstance(subckt, SubCircuit):
+                for inst in subckt.elements:
+                    logger.debug(f"Updating leaf instance parameters of module \
+                    {subckt.name} as {subckt.parameters}, global {self.ckt_parser.circuit.parameters}, inst param {inst.parameters} ")
+                    for p,v in inst.parameters.items():
+                        if v in self.ckt_parser.circuit.parameters.keys():
+                            inst.parameters[p] = self.ckt_parser.circuit.parameters[v]
+                        elif v in subckt.parameters.keys():
+                            inst.parameters[p] = subckt.parameters[v]
+
+    def _find_new_inst_name(self, subckt, param, counter=1):
+        name = f'{subckt.name.upper()}_{counter}'
+        existing_ckt = self.ckt_parser.library.find(name)
+        new_param = subckt.parameters.copy()
+        for p in new_param.keys():
+            if p in param.keys():
+                new_param[p]=param[p]
         if existing_ckt:
+            duplicate = True
             if subckt.pins == existing_ckt.pins and \
-                subckt.parameters == existing_ckt.parameters and \
+                new_param == existing_ckt.parameters and \
                 subckt.constraints == existing_ckt.constraints:
-                # logger.debug(f"Existing ckt defnition found, checking all elements")
+                logger.debug(f"Existing ckt defnition found, checking all elements")
                 for x in subckt.elements:
-                    if (not existing_ckt.get_element(x.name).model == x.model) or \
-                        (not existing_ckt.get_element(x.name).parameters == x.parameters) or \
-                            (not existing_ckt.get_element(x.name).pins == x.pins):
-                        logger.debug(f"multiple instance of same subcircuit found {subckt.name} {counter+1}")
-                        name = self.instance_counter(subckt,counter+1)
+                    if ( existing_ckt.get_element(x.name).model == x.model) and \
+                        ( existing_ckt.get_element(x.name).parameters == x.parameters) and \
+                        ( existing_ckt.get_element(x.name).generator == x.generator) and \
+                        ( existing_ckt.get_element(x.name).pins == x.pins):
+                        continue
+                    else:
+                        duplicate = False
                         break #Break after first mismatch
-        return name
-
-    def create_subckt_instance(self, subckt, match, instance_name):
-        with set_context(self.subckt.parent):
-            subckt_instance = SubCircuit(name=instance_name,
-                                pins=subckt.pins,
-                                parameters=subckt.parameters,
-                                constraints=subckt.constraints,
-                                elements = subckt.elements)
-        return subckt_instance
-
-
-
-
+            else:
+                duplicate = False
+            if duplicate == False:
+                logger.debug(f"Multiple different sized instance of subcircuit found {subckt.name} count {counter+1}")
+                name, new_param = self._find_new_inst_name(subckt, param, counter+1)
+        return name, new_param

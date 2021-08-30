@@ -43,7 +43,7 @@ class Annotate:
         self.clk = design_setup['CLOCK']
         self.all_lef = existing_generator
         self.stop_points = self.pg+self.clk
-        self.no_array = design_setup['NO_ARRAY']+design_setup['DIGITAL']
+        self.identify_array = design_setup['IDENTIFY_ARRAY']
         self.lib_names = [lib_ele.name for lib_ele in library]
 
     def _is_skip(self,ckt):
@@ -53,6 +53,12 @@ class Annotate:
         if len(di_const)>0:
             di_const = [x for y in di_const for x in y]
         return di_const
+
+    def _is_digital(self,ckt):
+        if ckt.name in self.digital:
+            return True
+        else:
+            return False
     def annotate(self):
         """
         main function to creates hierarchies in the block
@@ -75,11 +81,13 @@ class Annotate:
         traversed = [] # libray gets appended, so only traverse subckt once
         temp_match_dict ={} # To avoid iterative calls (search subckt in subckt)
         for ckt in self.ckt_data:
+            if self._is_digital(ckt):
+                continue
             if isinstance(ckt, SubCircuit) and ckt.name not in self.all_lef and ckt.name not in traversed:
                 netlist_graph= Graph(ckt)
                 skip_nodes = self._is_skip(ckt)
                 logger.debug(f"START MATCHING in circuit: {ckt.name} count: {len(ckt.elements)} \
-                    ele: {[e.name for e in ckt.elements]} const: {ckt.constraints} traversed: {traversed} skip: {skip_nodes}")
+                    ele: {[e.name for e in ckt.elements]} traversed: {traversed} skip: {skip_nodes}")
                 traversed.append(ckt.name)
                 for subckt in self.lib:
                     if subckt.name == ckt.name or (subckt.name in temp_match_dict and ckt.name in temp_match_dict[subckt.name]):
@@ -90,7 +98,7 @@ class Annotate:
                     else:
                         temp_match_dict[subckt.name] = new_subckts
                 #TODO array identification
-                logger.debug(f"Circuit after MATCHING: {ckt.name} {[e.name for e in ckt.elements]} {ckt.constraints}")
+                logger.debug(f"Circuit after MATCHING: {ckt.name} {[e.name for e in ckt.elements]}")
         logger.debug(f"Subcircuits after creating primitive hiearchy {[ckt.name for ckt in self.ckt_data if isinstance(ckt, SubCircuit)]}")
         return self.lib_names
 
@@ -323,13 +331,7 @@ class Annotate:
                             pair[0] = new_inst
                             # logger.debug(f"updated self symmetric constraint block:{const}")
         logger.debug(f"updated constraints of {name} {const_list}")
-    # TODO: Use this and add a testcase
-    def _is_digital(self,g2,name):
-        nd = [node for node in g2.nodes() if 'instance' in g2.nodes[node]]
-        if name in self.digital and len(nd)>1:
-            return True
-        else:
-            return False
+
     #TODO: use this and add a testcase
     def _is_clk(self,match_dict):
         for clk in self.clk:

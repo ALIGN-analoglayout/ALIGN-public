@@ -51,21 +51,21 @@ def preprocess_stack_parallel(ckt_data, design_setup, design_name):
 
     if isinstance(top, SubCircuit):
         if top.name not in design_setup['DIGITAL']:
-            if 'KEEP_DUMMY' in design_setup:
+            if design_setup['KEEP_DUMMY']==False:
                 #remove single instance subcircuits
                 dummy_hiers = []
-                find_dummy_hier(ckt_data, top, dummy_hiers, design_setup['KEEP_DUMMY'])
+                find_dummy_hier(ckt_data, top, dummy_hiers)
                 if len(dummy_hiers)>0:
                     logger.info(f"Removing dummy hierarchies {dummy_hiers}")
                     remove_dummies(ckt_data, dummy_hiers, top.name)
 
 def remove_dummies(library, dummy_hiers, top):
-    for h in dummy_hiers:
-        if h==top:
+    for dh in dummy_hiers:
+        if dh==top:
             logger.debug("Cant delete top hierarchy {top}")
             return
-        ckt = library.find(h)
-        assert ckt
+        ckt = library.find(dh)
+        assert ckt, f"No subckt with name {dh} found"
         with set_context(library):
             logger.info(f"Flattening dummy hierarchy {ckt.name}")
             for other_ckt in library:
@@ -73,7 +73,7 @@ def remove_dummies(library, dummy_hiers, top):
                     replace = {}
                     for inst in other_ckt.elements:
                         if inst.model == ckt.name:
-                            logger.debug(f"removing instance {inst} with instance {ckt.elements[0].model}")
+                            logger.debug(f"Removing instance {inst} with instance {ckt.elements[0].model}")
                             replace[inst.name] = ckt.elements[0]
                             #@Parijat, is there a better way to modify?
                     with set_context(other_ckt.elements):
@@ -97,17 +97,17 @@ def remove_dummies(library, dummy_hiers, top):
                                 ))
                             logger.info(f"updating {other_ckt.name} element {other_ckt.elements[-1]}")
                             other_ckt.elements.remove(ele)
-            logger.info(f'Removing hierarchy {h}')
+            all_subckt = [module.name for module in  library if isinstance(module, SubCircuit)]
             library.remove(ckt)
-            assert library.find(h) == None
+            logger.info(f'Removing hierarchy {dh} from {all_subckt}')
+            all_subckt_updated = [module.name for module in  library if isinstance(module, SubCircuit)]
+            assert library.find(dh) == None, f"{all_subckt_updated}"
 
-def find_dummy_hier(library, ckt, dummy_hiers, update=False):
-    if update == True:
-        return
+def find_dummy_hier(library, ckt, dummy_hiers):
     assert isinstance(dummy_hiers, list)
-    all_subckts = [str(e.model) for e in ckt.elements if isinstance(library.find(e.model), SubCircuit)]
+    all_subckts = set(str(e.model) for e in ckt.elements if isinstance(library.find(e.model), SubCircuit))
     logger.debug(f"Checking hiearchy {ckt.name} subckts {all_subckts} filter: {dummy_hiers}")
-    for m in set(all_subckts)-set(dummy_hiers):
+    for m in all_subckts-set(dummy_hiers):
         find_dummy_hier(library, library.find(m), dummy_hiers)
     if len(ckt.elements) ==1:
         dummy_hiers.append(ckt.name)
@@ -167,7 +167,7 @@ def define_SD(circuit,power,gnd,digital=None):
     assert high, f"VDD port {power} not defined in subckt port {circuit.pins}"
     assert low, f"GND port {gnd} not defined in subckt port {circuit.pins}"
 
-    logger.debug(f"START checking source and drain in graph ")
+    logger.debug(f"Start checking source and drain in {circuit.name} ")
 
     probable_changes_p = []
     assert high[0] in circuit.nets
@@ -177,7 +177,7 @@ def define_SD(circuit,power,gnd,digital=None):
         nxt = high.pop(0)
         for node in get_next_level(circuit,G,[nxt]):
             edge_type = G.get_edge_data(node, nxt)['pin']
-            if not set(edge_type)-set({'G'}) or node in traversed:
+            if not {'S','D'} & set(edge_type) or node in traversed:
                 continue
             if circuit.get_element(node):
                 base_model = get_base_model(circuit,node)
@@ -192,16 +192,18 @@ def define_SD(circuit,power,gnd,digital=None):
                     probable_changes_p.append(node)
             high.append(node)
             traversed.append(node)
-    if len(probable_changes_p)==0:
-        return
+    if len(probable_changes_p)>0:
+        logger.debug(f"probable SD changes based on VDD {power} are {probable_changes_p}")
     probable_changes_n=[]
     traversed = low.copy()
     traversed.extend(list(set(power).intersection(set(ports))))
     while low:
+        if len(probable_changes_p)==0:
+            break
         nxt = low.pop(0)
         for node in get_next_level(circuit,G,[nxt]):
             edge_type = G.get_edge_data(node, nxt)['pin']
-            if not set(edge_type)-set({'G'}) or node in traversed:
+            if not {'S','D'} & set(edge_type) or node in traversed:
                 continue
             if circuit.get_element(node):
                 base_model = get_base_model(circuit,node)
@@ -216,11 +218,13 @@ def define_SD(circuit,power,gnd,digital=None):
                     probable_changes_n.append(node)
             low.append(node)
             traversed.append(node)
+    if len(probable_changes_n)>0:
+        logger.debug(f"probable SD changes based on GND {power} are {probable_changes_n}")
+        for node in list (set(probable_changes_n) & set(probable_changes_p)):
+            logger.warning(f"changing source drain: {node}")
+            swap_SD(circuit,G,node)
 
-    for node in list (set(probable_changes_n) & set(probable_changes_p)):
-        logger.warning(f"changing source drain: {node}")
-        swap_SD(circuit,G,node)
-
+    #Recursive call
     for inst in circuit.elements:
         inst_ckt = circuit.parent.find(inst.model)
         if isinstance(inst_ckt, SubCircuit):
