@@ -4,11 +4,6 @@ Created on Wed Nov 21 13:12:15 2018
 
 @author: kunal
 """
-from align.schema import model
-from math import sqrt, ceil,floor
-
-from .util import convert_to_unit
-# from .merge_nodes import merge_subckt_param
 from align.schema.subcircuit import SubCircuit
 
 import logging

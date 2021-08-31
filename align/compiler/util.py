@@ -56,6 +56,7 @@ def get_base_model(subckt,node):
     else:
         logger.warning(f"invalid device {node}")
     return base_model
+
 def compare_two_nodes(G,node1:str,node2:str ,ports_weight):
     """
     compare two node properties. It uses 1st level of neighbourhood for comparison of nets
@@ -83,7 +84,7 @@ def compare_two_nodes(G,node1:str,node2:str ,ports_weight):
 
     # Add some heuristic here in future
     if G.nodes[node1].get('instance'):
-        logger.debug(f"checking mathc between {node1} {node2}")
+        logger.debug(f"checking match between {node1} {node2}")
         in1 = G.nodes[node1].get('instance')
         in2 = G.nodes[node2].get('instance')
         if in1.model == in2.model and\
@@ -136,33 +137,6 @@ def plt_graph(subgraph,sub_block_name):
     nx.draw(copy_graph,with_labels=True,pos=nx.spring_layout(copy_graph))
     plt.title(Title, fontsize=20)
 
-def _show_circuit_graph(filename, graph, dir_path):
-    no_of_subgraph = 0
-    for subgraph in nx.connected_component_subgraphs(graph):
-        no_of_subgraph += 1
-
-        color_map = []
-
-        plt.figure(figsize=(6, 8))
-        for _, attr in subgraph.nodes(data=True):
-            if "inst_type" in attr:
-                if attr["inst_type"] == 'pmos':
-                    color_map.append('red')
-                elif attr["inst_type"] == 'nmos':
-                    color_map.append('cyan')
-                elif attr["inst_type"] == 'cap':
-                    color_map.append('orange')
-                elif attr["inst_type"] == 'net':
-                    color_map.append('pink')
-                else:
-                    color_map.append('green')
-        nx.draw(subgraph, node_color=color_map)
-        plt.title(filename, fontsize=20)
-        if not os.path.exists(dir_path):
-            os.mkdir(dir_path)
-        plt.savefig(dir_path+'/'+ filename + "_" +
-                    str(no_of_subgraph) + '.png')
-        plt.close()
 
 def _show_bipartite_circuit_graph(filename, graph, dir_path):
     no_of_subgraph = 0
@@ -176,8 +150,6 @@ def _show_bipartite_circuit_graph(filename, graph, dir_path):
             (n, (1, i)) for i, n in enumerate(x_pos))  # put nodes from X at x=1
         pos.update(
             (n, (2, i)) for i, n in enumerate(y_pos))  # put nodes from Y at x=2
-        #nx.draw(B, pos=pos)
-        #plt.show()
         plt.figure(figsize=(6, 8))
         for dummy, attr in subgraph.nodes(data=True):
             if "inst_type" in attr:
@@ -204,19 +176,3 @@ def _write_circuit_graph(filename, graph,dir_path):
         os.mkdir(dir_path)
     nx.write_yaml(Graph(graph), dir_path+'/' + filename + ".yaml")
 
-def convert_to_unit(values):
-    for param in values:
-        if float(values[param])>= 1 :
-            values[param]=int(values[param])
-        elif float(values[param])*1E3> 1 :
-            values[param]=str(int(values[param]*1E3))+'m'
-        elif float(values[param])*1E6>1 :
-            values[param]=str(int(values[param]*1E6))+'u'
-        elif float(values[param])*1E9>1:
-            values[param]=str(int(values[param]*1E9))+'n'
-        elif float(values[param])*1E12>1:
-            values[param]=str(int(values[param]*1E12))+'p'
-        elif float(values[param])*1E15>1:
-            values[param]=str(int(values[param]*1E15))+'f'
-        else:
-            logger.error(f"WRONG value, {values}")

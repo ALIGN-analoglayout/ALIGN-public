@@ -9,19 +9,13 @@ from re import sub
 from align.schema import model
 from align.schema import Model, SubCircuit
 from ..schema.types import set_context
-from .util import get_next_level
-from .find_constraint import FindSymmetry
 import pprint
 import logging
 from ..schema import constraint
 from ..schema.instance import Instance
-from ..schema.hacks import HierDictNode
 from ..schema.types import set_context
 from align.schema.graph import Graph
 logger = logging.getLogger(__name__)
-
-
-#%%
 
 class Annotate:
     """
@@ -47,7 +41,6 @@ class Annotate:
         self.lib_names = [lib_ele.name for lib_ele in library]
 
     def _is_skip(self,ckt):
-
         di_const = [const.instances for const in ckt.constraints if isinstance(const, constraint.DoNotIdentify)]
         #Changing 2D list to 1D list
         if len(di_const)>0:
@@ -77,7 +70,6 @@ class Annotate:
                 self._group_cap_const(circuit_name)
 
         logger.debug(f"ALl subckt after grouping:{[ckt.name for ckt in self.ckt_data if isinstance(ckt, SubCircuit)]}")
-
         traversed = [] # libray gets appended, so only traverse subckt once
         temp_match_dict ={} # To avoid iterative calls (search subckt in subckt)
         for ckt in self.ckt_data:
@@ -109,10 +101,6 @@ class Annotate:
                 if hasattr(const,'instances') and len(const.instances)>0:
                     is_append = True
                 #TODO: remove dict type
-                elif isinstance(const,dict) and 'instances' in const and len(const["instances"])>0:
-                    is_append = True
-                elif isinstance(const,dict) and 'instances' not in const:
-                    is_append = True
                 elif isinstance(const,dict) and 'instances' in const and len(const["instances"])==0:
                     pass
                     #skipping const of zero length
@@ -225,7 +213,7 @@ class Annotate:
             cc_name = 'CAP_CC_'+"_".join([str(x) for x in const.num_units])
             if not self.ckt_data.find(const.name.upper()):
                 #Create a subckt and add to library
-                #Ideally Create a subckt initially but did not work at PnR capcitor hack are not compatible
+                #Ideally create a subckt initially but did not work at PnR capacitor hack are not compatible
                 with set_context(self.ckt_data):
                     new_subckt = Model(
                         name = const.name.upper(),
@@ -331,34 +319,3 @@ class Annotate:
                             pair[0] = new_inst
                             # logger.debug(f"updated self symmetric constraint block:{const}")
         logger.debug(f"updated constraints of {name} {const_list}")
-
-    #TODO: use this and add a testcase
-    def _is_clk(self,match_dict):
-        for clk in self.clk:
-            if clk in match_dict:
-                return True
-        return False
-#TODO move this functionality to graph/ check constraint
-def compare_balanced_tree(G, node1:str, node2:str, traversed1:list, traversed2:list):
-    """
-    used to remove some false matches for DP and CMC
-    """
-    tree1 = set(get_next_level(G,[node1]))
-    tree2 = set(get_next_level(G,[node2]))
-    traversed1.append(node1)
-    traversed2.append(node2)
-    if tree1==tree2:
-        return True
-    while(len(list(tree1))== len(list(tree2)) > 0):
-        tree1 = set(tree1) - set(traversed1)
-        tree2 = set(tree2) - set(traversed2)
-        if tree1.intersection(tree2) or len(list(tree1))== len(list(tree2))==0:
-            return True
-        else:
-            traversed1+=list(tree1)
-            traversed2+=list(tree2)
-            tree1=set(get_next_level(G,tree1))
-            tree2=set(get_next_level(G,tree2))
-
-    logger.debug(f"Non symmetrical branches for nets: {node1}, {node2}")
-    return False

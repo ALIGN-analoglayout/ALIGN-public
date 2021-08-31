@@ -30,7 +30,6 @@ def db():
     return subckt
 
 def test_swap(db):
-
     assert db.get_element('M1').name =='M1'
     define_SD(db,['VDD'],['GND'],digital=['SUBCKT'])
     assert db.get_element('M1').pins== {'D': 'VDD', 'G': 'G', 'S': 'GND', 'B': 'B'}
