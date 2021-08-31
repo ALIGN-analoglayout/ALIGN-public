@@ -56,7 +56,6 @@ def get_base_model(subckt,node):
     else:
         logger.warning(f"invalid device {node}")
     return base_model
-
 def compare_two_nodes(G,node1:str,node2:str ,ports_weight):
     """
     compare two node properties. It uses 1st level of neighbourhood for comparison of nets
@@ -176,3 +175,19 @@ def _write_circuit_graph(filename, graph,dir_path):
         os.mkdir(dir_path)
     nx.write_yaml(Graph(graph), dir_path+'/' + filename + ".yaml")
 
+def convert_to_unit(values):
+    for param in values:
+        if float(values[param])>= 1 :
+            values[param]=int(values[param])
+        elif float(values[param])*1E3> 1 :
+            values[param]=str(int(values[param]*1E3))+'m'
+        elif float(values[param])*1E6>1 :
+            values[param]=str(int(values[param]*1E6))+'u'
+        elif float(values[param])*1E9>1:
+            values[param]=str(int(values[param]*1E9))+'n'
+        elif float(values[param])*1E12>1:
+            values[param]=str(int(values[param]*1E12))+'p'
+        elif float(values[param])*1E15>1:
+            values[param]=str(int(values[param]*1E15))+'f'
+        else:
+            logger.error(f"WRONG value, {values}")
