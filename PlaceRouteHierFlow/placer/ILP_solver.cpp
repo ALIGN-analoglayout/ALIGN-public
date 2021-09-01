@@ -418,10 +418,12 @@ double ILP_solver::GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcI
 
   // set integer constraint, H_flip and V_flip can only be 0 or 1
   for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+    #ifdef ilp
     set_int(lp, i * 4 + 1, TRUE);
     set_int(lp, i * 4 + 2, TRUE);
     set_int(lp, i * 4 + 3, TRUE);
     set_int(lp, i * 4 + 4, TRUE);
+    #endif
     set_binary(lp, i * 4 + 3, TRUE);
     set_binary(lp, i * 4 + 4, TRUE);
   }
@@ -817,12 +819,24 @@ double ILP_solver::GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcI
     set_minim(lp);
     set_timeout(lp, 10);
     //print_lp(lp);
+    #ifndef ilp
+    set_presolve(lp, PRESOLVE_ROWS | PRESOLVE_COLS | PRESOLVE_LINDEP, get_presolveloops(lp));
+    #endif
     int ret = solve(lp);
     if (ret != 0 && ret != 1 && ret!= 25) return -1;
   }
 
   double var[N_var];
+  #ifdef ilp
   get_variables(lp, var);
+  #else
+  int Norig_columns, Norig_rows, i;
+  Norig_columns = get_Norig_columns(lp);
+  Norig_rows = get_Norig_rows(lp);
+  for(i = 1; i <= Norig_columns; i++) {
+    var[i - 1] = get_var_primalresult(lp, Norig_rows + i);
+  }
+  #endif
   delete_lp(lp);
   auto roundup = [](int& v, int pitch) { v = pitch * ((v + pitch - 1) / pitch); };
   int v_metal_index = -1;
