@@ -750,7 +750,7 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   int idx=0;
   for (bool removeTaps : {false, true}) {
     if (removeTaps && (!designData.RemoveTaps() || designData.isTop)) continue;
-    for(std::map<double, std::pair<SeqPair, ILP_solver>>::iterator it=spVec.begin(); it!=spVec.end() and idx<nodeSize; ++it, ++idx) {
+    for(std::map<double, std::pair<SeqPair, ILP_solver>>::iterator it=spVec.begin(); it!=spVec.end() && idx<nodeSize; ++it, ++idx) {
       if (designData.RemoveTaps()) it->second.first.SwapSelected();
       if (removeTaps && !it->second.second.RemoveAllTaps(designData, it->second.first, drcInfo)) continue;
       it->second.first.PrintSeqPair();

@@ -1673,6 +1673,7 @@ void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierN
   node.HPWL_norm = HPWL_norm;
   node.constraint_penalty = constraint_penalty;
   node.cost = cost;
+  node._taVias = nullptr;
 
   for (unsigned int i = 0; i < mydesign.Blocks.size(); ++i) {
     node.Blocks.at(i).selectedInstance = curr_sp.GetBlockSelected(i);
@@ -1775,9 +1776,11 @@ void ILP_solver::UpdateBlockinHierNode(design& mydesign, placerDB::Omark ort, Pn
     iv.LowerMetalRect.placedCenter = mydesign.GetPlacedBlockInterMetalAbsPoint(i, ort, iv.LowerMetalRect.originCenter, LL, sel);
     iv.ViaRect.placedCenter = mydesign.GetPlacedBlockInterMetalAbsPoint(i, ort, iv.ViaRect.originCenter, LL, sel);
   }
+  //auto logger = spdlog::default_logger()->clone("placer.ILP_solver.UpdateBlockinHierNode");
 
   if (nd._taVias) {
-    node._taVias = std::make_shared<PnRDB::taVias>();
+    //logger->info("has ta vias : {0} {1} {2} {3}", nd._taVias->_ntapVias.size(), nd._taVias->_ptapVias.size(), nd._taVias->_nactiveVias.size(), nd._taVias->_ptapVias.size());
+    if (!node._taVias) node._taVias = std::make_shared<PnRDB::taVias>();
     for (auto n : {true, false}) {
       auto& ndtapVias = n ? nd._taVias->_ntapVias : nd._taVias->_ptapVias;
       auto& ndactiveVias = n ? nd._taVias->_nactiveVias : nd._taVias->_pactiveVias;
