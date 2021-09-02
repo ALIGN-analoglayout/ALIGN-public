@@ -16,6 +16,7 @@ using std::pair;
 //#define min_displacement
 //#define quadratic_placement'
 #define ilp
+//#define hard_symmetry
 
 namespace PnRDB {
 

@@ -160,7 +160,7 @@ Placement::Placement(PnRDB::hierNode &current_node)
   PlotPlacement(602);
   // restore_MS();
   // PlotPlacement(601);
-  E_Placer();
+  E_Placer(current_node);
   bool isCompact = true;
   restore_CC_in_square(isCompact);
 
@@ -351,7 +351,7 @@ void Placement::place(PnRDB::hierNode &current_node)
   PlotPlacement(602);
   // restore_MS();
   // PlotPlacement(601);
-  E_Placer();
+  E_Placer(current_node);
   bool isCompact = true;
   restore_CC_in_square(isCompact);
 
@@ -1764,7 +1764,7 @@ void Placement::Cal_UT_Force(){
 
 }
 
-void Placement::E_Placer()
+void Placement::E_Placer(PnRDB::hierNode &current_node)
 {
 
   int i = 0;
@@ -1989,6 +1989,9 @@ void Placement::E_Placer()
     Pull_back_vector(uc_y, 0);
     Feedback_Placement_Vectors(uc_x, 1);
     Feedback_Placement_Vectors(uc_y, 0);
+    #ifdef hard_symmetry
+    force_symmetry(current_node);
+    #endif
     Pull_back_vector(vc_x, 1);
     Pull_back_vector(vl_x, 1);
     Pull_back_vector(vc_y, 0);
@@ -3949,6 +3952,93 @@ void Placement::read_order(PnRDB::hierNode &current_node)
 {
   Ordering_Constraints = current_node.Ordering_Constraints;
   std::cout << "ordering constraints size: " << Ordering_Constraints.size() << std::endl;
+}
+
+void Placement::force_symmetry(PnRDB::hierNode &current_node){
+  for (auto symmetry : current_node.SPBlocks) {
+    if (symmetry.axis_dir == PnRDB::V) {
+      //set<int> center_y_set;
+      //set<int> distance_set;
+      float center_x = 0;
+      for (auto i_selfsym:symmetry.selfsym){
+        center_x += Blocks[i_selfsym.first].Cpoint.x;
+      }
+      for(auto i_sympair:symmetry.sympair){
+        center_x += Blocks[i_sympair.first].Cpoint.x;
+        center_x += Blocks[i_sympair.second].Cpoint.x;
+      }
+      center_x /= (symmetry.selfsym.size() + symmetry.sympair.size() * 2);
+      
+      for (auto i_selfsym:symmetry.selfsym){
+        /**
+        while(center_y_set.find(node.Blocks[i_selfsym.first].instance[0].placedCenter.y)!=center_y_set.end())
+          node.Blocks[i_selfsym.first].instance[0].placedCenter.y++;
+        center_y_set.insert(node.Blocks[i_selfsym.first].instance[0].placedCenter.y);
+        **/
+        Blocks[i_selfsym.first].Cpoint.x = center_x;
+      }
+      
+      for(auto i_sympair:symmetry.sympair){
+        float diff = center_x - (Blocks[i_sympair.first].Cpoint.x + Blocks[i_sympair.second].Cpoint.x) / 2;
+        Blocks[i_sympair.first].Cpoint.x += diff;
+        Blocks[i_sympair.second].Cpoint.x += diff;
+        /**
+         * while(distance_set.find(abs(node.Blocks[i_sympair.first].instance[0].placedCenter.x-node.Blocks[i_sympair.second].instance[0].placedCenter.x))!=distance_set.end()){
+          node.Blocks[i_sympair.first].instance[0].placedCenter.x--;
+          node.Blocks[i_sympair.second].instance[0].placedCenter.x++;
+        }
+        distance_set.insert(abs(node.Blocks[i_sympair.first].instance[0].placedCenter.x - node.Blocks[i_sympair.second].instance[0].placedCenter.x));
+        int center_y = (node.Blocks[i_sympair.first].instance[0].placedCenter.y + node.Blocks[i_sympair.second].instance[0].placedCenter.y) / 2;
+        while (center_y_set.find(center_y) != center_y_set.end()) center_y++;
+        center_y_set.insert(center_y);
+        node.Blocks[i_sympair.first].instance[0].placedCenter.y = center_y;
+        node.Blocks[i_sympair.second].instance[0].placedCenter.y = center_y;
+        **/
+        float center_y = (Blocks[i_sympair.first].Cpoint.y + Blocks[i_sympair.second].Cpoint.y) / 2;
+        Blocks[i_sympair.first].Cpoint.y = center_y;
+        Blocks[i_sympair.second].Cpoint.y = center_y;
+      }
+    } else {
+      //set<int> center_x_set;
+      //set<int> distance_set;
+      float center_y = 0;
+      for (auto i_selfsym:symmetry.selfsym){
+        center_y += Blocks[i_selfsym.first].Cpoint.y;
+      }
+      for(auto i_sympair:symmetry.sympair){
+        center_y += Blocks[i_sympair.first].Cpoint.y;
+        center_y += Blocks[i_sympair.second].Cpoint.y;
+      }
+      center_y/=(symmetry.selfsym.size() + symmetry.sympair.size() * 2);
+      for (auto i_selfsym:symmetry.selfsym){
+        /**while(center_x_set.find(node.Blocks[i_selfsym.first].instance[0].placedCenter.x)!=center_x_set.end())
+          node.Blocks[i_selfsym.first].instance[0].placedCenter.x++;
+        center_x_set.insert(node.Blocks[i_selfsym.first].instance[0].placedCenter.x);
+        **/
+        Blocks[i_selfsym.first].Cpoint.y = center_y;
+      }
+      for(auto i_sympair:symmetry.sympair){
+        float diff = center_y - (Blocks[i_sympair.first].Cpoint.y + Blocks[i_sympair.second].Cpoint.y) / 2;
+        Blocks[i_sympair.first].Cpoint.y += diff;
+        Blocks[i_sympair.second].Cpoint.y += diff;
+        /**
+        while(distance_set.find(abs(node.Blocks[i_sympair.first].instance[0].placedCenter.y-node.Blocks[i_sympair.second].instance[0].placedCenter.y))!=distance_set.end()){
+          node.Blocks[i_sympair.first].instance[0].placedCenter.y--;
+          node.Blocks[i_sympair.second].instance[0].placedCenter.y++;
+        }
+        distance_set.insert(abs(node.Blocks[i_sympair.first].instance[0].placedCenter.y - node.Blocks[i_sympair.second].instance[0].placedCenter.y));
+        int center_x = (node.Blocks[i_sympair.first].instance[0].placedCenter.x + node.Blocks[i_sympair.second].instance[0].placedCenter.x) / 2;
+        while (center_x_set.find(center_x) != center_x_set.end()) center_x++;
+        center_x_set.insert(center_x);
+        node.Blocks[i_sympair.first].instance[0].placedCenter.x = center_x;
+        node.Blocks[i_sympair.second].instance[0].placedCenter.x = center_x;
+        **/
+        float center_x = (Blocks[i_sympair.first].Cpoint.x + Blocks[i_sympair.second].Cpoint.x) / 2;
+        Blocks[i_sympair.first].Cpoint.x = center_x;
+        Blocks[i_sympair.second].Cpoint.x = center_x;
+      }
+    }
+  }
 }
 
 void Placement::force_order(vector<float> &vc_x, vector<float> &vl_x, vector<float> &vc_y, vector<float> &vl_y)

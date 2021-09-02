@@ -115,7 +115,7 @@ public:
     void generate_testing_data();
 
     //
-    void E_Placer();
+    void E_Placer(PnRDB::hierNode &current_node);
     #ifdef PERFORMANCE_DRIVEN
     void performance_gradient(vector<float> &uc_x, vector<float> &uc_y, PyObject *pFun_cal_grad, PyObject *sess, PyObject *X, PyObject *grads);
     #endif
@@ -137,6 +137,7 @@ public:
     void read_order(PnRDB::hierNode &current_node);
     void force_alignment(vector<float> &vc_x,vector<float> &vl_x,vector<float> &vc_y,vector<float> &vl_y);
     void force_order(vector<float> &vc_x,vector<float> &vl_x,vector<float> &vc_y,vector<float> &vl_y);
+    void force_symmetry(PnRDB::hierNode &current_node);
     static bool comp_x(Ppoint_F c1, Ppoint_F c2);
     static bool comp_y(Ppoint_F c1, Ppoint_F c2);
     static bool comp_position(pair<pair<int,int>,int> p1,pair<pair<int,int>,int> p2);

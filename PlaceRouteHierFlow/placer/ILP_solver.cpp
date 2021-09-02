@@ -820,7 +820,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcI
     set_timeout(lp, 10);
     //print_lp(lp);
     #ifndef ilp
-    set_presolve(lp, PRESOLVE_ROWS | PRESOLVE_COLS | PRESOLVE_LINDEP, get_presolveloops(lp));
+    //set_presolve(lp, PRESOLVE_ROWS | PRESOLVE_COLS | PRESOLVE_LINDEP, get_presolveloops(lp));
     #endif
     int ret = solve(lp);
     if (ret != 0 && ret != 1 && ret!= 25) return -1;

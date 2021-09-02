@@ -356,6 +356,7 @@ int toplevel( const std::vector<std::string>& argv) {
 
 #ifdef analytical_placer
     clock_t start, end;
+    clock_t ilp1_start, ilp1_end, ilp2_start, ilp2_end;
     start = clock();
     // EA placer
     if(disable_io)std::cout.setstate(std::ios_base::failbit);
@@ -365,7 +366,9 @@ int toplevel( const std::vector<std::string>& argv) {
     //EA_placer.place_ut(current_node);
     if(disable_io)std::cout.clear();
     current_node.placement_id = placement_id;
+    ilp1_start = clock();
     PlacerIfc curr_plc1(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo));  // do placement and update data in current node
+    ilp1_end = clock();
     current_node = curr_plc1.getNode(0);
     // AFTER FIRST ILP, RUN THE FOLLOWING LINE
     if(disable_io)std::cout.setstate(std::ios_base::failbit);
@@ -373,13 +376,16 @@ int toplevel( const std::vector<std::string>& argv) {
     // Do the ILP again
     if(disable_io)std::cout.clear();
     current_node.placement_id = placement_id;
-    PlacerIfc curr_plc(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
+    ilp2_start = clock();
+    PlacerIfc curr_plc(current_node, numLayout, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo));  // do placement and update data in current node
+    ilp2_end = clock();
     current_node = curr_plc.getNode(0);
     if(disable_io)std::cout.setstate(std::ios_base::failbit);
     EA_placer.break_merged_cc(current_node);
     if(disable_io)std::cout.clear();
     end = clock();
     logger->info("Placement runtime: {0} s", (double)(end - start) / CLOCKS_PER_SEC);
+    logger->info("ILP/LP runtime: {0} s", (double)(ilp2_end - ilp2_start + ilp1_end - ilp1_start) / CLOCKS_PER_SEC);
     // return 0;
     // Placement
     std::vector<PnRDB::hierNode> nodeVec={current_node};
