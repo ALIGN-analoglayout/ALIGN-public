@@ -101,7 +101,11 @@ SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl, co
     if (maxIter > 0 && _posPair.size() <= 16 && maxIter > totEnum) {
       //totEnum *= (1 << (2*caseNL.GetSizeofBlocks()));
       for (unsigned i = 0; i < casenl.GetSizeofBlocks(); ++i) {
-        totEnum *= casenl.Blocks.at(i).size();
+		if (casenl.RemoveTaps()) {
+			totEnum *= (casenl.Blocks.at(i).size()/2);
+		} else {
+			totEnum *= (casenl.Blocks.at(i).size());
+		}
         if (maxIter < totEnum) {
           _valid = 0;
           break;

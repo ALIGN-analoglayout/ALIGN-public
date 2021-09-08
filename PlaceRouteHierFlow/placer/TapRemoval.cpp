@@ -118,7 +118,7 @@ void Node::computeRadius(const bool isTop, const geom::Rect& bbox, const Primiti
     auto dy = r.first.max_corner().get<1>() - r.first.min_corner().get<1>();
     if (dy > 0.) dhpwl += (dy * 1. / (bbox.width() + bbox.height()));
   }
-  if (isTop) {
+  /*if (isTop) {
     unsigned cnt(0);
     for (auto& e : _edges) {
       const auto other = (e->u() == this) ? e->v() : e->u();
@@ -127,7 +127,7 @@ void Node::computeRadius(const bool isTop, const geom::Rect& bbox, const Primiti
         _maxdist = std::max(_maxdist, _bbox.dist(other->_bbox) * 1. / (bbox.width() + bbox.height()));
       }
     }
-  }
+  }*/
   //auto x = _maxdist;
   _maxdist = (10*_maxdist + 2*_dist + _deltaarea + 2*dhpwl);
   //logger->info("{0} {1} {2} {3} {4} {5}", name(), _dist, _deltaarea, x, _maxdist, dhpwl);
