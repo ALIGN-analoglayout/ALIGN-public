@@ -149,8 +149,13 @@ class SpiceParser:
 
         if self.library.find(model):
             model = self.library.find(model)
+
             if model.base:
                 generator= model.base
+            elif isinstance(model, SubCircuit) and name.startswith ('X'):
+                generator = model.name
+            elif isinstance(model, Model) and model.prefix == 'XI':
+                generator = 'generic'
             else:
                 generator = model.name
             #TODO assert generator is available in primitive generator
