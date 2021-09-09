@@ -2,8 +2,9 @@
 # visit http://127.0.0.1:8050/ in your web browser.
 
 import dash
-from dash import dcc, html
+from dash import html
 from dash.dependencies import Input, Output
+import dash_html_components as html
 
 import itertools
 import random
