@@ -2,8 +2,7 @@
 # visit http://127.0.0.1:8050/ in your web browser.
 
 import dash
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dcc, html
 from dash.dependencies import Input, Output
 
 import itertools
@@ -48,7 +47,7 @@ class AppWithCallbacksAndState:
                     style={'display': 'inline-block', 'vertical-align': 'top'}
                 ),
                 html.Div(
-                    children=[    
+                    children=[
                         html.H2(children='Placement'),
                         dcc.Graph(
                             id='Placement',
@@ -58,7 +57,7 @@ class AppWithCallbacksAndState:
                     style={'display': 'inline-block', 'vertical-align': 'top'}
                 ),
                 html.Div(
-                    children=[    
+                    children=[
                         html.H2(children='Tree'),
                         dcc.Markdown(children='',id='Tree')
                     ],
@@ -109,7 +108,7 @@ def run_gui( DB, bboxes):
     histo = defaultdict(list)
     for idx,p in enumerate(bboxes):
         histo[p].append(idx)
-    
+
     pairs = list(histo.keys())
 
     max_x = max( p[0] for p in pairs)
