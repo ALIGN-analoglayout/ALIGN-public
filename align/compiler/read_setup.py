@@ -9,16 +9,17 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def read_setup(setup_path):
     design_setup = {
-            "POWER":['vdd'],
-            "GND":[],
-            "CLOCK":[],
-            "DIGITAL":[],
-            "DONT_USE_CELLS":[],
-            "NO_CONST":[],
+            "POWER": [],
+            "GND": [],
+            "CLOCK": [],
+            "DIGITAL": [],
+            "DONT_USE_CELLS": [],
+            "NO_CONST": [],
             "NO_ARRAY": [],
-            "MERGE_SYMM_CAPS":True,
+            "MERGE_SYMM_CAPS": True,
             "FIX_SD": True,
             "KEEP_DUMMY": False,
             "MERGE_SERIES": True,

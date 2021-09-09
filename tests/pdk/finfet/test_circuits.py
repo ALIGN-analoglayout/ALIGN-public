@@ -11,7 +11,20 @@ except BaseException:
 def test_comparator():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = constraints = ""
+    setup = ""
+    constraints = []
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example)
+
+
+def test_comparator_pg():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.comparator(name)
+    setup = textwrap.dedent("""\
+        POWER = vccx
+        GND = vssx
+        """)
+    constraints = []
     example = build_example(name, netlist, setup, constraints)
     run_example(example)
 
@@ -132,6 +145,7 @@ def test_tia():
     constraints = []
     example = build_example(name, netlist, setup, constraints)
     run_example(example)
+
 
 @pytest.mark.skip
 def test_ldo_amp():

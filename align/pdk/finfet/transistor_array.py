@@ -53,8 +53,6 @@ class MOSGenerator(CanvasPDK):
             nfin = int(parameters['NFIN'])
         else:
             assert False, f'Either nfin or w parameter should be defined {parameters}'
-        logger.warning(device_type)
-        logger.warning(parameters['real_inst_type'] )
         unit_transistor = Transistor(device_type=device_type,
                                      nf=int(parameters[nf]),
                                      nfin=nfin,
