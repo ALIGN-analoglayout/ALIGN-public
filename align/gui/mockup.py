@@ -2,7 +2,7 @@
 # visit http://127.0.0.1:8050/ in your web browser.
 
 import dash
-from dash import html
+import dash_html_components as html
 import dash_core_components as dcc
 
 from dash.dependencies import Input, Output
