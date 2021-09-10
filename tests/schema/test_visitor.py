@@ -1,17 +1,17 @@
 import pytest
 
-from align.schema.types import BaseModel, Optional, List, Dict
+from align.schema.types import BaseModel, Optional, List, Dict, String
 from align.schema.visitor import Visitor, Transformer, cache
 
 @pytest.fixture
 def dummy():
     class DummyModel(BaseModel):
-        arg1: str
-        arg2: Optional[str]
-        arg3: List[str]
-        arg4: List[Optional[str]]
-        arg5: Dict[str, str]
-        arg6: Dict[str, Optional[str]]
+        arg1: String
+        arg2: Optional[String]
+        arg3: List[String]
+        arg4: List[Optional[String]]
+        arg5: Dict[String, String]
+        arg6: Dict[String, Optional[String]]
         arg7: "Optional[DummyModel]"
         arg8: "Optional[List[DummyModel]]"
     DummyModel.update_forward_refs()
@@ -40,7 +40,7 @@ def test_visitor_no_output(dummy):
 def test_visitor_raw_output(dummy):
 
     class StrValVisitor(Visitor):
-        def visit_str(self, node):
+        def visit_String(self, node):
             return node
 
     assert StrValVisitor().visit(dummy) == [
@@ -85,7 +85,7 @@ def test_transformer_no_visitor(dummy):
 def test_transformer_string_visitor(dummy):
 
     class AddStringPrefix(Transformer):
-        def visit_str(self, node):
+        def visit_String(self, node):
             return 'prefix_' + node
 
     transformed = AddStringPrefix().visit(dummy)

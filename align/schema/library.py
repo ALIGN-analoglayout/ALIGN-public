@@ -19,7 +19,7 @@ class Library(List[Union[Model, SubCircuit]]):
             self.extend(libraries['default'])
 
     def find(self, name):
-        return next((x for x in self if x.name == name.upper()), None)
+        return next((x for x in self if x.name == name), None)
 
 #
 # Create default library

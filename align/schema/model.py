@@ -1,7 +1,7 @@
 import logging
 from . import types
 
-from .types import Dict, Optional, List
+from .types import Dict, List, String, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -10,11 +10,11 @@ class Model(types.BaseModel):
     Model creation class
     '''
 
-    name : str                 # Model Name
-    base : Optional[str]       # Model Base (for derived models)
-    pins : Optional[List[str]] # List of pin names (derived from base if base exists)
-    parameters : Optional[Dict[str, str]]   # Parameter Name: Value mapping (inherits & adds to base if needed)
-    prefix : Optional[str]     # Instance name prefix, optional
+    name : String                 # Model Name
+    base : Optional[String]       # Model Base (for derived models)
+    pins : Optional[List[String]] # List of pin names (derived from base if base exists)
+    parameters : Optional[Dict[String, String]]   # Parameter Name: Value mapping (inherits & adds to base if needed)
+    prefix : Optional[String]     # Instance name prefix, optional
 
     def xyce(self):
         params = ' '.join(f'{k}={{{v}}}' for k, v in self.parameters.items())
@@ -41,22 +41,21 @@ class Model(types.BaseModel):
     @types.validator('name', allow_reuse=True)
     def name_check(cls, name):
         assert len(name) > 0, 'Model name cannot be an empty string'
-        return name.upper()
+        return name
 
     @types.validator('base', allow_reuse=True)
     def base_check(cls, base):
         library = cls._validator_ctx().parent
         assert library is not None, "Could not retrieve parent scope. Please register to library."
-        base_ptr = cls._get_base_model(library, base.upper())
+        base_ptr = cls._get_base_model(library, base)
         assert base_ptr is not None, f"Could not find base model {base} in libary {library}"
-        return base.upper()
+        return base
 
     @types.validator('pins', always=True, allow_reuse=True)
     def pin_check(cls, pins, values):
         if 'base' not in values or not values['base']:
             assert pins, 'Pins must be specified for base models. Did something go wrong in base?'
             assert len(pins) >= 1, 'Instance must have at least one terminals (e.g., dummies have one terminal)'
-            pins = [p.upper() for p in pins]
         elif pins:
             logger.error(f"Inheriting from {values['base'].name}. Cannot add pins")
             raise AssertionError(f"Inheriting from {values['base'].name}. Cannot add pins")
@@ -66,7 +65,6 @@ class Model(types.BaseModel):
 
     @types.validator('parameters', always=True, allow_reuse=True)
     def parameter_check(cls, parameters, values):
-        parameters = {k.upper(): v.upper() for k, v in parameters.items()} if parameters else {}
         if 'base' in values and values['base']:
             x = cls._get_base_model(cls._validator_ctx().parent, values['base']).parameters.copy()
             x.update(parameters)

@@ -1,4 +1,6 @@
+import pydantic
 import pytest
+from align.schema import types
 
 from align.schema.model import Model
 from align.schema.types import set_context, List
@@ -25,7 +27,7 @@ def testmos(library):
 
 def test_new_model(library):
     with set_context(library):
-        with pytest.raises(Exception):     
+        with pytest.raises(Exception):
             MyDevice = Model()
         with pytest.raises(Exception):
             MyDevice = Model(name='MyDevice')
@@ -70,12 +72,13 @@ def test_base_model_case_insensitivity(library):
                 'PARAM1': 'nf*4',
                 'param2': '2'
             })
-    assert MyDevice.name == 'MYDEVICE'
-    assert MyDevice.pins == ['D', 'S']
-    assert MyDevice.parameters == {
+    assert isinstance(MyDevice.name, types.String), type(MyDevice.name)
+    assert MyDevice.name == types.String('MYDEVICE')
+    assert MyDevice.pins == types.List[types.String](['D', 'S'])
+    assert MyDevice.parameters == types.Dict[types.String, types.String]({
         'PARAM1': 'NF*4',
         'PARAM2': '2'
-    }
+    })
 
 
 def test_derived_model_case_insensitivity(testmos):
@@ -84,10 +87,13 @@ def test_derived_model_case_insensitivity(testmos):
             name='DerivedMOS',
             base='testmos',
             parameters={'param1': 'nf*4'})
-    assert DerivedMOS.name == 'DERIVEDMOS'
-    assert DerivedMOS.base == 'TESTMOS'
-    assert DerivedMOS.pins == ['D', 'G', 'S', 'B']
-    assert DerivedMOS.parameters == {'PARAM1': 'NF*4', 'PARAM2': '2'}
+    assert DerivedMOS.name == types.String('DERIVEDMOS')
+    assert DerivedMOS.base == types.String('TESTMOS')
+    assert DerivedMOS.pins == types.List[types.String](['D', 'G', 'S', 'B'])
+    assert DerivedMOS.parameters == types.Dict[types.String, types.String]({
+        'PARAM1': 'NF*4',
+        'PARAM2': '2'
+    })
 
 
 def test_derived_model_new_parameters(testmos):
@@ -98,11 +104,11 @@ def test_derived_model_new_parameters(testmos):
             parameters={
                 'PARAM1': 'NF*6',
                 'PARAM3': 'NF*4'})
-    assert DerivedMOS.parameters == {
+    assert DerivedMOS.parameters == types.Dict[types.String, types.String]({
         'PARAM1': 'NF*6',
         'PARAM2': '2',
         'PARAM3': 'NF*4'
-    }
+    })
 
 
 def test_model_str_casting(library):
@@ -118,10 +124,10 @@ def test_model_str_casting(library):
                 'PARAM1': 1.0,
                 'PARAM2': 2
             })
-    assert MyDevice.parameters == {
+    assert MyDevice.parameters == types.Dict[types.String, types.String]({
         'PARAM1': '1.0',
         'PARAM2': '2'
-    }
+    })
 
 
 def test_model_json(testmos):
@@ -136,4 +142,4 @@ def test_model_xyce(testmos):
         newmos = Model(name='newmos', base='TESTMOS',
                        parameters={'param3': '3'})
     assert newmos.xyce(
-    ) == '.MODEL NEWMOS TESTMOS PARAM1={1.0} PARAM2={2} PARAM3={3}'
+    ) == '.MODEL newmos TESTMOS PARAM1={1.0} PARAM2={2} param3={3}'

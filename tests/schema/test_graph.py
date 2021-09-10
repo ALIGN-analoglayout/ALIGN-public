@@ -8,6 +8,7 @@ from align.schema.subcircuit import SubCircuit, Circuit
 from align.schema.parser import SpiceParser
 from align.schema.graph import Graph
 from align.schema.types import set_context
+from align.schema import types
 
 @pytest.fixture
 def library():
@@ -104,16 +105,16 @@ def test_netlist(circuit):
     assert netlist.elements == circuit.elements
     assert netlist.nets == circuit.nets
     # Advanced graphx functionality test
-    nodes = ['X1', 'X2',
-             'NET1', 'NET2', 'NET3']
+    nodes = [types.String(x) for x in ('X1', 'X2', 'NET1', 'NET2', 'NET3')]
     assert all(x in netlist.nodes for x in nodes)
     assert all(x in nodes for x in netlist.nodes)
-    edges = [# X1, net, pin
+    edges = [(types.String(x[0]), types.String(x[1]), {types.String(y) for y in x[2]}) for x in [
+             # X1, net, pin
              ('X1', 'NET1', {'A'}), ('X1', 'NET2', {'B'}),
              ('NET1', 'X1', {'A'}), ('NET2', 'X1', {'B'}),
              # X2, net, pin
              ('X2', 'NET1', {'A'}), ('X2', 'NET2', {'B'}), ('X2', 'NET3', {'C'}),
-             ('NET1', 'X2', {'A'}), ('NET2', 'X2', {'B'}), ('NET3', 'X2', {'C'})]
+             ('NET1', 'X2', {'A'}), ('NET2', 'X2', {'B'}), ('NET3', 'X2', {'C'})]]
     assert all(x in netlist.edges.data('pin') for x in edges), netlist.edges
     assert all(x in edges for x in netlist.edges.data('pin')), netlist.edges
 
@@ -125,16 +126,16 @@ def test_netlist_shared_net(circuit):
     assert netlist.elements == circuit.elements
     assert netlist.nets == circuit.nets
     # Advanced graphx functionality test
-    nodes = ['X1', 'X2',
-             'NET1', 'NET2']
+    nodes = [types.String(x) for x in ('X1', 'X2', 'NET1', 'NET2')]
     assert all(x in netlist.nodes for x in nodes)
     assert all(x in nodes for x in netlist.nodes)
-    edges = [# X1, net, pin
+    edges = [(types.String(x[0]), types.String(x[1]), {types.String(y) for y in x[2]}) for x in [
+             # X1, net, pin
              ('X1', 'NET1', {'A'}), ('X1', 'NET2', {'B'}),
              ('NET1', 'X1', {'A'}), ('NET2', 'X1', {'B'}),
              # X2, net, pin
              ('X2', 'NET1', {'A', 'B'}), ('X2', 'NET2', {'C'}),
-             ('NET1', 'X2', {'A', 'B'}), ('NET2', 'X2', {'C'})]
+             ('NET1', 'X2', {'A', 'B'}), ('NET2', 'X2', {'C'})]]
     assert all(x in netlist.edges.data('pin') for x in edges), netlist.edges
     assert all(x in edges for x in netlist.edges.data('pin')), netlist.edges
 
@@ -142,7 +143,8 @@ def test_find_subgraph_matches(simple_circuit, matching_subckt):
     netlist, matching_netlist = Graph(simple_circuit), Graph(matching_subckt)
     # Validate true match
     assert len(netlist.find_subgraph_matches(matching_netlist)) == 1
-    assert netlist.find_subgraph_matches(matching_netlist)[0] == {'X3': 'X1', 'NET3': 'PIN3', 'NET1': 'PIN1', 'X4': 'X2', 'NET2': 'PIN2'}
+    assert netlist.find_subgraph_matches(matching_netlist)[0] == types.Dict[types.String, types.String]({
+        'X3': 'X1', 'NET3': 'PIN3', 'NET1': 'PIN1', 'X4': 'X2', 'NET2': 'PIN2'})
     # Validate false match
     with set_context(simple_circuit.parent):
         subckt2 = SubCircuit(name='test_subckt2', pins=['PIN1', 'PIN2', 'PIN3', 'PIN4', 'PIN5'])
@@ -163,8 +165,11 @@ def test_replace_matching_subgraph(simple_circuit, matching_subckt):
     matches = [{'X3': 'X1', 'NET3': 'PIN3', 'NET1': 'PIN1', 'X4': 'X2', 'NET2': 'PIN2'}]
     netlist.replace_matching_subgraph(matching_netlist)
     assert all(x not in netlist.nodes for x in matches[0].keys() if x.startswith('X'))
-    assert 'X_TEST_SUBCKT_I1_X3_X4' in netlist.nodes
-    new_edges = [('X_TEST_SUBCKT_I1_X3_X4', 'NET3', {'PIN3'}), ('X_TEST_SUBCKT_I1_X3_X4', 'NET1', {'PIN1'}), ('X_TEST_SUBCKT_I1_X3_X4', 'NET2', {'PIN2'})]
+    assert types.String('X_TEST_SUBCKT_I1_X3_X4') in netlist.nodes
+    new_edges = [(types.String(x[0]), types.String(x[1]), {types.String(y) for y in x[2]}) for x in [
+        ('X_TEST_SUBCKT_I1_X3_X4', 'NET3', {'PIN3'}),
+        ('X_TEST_SUBCKT_I1_X3_X4', 'NET1', {'PIN1'}), 
+        ('X_TEST_SUBCKT_I1_X3_X4', 'NET2', {'PIN2'})]]
     assert all(x in netlist.edges.data('pin') for x in new_edges), netlist.edges.data('pin')
 
 def test_replace_repeated_subckts(ota):
@@ -175,7 +180,10 @@ def test_replace_repeated_subckts(ota):
     assert len(subckts) == 1
     assert len(subckts[0].elements) == 4
     elements = {x.name for x in subckts[0].elements}
-    assert elements == {'M10', 'M7', 'M9', 'M1'} or elements == {'M2', 'M6', 'M8', 'M0'}
+    assert elements in (
+        {types.String(x) for x in ('M10', 'M7', 'M9', 'M1')},
+        {types.String(x) for x in ('M2', 'M6', 'M8', 'M0')}
+    )
 
 def test_replace_matching_subckts(ota, primitives):
     ckt = ota
@@ -195,27 +203,27 @@ def test_flatten(heirarchical_ckt):
     ckt = heirarchical_ckt
     netlist = Graph(ckt)
     netlist.flatten()
-    myparametermap = {
+    myparametermap = types.Dict[types.String, types.String]({
         'XSUB1_X2': '1',
         'XSUB1_X1_X1': '1',
         'XSUB1_X1_X2': '2',
         'XSUB2_X1': '1',
         'XSUB2_X2': '3'
-    }
+    })
     assert {x.name for x in ckt.elements} == set(myparametermap.keys())
-    assert set(ckt.nets) == {'NET1', 'NET2', 'NET3', 'XSUB1_NET1'}
-    assert all(element.parameters['MYPARAMETER'] == myparametermap[element.name] for element in ckt.elements)
+    assert set(ckt.nets) == {types.String(x) for x in ('NET1', 'NET2', 'NET3', 'XSUB1_NET1')}
+    assert all(element.parameters[types.String('MYPARAMETER')] == myparametermap[element.name] for element in ckt.elements)
 
 def test_flatten_depth1(heirarchical_ckt):
     ckt = heirarchical_ckt
     netlist = Graph(ckt)
     netlist.flatten(1)
-    myparametermap = {
+    myparametermap = types.Dict[types.String, types.String]({
         'XSUB1_X2': '1',
         'XSUB1_X1': '2',
         'XSUB2_X1': '1',
         'XSUB2_X2': '3'
-    }
+    })
     assert {x.name for x in ckt.elements} == set(myparametermap.keys())
-    assert set(ckt.nets) == {'NET1', 'NET2', 'NET3', 'XSUB1_NET1'}
-    assert all(element.parameters['MYPARAMETER'] == myparametermap[element.name] for element in ckt.elements)
+    assert set(ckt.nets) == {types.String(x) for x in ('NET1', 'NET2', 'NET3', 'XSUB1_NET1')}
+    assert all(element.parameters[types.String('MYPARAMETER')] == myparametermap[element.name] for element in ckt.elements)

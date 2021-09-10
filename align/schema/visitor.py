@@ -109,7 +109,7 @@ class Visitor(object):
             return self.flatten(self.visit(v) for v in node)
         elif isinstance(node, types.Dict) or isinstance(node, dict):
             return self.flatten(self.visit(v) for _, v in node.items())
-        elif isinstance(node, (str, int, type(None))):
+        elif isinstance(node, (types.String, int, type(None))):
             return None
         else:
             raise NotImplementedError( \
@@ -144,7 +144,7 @@ class Transformer(Visitor):
         elif isinstance(node, types.Dict) or isinstance(node, dict):
             new_node = {k: self.visit(v) for k, v in node.items()}
             return node if all(x is y for x, y in zip(node.values(), new_node.values())) else new_node
-        elif isinstance(node, (int, str, type(None))):
+        elif isinstance(node, (types.String, int, type(None))):
             return node
         else:
             raise NotImplementedError( \

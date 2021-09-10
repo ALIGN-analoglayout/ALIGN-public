@@ -25,7 +25,7 @@ unit_multipliers = {
 }
 
 def str2float(val):
-    unit = next((x for x in unit_multipliers if val.endswith(x.upper()) or val.endswith(x.lower())), None)
+    unit = next((x for x in unit_multipliers if val.endswith(x)), None)
     numstr = val if unit is None else val[:-1*len(unit)]
     return float(numstr) * unit_multipliers[unit] if unit is not None else float(numstr)
 
@@ -115,8 +115,8 @@ class SpiceParser:
         assert all(x.type in ('NAME', 'NUMBER', 'EXPR', 'EQUALS') for x in cache), cache
         assignments = {i for i, x in enumerate(cache) if x.type == 'EQUALS'}
         assert all(cache[i-1].type == 'NAME' for i in assignments)
-        args = [SpiceParser._cast(x.value.upper(), x.type) for i, x in enumerate(cache) if len(assignments.intersection({i-1, i, i+1})) == 0]
-        kwargs = {cache[i-1].value.upper(): SpiceParser._cast(cache[i+1].value.upper(), cache[i+1].type) for i in assignments}
+        args = [SpiceParser._cast(x.value, x.type) for i, x in enumerate(cache) if len(assignments.intersection({i-1, i, i+1})) == 0]
+        kwargs = {cache[i-1].value: SpiceParser._cast(cache[i+1].value, cache[i+1].type) for i in assignments}
         return args, kwargs
 
     @staticmethod
@@ -200,9 +200,7 @@ class SpiceParser:
             self._scope.pop()
         elif decl == '.PARAM':
             assert len(args) == 0, f"unsupported arguments {args}, probably missing default values"
-            self._scope[-1].parameters.update({
-                k.upper() : str(v).upper() for k, v in kwargs.items()
-            })
+            self._scope[-1].parameters.update(kwargs)
         elif decl == '.MODEL':
             assert len(args) == 2, args
             name, base = args[0], args[1]

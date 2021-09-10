@@ -53,7 +53,6 @@ def test_Order_nblock_checking(db):
     with pytest.raises(AssertionError):
         x.check(None)
 
-@pytest.mark.skip(reason='Cannot activate this yet because of ALIGN1.0 annotation issues')
 def test_Order_validate_instances(db):
     with set_context(db):
         with pytest.raises(Exception):

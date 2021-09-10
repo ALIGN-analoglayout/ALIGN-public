@@ -1,5 +1,5 @@
 __all__ = [
-    'BaseModel', 'List', 'Dict',
+    'BaseModel', 'List', 'Dict', 'String',
     'validator', 'root_validator', 'validate_arguments',
     'Optional', 'Union',
     'NamedTuple', 'Literal',
@@ -242,3 +242,33 @@ class Dict(pydantic.generics.GenericModel, typing.Generic[KeyT, DataT]):
 
     def __eq__(self, other):
         return self.__root__ == other
+
+    def __contains__(self, item):
+        return item in self.__root__
+
+    def update(self, other):
+        self.__root__.update(other)
+
+class String(str):
+
+    def __eq__(self, other):
+        return isinstance(other, str) and super().casefold() == other.casefold()
+
+    def __hash__(self) -> int:
+        return super().casefold().__hash__()
+
+    def startswith(self, prefix) -> bool:
+        return super().casefold().startswith(prefix.casefold())
+
+    def endswith(self, suffix) -> bool:
+        return super().casefold().endswith(suffix.casefold())
+
+    @classmethod
+    def __get_validators__(cls):
+        # declare validator to call
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v):
+        # force casting to 'String' instead of 'str'
+        return cls(v)

@@ -14,7 +14,7 @@ def gen_dot_file(nm, ifn, ofn):
         txt = fp.read()
         parser.parse(txt)
 
-    q = parser.library.find(nm.upper())
+    q = parser.library.find(nm)
 
     tbl = { "GND": {}, "VSS": {}, "VDD": {}, "CLK": {}}
 

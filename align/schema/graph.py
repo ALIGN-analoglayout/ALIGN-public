@@ -324,7 +324,7 @@ class Graph(networkx.Graph):
                 model=element.model,
                 pins={
                     pin: subcktinst.pins[net] if net in subcktinst.pins else f'{subcktinst.name}_{net}' for pin, net in element.pins.items()},
-                parameters={key: eval(val, {}, subcktinst.parameters)
+                parameters={key: eval(val.casefold(), {}, {k.casefold(): v for k, v in subcktinst.parameters.items()} if subcktinst.parameters else {})
                             for key, val in element.parameters.items()},
                 generator = element.generator
             )
