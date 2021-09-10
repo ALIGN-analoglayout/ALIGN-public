@@ -159,3 +159,16 @@ def test_ldo_amp():
     constraints = []
     example = build_example(name, netlist, setup, constraints)
     run_example(example)
+
+
+# def test_net_naming():
+#     name = f'ckt_{get_test_id()}'
+#     netlist = circuits.buffer(name)
+#     setup = textwrap.dedent("""\
+#         POWER = vccx
+#         GND = vssx
+#         """)
+#     setup = ""
+#     constraints = []
+#     example = build_example(name, netlist, setup, constraints)
+#     run_example(example, cleanup=False)

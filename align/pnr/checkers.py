@@ -304,7 +304,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     d['bbox'] = cnv.bbox.toList()
     d['terminals'] = new_d['terminals']
 
-    if toplevel:
+    if False:
         nets_actual = set.union({net.name for net in hN.Nets}, {net.name for net in hN.PowerNets})
         nets_found  = {term['netName'] for term in d['terminals'] if term['netName'] is not None}
         logger.debug(f'Nets actual: {nets_actual}')
