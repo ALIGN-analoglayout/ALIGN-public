@@ -9,6 +9,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def read_setup(setup_path):
     design_setup = {
             "POWER":list(),

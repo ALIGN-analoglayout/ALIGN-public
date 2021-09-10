@@ -69,7 +69,8 @@ class Annotate:
                 self._group_block_const(circuit_name)
                 self._group_cap_const(circuit_name)
 
-        logger.debug(f"ALl subckt after grouping:{[ckt.name for ckt in self.ckt_data if isinstance(ckt, SubCircuit)]}")
+        logger.debug(f"All subckt after grouping:{[ckt.name for ckt in self.ckt_data if isinstance(ckt, SubCircuit)]}")
+
         traversed = [] # libray gets appended, so only traverse subckt once
         temp_match_dict ={} # To avoid iterative calls (search subckt in subckt)
         for ckt in self.ckt_data:
