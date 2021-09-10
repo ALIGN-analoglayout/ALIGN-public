@@ -536,11 +536,11 @@ class SymmetricBlocks(SoftConstraint):
         if len(self.parent.parent.elements)==0:
             #skips the check while reading user constraints
             return
-        logger.info(f"parent constraints {self.parent} ")
+        # logger.info(f"parent constraints {self.parent} ")
         group_block_instances = [const.name for const in self.parent if isinstance(const, GroupBlocks)]
 
         for pair in self.pairs:
-            logger.debug(f"pairs {self.pairs} {self.parent.parent.get_element(pair[0])}")
+            # logger.debug(f"pairs {self.pairs} {self.parent.parent.get_element(pair[0])}")
             if len([ele for ele in pair if ele in group_block_instances])>0:
                 #Skip check for group block elements as they are added later in the flow
                 continue
