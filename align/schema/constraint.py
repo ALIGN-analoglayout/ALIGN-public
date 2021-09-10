@@ -530,6 +530,9 @@ class SymmetricBlocks(SoftConstraint):
         #TODO:function to check before adding, right now it adds and then check
         assert all(len(pair) for pair in self.pairs) >= 1, 'Must contain at least one instance'
         assert all(len(pair) for pair in self.pairs) <= 2, 'Must contain at most two instances'
+        if not hasattr(self.parent.parent, 'elements'):
+            # PnR stage VerilogJsonModule
+            return
         if len(self.parent.parent.elements)==0:
             #skips the check while reading user constraints
             return
