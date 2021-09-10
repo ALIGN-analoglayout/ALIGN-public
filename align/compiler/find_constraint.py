@@ -235,7 +235,7 @@ def recursive_start_points(G,all_match_pairs,traversed,node1,node2, ports_weight
     #TODO: use tuple instead of string
     all_match_pairs[node1+node2]=pair
     logger.debug(f"updating match pairs (start): {pprint.pformat(all_match_pairs, indent=4)}")
-    #CHECk for array start points
+    #Check for array start points
     hier_start_points = []
     for k,pair in all_match_pairs.items():
         logger.debug(f"all pairs from {k}:{pair}")
@@ -326,7 +326,6 @@ def get_leaf_connection(subckt,net):
                 conn.extend(get_leaf_connection(s, pin))
             else:
                 conn.append(pin)
-
     return conn
 
 def FindConst(ckt_data, name, stop_points=None):
@@ -391,78 +390,81 @@ def FindConst(ckt_data, name, stop_points=None):
     new_hier_keys =  [key for key,value in all_match_pairs.items() if "name" in value.keys()]
     for key in new_hier_keys:
         del all_match_pairs[key]
-
+    written_symmetries.extend(new_hier_keys)
     all_pairs = sorted(all_match_pairs.values(), key=lambda k: len([k1 for k1, v1 in k.items() if k1 != v1]), reverse=True)
     logger.debug(f"all symmtry matching pairs {pprint.pformat(all_pairs, indent=4)}")
     for pairs in all_pairs:
-        pairsj = []
         pairs = sorted(pairs.items(), key=lambda k: k[0])
         logger.debug(f"All symmblock pairs: {pairs}, existing symmetries: {written_symmetries}")
         logger.debug(f"All written symmetric instances: {written_symmetries}")
-        for key, value in pairs:
-            if key in stop_points:
-                #logger.debug(f"skipping symmetry b/w {key} {value} as they are present in stop_points")
-                continue
-            elif key in written_symmetries or value in written_symmetries:
-                #logger.debug(f"skipping symmetry b/w {key} {value} as already written {written_symmetries}")
-                continue
-            elif key in new_hier_keys:
-                #logger.debug(f"skipping symmetry b/w {key} {value} as {key} is merged to another hierarchy")
-                continue
-            elif key not in graph.nodes():
-                #logger.debug(f"skipping symmetry b/w {key} {value} as {key} is not in graph")
-                continue
-            if not graph.nodes[key].get('instance'):
-                if key!=value  :
-                    pairs, s1, s2 = symmnet_device_pairs(graph, key, value, written_symmetries, skip_const)
-                    if pairs:
-                        symmNet = ',' + key + ',' + ','.join(pairs.keys()) + \
-                                ',' + value + ',' + ','.join(pairs.values())
-                        written_symmetries.append(key)
-                        written_symmetries.append(value)
-                        with set_context(input_const):
-                            symmNetj = constraint.SymmetricNets(
-                                direction = "V",
-                                net1=key,
-                                net2=value,
-                                pins1=s1,
-                                pins2=s2)
-                            input_const.append(symmNetj)
-                        logger.debug(f"adding symmetric net const: {symmNetj}")
-                    else:
-                        logger.debug(f"skipping symmetry between large fanout nets {key} {value} {pairs}")
-                        #TODO Need update in placer to simplify this
-                else:
-                    logger.debug(f"skipping self symmetric nets {key} {value}")
-            elif 'Dcap' in graph.nodes[key].get('instance').model:
-                logger.debug(f"cd")
-                logger.debug(f"skipping symmetry for dcaps {key} {value}")
-            else:
-                if key !=value:
-                    pairsj.append([key, value])
-                elif graph.nodes[key].get('instance').model in {'NMOS','PMOS'}:
-                    logger.debug(f"TBF:skipping self symmetry for single transistor {key} {value}")
-                else:
-                    pairsj.append([key])
-        logger.debug(f"filterd symmetry pairs: {pairsj}")
-        if len(pairsj) > 1 or (len(pairsj) > 0 and len(pairsj[0]) == 2):
-            _temp = len(input_const)
-            try:
-                with set_context(input_const):
-                    symmBlock = constraint.SymmetricBlocks(direction='V',pairs=pairsj)
-                    input_const.append(symmBlock)
-                    written_symmetries.extend([str(ele) for pair in pairsj for ele in pair])
-                    logger.debug(f"one axis of written symmetries: {symmBlock}")
-            except:
-                while len(input_const) > _temp:
-                    input_const.pop()
-                logger.debug(f"skipping match {pairsj} due to unsatisfied constraints")
-                pass
-
+        pairsj = filter_sym_const(pairs, graph, input_const, stop_points, written_symmetries, skip_const)
+        add_or_revert_const(pairsj, input_const, written_symmetries)
     logger.debug(f"Identified constraints of {name} are {input_const}")
 
+def filter_sym_const(pairs:list, graph, input_const, stop_points:list, written_symmetries:list, skip_const):
+    pairsj = []
+    for key, value in pairs:
+        if key in stop_points:
+            #logger.debug(f"skipping symmetry b/w {key} {value} as they are present in stop_points")
+            continue
+        elif key in written_symmetries or value in written_symmetries:
+            #logger.debug(f"skipping symmetry b/w {key} {value} as already written {written_symmetries}")
+            continue
+        elif key not in graph.nodes():
+            #logger.debug(f"skipping symmetry b/w {key} {value} as {key} is not in graph")
+            continue
+        if not graph.nodes[key].get('instance'):
+            if key!=value  :
+                pairs, s1, s2 = symmnet_device_pairs(graph, key, value, written_symmetries, skip_const)
+                if pairs:
+                    written_symmetries.append(key)
+                    written_symmetries.append(value)
+                    with set_context(input_const):
+                        symmNetj = constraint.SymmetricNets(
+                            direction = "V",
+                            net1=key,
+                            net2=value,
+                            pins1=s1,
+                            pins2=s2)
+                        input_const.append(symmNetj)
+                    logger.debug(f"adding symmetric net const: {symmNetj}")
+                else:
+                    logger.debug(f"skipping symmetry between large fanout nets {key} {value} {pairs}")
+                    #TODO Need update in placer to simplify this
+            else:
+                logger.debug(f"skipping self symmetric nets {key} {value}")
+        elif 'Dcap' in graph.nodes[key].get('instance').model:
+            logger.debug(f"cd")
+            logger.debug(f"skipping symmetry for dcaps {key} {value}")
+        else:
+            if key !=value:
+                pairsj.append([key, value])
+            elif graph.nodes[key].get('instance').model in {'NMOS','PMOS'}:
+                logger.debug(f"TBF:skipping self symmetry for single transistor {key} {value}")
+            else:
+                pairsj.append([key])
+    return pairsj
 
-def symmnet_device_pairs(G, net_A, net_B,existing_symmetry_blocks=None, skip_blocks=None):
+
+def add_or_revert_const(pairsj:list, input_const, written_symmetries:list):
+    logger.debug(f"filterd symmetry pairs: {pairsj}")
+    if len(pairsj) > 1 or (len(pairsj) > 0 and len(pairsj[0]) == 2):
+        _temp = len(input_const)
+        try:
+            with set_context(input_const):
+                symmBlock = constraint.SymmetricBlocks(direction='V',pairs=pairsj)
+                input_const.append(symmBlock)
+                written_symmetries.extend([str(ele) for pair in pairsj for ele in pair])
+                logger.debug(f"one axis of written symmetries: {symmBlock}")
+        except:
+            while len(input_const) > _temp:
+                input_const.pop()
+            logger.debug(f"skipping match {pairsj} due to unsatisfied constraints")
+            pass
+
+
+
+def symmnet_device_pairs(G, net_A, net_B,existing_symmetry_blocks=list(), skip_blocks=None):
     """
     Parameters
     ----------
@@ -501,7 +503,7 @@ def symmnet_device_pairs(G, net_A, net_B,existing_symmetry_blocks=None, skip_blo
                 assert G.nodes[blockB].get('instance'), f"Block,{blockB} not found"
                 if conn_A[ele_A] == conn_B[ele_B] and G.nodes[blockA].get('instance').model == G.nodes[blockB].get('instance').model:
                     logger.debug(f"checking symmetric instances {ele_A}, {ele_B}")
-                    if ele_B.split('/')[0] in pairs.values():
+                    if blockB in pairs.values():
                         logger.debug(f"skipping symmetry due to multiple possible matching of net {net_B} nbr {ele_B} to {pairs.values()} ")
                         return [None,None,None]
                     elif blockA in existing_symmetry_blocks and blockB not in existing_symmetry_blocks:
@@ -512,7 +514,7 @@ def symmnet_device_pairs(G, net_A, net_B,existing_symmetry_blocks=None, skip_blo
                         continue
                     elif ele_A not in pinsA and ele_B not in pinsB:
                         logger.debug(f"adding symmetric blocks {ele_A} , {ele_B}")
-                        pairs[ele_A.split('/')[0]] = ele_B.split('/')[0]
+                        pairs[blockA] = blockB
                         pinsA.append(ele_A)
                         pinsB.append(ele_B)
             elif not ('/' in ele_A or '/' in ele_B) and \

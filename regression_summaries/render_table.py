@@ -2,7 +2,7 @@
 
 import dash
 from dash.dependencies import Input, Output
-from dash import html
+import dash_html_components as html
 import dash_table
 import pandas as pd
 import argparse
