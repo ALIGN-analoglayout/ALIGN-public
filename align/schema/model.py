@@ -66,9 +66,8 @@ class Model(types.BaseModel):
     @types.validator('parameters', always=True, allow_reuse=True)
     def parameter_check(cls, parameters, values):
         if 'base' in values and values['base']:
-            x = cls._get_base_model(cls._validator_ctx().parent, values['base']).parameters.copy()
-            x.update(parameters)
-            parameters = x
+            bparams = cls._get_base_model(cls._validator_ctx().parent, values['base']).parameters
+            parameters = type(parameters)({**bparams, **parameters})
         return parameters
 
     @types.validator('prefix', always=True, allow_reuse=True)

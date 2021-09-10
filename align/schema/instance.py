@@ -77,8 +77,7 @@ class Instance(types.BaseModel):
         if parameters:
             assert model.parameters and set(parameters.keys()).issubset(model.parameters.keys()), \
                 f"{cls.__name__} parameters must be a subset of {model.__class__.__name__} parameters"
-            parameters.update({k: v for k, v in model.parameters.items() \
-                    if k not in parameters})
+            parameters = type(parameters)({**model.parameters, **parameters})
         elif model.parameters:
             parameters = model.parameters.copy()
         return parameters
