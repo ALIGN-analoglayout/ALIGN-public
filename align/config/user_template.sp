@@ -133,11 +133,11 @@ M0 zn i SN SN NMOS w=w0 l=l0
 M1 zn i SP PB PMOS w=w1 l=l0
 .ends INV_B
 
-.subckt stage2_inv G1 G2 SN SP
-MM0 G1 D SN SN NMOS l=60n w=1u
-MM1 G1 D SP SP PMOS l=60n w=1u
-MM2 D G2 SN SN NMOS l=60n w=1u
-MM3 D G2 SP SP PMOS l=60n w=1u
+.subckt stage2_inv VI VO SN SP
+MM0 VM VI SN SN NMOS l=60n w=1u
+MM1 VM VI SP SP PMOS l=60n w=1u
+MM2 VO VM SN SN NMOS l=60n w=1u
+MM3 VO VM SP SP PMOS l=60n w=1u
 .ends stage2_inv
 *TBF: had to remove m=1 because in base model m=1 is not there. How to allow user to change base model?
 
