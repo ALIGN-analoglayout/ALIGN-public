@@ -35,6 +35,7 @@ class CreateDatabase:
         else:
             self.resolve_parameters(name, subckt.parameters)
         self._update_leaf_instances()
+        #TODO Remove redundant models
         return self.ckt_parser.library
 
     def resolve_parameters(self, name, param):
