@@ -216,7 +216,7 @@ workflows:
             branches:
               only:
                 - master
-                - bug/compiler
+                - compiler/code_coverage
           matrix:
             alias: test-integration-cp38-manylinux_2_24
             parameters:

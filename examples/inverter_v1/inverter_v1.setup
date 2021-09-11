@@ -1,4 +1,4 @@
-POWER = vdd
-GND = vss
+POWER = 
+GND = 
 CLOCK =
 DIGITAL =

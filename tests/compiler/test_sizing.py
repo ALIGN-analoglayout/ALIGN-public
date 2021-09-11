@@ -10,8 +10,6 @@ def ckt(cn):
     test_path = mydir.parent.parent / 'files' / 'test_circuits' / (cn+'.sp')
     ckt_library = compiler_input(test_path, cn, pdk_path, config_path)
     assert ckt_library.find(cn)
-    print(cn)
-    print(ckt_library.find(cn))
     return ckt_library.find(cn)
 
 @pytest.fixture

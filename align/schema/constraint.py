@@ -530,11 +530,23 @@ class SymmetricBlocks(SoftConstraint):
         #TODO:function to check before adding, right now it adds and then check
         assert all(len(pair) for pair in self.pairs) >= 1, 'Must contain at least one instance'
         assert all(len(pair) for pair in self.pairs) <= 2, 'Must contain at most two instances'
+        if not hasattr(self.parent.parent, 'elements'):
+            # PnR stage VerilogJsonModule
+            return
+        if len(self.parent.parent.elements)==0:
+            #skips the check while reading user constraints
+            return
+        # logger.info(f"parent constraints {self.parent} ")
+        group_block_instances = [const.name for const in self.parent if isinstance(const, GroupBlocks)]
+
         for pair in self.pairs:
-            #and condition skips the check while reading user constraints
-            if len(pair)==2 and 'get_element' in dir(self.parent.parent) \
-                and self.parent.parent.get_element(pair[0]) \
-                and self.parent.parent.get_element(pair[1]): #Handle groupblock objects in symmetry const
+            # logger.debug(f"pairs {self.pairs} {self.parent.parent.get_element(pair[0])}")
+            if len([ele for ele in pair if ele in group_block_instances])>0:
+                #Skip check for group block elements as they are added later in the flow
+                continue
+            elif len(pair)==2:
+                assert self.parent.parent.get_element(pair[0]), f"element {pair[0]} not found in design"
+                assert self.parent.parent.get_element(pair[1]), f"element {pair[1]} not found in design"
                 assert self.parent.parent.get_element(pair[0]).parameters == \
                     self.parent.parent.get_element(pair[1]).parameters, \
                         f"Incorrent symmetry pair {pair} in subckt {self.parent.parent.name}"
@@ -728,9 +740,13 @@ class ConstraintDB(types.List[ConstraintType]):
             data = []
         with set_context(self):
             for x in data:
-                logger.info(f'reading data {x}')
-                self.append(x)
-
+                if x['constraint'] == 'GroupBlocks':
+                    logger.info(f'first reading groupblock data {x}')
+                    self.append(x)
+            for x in data:
+                if x['constraint'] != 'GroupBlocks':
+                    logger.info(f'reading rest data {x}')
+                    self.append(x)
     def checkpoint(self):
         if self._checker:
             self._checker.checkpoint()

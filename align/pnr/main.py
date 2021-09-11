@@ -104,7 +104,7 @@ def extract_capacitor_constraints( pnr_const_ds):
 
     return cap_constraints
 
-def remove_pg_pins(verilog_d:dict, subckt:str, pg_pins:list):
+def remove_pg_pins(verilog_d:dict, subckt:str, pg_connections:dict):
     """remove_pg_pins
 
     Removes any ports related to power pins. PnR engine cannot connect to subcircuit power pins.
@@ -115,7 +115,7 @@ def remove_pg_pins(verilog_d:dict, subckt:str, pg_pins:list):
         subckt (str): name of sub-circuit
         pg_pins (list): list of power pins in subckt to be removed
     """
-    logger.debug(f"removing power pins {pg_pins} from subckt {subckt}")
+    logger.debug(f"removing power pins {pg_connections} from subckt {subckt}")
     modules_dict = {module['name']: module['parameters'] for module in verilog_d['modules']}
 
     if subckt in modules_dict:
@@ -125,23 +125,26 @@ def remove_pg_pins(verilog_d:dict, subckt:str, pg_pins:list):
     else:
         assert False, f"{subckt} not found in design {modules_dict}"
     modules = [module for module in verilog_d['modules'] if module['name']==subckt]
-    assert len(modules) ==1, f"dupicate modules are found {modules}"
+    assert len(modules) ==1, f"duplicate modules are found {modules}"
     module = modules[0]
     #Remove port from subckt level
-    module['parameters'] = [p for p in module['parameters'] if p not in pg_pins]
+    module['parameters'] = [p for p in module['parameters'] if p not in pg_connections.keys()]
     for inst in module['instances']:
         if inst['abstract_template_name'] in modules_dict:
             #Inst pins connected to pg_pins
-            pg_conn = [conn["formal"] for conn in inst['fa_map'] if conn["actual"] in pg_pins]
-            if len(pg_conn)>0:
-                logger.debug(f"Removing instance {inst['instance_name']} pins connected to {pg_conn}")
-                inst['fa_map'] = [conn for conn in inst['fa_map'] if conn["formal"] not in pg_conn]
+            hier_pg_connections = {conn["formal"]:pg_connections[conn["actual"]] for conn in inst['fa_map'] if conn["actual"] in pg_connections}
+            if len(hier_pg_connections)>0:
+                logger.debug(f"Removing instance {inst['instance_name']} pins connected to {hier_pg_connections}")
+                inst['fa_map'] = [conn for conn in inst['fa_map'] if conn["formal"] not in hier_pg_connections]
                 #Creates a copy of module with reduced pins
-                new_name = modify_pg_conn_subckt(verilog_d, inst['abstract_template_name'], pg_conn)
+                new_name = modify_pg_conn_subckt(verilog_d, inst['abstract_template_name'], hier_pg_connections)
                 inst['abstract_template_name'] = new_name
-                remove_pg_pins(verilog_d, new_name, pg_conn)
+                remove_pg_pins(verilog_d, new_name, hier_pg_connections)
         else:
+            inst['fa_map'] = [{'formal':conn['formal'],
+                        'actual': pg_connections.get(conn["actual"], conn["actual"])} for conn in inst['fa_map']]
             logging.debug(f"leaf level node {inst['instance_name']} {inst['abstract_template_name']}")
+
 def clean_if_extra(verilog_d, subckt):
     #Remove modules which are not instantiated
     all_inst = set([inst['abstract_template_name'] for module in verilog_d['modules'] for inst in module["instances"]]+[subckt])
@@ -291,8 +294,8 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         #with (topology_dir / verilog_file).open( 'rt') as fp:
         #    verilog_d = json.load(fp)
         check_modules(verilog_d)
-        pg_pins = [p["actual"] for p in verilog_d['global_signals']]
-        remove_pg_pins(verilog_d, subckt, pg_pins)
+        pg_connections = {p["actual"]:p["actual"] for p in verilog_d['global_signals']}
+        remove_pg_pins(verilog_d, subckt, pg_connections)
         clean_if_extra(verilog_d, subckt)
         check_modules(verilog_d)
 

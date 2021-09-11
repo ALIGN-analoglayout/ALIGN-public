@@ -10,7 +10,6 @@ class Instance(types.BaseModel):
     name: str
     pins : Dict[str, str]
     parameters : Optional[Dict[str, str]]
-    #TODO: associate a generator for eacj primitive during instantiation
     generator: str #Handles different sized instantiation of same subcircuit to same generator
     abstract_name: Optional[str] # Added during primitive generator, in case no primitive generator found = generator
     class Config:
@@ -39,6 +38,7 @@ class Instance(types.BaseModel):
     def add_actual_name(self, acn):
         with set_context(self.parent):
             self.actual_name = acn
+
     @property
     def mclass(self):
         model = self._get_model(self.parent.parent.parent, self.model)
