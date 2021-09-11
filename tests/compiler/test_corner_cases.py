@@ -4,16 +4,18 @@ import pathlib
 
 ALIGN_HOME = pathlib.Path(__file__).parent.parent.parent
 
+
 @pytest.fixture
 def get_parser():
     parser = SpiceParser()
-    model_statemenets = ALIGN_HOME/ 'align' / 'config' / 'model.txt'
+    model_statemenets = ALIGN_HOME / "align" / "config" / "model.txt"
     with open(model_statemenets) as f:
         lines = f.read()
     parser.parse(lines)
     return parser
 
-#parameters without default values
+
+# parameters without default values
 # def test_top_param(get_parser):
 #     get_parser.parse(f'''
 #     .subckt nfet2x d g s b
@@ -26,8 +28,8 @@ def get_parser():
 #     get_parser.parse(f'''
 #         MN0 d g n1 b    nmos l=0.014u nfin=p1 m=1
 #     ''')
-#TBF: new line character in parameter is traslated to args [single_to_differential_converter]
-#This ecample does not reroduce the testcase plese use  [single_to_differential_converter]
+# TBF: new line character in parameter is traslated to args [single_to_differential_converter]
+# This ecample does not reroduce the testcase plese use  [single_to_differential_converter]
 # def test_top_param(get_parser):
 #     get_parser.parse(f'''
 #     .param p1=1 b=1 \
@@ -71,7 +73,7 @@ def get_parser():
 #     circuit = compiler(test_path, "test1", pdk_dir, config_path) # Not able to parse spice files with no top level names
 #     assert len(circuit.elements) == 9
 
-#Non supported lines
+# Non supported lines
 # .param _par0 _par1
 # parameters _par=1 #spectre format
 # e0 clksb gnd VCVS vdd clks 1

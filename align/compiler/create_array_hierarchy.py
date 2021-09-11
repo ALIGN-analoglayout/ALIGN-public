@@ -23,7 +23,7 @@ class array_hierarchy:
     Creates a hierarchy for repeated elements
     """
 
-    def __init__(self, ckt_data, design_setup, library, existing_generator):
+    def __init__(self, ckt, design_setup):
         """
         Args:
             ckt_data (dict): all subckt graph, names and port
@@ -31,15 +31,12 @@ class array_hierarchy:
             library (list): list of library elements in dict format
             existing_generator (list): list of names of existing generators
         """
-        self.ckt_data = ckt_data
-        self.digital = design_setup["DIGITAL"]
+        self.ckt = ckt
+        assert not ckt.name in design_setup['DIGITAL']
+        assert design_setup["IDENTIFY_ARRAY"]==True
         self.pg = design_setup["POWER"] + design_setup["GND"]
-        self.lib = library
         self.clk = design_setup["CLOCK"]
-        self.all_lef = existing_generator
         self.stop_points = self.pg + self.clk
-        self.identify_array = design_setup["IDENTIFY_ARRAY"]
-        self.lib_names = [lib_ele.name for lib_ele in library]
 
     def create_hierarchy(self, graph, node: str, traversed: list):
         """
