@@ -22,10 +22,14 @@ set(sources
 
 add_library(placer STATIC ${sources} ${headers})
 
+
+target_include_directories(placer PRIVATE "/opt/homebrew/include")
+
+target_link_directories(placer PRIVATE "/opt/homebrew/lib")
+
 target_link_libraries(
      placer PRIVATE
-     spdlog::spdlog
-     lpsolve::lpsolve55
-     Boost::boost
+     spdlog
+     lpsolve55
 )
 target_code_coverage(placer)

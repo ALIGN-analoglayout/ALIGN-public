@@ -30,10 +30,11 @@ set(sources
 )
 
 add_library(router STATIC ${sources} ${headers})
+target_include_directories(router PRIVATE "/opt/homebrew/include")
+target_link_directories(router PRIVATE "/opt/homebrew/lib")
 target_link_libraries(
      router PRIVATE
-     lpsolve::lpsolve55
-     nlohmann_json::nlohmann_json
-     spdlog::spdlog
+     lpsolve55
+     spdlog
 )
 target_code_coverage(router)

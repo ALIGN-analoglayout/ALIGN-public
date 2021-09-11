@@ -1185,7 +1185,8 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
 
   // set_add_rowmode(lp, FALSE);
   {
-    double row[N_var + 1] = {0};
+    double row[N_var + 1];
+    for (unsigned i = 0; i < N_var + 1; ++i) row[i] = 0;
     ConstGraph const_graph;
 
     // add HPWL in cost

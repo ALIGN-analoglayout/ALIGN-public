@@ -9,6 +9,8 @@ set(sources
      PnR-pybind11.cpp)
 
 add_library(PnR SHARED ${sources} ${headers})
+target_include_directories(PnR PRIVATE "/opt/homebrew/include")
+target_link_directories(PnR PRIVATE "/opt/homebrew/lib")
 target_link_libraries(
      PnR PRIVATE
      # Internal Dependencies
@@ -19,12 +21,10 @@ target_link_libraries(
      guard_ring
      MNA
      # External Dependencies
-     lpsolve::lpsolve55
-     nlohmann_json::nlohmann_json
-     spdlog::spdlog
+     lpsolve55
+     spdlog
      superlu
      pybind11::module
-     Boost::boost
 )
 target_code_coverage(PnR)
 
@@ -47,12 +47,10 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
           guard_ring
           MNA
           # External Dependencies
-          lpsolve::lpsolve55
-          nlohmann_json::nlohmann_json
-          spdlog::spdlog
+          lpsolve55
+          spdlog
           superlu
           pybind11::module
-          Boost::boost
           GTest::gtest
           GTest::gtest_main)
 endif()
