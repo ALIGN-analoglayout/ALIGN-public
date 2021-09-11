@@ -71,7 +71,7 @@ class CreateDatabase:
             return new_name
         else:
             self.multi_param_instantiation.append(name.upper())
-            logger.debug(f"New module found {subckt.name} {subckt.parameters}")
+            logger.debug(f"New subckt definition found {subckt.name} {subckt.parameters}")
             for p in subckt.parameters.keys():
                 if p in param:
                     subckt.parameters[p]=param[p]
@@ -79,10 +79,13 @@ class CreateDatabase:
             return name.upper()
 
     def _update_instances(self, subckt):
-        logger.debug(f"Updating instance parameters of module {subckt.name} as {subckt.parameters}")
+        logger.debug(f"Updating instance parameters of subckt {subckt.name} as {subckt.parameters}")
         for inst in subckt.elements:
             if isinstance(self.ckt_parser.library.find(inst.model.upper()), SubCircuit):
                 logger.debug(f"checking subckt inst {inst.name} {inst.parameters}")
+                for p,v in inst.parameters.items():
+                    if v in subckt.parameters:
+                        inst.parameters[p]=subckt.parameters[v]
                 new_name = self.resolve_parameters(inst.model.upper(), inst.parameters)
                 logger.debug(f"New model name of instance {inst.name} is {new_name}")
                 assert self.ckt_parser.library.find(new_name), f" Model not found in library {new_name}"
