@@ -12,62 +12,62 @@ logger = logging.getLogger(__name__)
 
 def read_setup(setup_path):
     design_setup = {
-            "POWER":list(),
-            "GND":list(),
-            "CLOCK":list(),
-            "DIGITAL":list(),
-            "DONT_USE_LIB":list(),
-            "DONT_CONST":list(),
-            "IDENTIFY_ARRAY": True,
-            "MERGE_SYMM_CAPS":True,
-            "FIX_SD": True,
-            "KEEP_DUMMY": False,
-            "MERGE_SERIES": True,
-            "MERGE_PARALLEL": True
-            }
+        "POWER": list(),
+        "GND": list(),
+        "CLOCK": list(),
+        "DIGITAL": list(),
+        "DONT_USE_LIB": list(),
+        "DONT_CONST": list(),
+        "IDENTIFY_ARRAY": True,
+        "MERGE_SYMM_CAPS": True,
+        "FIX_SD": True,
+        "KEEP_DUMMY": False,
+        "MERGE_SERIES": True,
+        "MERGE_PARALLEL": True,
+    }
     if setup_path.is_file():
-        logger.debug(f'Reading setup file: {setup_path}')
+        logger.debug(f"Reading setup file: {setup_path}")
         fp = open(setup_path, "r")
         line = fp.readline()
         while line:
             if line.strip().upper().startswith("POWER"):
-                power = line.strip().upper().split('=')[1].split()
-                design_setup['POWER']=power
+                power = line.strip().upper().split("=")[1].split()
+                design_setup["POWER"] = power
             elif line.strip().upper().startswith("GND"):
-                GND = line.strip().upper().split('=')[1].split()
-                design_setup['GND']=GND
+                GND = line.strip().upper().split("=")[1].split()
+                design_setup["GND"] = GND
             elif line.strip().upper().startswith("CLOCK"):
-                CLOCK = line.strip().upper().split('=')[1].split()
-                design_setup['CLOCK']=CLOCK
+                CLOCK = line.strip().upper().split("=")[1].split()
+                design_setup["CLOCK"] = CLOCK
             elif line.strip().upper().startswith("DIGITAL"):
-                DIGITAL = line.strip().upper().split('=')[1].split()
-                design_setup['DIGITAL']=DIGITAL
+                DIGITAL = line.strip().upper().split("=")[1].split()
+                design_setup["DIGITAL"] = DIGITAL
             elif line.strip().upper().startswith("DONT_USE_LIB"):
-                DONT_USE_CELLS = line.strip().upper().split('=')[1].split()
-                design_setup['DONT_USE_LIB']=DONT_USE_CELLS
+                DONT_USE_CELLS = line.strip().upper().split("=")[1].split()
+                design_setup["DONT_USE_LIB"] = DONT_USE_CELLS
             elif line.strip().upper().startswith("DONT_CONST"):
-                NO_CONST = line.strip().upper().split('=')[1].split()
-                design_setup['DONT_CONST']=NO_CONST
+                NO_CONST = line.strip().upper().split("=")[1].split()
+                design_setup["DONT_CONST"] = NO_CONST
             elif line.strip().upper().startswith("IDENTIFY_ARRAY"):
-                NO_CONST = (line.strip().upper().split('=')[1].strip() == "TRUE")
-                design_setup['IDENTIFY_ARRAY'] = NO_CONST
+                NO_CONST = line.strip().upper().split("=")[1].strip() == "TRUE"
+                design_setup["IDENTIFY_ARRAY"] = NO_CONST
             elif line.strip().upper().startswith("MERGE_SYMM_CAPS"):
-                MERGE_SYMM_CAPS = (line.strip().upper().split('=')[1].strip() == "TRUE")
-                design_setup['MERGE_SYMM_CAPS'] = MERGE_SYMM_CAPS
+                MERGE_SYMM_CAPS = line.strip().upper().split("=")[1].strip() == "TRUE"
+                design_setup["MERGE_SYMM_CAPS"] = MERGE_SYMM_CAPS
             elif line.strip().upper().startswith("FIX_SOURCE_DRAIN"):
-                FIX_SOURCE_DRAIN = (line.strip().upper().split('=')[1].strip() == "TRUE")
-                design_setup['FIX_SD'] = FIX_SOURCE_DRAIN
+                FIX_SOURCE_DRAIN = line.strip().upper().split("=")[1].strip() == "TRUE"
+                design_setup["FIX_SD"] = FIX_SOURCE_DRAIN
             elif line.strip().upper().startswith("KEEP_DUMMY"):
-                KEEP_DUMMY = (line.strip().upper().split('=')[1].strip() == "TRUE")
-                design_setup['KEEP_DUMMY'] = KEEP_DUMMY
+                KEEP_DUMMY = line.strip().upper().split("=")[1].strip() == "TRUE"
+                design_setup["KEEP_DUMMY"] = KEEP_DUMMY
             elif line.strip().upper().startswith("MERGE_SERIES"):
-                MERGE_SERIES = (line.strip().upper().split('=')[1].strip() == "TRUE")
-                design_setup['MERGE_SERIES'] = MERGE_SERIES
+                MERGE_SERIES = line.strip().upper().split("=")[1].strip() == "TRUE"
+                design_setup["MERGE_SERIES"] = MERGE_SERIES
             elif line.strip().upper().startswith("MERGE_PARALLEL"):
-                MERGE_PARALLEL = (line.strip().upper().split('=')[1].strip() == "TRUE")
-                design_setup['MERGE_PARALLEL'] = MERGE_PARALLEL
+                MERGE_PARALLEL = line.strip().upper().split("=")[1].strip() == "TRUE"
+                design_setup["MERGE_PARALLEL"] = MERGE_PARALLEL
             else:
                 logger.warning(f"Non identified values found in setup file{line}")
-            line=fp.readline()
+            line = fp.readline()
         logger.debug(f"Read SETUP: {design_setup}")
     return design_setup

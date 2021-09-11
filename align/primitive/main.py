@@ -6,7 +6,6 @@ import json
 import importlib.util
 from copy import deepcopy
 from math import sqrt, ceil,floor
-from ..compiler.util import convert_to_unit
 from ..schema.subcircuit import SubCircuit
 
 from ..cell_fabric import gen_lef
@@ -481,7 +480,6 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
             values["NFIN"]=size
             name_arg ='NFIN'+str(size)
         else:
-            # convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
         if 'NF' in values.keys():
             if values['NF'] == 'unit_size':

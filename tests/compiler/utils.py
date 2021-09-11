@@ -40,7 +40,21 @@ def ota_six_flip(name):
         .ends {name}
     """)
     return netlist
-
+def ring_oscillator(name):
+    netlist = textwrap.dedent(f"""\
+        .subckt inverter vi vo vssx vccx
+        mp0 vo vi vcccx vccx p nfin=4 l=40n m=2
+        mn0 vo vi vssx vssx n nfin=4 l=40n m=2
+        .ends inverter
+        .subckt {name} vo vccx vssx
+        xi0 vo n1 vssx vccx inverter
+        xi1 n1 n2 vssx vccx inverter
+        xi2 n2 n3 vssx vccx inverter
+        xi3 n3 n4 vssx vccx inverter
+        xi4 n4 vo vssx vccx inverter
+        .ends {name}
+    """)
+    return netlist
 def clean_data(name):
     example = my_dir / name
     if example.exists() and example.is_dir():
