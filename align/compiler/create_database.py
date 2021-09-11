@@ -11,6 +11,8 @@ from networkx.algorithms.shortest_paths.weighted import multi_source_dijkstra
 from ..schema.subcircuit import SubCircuit
 
 import logging
+
+from align.schema import subcircuit
 logger = logging.getLogger(__name__)
 
 
@@ -19,6 +21,7 @@ class CreateDatabase:
         self.const_parse = const_parse
         self.ckt_parser = ckt_parser
         self.multi_param_instantiation = []
+        self.remove_redundant_models()
 
     def read_inputs(self, name: str):
         """
@@ -35,8 +38,27 @@ class CreateDatabase:
         else:
             self.resolve_parameters(name, subckt.parameters)
         self._update_leaf_instances()
-        #TODO Remove redundant models
         return self.ckt_parser.library
+
+    def remove_redundant_models(self):
+        _model_list = list()
+        for module in self.ckt_parser.library:
+            if isinstance(module, SubCircuit):
+                for ele in module.elements:
+                    _model_list.append(ele.model)
+        _redundant_list = list()
+        for module in self.ckt_parser.library:
+            if not isinstance(module,SubCircuit):
+                if not(module.name in _model_list or module.base==None):
+                    _redundant_list.append(module)
+        # Keep base models
+        # Delete unused models
+        for module in _redundant_list:
+            self.ckt_parser.library.remove(module)
+        # self.ckt_parser.library = self.ckt_parser.library.type([module for module in self.ckt_parser.library \
+        #     if isinstance(module, SubCircuit) or \
+        #     module.name in _model_list or module.base==None])
+
 
     def resolve_parameters(self, name, param):
         subckt = self.ckt_parser.library.find(name.upper())
@@ -84,7 +106,9 @@ class CreateDatabase:
             if isinstance(self.ckt_parser.library.find(inst.model.upper()), SubCircuit):
                 logger.debug(f"checking subckt inst {inst.name} {inst.parameters}")
                 for p,v in inst.parameters.items():
-                    if v in subckt.parameters:
+                    if v in self.ckt_parser.circuit.parameters.keys():
+                            inst.parameters[p] = self.ckt_parser.circuit.parameters[v]
+                    elif v in subckt.parameters:
                         inst.parameters[p]=subckt.parameters[v]
                 new_name = self.resolve_parameters(inst.model.upper(), inst.parameters)
                 logger.debug(f"New model name of instance {inst.name} is {new_name}")
