@@ -20,9 +20,9 @@ def mock_circuit():
     library.append(subckt)
     library.append(dummy_sub)
     for instance in [
-        'MN0', 'MN1', 'MN2', 'MN3', 'MN4',
-        'MP5', 'MP6', 'MP7', 'MP8', 'MP9',
-        'MP10', 'MP11', 'MN13', 'MP12', 'MN14',
+        'MN0', 'MN1', 'MN2', 'MN3', 'MN4', 'X_CMC_S_NMOS_B_I1_M12_M14',
+        'MP5', 'MP6', 'MP7', 'MP8', 'MP9', 'C2', 'C5', 'C1', 'X_CMC_S_NMOS_B_I1_M6_M7',
+        'MP10', 'MP11', 'MN13', 'MP12', 'MN14', 'X_CMC_PMOS_MP10_MP7', 'X_CMC_PMOS_MP8_MP9',
         'X_DP_MN1_MN2', 'X_CCN_MN3_MN4', 'X_CCP_MP5_MP6', 'X_INV_N_MP11_MN13', 'X_INV_P_MP12_MN14']:
         with types.set_context(subckt.elements):
             if instance.startswith('M'):
@@ -32,6 +32,14 @@ def mock_circuit():
                         model='nmos',
                         generator='',
                         pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET11', 'B': 'NET13'})
+                )
+            elif instance.startswith('C'):
+                subckt.elements.append(
+                    Instance(
+                        name=instance,
+                        model='cap',
+                        generator='',
+                        pins={'PLUS': 'NET10', 'MINUS': 'NET12'})
                 )
             else:
                 subckt.elements.append(
