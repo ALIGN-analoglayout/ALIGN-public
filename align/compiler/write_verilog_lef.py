@@ -34,30 +34,13 @@ class WriteVerilog:
             instance['instance_name'] = ele.name
             instance['fa_map']= self.gen_dict_fa(ele.pins.keys(), ele.pins.values())
             d['instances'].append( instance)
-
         return d
 
     def gen_dict_fa(self, a, b):
-        if len(a) == len(b):
-            mapped_pins = []
-            for ai, bi in zip(a, b):
-                mapped_pins.append( { "formal" : ai, "actual" : bi})
-            return list(sorted(mapped_pins,key=lambda x:x['formal']))
-        elif len(set(a)) == len(set(b)):
-            if len(a) > len(b):
-                mapped_pins = []
-                check_short = []
-                no_of_short = 0
-                for i in range(len(a)):
-                    if a[i] in check_short:
-                        mapped_pins.append(mapped_pins[check_short.index(a[i])])
-                        no_of_short += 1
-                    else:
-                        mapped_pins.append( { "formal" : a[i], "actual": b[i - no_of_short]})
-                        check_short.append(a[i])
-                return list(sorted(mapped_pins,key=lambda x:x['formal']))
-        else:
-            logger.error( f"unmatched ports found: {a} {b}")
-            assert False
+        assert len(a) == len(b), f'unmatched ports found: {a} {b}'
+        mapped_pins = []
+        for ai, bi in zip(a, b):
+            mapped_pins.append( { "formal" : ai, "actual" : bi})
+        return list(sorted(mapped_pins,key=lambda x:x['formal']))
 
 

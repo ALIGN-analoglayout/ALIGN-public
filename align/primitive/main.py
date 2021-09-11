@@ -481,7 +481,7 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
             values["NFIN"]=size
             name_arg ='NFIN'+str(size)
         else:
-            convert_to_unit(values)
+            # convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
         if 'NF' in values.keys():
             if values['NF'] == 'unit_size':
