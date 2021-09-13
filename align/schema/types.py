@@ -249,19 +249,27 @@ class Dict(pydantic.generics.GenericModel, typing.Generic[KeyT, DataT]):
     def update(self, other):
         self.__root__.update(other)
 
+
 class String(str):
 
     def __eq__(self, other):
-        return isinstance(other, str) and super().casefold() == other.casefold()
+        return isinstance(other, str) and \
+            super().casefold() == other.casefold()
 
     def __hash__(self) -> int:
         return super().casefold().__hash__()
 
+    def __contains__(self, other):
+        return isinstance(other, str) and \
+            super().casefold().__contains__(other.casefold())
+
     def startswith(self, prefix) -> bool:
-        return super().casefold().startswith(prefix.casefold())
+        return isinstance(prefix, str) and \
+            super().casefold().startswith(prefix.casefold())
 
     def endswith(self, suffix) -> bool:
-        return super().casefold().endswith(suffix.casefold())
+        return isinstance(suffix, str) and \
+            super().casefold().endswith(suffix.casefold())
 
     @classmethod
     def __get_validators__(cls):
