@@ -8,7 +8,7 @@ except BaseException:
     import circuits
 
 
-def test_comparator():
+def test_cmp():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = ""
