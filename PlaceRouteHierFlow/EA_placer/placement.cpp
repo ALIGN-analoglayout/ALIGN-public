@@ -1069,7 +1069,7 @@ void Placement::Cal_WA_Net_Force()
       }
       else{
         Blocks[i].Netforce.x += (x_positive - x_nagative);
-      Blocks[i].Netforce.y += (y_positive - y_nagative);
+        Blocks[i].Netforce.y += (y_positive - y_nagative);
       }
       
       
@@ -1127,6 +1127,49 @@ float Placement::WA_Net_SUM_N(int net_index, bool x_or_y)
   return result / gammar;
 }
 //End WA model
+
+void Placement::Cal_WA_Area_Force()
+{
+
+  float Area_SUM_P_X = Area_SUM_P(1);
+  float Area_SUM_P_X_2 = Area_SUM_P_X*Area_SUM_P_X;
+  float Area_SUM_P_Y = Area_SUM_P(0);
+  float Area_SUM_P_Y_2 = Area_SUM_P_Y*Area_SUM_P_Y;
+
+  float Area_SUM_N_X = Area_SUM_N(1);
+  float Area_SUM_N_X_2 = Area_SUM_N_X*Area_SUM_N_X;
+  float Area_SUM_N_Y = Area_SUM_N(0);
+  float Area_SUM_N_Y_2 = Area_SUM_N_Y*Area_SUM_N_Y;
+
+  float Area_SUM_P_WA_X = Area_SUM_P_WA(1);
+  float Area_SUM_P_WA_Y = Area_SUM_P_WA(0);
+  float Area_SUM_N_WA_X = Area_SUM_N_WA(1);
+  float Area_SUM_N_WA_Y = Area_SUM_N_WA(0);
+
+  float WA_X =  Area_SUM_P_WA_X/Area_SUM_P_X - Area_SUM_N_WA_X/Area_SUM_N_X;
+  float WA_Y =  Area_SUM_P_WA_Y/Area_SUM_P_Y - Area_SUM_N_WA_Y/Area_SUM_N_Y;
+
+  for (unsigned int i = 0; i < Blocks.size(); ++i)
+  {
+    Blocks[i].Net_block_force_P.x = LSE_block_P(i, 1);
+    Blocks[i].Net_block_force_P.y = LSE_block_P(i, 0);
+    Blocks[i].Net_block_force_N.x = LSE_block_N(i, 1);
+    Blocks[i].Net_block_force_N.y = LSE_block_N(i, 0);
+  }
+
+  for (unsigned int i = 0; i < Blocks.size(); ++i)
+  {
+
+    float x_positive = ((1 + Blocks[i].Cpoint.x / gammar) * Blocks[i].Net_block_force_P.x * Area_SUM_P_X - Blocks[i].Net_block_force_P.x * Area_SUM_P_WA_X) / (Area_SUM_P_X * Area_SUM_P_X);
+    float x_nagative = ((1 + Blocks[i].Cpoint.x / gammar) * Blocks[i].Net_block_force_N.x * Area_SUM_N_X - Blocks[i].Net_block_force_N.x * Area_SUM_N_WA_X) / (Area_SUM_N_X * Area_SUM_N_X);
+    float y_positive = ((1 + Blocks[i].Cpoint.y / gammar) * Blocks[i].Net_block_force_P.y * Area_SUM_P_Y - Blocks[i].Net_block_force_P.y * Area_SUM_P_WA_Y) / (Area_SUM_P_Y * Area_SUM_P_Y);
+    float y_nagative = ((1 + Blocks[i].Cpoint.y / gammar) * Blocks[i].Net_block_force_N.y * Area_SUM_N_Y - Blocks[i].Net_block_force_N.y * Area_SUM_N_WA_Y) / (Area_SUM_N_Y * Area_SUM_N_Y);
+    Blocks[i].Areaforce.x = (x_positive - x_nagative)* WA_Y;
+    Blocks[i].Areaforce.y = (y_positive - y_nagative)* WA_X;
+  }
+}
+
+
 
 //Area model
 void Placement::Cal_LSE_Area_Force()
@@ -1224,6 +1267,54 @@ float Placement::Area_SUM_N(bool x_or_y){
 
   return result;
 
+}
+
+float Placement::Area_SUM_P_WA(bool x_or_y)
+{
+
+  //( sum xi*exp(xi/r) )
+
+  float result = 0.0;
+
+  for (unsigned int i = 0; i < Blocks.size(); i++)
+  {
+    int block_index = i;
+
+    if (x_or_y)
+    { // 1 for x
+      result += Blocks[block_index].Cpoint.x * Exp_Function(Blocks[block_index].Cpoint.x, gammar);
+    }
+    else
+    {
+      result += Blocks[block_index].Cpoint.y * Exp_Function(Blocks[block_index].Cpoint.y, gammar);
+    }
+  }
+
+  return result;
+}
+
+float Placement::Area_SUM_N_WA(bool x_or_y)
+{
+
+  //( sum xi*exp(xi/r) )
+
+  float result = 0.0;
+
+  for (unsigned int i = 0; i < Blocks.size(); i++)
+  {
+    int block_index = i;
+
+    if (x_or_y)
+    { // 1 for x
+      result += Blocks[block_index].Cpoint.x * Exp_Function(-Blocks[block_index].Cpoint.x, gammar);
+    }
+    else
+    {
+      result += Blocks[block_index].Cpoint.y * Exp_Function(-Blocks[block_index].Cpoint.y, gammar);
+    }
+  }
+
+  return result;
 }
 
 
