@@ -14,10 +14,10 @@ def test_cmp():
     setup = ""
     constraints = []
     example = build_example(name, netlist, setup, constraints)
-    run_example(example)
+    run_example(example, cleanup=False)
 
 
-def test_comparator_pg():
+def test_cmp_pg():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = textwrap.dedent("""\
@@ -26,11 +26,11 @@ def test_comparator_pg():
         """)
     constraints = []
     example = build_example(name, netlist, setup, constraints)
-    run_example(example)
+    run_example(example, cleanup=False)
 
 
 @pytest.mark.nightly
-def test_comparator_1():
+def test_cmp_1():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = textwrap.dedent("""\
@@ -56,7 +56,7 @@ def test_comparator_1():
 
 
 @pytest.mark.nightly
-def test_comparator_2():
+def test_cmp_2():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = textwrap.dedent("""\
@@ -81,7 +81,7 @@ def test_comparator_2():
 
 
 @pytest.mark.nightly
-def test_comparator_clk():
+def test_cmp_clk():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = textwrap.dedent("""\
@@ -104,7 +104,7 @@ def test_comparator_clk():
 
 
 @pytest.mark.nightly
-def test_comparator_noconst():
+def test_cmp_noconst():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = textwrap.dedent(f"""\
@@ -118,7 +118,7 @@ def test_comparator_noconst():
 
 
 @pytest.mark.nightly
-def test_comparator_order():
+def test_cmp_order():
     """ mp7 and mp8 should not bypass subcircuit identification """
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
