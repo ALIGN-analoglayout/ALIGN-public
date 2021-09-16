@@ -12,6 +12,7 @@
 #ifdef PERFORMANCE_DRIVEN
 #include <Python.h>
 #endif
+#include "spdlog/spdlog.h"
 
 using namespace std;
 
@@ -117,7 +118,7 @@ public:
     //
     void E_Placer(PnRDB::hierNode &current_node);
     #ifdef PERFORMANCE_DRIVEN
-    void performance_gradient(vector<float> &uc_x, vector<float> &uc_y, PyObject *pFun_cal_grad, PyObject *sess, PyObject *X, PyObject *grads);
+    void performance_gradient(vector<float> &uc_x, vector<float> &uc_y, PyObject *pFun_cal_grad, PyObject *sess, PyObject *X, PyObject *grads, float weight);
     #endif
     void Extract_Placement_Vectors(vector<float> &temp_vector, bool x_or_y);
     void Feedback_Placement_Vectors(vector<float> &temp_vector, bool x_or_y);

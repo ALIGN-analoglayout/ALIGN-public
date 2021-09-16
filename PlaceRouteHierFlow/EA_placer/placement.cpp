@@ -269,6 +269,7 @@ void Placement::place_ut(PnRDB::hierNode &current_node)
 
 void Placement::place(PnRDB::hierNode &current_node)
 {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.place");
   //step 1: transfroming info. of current_node to Blocks and Nets
   //create a small function for this
   float area, scale_factor;
@@ -339,11 +340,16 @@ void Placement::place(PnRDB::hierNode &current_node)
   //read alignment constrains
   read_alignment(current_node);
   read_order(current_node);
+  clock_t start, end;
+  start = clock();
   #ifdef quadratic_placement
   Initilize_Placement(current_node);
   #else
   Initilize_Placement_Rand(current_node);
   #endif
+  end = clock();
+  logger->info("initialize runtime: {0} s", (double)(end - start) / CLOCKS_PER_SEC);
+      
 
   print_blocks_nets();
   //step 3: call E_placer
@@ -923,10 +929,10 @@ void Placement::PlotPlacement(int index)
     }
     */
 
-  for (int i = 0; i < (int)Blocks.size(); ++i)
+  for (int i = 0; i < originalBlockCNT; ++i)
   {
     // fout << "\nset label \"" << Blocks[i].blockname << "\" at " << Blocks[i].Cpoint.x << " , " << Blocks[i].Cpoint.y << " center " << endl;
-    fout << "\nset label \"" << Blocks[i].index << "\" at " << Blocks[i].Cpoint.x << " , " << Blocks[i].Cpoint.y << " center " << endl;
+    fout << "\nset label \"" << Blocks[i].blockname<< "\" at " << Blocks[i].Cpoint.x << " , " << Blocks[i].Cpoint.y << " center " << endl;
   }
 
   // fout << "\nplot[:][:] \'-\' with lines linestyle 3 lc 2,  \'-\' with lines linestyle 7 lc 2, "<<
@@ -934,7 +940,7 @@ void Placement::PlotPlacement(int index)
   //      << endl;
   ;
 
-  for (int i = 0; i < (int)Blocks.size(); ++i)
+  for (int i = 0; i < originalBlockCNT; ++i)
   {
       fout << "\nplot[:][:] \'-\' with lines linestyle 3 lc " <<  to_string(2*i)<<",  \'-\' with lines linestyle 7 lc " <<  to_string(i*2)<<", "<<
         "\'-\' with lines linestyle 1 lc " <<  to_string(i*2)<<", \'-\' with lines linestyle 0 lc " <<  to_string(i*2)<<"" << endl
@@ -1983,7 +1989,7 @@ void Placement::E_Placer(PnRDB::hierNode &current_node)
     std::cout << "test 3" << std::endl;
 #endif
 #ifdef PERFORMANCE_DRIVEN
-    performance_gradient(uc_x, uc_y, pFun_cal_grad, sess, X, grads);
+    performance_gradient(uc_x, uc_y, pFun_cal_grad, sess, X, grads, 1 - current_overlap);
 #endif
     Pull_back_vector(uc_x, 1);
     Pull_back_vector(uc_y, 0);
@@ -2017,7 +2023,7 @@ void Placement::E_Placer(PnRDB::hierNode &current_node)
 }
 
 #ifdef PERFORMANCE_DRIVEN
-void Placement::performance_gradient(vector<float> &uc_x, vector<float> &uc_y, PyObject *pFun_cal_grad, PyObject *sess, PyObject *X, PyObject *grads) { 
+void Placement::performance_gradient(vector<float> &uc_x, vector<float> &uc_y, PyObject *pFun_cal_grad, PyObject *sess, PyObject *X, PyObject *grads, float weight) { 
   vector<float> uc_x_ori(originalBlockCNT,0), uc_y_ori(originalBlockCNT,0);
   //vector<float> uc_x_ori_move(originalBlockCNT,0), uc_y_ori_move(originalBlockCNT,0);
   for (int i = 0;i<originalBlockCNT;i++){
@@ -2057,11 +2063,11 @@ void Placement::performance_gradient(vector<float> &uc_x, vector<float> &uc_y, P
     //std::cout<<grad_y[i]<<std::endl;
   }
   for (int i = 0;i<originalBlockCNT;i++){
-    uc_x[i] += grad_x[i];
-    uc_y[i] += grad_y[i];
+    uc_x[i] += weight * grad_x[i];
+    uc_y[i] += weight * grad_y[i];
     for(auto s:Blocks[i].spiltBlock){
-      uc_x[s] += grad_x[i];
-      uc_y[s] += grad_y[i];
+      uc_x[s] += weight * grad_x[i];
+      uc_y[s] += weight * grad_y[i];
     }
   }
 }
