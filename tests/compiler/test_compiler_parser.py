@@ -5,14 +5,9 @@ from align.compiler.compiler import compiler_input
 
 
 def test_simple_circuit():
-    test_path = (
-        pathlib.Path(__file__).parent.parent / "files" / "test_circuits" / "test2.sp"
-    ).resolve()
-    pdk_dir = (
-        pathlib.Path(__file__).resolve().parent.parent.parent
-        / "pdks"
-        / "FinFET14nm_Mock_PDK"
-    )
+    test_home = pathlib.Path(__file__).resolve().parent.parent
+    test_path = test_home / "files"/ "test_circuits"/ "ota"/ "ota.sp"
+    pdk_dir = test_home.parent / "pdks"/ "FinFET14nm_Mock_PDK"
     config_path = pathlib.Path(__file__).resolve().parent.parent / "files"
     lib = compiler_input(test_path, "test2", pdk_dir, config_path)
     circuit = lib.find("TEST2")

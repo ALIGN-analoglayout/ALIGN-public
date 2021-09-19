@@ -76,7 +76,6 @@ def clean_data(name):
     if example.exists() and example.is_dir():
         shutil.rmtree(example)
 
-
 def build_example(name, netlist, netlist_setup, constraints):
     example = my_dir / name
     if example.exists() and example.is_dir():

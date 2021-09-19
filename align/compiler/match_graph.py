@@ -6,17 +6,16 @@ Created on Fri Nov  2 21:33:22 2018
 """
 #%%
 from re import sub
-from align.schema import model
-from align.schema import Model, SubCircuit
+from align.schema import Model, SubCircuit, Instance
 from ..schema.types import set_context
 import pprint
 import logging
 from ..schema import constraint
-from ..schema.instance import Instance
 from ..schema.types import set_context
 from align.schema.graph import Graph
 
 logger = logging.getLogger(__name__)
+
 
 
 class Annotate:
@@ -25,7 +24,7 @@ class Annotate:
     Boundries (clk,digital, etc) are defined from setup file
     """
 
-    def __init__(self, ckt_data, design_setup, library, existing_generator):
+    def __init__(self, ckt_data, design_setup, primitive_library, existing_generator):
         """
         Args:
             ckt_data (dict): all subckt graph, names and port
@@ -36,7 +35,7 @@ class Annotate:
         self.ckt_data = ckt_data
         self.digital = design_setup["DIGITAL"]
         self.pg = design_setup["POWER"] + design_setup["GND"]
-        self.lib = library
+        self.lib = primitive_library
         self.clk = design_setup["CLOCK"]
         self.all_lef = existing_generator
         self.stop_points = self.pg + self.clk
@@ -227,22 +226,6 @@ class Annotate:
 
     def _group_cap_const(self, name):
         # TODO: merge group cap and group block
-        """
-        Reads common centroid const in input constraints
-        Merges cc caps as single cap in const-file and netlist
-        Parameters
-        ----------
-        graph : networkx graph
-            Input graph to be modified
-        const_path: pathlib.path
-            Input const file path
-        ports : list
-            Used to check nets which should not be deleted/renamed.
-        Returns
-        -------
-        None.
-
-        """
         subckt = self.ckt_data.find(name)
         const_list = subckt.constraints
         gc_const = [
@@ -270,25 +253,14 @@ class Annotate:
                 new_pins.update({k + str(i): v for k, v in sc_pins.items()})
             cc_name = "CAP_CC_" + "_".join([str(x) for x in const.num_units])
             if not self.ckt_data.find(const.name.upper()):
-                # Create a subckt and add to library
-                # Ideally create a subckt initially but did not work at PnR capacitor hack are not compatible
+                # Create a group cap model and add to library
+                # Ideally create a subckt initially but did not work at PnR needs Cap names startwith C
                 with set_context(self.ckt_data):
                     new_subckt = Model(
                         name=const.name.upper(), pins=list(new_pins.keys())
                     )
                     self.ckt_data.append(new_subckt)
-                # Add all instances of groupblock to new subckt
-                # with set_context(new_subckt.elements):
-                #     for i,e in enumerate(const_inst):
-                #         te = subckt.get_element(e)
-                #         X0 = Instance(name=te.name, model=te.model, \
-                #             pins={k:k+str(i) for k,v in te.pins.items()}, \
-                #             parameters = te.parameters,
-                #             generator=te.generator)
-                #         new_subckt.elements.append(X0)
 
-            # Remove elements from subckt then Add new_subckt instance
-            # inst_name = 'X'+'_'.join(const_inst)
             with set_context(subckt.elements):
                 for e in const_inst:
                     subckt.elements.remove(subckt.get_element(e))
@@ -300,8 +272,6 @@ class Annotate:
                     generator=cc_name,
                 )
                 subckt.elements.append(X1)
-            # Translate any constraints defined on the groupblock elements to subckt
-            # self._top_to_bottom_translation(name, {inst:inst for inst in const_inst}, cc_name)
             # Modify instance names in constraints after modifying groupblock
             self._update_const(
                 name, [const.name.upper(), *const_inst], const.name.upper()

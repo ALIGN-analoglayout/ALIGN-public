@@ -5,17 +5,54 @@ Created on Wed July 08 13:12:15 2020
 @author: kunal
 """
 
+from align.schema.graph import Graph
 from collections import Counter
 from itertools import combinations
-
+from align.schema import SubCircuit, Instance
 from .util import compare_two_nodes
-from ..schema import constraint
-from ..schema.hacks import HierDictNode
+from ..schema.types import set_context
 
 import logging
 
 logger = logging.getLogger(__name__)
 
+
+def create_new_hiearchy(dl, parent_name, child_name, elements, pins_map=None):
+    parent = dl.find(parent_name)
+    # Create a subckt and add to library
+    if not pins_map:
+        pins_map = {}
+        G = Graph(parent)
+        for ele in elements:
+            if G._is_element(ele):
+                pins_map.update({net:net for net in G.neighbors(ele)})
+        pins_map = { net:net for net in pins_map.keys()
+            if not (net in parent.pins) and
+            not (set(G.neighbors(net))-set(elements))
+            }
+    with set_context(dl):
+        child = SubCircuit(child_name, pins=pins_map.keys())
+        dl.append(child)
+    # Add all instances of groupblock to new subckt
+    pes = list()
+    with set_context(child.elements):
+        for ele in elements:
+            pe = parent.get_element(ele)
+            if pe:
+                pes.append(pe)
+                child.elements.append(pe)
+    # Remove elements from subckt then add new_subckt instance
+    inst_name = "X_"+child_name
+    with set_context(parent.elements):
+        for pe in pes:
+            parent.elements.remove(pe)
+        X1 = Instance(
+            name=inst_name,
+            model=child_name,
+            pins=pins_map,
+            generator=child_name,
+        )
+        parent.elements.append(X1)
 
 class array_hierarchy:
     """
@@ -23,7 +60,7 @@ class array_hierarchy:
     Creates a hierarchy for repeated elements
     """
 
-    def __init__(self, ckt, design_setup):
+    def __init__(self, dl, ckt, design_setup):
         """
         Args:
             ckt_data (dict): all subckt graph, names and port
@@ -31,14 +68,16 @@ class array_hierarchy:
             library (list): list of library elements in dict format
             existing_generator (list): list of names of existing generators
         """
+        self.dl = dl
         self.ckt = ckt
+        self.graph = Graph(ckt)
         assert not ckt.name in design_setup['DIGITAL']
         assert design_setup["IDENTIFY_ARRAY"]==True
         self.pg = design_setup["POWER"] + design_setup["GND"]
         self.clk = design_setup["CLOCK"]
         self.stop_points = self.pg + self.clk
 
-    def create_hierarchy(self, graph, node: str, traversed: list):
+    def find_array(self, node: str, traversed: list):
         """
         Creates array hierarchies starting from input node
 
@@ -57,8 +96,8 @@ class array_hierarchy:
 
         """
         node_hier = {}
-        lvl1 = list(set(graph.neighbors(node)) - set(traversed))
-        node_hier[node] = self.matching_groups(graph, lvl1, None)
+        lvl1 = list(set(self.graph.neighbors(node)) - set(traversed))
+        node_hier[node] = self.matching_groups(lvl1, None)
         logger.debug(f"new hierarchy points {node_hier} from node {node}")
 
         if len(node_hier[node]) > 0:
@@ -72,7 +111,7 @@ class array_hierarchy:
                     visited = group
                     array = similar_node_groups.copy()
                     self.trace_template(
-                        graph, similar_node_groups, visited, templates[node], array
+                        self.graph, similar_node_groups, visited, templates[node], array
                     )
                     logger.debug(f"similar groups final from {node}:{array}")
 
@@ -81,13 +120,12 @@ class array_hierarchy:
             all_inst = []
             if array and len(array.values()) > 1 and len(list(array.values())[0]) > 1:
                 # Multiple hierarchy identified in array
-                matched_ports = {}
                 for branch in array.values():
                     for node_hier in branch:
                         if (
-                            graph.nodes[node_hier]["inst_type"] != "net"
+                            self.graph.nodes[node_hier]["inst_type"] != "net"
                             and node_hier not in all_inst
-                            and not graph.nodes[node_hier]["inst_type"]
+                            and not self.graph.nodes[node_hier]["inst_type"]
                             .lower()
                             .startswith("cap")
                         ):
@@ -96,65 +134,19 @@ class array_hierarchy:
             else:
                 node_hier[node] = []
                 for inst in array.keys():
-                    if graph.nodes[inst]["inst_type"] != "net":
+                    if self.graph.nodes[inst]["inst_type"] != "net":
                         node_hier[node].append(inst)
             if len(all_inst) > 1:
                 all_inst = sorted(all_inst)
-                h_ports_weight = {}
-                for inst in all_inst:
-                    for node_hier in list(set(graph.neighbors(inst))):
-                        if graph.nodes[node_hier]["inst_type"] == "net":
-                            if (
-                                set(graph.neighbors(node_hier)) - set(all_inst)
-                            ) or graph.nodes[node_hier]["net_type"] == "external":
-                                matched_ports[node_hier] = node_hier
-                                h_ports_weight[node_hier] = []
-                                for nbr in list(graph.neighbors(node_hier)):
-                                    h_ports_weight[node_hier].append(
-                                        graph.get_edge_data(node_hier, nbr)["weight"]
-                                    )
-
-                logger.debug(
-                    f"creating a new hierarchy for {node}, {all_inst}, {matched_ports}"
-                )
-                # subgraph,_ = merge_nodes(graph, 'array_hier_'+node,all_inst , matched_ports)
-                subgraph = None
                 # TODO rewrite this code and tests
-                node_hier[node] = HierDictNode(
-                    name="array_hier_" + node,
-                    graph=subgraph,
-                    ports=list(matched_ports.keys()),
-                    ports_match=matched_ports,
-                    ports_weight=h_ports_weight,
-                    constraints=[],
-                    size=len(subgraph.nodes()),
-                )
-            return node_hier
+                create_new_hiearchy(self.dl, self.ckt.name, "array_hier_" + node, all_inst)
 
-    def matching_groups(self, G, lvl1: list, ports_weight):
-        """
-        Creates a a 2D list from 1D list of lvl1, grouping similar elements in separate group
-
-        Parameters
-        ----------
-        G : TYPE
-            DESCRIPTION.
-        lvl1 : TYPE
-            DESCRIPTION.
-        ports_weight : TYPE
-            DESCRIPTION.
-        Returns
-        -------
-        similar_groups : TYPE
-            DESCRIPTION.
-
-        """
-
+    def matching_groups(self, lvl1: list):
         similar_groups = []
         logger.debug(f"creating groups for all neighbors: {lvl1}")
-        # modify this best case complexity from n*(n-1) to n complexity
+        # TODO: modify this best case complexity from n*(n-1) to n complexity
         for l1_node1, l1_node2 in combinations(lvl1, 2):
-            if compare_two_nodes(G, l1_node1, l1_node2, ports_weight):
+            if compare_two_nodes(self.graph, l1_node1, l1_node2):
                 found_flag = 0
                 logger.debug("similar_group %s", similar_groups)
                 for index, sublist in enumerate(similar_groups):
@@ -173,32 +165,32 @@ class array_hierarchy:
                     similar_groups.append([l1_node1, l1_node2])
         return similar_groups
 
-    def trace_template(self, graph, similar_node_groups, visited, template, array):
+    def trace_template(self, similar_node_groups, visited, template, array):
         next_match = {}
         traversed = visited.copy()
 
         for source, groups in similar_node_groups.items():
             next_match[source] = []
             for node in groups:
-                lvl1 = list(set(graph.neighbors(node)) - set(traversed))
+                lvl1 = list(set(self.graph.neighbors(node)) - set(traversed))
                 next_match[source] += lvl1
                 visited += lvl1
             if len(next_match[source]) == 0:
                 del next_match[source]
 
-        if len(next_match.keys()) > 0 and self.match_branches(graph, next_match):
+        if len(next_match.keys()) > 0 and self.match_branches(next_match):
             for source in array.keys():
                 if source in next_match.keys():
                     array[source] += next_match[source]
 
             template += next_match[list(next_match.keys())[0]]
             logger.debug(
-                "found matching lvl: %s,%s,%s", template, similar_node_groups, visited
+                f"found matching lvl {template}, {similar_node_groups}, {visited}"
             )
             if self.check_convergence(next_match):
-                self.trace_template(graph, next_match, visited, template, array)
+                self.trace_template(next_match, visited, template, array)
 
-    def match_branches(self, graph, nodes_dict):
+    def match_branches(self, nodes_dict):
         logger.debug(f"matching next lvl branches {nodes_dict}")
         nbr_values = {}
         for node, nbrs in nodes_dict.items():
@@ -207,12 +199,12 @@ class array_hierarchy:
             if len(nbrs) == 1:
                 return False
             for nbr in nbrs:
-                if graph.nodes[nbr]["inst_type"] == "net":
+                if self.graph.nodes[nbr]["inst_type"] == "net":
                     super_list.append("net")
-                    super_list.append(graph.nodes[nbr]["net_type"])
+                    super_list.append(self.graph.nodes[nbr]["net_type"])
                 else:
-                    super_list.append(graph.nodes[nbr]["inst_type"])
-                    for v in graph.nodes[nbr]["values"].values():
+                    super_list.append(self.graph.nodes[nbr]["inst_type"])
+                    for v in self.graph.nodes[nbr]["values"].values():
                         super_list.append(v)
             nbr_values[node] = Counter(super_list)
         _, main = nbr_values.popitem()
