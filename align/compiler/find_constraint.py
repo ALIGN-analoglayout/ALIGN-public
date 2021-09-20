@@ -457,19 +457,18 @@ def FindConst(ckt_data, name, stop_points=None):
     all_match_pairs = FindSymmetry(subckt, stop_points)
     all_match_pairs = {k: v for k, v in all_match_pairs.items() if len(v) > 1}
     logger.debug(
-        f"all symmetry matching pairs {pprint.pformat(all_match_pairs, indent=4)}"
+        f"All symmetry matching pairs {pprint.pformat(all_match_pairs, indent=4)}"
     )
     written_symmetries = []
     logger.debug(f"input const {input_const}")
-    update_symmnet = []  # list of tuple
+    update_symmnet = []  # list of set and string
     for const in input_const:
         if isinstance(const, constraint.SymmetricNets):
             # if not getattr(const, 'pins1', None):
-            # TODO: constr with pin information should be handles separately
+            # TODO: constr with pin information should be handled separately
             logger.debug(f"adding pins to user symmnet constraint {const}")
             pairs, s1, s2 = symmnet_device_pairs(
-                graph, const.net1.upper(), const.net2.upper(), written_symmetries
-            )
+                graph, const.net1.upper(), const.net2.upper(), written_symmetries, True)
             assert s1, f"no connections found to net {const.net1}, fix user const"
             assert s2, f"no connections found to net {const.net2}, fix user const"
             with set_context(input_const):
@@ -578,14 +577,16 @@ def filter_sym_const(
         else:
             if key == value and graph.nodes[key].get("instance").model in ["NMOS", "PMOS", "RES", "CAP"]:
                 logger.debug(f"TBF:skipping self symmetry for single transistor {key}")
-            else:
+            elif key !=value:
                 pairsj.append([key,value])
+            else:
+                pairsj.append([key])
     return pairsj
 
 
 def add_or_revert_const(pairsj: list, input_const, written_symmetries: list):
     logger.debug(f"filterd symmetry pairs: {pairsj}")
-    if len(pairsj) > 1 or (pairsj and pairsj[0][0] != pairsj[0][1]):
+    if len(pairsj) > 1 or (pairsj and len(pairsj[0])==2):
         _temp = len(input_const)
         try:
             with set_context(input_const):
@@ -601,7 +602,7 @@ def add_or_revert_const(pairsj: list, input_const, written_symmetries: list):
             pass
 
 
-def symmnet_device_pairs(G, net_A, net_B, smb=list(), skip_blocks=None):
+def symmnet_device_pairs(G, net_A, net_B, smb=list(), user=False, skip_blocks=None):
     """
     Parameters
     ----------
@@ -619,8 +620,9 @@ def symmnet_device_pairs(G, net_A, net_B, smb=list(), skip_blocks=None):
     conn_B = connection(G, net_B)
     logger.debug(
         f"Identifying match pairs for symmnet, \
-        net1 {net_A}, connections: {conn_A}, net2 {net_B}, \
-            connections {conn_B}, existing: {smb}, skip: {skip_blocks}"
+        net1 {net_A}, connections: {conn_A}, \
+        net2 {net_B}, connections {conn_B}, \
+        existing: {smb}, skip: {skip_blocks}"
     )
     assert conn_A, f"No connection to net {net_A} found in {G.subckt.name}"
     assert conn_B, f"No connection to net {net_A} found in {G.subckt.name}"
@@ -636,9 +638,7 @@ def symmnet_device_pairs(G, net_A, net_B, smb=list(), skip_blocks=None):
                 blockA = ele_A.split("/")[0]
                 blockB = ele_B.split("/")[0]
                 if skip_blocks and (blockA in skip_blocks or blockB in skip_blocks):
-                    logger.debug(
-                        f"skipping blocks: {blockA},{blockB} present in do_not_identify {skip_blocks}"
-                    )
+                    logger.debug(f"skipping blocks: {blockA},{blockB} do_not_identify {skip_blocks}")
                     continue
                 logger.debug(
                     f"modelA:{G.nodes[blockA].get('instance').model} modelB:{G.nodes[blockB].get('instance').model}"
@@ -656,7 +656,7 @@ def symmnet_device_pairs(G, net_A, net_B, smb=list(), skip_blocks=None):
                             f"Skip symmnet: Multiple matches of net {net_B} nbr {ele_B} to {pairs.values()} "
                         )
                         return [None, None, None]
-                    elif {blockA,blockB} not in smb:
+                    elif user==False and {blockA, blockB} not in smb:
                         logger.debug(f"unsymmetrical instances {blockA, blockB}")
                         continue
                     elif ele_A not in pinsA and ele_B not in pinsB:
