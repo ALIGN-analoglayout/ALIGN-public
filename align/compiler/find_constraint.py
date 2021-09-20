@@ -37,9 +37,6 @@ def find_unique_matching_branches(G, nbrs1, nbrs2, ports_weight):
             return False
     return match
 
-
-
-
 def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_weight):
     """
     Traversing single branch for symmetry
@@ -344,9 +341,6 @@ def FindConst(ckt_data, name, stop_points=None):
     graph = Graph(subckt)
     match_pairs = FindSymmetry(subckt, stop_points)
     match_pairs = {k: v for k, v in match_pairs.items() if len(v) > 1}
-    logger.debug(
-        f"All symmetry matching pairs {pprint.pformat(match_pairs, indent=4)}"
-    )
     written_symmetries = []
     logger.debug(f"input const {input_const}")
     update_symmnet = []  # list of set and string
@@ -384,9 +378,7 @@ def FindConst(ckt_data, name, stop_points=None):
 
     skip_const = written_symmetries.copy()
     ## ALIGN block constraints
-    align_const_keys = [
-        key for key, value in match_pairs.items() if isinstance(value, list)
-    ]
+    align_const_keys = [key for key, value in match_pairs.items() if isinstance(value, list)]
     logger.debug(f"AlignBlock const gen{align_const_keys}")
     check_duplicate = []
     for key in align_const_keys:
@@ -411,50 +403,34 @@ def FindConst(ckt_data, name, stop_points=None):
     for pairs in all_pairs:
         pairs = sorted(pairs.items(), key=lambda k: k[0])
         logger.debug(f"Symmblock pairs: {pairs}, existing: {written_symmetries}")
-        pairsj = filter_sym_const(
-            pairs, graph, input_const, stop_points, written_symmetries, skip_const
-        )
+        pairsj = filter_symblock_const(pairs, graph, stop_points, written_symmetries)
+        add_or_revert_const(pairsj, input_const, written_symmetries)
+    for pairs in all_pairs:
+        pairs = sorted(pairs.items(), key=lambda k: k[0])
+        logger.debug(f"Symmnet pairs: {pairs}, existing: {written_symmetries}")
+        pairsj = filter_symnet_const(pairs, graph, input_const, stop_points, written_symmetries, skip_const)
         add_or_revert_const(pairsj, input_const, written_symmetries)
     logger.debug(f"Identified constraints of {name} are {input_const}")
 
-
-def filter_sym_const(
+def filter_symblock_const(
     pairs: list,
     graph: Graph,
-    input_const: list,
     stop_points: list,
-    written_symmetries: list,
-    skip_const:list,
+    written_symmetries: list
 ):
     pairsj = []
     for key, value in pairs:
         if key in stop_points:
             # logger.debug(f"skipping symmetry b/w {key} {value} as they are present in stop_points")
             continue
-        elif set([key,value]) in written_symmetries:
+        elif key in written_symmetries or value in written_symmetries or set([key,value]) in written_symmetries:
             # logger.debug(f"skipping symmetry b/w {key} {value} as already written {written_symmetries}")
             continue
         elif key not in graph.nodes():
             # logger.debug(f"skipping symmetry b/w {key} {value} as {key} is not in graph")
             continue
         if not graph.nodes[key].get("instance"):
-            if key != value:
-                pairs, s1, s2 = symmnet_device_pairs(
-                    graph, key, value, written_symmetries, skip_const
-                )
-                if pairs:
-                    written_symmetries.append({key,value})
-                    with set_context(input_const):
-                        symmNetj = constraint.SymmetricNets(
-                            direction="V", net1=key, net2=value, pins1=s1, pins2=s2
-                        )
-                        input_const.append(symmNetj)
-                    logger.debug(f"adding symmetric net const: {symmNetj}")
-                else:
-                    logger.debug(f"Skip symmetry: large fanout nets {key} {value} {pairs}")
-                    # TODO Need update in placer to simplify this
-            else:
-                logger.debug(f"skipping self symmetric nets {key} {value}")
+            continue
         elif "Dcap" in graph.nodes[key].get("instance").model:
             logger.debug(f"cd")
             logger.debug(f"skipping symmetry for dcaps {key} {value}")
@@ -468,6 +444,44 @@ def filter_sym_const(
                 pairsj.append([key])
     return pairsj
 
+def filter_symnet_const(
+    pairs: list,
+    graph: Graph,
+    input_const: list,
+    stop_points: list,
+    written_symmetries: list,
+    skip_const:list,
+):
+    pairsj = []
+    for key, value in pairs:
+        if key in stop_points:
+            # logger.debug(f"skipping symmetry b/w {key} {value} as they are present in stop_points")
+            continue
+        elif key in written_symmetries or value in written_symmetries or set([key,value]) in written_symmetries:
+            # logger.debug(f"skipping symmetry b/w {key} {value} as already written {written_symmetries}")
+            continue
+        elif key not in graph.nodes():
+            # logger.debug(f"skipping symmetry b/w {key} {value} as {key} is not in graph")
+            continue
+        if not graph.nodes[key].get("instance"):
+            if key != value:
+                pairs, s1, s2 = symmnet_device_pairs(
+                    graph, key, value, written_symmetries, skip_const
+                )
+                if pairs:
+                    written_symmetries.append({key,value})
+                    with set_context(input_const):
+                        symmnet = constraint.SymmetricNets(
+                            direction="V", net1=key, net2=value, pins1=s1, pins2=s2
+                        )
+                        input_const.append(symmnet)
+                    logger.debug(f"adding symmetric net const: {symmnet}")
+                else:
+                    logger.debug(f"Skip symmetry: large fanout nets {key} {value} {pairs}")
+                    # TODO Need update in placer to simplify this
+            else:
+                logger.debug(f"skipping self symmetric nets {key} {value}")
+    return pairsj
 
 def add_or_revert_const(pairsj: list, input_const, written_symmetries: list):
     logger.debug(f"filterd symmetry pairs: {pairsj}")
@@ -597,9 +611,7 @@ def connection(graph, net: str):
         subckt = graph.subckt.parent.find(graph.nodes[nbr].get("instance").model)
         if isinstance(subckt, SubCircuit):
             for pin in pins:
-                leaf_conn = set(
-                    sorted([c for c in get_leaf_connection(subckt, pin) if c != "B"])
-                )
+                leaf_conn = set(sorted([c for c in get_leaf_connection(subckt, pin) if c != "B"]))
                 if leaf_conn:
                     conn[(nbr,pin)] = leaf_conn
         else:
@@ -608,7 +620,5 @@ def connection(graph, net: str):
                     conn[(nbr,pin)] = [pin]
 
     if net in graph.subckt.pins:
-        conn[net] = set(
-            sorted([c for c in get_leaf_connection(graph.subckt, net) if c != "B"])
-        )
+        conn[net] = set(sorted([c for c in get_leaf_connection(graph.subckt, net) if c != "B"]))
     return conn

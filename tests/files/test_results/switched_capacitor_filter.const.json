@@ -34,6 +34,34 @@
             ]
           ],
           "direction": "V"
+        },
+        {
+          "constraint": "symmetric_blocks",
+          "pairs": [
+            [
+              "X_CMC_S_NMOS_B_I1_M0_M10"
+            ],
+            [
+              "X_CMC_S_NMOS_B_I1_M6_M7"
+            ]
+          ],
+          "direction": "V"
+        },
+        {
+          "constraint": "symmetric_nets",
+          "net1": "VINN",
+          "net2": "VINP",
+          "pins1": [
+            "C5/PLUS",
+            "X_CMC_S_NMOS_B_I1_M6_M7/SB",
+            "VINN"
+          ],
+          "pins2": [
+            "C2/PLUS",
+            "X_CMC_S_NMOS_B_I1_M12_M14/SA",
+            "VINP"
+          ],
+          "direction": "V"
         }
 ]
 
