@@ -30,11 +30,11 @@ def test_symm_net():
     ckt_library = compiler_input(example, name, pdk_path, config_path)
     ckt = ckt_library.find('CKT_OTA')
     G = Graph(ckt)
-    pairs, pinsA, pinsB = symmnet_device_pairs(G,'VIN','VIP', list(),None)
+    pairs, pinsA, pinsB = symmnet_device_pairs(G,'VIN','VIP', list(),None, True)
     assert pairs == {'VIN': 'VIP', 'MN4': 'MN3'}
     assert pinsA == ['MN4/G', 'VIN']
     assert pinsB == ['MN3/G', 'VIP']
-    pairs, pinsA, pinsB = symmnet_device_pairs(G,'VIN','VIP', ['MN3', 'MN4'],None)
+    pairs, pinsA, pinsB = symmnet_device_pairs(G,'VIN','VIP', [{'MN3', 'MN4'}],None)
     assert pairs == {'VIN': 'VIP', 'MN4': 'MN3'}
     pairs, pinsA, pinsB = symmnet_device_pairs(G,'VIN','VIP', ['MN3'],None)
     assert pairs == None

@@ -456,7 +456,7 @@ def FindConst(ckt_data, name, stop_points=None):
             # TODO: constr with pin information should be handled separately
             logger.debug(f"adding pins to user symmnet constraint {const}")
             pairs, s1, s2 = symmnet_device_pairs(
-                graph, const.net1.upper(), const.net2.upper(), written_symmetries, True)
+                graph, const.net1.upper(), const.net2.upper(), written_symmetries, None, True)
             assert s1, f"no connections found to net {const.net1}, fix user const"
             assert s2, f"no connections found to net {const.net2}, fix user const"
             with set_context(input_const):
@@ -589,7 +589,7 @@ def add_or_revert_const(pairsj: list, input_const, written_symmetries: list):
             pass
 
 
-def symmnet_device_pairs(G, net_A, net_B, smb=list(), user=False, skip_blocks=None):
+def symmnet_device_pairs(G, net_A, net_B, smb=list(), skip_blocks=None, user=False):
     """
     Parameters
     ----------
@@ -643,8 +643,8 @@ def symmnet_device_pairs(G, net_A, net_B, smb=list(), user=False, skip_blocks=No
                             f"Skip symmnet: Multiple matches of net {net_B} nbr {ele_B} to {pairs.values()} "
                         )
                         return [None, None, None]
-                    elif user==False and {blockA, blockB} not in smb:
-                        logger.debug(f"unsymmetrical instances {blockA, blockB}")
+                    elif user == False and {blockA, blockB} not in smb:
+                        logger.debug(f"unsymmetrical instances {blockA, blockB} {smb}")
                         continue
                     elif ele_A not in pinsA and ele_B not in pinsB:
                         logger.debug(f"Add symmetric connections {ele_A, ele_B}")
