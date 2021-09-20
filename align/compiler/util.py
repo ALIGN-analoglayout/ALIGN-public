@@ -60,7 +60,7 @@ def get_next_level(subckt, G, tree_l1):
 
 
 def get_base_model(subckt, node):
-    assert subckt.get_element(node)
+    assert subckt.get_element(node), f"node {node} not found in subckt {subckt}"
     if subckt.get_element(node).model in ["NMOS", "PMOS", "RES", "CAP"]:
         base_model = subckt.get_element(node).model
     elif subckt.parent.find(subckt.get_element(node).model):
@@ -70,7 +70,7 @@ def get_base_model(subckt, node):
     return base_model
 
 
-def compare_two_nodes(G, node1: str, node2: str, ports_weight):
+def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
     """
     compare two node properties. It uses 1st level of neighbourhood for comparison of nets
 
@@ -97,9 +97,8 @@ def compare_two_nodes(G, node1: str, node2: str, ports_weight):
     ]
     nbrs1 = [nbr for nbr in nbrs1 if G.get_edge_data(node1, nbr)["pin"] != {"B"}]
     nbrs2 = [nbr for nbr in nbrs2 if G.get_edge_data(node2, nbr)["pin"] != {"B"}]
-    logger.debug(f"comparing_nodes: {node1},{node2},{nbrs1},{nbrs2}")
+    logger.debug(f"comparing_nodes: {node1}, {node2}, {nbrs1}, {nbrs2}")
 
-    # Add some heuristic here in future
     if G.nodes[node1].get("instance"):
         logger.debug(f"checking match between {node1} {node2}")
         in1 = G.nodes[node1].get("instance")
@@ -142,7 +141,7 @@ def compare_two_nodes(G, node1: str, node2: str, ports_weight):
                 logger.debug("True")
                 return True
             else:
-                logger.debug(f"internal port weight mismatch {weight1},{weight2}")
+                logger.debug(f"Internal port weight mismatch {weight1},{weight2}")
                 return False
 
 
