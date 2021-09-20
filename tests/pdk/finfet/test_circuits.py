@@ -1,11 +1,15 @@
 import pytest
 import textwrap
+import json
+import shutil
 try:
     from .utils import get_test_id, build_example, run_example
     from . import circuits
 except BaseException:
     from utils import get_test_id, build_example, run_example
     import circuits
+
+cleanup = False
 
 
 def test_cmp():
@@ -14,7 +18,7 @@ def test_cmp():
     setup = ""
     constraints = []
     example = build_example(name, netlist, setup, constraints)
-    run_example(example, cleanup=False)
+    run_example(example, cleanup=cleanup)
 
 
 def test_cmp_pg():
@@ -23,11 +27,23 @@ def test_cmp_pg():
     setup = textwrap.dedent("""\
         POWER = vccx
         GND = vssx
-        DONT_USE_LIB = CMC_PMOS
         """)
     constraints = []
     example = build_example(name, netlist, setup, constraints)
-    run_example(example, cleanup=False)
+    run_example(example, cleanup=cleanup)
+
+
+def test_cmp_pg_clk():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.comparator(name)
+    setup = textwrap.dedent("""\
+        POWER = vccx
+        GND = vssx
+        CLOCK = clk
+        """)
+    constraints = []
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example, cleanup=cleanup)
 
 
 @pytest.mark.nightly
@@ -53,7 +69,7 @@ def test_cmp_1():
         {"constraint": "AspectRatio", "subcircuit": "comparator", "ratio_low": 0.7, "ratio_high": 1.3}
     ]
     example = build_example(name, netlist, setup, constraints)
-    run_example(example, cleanup=False)
+    run_example(example, cleanup=cleanup)
 
 
 @pytest.mark.nightly
@@ -78,11 +94,11 @@ def test_cmp_2():
         {"constraint": "AspectRatio", "subcircuit": "comparator", "ratio_low": 0.5, "ratio_high": 1.5}
     ]
     example = build_example(name, netlist, setup, constraints)
-    run_example(example, cleanup=False)
+    run_example(example, cleanup=cleanup)
 
 
 @pytest.mark.nightly
-def test_cmp_clk():
+def test_cmp_3():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = textwrap.dedent("""\
@@ -101,7 +117,7 @@ def test_cmp_clk():
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["dp", "ccn"]}
     ]
     example = build_example(name, netlist, setup, constraints)
-    run_example(example)
+    run_example(example, cleanup=cleanup)
 
 
 @pytest.mark.nightly
@@ -111,11 +127,24 @@ def test_cmp_noconst():
     setup = textwrap.dedent(f"""\
         POWER = vccx
         GND = vssx
-        NO_CONST = {name}
+        DONT_CONST = {name}
         """)
-    constraints = "[]"
+    constraints = []
     example = build_example(name, netlist, setup, constraints)
-    run_example(example)
+    ckt_dir, run_dir = run_example(example, cleanup=False)
+
+    with (run_dir / '1_topology' / f'{name.upper()}.verilog.json').open('rt') as fp:
+        verilog_json = json.load(fp)
+        module_found = False
+        for module in verilog_json['modules']:
+            if module['name'] == name.upper():
+                module_found = True
+            assert len(module['constraints']) == 0, "Constraints generated despise DONT_CONST"
+        assert module_found, f'Module {name.upper()} not found in {name.upper()}verilog.json'
+
+    if cleanup:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(ckt_dir)
 
 
 @pytest.mark.nightly
@@ -124,10 +153,24 @@ def test_cmp_order():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = ""
-    constraints = [{"constraint": "Order", "direction": "left_to_right", "instances": ["mmp7", "mmp8"]}]
+    constraints = [{"constraint": "Order", "direction": "left_to_right", "instances": ["mp7", "mp8"]}]
     name = f'ckt_{get_test_id()}'
     example = build_example(name, netlist, setup, constraints)
-    run_example(example)
+    ckt_dir, run_dir = run_example(example, cleanup=False)
+
+    with (run_dir / '1_topology' / f'{name.upper()}.verilog.json').open('rt') as fp:
+        verilog_json = json.load(fp)
+        module_found = False
+        for module in verilog_json['modules']:
+            if module['name'] == name.upper():
+                module_found = True
+                instances = set([k['instance_name'] for k in module['instances']])
+                assert 'MP7' in instances and 'MP8' in instances, f'MP7 or MP8 not found'
+        assert module_found, f'Module {name.upper()} not found in {name.upper()}verilog.json'
+
+    if cleanup:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(ckt_dir)
 
 
 def test_ota_six():
@@ -136,7 +179,7 @@ def test_ota_six():
     setup = ""
     constraints = []
     example = build_example(name, netlist, setup, constraints)
-    run_example(example)
+    run_example(example, cleanup=cleanup)
 
 
 def test_tia():
@@ -145,7 +188,7 @@ def test_tia():
     setup = ""
     constraints = []
     example = build_example(name, netlist, setup, constraints)
-    run_example(example)
+    run_example(example, cleanup=cleanup)
 
 
 @pytest.mark.skip
@@ -159,17 +202,4 @@ def test_ldo_amp():
         """)
     constraints = []
     example = build_example(name, netlist, setup, constraints)
-    run_example(example)
-
-
-# def test_net_naming():
-#     name = f'ckt_{get_test_id()}'
-#     netlist = circuits.buffer(name)
-#     setup = textwrap.dedent("""\
-#         POWER = vccx
-#         GND = vssx
-#         """)
-#     setup = ""
-#     constraints = []
-#     example = build_example(name, netlist, setup, constraints)
-#     run_example(example, cleanup=False)
+    run_example(example, cleanup=cleanup)
