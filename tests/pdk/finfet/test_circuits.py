@@ -23,6 +23,7 @@ def test_cmp_pg():
     setup = textwrap.dedent("""\
         POWER = vccx
         GND = vssx
+        DONT_USE_LIB = CMC_PMOS
         """)
     constraints = []
     example = build_example(name, netlist, setup, constraints)

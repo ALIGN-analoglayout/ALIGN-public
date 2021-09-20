@@ -14,7 +14,7 @@ from re import sub
 
 from networkx.classes.function import get_edge_attributes
 from .create_array_hierarchy import array_hierarchy
-from .util import compare_two_nodes, get_base_model
+from .util import compare_two_nodes, get_base_model, reduced_neighbors, reduced_SD_neighbors, get_leaf_connection
 from ..schema import constraint
 from ..schema.graph import Graph
 from align.schema.subcircuit import SubCircuit
@@ -38,40 +38,9 @@ def find_unique_matching_branches(G, nbrs1, nbrs2, ports_weight):
     return match
 
 
-def reduced_neighbors(G, node, nbr):
-    subckt = G.subckt
-    if subckt.get_element(node):
-        assert nbr in subckt.nets, f"net {nbr} not in {subckt.name}"
-        n = subckt.get_element(node)
-        s = subckt.parent.find(n.model)
-        assert nbr in n.pins.values(), f"net {nbr} not connected to {n.name}, {n.pins}"
-        p = list(n.pins.keys())[list(n.pins.values()).index(nbr)]
-        if isinstance(s, SubCircuit):
-            conn_type = set(get_leaf_connection(s, p))
-        else:
-            conn_type = G.get_edge_data(node, nbr)["pin"]
-    else:
-        assert node in subckt.nets, f"net {node} not in {subckt.name}"
-        n = subckt.get_element(nbr)
-        s = subckt.parent.find(n.model)
-        assert (
-            node in n.pins.values()
-        ), f"net {node} not connected to {n.name}, {n.pins}"
-        p = list(n.pins.keys())[list(n.pins.values()).index(node)]
-        if isinstance(s, SubCircuit):
-            conn_type = set(get_leaf_connection(s, p))
-        else:
-            conn_type = G.get_edge_data(node, nbr)["pin"]
-
-    if conn_type != {"B"}:
-        return True
-    else:
-        return False
 
 
-def compare_nodes(
-    G, match_pairs, match_pair, traversed, node1, node2, ports_weight
-):
+def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_weight):
     """
     Traversing single branch for symmetry
     condition 1, Single branch: both ports/ nets are same and connected to two or more ports
@@ -116,20 +85,16 @@ def compare_nodes(
             match_pair["start_point"] += [node1, node2]
         else:
             match_pair["start_point"] = [node1, node2]
-        logger.debug(
-            f"skipping high fanout nets due to large computation,  {node1} {nbrs1}"
-        )
+        logger.debug(f"skipping high fanout nets{node1, nbrs1}")
         traversed.append(node1)
         return
 
     if node1 == node2:
         if node1 in match_pair.keys() or node1 in match_pair.values():
-            logger.debug("avoid existing  pair wise symmetry")
+            logger.debug("avoid existing pair wise symmetry")
             return
-        logger.debug(
-            f"single node {node1}, nbrs {nbrs1}, nbr_weight {[G.get_edge_data(node1,nbr) for nbr in nbrs1]}"
-        )
-        SD_nbrs = [nbr for nbr in nbrs1 if G.get_edge_data(node1, nbr)["pin"] != {"B"}]
+        logger.debug(f"single node {node1}, nbrs {nbrs1}, nbr_weight {[G.get_edge_data(node1,nbr) for nbr in nbrs1]}")
+        SD_nbrs = [nbr for nbr in nbrs1 if reduced_SD_neighbors(G, node1, nbr)]
         ## TBD: filter based on primitive constraints
         ## Right now will try to figure out S/D paths
         if len(SD_nbrs) == 0:
@@ -150,9 +115,7 @@ def compare_nodes(
             )
         else:
             logger.debug(f"multiple nodes diverging {SD_nbrs}")
-            logger.debug(
-                f"nbr weights: {SD_nbrs} {[G.get_edge_data(node1, nbr)['pin'] for nbr in SD_nbrs  ]}"
-            )
+            logger.debug(f"nbr weights: {SD_nbrs} {[G.get_edge_data(node1, nbr)['pin'] for nbr in SD_nbrs]}")
             match_pair[node1] = node1
             traversed.append(node1)
             new_sp = sorted(set(SD_nbrs) - set(traversed))
@@ -214,48 +177,24 @@ def compare_nodes(
         if len(nbrs1) == 1:
             nbr1 = nbr2 = nbrs1[0]
             logger.debug(f"keeping single converged branch inline {nbr1} {nbr2}")
-            compare_nodes(
-                G,
-                match_pairs,
-                match_pair,
-                traversed.copy(),
-                nbr1,
-                nbr2,
-                ports_weight,
-            )
+            compare_nodes(G, match_pairs, match_pair, traversed.copy(), nbr1, nbr2, ports_weight)
         else:
             for nbr1, nbr2 in combinations_with_replacement(nbrs1, 2):
                 logger.debug(f"recursive call from converged branch {nbr1} {nbr2}")
                 if nbr1 + "_" + nbr2 not in match_pairs.keys():
                     new_pair = {}
-                    compare_nodes(
-                        G,
-                        match_pairs,
-                        new_pair,
-                        traversed.copy(),
-                        nbr1,
-                        nbr2,
-                        ports_weight,
-                    )
+                    compare_nodes(G, match_pairs, new_pair, traversed.copy(), nbr1, nbr2, ports_weight)
                     # filtering multiple axis of symmetries with same block, ideally they should be handled by array generation
                     if new_pair:
                         match_pairs[nbr1 + "_" + nbr2] = new_pair
-                        logger.debug(
-                            f"updating match pairs: {pprint.pformat(match_pairs, indent=4)}"
-                        )
+                        logger.debug(f"updating match pairs: {pprint.pformat(match_pairs, indent=4)}")
 
     elif compare_two_nodes(G, node1, node2, ports_weight):
-        nbrs1 = sorted(
-            set([nbr for nbr in nbrs1 if G.get_edge_data(node1, nbr)["pin"] != {"B"}])
-        )
-        nbrs2 = sorted(
-            set([nbr for nbr in nbrs2 if G.get_edge_data(node2, nbr)["pin"] != {"B"}])
-        )
+        nbrs1 = sorted(set([nbr for nbr in nbrs1 if G.get_edge_data(node1, nbr)["pin"] != {"B"}]))
+        nbrs2 = sorted(set([nbr for nbr in nbrs2 if G.get_edge_data(node2, nbr)["pin"] != {"B"}]))
         match_pair[node1] = node2
         traversed += [node1, node2]
-        logger.debug(
-            f"Traversing parallel branches from {node1},{node2} {nbrs1}, {nbrs2}"
-        )
+        logger.debug(f"Traversing parallel branches from {node1},{node2} {nbrs1}, {nbrs2}")
         nbrs1_wt = [pin for nbr in nbrs1 for pin in G.get_edge_data(node1, nbr)["pin"]]
         nbrs2_wt = [pin for nbr in nbrs2 for pin in G.get_edge_data(node2, nbr)["pin"]]
         logger.debug(f"nbr1 conn: {nbrs1_wt}, nbr2 {nbrs2_wt}")
@@ -264,32 +203,14 @@ def compare_nodes(
             logger.debug(f"no new SD neihbours, returning recursion {match_pair}")
         elif len(nbrs1) == 1 and len(nbrs2) == 1:
             logger.debug(f"traversing binary branch")
-            compare_nodes(
-                G,
-                match_pairs,
-                match_pair,
-                traversed,
-                nbrs1.pop(),
-                nbrs2.pop(),
-                ports_weight,
-            )
+            compare_nodes(G, match_pairs, match_pair, traversed, nbrs1.pop(), nbrs2.pop(), ports_weight)
         elif unique_match:
             logger.debug(f"traversing unique matches {unique_match}")
             match_pair[node1] = node2
             traversed += [node1, node2]
             for nbr1, nbr2 in unique_match.items():
-                logger.debug(
-                    f"recursive call from binary {node1}:{node2} to {nbr1}:{nbr2}"
-                )
-                compare_nodes(
-                    G,
-                    match_pairs,
-                    match_pair,
-                    traversed.copy(),
-                    nbr1,
-                    nbr2,
-                    ports_weight,
-                )
+                logger.debug(f"recursive call from pair {node1}:{node2} to {nbr1}:{nbr2}")
+                compare_nodes(G, match_pairs, match_pair, traversed.copy(), nbr1, nbr2, ports_weight)
         elif (
             len(nbrs1_wt) > len(set(nbrs1_wt)) > 1
             and len(nbrs2_wt) > len(set(nbrs2_wt)) > 1
@@ -319,9 +240,7 @@ def recursive_start_points(G, match_pairs, traversed, node1, node2, ports_weight
         return
     # TODO: use tuple instead of string
     match_pairs[node1 + node2] = pair
-    logger.debug(
-        f"Updating match pairs (start): {pprint.pformat(match_pairs, indent=4)}"
-    )
+    logger.debug(f"updating match pairs (start): {pprint.pformat(match_pairs, indent=4)}")
     # Check for array start points
     hier_start_points = []
     for k, pair in match_pairs.items():
@@ -405,30 +324,11 @@ def FindSymmetry(subckt, stop_points: list):
         # TODO: traverse a pair only once
         if ports_weight[port1] == ports_weight[port2] and ports_weight[port2]:
             traversed += [port1, port2]
-            recursive_start_points(
-                graph, match_pairs, traversed, port1, port2, ports_weight
-            )
+            recursive_start_points(graph, match_pairs, traversed, port1, port2, ports_weight)
             match_pairs = {k: v for k, v in match_pairs.items() if len(v) > 0}
-            logger.debug(
-                f"Matches starting from {port1, port2} pair: {pprint.pformat(match_pairs, indent=4)}"
-            )
+            logger.debug(f"Matches starting from {port1, port2} pair: {pprint.pformat(match_pairs, indent=4)}")
 
     return match_pairs
-
-
-def get_leaf_connection(subckt, net):
-    assert net in subckt.nets, f"Net {net} not found in subckt {subckt}"
-    graph = Graph(subckt)
-    conn = []
-    for nbr in graph.neighbors(net):
-        for pin in graph.get_edge_data(net, nbr)["pin"]:
-            s = subckt.parent.find(graph.nodes[nbr].get("instance").model)
-            if isinstance(s, SubCircuit):
-                conn.extend(get_leaf_connection(s, pin))
-            else:
-                conn.append(pin)
-    return conn
-
 
 def FindConst(ckt_data, name, stop_points=None):
     logger.debug(f"Searching constraints for block {name}")
@@ -498,9 +398,7 @@ def FindConst(ckt_data, name, stop_points=None):
             input_const.append(constraint.AlignBlock(direction="H", instances=h_blocks))
         del match_pairs[key]
     logger.debug(f"AlignBlock const update {input_const}")
-    new_hier_keys = [
-        key for key, value in match_pairs.items() if "name" in value.keys()
-    ]
+    new_hier_keys = [key for key, value in match_pairs.items() if "name" in value.keys()]
     for key in new_hier_keys:
         del match_pairs[key]
     written_symmetries.extend(new_hier_keys)

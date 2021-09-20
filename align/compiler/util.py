@@ -10,6 +10,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from networkx.algorithms import bipartite
 from ..schema.graph import Graph
+from ..schema import SubCircuit
 import logging
 
 logger = logging.getLogger(__name__)
@@ -58,7 +59,6 @@ def get_next_level(subckt, G, tree_l1):
             tree_next.extend(list(G.neighbors(node)))
     return tree_next
 
-
 def get_base_model(subckt, node):
     assert subckt.get_element(node), f"node {node} not found in subckt {subckt}"
     if subckt.get_element(node).model in ["NMOS", "PMOS", "RES", "CAP"]:
@@ -69,6 +69,54 @@ def get_base_model(subckt, node):
         logger.warning(f"invalid device {node}")
     return base_model
 
+def get_leaf_connection(subckt, net):
+    assert net in subckt.nets, f"Net {net} not found in subckt {subckt}"
+    graph = Graph(subckt)
+    conn = []
+    for nbr in graph.neighbors(net):
+        for pin in graph.get_edge_data(net, nbr)["pin"]:
+            s = subckt.parent.find(graph.nodes[nbr].get("instance").model)
+            if isinstance(s, SubCircuit):
+                conn.extend(get_leaf_connection(s, pin))
+            else:
+                conn.append(pin)
+    return conn
+def leaf_weights(G, node, nbr):
+    subckt = G.subckt
+    if subckt.get_element(node):
+        assert nbr in subckt.nets, f"net {nbr} not in {subckt.name}"
+        n = subckt.get_element(node)
+        s = subckt.parent.find(n.model)
+        assert nbr in n.pins.values(), f"net {nbr} not connected to {n.name}, {n.pins}"
+        p = list(n.pins.keys())[list(n.pins.values()).index(nbr)]
+        if isinstance(s, SubCircuit):
+            conn_type = set(get_leaf_connection(s, p))
+        else:
+            conn_type = G.get_edge_data(node, nbr)["pin"]
+    else:
+        assert node in subckt.nets, f"net {node} not in {subckt.name}"
+        n = subckt.get_element(nbr)
+        s = subckt.parent.find(n.model)
+        assert (node in n.pins.values()), f"net {node} not connected to {n.name}, {n.pins}"
+        p = list(n.pins.keys())[list(n.pins.values()).index(node)]
+        if isinstance(s, SubCircuit):
+            conn_type = set(get_leaf_connection(s, p))
+        else:
+            conn_type = G.get_edge_data(node, nbr)["pin"]
+    return conn_type
+def reduced_neighbors(G, node, nbr):
+    conn_type = leaf_weights(G, node, nbr)
+    if conn_type != {"B"}:
+        return True
+    else:
+        return False
+
+def reduced_SD_neighbors(G, node, nbr):
+    conn_type = leaf_weights(G, node, nbr)
+    if conn_type-{"B","G"}:
+        return True
+    else:
+        return False
 
 def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
     """
@@ -89,14 +137,8 @@ def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
         DESCRIPTION. True for matching node
 
     """
-    nbrs1 = [
-        nbr for nbr in G.neighbors(node1) if G.get_edge_data(node1, nbr)["pin"] != {"G"}
-    ]
-    nbrs2 = [
-        nbr for nbr in G.neighbors(node2) if G.get_edge_data(node2, nbr)["pin"] != {"G"}
-    ]
-    nbrs1 = [nbr for nbr in nbrs1 if G.get_edge_data(node1, nbr)["pin"] != {"B"}]
-    nbrs2 = [nbr for nbr in nbrs2 if G.get_edge_data(node2, nbr)["pin"] != {"B"}]
+    nbrs1 = [nbr for nbr in G.neighbors(node1) if reduced_SD_neighbors(G, node1, nbr)]
+    nbrs2 = [nbr for nbr in G.neighbors(node2) if reduced_SD_neighbors(G, node2, nbr)]
     logger.debug(f"comparing_nodes: {node1}, {node2}, {nbrs1}, {nbrs2}")
 
     if G.nodes[node1].get("instance"):
@@ -126,17 +168,11 @@ def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
                 logger.debug("True")
                 return True
             else:
-                logger.debug(
-                    f"external port weight mismatch {ports_weight[node1]},{ports_weight[node2]}"
-                )
+                logger.debug(f"external port weight mismatch {ports_weight[node1]},{ports_weight[node2]}")
                 return False
         else:
-            weight1 = [G.get_edge_data(node1, nbr)["pin"] for nbr in nbrs1]
-            weight2 = [G.get_edge_data(node2, nbr)["pin"] for nbr in nbrs2]
-            if {"G"} in weight1:
-                weight1.remove({"G"})
-            if {"G"} in weight2:
-                weight2.remove({"G"})
+            weight1 = sorted([leaf_weights(G, node1, nbr) for nbr in nbrs1])
+            weight2 = sorted([leaf_weights(G, node2, nbr) for nbr in nbrs2])
             if weight2 == weight1:
                 logger.debug("True")
                 return True
