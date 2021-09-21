@@ -85,6 +85,7 @@ def test_cmp_2():
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
         {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
         {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
+        {"constraint": "SameTemplate", "instances": ["mp7","mp8"]},
         {"constraint": "SameTemplate", "instances": ["mp9","mp10"]},
         {"constraint": "SameTemplate", "instances": ["invn","invp"]},
         {"constraint": "SymmetricBlocks", "direction": "V",
