@@ -65,8 +65,7 @@ def test_cmp_1():
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "dp"]},
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["ccp", "ccn"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["dp", "ccn"]},
-        {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
-        {"constraint": "AspectRatio", "subcircuit": "comparator", "ratio_low": 0.7, "ratio_high": 1.3}
+        {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6}
     ]
     example = build_example(name, netlist, setup, constraints)
     run_example(example, cleanup=cleanup)
@@ -91,7 +90,7 @@ def test_cmp_2():
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["invn", "ccp", "ccn", "dp", "mn0"]},
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["invn", "mp9", "mp7", "mn0"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
-        {"constraint": "AspectRatio", "subcircuit": "comparator", "ratio_low": 0.5, "ratio_high": 1.5}
+        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 1.5}
     ]
     example = build_example(name, netlist, setup, constraints)
     run_example(example, cleanup=cleanup)
@@ -149,7 +148,7 @@ def test_cmp_noconst():
 
 @pytest.mark.nightly
 def test_cmp_order():
-    """ mp7 and mp8 should not bypass subcircuit identification """
+    """ mp7 and mp8 should not be identified as a primitive """
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = ""
@@ -165,7 +164,7 @@ def test_cmp_order():
             if module['name'] == name.upper():
                 module_found = True
                 instances = set([k['instance_name'] for k in module['instances']])
-                assert 'MP7' in instances and 'MP8' in instances, f'MP7 or MP8 not found'
+                assert 'MP7' in instances and 'MP8' in instances, f'MP7 or MP8 not found in {instances}'
         assert module_found, f'Module {name.upper()} not found in {name.upper()}verilog.json'
 
     if cleanup:
@@ -177,7 +176,7 @@ def test_ota_six():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ota_six(name)
     setup = ""
-    constraints = []
+    constraints = [{"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 1.5}]
     example = build_example(name, netlist, setup, constraints)
     run_example(example, cleanup=cleanup)
 
