@@ -1267,20 +1267,37 @@ std::vector<int> A_star::extend_manner_direction_check(std::vector<int> temp_pat
   int temp_metel = -1;
   std::pair<int,int> temp_pair;
   temp_pair.first = -1;
+
+  //std::cout<<"a star path "<<temp_path.size()<<std::endl;
+
   for(int i=0;i<temp_path.size();++i){
+
+     //std::cout<<temp_path[i]<<" ";
+
      if(grid.vertices_total[temp_path[i]].metal!=temp_metel){
-        if(temp_pair.first!=-1)
+        if(temp_pair.first!=-1){
            path_pairs.push_back(temp_pair);
+        }
         temp_pair.first = temp_path[i];
         temp_pair.second = temp_path[i];
         temp_metel = grid.vertices_total[temp_path[i]].metal;
      }else{
         temp_pair.second = temp_path[i];
      }
+
+     if(i==temp_path.size()-1){
+        path_pairs.push_back(temp_pair);
+     }
   }
+  //std::cout<<std::endl;
+
+  //std::cout<<"a star path_pairs "<<path_pairs.size()<<std::endl;
 
   std::vector<int> extend_index; //0 not extend, 1 double side, 2 head extend, 3 tail extend, 4 bug case
   for(int i=0;i<path_pairs.size();++i){
+
+     //std::cout<<"<"<<path_pairs[i].first<<","<<path_pairs[i].second<<"> ";
+
      if(i==0||i==path_pairs.size()-1){
         extend_index.push_back(0);
      }else{
@@ -1300,6 +1317,8 @@ std::vector<int> A_star::extend_manner_direction_check(std::vector<int> temp_pat
         }
      }
   }
+
+  //std::cout<<std::endl;
   return extend_index;
 
 };
@@ -1886,6 +1905,19 @@ std::vector<std::vector<int> > A_star::Trace_Back_Paths(Grid& grid, int current_
   }
   Extend_labels.clear();
   Extend_labels = extend_labels;
+  //std::cout<<"a star temp_path length ";
+  for(int i=0;i<temp_paths.size();i++){
+     std::cout<<temp_paths[i].size()<<" "; 
+  }
+  //std::cout<<std::endl;
+
+  //std::cout<<"a star Extend_labels length ";
+  for(int i=0;i<Extend_labels.size();i++){
+     std::cout<<Extend_labels[i].size()<<" "; 
+  }
+  //std::cout<<std::endl;
+
+
   return temp_paths;
 
 };
