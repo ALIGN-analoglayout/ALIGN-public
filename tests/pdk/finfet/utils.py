@@ -81,7 +81,7 @@ def build_example(name, netlist, netlist_setup, constraints):
     return example
 
 
-def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO'):
+def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO', area=None):
     run_dir = my_dir / f'run_{example.name}'
     if run_dir.exists() and run_dir.is_dir():
         shutil.rmtree(run_dir)
@@ -99,7 +99,11 @@ def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO'):
             assert 'errors' in v, f"No Layouts were generated for {example.name} ({k})"
             assert v['errors'] <= max_errors, f"{example.name} ({k}):Number of DRC errorrs: {str(v['errors'])}"
 
-    verify_abstract_names(example.name.upper(), run_dir)
+    name = example.name.upper()
+
+    verify_abstract_names(name, run_dir)
+
+    verify_area(name, run_dir, area=area)
 
     if cleanup:
         shutil.rmtree(run_dir)
@@ -123,3 +127,13 @@ def verify_abstract_names(name, run_dir):
     assert abstract_names.issubset(abstract_names_used), (
         f'__primitives__.json has unused primitives: {set.difference(abstract_names, abstract_names_used)}\n'
     )
+
+
+def verify_area(name, run_dir, area=None):
+    with (run_dir / '3_pnr' / f'{name}_0.json').open('rt') as fp:
+        layout = json.load(fp)
+        x0, y0, x1, y1 = layout['bbox']
+        area_0 = (x1-x0)*(y1-y0)
+        print(f'{name}: area is {area_0}')
+        if area is not None and area > 0:
+            assert area_0 <= area, (f'Placer found a suboptimal solution: area: {area_0} target: {area} ratio: {area_0/area}')

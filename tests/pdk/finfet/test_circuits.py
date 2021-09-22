@@ -21,6 +21,7 @@ def test_cmp():
     run_example(example, cleanup=cleanup)
 
 
+@pytest.mark.nightly
 def test_cmp_pg():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
@@ -33,6 +34,7 @@ def test_cmp_pg():
     run_example(example, cleanup=cleanup)
 
 
+@pytest.mark.nightly
 def test_cmp_pg_clk():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
@@ -60,15 +62,18 @@ def test_cmp_1():
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
         {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
         {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
+        {"constraint": "SameTemplate", "instances": ["mp7", "mp8"]},
+        {"constraint": "SameTemplate", "instances": ["mp9", "mp10"]},
+        {"constraint": "SameTemplate", "instances": ["invn", "invp"]},
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["dp"]]},
-        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["ccp"], ["ccn"], ["invn", "invp"]]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["ccp"], ["ccn"], ["invn", "invp"], ["mp9", "mp10"], ["mp7", "mp8"]]},
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "dp"]},
-        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["ccp", "ccn"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["dp", "ccn"]},
-        {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6}
+        {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
+        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
     ]
     example = build_example(name, netlist, setup, constraints)
-    run_example(example, cleanup=cleanup)
+    run_example(example, cleanup=cleanup, area=4e10)
 
 
 @pytest.mark.nightly
@@ -85,9 +90,9 @@ def test_cmp_2():
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
         {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
         {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
-        {"constraint": "SameTemplate", "instances": ["mp7","mp8"]},
-        {"constraint": "SameTemplate", "instances": ["mp9","mp10"]},
-        {"constraint": "SameTemplate", "instances": ["invn","invp"]},
+        {"constraint": "SameTemplate", "instances": ["mp7", "mp8"]},
+        {"constraint": "SameTemplate", "instances": ["mp9", "mp10"]},
+        {"constraint": "SameTemplate", "instances": ["invn", "invp"]},
         {"constraint": "SymmetricBlocks", "direction": "V",
             "pairs": [["ccp"], ["ccn"], ["dp"], ["mn0"], ["invn", "invp"], ["mp7", "mp8"], ["mp9", "mp10"]]},
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["invn", "ccp", "ccn", "dp", "mn0"]},
@@ -96,7 +101,7 @@ def test_cmp_2():
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 1.5}
     ]
     example = build_example(name, netlist, setup, constraints)
-    run_example(example, cleanup=cleanup)
+    run_example(example, cleanup=cleanup, area=5e9)
 
 
 @pytest.mark.nightly
@@ -119,7 +124,7 @@ def test_cmp_3():
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["dp", "ccn"]}
     ]
     example = build_example(name, netlist, setup, constraints)
-    run_example(example, cleanup=cleanup)
+    run_example(example, cleanup=cleanup, area=3.5e9)
 
 
 @pytest.mark.nightly
