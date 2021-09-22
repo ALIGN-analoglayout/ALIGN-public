@@ -20,6 +20,7 @@ def test_cmp():
     example = build_example(name, netlist, setup, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, area=4.5e9)
 
+    # TODO: Generalize this test to all primitives based on m value
     with (run_dir / '1_topology' / '__primitives__.json').open('rt') as fp:
         primitives = json.load(fp)
         counter = 0
