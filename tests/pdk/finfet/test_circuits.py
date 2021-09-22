@@ -18,7 +18,19 @@ def test_cmp():
     setup = ""
     constraints = []
     example = build_example(name, netlist, setup, constraints)
-    run_example(example, cleanup=cleanup)
+    ckt_dir, run_dir = run_example(example, cleanup=False, area=4.5e9)
+
+    with (run_dir / '1_topology' / '__primitives__.json').open('rt') as fp:
+        primitives = json.load(fp)
+        counter = 0
+        for m in primitives.keys():
+            if m.startswith('DP_NMOS'):
+                counter += 1
+        assert counter == 6, f'Diff pair in comparator should have 6 variants. Found {counter}.'
+
+    if cleanup:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(ckt_dir)
 
 
 @pytest.mark.nightly
