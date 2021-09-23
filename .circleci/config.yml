@@ -183,13 +183,13 @@ workflows:
               python-tags:
                 - "cp38-cp38" # Python 3.8
       - build-wheel:
-          name: "build-wheel-cp37-manylinux1"
+          name: "build-wheel-cp37-manylinux2010"
           requires:
             - build-wheel-cp38-manylinux_2_24
           matrix:
             parameters:
               platform:
-                - "skhep/manylinuxgcc-x86_64"          # PEP 513
+                - "quay.io/pypa/manylinux2010_x86_64" # PEP 571
               python-tags:
                 - "cp37-cp37m" # Python 3.7
       - test-integration:
@@ -216,6 +216,7 @@ workflows:
             branches:
               only:
                 - master
+                - compiler/code_coverage
           matrix:
             alias: test-integration-cp38-manylinux_2_24
             parameters:
@@ -224,7 +225,7 @@ workflows:
               pdk:
                 - "Finfet"
               design:
-                - "not SAR and not DLL and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD and not BUFFER_VREFP and not BUFFER_VREFP2 and not CTDSM_CORE_NEW and not BUFFER_VCM and not vco_dtype_12_hierarchical and not Sanitized_Coarse_Comp_CK and not COMP_GM_STAGE_0415 and not linear_equalizer and not test_vga and not Gm1_v5_Practice and not powertrain_binary and not SW_Cres_v3_5 and not ldo_error_amp and not telescopic_ota_guard_ring"
+                - "not SAR and not Sanitized_EdgeComparator and not DLL and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD and not BUFFER_VREFP and not BUFFER_VREFP2 and not CTDSM_CORE_NEW and not BUFFER_VCM and not vco_dtype_12_hierarchical and not Sanitized_Coarse_Comp_CK and not COMP_GM_STAGE_0415 and not linear_equalizer and not test_vga and not Gm1_v5_Practice and not powertrain_binary and not SW_Cres_v3_5 and not ldo_error_amp and not telescopic_ota_guard_ring"
       - build-wheel:
           name: "build-wheel-<<matrix.platform>>"
           requires:
@@ -237,7 +238,6 @@ workflows:
             alias: build-wheel-all
             parameters:
               platform:
-                - "skhep/manylinuxgcc-x86_64"          # PEP 513
                 - "quay.io/pypa/manylinux2010_x86_64"  # PEP 571
                 - "quay.io/pypa/manylinux2014_x86_64"  # PEP 599
                 - "quay.io/pypa/manylinux_2_24_x86_64" # PEP 600
@@ -245,7 +245,7 @@ workflows:
                 - "cp38-cp38"
                 - "cp37-cp37m"
             exclude:
-              - platform: "skhep/manylinuxgcc-x86_64"
+              - platform: "quay.io/pypa/manylinux2010_x86_64"
                 python-tags: "cp37-cp37m"
               - platform: "quay.io/pypa/manylinux_2_24_x86_64"
                 python-tags: "cp38-cp38"

@@ -25,7 +25,7 @@ class UnionFind:
 
     def connect( self, other):
         other.root().dad = self.root()
-    
+
 class ScanlineRect(UnionFind):
     def __init__(self):
         super().__init__()
@@ -70,7 +70,7 @@ class Scanline:
         return slr
 
     def merge_slr(self, base_slr, new_slr):
-        base_slr.rect[self.dIndex+2] = max(base_slr.rect[self.dIndex+2], new_slr.rect[self.dIndex+2])        
+        base_slr.rect[self.dIndex+2] = max(base_slr.rect[self.dIndex+2], new_slr.rect[self.dIndex+2])
         base_slr.isPorted = base_slr.isPorted or new_slr.isPorted
 
     def __repr__( self):
@@ -95,7 +95,6 @@ class RemoveDuplicates():
         tbl = defaultdict(lst)
 
         for (layer,v) in self.store_scan_lines.items():
-            #print(v)
             for vv in v.values():
                 for slr in vv.rects:
                     tbl[id(slr.root())].append( (slr,root.netName,layer))

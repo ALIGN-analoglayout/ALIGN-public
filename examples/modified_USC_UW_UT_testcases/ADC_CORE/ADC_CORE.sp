@@ -265,7 +265,7 @@ xi1 gnd q<9> q<8> qb<7> qb<6> qb<5> qb<4> qb<3> qb<2> qb<1> vcm vdd vrefn vrefp 
 xi0 gnd qb<9> qb<8> q<7> q<6> q<5> q<4> q<3> q<2> q<1> vcm vdd vrefn vrefp SAMPLE_NETWORK
 xi2 clkc net3 net4 gnd net1 net2 coutn coutp vdd cpinp cpinn COMPARATOR
 xi3 clkc clksb gnd coutn coutp q<9> q<8> q<7> q<6> q<5> q<4> q<3> q<2> q<1> qb<9> qb<8> qb<7> qb<6> qb<5> qb<4> qb<3> qb<2> qb<1> vdd q<0> qb<0> est_delay est SAR_LOGIC
-e0 clksb gnd VCVS vdd clks 1
+* e0 clksb gnd VCVS vdd clks 1
 xi11 clks net05 inp cpinp SAMPLER
 xi12 clks net06 inn cpinn SAMPLER
 xi13 clksb est_delay estimator<1> estimator<0> gnd coutp vdd COUNTER

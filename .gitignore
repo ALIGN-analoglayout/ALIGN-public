@@ -69,7 +69,9 @@ Cktgen/cktgen/dist/
 !**/*-freeze.json
 !**/Process.json
 !**/layers.json
+!**/generators.json
 !dev/**/*.json
+!align/config/model.txt
 !dev/**/*.lef
 !PlaceRouteHierFlow/gold/*.json
 !PlaceRouteHierFlow/testcase_*/*.gds
