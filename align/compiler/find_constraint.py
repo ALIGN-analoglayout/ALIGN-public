@@ -293,10 +293,10 @@ def FindSymmetry(subckt, stop_points: list):
     """
     graph = Graph(subckt)
     ports = subckt.pins
-    match_pairs = {}
+    match_pairs = dict()
     non_power_ports = sorted(set(sorted(ports)) - set(stop_points))
     logger.debug(f"subckt: {subckt.name} sorted signal ports: {non_power_ports}")
-    ports_weight = {}
+    ports_weight = dict()
     for port in subckt.pins:
         leaf_conn = get_leaf_connection(subckt, port)
         logger.debug(f"leaf connections of net ({port}): {leaf_conn}")
@@ -343,8 +343,7 @@ class add_array_const:
         self.name = subckt.name
         self.G = Graph(subckt)
         self.iconst = subckt.constraints
-    def filter_hierarchy():
-        pass
+
     def filter_array(self):
         align_const_keys = [key for key, value in self.match_pairs.items() if isinstance(value, list)]
         logger.debug(f"AlignBlock const gen{align_const_keys}")
@@ -365,28 +364,40 @@ class add_array_const:
 
 class process_input_const:
     def __init__(self, subckt):
-        self.written_symblocks = list() # list of set for symmetric pairs and string
+        self.user_constrained_list = list() # list of set for symmetric pairs and string
         self.subckt = subckt
         self.name = subckt.name
         self.G = Graph(subckt)
         self.iconst = subckt.constraints
+
     def process_all(self):
         self.process_symmnet()
-        return self.written_symblocks
+        self.process_do_not_identify()
+        return self.user_constrained_list
+    def process_do_not_identify(self):
+        for const in self.iconst:
+            if isinstance(const, constraint.DoNotIdentify):
+                self.user_constrained_list.extend(const.instances)
     def process_symmnet(self):
         logger.debug(f"input const {self.iconst}")
-        update_symmnet = list()
+        replace_const = list()
+        new_symmblock_const =list()
         for const in self.iconst:
             if isinstance(const, constraint.SymmetricNets):
                 # if not getattr(const, 'pins1', None):
                 # TODO: constr with pin information should be handled separately
                 logger.debug(f"adding pins to user symmnet constraint {const}")
                 pairs, s1, s2 = symmnet_device_pairs(
-                    self.G, const.net1.upper(), const.net2.upper(), self.written_symmblocks, None, True)
+                    self.G,
+                    const.net1.upper(),
+                    const.net2.upper(),
+                    self.user_constrained_list,
+                    None,
+                    True)
                 assert s1, f"no connections found to net {const.net1}, fix user const"
                 assert s2, f"no connections found to net {const.net2}, fix user const"
                 with set_context(self.iconst):
-                    update_symmnet.append(
+                    replace_const.append(
                         (
                             const,
                             constraint.SymmetricNets(
@@ -398,22 +409,32 @@ class process_input_const:
                             ),
                         )
                     )
-                continue
-            elif isinstance(const, constraint.DoNotIdentify):
-                self.written_symblocks.extend(const.instances)
-        for k, v in update_symmnet:
-            with set_context(self.iconst):
+
+                    for key, value in pairs.items():
+                        self.user_constrained_list.extend([key,value])
+                        if key in s1:
+                            continue
+                        if key !=value:
+                            pairsj = [[key,value]]
+                        else:
+                            pairsj = [[key]]
+                        symmBlock = constraint.SymmetricBlocks(direction="V", pairs=pairsj)
+                        new_symmblock_const.append(symmBlock)
+        with set_context(self.iconst):
+            for k, v in replace_const:
                 self.iconst.remove(k)
                 self.iconst.append(v)
-                self.written_symblocks.append(v.net1)
-                self.written_symblocks.append(v.net2)
+                self.user_constrained_list.append(v.net1)
+                self.user_constrained_list.append(v.net2)
+            for symb in new_symmblock_const:
+                self.iconst.append(symb)
 
 class add_symmetry_const:
     def __init__(self, subckt, match_pairs, stop_points, written_symmblocks, skip_const):
         self.all_pairs = sorted(
         match_pairs.values(),
-        key=lambda k: len([k1 for k1, v1 in k.items() if k1 != v1]),
-        reverse=True,
+        key = lambda k: len([k1 for k1, v1 in k.items() if k1 != v1]),
+        reverse = True,
         )
         self.written_symmblocks = written_symmblocks
         self.subckt = subckt
@@ -439,7 +460,7 @@ class add_symmetry_const:
             add_or_revert_const(pairsj, self.iconst, self.written_symmblocks)
         logger.debug(f"identified constraints of {self.name} are {self.iconst}")
 
-    def pre_fiter(self, key,value):
+    def pre_fiter(self, key, value):
         if key in self.stop:
             # logger.debug(f"skipping symmetry b/w {key} {value} as they are present in stop points")
             return True
