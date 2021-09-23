@@ -41,20 +41,6 @@
             "axis_dir": "V"
         },
         {
-            "pairs": [
-                {
-                    "type": "selfsym",
-                    "block": "X_CMC_S_NMOS_B_I1_M0_M10"
-                },
-                {
-                    "type": "selfsym",
-                    "block": "X_CMC_S_NMOS_B_I1_M6_M7"
-                }
-            ],
-            "const_name": "SymmBlock",
-            "axis_dir": "V"
-        },
-        {
             "net1": {
                 "name": "VINN",
                 "blocks": [
