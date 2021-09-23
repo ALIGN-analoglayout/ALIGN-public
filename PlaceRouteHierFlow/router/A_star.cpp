@@ -1910,15 +1910,15 @@ std::vector<std::vector<int> > A_star::Trace_Back_Paths(Grid& grid, int current_
   Extend_labels.clear();
   Extend_labels = extend_labels;
   //std::cout<<"a star temp_path length ";
-  for(int i=0;i<temp_paths.size();i++){
-     std::cout<<temp_paths[i].size()<<" "; 
-  }
+  //for(int i=0;i<temp_paths.size();i++){
+     //std::cout<<temp_paths[i].size()<<" "; 
+  //}
   //std::cout<<std::endl;
 
   //std::cout<<"a star Extend_labels length ";
-  for(int i=0;i<Extend_labels.size();i++){
-     std::cout<<Extend_labels[i].size()<<" "; 
-  }
+  //for(int i=0;i<Extend_labels.size();i++){
+     //std::cout<<Extend_labels[i].size()<<" "; 
+  //}
   //std::cout<<std::endl;
 
 
