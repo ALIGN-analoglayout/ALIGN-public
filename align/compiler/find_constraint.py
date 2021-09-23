@@ -534,7 +534,7 @@ def add_or_revert_const(pairsj: list, iconst, written_symmblocks: list):
                 symmBlock = constraint.SymmetricBlocks(direction="V", pairs=pairsj)
                 iconst.append(symmBlock)
                 written_symmblocks.extend([set(pair) for pair in pairsj])
-                # written_symmblocks.extend([str(ele) for pair in pairsj for ele in pair])
+                written_symmblocks.extend([str(ele) for pair in pairsj for ele in pair])
                 logger.debug(f"one axis of written symmetries: {symmBlock}")
         except:
             while len(iconst) > _temp:
