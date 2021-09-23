@@ -409,15 +409,17 @@ class process_input_const:
                             ),
                         )
                     )
-
+                    pairsj = []
                     for key, value in pairs.items():
-                        self.user_constrained_list.extend([key,value])
                         if key in s1:
                             continue
-                        if key !=value:
-                            pairsj = [[key,value]]
-                        else:
-                            pairsj = [[key]]
+                        if key !=value and {key,value} not in self.user_constrained_list:
+                            self.user_constrained_list.append({key,value})
+                            pairsj.append([key,value])
+                        elif key not in self.user_constrained_list:
+                            self.user_constrained_list.append(key)
+                            pairsj.append([key])
+                    if len(pairsj)>0:
                         symmBlock = constraint.SymmetricBlocks(direction="V", pairs=pairsj)
                         new_symmblock_const.append(symmBlock)
         with set_context(self.iconst):
