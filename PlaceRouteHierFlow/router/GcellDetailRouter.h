@@ -99,7 +99,7 @@ class GcellDetailRouter : public GcellGlobalRouter{
     void NetToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& net, int net_index);
     void NetToNodeInterMetal(PnRDB::hierNode& HierNode, RouterDB::Net& net);
     void NetToNodeBlockPins(PnRDB::hierNode& HierNode, RouterDB::Net& net);
-    void returnPath(std::vector<std::vector<RouterDB::Metal> > &temp_path, RouterDB::Net& temp_net);
+    void returnPath(std::vector<std::vector<RouterDB::Metal> > &temp_path, RouterDB::Net& temp_net, std::vector<std::vector<int> > extend_labels);
     std::vector<RouterDB::Metal> CpSymPath(std::vector<RouterDB::Metal> &temp_path, int H, int center);
     RouterDB::contact SymContact(RouterDB::contact &temp_contact, bool H, int center);
     RouterDB::SinkData Sym_contact(RouterDB::SinkData &temp_contact, bool H, int center);
@@ -183,6 +183,8 @@ class GcellDetailRouter : public GcellGlobalRouter{
     void ExtendMetals(int i);
     void Topology_extraction(vector<RouterDB::Metal> &temp_path);
     void Mirror_Topology(std::vector<RouterDB::Metal> &sym_path,int HV_sym,int center);
+    void ExtendX_PN(RouterDB::Metal &temp_metal, int extend_dis, bool P);
+    void ExtendY_PN(RouterDB::Metal &temp_metal, int extend_dis, bool P);
    
 };
 

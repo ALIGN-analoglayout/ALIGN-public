@@ -160,7 +160,11 @@ void PowerRouter::ExtendMetals(int i){
 
      if(PowerNets[i].path_metal.size()!=PowerNets[i].extend_label.size()){assert(0);}
 
+     //std::cout<<"extend metal label for power net i "<<i<<" "<<PowerNets[i].netName<<" ";
+
      for(unsigned int j=0;j<PowerNets[i].path_metal.size();j++){
+         
+         //std::cout<<PowerNets[i].extend_label[j]<<" ";
 
          if(PowerNets[i].extend_label[j]==0){continue;}
 
@@ -172,7 +176,7 @@ void PowerRouter::ExtendMetals(int i){
          
          int current_length = abs( PowerNets[i].path_metal[j].LinePoint[0].x - PowerNets[i].path_metal[j].LinePoint[1].x) + abs( PowerNets[i].path_metal[j].LinePoint[0].y - PowerNets[i].path_metal[j].LinePoint[1].y);
 
-         if(current_length<minL){
+         if(current_length<minL and PowerNets[i].extend_label[j]==1){
 
             int extend_dis = ceil(minL - current_length)/2;
    
@@ -187,10 +191,47 @@ void PowerRouter::ExtendMetals(int i){
             }
 
 
+         }else if(current_length<minL and PowerNets[i].extend_label[j]==2){ //head
+
+            int extend_dis = ceil(minL - current_length);
+
+            bool p = 1;
+
+            if(direction==1){//h
+
+              ExtendX_PN(PowerNets[i].path_metal[j], extend_dis, p);
+
+            }else{//v
+
+              ExtendY_PN(PowerNets[i].path_metal[j], extend_dis, p);
+
+            }
+         }else if(current_length<minL and PowerNets[i].extend_label[j]==3){ // tail
+
+            int extend_dis = ceil(minL - current_length);
+
+            int p = 0;
+
+            if(direction==1){//h
+
+               ExtendX_PN(PowerNets[i].path_metal[j], extend_dis, p);
+
+            }else{//v
+
+               ExtendY_PN(PowerNets[i].path_metal[j], extend_dis, p);
+
+            }
+         }else if(current_length<minL and PowerNets[i].extend_label[j]==4){ // bug
+
+            auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.ExtendMetal");
+
+            logger->debug("Extend Error for PowerNets[i].netName {0}",PowerNets[i].netName);
+
          }
+
      }
 
-
+     //std::cout<<std::endl;
 };
 
 void PowerRouter::ExtendMetal(){
@@ -212,7 +253,7 @@ void PowerRouter::ExtendMetal(){
          
          int current_length = abs( PowerNets[i].path_metal[j].LinePoint[0].x - PowerNets[i].path_metal[j].LinePoint[1].x) + abs( PowerNets[i].path_metal[j].LinePoint[0].y - PowerNets[i].path_metal[j].LinePoint[1].y);
 
-         if(current_length<minL){
+         if(current_length<minL and PowerNets[i].extend_label[j]==1){
 
             int extend_dis = ceil(minL - current_length)/2;
    
@@ -227,7 +268,43 @@ void PowerRouter::ExtendMetal(){
             }
 
 
-         }
+         }else if(current_length<minL and PowerNets[i].extend_label[j]==2){ //head
+
+           int extend_dis = ceil(minL - current_length);
+
+           bool p = 1;
+
+           if(direction==1){//h
+
+              ExtendX_PN(PowerNets[i].path_metal[j], extend_dis, p);
+
+           }else{//v
+
+              ExtendY_PN(PowerNets[i].path_metal[j], extend_dis, p);
+
+           }
+        }else if(current_length<minL and PowerNets[i].extend_label[j]==3){ // tail
+
+           int extend_dis = ceil(minL - current_length);
+
+           int p = 0;
+
+          if(direction==1){//h
+
+              ExtendX_PN(PowerNets[i].path_metal[j], extend_dis, p);
+
+           }else{//v
+
+              ExtendY_PN(PowerNets[i].path_metal[j], extend_dis, p);
+
+           }
+        }else if(current_length<minL and PowerNets[i].extend_label[j]==4){ // bug
+
+           auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.ExtendMetal");
+
+           logger->debug("Extend Error for PowerNets[i].netName {0}",PowerNets[i].netName);
+
+        }
      }
   }
 
@@ -498,14 +575,16 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
             bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, 0, 0);
 
             std::vector<std::vector<RouterDB::Metal>> physical_path;
+            std::vector<std::vector<int> > extend_labels;
             logger->debug("Power router routing pathMark {0}",pathMark);
             Update_powerrouter_report_info(temp_routing_net, i, j, pathMark);
               if (pathMark) {
 
                 physical_path=a_star.ConvertPathintoPhysical(grid);
+                extend_labels = a_star.GetExtendLabel();
                 lastmile_source_new(physical_path,temp_source);
                 lastmile_dest_new(physical_path,temp_dest);
-                returnPath(physical_path, PowerNets[i]);
+                returnPath(physical_path, PowerNets[i],extend_labels);
 
                 InsertRoutingVia(a_star, grid, Pset_current_net_via);
                 InsertRoutingVia(a_star, grid, Pset_via);
@@ -669,20 +748,112 @@ void PowerRouter::CreatePowerGrid_DC(PnRDB::hierNode& node, PnRDB::Drc_info& drc
 
 };
 
-void PowerRouter::returnPath(std::vector<std::vector<RouterDB::Metal> > temp_path, RouterDB::PowerNet& temp_net){
+void PowerRouter::returnPath(std::vector<std::vector<RouterDB::Metal> > temp_path, RouterDB::PowerNet& temp_net, std::vector<std::vector<int> > extend_labels){
 
   for(unsigned int i=0;i<temp_path.size();i++){
        
      for(unsigned int j=0;j<temp_path[i].size();j++){
+         /*
          if(j==0 || j==temp_path[i].size()-1){
            temp_net.extend_label.push_back(0);
          }else{
            temp_net.extend_label.push_back(1);
          }
+         */
          temp_net.path_metal.push_back(temp_path[i][j]);
-     
+         temp_net.extend_label.push_back(extend_labels[i][j]);
         }
      }
+
+};
+
+void PowerRouter::ExtendX_PN(RouterDB::Metal &temp_metal, int extend_dis, bool P){
+
+  //extend p==1 extend for the grid with lager x
+
+  //std::cout<<"extendX_PN before"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[1].x<<std::endl;
+
+  if(P){  
+
+    if(temp_metal.LinePoint[0].x<temp_metal.LinePoint[1].x){
+
+       temp_metal.LinePoint[0].x = temp_metal.LinePoint[0].x;
+       temp_metal.LinePoint[1].x = temp_metal.LinePoint[1].x + extend_dis;
+       //rewrite contact
+
+      }else{
+
+       temp_metal.LinePoint[0].x = temp_metal.LinePoint[0].x + extend_dis;
+       temp_metal.LinePoint[1].x = temp_metal.LinePoint[1].x;
+
+      }
+
+    }else{
+
+    if(temp_metal.LinePoint[0].x<temp_metal.LinePoint[1].x){
+
+       temp_metal.LinePoint[0].x = temp_metal.LinePoint[0].x - extend_dis;
+       temp_metal.LinePoint[1].x = temp_metal.LinePoint[1].x ;
+       //rewrite contact
+
+      }else{
+
+       temp_metal.LinePoint[0].x = temp_metal.LinePoint[0].x;
+       temp_metal.LinePoint[1].x = temp_metal.LinePoint[1].x - extend_dis;
+
+      }
+
+    }
+
+    //std::cout<<"extendX_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[1].x<<std::endl;
+    //std::cout<<"extendX_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].y<<std::endl;
+
+    UpdateMetalContact(temp_metal);
+
+};
+
+void PowerRouter::ExtendY_PN(RouterDB::Metal &temp_metal, int extend_dis, bool P){
+
+  //extend p==1 extend for the grid with lager y
+
+  //std::cout<<"extendY_PN before "<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].y<<std::endl; 
+
+  if(P){  
+
+    if(temp_metal.LinePoint[0].y<temp_metal.LinePoint[1].y){
+
+       temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y;
+       temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y + extend_dis;
+       //rewrite contact
+
+      }else{
+
+       temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y + extend_dis;
+       temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y;
+
+      }
+
+    }else{
+
+    if(temp_metal.LinePoint[0].y<temp_metal.LinePoint[1].y){
+
+       temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y;
+       temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y - extend_dis;
+       //rewrite contact
+
+      }else{
+
+       temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y - extend_dis;
+       temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y ;
+
+      }
+
+    }
+
+    //std::cout<<"extendY_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].y<<std::endl;
+    //std::cout<<"extendY_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[1].x<<std::endl;
+
+    UpdateMetalContact(temp_metal);
 
 };
 
@@ -904,6 +1075,8 @@ void PowerRouter::Physical_metal_via_power_grid(RouterDB::PowerGrid &temp_grid){
 };
 
 void PowerRouter::GetPhsical_Metal_Via(int i){
+
+  //std::cout<<"power routing metal "<<i<<" ";
   
   for(unsigned int h=0;h<PowerNets[i].path_metal.size();h++){
 
@@ -945,9 +1118,11 @@ void PowerRouter::GetPhsical_Metal_Via(int i){
               PowerNets[i].path_metal[h].MetalRect.placedUR.y =  PowerNets[i].path_metal[h].LinePoint[1].y+PowerNets[i].path_metal[h].width/2;
             
             }
-
-          
+  
+         //std::cout<<" ( "<<PowerNets[i].path_metal[h].MetalRect.placedLL.x<<" "<<PowerNets[i].path_metal[h].MetalRect.placedLL.y<<" "<<PowerNets[i].path_metal[h].MetalRect.placedUR.x<<" "<<PowerNets[i].path_metal[h].MetalRect.placedUR.y<<" "<<PowerNets[i].path_metal[h].MetalRect.metal<<" ) ";          
      }
+
+     //std::cout<<std::endl;
 
   
   std::vector<RouterDB::Via> Vias;

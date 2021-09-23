@@ -54,7 +54,7 @@ class PowerRouter : public GcellDetailRouter {
     PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, int power_grid, string inputfile);
     void PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal);
     void CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, int hskip_factor, int v_skip_factor);
-    void returnPath(std::vector<std::vector<RouterDB::Metal> > temp_path, RouterDB::PowerNet& temp_net);
+    void returnPath(std::vector<std::vector<RouterDB::Metal> > temp_path, RouterDB::PowerNet& temp_net,  std::vector<std::vector<int> > extend_labels);
     void SetSrcDest(RouterDB::Pin temp_pin, RouterDB::PowerGrid Vdd_grid, std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest);
     void Physical_metal_via();
     void Physical_metal_via_power_grid(RouterDB::PowerGrid &temp_grid);
@@ -94,6 +94,8 @@ class PowerRouter : public GcellDetailRouter {
     int FindMulti_Connection_Number(int i, PnRDB::hierNode& node);
     void CreatePowerGridDrc_info_DC(string inputfile);
     void CreatePowerGrid_DC(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, string inputfile);
+    void ExtendX_PN(RouterDB::Metal &temp_metal, int extend_dis, bool P);
+    void ExtendY_PN(RouterDB::Metal &temp_metal, int extend_dis, bool P);
 
 };
 

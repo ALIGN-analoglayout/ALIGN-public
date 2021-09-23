@@ -23,6 +23,7 @@ class A_star {
     vector<int> source, dest;
     bool shielding=-1;
     std::vector<std::vector<int> > Path;
+    std::vector<std::vector<int> > Extend_labels;
     int path_number;
     PnRDB::Drc_info drc_info;
 
@@ -55,6 +56,9 @@ class A_star {
     std::vector<int> CovertToShieldingNet(Grid& grid, std::vector<int> &temp_path);
     void refreshGrid(Grid& grid);
     bool CheckExendable_With_Certain_Length(int first_node_same_layer,int current_node,int length,int minL,Grid &grid);
+    bool CheckExendable_With_Certain_Length_Head_Extend(int first_node_same_layer,int current_node,int length,int minL,Grid &grid, int &direction);
+    bool CheckExendable_With_Certain_Length_Tail_Extend(int first_node_same_layer,int current_node,int length,int minL,Grid &grid, int &direction);
+    
     int trace_back_node(int current_node, Grid& grid, std::set<int> &source_index);
     int trace_back_node_parent(int current_node, Grid& grid, std::set<int> &source_index);
     std::vector<std::vector<int>> GetPath();
@@ -71,6 +75,8 @@ class A_star {
     int Find_Symmetry_Cost(Grid& grid, int current_node, vector<RouterDB::Metal> &sym_path);
     std::vector<std::vector<int> > A_star_algorithm_Sym(Grid& grid, int left_up, int right_down, vector<RouterDB::Metal> &sym_path);
     bool FindFeasiblePath_sym(Grid& grid, int pathNo, int left_up, int right_down, std::vector<RouterDB::Metal> &sym_path);
+    std::vector<std::vector<int> > GetExtendLabel();
+    std::vector<int> extend_manner_direction_check(std::vector<int> temp_path, Grid &grid);
 };
 
 #endif
