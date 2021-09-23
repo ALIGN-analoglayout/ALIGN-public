@@ -160,11 +160,11 @@ void PowerRouter::ExtendMetals(int i){
 
      if(PowerNets[i].path_metal.size()!=PowerNets[i].extend_label.size()){assert(0);}
 
-     std::cout<<"extend metal label for power net i "<<i<<" "<<PowerNets[i].netName<<" ";
+     //std::cout<<"extend metal label for power net i "<<i<<" "<<PowerNets[i].netName<<" ";
 
      for(unsigned int j=0;j<PowerNets[i].path_metal.size();j++){
          
-         std::cout<<PowerNets[i].extend_label[j]<<" ";
+         //std::cout<<PowerNets[i].extend_label[j]<<" ";
 
          if(PowerNets[i].extend_label[j]==0){continue;}
 
@@ -231,7 +231,7 @@ void PowerRouter::ExtendMetals(int i){
 
      }
 
-     std::cout<<std::endl;
+     //std::cout<<std::endl;
 };
 
 void PowerRouter::ExtendMetal(){
@@ -771,7 +771,7 @@ void PowerRouter::ExtendX_PN(RouterDB::Metal &temp_metal, int extend_dis, bool P
 
   //extend p==1 extend for the grid with lager x
 
-  std::cout<<"extendX_PN before"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[1].x<<std::endl;
+  //std::cout<<"extendX_PN before"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[1].x<<std::endl;
 
   if(P){  
 
@@ -805,8 +805,8 @@ void PowerRouter::ExtendX_PN(RouterDB::Metal &temp_metal, int extend_dis, bool P
 
     }
 
-    std::cout<<"extendX_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[1].x<<std::endl;
-    std::cout<<"extendX_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].y<<std::endl;
+    //std::cout<<"extendX_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[1].x<<std::endl;
+    //std::cout<<"extendX_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].y<<std::endl;
 
     UpdateMetalContact(temp_metal);
 
@@ -816,7 +816,7 @@ void PowerRouter::ExtendY_PN(RouterDB::Metal &temp_metal, int extend_dis, bool P
 
   //extend p==1 extend for the grid with lager y
 
-  std::cout<<"extendY_PN before "<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].y<<std::endl; 
+  //std::cout<<"extendY_PN before "<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].y<<std::endl; 
 
   if(P){  
 
@@ -850,8 +850,8 @@ void PowerRouter::ExtendY_PN(RouterDB::Metal &temp_metal, int extend_dis, bool P
 
     }
 
-    std::cout<<"extendY_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].y<<std::endl;
-    std::cout<<"extendY_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[1].x<<std::endl;
+    //std::cout<<"extendY_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].y<<std::endl;
+    //std::cout<<"extendY_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[1].x<<std::endl;
 
     UpdateMetalContact(temp_metal);
 
@@ -1076,7 +1076,7 @@ void PowerRouter::Physical_metal_via_power_grid(RouterDB::PowerGrid &temp_grid){
 
 void PowerRouter::GetPhsical_Metal_Via(int i){
 
-  std::cout<<"power routing metal "<<i<<" ";
+  //std::cout<<"power routing metal "<<i<<" ";
   
   for(unsigned int h=0;h<PowerNets[i].path_metal.size();h++){
 
@@ -1119,10 +1119,10 @@ void PowerRouter::GetPhsical_Metal_Via(int i){
             
             }
   
-         std::cout<<" ( "<<PowerNets[i].path_metal[h].MetalRect.placedLL.x<<" "<<PowerNets[i].path_metal[h].MetalRect.placedLL.y<<" "<<PowerNets[i].path_metal[h].MetalRect.placedUR.x<<" "<<PowerNets[i].path_metal[h].MetalRect.placedUR.y<<" "<<PowerNets[i].path_metal[h].MetalRect.metal<<" ) ";          
+         //std::cout<<" ( "<<PowerNets[i].path_metal[h].MetalRect.placedLL.x<<" "<<PowerNets[i].path_metal[h].MetalRect.placedLL.y<<" "<<PowerNets[i].path_metal[h].MetalRect.placedUR.x<<" "<<PowerNets[i].path_metal[h].MetalRect.placedUR.y<<" "<<PowerNets[i].path_metal[h].MetalRect.metal<<" ) ";          
      }
 
-     std::cout<<std::endl;
+     //std::cout<<std::endl;
 
   
   std::vector<RouterDB::Via> Vias;

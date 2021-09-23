@@ -822,26 +822,26 @@ void GcellDetailRouter::create_detailrouter(){
         std::vector<std::vector<int> > extend_labels;
         Update_rouer_report_info(temp_routing_net, i, j, pathMark);
         logger->debug("pathMark {0}",pathMark);
-        std::cout<<"performing detailed router on debug 2"<<std::endl;
+        //std::cout<<"performing detailed router on debug 2"<<std::endl;
         //assert(pathMark);
         if (pathMark)
         {
-          std::cout<<"performing detailed router on debug 2.5"<<std::endl;
+          //std::cout<<"performing detailed router on debug 2.5"<<std::endl;
           physical_path = a_star.ConvertPathintoPhysical(grid);
-          std::cout<<"performing detailed router on debug 2.6"<<std::endl;
+          //std::cout<<"performing detailed router on debug 2.6"<<std::endl;
           extend_labels = a_star.GetExtendLabel();
           //lastmile_source_new(physical_path, temp_source);
           //lastmile_dest_new(physical_path, temp_dest);
-          std::cout<<"performing detailed router on debug 2.7"<<std::endl;
+          //std::cout<<"performing detailed router on debug 2.7"<<std::endl;
           returnPath(physical_path, Nets[i], extend_labels);
-          std::cout<<"performing detailed router on debug 3"<<std::endl;
+          //std::cout<<"performing detailed router on debug 3"<<std::endl;
           //insert via center into Pset
           InsertRoutingVia(a_star, grid, Pset_current_net_via);
           InsertRoutingVia(a_star, grid, Pset_via);
           //add path metal to set_current_net_contact
           //add via conatct to set_current_net_contact
           InsertRoutingContact(a_star, grid, Pset_current_net_via, Set_current_net_contact, i);
-          std::cout<<"performing detailed router on debug 4"<<std::endl;
+          //std::cout<<"performing detailed router on debug 4"<<std::endl;
         }
         else
         {
@@ -2563,7 +2563,7 @@ void GcellDetailRouter::ExtendX_PN(RouterDB::Metal &temp_metal, int extend_dis, 
 
   //extend p==1 extend for the grid with lager x
 
-  std::cout<<"extendX_PN before"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[1].x<<std::endl;
+  //std::cout<<"extendX_PN before"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[1].x<<std::endl;
 
   if(P){  
 
@@ -2597,8 +2597,8 @@ void GcellDetailRouter::ExtendX_PN(RouterDB::Metal &temp_metal, int extend_dis, 
 
     }
 
-    std::cout<<"extendX_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[1].x<<std::endl;
-    std::cout<<"extendX_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].y<<std::endl;
+    //std::cout<<"extendX_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[1].x<<std::endl;
+    //std::cout<<"extendX_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].y<<std::endl;
 
     UpdateMetalContact(temp_metal);
 
@@ -2608,7 +2608,7 @@ void GcellDetailRouter::ExtendY_PN(RouterDB::Metal &temp_metal, int extend_dis, 
 
   //extend p==1 extend for the grid with lager y
 
-  std::cout<<"extendY_PN before "<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].y<<std::endl; 
+  //std::cout<<"extendY_PN before "<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].y<<std::endl; 
 
   if(P){  
 
@@ -2642,8 +2642,8 @@ void GcellDetailRouter::ExtendY_PN(RouterDB::Metal &temp_metal, int extend_dis, 
 
     }
 
-    std::cout<<"extendY_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].y<<std::endl;
-    std::cout<<"extendY_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[1].x<<std::endl;
+    //std::cout<<"extendY_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].y<<std::endl;
+    //std::cout<<"extendY_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[1].x<<std::endl;
 
     UpdateMetalContact(temp_metal);
 
