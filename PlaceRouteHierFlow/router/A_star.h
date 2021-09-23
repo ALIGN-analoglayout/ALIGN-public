@@ -56,8 +56,8 @@ class A_star {
     std::vector<int> CovertToShieldingNet(Grid& grid, std::vector<int> &temp_path);
     void refreshGrid(Grid& grid);
     bool CheckExendable_With_Certain_Length(int first_node_same_layer,int current_node,int length,int minL,Grid &grid);
-    bool CheckExendable_With_Certain_Length_Head_Extend(int first_node_same_layer,int current_node,int length,int minL,Grid &grid);
-    bool CheckExendable_With_Certain_Length_Tail_Extend(int first_node_same_layer,int current_node,int length,int minL,Grid &grid);
+    bool CheckExendable_With_Certain_Length_Head_Extend(int first_node_same_layer,int current_node,int length,int minL,Grid &grid, int &direction);
+    bool CheckExendable_With_Certain_Length_Tail_Extend(int first_node_same_layer,int current_node,int length,int minL,Grid &grid, int &direction);
     
     int trace_back_node(int current_node, Grid& grid, std::set<int> &source_index);
     int trace_back_node_parent(int current_node, Grid& grid, std::set<int> &source_index);

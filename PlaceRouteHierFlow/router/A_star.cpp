@@ -449,7 +449,7 @@ bool A_star::CheckExendable_With_Certain_Length(int first_node_same_layer,int cu
 
 };
 
-bool A_star::CheckExendable_With_Certain_Length_Head_Extend(int first_node_same_layer,int current_node,int length,int minL,Grid &grid){
+bool A_star::CheckExendable_With_Certain_Length_Head_Extend(int first_node_same_layer,int current_node,int length,int minL,Grid &grid, int &direction){
 
   int half_minL = ceil( ( (double) minL -  (double) length) );
 
@@ -494,12 +494,12 @@ bool A_star::CheckExendable_With_Certain_Length_Head_Extend(int first_node_same_
        }
      }
   }
-
+  direction = first_direction;
   return feasible;
 
 };
 
-bool A_star::CheckExendable_With_Certain_Length_Tail_Extend(int first_node_same_layer,int current_node,int length,int minL,Grid &grid){
+bool A_star::CheckExendable_With_Certain_Length_Tail_Extend(int first_node_same_layer,int current_node,int length,int minL,Grid &grid, int &direction){
 
   int half_minL = ceil( ( (double) minL -  (double) length) );
 
@@ -544,7 +544,7 @@ bool A_star::CheckExendable_With_Certain_Length_Tail_Extend(int first_node_same_
        }
      }
   }
-
+  direction = current_direction;
   return feasible;
 
 };
@@ -1189,9 +1189,10 @@ bool A_star::Extention_check_prime(Grid& grid, int current_node, int next_node, 
       }
 
   if(delta_length<0 && length >= via_space_length){
+       int direction;
        bool feasible_half = CheckExendable_With_Certain_Length(node_same_layer,current_node,length,minL,grid);
-       bool feasible_head = CheckExendable_With_Certain_Length_Head_Extend(node_same_layer,current_node,length,minL,grid);
-       bool feasible_tail = CheckExendable_With_Certain_Length_Tail_Extend(node_same_layer,current_node,length,minL,grid);
+       bool feasible_head = CheckExendable_With_Certain_Length_Head_Extend(node_same_layer,current_node,length,minL,grid,direction);
+       bool feasible_tail = CheckExendable_With_Certain_Length_Tail_Extend(node_same_layer,current_node,length,minL,grid,direction);
        return feasible_half or feasible_head or feasible_tail;
     }else if(length >= via_space_length){
        return true;
@@ -1244,9 +1245,10 @@ bool A_star::Extention_check(Grid& grid, int current_node, std::set<int> &source
           }
        }
        if(delta_length<0 && length >= via_space_length){
+           int direction;
            bool feasible_half = CheckExendable_With_Certain_Length(node_same_layer,parent,length,minL,grid);
-           bool feasible_head = CheckExendable_With_Certain_Length_Head_Extend(node_same_layer,parent,length,minL,grid);
-           bool feasible_tail = CheckExendable_With_Certain_Length_Tail_Extend(node_same_layer,parent,length,minL,grid);
+           bool feasible_head = CheckExendable_With_Certain_Length_Head_Extend(node_same_layer,parent,length,minL,grid,direction);
+           bool feasible_tail = CheckExendable_With_Certain_Length_Tail_Extend(node_same_layer,parent,length,minL,grid,direction);
            return feasible_half or feasible_head or feasible_tail;
        }else if(length >= via_space_length){
            return true;
@@ -1297,7 +1299,7 @@ std::vector<int> A_star::extend_manner_direction_check(std::vector<int> temp_pat
   for(int i=0;i<path_pairs.size();++i){
 
      //std::cout<<"<"<<path_pairs[i].first<<","<<path_pairs[i].second<<"> ";
-
+     int direction;
      if(i==0||i==path_pairs.size()-1){
         extend_index.push_back(0);
      }else{
@@ -1308,10 +1310,12 @@ std::vector<int> A_star::extend_manner_direction_check(std::vector<int> temp_pat
            extend_index.push_back(0);
         }else if(CheckExendable_With_Certain_Length(path_pairs[i].first,path_pairs[i].second,length,minL,grid)){
           extend_index.push_back(1);
-        }else if(CheckExendable_With_Certain_Length_Head_Extend(path_pairs[i].first,path_pairs[i].second,length,minL,grid)){
-          extend_index.push_back(2);
-        }else if(CheckExendable_With_Certain_Length_Tail_Extend(path_pairs[i].first,path_pairs[i].second,length,minL,grid)){
-          extend_index.push_back(3);
+        }else if(CheckExendable_With_Certain_Length_Head_Extend(path_pairs[i].first,path_pairs[i].second,length,minL,grid,direction)){
+          if(direction==1)extend_index.push_back(2);
+          if(direction==-1)extend_index.push_back(3);
+        }else if(CheckExendable_With_Certain_Length_Tail_Extend(path_pairs[i].first,path_pairs[i].second,length,minL,grid,direction)){
+          if(direction==1)extend_index.push_back(2);
+          if(direction==-1)extend_index.push_back(3);
         }else{
           extend_index.push_back(4);
         }

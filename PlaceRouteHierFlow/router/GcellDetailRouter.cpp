@@ -2560,14 +2560,17 @@ void GcellDetailRouter::ExtendY(RouterDB::Metal &temp_metal, int extend_dis){
 
 
 void GcellDetailRouter::ExtendX_PN(RouterDB::Metal &temp_metal, int extend_dis, bool P){
-  
+
   //extend p==1 extend for the grid with lager x
+
+  std::cout<<"extendX_PN before"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[1].x<<std::endl;
+
   if(P){  
 
     if(temp_metal.LinePoint[0].x<temp_metal.LinePoint[1].x){
 
-       temp_metal.LinePoint[0].x = temp_metal.LinePoint[0].x - extend_dis;
-       temp_metal.LinePoint[1].x = temp_metal.LinePoint[1].x;
+       temp_metal.LinePoint[0].x = temp_metal.LinePoint[0].x;
+       temp_metal.LinePoint[1].x = temp_metal.LinePoint[1].x + extend_dis;
        //rewrite contact
 
       }else{
@@ -2581,8 +2584,8 @@ void GcellDetailRouter::ExtendX_PN(RouterDB::Metal &temp_metal, int extend_dis, 
 
     if(temp_metal.LinePoint[0].x<temp_metal.LinePoint[1].x){
 
-       temp_metal.LinePoint[0].x = temp_metal.LinePoint[0].x;
-       temp_metal.LinePoint[1].x = temp_metal.LinePoint[1].x + extend_dis;
+       temp_metal.LinePoint[0].x = temp_metal.LinePoint[0].x - extend_dis;
+       temp_metal.LinePoint[1].x = temp_metal.LinePoint[1].x ;
        //rewrite contact
 
       }else{
@@ -2594,19 +2597,25 @@ void GcellDetailRouter::ExtendX_PN(RouterDB::Metal &temp_metal, int extend_dis, 
 
     }
 
+    std::cout<<"extendX_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[1].x<<std::endl;
+    std::cout<<"extendX_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].y<<std::endl;
+
     UpdateMetalContact(temp_metal);
-    
+
 };
 
 void GcellDetailRouter::ExtendY_PN(RouterDB::Metal &temp_metal, int extend_dis, bool P){
 
   //extend p==1 extend for the grid with lager y
+
+  std::cout<<"extendY_PN before "<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].y<<std::endl; 
+
   if(P){  
 
     if(temp_metal.LinePoint[0].y<temp_metal.LinePoint[1].y){
 
-       temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y - extend_dis;
-       temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y;
+       temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y;
+       temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y + extend_dis;
        //rewrite contact
 
       }else{
@@ -2621,20 +2630,23 @@ void GcellDetailRouter::ExtendY_PN(RouterDB::Metal &temp_metal, int extend_dis, 
     if(temp_metal.LinePoint[0].y<temp_metal.LinePoint[1].y){
 
        temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y;
-       temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y + extend_dis;
+       temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y - extend_dis;
        //rewrite contact
 
       }else{
 
-       temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y;
-       temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y - extend_dis;
+       temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y - extend_dis;
+       temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y ;
 
       }
 
     }
 
+    std::cout<<"extendY_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].y<<std::endl;
+    std::cout<<"extendY_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[1].x<<std::endl;
+
     UpdateMetalContact(temp_metal);
-  
+
 };
 
 void GcellDetailRouter::ExtendMetals(int i){
