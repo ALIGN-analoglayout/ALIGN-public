@@ -383,6 +383,8 @@ class SetBoundingBox(HardConstraint):
     lly: int
     urx: int
     ury: int
+    sx: Optional[int] = 1  # -1 if instance flipped along x axis, else 1.
+    sy: Optional[int] = 1  # -1 if instance flipped along x axis, else 1.
     is_subcircuit: Optional[bool] = False
 
     def check(self, checker):
@@ -393,6 +395,8 @@ class SetBoundingBox(HardConstraint):
         checker.append(bvar.lly == self.lly)
         checker.append(bvar.urx == self.urx)
         checker.append(bvar.ury == self.ury)
+        checker.append(bvar.sx == self.sx)
+        checker.append(bvar.sy == self.sy)
 
 
 # You may chain constraints together for more complex constraints by
@@ -520,6 +524,8 @@ class DoNotIdentify(SoftConstraint):
 class SymmetricBlocks(SoftConstraint):
     pairs: List[List[str]]
     direction: Literal['H', 'V']
+    mirror: Optional[bool] = True
+
     def check(self, checker):
         '''
         X = Align(2, 3, 'h_center')
@@ -527,31 +533,44 @@ class SymmetricBlocks(SoftConstraint):
         Align(1, X, Y, 6, 'center')
 
         '''
-        #TODO:function to check before adding, right now it adds and then check
+        # TODO:function to check before adding, right now it adds and then check
         assert all(len(pair) for pair in self.pairs) >= 1, 'Must contain at least one instance'
         assert all(len(pair) for pair in self.pairs) <= 2, 'Must contain at most two instances'
         if not hasattr(self.parent.parent, 'elements'):
             # PnR stage VerilogJsonModule
             return
-        if len(self.parent.parent.elements)==0:
-            #skips the check while reading user constraints
+        if len(self.parent.parent.elements) == 0:
+            # skips the check while reading user constraints
             return
         # logger.info(f"parent constraints {self.parent} ")
         group_block_instances = [const.name for const in self.parent if isinstance(const, GroupBlocks)]
 
         for pair in self.pairs:
             # logger.debug(f"pairs {self.pairs} {self.parent.parent.get_element(pair[0])}")
-            if len([ele for ele in pair if ele in group_block_instances])>0:
-                #Skip check for group block elements as they are added later in the flow
+            if len([ele for ele in pair if ele in group_block_instances]) > 0:
+                # Skip check for group block elements as they are added later in the flow
                 continue
-            elif len(pair)==2:
+            elif len(pair) == 2:
                 assert self.parent.parent.get_element(pair[0]), f"element {pair[0]} not found in design"
                 assert self.parent.parent.get_element(pair[1]), f"element {pair[1]} not found in design"
                 assert self.parent.parent.get_element(pair[0]).parameters == \
-                    self.parent.parent.get_element(pair[1]).parameters, \
-                        f"Incorrent symmetry pair {pair} in subckt {self.parent.parent.name}"
-    #TODO: Trace current path
-
+                    self.parent.parent.get_element(pair[1]).parameters, (
+                        f"Incorrent symmetry pair {pair} in subckt {self.parent.parent.name}")
+                # TODO: If possible, get rid of all the previous returns and get to here
+                bvars = checker.iter_bbox_vars(pair)
+                for b1, b2 in itertools.pairwise(bvars):
+                    if self.direction == 'V':
+                        pd = 'sy'
+                        od = 'sx'
+                    else:
+                        pd = 'sx'
+                        od = 'sy'
+                    checker.append(getattr(b1, pd) == getattr(b2, pd))
+                    if self.mirror:
+                        checker.append(getattr(b1, od) != getattr(b2, od))
+                    else:
+                        checker.append(getattr(b1, od) == getattr(b2, od))
+        # TODO: Trace current path
 
 
 class BlockDistance(SoftConstraint):

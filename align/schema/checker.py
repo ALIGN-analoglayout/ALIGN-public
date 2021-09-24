@@ -164,13 +164,17 @@ class Z3Checker(AbstractChecker):
         # generate new bbox
         b = self._generate_var(
             'Bbox',
-            llx = f'{name}_llx',
-            lly = f'{name}_lly',
-            urx = f'{name}_urx',
-            ury = f'{name}_ury')
+            llx=f'{name}_llx',
+            lly=f'{name}_lly',
+            urx=f'{name}_urx',
+            ury=f'{name}_ury',
+            sx=f'{name}_sx',
+            sy=f'{name}_sy')
         # width / height cannot be 0
         self.append(b.llx < b.urx)
         self.append(b.lly < b.ury)
+        self.append(self.Or(b.sx == 1, b.sx == -1))
+        self.append(self.Or(b.sy == 1, b.sy == -1))
         if is_subcircuit:
             self._bbox_subcircuit[name] = True
         else:

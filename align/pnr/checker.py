@@ -1,12 +1,13 @@
 from ..schema import constraint, types
 from ..cell_fabric import transformation
 
+
 def check_placement(placement_verilog_d, scale_factor):
-    leaf_bboxes = { x['concrete_name'] : x['bbox'] for x in placement_verilog_d['leaves']}
+    leaf_bboxes = {x['concrete_name']: x['bbox'] for x in placement_verilog_d['leaves']}
 
-    internal_bboxes = { x['concrete_name'] : x['bbox'] for x in placement_verilog_d['modules']}
+    internal_bboxes = {x['concrete_name']: x['bbox'] for x in placement_verilog_d['modules']}
 
-    non_leaves = { module['concrete_name'] for module in placement_verilog_d['modules']}
+    non_leaves = {module['concrete_name'] for module in placement_verilog_d['modules']}
 
     for module in placement_verilog_d['modules']:
         if len(module['constraints']) == 0:
@@ -19,7 +20,7 @@ def check_placement(placement_verilog_d, scale_factor):
             if isinstance(const, constraint.DoNotIdentify):
                 do_not_identify.extend(const.instances)
         do_not_identify = list(set(do_not_identify))
-        all_inst = [inst['instance_name'] for inst in  module['instances']]
+        all_inst = [inst['instance_name'] for inst in module['instances']]
         for inst in do_not_identify:
             assert inst in all_inst, f'Instance not found {inst}'
 
@@ -52,6 +53,8 @@ def check_placement(placement_verilog_d, scale_factor):
                         llx=bbox.llx/scale_factor,
                         lly=bbox.lly/scale_factor,
                         urx=bbox.urx/scale_factor,
-                        ury=bbox.ury/scale_factor
+                        ury=bbox.ury/scale_factor,
+                        sx=t['sX'],
+                        sy=t['sY']  # just for debug
                     )
                 )
