@@ -1,4 +1,5 @@
-
+import json
+import shutil
 import textwrap
 try:
     from .utils import get_test_id, build_example, run_example
@@ -29,4 +30,12 @@ def test_mirror():
         {"constraint": "SymmetricBlocks", "direction": "H", "pairs": [["x2", "x3"]], "mirror": False}
     ]
     example = build_example(name, netlist, setup, constraints)
-    run_example(example, cleanup=False)
+    ckt_dir, run_dir = run_example(example, cleanup=False)
+
+    with (run_dir / '1_topology' / '__primitives__.json').open('rt') as fp:
+        primitives = json.load(fp)
+        for key, _ in primitives.items():
+            assert key.startswith('NMOS'), f"Incorrect subcircuit identification: {key}"
+
+    shutil.rmtree(run_dir)
+    shutil.rmtree(ckt_dir)
