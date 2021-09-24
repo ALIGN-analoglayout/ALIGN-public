@@ -463,10 +463,17 @@ class add_symmetry_const:
         logger.debug(f"identified constraints of {self.name} are {self.iconst}")
 
     def pre_fiter(self, key, value):
+        smb_1d =[]
+        for inst in self.written_symmblocks:
+            # extend list elements to one_d list
+            if isinstance(inst, str):
+                smb_1d.append(inst)
+            else:
+                smb_1d.extend(inst)
         if key in self.stop:
             # logger.debug(f"skipping symmetry b/w {key} {value} as they are present in stop points")
             return True
-        elif key in self.written_symmblocks or value in self.written_symmblocks or set([key,value]) in self.written_symmblocks:
+        elif {key, value} & set(smb_1d) :
             # logger.debug(f"skipping symmetry b/w {key} {value} as already written {written_symmblocks}")
             return True
         elif key not in self.G.nodes():
@@ -534,7 +541,7 @@ def add_or_revert_const(pairsj: list, iconst, written_symmblocks: list):
                 symmBlock = constraint.SymmetricBlocks(direction="V", pairs=pairsj)
                 iconst.append(symmBlock)
                 written_symmblocks.extend([set(pair) for pair in pairsj])
-                written_symmblocks.extend([str(ele) for pair in pairsj for ele in pair])
+                # written_symmblocks.extend([str(ele) for pair in pairsj for ele in pair])
                 logger.debug(f"one axis of written symmetries: {symmBlock}")
         except:
             while len(iconst) > _temp:
