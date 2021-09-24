@@ -185,11 +185,21 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
       // constraint inside one pair
       for (int i = 0; i < SPBlock.sympair.size(); i++) {
         int first_id = SPBlock.sympair[i].first, second_id = SPBlock.sympair[i].second;
-        // each pair has opposite V flip
+        // each pair has opposite/same V flip if mirror==true/false
         {
           double sparserow[2] = {1, 1};
+          if (SPBlock.mirror == false) sparserow[1] = -1;
           int colno[2] = {first_id * 4 + 4, second_id * 4 + 4};
-          add_constraintex(lp, 2, sparserow, colno, EQ, 1);
+          if(SPBlock.mirror)
+            add_constraintex(lp, 2, sparserow, colno, EQ, 1);  // opposite V flip
+          else
+            add_constraintex(lp, 2, sparserow, colno, EQ, 0);  // equal V flip
+        }
+        // each pair has the same H flip
+        {
+          double sparserow[2] = {1, -1};
+          int colno[2] = {first_id * 4 + 3, second_id * 4 + 3};
+          add_constraintex(lp, 2, sparserow, colno, EQ, 0);
         }
         // x center of blocks in each pair are the same
         {
@@ -253,11 +263,21 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
       // constraint inside one pair
       for (int i = 0; i < SPBlock.sympair.size(); i++) {
         int first_id = SPBlock.sympair[i].first, second_id = SPBlock.sympair[i].second;
-        // each pair has opposite H flip
+        // each pair has opposite/same H flip if mirror=true/false
         {
           double sparserow[2] = {1, 1};
+          if (SPBlock.mirror == false) sparserow[1] = -1;
           int colno[2] = {first_id * 4 + 3, second_id * 4 + 3};
-          add_constraintex(lp, 2, sparserow, colno, EQ, 1);
+          if(SPBlock.mirror)
+            add_constraintex(lp, 2, sparserow, colno, EQ, 1);  // opposite H flip
+          else
+            add_constraintex(lp, 2, sparserow, colno, EQ, 0);  // same H flip
+        }
+        // each pair has the same V flip
+        {
+          double sparserow[2] = {1, -1};
+          int colno[2] = {first_id * 4 + 4, second_id * 4 + 4};
+          add_constraintex(lp, 2, sparserow, colno, EQ, 0);
         }
         // y center of blocks in each pair are the same
         {
@@ -991,11 +1011,21 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
       // constraint inside one pair
       for (int i = 0; i < SPBlock.sympair.size(); i++) {
         int first_id = SPBlock.sympair[i].first, second_id = SPBlock.sympair[i].second;
-        // each pair has opposite V flip
+        // each pair has opposite/same V flip if mirror=true/false
         {
           double sparserow[2] = {1, 1};
+          if (SPBlock.mirror == false) sparserow[1] = -1;
           int colno[2] = {first_id * 6 + 4, second_id * 6 + 4};
-          add_constraintex(lp, 2, sparserow, colno, EQ, 1);
+          if (SPBlock.mirror)
+            add_constraintex(lp, 2, sparserow, colno, EQ, 1);  // opposite V flip
+          else
+            add_constraintex(lp, 2, sparserow, colno, EQ, 0);  // same V flip
+        }
+        // each pair has the same H flip
+        {
+          double sparserow[2] = {1, -1};
+          int colno[2] = {first_id * 6 + 3, second_id * 6 + 3};
+          add_constraintex(lp, 2, sparserow, colno, EQ, 0);
         }
         // x center of blocks in each pair are the same
         {
@@ -1058,11 +1088,21 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
       // constraint inside one pair
       for (int i = 0; i < SPBlock.sympair.size(); i++) {
         int first_id = SPBlock.sympair[i].first, second_id = SPBlock.sympair[i].second;
-        // each pair has opposite H flip
+        // each pair has opposite/same H flip if mirror==true/false
         {
           double sparserow[2] = {1, 1};
+          if (SPBlock.mirror == false) sparserow[1] = -1;
           int colno[2] = {first_id * 6 + 3, second_id * 6 + 3};
-          add_constraintex(lp, 2, sparserow, colno, EQ, 1);
+          if(SPBlock.mirror)
+            add_constraintex(lp, 2, sparserow, colno, EQ, 1);  // opposite H flip
+          else
+            add_constraintex(lp, 2, sparserow, colno, EQ, 0);  // same H flip
+        }
+        // each pair has the same V flip
+        {
+          double sparserow[2] = {1, -1};
+          int colno[2] = {first_id * 6 + 4, second_id * 6 + 4};
+          add_constraintex(lp, 2, sparserow, colno, EQ, 0);
         }
         // y center of blocks in each pair are the same
         {

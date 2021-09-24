@@ -448,7 +448,8 @@ struct SymmNet {
 struct SymmPairBlock {
   vector< pair<int,int> > sympair;
   vector< pair<int,Smark> > selfsym;
-  Smark axis_dir=PnRDB::V;
+  Smark axis_dir = PnRDB::V;
+  bool mirror = true;
 };
 
 struct Preplace {

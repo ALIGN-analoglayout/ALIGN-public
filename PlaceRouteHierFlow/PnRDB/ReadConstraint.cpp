@@ -249,6 +249,7 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
       temp_SymmPairBlock.axis_dir = constraint["axis_dir"] == "H" ? PnRDB::H : PnRDB::V;
       pair<int, int> temp_pair;
       pair<int, PnRDB::Smark> temp_selfsym;
+      if (constraint.contains("mirror")) temp_SymmPairBlock.mirror = constraint["mirror"];
       for (auto pair : constraint["pairs"]) {
         if (pair["type"] == "sympair") {  // sympair
           temp_pair.first = -1;

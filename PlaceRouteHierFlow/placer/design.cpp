@@ -468,8 +468,12 @@ design::design(PnRDB::hierNode& node) {
       this->SPBlocks.back().selfsym.push_back(make_pair(sit->first, axis));
     }
     //added by YG: 10/22/2020
-    if(it->axis_dir==PnRDB::H) {this->SPBlocks.back().axis_dir=placerDB::H;}
-    else if(it->axis_dir==PnRDB::V) {this->SPBlocks.back().axis_dir=placerDB::V;}
+    this->SPBlocks.back().mirror = it->mirror;
+    if (it->axis_dir == PnRDB::H) {
+      this->SPBlocks.back().axis_dir = placerDB::H;
+    } else if (it->axis_dir == PnRDB::V) {
+      this->SPBlocks.back().axis_dir = placerDB::V;
+    }
     //end add
   }
   // Add symmetry net constraints

@@ -84,7 +84,8 @@ class design
     struct SymmPairBlock {
       vector< pair<int,int> > sympair;
       vector< pair<int,placerDB::Smark> > selfsym;
-      placerDB::Smark axis_dir=placerDB::V;
+      placerDB::Smark axis_dir = placerDB::V;
+      bool mirror = true;
     };
     struct PortPos {
       int tid;
