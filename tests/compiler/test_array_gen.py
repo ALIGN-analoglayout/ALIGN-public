@@ -12,37 +12,23 @@ from align.compiler.find_constraint import add_or_revert_const, symmnet_device_p
 from utils import clean_data, build_example, ring_oscillator
 import textwrap
 
-pdk_path = (
-    pathlib.Path(__file__).resolve().parent.parent.parent
-    / "pdks"
-    / "FinFET14nm_Mock_PDK"
-)
-config_path = pathlib.Path(__file__).resolve().parent.parent / "files"
-out_path = pathlib.Path(__file__).resolve().parent / "Results"
+pdk_path = pathlib.Path(__file__).resolve().parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK'
+config_path =  pathlib.Path(__file__).resolve().parent.parent / 'files'
+out_path = pathlib.Path(__file__).resolve().parent / 'Results'
 
 
 def test_array_gen():
-    name = "CKT_OTA"
+    name = 'RING_OSCILLATOR'
     netlist = ring_oscillator(name)
-    setup = textwrap.dedent(
-        """\
+    setup = textwrap.dedent("""\
         POWER = vccx
         GND = vssx
-        DIGITAL = CKT_OTA
-        """
-    )
+        DIGITAL = ring_oscillator
+        """)
     constraints = []
     example = build_example(name, netlist, setup, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
-    ckt = ckt_library.find("CKT_OTA")
+    ckt = ckt_library.find('RING_OSCILLATOR')
     G = Graph(ckt)
-    pairs, pinsA, pinsB = symmnet_device_pairs(G, "VIN", "VIP", list(), None)
-    assert pairs == {"VIN": "VIP", "MN4": "MN3"}
-    assert pinsA == ["MN4/G", "VIN"]
-    assert pinsB == ["MN3/G", "VIP"]
-    pairs, pinsA, pinsB = symmnet_device_pairs(G, "VIN", "VIP", ["MN3", "MN4"], None)
-    assert pairs == {"VIN": "VIP", "MN4": "MN3"}
-    pairs, pinsA, pinsB = symmnet_device_pairs(G, "VIN", "VIP", ["MN3"], None)
-    assert pairs == None
 
     clean_data(name)

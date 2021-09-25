@@ -40,8 +40,8 @@ def test_ota_six():
 
 
 def test_ota_swap():
-    # check dran gate swap
-    name = "CKT_OTA_1"
+    #check dran gate swap
+    name = 'CKT_OTA_1_SWAP'
     netlist = ota_six_flip(name)
     setup = textwrap.dedent(
         """\
@@ -52,17 +52,15 @@ def test_ota_swap():
     constraints = []
     example = build_example(name, netlist, setup, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
-    all_modules = set(["CKT_OTA_1", "SCM_NMOS", "SCM_PMOS", "DP_NMOS_B"])
-    available_modules = set(
-        [module.name for module in ckt_library if isinstance(module, SubCircuit)]
-    )
+    all_modules = set([name, 'SCM_NMOS', 'SCM_PMOS', 'DP_NMOS_B'])
+    available_modules = set([module.name for module in  ckt_library if isinstance(module, SubCircuit)])
     assert available_modules == all_modules, f"{available_modules}"
     clean_data(name)
 
 
 def test_ota_dont_swap():
-    # check dran gate swap
-    name = "CKT_OTA_1"
+    #check dran gate swap
+    name = 'CKT_OTA_1_DONT_SWAP'
     netlist = ota_six_flip(name)
     setup = textwrap.dedent(
         """\
@@ -74,37 +72,31 @@ def test_ota_dont_swap():
     constraints = []
     example = build_example(name, netlist, setup, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
-    all_modules = set(["CKT_OTA_1", "SCM_NMOS", "SCM_PMOS"])
-    available_modules = set(
-        [module.name for module in ckt_library if isinstance(module, SubCircuit)]
-    )
+    all_modules = set([name, 'SCM_NMOS', 'SCM_PMOS'])
+    available_modules = set([module.name for module in  ckt_library if isinstance(module, SubCircuit)])
     assert available_modules == all_modules, f"{available_modules}"
     clean_data(name)
 
 
 def test_skip_digital():
-    name = "CKT_OTA"
+    name = 'CKT_OTA_SKIP_DIGITAL'
     netlist = ota_six(name)
-    setup = textwrap.dedent(
-        """\
+    setup = textwrap.dedent(f"""\
         POWER = vccx
         GND = vssx
-        DIGITAL = CKT_OTA
-        """
-    )
+        DIGITAL = {name}
+        """)
     constraints = []
     example = build_example(name, netlist, setup, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
-    all_modules = set(["CKT_OTA"])
-    available_modules = set(
-        [module.name for module in ckt_library if isinstance(module, SubCircuit)]
-    )
+    all_modules = set([name])
+    available_modules = set([module.name for module in  ckt_library if isinstance(module, SubCircuit)])
     assert available_modules == all_modules, f"{available_modules}"
     clean_data(name)
 
 
 def test_dont_use_lib_cell():
-    name = "CKT_OTA"
+    name = 'CKT_OTA_DONT_USE_LIB_CELL'
     netlist = ota_six(name)
     setup = textwrap.dedent(
         """\
@@ -116,32 +108,26 @@ def test_dont_use_lib_cell():
     constraints = []
     example = build_example(name, netlist, setup, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
-    all_modules = set(["CKT_OTA", "SCM_NMOS", "SCM_PMOS"])
-    available_modules = set(
-        [module.name for module in ckt_library if isinstance(module, SubCircuit)]
-    )
+    all_modules = set([name, 'SCM_NMOS', 'SCM_PMOS'])
+    available_modules = set([module.name for module in  ckt_library if isinstance(module, SubCircuit)])
     assert available_modules == all_modules, f"{available_modules}"
     clean_data(name)
 
 
 def test_dont_const():
-    name = "CKT_OTA"
+    name = 'CKT_OTA_DONT_CONST'
     netlist = ota_six(name)
-    setup = textwrap.dedent(
-        """\
+    setup = textwrap.dedent(f"""\
         POWER = vccx
         GND = vssx
-        DONT_CONST = CKT_OTA
-        """
-    )
+        DONT_CONST = {name}
+        """)
     constraints = []
     example = build_example(name, netlist, setup, constraints)
     generate_hierarchy(example, name, out_path, False, pdk_path, False)
-    gen_const_path = out_path / "CKT_OTA.verilog.json"
+    gen_const_path = out_path / f'{name}.verilog.json'
     with open(gen_const_path, "r") as fp:
-        gen_const = next(x for x in json.load(fp)["modules"] if x["name"] == "CKT_OTA")[
-            "constraints"
-        ]
+        gen_const = next(x for x in json.load(fp)['modules'] if x['name'] == name)["constraints"]
         assert len(gen_const) == 0
     clean_data(name)
 

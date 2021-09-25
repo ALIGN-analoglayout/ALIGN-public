@@ -73,7 +73,7 @@ def gen_more_primitives( primitives, topology_dir, subckt):
     # As a hack, add more primitives if it matches this pattern
     p = re.compile( r'^(\S+)_nfin(\d+)_n(\d+)_X(\d+)_Y(\d+)(|_\S+)$')
 
-    p_2 = re.compile( r'^(\S+)_x(\d+)_y(\d+)$')
+    p_2 = re.compile( r'^(\S+)_X(\d+)_Y(\d+)$')
 
     more_primitives = {}
 
@@ -125,7 +125,7 @@ def gen_more_primitives( primitives, topology_dir, subckt):
             abstract_name = f'{prefix}{suffix}'
             map_d[abstract_name].append( k)
             for newx,newy in pairs:
-                concrete_name = f'{prefix}_n{n}_X{newx}_Y{newy}{suffix}'
+                concrete_name = f'{prefix}_N{n}_X{newx}_Y{newy}{suffix}'
                 map_d[abstract_name].append( concrete_name)
                 if concrete_name not in primitives and \
                     concrete_name not in more_primitives:
@@ -152,13 +152,12 @@ def gen_more_primitives( primitives, topology_dir, subckt):
             abstract_name = f'{prefix}'
             map_d[abstract_name].append(k)
             for newx,newy in pairs:
-                concrete_name = f'{prefix}_x{newx}_y{newy}'
+                concrete_name = f'{prefix}_X{newx}_Y{newy}'
                 map_d[abstract_name].append( concrete_name)
                 if concrete_name not in primitives and concrete_name not in more_primitives:
                     more_primitives[concrete_name] = copy.deepcopy(v)
                     more_primitives[concrete_name]['x_cells'] = newx
                     more_primitives[concrete_name]['y_cells'] = newy
-
         else:
             if not (k.startswith( "Res") or k.startswith( "Cap")):
                 logger.warning( f'Didn\'t match primitive {k}')

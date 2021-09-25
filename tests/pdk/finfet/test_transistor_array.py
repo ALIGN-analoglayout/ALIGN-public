@@ -47,11 +47,11 @@ ports_duo = [
 def test_uno_drc(n_row, n_col, nf, device_type, ports):
     logger.info(f'running {get_test_id()}')
     c = MOSGenerator()
-    parameters = {'m': n_row*n_col, 'nfin': 4, 'real_inst_type': 'n'}
+    parameters = {'M': n_row*n_col, 'NFIN': 4, 'real_inst_type': 'n'}
     if device_type == 'parallel':
-        parameters['nf'] = nf
+        parameters['NF'] = nf
     else:
-        parameters['stack'] = nf
+        parameters['STACK'] = nf
     c.addNMOSArray(n_col, n_row, 0, None, ports, **parameters)
     c.gen_data(run_drc=True)
     if c.drc.num_errors > 0 or len(c.rd.opens) > 0 or len(c.rd.shorts) > 0:

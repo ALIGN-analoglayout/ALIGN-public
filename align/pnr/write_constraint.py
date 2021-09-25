@@ -134,14 +134,14 @@ class PnRConstraintWriter:
             elif const["const_name"] == 'MultiConnection':
                 for net in const["nets"]:
                     extra = {
-                        "const_name" : 'Multi_Connection',
-                        "multi_number" : int(const["multiplier"]),
-                        "net_name" : net
+                        "const_name": 'Multi_Connection',
+                        "multi_number": int(const["multiplier"]),
+                        "net_name": net.upper()  # TODO: Revert after case sensitivity is restored
                     }
                     pnr_const.append(extra)
             elif const["const_name"] == 'NetConst':
                 for net in const["nets"]:
-                    if 'shield' in const and 'criticality' in const and not const['shield'] =="None":
+                    if 'shield' in const and 'criticality' in const and not const['shield'] == "None":
                         extra = {
                             "const_name" : 'ShieldNet',
                             "net_name" : net,

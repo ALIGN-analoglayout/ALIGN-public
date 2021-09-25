@@ -1021,7 +1021,9 @@ bool SeqPair::ChangeSelectedBlock(design& caseNL) {
   }
   int newsel=rand() % caseNL.Blocks.at(anode).size();
   selected.at(anode)=newsel;
-  if(caseNL.GetBlockCounterpart(anode)!=-1) { selected.at( caseNL.GetBlockCounterpart(anode) )=newsel;}
+  //if(caseNL.GetBlockCounterpart(anode)!=-1) { 
+    //selected.at( caseNL.GetBlockCounterpart(anode) )=newsel;
+  //}
   return true;
 }
 

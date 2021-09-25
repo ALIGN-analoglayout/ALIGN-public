@@ -457,7 +457,7 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
             else:
                 block_name += f'_nf{nf}'
 
-            block_name += f'_x{x}_y{y}'
+            block_name += f'_X{x}_Y{y}'
 
             if block_name in available_block_lef:
                 if block_args != available_block_lef[block_name]:
@@ -509,7 +509,7 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
                 square_y -= 1
             yval = square_y
             xval = int(no_units / square_y)
-            block_name = f"{name}_{name_arg}_n{unit_size_mos}_X{xval}_Y{yval}"
+            block_name = f"{name}_{name_arg}_N{unit_size_mos}_X{xval}_Y{yval}"
 
             if block_name in available_block_lef:
                 return block_name, available_block_lef[block_name]

@@ -312,7 +312,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
             json.dump( capacitors, fp=fp, indent=2)
 
         leaf_collateral = gen_leaf_collateral( leaves, primitives, primitive_dir)
-
+        logger.debug(f'primitives: {primitives}')
         logger.debug( f'leaf_collateral: {leaf_collateral}')
         logger.debug( f'capacitors: {dict(capacitors)}')
 
@@ -329,6 +329,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
         # Generate .lef inputs for PnR
         with (input_dir / lef_file).open(mode='wt') as lp:
+            logger.debug(f"lef files: {[pathlib.Path(v['.lef']) for k,v in leaf_collateral.items()]}")
             for k,v in leaf_collateral.items():
                 lp.write(pathlib.Path(v['.lef']).read_text())
 

@@ -228,6 +228,8 @@ def compiler_output(
     for ckt in ckt_data:
         if not isinstance(ckt, SubCircuit):
             continue
+        elif ckt.name in generators:
+            continue
         logger.debug(f"Found module: {ckt.name} {ckt.elements} {ckt.pins}")
         for const in ckt.constraints:
             if isinstance(const, constraint.GuardRing):
