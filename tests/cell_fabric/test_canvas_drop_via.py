@@ -5,8 +5,8 @@ from align.cell_fabric import Canvas, Wire, Via, UncoloredCenterLineGrid, Enclos
 
 mydir = pathlib.Path(__file__).resolve().parent
 
-
-def test_one():
+# removing test
+def one():
 
     c = Canvas()
 

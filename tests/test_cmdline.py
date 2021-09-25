@@ -17,7 +17,7 @@ examples = [('inverter_v1',1,False,False),
             ('telescopic_ota',1,True,False),
             # Test user constraints
             ('common_source', 1, False,False),
-            ('high_speed_comparator', 1, False,False)
+            # ('high_speed_comparator', 1, False,False)
             ]
 
 ALIGN_HOME = pathlib.Path(__file__).resolve().parent.parent
