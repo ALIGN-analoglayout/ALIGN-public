@@ -25,6 +25,22 @@
             "cap_s": -1
         },
         {
+            "pairs": [
+                {
+                    "type": "sympair",
+                    "block1": "C5",
+                    "block2": "C2"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "X_CMC_S_NMOS_B_I1_M6_M7",
+                    "block2": "X_CMC_S_NMOS_B_I1_M12_M14"
+                }
+            ],
+            "const_name": "SymmBlock",
+            "axis_dir": "V"
+        },
+        {
             "net1": {
                 "name": "VINN",
                 "blocks": [
@@ -66,22 +82,6 @@
                 ]
             },
             "const_name": "SymmNet",
-            "axis_dir": "V"
-        },
-        {
-            "pairs": [
-                {
-                    "type": "sympair",
-                    "block1": "C5",
-                    "block2": "C2"
-                },
-                {
-                    "type": "sympair",
-                    "block1": "X_CMC_S_NMOS_B_I1_M6_M7",
-                    "block2": "X_CMC_S_NMOS_B_I1_M12_M14"
-                }
-            ],
-            "const_name": "SymmBlock",
             "axis_dir": "V"
         }
     ]
