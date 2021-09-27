@@ -539,6 +539,21 @@ class SymmetricBlocks(SoftConstraint):
         if not hasattr(self.parent.parent, 'elements'):
             # PnR stage VerilogJsonModule
             logger.debug(f"Skipping constraint checking 1 {self.parent} ")
+            for pair in self.pairs:
+                if len(pair) == 2:
+                    bvars = checker.iter_bbox_vars(pair)
+                    for b1, b2 in itertools.pairwise(bvars):
+                        if self.direction == 'V':
+                            pd = 'sy'
+                            od = 'sx'
+                        else:
+                            pd = 'sx'
+                            od = 'sy'
+                        checker.append(getattr(b1, pd) == getattr(b2, pd))
+                        if self.mirror:
+                            checker.append(getattr(b1, od) != getattr(b2, od))
+                        else:
+                            checker.append(getattr(b1, od) == getattr(b2, od))
             return
         if len(self.parent.parent.elements) == 0:
             # skips the check while reading user constraints
@@ -561,19 +576,7 @@ class SymmetricBlocks(SoftConstraint):
                     self.parent.parent.get_element(pair[1]).parameters, (
                         f"Incorrent symmetry pair {pair} in subckt {self.parent.parent.name}")
                 # TODO: If possible, get rid of all the previous returns and get to here
-                bvars = checker.iter_bbox_vars(pair)
-                for b1, b2 in itertools.pairwise(bvars):
-                    if self.direction == 'V':
-                        pd = 'sy'
-                        od = 'sx'
-                    else:
-                        pd = 'sx'
-                        od = 'sy'
-                    checker.append(getattr(b1, pd) == getattr(b2, pd))
-                    if self.mirror:
-                        checker.append(getattr(b1, od) != getattr(b2, od))
-                    else:
-                        checker.append(getattr(b1, od) == getattr(b2, od))
+
         # TODO: Trace current path
 
 
