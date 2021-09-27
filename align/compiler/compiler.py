@@ -17,7 +17,6 @@ from ..schema import constraint
 from ..primitive import generate_primitive_lef
 import logging
 
-from align import primitive
 
 logger = logging.getLogger(__name__)
 
@@ -138,9 +137,7 @@ def compiler_input(
     logger.debug(f"START preprocessing from top {design_name.upper()}")
     preprocess_stack_parallel(ckt_data, design_setup, design_name.upper())
 
-    logger.debug(
-        "\n################### FINAL CIRCUIT AFTER preprocessing #################### \n"
-    )
+    logger.debug("\n###### FINAL CIRCUIT AFTER preprocessing ###### \n")
     logger.debug(ckt_parser)
     annotate = Annotate(ckt_data, design_setup, primitives, generators)
     annotate.annotate()

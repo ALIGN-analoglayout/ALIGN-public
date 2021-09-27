@@ -5,6 +5,7 @@ Created on Fri Nov  2 21:33:22 2018
 @author: kunal
 """
 #%%
+from align import primitive
 from re import sub
 from align.schema import Model, SubCircuit, Instance
 from ..schema.types import set_context
@@ -40,7 +41,7 @@ class Annotate:
         self.all_lef = existing_generator
         self.stop_points = self.pg + self.clk
         self.identify_array = design_setup["IDENTIFY_ARRAY"]
-        self.lib_names = [lib_ele.name for lib_ele in library]
+        self.lib_names = [lib_ele.name for lib_ele in primitive_library]
 
     def _is_skip(self, ckt):
         di_const = [

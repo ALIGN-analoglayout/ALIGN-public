@@ -60,7 +60,7 @@ class array_hierarchy:
     Creates a hierarchy for repeated elements
     """
 
-    def __init__(self, dl, ckt, design_setup):
+    def __init__(self, ckt, design_setup):
         """
         Args:
             ckt_data (dict): all subckt graph, names and port
@@ -68,11 +68,11 @@ class array_hierarchy:
             library (list): list of library elements in dict format
             existing_generator (list): list of names of existing generators
         """
-        self.dl = dl
+        self.dl = ckt.parent
         self.ckt = ckt
         self.graph = Graph(ckt)
-        assert not ckt.name in design_setup['DIGITAL']
-        assert design_setup["IDENTIFY_ARRAY"]==True
+        assert not ckt.name in design_setup['DIGITAL'], f'cant identify array in digital block'
+        assert design_setup["IDENTIFY_ARRAY"] == True
         self.pg = design_setup["POWER"] + design_setup["GND"]
         self.clk = design_setup["CLOCK"]
         self.stop_points = self.pg + self.clk
@@ -83,36 +83,27 @@ class array_hierarchy:
 
         Parameters
         ----------
-        graph : TYPE
-            DESCRIPTION.
         node : str
             node with high fanout.
         traversed : list
             DESCRIPTION.
-        Returns
-        -------
-        node_hier : TYPE
-            DESCRIPTION.
-
         """
         node_hier = {}
         lvl1 = list(set(self.graph.neighbors(node)) - set(traversed))
-        node_hier[node] = self.matching_groups(lvl1, None)
+        node_hier[node] = self.matching_groups(lvl1)
         logger.debug(f"new hierarchy points {node_hier} from node {node}")
 
         if len(node_hier[node]) > 0:
             for group in sorted(node_hier[node], key=lambda group: len(group)):
                 if len(group) > 0:
                     templates = {}
-                    similar_node_groups = {}
+                    match_grps = {}
                     for el in sorted(group):
-                        similar_node_groups[el] = [el]
+                        match_grps[el] = [el]
                     templates[node] = [el]
                     visited = group
-                    array = similar_node_groups.copy()
-                    self.trace_template(
-                        self.graph, similar_node_groups, visited, templates[node], array
-                    )
+                    array = match_grps.copy()
+                    self.trace_template(match_grps, visited, templates[node], array)
                     logger.debug(f"similar groups final from {node}:{array}")
 
             # check number of lvls in detected array
@@ -120,26 +111,24 @@ class array_hierarchy:
             all_inst = []
             if array and len(array.values()) > 1 and len(list(array.values())[0]) > 1:
                 # Multiple hierarchy identified in array
+                logger.debug(f"collecting instances for hierarchy creation")
                 for branch in array.values():
                     for node_hier in branch:
                         if (
-                            self.graph.nodes[node_hier]["inst_type"] != "net"
-                            and node_hier not in all_inst
-                            and not self.graph.nodes[node_hier]["inst_type"]
-                            .lower()
-                            .startswith("cap")
+                            self.graph._is_element(node_hier)
                         ):
+                            #TODO: filter caps
                             all_inst.append(node_hier)
-
             else:
+                logger.debug(f"traversing single branches")
                 node_hier[node] = []
                 for inst in array.keys():
-                    if self.graph.nodes[inst]["inst_type"] != "net":
+                    if self.graph._is_element(inst):
                         node_hier[node].append(inst)
+            logger.debug(f"array instances {all_inst}")
             if len(all_inst) > 1:
                 all_inst = sorted(all_inst)
-                # TODO rewrite this code and tests
-                create_new_hiearchy(self.dl, self.ckt.name, "array_hier_" + node, all_inst)
+                create_new_hiearchy(self.dl, self.ckt.name, "ARRAY_HIER_" + node, all_inst)
 
     def matching_groups(self, lvl1: list):
         similar_groups = []
@@ -148,7 +137,7 @@ class array_hierarchy:
         for l1_node1, l1_node2 in combinations(lvl1, 2):
             if compare_two_nodes(self.graph, l1_node1, l1_node2):
                 found_flag = 0
-                logger.debug("similar_group %s", similar_groups)
+                logger.debug(f"similar_group {similar_groups}")
                 for index, sublist in enumerate(similar_groups):
                     if l1_node1 in sublist and l1_node2 in sublist:
                         found_flag = 1
@@ -165,11 +154,11 @@ class array_hierarchy:
                     similar_groups.append([l1_node1, l1_node2])
         return similar_groups
 
-    def trace_template(self, similar_node_groups, visited, template, array):
+    def trace_template(self, match_grps, visited, template, array):
         next_match = {}
         traversed = visited.copy()
 
-        for source, groups in similar_node_groups.items():
+        for source, groups in match_grps.items():
             next_match[source] = []
             for node in groups:
                 lvl1 = list(set(self.graph.neighbors(node)) - set(traversed))
@@ -184,9 +173,7 @@ class array_hierarchy:
                     array[source] += next_match[source]
 
             template += next_match[list(next_match.keys())[0]]
-            logger.debug(
-                f"found matching lvl {template}, {similar_node_groups}, {visited}"
-            )
+            logger.debug(f"matching lvl {template}, {match_grps}")
             if self.check_convergence(next_match):
                 self.trace_template(next_match, visited, template, array)
 
@@ -199,13 +186,14 @@ class array_hierarchy:
             if len(nbrs) == 1:
                 return False
             for nbr in nbrs:
-                if self.graph.nodes[nbr]["inst_type"] == "net":
-                    super_list.append("net")
-                    super_list.append(self.graph.nodes[nbr]["net_type"])
+                if self.graph._is_element(nbr):
+                    inst = self.graph.element(nbr)
+                    super_list.append(inst.model)
+                    super_list.append(inst.parameters)
+                elif nbr in self.ckt.pins:
+                    super_list.append("port")
                 else:
-                    super_list.append(self.graph.nodes[nbr]["inst_type"])
-                    for v in self.graph.nodes[nbr]["values"].values():
-                        super_list.append(v)
+                    super_list.append("net")
             nbr_values[node] = Counter(super_list)
         _, main = nbr_values.popitem()
         for node, val in nbr_values.items():
