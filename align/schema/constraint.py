@@ -538,9 +538,11 @@ class SymmetricBlocks(SoftConstraint):
         assert all(len(pair) for pair in self.pairs) <= 2, 'Must contain at most two instances'
         if not hasattr(self.parent.parent, 'elements'):
             # PnR stage VerilogJsonModule
+            logger.debug(f"Skipping constraint checking 1 {self.parent} ")
             return
         if len(self.parent.parent.elements) == 0:
             # skips the check while reading user constraints
+            logger.debug(f"Skipping constraint checking 2 {self.parent} ")
             return
         # logger.info(f"parent constraints {self.parent} ")
         group_block_instances = [const.name for const in self.parent if isinstance(const, GroupBlocks)]
@@ -549,6 +551,8 @@ class SymmetricBlocks(SoftConstraint):
             # logger.debug(f"pairs {self.pairs} {self.parent.parent.get_element(pair[0])}")
             if len([ele for ele in pair if ele in group_block_instances]) > 0:
                 # Skip check for group block elements as they are added later in the flow
+                logger.debug(f"Skipping constraint checking 3 {self.parent} ")
+
                 continue
             elif len(pair) == 2:
                 assert self.parent.parent.get_element(pair[0]), f"element {pair[0]} not found in design"
