@@ -140,6 +140,7 @@ class Z3Checker(AbstractChecker):
 
     def append(self, formula, identifier=None):
         self._solver.add(formula)
+        logger.debug(f'formulas: {self._solver}')
         r = self._solver.check()
         if r == z3.unsat:
             z3.set_option(max_depth=10000, max_args=100, max_lines=10000)

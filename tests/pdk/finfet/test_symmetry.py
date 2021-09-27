@@ -25,12 +25,12 @@ def test_mirror():
         DONT_CONST = {name}
         """)
     constraints = [
-        {"constraint": "DoNotIdentify", "instances": ["x0", "x1", "x2", "x3"]},  # TODO: This should have been auto-generated
+        # {"constraint": "DoNotIdentify", "instances": ["x0", "x1", "x2", "x3"]},  # This should be auto-generated
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["x0", "x1"]], "mirror": True},
-        {"constraint": "SymmetricBlocks", "direction": "H", "pairs": [["x2", "x3"]], "mirror": False}
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["x2", "x3"]], "mirror": False}
     ]
     example = build_example(name, netlist, setup, constraints)
-    ckt_dir, run_dir = run_example(example, cleanup=False)
+    ckt_dir, run_dir = run_example(example, cleanup=False, log_level='DEBUG')
 
     with (run_dir / '1_topology' / '__primitives__.json').open('rt') as fp:
         primitives = json.load(fp)

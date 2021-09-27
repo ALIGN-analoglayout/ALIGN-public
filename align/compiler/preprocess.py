@@ -102,12 +102,10 @@ def remove_dummies(library, dummy_hiers, top):
                                 }
                             )
                             logger.debug(f"new instance parameters: {y.parameters}")
-                            _prefix = library.find(y.model).prefix
-                            if not _prefix:
-                                _prefix = "M"  # default value, used in testing
+                            # Do not change the instance name to preserve constraints
                             other_ckt.elements.append(
                                 Instance(
-                                    name=ele.name.replace("X", _prefix),
+                                    name=ele.name,
                                     model=y.model,
                                     pins=pins,
                                     parameters=y.parameters,

@@ -54,16 +54,6 @@ class Instance(types.BaseModel):
         assert cls._get_model(cls._validator_ctx().parent.parent.parent, model) is not None, f'Could not find model {model}'
         return model
 
-    @types.validator('name', allow_reuse=True)
-    def name_complies_with_model(cls, name, values):
-        assert 'model' in values, 'Cannot run check without model definition'
-        model = cls._get_model(cls._validator_ctx().parent.parent.parent, values['model'])
-        name = name.upper()
-        if model.prefix and not name.startswith(model.prefix):
-            logger.error(f"{name} does not start with {model.prefix}")
-            raise AssertionError(f"{name} does not start with {model.prefix}")
-        return name
-
     @types.validator('pins', allow_reuse=True)
     def pins_comply_with_model(cls, pins, values):
         assert 'model' in values, 'Cannot run check without model definition'
