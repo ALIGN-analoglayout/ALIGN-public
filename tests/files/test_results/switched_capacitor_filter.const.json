@@ -22,6 +22,20 @@
           "dummy": false
         },
         {
+          "constraint": "symmetric_blocks",
+          "pairs": [
+            [
+              "C5",
+              "C2"
+            ],
+            [
+              "X_CMC_S_NMOS_B_I1_M6_M7",
+              "X_CMC_S_NMOS_B_I1_M12_M14"
+            ]
+          ],
+          "direction": "V"
+        },
+        {
           "constraint": "symmetric_nets",
           "net1": "VINN",
           "net2": "VINP",
@@ -34,20 +48,6 @@
             "C2/PLUS",
             "X_CMC_S_NMOS_B_I1_M12_M14/SA",
             "VINP"
-          ],
-          "direction": "V"
-        },
-        {
-          "constraint": "symmetric_blocks",
-          "pairs": [
-            [
-              "C5",
-              "C2"
-            ],
-            [
-              "X_CMC_S_NMOS_B_I1_M6_M7",
-              "X_CMC_S_NMOS_B_I1_M12_M14"
-            ]
           ],
           "direction": "V"
         }
