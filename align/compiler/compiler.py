@@ -13,7 +13,7 @@ from .read_setup import read_setup
 from .write_verilog_lef import WriteVerilog
 from .find_constraint import FindConst
 from .user_const import ConstraintParser
-from ..schema import constraint
+from ..schema import constraint, types
 from ..primitive import generate_primitive_lef
 import logging
 
@@ -26,6 +26,9 @@ def generate_hierarchy(
     netlist_path, subckt, output_dir, flatten_heirarchy, pdk_dir, uniform_height
 ):
     config_path = pathlib.Path(__file__).resolve().parent.parent / "config"
+    # TODO: Review this
+    #       The division between compiler_input & compiler_output feels somewhat arbitrary
+    #       More importantly, some files get loaded twice because of this division
     ckt_data = compiler_input(
         netlist_path, subckt, pdk_dir, config_path, flatten_heirarchy
     )
@@ -102,27 +105,24 @@ def compiler_input(
         design_setup = read_setup(input_dir / "dummy")
     logger.debug(f"template parent path: {pathlib.Path(__file__).parent}")
 
+    # We may want to create compiler heirarchies that don't necessarily use a generator
+    # (To help placer maintain proximity for example)
     primitives = [
         v
         for v in library
         if isinstance(v, SubCircuit) and v.name not in design_setup["DONT_USE_LIB"]
     ]
     # TODO: update the order based on weighing mechanism
-    primitives.sort(
-        key=lambda x: len(x.elements)
-        + 1 / len(x.nets)
-        + len(set([e.model for e in x.elements])),
-        reverse=True,
-    )
+    primitives.sort(key=lambda x: (
+        len(x.elements),
+        len(set([e.model for e in x.elements])),
+        - len(x.nets)),
+        reverse=True)
     logger.debug(f"dont use library cells: {design_setup['DONT_USE_LIB']}")
     logger.debug(f"all library elements: {[ele.name for ele in primitives]}")
-    if len(design_setup["DONT_USE_LIB"]) > 0:
-        primitives = [
-            v for v in primitives if v.name not in design_setup["DONT_USE_LIB"]
-        ]
 
-    # generator will be called for these elments
-    with open(pdk_dir / "generators.json") as fp:
+    # Generator will be called for these elements
+    with open(pdk_dir / 'generators.json') as fp:
         generators = json.load(fp).keys()
     logger.debug(f"Available generator for cells: {generators}")
 
@@ -131,19 +131,29 @@ def compiler_input(
             design_name, ckt_parser.library.find(design_name), "./circuit_graphs/"
         )
 
+    # TODO: Review this !!!
+    #       Substantial issues with parameter resolving in CreateDatabase
     const_parse = ConstraintParser(pdk_dir, input_dir)
     # TODO FLAT implementation
     create_data = CreateDatabase(ckt_parser, const_parse)
     ckt_data = create_data.read_inputs(design_name)
     logger.debug(f"START preprocessing from top {design_name.upper()}")
+    # TODO: Review this !!!
+    #       Looks good overall but would benefit from being refactored
+    #       as a class with public / private members
     preprocess_stack_parallel(ckt_data, design_setup, design_name.upper())
 
     logger.debug(
         "\n################### FINAL CIRCUIT AFTER preprocessing #################### \n"
     )
     logger.debug(ckt_parser)
+    # TODO: Review this !!!
+    #       Love the class structure but it feels like
+    #       annotate may be trying to do too much in one shot
     annotate = Annotate(ckt_data, design_setup, primitives, generators)
     annotate.annotate()
+    # TODO: Review this !!!
+    #       Why is this check over here? Shouldn't it be prior to annotation?
     for ckt in ckt_data:
         if isinstance(ckt, SubCircuit):
             # Check no repeated ports
@@ -194,7 +204,10 @@ def compiler_output(
         DESCRIPTION.
 
     """
-    layers_json = pdk_dir / "layers.json"
+    # TODO: Review this !!!
+    #       Think we have two PDK jsons floating around
+    #       One schema based and one old style?
+    layers_json = pdk_dir / 'layers.json'
     with open(layers_json, "rt") as fp:
         pdk_data = json.load(fp)
     design_config = pdk_data["design_info"]
@@ -266,7 +279,7 @@ def compiler_output(
         if not isinstance(ckt, SubCircuit):
             continue
         if ckt.name not in generators:
-            ## Removing constraints to fix cascoded cmc
+            # Removing constraints to fix cascoded cmc
             if ckt.name not in design_setup["DIGITAL"]:
                 logger.debug(f"call constraint generator writer for block: {ckt.name}")
                 stop_points = (
@@ -275,7 +288,7 @@ def compiler_output(
                 if ckt.name not in design_setup["DONT_CONST"]:
                     FindConst(ckt_data, ckt.name, stop_points)
 
-            ## Write out modified netlist & constraints as JSON
+            # Write out modified netlist & constraints as JSON
             logger.debug(f"call verilog writer for block: {ckt.name}")
             wv = WriteVerilog(ckt, ckt_data, POWER_PINS)
             verilog_tbl["modules"].append(wv.gen_dict())
