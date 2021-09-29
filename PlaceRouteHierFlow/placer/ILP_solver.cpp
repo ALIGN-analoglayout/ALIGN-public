@@ -191,6 +191,12 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
           int colno[2] = {first_id * 4 + 4, second_id * 4 + 4};
           add_constraintex(lp, 2, sparserow, colno, EQ, 1);
         }
+        // each pair has the same H flip
+        {
+          double sparserow[2] = {1, -1};
+          int colno[2] = {first_id * 4 + 3, second_id * 4 + 3};
+          add_constraintex(lp, 2, sparserow, colno, EQ, 0);
+        }
         // x center of blocks in each pair are the same
         {
           double sparserow[2] = {1, -1};
@@ -258,6 +264,12 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
           double sparserow[2] = {1, 1};
           int colno[2] = {first_id * 4 + 3, second_id * 4 + 3};
           add_constraintex(lp, 2, sparserow, colno, EQ, 1);
+        }
+        // each pair has the same V flip
+        {
+          double sparserow[2] = {1, -1};
+          int colno[2] = {first_id * 4 + 4, second_id * 4 + 4};
+          add_constraintex(lp, 2, sparserow, colno, EQ, 0);
         }
         // y center of blocks in each pair are the same
         {
@@ -997,6 +1009,12 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
           int colno[2] = {first_id * 6 + 4, second_id * 6 + 4};
           add_constraintex(lp, 2, sparserow, colno, EQ, 1);
         }
+        // each pair has the same H flip
+        {
+          double sparserow[2] = {1, -1};
+          int colno[2] = {first_id * 6 + 3, second_id * 6 + 3};
+          add_constraintex(lp, 2, sparserow, colno, EQ, 0);
+        }
         // x center of blocks in each pair are the same
         {
           double sparserow[4] = {1, -1, 0.5, -0.5};
@@ -1063,6 +1081,12 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
           double sparserow[2] = {1, 1};
           int colno[2] = {first_id * 6 + 3, second_id * 6 + 3};
           add_constraintex(lp, 2, sparserow, colno, EQ, 1);
+        }
+        // each pair has the same V flip
+        {
+          double sparserow[2] = {1, -1};
+          int colno[2] = {first_id * 6 + 4, second_id * 6 + 4};
+          add_constraintex(lp, 2, sparserow, colno, EQ, 0);
         }
         // y center of blocks in each pair are the same
         {

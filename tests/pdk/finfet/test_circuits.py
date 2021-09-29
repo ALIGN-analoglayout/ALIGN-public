@@ -1,5 +1,7 @@
 import pytest
 import textwrap
+import json
+import shutil
 try:
     from .utils import get_test_id, build_example, run_example
     from . import circuits
@@ -7,17 +9,33 @@ except BaseException:
     from utils import get_test_id, build_example, run_example
     import circuits
 
+cleanup = False
 
-def test_comparator():
+
+def test_cmp():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = ""
     constraints = []
     example = build_example(name, netlist, setup, constraints)
-    run_example(example)
+    ckt_dir, run_dir = run_example(example, cleanup=False, area=4.5e9)
+
+    # TODO: Generalize this test to all primitives based on m value
+    with (run_dir / '1_topology' / '__primitives__.json').open('rt') as fp:
+        primitives = json.load(fp)
+        counter = 0
+        for m in primitives.keys():
+            if m.startswith('DP_NMOS'):
+                counter += 1
+        assert counter == 6, f'Diff pair in comparator should have 6 variants. Found {counter}.'
+
+    if cleanup:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(ckt_dir)
 
 
-def test_comparator_pg():
+@pytest.mark.nightly
+def test_cmp_pg():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = textwrap.dedent("""\
@@ -26,11 +44,25 @@ def test_comparator_pg():
         """)
     constraints = []
     example = build_example(name, netlist, setup, constraints)
-    run_example(example)
+    run_example(example, cleanup=cleanup)
 
 
 @pytest.mark.nightly
-def test_comparator_1():
+def test_cmp_pg_clk():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.comparator(name)
+    setup = textwrap.dedent("""\
+        POWER = vccx
+        GND = vssx
+        CLOCK = clk
+        """)
+    constraints = []
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example, cleanup=cleanup)
+
+
+@pytest.mark.nightly
+def test_cmp_1():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = textwrap.dedent("""\
@@ -43,20 +75,22 @@ def test_comparator_1():
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
         {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
         {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
+        {"constraint": "SameTemplate", "instances": ["mp7", "mp8"]},
+        {"constraint": "SameTemplate", "instances": ["mp9", "mp10"]},
+        {"constraint": "SameTemplate", "instances": ["invn", "invp"]},
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["dp"]]},
-        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["ccp"], ["ccn"], ["invn", "invp"]]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["ccp"], ["ccn"], ["invn", "invp"], ["mp9", "mp10"], ["mp7", "mp8"]]},
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "dp"]},
-        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["ccp", "ccn"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["dp", "ccn"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
-        {"constraint": "AspectRatio", "subcircuit": "comparator", "ratio_low": 0.7, "ratio_high": 1.3}
+        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
     ]
     example = build_example(name, netlist, setup, constraints)
-    run_example(example, cleanup=False)
+    run_example(example, cleanup=cleanup, area=4e10)
 
 
 @pytest.mark.nightly
-def test_comparator_2():
+def test_cmp_2():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = textwrap.dedent("""\
@@ -69,19 +103,22 @@ def test_comparator_2():
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
         {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
         {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
+        {"constraint": "SameTemplate", "instances": ["mp7", "mp8"]},
+        {"constraint": "SameTemplate", "instances": ["mp9", "mp10"]},
+        {"constraint": "SameTemplate", "instances": ["invn", "invp"]},
         {"constraint": "SymmetricBlocks", "direction": "V",
             "pairs": [["ccp"], ["ccn"], ["dp"], ["mn0"], ["invn", "invp"], ["mp7", "mp8"], ["mp9", "mp10"]]},
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["invn", "ccp", "ccn", "dp", "mn0"]},
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["invn", "mp9", "mp7", "mn0"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
-        {"constraint": "AspectRatio", "subcircuit": "comparator", "ratio_low": 0.5, "ratio_high": 1.5}
+        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 1.5}
     ]
     example = build_example(name, netlist, setup, constraints)
-    run_example(example, cleanup=False)
+    run_example(example, cleanup=cleanup, area=5e9)
 
 
 @pytest.mark.nightly
-def test_comparator_clk():
+def test_cmp_3():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = textwrap.dedent("""\
@@ -100,42 +137,69 @@ def test_comparator_clk():
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["dp", "ccn"]}
     ]
     example = build_example(name, netlist, setup, constraints)
-    run_example(example)
+    run_example(example, cleanup=cleanup, area=3.5e9)
 
 
 @pytest.mark.nightly
-def test_comparator_noconst():
+def test_cmp_noconst():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = textwrap.dedent(f"""\
         POWER = vccx
         GND = vssx
-        NO_CONST = {name}
+        DONT_CONST = {name}
         """)
-    constraints = "[]"
+    constraints = []
     example = build_example(name, netlist, setup, constraints)
-    run_example(example)
+    ckt_dir, run_dir = run_example(example, cleanup=False)
+
+    with (run_dir / '1_topology' / f'{name.upper()}.verilog.json').open('rt') as fp:
+        verilog_json = json.load(fp)
+        module_found = False
+        for module in verilog_json['modules']:
+            if module['name'] == name.upper():
+                module_found = True
+            assert len(module['constraints']) == 0, "Constraints generated despise DONT_CONST"
+        assert module_found, f'Module {name.upper()} not found in {name.upper()}verilog.json'
+
+    if cleanup:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(ckt_dir)
 
 
 @pytest.mark.nightly
-def test_comparator_order():
-    """ mp7 and mp8 should not bypass subcircuit identification """
+def test_cmp_order():
+    """ mp7 and mp8 should not be identified as a primitive """
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = ""
-    constraints = [{"constraint": "Order", "direction": "left_to_right", "instances": ["mmp7", "mmp8"]}]
+    constraints = [{"constraint": "Order", "direction": "left_to_right", "instances": ["mp7", "mp8"]}]
     name = f'ckt_{get_test_id()}'
     example = build_example(name, netlist, setup, constraints)
-    run_example(example)
+    ckt_dir, run_dir = run_example(example, cleanup=False)
+
+    with (run_dir / '1_topology' / f'{name.upper()}.verilog.json').open('rt') as fp:
+        verilog_json = json.load(fp)
+        module_found = False
+        for module in verilog_json['modules']:
+            if module['name'] == name.upper():
+                module_found = True
+                instances = set([k['instance_name'] for k in module['instances']])
+                assert 'MP7' in instances and 'MP8' in instances, f'MP7 or MP8 not found in {instances}'
+        assert module_found, f'Module {name.upper()} not found in {name.upper()}verilog.json'
+
+    if cleanup:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(ckt_dir)
 
 
 def test_ota_six():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ota_six(name)
     setup = ""
-    constraints = []
+    constraints = [{"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 1.5}]
     example = build_example(name, netlist, setup, constraints)
-    run_example(example)
+    run_example(example, cleanup=cleanup)
 
 
 def test_tia():
@@ -144,7 +208,7 @@ def test_tia():
     setup = ""
     constraints = []
     example = build_example(name, netlist, setup, constraints)
-    run_example(example)
+    run_example(example, cleanup=cleanup)
 
 
 @pytest.mark.skip
@@ -158,17 +222,4 @@ def test_ldo_amp():
         """)
     constraints = []
     example = build_example(name, netlist, setup, constraints)
-    run_example(example)
-
-
-# def test_net_naming():
-#     name = f'ckt_{get_test_id()}'
-#     netlist = circuits.buffer(name)
-#     setup = textwrap.dedent("""\
-#         POWER = vccx
-#         GND = vssx
-#         """)
-#     setup = ""
-#     constraints = []
-#     example = build_example(name, netlist, setup, constraints)
-#     run_example(example, cleanup=False)
+    run_example(example, cleanup=cleanup)

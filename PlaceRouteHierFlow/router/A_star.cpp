@@ -130,6 +130,10 @@ std::vector<std::vector<RouterDB::Metal> > A_star::ConvertPathintoPhysical(Grid&
   return Phsical_Path;
 };
 
+std::vector<std::vector<int> > A_star::GetExtendLabel(){
+  return Extend_labels;
+}
+
 int A_star::Manhattan_distan(int sindex, Grid& grid){
 
   std::set<int> Mdis;
@@ -444,6 +448,109 @@ bool A_star::CheckExendable_With_Certain_Length(int first_node_same_layer,int cu
   return feasible;
 
 };
+
+bool A_star::CheckExendable_With_Certain_Length_Head_Extend(int first_node_same_layer,int current_node,int length,int minL,Grid &grid, int &direction){
+
+  int half_minL = ceil( ( (double) minL -  (double) length) );
+
+  bool feasible = true;
+  
+  int first_direction = 0;
+
+  int current_direction = 0;
+ 
+  if(first_node_same_layer<=current_node){
+
+     first_direction = -1;
+     current_direction = 1;
+
+  }else{
+
+     first_direction = 1;
+     current_direction = -1;
+
+  }
+
+  bool search_flag = true;
+  int culmulated_length = 0;
+  int dummy_node = first_node_same_layer;
+  while(search_flag){
+     if(culmulated_length>=half_minL){
+        search_flag = false;
+     }else{
+       int next_node = dummy_node + first_direction;
+       if(next_node<0 || next_node>=int(grid.vertices_total.size()) ) {
+          search_flag = false;
+          feasible = false;
+       }else if(grid.vertices_total[next_node].active==0) {
+          search_flag = false;
+          feasible = false;
+       }else if( (grid.vertices_total[next_node].x != grid.vertices_total[first_node_same_layer].x && grid.vertices_total[next_node].y != grid.vertices_total[first_node_same_layer].y) || grid.vertices_total[next_node].metal != grid.vertices_total[first_node_same_layer].metal ){
+          search_flag = false;
+          feasible = false;
+       }else {
+          culmulated_length = abs(grid.vertices_total[next_node].x-grid.vertices_total[first_node_same_layer].x) + abs( grid.vertices_total[next_node].y-grid.vertices_total[first_node_same_layer].y);
+          dummy_node = next_node;
+       }
+     }
+  }
+  direction = first_direction;
+  return feasible;
+
+};
+
+bool A_star::CheckExendable_With_Certain_Length_Tail_Extend(int first_node_same_layer,int current_node,int length,int minL,Grid &grid, int &direction){
+
+  int half_minL = ceil( ( (double) minL -  (double) length) );
+
+  bool feasible = true;
+  
+  int first_direction = 0;
+
+  int current_direction = 0;
+ 
+  if(first_node_same_layer<=current_node){
+
+     first_direction = -1;
+     current_direction = 1;
+
+  }else{
+
+     first_direction = 1;
+     current_direction = -1;
+
+  }
+
+  int culmulated_length = 0;
+  bool search_flag = true;
+  int dummy_node = current_node;
+  while(search_flag){
+     if(culmulated_length>=half_minL){
+        search_flag = false;
+     }else{
+       int next_node = dummy_node + current_direction;
+       if(next_node<0 || next_node>=int(grid.vertices_total.size() )) {
+          search_flag = false;
+          feasible = false;
+       }else if(grid.vertices_total[next_node].active==0) {
+          search_flag = false;
+          feasible = false;
+       }else if( (grid.vertices_total[next_node].x != grid.vertices_total[current_node].x && grid.vertices_total[next_node].y != grid.vertices_total[current_node].y) || grid.vertices_total[next_node].metal != grid.vertices_total[current_node].metal){
+          search_flag = false;
+          feasible = false;
+       }else {
+          culmulated_length = abs(grid.vertices_total[next_node].x-grid.vertices_total[current_node].x) + abs( grid.vertices_total[next_node].y-grid.vertices_total[current_node].y);
+          dummy_node = next_node;
+       }
+     }
+  }
+  direction = current_direction;
+  return feasible;
+
+};
+
+
+
 
 int A_star::Calculate_Interval_number(Grid& grid, int node){
 
@@ -1082,8 +1189,11 @@ bool A_star::Extention_check_prime(Grid& grid, int current_node, int next_node, 
       }
 
   if(delta_length<0 && length >= via_space_length){
-       bool feasible = CheckExendable_With_Certain_Length(node_same_layer,current_node,length,minL,grid);
-       return feasible;
+       int direction;
+       bool feasible_half = CheckExendable_With_Certain_Length(node_same_layer,current_node,length,minL,grid);
+       bool feasible_head = CheckExendable_With_Certain_Length_Head_Extend(node_same_layer,current_node,length,minL,grid,direction);
+       bool feasible_tail = CheckExendable_With_Certain_Length_Tail_Extend(node_same_layer,current_node,length,minL,grid,direction);
+       return feasible_half or feasible_head or feasible_tail;
     }else if(length >= via_space_length){
        return true;
     }else{
@@ -1135,8 +1245,11 @@ bool A_star::Extention_check(Grid& grid, int current_node, std::set<int> &source
           }
        }
        if(delta_length<0 && length >= via_space_length){
-           bool feasible = CheckExendable_With_Certain_Length(node_same_layer,parent,length,minL,grid);
-           return feasible;
+           int direction;
+           bool feasible_half = CheckExendable_With_Certain_Length(node_same_layer,parent,length,minL,grid);
+           bool feasible_head = CheckExendable_With_Certain_Length_Head_Extend(node_same_layer,parent,length,minL,grid,direction);
+           bool feasible_tail = CheckExendable_With_Certain_Length_Tail_Extend(node_same_layer,parent,length,minL,grid,direction);
+           return feasible_half or feasible_head or feasible_tail;
        }else if(length >= via_space_length){
            return true;
        }
@@ -1147,6 +1260,70 @@ bool A_star::Extention_check(Grid& grid, int current_node, std::set<int> &source
     logger->error("Extention check bug parent node is out of grid");
     assert(0);
   }
+
+};
+
+std::vector<int> A_star::extend_manner_direction_check(std::vector<int> temp_path, Grid &grid){
+
+  std::vector<std::pair<int,int> > path_pairs;
+  int temp_metel = -1;
+  std::pair<int,int> temp_pair;
+  temp_pair.first = -1;
+
+  //std::cout<<"a star path "<<temp_path.size()<<std::endl;
+
+  for(int i=0;i<temp_path.size();++i){
+
+     //std::cout<<temp_path[i]<<" ";
+
+     if(grid.vertices_total[temp_path[i]].metal!=temp_metel){
+        if(temp_pair.first!=-1){
+           path_pairs.push_back(temp_pair);
+        }
+        temp_pair.first = temp_path[i];
+        temp_pair.second = temp_path[i];
+        temp_metel = grid.vertices_total[temp_path[i]].metal;
+     }else{
+        temp_pair.second = temp_path[i];
+     }
+
+     if(i==temp_path.size()-1){
+        path_pairs.push_back(temp_pair);
+     }
+  }
+  //std::cout<<std::endl;
+
+  //std::cout<<"a star path_pairs "<<path_pairs.size()<<std::endl;
+
+  std::vector<int> extend_index; //0 not extend, 1 double side, 2 head extend, 3 tail extend, 4 bug case
+  for(int i=0;i<path_pairs.size();++i){
+
+     //std::cout<<"<"<<path_pairs[i].first<<","<<path_pairs[i].second<<"> ";
+     int direction;
+     if(i==0||i==path_pairs.size()-1){
+        extend_index.push_back(0);
+     }else{
+        int length = abs(grid.vertices_total[path_pairs[i].first].x - grid.vertices_total[path_pairs[i].second].x) + abs(grid.vertices_total[path_pairs[i].first].y - grid.vertices_total[path_pairs[i].second].y);
+        int metal = grid.vertices_total[path_pairs[i].first].metal;
+        int minL = drc_info.Metal_info[metal].minL;
+        if(length>=minL){
+           extend_index.push_back(0);
+        }else if(CheckExendable_With_Certain_Length(path_pairs[i].first,path_pairs[i].second,length,minL,grid)){
+          extend_index.push_back(1);
+        }else if(CheckExendable_With_Certain_Length_Head_Extend(path_pairs[i].first,path_pairs[i].second,length,minL,grid,direction)){
+          if(direction==1)extend_index.push_back(2);
+          if(direction==-1)extend_index.push_back(3);
+        }else if(CheckExendable_With_Certain_Length_Tail_Extend(path_pairs[i].first,path_pairs[i].second,length,minL,grid,direction)){
+          if(direction==1)extend_index.push_back(2);
+          if(direction==-1)extend_index.push_back(3);
+        }else{
+          extend_index.push_back(4);
+        }
+     }
+  }
+
+  //std::cout<<std::endl;
+  return extend_index;
 
 };
 
@@ -1678,6 +1855,7 @@ std::vector<std::vector<int> > A_star::Trace_Back_Paths(Grid& grid, int current_
   auto logger = spdlog::default_logger()->clone("router.A_star.Trace_Back_Paths");
 
   std::vector<std::vector<int> > temp_paths;
+  std::vector<std::vector<int> > extend_labels;
   int mode = 0;
   std::vector<int> nodes;
   //Pre_trace_back(grid, current_node, left, right, src_index,dest_index);
@@ -1713,16 +1891,37 @@ std::vector<std::vector<int> > A_star::Trace_Back_Paths(Grid& grid, int current_
         //assert(0);      
      }
      temp_paths.push_back(temp_path);
+     std::vector<int> extend_label = extend_manner_direction_check(temp_path,grid);
+     extend_labels.push_back(extend_label);
   }
   if(shielding){
     if(temp_paths.size()>2){
       int path_size = int(temp_paths.size()-1);
       std::vector<int> temp_path_l = CovertToShieldingNet(grid, temp_paths[0]);
+      std::vector<int> temp_extend_label_l = CovertToShieldingNet(grid, extend_labels[0]);
+      extend_labels[0] = temp_extend_label_l;
       temp_paths[0] = temp_path_l;
       std::vector<int> temp_path_r = CovertToShieldingNet(grid, temp_paths[path_size]);
+      std::vector<int> temp_extend_label_r = CovertToShieldingNet(grid, extend_labels[path_size]);
       temp_paths[path_size] = temp_path_r;
+      extend_labels[path_size] = temp_extend_label_r;
     }
   }
+  Extend_labels.clear();
+  Extend_labels = extend_labels;
+  //std::cout<<"a star temp_path length ";
+  //for(int i=0;i<temp_paths.size();i++){
+     //std::cout<<temp_paths[i].size()<<" "; 
+  //}
+  //std::cout<<std::endl;
+
+  //std::cout<<"a star Extend_labels length ";
+  //for(int i=0;i<Extend_labels.size();i++){
+     //std::cout<<Extend_labels[i].size()<<" "; 
+  //}
+  //std::cout<<std::endl;
+
+
   return temp_paths;
 
 };
@@ -1782,6 +1981,8 @@ std::vector<int> A_star::Trace_Back_Path_trace_back_node(Grid& grid, int current
   for(int i=(int)temp_path.size()-1;i>=0;i--){
      reserse_path.push_back(temp_path[i]);
     }
+
+  
   return reserse_path;
 
 };

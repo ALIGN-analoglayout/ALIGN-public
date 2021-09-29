@@ -79,7 +79,7 @@
         {
             "const_name": "Multi_Connection",
             "multi_number": 3,
-            "net_name": "vcom"
+            "net_name": "VCOM"
         },
         {
             "const_name": "DoNotIdentify",

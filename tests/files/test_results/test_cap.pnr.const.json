@@ -37,17 +37,9 @@
         {
             "pairs": [
                 {
-                    "type": "selfsym",
-                    "block": "C0"
-                },
-                {
                     "type": "sympair",
                     "block1": "C2",
                     "block2": "C1"
-                },
-                {
-                    "type": "selfsym",
-                    "block": "M0"
                 }
             ],
             "const_name": "SymmBlock",
