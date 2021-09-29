@@ -11,6 +11,7 @@ set(headers
      GcellDetailRouter.h
      GlobalGrid.h
      Grid.h
+     HananRouter.h
      Rdatatype.h
 )
 
@@ -26,6 +27,7 @@ set(sources
      RawRouter.cpp
      GcellGlobalRouter.cpp
      Graph.cpp
+     HananRouter.cpp
      Router.cpp
 )
 
