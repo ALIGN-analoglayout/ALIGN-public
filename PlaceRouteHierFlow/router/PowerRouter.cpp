@@ -686,10 +686,10 @@ void PowerRouter::UpdatePowerGridLLUR(int Lmetal, int Hmetal){
      x_grid = higher_metal.grid_unit_x ;
   }
 
-  if(higher_metal.direct == 1){//horizontal
-     y_grid = higher_metal.grid_unit_y ;
+  if(lower_metal.direct == 1){//horizontal
+     y_grid = lower_metal.grid_unit_y ;
   }else{// vertical
-     x_grid = higher_metal.grid_unit_x ;
+     x_grid = lower_metal.grid_unit_x ;
   }
 
   if(y_grid == -1){//horizontal
@@ -697,7 +697,7 @@ void PowerRouter::UpdatePowerGridLLUR(int Lmetal, int Hmetal){
   }
 
   if(x_grid == -1){//horizontal
-     x_grid = PowerGrid_Drc_info.Metal_info[Lmetal+1].grid_unit_x ;
+     x_grid = PowerGrid_Drc_info.Metal_info[Hmetal-1].grid_unit_x ;
   }
 
   if(this->UR.x < x_grid) this->UR.x = x_grid;
