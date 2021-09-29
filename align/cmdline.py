@@ -1,3 +1,4 @@
+import os
 import argparse
 from .main import schematic2layout
 from . import __version__
@@ -7,15 +8,14 @@ from .utils import logmanager
 import logging
 logger = logging.getLogger(__name__)
 
-import os
 
 class CmdlineParser():
 
     def __init__(self, *args, **kwargs):
-        align_home = os.environ.get( 'ALIGN_HOME', None)
+        align_home = os.environ.get('ALIGN_HOME', None)
 
         parser = argparse.ArgumentParser(*args, **kwargs,
-            description="directory path for input circuits")
+                                         description="directory path for input circuits")
         parser.add_argument("netlist_dir",
                             type=str,
                             help='Path to netlist directory')
@@ -68,14 +68,14 @@ class CmdlineParser():
         #                     action='store_true',
         #                     help="Set the true to generate png")
         log_level, verbosity = logmanager.get_loglevels()
-        parser.add_argument( "-l", "--log",
+        parser.add_argument("-l", "--log",
                             dest="log_level",
-                            choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'],
+                            choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                             default=log_level,
                             help="Logfile logging level (default: %(default)s)")
-        parser.add_argument( "-v", "--verbosity",
+        parser.add_argument("-v", "--verbosity",
                             dest="verbosity",
-                            choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'],
+                            choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                             default=verbosity,
                             help="Console logging level (default: %(default)s)")
         parser.add_argument("-r",
@@ -104,7 +104,7 @@ class CmdlineParser():
         parser.add_argument('--router_mode',
                             type=str,
                             default='top_down',
-                            choices=['top_down','bottom_up','no_op'],
+                            choices=['top_down', 'bottom_up', 'no_op'],
                             help='Router mode')
 
         parser.add_argument('--gui',
@@ -137,6 +137,11 @@ class CmdlineParser():
         parser.add_argument('--select_in_ILP',
                             action='store_true',
                             help='Use ILP to determine subcircuit selection.')
+
+        parser.add_argument('-plt', '--placer_time_limit',
+                            type=int,
+                            default=5,
+                            help='Max time limit spent in placement (in minutes)')
 
         self.parser = parser
 
