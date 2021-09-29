@@ -515,6 +515,8 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
       tile_size = 10;
   }
   GlobalGrid Initial_Gcell = GlobalGrid(drc_info, LL.x, LL.y, UR.x, UR.y, Lmetal, Hmetal, tileLayerNo, tile_size);
+
+  //change start from here for non-uniform grid
   Initial_Gcell.ConvertGlobalInternalMetal(Blocks);
   Initial_Gcell.AdjustVerticalEdgeCapacityfromInternalMetal(Blocks);
   this->Gcell = GlobalGrid(Initial_Gcell);
@@ -528,7 +530,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   Gcell.SetNetSink(Blocks, Nets, Terminals, terminal_routing);
   //Gcell.CreateGridDataNCap();
   //Gcell.CreateGridDataCap(true);
-
+  //change end here for non-uniform grid
 
   //return;
   //end of global Grid

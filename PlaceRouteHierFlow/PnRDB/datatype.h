@@ -664,6 +664,7 @@ struct Drc_info {
   Boundary top_boundary;
   guardring_info Guardring_info; //guardring info read from layers.json
   design_info Design_info;       // design ingo from layer.json
+  pair<int, int> Gcell_Dimen; //dimension of gcell, Gcell_Dimen.frist is width, Gcell_Dimen.second is height
 };
 
 struct routing_net{

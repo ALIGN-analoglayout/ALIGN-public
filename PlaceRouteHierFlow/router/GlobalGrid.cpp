@@ -125,7 +125,7 @@ GlobalGrid::GlobalGrid(PnRDB::Drc_info& drc_info, int LLx, int LLy, int URx, int
   this->LL.x=LLx; this->LL.y=LLy;
   this->UR.x=URx; this->UR.y=URy;
   this->maxXidx=0; this->maxYidx=0;
-
+  //change this->x_unit = drc_info.Metal_info.Gcell_dimen.first and this->y_unit = drc_info.Metal_info.Gcell_dimen.second
   if(drc_info.Metal_info.at(Lmetal).direct==0) { //vertical
     this->x_unit=drc_info.Metal_info.at(Lmetal).grid_unit_x*scale;
     this->y_unit=drc_info.Metal_info.at(Lmetal+1).grid_unit_y*scale;
