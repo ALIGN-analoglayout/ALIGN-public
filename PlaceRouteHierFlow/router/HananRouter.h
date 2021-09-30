@@ -11,9 +11,13 @@
 
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/register/point.hpp>
+#include <boost/geometry/geometries/register/box.hpp>
 #include <boost/geometry/index/rtree.hpp>
 
 #include "../PnRDB/datatype.h"
+
+namespace bg = boost::geometry;
+namespace bgi = boost::geometry::index;
 
 namespace geom {
 
@@ -32,6 +36,10 @@ class Point {
     const int& y() const { return _y; }
     int& x() { return _x; }
     int& y() { return _y; }
+    int getx() const { return _x; }
+    int gety() const { return _y; }
+    void setx(const int x) { _x = x; }
+    void sety(const int y) { _y = y; }
     void scale(int t) { _x *= t; _y *= t; }
     void translate(int x, int y) { _x += x; _y += y; }
     void translate(int c) { _x += c; _y += c; }
@@ -85,6 +93,9 @@ class Rect {
     int& ymax() { return _ur.y(); }
     const int xcenter() const { return (_ll.x() + _ur.x())/2; }
     const int ycenter() const { return (_ll.y() + _ur.y())/2; }
+
+    const Point& ll() const { return _ll; }
+    const Point& ur() const { return _ur; }
 
     const bool xoverlap(const Rect& r) const { return xmin() <= r.xmax() && xmax() >= r.xmin(); }
     const bool yoverlap(const Rect& r) const { return ymin() <= r.ymax() && ymax() >= r.ymin(); }
@@ -184,17 +195,133 @@ typedef vector<Rect> Rects;
 
 }
 
-namespace HRouterDB {
-}
+BOOST_GEOMETRY_REGISTER_POINT_2D_GET_SET(geom::Point, int, bg::cs::cartesian, geom::Point::getx, geom::Point::gety, geom::Point::setx, geom::Point::sety);
+BOOST_GEOMETRY_REGISTER_BOX(geom::Rect, geom::Point, geom::Rect::ll(), geom::Rect::ur());
 
 namespace Hanan {
 
-namespace bg = boost::geometry;
-namespace bgi = boost::geometry::index;
-typedef bg::model::point<int, 2, bg::cs::cartesian> bgPt;
-typedef bg::model::box<bgPt> bgBox;
-typedef std::pair<bgBox, size_t> bgVal;
+class Obj;
+
+class Net {
+  private:
+    std::string _name;
+    std::list<Obj*> _shapes;
+  public:
+    const std::string& name() const { return _name; }
+    const std::list<Obj*> shapes() const { return _shapes; }
+};
+
+enum class ShapeType {
+  PATH,
+  VIA,
+  PATH_OBS,
+  VIA_OBS,
+  MAX_SHAPE_TYPE
+};
+
+class Obj {
+  private:
+    geom::Rect _bbox;
+    int _layer;
+    const Net* _net;
+    ShapeType _st;
+  public:
+    const geom::Rect& bbox() const { return _bbox; }
+    int layer() const { return _layer; }
+    Obj(const geom::Rect& r, const int l, const Net* net, const ShapeType& st) : _bbox(r), _layer(l), _net(net), _st(st) {}
+    void setxmin(const int x) { _bbox.xmin() = x; }
+    void setymin(const int y) { _bbox.ymin() = y; }
+    void setxmax(const int x) { _bbox.xmax() = x; }
+    void setymax(const int y) { _bbox.ymax() = y; }
+    ShapeType shapeType() const { return _st; }
+    bool isPath() const { return _st == ShapeType::PATH; }
+    bool isVia() const { return _st == ShapeType::VIA; }
+};
+
+class Grid {
+  private:
+    const int _offset, _pitch;
+    const std::vector<int> _pattern;
+  public:
+    Grid(const int offset, const int pitch, const vector<int>& pattern) : _offset(offset), _pitch(pitch), _pattern(pattern) {}
+    bool isOnGrid(int p) const
+    {
+      if (p >= _offset && _pitch) {
+        p = (p - _offset) % _pitch;
+        for (const auto& x : _pattern) {
+          if (x == p) return true;
+        }
+      }
+      return false;
+    }
+    int snapUpToGrid(int p) const
+    {
+      if (p >= _offset && _pitch) {
+        for (auto iter : {0, 1}) {
+          auto delta = (p - _offset) % _pitch;
+          unsigned i = 0;
+          while (i < _pattern.size()) {
+            if (delta == _pattern[i]) {
+              return p;
+            } else if (delta < _pattern[i]) {
+              return p + _pattern[i] - delta;
+            }
+            ++i;
+          }
+          p += (_pitch - delta);
+        }
+      }
+      return p;
+    }
+    int snapDnToGrid(int p) const
+    {
+      if (p >= _offset && _pitch) {
+        for (auto iter : {0, 1}) {
+          auto delta = (p - _offset) % _pitch;
+          int i = _pattern.size() - 1;
+          while (i >= 0) {
+            if (delta == _pattern[i]) {
+              return p;
+            } else if (delta > _pattern[i]) {
+              return p + _pattern[i] - delta;
+            }
+            --i;
+          }
+          p -= delta;
+        }
+      }
+      return p;
+    }
+};
+
+class Path : public Obj {
+  public:
+    Path(const geom::Rect& r, const int l, const Net* net) : Obj(r, l, net, ShapeType::PATH) {}
+};
+
+class Via : public Obj {
+  private:
+    const PnRDB::ViaModel* _viaModel;
+  public:
+    Via(const geom::Rect& r, const int l, const Net* net, const PnRDB::ViaModel* vm) : Obj(r, l, net, ShapeType::VIA), _viaModel(vm) {}
+    int upperLayer() const { return _viaModel ? _viaModel->UpperIdx : -1; }
+    int lowerLayer() const { return _viaModel ? _viaModel->LowerIdx : -1; }
+    int viaLayer()   const { return _viaModel ? _viaModel->ViaIdx   : -1; }
+
+};
+
+typedef std::pair<geom::Rect, Obj*> bgVal;
 typedef bgi::rtree<bgVal, bgi::quadratic<8, 4> > RTree;
+class HRouterDB {
+  private:
+    vector<RTree> _metaltree, _viatree;
+
+  public:
+    HRouterDB() {}
+    
+};
+
+
 void DetailRouter(PnRDB::hierNode& node, const PnRDB::Drc_info& drcData, const int Lmetal, const int Hmetal);
 }
 
