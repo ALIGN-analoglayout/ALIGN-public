@@ -189,7 +189,7 @@ GlobalGrid::GlobalGrid(PnRDB::Drc_info& drc_info, int LLx, int LLy, int URx, int
     this->End_index.at(layerIdx)=this->tiles_total.size()-1;
     logger->debug("end of layer {0}", i);
   }
-  
+  //change start for non-uniform grid
   // 2. Add tile edges
   logger->debug("GlobalGrid-Info: add tile connections");
   for(int i=Lmetal;i<=Hmetal;++i) {
@@ -280,12 +280,15 @@ GlobalGrid::GlobalGrid(PnRDB::Drc_info& drc_info, int LLx, int LLy, int URx, int
       }
     }
   }
+  //change end for non-uniform grid
 }
 
 void GlobalGrid::ConvertRect2Points(int metalIdx, int LLx, int LLy, int URx, int URy) {
   if(this->drc_info.Metal_info.at(metalIdx).direct==0) { // vertical net
+    //change start for non-uniform grid
     int mainUnit=this->y_unit;
     int minUnit=this->drc_info.Metal_info.at(metalIdx).grid_unit_x;
+    //change end for non-uniform grid
     int LLy_cc=ceil(double(LLy)/mainUnit)*mainUnit;
     int LLx_cc=ceil(double(LLx)/minUnit)*minUnit;
     for(int y=LLy_cc;y<=URy;y+=mainUnit) {
@@ -296,8 +299,10 @@ void GlobalGrid::ConvertRect2Points(int metalIdx, int LLx, int LLy, int URx, int
       }
     }
   } else { // horizontal net
+    //change start for non-uniform grid
     int mainUnit=this->x_unit;
     int minUnit=this->drc_info.Metal_info.at(metalIdx).grid_unit_y;
+    //change end for non-uniform grid
     int LLy_cc=ceil(double(LLy)/minUnit)*minUnit;
     int LLx_cc=ceil(double(LLx)/mainUnit)*mainUnit;
     for(int y=LLy_cc;y<=URy;y+=minUnit) {
@@ -359,7 +364,7 @@ void GlobalGrid::ConvertGlobalBlockPin(std::vector<RouterDB::Block>& Blocks, std
 }
 
 void GlobalGrid::AdjustPlateEdgeCapacity() {
-
+  //change this function for non-uniform grid
   auto logger = spdlog::default_logger()->clone("router.GlobalGrid.AdjustPlateEdgeCapacity");
 
   //limits: capacity unbalanced between the edges from one tile, which has little intermetal, and another tile, which has a lot of intermetal. In this case, the capacity should be keep along with the smaller capacity;
@@ -432,7 +437,7 @@ void GlobalGrid::AdjustPlateEdgeCapacity() {
 }
 
 void GlobalGrid::AdjustVerticalEdgeCapacityfromInternalMetal( std::vector<RouterDB::Block>& Blocks ) {
-
+  //change this function for non-uniform grid
   auto logger = spdlog::default_logger()->clone("router.GlobalGrid.AdjustVerticalEdgeCapacityfromInternalMetal");
 
   //limits: via capacity is a approximate version. Maybe needs to be improved in the future.
@@ -480,7 +485,7 @@ void GlobalGrid::AdjustVerticalEdgeCapacityfromInternalMetal( std::vector<Router
 }
 
 void GlobalGrid::AdjustVerticalEdgeCapacityfromBlockPin( std::vector<RouterDB::Block>& Blocks, std::vector<RouterDB::Net>& Nets, int excNet  ) {
-
+  //change this function for non-uniform grid
   auto logger = spdlog::default_logger()->clone("router.GlobalGrid.AdjustVerticalEdgeCapacityfromBlockPin");
 
   double scale_number = 2;
