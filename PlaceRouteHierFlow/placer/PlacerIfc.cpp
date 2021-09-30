@@ -11,7 +11,7 @@ double ConstGraph::PHI=0.05;
 double ConstGraph::PI=0.05;
 double ConstGraph::PII=1;
 
-PlacerIfc::PlacerIfc(PnRDB::hierNode& currentNode, int numLayout, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper, bool select_in_ILP = false) : _nodeVec( numLayout, currentNode) {
+PlacerIfc::PlacerIfc(PnRDB::hierNode& currentNode, int numLayout, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper, bool select_in_ILP = false, double placer_time_limit = 5.0) : _nodeVec( numLayout, currentNode) {
   ConstGraph::LAMBDA = hyper.LAMBDA;
-  Placer curr_plc(_nodeVec,opath,effort,drcInfo,hyper, select_in_ILP);
+  Placer curr_plc(_nodeVec,opath,effort,drcInfo,hyper, select_in_ILP, placer_time_limit);
 }

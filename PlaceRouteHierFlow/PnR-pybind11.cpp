@@ -489,7 +489,7 @@ PYBIND11_MODULE(PnR, m) {
     ;
 
   py::class_<PlacerIfc>( m, "PlacerIfc")
-    .def( py::init<hierNode&, int, string, int, Drc_info&, const PlacerHyperparameters&, bool>())
+    .def( py::init<hierNode&, int, string, int, Drc_info&, const PlacerHyperparameters&, bool, double>())
     .def( "getNodeVecSize", &PlacerIfc::getNodeVecSize)
     .def( "getNode", &PlacerIfc::getNode);
 
