@@ -379,6 +379,8 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
           DRC_info.MaskID_Via.push_back(std::to_string( DRC_info.Via_info.at(i).layerNo ));
         }
 
+        // Should add Gcell dimension here
+
         // 7. read design info
         // first init hspace and vspace
         if (DRC_info.Metal_info[0].direct == 1) {  // horizontal
