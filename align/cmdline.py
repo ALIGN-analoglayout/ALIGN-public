@@ -140,8 +140,8 @@ class CmdlineParser():
 
         parser.add_argument('-plt', '--placer_time_limit',
                             type=int,
-                            default=5,
-                            help='Max time limit spent in placement (in minutes)')
+                            default=30,
+                            help='Max time limit spent in placement (in seconds)')
 
         self.parser = parser
 
