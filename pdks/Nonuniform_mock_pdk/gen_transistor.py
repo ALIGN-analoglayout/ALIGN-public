@@ -8,7 +8,7 @@ from align.cell_fabric import transformation
 
 def mos(tx: Transistor):
 
-    assert tx.nf % 2 == 0, f'Odd number of fingers are not allowed in this PDK.'
+    assert tx.nf % 2 == 0, 'Odd number of fingers are not allowed in this PDK.'
 
     # TODO: Below is an example of parameters to instantiate a PCELL
     # When flow is completed, instance is used to stamp the PCELLs where instantiated
@@ -47,30 +47,29 @@ def mos(tx: Transistor):
     return {"bbox": c.bbox.toList(), "instance": instance, "terminals": c.terminals}
 
 
-def test_one():
-    tx = Transistor(device_type='stack',
-                    nf=4,
-                    nfin=4,
-                    model_name='n')
+# def test_one():
+#     tx = Transistor(device_type='stack',
+#                     nf=4,
+#                     nfin=4,
+#                     model_name='n')
 
-    data = mos(tx)
-    data['globalRoutes'] = []
-    data['globalRouteGrid'] = []
-    print(data)
-    with open(pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/'test_mos_one.json', "wt") as fp:
-        fp.write(json.dumps(data, indent=2) + '\n')
+#     data = mos(tx)
+#     data['globalRoutes'] = []
+#     data['globalRouteGrid'] = []
+#     print(data)
+#     with open(pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/'test_mos_one.json', "wt") as fp:
+#         fp.write(json.dumps(data, indent=2) + '\n')
 
 
-def test_two():
+# def test_two():
 
-    tx = Transistor(device_type='parallel',
-                    nf=4,
-                    nfin=4,
-                    model_name='p')
-    data = mos(tx)
-    data['globalRoutes'] = []
-    data['globalRouteGrid'] = []
-    print(data)
-    with open(pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/'test_mos_two.json', "wt") as fp:
-        fp.write(json.dumps(data, indent=2) + '\n')
-
+#     tx = Transistor(device_type='parallel',
+#                     nf=4,
+#                     nfin=4,
+#                     model_name='p')
+#     data = mos(tx)
+#     data['globalRoutes'] = []
+#     data['globalRouteGrid'] = []
+#     print(data)
+#     with open(pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/'test_mos_two.json', "wt") as fp:
+#         fp.write(json.dumps(data, indent=2) + '\n')

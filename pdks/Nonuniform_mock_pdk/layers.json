@@ -18,7 +18,9 @@
   "unit_size_cap":12,
   "max_nfin_mos":48,
   "Gate_pitch":45,
-  "unit_height_res":600
+  "unit_height_res":600,
+  "gcell_unit_height": 3200,
+  "gcell_unit_width": 6000
   },
   "layers": {
     "M1": {
@@ -60,18 +62,12 @@
       "width": [
         400,
         500,
-        500,
         600,
-        600,
-        500,
         500
       ],
       "space": [
         300,
         300,
-        400,
-        400,
-        400,
         300,
         300
       ],

@@ -176,28 +176,25 @@ class MOSGenerator(CanvasPDK):
         return lst
 
 
-def test_one():
-    mg = MOSGenerator()
-    ports = {'SA': [('M1', 'S')], 'DA': [('M1', 'D')], 'GA': [('M1', 'G')]}
-    parameters = {'m': 4, 'nf': 2, 'real_inst_type': 'n'}
-    mg.addNMOSArray(2, 1, 1, None, ports, **parameters)
-    fn = os.path.join(os.environ['ALIGN_HOME'], 'Viewer/INPUT/test_primitive_one.json')
-    with open(fn, "wt") as fp:
-        mg.writeJSON(fp, draw_grid=False, run_drc=False, run_pex=False, postprocess=True)
+# def test_one():
+#     mg = MOSGenerator()
+#     ports = {'SA': [('M1', 'S')], 'DA': [('M1', 'D')], 'GA': [('M1', 'G')]}
+#     parameters = {'m': 4, 'nf': 2, 'real_inst_type': 'n'}
+#     mg.addNMOSArray(2, 1, 1, None, ports, **parameters)
+#     fn = os.path.join(os.environ['ALIGN_HOME'], 'Viewer/INPUT/test_primitive_one.json')
+#     with open(fn, "wt") as fp:
+#         mg.writeJSON(fp, draw_grid=False, run_drc=False, run_pex=False, postprocess=True)
 
 
-def test_two():
-    mg = MOSGenerator()
-    ports = {'S': [('M1', 'S'), ('M2', 'S')],
-             'DA': [('M1', 'D')], 'DB': [('M2', 'D')],
-             'GA': [('M1', 'G')], 'GB': [('M2', 'G')]
-             }
-    parameters = {'m': 4, 'stack': 4, 'real_inst_type': 'n'}
-    mg.addNMOSArray(2, 1, 1, None, ports, **parameters)
-    fn = os.path.join(os.environ['ALIGN_HOME'], 'Viewer/INPUT/test_primitive_two.json')
-    with open(fn, "wt") as fp:
-        mg.writeJSON(fp, draw_grid=False, run_drc=False, run_pex=False, postprocess=True, )
+# def test_two():
+#     mg = MOSGenerator()
+#     ports = {'S': [('M1', 'S'), ('M2', 'S')],
+#              'DA': [('M1', 'D')], 'DB': [('M2', 'D')],
+#              'GA': [('M1', 'G')], 'GB': [('M2', 'G')]
+#              }
+#     parameters = {'m': 4, 'stack': 4, 'real_inst_type': 'n'}
+#     mg.addNMOSArray(2, 1, 1, None, ports, **parameters)
+#     fn = os.path.join(os.environ['ALIGN_HOME'], 'Viewer/INPUT/test_primitive_two.json')
+#     with open(fn, "wt") as fp:
+#         mg.writeJSON(fp, draw_grid=False, run_drc=False, run_pex=False, postprocess=True, )
 
-
-test_one()
-test_two()
