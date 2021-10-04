@@ -3291,7 +3291,7 @@
           ],
           "instance_name": "MP7",
           "transformation": {
-            "oX": 43200,
+            "oX": 38880,
             "oY": 18900,
             "sX": -1,
             "sY": 1
@@ -3320,7 +3320,7 @@
           ],
           "instance_name": "MP8",
           "transformation": {
-            "oX": 62640,
+            "oX": 58320,
             "oY": 18900,
             "sX": 1,
             "sY": 1
@@ -3349,7 +3349,7 @@
           ],
           "instance_name": "MP9",
           "transformation": {
-            "oX": 62640,
+            "oX": 58320,
             "oY": 44100,
             "sX": 1,
             "sY": -1
@@ -3378,7 +3378,7 @@
           ],
           "instance_name": "MP10",
           "transformation": {
-            "oX": 43200,
+            "oX": 38880,
             "oY": 44100,
             "sX": -1,
             "sY": -1
@@ -3440,7 +3440,7 @@
           ],
           "instance_name": "X_CCN_MN3_MN4",
           "transformation": {
-            "oX": 34560,
+            "oX": 30240,
             "oY": 0,
             "sX": 1,
             "sY": 1
@@ -3461,7 +3461,7 @@
           ],
           "instance_name": "X_CCP_MP5_MP6",
           "transformation": {
-            "oX": 43200,
+            "oX": 38880,
             "oY": 18900,
             "sX": 1,
             "sY": 1
@@ -3482,7 +3482,7 @@
           ],
           "instance_name": "X_INVP_MN11_MP13",
           "transformation": {
-            "oX": 65880,
+            "oX": 61560,
             "oY": 56700,
             "sX": -1,
             "sY": -1
@@ -3503,7 +3503,7 @@
           ],
           "instance_name": "X_INVN_MN12_MP14",
           "transformation": {
-            "oX": 39960,
+            "oX": 35640,
             "oY": 56700,
             "sX": 1,
             "sY": -1
