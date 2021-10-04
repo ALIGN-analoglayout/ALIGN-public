@@ -13,7 +13,7 @@ except BaseException:
 cleanup = False
 
 
-def test_cmp_1():
+def test_place_cmp_1():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = textwrap.dedent("""\
@@ -38,9 +38,9 @@ def test_cmp_1():
     ]
     example = build_example(name, netlist, setup, constraints)
 
-    plt = 60
+    plt = 0
     start = time.time()
-    run_example(example, cleanup=cleanup, area=4e10, plt=plt)
+    run_example(example, cleanup=cleanup, area=4e10, plt=plt, log_level='DEBUG')
     finish = time.time()
     elapsed = int(finish-start)
-    assert elapsed >= plt, f'Flow finished in {elapsed} secs sooner than {plt} secs'
+    print(f'Flow finished in {elapsed} secs')

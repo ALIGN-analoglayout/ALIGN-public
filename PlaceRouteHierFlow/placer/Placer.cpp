@@ -655,6 +655,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
           } else {
             double r = (double)rand() / RAND_MAX;
             if (r < exp((-1.0 * delta_cost) / T)) {
+              logger->debug("Placer: Climbing up r={0}, delta_cost={1}, T={2}", r, delta_cost, T);
               Smark = true;
             }
           }
@@ -701,12 +702,12 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     if (exhausted) break;
     if (placer_time_limit > 0.) {
       if ((clock() - start) / CLOCKS_PER_SEC > placer_time_limit) break;
-    } else {
-      T *= hyper.ALPHA;
     }
+    T *= hyper.ALPHA;
     // cout<<T<<endl;
   }
   // Write out placement results
+  logger->debug("Placer: optimal cost = {0}", curr_cost);
   //cout << endl << "Placer-Info: optimal cost = " << curr_cost << endl;
   // curr_sol.PrintConstGraph();
   curr_sp.PrintSeqPair();
