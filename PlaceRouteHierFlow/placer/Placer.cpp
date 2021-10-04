@@ -14,7 +14,7 @@ Placer::Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info&
   PlacementRegular(node, opath, effort, drcInfo);
 }
 
-Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in, bool select_in_ILP = false, double placer_time_limit = 5.0) : hyper(hyper_in) {
+Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in, bool select_in_ILP = false, double placer_time_limit = -1.) : hyper(hyper_in) {
   PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo, select_in_ILP, placer_time_limit);
   //PlacementRegularAspectRatio(nodeVec, opath, effort, drcInfo);
   //PlacementMixSAAspectRatio(nodeVec, opath, effort);
@@ -516,7 +516,7 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
 }
 
 std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRatio_ILP(design& designData, SeqPair& curr_sp, ILP_solver& curr_sol, int mode,
-                                                                                      int nodeSize, int effort, PnRDB::Drc_info& drcInfo, bool select_in_ILP = false, double placer_time_limit = 5.0) {
+                                                                                      int nodeSize, int effort, PnRDB::Drc_info& drcInfo, bool select_in_ILP = false, double placer_time_limit = -1.0) {
 
   auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementCoreAspectRatio_ILP");
   clock_t start = clock();
@@ -699,8 +699,11 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       per = per + 0.01;
     }
     if (exhausted) break;
-    if ((clock() - start) / CLOCKS_PER_SEC > placer_time_limit) break;
-    T *= hyper.ALPHA;
+    if (placer_time_limit > 0.) {
+      if ((clock() - start) / CLOCKS_PER_SEC > placer_time_limit) break;
+    } else {
+      T *= hyper.ALPHA;
+    }
     // cout<<T<<endl;
   }
   // Write out placement results
@@ -729,7 +732,7 @@ void Placer::ReshapeSeqPairMap(std::map<double, std::pair<SeqPair, ILP_solver>>&
   if(it!=Map.end()) {Map.erase(it, Map.end());}
 }
 
-void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, bool select_in_ILP = false, double placer_time_limit = 5.0){
+void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, bool select_in_ILP = false, double placer_time_limit = -1.0){
   auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementRegularAspectRatio_ILP");
   int nodeSize=nodeVec.size();
   //cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
