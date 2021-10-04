@@ -81,7 +81,7 @@ def build_example(name, netlist, netlist_setup, constraints):
     return example
 
 
-def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO', area=None):
+def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO', area=None, additional_args=None):
     run_dir = my_dir / f'run_{example.name}'
     if run_dir.exists() and run_dir.is_dir():
         shutil.rmtree(run_dir)
@@ -89,6 +89,11 @@ def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO', area
     os.chdir(run_dir)
 
     args = [str(example), '-p', str(pdk_dir), '-l', log_level, '-n', str(n)]
+
+    if additional_args:
+        for elem in additional_args:
+            args.append(elem)
+
     results = align.CmdlineParser().parse_args(args)
 
     assert results is not None, f"{example.name}: No results generated"
@@ -137,3 +142,4 @@ def verify_area(name, run_dir, area=None):
         print(f'{name}: area is {area_0}')
         if area is not None and area > 0:
             assert area_0 <= area, (f'Placer found a suboptimal solution: area: {area_0} target: {area} ratio: {area_0/area}')
+
