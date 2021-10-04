@@ -2,6 +2,7 @@ import pytest
 import textwrap
 import json
 import shutil
+import time
 try:
     from .utils import get_test_id, build_example, run_example
     from . import circuits
@@ -86,7 +87,10 @@ def test_cmp_1():
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
     ]
     example = build_example(name, netlist, setup, constraints)
-    run_example(example, cleanup=cleanup, area=4e10)
+    start = time.time()
+    run_example(example, cleanup=cleanup, area=4e10, plt=120)
+    finish = time.time()
+    print('Elapsed time:', finish-start)
 
 
 @pytest.mark.nightly
