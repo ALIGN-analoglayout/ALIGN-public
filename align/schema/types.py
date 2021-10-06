@@ -1,5 +1,5 @@
 __all__ = [
-    'BaseModel', 'List', 'Dict', 'String',
+    'BaseModel', 'List', 'Dict', 'SpiceStr',
     'validator', 'root_validator', 'validate_arguments',
     'Optional', 'Union',
     'NamedTuple', 'Literal',
@@ -250,7 +250,7 @@ class Dict(pydantic.generics.GenericModel, typing.Generic[KeyT, DataT]):
         self.__root__.update(other)
 
 
-class String(str):
+class SpiceStr(str):
 
     def __eq__(self, other):
         return isinstance(other, str) and \
@@ -278,5 +278,5 @@ class String(str):
 
     @classmethod
     def validate(cls, v):
-        # force casting to 'String' instead of 'str'
+        # force casting to 'SpiceStr' instead of 'str'
         return cls(v)

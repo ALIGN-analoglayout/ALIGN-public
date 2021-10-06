@@ -72,10 +72,10 @@ def test_base_model_case_insensitivity(library):
                 'PARAM1': 'nf*4',
                 'param2': '2'
             })
-    assert isinstance(MyDevice.name, types.String), type(MyDevice.name)
-    assert MyDevice.name == types.String('MYDEVICE')
-    assert MyDevice.pins == types.List[types.String](['D', 'S'])
-    assert MyDevice.parameters == types.Dict[types.String, types.String]({
+    assert isinstance(MyDevice.name, types.SpiceStr), type(MyDevice.name)
+    assert MyDevice.name == types.SpiceStr('MYDEVICE')
+    assert MyDevice.pins == types.List[types.SpiceStr](['D', 'S'])
+    assert MyDevice.parameters == types.Dict[types.SpiceStr, types.SpiceStr]({
         'PARAM1': 'NF*4',
         'PARAM2': '2'
     })
@@ -87,10 +87,10 @@ def test_derived_model_case_insensitivity(testmos):
             name='DerivedMOS',
             base='testmos',
             parameters={'param1': 'nf*4'})
-    assert DerivedMOS.name == types.String('DERIVEDMOS')
-    assert DerivedMOS.base == types.String('TESTMOS')
-    assert DerivedMOS.pins == types.List[types.String](['D', 'G', 'S', 'B'])
-    assert DerivedMOS.parameters == types.Dict[types.String, types.String]({
+    assert DerivedMOS.name == types.SpiceStr('DERIVEDMOS')
+    assert DerivedMOS.base == types.SpiceStr('TESTMOS')
+    assert DerivedMOS.pins == types.List[types.SpiceStr](['D', 'G', 'S', 'B'])
+    assert DerivedMOS.parameters == types.Dict[types.SpiceStr, types.SpiceStr]({
         'PARAM1': 'NF*4',
         'PARAM2': '2'
     })
@@ -104,7 +104,7 @@ def test_derived_model_new_parameters(testmos):
             parameters={
                 'PARAM1': 'NF*6',
                 'PARAM3': 'NF*4'})
-    assert DerivedMOS.parameters == types.Dict[types.String, types.String]({
+    assert DerivedMOS.parameters == types.Dict[types.SpiceStr, types.SpiceStr]({
         'PARAM1': 'NF*6',
         'PARAM2': '2',
         'PARAM3': 'NF*4'
@@ -124,7 +124,7 @@ def test_model_str_casting(library):
                 'PARAM1': 1.0,
                 'PARAM2': 2
             })
-    assert MyDevice.parameters == types.Dict[types.String, types.String]({
+    assert MyDevice.parameters == types.Dict[types.SpiceStr, types.SpiceStr]({
         'PARAM1': '1.0',
         'PARAM2': '2'
     })

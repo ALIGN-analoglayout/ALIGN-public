@@ -1,18 +1,18 @@
 from . import types
-from .types import Union, Dict, Optional, List, String, set_context
+from .types import Union, Dict, Optional, List, SpiceStr, set_context
 
 import logging
 logger = logging.getLogger(__name__)
 
 class Instance(types.BaseModel):
 
-    model: String
-    name: String
-    pins : Dict[String, String]
-    parameters : Optional[Dict[String, String]]
+    model: SpiceStr
+    name: SpiceStr
+    pins : Dict[SpiceStr, SpiceStr]
+    parameters : Optional[Dict[SpiceStr, SpiceStr]]
     #TODO: associate a generator for eacj primitive during instantiation
-    generator: String #Handles different sized instantiation of same subcircuit to same generator
-    abstract_name: Optional[String] # Added during primitive generator, in case no primitive generator found = generator
+    generator: SpiceStr #Handles different sized instantiation of same subcircuit to same generator
+    abstract_name: Optional[SpiceStr] # Added during primitive generator, in case no primitive generator found = generator
     class Config:
         allow_mutation = True
 

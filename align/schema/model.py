@@ -1,7 +1,7 @@
 import logging
 from . import types
 
-from .types import Dict, List, String, Optional
+from .types import Dict, List, SpiceStr, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -10,11 +10,11 @@ class Model(types.BaseModel):
     Model creation class
     '''
 
-    name : String                 # Model Name
-    base : Optional[String]       # Model Base (for derived models)
-    pins : Optional[List[String]] # List of pin names (derived from base if base exists)
-    parameters : Optional[Dict[String, String]]   # Parameter Name: Value mapping (inherits & adds to base if needed)
-    prefix : Optional[String]     # Instance name prefix, optional
+    name : SpiceStr                 # Model Name
+    base : Optional[SpiceStr]       # Model Base (for derived models)
+    pins : Optional[List[SpiceStr]] # List of pin names (derived from base if base exists)
+    parameters : Optional[Dict[SpiceStr, SpiceStr]]   # Parameter Name: Value mapping (inherits & adds to base if needed)
+    prefix : Optional[SpiceStr]     # Instance name prefix, optional
 
     def xyce(self):
         params = ' '.join(f'{k}={{{v}}}' for k, v in self.parameters.items())

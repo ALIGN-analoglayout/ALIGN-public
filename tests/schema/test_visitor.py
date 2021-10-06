@@ -1,17 +1,17 @@
 import pytest
 
-from align.schema.types import BaseModel, Optional, List, Dict, String
+from align.schema.types import BaseModel, Optional, List, Dict, SpiceStr
 from align.schema.visitor import Visitor, Transformer, cache
 
 @pytest.fixture
 def dummy():
     class DummyModel(BaseModel):
-        arg1: String
-        arg2: Optional[String]
-        arg3: List[String]
-        arg4: List[Optional[String]]
-        arg5: Dict[String, String]
-        arg6: Dict[String, Optional[String]]
+        arg1: SpiceStr
+        arg2: Optional[SpiceStr]
+        arg3: List[SpiceStr]
+        arg4: List[Optional[SpiceStr]]
+        arg5: Dict[SpiceStr, SpiceStr]
+        arg6: Dict[SpiceStr, Optional[SpiceStr]]
         arg7: "Optional[DummyModel]"
         arg8: "Optional[List[DummyModel]]"
     DummyModel.update_forward_refs()
@@ -40,7 +40,7 @@ def test_visitor_no_output(dummy):
 def test_visitor_raw_output(dummy):
 
     class StrValVisitor(Visitor):
-        def visit_String(self, node):
+        def visit_SpiceStr(self, node):
             return node
 
     assert StrValVisitor().visit(dummy) == [
@@ -85,24 +85,24 @@ def test_transformer_no_visitor(dummy):
 def test_transformer_string_visitor(dummy):
 
     class AddStringPrefix(Transformer):
-        def visit_String(self, node):
+        def visit_SpiceStr(self, node):
             return 'prefix_' + node
 
     transformed = AddStringPrefix().visit(dummy)
     assert isinstance(transformed, dummy.__class__)
-    # String in subtree
+    # SpiceStr in subtree
     assert transformed.arg1 == 'prefix_arg1'
     assert transformed.arg1 is not dummy.arg1
     # No string in subtree
     assert transformed.arg2 == None
     assert transformed.arg2 is dummy.arg2
-    # String in subtree
+    # SpiceStr in subtree
     assert transformed.arg3 == ['prefix_arg3_1', 'prefix_arg3_2']
     assert transformed.arg3 is not dummy.arg3
     # No string in subtree
     assert transformed.arg4 == []
     assert transformed.arg4 is dummy.arg4, f'old:({id(dummy.arg4)}, {dummy.arg4}), new:({id(transformed.arg4)}, {transformed.arg4})'
-    # String in subtree
+    # SpiceStr in subtree
     assert transformed.arg5 == {'arg5_k': 'prefix_arg5_v'}
     assert transformed.arg5 is not dummy.arg5
     # No string in subtree
@@ -118,10 +118,10 @@ def test_transformer_string_visitor(dummy):
                 'arg6': {'arg6_k': None},
                 'arg7': None,
                 'arg8': None}
-    # String in subtree
+    # SpiceStr in subtree
     assert transformed.arg7 == basedict
     assert transformed.arg7 is not dummy.arg7
-    # String in subtree
+    # SpiceStr in subtree
     assert transformed.arg8 == [basedict, basedict]
     assert transformed.arg8 is not dummy.arg8
     # Ensure cache is working for generic_visitor

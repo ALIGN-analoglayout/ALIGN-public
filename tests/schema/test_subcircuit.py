@@ -2,7 +2,7 @@ import pytest
 
 from align.schema.subcircuit import Model, SubCircuit, Circuit, Instance
 from align.schema.library import Library
-from align.schema.types import set_context, Dict, String
+from align.schema.types import set_context, Dict, SpiceStr
 
 @pytest.fixture
 def library():
@@ -38,18 +38,18 @@ def test_subckt_definition(library, test_ckt):
     assert inst.model == 'SUBCKT'
     assert list(inst.pins.keys()) == ['PIN1', 'PIN2']
     assert list(inst.pins.values()) == ['NET10', 'NET12']
-    assert inst.pins == {String('PIN1'): String('NET10'), String('PIN2'): 'NET12'}
+    assert inst.pins == {SpiceStr('PIN1'): SpiceStr('NET10'), SpiceStr('PIN2'): 'NET12'}
     assert list(inst.parameters.keys()) == ['PARAM1', 'PARAM2', 'PARAM3', 'PARAM4']
-    assert inst.parameters[String('PARAM1')] == '1'
-    assert inst.parameters[String('PARAM2')] == '1E-3'
-    assert inst.parameters[String('PARAM3')] == '0.1F'
-    assert inst.parameters[String('PARAM4')] == 'HELLO'
+    assert inst.parameters[SpiceStr('PARAM1')] == '1'
+    assert inst.parameters[SpiceStr('PARAM2')] == '1E-3'
+    assert inst.parameters[SpiceStr('PARAM3')] == '0.1F'
+    assert inst.parameters[SpiceStr('PARAM4')] == 'HELLO'
     with set_context(test_ckt.elements):
         with pytest.raises(Exception):
             inst = subckt(name='X1', model='subckt', pins={'PIN1': 'NET10', 'PIN2': 'NET12'}, parameters={'garbage':''},generator='Dummy')
         inst = Instance(name='X1', model='subckt', pins={'PIN1': 'NET10', 'PIN2': 'NET12'}, parameters={'param1': '2', 'param3': '1e-16'},generator='Dummy')
-    assert inst.parameters[String('PARAM1')] == '2'
-    assert inst.parameters[String('PARAM3')] == '1E-16'
+    assert inst.parameters[SpiceStr('PARAM1')] == '2'
+    assert inst.parameters[SpiceStr('PARAM3')] == '1E-16'
 
 def test_subckt_instantiation(library, test_ckt):
     with set_context(library):
@@ -74,10 +74,10 @@ def test_subckt_instantiation(library, test_ckt):
     assert inst.name == 'X1'
     assert inst.model == 'SUBCKT'
     assert isinstance(inst.pins, Dict)
-    assert all(isinstance(x, String) for x in inst.pins.keys())
-    assert all(isinstance(x, String) for x in inst.pins.values())
-    assert inst.pins == {String('PIN1'): String('NET10'), String('PIN2'): String('NET12')}
+    assert all(isinstance(x, SpiceStr) for x in inst.pins.keys())
+    assert all(isinstance(x, SpiceStr) for x in inst.pins.values())
+    assert inst.pins == {SpiceStr('PIN1'): SpiceStr('NET10'), SpiceStr('PIN2'): SpiceStr('NET12')}
     assert isinstance(inst.parameters, Dict)
-    assert all(isinstance(x, String) for x in inst.parameters.keys())
-    assert all(isinstance(x, String) for x in inst.parameters.values())
-    assert inst.parameters == {String('PARAM1'): String('1'), String('PARAM2'): String('0.001'), String('PARAM3'): String('1E-16'), String('PARAM4'): String('HELLO')}
+    assert all(isinstance(x, SpiceStr) for x in inst.parameters.keys())
+    assert all(isinstance(x, SpiceStr) for x in inst.parameters.values())
+    assert inst.parameters == {SpiceStr('PARAM1'): SpiceStr('1'), SpiceStr('PARAM2'): SpiceStr('0.001'), SpiceStr('PARAM3'): SpiceStr('1E-16'), SpiceStr('PARAM4'): SpiceStr('HELLO')}

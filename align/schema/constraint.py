@@ -3,7 +3,7 @@ import more_itertools as itertools
 import re
 
 from . import types
-from .types import Union, Optional, Literal, List, String, set_context
+from .types import Union, Optional, Literal, List, SpiceStr, set_context
 from . import checker
 
 import logging
@@ -33,7 +33,7 @@ def validate_instances(cls, value):
 
 class SoftConstraint(types.BaseModel):
 
-    constraint: String
+    constraint: SpiceStr
 
     def __init__(self, *args, **kwargs):
         constraint = pattern.sub(
@@ -86,7 +86,7 @@ class PlacementConstraint(HardConstraint):
 
 
 class SameTemplate(PlacementConstraint):
-    instances: List[String]
+    instances: List[SpiceStr]
 
     def check(self, checker):
         pass
@@ -113,7 +113,7 @@ class Order(PlacementConstraint):
     If `abut` is `True`:
     > adjoining instances will touch
     '''
-    instances: List[String]
+    instances: List[SpiceStr]
     direction: Optional[Literal[
         'horizontal', 'vertical',
         'left_to_right', 'right_to_left',
@@ -184,7 +184,7 @@ class Align(PlacementConstraint):
     > `'v_right'`
     > `'v_center'`
     '''
-    instances: List[String]
+    instances: List[SpiceStr]
     line: Optional[Literal[
         'h_any', 'h_top', 'h_bottom', 'h_center',
         'v_any', 'v_left', 'v_right', 'v_center'
@@ -254,7 +254,7 @@ class Enclose(PlacementConstraint):
     > `min_aspect_ratio`
     > `max_aspect_ratio`
     '''
-    instances: Optional[List[String]]
+    instances: Optional[List[SpiceStr]]
     min_height: Optional[int]
     max_height: Optional[int]
     min_width: Optional[int]
@@ -332,7 +332,7 @@ class Spread(PlacementConstraint):
     > `'vertical'`
     '''
 
-    instances: List[String]
+    instances: List[SpiceStr]
     direction: Optional[Literal['horizontal', 'vertical']]
     distance: int  # in nm
 
@@ -378,7 +378,7 @@ class Spread(PlacementConstraint):
 
 
 class SetBoundingBox(HardConstraint):
-    instance: String
+    instance: SpiceStr
     llx: int
     lly: int
     urx: int
@@ -417,7 +417,7 @@ class AlignInOrder(UserConstraint):
 
     > `direction == 'vertical'`   => bottom_to_top
     '''
-    instances: List[String]
+    instances: List[SpiceStr]
     line: Literal[
         'top', 'bottom',
         'left', 'right',
@@ -477,7 +477,7 @@ class PlaceSymmetric(PlacementConstraint):
       2 3  |  2 3  |  3 2  |   1   |  5 4  |   6
        6   |   6   |   1   |  2 3  |  2 3  |  3 2
     '''
-    instances: List[List[String]]
+    instances: List[List[SpiceStr]]
     direction: Optional[Literal['horizontal', 'vertical']]
 
     def check(self, checker):
@@ -492,14 +492,14 @@ class PlaceSymmetric(PlacementConstraint):
 
 
 class CreateAlias(SoftConstraint):
-    instances: List[String]
-    name: String
+    instances: List[SpiceStr]
+    name: SpiceStr
 
 
 class GroupBlocks(SoftConstraint):
     ''' Force heirarchy creation '''
-    name: String
-    instances: List[String]
+    name: SpiceStr
+    instances: List[SpiceStr]
     style: Optional[Literal["tbd_interdigitated", "tbd_common_centroid"]]
 
 
@@ -507,18 +507,18 @@ class MatchBlocks(SoftConstraint):
     '''
     TODO: Can be replicated by Enclose??
     '''
-    instances: List[String]
+    instances: List[SpiceStr]
 
 
 class DoNotIdentify(SoftConstraint):
     '''
     TODO: Can be replicated by Enclose??
     '''
-    instances: List[String]
+    instances: List[SpiceStr]
 
 
 class SymmetricBlocks(SoftConstraint):
-    pairs: List[List[String]]
+    pairs: List[List[SpiceStr]]
     direction: Literal['H', 'V']
     def check(self, checker):
         '''
@@ -578,23 +578,23 @@ class GuardRing(SoftConstraint):
     '''
     Adds guard ring for particular hierarchy
     '''
-    guard_ring_primitives: String
-    global_pin: String
-    block_name: String
+    guard_ring_primitives: SpiceStr
+    global_pin: SpiceStr
+    block_name: SpiceStr
 
 
 class GroupCaps(SoftConstraint):
     ''' Common Centroid Cap '''
-    name: String  # subcircuit name
-    instances: List[String]
-    unit_cap: String  # cap value in fF
+    name: SpiceStr  # subcircuit name
+    instances: List[SpiceStr]
+    unit_cap: SpiceStr  # cap value in fF
     num_units: List
     dummy: bool  # whether to fill in dummies
 
 
 class NetConst(SoftConstraint):
-    nets: List[String]
-    shield: String
+    nets: List[SpiceStr]
+    shield: SpiceStr
     criticality: int
 
 
@@ -608,8 +608,8 @@ class PortLocation(SoftConstraint):
 
 
 class SymmetricNets(SoftConstraint):
-    net1: String
-    net2: String
+    net1: SpiceStr
+    net2: SpiceStr
     pins1: Optional[List]
     pins2: Optional[List]
     direction: Literal['H', 'V']
@@ -621,7 +621,7 @@ class AspectRatio(HardConstraint):
 
     `ratio_low` <= width/height <= `ratio_high`
     """
-    subcircuit: String
+    subcircuit: SpiceStr
     ratio_low: float = 0.1
     ratio_high: float = 10
     weight: int = 1
@@ -639,7 +639,7 @@ class Boundary(HardConstraint):
     """
     Define `max_height` and/or `max_width` on a subcircuit in micrometers.
     """
-    subcircuit: String
+    subcircuit: SpiceStr
     max_width: Optional[float] = 10000
     max_height: Optional[float] = 10000
 
@@ -656,7 +656,7 @@ class Boundary(HardConstraint):
 
 
 class MultiConnection(SoftConstraint):
-    nets: List[String]
+    nets: List[SpiceStr]
     multiplier: int
 
 

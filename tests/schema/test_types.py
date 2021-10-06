@@ -1,17 +1,17 @@
 import pytest
 
-from align.schema.types import BaseModel, List, Dict, String
+from align.schema.types import BaseModel, List, Dict, SpiceStr
 
 
 class BaseType(BaseModel):
-    name: String
+    name: SpiceStr
 
 
 class CompositionalType(BaseModel):
-    name: String
+    name: SpiceStr
     child: BaseType
     children: List[BaseType]
-    children_as_dict: Dict[String, BaseType]
+    children_as_dict: Dict[SpiceStr, BaseType]
 
 
 def test_type_inference():
@@ -32,7 +32,7 @@ def test_type_inference():
     assert isinstance(myobj.children, List)
     assert isinstance(myobj.children_as_dict, Dict)
     assert all(isinstance(x, BaseType) for x in myobj.children)
-    assert all(isinstance(x, String) for x in myobj.children_as_dict.keys())
+    assert all(isinstance(x, SpiceStr) for x in myobj.children_as_dict.keys())
     assert all(isinstance(x, BaseType) for x in myobj.children_as_dict.values())
 
 def test_type_relationships():
@@ -60,44 +60,44 @@ def test_type_relationships():
 
 def test_case_insensitive_string():
     # Core functionality we are trying to achieve
-    assert String("Steve") == String("steve")
-    assert String("Steve") != String("burns")
+    assert SpiceStr("Steve") == SpiceStr("steve")
+    assert SpiceStr("Steve") != SpiceStr("burns")
 
     # Comparison to built-in str works 
     # both ways as well !!!
-    assert "sTeVe" == String("Steve")
-    assert String("Steve") == "sTeVe"
-    assert "burns" != String("Steve")
-    assert String("Steve") != "burns"
+    assert "sTeVe" == SpiceStr("Steve")
+    assert SpiceStr("Steve") == "sTeVe"
+    assert "burns" != SpiceStr("Steve")
+    assert SpiceStr("Steve") != "burns"
 
     # As long as parent string is of type
-    # `String`, contains works as expected
-    assert String("Ste") in String("steve")
-    assert "sTeVe" in String("steve")
-    assert "StE" in String("steve")
-    assert "Burns" not in String("steve")
+    # `SpiceStr`, contains works as expected
+    assert SpiceStr("Ste") in SpiceStr("steve")
+    assert "sTeVe" in SpiceStr("steve")
+    assert "StE" in SpiceStr("steve")
+    assert "Burns" not in SpiceStr("steve")
     # WARNING: parent string MUST be of type
-    # `String` for contain to work. See below
-    assert String("ste") not in "Steve"
+    # `SpiceStr` for contain to work. See below
+    assert SpiceStr("ste") not in "Steve"
 
     # WARNING: Object behaves like built-in str
     # for almost everything else
 
-    # Slicing returns built-in str (not `String`)
-    x, y = String("Steve")[0], String("Steve")[0:3]
+    # Slicing returns built-in str (not `SpiceStr`)
+    x, y = SpiceStr("Steve")[0], SpiceStr("Steve")[0:3]
     assert type(x) == str
     assert type(y) == str
     assert x == 'S'
     assert y == 'Ste'
     # Reverse via slicing works returns
-    # built-in str (not `String`)
-    x = String("Steve")[::-1]
+    # built-in str (not `SpiceStr`)
+    x = SpiceStr("Steve")[::-1]
     assert type(x) == str
     assert x == "evetS"
 
     # `reverse` returns iterator
-    assert list(reversed(String("Steve"))) == list("evetS")
+    assert list(reversed(SpiceStr("Steve"))) == list("evetS")
 
     # len, list comprehension etc works like str
-    assert len(String("Steve")) == 5
-    assert list("Steve") == [c for c in String("Steve")]
+    assert len(SpiceStr("Steve")) == 5
+    assert list("Steve") == [c for c in SpiceStr("Steve")]

@@ -1,4 +1,4 @@
-from .types import Optional, List, Dict, String
+from .types import Optional, List, Dict, SpiceStr
 
 from . import types
 from pydantic import validator
@@ -9,12 +9,12 @@ from .instance import Instance
 from .constraint import ConstraintDB
 
 class SubCircuit(Model):
-    name : String                 # Model Name
-    pins : Optional[List[String]] # List of pin names (derived from base if base exists)
-    parameters : Optional[Dict[String, String]]   # Parameter Name: Value mapping (inherits & adds to base if needed)
+    name : SpiceStr                 # Model Name
+    pins : Optional[List[SpiceStr]] # List of pin names (derived from base if base exists)
+    parameters : Optional[Dict[SpiceStr, SpiceStr]]   # Parameter Name: Value mapping (inherits & adds to base if needed)
     elements: List[Instance]
     constraints: ConstraintDB
-    prefix : String = 'X'         # Instance name prefix, optional
+    prefix : SpiceStr = 'X'         # Instance name prefix, optional
 
     @property
     def nets(self):
@@ -60,7 +60,7 @@ class SubCircuit(Model):
         for constraint in self.constraints:
             ret.append(f'* @: {constraint}')
         ret.append(f'.SUBCKT {self.name} ' + ' '.join(f'{x}' for x in self.pins))
-        ret.extend([f'.PARAM {x}=' + (f'{{{y}}}' if isinstance(y, String) else f'{y}') for x, y in self.parameters.items()])
+        ret.extend([f'.PARAM {x}=' + (f'{{{y}}}' if isinstance(y, SpiceStr) else f'{y}') for x, y in self.parameters.items()])
         ret.extend([element.xyce() for element in self.elements])
         ret.append(f'.ENDS {self.name}')
         return '\n'.join(ret)
@@ -68,8 +68,8 @@ class SubCircuit(Model):
 
 class Circuit(SubCircuit):
 
-    name: Optional[String]
-    pins: Optional[List[String]]
+    name: Optional[SpiceStr]
+    pins: Optional[List[SpiceStr]]
 
     def xyce(self):
         return '\n'.join([element.xyce() for element in self.elements])

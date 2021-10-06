@@ -1,11 +1,11 @@
-from .types import Union, Optional, Literal, List, String
+from .types import Union, Optional, Literal, List, SpiceStr
 from .constraint import PlacementConstraint
 from pydantic import validator
 
 
 class Alignment(PlacementConstraint):
     constraint: Literal["alignment"]
-    instances: List[String]
+    instances: List[SpiceStr]
     direction: Optional[Literal['horizontal', 'vertical']] = 'horizontal'
     edge: Optional[Literal['top', 'center', 'bottom', 'left', 'right']] = 'bottom'
     abut: Optional[bool] = True
@@ -24,9 +24,9 @@ class Alignment(PlacementConstraint):
 
 class Generator(PlacementConstraint):
     constraint: Literal["generator"]
-    instances: List[String]
+    instances: List[SpiceStr]
     style: Optional[Literal['cc', 'id']] = 'cc'
-    alias: Optional[String]
+    alias: Optional[SpiceStr]
     n_rows: Optional[int] = None
     add_guard_ring: Optional[bool] = False
 
@@ -36,7 +36,7 @@ class Generator(PlacementConstraint):
 
 class Orientation(PlacementConstraint):
     constraint: Literal["orientation"]
-    instances: List[String]
+    instances: List[SpiceStr]
     flip_x: Optional[bool] = False
     flip_y: Optional[bool] = False
 
@@ -46,7 +46,7 @@ class Orientation(PlacementConstraint):
 
 class Boundary(PlacementConstraint):
     constraint: Literal["boundary"]
-    subcircuits: List[String]
+    subcircuits: List[SpiceStr]
     height_min: Optional[float] = None
     height_max: Optional[float] = None
     aspect_ratio_min: Optional[float] = None

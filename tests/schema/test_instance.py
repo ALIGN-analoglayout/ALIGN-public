@@ -103,15 +103,15 @@ def test_instance_pins(circuit):
             pins={'D': 'NET01', 'G': 'NET02', 'S': 'NET03', 'B': 'NET04'},
             generator='MOS'
         )
-    assert M1.name == types.String('M1')
-    assert M1.model == types.String('TESTMOS')
-    assert M1.pins == types.Dict[types.String, types.String]({
+    assert M1.name == types.SpiceStr('M1')
+    assert M1.model == types.SpiceStr('TESTMOS')
+    assert M1.pins == types.Dict[types.SpiceStr, types.SpiceStr]({
         'D': 'NET01',
         'G': 'NET02',
         'S': 'NET03',
         'B': 'NET04'
     })
-    assert M1.parameters == types.Dict[types.String, types.String]({
+    assert M1.parameters == types.Dict[types.SpiceStr, types.SpiceStr]({
         'PARAM1': "1.0",
         'PARAM2': "2"
     })
@@ -126,7 +126,7 @@ def test_instance_init_parameters(circuit):
             parameters={'PARAM1': 'NF*4'},
             generator='MOS'
         )
-    assert M1.parameters == types.Dict[types.String, types.String]({
+    assert M1.parameters == types.Dict[types.SpiceStr, types.SpiceStr]({
         'PARAM1': 'NF*4',
         'PARAM2': "2"
     })
@@ -138,7 +138,7 @@ def test_instance_init_parameters(circuit):
             parameters={'PARAM1': '12', 'PARAM2': '13'},
             generator='MOS'
         )
-    assert M1.parameters == types.Dict[types.String, types.String]({
+    assert M1.parameters == types.Dict[types.SpiceStr, types.SpiceStr]({
         'PARAM1': "12",
         'PARAM2': "13"
     })
@@ -180,18 +180,18 @@ def test_instance_case_insensitivity(circuit):
             parameters={'PARAM1': 'nf*4', 'param2': '2.0'},
             generator='MOS'
         )
-    assert M1.name == types.String('M1')
-    assert M1.pins == types.Dict[types.String, types.String]({
+    assert M1.name == types.SpiceStr('M1')
+    assert M1.pins == types.Dict[types.SpiceStr, types.SpiceStr]({
         'D': 'NET01',
         'G': 'NET02',
         'S': 'NET03',
         'B': 'NET04'
     })
-    assert M1.parameters == types.Dict[types.String, types.String]({
+    assert M1.parameters == types.Dict[types.SpiceStr, types.SpiceStr]({
         'PARAM1': 'NF*4',
         'PARAM2': "2.0"
     })
-    assert M1.generator == types.String('MOS')
+    assert M1.generator == types.SpiceStr('MOS')
 
 
 def test_instance_json(circuit):
