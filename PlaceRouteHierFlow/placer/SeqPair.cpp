@@ -1156,6 +1156,16 @@ void SeqPair::PerturbationNew(design& caseNL) {
   /* initialize random seed: */
   //srand(time(NULL));
 
+  // auto logger = spdlog::default_logger()->clone("placer.SeqPair.PerturbationNew");
+  // std::string pos("{ "), neg("{ "), sel("{ ");
+  // for (auto& it : posPair) pos += (std::to_string(it) + " ");
+  // for (auto& it : negPair) neg += (std::to_string(it) + " ");
+  // for (auto& it : selected) sel += (std::to_string(it) + " ");
+  // pos += "}";
+  // neg += "}";
+  // sel += "}";
+  // logger->info("sp_before_perturbation {0} {1} {2}", pos, neg, sel);
+
   if (_seqPairEnum) {
     posPair = _seqPairEnum->PosPair();
     negPair = _seqPairEnum->NegPair();
@@ -1201,18 +1211,17 @@ void SeqPair::PerturbationNew(design& caseNL) {
       fail++;
     }
   }
-  //auto logger = spdlog::default_logger()->clone("placer.SeqPair.PerturbationNew");
-  //std::string pos("{ "), neg("{ "), sel("{ ");
-  //for (auto& it : posPair) pos += (std::to_string(it) + " ");
-  //for (auto& it : negPair) neg += (std::to_string(it) + " ");
-  //for (auto& it : selected) sel += (std::to_string(it) + " ");
-  //pos += "}";
-  //neg += "}";
-  //sel += "}";
-  //logger->info("seq pair {0} {1} {2}", pos, neg, sel);
-
   KeepOrdering(caseNL);
   SameSelected(caseNL);
+
+  // std::string pos("{ "), neg("{ "), sel("{ ");
+  // for (auto& it : posPair) pos += (std::to_string(it) + " ");
+  // for (auto& it : negPair) neg += (std::to_string(it) + " ");
+  // for (auto& it : selected) sel += (std::to_string(it) + " ");
+  // pos += "}";
+  // neg += "}";
+  // sel += "}";
+  // logger->info("sp_before_perturbation {0} {1} {2}", pos, neg, sel);
 }
 
 void SeqPair::Perturbation(design& caseNL) {

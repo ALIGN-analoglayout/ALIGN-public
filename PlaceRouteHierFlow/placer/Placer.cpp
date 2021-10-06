@@ -531,6 +531,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
   else
     curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo);
+  // curr_cost negative means infeasible (do not satisfy placement constraints)
+  // Only positive curr_cost value is accepted.
   while (curr_cost < 0) {
     if (++trial_count > max_trial_count) {
       logger->error("Couldn't generate a feasible solution even after {0} perturbations.", max_trial_count);
@@ -637,6 +639,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       // Trival moves
       SeqPair trial_sp(curr_sp);
       // cout<<"before per"<<endl; trial_sp.PrintSeqPair();
+      // SY: PerturbationNew honors order and symmetry. What could make the trial_sp infeasible? Aspect ratio, Align?
       trial_sp.PerturbationNew(designData);
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ILP_solver trial_sol(designData);
@@ -652,12 +655,16 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
           delta_cost = trial_cost - curr_cost;
           if (delta_cost <= 0) {
             Smark = true;
+            logger->info("sa_found_better  T={0} curr_cost={1} delta_cost={2}", T, curr_cost, delta_cost);
           } else {
             double r = (double)rand() / RAND_MAX;
             if (r < exp((-1.0 * delta_cost) / T)) {
               Smark = true;
+              logger->info("sa_climbing_up T={0} curr_cost={1} delta_cost={2}", T, curr_cost, delta_cost);
             }
           }
+        } else {
+          logger->info("Valid_solution_not_found T={0}", T);
         }
         if (Smark) {
           //std::cout << "cost: " << trial_cost << std::endl;
