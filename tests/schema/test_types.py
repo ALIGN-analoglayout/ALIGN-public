@@ -70,6 +70,15 @@ def test_case_insensitive_string():
     assert "burns" != SpiceStr("Steve")
     assert SpiceStr("Steve") != "burns"
 
+    # Appending a standard str to a SpiceStr
+    # should return a SpiceStr
+    assert isinstance(SpiceStr("heLLo") + 'someone', SpiceStr)
+    assert SpiceStr("heLLo") + 'someone'== "hellosomeone"
+    # WARNING: appending the other way round does
+    #          not hold true
+    assert not isinstance("heLLo" + SpiceStr('someone'), SpiceStr)
+    assert "heLLo" + SpiceStr('someone') != "hellosomeone"
+
     # As long as parent string is of type
     # `SpiceStr`, contains works as expected
     assert SpiceStr("Ste") in SpiceStr("steve")

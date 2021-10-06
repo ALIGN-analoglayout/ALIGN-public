@@ -256,6 +256,9 @@ class SpiceStr(str):
         return isinstance(other, str) and \
             super().casefold() == other.casefold()
 
+    def __add__(self, s: str) -> str:
+        return type(self)(super().__add__(s))
+
     def __hash__(self) -> int:
         return super().casefold().__hash__()
 
