@@ -43,6 +43,8 @@ def test_place_cmp_1():
     example = build_example(name, netlist, setup, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=cleanup)
 
+    print(f'run_dir: {run_dir}')
+
     cn = f'{name.upper()}_0'
 
     with (run_dir / '3_pnr' / 'Results' / f'{cn}.placement_verilog.json').open('rt') as fp:

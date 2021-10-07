@@ -411,6 +411,17 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
             standalone_overlap_checker( scaled_placement_verilog_d, concrete_name)
             check_placement( scaled_placement_verilog_d, scale_factor)
 
+            if True:
+                nets_d = gen_netlist( placement_verilog_d, concrete_name)
+
+                hpwl_alt = calculate_HPWL_from_placement_verilog_d( placement_verilog_d, concrete_name, nets_d, skip_globals=True)
+                if hN is not None:
+                    if hpwl_alt != hN.HPWL_extend:
+                        logger.warning( f'hpwl: locally computed from netlist {hpwl_alt}, placer computed {hN.HPWL_extend} differ!')
+                    else:
+                        logger.info( f'hpwl: locally computed from netlist {hpwl_alt}, placer computed {hN.HPWL_extend} are equal!')
+
+
             if gui:
                 nets_d = gen_netlist( placement_verilog_d, concrete_name)
 
