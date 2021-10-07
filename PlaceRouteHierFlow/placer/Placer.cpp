@@ -651,9 +651,10 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       if (trial_cost >= 0) {
         oData[trial_cost] = std::make_pair(trial_sp, trial_sol);
         bool Smark = trial_sp.Enumerate();
-        if (!Smark) {
+        if (1) {
+          Smark = false;
           delta_cost = trial_cost - curr_cost;
-          if (delta_cost <= 0) {
+          if (delta_cost < 0) {
             Smark = true;
             logger->info("sa_found_better  T={0} curr_cost={1} delta_cost={2}", T, curr_cost, delta_cost);
           } else {

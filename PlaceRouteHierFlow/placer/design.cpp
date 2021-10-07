@@ -345,6 +345,7 @@ design::design(PnRDB::hierNode& node) {
   mixFlag = false;
   double averageWL=0;
   double macroThreshold=0.5; // threshold to filter out small blocks
+  name = node.name;
   // Add blocks
   for(vector<PnRDB::blockComplex>::iterator it=node.Blocks.begin(); it!=node.Blocks.end(); ++it) {
     this->Blocks.resize(this->Blocks.size()+1);
@@ -438,18 +439,6 @@ design::design(PnRDB::hierNode& node) {
       tmpnet.connected.push_back(tmpnode);
     }
     this->Nets.push_back(tmpnet);
-  }
-
-  this->ML_Constraints = node.ML_Constraints;
-  for (auto order: node.Ordering_Constraints) {
-    for (unsigned int i = 0; i < order.first.size() - 1;i++){
-      Ordering_Constraints.push_back(make_pair(make_pair(order.first[i], order.first[i+1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
-    }
-  }
-  for (auto order: node.Abut_Constraints) {
-    for (unsigned int i = 0; i < order.first.size() - 1;i++){
-      Abut_Constraints.push_back(make_pair(make_pair(order.first[i], order.first[i+1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
-    }
   }
 
   // Add symmetry block constraint, axis direction is determined by user
@@ -550,6 +539,22 @@ design::design(PnRDB::hierNode& node) {
     this->Port_Location.back().pos=placerDB::Bmark(it->pos);
   }
   constructSymmGroup();
+  this->ML_Constraints = node.ML_Constraints;
+  for (auto order: node.Ordering_Constraints) {
+    for (unsigned int i = 0; i < order.first.size() - 1;i++){
+      Ordering_Constraints.push_back(make_pair(make_pair(order.first[i], order.first[i+1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
+      if(Blocks[order.first[i]][0].counterpart!=-1 && Blocks[order.first[i+1]][0].counterpart!=-1)
+        Ordering_Constraints.push_back(make_pair(make_pair(Blocks[order.first[i]][0].counterpart, Blocks[order.first[i + 1]][0].counterpart),
+                                                 order.second == PnRDB::H ? placerDB::H : placerDB::V));
+    }
+  }
+  for (auto abut: node.Abut_Constraints) {
+    for (unsigned int i = 0; i < abut.first.size() - 1;i++){
+      Abut_Constraints.push_back(make_pair(make_pair(abut.first[i], abut.first[i+1]), abut.second == PnRDB::H ? placerDB::H : placerDB::V));
+    }
+  }
+
+  
   PrintDesign();
   //std::cout<<"Leaving design2\n";
   hasAsymBlock=checkAsymmetricBlockExist();
