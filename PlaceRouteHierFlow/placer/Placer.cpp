@@ -664,8 +664,6 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
               logger->info("sa_climbing_up T={0} curr_cost={1} delta_cost={2}", T, curr_cost, delta_cost);
             }
           }
-        } else {
-          logger->info("Valid_solution_not_found T={0}", T);
         }
         if (Smark) {
           //std::cout << "cost: " << trial_cost << std::endl;
@@ -677,6 +675,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
           curr_sol.cost = curr_cost;
           //}
         }
+      } else {
+        logger->info("sa_valid_solution_not_found T={0}", T);
       }
       ReshapeSeqPairMap(oData, nodeSize);
 

@@ -16,7 +16,7 @@ cleanup = False
 
 
 def test_place_cmp_1():
-    """ original comparator """
+    """ original comparator. Run this test with -v and -s"""
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = textwrap.dedent(f"""\
@@ -41,7 +41,7 @@ def test_place_cmp_1():
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
     ]
     example = build_example(name, netlist, setup, constraints)
-    ckt_dir, run_dir = run_example(example, cleanup=cleanup, area=4e10)
+    ckt_dir, run_dir = run_example(example, cleanup=cleanup)
 
     cn = f'{name.upper()}_0'
 
@@ -50,20 +50,24 @@ def test_place_cmp_1():
 
         assert standalone_overlap_checker(placement, cn)
         nets = gen_netlist(placement, cn)
-        hpwl_align = calculate_HPWL_from_placement_verilog_d(placement, cn, nets)
+        hpwl_new = calculate_HPWL_from_placement_verilog_d(placement, cn, nets)
         x0, y0, x1, y1 = placement['modules'][0]['bbox']
-        area_align = (x1-x0)*(y1-y0)
-        print(f'HPWL_align={hpwl_align} AREA_align={area_align}')
+        area_new = (x1-x0)*(y1-y0)
+        print(f'hpwl_new={hpwl_new} area_new={area_new}')
 
     with (run_dir / '..' / f'_{cn}.placement_verilog.json').open('rt') as fp:
         placement = json.load(fp)
 
         assert standalone_overlap_checker(placement, cn)
         nets = gen_netlist(placement, cn)
-        hpwl_human = calculate_HPWL_from_placement_verilog_d(placement, cn, nets)
-        print('HPWL_human=', hpwl_human)
+        hpwl_best = calculate_HPWL_from_placement_verilog_d(placement, cn, nets)
+        x0, y0, x1, y1 = placement['modules'][0]['bbox']
+        area_best = (x1-x0)*(y1-y0)
+        print(f'hpwl_best={hpwl_best} area_best={area_best}')
 
-        assert hpwl_align <= hpwl_human, f'Suboptimal placement. hpwl_align={hpwl_align} vs hpwl_human={hpwl_human} ratio={hpwl_align/hpwl_human}'
+    hpwl_pct = round(100*((hpwl_new/hpwl_best)-1))
+    area_pct = round(100*((area_new/area_best)-1))
+    print(f'Generated layout is {hpwl_pct}% worse in HPWL and {area_pct}% worse in AREA')
 
     if cleanup:
         shutil.rmtree(run_dir)
@@ -139,11 +143,11 @@ def test_place_cmp_2():
 
         assert standalone_overlap_checker(placement, cn)
         nets = gen_netlist(placement, cn)
-        hpwl_align = calculate_HPWL_from_placement_verilog_d(placement, cn, nets)
+        hpwl_new = calculate_HPWL_from_placement_verilog_d(placement, cn, nets)
         x0, y0, x1, y1 = placement['modules'][0]['bbox']
-        area_align = (x1-x0)*(y1-y0)
+        area_new = (x1-x0)*(y1-y0)
 
-        print(f'HPWL_align={hpwl_align} AREA_align={area_align}')
+        print(f'hpwl_new={hpwl_new} area_new={area_new}')
 
     if cleanup:
         shutil.rmtree(run_dir)

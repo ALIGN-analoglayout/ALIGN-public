@@ -1564,6 +1564,7 @@ double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
     cost += area_norm;
     cost += HPWL_norm * const_graph.LAMBDA;
   } else {
+    // log measures the percentage change log(area_old)-log(area_new) = log(area_old/area_new)
     cost += log(area);
     if (HPWL_extend > 0) {
       cost += log(HPWL_extend) * const_graph.LAMBDA;

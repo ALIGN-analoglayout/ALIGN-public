@@ -303,9 +303,9 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
 
     hyper = PnR.PlacerHyperparameters()
     # Defaults; change (and uncomment) as required
-    #hyper.T_INT = 1e6
-    #hyper.T_MIN = 1e-6
-    #hyper.ALPHA = 0.995
+    # hyper.T_INT = 1e6
+    # hyper.T_MIN = 1e-6
+    # hyper.ALPHA = 0.995
     #hyper.COUNT_LIMIT = 200
     hyper.LAMBDA = lambda_coeff
 
