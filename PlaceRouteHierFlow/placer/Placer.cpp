@@ -531,7 +531,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   unsigned int seed = 0;
   if (hyper.SEED > 0) {
     seed = hyper.SEED;
-    srand(0);
+    srand(seed);
     logger->debug("Random number generator seed={0}", seed);
   }
 
