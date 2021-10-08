@@ -305,7 +305,8 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
     # Defaults; change (and uncomment) as required
     hyper.T_INT = 0.75
     hyper.ALPHA = 0.99925
-    hyper.T_MIN = hyper.T_INT*(hyper.ALPHA**1e4)   # 10k iterations
+    hyper.T_MIN = hyper.T_INT*(hyper.ALPHA**1e4)    # 10k iterations
+    hyper.SEED = 0  # 0 do not override, >0 overwrite the seed
     # hyper.COUNT_LIMIT = 200
     hyper.LAMBDA = lambda_coeff
 

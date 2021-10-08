@@ -560,12 +560,18 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   double delta_cost;
   int update_index = 0;
   int T_index = 0;
-  float per = 0.01;
+  float per = 0.1;
   //int updateThrd = 100;
   float total_update_number = log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA);
   bool exhausted(false);
   int total_candidates = 0;
   int total_candidates_infeasible = 0;
+  unsigned int seed = 0;
+  if (hyper.SEED > 0) {
+    seed = hyper.SEED;
+    srand(0);
+    logger->debug("Random number generator seed={0}", seed);
+  }
   while (T > hyper.T_MIN) {
     int i = 1;
     int MAX_Iter = 1;
@@ -702,9 +708,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     }
     T_index++;
     if (total_update_number * per < T_index) {
-      logger->debug( "..... {0} %" , per * 100);
-      //cout.flush();
-      per = per + 0.01;
+      logger->info( "..... {0} %" , (int)(per * 100));
+      per = per + 0.1;
     }
     if (exhausted) break;
     T *= hyper.ALPHA;
