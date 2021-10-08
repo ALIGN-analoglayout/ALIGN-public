@@ -651,19 +651,17 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       total_candidates += 1;
       if (trial_cost >= 0) {
         oData[trial_cost] = std::make_pair(trial_sp, trial_sol);
-        bool Smark = trial_sp.Enumerate();
-        if (1) {
-          Smark = false;
-          delta_cost = trial_cost - curr_cost;
-          if (delta_cost < 0) {
+        bool Smark = false;///trial_sp.Enumerate();
+        //Smark = false;
+        delta_cost = trial_cost - curr_cost;
+        if (delta_cost < 0) {
+          Smark = true;
+          logger->debug("sa__accept_better T={0} delta_cost={1} ", T, delta_cost);
+        } else {
+          double r = (double)rand() / RAND_MAX;
+          if (r < exp((-1.0 * delta_cost) / T)) {
             Smark = true;
-            logger->debug("sa__accept_better T={0} delta_cost={1} ", T, delta_cost);
-          } else {
-            double r = (double)rand() / RAND_MAX;
-            if (r < exp((-1.0 * delta_cost) / T)) {
-              Smark = true;
-              logger->debug("sa__climbing_up T={0} delta_cost={1}", T, delta_cost);
-            }
+            logger->debug("sa__climbing_up T={0} delta_cost={1}", T, delta_cost);
           }
         }
         if (Smark) {
