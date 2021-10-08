@@ -3301,9 +3301,9 @@
           "instance_name": "MP7",
           "transformation": {
             "oX": 34560,
-            "oY": 37800,
+            "oY": 25200,
             "sX": -1,
-            "sY": -1
+            "sY": 1
           }
         },
         {
@@ -3330,9 +3330,9 @@
           "instance_name": "MP8",
           "transformation": {
             "oX": 54000,
-            "oY": 37800,
+            "oY": 25200,
             "sX": 1,
-            "sY": -1
+            "sY": 1
           }
         },
         {
@@ -3577,10 +3577,10 @@
         }
       ],
       "parameters": [
-        "VIN_D",
-        "VIN",
         "VIP",
         "VIP_D",
+        "VIN",
+        "VIN_D",
         "VCOM"
       ]
     },
@@ -3630,10 +3630,10 @@
         }
       ],
       "parameters": [
-        "VIN_D",
-        "VIN_O",
         "VIP_D",
-        "VIP_O"
+        "VIN_D",
+        "VIP_O",
+        "VIN_O"
       ]
     },
     {
