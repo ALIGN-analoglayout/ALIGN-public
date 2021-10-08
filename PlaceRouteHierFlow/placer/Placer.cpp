@@ -564,15 +564,15 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   //int updateThrd = 100;
   float total_update_number = log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA);
   bool exhausted(false);
+  int total_candidates = 0;
+  int total_candidates_infeasible = 0;
   while (T > hyper.T_MIN) {
     int i = 1;
     int MAX_Iter = 1;
-    if (effort == 0) {
+    if (effort <= 0) {
       MAX_Iter = 1;
-    } else if (effort == 1) {
-      MAX_Iter = 4;
     } else {
-      MAX_Iter = 8;
+      MAX_Iter = effort;
     }
     while (i <= MAX_Iter) {
 #ifdef MTMODE
@@ -648,6 +648,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
         trial_cost = trial_sol.GenerateValidSolution_select(designData, trial_sp, drcInfo);
       else
         trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo);
+      total_candidates += 1;
       if (trial_cost >= 0) {
         oData[trial_cost] = std::make_pair(trial_sp, trial_sol);
         bool Smark = trial_sp.Enumerate();
@@ -656,12 +657,12 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
           delta_cost = trial_cost - curr_cost;
           if (delta_cost < 0) {
             Smark = true;
-            logger->info("sa_found_better  T={0} curr_cost={1} delta_cost={2}", T, curr_cost, delta_cost);
+            logger->debug("sa__accept_better T={0} delta_cost={1} ", T, delta_cost);
           } else {
             double r = (double)rand() / RAND_MAX;
             if (r < exp((-1.0 * delta_cost) / T)) {
               Smark = true;
-              logger->info("sa_climbing_up T={0} curr_cost={1} delta_cost={2}", T, curr_cost, delta_cost);
+              logger->debug("sa__climbing_up T={0} delta_cost={1}", T, delta_cost);
             }
           }
         }
@@ -676,7 +677,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
           //}
         }
       } else {
-        logger->info("sa_valid_solution_not_found T={0}", T);
+        total_candidates_infeasible += 1;
+        logger->debug("sa__infeasible_candidate i={1}/{2} T={0} ", T, i, MAX_Iter);
       }
       ReshapeSeqPairMap(oData, nodeSize);
 
@@ -708,8 +710,11 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     }
     if (exhausted) break;
     T *= hyper.ALPHA;
-    // cout<<T<<endl;
+    logger->debug("sa__reducing_temp T={0}", T);
   }
+
+  logger->debug("sa__summary total_candidates={0} total_candidates_infeasible={1}", total_candidates, total_candidates_infeasible);
+
   // Write out placement results
   //cout << endl << "Placer-Info: optimal cost = " << curr_cost << endl;
   // curr_sol.PrintConstGraph();

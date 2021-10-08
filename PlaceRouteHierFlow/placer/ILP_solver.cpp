@@ -1582,6 +1582,7 @@ double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
   }
   if (!mydesign.Match_blocks.empty()) match_cost /= (mydesign.Match_blocks.size());
   constraint_penalty = match_cost * const_graph.BETA + linear_const * const_graph.PI + multi_linear_const * const_graph.PII;
+  // logger->info("cost={0} penalty={1} lambda={2}", cost, constraint_penalty, const_graph.LAMBDA);
   cost += constraint_penalty;
   return cost;
 }
