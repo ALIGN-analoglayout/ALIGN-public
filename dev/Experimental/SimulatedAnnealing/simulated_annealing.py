@@ -67,9 +67,10 @@ def median_cost_geometric(n_iter, t_init, alpha):
     return(c)
 
 
-def median_cost_linear(n_iter, t_init):
+def median_cost_harmonic(n_iter, t_init):
     c = []
     t = t_init
+    t_lst = []
     for i in range(n_iter):
         """
         r <= exp(-c/T)
@@ -78,8 +79,26 @@ def median_cost_linear(n_iter, t_init):
         c_median_pct = 100*T*ln(2)
         """
         c.append(100*t*math.log(2))
+        t = t_init
         t = t_init*(n_iter/(i+1)-1)/(n_iter-1)
-    return(c)
+    return(c, t_lst)
+
+
+def median_cost_linear(n_iter, t_init):
+    c = []
+    t = t_init
+    t_lst = []
+    dt = t_init/n_iter
+    for i in range(n_iter):
+        """
+        r <= exp(-c/T)
+        0.5 = exp(-c/T)
+        c_median = T*ln(2)
+        c_median_pct = 100*T*ln(2)
+        """
+        c.append(100*t*math.log(2))
+        t = t_init - dt*i
+    return(c, t_lst)
 
 
 # Median cost for geometric annealing
@@ -106,11 +125,29 @@ plt.savefig("median_cost_geometric.png")
 # Median cost for linear annealing
 plt.figure()
 n_iter = int(10000)
-t_init_lst = [1, 10, 100]
+t_init_lst = [1, 2, 4]
 alpha_lst = []
 for t_init in t_init_lst:
-    c = median_cost_linear(n_iter, t_init)
+    (c, t) = median_cost_harmonic(n_iter, t_init)
     plt.semilogy(range(n_iter), c)
+plt.title('Linear Annealing from t_init to 0')
+lgd = [f't_init={a:.2f}' for a in t_init_lst]
+plt.legend(lgd)
+plt.show()
+plt.grid()
+plt.ylabel('Median Value of Accepted Cost')
+plt.xlabel('Iterations')
+plt.savefig("median_cost_harmonic.png")
+
+
+# Median cost for linear annealing
+plt.figure()
+n_iter = int(10000)
+t_init_lst = [1, 2, 4]
+alpha_lst = []
+for t_init in t_init_lst:
+    (c, t) = median_cost_linear(n_iter, t_init)
+    plt.plot(range(n_iter), c)
 plt.title('Linear Annealing from t_init to 0')
 lgd = [f't_init={a:.2f}' for a in t_init_lst]
 plt.legend(lgd)
