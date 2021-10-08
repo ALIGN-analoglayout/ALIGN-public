@@ -543,7 +543,7 @@ design::design(PnRDB::hierNode& node) {
   for (auto order: node.Ordering_Constraints) {
     for (unsigned int i = 0; i < order.first.size() - 1;i++){
       Ordering_Constraints.push_back(make_pair(make_pair(order.first[i], order.first[i+1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
-      if(Blocks[order.first[i]][0].counterpart!=-1 && Blocks[order.first[i+1]][0].counterpart!=-1)
+      if(Blocks[order.first[i]][0].counterpart!=-1 && Blocks[order.first[i+1]][0].counterpart!=-1 && Blocks[order.first[i+1]][0].counterpart!=order.first[i])
         Ordering_Constraints.push_back(make_pair(make_pair(Blocks[order.first[i]][0].counterpart, Blocks[order.first[i + 1]][0].counterpart),
                                                  order.second == PnRDB::H ? placerDB::H : placerDB::V));
     }
