@@ -527,6 +527,14 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   double curr_cost = 0;
   int trial_count = 0;
   int max_trial_count = 10000;
+
+  unsigned int seed = 0;
+  if (hyper.SEED > 0) {
+    seed = hyper.SEED;
+    srand(0);
+    logger->debug("Random number generator seed={0}", seed);
+  }
+
   if(select_in_ILP)
     curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
   else
@@ -566,12 +574,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   bool exhausted(false);
   int total_candidates = 0;
   int total_candidates_infeasible = 0;
-  unsigned int seed = 0;
-  if (hyper.SEED > 0) {
-    seed = hyper.SEED;
-    srand(0);
-    logger->debug("Random number generator seed={0}", seed);
-  }
+  logger->debug("sa__cost iter_outer={0} iter_inner={1} cost={2}", T_index, 0, curr_cost);
   while (T > hyper.T_MIN) {
     int i = 1;
     int MAX_Iter = 1;
@@ -671,14 +674,11 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
           }
         }
         if (Smark) {
-          //std::cout << "cost: " << trial_cost << std::endl;
           curr_cost = trial_cost;
           curr_sp = trial_sp;
           curr_sol = trial_sol;
-          // if(update_index>updateThrd) {
-          //std::cout << "Insert\n";
           curr_sol.cost = curr_cost;
-          //}
+          logger->debug("sa__cost iter_outer={0} iter_inner={1} cost={2}", T_index, i, curr_cost);
         }
       } else {
         total_candidates_infeasible += 1;
