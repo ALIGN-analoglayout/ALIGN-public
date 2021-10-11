@@ -5750,6 +5750,7 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile, 
 
   ofstream jsonStream;
   int index = outfile.find("_0.plt");
+  /*
   jsonStream.open(outfile.substr(0,index)+".json");
   json jsonLibAry = json::array();
   for(int i=0;i<(int)caseNL.GetSizeofBlocks();++i) {
@@ -5765,6 +5766,7 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile, 
   jsonLibAry.push_back(temp);
   jsonStream << std::setw(4) << jsonLibAry;
   jsonStream.close();
+  */
 
   auto logger = spdlog::default_logger()->clone("placer.ConstGraph.PlotPlacement");
 

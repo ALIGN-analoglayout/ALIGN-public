@@ -994,6 +994,7 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
   return cost;
 }
 
+
 double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
 
@@ -2498,7 +2499,7 @@ double ILP_solver::CalculateCost(design& mydesign) {
   }
   cost += match_cost * const_graph.BETA;
   cost += ratio * Aspect_Ratio_weight;
-  cost += dead_area / area * const_graph.PHI;
+  cost += 0.0 / area * const_graph.PHI; //dead_area
   cost += linear_const * const_graph.PI;
   cost += multi_linear_const * const_graph.PII;
   return cost;
@@ -3999,7 +4000,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign, SeqPair& curr_sp) {
   }
 }
 
-void ILP_solver::UpdateHierNode(design& mydesign, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo) {
+void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo) {
   node.width = UR.x;
   node.height = UR.y;
   node.HPWL = HPWL;
@@ -4026,13 +4027,50 @@ void ILP_solver::UpdateHierNode(design& mydesign, PnRDB::hierNode& node, PnRDB::
       else
         ort = placerDB::N;
     }
+    UpdateBlockinHierNode(mydesign, ort, node, i, curr_sp.GetBlockSelected(i), drcInfo);
+  }
+  UpdateTerminalinHierNode(mydesign, node, drcInfo);
+  for (unsigned int i = 0; i < mydesign.SNets.size(); ++i) {
+    int SBidx = mydesign.SNets.at(i).SBidx;
+    placerDB::Smark axis_dir = curr_sp.GetSymmBlockAxis(SBidx);
+    UpdateSymmetryNetInfo(mydesign, node, i, SBidx, axis_dir, curr_sp);
+  }
+}
+
+void ILP_solver::UpdateHierNodeAnalytical(design& mydesign, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo) {
+  node.width = UR.x;
+  node.height = UR.y;
+  node.HPWL = HPWL;
+  node.HPWL_extend = HPWL_extend;
+  node.HPWL_extend_wo_terminal = node.HPWL_extend - HPWL_extend_terminal;  // HPWL without terminal nets' HPWL
+  node.area_norm = area_norm;
+  node.HPWL_norm = HPWL_norm;
+  node.constraint_penalty = constraint_penalty;
+  node.cost = cost;
+
+  for (unsigned int i = 0; i < mydesign.Blocks.size(); ++i) {
+    //node.Blocks.at(i).selectedInstance = curr_sp.GetBlockSelected(i);
+    node.HPWL_extend += node.Blocks[i].instance[node.Blocks.at(i).selectedInstance].HPWL_extend_wo_terminal;
+    node.HPWL_extend_wo_terminal += node.Blocks[i].instance[node.Blocks.at(i).selectedInstance].HPWL_extend_wo_terminal;
+    placerDB::Omark ort;
+    if (Blocks[i].H_flip) {
+      if (Blocks[i].V_flip)
+        ort = placerDB::S;
+      else
+        ort = placerDB::FN;
+    } else {
+      if (Blocks[i].V_flip)
+        ort = placerDB::FS;
+      else
+        ort = placerDB::N;
+    }
     UpdateBlockinHierNode(mydesign, ort, node, i, 0, drcInfo);
   }
   UpdateTerminalinHierNode(mydesign, node, drcInfo);
   for (unsigned int i = 0; i < mydesign.SNets.size(); ++i) {
     int SBidx = mydesign.SNets.at(i).SBidx;
     placerDB::Smark axis_dir = mydesign.SBlocks[i].axis_dir;
-    UpdateSymmetryNetInfo(mydesign, node, i, SBidx, axis_dir);
+    UpdateSymmetryNetInfoAnalytical(mydesign, node, i, SBidx, axis_dir);
   }
 }
 
@@ -4163,7 +4201,7 @@ void ILP_solver::UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& nod
   }
 }
 
-void ILP_solver::UpdateSymmetryNetInfo(design& mydesign, PnRDB::hierNode& node, int i, int SBidx, placerDB::Smark axis_dir) {
+void ILP_solver::UpdateSymmetryNetInfoAnalytical(design& mydesign, PnRDB::hierNode& node, int i, int SBidx, placerDB::Smark axis_dir) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.UpdateSymmetryNetInfo");
 
   int axis_coor = 0;
@@ -4182,6 +4220,45 @@ void ILP_solver::UpdateSymmetryNetInfo(design& mydesign, PnRDB::hierNode& node, 
     } else {
       axis_coor = Blocks[mydesign.SBlocks[SBidx].sympair[0].first].y / 2 + mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].first][0].height / 4 +
                   Blocks[mydesign.SBlocks[SBidx].sympair[0].second].y / 2 + mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].second][0].height / 4;
+    }
+  } else {
+    logger->error("Placer-Error: incorrect symmetry axis direction");
+  }
+  string net1 = mydesign.SNets.at(i).net1.name;
+  string net2 = mydesign.SNets.at(i).net2.name;
+  for (std::vector<PnRDB::net>::iterator it = node.Nets.begin(); it != node.Nets.end(); ++it) {
+    if (it->name.compare(net1) == 0 || it->name.compare(net2) == 0) {
+      it->axis_dir = PnRDB::Smark(int(axis_dir));
+      it->axis_coor = axis_coor;
+    }
+  }
+}
+
+void ILP_solver::UpdateSymmetryNetInfo(design& mydesign, PnRDB::hierNode& node, int i, int SBidx, placerDB::Smark axis_dir, SeqPair& curr_sp) {
+  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.UpdateSymmetryNetInfo");
+
+  int axis_coor = 0;
+  if (axis_dir == placerDB::V) {
+    if (mydesign.SBlocks[SBidx].selfsym.size() > 0) {
+      // self sym x axis coordinate
+      axis_coor = Blocks[mydesign.SBlocks[SBidx].selfsym[0].first].x +
+                  mydesign.Blocks[mydesign.SBlocks[SBidx].selfsym[0].first][curr_sp.selected[mydesign.SBlocks[SBidx].selfsym[0].first]].width / 2;
+    } else {
+      // sym pair x axis coordinate
+      axis_coor = Blocks[mydesign.SBlocks[SBidx].sympair[0].first].x / 2 +
+                  mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].first][curr_sp.selected[mydesign.SBlocks[SBidx].sympair[0].first]].width / 4 +
+                  Blocks[mydesign.SBlocks[SBidx].sympair[0].second].x / 2 +
+                  mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].second][curr_sp.selected[mydesign.SBlocks[SBidx].sympair[0].second]].width / 4;
+    }
+  } else if (axis_dir == placerDB::H) {
+    if (mydesign.SBlocks[SBidx].selfsym.size() > 0) {
+      axis_coor = Blocks[mydesign.SBlocks[SBidx].selfsym[0].first].y +
+                  mydesign.Blocks[mydesign.SBlocks[SBidx].selfsym[0].first][curr_sp.selected[mydesign.SBlocks[SBidx].selfsym[0].first]].height / 2;
+    } else {
+      axis_coor = Blocks[mydesign.SBlocks[SBidx].sympair[0].first].y / 2 +
+                  mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].first][curr_sp.selected[mydesign.SBlocks[SBidx].sympair[0].first]].height / 4 +
+                  Blocks[mydesign.SBlocks[SBidx].sympair[0].second].y / 2 +
+                  mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].second][curr_sp.selected[mydesign.SBlocks[SBidx].sympair[0].second]].height / 4;
     }
   } else {
     logger->error("Placer-Error: incorrect symmetry axis direction");

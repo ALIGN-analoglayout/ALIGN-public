@@ -19,7 +19,6 @@
 #include "Aplace.h"
 #include "ILP_solver.h"
 #include "../PnRDB/datatype.h"
-#include <nlohmann/json.hpp>
 #ifdef PERFORMANCE_DRIVEN
 #include <Python.h>
 #endif
@@ -33,7 +32,6 @@ using std::stack;
 using std::pair;
 using std::make_pair;
 using std::min;
-using namespace nlohmann;
 //using namespace std;
 //using namespace placerDB;
 

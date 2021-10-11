@@ -14,21 +14,13 @@ Placer::Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info&
   PlacementRegular(node, opath, effort, drcInfo);
 }
 
-<<<<<<< HEAD
-Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
+Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in, bool select_in_ILP = false) : hyper(hyper_in) {
 //#define analytical_placer
 #ifdef analytical_placer
-  PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo);
+  PlacementRegularAspectRatio_ILP_Analytical(nodeVec, opath, effort, drcInfo, select_in_ILP);
 #else
-  PlacementRegularAspectRatio(nodeVec, opath, effort, drcInfo);
-#endif
-=======
-Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in, bool select_in_ILP = false) : hyper(hyper_in) {
   PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo, select_in_ILP);
-  //PlacementRegularAspectRatio(nodeVec, opath, effort, drcInfo);
->>>>>>> master
-  //PlacementMixSAAspectRatio(nodeVec, opath, effort);
-  //PlacementMixAPAspectRatio(nodeVec, opath, effort);
+#endif
 }
 
 //PnRDB::hierNode Placer::CheckoutHierNode() {
@@ -549,13 +541,9 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
   //curr_sol.updateTerminalCenter(designData, curr_sp);
   return oData;
 }
-/**
+
 std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRatio_ILP(design& designData, SeqPair& curr_sp, ILP_solver& curr_sol, int mode,
-<<<<<<< HEAD
-                                                                                      int nodeSize, int effort, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node) {
-=======
                                                                                       int nodeSize, int effort, PnRDB::Drc_info& drcInfo, bool select_in_ILP = false) {
->>>>>>> master
 
   auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementCoreAspectRatio_ILP");
 
@@ -565,13 +553,6 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   curr_sp.PrintSeqPair();
   double curr_cost = 0;
   int trial_count = 0;
-<<<<<<< HEAD
-  while ((curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo, node)) < 0) {
-    curr_sp.PerturbationNew(designData);
-    trial_count++;
-    if (trial_count > 100) {
-      logger->warn("please check constraint" );
-=======
   int max_trial_count = 10000;
   if(select_in_ILP)
     curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
@@ -581,7 +562,6 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     if (++trial_count > max_trial_count) {
       logger->error("Couldn't generate a feasible solution even after {0} perturbations.", max_trial_count);
       curr_cost = __DBL_MAX__;
->>>>>>> master
       break;
     }
     curr_sp.PerturbationNew(designData);
@@ -687,15 +667,11 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       trial_sp.PerturbationNew(designData);
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ILP_solver trial_sol(designData);
-<<<<<<< HEAD
-      double trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo, node);
-=======
       double trial_cost = 0;
       if (select_in_ILP)
         trial_cost = trial_sol.GenerateValidSolution_select(designData, trial_sp, drcInfo);
       else
         trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo);
->>>>>>> master
       if (trial_cost >= 0) {
         oData[trial_cost] = std::make_pair(trial_sp, trial_sol);
         bool Smark = trial_sp.Enumerate();
@@ -728,7 +704,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       i++;
       update_index++;
       // cout<<update_index<<endl;
-      //
+      /**
       if(update_index==updateThrd){
         curr_sol.Update_parameters(designData, curr_sp);
         curr_cost = curr_sol.CalculateCost(designData, curr_sp);
@@ -736,15 +712,12 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
         oData[curr_cost]=curr_sp;
         ReshapeSeqPairMap(oData, nodeSize);
       }
-<<<<<<< HEAD
-=======
       **/
       if (trial_sp.EnumExhausted()) {
         logger->info("Exhausted all permutations of sequence pairs");
         exhausted = true;
         break;
       }
->>>>>>> master
     }
     T_index++;
     if (total_update_number * per < T_index) {
@@ -762,7 +735,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   curr_sp.PrintSeqPair();
   // curr_sol.updateTerminalCenter(designData, curr_sp);
   return oData;
-}**/
+}
 
 void Placer::ReshapeSeqPairMap(std::map<double, SeqPair>& spMap, int nodeSize) {
   int idx=0;
@@ -794,42 +767,11 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   //cout<<"Placer-Info: run in normal mode..."<<endl;
   srand(0);
   #endif
-  //int mode=0;
+  int mode=0;
   // Read design netlist and constraints
   design designData(nodeVec.back());
-  //designData.PrintDesign();
+  designData.PrintDesign();
   // Initialize simulate annealing with initial solution
-<<<<<<< HEAD
-  //SeqPair curr_sp(designData);
-  //curr_sp.PrintSeqPair();
-  ILP_solver curr_sol(designData,nodeVec.back());
-  curr_sol.GenerateValidSolution(designData, drcInfo, nodeVec.back());
-  curr_sol.updateTerminalCenter(designData);
-  curr_sol.PlotPlacement(designData, opath + nodeVec.back().name + "_" + std::to_string(0) + ".plt", false, false, false);
-  curr_sol.UpdateHierNode(designData, nodeVec.back(), drcInfo);
-  // std::map<double, std::pair<SeqPair, ILP_solver>> spVec=PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo);
-  // curr_sol.updateTerminalCenter(designData, curr_sp);
-  // curr_sol.PlotPlacement(designData, curr_sp, opath+nodeVec.back().name+"opt.plt");
-  // if((int)spVec.size()<nodeSize) {
-  // nodeSize=spVec.size();
-  // nodeVec.resize(nodeSize);
-  //}
-  // int idx=0;
-  // for(std::map<double, std::pair<SeqPair, ILP_solver>>::iterator it=spVec.begin(); it!=spVec.end() and idx<nodeSize; ++it, ++idx) {
-  // std::cout<<"Placer-Info: cost "<<it->first<<std::endl;
-  // ConstGraph vec_sol(designData, it->second, mode);
-  // vec_sol.ConstraintGraph(designData, it->second);
-  // vec_sol.FastInitialScan();
-  // vec_sol.updateTerminalCenter(designData, it->second);
-  // std::cout<<"wbxu check design\n";
-  // designData.PrintDesign();
-  // it->second.PrintSeqPair();
-  // std::cout<<"write design "<<idx<<std::endl;
-  // 
-  // it->second.second.WritePlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".pl");
-  // it->second.second.PlotPlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".plt");
-  //}
-=======
   SeqPair curr_sp(designData, size_t(1. * log(hyper.T_MIN/hyper.T_INT)/log(hyper.ALPHA) *
         ((effort == 0) ? 1. : ((effort == 1) ? 4. : 8.)) ));
   curr_sp.PrintSeqPair();
@@ -863,7 +805,54 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
     it->second.second.PlotPlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".plt");
     it->second.second.UpdateHierNode(designData, it->second.first, nodeVec[idx], drcInfo);
   }
->>>>>>> master
+}
+
+void Placer::PlacementRegularAspectRatio_ILP_Analytical(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, bool select_in_ILP = false){
+  auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementRegularAspectRatio_ILP");
+  int nodeSize=nodeVec.size();
+  //cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
+  #ifdef RFLAG
+  //cout<<"Placer-Info: run in random mode..."<<endl;
+  srand (time(NULL));
+  #endif
+  #ifndef RFLAG
+  //cout<<"Placer-Info: run in normal mode..."<<endl;
+  srand(0);
+  #endif
+  //int mode=0;
+  // Read design netlist and constraints
+  design designData(nodeVec.back());
+  //designData.PrintDesign();
+  // Initialize simulate annealing with initial solution
+  //SeqPair curr_sp(designData);
+  //curr_sp.PrintSeqPair();
+  ILP_solver curr_sol(designData,nodeVec.back());
+  curr_sol.GenerateValidSolutionAnalytical(designData, drcInfo, nodeVec.back());
+  curr_sol.updateTerminalCenterAnalytical(designData);
+  curr_sol.PlotPlacementAnalytical(designData, opath + nodeVec.back().name + "_" + std::to_string(0) + ".plt", false, false, false);
+  curr_sol.UpdateHierNodeAnalytical(designData, nodeVec.back(), drcInfo);
+  // std::map<double, std::pair<SeqPair, ILP_solver>> spVec=PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo);
+  // curr_sol.updateTerminalCenter(designData, curr_sp);
+  // curr_sol.PlotPlacement(designData, curr_sp, opath+nodeVec.back().name+"opt.plt");
+  // if((int)spVec.size()<nodeSize) {
+  // nodeSize=spVec.size();
+  // nodeVec.resize(nodeSize);
+  //}
+  // int idx=0;
+  // for(std::map<double, std::pair<SeqPair, ILP_solver>>::iterator it=spVec.begin(); it!=spVec.end() and idx<nodeSize; ++it, ++idx) {
+  // std::cout<<"Placer-Info: cost "<<it->first<<std::endl;
+  // ConstGraph vec_sol(designData, it->second, mode);
+  // vec_sol.ConstraintGraph(designData, it->second);
+  // vec_sol.FastInitialScan();
+  // vec_sol.updateTerminalCenter(designData, it->second);
+  // std::cout<<"wbxu check design\n";
+  // designData.PrintDesign();
+  // it->second.PrintSeqPair();
+  // std::cout<<"write design "<<idx<<std::endl;
+  // 
+  // it->second.second.WritePlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".pl");
+  // it->second.second.PlotPlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".plt");
+  //}
 }
 
 void Placer::PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
