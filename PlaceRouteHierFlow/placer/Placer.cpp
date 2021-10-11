@@ -574,10 +574,6 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   int total_candidates = 0;
   int total_candidates_infeasible = 0;
   logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3}", designData.name, T_index, 0, curr_cost);
-  // Track best solution
-  SeqPair best_sp(curr_sp);
-  double best_cost = curr_cost;
-  ILP_solver best_sol(designData);
   while (T > hyper.T_MIN) {
     int i = 1;
     int MAX_Iter = 1;
@@ -681,14 +677,6 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
           curr_sp = trial_sp;
           curr_sol = trial_sol;
           curr_sol.cost = curr_cost;
-          // Bookkeep best solution
-          if (curr_cost < best_cost) {
-            best_cost = curr_cost;
-            best_sp = curr_sp;
-            best_sol = curr_sol;
-            best_sol.cost = curr_cost;
-          }
-
         }
       } else {
         total_candidates_infeasible += 1;
@@ -719,15 +707,6 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   }
 
   logger->debug("sa__summary total_candidates={0} total_candidates_infeasible={1}", total_candidates, total_candidates_infeasible);
-  logger->debug("sa__summary final_cost={0} best_cost={1}", curr_cost, best_cost);
-
-  // Use best found solution
-  if (best_cost < curr_cost) {
-    curr_cost = best_cost;
-    curr_sp = best_sp;
-    curr_sol = best_sol;
-    curr_sol.cost = best_cost;
-  }
 
   // Write out placement results
   //cout << endl << "Placer-Info: optimal cost = " << curr_cost << endl;
