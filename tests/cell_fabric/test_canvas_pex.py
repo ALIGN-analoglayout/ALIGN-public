@@ -18,20 +18,20 @@ def setup():
 
 def test_m1_pex(setup):
     c = setup
-    c.terminals = [{'layer': 'M1', 'netName': 'x', 'rect': [0, 0, 100, 300]}]
+    c.terminals = [{'layer': 'M1', 'netName': 'x', 'rect': [0, 0, 100, 300], 'netType': 'drawing'}]
     c.gen_data()
     assert len(c.pex.netCells) == math.ceil(300 / c.pdk['Poly']['Pitch'])
 
 def test_m2_pex(setup):
     c = setup
-    c.terminals = [{'layer': 'M2', 'netName': 'x', 'rect': [0, 0, 300, 100]}]
+    c.terminals = [{'layer': 'M2', 'netName': 'x', 'rect': [0, 0, 300, 100], 'netType': 'drawing'}]
     c.gen_data()
     assert len(c.pex.netCells) == math.ceil(300 / c.pdk['Poly']['Pitch'])
 
 def test_via_pex(setup):
     c = setup
     for (i,nm) in itertools.chain( itertools.product( [0,2,4], ['a']), itertools.product( [1,3,5], ['b'])):
-        c.addWire( c.m1, nm, None, i, (0,-1), (3,-1))
+        c.addWire( c.m1, nm, i, (0,-1), (3,-1))
     c.asciiStickDiagram( c.v1, c.m2, c.v2, c.m3, """
     +=======+=======*
                     b
@@ -52,9 +52,9 @@ def test_via_pex(setup):
 def test_via_pex2(setup):
     c = setup
     for (i,nm) in itertools.product( [5,7,9], ['a']):
-        c.addWire( c.m1, nm, None, i, (0,-1), (0,1))
+        c.addWire( c.m1, nm, i, (0,-1), (0,1))
     for (i,nm) in itertools.product( [1,3,5,7,9], ['a']):
-        c.addWire( c.m1, nm, None, i, (4,-1), (4,1))
+        c.addWire( c.m1, nm, i, (4,-1), (4,1))
     c.asciiStickDiagram( c.v1, c.m2, c.v2, c.m3, """
     +=======+=======*=======+=======+
                     a
@@ -100,9 +100,9 @@ V1 {source} 0 {hack1}
 def test_via_pex_current(setup):
     c = setup
     for (i,nm) in itertools.product( [5,7,9], ['a']):
-        c.addWire( c.m1, nm, None, i, (0,-1), (0,1))
+        c.addWire( c.m1, nm, i, (0,-1), (0,1))
     for (i,nm) in itertools.product( [1,3,5,7,9], ['a']):
-        c.addWire( c.m1, nm, None, i, (4,-1), (4,1))
+        c.addWire( c.m1, nm, i, (4,-1), (4,1))
     c.asciiStickDiagram( c.v1, c.m2, c.v2, c.m3, """
     +=======+=======*=======+=======+
                     a
@@ -146,11 +146,11 @@ V2 {sink2} 0 0
 def test_via_pex_current2(setup):
     c = setup
     for (i,nm) in itertools.product( [5,7,9], ['a']):
-        c.addWire( c.m1, nm, None, i, (0,-1), (0,1))
+        c.addWire( c.m1, nm, i, (0,-1), (0,1))
     for (i,nm) in itertools.product( [5,7,9], ['a']):
-        c.addWire( c.m1, nm, None, i, (4,-1), (4,1))
+        c.addWire( c.m1, nm, i, (4,-1), (4,1))
     for (i,nm) in itertools.product( [1,3], ['a']):
-        c.addWire( c.m1, nm, None, i, (2,-1), (2,1))
+        c.addWire( c.m1, nm, i, (2,-1), (2,1))
     c.asciiStickDiagram( c.v1, c.m2, c.v2, c.m3, """
                     *=======+=======+
                     a

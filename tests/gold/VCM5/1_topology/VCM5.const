@@ -1,2 +1,0 @@
-// ALIGN generated automatic constraints
-SymmBlock ( {xm33_xm32} , {xm20_xm21_xm19_xm18} , {xm23_xm24,xm22_xm25} , {xm31_xm26_xm27} , {xm29_xm30_xm17} )

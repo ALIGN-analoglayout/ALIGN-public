@@ -5,6 +5,7 @@ Subpackages
 -----------
 
 .. toctree::
+   :maxdepth: 4
 
    align.primitive.default
 
@@ -18,7 +19,6 @@ align.primitive.main module
    :members:
    :undoc-members:
    :show-inheritance:
-
 
 Module contents
 ---------------

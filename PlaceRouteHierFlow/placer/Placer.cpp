@@ -1,8 +1,9 @@
+
 #include "Placer.h"
 #include "spdlog/spdlog.h"
 #define NUM_THREADS 8
 
-Placer::Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo) {
+Placer::Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in) : hyper(hyper_in) {
   //cout<<"Constructor placer"<<endl;
   //this->node=input_node;
   //this->designData=design(input_node);
@@ -13,6 +14,7 @@ Placer::Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info&
   PlacementRegular(node, opath, effort, drcInfo);
 }
 
+<<<<<<< HEAD
 Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
 //#define analytical_placer
 #ifdef analytical_placer
@@ -20,6 +22,11 @@ Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, 
 #else
   PlacementRegularAspectRatio(nodeVec, opath, effort, drcInfo);
 #endif
+=======
+Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in, bool select_in_ILP = false) : hyper(hyper_in) {
+  PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo, select_in_ILP);
+  //PlacementRegularAspectRatio(nodeVec, opath, effort, drcInfo);
+>>>>>>> master
   //PlacementMixSAAspectRatio(nodeVec, opath, effort);
   //PlacementMixAPAspectRatio(nodeVec, opath, effort);
 }
@@ -37,14 +44,14 @@ bool Placer::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, ConstGrap
     // 1. Check feasible sequence pair and perturbate seqeucen pair
     int intCount=0;
     bool spCheck;
-    while( (spCheck=curr_sp.FastInitialScan(mydesign)) and intCount<COUNT_LIMIT ) {
+    while( (spCheck=curr_sp.FastInitialScan(mydesign)) && intCount<hyper.COUNT_LIMIT ) {
       curr_sp.PerturbationNew(mydesign);
       //cout<<"intCount "<<intCount<<endl;
       intCount++;
     }
     // If no feasible sequence pair, break out
     if (spCheck) { 
-      //cout<<"Placer-Warning: try "<<COUNT_LIMIT <<" perturbtions, but fail in generating feasible sequence pair..."<<endl;
+      //cout<<"Placer-Warning: try "<<hyper.COUNT_LIMIT <<" perturbtions, but fail in generating feasible sequence pair..."<<endl;
       //cout<<"Placer-Warning: use one solution without constraints instead!"<<endl;
       //ConstGraph infea_sol(mydesign, curr_sp, mode);
       //infea_sol.AddLargePenalty(); // ensure this infeasible soluton has huge cost
@@ -61,8 +68,8 @@ bool Placer::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, ConstGrap
     if (valid) {
       // If construct graphs sucessfully
       if( try_sol.FastInitialScan() ) { // If violation found
-        if (extCount>=COUNT_LIMIT) { // If too many iteratons
-          //cout<<"Placer-Warning: try "<<COUNT_LIMIT <<" perturbtions, but fail in generating feasible solution without violations..."<<endl;
+        if (extCount>=hyper.COUNT_LIMIT) { // If too many iteratons
+          //cout<<"Placer-Warning: try "<<hyper.COUNT_LIMIT <<" perturbtions, but fail in generating feasible solution without violations..."<<endl;
           //cout<<"Placer-Warning: use one solution with violations instead!"<<endl;
           curr_sol=try_sol;
           return false;
@@ -74,8 +81,8 @@ bool Placer::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, ConstGrap
       }
     } else {
       // If fail in construction
-      if (extCount>=COUNT_LIMIT) { // If too many iteratons
-        //cout<<"Placer-Warning: try "<<COUNT_LIMIT <<" perturbtions, but fail in generating feasible constraint graphs..."<<endl;
+      if (extCount>=hyper.COUNT_LIMIT) { // If too many iteratons
+        //cout<<"Placer-Warning: try "<<hyper.COUNT_LIMIT <<" perturbtions, but fail in generating feasible constraint graphs..."<<endl;
         //cout<<"Placer-Warning: use one solution with partial constraints instead!"<<endl;
         try_sol.AddLargePenalty(); // ensure this infeasible soluton has huge cost
         curr_sol=try_sol;
@@ -266,15 +273,15 @@ void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& cur
   logger->debug("Placer-Info: initial cost = {0}",curr_cost);
   logger->debug("Placer-Info: status ");
   // Aimulate annealing
-  double T=T_INT;
+  double T=hyper.T_INT;
   double delta_cost;
   int update_index =0;
   int T_index=0;
   float per = 0.1;
-  float total_update_number = log(T_MIN/T_INT)/log(ALPHA);
+  float total_update_number = log(hyper.T_MIN/hyper.T_INT)/log(hyper.ALPHA);
   int updateThrd=100;
   int fail_number = 0;
-  while(T>T_MIN && fail_number < 10) {
+  while(T>hyper.T_MIN && fail_number < 10) {
     int i=1;
     int MAX_Iter=1;
     if(effort==0) { MAX_Iter=1;
@@ -305,7 +312,7 @@ void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& cur
         if( td[id].thread_succeed) {trial_cost=td[id].thread_trial_cost; good_idx=id; break;}
       }
       for( ; id < NUM_THREADS; id++ ) {
-        if( td[id].thread_succeed and td[id].thread_trial_cost<trial_cost) {
+        if( td[id].thread_succeed && td[id].thread_trial_cost<trial_cost) {
           trial_cost=td[id].thread_trial_cost; good_idx=id;
         }
       }
@@ -367,7 +374,7 @@ void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& cur
       logger->debug(".....{0}",per*100);
       per=per+0.1;
     }
-    T*=ALPHA;
+    T*=hyper.ALPHA;
     //cout<<T<<endl;
   }
   // Write out placement results
@@ -410,15 +417,15 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
   logger->debug("Placer-Info: initial cost = ",curr_cost);
   logger->debug("Placer-Info: status ");
   // Aimulate annealing
-  double T=T_INT;
+  double T=hyper.T_INT;
   double delta_cost;
   int update_index =0;
   int T_index=0;
   float per = 0.1;
   int updateThrd=100;
   int fail_number=0;
-  float total_update_number = log(T_MIN/T_INT)/log(ALPHA);
-  while(T>T_MIN && fail_number < 10) {
+  float total_update_number = log(hyper.T_MIN/hyper.T_INT)/log(hyper.ALPHA);
+  while(T>hyper.T_MIN && fail_number < 10) {
     int i=1;
     int MAX_Iter=1;
     if(effort==0) { MAX_Iter=1;
@@ -449,7 +456,7 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
         if( td[id].thread_succeed) {trial_cost=td[id].thread_trial_cost; good_idx=id; break;}
       }
       for( ; id < NUM_THREADS; id++ ) {
-        if( td[id].thread_succeed and td[id].thread_trial_cost<trial_cost) {
+        if( td[id].thread_succeed && td[id].thread_trial_cost<trial_cost) {
           trial_cost=td[id].thread_trial_cost; good_idx=id;
         }
       }
@@ -526,7 +533,7 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
       logger->debug("...{0}%",per*100);
       per=per+0.1;
     }
-    T*=ALPHA;
+    T*=hyper.ALPHA;
     //cout<<T<<endl;
   }
   // Write out placement results
@@ -544,7 +551,11 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
 }
 /**
 std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRatio_ILP(design& designData, SeqPair& curr_sp, ILP_solver& curr_sol, int mode,
+<<<<<<< HEAD
                                                                                       int nodeSize, int effort, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node) {
+=======
+                                                                                      int nodeSize, int effort, PnRDB::Drc_info& drcInfo, bool select_in_ILP = false) {
+>>>>>>> master
 
   auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementCoreAspectRatio_ILP");
 
@@ -554,14 +565,35 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   curr_sp.PrintSeqPair();
   double curr_cost = 0;
   int trial_count = 0;
+<<<<<<< HEAD
   while ((curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo, node)) < 0) {
     curr_sp.PerturbationNew(designData);
     trial_count++;
     if (trial_count > 100) {
       logger->warn("please check constraint" );
+=======
+  int max_trial_count = 10000;
+  if(select_in_ILP)
+    curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
+  else
+    curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo);
+  while (curr_cost < 0) {
+    if (++trial_count > max_trial_count) {
+      logger->error("Couldn't generate a feasible solution even after {0} perturbations.", max_trial_count);
+      curr_cost = __DBL_MAX__;
+>>>>>>> master
       break;
     }
+    curr_sp.PerturbationNew(designData);
+    if(select_in_ILP)
+      curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
+    else
+      curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo);
   }
+  if (0 < trial_count && trial_count <= max_trial_count) {
+    logger->info("Required {0} perturbations to generate a feasible solution.", trial_count);
+  }
+  curr_sol.cost = curr_cost;
   oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
   ReshapeSeqPairMap(oData, nodeSize);
   //cout << "Placer-Info: initial cost = " << curr_cost << endl;
@@ -569,14 +601,15 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   //cout << "Placer-Info: status ";
   //cout.flush();
   // Aimulate annealing
-  double T = T_INT;
+  double T = hyper.T_INT;
   double delta_cost;
   int update_index = 0;
   int T_index = 0;
-  float per = 0.1;
-  int updateThrd = 100;
-  float total_update_number = log(T_MIN / T_INT) / log(ALPHA);
-  while (T > T_MIN) {
+  float per = 0.01;
+  //int updateThrd = 100;
+  float total_update_number = log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA);
+  bool exhausted(false);
+  while (T > hyper.T_MIN) {
     int i = 1;
     int MAX_Iter = 1;
     if (effort == 0) {
@@ -616,7 +649,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
         }
       }
       for (; id < NUM_THREADS; id++) {
-        if (td[id].thread_succeed and td[id].thread_trial_cost < trial_cost) {
+        if (td[id].thread_succeed && td[id].thread_trial_cost < trial_cost) {
           trial_cost = td[id].thread_trial_cost;
           good_idx = id;
         }
@@ -654,16 +687,27 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       trial_sp.PerturbationNew(designData);
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ILP_solver trial_sol(designData);
+<<<<<<< HEAD
       double trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo, node);
+=======
+      double trial_cost = 0;
+      if (select_in_ILP)
+        trial_cost = trial_sol.GenerateValidSolution_select(designData, trial_sp, drcInfo);
+      else
+        trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo);
+>>>>>>> master
       if (trial_cost >= 0) {
-        bool Smark = false;
-        delta_cost = trial_cost - curr_cost;
-        if (delta_cost <= 0) {
-          Smark = true;
-        } else {
-          double r = (double)rand() / RAND_MAX;
-          if (r < exp((-1.0 * delta_cost) / T)) {
+        oData[trial_cost] = std::make_pair(trial_sp, trial_sol);
+        bool Smark = trial_sp.Enumerate();
+        if (!Smark) {
+          delta_cost = trial_cost - curr_cost;
+          if (delta_cost <= 0) {
             Smark = true;
+          } else {
+            double r = (double)rand() / RAND_MAX;
+            if (r < exp((-1.0 * delta_cost) / T)) {
+              Smark = true;
+            }
           }
         }
         if (Smark) {
@@ -673,11 +717,11 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
           curr_sol = trial_sol;
           // if(update_index>updateThrd) {
           //std::cout << "Insert\n";
-          oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
-          ReshapeSeqPairMap(oData, nodeSize);
+          curr_sol.cost = curr_cost;
           //}
         }
       }
+      ReshapeSeqPairMap(oData, nodeSize);
 
 #endif
 
@@ -692,14 +736,24 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
         oData[curr_cost]=curr_sp;
         ReshapeSeqPairMap(oData, nodeSize);
       }
+<<<<<<< HEAD
+=======
+      **/
+      if (trial_sp.EnumExhausted()) {
+        logger->info("Exhausted all permutations of sequence pairs");
+        exhausted = true;
+        break;
+      }
+>>>>>>> master
     }
     T_index++;
     if (total_update_number * per < T_index) {
       logger->debug( "..... {0} %" , per * 100);
       //cout.flush();
-      per = per + 0.1;
+      per = per + 0.01;
     }
-    T *= ALPHA;
+    if (exhausted) break;
+    T *= hyper.ALPHA;
     // cout<<T<<endl;
   }
   // Write out placement results
@@ -728,7 +782,8 @@ void Placer::ReshapeSeqPairMap(std::map<double, std::pair<SeqPair, ILP_solver>>&
   if(it!=Map.end()) {Map.erase(it, Map.end());}
 }
 
-void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo){
+void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, bool select_in_ILP = false){
+  auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementRegularAspectRatio_ILP");
   int nodeSize=nodeVec.size();
   //cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
   #ifdef RFLAG
@@ -744,6 +799,7 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   design designData(nodeVec.back());
   //designData.PrintDesign();
   // Initialize simulate annealing with initial solution
+<<<<<<< HEAD
   //SeqPair curr_sp(designData);
   //curr_sp.PrintSeqPair();
   ILP_solver curr_sol(designData,nodeVec.back());
@@ -773,6 +829,41 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   // it->second.second.WritePlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".pl");
   // it->second.second.PlotPlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".plt");
   //}
+=======
+  SeqPair curr_sp(designData, size_t(1. * log(hyper.T_MIN/hyper.T_INT)/log(hyper.ALPHA) *
+        ((effort == 0) ? 1. : ((effort == 1) ? 4. : 8.)) ));
+  curr_sp.PrintSeqPair();
+  ILP_solver curr_sol(designData);
+  //clock_t start, finish;
+  //double   duration;
+  //start = clock();
+  std::map<double, std::pair<SeqPair, ILP_solver>> spVec=PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo, select_in_ILP);
+  //finish = clock();
+  //duration = (double)(finish - start) / CLOCKS_PER_SEC;
+  //logger->info("lpsolve time: {0}", duration);
+  //curr_sol.updateTerminalCenter(designData, curr_sp);
+  //curr_sol.PlotPlacement(designData, curr_sp, opath+nodeVec.back().name+"opt.plt");
+  if((int)spVec.size()<nodeSize) {
+    nodeSize=spVec.size();
+    nodeVec.resize(nodeSize);
+  }
+  int idx=0;
+  for(std::map<double, std::pair<SeqPair, ILP_solver>>::iterator it=spVec.begin(); it!=spVec.end() and idx<nodeSize; ++it, ++idx) {
+    //std::cout<<"Placer-Info: cost "<<it->first<<std::endl;
+    //ConstGraph vec_sol(designData, it->second, mode);
+    //vec_sol.ConstraintGraph(designData, it->second);
+    //vec_sol.FastInitialScan();
+    //vec_sol.updateTerminalCenter(designData, it->second);
+    //std::cout<<"wbxu check design\n";
+    //designData.PrintDesign();
+    //it->second.PrintSeqPair();
+    //std::cout<<"write design "<<idx<<std::endl;
+    it->second.second.updateTerminalCenter(designData, it->second.first);
+    it->second.second.WritePlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".pl");
+    it->second.second.PlotPlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".plt");
+    it->second.second.UpdateHierNode(designData, it->second.first, nodeVec[idx], drcInfo);
+  }
+>>>>>>> master
 }
 
 void Placer::PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
@@ -805,7 +896,7 @@ void Placer::PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, 
     nodeVec.resize(nodeSize);
   }
   int idx=0;
-  for(std::map<double, SeqPair>::iterator it=spVec.begin(); it!=spVec.end() and idx<nodeSize; ++it, ++idx) {
+  for(std::map<double, SeqPair>::iterator it=spVec.begin(); it!=spVec.end() && idx<nodeSize; ++it, ++idx) {
     //std::cout<<"Placer-Info: cost "<<it->first<<std::endl;
     ConstGraph vec_sol(designData, it->second, mode);
     vec_sol.ConstraintGraph(designData, it->second);
@@ -862,7 +953,7 @@ void Placer::PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
   }
   logger->debug("Placer-Info: after 1st SA size {0}",spVec.size());
   int idx=0;
-  for(std::map<double, SeqPair>::iterator it=spVec.begin(); it!=spVec.end() and idx<nodeSize; ++it, ++idx) {
+  for(std::map<double, SeqPair>::iterator it=spVec.begin(); it!=spVec.end() && idx<nodeSize; ++it, ++idx) {
     logger->debug("Placer-Info: second round SA {0}",idx);
     // Full design
     designData_full.PrintDesign();
@@ -923,7 +1014,7 @@ void Placer::PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
   logger->debug("Placer-Info: complete mixed-size placement - phase I SA");
   logger->debug("Placer-Info: start mixed-size placement - phase II AP");
   int idx=0;
-  for(std::map<double, SeqPair>::iterator it=spVec.begin(); it!=spVec.end() and idx<nodeSize; ++it, ++idx) {
+  for(std::map<double, SeqPair>::iterator it=spVec.begin(); it!=spVec.end() && idx<nodeSize; ++it, ++idx) {
     ConstGraph vec_sol(designData, it->second, bias_mode);
     vec_sol.ConstraintGraph(designData, it->second);
     vec_sol.FastInitialScan();
@@ -959,138 +1050,4 @@ void Placer::PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
 
 }
 
-//void Placer::Placement(PnRDB::hierNode& node) {
-//  cout<<"Placer-Info: place "<<node.name<<endl;
-//  #ifdef RFLAG
-//  cout<<"Placer-Info: run in random mode..."<<endl;
-//  srand (time(NULL));
-//  #endif
-//  #ifndef RFLAG
-//  cout<<"Placer-Info: run in normal mode..."<<endl;
-//  srand(0);
-//  #endif
-//
-//  // Read design netlist and constraints
-//  //design designData(bfile.c_str(), nfile.c_str(), cfile.c_str());
-//  design designData(node);
-//  designData.PrintDesign();
-//  // Initialize simulate annealing with initial solution
-//  SeqPair curr_sp(designData);
-//  //curr_sp.PrintSeqPair();
-//  ConstGraph curr_sol;
-//  GenerateValidSolution(designData, curr_sp, curr_sol);
-//  //curr_sol.PrintConstGraph();
-//  double curr_cost=curr_sol.CalculateCost(designData, curr_sp);
-//  cout<<"Placer-Info: initial cost = "<<curr_cost<<endl;
-//
-//  cout<<"Placer-Info: status ";cout.flush();
-//  // Aimulate annealing
-//  double T=T_INT;
-//  double delta_cost;
-//  int update_index =0;
-//  int T_index=0;
-//  float per = 0.1;
-//  float total_update_number = log(T_MIN/T_INT)/log(ALPHA);
-//  while(T>T_MIN) {
-//    int i=1;
-//    while(i<=1) {
-//      #ifdef MTMODE
-//      double trial_cost; 
-//      int id; int good_idx=-1;
-//      Thread_data td[NUM_THREADS];
-//      std::vector<std::thread> threads;
-//      // Create threads
-//      for( id = 0; id < NUM_THREADS; id++ ) {
-//        //cout <<"Placer-Info: creating thread, " << id << endl;
-//        td[id].thread_id = id;
-//        td[id].thread_designData=designData;
-//        td[id].thread_trial_sp=curr_sp;
-//        threads.push_back(std::thread(&Placer::ThreadFunc, this, td+id ) );
-//      }
-//      // Join threads
-//      for( id = 0; id < NUM_THREADS; id++ ) {
-//        threads.at(id).join();
-//        //cout<<"Placer-Info: joining thread, "<<id<<endl;
-//      }
-//
-//      for( id = 0; id < NUM_THREADS; id++ ) {
-//        if( td[id].thread_succeed) {trial_cost=td[id].thread_trial_cost; good_idx=id; break;}
-//      }
-//      for( ; id < NUM_THREADS; id++ ) {
-//        if( td[id].thread_succeed and td[id].thread_trial_cost<trial_cost) {
-//          trial_cost=td[id].thread_trial_cost; good_idx=id;
-//        }
-//      }
-//      if(good_idx!=-1) {
-//        delta_cost=trial_cost-curr_cost;
-//        if(delta_cost<0) {
-//          curr_cost=trial_cost;
-//          curr_sp=td[good_idx].thread_trial_sp;
-//          curr_sol=td[good_idx].thread_trial_sol;
-//        } else {
-//          double r = (double)rand() / RAND_MAX;
-//          if( r < exp( (-1.0 * delta_cost)/T ) ) {
-//            curr_cost=trial_cost;
-//            curr_sp=td[good_idx].thread_trial_sp;
-//            curr_sol=td[good_idx].thread_trial_sol;
-//          }
-//        }
-//      }
-//      #endif
-//
-//      #ifndef MTMODE
-//      //cout<<"T "<<T<<" i "<<i<<endl;
-//      // Trival moves
-//      SeqPair trial_sp(curr_sp);  
-//      //cout<<"before per"<<endl; trial_sp.PrintSeqPair();
-//      trial_sp.Perturbation(designData);
-//      //cout<<"after per"<<endl; trial_sp.PrintSeqPair();
-//      ConstGraph trial_sol;
-//      if(GenerateValidSolution(designData, trial_sp, trial_sol)) {
-//        double trial_cost=trial_sol.CalculateCost(designData, trial_sp);
-//
-//        delta_cost=trial_cost-curr_cost;
-//        if(delta_cost<0) {
-//          curr_cost=trial_cost;
-//          curr_sp=trial_sp;
-//          curr_sol=trial_sol;
-//        } else {
-//          double r = (double)rand() / RAND_MAX;
-//          if( r < exp( (-1.0 * delta_cost)/T ) ) {
-//            curr_cost=trial_cost;
-//            curr_sp=trial_sp;
-//            curr_sol=trial_sol;
-//          }
-//        }
-//      }
-//      #endif
-//
-//      i++;
-//      update_index++;
-//      //cout<<update_index<<endl;
-//      if(update_index==100){
-//        curr_sol.Update_parameters(designData, curr_sp);
-//        curr_cost = curr_sol.CalculateCost(designData, curr_sp);
-//      }
-//    }
-//    T_index ++;
-//    if(total_update_number*per<T_index){
-//      cout<<"....."<<per*100<<"%"; cout.flush();
-//      per=per+0.1;
-//    }
-//    T*=ALPHA;
-//    //cout<<T<<endl;
-//  }
-//
-//  // Write out placement results
-//  cout<<endl<<"Placer-Info: optimal cost = "<<curr_cost<<endl;
-//  //curr_sol.PrintConstGraph();
-//  //curr_sp.PrintSeqPair();
-//  curr_sol.updateTerminalCenter(designData, curr_sp);
-//  curr_sol.WritePlacement(designData, curr_sp, "./"+node.name+".pl");
-//  curr_sol.PlotPlacement(designData, curr_sp, "./"+node.name+".plt");
-//  curr_sol.UpdateHierNode(designData, curr_sp, node);
-//  //curr_sol.WritePlacement(designData, curr_sp, ofile.c_str());
-//  //curr_sol.PlotPlacement(designData, curr_sp, pfile.c_str());
-//}
 

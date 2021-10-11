@@ -109,7 +109,7 @@ class Pdk(object):
         self._add(params + optional_params, **kwargs)
 
     def addVia(self, **kwargs):
-        optional_params = ['ViaCut']
+        optional_params = ['ViaCut', 'Pitch', 'Offset']
         params = ['Layer',
                   'GdsLayerNo',
                   'GdsDatatype',

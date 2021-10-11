@@ -45,5 +45,7 @@ public:
     std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > FindsetPlist(std::set<RouterDB::SinkData, RouterDB::SinkDataComp>& Set_x, RouterDB::point LL, RouterDB::point UR);
     std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > Plist2Set(std::vector<std::vector<RouterDB::point> >& plist);
     void InsertPlistToSet(std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> &Set, std::vector<std::vector<RouterDB::point>> &plist);
+    std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Findset(std::set<RouterDB::SinkData, RouterDB::SinkDataComp>& Set_x, RouterDB::point LL, RouterDB::point UR);
+    std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> findviaset(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, RouterDB::point LL, RouterDB::point UR);
 };
 #endif

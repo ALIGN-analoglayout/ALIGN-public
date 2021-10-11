@@ -22,13 +22,12 @@ class MOSGenerator(DefaultCanvas):
         self.gate = (2*gate)*self.stack
         self.gatesPerUnitCell = self.gate + 2*self.gateDummy*(1-self.shared_diff)
         self.finDummy = (self.finsPerUnitCell-fin)//2
-        self.lFin = 16 ## need to be added in the PDK JSON
+        self.lFin = height ### This defines numebr of fins for tap cells; Should we define it in the layers.json?
         assert self.finDummy >= 8, "number of fins in the transistor must be less than height"
         assert fin > 3, "number of fins in the transistor must be more than 2"
         assert fin % 2 == 0, "number of fins in the transistor must be even" 
         assert gateDummy > 0
         unitCellLength = self.gatesPerUnitCell* self.pdk['Poly']['Pitch']
-        #activeOffset = self.finsPerUnitCell//-self.pdk['Fin']['Pitch']//2
         activeOffset = self.unitCellHeight//2 -self.pdk['Fin']['Pitch']//2
         activeWidth =  self.pdk['Fin']['Pitch']*fin
         activePitch = self.unitCellHeight
@@ -145,7 +144,6 @@ class MOSGenerator(DefaultCanvas):
                                     WidthY=self.pdk['V0']['WidthY']))
 
         self.v0.h_clg.addCenterLine( 0,                 self.pdk['V0']['WidthY'], False)
-        #v0pitch = activeWidth//(2*self.pdk['M2']['Pitch']) * self.pdk['Fin']['Pitch']
         v0pitch = 3*self.pdk['Fin']['Pitch']
         v0Offset = ((self.finDummy+3)//2)*self.pdk['M2']['Pitch'] 
         for i in range((activeWidth-2*self.pdk['M2']['Pitch']) // v0pitch + 1):
@@ -159,38 +157,35 @@ class MOSGenerator(DefaultCanvas):
         self.subinsts[fullname].parameters.update(parameters)
 
         def _connect_diffusion(i, pin):
-            self.addWire( self.m1, None, None, i, (grid_y0, -1), (grid_y1, 1))
+            self.addWire( self.m1, None, i, (grid_y0, -1), (grid_y1, 1))
             for j in range(1,self.v0.h_clg.n): ## self.v0.h_clg.n??
-                self.addVia( self.v0, f'{fullname}:{pin}', None, i, (y, j))
+                self.addVia( self.v0, f'{fullname}:{pin}', i, (y, j))
             self._xpins[name][pin].append(i)
             
         # Draw FEOL Layers
         if self.shared_diff == 0:
-            self.addWire( self.active, None, None, y, (x,1), (x+1,-1)) 
+            self.addWire( self.active, None, y, (x,1), (x+1,-1)) 
         elif self.shared_diff == 1 and x == x_cells-1:
-            self.addWire( self.active_diff, None, None, y, 0, self.gate*x_cells+1)
+            self.addWire( self.active_diff, None, y, 0, self.gate*x_cells+1)
         else:
             pass
 
         for i in range(self.gatesPerUnitCell):
-            self.addWire( self.pl, None, None, self.gatesPerUnitCell*x+self.gateDummy*self.shared_diff+i,   (y,0), (y,1))
+            self.addWire( self.pl, None, self.gatesPerUnitCell*x+self.gateDummy*self.shared_diff+i,   (y,0), (y,1))
 
         if self.shared_diff == 1 and (x == 0 or x == x_cells-1):
             dummy_gates = self.gatesPerUnitCell*x_cells+self.gateDummy if x == x_cells-1 else 0
             for i in range(self.gateDummy):
-                self.addWire( self.pl, None, None, dummy_gates+i,   (y,0), (y,1))
+                self.addWire( self.pl, None, dummy_gates+i,   (y,0), (y,1))
         # Source, Drain, Gate Connections
 
-        #grid_y0 = y*self.m2PerUnitCell + self.finDummy//2-1
         grid_y0 = y*self.m2PerUnitCell + 1
         grid_y1 = (y+1)*self.m2PerUnitCell-5
-        #grid_y1 = grid_y0+(self.finsPerUnitCell - 2*self.finDummy + 2)//2-1
         gate_x = self.gateDummy*self.shared_diff + x * self.gatesPerUnitCell + self.gatesPerUnitCell // 2
         # Connect Gate (gate_x)
-        self.addWire( self.m1, None, None, gate_x , (grid_y1+2, -1), (grid_y1+4, 1))
-        self.addWire( self.pc, None, None, grid_y1+1, (x,1), (x+1,-1))
-        #self.addVia( self.va, f'{fullname}:G', None, gate_x, (y*self.m2PerUnitCell//2, 1))
-        self.addVia( self.va, f'{fullname}:G', None, gate_x, grid_y1+2)
+        self.addWire( self.m1, None, gate_x , (grid_y1+2, -1), (grid_y1+4, 1))
+        self.addWire( self.pc, None, grid_y1+1, (x,1), (x+1,-1))
+        self.addVia( self.va, f'{fullname}:G', gate_x, grid_y1+2)
         self._xpins[name]['G'].append(gate_x)
 
         # Connect Source & Drain
@@ -232,7 +227,7 @@ class MOSGenerator(DefaultCanvas):
                     else:
                         current_track = y * self.m2PerUnitCell + len(connections) * j + diff_track
                         diff_track = diff_track + 1
-                    self.addWireAndViaSet(net, None, self.m2, self.v1, current_track, contacts)
+                    self.addWireAndViaSet(net, self.m2, self.v1, current_track, contacts)
                     self._nets[net][current_track] = contacts
                 # Extend m1 if needed. TODO: Should we draw longer M1s to begin with?
                 #direction = 1 if current_track > center_track else -1
@@ -262,42 +257,37 @@ class MOSGenerator(DefaultCanvas):
                 if len(contacts) == 1: # Create m2 terminal
                     i = next(iter(contacts))
                     minx, maxx = _get_wire_terminators(conn[i])
-                    self.addWire(self.m2, net, net, i, (minx, -1), (maxx, 1))
+                    self.addWire(self.m2, net, i, (minx, -1), (maxx, 1), netType = 'pin')
                 else: # create m3 terminal(s)
-                    self.addWireAndViaSet(net, net, self.m3, self.v2, current_track, contacts)
+                    self.addWireAndViaSet(net, self.m3, self.v2, current_track, contacts, netType = 'pin')
                     if max(contacts) - min(contacts) < 2:
                         minL_m3 = 2 ## for M3 min length
                         maxy = min(contacts) + minL_m3
                         miny = min(contacts)
-                        self.addWire(self.m3, net, net, current_track, (miny, -1), (maxy, 1))
+                        self.addWire(self.m3, net, current_track, (miny, -1), (maxy, 1), netType = 'pin')
                     else:
                         pass
                     # Extend m2 if needed. TODO: What to do if we go beyond cell boundary?
                     for i, locs in conn.items():
                         minx, maxx = _get_wire_terminators([*locs, current_track])
-                        self.addWire(self.m2, net, None, i, (minx, -1), (maxx, 1))
-
-        #self.addWire( self.m2, 'B', 'B', (y_cells)* self.m2PerUnitCell + self.lFin//4, (0, 1), (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1))
+                        self.addWire(self.m2, net, i, (minx, -1), (maxx, 1))
 
     def _addBodyContact(self, x, y, x_cells, yloc=None, name='M1'):
-        #if self.bodyswitch == 0:continue
         fullname = f'{name}_X{x}_Y{y}'
         if yloc is not None:
             y = yloc
         h = self.m2PerUnitCell
         gu = self.gatesPerUnitCell
         gate_x = self.gateDummy*self.shared_diff + x*gu + gu // 2
-        #gate_x = x*gu + gu // 2
         self._xpins[name]['B'].append(gate_x)
         if self.shared_diff == 0:
-            self.addWire( self.activeb, None, None, y, (x,1), (x+1,-1)) 
-            self.addWire( self.pb, None, None, y, (x,1), (x+1,-1)) 
+            self.addWire( self.activeb, None, y, (x,1), (x+1,-1)) 
+            self.addWire( self.pb, None, y, (x,1), (x+1,-1)) 
         else:
-            self.addWire( self.activeb_diff, None, None, y, 0, self.gate*x_cells+1)
-            self.addWire( self.pb_diff, None, None, y, (x,1), (x+1,-1))
-        self.addWire( self.m1, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1))
-        self.addVia( self.va, f'{fullname}:B', None, gate_x, (y+1)*h + self.lFin//4)
-        #self.addVia( self.v1, 'B', None, gate_x, (y+1)*h + self.lFin//4)
+            self.addWire( self.activeb_diff, None, y, 0, self.gate*x_cells+1)
+            self.addWire( self.pb_diff, None, y, (x,1), (x+1,-1))
+        self.addWire( self.m1, None, gate_x, ((y+1)*h+self.lFin//4-1, -1), ((y+1)*h+self.lFin//4+1, 1))
+        self.addVia( self.va, f'{fullname}:B', gate_x, (y+1)*h + self.lFin//4)
 
     def _addMOSArray( self, x_cells, y_cells, pattern, vt_type, connections, minvias = 1, **parameters):
         if minvias * len(connections) > self.m2PerUnitCell - 1:
@@ -345,12 +335,12 @@ class MOSGenerator(DefaultCanvas):
 
         self._addMOSArray(x_cells, y_cells, pattern, vt_type, connections, **parameters)
         #####   Nselect Placement   #####
-        self.addRegion( self.nselect, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin) 
+        self.addRegion( self.nselect, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin) 
 
     def addPMOSArray( self, x_cells, y_cells, pattern, vt_type, connections, **parameters):
 
         self._addMOSArray(x_cells, y_cells, pattern, vt_type, connections, **parameters)
 
         #####   Pselect and Nwell Placement   #####
-        self.addRegion( self.pselect, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
-        self.addRegion( self.nwell, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
+        self.addRegion( self.pselect, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
+        self.addRegion( self.nwell, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)

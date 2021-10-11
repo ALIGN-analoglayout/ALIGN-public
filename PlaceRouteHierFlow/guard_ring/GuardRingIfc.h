@@ -11,7 +11,7 @@ class GuardRingIfc {
   GuardRing *_ptr;
   
   public:
-    GuardRingIfc(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& lefData, const PnRDB::Drc_info& drc_info);
+    GuardRingIfc(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& lefData, const PnRDB::Drc_info& drc_info, const string& fpath);
     ~GuardRingIfc();
     GuardRing *get() const { return _ptr; }
 };

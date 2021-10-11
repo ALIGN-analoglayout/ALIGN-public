@@ -1,0 +1,56 @@
+{
+    "constraints": [
+        {
+            "const_name": "SymmBlock",
+            "axis_dir": "V",
+            "pairs": [
+                {
+                    "type": "selfsym",
+                    "block": "m2_m1"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "m3_m0"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "m5_m4"
+                }
+            ]
+        },
+        {
+            "const_name":"SymmNet",
+            "axis_dir":"V",
+            "net1":{
+                "name":"voutp",
+                "blocks":[
+                    {
+                        "type":"pin",
+                        "name":"m2_m1",
+                        "pin":"DA"
+                    },
+                    {
+                        "type":"pin",
+                        "name":"m3_m0",
+                        "pin":"DA"
+                    }
+                ]
+            },
+            "net2":{
+                "name":"voutn",
+                "blocks":[
+                    {
+                        "type":"pin",
+                        "name":"m2_m1",
+                        "pin":"DB"
+                    },
+                    {
+                        "type":"pin",
+                        "name":"m3_m0",
+                        "pin":"DB"
+                    }
+                ]
+            }
+        }
+    ]
+}

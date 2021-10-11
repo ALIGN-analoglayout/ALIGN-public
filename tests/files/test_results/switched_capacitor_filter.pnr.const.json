@@ -1,0 +1,88 @@
+{
+    "constraints": [
+        {
+            "const_name": "CC",
+            "cap_name": "C1_C3",
+            "unit_capacitor": "CAP_12F",
+            "size": [
+                3,
+                5
+            ],
+            "nodummy": true,
+            "cap_r": -1,
+            "cap_s": -1
+        },
+        {
+            "const_name": "CC",
+            "cap_name": "C7_C6",
+            "unit_capacitor": "CAP_12F",
+            "size": [
+                3,
+                5
+            ],
+            "nodummy": true,
+            "cap_r": -1,
+            "cap_s": -1
+        },
+        {
+            "pairs": [
+                {
+                    "type": "sympair",
+                    "block1": "C5",
+                    "block2": "C2"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "X_CMC_S_NMOS_B_I1_M6_M7",
+                    "block2": "X_CMC_S_NMOS_B_I1_M12_M14"
+                }
+            ],
+            "const_name": "SymmBlock",
+            "axis_dir": "V"
+        },
+        {
+            "net1": {
+                "name": "VINN",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "C5",
+                        "pin": "PLUS"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_CMC_S_NMOS_B_I1_M6_M7",
+                        "pin": "SB"
+                    },
+                    {
+                        "type": "terminal",
+                        "name": "VINN",
+                        "pin": null
+                    }
+                ]
+            },
+            "net2": {
+                "name": "VINP",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "C2",
+                        "pin": "PLUS"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_CMC_S_NMOS_B_I1_M12_M14",
+                        "pin": "SA"
+                    },
+                    {
+                        "type": "terminal",
+                        "name": "VINP",
+                        "pin": null
+                    }
+                ]
+            },
+            "const_name": "SymmNet",
+            "axis_dir": "V"
+        }
+    ]
+}

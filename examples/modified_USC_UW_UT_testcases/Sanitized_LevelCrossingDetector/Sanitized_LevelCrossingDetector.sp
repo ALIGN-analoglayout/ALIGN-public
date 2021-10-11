@@ -1,6 +1,6 @@
 ************************************************************************
 * auCdl Netlist:
-* 
+*
 * Library Name:  TempSensorLayout
 * Top Cell Name: CrossingDetector
 * View Name:     schematic
@@ -8,7 +8,7 @@
 ************************************************************************
 
 *.BIPOLAR
-*.RESI = 2000 
+*.RESI = 2000
 *.RESVAL
 *.CAPVAL
 *.DIOPERI
@@ -78,13 +78,13 @@ MM_u1 ZN I VDD VDD lvtpfet l=LA w=WA m=1
 
 .SUBCKT CrossingDetector_Mux IN SS VDD VO VSS
 *.PININFO IN:I SS:I VO:O VDD:B VSS:B
-XI18 net012 net032 SS VDD VSS VO / MUX2D2LVT
-XI16 net033 VDD VSS net012 / CKBD1LVT
-XI10 net012 VDD VSS net032 / CKBD1LVT
-XI9 net015 VDD VSS net033 / CKBD1LVT
+XI18 net012 net032 SS VDD VSS VO MUX2D2LVT
+XI16 net033 VDD VSS net012 CKBD1LVT
+XI10 net012 VDD VSS net032 CKBD1LVT
+XI9 net015 VDD VSS net033 CKBD1LVT
 MM2 net06 IN VDD VDD lvtpfet l=LA w=WK m=2
 MM1 net06 IN VSS VSS lvtnfet l=LA w=WJ m=2
-XI15 net06 VDD VSS net015 / CKND1LVT
+XI15 net06 VDD VSS net015 CKND1LVT
 .ENDS
 
 ************************************************************************
@@ -95,7 +95,7 @@ XI15 net06 VDD VSS net015 / CKND1LVT
 
 .SUBCKT Sanitized_LevelCrossingDetector QD QPHASE SQ SS VCP VCPS VDD VSS
 *.PININFO QPHASE:I SQ:I SS:I VCP:I QD:O VCPS:O VDD:B VSS:B
-XI2 QPHASE SQ VDD QD VSS / CrossingDetector_Mux
-XI0 VCP SS VDD VCPS VSS / CrossingDetector_Mux
+XI2 QPHASE SQ VDD QD VSS CrossingDetector_Mux
+XI0 VCP SS VDD VCPS VSS CrossingDetector_Mux
 .ENDS
 

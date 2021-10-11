@@ -27,9 +27,9 @@ def test_merged_same(setup):
     c,dy0,_ = setup
 
     c.terminals = [
-        {'layer': 'M2', 'netName': 'x', 'rect': [    0, -dy0,  200, dy0]},
-        {'layer': 'M2', 'netName': 'x', 'rect': [  200, -dy0,  400, dy0]},
-        {'layer': 'M2', 'netName': 'y', 'rect': [ 1000, -dy0, 1200, dy0]}
+        {'layer': 'M2', 'netName': 'x', 'rect': [    0, -dy0,  200, dy0], "netType": "drawing"},
+        {'layer': 'M2', 'netName': 'x', 'rect': [  200, -dy0,  400, dy0], "netType": "drawing"},
+        {'layer': 'M2', 'netName': 'y', 'rect': [ 1000, -dy0, 1200, dy0], "netType": "drawing"}
     ]
 
     assert len(c.terminals) == 3
@@ -39,8 +39,8 @@ def test_merged_same(setup):
     assert c.drc.num_errors == 0
 
     gold = [
-        {'layer': 'M2', 'netName': 'x', 'rect': [    0, -dy0,  400, dy0]},
-        {'layer': 'M2', 'netName': 'y', 'rect': [ 1000, -dy0, 1200, dy0]}
+        {'layer': 'M2', 'netName': 'x', 'rect': [    0, -dy0,  400, dy0], "netType": "drawing"},
+        {'layer': 'M2', 'netName': 'y', 'rect': [ 1000, -dy0, 1200, dy0], "netType": "drawing"}
     ]
 
     assert len(data['terminals']) == 2
@@ -51,9 +51,9 @@ def test_merged_diff_after(setup):
     c,dy0,dy1 = setup
 
     c.terminals = [
-        {'layer': 'M2', 'netName': 'x', 'rect': [    0, -dy0,  200, dy0]},
-        {'layer': 'M2', 'netName': 'x', 'rect': [  200, -dy0,  400, dy0]},
-        {'layer': 'M2', 'netName': 'y', 'rect': [ 1000, -dy1, 1200, dy1]}
+        {'layer': 'M2', 'netName': 'x', 'rect': [    0, -dy0,  200, dy0], "netType": "drawing"},
+        {'layer': 'M2', 'netName': 'x', 'rect': [  200, -dy0,  400, dy0], "netType": "drawing"},
+        {'layer': 'M2', 'netName': 'y', 'rect': [ 1000, -dy1, 1200, dy1], "netType": "drawing"}
     ]
 
     assert len(c.terminals) == 3
@@ -63,8 +63,8 @@ def test_merged_diff_after(setup):
     assert c.drc.num_errors == 0
 
     gold = [
-        {'layer': 'M2', 'netName': 'x', 'rect': [    0, -dy0,  400, dy0]},
-        {'layer': 'M2', 'netName': 'y', 'rect': [ 1000, -dy1, 1200, dy1]}
+        {'layer': 'M2', 'netName': 'x', 'rect': [    0, -dy0,  400, dy0], "netType": "drawing"},
+        {'layer': 'M2', 'netName': 'y', 'rect': [ 1000, -dy1, 1200, dy1], "netType": "drawing"}
     ]
 
     assert len(data['terminals']) == 2
@@ -77,9 +77,9 @@ def test_merged_diff_before(setup):
     c,dy0,dy1 = setup
 
     c.terminals = [
-        {'layer': 'M2', 'netName': 'y', 'rect': [ -1000, -dy1, -800, dy1]},
-        {'layer': 'M2', 'netName': 'x', 'rect': [     0, -dy0,  200, dy0]},
-        {'layer': 'M2', 'netName': 'x', 'rect': [   200, -dy0,  400, dy0]}
+        {'layer': 'M2', 'netName': 'y', 'rect': [ -1000, -dy1, -800, dy1], "netType": "drawing"},
+        {'layer': 'M2', 'netName': 'x', 'rect': [     0, -dy0,  200, dy0], "netType": "drawing"},
+        {'layer': 'M2', 'netName': 'x', 'rect': [   200, -dy0,  400, dy0], "netType": "drawing"}
     ]
 
     assert len(c.terminals) == 3
@@ -89,8 +89,8 @@ def test_merged_diff_before(setup):
     assert c.drc.num_errors == 0
 
     gold = [
-        {'layer': 'M2', 'netName': 'y', 'rect': [ -1000, -dy1, -800, dy1]},
-        {'layer': 'M2', 'netName': 'x', 'rect': [     0, -dy0,  400, dy0]}
+        {'layer': 'M2', 'netName': 'y', 'rect': [ -1000, -dy1, -800, dy1], "netType": "drawing"},
+        {'layer': 'M2', 'netName': 'x', 'rect': [     0, -dy0,  400, dy0], "netType": "drawing"}
     ]
 
     assert len(data['terminals']) == 2
