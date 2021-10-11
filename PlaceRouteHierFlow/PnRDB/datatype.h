@@ -439,7 +439,6 @@ struct hierNode {
   double cost = -1;
 }; // structure of vertex in heirarchical tree
 
->>>>>>> master
 
 /// Part 3: declaration of structures for constraint data
 
