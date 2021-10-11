@@ -560,10 +560,9 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
   ReshapeSeqPairMap(oData, nodeSize);
   //cout << "Placer-Info: initial cost = " << curr_cost << endl;
-
   //cout << "Placer-Info: status ";
   //cout.flush();
-  // Aimulate annealing
+  // Simulated annealing
   double T = hyper.T_INT;
   double delta_cost;
   int update_index = 0;
@@ -574,7 +573,11 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   bool exhausted(false);
   int total_candidates = 0;
   int total_candidates_infeasible = 0;
-  logger->debug("sa__cost iter_outer={0} iter_inner={1} cost={2}", T_index, 0, curr_cost);
+  logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3}", designData.name, T_index, 0, curr_cost);
+  // Track best solution
+  SeqPair best_sp(curr_sp);
+  double best_cost = curr_cost;
+  ILP_solver best_sol(designData);
   while (T > hyper.T_MIN) {
     int i = 1;
     int MAX_Iter = 1;
@@ -678,7 +681,14 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
           curr_sp = trial_sp;
           curr_sol = trial_sol;
           curr_sol.cost = curr_cost;
-          logger->debug("sa__cost iter_outer={0} iter_inner={1} cost={2}", T_index, i, curr_cost);
+          // Bookkeep best solution
+          if (curr_cost < best_cost) {
+            best_cost = curr_cost;
+            best_sp = curr_sp;
+            best_sol = curr_sol;
+            best_sol.cost = curr_cost;
+          }
+
         }
       } else {
         total_candidates_infeasible += 1;
@@ -689,17 +699,9 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
 #endif
 
       i++;
+      logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3}", designData.name, T_index, i, curr_cost);
+
       update_index++;
-      // cout<<update_index<<endl;
-      /**
-      if(update_index==updateThrd){
-        curr_sol.Update_parameters(designData, curr_sp);
-        curr_cost = curr_sol.CalculateCost(designData, curr_sp);
-        std::cout<<"updated cost: "<<curr_cost<<std::endl;
-        oData[curr_cost]=curr_sp;
-        ReshapeSeqPairMap(oData, nodeSize);
-      }
-      **/
       if (trial_sp.EnumExhausted()) {
         logger->info("Exhausted all permutations of sequence pairs");
         exhausted = true;
@@ -717,6 +719,15 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   }
 
   logger->debug("sa__summary total_candidates={0} total_candidates_infeasible={1}", total_candidates, total_candidates_infeasible);
+  logger->debug("sa__summary final_cost={0} best_cost={1}", curr_cost, best_cost);
+
+  // Use best found solution
+  if (best_cost < curr_cost) {
+    curr_cost = best_cost;
+    curr_sp = best_sp;
+    curr_sol = best_sol;
+    curr_sol.cost = best_cost;
+  }
 
   // Write out placement results
   //cout << endl << "Placer-Info: optimal cost = " << curr_cost << endl;

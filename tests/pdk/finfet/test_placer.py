@@ -41,7 +41,8 @@ def test_place_cmp_1():
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
     ]
     example = build_example(name, netlist, setup, constraints)
-    ckt_dir, run_dir = run_example(example, cleanup=cleanup, additional_args=['-e', '4'])
+    ckt_dir, run_dir = run_example(example, cleanup=cleanup, log_level='DEBUG',
+                                   additional_args=['-e', '4', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op'])
 
     print(f'run_dir: {run_dir}')
 
