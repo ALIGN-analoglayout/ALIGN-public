@@ -1,3 +1,4 @@
+import pytest
 import textwrap
 import json
 import shutil
@@ -15,6 +16,7 @@ except BaseException:
 cleanup = False
 
 
+@pytest.mark.skip
 def test_place_cmp_1():
     """ original comparator. Run this test with -v and -s"""
     name = f'ckt_{get_test_id()}'
@@ -76,7 +78,7 @@ def test_place_cmp_1():
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
 
-
+@pytest.mark.skip
 def test_place_cmp_2():
     """ comparator with modified hierarchy """
     name = f'ckt_{get_test_id()}'
