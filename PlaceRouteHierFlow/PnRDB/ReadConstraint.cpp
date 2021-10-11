@@ -282,35 +282,7 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
             }
           }
         }
-        node.Ordering_Constraints.push_back(temp_order);
-      } else if (constraint["const_name"] == "OrderingList") {
-        PnRDB::Smark axis_dir = PnRDB::V;
-        pair<vector<int>, PnRDB::Smark> temp_order;
-        if (constraint["direction"] == "H") {
-          temp_order.second = PnRDB::H;
-        } else {
-          temp_order.second = PnRDB::V;
-        }
-        for (auto block1 : constraint["blocks1"]) {
-          for (int k = 0; k < (int)node.Blocks.size(); k++) {
-            if (node.Blocks.at(k).instance.back().name.compare(block1) == 0) {
-              for (auto block2 : constraint["blocks2"]) {
-                for (int l = 0; l < (int)node.Blocks.size(); l++) {
-                  if (node.Blocks.at(l).instance.back().name.compare(block2) == 0) {
-                    temp_order.first.clear();
-                    temp_order.first.push_back(k);
-                    temp_order.first.push_back(l);
-                    node.Ordering_Constraints.push_back(temp_order);
-                    break;
-                  }
-                }
-              }
-              break;
-            }
-          }
-        }
-        
-      } 
+      }
       for (unsigned int sym_index = 0; sym_index < temp_SymmPairBlock.selfsym.size(); sym_index++) {
         temp_SymmPairBlock.selfsym[sym_index].second = constraint["axis_dir"] == "H" ? PnRDB::H : PnRDB::V;
       }
@@ -420,76 +392,47 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
           tmp_portpos.tid = k;
           break;
         }
-<<<<<<< HEAD
-        for (auto block : constraint["blocks"]) {
-          bool found = false;
-          for (int i = 0; i < (int)node.Blocks.size(); i++) {
-            if (node.Blocks.at(i).instance.back().name.compare(block) == 0) {
-              alignment_unit.blocks.push_back(i);
-              found = true;
+      }
+      node.Port_Location.push_back(tmp_portpos);
+    } else if (constraint["const_name"] == "R_Const") {
+      PnRDB::R_const temp_r_const;
+      temp_r_const.net_name = constraint["net_name"];
+      for (auto pair : constraint["constraints"]) {
+        std::pair<int, int> temp_start_pin;
+        std::pair<int, int> temp_end_pin;
+        vector<string> pins;
+        if (pair["pin1"]["type"] == "pin") {
+          for (unsigned int j = 0; j < node.Blocks.size(); j++) {
+            if (node.Blocks.at(j).instance.back().name.compare(pair["pin1"]["block_name"]) == 0) {
+              for (unsigned int k = 0; k < node.Blocks.at(j).instance.back().blockPins.size(); k++) {
+                if (node.Blocks.at(j).instance.back().blockPins[k].name.compare(pair["pin1"]["pin_name"]) == 0) {
+                  temp_start_pin.first = j;
+                  temp_start_pin.second = k;
+                  temp_r_const.start_pin.push_back(temp_start_pin);
+                  break;
+                }
+              }
+            }
+          }
+        } else if (pair["pin1"]["type"] == "terminal") {
+          for (unsigned int j = 0; j < node.Terminals.size(); j++) {
+            if (node.Terminals.at(j).name.compare(pair["pin1"]["terminal_name"]) == 0) {
+              temp_start_pin.first = -1;
+              temp_start_pin.second = j;
+              temp_r_const.start_pin.push_back(temp_start_pin);
               break;
             }
           }
-          if (!found) logger->error("Block {0} in AlignBlock not found in netlist", block);
         }
-        node.Align_blocks.push_back(alignment_unit);
-      } else if (constraint["const_name"] == "PortLocation") {
-        // PortLocation(X,L)
-        // This constraint indicates the location of the port ‘X’
-        // Considering the block as a rectangle, the edges can be divided into 12 sections as shown in the figure below.
-        //  L indicates the approximate position of the port. Value of L should be taken from the set
-        // {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT, }
-        PnRDB::PortPos tmp_portpos;
-        if (constraint["location"] == "TL")
-          tmp_portpos.pos = PnRDB::TL;
-        else if (constraint["location"] == "TC")
-          tmp_portpos.pos = PnRDB::TC;
-        else if (constraint["location"] == "TR")
-          tmp_portpos.pos = PnRDB::TR;
-        else if (constraint["location"] == "RT")
-          tmp_portpos.pos = PnRDB::RT;
-        else if (constraint["location"] == "RC")
-          tmp_portpos.pos = PnRDB::RC;
-        else if (constraint["location"] == "RB")
-          tmp_portpos.pos = PnRDB::RB;
-        else if (constraint["location"] == "BL")
-          tmp_portpos.pos = PnRDB::BL;
-        else if (constraint["location"] == "BC")
-          tmp_portpos.pos = PnRDB::BC;
-        else if (constraint["location"] == "BR")
-          tmp_portpos.pos = PnRDB::BR;
-        else if (constraint["location"] == "LB")
-          tmp_portpos.pos = PnRDB::LB;
-        else if (constraint["location"] == "LC")
-          tmp_portpos.pos = PnRDB::LC;
-        else if (constraint["location"] == "LT")
-          tmp_portpos.pos = PnRDB::LT;
-        string name = constraint["termianl_name"];
-        tmp_portpos.tid = -1;
-        for (int k = 0; k < (int)node.Terminals.size(); ++k) {
-          if (node.Terminals.at(k).name.compare(name) == 0) {
-            tmp_portpos.tid = k;
-            break;
-          }
-        }
-        if(tmp_portpos.tid != -1)node.Port_Location.push_back(tmp_portpos);
-      } else if (constraint["const_name"] == "R_Const") {
-        PnRDB::R_const temp_r_const;
-        temp_r_const.net_name = constraint["net_name"];
-        for (auto pair : constraint["constraints"]) {
-          std::pair<int, int> temp_start_pin;
-          std::pair<int, int> temp_end_pin;
-          vector<string> pins;
-          if (pair["pin1"]["type"] == "pin") {
-            for (unsigned int j = 0; j < node.Blocks.size(); j++) {
-              if (node.Blocks.at(j).instance.back().name.compare(pair["pin1"]["block_name"]) == 0) {
-                for (unsigned int k = 0; k < node.Blocks.at(j).instance.back().blockPins.size(); k++) {
-                  if (node.Blocks.at(j).instance.back().blockPins[k].name.compare(pair["pin1"]["pin_name"]) == 0) {
-                    temp_start_pin.first = j;
-                    temp_start_pin.second = k;
-                    temp_r_const.start_pin.push_back(temp_start_pin);
-                    break;
-                  }
+        if (pair["pin2"]["type"] == "pin") {
+          for (unsigned int j = 0; j < node.Blocks.size(); j++) {
+            if (node.Blocks.at(j).instance.back().name.compare(pair["pin2"]["block_name"]) == 0) {
+              for (unsigned int k = 0; k < node.Blocks.at(j).instance.back().blockPins.size(); k++) {
+                if (node.Blocks.at(j).instance.back().blockPins[k].name.compare(pair["pin2"]["pin_name"]) == 0) {
+                  temp_end_pin.first = j;
+                  temp_end_pin.second = k;
+                  temp_r_const.end_pin.push_back(temp_end_pin);
+                  break;
                 }
               }
             }
