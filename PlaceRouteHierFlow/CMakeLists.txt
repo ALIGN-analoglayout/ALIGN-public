@@ -1,5 +1,6 @@
 add_subdirectory(PnRDB)
 add_subdirectory(placer)
+add_subdirectory(EA_placer)
 add_subdirectory(router)
 add_subdirectory(cap_placer)
 add_subdirectory(guard_ring)

@@ -2,6 +2,7 @@
 #include "../PnRDB/datatype.h"
 #include "PlacerIfc.h"
 #include "Placer.h"
+#include "../EA_placer/placement.h"
 
 double ConstGraph::LAMBDA=1.;
 double ConstGraph::GAMAR=30;
