@@ -303,10 +303,11 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
 
     hyper = PnR.PlacerHyperparameters()
     # Defaults; change (and uncomment) as required
-    #hyper.T_INT = 1e6
-    #hyper.T_MIN = 1e-6
-    #hyper.ALPHA = 0.995
-    #hyper.COUNT_LIMIT = 200
+    hyper.T_INT = 0.75
+    hyper.ALPHA = 0.99925
+    hyper.T_MIN = hyper.T_INT*(hyper.ALPHA**1e4)    # 10k iterations
+    hyper.SEED = 0  # 0 do not override, >0 overwrite the seed
+    # hyper.COUNT_LIMIT = 200
     hyper.LAMBDA = lambda_coeff
 
     curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, DB.getDrc_info(), hyper, select_in_ILP)
@@ -410,6 +411,17 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
             standalone_overlap_checker( scaled_placement_verilog_d, concrete_name)
             check_placement( scaled_placement_verilog_d, scale_factor)
+
+            if True:
+                nets_d = gen_netlist( placement_verilog_d, concrete_name)
+
+                hpwl_alt = calculate_HPWL_from_placement_verilog_d( placement_verilog_d, concrete_name, nets_d, skip_globals=True)
+                if hN is not None:
+                    if hpwl_alt != hN.HPWL_extend:
+                        logger.warning( f'hpwl: locally computed from netlist {hpwl_alt}, placer computed {hN.HPWL_extend} differ!')
+                    else:
+                        logger.info( f'hpwl: locally computed from netlist {hpwl_alt}, placer computed {hN.HPWL_extend} are equal!')
+
 
             if gui:
                 nets_d = gen_netlist( placement_verilog_d, concrete_name)

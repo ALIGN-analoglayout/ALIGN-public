@@ -1564,6 +1564,7 @@ double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
     cost += area_norm;
     cost += HPWL_norm * const_graph.LAMBDA;
   } else {
+    // log measures the percentage change log(area_old)-log(area_new) = log(area_old/area_new)
     cost += log(area);
     if (HPWL_extend > 0) {
       cost += log(HPWL_extend) * const_graph.LAMBDA;
@@ -1581,7 +1582,10 @@ double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
   }
   if (!mydesign.Match_blocks.empty()) match_cost /= (mydesign.Match_blocks.size());
   constraint_penalty = match_cost * const_graph.BETA + linear_const * const_graph.PI + multi_linear_const * const_graph.PII;
-  cost += constraint_penalty;
+  // logger->info("cost={0} penalty={1} lambda={2}", cost, constraint_penalty, const_graph.LAMBDA);
+  if (constraint_penalty > 0) {
+  cost += log(constraint_penalty);
+  }
   return cost;
 }
 
