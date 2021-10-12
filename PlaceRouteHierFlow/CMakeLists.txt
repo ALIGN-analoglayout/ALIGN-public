@@ -15,6 +15,7 @@ target_link_libraries(
      # Internal Dependencies
      PnRDB
      placer
+     EA_placer
      router
      cap_placer
      guard_ring

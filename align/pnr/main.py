@@ -262,7 +262,7 @@ def write_verilog_json(verilog_d):
                         "instances": [mi.dict() for mi in m.instances],
                         } for m in verilog_d.modules],
         "global_signals":verilog_d.global_signals}
-def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False, gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False, steps_to_run,lambda_coeff, reference_placement_verilog_json, nroutings=1, select_in_ILP=False):
+def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False, gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False, steps_to_run,lambda_coeff, reference_placement_verilog_json, nroutings=1, select_in_ILP=False, use_analytical_placer=False):
     logger.info(f"Running Place & Route for {subckt} {router_mode} {steps_to_run}")
     # Generate file name inputs
     for cf in topology_dir.rglob('*.verilog.json'):
@@ -365,7 +365,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
         current_working_dir = os.getcwd()
         os.chdir(working_dir)
-        DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, results_dir=None, router_mode=router_mode, gui=gui, skipGDS=skipGDS, lambda_coeff=lambda_coeff, scale_factor=scale_factor, reference_placement_verilog_json=reference_placement_verilog_json, nroutings=nroutings, select_in_ILP=select_in_ILP)
+        DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, results_dir=None, router_mode=router_mode, gui=gui, skipGDS=skipGDS, lambda_coeff=lambda_coeff, scale_factor=scale_factor, reference_placement_verilog_json=reference_placement_verilog_json, nroutings=nroutings, select_in_ILP=select_in_ILP, use_analytical_placer=use_analytical_placer)
         os.chdir(current_working_dir)
 
         # Copy generated cap jsons from results_dir to working_dir
