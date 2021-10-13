@@ -452,53 +452,53 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
       if (block_order[i][j] & 0x0001) {
         // i is at the left of j
         double sparserow[2] = {-1, 1};
-        int colno[2] = {i * 4 + 1, j * 4 + 1};
+        int colno[2] = {int(i) * 4 + 1, int(j) * 4 + 1};
         if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[i][0].width + mydesign.bias_Hgraph)) logger->error("error");
       } else if (block_order[i][j] & 0x0002) {
         // i and j align to LLx
         double sparserow[2] = {1, -1};
-        int colno[2] = {i * 4 + 1, j * 4 + 1};
+        int colno[2] = {int(i) * 4 + 1, int(j) * 4 + 1};
         if (!add_constraintex(lp, 2, sparserow, colno, EQ, 0)) logger->error("error");
       } else if (block_order[i][j] & 0x0004) {
         // i and j align to x center
         double sparserow[2] = {1, -1};
-        int colno[2] = {i * 4 + 1, j * 4 + 1};
+        int colno[2] = {int(i) * 4 + 1, int(j) * 4 + 1};
         if (!add_constraintex(lp, 2, sparserow, colno, EQ, mydesign.Blocks[j][0].width / 2 - mydesign.Blocks[i][0].width / 2)) logger->error("error");
       } else if (block_order[i][j] & 0x0008) {
         // i and j align to URx
         double sparserow[2] = {1, -1};
-        int colno[2] = {i * 4 + 1, j * 4 + 1};
+        int colno[2] = {int(i) * 4 + 1, int(j) * 4 + 1};
         if (!add_constraintex(lp, 2, sparserow, colno, EQ, mydesign.Blocks[j][0].width - mydesign.Blocks[i][0].width)) logger->error("error");
       } else if (block_order[i][j] & 0x0010) {
         // i is at the right of j
         double sparserow[2] = {1, -1};
-        int colno[2] = {i * 4 + 1, j * 4 + 1};
+        int colno[2] = {int(i) * 4 + 1, int(j) * 4 + 1};
         if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][0].width + mydesign.bias_Hgraph)) logger->error("error");
       }
       if (block_order[i][j] & 0x0100) {
         // i is at below j
         double sparserow[2] = {-1, 1};
-        int colno[2] = {i * 4 + 2, j * 4 + 2};
+        int colno[2] = {int(i) * 4 + 2, int(j) * 4 + 2};
         if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[i][0].height + mydesign.bias_Vgraph)) logger->error("error");
       } else if (block_order[i][j] & 0x0200) {
         // i and j align to LLy
         double sparserow[2] = {1, -1};
-        int colno[2] = {i * 4 + 2, j * 4 + 2};
+        int colno[2] = {int(i) * 4 + 2, int(j) * 4 + 2};
         if (!add_constraintex(lp, 2, sparserow, colno, EQ, 0)) logger->error("error");
       } else if (block_order[i][j] & 0x0400) {
         // i and j align to y center
         double sparserow[2] = {1, -1};
-        int colno[2] = {i * 4 + 2, j * 4 + 2};
+        int colno[2] = {int(i) * 4 + 2, int(j) * 4 + 2};
         if (!add_constraintex(lp, 2, sparserow, colno, EQ, mydesign.Blocks[j][0].height / 2 - mydesign.Blocks[i][0].height / 2)) logger->error("error");
       } else if (block_order[i][j] & 0x0800) {
         // i and j align to URy
         double sparserow[2] = {1, -1};
-        int colno[2] = {i * 4 + 2, j * 4 + 2};
+        int colno[2] = {int(i) * 4 + 2, int(j) * 4 + 2};
         if (!add_constraintex(lp, 2, sparserow, colno, EQ, mydesign.Blocks[j][0].height - mydesign.Blocks[i][0].height)) logger->error("error");
       } else if (block_order[i][j] & 0x1000) {
         // i is above j
         double sparserow[2] = {1, -1};
-        int colno[2] = {i * 4 + 2, j * 4 + 2};
+        int colno[2] = {int(i) * 4 + 2, int(j) * 4 + 2};
         if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][0].height + mydesign.bias_Vgraph)) logger->error("error");
       }
     }
@@ -542,12 +542,12 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
   for (unsigned int i = 0; i < node.Blocks.size(); i++) {
     {
       double sparserow[1] = {1};
-      int colno[1] = {i * 4 + 1};
+      int colno[1] = {int(i) * 4 + 1};
       if (!add_constraintex(lp, 1, sparserow, colno, GE, 0)) logger->error("error");
     }
     {
       double sparserow[1] = {1};
-      int colno[1] = {i * 4 + 2};
+      int colno[1] = {int(i) * 4 + 2};
       if (!add_constraintex(lp, 1, sparserow, colno, GE, 0)) logger->error("error");
     }
   }
@@ -785,13 +785,13 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
         {
           double sparserow[5] = {const_graph.LAMBDA, (Lblock_width - 2 * Lpin_x) * const_graph.LAMBDA, -const_graph.LAMBDA,
                                 -(Rblock_width - 2 * Rpin_x) * const_graph.LAMBDA, -1};
-          int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, int(mydesign.Blocks.size()) * 4 + i * 2 + 1};
+          int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, int(mydesign.Blocks.size()) * 4 + int(i) * 2 + 1};
           add_constraintex(lp, 5, sparserow, colno, LE, -Lpin_x + Rpin_x);
         }
         {
           double sparserow[5] = {-const_graph.LAMBDA, -(Lblock_width - 2 * Lpin_x) * const_graph.LAMBDA, const_graph.LAMBDA,
                                 (Rblock_width - 2 * Rpin_x) * const_graph.LAMBDA, -1};
-          int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, int(mydesign.Blocks.size()) * 4 + i * 2 + 1};
+          int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, int(mydesign.Blocks.size()) * 4 + int(i) * 2 + 1};
           add_constraintex(lp, 5, sparserow, colno, LE, Lpin_x - Rpin_x);
         }
         row[mydesign.Blocks.size() * 4 + i * 2 + 1] = 1;
@@ -800,13 +800,13 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
         {
           double sparserow[5] = {const_graph.LAMBDA, (Dblock_height - 2 * Dpin_y) * const_graph.LAMBDA, -const_graph.LAMBDA,
                                 -(Ublock_height - 2 * Upin_y) * const_graph.LAMBDA, -1};
-          int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, int(mydesign.Blocks.size()) * 4 + i * 2 + 2};
+          int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, int(mydesign.Blocks.size()) * 4 + int(i) * 2 + 2};
           add_constraintex(lp, 5, sparserow, colno, LE, -Dpin_y + Upin_y);
         }
         {
           double sparserow[5] = {-const_graph.LAMBDA, -(Dblock_height - 2 * Dpin_y) * const_graph.LAMBDA, const_graph.LAMBDA,
                                 (Ublock_height - 2 * Upin_y) * const_graph.LAMBDA, -1};
-          int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, int(mydesign.Blocks.size()) * 4 + i * 2 + 2};
+          int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, int(mydesign.Blocks.size()) * 4 + int(i) * 2 + 2};
           add_constraintex(lp, 5, sparserow, colno, LE, Dpin_y - Upin_y);
         }
         row[mydesign.Blocks.size() * 4 + i * 2 + 2] = 1;
