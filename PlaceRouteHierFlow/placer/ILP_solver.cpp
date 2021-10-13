@@ -785,13 +785,13 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
         {
           double sparserow[5] = {const_graph.LAMBDA, (Lblock_width - 2 * Lpin_x) * const_graph.LAMBDA, -const_graph.LAMBDA,
                                 -(Rblock_width - 2 * Rpin_x) * const_graph.LAMBDA, -1};
-          int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, mydesign.Blocks.size() * 4 + i * 2 + 1};
+          int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, int(mydesign.Blocks.size()) * 4 + i * 2 + 1};
           add_constraintex(lp, 5, sparserow, colno, LE, -Lpin_x + Rpin_x);
         }
         {
           double sparserow[5] = {-const_graph.LAMBDA, -(Lblock_width - 2 * Lpin_x) * const_graph.LAMBDA, const_graph.LAMBDA,
                                 (Rblock_width - 2 * Rpin_x) * const_graph.LAMBDA, -1};
-          int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, mydesign.Blocks.size() * 4 + i * 2 + 1};
+          int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, int(mydesign.Blocks.size()) * 4 + i * 2 + 1};
           add_constraintex(lp, 5, sparserow, colno, LE, Lpin_x - Rpin_x);
         }
         row[mydesign.Blocks.size() * 4 + i * 2 + 1] = 1;
@@ -800,13 +800,13 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
         {
           double sparserow[5] = {const_graph.LAMBDA, (Dblock_height - 2 * Dpin_y) * const_graph.LAMBDA, -const_graph.LAMBDA,
                                 -(Ublock_height - 2 * Upin_y) * const_graph.LAMBDA, -1};
-          int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, mydesign.Blocks.size() * 4 + i * 2 + 2};
+          int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, int(mydesign.Blocks.size()) * 4 + i * 2 + 2};
           add_constraintex(lp, 5, sparserow, colno, LE, -Dpin_y + Upin_y);
         }
         {
           double sparserow[5] = {-const_graph.LAMBDA, -(Dblock_height - 2 * Dpin_y) * const_graph.LAMBDA, const_graph.LAMBDA,
                                 (Ublock_height - 2 * Upin_y) * const_graph.LAMBDA, -1};
-          int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, mydesign.Blocks.size() * 4 + i * 2 + 2};
+          int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, int(mydesign.Blocks.size()) * 4 + i * 2 + 2};
           add_constraintex(lp, 5, sparserow, colno, LE, Dpin_y - Upin_y);
         }
         row[mydesign.Blocks.size() * 4 + i * 2 + 2] = 1;
@@ -4063,7 +4063,7 @@ void ILP_solver::UpdateHierNodeAnalytical(design& mydesign, PnRDB::hierNode& nod
   node.cost = cost;
 
   for (unsigned int i = 0; i < mydesign.Blocks.size(); ++i) {
-    //node.Blocks.at(i).selectedInstance = curr_sp.GetBlockSelected(i);
+    node.Blocks.at(i).selectedInstance = 0;
     node.HPWL_extend += node.Blocks[i].instance[node.Blocks.at(i).selectedInstance].HPWL_extend_wo_terminal;
     node.HPWL_extend_wo_terminal += node.Blocks[i].instance[node.Blocks.at(i).selectedInstance].HPWL_extend_wo_terminal;
     placerDB::Omark ort;
