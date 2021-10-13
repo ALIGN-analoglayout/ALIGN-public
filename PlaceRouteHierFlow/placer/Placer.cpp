@@ -553,10 +553,20 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   double curr_cost = 0;
   int trial_count = 0;
   int max_trial_count = 10000;
+
+  unsigned int seed = 0;
+  if (hyper.SEED > 0) {
+    seed = hyper.SEED;
+    srand(seed);
+    logger->debug("Random number generator seed={0}", seed);
+  }
+
   if(select_in_ILP)
     curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
   else
     curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo);
+  // curr_cost negative means infeasible (do not satisfy placement constraints)
+  // Only positive curr_cost value is accepted.
   while (curr_cost < 0) {
     if (++trial_count > max_trial_count) {
       logger->error("Couldn't generate a feasible solution even after {0} perturbations.", max_trial_count);
@@ -576,27 +586,27 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
   ReshapeSeqPairMap(oData, nodeSize);
   //cout << "Placer-Info: initial cost = " << curr_cost << endl;
-
   //cout << "Placer-Info: status ";
   //cout.flush();
-  // Aimulate annealing
+  // Simulated annealing
   double T = hyper.T_INT;
   double delta_cost;
   int update_index = 0;
   int T_index = 0;
-  float per = 0.01;
+  float per = 0.1;
   //int updateThrd = 100;
   float total_update_number = log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA);
   bool exhausted(false);
+  int total_candidates = 0;
+  int total_candidates_infeasible = 0;
+  logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3}", designData.name, T_index, 0, curr_cost);
   while (T > hyper.T_MIN) {
     int i = 1;
     int MAX_Iter = 1;
-    if (effort == 0) {
+    if (effort <= 0) {
       MAX_Iter = 1;
-    } else if (effort == 1) {
-      MAX_Iter = 4;
     } else {
-      MAX_Iter = 8;
+      MAX_Iter = effort;
     }
     while (i <= MAX_Iter) {
 #ifdef MTMODE
@@ -663,6 +673,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       // Trival moves
       SeqPair trial_sp(curr_sp);
       // cout<<"before per"<<endl; trial_sp.PrintSeqPair();
+      // SY: PerturbationNew honors order and symmetry. What could make the trial_sp infeasible? Aspect ratio, Align?
       trial_sp.PerturbationNew(designData);
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ILP_solver trial_sol(designData);
@@ -671,47 +682,40 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
         trial_cost = trial_sol.GenerateValidSolution_select(designData, trial_sp, drcInfo);
       else
         trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo);
+      total_candidates += 1;
       if (trial_cost >= 0) {
         oData[trial_cost] = std::make_pair(trial_sp, trial_sol);
-        bool Smark = trial_sp.Enumerate();
-        if (!Smark) {
-          delta_cost = trial_cost - curr_cost;
-          if (delta_cost <= 0) {
+        bool Smark = false;///trial_sp.Enumerate();
+        //Smark = false;
+        delta_cost = trial_cost - curr_cost;
+        if (delta_cost < 0) {
+          Smark = true;
+          logger->debug("sa__accept_better T={0} delta_cost={1} ", T, delta_cost);
+        } else {
+          double r = (double)rand() / RAND_MAX;
+          if (r < exp((-1.0 * delta_cost) / T)) {
             Smark = true;
-          } else {
-            double r = (double)rand() / RAND_MAX;
-            if (r < exp((-1.0 * delta_cost) / T)) {
-              Smark = true;
-            }
+            logger->debug("sa__climbing_up T={0} delta_cost={1}", T, delta_cost);
           }
         }
         if (Smark) {
-          //std::cout << "cost: " << trial_cost << std::endl;
           curr_cost = trial_cost;
           curr_sp = trial_sp;
           curr_sol = trial_sol;
-          // if(update_index>updateThrd) {
-          //std::cout << "Insert\n";
           curr_sol.cost = curr_cost;
-          //}
         }
+      } else {
+        total_candidates_infeasible += 1;
+        logger->debug("sa__infeasible_candidate i={1}/{2} T={0} ", T, i, MAX_Iter);
       }
       ReshapeSeqPairMap(oData, nodeSize);
 
 #endif
 
       i++;
+      logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3}", designData.name, T_index, i, curr_cost);
+
       update_index++;
-      // cout<<update_index<<endl;
-      /**
-      if(update_index==updateThrd){
-        curr_sol.Update_parameters(designData, curr_sp);
-        curr_cost = curr_sol.CalculateCost(designData, curr_sp);
-        std::cout<<"updated cost: "<<curr_cost<<std::endl;
-        oData[curr_cost]=curr_sp;
-        ReshapeSeqPairMap(oData, nodeSize);
-      }
-      **/
       if (trial_sp.EnumExhausted()) {
         logger->info("Exhausted all permutations of sequence pairs");
         exhausted = true;
@@ -720,14 +724,16 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     }
     T_index++;
     if (total_update_number * per < T_index) {
-      logger->debug( "..... {0} %" , per * 100);
-      //cout.flush();
-      per = per + 0.01;
+      logger->info( "..... {0} %" , (int)(per * 100));
+      per = per + 0.1;
     }
     if (exhausted) break;
     T *= hyper.ALPHA;
-    // cout<<T<<endl;
+    logger->debug("sa__reducing_temp T={0}", T);
   }
+
+  logger->debug("sa__summary total_candidates={0} total_candidates_infeasible={1}", total_candidates, total_candidates_infeasible);
+
   // Write out placement results
   //cout << endl << "Placer-Info: optimal cost = " << curr_cost << endl;
   // curr_sol.PrintConstGraph();

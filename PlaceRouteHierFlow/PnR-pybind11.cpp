@@ -484,6 +484,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("T_INT", &PlacerHyperparameters::T_INT)
     .def_readwrite("T_MIN", &PlacerHyperparameters::T_MIN)
     .def_readwrite("ALPHA", &PlacerHyperparameters::ALPHA)
+    .def_readwrite("SEED", &PlacerHyperparameters::SEED)
     .def_readwrite("COUNT_LIMIT", &PlacerHyperparameters::COUNT_LIMIT)
     .def_readwrite("LAMBDA", &PlacerHyperparameters::LAMBDA)
     .def_readwrite("use_analytical_placer", &PlacerHyperparameters::use_analytical_placer)
