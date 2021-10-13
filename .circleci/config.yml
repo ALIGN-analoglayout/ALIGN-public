@@ -162,7 +162,7 @@ jobs:
             pip install align[test] -f ./wheelhouse
             filter="<<parameters.design>>"
             filter="<<parameters.pdk>>${filter:+ and $filter}"
-            pytest -vv -n "$MAX_JOBS" --runnightly --maxerrors=20 --timeout=<<parameters.timeout>> --durations=0 -k "$filter" -- tests/integration tests/pdks
+            pytest -vv --runnightly --maxerrors=20 --timeout=<<parameters.timeout>> --durations=0 -k "$filter" -- tests/integration tests/pdks
             mkdir -p test-reports/${CIRCLE_BUILD_NUM} && cp -r junit.xml LOG test-reports/${CIRCLE_BUILD_NUM}
       - store_test_results:
           path: test-reports
