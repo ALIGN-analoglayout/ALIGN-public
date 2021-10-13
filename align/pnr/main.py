@@ -20,7 +20,7 @@ from ..cell_fabric import gen_gds_json, transformation
 from .write_constraint import PnRConstraintWriter
 from .. import PnR
 from .toplevel import toplevel
-from ..schema.hacks import VerilogJsonTop
+from ..schema.hacks import VerilogJsonTop, VerilogJsonModule
 
 logger = logging.getLogger(__name__)
 
@@ -163,8 +163,19 @@ def modify_pg_conn_subckt(verilog_d, subckt, pp):
     nm: new module
     """
     # TODO: remove redundant const
-    nm = deepcopy([module for module in verilog_d['modules'] if module['name'] == subckt][0])
+
+    def copymodule( module):
+        r = { 'name': module['name'],
+              'parameters': module['parameters'][:],
+              'constraints': module['constraints'],
+              'instances': module['instances'],
+              }
+        return VerilogJsonModule(**r)
+
+    nm = copymodule([module for module in verilog_d['modules'] if module['name'] == subckt][0])
+
     nm['parameters'] = [p for p in nm['parameters'] if p not in pp]
+
     logger.debug(f"modifying subckt {nm['name']} {pp}")
     modules_dict = {module['name']: module['parameters'] for module in verilog_d['modules']}
     i = 0
@@ -177,6 +188,7 @@ def modify_pg_conn_subckt(verilog_d, subckt, pp):
             i = i+1
             updated_ckt_name = subckt+'_PG'+str(i)
     nm['name'] = updated_ckt_name
+
     logger.debug(f"new module is added: {nm}")
     verilog_d['modules'].append(nm)
     return updated_ckt_name
