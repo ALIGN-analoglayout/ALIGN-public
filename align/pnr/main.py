@@ -105,7 +105,7 @@ def extract_capacitor_constraints( pnr_const_ds):
 
     return cap_constraints
 
-@profile
+
 def remove_pg_pins(verilog_d: dict, subckt: str, pg_connections: dict):
     """remove_pg_pins
 
@@ -155,7 +155,6 @@ def clean_if_extra(verilog_d, subckt):
     verilog_d['modules'] = [m for m in verilog_d['modules'] if m['name'] in all_inst]
 
 
-@profile
 def modify_pg_conn_subckt(verilog_d, subckt, pp):
     """
     creates a new subcircuit by removing power pins from a subcircuit definition
@@ -275,7 +274,7 @@ def write_verilog_json(verilog_d):
         "global_signals":verilog_d.global_signals}
 
 
-@profile
+
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False, gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False, steps_to_run,lambda_coeff, reference_placement_verilog_json, nroutings=1, select_in_ILP=False):
     logger.info(f"Running Place & Route for {subckt} {router_mode} {steps_to_run}")
     # Generate file name inputs

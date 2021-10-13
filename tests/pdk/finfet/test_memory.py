@@ -11,7 +11,7 @@ except BaseException:
 
 cleanup = False
 
-
+@pytest.mark.skip(reason="Only needed for debugging memory leaks")
 def test_cmp_0():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
@@ -21,6 +21,7 @@ def test_cmp_0():
     ckt_dir, run_dir = run_example(example, cleanup=cleanup)
 
 
+@pytest.mark.skip(reason="Only needed for debugging memory leaks")
 def test_cmp_1():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
@@ -47,17 +48,10 @@ def test_cmp_1():
     ]
     example = build_example(name, netlist, setup, constraints)
 
-    # run_example(example, cleanup=cleanup)
+    run_example(example, cleanup=cleanup)
 
     # run_example(example, cleanup=cleanup,
     #             additional_args=['--flow_stop', '2_primitives'])
 
     # run_example(example, cleanup=cleanup,
     #             additional_args=['--flow_stop', '3_pnr:prep', '--router_mode', 'no_op'])
-
-    # run_example(example, cleanup=cleanup,
-    #             additional_args=['--router_mode', 'no_op'])
-
-    run_example(example, cleanup=cleanup,
-                additional_args=['--flow_stop', '3_pnr:prep', '--router_mode', 'no_op',
-                                 '--skipGDS', ])
