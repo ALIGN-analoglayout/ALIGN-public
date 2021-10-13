@@ -9,7 +9,7 @@ import json
 import re
 import itertools
 #from IPython import embed
-from copy import deepcopy
+import copy
 
 from collections import deque, defaultdict
 
@@ -158,7 +158,7 @@ def modify_pg_conn_subckt(verilog_d, subckt, pp):
     nm: new module
     """
     #TODO: remove redundant const
-    nm = deepcopy([module for module in verilog_d['modules'] if module['name']==subckt][0])
+    nm = copy.copy([module for module in verilog_d['modules'] if module['name']==subckt][0])
     nm['parameters'] = [p for p in nm['parameters'] if p not in pp]
     logger.debug(f"modifying subckt {nm['name']} {pp}")
     modules_dict = {module['name']: module['parameters'] for module in verilog_d['modules']}
