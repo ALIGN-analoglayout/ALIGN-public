@@ -74,6 +74,72 @@ std::vector<std::vector<RouterDB::point> > RawRouter::FindPlist(std::set<RouterD
 
 };
 
+std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> RawRouter::findviaset(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, RouterDB::point LL, RouterDB::point UR){
+
+  std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> set;
+  std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp >::iterator itlowx, itupx, xitx; 
+  
+
+  //std::cout<<"set@@@@@set"<<std::endl;
+  std::pair<int, RouterDB::point> temp_sink_up;
+  std::pair<int, RouterDB::point> temp_sink_low;
+  temp_sink_up.second=UR;
+  temp_sink_up.first=this->highest_metal;
+  //temp_sink_up.iterNet=this->Nets.size();
+  itupx= Pset_via.upper_bound(temp_sink_up);//what if on the margin?
+  temp_sink_low.second=LL;
+  temp_sink_low.first=this->lowest_metal;
+  //temp_sink_low.iterNet=-2;
+  itlowx = Pset_via.lower_bound(temp_sink_low);
+
+
+  for(xitx=itlowx; xitx!=itupx; ++xitx){
+      set.insert(*xitx);
+     }
+
+  return set;
+
+};
+
+std::set<RouterDB::SinkData, RouterDB::SinkDataComp> RawRouter::Findset(std::set<RouterDB::SinkData, RouterDB::SinkDataComp>& Set_x, RouterDB::point LL, RouterDB::point UR){
+
+  std::set<RouterDB::SinkData, RouterDB::SinkDataComp> set;
+  std::set<RouterDB::SinkData, RouterDB::SinkData2Comp> Set_y;
+  std::set<RouterDB::SinkData, RouterDB::SinkDataComp >::iterator itlowx, itupx, xitx;
+  std::set<RouterDB::SinkData, RouterDB::SinkData2Comp >::iterator itlowy, itupy, xity; 
+  
+
+  //std::cout<<"set@@@@@set"<<std::endl;
+  RouterDB::SinkData temp_sink_up;
+  RouterDB::SinkData temp_sink_low;
+  temp_sink_up.coord.push_back(UR);
+  temp_sink_up.metalIdx=this->highest_metal;
+  //temp_sink_up.iterNet=this->Nets.size();
+  itupx= Set_x.upper_bound(temp_sink_up);//what if on the margin?
+  temp_sink_low.coord.push_back(LL);
+  temp_sink_low.metalIdx=this->lowest_metal;
+  //temp_sink_low.iterNet=-2;
+  itlowx = Set_x.lower_bound(temp_sink_low);
+  
+  //std::cout<<"LL,UR "<<"("<<LL.x<<","<<LL.y<<") ("<<UR.x<<","<<UR.y<<")"<<std::endl;
+
+  for(xitx=itlowx; xitx!=itupx; ++xitx){
+      Set_y.insert(*xitx);
+     }
+
+  itupy = Set_y.upper_bound(temp_sink_up);
+  itlowy = Set_y.lower_bound(temp_sink_low);
+
+  //for(xitx=itlowx; xitx!=itupx; ++xitx){
+  for(xity=itlowy;xity!=itupy;++xity){
+       set.insert(*xity);
+  }
+
+  return set;
+
+};
+
+
 std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > RawRouter::FindsetPlist(std::set<RouterDB::SinkData, RouterDB::SinkDataComp>& Set_x, RouterDB::point LL, RouterDB::point UR){
 
   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > plist;

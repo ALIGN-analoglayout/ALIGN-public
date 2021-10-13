@@ -34,21 +34,21 @@ void GlobalGrid::CreateGridDataCap(bool Cap_Ncap){
 
       for(unsigned int j=0;j<tiles_total[i].north.size();j++){
 
-           if(tiles_total[i].north[j].capacity>0 or Cap_Ncap){    
+           if(tiles_total[i].north[j].capacity>0 || Cap_Ncap){    
               write_out_matlab_file(i,tiles_total[i].north[j].next); 
              }
           }
 
       for(unsigned int j=0;j<tiles_total[i].south.size();j++){
 
-           if(tiles_total[i].south[j].capacity>0 or Cap_Ncap){    
+           if(tiles_total[i].south[j].capacity>0 || Cap_Ncap){    
               write_out_matlab_file(i,tiles_total[i].south[j].next); 
              }
           }
 
       for(unsigned int j=0;j<tiles_total[i].east.size();j++){
 
-           if(tiles_total[i].east[j].capacity>0 or Cap_Ncap){    
+           if(tiles_total[i].east[j].capacity>0 || Cap_Ncap){    
               write_out_matlab_file(i,tiles_total[i].east[j].next); 
              }
           }
@@ -56,7 +56,7 @@ void GlobalGrid::CreateGridDataCap(bool Cap_Ncap){
 
       for(unsigned int j=0;j<tiles_total[i].west.size();j++){
 
-           if(tiles_total[i].west[j].capacity>0 or Cap_Ncap){    
+           if(tiles_total[i].west[j].capacity>0 || Cap_Ncap){    
               write_out_matlab_file(i,tiles_total[i].west[j].next); 
              }
           }
@@ -64,14 +64,14 @@ void GlobalGrid::CreateGridDataCap(bool Cap_Ncap){
 
       for(unsigned int j=0;j<tiles_total[i].down.size();j++){
 
-           if(tiles_total[i].down[j].capacity>0 or Cap_Ncap){    
+           if(tiles_total[i].down[j].capacity>0 || Cap_Ncap){    
               write_out_matlab_file(i,tiles_total[i].down[j].next);  
              }
           }
 
       for(unsigned int j=0;j<tiles_total[i].up.size();j++){
 
-           if(tiles_total[i].up[j].capacity>0 or Cap_Ncap){    
+           if(tiles_total[i].up[j].capacity>0 || Cap_Ncap){    
               write_out_matlab_file(i,tiles_total[i].up[j].next);  
              }
           }
@@ -141,7 +141,7 @@ GlobalGrid::GlobalGrid(PnRDB::Drc_info& drc_info, int LLx, int LLy, int URx, int
     int layerIdx=(i-Lmetal)/tileLayerNo; // current tile index
     this->tile2metal[layerIdx].clear();
     std::vector<int> tmpV;
-    for(int j=0;j<tileLayerNo and i+j<=Hmetal;j++) {
+    for(int j=0;j<tileLayerNo && i+j<=Hmetal;j++) {
       logger->debug("Traverse layer ",j);
       this->metal2tile[i+j]=layerIdx;
       this->tile2metal[layerIdx].insert(i+j);
@@ -174,7 +174,7 @@ GlobalGrid::GlobalGrid(PnRDB::Drc_info& drc_info, int LLx, int LLy, int URx, int
         tmpT.Xidx=Xidx; tmpT.Yidx=Yidx;
         tmpT.tileLayer=layerIdx;
         //tmpT.metal.clear();
-        //for(int j=0;j<tileLayerNo and i+j<=Hmetal;j++) {
+        //for(int j=0;j<tileLayerNo && i+j<=Hmetal;j++) {
         //  tmpT.metal.insert(i+j);
         //}
         RouterDB::point tmpP;

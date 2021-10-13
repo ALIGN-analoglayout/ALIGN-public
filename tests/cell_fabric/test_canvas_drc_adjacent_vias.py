@@ -46,10 +46,10 @@ def setup():
     gridlines = list(range(n))
 
     for i in gridlines:
-        c.addWire( m3, 'a', None, i, (0,1), (n+1,-1)) 
+        c.addWire( m3, 'a', i, (0,1), (n+1,-1)) 
 
     for j in gridlines:
-        c.addWireAndViaSet( 'a', None, m2, v2, j+1, gridlines)
+        c.addWireAndViaSet( 'a', m2, v2, j+1, gridlines)
 
     return c,n
 

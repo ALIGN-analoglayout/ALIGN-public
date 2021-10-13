@@ -1,5 +1,0 @@
-Multi_Connection ( {voutp} , {3} )
-Multi_Connection ( {voutn} , {3} )
-Multi_Connection ( {net10} , {3} )
-Multi_Connection ( {vss} , {3} )
-Multi_Connection ( {vdd} , {3} )

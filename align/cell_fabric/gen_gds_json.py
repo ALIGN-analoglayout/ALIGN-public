@@ -25,8 +25,10 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
 
   tme = [ ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second]
   tme = tme + tme
-
-  lib = {"time" : tme, "libname" : "pcell", "units" : [ 0.000025, 2.5e-11 ]}
+  units_meter = (1/j1['ScaleFactor'])*1e-09
+  units_user = (1/j1['ScaleFactor'])*1e-09
+  #lib = {"time" : tme, "libname" : "pcell", "units" : [ 0.000025, 2.5e-11 ]}
+  lib = {"time" : tme, "libname" : "pcell", "units" : [ units_user, units_meter ]}
   libraries.append (lib)
 
   structures = []
@@ -38,7 +40,6 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
     strct = {"time" : tme, "strname" : nm, "elements" : []}
 
     for layer, rect in layers.items():
-      #print(j['V1']['GdsLayerNo'])
       strct["elements"].append ({"type": "boundary", "layer" : j[layer]['GdsLayerNo'], "datatype" : j[layer]['GdsDatatype']['Draw'],
                                  "xy" : flat_rect_to_boundary( rect)})
 
@@ -52,14 +53,14 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
 
   def scale(x):
 
-    result = x*4//j1['ScaleFactor']
-    if isinstance(result, float):
-      logger.warning(f"translate_data:scale: Coord {x} ({result}) not integral")
-      intresult = int(round(result,0))
-      assert abs(intresult-result) < 0.001
-      return intresult
-    else:
-      return result
+      result = x
+      if isinstance(result, float):
+        logger.warning(f"translate_data:scale: Coord {x} ({result}) not integral")
+        intresult = int(round(result,0))
+        assert abs(intresult-result) < 0.001
+        return intresult
+      else:
+        return result
 
 
   pat = None
@@ -73,9 +74,18 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
   for obj in data['terminals']:
       k = obj['layer']
       if k in via_gen_tbl: continue
-      if exclude_based_on_name( obj['netName']): continue
+      if exclude_based_on_name( obj['netName']): continue    
+      r = list(map( scale, obj['rect']))
 
-      strct["elements"].append ({"type": "boundary", "layer" : j[k]['GdsLayerNo'],
+      if k == "V0" and (r[2]-r[0]) > scale(10*j['V0']['WidthX']):
+          for NumX in range(j['GuardRing']['viaArray']):
+              new_rect = [r[0]+NumX*(j['GuardRing']['v0WidthX']+j['GuardRing']['v0SpaceX']), r[1],
+                          r[0]+NumX*(j['GuardRing']['v0WidthX']+j['GuardRing']['v0SpaceX'])+j['GuardRing']['v0WidthX'], r[3]]
+              strct["elements"].append ({"type": "boundary", "layer" : j[k]['GdsLayerNo'],
+                            "datatype" : j[k]['GdsDatatype']['Draw'],
+                            "xy" : flat_rect_to_boundary( new_rect)})
+      else:
+          strct["elements"].append ({"type": "boundary", "layer" : j[k]['GdsLayerNo'],
                         "datatype" : j[k]['GdsDatatype']['Draw'],
                         "xy" : flat_rect_to_boundary( list(map(scale,obj['rect'])))})
       if ('color' in obj):
@@ -96,7 +106,7 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
       r = list(map( scale, obj['rect']))
       xc = (r[0]+r[2])//2
       yc = (r[1]+r[3])//2
-
+      
       strct["elements"].append ({"type": "sref", "sname" : via_gen_tbl[k][0], "xy" : [xc, yc]})
 
   strct["elements"].append ({"type": "boundary", "layer" : j['Bbox']['GdsLayerNo'], "datatype" : j['Bbox']['GdsDatatype']['Draw'],

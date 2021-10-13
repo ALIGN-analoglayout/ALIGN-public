@@ -5,17 +5,19 @@
 "design_info":
 {
 "vt_type":["SLVT", "HVT","LVT","RVT"],
-"top_signal_routing_layer": "M12",
-"bottom_signal_routing_layer": "M2",
+"top_signal_routing_layer": "M5",
+"bottom_signal_routing_layer": "M1",
+"top_power_grid_layer": "M6",
+"bottom_power_grid_layer": "M5",
+"top_power_routing_layer": "M6",
+"bottom_power_routing_layer": "M1",
 "top_clock_routing_layer": "M12",
 "bottom_clock_routing_layer":"M2",
-"top_power_routing_layer": "M12",
-"bottom_power_routing_layer": "M2",
 "top_port_routing_layer": "M12",
 "bottom_port_routing_layer": "M2",
 "power_rail_frequency":2,
-"Hspace": 32,
-"Vspace": 32,
+"Hspace": 0,
+"Vspace": 0,
 "unit_size_nmos":12,
 "unit_size_pmos":12,
 "unit_size_cap":12,
@@ -664,6 +666,17 @@
 "Layer": "Outline",
 "GdsLayerNo": 104,
 "GdsDatatype": {"Draw":0}
+},
+
+{
+"Layer": "GuardRing",
+"activeRingWidth": 400,
+"activeRing_enclosure": 300,
+"viaArray": 8,
+"v0SpaceX": 48,
+"v0WidthX": 32,
+"XSpace": 240,
+"YSpace": 252
 },    
 
 {

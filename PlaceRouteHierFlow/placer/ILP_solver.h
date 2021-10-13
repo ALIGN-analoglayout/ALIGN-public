@@ -22,7 +22,6 @@
 #include "SeqPair.h"
 #include "design.h"
 #include "lp_lib.h"
-#include "spdlog/spdlog.h"
 
 using std::cerr;
 using std::cin;
@@ -42,28 +41,40 @@ class ILP_solver {
   };
   vector<Block> Blocks;
   placerDB::point LL, UR;
-  double area = 0, HPWL = 0, ratio = 0, dead_area = 0, linear_const = 0, multi_linear_const = 0;
+  double area = 0, HPWL = 0, HPWL_extend = 0, HPWL_extend_terminal = 0, ratio = 0, linear_const = 0, multi_linear_const = 0;
+  double area_norm = 0, HPWL_norm = 0;
   double Aspect_Ratio_weight = 1000;
-  typedef void (lphandlestr_func)(lprec *lp, void *userhandle, char *buf);
+  double Aspect_Ratio[2] = {0, 100};
+  double placement_box[2] = {-1.0, -1.0};
+  typedef void(lphandlestr_func)(lprec* lp, void* userhandle, char* buf);
   static void lpsolve_logger(lprec *lp, void *userhandle, char *buf);
   vector<vector<int>> block_order;
 
   public:
+  double cost = 0;
+  double constraint_penalty = 0;
   ILP_solver();
   ILP_solver(design& mydesign, PnRDB::hierNode& node);
   ILP_solver(design& mydesign);
   ILP_solver(const ILP_solver& solver);
   ILP_solver& operator=(const ILP_solver& solver);
-  double GenerateValidSolution(design& mydesign, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node);
+  double GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node);
+  double GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
+  double GenerateValidSolution_select(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
   double CalculateCost(design& mydesign);
+  double CalculateCost(design& mydesign, SeqPair& curr_sp);
   void WritePlacement(design& caseNL, SeqPair& curr_sp, string outfile);
-  void PlotPlacement(design& caseNL, string outfile, bool plot_pin, bool plot_terminal, bool plot_net);
+  void PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfile);
+  void PlotPlacementAnalytical(design& caseNL, string outfile, bool plot_pin, bool plot_terminal, bool plot_net);
   std::vector<double> Calculate_Center_Point_feature(std::vector<std::vector<placerDB::point> >& temp_contact);
-  void updateTerminalCenter(design& mydesign);
-  void UpdateHierNode(design& mydesign, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo);
+  void updateTerminalCenter(design& mydesign, SeqPair& curr_sp);
+  void updateTerminalCenterAnalytical(design& mydesign);
+  void UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo);
+  void UpdateHierNodeAnalytical(design& mydesign, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo);
   void UpdateBlockinHierNode(design& mydesign, placerDB::Omark ort, PnRDB::hierNode& node, int i, int sel, PnRDB::Drc_info& drcInfo);
   void UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo);
-  void UpdateSymmetryNetInfo(design& mydesign, PnRDB::hierNode& node, int i, int SBidx, placerDB::Smark axis_dir);
+  void UpdateSymmetryNetInfoAnalytical(design& mydesign, PnRDB::hierNode& node, int i, int SBidx, placerDB::Smark axis_dir);
+  void UpdateSymmetryNetInfo(design& mydesign, PnRDB::hierNode& node, int i, int SBidx, placerDB::Smark axis_dir, SeqPair& curr_sp);
   PnRDB::bbox ConvertBoundaryData(vector<placerDB::point> Bdata);
   PnRDB::point ConvertPointData(placerDB::point Pdata);
 };

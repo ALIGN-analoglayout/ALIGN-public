@@ -5,6 +5,15 @@ GcellDetailRouter::GcellDetailRouter(){
 
 };
 
+void GcellDetailRouter::Topology_extraction(vector<RouterDB::Metal> &temp_path){
+
+  //Q: for each 2 pin segment?
+  //Q: merge small segment?
+
+  //return temp_path;
+
+};
+
 GcellDetailRouter::GcellDetailRouter(PnRDB::hierNode& HierNode, GcellGlobalRouter& GR, int path_number, int grid_scale){
 
   auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.GcellDetailRouter");
@@ -52,7 +61,7 @@ void GcellDetailRouter::calculate_extension_length() {
   //this calculate difference between minlength and via metal length
   //and used for inactivate contact of extra length to avoid minspacing from metal extension
   Minlength_ViaLength_Diff.resize(drc_info.Metal_info.size());
-  for (int i = 0; i < drc_info.Metal_info.size(); ++i) {
+  for (int i = 0; i < int(drc_info.Metal_info.size()); ++i) {
     int minL = drc_info.Metal_info[i].minL;
     int lower_via_length = INT_MAX;
     int upper_via_length = INT_MAX;
@@ -145,20 +154,20 @@ std::vector<std::pair<int,int> > GcellDetailRouter::MappingToConnected(RouterDB:
   std::pair<int,int> temp_pair;
   for(unsigned int i=0;i<temp_R.start_pin.size();++i){
      for(unsigned int j=0;j<temp_net.connected.size();++j){
-        if(temp_R.start_pin[i].first!=-1 and temp_R.start_pin[i].first ==temp_net.connected[j].iter and temp_R.start_pin[i].second ==temp_net.connected[j].iter2){
+        if(temp_R.start_pin[i].first!=-1 && temp_R.start_pin[i].first ==temp_net.connected[j].iter && temp_R.start_pin[i].second ==temp_net.connected[j].iter2){
            temp_pair.first = j;
            break;
-        }else if(temp_R.start_pin[i].first == -1 and temp_R.start_pin[i].second ==temp_net.connected[j].iter){
+        }else if(temp_R.start_pin[i].first == -1 && temp_R.start_pin[i].second ==temp_net.connected[j].iter){
            temp_pair.first = j;
            break;
         }
      }
 
      for(unsigned int j=0;j<temp_net.connected.size();++j){
-        if(temp_R.end_pin[i].first!=-1 and temp_R.end_pin[i].first ==temp_net.connected[j].iter and temp_R.end_pin[i].second ==temp_net.connected[j].iter2){
+        if(temp_R.end_pin[i].first!=-1 && temp_R.end_pin[i].first ==temp_net.connected[j].iter && temp_R.end_pin[i].second ==temp_net.connected[j].iter2){
            temp_pair.second = j;
            break;
-        }else if(temp_R.end_pin[i].first == -1 and temp_R.end_pin[i].second ==temp_net.connected[j].iter){
+        }else if(temp_R.end_pin[i].first == -1 && temp_R.end_pin[i].second ==temp_net.connected[j].iter){
            temp_pair.second = j;
            break;
         }
@@ -285,7 +294,7 @@ std::vector<int> GcellDetailRouter::EstimateDist(RouterDB::R_const &temp_R, Rout
 
 void GcellDetailRouter::Copy_tile_metals(){
 
-  for(int i=0;i<Gcell.tiles_total.size();i++){
+  for(unsigned int i=0;i<Gcell.tiles_total.size();i++){
 
       Gcell.tiles_total[i].origin_metal = Gcell.tiles_total[i].metal;
 
@@ -486,7 +495,7 @@ void GcellDetailRouter::Global_Path_Operation_For_Pins(int i, std::vector<std::p
 void GcellDetailRouter::Global_Path_Operation_For_Symmetry_Pins(int i, std::vector<std::pair<int,int> > &global_path){
 
   std::pair<int,int> temp_global_path;
-  if(Nets[i].symCounterpart!=-1 and Nets[i].symCounterpart < (int)Nets.size()-1){
+  if(Nets[i].symCounterpart!=-1 && Nets[i].symCounterpart < (int)Nets.size()-1){
 
      int sym_ST_index = Nets[Nets[i].symCounterpart].STindex;
      for(unsigned int j=0;j<Nets[Nets[i].symCounterpart].STs[sym_ST_index].path.size();j++){
@@ -503,6 +512,9 @@ void GcellDetailRouter::Global_Path_Operation_For_Symmetry_Pins(int i, std::vect
 
 Grid GcellDetailRouter::Generate_Grid_Net(int i){
 
+  //construct grid based on 2D i-th global routing and 3D terminals
+  //grid includes all the 2D symmetry path of i-th net and all terminals
+
   RouterDB::point chip_LL;
   RouterDB::point chip_UR;
   chip_LL.x = LL.x;
@@ -515,7 +527,7 @@ Grid GcellDetailRouter::Generate_Grid_Net(int i){
   std::pair<int,int> temp_global_path;
 
   Global_Path_Operation_For_Pins(i, global_path);
-  Global_Path_Operation_For_Symmetry_Pins(i, global_path);
+  Global_Path_Operation_For_Symmetry_Pins(i, global_path); //do not need this part
   Grid grid(Gcell, global_path, drc_info, chip_LL, chip_UR, lowest_metal, highest_metal, grid_scale);
   grid.Full_Connected_Vertex();
 
@@ -546,7 +558,8 @@ int GcellDetailRouter::Found_Pins_and_Symmetry_Pins(Grid &grid ,int i, std::vect
   std::vector<std::vector<RouterDB::SinkData> > sym_temp_pins; //symmetry pins 
   std::vector<std::vector<RouterDB::SinkData> > common_pins; //common part for routing pins and symmetry pins
 
-  if(Nets[i].symCounterpart!=-1 and Nets[i].symCounterpart < (int)Nets.size()-1){       
+  if(Nets[i].symCounterpart!=-1 && Nets[i].symCounterpart < (int)Nets.size()-1){ 
+     /*
      sym_flag = findPins_Sym(grid, Nets[i], Nets[Nets[i].symCounterpart], Nets[i].sym_H, Nets[i].center, temp_pins, sym_temp_pins, common_pins);
      if(sym_flag == 1){
         logger->debug("sym_flag exist");
@@ -555,6 +568,8 @@ int GcellDetailRouter::Found_Pins_and_Symmetry_Pins(Grid &grid ,int i, std::vect
         //SortPins(common_pins);
         temp_pins = common_pins;
        }
+       */
+     temp_pins = findPins_new(grid, Nets[i]);      
     }else{
      temp_pins = findPins_new(grid, Nets[i]);
      //SortPins(temp_pins);
@@ -569,19 +584,10 @@ void GcellDetailRouter::Symmetry_metal_Inactive(int i, int sym_flag, Grid &grid,
 
     auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.Symmetry_metal_Inactive");
 
-       //modify_tile_metals(Nets[i], 1);
-    if(sym_flag==1 and Nets[i].global_sym!=-1 and Nets[i].global_sym <(int)Nets.size()-1){
-
-       RouterDB::point global_sym_gridll;
-       RouterDB::point global_sym_gridur;
-       //FindBoundryofGlobalSymNet(gridll,gridur,global_sym_gridll,global_sym_gridur,Nets[i].sym_H,Nets[i].center, Nets[i].global_sym);
-      }
-
-    // void InactivePointlist(std::vector< std::set<RouterDB::point, RouterDB::pointXYComp> > &plist);
     sym_gridll = gridll;
     sym_gridur = gridur;
 
-    if(sym_flag ==1){
+    if(Nets[i].symCounterpart!=-1 && Nets[i].symCounterpart<int(Nets.size())){
         logger->debug("Starting sym net metal coping");
         RouterDB::SinkData sym_aear;
         sym_aear.metalIdx = -1;
@@ -593,7 +599,7 @@ void GcellDetailRouter::Symmetry_metal_Inactive(int i, int sym_flag, Grid &grid,
         std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > sym_netplist;
         logger->debug("Starting sym block metal coping flag");
         CreatePlistSymBlocks(sym_netplist, sym_gridll, sym_gridur, Nets[i].sym_H, Nets[i].center, gridll, gridur);
-        grid.InactivePointlist(sym_netplist);
+        //grid.InactivePointlist(sym_netplist);
         logger->debug("End sym net metal coping");
       }
 
@@ -649,10 +655,10 @@ void GcellDetailRouter::Detailed_router_set_src_dest(Grid &grid, std::vector<Rou
    //std::cout<<"Detail Router check point 2"<<std::endl;
    std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > sym_net_plist;
 
-   if(sym_flag == 1){
+   if(Nets[i].symCounterpart != -1 && Nets[i].symCounterpart<int(Nets.size() )){
      //inactivate the point in the sym part, then recover those node in the end
      CreatePlistSymNets(sym_net_plist, sym_gridll, sym_gridur, Nets[i].sym_H, Nets[i].center, gridll, gridur);
-     grid.InactivePointlist(sym_net_plist);
+     //grid.InactivePointlist(sym_net_plist);
     }
 
    grid.setSrcDest_detail( temp_source, temp_dest, this->width, this->height, Smap);
@@ -698,6 +704,23 @@ void GcellDetailRouter::Symmetry_Routing(int sym_flag, int i, std::set<RouterDB:
     }
 
 };
+
+void GcellDetailRouter::Mirror_Topology(std::vector<RouterDB::Metal> &sym_path,int HV_sym,int center){
+
+  if(HV_sym==1){//H
+    for(unsigned int i=0;i<sym_path.size();++i){
+      sym_path[i].LinePoint[0].y = 2*center - sym_path[i].LinePoint[0].y;
+      sym_path[i].LinePoint[1].y = 2*center - sym_path[i].LinePoint[1].y;
+    }
+  }else{//V
+    for(unsigned int i=0;i<sym_path.size();++i){
+      sym_path[i].LinePoint[0].x = 2*center - sym_path[i].LinePoint[0].x;
+      sym_path[i].LinePoint[1].x = 2*center - sym_path[i].LinePoint[1].x;
+    }
+  }
+
+};
+
 void GcellDetailRouter::create_detailrouter(){
 
   auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.create_detailrouter");
@@ -727,8 +750,19 @@ void GcellDetailRouter::create_detailrouter(){
 
     //int multi_number = R_constraint_based_Parallel_routing_number(i);
     int multi_number = Nets[i].multi_connection;
+    //std::cout<<"sym net index "<<i<<" sym part"<<Nets[i].symCounterpart<<" sym axis "<<Nets[i].sym_H<<" sym center "<<Nets[i].center<<std::endl;
+    std::vector<RouterDB::Metal> symmetry_path;
+    if(Nets[i].symCounterpart!=-1 && Nets[i].symCounterpart<int(Nets.size())){
+      symmetry_path = Nets[Nets[i].symCounterpart].path_metal;
+      logger->debug("symmetry_path size {0}", symmetry_path.size());
+      Topology_extraction(symmetry_path);
+      logger->debug("sym net index {0} sym part {1} sym axis {2} sym center {3}", i, Nets[i].symCounterpart, Nets[i].sym_H, Nets[i].center);
+      // Q: HV_symmetry, center?
+      Mirror_Topology(symmetry_path,Nets[i].sym_H,Nets[i].center);
+      logger->debug("symmetry_path size {0}", symmetry_path.size());
+    }
 
-    for(unsigned int multi_index=0;multi_index<multi_number;multi_index++){
+    for(int multi_index=0;multi_index<multi_number;multi_index++){
 
       std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> Pset_current_net_via; //current net via conter and layer info
       std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_current_net_contact; //current Net metal contact set
@@ -770,11 +804,14 @@ void GcellDetailRouter::create_detailrouter(){
         std::vector<RouterDB::SinkData> temp_dest = temp_pins[j];
         std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> src_dest_plist;
         Detailed_router_set_src_dest(grid, temp_source, temp_dest, i, sym_gridll, sym_gridur, gridll, gridur, src_dest_plist, Set_net, sym_flag);
-        AddViaEnclosure(Pset_via, grid, Set_x_contact, Set_net_contact);
-        AddViaSpacing(Pset_via, grid);
+        AddViaEnclosure(Pset_via, grid, Set_x_contact, Set_net_contact, gridll, gridur);
+        AddViaSpacing(Pset_via, grid, gridll, gridur);
         A_star a_star(grid, Nets[i].shielding);
+        //std::cout<<"performing detailed router on "<<Nets[i].netName<<" "<<j<<" pin"<<std::endl;
         logger->debug("Net name {0}",Nets[i].netName);
-        bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, 0, 0);
+        //bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, 0, 0);
+        bool pathMark = a_star.FindFeasiblePath_sym(grid, this->path_number, 0, 0, symmetry_path);
+        //std::cout<<"performing detailed router on debug 1"<<std::endl;
         /*
         if(pathMark==0){
           grid.CreateGridData();
@@ -782,22 +819,29 @@ void GcellDetailRouter::create_detailrouter(){
          }
         */
         std::vector<std::vector<RouterDB::Metal>> physical_path;
+        std::vector<std::vector<int> > extend_labels;
         Update_rouer_report_info(temp_routing_net, i, j, pathMark);
         logger->debug("pathMark {0}",pathMark);
+        //std::cout<<"performing detailed router on debug 2"<<std::endl;
         //assert(pathMark);
         if (pathMark)
         {
+          //std::cout<<"performing detailed router on debug 2.5"<<std::endl;
           physical_path = a_star.ConvertPathintoPhysical(grid);
+          //std::cout<<"performing detailed router on debug 2.6"<<std::endl;
+          extend_labels = a_star.GetExtendLabel();
           //lastmile_source_new(physical_path, temp_source);
           //lastmile_dest_new(physical_path, temp_dest);
-          returnPath(physical_path, Nets[i]);
-
+          //std::cout<<"performing detailed router on debug 2.7"<<std::endl;
+          returnPath(physical_path, Nets[i], extend_labels);
+          //std::cout<<"performing detailed router on debug 3"<<std::endl;
           //insert via center into Pset
           InsertRoutingVia(a_star, grid, Pset_current_net_via);
           InsertRoutingVia(a_star, grid, Pset_via);
           //add path metal to set_current_net_contact
           //add via conatct to set_current_net_contact
           InsertRoutingContact(a_star, grid, Pset_current_net_via, Set_current_net_contact, i);
+          //std::cout<<"performing detailed router on debug 4"<<std::endl;
         }
         else
         {
@@ -810,7 +854,7 @@ void GcellDetailRouter::create_detailrouter(){
         Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source, temp_dest, physical_path);
         UpdatePlistNets(physical_path, add_plist);
       }
-    Symmetry_Routing(sym_flag, i, Set_net);
+    //Symmetry_Routing(sym_flag, i, Set_net);
     InsertPlistToSet_x(Set_net, add_plist);
     InsertContact2Contact(Set_current_net_contact, Set_net_contact);
 
@@ -861,7 +905,7 @@ void GcellDetailRouter::create_detailrouter_old(){
     RouterDB::point sym_gridur;
     Grid grid = Generate_Grid_Net(i);                    //create grid for this net
     Grid_Inactive(grid, Set_x, Set_net, gridll, gridur); //inactive grid on internal metals
-    int sym_flag = Found_Pins_and_Symmetry_Pins(grid, i, temp_pins);
+    int sym_flag = Found_Pins_and_Symmetry_Pins(grid, i, temp_pins); //need temp_pins but sym_flag is no longer needed
     Symmetry_metal_Inactive(i, sym_flag, grid, sym_gridll, sym_gridur, gridll, gridur);
 
     int source_lock = 0;
@@ -883,6 +927,7 @@ void GcellDetailRouter::create_detailrouter_old(){
       A_star a_star(grid, Nets[i].shielding);
       bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, multi_number, multi_number);
       std::vector<std::vector<RouterDB::Metal>> physical_path;
+      std::vector<std::vector<int> > extend_labels;
       Update_rouer_report_info(temp_routing_net, i, j, pathMark);
 
       //assert(pathMark);
@@ -890,9 +935,10 @@ void GcellDetailRouter::create_detailrouter_old(){
       {
         InsertRoutingVia(a_star, grid, Pset_via);
         physical_path = a_star.ConvertPathintoPhysical(grid);
+        extend_labels = a_star.GetExtendLabel();
         //lastmile_source_new(physical_path, temp_source);
         //lastmile_dest_new(physical_path, temp_dest);
-        returnPath(physical_path, Nets[i]);
+        returnPath(physical_path, Nets[i], extend_labels);
       }
       else
       {
@@ -904,7 +950,7 @@ void GcellDetailRouter::create_detailrouter_old(){
       Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source, temp_dest, physical_path);
       UpdatePlistNets(physical_path, add_plist);
     }
-    Symmetry_Routing(sym_flag, i, Set_net);
+    //Symmetry_Routing(sym_flag, i, Set_net);
 
     InsertPlistToSet_x(Set_net, add_plist);
 
@@ -1067,7 +1113,7 @@ void GcellDetailRouter::AddViaEnclosure_old(std::set<std::pair<int, RouterDB::po
 
 void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid &grid,
                                         std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x_contact,
-                                        std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net_contact) {
+                                        std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net_contact, RouterDB::point LL, RouterDB::point UR) {
   RouterDB::box box;
   std::vector<std::vector<RouterDB::point>> plist_metal2uppervia(this->layerNo);  // points in this list cannot have an upper via
   std::vector<std::vector<RouterDB::point>> plist_metal2lowervia(this->layerNo);  // points in this list cannot have a lower via
@@ -1164,7 +1210,11 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
   //***************block vias around metal******************
   plist_metal2uppervia.clear(), plist_metal2uppervia.resize(this->layerNo);
   plist_metal2lowervia.clear(), plist_metal2lowervia.resize(this->layerNo);
-  std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set = CombineTwoSets(Set_net_contact, Set_x_contact);
+  std::set<RouterDB::SinkData, RouterDB::SinkDataComp> temp_Set = CombineTwoSets(Set_net_contact, Set_x_contact);
+  std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set = Findset(temp_Set,LL,UR);
+  //std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set = temp_Set;
+  // need to select some contacts accroding to the routing area
+  //std::cout<<"via enclosure set number "<<temp_Set.size()<<" "<<Set.size()<<std::endl;
   bool bidirection = false;
   if (bidirection) {
     for (std::set<RouterDB::SinkData, RouterDB::SinkDataComp>::iterator mit = Set.begin(); mit != Set.end(); ++mit) {
@@ -1256,12 +1306,18 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
   //***************block vias around metal******************
 };
 
-void GcellDetailRouter::AddViaSpacing(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid& grid){
+void GcellDetailRouter::AddViaSpacing(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid& grid, RouterDB::point LL, RouterDB::point UR){
   RouterDB::box box;
   std::vector<std::vector<RouterDB::point> > plist_via_lower_metal(this->layerNo); //points in this list cannot have an upper via
   std::vector<std::vector<RouterDB::point> > plist_via_upper_metal(this->layerNo); //points in this list cannot have a lower via
+
+  std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> temp_Pset_via = findviaset(Pset_via,LL,UR);
+  //std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> temp_Pset_via = Pset_via;
+
+  //std::cout<<"viaspaceing set number "<<Pset_via.size()<<" "<<temp_Pset_via.size()<<std::endl;
+
   //1.convert via point into via spacing box and 
-  for (std::set<std::pair<int, RouterDB::point>>::iterator vit = Pset_via.begin(); vit != Pset_via.end();++vit)
+  for (std::set<std::pair<int, RouterDB::point>>::iterator vit = temp_Pset_via.begin(); vit != temp_Pset_via.end();++vit)
   {
     int vIdx = vit->first;
     box.LL.x = vit->second.x - drc_info.Via_info[vIdx].dist_ss - drc_info.Via_info[vIdx].width;
@@ -1321,7 +1377,7 @@ int GcellDetailRouter::Cover_Contact(RouterDB::SinkData &temp_contact, RouterDB:
      int y2=-1;
      cover_contact.metalIdx = temp_contact.metalIdx ;
     
-     if( sym_temp_contact.coord[0].x>temp_contact.coord[0].x and sym_temp_contact.coord[0].x<temp_contact.coord[1].x ){
+     if( sym_temp_contact.coord[0].x>temp_contact.coord[0].x && sym_temp_contact.coord[0].x<temp_contact.coord[1].x ){
         
           x1 = sym_temp_contact.coord[0].x;
 
@@ -1331,7 +1387,7 @@ int GcellDetailRouter::Cover_Contact(RouterDB::SinkData &temp_contact, RouterDB:
              x2 = temp_contact.coord[1].x;
             }
 
-       }else if(sym_temp_contact.coord[1].x>temp_contact.coord[0].x and sym_temp_contact.coord[1].x<temp_contact.coord[1].x){
+       }else if(sym_temp_contact.coord[1].x>temp_contact.coord[0].x && sym_temp_contact.coord[1].x<temp_contact.coord[1].x){
 
           x2 = sym_temp_contact.coord[1].x;
 
@@ -1341,7 +1397,7 @@ int GcellDetailRouter::Cover_Contact(RouterDB::SinkData &temp_contact, RouterDB:
              x1 = temp_contact.coord[0].x;
             }
 
-       }else if(temp_contact.coord[0].x > sym_temp_contact.coord[0].x and temp_contact.coord[0].x < sym_temp_contact.coord[1].x){
+       }else if(temp_contact.coord[0].x > sym_temp_contact.coord[0].x && temp_contact.coord[0].x < sym_temp_contact.coord[1].x){
 
           x1 = temp_contact.coord[0].x;
 
@@ -1351,7 +1407,7 @@ int GcellDetailRouter::Cover_Contact(RouterDB::SinkData &temp_contact, RouterDB:
              x2 = temp_contact.coord[1].x;
             }
           
-       }else if(temp_contact.coord[1].x > sym_temp_contact.coord[0].x and temp_contact.coord[1].x < sym_temp_contact.coord[1].x){
+       }else if(temp_contact.coord[1].x > sym_temp_contact.coord[0].x && temp_contact.coord[1].x < sym_temp_contact.coord[1].x){
 
           x2 = temp_contact.coord[1].x;
 
@@ -1367,7 +1423,7 @@ int GcellDetailRouter::Cover_Contact(RouterDB::SinkData &temp_contact, RouterDB:
        
        }
 
-     if( sym_temp_contact.coord[0].y>temp_contact.coord[0].y and sym_temp_contact.coord[0].y<temp_contact.coord[1].y ){
+     if( sym_temp_contact.coord[0].y>temp_contact.coord[0].y && sym_temp_contact.coord[0].y<temp_contact.coord[1].y ){
         
           y1 = sym_temp_contact.coord[0].y;
 
@@ -1377,7 +1433,7 @@ int GcellDetailRouter::Cover_Contact(RouterDB::SinkData &temp_contact, RouterDB:
              y2 = temp_contact.coord[1].y;
             }
 
-       }else if(sym_temp_contact.coord[1].y>temp_contact.coord[0].y and sym_temp_contact.coord[1].y<temp_contact.coord[1].y){
+       }else if(sym_temp_contact.coord[1].y>temp_contact.coord[0].y && sym_temp_contact.coord[1].y<temp_contact.coord[1].y){
 
           y2 = sym_temp_contact.coord[1].y;
 
@@ -1387,7 +1443,7 @@ int GcellDetailRouter::Cover_Contact(RouterDB::SinkData &temp_contact, RouterDB:
              y1 = temp_contact.coord[0].y;
             }
 
-       }else if(temp_contact.coord[0].y > sym_temp_contact.coord[0].y and temp_contact.coord[0].y < sym_temp_contact.coord[1].y){
+       }else if(temp_contact.coord[0].y > sym_temp_contact.coord[0].y && temp_contact.coord[0].y < sym_temp_contact.coord[1].y){
 
           y1 = temp_contact.coord[0].y;
 
@@ -1397,7 +1453,7 @@ int GcellDetailRouter::Cover_Contact(RouterDB::SinkData &temp_contact, RouterDB:
              y2 = temp_contact.coord[1].y;
             }
           
-       }else if(temp_contact.coord[1].y > sym_temp_contact.coord[0].y and temp_contact.coord[1].y < sym_temp_contact.coord[1].y){
+       }else if(temp_contact.coord[1].y > sym_temp_contact.coord[0].y && temp_contact.coord[1].y < sym_temp_contact.coord[1].y){
 
           y2 = temp_contact.coord[1].y;
 
@@ -1413,7 +1469,7 @@ int GcellDetailRouter::Cover_Contact(RouterDB::SinkData &temp_contact, RouterDB:
        
        }
 
-      if(x1 == -1 or x2 == -1 or y1 == -1 or y2 == -1){
+      if(x1 == -1 || x2 == -1 || y1 == -1 || y2 == -1){
 
         return 0;
          }else{
@@ -1544,7 +1600,7 @@ int GcellDetailRouter::Tile_Cover_Contact(RouterDB::SinkData &temp_contact, Rout
      int y1=-1;
      int y2=-1;
     
-     if( sym_temp_contact.coord[0].x>temp_contact.coord[0].x and sym_temp_contact.coord[0].x<temp_contact.coord[1].x ){
+     if( sym_temp_contact.coord[0].x>temp_contact.coord[0].x && sym_temp_contact.coord[0].x<temp_contact.coord[1].x ){
         
           x1 = sym_temp_contact.coord[0].x;
 
@@ -1554,7 +1610,7 @@ int GcellDetailRouter::Tile_Cover_Contact(RouterDB::SinkData &temp_contact, Rout
              x2 = temp_contact.coord[1].x;
             }
 
-       }else if(sym_temp_contact.coord[1].x>temp_contact.coord[0].x and sym_temp_contact.coord[1].x<temp_contact.coord[1].x){
+       }else if(sym_temp_contact.coord[1].x>temp_contact.coord[0].x && sym_temp_contact.coord[1].x<temp_contact.coord[1].x){
 
           x2 = sym_temp_contact.coord[1].x;
 
@@ -1564,7 +1620,7 @@ int GcellDetailRouter::Tile_Cover_Contact(RouterDB::SinkData &temp_contact, Rout
              x1 = temp_contact.coord[0].x;
             }
 
-       }else if(temp_contact.coord[0].x > sym_temp_contact.coord[0].x and temp_contact.coord[0].x < sym_temp_contact.coord[1].x){
+       }else if(temp_contact.coord[0].x > sym_temp_contact.coord[0].x && temp_contact.coord[0].x < sym_temp_contact.coord[1].x){
 
           x1 = temp_contact.coord[0].x;
 
@@ -1574,7 +1630,7 @@ int GcellDetailRouter::Tile_Cover_Contact(RouterDB::SinkData &temp_contact, Rout
              x2 = temp_contact.coord[1].x;
             }
           
-       }else if(temp_contact.coord[1].x > sym_temp_contact.coord[0].x and temp_contact.coord[1].x < sym_temp_contact.coord[1].x){
+       }else if(temp_contact.coord[1].x > sym_temp_contact.coord[0].x && temp_contact.coord[1].x < sym_temp_contact.coord[1].x){
 
           x2 = temp_contact.coord[1].x;
 
@@ -1590,7 +1646,7 @@ int GcellDetailRouter::Tile_Cover_Contact(RouterDB::SinkData &temp_contact, Rout
        
        }
 
-     if( sym_temp_contact.coord[0].y>temp_contact.coord[0].y and sym_temp_contact.coord[0].y<temp_contact.coord[1].y ){
+     if( sym_temp_contact.coord[0].y>temp_contact.coord[0].y && sym_temp_contact.coord[0].y<temp_contact.coord[1].y ){
         
           y1 = sym_temp_contact.coord[0].y;
 
@@ -1600,7 +1656,7 @@ int GcellDetailRouter::Tile_Cover_Contact(RouterDB::SinkData &temp_contact, Rout
              y2 = temp_contact.coord[1].y;
             }
 
-       }else if(sym_temp_contact.coord[1].y>temp_contact.coord[0].y and sym_temp_contact.coord[1].y<temp_contact.coord[1].y){
+       }else if(sym_temp_contact.coord[1].y>temp_contact.coord[0].y && sym_temp_contact.coord[1].y<temp_contact.coord[1].y){
 
           y2 = sym_temp_contact.coord[1].y;
 
@@ -1610,7 +1666,7 @@ int GcellDetailRouter::Tile_Cover_Contact(RouterDB::SinkData &temp_contact, Rout
              y1 = temp_contact.coord[0].y;
             }
 
-       }else if(temp_contact.coord[0].y > sym_temp_contact.coord[0].y and temp_contact.coord[0].y < sym_temp_contact.coord[1].y){
+       }else if(temp_contact.coord[0].y > sym_temp_contact.coord[0].y && temp_contact.coord[0].y < sym_temp_contact.coord[1].y){
 
           y1 = temp_contact.coord[0].y;
 
@@ -1620,7 +1676,7 @@ int GcellDetailRouter::Tile_Cover_Contact(RouterDB::SinkData &temp_contact, Rout
              y2 = temp_contact.coord[1].y;
             }
           
-       }else if(temp_contact.coord[1].y > sym_temp_contact.coord[0].y and temp_contact.coord[1].y < sym_temp_contact.coord[1].y){
+       }else if(temp_contact.coord[1].y > sym_temp_contact.coord[0].y && temp_contact.coord[1].y < sym_temp_contact.coord[1].y){
 
           y2 = temp_contact.coord[1].y;
 
@@ -1637,7 +1693,7 @@ int GcellDetailRouter::Tile_Cover_Contact(RouterDB::SinkData &temp_contact, Rout
        }
 
 
-      if(x1 == -1 or x2 == -1 or y1 == -1 or y2 == -1){
+      if(x1 == -1 || x2 == -1 || y1 == -1 || y2 == -1){
         
            return 0;
  
@@ -1725,7 +1781,6 @@ int GcellDetailRouter::findPins_Sym(Grid& grid, RouterDB::Net &temp_net, RouterD
     return 1;
 
 
-
 };
 
 
@@ -1760,7 +1815,7 @@ std::vector<std::vector<RouterDB::SinkData> > GcellDetailRouter::findPins_new_ol
             }
 
 
-        }else if(temp_net.connected[i].type == RouterDB::TERMINAL and this->isTop and this->Terminals.at(temp_net.connected[i].iter).termContacts[0].metal==-1){
+        }else if(temp_net.connected[i].type == RouterDB::TERMINAL && this->isTop && this->Terminals.at(temp_net.connected[i].iter).termContacts[0].metal==-1){
          //else if(0){ 
 
 
@@ -1788,7 +1843,7 @@ std::vector<std::vector<RouterDB::SinkData> > GcellDetailRouter::findPins_new_ol
                     Terminals[temp_net.connected[i].iter].termContacts.push_back(Terminal_contact[k]);
                    }
 
-                int contact_number = Terminals[temp_net.connected[i].iter].termContacts.size();
+                int contact_number = int(Terminals[temp_net.connected[i].iter].termContacts.size());
 
             for(int j=0;j<contact_number;j++){
                RouterDB::SinkData terminals_temp_contact;
@@ -1816,7 +1871,7 @@ std::vector<std::vector<RouterDB::SinkData> > GcellDetailRouter::findPins_new_ol
 
               }   
 
-        }else if(temp_net.connected[i].type == RouterDB::TERMINAL and this->isTop and this->Terminals.at(temp_net.connected[i].iter).termContacts[0].metal!=-1){
+        }else if(temp_net.connected[i].type == RouterDB::TERMINAL && this->isTop && this->Terminals.at(temp_net.connected[i].iter).termContacts[0].metal!=-1){
               
                RouterDB::SinkData terminals_temp_contact;
                RouterDB::point temp_point;
@@ -1871,7 +1926,7 @@ std::vector<std::vector<RouterDB::SinkData> > GcellDetailRouter::findPins_new(Gr
             temp_contacts.push_back(temp_contact);
             } 
 
-        }else if(temp_net.connected[i].type == RouterDB::TERMINAL and this->Terminals.at(temp_net.connected[i].iter).termContacts[0].metal!=-1){
+        }else if(temp_net.connected[i].type == RouterDB::TERMINAL && this->Terminals.at(temp_net.connected[i].iter).termContacts[0].metal!=-1){
 
 
          unsigned int contact_number = this->Terminals.at(temp_net.connected[i].iter).termContacts.size();
@@ -2030,14 +2085,14 @@ void GcellDetailRouter::splitPath(std::vector<std::vector<RouterDB::Metal> > &te
          }
 
 
-      if(temp_metalIdx ==temp_net.path_metal[i].MetalIdx and temp_point.x>Lpoint.x and temp_point.x<Upoint.x and temp_point.y==Lpoint.y and temp_point.y==Upoint.y){
+      if(temp_metalIdx ==temp_net.path_metal[i].MetalIdx && temp_point.x>Lpoint.x && temp_point.x<Upoint.x && temp_point.y==Lpoint.y && temp_point.y==Upoint.y){
           
           found_index = i;
           break;
         
          }
 
-      if(temp_metalIdx ==temp_net.path_metal[i].MetalIdx and temp_point.x==Lpoint.x and temp_point.x==Upoint.x and temp_point.y>Lpoint.y and temp_point.y<Upoint.y){
+      if(temp_metalIdx ==temp_net.path_metal[i].MetalIdx && temp_point.x==Lpoint.x && temp_point.x==Upoint.x && temp_point.y>Lpoint.y && temp_point.y<Upoint.y){
           found_index = i;
           break;
          }
@@ -2079,11 +2134,11 @@ void GcellDetailRouter::lastmile_source_new(std::vector<std::vector<RouterDB::Me
 
   for(unsigned int i =0;i<temp_source.size();i++){
      
-     if(temp_source[i].coord[0].x<=temp_source[i].coord[1].x and temp_source[i].coord[0].y<=temp_source[i].coord[1].y){}else{logger->debug("EError");} 
+     if(temp_source[i].coord[0].x<=temp_source[i].coord[1].x && temp_source[i].coord[0].y<=temp_source[i].coord[1].y){}else{logger->debug("EError");} 
        
-     if(temp_point.x>=temp_source[i].coord[0].x and temp_point.y>=temp_source[i].coord[0].y and temp_point.x<=temp_source[i].coord[1].x and temp_point.y<=temp_source[i].coord[1].y and temp_source[i].metalIdx == temp_metal_metalidx){connected = 1;}
+     if(temp_point.x>=temp_source[i].coord[0].x && temp_point.y>=temp_source[i].coord[0].y && temp_point.x<=temp_source[i].coord[1].x && temp_point.y<=temp_source[i].coord[1].y && temp_source[i].metalIdx == temp_metal_metalidx){connected = 1;}
 
-     if(abs(temp_source[i].coord[0].x - temp_point.x)+abs(temp_source[i].coord[0].y - temp_point.y)<dis and temp_source[i].metalIdx == temp_metal_metalidx){
+     if(abs(temp_source[i].coord[0].x - temp_point.x)+abs(temp_source[i].coord[0].y - temp_point.y)<dis && temp_source[i].metalIdx == temp_metal_metalidx){
          dis = abs(temp_source[i].coord[0].x - temp_point.x)+abs(temp_source[i].coord[0].y - temp_point.y);
          source_point = temp_source[i].coord[0];
          point_flag = 0;
@@ -2091,7 +2146,7 @@ void GcellDetailRouter::lastmile_source_new(std::vector<std::vector<RouterDB::Me
 
 
 
-     if(abs(temp_source[i].coord[1].x - temp_point.x)+abs(temp_source[i].coord[1].y - temp_point.y)<dis and temp_source[i].metalIdx == temp_metal_metalidx){
+     if(abs(temp_source[i].coord[1].x - temp_point.x)+abs(temp_source[i].coord[1].y - temp_point.y)<dis && temp_source[i].metalIdx == temp_metal_metalidx){
          dis = abs(temp_source[i].coord[1].x - temp_point.x)+abs(temp_source[i].coord[1].y - temp_point.y);
          source_point = temp_source[i].coord[1];
          point_flag = 1;
@@ -2193,19 +2248,19 @@ void GcellDetailRouter::lastmile_dest_new(std::vector<std::vector<RouterDB::Meta
 
   for(unsigned int i =0;i<temp_source.size();i++){
      
-     if(temp_source[i].coord[0].x<=temp_source[i].coord[1].x and temp_source[i].coord[0].y<=temp_source[i].coord[1].y){}else{
+     if(temp_source[i].coord[0].x<=temp_source[i].coord[1].x && temp_source[i].coord[0].y<=temp_source[i].coord[1].y){}else{
         logger->debug("EEroor");
      }  
        
-     if(temp_point.x>=temp_source[i].coord[0].x and temp_point.y>=temp_source[i].coord[0].y and temp_point.x<=temp_source[i].coord[1].x and temp_point.y<=temp_source[i].coord[1].y and temp_source[i].metalIdx == temp_metal_metalidx){connected = 1;}
+     if(temp_point.x>=temp_source[i].coord[0].x && temp_point.y>=temp_source[i].coord[0].y && temp_point.x<=temp_source[i].coord[1].x && temp_point.y<=temp_source[i].coord[1].y && temp_source[i].metalIdx == temp_metal_metalidx){connected = 1;}
 
-     if(abs(temp_source[i].coord[0].x - temp_point.x)+abs(temp_source[i].coord[0].y - temp_point.y)<dis and temp_source[i].metalIdx == temp_metal_metalidx){
+     if(abs(temp_source[i].coord[0].x - temp_point.x)+abs(temp_source[i].coord[0].y - temp_point.y)<dis && temp_source[i].metalIdx == temp_metal_metalidx){
          dis = abs(temp_source[i].coord[0].x - temp_point.x)+abs(temp_source[i].coord[0].y - temp_point.y);
          source_point = temp_source[i].coord[0];
          point_flag = 0;
          }
 
-     if(abs(temp_source[i].coord[1].x - temp_point.x)+abs(temp_source[i].coord[1].y - temp_point.y)<dis and temp_source[i].metalIdx == temp_metal_metalidx){
+     if(abs(temp_source[i].coord[1].x - temp_point.x)+abs(temp_source[i].coord[1].y - temp_point.y)<dis && temp_source[i].metalIdx == temp_metal_metalidx){
          dis = abs(temp_source[i].coord[1].x - temp_point.x)+abs(temp_source[i].coord[1].y - temp_point.y);
          source_point = temp_source[i].coord[1];
          point_flag = 1;
@@ -2244,7 +2299,7 @@ void GcellDetailRouter::lastmile_dest_new(std::vector<std::vector<RouterDB::Meta
            temp_metal.LinePoint.push_back(temp_point);
            //std::cout<<"path ( "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[0].y<<") ("<<temp_metal.LinePoint[1].x<<" "<<temp_metal.LinePoint[1].y<<") "<<std::endl;
            temp_path[0].insert(temp_path[0].end(),temp_metal);
-           int last_end_index = temp_path[0].size()-1;
+           //int last_end_index = temp_path[0].size()-1;
         //std::cout<<temp_path[0][last_end_index].LinePoint[0].x<<" "<<temp_path[0][last_end_index].LinePoint[0].y<<" "<<temp_path[0][last_end_index].LinePoint[1].x<<" "<<temp_path[0][last_end_index].LinePoint[1].y<<std::endl;
             }else{
            temp_metal.LinePoint.push_back(source_point); 
@@ -2258,7 +2313,7 @@ void GcellDetailRouter::lastmile_dest_new(std::vector<std::vector<RouterDB::Meta
            temp_metal.LinePoint.push_back(source_point);
            temp_metal.LinePoint.push_back(temp_point);
            temp_path[0].insert(temp_path[0].end(),temp_metal);
-           int last_end_index = temp_path[0].size()-1;
+           //int last_end_index = temp_path[0].size()-1;
         //std::cout<<temp_path[0][last_end_index].LinePoint[0].x<<" "<<temp_path[0][last_end_index].LinePoint[0].y<<" "<<temp_path[0][last_end_index].LinePoint[1].x<<" "<<temp_path[0][last_end_index].LinePoint[1].y<<std::endl;
            
 
@@ -2272,7 +2327,7 @@ void GcellDetailRouter::lastmile_dest_new(std::vector<std::vector<RouterDB::Meta
            temp_metal.LinePoint.push_back(temp_point);
            //std::cout<<"path ( "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[0].y<<") ("<<temp_metal.LinePoint[1].x<<" "<<temp_metal.LinePoint[1].y<<") "<<std::endl;
            temp_path[0].insert(temp_path[0].end(),temp_metal);
-           int last_end_index = temp_path[0].size()-1;
+           //int last_end_index = temp_path[0].size()-1;
         //std::cout<<temp_path[0][last_end_index].LinePoint[0].x<<" "<<temp_path[0][last_end_index].LinePoint[0].y<<" "<<temp_path[0][last_end_index].LinePoint[1].x<<" "<<temp_path[0][last_end_index].LinePoint[1].y<<std::endl;
             }else{
            temp_metal.LinePoint.push_back(source_point); 
@@ -2286,7 +2341,7 @@ void GcellDetailRouter::lastmile_dest_new(std::vector<std::vector<RouterDB::Meta
            temp_metal.LinePoint.push_back(source_point);
            temp_metal.LinePoint.push_back(temp_point);
            temp_path[0].insert(temp_path[0].end(),temp_metal);
-           int last_end_index = temp_path[0].size()-1;
+          // int last_end_index = temp_path[0].size()-1;
         //std::cout<<temp_path[0][last_end_index].LinePoint[0].x<<" "<<temp_path[0][last_end_index].LinePoint[0].y<<" "<<temp_path[0][last_end_index].LinePoint[1].x<<" "<<temp_path[0][last_end_index].LinePoint[1].y<<std::endl;
            
 
@@ -2393,17 +2448,22 @@ void GcellDetailRouter::updateSource(std::vector<std::vector<RouterDB::Metal> > 
 
 };
 
-void GcellDetailRouter::returnPath(std::vector<std::vector<RouterDB::Metal> > &temp_path, RouterDB::Net& temp_net){
+void GcellDetailRouter::returnPath(std::vector<std::vector<RouterDB::Metal> > &temp_path, RouterDB::Net& temp_net, std::vector<std::vector<int> > extend_labels){
 
   for(unsigned int i=0;i<temp_path.size();i++){
+
+     //std::cout<<"temp_path length "<<temp_path[i].size()<<" extend_label length "<<extend_labels[i].size()<<std::endl;
        
      for(unsigned int j=0;j<temp_path[i].size();j++){
-         if(j==0 or j==temp_path[i].size()-1){
+         /*
+         if(j==0 || j==temp_path[i].size()-1){
            temp_net.extend_label.push_back(0);
          }else{
            temp_net.extend_label.push_back(1);
          }
+         */ 
          temp_net.path_metal.push_back(temp_path[i][j]);
+         temp_net.extend_label.push_back(extend_labels[i][j]);
      
         }
      }
@@ -2499,8 +2559,100 @@ void GcellDetailRouter::ExtendY(RouterDB::Metal &temp_metal, int extend_dis){
   
 };
 
+
+void GcellDetailRouter::ExtendX_PN(RouterDB::Metal &temp_metal, int extend_dis, bool P){
+
+  //extend p==1 extend for the grid with lager x
+
+  //std::cout<<"extendX_PN before"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[1].x<<std::endl;
+
+  if(P){  
+
+    if(temp_metal.LinePoint[0].x<temp_metal.LinePoint[1].x){
+
+       temp_metal.LinePoint[0].x = temp_metal.LinePoint[0].x;
+       temp_metal.LinePoint[1].x = temp_metal.LinePoint[1].x + extend_dis;
+       //rewrite contact
+
+      }else{
+
+       temp_metal.LinePoint[0].x = temp_metal.LinePoint[0].x + extend_dis;
+       temp_metal.LinePoint[1].x = temp_metal.LinePoint[1].x;
+
+      }
+
+    }else{
+
+    if(temp_metal.LinePoint[0].x<temp_metal.LinePoint[1].x){
+
+       temp_metal.LinePoint[0].x = temp_metal.LinePoint[0].x - extend_dis;
+       temp_metal.LinePoint[1].x = temp_metal.LinePoint[1].x ;
+       //rewrite contact
+
+      }else{
+
+       temp_metal.LinePoint[0].x = temp_metal.LinePoint[0].x;
+       temp_metal.LinePoint[1].x = temp_metal.LinePoint[1].x - extend_dis;
+
+      }
+
+    }
+
+    //std::cout<<"extendX_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[1].x<<std::endl;
+    //std::cout<<"extendX_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].y<<std::endl;
+
+    UpdateMetalContact(temp_metal);
+
+};
+
+void GcellDetailRouter::ExtendY_PN(RouterDB::Metal &temp_metal, int extend_dis, bool P){
+
+  //extend p==1 extend for the grid with lager y
+
+  //std::cout<<"extendY_PN before "<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].y<<std::endl; 
+
+  if(P){  
+
+    if(temp_metal.LinePoint[0].y<temp_metal.LinePoint[1].y){
+
+       temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y;
+       temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y + extend_dis;
+       //rewrite contact
+
+      }else{
+
+       temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y + extend_dis;
+       temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y;
+
+      }
+
+    }else{
+
+    if(temp_metal.LinePoint[0].y<temp_metal.LinePoint[1].y){
+
+       temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y;
+       temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y - extend_dis;
+       //rewrite contact
+
+      }else{
+
+       temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y - extend_dis;
+       temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y ;
+
+      }
+
+    }
+
+    //std::cout<<"extendY_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].y<<std::endl;
+    //std::cout<<"extendY_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[1].x<<std::endl;
+
+    UpdateMetalContact(temp_metal);
+
+};
+
 void GcellDetailRouter::ExtendMetals(int i){
 
+  
   if(Nets[i].path_metal.size()!=Nets[i].extend_label.size()){assert(0);}
 
   for(unsigned int j=0;j<Nets[i].path_metal.size();j++){
@@ -2515,7 +2667,7 @@ void GcellDetailRouter::ExtendMetals(int i){
          
       int current_length = abs( Nets[i].path_metal[j].LinePoint[0].x - Nets[i].path_metal[j].LinePoint[1].x) + abs( Nets[i].path_metal[j].LinePoint[0].y - Nets[i].path_metal[j].LinePoint[1].y);
 
-      if(current_length<minL){
+      if(current_length<minL and Nets[i].extend_label[j]==1){
 
          int extend_dis = ceil(minL - current_length)/2;
    
@@ -2528,17 +2680,51 @@ void GcellDetailRouter::ExtendMetals(int i){
             ExtendY(Nets[i].path_metal[j], extend_dis);
               
          }
+      }else if(current_length<minL and Nets[i].extend_label[j]==2){ //head
 
+         int extend_dis = ceil(minL - current_length);
+
+         bool p = 1;
+   
+         if(direction==1){//h
+             
+            ExtendX_PN(Nets[i].path_metal[j], extend_dis, p);
+               
+         }else{//v
+              
+            ExtendY_PN(Nets[i].path_metal[j], extend_dis, p);
+              
+         }
+      }else if(current_length<minL and Nets[i].extend_label[j]==3){ // tail
+
+         int extend_dis = ceil(minL - current_length);
+         
+         int p = 0;
+   
+         if(direction==1){//h
+             
+            ExtendX_PN(Nets[i].path_metal[j], extend_dis, p);
+               
+         }else{//v
+              
+            ExtendY_PN(Nets[i].path_metal[j], extend_dis, p);
+              
+         }
+      }else if(current_length<minL and Nets[i].extend_label[j]==4){ // bug
+
+         auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.ExtendMetal");
+
+         logger->debug("Extend Error for Nets[i].netName {0}",Nets[i].netName);
 
       }
-
    }
+   
 
 };
 
 void GcellDetailRouter::ExtendMetal(){
 
-
+  
   for(unsigned int i=0;i<Nets.size();i++){
 
   if(Nets[i].path_metal.size()!=Nets[i].extend_label.size()){assert(0);}
@@ -2555,7 +2741,7 @@ void GcellDetailRouter::ExtendMetal(){
          
       int current_length = abs( Nets[i].path_metal[j].LinePoint[0].x - Nets[i].path_metal[j].LinePoint[1].x) + abs( Nets[i].path_metal[j].LinePoint[0].y - Nets[i].path_metal[j].LinePoint[1].y);
 
-      if(current_length<minL){
+      if(current_length<minL and Nets[i].extend_label[j]==1){
 
          int extend_dis = ceil(minL - current_length)/2;
    
@@ -2568,12 +2754,47 @@ void GcellDetailRouter::ExtendMetal(){
             ExtendY(Nets[i].path_metal[j], extend_dis);
               
          }
+      }else if(current_length<minL and Nets[i].extend_label[j]==2){ //head
 
+         int extend_dis = ceil(minL - current_length);
+
+         bool p = 1;
+   
+         if(direction==1){//h
+             
+            ExtendX_PN(Nets[i].path_metal[j], extend_dis, p);
+               
+         }else{//v
+              
+            ExtendY_PN(Nets[i].path_metal[j], extend_dis, p);
+              
+         }
+      }else if(current_length<minL and Nets[i].extend_label[j]==3){ // tail
+
+         int extend_dis = ceil(minL - current_length);
+         
+         int p = 0;
+   
+         if(direction==1){//h
+             
+            ExtendX_PN(Nets[i].path_metal[j], extend_dis, p);
+               
+         }else{//v
+              
+            ExtendY_PN(Nets[i].path_metal[j], extend_dis, p);
+              
+         }
+      }else if(current_length<minL and Nets[i].extend_label[j]==4){ // bug
+
+         auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.ExtendMetal");
+
+         logger->debug("Extend Error for Nets[i].netName {0}",Nets[i].netName);
 
       }
 
    }
-  }
+
+   }
 
 
 };
@@ -2617,7 +2838,7 @@ void GcellDetailRouter::GetPhsical_Metal_Via(int i){
                 }
             }
 
-         if(Nets[i].path_metal[h].LinePoint[0].y==Nets[i].path_metal[h].LinePoint[1].y and Nets[i].path_metal[h].LinePoint[0].x==Nets[i].path_metal[h].LinePoint[1].x){          
+         if(Nets[i].path_metal[h].LinePoint[0].y==Nets[i].path_metal[h].LinePoint[1].y && Nets[i].path_metal[h].LinePoint[0].x==Nets[i].path_metal[h].LinePoint[1].x){          
            
               Nets[i].path_metal[h].MetalRect.placedLL.x =  Nets[i].path_metal[h].LinePoint[0].x-Nets[i].path_metal[h].width/2;
               Nets[i].path_metal[h].MetalRect.placedLL.y =  Nets[i].path_metal[h].LinePoint[0].y-Nets[i].path_metal[h].width/2;
@@ -2644,28 +2865,28 @@ void GcellDetailRouter::GetPhsical_Metal_Via(int i){
 
             if(temp_metal_index == next_metal_index -1){
                 
-                if(Nets[i].path_metal[h].LinePoint[0].x==Nets[i].path_metal[l].LinePoint[0].x and Nets[i].path_metal[h].LinePoint[0].y==Nets[i].path_metal[l].LinePoint[0].y){
+                if(Nets[i].path_metal[h].LinePoint[0].x==Nets[i].path_metal[l].LinePoint[0].x && Nets[i].path_metal[h].LinePoint[0].y==Nets[i].path_metal[l].LinePoint[0].y){
                   temp_via.position = Nets[i].path_metal[h].LinePoint[0];
                   temp_via.model_index = temp_metal_index;
                   UpdateVia(temp_via);
                   set_via.insert(temp_via);
                   }
 
-                if(Nets[i].path_metal[h].LinePoint[0].x==Nets[i].path_metal[l].LinePoint[1].x and Nets[i].path_metal[h].LinePoint[0].y==Nets[i].path_metal[l].LinePoint[1].y){
+                if(Nets[i].path_metal[h].LinePoint[0].x==Nets[i].path_metal[l].LinePoint[1].x && Nets[i].path_metal[h].LinePoint[0].y==Nets[i].path_metal[l].LinePoint[1].y){
                   temp_via.position = Nets[i].path_metal[h].LinePoint[0];
                   temp_via.model_index = temp_metal_index;
                   UpdateVia(temp_via);
                   set_via.insert(temp_via);
                   }
 
-                if(Nets[i].path_metal[h].LinePoint[1].x==Nets[i].path_metal[l].LinePoint[0].x and Nets[i].path_metal[h].LinePoint[1].y==Nets[i].path_metal[l].LinePoint[0].y){
+                if(Nets[i].path_metal[h].LinePoint[1].x==Nets[i].path_metal[l].LinePoint[0].x && Nets[i].path_metal[h].LinePoint[1].y==Nets[i].path_metal[l].LinePoint[0].y){
                   temp_via.position = Nets[i].path_metal[h].LinePoint[1];
                   temp_via.model_index = temp_metal_index;
                   UpdateVia(temp_via);
                   set_via.insert(temp_via);
                   }
 
-                if(Nets[i].path_metal[h].LinePoint[1].x==Nets[i].path_metal[l].LinePoint[1].x and Nets[i].path_metal[h].LinePoint[1].y==Nets[i].path_metal[l].LinePoint[1].y){
+                if(Nets[i].path_metal[h].LinePoint[1].x==Nets[i].path_metal[l].LinePoint[1].x && Nets[i].path_metal[h].LinePoint[1].y==Nets[i].path_metal[l].LinePoint[1].y){
                   temp_via.position = Nets[i].path_metal[h].LinePoint[1];
                   temp_via.model_index = temp_metal_index;
                   UpdateVia(temp_via);
@@ -2695,6 +2916,7 @@ void GcellDetailRouter::CreatePlistSymBlocks(std::vector<std::set<RouterDB::poin
   std::vector<RouterDB::contact> Contacts;
   std::vector<RouterDB::contact> Sym_Contacts;
   std::vector<std::vector<RouterDB::point> > plist;
+  plist.resize( this->layerNo );
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_x;
   //std::vector<RouterDB::point>
   int LLx, LLy, URx, URy;
@@ -2706,7 +2928,7 @@ void GcellDetailRouter::CreatePlistSymBlocks(std::vector<std::set<RouterDB::poin
        URx=temp_contact.placedUR.x;
        URy=temp_contact.placedUR.y;
         
-       if(!(URx<gridll.x or URy<gridll.y or LLx>gridur.x or LLy>gridur.y)){
+       if(!(URx<gridll.x || URy<gridll.y || LLx>gridur.x || LLy>gridur.y)){
            Contacts.push_back(temp_contact);
          }
 
@@ -2723,6 +2945,7 @@ void GcellDetailRouter::CreatePlistSymBlocks(std::vector<std::set<RouterDB::poin
          push_contact(cit->LowerMetalRect);
       }
     }
+
     // 2. collect internal metals on grids
     for(std::vector<RouterDB::contact>::iterator pit=bit->InternalMetal.begin(); pit!=bit->InternalMetal.end(); ++pit) {
         //std::cout<<"check point createplistBlocks 4.0 "<<std::endl;
@@ -2998,28 +3221,28 @@ void GcellDetailRouter::GetPhsical_Via_contacts(std::vector<std::vector<RouterDB
 
                if(temp_metal_index == next_metal_index -1){
                 
-                if(temp_path[j].LinePoint[0].x==temp_path[h].LinePoint[0].x and temp_path[j].LinePoint[0].y==temp_path[h].LinePoint[0].y){
+                if(temp_path[j].LinePoint[0].x==temp_path[h].LinePoint[0].x && temp_path[j].LinePoint[0].y==temp_path[h].LinePoint[0].y){
                   temp_via.position = temp_path[j].LinePoint[0];
                   temp_via.model_index = temp_metal_index;
                   UpdateVia(temp_via);
                   set_via.insert(temp_via);
                   }
 
-                if(temp_path[j].LinePoint[0].x==temp_path[h].LinePoint[1].x and temp_path[j].LinePoint[0].y==temp_path[h].LinePoint[1].y){
+                if(temp_path[j].LinePoint[0].x==temp_path[h].LinePoint[1].x && temp_path[j].LinePoint[0].y==temp_path[h].LinePoint[1].y){
                   temp_via.position = temp_path[j].LinePoint[0];
                   temp_via.model_index = temp_metal_index;
                   UpdateVia(temp_via);
                   set_via.insert(temp_via);
                   }
 
-                if(temp_path[j].LinePoint[1].x==temp_path[h].LinePoint[0].x and temp_path[j].LinePoint[1].y==temp_path[h].LinePoint[0].y){
+                if(temp_path[j].LinePoint[1].x==temp_path[h].LinePoint[0].x && temp_path[j].LinePoint[1].y==temp_path[h].LinePoint[0].y){
                   temp_via.position = temp_path[j].LinePoint[1];
                   temp_via.model_index = temp_metal_index;
                   UpdateVia(temp_via);
                   set_via.insert(temp_via);
                   }
 
-                if(temp_path[j].LinePoint[1].x==temp_path[h].LinePoint[1].x and temp_path[j].LinePoint[1].y==temp_path[h].LinePoint[1].y){
+                if(temp_path[j].LinePoint[1].x==temp_path[h].LinePoint[1].x && temp_path[j].LinePoint[1].y==temp_path[h].LinePoint[1].y){
                   temp_via.position = temp_path[j].LinePoint[1];
                   temp_via.model_index = temp_metal_index;
                   UpdateVia(temp_via);
@@ -3052,7 +3275,7 @@ void GcellDetailRouter::CreatePlistSrc_Dest(std::vector<std::set<RouterDB::point
   auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.CreatePlistSrc_Dest");
 
   //RouterDB::point tmpP;
-  int LLx, LLy, URx, URy;
+  //int LLx, LLy, URx, URy;
 
   std::vector<RouterDB::contact> Contacts;
   RouterDB::contact temp_contact;
@@ -3072,7 +3295,7 @@ void GcellDetailRouter::CreatePlistSrc_Dest(std::vector<std::set<RouterDB::point
 
   //change sinkdata to contact
   logger->debug("src contact {0}",temp_src.size());
-  for(int i=0;i<temp_src.size();i++){
+  for(unsigned int i=0;i<temp_src.size();i++){
     SinkData_contact(temp_src[i], temp_contact);
     Contacts.push_back(temp_contact);
     if(temp_contact.placedLL.x<ll.x){ll.x=temp_contact.placedLL.x;}
@@ -3082,7 +3305,7 @@ void GcellDetailRouter::CreatePlistSrc_Dest(std::vector<std::set<RouterDB::point
   }
   logger->debug("check point new function 2 ");
   logger->debug("dest contact {0}",temp_dest.size());
-  for(int i=0;i<temp_dest.size();i++){
+  for(unsigned int i=0;i<temp_dest.size();i++){
     SinkData_contact(temp_dest[i], temp_contact);
     Contacts.push_back(temp_contact);
     if(temp_contact.placedLL.x<ll.x){ll.x=temp_contact.placedLL.x;}
@@ -3113,6 +3336,7 @@ void GcellDetailRouter::CreatePlistSymNets(std::vector<std::set<RouterDB::point,
   std::vector<RouterDB::contact> Sym_Contacts; 
   //RouterDB::point tmpP;
   std::vector<std::vector<RouterDB::point> > plist;
+  plist.resize(this->layerNo);
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_x; 
 
   auto push_contact = [&](auto & temp_contact){
@@ -3122,7 +3346,7 @@ void GcellDetailRouter::CreatePlistSymNets(std::vector<std::set<RouterDB::point,
        URx=temp_contact.placedUR.x;
        URy=temp_contact.placedUR.y;
         
-       if(!(URx<gridll.x or URy<gridll.y or LLx>gridur.x or LLy>gridur.y)){
+       if(!(URx<gridll.x || URy<gridll.y || LLx>gridur.x || LLy>gridur.y)){
            Contacts.push_back(temp_contact);
          }
 
@@ -3216,15 +3440,15 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
 
   int enclose_length =0;  
 /*
-  if(mIdx>=0 and mIdx<drc_info.Metal_info.size()-1){
+  if(mIdx>=0 && mIdx<drc_info.Metal_info.size()-1){
 
      int via_Idex = mIdx;
 
-     if(mIdx == drc_info.Via_model[via_Idex].LowerIdx and drc_info.Metal_info[mIdx].direct == 0){ //v
+     if(mIdx == drc_info.Via_model[via_Idex].LowerIdx && drc_info.Metal_info[mIdx].direct == 0){ //v
 
         enclose_length = drc_info.Via_model[via_Idex].LowerRect[1].y - drc_info.Via_model[via_Idex].LowerRect[0].y;
 
-       }else if(mIdx == drc_info.Via_model[via_Idex].LowerIdx and drc_info.Metal_info[mIdx].direct == 1){
+       }else if(mIdx == drc_info.Via_model[via_Idex].LowerIdx && drc_info.Metal_info[mIdx].direct == 1){
 
         enclose_length = drc_info.Via_model[via_Idex].LowerRect[1].x - drc_info.Via_model[via_Idex].LowerRect[0].x;
 
@@ -3234,11 +3458,11 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
 
      int via_Idex = mIdx-1;
 
-     if(mIdx == drc_info.Via_model[via_Idex].UpperIdx and drc_info.Metal_info[mIdx].direct == 0){ //v
+     if(mIdx == drc_info.Via_model[via_Idex].UpperIdx && drc_info.Metal_info[mIdx].direct == 0){ //v
 
         enclose_length = drc_info.Via_model[via_Idex].UpperRect[1].y - drc_info.Via_model[via_Idex].UpperRect[0].y;
 
-       }else if(mIdx == drc_info.Via_model[via_Idex].UpperIdx and drc_info.Metal_info[mIdx].direct == 1){
+       }else if(mIdx == drc_info.Via_model[via_Idex].UpperIdx && drc_info.Metal_info[mIdx].direct == 1){
 
         enclose_length = drc_info.Via_model[via_Idex].UpperRect[1].x - drc_info.Via_model[via_Idex].UpperRect[0].x;
 
@@ -3276,8 +3500,9 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         }
 
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
-          if(x>=newLLx and x<=newURx and y>=newLLy and y<=newURy){
+          if(x>=newLLx && x<=newURx && y>=newLLy && y<=newURy){
              //std::cout<<"Plist problem"<<std::endl;
+             //std::cout<<x<<" "<<y<<" "<<mIdx<<" "<<plist.size()<<std::endl;
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
          //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
@@ -3305,7 +3530,7 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
 
         logger->debug( "converter check point 2");
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
-          if(x>=newLLx and x<=newURx and y>=newLLy and y<=newURy){
+          if(x>=newLLx && x<=newURx && y>=newLLy && y<=newURy){
              //std::cout<<"Plist problem"<<std::endl;
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
@@ -3343,7 +3568,7 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
 
          logger->debug( "converter check point 3");
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
-          if(x>=newLLx and x<=newURx and y>=newLLy and y<=newURy){
+          if(x>=newLLx && x<=newURx && y>=newLLy && y<=newURy){
              //std::cout<<"Plist problem"<<std::endl;
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
@@ -3372,7 +3597,7 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
 
         logger->debug( "converter check point 4");
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
-          if(x>=newLLx and x<=newURx and y>=newLLy and y<=newURy){
+          if(x>=newLLx && x<=newURx && y>=newLLy && y<=newURy){
              //std::cout<<"Plist problem"<<std::endl;
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
@@ -3417,7 +3642,7 @@ void GcellDetailRouter::ConvertRect2GridPoints_Via(std::vector<std::vector<Route
         //newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
 	logger->debug( "converter check point 1");
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
-          if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+          if(x>=LLx && x<=URx && y>=LLy && y<=URy){
             logger->debug( "Plist problem");
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
@@ -3439,7 +3664,7 @@ void GcellDetailRouter::ConvertRect2GridPoints_Via(std::vector<std::vector<Route
         //newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
 	logger->debug( "converter check point 2");
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
-          if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+          if(x>=LLx && x<=URx && y>=LLy && y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
           //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
@@ -3467,7 +3692,7 @@ void GcellDetailRouter::ConvertRect2GridPoints_Via(std::vector<std::vector<Route
         //newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
 	logger->debug( "converter check point 3");
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
-           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+           if(x>=LLx && x<=URx && y>=LLy && y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
            //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
@@ -3488,7 +3713,7 @@ void GcellDetailRouter::ConvertRect2GridPoints_Via(std::vector<std::vector<Route
         //newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
 	logger->debug( "converter check point 4");
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
-          if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+          if(x>=LLx && x<=URx && y>=LLy && y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
           //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);

@@ -55,7 +55,7 @@ def test_m2_and_m3(setup):
     (c, m1, v1, m2, v2, m3) = setup
 
     for (i,nm) in chain( product( [0,2,4], ['a']), product( [1,3,5], ['b'])):
-        c.addWire( m1, nm, None, i, (0,1), (4,-1)) 
+        c.addWire( m1, nm, i, (0,1), (4,-1)) 
 
     c.asciiStickDiagram( v1, m2, v2, m3, """
     +b======+=======*
@@ -73,7 +73,7 @@ def test_m2_and_m3_infer(setup):
     (c, m1, v1, m2, v2, m3) = setup
 
     for (i,nm) in chain( product( [0,2,4], [None]), product( [1,3,5], [None])):
-        c.addWire( m1, nm, None, i, (0,1), (4,-1)) 
+        c.addWire( m1, nm, i, (0,1), (4,-1)) 
 
     c.asciiStickDiagram( v1, m2, v2, m3, """
     +b======+=======*
@@ -91,7 +91,7 @@ def test_m2_and_m3_twochar(setup):
     (c, m1, v1, m2, v2, m3) = setup
 
     for (i,nm) in chain( product( [0,2,4], ['a']), product( [1,3,5], ['tw'])):
-        c.addWire( m1, nm, None, i, (0,1), (4,-1)) 
+        c.addWire( m1, nm, i, (0,1), (4,-1)) 
 
     c.asciiStickDiagram( v1, m2, v2, m3, """
     +tw=====+=======*
@@ -109,7 +109,7 @@ def test_m2_and_m3_unicode(setup):
     (c, m1, v1, m2, v2, m3) = setup
 
     for (i,nm) in chain( product( [0,2,4], ['a']), product( [1,3,5], ['b'])):
-        c.addWire( m1, nm, None, i, (0,1), (4,-1)) 
+        c.addWire( m1, nm, i, (0,1), (4,-1)) 
 
     c.asciiStickDiagram( v1, m2, v2, m3, """
     +b══════+═══════*
@@ -127,7 +127,7 @@ def test_m2_and_m3_unicode2(setup):
     (c, m1, v1, m2, v2, m3) = setup
 
     for (i,nm) in chain( product( [0,2,4], ['a']), product( [1,3,5], ['b'])):
-        c.addWire( m1, nm, None, i, (0,1), (4,-1)) 
+        c.addWire( m1, nm, i, (0,1), (4,-1)) 
 
     c.asciiStickDiagram( v1, m2, v2, m3, """
     +b══════*═══════+
@@ -145,7 +145,7 @@ def test_m2_and_m3_resolve_names(setup):
     (c, m1, v1, m2, v2, m3) = setup
 
     for (i,nm) in chain( product( [0,2,4], ['a']), product( [1,3,5], ['b'])):
-        c.addWire( m1, nm, None, i, (0,1), (4,-1)) 
+        c.addWire( m1, nm, i, (0,1), (4,-1)) 
 
     c.asciiStickDiagram( v1, m2, v2, m3, """
     +═══════*═══════+
@@ -163,7 +163,7 @@ def test_m2_and_m3_resolve_names_small(setup):
     (c, m1, v1, m2, v2, m3) = setup
 
     for (i,nm) in product( [0,2], [None]):
-        c.addWire( m1, nm, None, i, (0,1), (4,-1)) 
+        c.addWire( m1, nm, i, (0,1), (4,-1)) 
 
     c.asciiStickDiagram( v1, m2, v2, m3, """
 
@@ -181,7 +181,7 @@ def test_m2_and_m3_multicharskip(setup):
     (c, m1, v1, m2, v2, m3) = setup
 
     for (i,nm) in chain( product( [0,2,4], ['a']), product( [1,3,5], ['tw'])):
-        c.addWire( m1, nm, None, i, (0,1), (4,-1)) 
+        c.addWire( m1, nm, i, (0,1), (4,-1)) 
 
     # weird behavior, probably want to disallow
     c.asciiStickDiagram( v1, m2, v2, m3, """
@@ -200,7 +200,7 @@ def test_m2_and_m3_badchars(setup):
     (c, m1, v1, m2, v2, m3) = setup
 
     for (i,nm) in chain( product( [0,2,4], ['a']), product( [1,3,5], ['tw'])):
-        c.addWire( m1, nm, None, i, (0,1), (4,-1)) 
+        c.addWire( m1, nm, i, (0,1), (4,-1)) 
 
     with pytest.raises(AssertionError) as excinfo:
         c.asciiStickDiagram( v1, m2, v2, m3, """
@@ -230,7 +230,7 @@ def test_m2_and_m3_different_pitch(setup):
     (c, m1, v1, m2, v2, m3) = setup
 
     for (i,nm) in chain( product( [0,2,4], ['a']), product( [1,3,5], ['b'])):
-        c.addWire( m1, nm, None, i, (0,1), (4,-1)) 
+        c.addWire( m1, nm, i, (0,1), (4,-1)) 
 
     c.asciiStickDiagram( v1, m2, v2, m3, """
    +b====+=====*

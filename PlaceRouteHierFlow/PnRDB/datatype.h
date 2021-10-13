@@ -3,16 +3,19 @@
 
 #include <vector>
 #include <string>
+#include <set>
 #include "limits.h"
 #include <map>
 #include <utility>
 //#include "../router/Rdatatype.h"
-using std::vector;
-using std::string;
 using std::map;
 using std::pair;
+using std::set;
+using std::string;
+using std::vector;
+
 //#define PERFORMANCE_DRIVEN
-#define analytical_placer
+//#define analytical_placer
 //#define min_displacement
 //#define quadratic_placement
 #define ilp
@@ -58,6 +61,7 @@ struct Multi_LinearConst;
 struct Multi_connection;
 struct GuardRing;
 struct Guardring_Const;
+struct guardring_info;
 
 /// Part 1: declaration of enum types
 enum NType {Block, Terminal};
@@ -312,8 +316,8 @@ struct block {
   vector<Via> interVias;
   vector<pin> dummy_power_pin; //power pins below to this block, but needs updated hierachy
   vector<GuardRing> GuardRings;
-
-}; // structure of block
+  int HPWL_extend_wo_terminal = 0;
+};  // structure of block
 
 struct terminal {
   string name="";
@@ -339,20 +343,27 @@ struct PowerGrid{
 struct layoutAS {
   int width=0;
   int height=0;
-  string gdsFile="";
+  int HPWL = -1, HPWL_extend = -1;
+  double HPWL_norm=-1;
+  double area_norm = -1;
+  double constraint_penalty = -1;
+  double cost = -1;
+  string gdsFile = "";
   vector<blockComplex> Blocks;
   vector<net> Nets;
   vector<terminal> Terminals;
   point LL;
   point UR;
-  //vector<pin> blockPins;
-  //vector<contact> interMetals;
-  //vector<Via> interVias;
+  vector<PowerNet> PowerNets;
+  vector<GuardRing> GuardRings;
+  // vector<pin> blockPins;
+  // vector<contact> interMetals;
+  // vector<Via> interVias;
 };
 
 struct GuardRing {
   std::string mastername = "";
-  string gdsFile="testcase_guardring/guard_ring.gds";
+  string gdsFile="guard_ring.gds";
   point LL;
   point UR;
   point center;
@@ -377,6 +388,7 @@ struct hierNode {
   string gdsFile="";
   vector<int> parent;
   vector<blockComplex> Blocks;
+  map<string, int> Block_name_map;//map from block name to block index
   vector<tile> tiles_total;
   vector<net> Nets;
   vector<terminal> Terminals;
@@ -412,13 +424,23 @@ struct hierNode {
   vector<LinearConst> L_Constraints;
   vector<Multi_LinearConst> ML_Constraints;
   vector<pair<vector<int>, Smark>> Ordering_Constraints;
+  vector<pair<vector<int>, Smark>> Abut_Constraints;
+  vector<set<int>> Same_Template_Constraints;
   int bias_Hgraph = 0;
   int bias_Vgraph=0;
   double Aspect_Ratio_weight = 1000;
+  double Aspect_Ratio[2] = {0, 100};
+  double placement_box[2] = {-1, -1};
   vector<Router_report> router_report;
   vector<Multi_connection> Multi_connections;
   int placement_id = 0;
-};  // structure of vertex in heirarchical tree
+  int HPWL = -1, HPWL_extend = -1, HPWL_extend_wo_terminal = -1;
+  double area_norm = -1;
+  double HPWL_norm = -1;
+  double constraint_penalty = -1;
+  double cost = -1;
+}; // structure of vertex in heirarchical tree
+
 
 /// Part 3: declaration of structures for constraint data
 
@@ -472,6 +494,7 @@ struct MatchBlock {
 struct AlignBlock {
   std::vector<int> blocks;//LL.x/LL.y equal
   int horizon; // 1 is h, 0 is v.
+  int line; // 0 is left or bottom, 1 is center, 2 is right or top
 };
 
 struct PortPos {
@@ -491,7 +514,7 @@ struct CCCap {
 
 struct Guardring_Const {
   string block_name;
-  string guard_ring_perimitives;
+  string guard_ring_primitives;
   string global_pin;
 };
 
@@ -625,6 +648,19 @@ struct guardring_info {
   int xspace; // x dimension minimal space
   int yspace; // y dimension minimal space
   GdsDatatype gds_datatype;
+  string path;
+};
+
+struct design_info {
+  int Hspace = 0, Vspace = 0;  // global Hspace and Vspace in placement
+  int signal_routing_metal_l;
+  int signal_routing_metal_u;
+  int power_grid_metal_l;
+  int power_grid_metal_u;
+  int power_routing_metal_l;
+  int power_routing_metal_u;  
+  int h_skip_factor;
+  int v_skip_factor;
 };
 
 struct Drc_info {
@@ -638,9 +674,8 @@ struct Drc_info {
   vector<string> MaskID_Via;
   Boundary top_boundary;
   guardring_info Guardring_info; //guardring info read from layers.json
+  design_info Design_info;       // design ingo from layer.json
 };
-
-
 
 struct routing_net{
    

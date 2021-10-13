@@ -1,0 +1,8 @@
+[
+    {"constraint":"HorizontalDistance", "abs_distance":0},
+    {"constraint":"VerticalDistance",   "abs_distance":0},
+    {"constraint": "Order",
+        "instances": ["mp0", "mn0"],
+         "direction": "top_to_bottom"
+    }
+]

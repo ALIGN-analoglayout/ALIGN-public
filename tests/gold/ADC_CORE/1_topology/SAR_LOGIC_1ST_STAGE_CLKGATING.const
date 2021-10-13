@@ -1,3 +1,0 @@
-// ALIGN generated automatic constraints
-SymmBlock ( {xi18<1>,xi18<2>} , {xi16<1>} , {xi16<7>,xi16<9>} , {xi18<7>,xi18<10>} , {xi18<8>,xi18<9>} , {xi16<10>,xi16<4>} , {xi18<6>,xi18<4>} , {xi13} , {xi17} , {xi19} )
-SymmBlock ( {xi16<5>,xi16<6>} , {xi16<8>,xi16<3>} )

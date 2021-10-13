@@ -68,7 +68,7 @@ JSONExtractUit (string GDSData, double& unit)
                      logger->debug("Unit {0} ", to_string(strAry));
 		     json::iterator xyI = strAry.begin();
                      double xyU=*xyI;
-                     unit=2*0.00025/xyU;
+                     unit=0.5*0.000000001/xyU;
                      return;
                 }
             }
@@ -143,7 +143,7 @@ JSONReaderWrite_subcells (string GDSData, long int& rndnum,
     ury.push_back(TJ_ury);
 };
 
-
+/**
 static void
 JSONLabelTerminals(PnRDB::hierNode& node, const PnRDB::Drc_info& drc_info, json& elmAry, double unit)
 {
@@ -204,7 +204,7 @@ JSONLabelTerminals(PnRDB::hierNode& node, const PnRDB::Drc_info& drc_info, json&
 	    }
 	}
     }
-}
+}**/
 
 void
 assignBoxPoints (int* x, int*y, struct PnRDB::bbox b, double unit) {
@@ -248,7 +248,7 @@ addMetalBoundaries (json& jsonElements, struct PnRDB::Metal& metal, const PnRDB:
     int x[5], y[5];
     assignBoxPoints (x, y, metal.MetalRect.placedBox, unit);
 
-    if (metal.LinePoint[0].x != metal.LinePoint[1].x or
+    if (metal.LinePoint[0].x != metal.LinePoint[1].x ||
 	metal.LinePoint[0].y != metal.LinePoint[1].y) {
 	json bound0;
 	bound0["type"] = "boundary";
@@ -400,7 +400,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     node.gdsFile = opath+gdsName+".gds";
     string TopCellName = gdsName;
     std::set<string> uniGDSset;
-    double unitScale=2;
+    double unitScale=0.5;
 	for (unsigned int i = 0; i < node.Blocks.size(); i++) 
 	    uniGDSset.insert(node.Blocks[i].instance.at( node.Blocks[i].selectedInstance ).gdsFile);
 
@@ -417,8 +417,9 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     jsonTop["header"] = 600;
     json jsonLib;
     jsonLib["time"] = JSON_TimeTime ();
-    double dbUnitUser=2*0.00025/unitScale;
-    double dbUnitMeter=dbUnitUser/1e6;
+    double dbUnitUser=0.5*0.000000001/unitScale;
+    double dbUnitMeter = dbUnitUser;
+    /// 1e6;
     jsonLib["units"] = {dbUnitUser, dbUnitMeter};
     //jsonLib["units"] = {0.00025, 2.5e-10};
     jsonLib["libname"] = "test";
@@ -458,8 +459,8 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     json jsonElements = json::array();
 
     int x[5], y[5];
-    int write_blockPins_name = 1;
-    if (write_blockPins_name and node.isTop ==1){
+    int write_blockPins_name = 0;
+    if (write_blockPins_name && node.isTop ==1){
 	for (unsigned int i = 0; i < node.blockPins.size(); i++) {
 	    int write = 0;
             logger->debug("Write blockPins info {0}",node.blockPins[i].name);

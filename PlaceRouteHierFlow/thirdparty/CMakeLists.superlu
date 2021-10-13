@@ -1,0 +1,87 @@
+######################################################################
+#
+# CMakeLists.txt for SUPERLU
+#
+######################################################################
+
+# Required version
+cmake_minimum_required(VERSION 2.8.12)
+
+# Project Version
+project(SuperLU NONE)
+set(VERSION_MAJOR "5")
+set(VERSION_MINOR "2")
+set(VERSION_BugFix "2")
+set(PROJECT_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_BugFix})
+
+if (BUILD_SHARED_LIBS)
+  message("-- SuperLU will be built as a shared library.")
+  set(PROJECT_NAME_LIB_EXPORT libsuperlu.so)
+else()
+  message("-- SuperLU will be built as a static library.")
+  set(PROJECT_NAME_LIB_EXPORT libsuperlu.a)
+endif()
+
+set(SUPERLU_VERSION "${PROJECT_VERSION}")
+set(SUPERLU_REV "${PROJECT_REV}")
+
+set(enable_blaslib_DEFAULT ON)
+
+if (NOT CMAKE_INSTALL_PREFIX)
+  set(CMAKE_INSTALL_PREFIX /usr/local)
+endif()
+
+# setup options
+option(enable_internal_blaslib  "Build the CBLAS library" ${enable_blaslib_DEFAULT})
+option(enable_single    "Enable single precision library" ON)
+option(enable_double    "Enable double precision library" ON)
+option(enable_complex   "Enable complex precision library" ON)
+option(enable_complex16 "Enable complex16 precision library" ON)
+
+######################################################################
+#
+# Find packages
+#
+######################################################################
+#
+#--------------------- BLAS ---------------------
+if(NOT enable_internal_blaslib)
+  if (TPL_BLAS_LIBRARIES)
+    set(BLAS_FOUND TRUE)
+  else()
+    find_package(BLAS)
+    if (BLAS_FOUND)
+      set(TPL_BLAS_LIBRARIES "${BLAS_LIBRARIES}" CACHE FILEPATH
+        "Set from FindBLAS.cmake BLAS_LIBRARIES." FORCE)
+    endif()
+  endif()
+endif()
+
+if(BLAS_FOUND)
+  message("-- Using TPL_BLAS_LIBRARIES='${TPL_BLAS_LIBRARIES}'")
+  set(CMAKE_C_FLAGS "-DUSE_VENDOR_BLAS ${CMAKE_C_FLAGS}")
+  set(BLAS_LIB ${TPL_BLAS_LIBRARIES})
+  # fix up BLAS library name
+  string (REPLACE ";" " " BLAS_LIB_STR "${BLAS_LIB}")
+  set(BLAS_LIB_EXPORT ${BLAS_LIB_STR})
+else()
+  message("-- Did not find or specify BLAS so configure to build internal CBLAS ...")
+  add_subdirectory(CBLAS)
+  set(BLAS_LIB blas)
+  if (BUILD_SHARED_LIBS)  # export to be referenced by downstream makefile
+      set(BLAS_LIB_EXPORT ${CMAKE_INSTALL_PREFIX}/CBLAS/libblas.so)
+  else()
+      set(BLAS_LIB_EXPORT ${CMAKE_INSTALL_PREFIX}/CBLAS/libblas.a)
+  endif()
+endif()
+
+######################################################################
+#
+# Add subdirectories
+#
+######################################################################
+
+add_subdirectory(SRC)
+
+target_compile_definitions(superlu PRIVATE PRNTlevel=0 DEBUGlevel=0)
+# target_compile_definitions(superlu PRIVATE Add_)

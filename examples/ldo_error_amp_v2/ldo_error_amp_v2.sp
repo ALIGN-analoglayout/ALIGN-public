@@ -1,9 +1,14 @@
+.model phplvt pmos nfin=1 m=1
+.model nhplvt nmos nfin=1 m=1
+
 .SUBCKT pcell_0 b d g s
+.param m=1
 Mi1[0] n0 g s b phplvt nfin=6 m=1
 Mi0[0] d g n0 b phplvt nfin=6 m=1
 .ENDS
 
 .SUBCKT pcell_1 d g s vssx
+.param m=1
 Mi1[0] d g n0 vssx nhplvt nfin=6 m=1
 Mi0[0] n0 g s vssx nhplvt nfin=6 m=1
 .ENDS

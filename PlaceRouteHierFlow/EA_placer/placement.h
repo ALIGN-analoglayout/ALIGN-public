@@ -195,6 +195,10 @@ public:
     float Area_SUM_N(bool x_or_y);
     void Cal_LSE_Area_Force();
     
+    float Area_SUM_P_WA(bool x_or_y);
+    float Area_SUM_N_WA(bool x_or_y);
+    void Cal_WA_Area_Force();
+    
     // for UT placer
     void UT_Placer();
     void Cal_LSE_BND_Force();

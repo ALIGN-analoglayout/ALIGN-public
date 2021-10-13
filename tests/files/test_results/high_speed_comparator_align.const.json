@@ -1,0 +1,86 @@
+[
+        {
+          "constraint": "horizontal_distance",
+          "abs_distance": 0
+        },
+        {
+          "constraint": "vertical_distance",
+          "abs_distance": 0
+        },
+        {
+          "constraint": "symmetric_blocks",
+          "pairs": [
+            [
+              "MN0"
+            ],
+            [
+              "X_DP_MN1_MN2"
+            ],
+            [
+              "X_CCN_MN3_MN4"
+            ],
+            [
+              "X_CCP_MP5_MP6"
+            ],
+            [
+              "MP7",
+              "MP8"
+            ],
+            [
+              "MP9",
+              "MP10"
+            ],
+            [
+              "X_INV_N_MP11_MN13",
+              "X_INV_P_MP12_MN14"
+            ]
+          ],
+          "direction": "V"
+        },
+        {
+          "constraint": "order",
+          "instances": [
+            "MN0",
+            "X_DP_MN1_MN2",
+            "X_CCN_MN3_MN4",
+            "X_CCP_MP5_MP6"
+          ],
+          "direction": "top_to_bottom",
+          "abut": false
+        },
+        {
+          "constraint": "align",
+          "instances": [
+            "MP9",
+            "MP7",
+            "X_DP_MN1_MN2",
+            "MP8",
+            "MP10"
+          ],
+          "line": "h_bottom"
+        },
+        {
+          "constraint": "align",
+          "instances": [
+            "X_INV_N_MP11_MN13",
+            "X_CCP_MP5_MP6",
+            "X_INV_P_MP12_MN14"
+          ],
+          "line": "h_bottom"
+        },
+        {
+          "constraint": "do_not_identify",
+          "instances": [
+            "X_CCN_MN3_MN4",
+            "X_CCP_MP5_MP6",
+            "X_DP_MN1_MN2",
+            "X_INV_N_MP11_MN13",
+            "X_INV_P_MP12_MN14",
+            "MN0",
+            "MP10",
+            "MP7",
+            "MP8",
+            "MP9"
+          ]
+        }
+      ]

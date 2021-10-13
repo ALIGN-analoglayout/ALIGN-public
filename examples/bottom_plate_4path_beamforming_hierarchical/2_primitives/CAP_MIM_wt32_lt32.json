@@ -1,0 +1,54 @@
+{
+  "bbox": [
+    0,
+    0,
+    52800,
+    56800
+  ],
+  "globalRoutes": [],
+  "globalRouteGrid": [],
+  "terminals": [
+    {
+      "netName": "PLUS",
+      "pin": "PLUS",
+      "layer": "M8",
+      "rect": [
+        8400,
+        12800,
+        9520,
+        44160
+      ]
+    },
+    {
+      "netName": "MINUS",
+      "pin": "MINUS",
+      "layer": "M8",
+      "rect": [
+        43120,
+        11520,
+        44240,
+        45440
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "M7",
+      "rect": [
+        7000,
+        6960,
+        46000,
+        49000
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "M8",
+      "rect": [
+        10000,
+        10000,
+        42800,
+        46800
+      ]
+    }
+  ]
+}

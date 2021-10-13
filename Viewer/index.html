@@ -135,10 +135,9 @@
       { layer: "Boundary", master: "diearea" },
       { layer: "boundary", master: "diearea" },
       { layer: "diffcon", master: "Diffcon" },
-      { layer: "pc", master: "Pc" },
+      { layer: "pc", master: "Polycon" },
       { layer: "poly", master: "Poly" },
-      { layer: "tcn", master: "Diffcon" },
-      { layer: "gcn", master: "Polycon" },
+      { layer: "polycon", master: "Polycon" },
       { layer: "nwell", master: "Nwell" }
     ];
 
@@ -150,7 +149,7 @@
       { layer: "Nselect", tag: "NS", color: colorbrewer.Reds[3][1] },
       { layer: "Fin", tag: "Fin", color: "green" },
       { layer: "Diffcon", tag: "DC", color: "magenta" },
-      { layer: "Pc", tag: "PC", color: "magenta" },
+      { layer: "Polycon", tag: "PC", color: "magenta" },
       { layer: "Poly", tag: "PL", color: "cyan" },
       { layer: "viad", tag: "vd", color: "black" },
       { layer: "viap", tag: "vp", color: "black" },
@@ -187,10 +186,10 @@
       { layer: "cellarea", tag: "C", color: colorbrewer.Reds[3][1] },
       { layer: "diearea", tag: "D", color: colorbrewer.Greens[3][1] },
       { layer: "Nwell", tag: "NW", color: colorbrewer.Greens[3][1] },
-      { layer: "basepitchid", tag: "BPID", color: "yellow" },
-      { layer: "devflavn1id", tag: "DFNID", color: "yellow" },
-      { layer: "devflavp1id", tag: "DFPID", color: "yellow" },
-      { layer: "devtype1id", tag: "DTID", color: "yellow" }
+      { layer: "Basepitchid", tag: "BPID", color: "yellow" },
+      { layer: "Devflavn1id", tag: "DFNID", color: "orange" },
+      { layer: "Devflavp1id", tag: "DFPID", color: "orange" },
+      { layer: "Devtype1id",  tag: "DTID", color: "yellow" }
     ];
 
     function color(d) {
@@ -514,7 +513,7 @@
         .attr("fill-opacity", 0.5)
         .attr("stroke", "black");
 
-      gs.append("title").text(d => `${d.netName},${d.layer},${d.rect}`);
+      gs.append("title").text(d => `${d.netName},${d.layer},${d.rect},${d.netType}`);
 
       /*========================*/
 
@@ -550,7 +549,7 @@
         .attr("fill-opacity", 0.5)
         .attr("stroke", "black");
 
-      gt.append("title").text(d => `${d.netName},${d.layer},${d.rect}`);
+      gt.append("title").text(d => `${d.netName},${d.layer},${d.rect},${d.netType}`);
     }
   }
 </script>

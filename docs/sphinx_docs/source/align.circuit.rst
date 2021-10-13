@@ -36,7 +36,6 @@ align.circuit.parser module
    :undoc-members:
    :show-inheritance:
 
-
 Module contents
 ---------------
 

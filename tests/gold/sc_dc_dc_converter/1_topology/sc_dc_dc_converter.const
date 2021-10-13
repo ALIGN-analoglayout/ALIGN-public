@@ -1,4 +1,0 @@
-// ALIGN generated automatic constraints
-SymmBlock ( {m8_m0} , {m6_m5} )
-CC ( {c1} , {1} , {Cap_1000000f} )
-CC ( {c0} , {1} , {Cap_1000000f} )

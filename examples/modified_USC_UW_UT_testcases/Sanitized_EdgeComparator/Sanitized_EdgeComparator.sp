@@ -1,6 +1,6 @@
 ************************************************************************
 * auCdl Netlist:
-* 
+*
 * Library Name:  TempSensorLayout
 * Top Cell Name: EdgeComparator
 * View Name:     schematic
@@ -8,7 +8,7 @@
 ************************************************************************
 
 *.BIPOLAR
-*.RESI = 2000 
+*.RESI = 2000
 *.RESVAL
 *.CAPVAL
 *.DIOPERI
@@ -16,7 +16,7 @@
 *.EQUATION
 *.SCALE METER
 *.MEGA
-.PARAM
+* .PARAM
 
 
 
@@ -64,16 +64,16 @@ MM2 net25 VIN VDD VDD lvtpfet l=LB w=WA m=1
 MM0 net028 VIP VDD VDD lvtpfet l=LB w=WA m=1
 MM45 net25 net028 VDD VDD lvtpfet l=LB w=WA m=4
 MM3 net028 net25 VDD VDD lvtpfet l=LB w=WA m=4
-XI95 VOP VOPL VDD VSS VONL / NR2D2LVT
-XI96 VON VONL VDD VSS VOPL / NR2D2LVT
+XI95 VOP VOPL VDD VSS VONL NR2D2LVT
+XI96 VON VONL VDD VSS VOPL NR2D2LVT
 MM5 net032 net028 net015 VSS lvtnfet l=LC w=WB m=2
 MM4 net24 net25 net015 VSS lvtnfet l=LC w=WB m=2
 MM28 net25 VIN net032 VSS lvtnfet l=LC w=WC m=2
 MM1 net028 VIP net24 VSS lvtnfet l=LC w=WC m=2
 MM22 net015 COMPEN VSS VSS lvtnfet l=LC w=WB m=2
-XI5 PRESET VDD VSS net029 / INVD1LVT
-XI4 PRESET VDD VSS net033 / INVD1LVT
-XI3 net028 VDD VSS VOP / INVD1LVT
-XI1 net25 VDD VSS VON / INVD1LVT
+XI5 PRESET VDD VSS net029 INVD1LVT
+XI4 PRESET VDD VSS net033 INVD1LVT
+XI3 net028 VDD VSS VOP INVD1LVT
+XI1 net25 VDD VSS VON INVD1LVT
 .ENDS
 

@@ -1,5 +1,6 @@
 import pprint
 import logging
+from collections import defaultdict
 logger = logging.getLogger(__name__)
 
 class RegionSet:
@@ -51,39 +52,46 @@ class DesignRuleCheck():
             else:
                 self._check_metal_rules(layer, vv)
                 self._check_adjacent_metals( layer, vv)
-        for error in self.errors:
-            logger.warning(pprint.pformat(error))
+
+        #SMB Is it good enough to have the actual errors in the .errors file
+        if True:
+            if self.errors:
+                logger.error(f'Found errors: DRC {self.num_errors}')
+        else:
+            for error in self.errors:
+                logger.warning(pprint.pformat(error))
+
         return self.num_errors
 
     def _check_via_rules(self, layer, vv):
         '''Simple rules related to vertical and horizontal spacing; need more work for diagonals'''
-        if 'SpaceY' in self.canvas.pdk[layer]:
-            # need a walrus operator
-            space_y = self.canvas.pdk[layer]['SpaceY']
-            if space_y is not None: 
-                # Since vias are stored as vertical wires in the scan lines, this is the easy case 
-                # find closest via with same X centerline with higher Y value
-                for (_, sl0) in vv.items():
-                    for slr0 in sl0.rects:
-                        for slr1 in sl0.rects:
-                            if slr0 == slr1: continue
-                            if slr0.rect[3] < slr1.rect[1]:
-                                if slr0.rect[3] + space_y > slr1.rect[1]:
-                                    self.errors.append( f"Vertical space violation on {layer}: {slr0} {slr1} {space_y}")
-        if 'SpaceX' in self.canvas.pdk[layer]:
-            space_x = self.canvas.pdk[layer]['SpaceX']
-            if space_x is not None: 
-                # This is harder
-                # find closest via with same Y coords and with a higher X value
-                for (cx0, sl0) in vv.items():
-                    for (cx1, sl1) in vv.items():
-                        if cx0 >= cx1: continue
-                        for slr0 in sl0.rects:
-                            for slr1 in sl1.rects:
-                                if slr0.rect[1] == slr1.rect[1] and slr0.rect[3] == slr1.rect[3]:
-                                    if slr0.rect[2] < slr1.rect[0]:
-                                        if slr0.rect[2] + space_x > slr1.rect[0]:
-                                            self.errors.append( f"Horizontal space violation on {layer}: {slr0} {slr1} {space_x}")
+        space_y = self.canvas.pdk[layer].get('SpaceY',None)
+        if space_y is not None: 
+            # Since vias are stored as vertical wires in the scan lines, this is the easy case 
+            # find closest via with same X centerline with higher Y value
+            # if this one violates there may be more that we are ignoring
+            for (_, sl0) in vv.items():
+                for idx,slr0 in enumerate(sl0.rects):
+                    if idx+1 < len(sl0.rects):
+                        slr1 = sl0.rects[idx+1]
+                        if slr0.rect[3] < slr1.rect[1]:
+                            if slr0.rect[3] + space_y > slr1.rect[1]:
+                                self.errors.append( f"Vertical space violation on {layer}: {slr0} {slr1} {space_y}")
+        space_x = self.canvas.pdk[layer].get('SpaceX',None)
+        if space_x is not None: 
+            horizontal_bins = defaultdict(list)
+            for cx, sl in vv.items():
+                for slr in sl.rects:
+                    cy = slr.rect[1] + slr.rect[3]
+                    horizontal_bins[cy].append( slr.rect)
+            for cy, bins in horizontal_bins.items():
+                bins.sort(key=lambda slr: slr[0])
+                for idx,slr0 in enumerate(bins):
+                    if idx+1 < len(bins):
+                        slr1 = bins[idx+1]
+                        if slr0[2] < slr1[0]:
+                            if slr0[2] + space_x > slr1[0]:
+                                self.errors.append( f"Horizontal space violation on {layer}: {slr0} {slr1} {space_x}")
 
 
 

@@ -1,6 +1,6 @@
 
 .param cload=10f ccoup=50f nfpf=30 ngf=1 rbias=20k rload=900 \
-    vbias=600m vps=0.85
+	vbias=600m vps=0.85
 
 .subckt nfet2x d g s b
 .param p1=30

@@ -28,6 +28,7 @@ class design
   private:
     friend class ConstGraph;
     friend class SeqPair;
+    friend class SeqPairEnumerator;
     friend class Aplace;
     friend class Placer;
     friend class ILP_solver;
@@ -109,10 +110,16 @@ class design
     std::vector<PortPos> Port_Location;
     std::vector<PnRDB::Multi_LinearConst> ML_Constraints;
     std::vector<pair<pair<int,int>, placerDB::Smark>> Ordering_Constraints;
+    std::vector<pair<pair<int,int>, placerDB::Smark>> Abut_Constraints;
+    vector<set<int>> Same_Template_Constraints;
     double Aspect_Ratio_weight = 1000;
     string name;
     int placement_id = -1;
     bool is_first_ILP = true;
+    double Aspect_Ratio[2] = {0, 100};
+    double placement_box[2] = {-1.0, -1.0};
+    double maxBlockAreaSum = 0;
+    double maxBlockHPWLSum = 0;
 
     //added by ya
     
@@ -138,6 +145,7 @@ class design
     struct AlignBlock {
       std::vector<int> blocks;
       int horizon; // 1 is h, 0 is v.
+      int line; // 0 is left or bottom, 1 is center, 2 is right or top
     };
     vector<AlignBlock> Align_blocks;
 
@@ -246,6 +254,10 @@ class design
     PnRDB::bbox GetPlacedBlockInterMetalAbsBox(int blockid, placerDB::Omark ort, PnRDB::bbox& originBox, placerDB::point LL, int sel); 
     PnRDB::point GetPlacedBlockInterMetalAbsPoint(int blockid, placerDB::Omark ort, PnRDB::point& originP, placerDB::point LL, int sel);
     PnRDB::point GetPlacedBlockInterMetalRelPoint(int blockid, placerDB::Omark ort, PnRDB::point& originP, int sel);
+    void checkselfsym(vector< pair<int,int> > &tmpsympair, vector< pair<int,placerDB::Smark> > &tmpselfsym, placerDB::Smark tsmark);
+
+    double GetMaxBlockAreaSum();
+    double GetMaxBlockHPWLSum();
 };
 
 #endif
