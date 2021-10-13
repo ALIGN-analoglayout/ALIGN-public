@@ -157,3 +157,48 @@ def test_place_cmp_2():
     if cleanup:
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
+
+
+@pytest.mark.parametrize("seed", [0, 7, 1981, 2021])
+def test_place_cmp_seed(seed):
+    """ original comparator. Run this test with -v and -s"""
+    name = f'ckt_{get_test_id()}_{seed}'
+    netlist = circuits.comparator(name)
+    setup = textwrap.dedent(f"""\
+        POWER = vccx
+        GND = vssx
+        DONT_CONST = {name}
+        """)
+    constraints = [
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
+        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
+        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
+        {"constraint": "SameTemplate", "instances": ["mp7", "mp8"]},
+        {"constraint": "SameTemplate", "instances": ["mp9", "mp10"]},
+        {"constraint": "SameTemplate", "instances": ["invn", "invp"]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["dp"]]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["ccp"], ["ccn"], ["invn", "invp"], ["mp9", "mp10"], ["mp7", "mp8"]]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "dp"]},
+        {"constraint": "AlignInOrder", "line": "bottom", "instances": ["dp", "ccn"]},
+        {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
+        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
+    ]
+    example = build_example(name, netlist, setup, constraints)
+
+    ckt_dir, run_dir = run_example(example, cleanup=cleanup, log_level='DEBUG',
+                                   additional_args=['-e', '4', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op', '--seed', str(seed)])
+
+    cn = f'{name.upper()}_0'
+
+    with (run_dir / '3_pnr' / 'Results' / f'{cn}.placement_verilog.json').open('rt') as fp:
+        placement = json.load(fp)
+
+        assert standalone_overlap_checker(placement, cn)
+        nets = gen_netlist(placement, cn)
+        hpwl_new = calculate_HPWL_from_placement_verilog_d(placement, cn, nets)
+        x0, y0, x1, y1 = placement['modules'][0]['bbox']
+        area_new = (x1-x0)*(y1-y0)
+
+        print(f'seed={seed} hpwl={hpwl_new} area={area_new}')
