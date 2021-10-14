@@ -272,6 +272,7 @@ def write_verilog_json(verilog_d):
                         "instances": [mi.dict() for mi in m.instances],
                         } for m in verilog_d.modules],
         "global_signals":verilog_d.global_signals}
+
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False, gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False, steps_to_run,lambda_coeff, reference_placement_verilog_json, nroutings=1, select_in_ILP=False, use_analytical_placer=False):
     logger.info(f"Running Place & Route for {subckt} {router_mode} {steps_to_run}")
     # Generate file name inputs
