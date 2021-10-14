@@ -2390,5 +2390,5 @@ bool design::isSeqInCache(const vector<int>& p, const vector<int>& n, const vect
 design::~design()
 {
   auto logger = spdlog::default_logger()->clone("placer.design.design");
-  logger->debug("sa__seq unique_cnt={0}", _seqPairCache.size());
+  logger->debug("sa__seq {0} unique_cnt={1}", name, _seqPairCache.size());
 }
