@@ -202,6 +202,6 @@ def test_place_cmp_seed(seed):
         x0, y0, x1, y1 = placement['modules'][0]['bbox']
         area_new = (x1-x0)*(y1-y0)
 
-        print(f'seed={seed} hpwl={hpwl_new} area={area_new}')
+        print(f'seed={seed} hpwl={hpwl_new} area={area_new} area*hpwl={area_new*hpwl_new}')
 
         plot_sa_cost(name.upper())
