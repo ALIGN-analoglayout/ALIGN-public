@@ -527,7 +527,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   double curr_cost = 0;
   int trial_count = 0;
   const int max_trial_count = 10000;
-  const int max_trial_cache_count = 10;
+  const int max_trial_cache_count = 20;
 
   unsigned int seed = 0;
   if (hyper.SEED > 0) {
@@ -654,7 +654,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       int trial_cached = 0;
       while (++trial_cached < max_trial_cache_count) {
         trial_sp.PerturbationNew(designData);
-        if (!curr_sp.isSeqInCache(designData)) break;
+        if (!trial_sp.isSeqInCache(designData)) break;
       }
       trial_sp.cacheSeq(designData);
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
@@ -761,8 +761,8 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   design designData(nodeVec.back());
   designData.PrintDesign();
   // Initialize simulate annealing with initial solution
-  SeqPair curr_sp(designData, size_t(1. * log(hyper.T_MIN/hyper.T_INT)/log(hyper.ALPHA) *
-        ((effort == 0) ? 1. : ((effort == 1) ? 4. : 8.)) ));
+  SeqPair curr_sp(designData, size_t(1. * log(hyper.T_MIN/hyper.T_INT)/log(hyper.ALPHA) * 
+        ((effort == 0) ? 1. : effort)));
   curr_sp.PrintSeqPair();
   ILP_solver curr_sol(designData);
   //clock_t start, finish;
