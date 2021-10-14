@@ -347,6 +347,10 @@ design::design(PnRDB::hierNode& node) {
   double macroThreshold=0.5; // threshold to filter out small blocks
   name = node.name;
   // Add blocks
+  if (getenv("ALIGN_SKIP_SEQ_PAIR") == nullptr || !std::atoi(getenv("ALIGN_SKIP_SEQ_PAIR"))) {
+    _useCache = true;
+  }
+
   for(vector<PnRDB::blockComplex>::iterator it=node.Blocks.begin(); it!=node.Blocks.end(); ++it) {
     this->Blocks.resize(this->Blocks.size()+1);
     int WL=0;
@@ -2323,4 +2327,68 @@ double design::GetMaxBlockHPWLSum()
     }
   }
   return maxBlockHPWLSum;
+}
+
+size_t design::getSeqIndex(const vector<int>& seq)
+{
+  size_t ind = 0;
+  auto it = _seqPairHash.find(seq);
+  if (it != _seqPairHash.end()) ind = it->second;
+  else {
+    auto sz = _seqPairHash.size();
+    _seqPairHash.insert(std::make_pair(seq, sz));
+    ind = sz;
+  }
+  return ind;
+}
+
+size_t design::getSeqIndex(const vector<int>& seq) const
+{
+  size_t ind = 0;
+  const auto it = _seqPairHash.find(seq);
+  if (it != _seqPairHash.end()) ind = it->second;
+  return ind;
+}
+
+size_t design::getSelIndex(const vector<int>& sel)
+{
+  size_t ind = 0;
+  auto it = _selHash.find(sel);
+  if (it != _selHash.end()) ind = it->second;
+  else {
+    auto sz = _selHash.size();
+    _selHash.insert(std::make_pair(sel, sz));
+    ind = sz;
+  }
+  return ind;
+}
+
+size_t design::getSelIndex(const vector<int>& sel) const
+{
+  size_t ind = 0;
+  const auto it = _selHash.find(sel);
+  if (it != _selHash.end()) ind = it->second;
+  return ind;
+}
+
+void design::cacheSeq(const vector<int>& p, const vector<int>& n, const vector<int>& sel)
+{
+  auto pindx = getSeqIndex(p), nindx = getSeqIndex(n), sindx = getSelIndex(sel);
+  auto tpl = std::make_tuple(pindx, nindx, sindx);
+  if (_seqPairCache.find(tpl) == _seqPairCache.end()) {
+    _seqPairCache.insert(tpl);
+  }
+}
+
+bool design::isSeqInCache(const vector<int>& p, const vector<int>& n, const vector<int>& sel) const
+{
+  if (!_useCache) return false;
+  auto pindx = getSeqIndex(p), nindx = getSeqIndex(n), sindx = getSelIndex(sel);
+  return _seqPairCache.find(std::make_tuple(pindx, nindx, sindx)) != _seqPairCache.end();
+}
+
+design::~design()
+{
+  auto logger = spdlog::default_logger()->clone("placer.design.design");
+  logger->debug("sa__seq unique_cnt={0}", _seqPairCache.size());
 }

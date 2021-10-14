@@ -526,7 +526,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   curr_sp.PrintSeqPair();
   double curr_cost = 0;
   int trial_count = 0;
-  int max_trial_count = 10000;
+  const int max_trial_count = 10000;
+  const int max_trial_cache_count = 10;
 
   unsigned int seed = 0;
   if (hyper.SEED > 0) {
@@ -539,6 +540,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
   else
     curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo);
+  curr_sp.cacheSeq(designData);
   // curr_cost negative means infeasible (do not satisfy placement constraints)
   // Only positive curr_cost value is accepted.
   while (curr_cost < 0) {
@@ -548,6 +550,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       break;
     }
     curr_sp.PerturbationNew(designData);
+    curr_sp.cacheSeq(designData);
     if(select_in_ILP)
       curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
     else
@@ -648,7 +651,12 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       SeqPair trial_sp(curr_sp);
       // cout<<"before per"<<endl; trial_sp.PrintSeqPair();
       // SY: PerturbationNew honors order and symmetry. What could make the trial_sp infeasible? Aspect ratio, Align?
-      trial_sp.PerturbationNew(designData);
+      int trial_cached = 0;
+      while (++trial_cached < max_trial_cache_count) {
+        trial_sp.PerturbationNew(designData);
+        if (!curr_sp.isSeqInCache(designData)) break;
+      }
+      trial_sp.cacheSeq(designData);
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ILP_solver trial_sol(designData);
       double trial_cost = 0;
@@ -659,17 +667,19 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       total_candidates += 1;
       if (trial_cost >= 0) {
         oData[trial_cost] = std::make_pair(trial_sp, trial_sol);
-        bool Smark = false;///trial_sp.Enumerate();
+        bool Smark = trial_sp.Enumerate();
         //Smark = false;
-        delta_cost = trial_cost - curr_cost;
-        if (delta_cost < 0) {
-          Smark = true;
-          logger->debug("sa__accept_better T={0} delta_cost={1} ", T, delta_cost);
-        } else {
-          double r = (double)rand() / RAND_MAX;
-          if (r < exp((-1.0 * delta_cost) / T)) {
+        if (!Smark) {
+          delta_cost = trial_cost - curr_cost;
+          if (delta_cost < 0) {
             Smark = true;
-            logger->debug("sa__climbing_up T={0} delta_cost={1}", T, delta_cost);
+            logger->debug("sa__accept_better T={0} delta_cost={1} ", T, delta_cost);
+          } else {
+            double r = (double)rand() / RAND_MAX;
+            if (r < exp((-1.0 * delta_cost) / T)) {
+              Smark = true;
+              logger->debug("sa__climbing_up T={0} delta_cost={1}", T, delta_cost);
+            }
           }
         }
         if (Smark) {
@@ -679,7 +689,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
           curr_sol.cost = curr_cost;
         }
       } else {
-        total_candidates_infeasible += 1;
+        ++total_candidates_infeasible;
         logger->debug("sa__infeasible_candidate i={1}/{2} T={0} ", T, i, MAX_Iter);
       }
       ReshapeSeqPairMap(oData, nodeSize);
