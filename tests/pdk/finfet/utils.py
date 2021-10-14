@@ -4,6 +4,11 @@ import pathlib
 from copy import deepcopy
 import shutil
 import align.pdk.finfet
+import re
+import math
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
 
 align_home = os.getenv('ALIGN_HOME')
 
@@ -144,3 +149,42 @@ def verify_area(name, run_dir, area=None):
             print(f'{name}: area is {area_0}')
             if area is not None and area > 0:
                 assert area_0 <= area, (f'Placer found a suboptimal solution: area: {area_0} target: {area} ratio: {area_0/area}')
+
+
+def _parse_sa_cost(name):
+    """
+        logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3}", designData.name, T_index, i, curr_cost);
+    """
+    pattern = f'sa__cost name={name}'
+    cost = []
+    temp = []
+    with open(my_dir / 'LOG' / 'align.log', 'r') as fp:
+        for line in fp:
+            if re.search(pattern, line):
+                line = line.split(pattern)[1]
+                val = float(line.split('cost=')[1])
+                cost.append(val)
+                val = line.split('t_index=')[1]
+                val = float(val.split(' ')[0])
+                temp.append(val)
+    return temp, cost
+
+
+def plot_sa_cost(name, normalize=False):
+    t, c = _parse_sa_cost(name)
+    if normalize:
+        c_norm = [100*math.exp(v - c[0]) for v in c]
+    else:
+        c_norm = c
+    plt.figure()
+    plt.plot(range(len(c_norm)), c_norm)
+    plt.title('Cost')
+    if normalize:
+        plt.ylabel('Cost normalized to initial solution (%)')
+    else:
+        plt.ylabel('Cost')
+    plt.xlabel('Perturbation')
+    plt.legend([f'initial={c_norm[0]:.3f} final={c_norm[-1]:.3f} min={min(c_norm):.3f}'])
+    plt.grid()
+    plt.show()
+    plt.savefig(f'{my_dir}/cost_{name}.png')

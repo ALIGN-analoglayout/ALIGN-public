@@ -7,10 +7,10 @@ from align.pnr.render_placement import standalone_overlap_checker
 
 
 try:
-    from .utils import get_test_id, build_example, run_example
+    from .utils import get_test_id, build_example, run_example, plot_sa_cost
     from . import circuits
 except BaseException:
-    from utils import get_test_id, build_example, run_example
+    from utils import get_test_id, build_example, run_example, plot_sa_cost
     import circuits
 
 cleanup = False
@@ -77,6 +77,7 @@ def test_place_cmp_1():
     if cleanup:
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
+
 
 @pytest.mark.skip
 def test_place_cmp_2():
@@ -162,7 +163,7 @@ def test_place_cmp_2():
 @pytest.mark.parametrize("seed", [0, 7, 1981, 2021])
 def test_place_cmp_seed(seed):
     """ original comparator. Run this test with -v and -s"""
-    name = f'ckt_{get_test_id()}_{seed}'
+    name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     setup = textwrap.dedent(f"""\
         POWER = vccx
@@ -188,7 +189,7 @@ def test_place_cmp_seed(seed):
     example = build_example(name, netlist, setup, constraints)
 
     ckt_dir, run_dir = run_example(example, cleanup=cleanup, log_level='DEBUG',
-                                   additional_args=['-e', '4', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op', '--seed', str(seed)])
+                                   additional_args=['-e', '1', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op', '--seed', str(seed)])
 
     cn = f'{name.upper()}_0'
 
@@ -202,3 +203,5 @@ def test_place_cmp_seed(seed):
         area_new = (x1-x0)*(y1-y0)
 
         print(f'seed={seed} hpwl={hpwl_new} area={area_new}')
+
+        plot_sa_cost(name.upper())
