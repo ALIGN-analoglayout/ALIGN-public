@@ -189,7 +189,7 @@ def test_place_cmp_seed(seed):
     example = build_example(name, netlist, setup, constraints)
 
     ckt_dir, run_dir = run_example(example, cleanup=cleanup, log_level='DEBUG',
-                                   additional_args=['-e', '1', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op', '--seed', str(seed)])
+                                   additional_args=['-e', '4', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op', '--seed', str(seed)])
 
     cn = f'{name.upper()}_0'
 
