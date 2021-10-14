@@ -160,7 +160,7 @@ def test_place_cmp_2():
         shutil.rmtree(ckt_dir)
 
 
-@pytest.mark.parametrize("seed", [0, 7, 1981, 2021])
+@pytest.mark.parametrize("seed", [0, 7, 1453, 1981, 2021])
 def test_place_cmp_seed(seed):
     """ original comparator. Run this test with -v and -s"""
     name = f'ckt_{get_test_id()}'
@@ -202,6 +202,20 @@ def test_place_cmp_seed(seed):
         x0, y0, x1, y1 = placement['modules'][0]['bbox']
         area_new = (x1-x0)*(y1-y0)
 
-        print(f'seed={seed} hpwl={hpwl_new} area={area_new} area*hpwl={area_new*hpwl_new}')
-
         plot_sa_cost(name.upper())
+
+    cn = 'CKT_PLACE_CMP_1_0'
+    with (run_dir / '..' / f'_{cn}.placement_verilog.json').open('rt') as fp:
+        placement = json.load(fp)
+
+        assert standalone_overlap_checker(placement, cn)
+        nets = gen_netlist(placement, cn)
+        hpwl_best = calculate_HPWL_from_placement_verilog_d(placement, cn, nets)
+        x0, y0, x1, y1 = placement['modules'][0]['bbox']
+        area_best = (x1-x0)*(y1-y0)
+
+    hpwl_pct = round(100*((hpwl_new/hpwl_best)-1))
+    area_pct = round(100*((area_new/area_best)-1))
+    pct = (area_new*hpwl_new)/(area_best*hpwl_best)
+    pct = round(100*(pct-1))
+    print(f'seed={seed} hpwl={hpwl_new} area={area_new} area*hpwl={area_new*hpwl_new} This placement is {hpwl_pct}% in hpwl, {area_pct}% in area, {pct}% in area*hpwl worse than the best known solution')
