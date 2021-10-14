@@ -20,10 +20,11 @@ from ..cell_fabric import gen_gds_json, transformation
 from .write_constraint import PnRConstraintWriter
 from .. import PnR
 from .toplevel import toplevel
-from ..schema.hacks import VerilogJsonTop
+from ..schema.hacks import VerilogJsonTop, VerilogJsonModule
 
 logger = logging.getLogger(__name__)
 
+from memory_profiler import profile
 
 def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, extract=False, input_dir=None, toplevel=True, gds_json=True):
 
@@ -104,7 +105,8 @@ def extract_capacitor_constraints( pnr_const_ds):
 
     return cap_constraints
 
-def remove_pg_pins(verilog_d:dict, subckt:str, pg_connections:dict):
+
+def remove_pg_pins(verilog_d: dict, subckt: str, pg_connections: dict):
     """remove_pg_pins
 
     Removes any ports related to power pins. PnR engine cannot connect to subcircuit power pins.
@@ -121,29 +123,30 @@ def remove_pg_pins(verilog_d:dict, subckt:str, pg_connections:dict):
     if subckt in modules_dict:
         pass
     elif subckt.upper() in modules_dict:
-        subckt=subckt.upper()
+        subckt = subckt.upper()
     else:
         assert False, f"{subckt} not found in design {modules_dict}"
-    modules = [module for module in verilog_d['modules'] if module['name']==subckt]
-    assert len(modules) ==1, f"duplicate modules are found {modules}"
+    modules = [module for module in verilog_d['modules'] if module['name'] == subckt]
+    assert len(modules) == 1, f"duplicate modules are found {modules}"
     module = modules[0]
-    #Remove port from subckt level
+    # Remove port from subckt level
     module['parameters'] = [p for p in module['parameters'] if p not in pg_connections.keys()]
     for inst in module['instances']:
         if inst['abstract_template_name'] in modules_dict:
-            #Inst pins connected to pg_pins
-            hier_pg_connections = {conn["formal"]:pg_connections[conn["actual"]] for conn in inst['fa_map'] if conn["actual"] in pg_connections}
-            if len(hier_pg_connections)>0:
+            # Inst pins connected to pg_pins
+            hier_pg_connections = {conn["formal"]: pg_connections[conn["actual"]] for conn in inst['fa_map'] if conn["actual"] in pg_connections}
+            if len(hier_pg_connections) > 0:
                 logger.debug(f"Removing instance {inst['instance_name']} pins connected to {hier_pg_connections}")
                 inst['fa_map'] = [conn for conn in inst['fa_map'] if conn["formal"] not in hier_pg_connections]
-                #Creates a copy of module with reduced pins
+                # Creates a copy of module with reduced pins
                 new_name = modify_pg_conn_subckt(verilog_d, inst['abstract_template_name'], hier_pg_connections)
                 inst['abstract_template_name'] = new_name
                 remove_pg_pins(verilog_d, new_name, hier_pg_connections)
         else:
-            inst['fa_map'] = [{'formal':conn['formal'],
-                        'actual': pg_connections.get(conn["actual"], conn["actual"])} for conn in inst['fa_map']]
+            inst['fa_map'] = [{'formal': conn['formal'],
+                               'actual': pg_connections.get(conn["actual"], conn["actual"])} for conn in inst['fa_map']]
             logging.debug(f"leaf level node {inst['instance_name']} {inst['abstract_template_name']}")
+
 
 def clean_if_extra(verilog_d, subckt):
     #Remove modules which are not instantiated
@@ -151,18 +154,22 @@ def clean_if_extra(verilog_d, subckt):
     logger.debug(f"All used modules: {all_inst}")
     verilog_d['modules'] = [m for m in verilog_d['modules'] if m['name'] in all_inst]
 
+
 def modify_pg_conn_subckt(verilog_d, subckt, pp):
     """
-    creates a new subcircuit by removing power pins from a subcircuit defination
+    creates a new subcircuit by removing power pins from a subcircuit definition
     and change internal connections within the subcircuit
     nm: new module
     """
-    #TODO: remove redundant const
-    nm = copy.copy([module for module in verilog_d['modules'] if module['name']==subckt][0])
+    # TODO: remove redundant const
+
+    nm = copy.copy([module for module in verilog_d['modules'] if module['name'] == subckt][0])
+
     nm['parameters'] = [p for p in nm['parameters'] if p not in pp]
+
     logger.debug(f"modifying subckt {nm['name']} {pp}")
     modules_dict = {module['name']: module['parameters'] for module in verilog_d['modules']}
-    i=0
+    i = 0
     updated_ckt_name = subckt+'_PG'+str(i)
     while updated_ckt_name in modules_dict.keys():
         if modules_dict[updated_ckt_name] == nm['parameters']:
@@ -172,9 +179,11 @@ def modify_pg_conn_subckt(verilog_d, subckt, pp):
             i = i+1
             updated_ckt_name = subckt+'_PG'+str(i)
     nm['name'] = updated_ckt_name
+
     logger.debug(f"new module is added: {nm}")
     verilog_d['modules'].append(nm)
     return updated_ckt_name
+
 
 def gen_leaf_cell_info( verilog_d, pnr_const_ds):
     non_leaves = { module['name'] for module in verilog_d['modules'] }
@@ -255,6 +264,7 @@ def check_modules(verilog_d):
                 assert all(fm["formal"] in all_module_pins[inst["abstract_template_name"]] for fm in inst["fa_map"]), \
                     f"incorrect instantiation {inst['instance_name']} of module {inst['abstract_template_name']}, \
                      instance_pins: {inst['fa_map']}, module pins: {all_module_pins[inst['abstract_template_name']]}"
+
 def write_verilog_json(verilog_d):
     return {"modules":[{"name":m.name,
                         "parameters": list(m.parameters),
@@ -353,6 +363,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
     else:
         with (working_dir / "__capacitors__.json").open("rt") as fp:
             capacitors = json.load(fp)
+
     if '3_pnr:place' in steps_to_run or '3_pnr:route' in steps_to_run:
 
         with (pdk_dir / pdk_file).open( 'rt') as fp:
@@ -376,8 +387,8 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
             for fn in results_dir.glob( f'{cap_template_name}_AspectRatio_*.json'):
                 (working_dir / fn.name).write_text(fn.read_text())
 
-
     variants = collections.defaultdict(collections.defaultdict)
+
     if '3_pnr:check' in steps_to_run:
         for variant, ( path_name, layout_idx) in results_name_map.items():
 
