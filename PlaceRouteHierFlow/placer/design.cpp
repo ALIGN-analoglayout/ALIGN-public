@@ -347,7 +347,7 @@ design::design(PnRDB::hierNode& node) {
   double macroThreshold=0.5; // threshold to filter out small blocks
   name = node.name;
   // Add blocks
-  if (getenv("ALIGN_SKIP_SEQ_PAIR") == nullptr || !std::atoi(getenv("ALIGN_SKIP_SEQ_PAIR"))) {
+  if (getenv("ALIGN_SKIP_SEQ_PAIR_CACHE") == nullptr || !std::atoi(getenv("ALIGN_SKIP_SEQ_PAIR_CACHE"))) {
     _useCache = true;
   }
 
