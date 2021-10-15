@@ -177,3 +177,25 @@ plt.grid()
 plt.ylabel('Median Value of Accepted Cost')
 plt.xlabel('Iterations')
 plt.savefig("median_cost_geometric_v2.png")
+
+#
+t = 0.75
+plt.figure()
+pct = np.linspace(1, 10, 100)
+
+delta = pct
+p = np.exp(-delta/t)
+plt.plot(pct, p)
+
+delta = np.log(pct)
+p = np.exp(-delta/t)
+plt.plot(pct, p)
+
+plt.grid()
+plt.title(f'Acceptance Probability at T_INIT={t}')
+plt.ylabel('Acceptance Probability')
+plt.xlabel('trial_cost/current_cost')
+plt.xlim([1, 10])
+plt.ylim([0, 1])
+plt.legend(['linear: r < exp( -(c1/c2)/T )', 'log: r < exp( -log(c1/c2)/T ) '])
+plt.savefig("acceptance_vs_ratio.png")
