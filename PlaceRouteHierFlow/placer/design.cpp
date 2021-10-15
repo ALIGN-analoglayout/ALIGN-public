@@ -2336,12 +2336,27 @@ double design::GetMaxBlockHPWLSum()
 size_t design::getSeqIndex(const vector<int>& seq)
 {
   size_t ind = 0;
-  auto it = _seqPairHash.find(seq);
-  if (it != _seqPairHash.end()) ind = it->second;
-  else {
-	  auto sz = _seqPairHash.size();
-	  _seqPairHash.insert(std::make_pair(seq, sz));
-	  ind = sz;
+  if (seq.size() <= 12 && _factorial.size() < seq.size()) {
+    for (unsigned i = _factorial.size(); i < seq.size(); ++i) {
+      if (i > 0) _factorial.push_back(i * _factorial[i - 1]);
+      else _factorial.push_back(1);
+    }
+  }
+  if (seq.size()  <= 12) {
+    for (unsigned i = 0; i < seq.size() - 1; ++i) {
+      unsigned count = 0;
+      for (unsigned j = i + 1; j < seq.size(); ++j)
+        if (seq[i] > seq[j]) ++count;
+      if (count > 0) ind += _factorial[seq.size() - i - 1] * count;
+    }
+  } else {
+    auto it = _seqPairHash.find(seq);
+    if (it != _seqPairHash.end()) ind = it->second;
+    else {
+      auto sz = _seqPairHash.size();
+      _seqPairHash.insert(std::make_pair(seq, sz));
+      ind = sz;
+    }
   }
   return ind;
 }
@@ -2349,8 +2364,18 @@ size_t design::getSeqIndex(const vector<int>& seq)
 size_t design::getSeqIndex(const vector<int>& seq) const
 {
   size_t ind = ULONG_MAX;
-  const auto it = _seqPairHash.find(seq);
-  if (it != _seqPairHash.end()) ind = it->second;
+  if (seq.size()  <= 12) {
+    ind = 0;
+    for (unsigned i = 0; i < seq.size() - 1; ++i) {
+      unsigned count = 0;
+      for (unsigned j = i + 1; j < seq.size(); ++j)
+        if (seq[i] > seq[j]) ++count;
+      if (count > 0) ind += _factorial[seq.size() - i - 1] * count;
+    }
+  } else {
+    const auto it = _seqPairHash.find(seq);
+    if (it != _seqPairHash.end()) ind = it->second;
+  }
   return ind;
 }
 
