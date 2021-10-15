@@ -2377,11 +2377,12 @@ size_t design::getSelIndex(const vector<int>& sel) const
 
 void design::cacheSeq(const vector<int>& p, const vector<int>& n, const vector<int>& sel)
 {
+  auto logger = spdlog::default_logger()->clone("placer.design.cacheSeq");
   auto pindx = getSeqIndex(p), nindx = getSeqIndex(n), sindx = getSelIndex(sel);
-  auto tpl = std::make_tuple(pindx, nindx, sindx);
-  if (_seqPairCache.find(tpl) == _seqPairCache.end()) {
-    _seqPairCache.insert(tpl);
+  if (_seqPairCache.empty()) {
+    logger->debug("Using seq pair cache for {0} to reduce redundancy", name);
   }
+  _seqPairCache.emplace(pindx, nindx, sindx);
 }
 
 bool design::isSeqInCache(const vector<int>& p, const vector<int>& n, const vector<int>& sel) const
@@ -2398,5 +2399,6 @@ design::~design()
 {
   auto logger = spdlog::default_logger()->clone("placer.design.design");
   logger->debug("sa__seq {0} unique_cnt={1} seq_pair_hash={2} sel_hash={3}", name, _seqPairCache.size(), _seqPairHash.size(), _selHash.size());
+  logger->debug("sa__infeasible {0} aspect_ratio={1} ilp_fail={2} placement_boundary={3} total_calls={4}", name, _infeasAspRatio, _infeasILPFail, _infeasPlBound, _totalNumCostCalc);
   //_debugofs.close();
 }
