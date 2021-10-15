@@ -845,7 +845,6 @@ void GcellDetailRouter::create_detailrouter(){
         }
         else
         {
-          exit(0);
           logger->warn("Router-Warning: feasible path might not be found");
         }
 
