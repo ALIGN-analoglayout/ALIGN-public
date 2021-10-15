@@ -184,7 +184,7 @@ def test_place_cmp_seed(seed):
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "dp"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["dp", "ccn"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
+        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.01, "ratio_high": 100}
     ]
     example = build_example(name, netlist, setup, constraints)
 
@@ -202,8 +202,6 @@ def test_place_cmp_seed(seed):
         x0, y0, x1, y1 = placement['modules'][0]['bbox']
         area_new = (x1-x0)*(y1-y0)
 
-        plot_sa_cost(name.upper())
-
     cn = 'CKT_PLACE_CMP_1_0'
     with (run_dir / '..' / f'_{cn}.placement_verilog.json').open('rt') as fp:
         placement = json.load(fp)
@@ -219,3 +217,5 @@ def test_place_cmp_seed(seed):
     pct = (area_new*hpwl_new)/(area_best*hpwl_best)
     pct = round(100*(pct-1))
     print(f'seed={seed} hpwl={hpwl_new} area={area_new} area*hpwl={area_new*hpwl_new} This placement is {hpwl_pct}% in hpwl, {area_pct}% in area, {pct}% in area*hpwl worse than the best known solution')
+
+    plot_sa_cost(name.upper())

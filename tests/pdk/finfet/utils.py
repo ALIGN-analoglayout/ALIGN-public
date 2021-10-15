@@ -153,38 +153,52 @@ def verify_area(name, run_dir, area=None):
 
 def _parse_sa_cost(name):
     """
-        logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3}", designData.name, T_index, i, curr_cost);
+        logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3} temp={4}", designData.name, T_index, 0, curr_cost, T);
     """
     pattern = f'sa__cost name={name}'
-    cost = []
-    temp = []
+    data = dict()
     with open(my_dir / 'LOG' / 'align.log', 'r') as fp:
         for line in fp:
             if re.search(pattern, line):
                 line = line.split(pattern)[1]
-                val = float(line.split('cost=')[1])
-                cost.append(val)
-                val = line.split('t_index=')[1]
-                val = float(val.split(' ')[0])
-                temp.append(val)
-    return temp, cost
+                line = line.strip().split()
+                for item in line:
+                    k, v = item.split('=')
+                    if k not in data:
+                        data[k] = []
+                    else:
+                        data[k].append(float(v))
+    return data
 
 
-def plot_sa_cost(name, normalize=False):
-    t, c = _parse_sa_cost(name)
+def plot_sa_cost(name, normalize=True):
+    data = _parse_sa_cost(name)
     if normalize:
-        c_norm = [100*math.exp(v - c[0]) for v in c]
+        c_norm = [100*math.exp(v - data['cost'][0]) for v in data['cost']]
     else:
-        c_norm = c
-    plt.figure()
-    plt.plot(range(len(c_norm)), c_norm)
-    plt.title('Cost')
+        c_norm = data['cost']
+
+    fig, ax = plt.subplots()
+    ax.plot(range(len(c_norm)), c_norm, '-o')
+    ax.set_title('Cost vs Iteration')
     if normalize:
-        plt.ylabel('Cost normalized to initial solution (%)')
+        ax.set_ylabel('Cost normalized to initial solution (%)')
     else:
-        plt.ylabel('Cost')
-    plt.xlabel('Perturbation')
-    plt.legend([f'initial={c_norm[0]:.3f} final={c_norm[-1]:.3f} min={min(c_norm):.3f}'])
-    plt.grid()
-    plt.show()
-    plt.savefig(f'{my_dir}/cost_{name}.png')
+        ax.set_ylabel('Cost')
+    ax.set_xlabel('Iteration')
+    ax.legend([f'initial={c_norm[0]:.3f} final={c_norm[-1]:.3f} min={min(c_norm):.3f}'])
+    ax.grid()
+    fig.savefig(f'{my_dir}/cost_vs_iter_{name}.png')
+
+    fig, ax = plt.subplots()
+    ax.plot(data['temp'], c_norm, '-o')
+    ax.set_title('Cost vs Temperature')
+    ax.set_xlim(data['temp'][0], data['temp'][-1])
+    if normalize:
+        ax.set_ylabel('Cost normalized to initial solution (%)')
+    else:
+        ax.set_ylabel('Cost')
+    ax.set_xlabel('Temperature')
+    ax.legend([f'initial={c_norm[0]:.3f} final={c_norm[-1]:.3f} min={min(c_norm):.3f}'])
+    ax.grid()
+    fig.savefig(f'{my_dir}/cost_vs_temp_{name}.png')

@@ -576,7 +576,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   bool exhausted(false);
   int total_candidates = 0;
   int total_candidates_infeasible = 0;
-  logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3}", designData.name, T_index, 0, curr_cost);
+  logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3} temp={4}", designData.name, T_index, 0, curr_cost, T);
   while (T > hyper.T_MIN) {
     int i = 1;
     int MAX_Iter = 1;
@@ -672,8 +672,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       total_candidates += 1;
       if (trial_cost >= 0) {
         oData[trial_cost] = std::make_pair(trial_sp, trial_sol);
+        // Smark is true if search space is enumerated (no need to randomize)
         bool Smark = trial_sp.Enumerate();
-        //Smark = false;
         if (!Smark) {
           delta_cost = trial_cost - curr_cost;
           if (delta_cost < 0) {
@@ -702,7 +702,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
 #endif
 
       i++;
-      logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3}", designData.name, T_index, i, curr_cost);
+      logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3} temp={4}", designData.name, T_index, i, curr_cost, T);
 
       update_index++;
       if (trial_sp.EnumExhausted()) {
