@@ -9,6 +9,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <climits>
+#include <fstream>
 #include <utility> // pair, make_pair
 #include "Pdatatype.h"
 #include "../PnRDB/readfile.h"
@@ -187,6 +188,9 @@ class design
     std::map<std::vector<int>, size_t> _seqPairHash, _selHash;
     bool _useCache{false};
     std::set<std::tuple<size_t, size_t, size_t>> _seqPairCache;
+  std::vector<size_t> _factorial;
+  size_t getSeqIndex(const vector<int>& seq);
+  size_t getSelIndex(const vector<int>& sel);
   public:
     design();
     design(PnRDB::hierNode& node);
@@ -260,13 +264,12 @@ class design
     double GetMaxBlockAreaSum();
     double GetMaxBlockHPWLSum();
 	~design();
-  size_t getSeqIndex(const vector<int>& seq);
-  size_t getSeqIndex(const vector<int>& seq) const;
-  size_t getSelIndex(const vector<int>& sel);
-  size_t getSelIndex(const vector<int>& sel) const;
 
+  size_t getSeqIndex(const vector<int>& seq) const;
+  size_t getSelIndex(const vector<int>& sel) const;
   void cacheSeq(const vector<int>& p, const vector<int>& n, const vector<int>& sel);
   bool isSeqInCache(const vector<int>& p, const vector<int>& n, const vector<int>& sel) const;
+  //std::ofstream _debugofs;
 };
 
 #endif

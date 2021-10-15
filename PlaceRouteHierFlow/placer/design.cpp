@@ -569,6 +569,10 @@ design::design(PnRDB::hierNode& node) {
   noSymGroup4FullMove=GetSizeSymGroup4FullMove(1);
   noSymGroup4PartMove=noSymGroup4FullMove;
   //std::cout<<"Leaving design\n";
+  //if (getenv("ALIGN_DEBUG_SEQ_PAIR") != nullptr && std::atoi(getenv("ALIGN_DEBUG_SEQ_PAIR"))) {
+  //  _debugofs.open(name + ".seq_pair_dbg.data");
+  //}
+
 }
 
 int design::GetSizeBlock4Move(int mode) {
@@ -2335,16 +2339,16 @@ size_t design::getSeqIndex(const vector<int>& seq)
   auto it = _seqPairHash.find(seq);
   if (it != _seqPairHash.end()) ind = it->second;
   else {
-    auto sz = _seqPairHash.size();
-    _seqPairHash.insert(std::make_pair(seq, sz));
-    ind = sz;
+	  auto sz = _seqPairHash.size();
+	  _seqPairHash.insert(std::make_pair(seq, sz));
+	  ind = sz;
   }
   return ind;
 }
 
 size_t design::getSeqIndex(const vector<int>& seq) const
 {
-  size_t ind = 0;
+  size_t ind = ULONG_MAX;
   const auto it = _seqPairHash.find(seq);
   if (it != _seqPairHash.end()) ind = it->second;
   return ind;
@@ -2365,7 +2369,7 @@ size_t design::getSelIndex(const vector<int>& sel)
 
 size_t design::getSelIndex(const vector<int>& sel) const
 {
-  size_t ind = 0;
+  size_t ind = ULONG_MAX;
   const auto it = _selHash.find(sel);
   if (it != _selHash.end()) ind = it->second;
   return ind;
@@ -2384,11 +2388,15 @@ bool design::isSeqInCache(const vector<int>& p, const vector<int>& n, const vect
 {
   if (!_useCache) return false;
   auto pindx = getSeqIndex(p), nindx = getSeqIndex(n), sindx = getSelIndex(sel);
-  return _seqPairCache.find(std::make_tuple(pindx, nindx, sindx)) != _seqPairCache.end();
+  if (pindx != ULONG_MAX && nindx != ULONG_MAX && sindx != ULONG_MAX) {
+	  return _seqPairCache.find(std::make_tuple(pindx, nindx, sindx)) != _seqPairCache.end();
+  }
+  return false;
 }
 
 design::~design()
 {
   auto logger = spdlog::default_logger()->clone("placer.design.design");
-  logger->debug("sa__seq {0} unique_cnt={1}", name, _seqPairCache.size());
+  logger->debug("sa__seq {0} unique_cnt={1} seq_pair_hash={2} sel_hash={3}", name, _seqPairCache.size(), _seqPairHash.size(), _selHash.size());
+  //_debugofs.close();
 }
