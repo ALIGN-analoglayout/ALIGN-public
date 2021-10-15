@@ -170,6 +170,24 @@ def _parse_sa_cost(name):
                         data[k].append(float(v))
     return data
 
+def _parse_seq_pair_cost(name):
+    """
+        logger->debug("sa__seq__hash {0} {1}", trial_sp.getLexIndex(designData), trial_cost);
+    """
+    pattern = f'sa__seq__hash name={name}'
+    data = dict()
+    with open(my_dir / 'LOG' / 'align.log', 'r') as fp:
+        for line in fp:
+            if re.search(pattern, line):
+                line = line.split(pattern)[1]
+                line = line.strip().split()
+                for item in line:
+                    k, v = item.split('=')
+                    if k not in data:
+                        data[k] = []
+                    else:
+                        data[k].append(float(v))
+    return data
 
 def plot_sa_cost(name, normalize=True):
     data = _parse_sa_cost(name)
@@ -202,3 +220,16 @@ def plot_sa_cost(name, normalize=True):
     ax.legend([f'initial={c_norm[0]:.3f} final={c_norm[-1]:.3f} min={min(c_norm):.3f}'])
     ax.grid()
     fig.savefig(f'{my_dir}/cost_vs_temp_{name}.png')
+
+def plot_sa_seq(name):
+    data = _parse_seq_pair_cost(name)
+
+    print(len(data))
+
+    fig, ax = plt.subplots()
+    ax.plot(data['pos_pair'], data['neg_pair'], '*')
+    ax.set_title('sequence pairs')
+    ax.set_ylabel('Neg pair')
+    ax.set_xlabel('Pos pair')
+    ax.grid()
+    fig.savefig(f'{my_dir}/scatter_seq_pair_{name}.png')

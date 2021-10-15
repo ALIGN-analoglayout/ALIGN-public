@@ -1153,13 +1153,8 @@ inline size_t SeqPair::Factorial(const size_t& t)
 }
 
 std::string SeqPair::getLexIndex(design& des) const {
-  std::string str{std::to_string(des.getSeqIndex(posPair)) +
-    " " + std::to_string(des.getSeqIndex(negPair)) + " {"};
-  for (auto& i : selected) {
-    str += (std::to_string(i) + " ");
-  }
-  str += "}";
-  return str;
+  return "pos_pair=" + std::to_string(des.getSeqIndex(posPair)) +
+    " neg_pair=" + std::to_string(des.getSeqIndex(negPair));
 }
 
 void SeqPair::PerturbationNew(design& caseNL) {
