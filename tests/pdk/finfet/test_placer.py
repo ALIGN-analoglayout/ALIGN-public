@@ -7,10 +7,10 @@ from align.pnr.render_placement import standalone_overlap_checker
 
 
 try:
-    from .utils import get_test_id, build_example, run_example, plot_sa_cost
+    from .utils import get_test_id, build_example, run_example, plot_sa_cost, plot_sa_seq
     from . import circuits
 except BaseException:
-    from utils import get_test_id, build_example, run_example, plot_sa_cost
+    from utils import get_test_id, build_example, run_example, plot_sa_cost, plot_sa_seq
     import circuits
 
 cleanup = False
@@ -219,3 +219,4 @@ def test_place_cmp_seed(seed):
     print(f'seed={seed} hpwl={hpwl_new} area={area_new} area*hpwl={area_new*hpwl_new} This placement is {hpwl_pct}% in hpwl, {area_pct}% in area, {pct}% in area*hpwl worse than the best known solution')
 
     plot_sa_cost(name.upper())
+    plot_sa_seq(name.upper())
