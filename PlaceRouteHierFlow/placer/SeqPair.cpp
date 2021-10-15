@@ -1165,15 +1165,20 @@ std::string SeqPair::getLexIndex(design& des) const {
 void SeqPair::PerturbationNew(design& caseNL) {
   /* initialize random seed: */
   //srand(time(NULL));
+  //
 
   //auto logger = spdlog::default_logger()->clone("placer.SeqPair.PerturbationNew");
-  //std::string pos("{ "), neg("{ "), sel("{ ");
-  //for (auto& it : posPair) pos += (std::to_string(it) + " ");
-  //for (auto& it : negPair) neg += (std::to_string(it) + " ");
-  //for (auto& it : selected) sel += (std::to_string(it) + " ");
-  //pos += "}";
-  //neg += "}";
-  //sel += "}";
+  /*if (caseNL._debugofs.is_open()) {
+    std::string pos("{ "), neg("{ "), sel("{ ");
+    for (auto& it : posPair) pos += (std::to_string(it) + " ");
+    for (auto& it : negPair) neg += (std::to_string(it) + " ");
+    for (auto& it : selected) sel += (std::to_string(it) + " ");
+    pos += "}";
+    neg += "}";
+    sel += "}";
+    caseNL._debugofs << "sp_before_perturbation : "<< pos << ' ' << neg << ' ' << sel << ' ' << caseNL.getSeqIndex(posPair) << ' ' << caseNL.getSeqIndex(negPair) << '\n';
+  }*/
+
   //logger->info("sp_before_perturbation {0} {1} {2}", pos, neg, sel);
 
   if (_seqPairEnum) {
@@ -1224,14 +1229,17 @@ void SeqPair::PerturbationNew(design& caseNL) {
   KeepOrdering(caseNL);
   SameSelected(caseNL);
 
-  //pos=("{ "); neg=("{ "); sel=("{ ");
-  //for (auto& it : posPair) pos += (std::to_string(it) + " ");
-  //for (auto& it : negPair) neg += (std::to_string(it) + " ");
-  //for (auto& it : selected) sel += (std::to_string(it) + " ");
-  //pos += "}";
-  //neg += "}";
-  //sel += "}";
-  //logger->info("sp_after_perturbation {0} {1} {2}", pos, neg, sel);
+  /*if (caseNL._debugofs.is_open()) {
+    std::string pos("{ "), neg("{ "), sel("{ ");
+    for (auto& it : posPair) pos += (std::to_string(it) + " ");
+    for (auto& it : negPair) neg += (std::to_string(it) + " ");
+    for (auto& it : selected) sel += (std::to_string(it) + " ");
+    pos += "}";
+    neg += "}";
+    sel += "}";
+    //logger->info("sp_after_perturbation {0} {1} {2}", pos, neg, sel);
+    caseNL._debugofs << "sp_after_perturbation : "<< pos << ' ' << neg << ' ' << sel << ' ' << caseNL.getSeqIndex(posPair) << ' ' << caseNL.getSeqIndex(negPair) << '\n';
+  }*/
 }
 
 void SeqPair::Perturbation(design& caseNL) {

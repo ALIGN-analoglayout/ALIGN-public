@@ -527,7 +527,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   double curr_cost = 0;
   int trial_count = 0;
   const int max_trial_count = 10000;
-  const int max_trial_cache_count = 20;
+  const int max_trial_cache_count = 10;
 
   unsigned int seed = 0;
   if (hyper.SEED > 0) {
@@ -654,7 +654,9 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       int trial_cached = 0;
       while (++trial_cached < max_trial_cache_count) {
         trial_sp.PerturbationNew(designData);
-        if (!trial_sp.isSeqInCache(designData)) break;
+        if (!trial_sp.isSeqInCache(designData)) {
+			break;
+		}
       }
       trial_sp.cacheSeq(designData);
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
@@ -664,6 +666,9 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
         trial_cost = trial_sol.GenerateValidSolution_select(designData, trial_sp, drcInfo);
       else
         trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo);
+	  /*if (designData._debugofs.is_open()) {
+		  designData._debugofs << "sp__cost : " << trial_sp.getLexIndex(designData) << ' ' << trial_cost << '\n';
+	  }*/
       total_candidates += 1;
       if (trial_cost >= 0) {
         oData[trial_cost] = std::make_pair(trial_sp, trial_sol);

@@ -303,7 +303,7 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
 
     hyper = PnR.PlacerHyperparameters()
     # Defaults; change (and uncomment) as required
-    hyper.T_INT = 0.75
+    hyper.T_INT = 0.10
     hyper.ALPHA = 0.99925
     hyper.T_MIN = hyper.T_INT*(hyper.ALPHA**1e4)    # 10k iterations
     hyper.SEED = seed  # 0 do not override, >0 overwrite the seed
