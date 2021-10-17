@@ -229,8 +229,8 @@ def plot_sa_seq(name):
     for i in range(2):
         ax[i].set_ylabel('Neg pair')
         ax[i].set_xlabel('Pos pair')
-        ax[i].set_xlim(0, max_val+1)
-        ax[i].set_ylim(0, max_val+1)
+        ax[i].set_xlim(-0.5, max_val+0.5)
+        ax[i].set_ylim(-0.5, max_val+0.5)
         ax[i].grid()
 
     fig.colorbar(im0, ax=ax[0])
