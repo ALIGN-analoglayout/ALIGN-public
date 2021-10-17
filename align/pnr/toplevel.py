@@ -13,6 +13,8 @@ from ..gui.mockup import run_gui
 from ..schema.hacks import VerilogJsonTop
 from .hpwl import calculate_HPWL_from_placement_verilog_d, gen_netlist
 
+import math
+
 logger = logging.getLogger(__name__)
 
 Omark = PnR.Omark
@@ -304,8 +306,10 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
     hyper = PnR.PlacerHyperparameters()
     # Defaults; change (and uncomment) as required
     hyper.T_INT = 0.5  # Increase for denormalized decision criteria
-    hyper.ALPHA = 0.99925
-    hyper.T_MIN = hyper.T_INT*(hyper.ALPHA**1e4)    # 10k iterations
+    hyper.T_MIN = 0.05
+    hyper.ALPHA = math.exp(math.log(hyper.T_MIN/hyper.T_INT)/1e4)
+    # hyper.T_MIN = hyper.T_INT*(hyper.ALPHA**1e4)    # 10k iterations
+    # hyper.ALPHA = 0.99925
     hyper.SEED = seed  # 0 do not override, >0 overwrite the seed
     # hyper.COUNT_LIMIT = 200
     hyper.LAMBDA = lambda_coeff
