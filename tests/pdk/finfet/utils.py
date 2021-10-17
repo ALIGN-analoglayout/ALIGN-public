@@ -186,6 +186,7 @@ def plot_sa_cost(name):
     fig, ax = plt.subplots(2, 1)
 
     ax[0].plot(range(len(cost)), cost, '-o')
+    ax[0].set_xlim(0, len(cost)+1)
     ax[0].set_ylabel('Cost norm. to initial')
     ax[0].set_xlabel('Iteration')
     ax[0].legend([f'initial={cost[0]:.3f} final={cost[-1]:.3f} min={min(cost):.3f}'])

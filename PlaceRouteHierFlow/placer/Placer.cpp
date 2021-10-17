@@ -527,7 +527,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   double curr_cost = 0;
   int trial_count = 0;
   const int max_trial_count = 10000;
-  const int max_trial_cache_count = 10;
+  const int max_trial_cache_count = 100;
 
   unsigned int seed = 0;
   if (hyper.SEED > 0) {
@@ -536,30 +536,37 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     logger->debug("Random number generator seed={0}", seed);
   }
 
-  if(select_in_ILP)
-    curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
-  else
-    curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo);
-  curr_sp.cacheSeq(designData);
-  // curr_cost negative means infeasible (do not satisfy placement constraints)
-  // Only positive curr_cost value is accepted.
-  // TODO: Utilize the SP cache for the initial trials as well!
-  while (curr_cost < 0) {
-    if (++trial_count > max_trial_count) {
-      logger->error("Couldn't generate a feasible solution even after {0} perturbations.", max_trial_count);
-      curr_cost = __DBL_MAX__;
-      break;
-    }
-    curr_sp.PerturbationNew(designData);
-    curr_sp.cacheSeq(designData);
+  while (++trial_count < max_trial_count) {
+    // curr_cost negative means infeasible (do not satisfy placement constraints)
+    // Only positive curr_cost value is accepted.
     if(select_in_ILP)
       curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
     else
       curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo);
+
+    curr_sp.cacheSeq(designData);
+
+    logger->debug("sa__seq__hash name={0} {1} cost={2} temp={3} t_index={4}", designData.name, curr_sp.getLexIndex(designData), curr_cost, hyper.T_INT, 0);
+
+    if (curr_cost > 0) {
+      logger->info("Required {0} perturbations to generate a feasible solution.", trial_count);
+      break;
+    } else {
+      int trial_cached = 0;
+      while (++trial_cached < max_trial_cache_count) {
+        curr_sp.PerturbationNew(designData);
+        if (!curr_sp.isSeqInCache(designData)) {
+          break;
+        }
+      }
+    }
   }
-  if (0 < trial_count && trial_count <= max_trial_count) {
-    logger->info("Required {0} perturbations to generate a feasible solution.", trial_count);
+
+  if (curr_cost < 0) {
+      logger->error("Couldn't generate a feasible solution even after {0} perturbations.", max_trial_count);
+      curr_cost = __DBL_MAX__;
   }
+
   curr_sol.cost = curr_cost;
   oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
   ReshapeSeqPairMap(oData, nodeSize);
@@ -656,8 +663,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       while (++trial_cached < max_trial_cache_count) {
         trial_sp.PerturbationNew(designData);
         if (!trial_sp.isSeqInCache(designData)) {
-			break;
-		}
+			    break;
+		    }
       }
       trial_sp.cacheSeq(designData);
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
