@@ -151,26 +151,6 @@ def verify_area(name, run_dir, area=None):
                 assert area_0 <= area, (f'Placer found a suboptimal solution: area: {area_0} target: {area} ratio: {area_0/area}')
 
 
-def _parse_sa_cost(name):
-    """
-        logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3} temp={4}", designData.name, T_index, 0, curr_cost, T);
-    """
-    pattern = f'sa__cost name={name}'
-    data = dict()
-    with open(my_dir / 'LOG' / 'align.log', 'r') as fp:
-        for line in fp:
-            if re.search(pattern, line):
-                line = line.split(pattern)[1]
-                line = line.strip().split()
-                for item in line:
-                    k, v = item.split('=')
-                    if k not in data:
-                        data[k] = []
-                    else:
-                        data[k].append(float(v))
-    return data
-
-
 def _parse_seq_pair_cost(name):
     """
     logger->debug("sa__seq__hash name={0} {1} cost={2} temp={3} t_index={4}", designData.name, trial_sp.getLexIndex(designData), trial_cost, T, T_index);
@@ -191,32 +171,31 @@ def _parse_seq_pair_cost(name):
     return data
 
 
-def plot_sa_cost(name, normalize=True):
-    data = _parse_sa_cost(name)
-    if normalize:
-        c_norm = [100*math.exp(v - data['cost'][0]) for v in data['cost']]
-    else:
-        c_norm = data['cost']
+def plot_sa_cost(name):
+    data = _parse_seq_pair_cost(name)
+
+    init = -1
+    for i in data['cost']:
+        if i > 0:
+            init = i
+            break
+    assert init > 0
+
+    cost = [math.exp(k-init) if k > 0 else -1 for k in data['cost']]
 
     fig, ax = plt.subplots(2, 1)
 
-    ax[0].plot(range(len(c_norm)), c_norm, '-o')
-    if normalize:
-        ax[0].set_ylabel('Cost normalized to initial(%)')
-    else:
-        ax[0].set_ylabel('Cost')
+    ax[0].plot(range(len(cost)), cost, '-o')
+    ax[0].set_ylabel('Cost norm. to initial')
     ax[0].set_xlabel('Iteration')
-    ax[0].legend([f'initial={c_norm[0]:.3f} final={c_norm[-1]:.3f} min={min(c_norm):.3f}'])
+    ax[0].legend([f'initial={cost[0]:.3f} final={cost[-1]:.3f} min={min(cost):.3f}'])
     ax[0].grid()
 
-    ax[1].plot(data['temp'], c_norm, '-o')
+    ax[1].plot(data['temp'], cost, '-o')
     ax[1].set_xlim(data['temp'][0], data['temp'][-1])
-    if normalize:
-        ax[1].set_ylabel('Cost normalized to initial(%)')
-    else:
-        ax[1].set_ylabel('Cost')
+    ax[1].set_ylabel('Cost norm. to initial')
     ax[1].set_xlabel('Temperature')
-    ax[1].legend([f'initial={c_norm[0]:.3f} final={c_norm[-1]:.3f} min={min(c_norm):.3f}'])
+    ax[1].legend([f'initial={cost[0]:.3f} final={cost[-1]:.3f} min={min(cost):.3f}'])
     ax[1].grid()
 
     fig.set_size_inches(14, 8)
@@ -225,7 +204,14 @@ def plot_sa_cost(name, normalize=True):
 
 def plot_sa_seq(name):
     data = _parse_seq_pair_cost(name)
-    init = data['cost'][0]
+
+    init = -1
+    for i in data['cost']:
+        if i > 0:
+            init = i
+            break
+    assert init > 0
+
     cost = [math.exp(k-init) if k > 0 else -1 for k in data['cost']]
     cm = plt.cm.get_cmap('cool')
 

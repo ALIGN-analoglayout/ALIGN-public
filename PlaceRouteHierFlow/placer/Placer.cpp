@@ -543,6 +543,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   curr_sp.cacheSeq(designData);
   // curr_cost negative means infeasible (do not satisfy placement constraints)
   // Only positive curr_cost value is accepted.
+  // TODO: Utilize the SP cache for the initial trials as well!
   while (curr_cost < 0) {
     if (++trial_count > max_trial_count) {
       logger->error("Couldn't generate a feasible solution even after {0} perturbations.", max_trial_count);
@@ -562,9 +563,6 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   curr_sol.cost = curr_cost;
   oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
   ReshapeSeqPairMap(oData, nodeSize);
-  //cout << "Placer-Info: initial cost = " << curr_cost << endl;
-  //cout << "Placer-Info: status ";
-  //cout.flush();
   // Simulated annealing
   double T = hyper.T_INT;
   double delta_cost;
@@ -576,7 +574,9 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   bool exhausted(false);
   int total_candidates = 0;
   int total_candidates_infeasible = 0;
-  logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3} temp={4}", designData.name, T_index, 0, curr_cost, T);
+
+  logger->debug("sa__seq__hash name={0} {1} cost={2} temp={3} t_index={4}", designData.name, curr_sp.getLexIndex(designData), curr_cost, T, T_index);
+
   while (T > hyper.T_MIN) {
     int i = 1;
     int MAX_Iter = 1;
@@ -682,6 +682,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
             logger->debug("sa__accept_better T={0} delta_cost={1} ", T, delta_cost);
           } else {
             double r = (double)rand() / RAND_MAX;
+            // De-normalize the delta cost
+            delta_cost = exp(delta_cost);
             if (r < exp((-1.0 * delta_cost) / T)) {
               Smark = true;
               logger->debug("sa__climbing_up T={0} delta_cost={1}", T, delta_cost);
@@ -703,8 +705,6 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
 #endif
 
       i++;
-      logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3} temp={4}", designData.name, T_index, i, curr_cost, T);
-
       update_index++;
       if (trial_sp.EnumExhausted()) {
         logger->info("Exhausted all permutations of sequence pairs");
