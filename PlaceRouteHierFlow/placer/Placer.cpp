@@ -576,6 +576,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   int total_candidates_infeasible = 0;
 
   logger->debug("sa__seq__hash name={0} {1} cost={2} temp={3} t_index={4}", designData.name, curr_sp.getLexIndex(designData), curr_cost, T, T_index);
+  logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3} temp={4}", designData.name, T_index, 0, curr_cost, T);
 
   while (T > hyper.T_MIN) {
     int i = 1;
@@ -703,7 +704,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       ReshapeSeqPairMap(oData, nodeSize);
 
 #endif
-
+      logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3} temp={4}", designData.name, T_index, i, curr_cost, T);
       i++;
       update_index++;
       if (trial_sp.EnumExhausted()) {

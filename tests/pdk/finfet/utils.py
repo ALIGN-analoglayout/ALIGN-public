@@ -151,11 +151,11 @@ def verify_area(name, run_dir, area=None):
                 assert area_0 <= area, (f'Placer found a suboptimal solution: area: {area_0} target: {area} ratio: {area_0/area}')
 
 
-def _parse_seq_pair_cost(name):
+def _parse_pattern(pattern):
     """
+    logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3} temp={4}", designData.name, T_index, 0, curr_cost, T);
     logger->debug("sa__seq__hash name={0} {1} cost={2} temp={3} t_index={4}", designData.name, trial_sp.getLexIndex(designData), trial_cost, T, T_index);
     """
-    pattern = f'sa__seq__hash name={name}'
     data = dict()
     with open(my_dir / 'LOG' / 'align.log', 'r') as fp:
         for line in fp:
@@ -172,7 +172,7 @@ def _parse_seq_pair_cost(name):
 
 
 def plot_sa_cost(name):
-    data = _parse_seq_pair_cost(name)
+    data = _parse_pattern(f'sa__cost name={name}')
 
     init = -1
     for i in data['cost']:
@@ -203,7 +203,7 @@ def plot_sa_cost(name):
 
 
 def plot_sa_seq(name):
-    data = _parse_seq_pair_cost(name)
+    data = _parse_pattern(f'sa__seq__hash name={name}')
 
     init = -1
     for i in data['cost']:
