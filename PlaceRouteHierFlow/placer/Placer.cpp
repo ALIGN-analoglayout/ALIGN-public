@@ -666,7 +666,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
         trial_cost = trial_sol.GenerateValidSolution_select(designData, trial_sp, drcInfo);
       else
         trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo);
-      logger->debug("sa__seq__hash name={0} {1} cost={2}", designData.name, trial_sp.getLexIndex(designData), trial_cost);
+      logger->debug("sa__seq__hash name={0} {1} cost={2} temp={3} t_index={4}", designData.name, trial_sp.getLexIndex(designData), trial_cost, T, T_index);
 	  /*if (designData._debugofs.is_open()) {
 		  designData._debugofs << "sp__cost : " << trial_sp.getLexIndex(designData) << ' ' << trial_cost << '\n';
 	  }*/

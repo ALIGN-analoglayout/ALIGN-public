@@ -170,9 +170,10 @@ def _parse_sa_cost(name):
                         data[k].append(float(v))
     return data
 
+
 def _parse_seq_pair_cost(name):
     """
-        logger->debug("sa__seq__hash {0} {1}", trial_sp.getLexIndex(designData), trial_cost);
+    logger->debug("sa__seq__hash name={0} {1} cost={2} temp={3} t_index={4}", designData.name, trial_sp.getLexIndex(designData), trial_cost, T, T_index);
     """
     pattern = f'sa__seq__hash name={name}'
     data = dict()
@@ -189,6 +190,7 @@ def _parse_seq_pair_cost(name):
                         data[k].append(float(v))
     return data
 
+
 def plot_sa_cost(name, normalize=True):
     data = _parse_sa_cost(name)
     if normalize:
@@ -196,40 +198,55 @@ def plot_sa_cost(name, normalize=True):
     else:
         c_norm = data['cost']
 
-    fig, ax = plt.subplots()
-    ax.plot(range(len(c_norm)), c_norm, '-o')
-    ax.set_title('Cost vs Iteration')
-    if normalize:
-        ax.set_ylabel('Cost normalized to initial solution (%)')
-    else:
-        ax.set_ylabel('Cost')
-    ax.set_xlabel('Iteration')
-    ax.legend([f'initial={c_norm[0]:.3f} final={c_norm[-1]:.3f} min={min(c_norm):.3f}'])
-    ax.grid()
-    fig.savefig(f'{my_dir}/cost_vs_iter_{name}.png')
+    fig, ax = plt.subplots(2, 1)
 
-    fig, ax = plt.subplots()
-    ax.plot(data['temp'], c_norm, '-o')
-    ax.set_title('Cost vs Temperature')
-    ax.set_xlim(data['temp'][0], data['temp'][-1])
+    ax[0].plot(range(len(c_norm)), c_norm, '-o')
     if normalize:
-        ax.set_ylabel('Cost normalized to initial solution (%)')
+        ax[0].set_ylabel('Cost normalized to initial(%)')
     else:
-        ax.set_ylabel('Cost')
-    ax.set_xlabel('Temperature')
-    ax.legend([f'initial={c_norm[0]:.3f} final={c_norm[-1]:.3f} min={min(c_norm):.3f}'])
-    ax.grid()
-    fig.savefig(f'{my_dir}/cost_vs_temp_{name}.png')
+        ax[0].set_ylabel('Cost')
+    ax[0].set_xlabel('Iteration')
+    ax[0].legend([f'initial={c_norm[0]:.3f} final={c_norm[-1]:.3f} min={min(c_norm):.3f}'])
+    ax[0].grid()
+
+    ax[1].plot(data['temp'], c_norm, '-o')
+    ax[1].set_xlim(data['temp'][0], data['temp'][-1])
+    if normalize:
+        ax[1].set_ylabel('Cost normalized to initial(%)')
+    else:
+        ax[1].set_ylabel('Cost')
+    ax[1].set_xlabel('Temperature')
+    ax[1].legend([f'initial={c_norm[0]:.3f} final={c_norm[-1]:.3f} min={min(c_norm):.3f}'])
+    ax[1].grid()
+
+    fig.set_size_inches(14, 8)
+    fig.savefig(f'{my_dir}/{name}_cost_trajectory.png', dpi=300, pad_inches=0.1)
+
 
 def plot_sa_seq(name):
     data = _parse_seq_pair_cost(name)
+    init = data['cost'][0]
+    cost = [math.exp(k-init) if k > 0 else -1 for k in data['cost']]
+    cm = plt.cm.get_cmap('cool')
 
-    print(len(data))
+    fig, ax = plt.subplots(1, 2)
 
-    fig, ax = plt.subplots()
-    ax.plot(data['pos_pair'], data['neg_pair'], '*')
-    ax.set_title('sequence pairs')
-    ax.set_ylabel('Neg pair')
-    ax.set_xlabel('Pos pair')
-    ax.grid()
-    fig.savefig(f'{my_dir}/scatter_seq_pair_{name}.png')
+    max_val = max(max(data['neg_pair']), max(data['pos_pair']))
+
+    im0 = ax[0].scatter(data['pos_pair'], data['neg_pair'], c=data['temp'], cmap=cm, marker='.')
+    im1 = ax[1].scatter(data['pos_pair'], data['neg_pair'], c=cost,         cmap=cm, marker='.')
+
+    ax[0].set_title('Temperature')
+    ax[1].set_title('Cost (Norm. to initial. -1 if infeasible)')
+
+    for i in range(2):
+        ax[i].set_ylabel('Neg pair')
+        ax[i].set_xlabel('Pos pair')
+        ax[i].set_xlim(0, max_val+1)
+        ax[i].set_ylim(0, max_val+1)
+        ax[i].grid()
+
+    fig.colorbar(im0, ax=ax[0])
+    fig.colorbar(im1, ax=ax[1])
+    fig.set_size_inches(14, 6)
+    fig.savefig(f'{my_dir}/{name}_seqpair_scatter.png', dpi=300, pad_inches=0.001)
