@@ -206,8 +206,8 @@ def test_ota_six():
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.01, "ratio_high": 100}]
     example = build_example(name, netlist, setup, constraints)
     run_example(example, cleanup=cleanup, log_level='DEBUG')
-    plot_sa_cost(name.upper())
-    plot_sa_seq(name.upper())
+    # plot_sa_cost(name.upper())
+    # plot_sa_seq(name.upper())
 
 
 def test_tia():
