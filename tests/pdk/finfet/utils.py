@@ -168,6 +168,8 @@ def _parse_pattern(pattern):
                         data[k] = []
                     else:
                         data[k].append(float(v))
+    # for k, v in data.items():
+    #     print(f'{k}: min={min(v)} max={max(v)}')
     return data
 
 
