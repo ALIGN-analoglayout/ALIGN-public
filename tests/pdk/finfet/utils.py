@@ -218,12 +218,12 @@ def plot_sa_seq(name):
 
     fig, ax = plt.subplots(1, 2)
 
-    max_val = max(max(data['neg_pair']), max(data['pos_pair']))
-
     if len(data['pos_pair']) == len(data['selected']):
         for i in range(len(data['pos_pair'])):
             data['pos_pair'][i] = float(f"{int(data['pos_pair'][i])}.{int(data['selected'][i])}")
             data['neg_pair'][i] = float(f"{int(data['neg_pair'][i])}.{int(data['selected'][i])}")
+
+    max_val = max(max(data['neg_pair']), max(data['pos_pair']))
 
     im0 = ax[0].scatter(data['pos_pair'], data['neg_pair'], c=data['temp'], cmap=cm, marker='.')
     im1 = ax[1].scatter(data['pos_pair'], data['neg_pair'], c=cost,         cmap=cm, marker='.')
