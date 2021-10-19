@@ -13,6 +13,8 @@ from ..gui.mockup import run_gui
 from ..schema.hacks import VerilogJsonTop
 from .hpwl import calculate_HPWL_from_placement_verilog_d, gen_netlist
 
+import math
+
 logger = logging.getLogger(__name__)
 
 Omark = PnR.Omark
@@ -292,7 +294,7 @@ def route_top_down( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS, placements_t
     return results_name_map
 
 
-def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP):
+def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, seed):
     logger.info(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
 
     current_node = DB.CheckoutHierNode(idx,-1)
@@ -303,10 +305,12 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
 
     hyper = PnR.PlacerHyperparameters()
     # Defaults; change (and uncomment) as required
-    hyper.T_INT = 0.75
-    hyper.ALPHA = 0.99925
-    hyper.T_MIN = hyper.T_INT*(hyper.ALPHA**1e4)    # 10k iterations
-    hyper.SEED = 0  # 0 do not override, >0 overwrite the seed
+    hyper.T_INT = 0.5  # Increase for denormalized decision criteria
+    hyper.T_MIN = 0.05
+    hyper.ALPHA = math.exp(math.log(hyper.T_MIN/hyper.T_INT)/1e4)
+    # hyper.T_MIN = hyper.T_INT*(hyper.ALPHA**1e4)    # 10k iterations
+    # hyper.ALPHA = 0.99925
+    hyper.SEED = seed  # if seed==0, C++ code will use its default value. Else, C++ code will use the provided value.
     # hyper.COUNT_LIMIT = 200
     hyper.LAMBDA = lambda_coeff
 
@@ -368,11 +372,15 @@ def subset_verilog_d( verilog_d, nm):
 
     return new_verilog_d
 
-def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, verilog_d, router_mode, gui, skipGDS, lambda_coeff, scale_factor, reference_placement_verilog_json, nroutings, select_in_ILP):
+
+def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, verilog_d, router_mode, gui, skipGDS, lambda_coeff, scale_factor,
+                    reference_placement_verilog_json, nroutings, select_in_ILP, seed):
+
     TraverseOrder = DB.TraverseHierTree()
 
     for idx in TraverseOrder:
-        place( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx, lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP)
+        place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx, lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP,
+              seed=seed)
 
     placements_to_run = None
 
@@ -545,7 +553,7 @@ def place_and_route( *, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
 
     return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
 
-def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0, scale_factor=2, reference_placement_verilog_json=None, nroutings=1, select_in_ILP=False):
+def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0, scale_factor=2, reference_placement_verilog_json=None, nroutings=1, select_in_ILP=False, seed=0):
 
     assert len(args) == 9
 
@@ -565,6 +573,9 @@ def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_m
 
     pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
 
-    results_name_map = place_and_route( DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode, verilog_d=verilog_d, router_mode=router_mode, gui=gui, skipGDS=skipGDS, lambda_coeff=lambda_coeff, scale_factor=scale_factor, reference_placement_verilog_json=reference_placement_verilog_json, nroutings=nroutings, select_in_ILP=select_in_ILP)
+    results_name_map = place_and_route(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode,
+                                       verilog_d=verilog_d, router_mode=router_mode, gui=gui, skipGDS=skipGDS, lambda_coeff=lambda_coeff,
+                                       scale_factor=scale_factor, reference_placement_verilog_json=reference_placement_verilog_json,
+                                       nroutings=nroutings, select_in_ILP=select_in_ILP, seed=seed)
 
     return DB, results_name_map

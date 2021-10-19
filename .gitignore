@@ -21,7 +21,7 @@ _skbuild/
 **/*.tar.gz
 pycharm/
 .idea/
-.vscode/
+.vscode
 **/*~
 **/*.swp
 **/.coverage

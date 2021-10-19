@@ -67,6 +67,7 @@ void ILP_solver::lpsolve_logger(lprec* lp, void* userhandle, char* buf) {
 double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
 
+  ++mydesign._totalNumCostCalc;
   auto roundup = [](int& v, int pitch) { v = pitch * ((v + pitch - 1) / pitch); };
   int v_metal_index = -1;
   int h_metal_index = -1;
@@ -548,6 +549,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     int ret = solve(lp);
     if (ret != 0 && ret != 1) {
       delete_lp(lp);
+	  ++mydesign._infeasILPFail;
       return -1;
     }
   }
@@ -592,8 +594,14 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   // calculate ratio
   // ratio = std::max(double(UR.x - LL.x) / double(UR.y - LL.y), double(UR.y - LL.y) / double(UR.x - LL.x));
   ratio = double(UR.x - LL.x) / double(UR.y - LL.y);
-  if (ratio < Aspect_Ratio[0] || ratio > Aspect_Ratio[1]) return -1;
-  if (placement_box[0] > 0 && (UR.x - LL.x > placement_box[0]) || placement_box[1] > 0 && (UR.y - LL.y > placement_box[1])) return -1;
+  if (ratio < Aspect_Ratio[0] || ratio > Aspect_Ratio[1]) {
+	  ++mydesign._infeasAspRatio;
+	  return -1;
+  }
+  if (placement_box[0] > 0 && (UR.x - LL.x > placement_box[0]) || placement_box[1] > 0 && (UR.y - LL.y > placement_box[1])) {
+	  ++mydesign._infeasPlBound;
+	  return -1;
+  }
   // calculate HPWL
   HPWL = 0;
   HPWL_extend = 0;
@@ -1431,8 +1439,12 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
   // calculate ratio
   // ratio = std::max(double(UR.x - LL.x) / double(UR.y - LL.y), double(UR.y - LL.y) / double(UR.x - LL.x));
   ratio = double(UR.x - LL.x) / double(UR.y - LL.y);
-  if (ratio < Aspect_Ratio[0] || ratio > Aspect_Ratio[1]) return -1;
-  if (placement_box[0] > 0 && (UR.x - LL.x > placement_box[0]) || placement_box[1] > 0 && (UR.y - LL.y > placement_box[1])) return -1;
+  if (ratio < Aspect_Ratio[0] || ratio > Aspect_Ratio[1]) {
+	  return -1;
+  }
+  if (placement_box[0] > 0 && (UR.x - LL.x > placement_box[0]) || placement_box[1] > 0 && (UR.y - LL.y > placement_box[1])) {
+	  return -1;
+  }
   // calculate HPWL
   HPWL = 0;
   HPWL_extend = 0;

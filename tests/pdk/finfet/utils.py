@@ -4,6 +4,11 @@ import pathlib
 from copy import deepcopy
 import shutil
 import align.pdk.finfet
+import re
+import math
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
 
 align_home = os.getenv('ALIGN_HOME')
 
@@ -144,3 +149,98 @@ def verify_area(name, run_dir, area=None):
             print(f'{name}: area is {area_0}')
             if area is not None and area > 0:
                 assert area_0 <= area, (f'Placer found a suboptimal solution: area: {area_0} target: {area} ratio: {area_0/area}')
+
+
+def _parse_pattern(pattern):
+    """
+    logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3} temp={4}", designData.name, T_index, 0, curr_cost, T);
+    logger->debug("sa__seq__hash name={0} {1} cost={2} temp={3} t_index={4}", designData.name, trial_sp.getLexIndex(designData), trial_cost, T, T_index);
+    """
+    data = dict()
+    with open(my_dir / 'LOG' / 'align.log', 'r') as fp:
+        for line in fp:
+            if re.search(pattern, line):
+                line = line.split(pattern)[1]
+                line = line.strip().split()
+                for item in line:
+                    k, v = item.split('=')
+                    if k not in data:
+                        data[k] = []
+                    else:
+                        data[k].append(float(v))
+    # for k, v in data.items():
+    #     print(f'{k}: min={min(v)} max={max(v)}')
+    return data
+
+
+def plot_sa_cost(name):
+    data = _parse_pattern(f'sa__cost name={name}')
+
+    init = -1
+    for i in data['cost']:
+        if i > 0:
+            init = i
+            break
+    assert init > 0
+
+    cost = [math.exp(k-init) if k > 0 else -1 for k in data['cost']]
+
+    fig, ax = plt.subplots(2, 1)
+
+    ax[0].plot(range(len(cost)), cost, '-o')
+    ax[0].set_xlim(0, len(cost)+1)
+    ax[0].set_ylabel('Cost norm. to initial')
+    ax[0].set_xlabel('Iteration')
+    ax[0].legend([f'initial={cost[0]:.3f} final={cost[-1]:.3f} min={min(cost):.3f}'])
+    ax[0].grid()
+
+    ax[1].plot(data['temp'], cost, '-o')
+    ax[1].set_xlim(data['temp'][0], data['temp'][-1])
+    ax[1].set_ylabel('Cost norm. to initial')
+    ax[1].set_xlabel('Temperature')
+    ax[1].legend([f'initial={cost[0]:.3f} final={cost[-1]:.3f} min={min(cost):.3f}'])
+    ax[1].grid()
+
+    fig.set_size_inches(14, 8)
+    fig.savefig(f'{my_dir}/{name}_cost_trajectory.png', dpi=300, pad_inches=0.1)
+
+
+def plot_sa_seq(name):
+    data = _parse_pattern(f'sa__seq__hash name={name}')
+
+    init = -1
+    for i in data['cost']:
+        if i > 0:
+            init = i
+            break
+    assert init > 0
+
+    cost = [math.exp(k-init) if k > 0 else -1 for k in data['cost']]
+    cm = plt.cm.get_cmap('cool')
+
+    fig, ax = plt.subplots(1, 2)
+
+    if len(data['pos_pair']) == len(data['selected']):
+        for i in range(len(data['pos_pair'])):
+            data['pos_pair'][i] = float(f"{int(data['pos_pair'][i])}.{int(data['selected'][i])}")
+            data['neg_pair'][i] = float(f"{int(data['neg_pair'][i])}.{int(data['selected'][i])}")
+
+    max_val = max(max(data['neg_pair']), max(data['pos_pair']))
+
+    im0 = ax[0].scatter(data['pos_pair'], data['neg_pair'], c=data['temp'], cmap=cm, marker='.')
+    im1 = ax[1].scatter(data['pos_pair'], data['neg_pair'], c=cost,         cmap=cm, marker='.')
+
+    ax[0].set_title('Temperature')
+    ax[1].set_title('Cost (Norm. to initial. -1 if infeasible)')
+
+    for i in range(2):
+        ax[i].set_ylabel('Neg pair')
+        ax[i].set_xlabel('Pos pair')
+        ax[i].set_xlim(-0.5, max_val+0.5)
+        ax[i].set_ylim(-0.5, max_val+0.5)
+        ax[i].grid()
+
+    fig.colorbar(im0, ax=ax[0])
+    fig.colorbar(im1, ax=ax[1])
+    fig.set_size_inches(14, 6)
+    fig.savefig(f'{my_dir}/{name}_seqpair_scatter.png', dpi=300, pad_inches=0.001)
