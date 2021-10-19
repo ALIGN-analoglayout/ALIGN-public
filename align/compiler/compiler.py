@@ -22,14 +22,28 @@ logger = logging.getLogger(__name__)
 
 
 def generate_hierarchy(
-    netlist_path, subckt, output_dir, flatten_heirarchy, pdk_dir, uniform_height
+    netlist_path: pathlib.Path,
+    subckt: str,
+    output_dir: pathlib.Path,
+    flatten_heirarchy: bool,
+    pdk_dir: pathlib.Path,
+    uniform_height: bool
 ):
     config_path = pathlib.Path(__file__).resolve().parent.parent / "config"
     ckt_data = compiler_input(
-        netlist_path, subckt, pdk_dir, config_path, flatten_heirarchy
+        netlist_path,
+        subckt,
+        pdk_dir,
+        config_path,
+        flatten_heirarchy
     )
     return compiler_output(
-        netlist_path, ckt_data, subckt, output_dir, pdk_dir, uniform_height
+        netlist_path,
+        ckt_data,
+        subckt,
+        output_dir,
+        pdk_dir,
+        uniform_height
     )
 
 

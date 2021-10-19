@@ -70,6 +70,24 @@ def ring_oscillator(name):
     )
     return netlist
 
+def ring_oscillator_flat(name):
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} vo vccx vssx
+        mp0 vo n1 vccx vccx p nfin=4 l=40n m=2
+        mn0 vo n1 vssx vssx n nfin=4 l=40n m=2
+        mp1 n1 n2 vccx vccx p nfin=4 l=40n m=2
+        mn1 n1 n2 vssx vssx n nfin=4 l=40n m=2
+        mp2 n2 n3 vccx vccx p nfin=4 l=40n m=2
+        mn2 n2 n3 vssx vssx n nfin=4 l=40n m=2
+        mp3 n3 n4 vccx vccx p nfin=4 l=40n m=2
+        mn3 n3 n4 vssx vssx n nfin=4 l=40n m=2
+        mp4 n4 v0 vccx vccx p nfin=4 l=40n m=2
+        mn4 n4 v0 vssx vssx n nfin=4 l=40n m=2
+        .ends {name}
+    """
+    )
+    return netlist
 
 def clean_data(name):
     example = my_dir / name

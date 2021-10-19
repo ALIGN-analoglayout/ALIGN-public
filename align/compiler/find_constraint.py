@@ -11,7 +11,7 @@ import pprint
 from itertools import combinations, combinations_with_replacement
 import logging
 
-from .create_array_hierarchy import array_hierarchy
+from .create_array_hierarchy import process_arrays
 from .util import compare_two_nodes, get_base_model, reduced_neighbors, reduced_SD_neighbors, get_leaf_connection
 from ..schema import constraint
 from ..schema.graph import Graph
@@ -235,48 +235,9 @@ def recursive_start_points(G, match_pairs, traversed, node1, node2, ports_weight
     match_pairs[node1 + node2] = pair
     logger.debug(f"updating match pairs (start): {pprint.pformat(match_pairs, indent=4)}")
     # Check for array start points
-    hier_start_points = []
-    for k, pair in match_pairs.items():
-        logger.debug(f"all pairs from {k}:{pair}")
-        if "start_point" in pair.keys():
-            if pair["start_point"] and isinstance(pair["start_point"][0], str):
-                # Check later for CTDTDSM
-                hier_start_points.extend(pair["start_point"])
-            del pair["start_point"]
-            logger.debug(f"New symmetrical start points {pair}")
-    logger.debug(f"updating match pairs: {pprint.pformat(match_pairs, indent=4)}")
-    if not hier_start_points:
-        return
-    assert hier_start_points
     # TODO array hieararchy to be reimplemented
     return
-    logger.debug(f"Creating new node from binary branch: {hier_start_points}")
-    for sp in sorted(set(hier_start_points)):
-        logger.debug(
-            f"starting new node from binary branch:{sp} {hier_start_points} traversed {traversed} existing {pprint.pformat(match_pairs, indent=4)}"
-        )
-        if sp not in G.nodes():
-            logger.debug(f"{sp} not found in graph {G.nodes()}")
-            continue
-        multifanout = array_hierarchy(G, sp, traversed, ports_weight)
-        if multifanout and isinstance(multifanout[sp], list):
-            logger.debug(
-                f"only one level matched so putting as align block:{multifanout[sp]}"
-            )
-            match_pairs[node1 + node2 + "_align"] = {"start_point": multifanout[sp]}
-        elif multifanout and isinstance(multifanout[sp], dict):
-            logger.debug(
-                f"more than one depth matched so creating new hierarchy :{multifanout[sp]}"
-            )
-            traversed += [node1, node2]
-            match_pairs[sp + "_new_hier"] = multifanout[sp].copy()
-            # for  h_port1, h_port2 in combinations(multifanout[sp]['ports'],2):
-            #     recursive_start_points(multifanout[sp]['graph'],match_pairs,traversed.copy(),h_port1, h_port2, multifanout[sp]['ports_weight'])
-        else:
-            logger.debug(f"no symmetry from {sp}")
-    logger.debug(
-        f"updating match pairs end: {pprint.pformat(match_pairs, indent=4)}"
-    )
+
 
 def FindSymmetry(subckt, stop_points: list):
     """
@@ -317,9 +278,9 @@ def FindConst(ckt_data, name, stop_points=None):
     logger.debug(f"Stop_points : {stop_points}")
     # Read contents of input constraint file
     if stop_points == None:
-        stop_points = []
-    # TODO: methodology for array layout
+        stop_points = list()
     if "array_hier" in name:
+        #TODO Generate consraints for array hierarchies
         return
     subckt = ckt_data.find(name)
     # Search symmetry constraints
@@ -329,38 +290,14 @@ def FindConst(ckt_data, name, stop_points=None):
     written_symmblocks = pp.process_all()
     skip_const = written_symmblocks.copy()
     ## Generate hiearchies based on array identification
-    array_hier = add_array_const(subckt, match_pairs)
-    hier_keys = array_hier.filter_array()
-    written_symmblocks.extend(hier_keys)
+    array_hier = process_arrays(subckt, match_pairs)
+    array_hier.add_align_block_const()
+    array_hier.add_new_array_hier()
+    # hier_keys = array_hier.filter_array()
+    # written_symmblocks.extend(hier_keys)
     ## Add symmetry constraints
     add_symm = add_symmetry_const(subckt, match_pairs, stop_points, written_symmblocks, skip_const)
     add_symm.loop_through_pairs()
-
-class add_array_const:
-    def __init__(self, subckt, match_pairs):
-        self.match_pairs = {k: v for k, v in match_pairs.items() if len(v) > 1}
-        self.subckt = subckt
-        self.name = subckt.name
-        self.G = Graph(subckt)
-        self.iconst = subckt.constraints
-
-    def filter_array(self):
-        align_const_keys = [key for key, value in self.match_pairs.items() if isinstance(value, list)]
-        logger.debug(f"AlignBlock const gen{align_const_keys}")
-        check_duplicate = []
-        for key in align_const_keys:
-            array = self.match_pairs[key]
-            logger.debug(f"group1: {array}")
-            h_blocks = [ele for ele in array if ele in self.G and ele not in check_duplicate]
-            if len(h_blocks) > 0:
-                check_duplicate += h_blocks
-                self.iconst.append(constraint.AlignBlock(direction="H", instances=h_blocks))
-            del self.match_pairs[key]
-        logger.debug(f"AlignBlock const update {self.iconst}")
-        hier_keys = [key for key, value in self.match_pairs.items() if "name" in value.keys()]
-        for key in hier_keys:
-            del self.match_pairs[key]
-        return hier_keys
 
 class process_input_const:
     def __init__(self, subckt):
