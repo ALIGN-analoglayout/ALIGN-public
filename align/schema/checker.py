@@ -33,7 +33,7 @@ class AbstractChecker(abc.ABC):
         Checkpoint current state of solver
 
         Note: We assume incremental solving here
-              May need to revisit if we have to 
+              May need to revisit if we have to
               rebuild solution from scratch
         '''
         pass
@@ -44,7 +44,7 @@ class AbstractChecker(abc.ABC):
         Revert to last checkpoint
 
         Note: We assume incremental solving here
-              May need to revisit if we have to 
+              May need to revisit if we have to
               rebuild solution from scratch
         '''
         pass
@@ -113,7 +113,7 @@ class AbstractChecker(abc.ABC):
         '''
         cast `expr` to `type_`
 
-        Note: Use with care. Not all 
+        Note: Use with care. Not all
               engines support all types
         '''
         pass
@@ -140,7 +140,7 @@ class Z3Checker(AbstractChecker):
 
     def append(self, formula, identifier=None):
         self._solver.add(formula)
-        logger.debug(f'formulas: {self._solver}')
+        # logger.debug(f'formulas: {self._solver}')
         r = self._solver.check()
         if r == z3.unsat:
             z3.set_option(max_depth=10000, max_args=100, max_lines=10000)

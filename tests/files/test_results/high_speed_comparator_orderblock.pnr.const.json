@@ -36,6 +36,7 @@
                     "block2": "X_CMC_PMOS_MP8_MP9"
                 }
             ],
+            "mirror": true,
             "const_name": "SymmBlock",
             "axis_dir": "V"
         }

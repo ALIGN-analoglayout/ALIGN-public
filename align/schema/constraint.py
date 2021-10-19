@@ -31,10 +31,7 @@ def get_instance_param_from_hacked_dataclasses(constraint, inst):
     elif hasattr(constraint.parent.parent, 'elements'):
         val = constraint.parent.parent.get_element(inst).parameters
     elif hasattr(constraint.parent.parent, 'instances'):
-        instances = {x.instance_name for x in constraint.parent.parent.instances}
-        param = {x for x in constraint.parent.parent.instances}
-        logger.debug(f"hahahaha instance parameters {param}")
-        val = param[instances.index(inst)]
+        val = {x.abstract_template_name for x in constraint.parent.parent.instances if x.instance_name==inst}
     else:
         raise NotImplementedError(f"Cannot handle {type(constraint.parent.parent)}")
     # names = {x.name for x in constraint.parent if hasattr(x, 'name')}
@@ -554,27 +551,12 @@ class SymmetricBlocks(SoftConstraint):
         assert all(len(pair) for pair in self.pairs) <= 2, 'Must contain at most two instances'
         instances = get_instances_from_hacked_dataclasses(self)
         assert isinstance(instances, set), 'Could not retrieve instances from subcircuit definition'
-
-        # if not hasattr(self.parent.parent, 'elements'):
-            # PnR stage VerilogJsonModule
-        # logger.debug(f"Skipping constraint checking 1 {self.parent} ")
-        # for pair in self.pairs:
-        #     if len(pair) == 2:
-
-        #     return
-        # if len(self.parent.parent.elements) == 0:
-        #     # skips the check while reading user constraints
-        #     logger.debug(f"Skipping constraint checking 2 {self.parent} ")
-        #     return
-        # logger.info(f"parent constraints {self.parent} ")
         group_block_instances = [const.name for const in self.parent if isinstance(const, GroupBlocks)]
 
         for pair in self.pairs:
-            # logger.debug(f"pairs {self.pairs} {self.parent.parent.get_element(pair[0])}")
             if len([ele for ele in pair if ele in group_block_instances]) > 0:
                 # Skip check for group block elements as they are added later in the flow
-                logger.debug(f"Skipping constraint checking 3 {self.parent} ")
-
+                logger.debug(f"Skipping constraint checking {self.parent} ")
                 continue
             elif len(pair) == 2:
                 assert all(x in instances or x.upper() in instances for x in pair), f'One or more constraint instances {pair} not found in {instances}'

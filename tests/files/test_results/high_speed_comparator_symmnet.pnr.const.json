@@ -42,6 +42,7 @@
                     "block2": "X_INV_P_MP12_MN14"
                 }
             ],
+            "mirror": true,
             "const_name": "SymmBlock",
             "axis_dir": "V"
         },
@@ -185,6 +186,7 @@
                     "block": "X_CCN_MN3_MN4"
                 }
             ],
+            "mirror": true,
             "const_name": "SymmBlock",
             "axis_dir": "V"
         }

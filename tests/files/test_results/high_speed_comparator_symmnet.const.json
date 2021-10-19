@@ -35,7 +35,8 @@
               "X_INV_P_MP12_MN14"
             ]
           ],
-          "direction": "V"
+          "direction": "V",
+          "mirror": true
         },
         {
           "constraint": "order",
@@ -127,7 +128,8 @@
               "X_CCN_MN3_MN4"
             ]
           ],
-          "direction": "V"
+          "direction": "V",
+          "mirror": true
         }
 
       ]

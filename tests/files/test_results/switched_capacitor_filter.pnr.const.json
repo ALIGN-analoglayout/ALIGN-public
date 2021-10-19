@@ -37,6 +37,7 @@
                     "block2": "X_CMC_S_NMOS_B_I1_M12_M14"
                 }
             ],
+            "mirror": true,
             "const_name": "SymmBlock",
             "axis_dir": "V"
         },

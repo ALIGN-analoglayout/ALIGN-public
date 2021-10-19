@@ -33,7 +33,8 @@
               "X_CMC_S_NMOS_B_I1_M12_M14"
             ]
           ],
-          "direction": "V"
+          "direction": "V",
+          "mirror": true
         },
         {
           "constraint": "symmetric_nets",

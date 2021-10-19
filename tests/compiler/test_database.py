@@ -131,14 +131,14 @@ def test_multi_param_remove_dummy():
     assert available_modules == all_modules, f"{available_modules}"
     ckt = ckt_library.find('DB_CKT_REMOVE_DUMMY_HIER')
     assert ckt
-    assert ckt.get_element('MI1'), f"all instances{[ele.name for ele in ckt.elements]}"
-    assert ckt.get_element('MI1').parameters['NFIN']=='16'
-    assert ckt.get_element('MI2')
-    assert ckt.get_element('MI2').parameters['NFIN']=='24'
-    assert ckt.get_element('MI3')
-    assert ckt.get_element('MI3').parameters['NFIN']=='24'
-    assert ckt.get_element('MI4')
-    assert ckt.get_element('MI4').parameters['NFIN']=='64'
+    assert ckt.get_element('XI1'), f"all instances{[ele.name for ele in ckt.elements]}"
+    assert ckt.get_element('XI1').parameters['NFIN']=='16'
+    assert ckt.get_element('XI2')
+    assert ckt.get_element('XI2').parameters['NFIN']=='24'
+    assert ckt.get_element('XI3')
+    assert ckt.get_element('XI3').parameters['NFIN']=='24'
+    assert ckt.get_element('XI4')
+    assert ckt.get_element('XI4').parameters['NFIN']=='64'
     clean_data(name)
 
 

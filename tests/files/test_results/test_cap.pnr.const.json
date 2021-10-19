@@ -42,6 +42,7 @@
                     "block2": "C1"
                 }
             ],
+            "mirror": true,
             "const_name": "SymmBlock",
             "axis_dir": "V"
         }

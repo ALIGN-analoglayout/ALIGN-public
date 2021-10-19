@@ -35,6 +35,7 @@
               "X_CMC_PMOS_MP8_MP9"
             ]
           ],
-          "direction": "V"
+          "direction": "V",
+          "mirror": true
         }
 ]

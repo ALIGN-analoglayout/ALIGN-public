@@ -57,6 +57,7 @@ class FormalActualMap(DictEmulator):
 class VerilogJsonInstance(DictEmulator):
     instance_name: str
     fa_map: List[FormalActualMap]
+    abstract_template_name : str
 
 
 class VerilogJsonModule(DictEmulator):

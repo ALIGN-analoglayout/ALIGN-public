@@ -101,7 +101,7 @@ def remove_dummies(library, dummy_hiers, top):
                                     if k in y.parameters
                                 }
                             )
-                            logger.debug(f"new instance parameters: {y.parameters}")
+                            logger.debug(f"new instance {ele.name} parameters: {y.parameters}")
                             # Do not change the instance name to preserve constraints
                             other_ckt.elements.append(
                                 Instance(
