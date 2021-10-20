@@ -67,6 +67,7 @@ setup(name='align',
           'bin/convert_lef_to_layout_json.py'
       ],
       install_requires=[
+          'pillow < 8.4.0',
           'networkx>=2.4',
           'python-gdsii',
           'matplotlib',
@@ -79,7 +80,8 @@ setup(name='align',
           'plotly',
           'pandas',
           'dash',
-          'typing_extensions; python_version<"3.8"'
+          'typing_extensions; python_version<"3.8"',
+          'memory_profiler'
           ],
       extras_require={
           'test': [

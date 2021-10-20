@@ -255,7 +255,6 @@ class process_arrays:
                         Graph(self.dl.find(t_name)), None
                     )
 
-
 def create_new_hiearchy(dl, parent_name, child_name, elements, pins_map=None):
     parent = dl.find(parent_name)
     # Create a subckt and add to library
@@ -270,7 +269,7 @@ def create_new_hiearchy(dl, parent_name, child_name, elements, pins_map=None):
         logger.debug(f"pins {pins_map} {elements} {parent.pins}")
         pins_map = { net:net for net in pins_map.keys()
             if net in parent.pins or
-            not (set(G.neighbors(net))-set(elements))
+             (set(G.neighbors(net))-set(elements))
             }
     if not pins_map:
         logger.error(f"can't create module with no pins")

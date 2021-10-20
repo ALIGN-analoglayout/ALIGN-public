@@ -11,7 +11,11 @@ import pprint
 from itertools import combinations, combinations_with_replacement
 import logging
 
+<<<<<<< HEAD
 from .create_array_hierarchy import process_arrays
+=======
+from .create_array_hierarchy import array_hierarchy
+>>>>>>> master
 from .util import compare_two_nodes, get_base_model, reduced_neighbors, reduced_SD_neighbors, get_leaf_connection
 from ..schema import constraint
 from ..schema.graph import Graph
@@ -234,10 +238,7 @@ def recursive_start_points(G, match_pairs, traversed, node1, node2, ports_weight
     # TODO: use tuple instead of string
     match_pairs[node1 + node2] = pair
     logger.debug(f"updating match pairs (start): {pprint.pformat(match_pairs, indent=4)}")
-    # Check for array start points
-    # TODO array hieararchy to be reimplemented
     return
-
 
 def FindSymmetry(subckt, stop_points: list):
     """
