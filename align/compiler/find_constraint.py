@@ -270,13 +270,16 @@ def FindSymmetry(subckt, stop_points: list):
             logger.debug(f"Matches starting from {port1, port2} pair: {pprint.pformat(match_pairs, indent=4)}")
     return match_pairs
 
-def FindConst(ckt_data, name, stop_points=None):
+def FindConst(ckt_data, name, design_setup):
     logger.debug(f"Searching constraints for block {name}")
+    stop_points = design_setup["POWER"] + design_setup["GND"] + design_setup["CLOCK"]
+
     logger.debug(f"Stop_points : {stop_points}")
+
     # Read contents of input constraint file
     if stop_points == None:
         stop_points = list()
-    if "array_hier" in name:
+    if "ARRAY_HIER" in name.upper():
         #TODO Generate consraints for array hierarchies
         return
     subckt = ckt_data.find(name)
@@ -287,11 +290,9 @@ def FindConst(ckt_data, name, stop_points=None):
     written_symmblocks = pp.process_all()
     skip_const = written_symmblocks.copy()
     ## Generate hiearchies based on array identification
-    array_hier = process_arrays(subckt, match_pairs)
+    array_hier = process_arrays(subckt, match_pairs, design_setup)
     array_hier.add_align_block_const()
     array_hier.add_new_array_hier()
-    # hier_keys = array_hier.filter_array()
-    # written_symmblocks.extend(hier_keys)
     ## Add symmetry constraints
     add_symm = add_symmetry_const(subckt, match_pairs, stop_points, written_symmblocks, skip_const)
     add_symm.loop_through_pairs()

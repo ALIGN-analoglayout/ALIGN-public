@@ -28,22 +28,15 @@ def test_cmp():
             if m.startswith('DP_NMOS'):
                 counter += 1
         assert counter == 6, f'Diff pair in comparator should have 6 variants. Found {counter}.'
-<<<<<<< HEAD
-
-    if cleanup:
-        shutil.rmtree(run_dir)
-        shutil.rmtree(ckt_dir)
-=======
->>>>>>> master
 
     if cleanup:
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
 
-<<<<<<< HEAD
-=======
+    if cleanup:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(ckt_dir)
 
->>>>>>> master
 @pytest.mark.nightly
 def test_cmp_pg():
     name = f'ckt_{get_test_id()}'
@@ -206,12 +199,6 @@ def test_cmp_order():
 def test_ota_six():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ota_six(name)
-<<<<<<< HEAD
-    setup = ""
-    constraints = [{"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 1.5}]
-    example = build_example(name, netlist, setup, constraints)
-    run_example(example, cleanup=cleanup)
-=======
     setup = textwrap.dedent(f"""\
         DONT_CONST = {name}
         """)
@@ -224,7 +211,6 @@ def test_ota_six():
     run_example(example, cleanup=cleanup, log_level='DEBUG')
     # plot_sa_cost(name.upper())
     # plot_sa_seq(name.upper())
->>>>>>> master
 
 
 def test_tia():

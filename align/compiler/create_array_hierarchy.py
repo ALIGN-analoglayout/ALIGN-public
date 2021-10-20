@@ -38,10 +38,10 @@ class process_arrays:
         self.dl = ckt.parent
         self.ckt = ckt
         self.graph = Graph(ckt)
-        assert not ckt.name in design_setup['DIGITAL'], f'cant identify array in digital block'
-        assert design_setup["IDENTIFY_ARRAY"] == True
         self.pg = design_setup["POWER"] + design_setup["GND"]
         self.clk = design_setup["CLOCK"]
+        self.condition = design_setup["IDENTIFY_ARRAY"]
+        self.is_digital = ckt.name in design_setup['DIGITAL']
         self.stop_points = self.pg + self.clk
         self.match_pairs = {k: v for k, v in match_pairs.items() if len(v) > 1}
         self.name = ckt.name
@@ -89,10 +89,15 @@ class process_arrays:
         traversed : list
             DESCRIPTION.
         """
+        if not self.condition:
+            logger.info(f"auto-array generation set to false")
+            return
+        elif self.is_digital:
+            logger.info(f'cant identify array in digital ckt {self.name}')
+            return
+
         node_hier = {}
-
         lvl1 = list(set(self.graph.neighbors(start_node)) - set(traversed))
-
         node_hier[start_node] = self.matching_groups(start_node, lvl1)
         logger.debug(f"new hierarchy points {node_hier} from {start_node}")
         if len(node_hier[start_node]) == 0:

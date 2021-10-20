@@ -278,13 +278,8 @@ def compiler_output(
             continue
         if ckt.name not in generators:
             ## Removing constraints to fix cascoded cmc
-            if ckt.name not in design_setup["DIGITAL"]:
-                logger.debug(f"call constraint generator writer for block: {ckt.name}")
-                stop_points = (
-                    design_setup["POWER"] + design_setup["GND"] + design_setup["CLOCK"]
-                )
-                if ckt.name not in design_setup["DONT_CONST"]:
-                    FindConst(ckt_data, ckt.name, stop_points)
+            if ckt.name not in design_setup["DIGITAL"] and ckt.name not in design_setup["DONT_CONST"]:
+                FindConst(ckt_data, ckt.name, design_setup)
 
             ## Write out modified netlist & constraints as JSON
             logger.debug(f"call verilog writer for block: {ckt.name}")
