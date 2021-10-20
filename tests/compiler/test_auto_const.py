@@ -18,17 +18,18 @@ out_path = pathlib.Path(__file__).resolve().parent / 'Results'
 
 
 def test_symm_net():
-    name = 'CKT_OTA'
+    name = 'CKT_OTA_SYMM_NET'
     netlist = ota_six(name)
-    setup = textwrap.dedent("""\
+    setup = textwrap.dedent(f"""\
         POWER = vccx
         GND = vssx
-        DIGITAL = CKT_OTA
+        DIGITAL = {}name
         """)
-    constraints = []
+    constraints = list()
     example = build_example(name, netlist, setup, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
-    ckt = ckt_library.find('CKT_OTA')
+    ckt = ckt_library.find(name)
+    assert len(ckt.elements) == 6
     G = Graph(ckt)
     pairs, pinsA, pinsB = symmnet_device_pairs(G,'VIN','VIP', list(),None, True)
     assert pairs == {'VIN': 'VIP', 'MN4': 'MN3'}
@@ -53,17 +54,17 @@ def test_symm_net():
     clean_data(name)
 
 def test_add_symmetry_const():
-    name = 'CKT_OTA'
+    name = 'CKT_OTA_ADD_SYMMETRY_CONST'
     netlist = ota_six(name)
-    setup = textwrap.dedent("""\
+    setup = textwrap.dedent(f"""\
         POWER = vccx
         GND = vssx
-        DIGITAL = CKT_OTA
+        DIGITAL = {name}
         """)
-    constraints = []
+    constraints = list()
     example = build_example(name, netlist, setup, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
-    ckt = ckt_library.find('CKT_OTA')
+    ckt = ckt_library.find(name)
     with set_context(ckt.constraints):
         x = constraint.SymmetricBlocks(direction='V',pairs=[['MN4','MN3']])
     const_pairs = {'MN4': 'MN3'} #skip dictionary element
@@ -80,3 +81,5 @@ def test_add_symmetry_const():
     const_pairs = [['VIN', 'VIP']] #Skip net
     add_or_revert_const(const_pairs, ckt.constraints, list())
     assert len(ckt.constraints)==1
+    clean_data(name)
+
