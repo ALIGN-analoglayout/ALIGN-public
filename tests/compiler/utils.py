@@ -88,24 +88,59 @@ def ring_oscillator_flat(name):
     """
     )
     return netlist
-def linear_equalizer(name):
+
+def variable_gain_amplifier_equal(name):
     netlist = textwrap.dedent(
         f"""\
-        .subckt {name} vmirror_ctle s0_ctle s3_ctle vin1 vin2 vout_ctle1 vout_ctle2 vps vgnd
-        .param nfpf_cm=72 nfpf_dp=48 nfpf_sw=48 Rsw=100 Csw=24f rl=800
-        M0 vout_ctle2 vin2 net8 vgnd nfet p1=48
-        M1 vout_ctle1 vin1 net5 vgnd nfet p1=48
-        M4 vmirror_ctle vmirror_ctle vgnd vgnd nfet p1=nfpf_cm
-        M3 net5 vmirror_ctle vgnd vgnd nfet p1=nfpf_cm
-        M2 net8 vmirror_ctle vgnd vgnd nfet p1=nfpf_cm
-        R1 vps vout_ctle2 resistor r=rl
-        R0 vps vout_ctle1 resistor r=rl
-        C4 net021 net8 capacitor c=Csw
-        C3 net5 net022 capacitor c=Csw
-        R4 net5 net016 resistor r=Rsw
-        R3 net015 net8 resistor r=Rsw
-        MN9 net021 s3_ctle net022 vgnd nfet l=0.014u nfin=nfpf_sw
-        MN6 net015 s0_ctle net016 vgnd nfet l=0.014u nfin=nfpf_sw
+        .subckt {name} vmirror_vga s0 s1 s2 vin1 vin2 vout_vga1 vout_vga2 vps vgnd
+        .param nfpf_sw=72 nfpf_cm=72 nfpf_dp=48 rl=400
+        M03 vmirror_vga vmirror_vga vgnd vgnd nfet nfin=nfpf_cm m=1 nf=1
+		M02 net3 vmirror_vga vgnd vgnd nfet nfin=nfpf_cm m=1  nf=1
+		M01 vout_vga2 vin2 net3 vgnd nfet nfin=nfpf_dp m=1 nf=1
+		M00 vout_vga1 vin1 net3 vgnd nfet nfin=nfpf_dp
+		Msw0 net5 s0 net5p vgnd nfet l=0.014u nfin=nfpf_sw
+		M12 net5p vmirror_vga vgnd vgnd nfet nfin=nfpf_cm
+		M11 vout_vga2 vin2 net5 vgnd nfet nfin=nfpf_dp
+		M10 vout_vga1 vin1 net5 vgnd nfet nfin=nfpf_dp
+		Msw1 net4 s1 net4p vgnd nfet l=0.014u nfin=nfpf_sw
+		M22 net4p vmirror_vga vgnd vgnd nfet nfin=nfpf_cm
+		M21 vout_vga2 vin2 net4 vgnd nfet nfin=nfpf_dp
+		M20 vout_vga1 vin1 net4 vgnd nfet nfin=nfpf_dp
+		Msw2 net6 s2 net6p vgnd nfet l=0.014u nfin=nfpf_sw
+		M32 net6p vmirror_vga vgnd vgnd nfet nfin=nfpf_cm
+		M31 vout_vga2 vin2 net6 vgnd nfet nfin=nfpf_dp
+		M30 vout_vga1 vin1 net6 vgnd nfet nfin=nfpf_dp
+		R5 vps vout_vga2 rl
+		R6 vps vout_vga1 rl
+        .ends {name}
+    """
+    )
+    return netlist
+
+def variable_gain_amplifier_ratioed(name):
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} vmirror_vga s0 s1 s2 vin1 vin2 vout_vga1 vout_vga2 vps vgnd
+        .param nfpf_sw=72 nfpf_sw_2=144 nfpf_sw_4=288 nfpf_cm=72 nfpf_cm_2=144 nfpf_cm_4=288 nfpf_dp=48 nfpf_dp_2=96 nfpf_dp_4=192 rl=400
+
+        M03 vmirror_vga vmirror_vga vgnd vgnd nfet nfin=nfpf_cm m=1 nf=1
+		M02 net3 vmirror_vga vgnd vgnd nfet nfin=nfpf_cm m=1  nf=1
+		M01 vout_vga2 vin2 net3 vgnd nfet nfin=nfpf_dp m=1 nf=1
+		M00 vout_vga1 vin1 net3 vgnd nfet nfin=nfpf_dp
+		Msw0 net5 s0 net5p vgnd nfet l=0.014u nfin=nfpf_sw
+		M12 net5p vmirror_vga vgnd vgnd nfet nfin=nfpf_cm
+		M11 vout_vga2 vin2 net5 vgnd nfet nfin=nfpf_dp
+		M10 vout_vga1 vin1 net5 vgnd nfet nfin=nfpf_dp
+		Msw1 net4 s1 net4p vgnd nfet l=0.014u nfin=nfpf_sw_2
+		M22 net4p vmirror_vga vgnd vgnd nfet nfin=nfpf_cm_2
+		M21 vout_vga2 vin2 net4 vgnd nfet nfin=nfpf_dp_2
+		M20 vout_vga1 vin1 net4 vgnd nfet nfin=nfpf_dp_2
+		Msw2 net6 s2 net6p vgnd nfet l=0.014u nfin=nfpf_sw_4
+		M32 net6p vmirror_vga vgnd vgnd nfet nfin=nfpf_cm_4
+		M31 vout_vga2 vin2 net6 vgnd nfet nfin=nfpf_dp_4
+		M30 vout_vga1 vin1 net6 vgnd nfet nfin=nfpf_dp_4
+		R5 vps vout_vga2 rl
+		R6 vps vout_vga1 rl
         .ends {name}
     """
     )

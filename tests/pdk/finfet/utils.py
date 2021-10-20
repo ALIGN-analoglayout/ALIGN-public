@@ -140,15 +140,6 @@ def verify_abstract_names(name, run_dir):
 
 
 def verify_area(name, run_dir, area=None):
-<<<<<<< HEAD
-    with (run_dir / '3_pnr' / f'{name}_0.json').open('rt') as fp:
-        layout = json.load(fp)
-        x0, y0, x1, y1 = layout['bbox']
-        area_0 = (x1-x0)*(y1-y0)
-        print(f'{name}: area is {area_0}')
-        if area is not None and area > 0:
-            assert area_0 <= area, (f'Placer found a suboptimal solution: area: {area_0} target: {area} ratio: {area_0/area}')
-=======
     json_file = run_dir / '3_pnr' / f'{name}_0.json'
     if json_file.exists():
         with json_file.open('rt') as fp:
@@ -253,4 +244,3 @@ def plot_sa_seq(name):
     fig.colorbar(im1, ax=ax[1])
     fig.set_size_inches(14, 6)
     fig.savefig(f'{my_dir}/{name}_seqpair_scatter.png', dpi=300, pad_inches=0.001)
->>>>>>> master

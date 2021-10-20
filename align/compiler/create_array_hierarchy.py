@@ -46,7 +46,7 @@ class process_arrays:
         self.match_pairs = {k: v for k, v in match_pairs.items() if len(v) > 1}
         self.name = ckt.name
         self.iconst = ckt.constraints
-        self.hier_sp = list()
+        self.hier_sp = set()
         self.align_block_const = dict()
         self.new_hier_instances = dict()
         self._filter_start_points_from_match_pairs()
@@ -58,14 +58,14 @@ class process_arrays:
             if "start_point" in pair.keys():
                 if pair["start_point"] and isinstance(pair["start_point"][0], str):
                     # Check later for CTDTDSM
-                    self.hier_sp.extend(pair["start_point"])
+                    self.hier_sp.update(pair["start_point"])
                 del pair["start_point"]
                 logger.debug(f"New symmetrical start points {pair}")
         logger.debug(f"updated match pairs: {pprint.pformat(self.match_pairs, indent=4)}")
 
     def _check_array_start_points(self, traversed):
         logger.debug(f"new hier start points: {self.hier_sp}")
-        for sp in sorted(set(self.hier_sp)):
+        for sp in sorted(self.hier_sp):
             logger.debug(
                 f"Searching arrays from:{sp}\
                 traversed: {traversed} \
@@ -240,8 +240,13 @@ class process_arrays:
         sub_hier_elements = set()
         for key, array_2D in self.new_hier_instances.items():
             logger.debug(f"new hier instances: {array_2D}")
+
             all_inst = [inst for template in array_2D for inst in template
                 if inst in self.graph and inst not in sub_hier_elements]
+            #Filter repeated elements across array of obejcts
+            repeated_elements = set([inst for inst, count in Counter(all_inst).items() if count>1])
+            all_inst = set(all_inst) - repeated_elements
+            array_2D = [list(set(array_1D) - repeated_elements) for array_1D in array_2D]
             sub_hier_elements.update(all_inst)
             if len(all_inst) <=1:
                 logger.debug(f"not enough elements to create a hierarchy")
@@ -259,6 +264,8 @@ class process_arrays:
             array_hier_graph.replace_matching_subgraph(
                         Graph(self.dl.find(t_name)), None
                     )
+
+
 
 def create_new_hiearchy(dl, parent_name, child_name, elements, pins_map=None):
     parent = dl.find(parent_name)
