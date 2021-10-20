@@ -11,11 +11,7 @@ import pprint
 from itertools import combinations, combinations_with_replacement
 import logging
 
-<<<<<<< HEAD
 from .create_array_hierarchy import process_arrays
-=======
-from .create_array_hierarchy import array_hierarchy
->>>>>>> master
 from .util import compare_two_nodes, get_base_model, reduced_neighbors, reduced_SD_neighbors, get_leaf_connection
 from ..schema import constraint
 from ..schema.graph import Graph
