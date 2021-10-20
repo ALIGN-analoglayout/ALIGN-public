@@ -89,9 +89,9 @@ class Annotate:
             if self._is_digital(ckt):
                 continue
             if (
-                isinstance(ckt, SubCircuit)
-                and ckt.name not in self.all_lef
-                and ckt.name not in traversed
+                isinstance(ckt, SubCircuit) and \
+                ckt.name not in self.all_lef and \
+                ckt.name not in traversed
             ):
                 netlist_graph = Graph(ckt)
                 skip_nodes = self._is_skip(ckt)
@@ -102,8 +102,8 @@ class Annotate:
                 traversed.append(ckt.name)
                 for subckt in self.lib:
                     if subckt.name == ckt.name or (
-                        subckt.name in temp_match_dict
-                        and ckt.name in temp_match_dict[subckt.name]
+                        subckt.name in temp_match_dict and
+                        ckt.name in temp_match_dict[subckt.name]
                     ):
                         continue
                     new_subckts = netlist_graph.replace_matching_subgraph(

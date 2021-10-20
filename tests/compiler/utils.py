@@ -88,6 +88,28 @@ def ring_oscillator_flat(name):
     """
     )
     return netlist
+def linear_equalizer(name):
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} vmirror_ctle s0_ctle s3_ctle vin1 vin2 vout_ctle1 vout_ctle2 vps vgnd
+        .param nfpf_cm=72 nfpf_dp=48 nfpf_sw=48 Rsw=100 Csw=24f rl=800
+        M0 vout_ctle2 vin2 net8 vgnd nfet p1=48
+        M1 vout_ctle1 vin1 net5 vgnd nfet p1=48
+        M4 vmirror_ctle vmirror_ctle vgnd vgnd nfet p1=nfpf_cm
+        M3 net5 vmirror_ctle vgnd vgnd nfet p1=nfpf_cm
+        M2 net8 vmirror_ctle vgnd vgnd nfet p1=nfpf_cm
+        R1 vps vout_ctle2 resistor r=rl
+        R0 vps vout_ctle1 resistor r=rl
+        C4 net021 net8 capacitor c=Csw
+        C3 net5 net022 capacitor c=Csw
+        R4 net5 net016 resistor r=Rsw
+        R3 net015 net8 resistor r=Rsw
+        MN9 net021 s3_ctle net022 vgnd nfet l=0.014u nfin=nfpf_sw
+        MN6 net015 s0_ctle net016 vgnd nfet l=0.014u nfin=nfpf_sw
+        .ends {name}
+    """
+    )
+    return netlist
 
 def clean_data(name):
     example = my_dir / name
