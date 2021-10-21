@@ -43,13 +43,13 @@ def lef_from_layout_d(layout_d, fp, out_lef, cell_pin, bodyswitch, blockM, *, ex
     fp.write("  OBS\n")
     cap_layers = ['M1', 'M2', 'M3']
     for obj in layout_d['terminals']:
-        if (obj['netType'] != 'pin' or obj['netName'] not in cell_pin) and blockM == 0 and obj['layer'] not in exclude_layers:
+        if (obj['netType'] != 'pin' or obj['netName'] not in cell_pin) and obj['layer'] not in exclude_layers:
             fp.write("    LAYER %s ;\n" % obj['layer'])
             fp.write("      RECT %s %s %s %s ;\n" % tuple(obj['rect']))
-        elif (blockM == 1) and obj['layer'] == 'Boundary':
-            for capL in cap_layers: 
-                fp.write("    LAYER %s ;\n" % capL)
-                fp.write("      RECT %s %s %s %s ;\n" % tuple(obj['rect']))
+        #elif (blockM == 1) and obj['layer'] == 'Boundary':
+        #    for capL in cap_layers: 
+        #        fp.write("    LAYER %s ;\n" % capL)
+        #        fp.write("      RECT %s %s %s %s ;\n" % tuple(obj['rect']))
         else:
             pass
 
