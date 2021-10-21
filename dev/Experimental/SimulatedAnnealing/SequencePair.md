@@ -21,7 +21,7 @@
 ```
 
 &nbsp;
-### order with abut .., A, B, .. top_to_bottom```
+### order with abut .., A, B, .. top_to_bottom
 ```
 (A should always be above B) AND (C cannot be below A and above B => s2 ∩ s5 = ∅)
 ( s1 A s2 B s3 ), ( s4 B s5 A s6 )
@@ -46,9 +46,7 @@ No blocks is (below A and above B) OR (below B and above A)
 &nbsp;
 ### align .. A, .. , B, .. left (llx_a = llx_b)
 ```
-(A is above B) AND (C cannot left of one and right of the other => ...)
-( .. A .. B .. ), ( .. B .. A .. )
-OR
-(A is below B) AND (C cannot left of one and right of the other => ...)
-( .. B .. A .. ), ( .. A .. B .. )
+(A is above B) OR ( A is below B) 
+( s1 A s2 B s3 ), ( s4 B s5 A s6 )
+( s1 B s2 A s3 ), ( s4 A s5 B s6 )
 ```
