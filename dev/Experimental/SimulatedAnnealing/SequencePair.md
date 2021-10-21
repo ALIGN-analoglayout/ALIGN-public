@@ -3,28 +3,28 @@
 ### order .., A, .., B, .. left_to_right
 ```
 (A should always proceed B)
-( .. A .. B .. ), ( .. A .. B .. )
+( s1 A s2 B s3 ), ( s4 A s5 B s6 )
 ```
 
 &nbsp;
 ### order with abut .., A, B, .. left_to_right
 ```
-(A should always proceed B) AND (C cannot be in between => set1 ∩ set2 = ∅)
-( .. A .. set1 .. B .. ), (.. A .. set2 .. B .. )
+(A should always proceed B) AND (C cannot be in between => s2 ∩ s5 = ∅)
+( s1 A s2 B s3 ), ( s4 A s5 B s6 )
 ```
 
 &nbsp;
 ### order .. , A, .., B, .. top_to_bottom
 ```
 (A should always be above B)
-( .. A .. B .. ), ( .. B .. A .. )
+( s1 A s2 B s3 ), ( s4 B s5 A s6 )
 ```
 
 &nbsp;
 ### order with abut .., A, B, .. top_to_bottom```
 ```
-(A should always be above B) AND (C cannot be in between => set1 ∩ set2 = ∅)
-( .. A .. set1 .. B .. ), ( .. B .. set2 .. A .. )
+(A should always be above B) AND (C cannot be below A and above B => s2 ∩ s5 = ∅)
+( s1 A s2 B s3 ), ( s4 B s5 A s6 )
 ```
 
 &nbsp;
