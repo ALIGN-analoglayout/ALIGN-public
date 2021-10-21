@@ -58,6 +58,5 @@ Note: For `( s1 A s2 B s3 ), ( s4 B s5 A s6 )`, there can never be a C that is r
 Proof:
 
 Blocks right of A: `(s2 ∪ s3) ∩ s6`  
-Blocks left  of B: `(s1 ∪ s2) ∩ s4`
+Blocks left  of B: `(s1 ∪ s2) ∩ s4`  
 Blocks right of A AND left of B: `((s2 ∪ s3) ∩ s6) ∩ ((s1 ∪ s2) ∩ s4) as s4 and s6 are disjoint`
-
