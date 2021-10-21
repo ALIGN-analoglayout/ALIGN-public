@@ -160,8 +160,8 @@ def test_place_cmp_2():
         shutil.rmtree(ckt_dir)
 
 
-@pytest.mark.skip
-@pytest.mark.parametrize("seed", [0, 7, 1453, 1981, 2021])
+#@pytest.mark.skip
+@pytest.mark.parametrize("seed", [0])
 def test_place_cmp_seed(seed):
     """ original comparator. Run this test with -v and -s"""
     name = f'ckt_{get_test_id()}'

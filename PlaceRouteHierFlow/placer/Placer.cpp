@@ -528,6 +528,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   int trial_count = 0;
   const int max_trial_count = 10000;
   const int max_trial_cache_count = 100;
+  double mean_cache_miss{0};
+  int num_perturb{0};
 
   unsigned int seed = 0;
   if (hyper.SEED > 0) {
@@ -559,6 +561,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
           break;
         }
       }
+	  mean_cache_miss += trial_cached;
+	  ++num_perturb;
     }
   }
 
@@ -666,6 +670,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
           break;
         }
       }
+	  mean_cache_miss += trial_cached;
+	  ++num_perturb;
       trial_sp.cacheSeq(designData);
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ILP_solver trial_sol(designData);
@@ -730,7 +736,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     logger->debug("sa__reducing_temp T={0}", T);
   }
 
-  logger->debug("sa__summary total_candidates={0} total_candidates_infeasible={1}", total_candidates, total_candidates_infeasible);
+  if (num_perturb) mean_cache_miss /= num_perturb;
+  logger->debug("sa__summary total_candidates={0} total_candidates_infeasible={1} mean_cache_miss={2}", total_candidates, total_candidates_infeasible, mean_cache_miss);
 
   // Write out placement results
   //cout << endl << "Placer-Info: optimal cost = " << curr_cost << endl;

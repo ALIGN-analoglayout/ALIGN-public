@@ -88,7 +88,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
 
   // each block has 4 vars, x, y, H_flip, V_flip;
   unsigned int N_var = mydesign.Blocks.size() * 4 + mydesign.Nets.size() * 2;
-  // i*4+1: x
+  // i*4+1:x
   // i*4+2:y
   // i*4+3:H_flip
   // i*4+4:V_flip
@@ -99,12 +99,18 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
 
   // set integer constraint, H_flip and V_flip can only be 0 or 1
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
-    set_int(lp, i * 4 + 1, TRUE);
-    set_int(lp, i * 4 + 2, TRUE);
+    set_int(lp, i * 4 + 1, TRUE); set_col_name(lp, i * 4 + 1, const_cast<char*>((mydesign.Blocks[i][0].name + "_x").c_str()));
+    set_int(lp, i * 4 + 2, TRUE); set_col_name(lp, i * 4 + 2, const_cast<char*>((mydesign.Blocks[i][0].name + "_y").c_str()));
     set_int(lp, i * 4 + 3, TRUE);
     set_int(lp, i * 4 + 4, TRUE);
-    set_binary(lp, i * 4 + 3, TRUE);
-    set_binary(lp, i * 4 + 4, TRUE);
+    set_binary(lp, i * 4 + 3, TRUE); set_col_name(lp, i * 4 + 3, const_cast<char*>((mydesign.Blocks[i][0].name + "_flx").c_str()));
+    set_binary(lp, i * 4 + 4, TRUE); set_col_name(lp, i * 4 + 4, const_cast<char*>((mydesign.Blocks[i][0].name + "_fly").c_str()));
+  }
+
+  for (int i = 0; i < mydesign.Nets.size(); ++i) {
+	  int ind = i * 2 + mydesign.Blocks.size() * 4 + 1;
+	  set_col_name(lp, ind, const_cast<char*>((mydesign.Nets[i].name + "_x").c_str()));
+	  set_col_name(lp, ind + 1, const_cast<char*>((mydesign.Nets[i].name + "_y").c_str()));
   }
 
   int bias_Hgraph = mydesign.bias_Hgraph, bias_Vgraph = mydesign.bias_Vgraph;
@@ -548,6 +554,18 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     set_timeout(lp, 1);
     int ret = solve(lp);
     if (ret != 0 && ret != 1) {
+      /*static int fail_cnt{0};
+	  if (fail_cnt < 10) {
+		  write_lp(lp, const_cast<char*>((mydesign.name + "_fail_ilp_" + std::to_string(fail_cnt) + ".lp").c_str()));
+		  curr_sp.PrintSeqPair();
+		  std::string tmpstrpos, tmpstrneg;
+		  for (auto& it : curr_sp.posPair) if (it < mydesign.Blocks.size()) tmpstrpos += (mydesign.Blocks[it][0].name + " ");
+		  for (auto& it : curr_sp.negPair) if (it < mydesign.Blocks.size()) tmpstrneg += (mydesign.Blocks[it][0].name + " ");
+		  logger->info("DEBUG fail ILP seq pair : pos=[{0}] neg=[{1}]", tmpstrpos, tmpstrneg);
+		  logger->info("ILP fail {0}", fail_cnt);
+		  curr_sp.PrintSeqPair(mydesign);
+		  ++fail_cnt;
+	  }*/
       delete_lp(lp);
 	  ++mydesign._infeasILPFail;
       return -1;
@@ -569,14 +587,6 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
       Blocks[i].V_flip = var.at(i * 4 + 3);
     }
   }
-  /*auto hflipVec = curr_sp.GetFlip(true);
-  auto vflipVec = curr_sp.GetFlip(false);
-  if (!hflipVec.empty() && !vflipVec.empty()) {
-    for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
-      Blocks[i].H_flip = hflipVec[i];
-      Blocks[i].V_flip = vflipVec[i];
-    }
-  }*/
 
   // calculate LL and UR
   LL.x = INT_MAX, LL.y = INT_MAX;
