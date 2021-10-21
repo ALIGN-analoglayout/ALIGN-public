@@ -554,7 +554,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     } else {
       int trial_cached = 0;
       while (++trial_cached < max_trial_cache_count) {
-        curr_sp.PerturbationNew(designData);
+        if (!curr_sp.PerturbationNew(designData)) continue;
         if (!curr_sp.isSeqInCache(designData)) {
           break;
         }
@@ -661,10 +661,10 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       // SY: PerturbationNew honors order and symmetry. What could make the trial_sp infeasible? Aspect ratio, Align?
       int trial_cached = 0;
       while (++trial_cached < max_trial_cache_count) {
-        trial_sp.PerturbationNew(designData);
+        if (!trial_sp.PerturbationNew(designData)) continue;
         if (!trial_sp.isSeqInCache(designData)) {
-			    break;
-		    }
+          break;
+        }
       }
       trial_sp.cacheSeq(designData);
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();

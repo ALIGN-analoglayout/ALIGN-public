@@ -1158,7 +1158,22 @@ std::string SeqPair::getLexIndex(design& des) const {
 	" selected=" + std::to_string(des.getSelIndex(selected));
 }
 
-void SeqPair::PerturbationNew(design& caseNL) {
+bool SeqPair::CheckAlign(design& caseNL) { 
+  for(auto align:caseNL.Align_blocks){
+    int first_it_pos, second_it_pos, first_it_neg, second_it_neg;
+    first_it_pos = find(posPair.begin(), posPair.end(), align.blocks[0]) - posPair.begin();
+    second_it_pos = find(posPair.begin(), posPair.end(), align.blocks[1]) - posPair.begin();
+    first_it_neg = find(negPair.begin(), negPair.end(), align.blocks[0]) - negPair.begin();
+    second_it_neg = find(negPair.begin(), negPair.end(), align.blocks[1]) - negPair.begin();
+    if(align.horizon && (first_it_pos - second_it_pos) * (first_it_neg - second_it_neg) < 0)
+      return false;
+    else if (!align.horizon && (first_it_pos - second_it_pos) * (first_it_neg - second_it_neg) > 0)
+      return false;
+  }
+  return true; 
+}
+
+bool SeqPair::PerturbationNew(design& caseNL) {
   /* initialize random seed: */
   //srand(time(NULL));
   //
@@ -1195,7 +1210,7 @@ void SeqPair::PerturbationNew(design& caseNL) {
     // 7:ChangeSymmetryBlockOrient
     // 8:SwapMultiBlocksofSameGroup
     // 9:RotateSymmetryGroup
-    if(caseNL.GetSizeofBlocks()<=1) {return;}
+    if(caseNL.GetSizeofBlocks()<=1) {return true;}
     if(caseNL.noBlock4Move>0) {pool.insert(0);}
     if(caseNL.noAsymBlock4Move>0) { pool.insert(1); pool.insert(2); pool.insert(3);}
     if(caseNL.noSymGroup4PartMove>0) {pool.insert(5); pool.insert(8); } 
@@ -1224,7 +1239,8 @@ void SeqPair::PerturbationNew(design& caseNL) {
   }
   KeepOrdering(caseNL);
   SameSelected(caseNL);
-
+  if (!CheckAlign(caseNL)) return false;
+  return true;
   /*if (caseNL._debugofs.is_open()) {
     std::string pos("{ "), neg("{ "), sel("{ ");
     for (auto& it : posPair) pos += (std::to_string(it) + " ");
@@ -1234,7 +1250,8 @@ void SeqPair::PerturbationNew(design& caseNL) {
     neg += "}";
     sel += "}";
     //logger->info("sp_after_perturbation {0} {1} {2}", pos, neg, sel);
-    caseNL._debugofs << "sp_after_perturbation : "<< pos << ' ' << neg << ' ' << sel << ' ' << caseNL.getSeqIndex(posPair) << ' ' << caseNL.getSeqIndex(negPair) << '\n';
+    caseNL._debugofs << "sp_after_perturbation : "<< pos << ' ' << neg << ' ' << sel << ' ' << caseNL.getSeqIndex(posPair) << ' ' << caseNL.getSeqIndex(negPair)
+  << '\n';
   }*/
 }
 
