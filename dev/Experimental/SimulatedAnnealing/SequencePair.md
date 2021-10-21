@@ -30,17 +30,17 @@
 &nbsp;
 ### align .., A, .., B, ..  bottom (lly_a = lly_b)
 ```
-(A is either right or left of B) AND (C cannot be above and below => set1 ∩ set6 = set3 ∩ set4 = ∅)
-( set1 A set2 B set3 ), ( set4 A set5 B set6 )
-( set1 B set2 A set3 ), ( set4 B set5 A set6 )
+(A is either right or left of B) AND (C cannot be above and below => s1 ∩ s6 = s3 ∩ s4 = ∅)
+( s1 A s2 B s3 ), ( s4 A s5 B s6 )
+( s1 B s2 A s3 ), ( s4 B s5 A s6 )
 ```
-For `( set1 A set2 B set3 ), ( set4 A set5 B set6 )`:  
-Blocks below A: `(set2 ∪ set3) ∩ set4`  
-Blocks above A: `(set5 ∪ set6) ∩ set1`  
-Blocks below B: `(set4 ∪ set5) ∩ set3`  
-Blocks above B: `(set1 ∪ set2) ∩ set6`  
-Blocks below A and above B: `((set2 ∪ set3) ∩ set4) ∩ ((set1 ∪ set2) ∩ set6) = ∅`  
-Blocks below B and above A: `((set4 ∪ set5) ∩ set3) ∩ ((set5 ∪ set6) ∩ set1) = ∅`  
+For `( s1 A s2 B s3 ), ( s4 A s5 B s6 )`:  
+Blocks below A: `(s2 ∪ s3) ∩ s4`  
+Blocks above A: `(s5 ∪ s6) ∩ s1`  
+Blocks below B: `(s4 ∪ s5) ∩ s3`  
+Blocks above B: `(s1 ∪ s2) ∩ s6`  
+Blocks below A and above B: `((s2 ∪ s3) ∩ s4) ∩ ((s1 ∪ s2) ∩ s6) = ∅`  
+Blocks below B and above A: `((s4 ∪ s5) ∩ s3) ∩ ((s5 ∪ s6) ∩ s1) = ∅`  
 No blocks is (below A and above B) OR (below B and above A) 
 
 &nbsp;
