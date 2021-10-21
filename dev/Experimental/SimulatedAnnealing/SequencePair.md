@@ -34,14 +34,14 @@
 ( set1 A set2 B set3 ), ( set4 A set5 B set6 )
 ( set1 B set2 A set3 ), ( set4 B set5 A set6 )
 ```
-For `( set1 A set2 B set3 ), ( set4 A set5 B set6 )`:
-Blocks below A: `(set2 ∪ set3) ∩ set4`
-Blocks above A: `(set5 ∪ set6) ∩ set1`
-Blocks below B: `(set4 ∪ set5) ∩ set3`
-Blocks above B: `(set1 ∪ set2) ∩ set6`
-Blocks below A and above B: ((set2 ∪ set3) ∩ set4) ∩ ((set1 ∪ set2) ∩ set6) = ∅
-Blocks below B and above A: ((set4 ∪ set5) ∩ set3) ∩ ((set5 ∪ set6) ∩ set1) = ∅
-No blocks is (below A and above B) OR (below B and above A)
+For `( set1 A set2 B set3 ), ( set4 A set5 B set6 )`: 
+Blocks below A: `(set2 ∪ set3) ∩ set4` 
+Blocks above A: `(set5 ∪ set6) ∩ set1` 
+Blocks below B: `(set4 ∪ set5) ∩ set3` 
+Blocks above B: `(set1 ∪ set2) ∩ set6` 
+Blocks below A and above B: `((set2 ∪ set3) ∩ set4) ∩ ((set1 ∪ set2) ∩ set6) = ∅` 
+Blocks below B and above A: `((set4 ∪ set5) ∩ set3) ∩ ((set5 ∪ set6) ∩ set1) = ∅` 
+No blocks is (below A and above B) OR (below B and above A) 
 
 &nbsp;
 ### align .. A, .. , B, .. left (llx_a = llx_b)
