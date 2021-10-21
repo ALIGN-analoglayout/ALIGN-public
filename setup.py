@@ -67,6 +67,7 @@ setup(name='align',
           'bin/convert_lef_to_layout_json.py'
       ],
       install_requires=[
+          'pillow < 8.4.0',
           'networkx>=2.4',
           'python-gdsii',
           'matplotlib',
