@@ -30,11 +30,12 @@
 &nbsp;
 ### align .., A, .., B, ..  bottom (lly_a = lly_b)
 ```
-(A is either right or left of B) AND (C cannot be above and below => s1 ∩ s6 = s3 ∩ s4 = ∅)
+(A is either right or left of B)
 ( s1 A s2 B s3 ), ( s4 A s5 B s6 )
 ( s1 B s2 A s3 ), ( s4 B s5 A s6 )
 ```
-For `( s1 A s2 B s3 ), ( s4 A s5 B s6 )`:  
+Note: For `( s1 A s2 B s3 ), ( s4 A s5 B s6 )`, there can never be a C that is below A and above B (or viceversa).
+Proof:
 Blocks below A: `(s2 ∪ s3) ∩ s4`  
 Blocks above A: `(s5 ∪ s6) ∩ s1`  
 Blocks below B: `(s4 ∪ s5) ∩ s3`  
