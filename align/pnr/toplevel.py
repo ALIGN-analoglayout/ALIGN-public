@@ -293,8 +293,8 @@ def route_top_down( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS, placements_t
         new_topnode_indices.append(new_topnode_idx)
     return results_name_map
 
-
 def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, seed, use_analytical_placer):
+
     logger.info(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
 
     current_node = DB.CheckoutHierNode(idx,-1)

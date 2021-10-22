@@ -331,6 +331,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
                                 extract=extract, gds_json=not skipGDS, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui, skipGDS=skipGDS,
                                 steps_to_run=sub_steps, lambda_coeff=lambda_coeff, reference_placement_verilog_json=reference_placement_verilog_json,
                                 nroutings=nroutings, select_in_ILP=select_in_ILP, seed=seed, use_analytical_placer=use_analytical_placer)
+
         results.append( (subckt, variants))
 
         assert gui or router_mode == 'no_op' or '3_pnr:check' not in sub_steps or len(variants) > 0, f"No layouts were generated for {subckt}. Cannot proceed further. See LOG/align.log for last error."
