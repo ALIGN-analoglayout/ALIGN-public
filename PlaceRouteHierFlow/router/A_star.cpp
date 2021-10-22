@@ -1260,7 +1260,7 @@ bool A_star::Extention_check(Grid& grid, int current_node, std::set<int> &source
     logger->error("Extention check bug parent node is out of grid");
     assert(0);
   }
-  //return true or false?
+  return true;
 };
 
 std::vector<int> A_star::extend_manner_direction_check(std::vector<int> temp_path, Grid &grid){
