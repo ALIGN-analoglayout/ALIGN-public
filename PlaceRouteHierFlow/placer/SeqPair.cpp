@@ -1165,10 +1165,81 @@ bool SeqPair::CheckAlign(design& caseNL) {
         second_it_pos = find(posPair.begin(), posPair.end(), align.blocks[j]) - posPair.begin();
         first_it_neg = find(negPair.begin(), negPair.end(), align.blocks[i]) - negPair.begin();
         second_it_neg = find(negPair.begin(), negPair.end(), align.blocks[j]) - negPair.begin();
-        if(align.horizon && (first_it_pos - second_it_pos) * (first_it_neg - second_it_neg) < 0)
-          return false;
-        else if (!align.horizon && (first_it_pos - second_it_pos) * (first_it_neg - second_it_neg) > 0)
-          return false;
+        if(align.horizon){
+          if((first_it_pos - second_it_pos) * (first_it_neg - second_it_neg) < 0)return false;
+          if(first_it_pos>second_it_pos){
+            swap(first_it_pos, second_it_pos);
+            swap(first_it_neg, second_it_neg);
+          }
+          vector<int> s1(posPair.begin(), posPair.begin() + first_it_pos);
+          vector<int> s2(posPair.begin() + first_it_pos + 1, posPair.begin() + second_it_pos);
+          vector<int> s3(posPair.begin() + second_it_pos + 1, posPair.end());
+          vector<int> s4(negPair.begin(), negPair.begin() + first_it_neg);
+          vector<int> s5(negPair.begin() + first_it_neg + 1, negPair.begin() + second_it_neg);
+          vector<int> s6(negPair.begin() + second_it_neg + 1, negPair.end());
+          vector<int> u_23, u_12, i_u23_4, i_u12_6;
+          sort(s1.begin(), s1.end());
+          sort(s2.begin(), s2.end());
+          sort(s3.begin(), s3.end());
+          sort(s4.begin(), s4.end());
+          sort(s5.begin(), s5.end());
+          sort(s6.begin(), s6.end());
+          std::set_union(s2.begin(), s2.end(), s3.begin(), s3.end(), std::back_inserter(u_23));
+          std::set_union(s1.begin(), s1.end(), s2.begin(), s2.end(), std::back_inserter(u_12));
+          sort(u_23.begin(), u_23.end());
+          sort(u_12.begin(), u_12.end());
+          std::set_intersection(u_23.begin(), u_23.end(), s4.begin(), s4.end(), std::back_inserter(i_u23_4));
+          std::set_intersection(u_12.begin(), u_12.end(), s6.begin(), s6.end(), std::back_inserter(i_u12_6));
+          for(auto a:i_u23_4){
+            for(auto b:i_u12_6){
+              for (auto SPBlock : caseNL.SPBlocks){
+                if (SPBlock.axis_dir == placerDB::V){
+                  for(auto sympair: SPBlock.sympair){
+                    if (a == sympair.first && b == sympair.second || a == sympair.second && b == sympair.first) return false;
+                    //check sympair
+                  }
+                }
+              }
+            }
+          }
+        } else if (!align.horizon) {
+          if((first_it_pos - second_it_pos) * (first_it_neg - second_it_neg) > 0)return false;
+          if(first_it_pos>second_it_pos){
+            swap(first_it_pos, second_it_pos);
+            swap(first_it_neg, second_it_neg);
+          }
+          vector<int> s1(posPair.begin(), posPair.begin() + first_it_pos);
+          vector<int> s2(posPair.begin() + first_it_pos + 1, posPair.begin() + second_it_pos);
+          vector<int> s3(posPair.begin() + second_it_pos + 1, posPair.end());
+          vector<int> s4(negPair.begin(), negPair.begin() + second_it_neg);
+          vector<int> s5(negPair.begin() + second_it_neg + 1, negPair.begin() + first_it_neg);
+          vector<int> s6(negPair.begin() + first_it_neg + 1, negPair.end());
+          vector<int> u_23, u_12, i_u23_6, i_u12_4;
+          sort(s1.begin(), s1.end());
+          sort(s2.begin(), s2.end());
+          sort(s3.begin(), s3.end());
+          sort(s4.begin(), s4.end());
+          sort(s5.begin(), s5.end());
+          sort(s6.begin(), s6.end());
+          std::set_union(s2.begin(), s2.end(), s3.begin(), s3.end(), std::back_inserter(u_23));
+          std::set_union(s1.begin(), s1.end(), s2.begin(), s2.end(), std::back_inserter(u_12));
+          sort(u_23.begin(), u_23.end());
+          sort(u_12.begin(), u_12.end());
+          std::set_intersection(u_23.begin(), u_23.end(), s6.begin(), s6.end(), std::back_inserter(i_u23_6));
+          std::set_intersection(u_12.begin(), u_12.end(), s4.begin(), s4.end(), std::back_inserter(i_u12_4));
+          for(auto a:i_u23_6){
+            for(auto b:i_u12_4){
+              for (auto SPBlock : caseNL.SPBlocks){
+                if (SPBlock.axis_dir == placerDB::H){
+                  for(auto sympair: SPBlock.sympair){
+                    if (a == sympair.first && b == sympair.second || a == sympair.second && b == sympair.first) return false;
+                    //check sympair
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
