@@ -374,7 +374,7 @@ def subset_verilog_d( verilog_d, nm):
     return new_verilog_d
 
 def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, verilog_d, router_mode, gui, skipGDS, lambda_coeff, scale_factor,
-                    reference_placement_verilog_json, nroutings, select_in_ILP, seed, use_analytical_placer=use_analytical_placer):
+                    reference_placement_verilog_json, nroutings, select_in_ILP, seed, use_analytical_placer):
 
     TraverseOrder = DB.TraverseHierTree()
 
