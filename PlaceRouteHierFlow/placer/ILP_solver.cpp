@@ -423,8 +423,6 @@ void ILP_solver::lpsolve_logger(lprec* lp, void* userhandle, char* buf) {
 double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
 
-<<<<<<< HEAD
-=======
   ++mydesign._totalNumCostCalc;
   auto roundup = [](int& v, int pitch) { v = pitch * ((v + pitch - 1) / pitch); };
   int v_metal_index = -1;
@@ -444,7 +442,6 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
   int x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
   int y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
 
->>>>>>> master
   // each block has 4 vars, x, y, H_flip, V_flip;
   int N_var = mydesign.Blocks.size() * 4 + mydesign.Nets.size() * 2;
   // i*4+1: x
@@ -863,15 +860,11 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
     //set_presolve(lp, PRESOLVE_ROWS | PRESOLVE_COLS | PRESOLVE_LINDEP, get_presolveloops(lp));
     #endif
     int ret = solve(lp);
-<<<<<<< HEAD
-    if (ret != 0 && ret != 1 && ret!= 25) return -1;
-=======
     if (ret != 0 && ret != 1) {
       delete_lp(lp);
 	  ++mydesign._infeasILPFail;
       return -1;
     }
->>>>>>> master
   }
 
   double var[N_var];
@@ -928,11 +921,8 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
     dead_area -= double(mydesign.Blocks[i][0].width) * double(mydesign.Blocks[i][0].height);
   }
   // calculate ratio
-<<<<<<< HEAD
-  ratio = std::max(double(UR.x - LL.x) / double(UR.y - LL.y), double(UR.y - LL.y) / double(UR.x - LL.x));
-  **/
-=======
   // ratio = std::max(double(UR.x - LL.x) / double(UR.y - LL.y), double(UR.y - LL.y) / double(UR.x - LL.x));
+  **/
   ratio = double(UR.x - LL.x) / double(UR.y - LL.y);
   if (ratio < Aspect_Ratio[0] || ratio > Aspect_Ratio[1]) {
 	  ++mydesign._infeasAspRatio;
@@ -942,7 +932,6 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
 	  ++mydesign._infeasPlBound;
 	  return -1;
   }
->>>>>>> master
   // calculate HPWL
   HPWL = 0;
   for (auto neti : mydesign.Nets) {
