@@ -1,0 +1,32 @@
+{
+    "constraints": [
+        {
+            "const_name": "SymmBlock",
+            "axis_dir": "V",
+            "pairs": [
+                {
+                    "type": "selfsym",
+                    "block": "mmn42_mn38"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "mn37_mn20"
+                }
+            ]
+        },
+        {
+            "const_name": "SymmBlock",
+            "axis_dir": "V",
+            "pairs": [
+                {
+                    "type": "selfsym",
+                    "block": "mmp33_mmp29"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "mp28_mp22"
+                }
+            ]
+        }
+    ]
+}

@@ -114,6 +114,8 @@ class design
     std::vector<pair<pair<int,int>, placerDB::Smark>> Abut_Constraints;
     vector<set<int>> Same_Template_Constraints;
     double Aspect_Ratio_weight = 1000;
+    int placement_id = -1;
+    bool is_first_ILP = true;
     double Aspect_Ratio[2] = {0, 100};
     double placement_box[2] = {-1.0, -1.0};
     double maxBlockAreaSum = 0;

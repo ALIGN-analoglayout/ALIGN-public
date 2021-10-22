@@ -1,0 +1,24 @@
+CC = g++ -w -Wall --std=c++11 -g -O3 -lm -ldl -m64
+
+fft_folder = FFT
+
+main: main.o placement.o fft.o fftsg2d.o fftsg.o   
+	$(CC) main.o fft.o fftsg2d.o fftsg.o placement.o -o main
+
+main.o: main.cpp placement.h $(fft_folder)/fft.h
+	$(CC) -c main.cpp
+
+fft.o: $(fft_folder)/fft.cpp $(fft_folder)/fftsg2d.cpp $(fft_folder)/fftsg.cpp $(fft_folder)/fft.h
+	$(CC) -c $(fft_folder)/fft.cpp
+
+fftsg2d.o: $(fft_folder)/fftsg2d.cpp $(fft_folder)/fft.h
+	$(CC) -c $(fft_folder)/fftsg2d.cpp
+
+fftsg.o: $(fft_folder)/fftsg.cpp $(fft_folder)/fft.h
+	$(CC) -c $(fft_folder)/fftsg.cpp
+
+placement.o: placement.cpp placement.h $(fft_folder)/fft.h Pdatatype.h
+	$(CC) -c placement.cpp
+
+clean:
+	rm -rf *.o

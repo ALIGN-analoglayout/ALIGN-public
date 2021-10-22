@@ -15,10 +15,11 @@ Placer::Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info&
 }
 
 Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in, bool select_in_ILP = false) : hyper(hyper_in) {
-  PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo, select_in_ILP);
-  //PlacementRegularAspectRatio(nodeVec, opath, effort, drcInfo);
-  //PlacementMixSAAspectRatio(nodeVec, opath, effort);
-  //PlacementMixAPAspectRatio(nodeVec, opath, effort);
+//#define analytical_placer
+  if(hyper.use_analytical_placer)
+    PlacementRegularAspectRatio_ILP_Analytical(nodeVec, opath, effort, drcInfo, select_in_ILP);
+  else
+    PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo, select_in_ILP);
 }
 
 //PnRDB::hierNode Placer::CheckoutHierNode() {
@@ -119,7 +120,7 @@ void Placer::PlacementRegular(PnRDB::hierNode& node, string opath, int effort, P
   ConstGraph curr_sol;
   PlacementCore(designData, curr_sp, curr_sol, mode, effort);
   curr_sol.WritePlacement(designData, curr_sp, opath+node.name+".pl");
-  curr_sol.PlotPlacement(designData, curr_sp, opath+node.name+".plt");
+  curr_sol.PlotPlacement(designData, curr_sp, opath+node.name+".plt", false, false, false);
   curr_sol.UpdateHierNode(designData, curr_sp, node, drcInfo);
 }
 
@@ -154,7 +155,7 @@ void Placer::PlacementMixSA(PnRDB::hierNode& node, string opath, int effort, PnR
   ConstGraph curr_sol;
   PlacementCore(designData, curr_sp, curr_sol, mode, effort);
   curr_sol.WritePlacement(designData, curr_sp, opath+node.name+"_reduced.pl");
-  curr_sol.PlotPlacement(designData, curr_sp, opath+node.name+"_reduced.plt");
+  curr_sol.PlotPlacement(designData, curr_sp, opath+node.name+"_reduced.plt", false, false, false);
 
   // Full design
   SeqPair curr_sp_full( designData_full, designData, curr_sp  );
@@ -163,7 +164,7 @@ void Placer::PlacementMixSA(PnRDB::hierNode& node, string opath, int effort, PnR
   ConstGraph curr_sol_full;
   PlacementCore(designData_full, curr_sp_full, curr_sol_full, mode, effort);
   curr_sol_full.WritePlacement(designData_full, curr_sp_full, opath+node.name+".pl");
-  curr_sol_full.PlotPlacement(designData_full, curr_sp_full, opath+node.name+".plt");
+  curr_sol_full.PlotPlacement(designData_full, curr_sp_full, opath+node.name+".plt", false, false, false);
   //cout<<"Test: before update node"<<endl;
   curr_sol_full.UpdateHierNode(designData_full, curr_sp_full, node, drcInfo);
   //cout<<"Test:: after update node"<<endl;
@@ -202,7 +203,7 @@ void Placer::PlacementMixAP(PnRDB::hierNode& node, string opath, int effort, PnR
   ConstGraph curr_sol;
   PlacementCore(designData, curr_sp, curr_sol, 1, effort);
   curr_sol.WritePlacement(designData, curr_sp, opath+node.name+"_reduced.pl");
-  curr_sol.PlotPlacement(designData, curr_sp, opath+node.name+"_reduced.plt");
+  curr_sol.PlotPlacement(designData, curr_sp, opath+node.name+"_reduced.plt", false, false, false);
   curr_sol.UpdateDesignHierNode4AP(designData_full, designData, curr_sp, node);
   logger->debug("Placer-Info: complete mixed-size placement - phase I SA");
   logger->debug("Placer-Info: start mixed-size placement - phase II AP");
@@ -377,7 +378,23 @@ void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& cur
 std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, SeqPair& curr_sp, ConstGraph& curr_sol, int mode, int nodeSize, int effort) {
 
   auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementCoreAspectRatio");
-
+#ifdef PERFORMANCE_DRIVEN
+  Py_Initialize();
+  if (!Py_IsInitialized()) std::cout << "Py_Initialize fails" << std::endl;
+  PyRun_SimpleString("import sys");
+  PyRun_SimpleString("sys.path.append('./')");
+  PyObject *pModule = PyImport_ImportModule("calfom");
+  PyObject *pFun_initialization = PyObject_GetAttrString(pModule, "initialization");
+  PyObject *pFun_cal_fom = PyObject_GetAttrString(pModule, "cal_fom");
+  PyObject *pArgs_initialization = PyTuple_New(1);                 
+  PyTuple_SetItem(pArgs_initialization, 0, PyUnicode_FromString(designData.name.c_str()));
+  PyObject *pyValue_initialization=PyEval_CallObject(pFun_initialization, pArgs_initialization);
+  PyObject *sess = NULL, *X = NULL, *pred_op = NULL;
+  PyArg_ParseTuple(pyValue_initialization, "O|O|O", &sess, &X, &pred_op);
+  if(!sess)std::cout<<"empty sess"<<std::endl;
+  if(!X)std::cout<<"empty X"<<std::endl;
+  if(!pred_op)std::cout<<"empty pred_op"<<std::endl;
+#endif
 // Mode 0: graph bias; Mode 1: graph bias + net margin; Others: no bias/margin
   //cout<<"PlacementCore\n";
   std::map<double, SeqPair> oData;
@@ -385,6 +402,9 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
   GenerateValidSolution(designData, curr_sp, curr_sol, mode);
   //curr_sol.PrintConstGraph();
   double curr_cost=curr_sol.CalculateCost(designData, curr_sp);
+  #ifdef PERFORMANCE_DRIVEN
+  curr_cost=curr_sol.performance_fom(curr_cost, designData, curr_sp, pFun_cal_fom, sess, X, pred_op);
+  #endif
   logger->debug("Placer-Info: initial cost = ",curr_cost);
   logger->debug("Placer-Info: status ");
   // Aimulate annealing
@@ -464,6 +484,9 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
       if(GenerateValidSolution(designData, trial_sp, trial_sol, mode)) {
         fail_number = 0;
         double trial_cost=trial_sol.CalculateCost(designData, trial_sp);
+        #ifdef PERFORMANCE_DRIVEN
+        trial_cost=curr_sol.performance_fom(trial_cost, designData, trial_sp, pFun_cal_fom, sess, X, pred_op);
+        #endif
         bool Smark=false;
         delta_cost=trial_cost-curr_cost;
         if(delta_cost<0) {Smark=true;
@@ -511,6 +534,9 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
   //cout<<endl<<"Placer-Info: optimal cost = "<<curr_cost<<endl;
   //curr_sol.PrintConstGraph();
   curr_sp.PrintSeqPair();
+  #ifdef PERFORMANCE_DRIVEN
+  Py_Finalize();
+  #endif
   //curr_sol.updateTerminalCenter(designData, curr_sp);
   return oData;
 }
@@ -817,6 +843,54 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   }
 }
 
+void Placer::PlacementRegularAspectRatio_ILP_Analytical(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, bool select_in_ILP){
+  auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementRegularAspectRatio_ILP");
+  int nodeSize=nodeVec.size();
+  //cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
+  #ifdef RFLAG
+  //cout<<"Placer-Info: run in random mode..."<<endl;
+  srand (time(NULL));
+  #endif
+  #ifndef RFLAG
+  //cout<<"Placer-Info: run in normal mode..."<<endl;
+  srand(0);
+  #endif
+  //int mode=0;
+  // Read design netlist and constraints
+  design designData(nodeVec.back());
+  //designData.PrintDesign();
+  // Initialize simulate annealing with initial solution
+  //SeqPair curr_sp(designData);
+  //curr_sp.PrintSeqPair();
+  ILP_solver curr_sol(designData,nodeVec.back());
+  curr_sol.GenerateValidSolutionAnalytical(designData, drcInfo, nodeVec.back());
+  curr_sol.updateTerminalCenterAnalytical(designData);
+  curr_sol.PlotPlacementAnalytical(designData, opath + nodeVec.back().name + "_" + std::to_string(0) + ".plt", false, false, false);
+  curr_sol.UpdateHierNodeAnalytical(designData, nodeVec.back(), drcInfo);
+  // std::map<double, std::pair<SeqPair, ILP_solver>> spVec=PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo);
+  // curr_sol.updateTerminalCenter(designData, curr_sp);
+  // curr_sol.PlotPlacement(designData, curr_sp, opath+nodeVec.back().name+"opt.plt");
+  // if((int)spVec.size()<nodeSize) {
+  // nodeSize=spVec.size();
+  // nodeVec.resize(nodeSize);
+  //}
+  // int idx=0;
+  // for(std::map<double, std::pair<SeqPair, ILP_solver>>::iterator it=spVec.begin(); it!=spVec.end() and idx<nodeSize; ++it, ++idx) {
+  // std::cout<<"Placer-Info: cost "<<it->first<<std::endl;
+  // ConstGraph vec_sol(designData, it->second, mode);
+  // vec_sol.ConstraintGraph(designData, it->second);
+  // vec_sol.FastInitialScan();
+  // vec_sol.updateTerminalCenter(designData, it->second);
+  // std::cout<<"wbxu check design\n";
+  // designData.PrintDesign();
+  // it->second.PrintSeqPair();
+  // std::cout<<"write design "<<idx<<std::endl;
+  // 
+  // it->second.second.WritePlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".pl");
+  // it->second.second.PlotPlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".plt");
+  //}
+}
+
 void Placer::PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
 
   auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementRegularAspectRatio");
@@ -858,7 +932,7 @@ void Placer::PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, 
     //it->second.PrintSeqPair();
     //std::cout<<"write design "<<idx<<std::endl;
     vec_sol.WritePlacement(designData, it->second, opath+nodeVec.back().name+"_"+std::to_string(idx)+".pl");
-    vec_sol.PlotPlacement(designData, it->second, opath+nodeVec.back().name+"_"+std::to_string(idx)+".plt");
+    vec_sol.PlotPlacement(designData, it->second, opath+nodeVec.back().name+"_"+std::to_string(idx)+".plt", false, false, false);
     vec_sol.UpdateHierNode(designData, it->second, nodeVec[idx], drcInfo);
   }
 }
@@ -917,7 +991,7 @@ void Placer::PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
     ConstGraph curr_sol_full;
     PlacementCore(designData_full, curr_sp_full, curr_sol_full, bias_mode, effort);
     curr_sol_full.WritePlacement(designData_full, curr_sp_full, opath+nodeVec.back().name+"_"+std::to_string(idx)+".pl");
-    curr_sol_full.PlotPlacement(designData_full, curr_sp_full, opath+nodeVec.back().name+"_"+std::to_string(idx)+".plt");
+    curr_sol_full.PlotPlacement(designData_full, curr_sp_full, opath+nodeVec.back().name+"_"+std::to_string(idx)+".plt", false, false, false);
     //cout<<"Test: before update node"<<endl;
     curr_sol_full.UpdateHierNode(designData_full, curr_sp_full, nodeVec.at(idx), drcInfo);
     //cout<<"Test:: after update node"<<endl;
@@ -972,7 +1046,7 @@ void Placer::PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
     vec_sol.updateTerminalCenter(designData, it->second);
     vec_sol.PrintConstGraph();
     vec_sol.WritePlacement(designData, it->second, opath+nodeVec.back().name+"_"+std::to_string(idx)+"_reduced.pl");
-    vec_sol.PlotPlacement(designData, it->second, opath+nodeVec.back().name+"_"+std::to_string(idx)+"_reduced.plt");
+    vec_sol.PlotPlacement(designData, it->second, opath+nodeVec.back().name+"_"+std::to_string(idx)+"_reduced.plt", false, false, false);
     vec_sol.UpdateDesignHierNode4AP(designData_full, designData, it->second, nodeVec.at(idx));
 
     Aplace AP(nodeVec.at(idx), designData_full, opath);

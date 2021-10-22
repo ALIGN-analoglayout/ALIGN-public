@@ -1,0 +1,15 @@
+{
+    "constraints": [
+        {
+            "const_name": "SymmBlock",
+            "axis_dir": "V",
+            "pairs": [
+                {
+                    "type": "sympair",
+                    "block1": "mn2_mp0",
+                    "block2": "mn3_mp1"
+                }
+            ]
+        }
+    ]
+}
