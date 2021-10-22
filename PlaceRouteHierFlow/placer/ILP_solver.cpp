@@ -867,20 +867,7 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
     #endif
     int ret = solve(lp);
     if (ret != 0 && ret != 1) {
-      static int fail_cnt{0};
-      if (fail_cnt < 10) {
-        write_lp(lp, const_cast<char*>((mydesign.name + "_fail_ilp_" + std::to_string(fail_cnt) + ".lp").c_str()));
-        curr_sp.PrintSeqPair();
-        std::string tmpstrpos, tmpstrneg;
-        for (auto& it : curr_sp.posPair) if (it < mydesign.Blocks.size()) tmpstrpos += (mydesign.Blocks[it][0].name + " ");
-        for (auto& it : curr_sp.negPair) if (it < mydesign.Blocks.size()) tmpstrneg += (mydesign.Blocks[it][0].name + " ");
-        logger->info("DEBUG fail ILP seq pair : pos=[{0}] neg=[{1}]", tmpstrpos, tmpstrneg);
-        logger->info("ILP fail {0}", fail_cnt);
-        curr_sp.PrintSeqPair(mydesign);
-        ++fail_cnt;
-      }
       delete_lp(lp);
-      ++mydesign._infeasILPFail;
       return -1;
     }
   }
@@ -1525,7 +1512,20 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     set_timeout(lp, 1);
     int ret = solve(lp);
     if (ret != 0 && ret != 1) {
+      static int fail_cnt{0};
+      if (fail_cnt < 10) {
+        write_lp(lp, const_cast<char*>((mydesign.name + "_fail_ilp_" + std::to_string(fail_cnt) + ".lp").c_str()));
+        curr_sp.PrintSeqPair();
+        std::string tmpstrpos, tmpstrneg;
+        for (auto& it : curr_sp.posPair) if (it < mydesign.Blocks.size()) tmpstrpos += (mydesign.Blocks[it][0].name + " ");
+        for (auto& it : curr_sp.negPair) if (it < mydesign.Blocks.size()) tmpstrneg += (mydesign.Blocks[it][0].name + " ");
+        logger->info("DEBUG fail ILP seq pair : pos=[{0}] neg=[{1}]", tmpstrpos, tmpstrneg);
+        logger->info("ILP fail {0}", fail_cnt);
+        curr_sp.PrintSeqPair(mydesign);
+        ++fail_cnt;
+      }
       delete_lp(lp);
+      ++mydesign._infeasILPFail;
       return -1;
     }
   }
