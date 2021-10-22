@@ -2997,7 +2997,7 @@ void Placement::Unify_blocks(float area, float scale_factor)
   }
 }
 
-Ppoint_F Placement::find_uni_cell()
+void Placement::find_uni_cell()
 {
   //Ppoint_F uni_cell_Dpoint;
   float min_x = Blocks[0].Dpoint.x, min_y = Blocks[0].Dpoint.y;

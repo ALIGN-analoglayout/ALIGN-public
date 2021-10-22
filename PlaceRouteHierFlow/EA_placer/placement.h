@@ -148,7 +148,7 @@ public:
     void addNet_for_one_split_Blocks(int blockID,Ppoint_I num);
     void update_netlist_after_split_MS();
     void match_vector_into_pairs(vector<int> &q, vector<pair<int,int>> &pairs);
-    Ppoint_F find_uni_cell();
+    void find_uni_cell();
     void readCC();
     void addNet_after_split_Blocks(int tol_diff,float uniHeight, float uniWidth);//tol diff is the maximum difference of abs(shape.x - shape.y)
     Ppoint_I determineShape(int cellNum,int tol_diff);

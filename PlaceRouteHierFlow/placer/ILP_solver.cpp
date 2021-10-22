@@ -879,23 +879,6 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
   }
   #endif
   delete_lp(lp);
-  auto roundup = [](int& v, int pitch) { v = pitch * ((v + pitch - 1) / pitch); };
-  int v_metal_index = -1;
-  int h_metal_index = -1;
-  for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
-    if (drcInfo.Metal_info[i].direct == 0) {
-      v_metal_index = i;
-      break;
-    }
-  }
-  for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
-    if (drcInfo.Metal_info[i].direct == 1) {
-      h_metal_index = i;
-      break;
-    }
-  }
-  int x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
-  int y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
   for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
     Blocks[i].x = var[i * 4];
     Blocks[i].y = var[i * 4 + 1];
