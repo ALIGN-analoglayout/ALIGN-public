@@ -1204,7 +1204,7 @@ bool SeqPair::CheckSymm(design& caseNL) {
 		for (int i = 0; i < sb.selfsym.size() - 1; ++i) {
       auto posA = GetVertexIndexinSeq(posPair, sb.selfsym[i].first);
       auto negA = GetVertexIndexinSeq(negPair, sb.selfsym[i].first);
-      for (int j = i + 1; j < sb.selfsym.size() - 1; ++j) {
+      for (int j = i + 1; j < sb.selfsym.size(); ++j) {
         auto posB = GetVertexIndexinSeq(posPair, sb.selfsym[j].first);
         auto negB = GetVertexIndexinSeq(negPair, sb.selfsym[j].first);
         if (sb.axis_dir == placerDB::V) {
