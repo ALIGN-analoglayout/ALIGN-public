@@ -139,6 +139,10 @@ class SeqPair
     bool isSeqInCache(const design& des) const { return des.isSeqInCache(posPair, negPair, selected); }
 
     //vector<int> GetFlip(const bool hor) const;
+    bool operator == (const SeqPair& s1) const
+    {
+      return (posPair == s1.posPair) && (negPair == s1.negPair) && (selected == s1.selected);
+    }
 };
 
 #endif
