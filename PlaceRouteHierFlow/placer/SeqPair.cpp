@@ -770,6 +770,20 @@ SeqPair& SeqPair::operator=(const SeqPair& sp) {
   return *this;
 }
 
+void SeqPair::PrintSeqPair(const design& des) const {
+
+  auto logger = spdlog::default_logger()->clone("placer.SeqPair.PrintSeqPair");
+
+  logger->debug("=== Sequence Pair ===");
+  std::string tmpstr;
+  for(const auto& it : posPair) if (it < des.Blocks.size()) tmpstr += (des.Blocks[it][0].name + " ");
+  logger->debug("Positive pair: {0}", tmpstr);
+
+  tmpstr = "";
+  for(const auto& it : negPair) if (it < des.Blocks.size()) tmpstr += (des.Blocks[it][0].name + " ");
+  logger->debug("Negative pair: {0}", tmpstr);
+}
+
 void SeqPair::PrintSeqPair() {
 
   auto logger = spdlog::default_logger()->clone("placer.SeqPair.PrintSeqPair");
@@ -1188,17 +1202,17 @@ bool SeqPair::CheckSymm(design& caseNL) {
 			}
 		}
 		for (int i = 0; i < sb.selfsym.size() - 1; ++i) {
+      auto posA = GetVertexIndexinSeq(posPair, sb.selfsym[i].first);
+      auto negA = GetVertexIndexinSeq(negPair, sb.selfsym[i].first);
       for (int j = i + 1; j < sb.selfsym.size() - 1; ++j) {
-        auto posA = GetVertexIndexinSeq(posPair, sb.selfsym[i].first);
-        auto negA = GetVertexIndexinSeq(negPair, sb.selfsym[i].first);
         auto posB = GetVertexIndexinSeq(posPair, sb.selfsym[j].first);
         auto negB = GetVertexIndexinSeq(negPair, sb.selfsym[j].first);
         if (sb.axis_dir == placerDB::V) {
-          if ((posA < posB && negA > negB) || (posA > posB && negA < negB)) {
+          if ((posA < posB && negA < negB) || (posA > posB && negA > negB)) {
             return false;
           }
         } else {
-          if ((posA < posB && negA < negB) || (posA > posB && negA > negB)) {
+          if ((posA < posB && negA > negB) || (posA > posB && negA < negB)) {
             return false;
           }
         }
