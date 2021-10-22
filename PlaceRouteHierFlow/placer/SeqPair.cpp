@@ -1235,6 +1235,16 @@ bool SeqPair::CheckAlign(design& caseNL) {
                   }
                 }
               }
+              for(auto otheralign:caseNL.Align_blocks){
+                for (int i = 0; i < otheralign.blocks.size() - 1; ++i) {
+                  for (int j = i + 1; j < otheralign.blocks.size(); ++j) {
+                    if(otheralign.horizon){
+                      if (a == otheralign.blocks[i] && b == otheralign.blocks[j] || a == otheralign.blocks[j] && b == otheralign.blocks[i]) return false;
+                      // check other align pairs
+                    }
+                  }
+                }
+              }
             }
           }
         } else if (!align.horizon) {
@@ -1269,6 +1279,16 @@ bool SeqPair::CheckAlign(design& caseNL) {
                   for(auto sympair: SPBlock.sympair){
                     if (a == sympair.first && b == sympair.second || a == sympair.second && b == sympair.first) return false;
                     //check sympair
+                  }
+                }
+              }
+              for(auto otheralign:caseNL.Align_blocks){
+                for (int i = 0; i < otheralign.blocks.size() - 1; ++i) {
+                  for (int j = i + 1; j < otheralign.blocks.size(); ++j) {
+                    if(!otheralign.horizon){
+                      if (a == otheralign.blocks[i] && b == otheralign.blocks[j] || a == otheralign.blocks[j] && b == otheralign.blocks[i]) return false;
+                      // check other align pairs
+                    }
                   }
                 }
               }
