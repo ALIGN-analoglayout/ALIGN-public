@@ -1014,7 +1014,7 @@ bool SeqPair::ChangeSelectedBlock(design& caseNL) {
     } // randomly choose a block
   }
   if(caseNL.Blocks.at(anode).size()<=1) {
-    logger->debug("anode size < 1");
+    if (caseNL.Blocks.at(anode).size()<1) logger->debug("anode size < 1");
     return false;
   }
   int newsel=rand() % caseNL.Blocks.at(anode).size();
@@ -1154,6 +1154,41 @@ std::string SeqPair::getLexIndex(design& des) const {
   return "pos_pair=" + std::to_string(des.getSeqIndex(posPair)) +
     " neg_pair=" + std::to_string(des.getSeqIndex(negPair)) + 
 	" selected=" + std::to_string(des.getSelIndex(selected));
+}
+
+bool SeqPair::CheckSymm(design& caseNL) {
+	for (const auto& sb : caseNL.SBlocks) {
+		for (const auto& itsympair : sb.sympair) {
+			auto posA = GetVertexIndexinSeq(posPair, itsympair.first);
+			auto posB = GetVertexIndexinSeq(posPair, itsympair.second);
+			auto negA = GetVertexIndexinSeq(negPair, itsympair.first);
+			auto negB = GetVertexIndexinSeq(negPair, itsympair.second);
+			if (sb.axis_dir == placerDB::V) {
+				if ((posA < posB && negA > negB) || (posA > posB && negA < negB)) {
+					return false;
+				}
+				for (const auto& itselfsym : sb.selfsym) {
+					auto posC = GetVertexIndexinSeq(posPair, itselfsym.first);
+					auto negC = GetVertexIndexinSeq(negPair, itselfsym.first);
+					if ((posA < posB && posC > posB && negC > negB) || (posA > posB && posC > posA && negC > negA)) {
+						return false;
+					}
+				}
+			} else {
+				if ((posA < posB && negA < negB) || (posA > posB && negA > negB)) {
+					return false;
+				}
+				for (const auto& itselfsym : sb.selfsym) {
+					auto posC = GetVertexIndexinSeq(posPair, itselfsym.first);
+					auto negC = GetVertexIndexinSeq(negPair, itselfsym.first);
+					if ((posA < posB && posC > posB && negC < negB) || (posA > posB && posC > posA && negC < negA)) {
+						return false;
+					}
+				}
+			}
+		}
+	}
+  return true;
 }
 
 bool SeqPair::CheckAlign(design& caseNL) { 
@@ -1317,8 +1352,8 @@ bool SeqPair::PerturbationNew(design& caseNL) {
 
   SeqPair cpsp(*this);
   const int max_trial_cnt{20};
-  int trial_cnt{0};
   bool retval{true};
+  int trial_cnt{0};
   do {
     if (_seqPairEnum) {
       posPair = _seqPairEnum->PosPair();
@@ -1366,9 +1401,9 @@ bool SeqPair::PerturbationNew(design& caseNL) {
     }
     KeepOrdering(caseNL);
     SameSelected(caseNL);
-    retval = ( cpsp == *this || !CheckAlign(caseNL));
-  } while ( retval && trial_cnt++ < max_trial_cnt);
-  return retval;
+    retval = ((cpsp == *this) || !CheckAlign(caseNL) || !CheckSymm(caseNL));
+  } while (retval && ++trial_cnt < max_trial_cnt);
+  return !retval;
 }
 
 void SeqPair::Perturbation(design& caseNL) {

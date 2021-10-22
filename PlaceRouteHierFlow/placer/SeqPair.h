@@ -128,6 +128,7 @@ class SeqPair
     void Perturbation(design& caseNL);
     bool PerturbationNew(design& caseNL);
     bool CheckAlign(design& caseNL);
+    bool CheckSymm(design& caseNL);
     void TestSwap();
     int GetBlockSelected(int blockNo);
     bool ChangeSelectedBlock(design& caseNL);
