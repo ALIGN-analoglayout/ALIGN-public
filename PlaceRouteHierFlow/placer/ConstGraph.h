@@ -7,6 +7,7 @@
 #include <stack>
 #include <climits>
 #include <string>
+#include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -18,6 +19,9 @@
 #include "Aplace.h"
 #include "ILP_solver.h"
 #include "../PnRDB/datatype.h"
+#ifdef PERFORMANCE_DRIVEN
+#include <Python.h>
+#endif
 
 using std::vector;
 using std::string;
@@ -164,13 +168,16 @@ class ConstGraph
     bool ConstraintGraph(design& caseNL, SeqPair& caseSP);
     bool ConstraintGraphAP(design& caseNL, Aplace& caseAP);
     double CalculateCost(design& caseNL, SeqPair& caseSP);
+    #ifdef PERFORMANCE_DRIVEN
+    double performance_fom(double curr_cost, design& caseNL, SeqPair& caseSP, PyObject *pFun_cal_fom, PyObject *sess, PyObject *X, PyObject *pred_op);
+    #endif
     double CalculateMatchCost(design& caseNL, SeqPair& caseSP);
     void updateTerminalCenterRetire(design& caseNL, SeqPair& caseSP);
     void updateTerminalCenter(design& caseNL, SeqPair& caseSP);
     void updateTerminalCenterAPRetire(design& caseNL, Aplace& caseAP);
     void updateTerminalCenterAP(design& caseNL, Aplace& caseAP);
     void WritePlacement(design& caseNL, SeqPair& caseSP, string outfile);
-    void PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile);
+    void PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile, bool plot_pin, bool plot_terminal, bool plot_net);
     void WritePlacementAP(design& caseNL, Aplace& caseAP, string outfile);
     void PlotPlacementAP(design& caseNL, Aplace& caseAP, string outfile);
     void UpdateHierNode(design& caseNL, SeqPair& caseSP, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo);

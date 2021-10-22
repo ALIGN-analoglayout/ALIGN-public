@@ -335,8 +335,10 @@ design::design(design& other, int mode) {
 design::design(PnRDB::hierNode& node) {
 
   auto logger = spdlog::default_logger()->clone("placer.design.design");
-
-  bias_Vgraph=node.bias_Vgraph; // from node
+  is_first_ILP = node.isFirstILP;
+  name = node.name;
+  placement_id = node.placement_id;
+  bias_Vgraph = node.bias_Vgraph;  // from node
   bias_Hgraph=node.bias_Hgraph; // from node
   Aspect_Ratio_weight = node.Aspect_Ratio_weight;
   memcpy(Aspect_Ratio, node.Aspect_Ratio, sizeof(node.Aspect_Ratio));
@@ -1430,27 +1432,28 @@ void design::PrintTerminals() {
 }
 
 void design::PrintNets() {
-
   auto logger = spdlog::default_logger()->clone("placer.design.PrintNets");
 
   logger->debug("=== Nets ===");
-  for(vector<placerDB::net>::iterator it=Nets.begin(); it!=Nets.end(); ++it) {
-    logger->debug("Name: {0} Weight: {1} Priority: {2}",(*it).name,it->weight,it->priority);
-    logger->debug("Name: {0} Priority: {1} Margin: {2}",(*it).name,it->priority,it->margin);
+  for (vector<placerDB::net>::iterator it = Nets.begin(); it != Nets.end(); ++it) {
+    logger->debug("Name: {0} Weight: {1} Priority: {2}", (*it).name, it->weight, it->priority);
+    logger->debug("Name: {0} Priority: {1} Margin: {2}", (*it).name, it->priority, it->margin);
     logger->debug("Connected: ");
-    for(vector<placerDB::Node>::iterator it2=it->connected.begin(); it2!=it->connected.end(); ++it2) {
-      logger->debug("type: {0} iter {1} iter2 {2}",it2->type,it2->iter,it2->iter2);
-      if(it2->type==placerDB::Block) {
-	auto blk=Blocks.at(it2->iter2);
-	if ( blk.size() == 0) { 
-          logger->debug(" <empty>"); 
-	} else {
-	  auto tmp=blk.back();
-	  auto tmp2=tmp.blockPins.at(it2->iter);
-          logger->debug("{0} / {1}",tmp.name,tmp2.name);
-	}
+    for (vector<placerDB::Node>::iterator it2 = it->connected.begin(); it2 != it->connected.end(); ++it2) {
+      logger->debug("type: {0} iter {1} iter2 {2}", it2->type, it2->iter, it2->iter2);
+      if (it2->type == placerDB::Block) {
+        auto blk = Blocks.at(it2->iter2);
+        if (blk.size() == 0) {
+          logger->debug(" <empty>");
+        } else if(blk.back().blockPins.size()>it2->iter) {
+          auto tmp = blk.back();
+          auto tmp2 = tmp.blockPins.at(it2->iter);
+          logger->debug("{0} / {1}", tmp.name, tmp2.name);
+        }
       }
-      if(it2->type==placerDB::Terminal) {logger->debug("{0}",Terminals.at(it2->iter).name);}
+      if (it2->type == placerDB::Terminal) {
+        logger->debug("{0}", Terminals.at(it2->iter).name);
+      }
     }
   }
 }

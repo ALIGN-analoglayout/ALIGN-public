@@ -1,0 +1,5 @@
+Switch_NMOS_nfin48_n12_X2_Y2_ST2 Switch_NMOS_nfin48_n12_X2_Y2_ST2.gds
+Cap_12f Cap_12f.gds
+Res_r500 Res_r500.gds
+Switch_PMOS_nfin48_n12_X2_Y2_ST2 Switch_PMOS_nfin48_n12_X2_Y2_ST2.gds
+Res_r20000 Res_r20000.gds
