@@ -21,8 +21,8 @@ def ReadVerilogJson( DB, j):
         temp_node = PnR.hierNode()
         temp_node.name = module['name']
         temp_node.isCompleted = 0
-        print(temp_node)
-        print(temp_node.Block_name_map)
+         #print(temp_node)
+         #print(temp_node.Block_name_map)
 
         Terminals = []
         for parameter in module['parameters']:

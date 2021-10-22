@@ -1160,8 +1160,8 @@ bool SeqPair::CheckSymm(design& caseNL) {
 	for (const auto& sb : caseNL.SBlocks) {
 		for (const auto& itsympair : sb.sympair) {
 			auto posA = GetVertexIndexinSeq(posPair, itsympair.first);
-			auto posB = GetVertexIndexinSeq(posPair, itsympair.second);
 			auto negA = GetVertexIndexinSeq(negPair, itsympair.first);
+			auto posB = GetVertexIndexinSeq(posPair, itsympair.second);
 			auto negB = GetVertexIndexinSeq(negPair, itsympair.second);
 			if (sb.axis_dir == placerDB::V) {
 				if ((posA < posB && negA > negB) || (posA > posB && negA < negB)) {
@@ -1187,6 +1187,23 @@ bool SeqPair::CheckSymm(design& caseNL) {
 				}
 			}
 		}
+		for (int i = 0; i < sb.selfsym.size() - 1; ++i) {
+      for (int j = i + 1; j < sb.selfsym.size() - 1; ++j) {
+        auto posA = GetVertexIndexinSeq(posPair, sb.selfsym[i].first);
+        auto negA = GetVertexIndexinSeq(negPair, sb.selfsym[i].first);
+        auto posB = GetVertexIndexinSeq(posPair, sb.selfsym[j].first);
+        auto negB = GetVertexIndexinSeq(negPair, sb.selfsym[j].first);
+        if (sb.axis_dir == placerDB::V) {
+          if ((posA < posB && negA > negB) || (posA > posB && negA < negB)) {
+            return false;
+          }
+        } else {
+          if ((posA < posB && negA < negB) || (posA > posB && negA > negB)) {
+            return false;
+          }
+        }
+      }
+    }
 	}
   return true;
 }
