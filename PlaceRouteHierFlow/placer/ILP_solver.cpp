@@ -456,19 +456,13 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
   // set integer constraint, H_flip and V_flip can only be 0 or 1
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
     #ifdef ilp
-    set_int(lp, i * 4 + 1, TRUE); set_col_name(lp, i * 4 + 1, const_cast<char*>((mydesign.Blocks[i][0].name + "_x").c_str()));
-    set_int(lp, i * 4 + 2, TRUE); set_col_name(lp, i * 4 + 2, const_cast<char*>((mydesign.Blocks[i][0].name + "_y").c_str()));
+    set_int(lp, i * 4 + 1, TRUE);
+    set_int(lp, i * 4 + 2, TRUE);
     set_int(lp, i * 4 + 3, TRUE);
     set_int(lp, i * 4 + 4, TRUE);
     #endif
-    set_binary(lp, i * 4 + 3, TRUE); set_col_name(lp, i * 4 + 3, const_cast<char*>((mydesign.Blocks[i][0].name + "_flx").c_str()));
-    set_binary(lp, i * 4 + 4, TRUE); set_col_name(lp, i * 4 + 4, const_cast<char*>((mydesign.Blocks[i][0].name + "_fly").c_str()));
-  }
-
-  for (int i = 0; i < mydesign.Nets.size(); ++i) {
-	  int ind = i * 2 + mydesign.Blocks.size() * 4 + 1;
-	  set_col_name(lp, ind, const_cast<char*>((mydesign.Nets[i].name + "_x").c_str()));
-	  set_col_name(lp, ind + 1, const_cast<char*>((mydesign.Nets[i].name + "_y").c_str()));
+    set_binary(lp, i * 4 + 3, TRUE);
+    set_binary(lp, i * 4 + 4, TRUE);
   }
 
   // overlap constraint
@@ -1063,12 +1057,18 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
 
   // set integer constraint, H_flip and V_flip can only be 0 or 1
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
-    set_int(lp, i * 4 + 1, TRUE);
-    set_int(lp, i * 4 + 2, TRUE);
+    set_int(lp, i * 4 + 1, TRUE); set_col_name(lp, i * 4 + 1, const_cast<char*>((mydesign.Blocks[i][0].name + "_x").c_str()));
+    set_int(lp, i * 4 + 2, TRUE); set_col_name(lp, i * 4 + 2, const_cast<char*>((mydesign.Blocks[i][0].name + "_y").c_str()));
     set_int(lp, i * 4 + 3, TRUE);
     set_int(lp, i * 4 + 4, TRUE);
-    set_binary(lp, i * 4 + 3, TRUE);
-    set_binary(lp, i * 4 + 4, TRUE);
+    set_binary(lp, i * 4 + 3, TRUE); set_col_name(lp, i * 4 + 3, const_cast<char*>((mydesign.Blocks[i][0].name + "_flx").c_str()));
+    set_binary(lp, i * 4 + 4, TRUE); set_col_name(lp, i * 4 + 4, const_cast<char*>((mydesign.Blocks[i][0].name + "_fly").c_str()));
+  }
+
+  for (int i = 0; i < mydesign.Nets.size(); ++i) {
+	  int ind = i * 2 + mydesign.Blocks.size() * 4 + 1;
+	  set_col_name(lp, ind, const_cast<char*>((mydesign.Nets[i].name + "_x").c_str()));
+	  set_col_name(lp, ind + 1, const_cast<char*>((mydesign.Nets[i].name + "_y").c_str()));
   }
 
   int bias_Hgraph = mydesign.bias_Hgraph, bias_Vgraph = mydesign.bias_Vgraph;
