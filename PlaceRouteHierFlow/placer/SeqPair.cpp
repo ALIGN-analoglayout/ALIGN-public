@@ -1221,6 +1221,9 @@ bool SeqPair::CheckSymm(design& caseNL) {
           if (posA > posC && negA < negC && posB < posD && negB > negD) return false;
           if (posA < posD && negA > negD && posB > posC && negB < negC) return false;
           if (posA > posD && negA < negD && posB < posC && negB > negC) return false;
+
+          if (posA < posC && negA < negC && posB < posD && negB < negD) return false;
+          if (posA > posC && negA > negC && posB > posD && negB > negD) return false;
         }
       } else {
         if ((posA < posB && negA < negB) || (posA > posB && negA > negB)) {
@@ -1248,6 +1251,9 @@ bool SeqPair::CheckSymm(design& caseNL) {
           if (posA > posC && negA > negC && posB < posD && negB < negD) return false;
           if (posA < posD && negA < negD && posB > posC && negB > negC) return false;
           if (posA > posD && negA > negD && posB < posC && negB < negC) return false;
+
+          if (posA > posC && negA < negC && posB < posD && negB > negD) return false;
+          if (posA < posC && negA > negC && posB > posD && negB < negD) return false;
         }
 			}
 		}
@@ -1338,7 +1344,7 @@ bool SeqPair::CheckSymm(design& caseNL) {
   return true;
 }
 
-bool SeqPair::CheckAlign(design& caseNL) { 
+bool SeqPair::CheckAlign(design& caseNL) {
   for(auto align:caseNL.Align_blocks){
     for (int i = 0; i < align.blocks.size() - 1; ++i) {
       for (int j = i + 1; j < align.blocks.size(); ++j) {
@@ -1420,6 +1426,123 @@ bool SeqPair::CheckAlign(design& caseNL) {
               }
             }
           }
+        }
+      }
+    }
+  }
+
+  std::map<int, int> posPosition, negPosition;
+  for (int i = 0; i < posPair.size(); ++i) {
+    posPosition[posPair[i]] = i;
+    negPosition[negPair[i]] = i;
+  }
+  std::map<int, const std::vector<int> &> alignBlocks;
+  for (const auto& au : caseNL.Align_blocks) {
+    if (au.horizon == 1) {
+      for (const auto& it : au.blocks) {
+        if (alignBlocks.find(it) == alignBlocks.end()) {
+          alignBlocks.emplace(it, au.blocks);
+        }
+      }
+    }
+  }
+	std::map<int, std::set<int> > aboveSet, belowSet;
+	for (auto& it : posPair) {
+		auto posA = posPosition[it];
+		auto negA = negPosition[it];
+		for (int i = 0; i < posA; ++i) {
+      const auto& bi = posPair[i];
+			if (bi < caseNL.Blocks.size()) {
+				if (negPosition[bi] > negA) {
+					aboveSet[it].insert(posPair[i]);
+					const auto& cpt = caseNL.Blocks[bi][0].counterpart;
+					if (cpt != -1) {
+						aboveSet[it].insert(cpt);
+					}
+          auto itAlign= alignBlocks.find(bi);
+          if (itAlign != alignBlocks.end()) {
+            aboveSet[it].insert(itAlign->second.begin(), itAlign->second.end());
+          }
+				}
+			}
+		}
+		for (int i = posA + 1; i < posPair.size(); ++i) {
+      const auto& bi = posPair[i];
+			if (bi < caseNL.Blocks.size()) {
+				if (negPosition[bi] < negA) {
+					belowSet[it].insert(posPair[i]);
+					const auto& cpt = caseNL.Blocks[bi][0].counterpart;
+					if (cpt != -1) {
+						belowSet[it].insert(cpt);
+					}
+          auto itAlign= alignBlocks.find(bi);
+          if (itAlign != alignBlocks.end()) {
+            belowSet[it].insert(itAlign->second.begin(), itAlign->second.end());
+          }
+				}
+			}
+		}
+	}
+
+	std::vector<int> intersec(posPair.size());
+  for (auto& itpos : posPair) {
+    std::set<int> tmpset;
+    for (auto& itabove : aboveSet[itpos]) {
+      tmpset.insert(aboveSet[itabove].begin(), aboveSet[itabove].end());
+    }
+    aboveSet[itpos].insert(tmpset.begin(), tmpset.end());
+    tmpset.clear();
+    for (auto& itbelow : belowSet[itpos]) {
+      tmpset.insert(belowSet[itbelow].begin(), belowSet[itbelow].end());
+    }
+    belowSet[itpos].insert(tmpset.begin(), tmpset.end());
+		auto itinter = std::set_intersection(aboveSet[itpos].begin(), aboveSet[itpos].end(),
+				belowSet[itpos].begin(), belowSet[itpos].end(), intersec.begin());
+		if ((itinter - intersec.begin()) > 0) {
+			return false;
+		}
+  }
+
+  for (const auto& au : caseNL.Align_blocks) {
+    if (au.horizon == 1) {
+      for (int i = 0; i < au.blocks.size() - 1; ++i) {
+        const int& ai = au.blocks[i];
+        const auto& aboveai = aboveSet[ai];
+        const auto& belowai = belowSet[ai];
+        for (int j = i + 1; j < au.blocks.size(); ++j) {
+          const int& bj = au.blocks[j];
+          const auto& abovebj = aboveSet[bj];
+          const auto& belowbj = belowSet[bj];
+          auto itinter = std::set_intersection(aboveai.begin(), aboveai.end(),
+              belowbj.begin(), belowbj.end(), intersec.begin());
+          if ((itinter - intersec.begin()) > 0) {
+            return false;
+          }
+          itinter = std::set_intersection(belowai.begin(), belowai.end(),
+              abovebj.begin(), abovebj.end(), intersec.begin());
+          if ((itinter - intersec.begin()) > 0) {
+            return false;
+          }
+        }
+      }
+    }
+  }
+  for (const auto& sb : caseNL.SBlocks) {
+    for (const auto& it : sb.sympair) {
+      if (sb.axis_dir == placerDB::V) {
+        const auto& aboveai = aboveSet[it.first];
+        const auto& belowbj = belowSet[it.second];
+        auto itinter = std::set_intersection(aboveai.begin(), aboveai.end(),
+            belowbj.begin(), belowbj.end(), intersec.begin());
+        if ((itinter - intersec.begin()) > 0) {
+          return false;
+        }
+        const auto& belowai = belowSet[it.first];
+        const auto& abovebj = aboveSet[it.second];
+        itinter = std::set_intersection(belowai.begin(), belowai.end(),
+            abovebj.begin(), abovebj.end(), intersec.begin());
+        if ((itinter - intersec.begin()) > 0) {
+          return false;
         }
       }
     }
