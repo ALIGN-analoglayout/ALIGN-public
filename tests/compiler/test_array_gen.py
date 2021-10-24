@@ -100,12 +100,9 @@ def test_array_gen_rof():
     array_cl.add_new_array_hier()
     assert ckt.get_element("X_ARRAY_HIER_VCCX")
     assert ckt_library.find("ARRAY_HIER_VCCX")
-    assert ckt_library.find("ARRAY_template")
-    assert set([inst.name for inst in ckt_library.find("ARRAY_template").elements]) == {'MP0', 'MN0'}
-    array_insts = ['X_ARRAY_TEMPLATE', 'X_ARRAY_TEMPLATE_MN1_MP1',
-    'X_ARRAY_TEMPLATE_MN2_MP2', 'X_ARRAY_TEMPLATE_MN3_MP3',
-    'X_ARRAY_TEMPLATE_MN4_MP4',
-    ]
+    assert ckt_library.find("ARRAY_TEMPLATE"), f"{set([inst.name for inst in ckt_library.find('ARRAY_TEMPLATE').elements])}"
+    assert set([inst.name for inst in ckt_library.find("ARRAY_TEMPLATE").elements]) == {'MP0', 'MN0'}
+    array_insts = ['X_ARRAY_TEMPLATE', 'X_ARRAY_TEMPLATE1', 'X_ARRAY_TEMPLATE2', 'X_ARRAY_TEMPLATE3', 'X_ARRAY_TEMPLATE4']
     assert [inst.name for inst in ckt_library.find("ARRAY_HIER_VCCX").elements] == array_insts
     clean_data(name)
 
@@ -133,5 +130,5 @@ def test_array_vga_equal():
     TEMPLATE = ckt_library.find("ARRAY_TEMPLATE")
     assert TEMPLATE, f"\TEMPLATE not found in {all_arrays}"
     insts = [inst.name for inst in TEMPLATE.elements]
-    assert insts == ['X_DP_NMOS_B_M00_M01', 'X_CMB_NMOS_4_M02_M03_M12_M22_M32']
+    assert set(insts) == {'X_DP_NMOS_B_M00_M01', 'MSW0'}
     clean_data(name)

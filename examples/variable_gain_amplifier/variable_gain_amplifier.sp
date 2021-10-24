@@ -1,5 +1,5 @@
 .subckt variable_gain_amplifier vmirror_vga s0 s1 s2 s3 vin1 vin2 vout_vga1 vout_vga2 vps vgnd
-.param nfpf_sw=72 cload=12f nfpf_cm=72 nfpf_dp=48 rl=400
+.param nfpf_sw=72 nfpf_cm=72 nfpf_dp=48 rl=400
 
         M03 vmirror_vga vmirror_vga vgnd vgnd nfet nfin=nfpf_cm m=1 nf=1
 		M02 net3p vmirror_vga vgnd vgnd nfet nfin=nfpf_cm m=1  nf=1

@@ -254,7 +254,7 @@ class process_arrays:
             create_new_hiearchy(self.dl, self.name, new_array_hier_name, all_inst)
             all_template_names = list()
             for template in array_2D:
-                template_name = self.get_new_subckt_name("ARRAY_TEMPATE")
+                template_name = self.get_new_subckt_name("ARRAY_TEMPLATE")
                 create_new_hiearchy(self.dl, new_array_hier_name, template_name, template)
                 all_template_names.append(template_name)
             self.add_array_placement_constraints(new_array_hier_name, all_template_names)
