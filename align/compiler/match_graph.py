@@ -113,13 +113,9 @@ class Annotate:
                         temp_match_dict[subckt.name].extend(new_subckts)
                     else:
                         temp_match_dict[subckt.name] = new_subckts
-                # TODO array identification
-                logger.debug(
-                    f"Circuit after MATCHING: {ckt.name} {[e.name for e in ckt.elements]}"
-                )
-        logger.debug(
-            f"Subcircuits after creating primitive hiearchy {[ckt.name for ckt in self.ckt_data if isinstance(ckt, SubCircuit)]}"
-        )
+                logger.debug(f"Circuit after annotation: {ckt.name} {[e.name for e in ckt.elements]}")
+        all_subckt = [ckt.name for ckt in self.ckt_data if isinstance(ckt, SubCircuit)]
+        logger.debug(f"Subcircuits after creating primitive hiearchy {all_subckt}")
         return self.lib_names
 
     def _check_const_length(self, const_list, const):

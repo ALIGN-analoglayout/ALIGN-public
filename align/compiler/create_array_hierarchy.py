@@ -6,7 +6,7 @@ Created on Wed July 08 13:12:15 2020
 """
 
 from networkx.generators import line
-from align.schema import graph
+from align.schema import graph, instance
 from align.schema.graph import Graph
 from collections import Counter
 from itertools import combinations
@@ -167,7 +167,7 @@ class process_arrays:
                 nbrs = set(self.graph.neighbors(node)) - set(traversed)
                 lvl1 = [nbr for nbr in nbrs if reduced_SD_neighbors(self.graph, node, nbr)]
                 # logger.debug(f"lvl1 {lvl1} {set(self.graph.neighbors(node))} {traversed}")
-                next_match[source] += lvl1
+                next_match[source].extend(lvl1)
                 visited += lvl1
             if not next_match[source]:
                 del next_match[source]
@@ -178,8 +178,8 @@ class process_arrays:
                     array[source] += next_match[source]
 
             template += next_match[list(next_match.keys())[0]]
-            logger.debug(f"matching lvl {template}, {match_grps}")
-            if self.check_convergence(next_match):
+            logger.debug(f"found matching lvl {template}, {match_grps}")
+            if self.check_non_convergence(next_match):
                 self.trace_template(next_match, visited, template, array)
 
     def match_branches(self, nodes_dict):
@@ -188,14 +188,14 @@ class process_arrays:
         for node, nbrs in nodes_dict.items():
             super_list = list()
             for nbr in nbrs:
-                if nbr in self.stop_points:
-                    continue
-                elif self.graph._is_element(nbr):
+                if self.graph._is_element(self.graph.nodes[nbr]):
                     inst = self.graph.element(nbr)
-                    super_list.append(inst.model)
-                    super_list.append(inst.parameters)
+                    # logger.debug(f"instance {inst}")
+                    # super_list.append(inst.model)
+                    super_list.append(inst.abstract_name)
                 else:
                     super_list.append("net")
+            logger.debug(f"all probable neighbors from {node} {super_list}")
             nbr_values[node] = Counter(super_list)
         logger.debug(f"all nbr properties {nbr_values}")
         _, main = nbr_values.popitem()
@@ -206,7 +206,7 @@ class process_arrays:
                 return False
         return True
 
-    def check_convergence(self, match: dict):
+    def check_non_convergence(self, match: dict):
         vals = list()
         for val in match.values():
             common_node = set(val).intersection(vals)
@@ -240,7 +240,6 @@ class process_arrays:
         sub_hier_elements = set()
         for key, array_2D in self.new_hier_instances.items():
             logger.debug(f"new hier instances: {array_2D}")
-
             all_inst = [inst for template in array_2D for inst in template
                 if inst in self.graph and inst not in sub_hier_elements]
             #Filter repeated elements across array of obejcts
@@ -251,21 +250,38 @@ class process_arrays:
             if len(all_inst) <=1:
                 logger.debug(f"not enough elements to create a hierarchy")
                 continue
-            create_new_hiearchy(self.dl, self.name, "ARRAY_HIER_" + key, all_inst)
-            #t --> template
-            t_name = "ARRAY_TEMPLATE"
-            count =1
-            while self.ckt.parent.find(t_name):
-                t_name = t_name + str(count)
-                count +=1
-            template = array_2D[0]
-            create_new_hiearchy(self.dl, "ARRAY_HIER_" + key, t_name, template)
-            array_hier_graph = Graph(self.dl.find("ARRAY_HIER_" + key))
-            array_hier_graph.replace_matching_subgraph(
-                        Graph(self.dl.find(t_name)), None
-                    )
+            new_array_hier_name = "ARRAY_HIER_" + key
+            create_new_hiearchy(self.dl, self.name, new_array_hier_name, all_inst)
+            all_template_names = list()
+            for template in array_2D:
+                template_name = self.get_new_subckt_name("ARRAY_TEMPATE")
+                create_new_hiearchy(self.dl, new_array_hier_name, template_name, template)
+                all_template_names.append(template_name)
+            self.add_array_placement_constraints(new_array_hier_name, all_template_names)
+
+    def add_array_placement_constraints(self, hier, modules):
+        #TODO make it sizing aware
+        # array placement constraint
+        arre_hier_const = self.dl.find(hier).constraints
+        with set_context(arre_hier_const):
+            instances = ['X_'+module for module in modules]
+            arre_hier_const.append(constraint.Align(line="h_center", instances=instances))
+            arre_hier_const.append(constraint.SameTemplate(instances=instances))
+        # template placement constraint
+        for template in modules:
+            template_module = self.dl.find(template)
+            all_inst = [inst.name for inst in template_module.elements]
+            with set_context(template_module.constraints):
+                template_module.constraints.append(constraint.Align(line="v_center", instances=all_inst))
 
 
+    def get_new_subckt_name(self, name):
+        count =1
+        new_name = name
+        while self.ckt.parent.find(new_name):
+            new_name = name + str(count)
+            count +=1
+        return new_name
 
 def create_new_hiearchy(dl, parent_name, child_name, elements, pins_map=None):
     parent = dl.find(parent_name)
@@ -310,5 +326,6 @@ def create_new_hiearchy(dl, parent_name, child_name, elements, pins_map=None):
             model=child_name,
             pins=pins_map,
             generator=child_name,
+            abstract_name = child_name
         )
         parent.elements.append(X1)

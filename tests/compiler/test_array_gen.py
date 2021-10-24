@@ -101,7 +101,7 @@ def test_array_gen_rof():
     assert ckt.get_element("X_ARRAY_HIER_VCCX")
     assert ckt_library.find("ARRAY_HIER_VCCX")
     assert ckt_library.find("ARRAY_template")
-    assert [inst.name for inst in ckt_library.find("ARRAY_template").elements] == ['MP0', 'MN0']
+    assert set([inst.name for inst in ckt_library.find("ARRAY_template").elements]) == {'MP0', 'MN0'}
     array_insts = ['X_ARRAY_TEMPLATE', 'X_ARRAY_TEMPLATE_MN1_MP1',
     'X_ARRAY_TEMPLATE_MN2_MP2', 'X_ARRAY_TEMPLATE_MN3_MP3',
     'X_ARRAY_TEMPLATE_MN4_MP4',
@@ -127,12 +127,6 @@ def test_array_vga_equal():
     ckt = ckt_library.find(name)
     assert ckt, f"No ckt {name} found in library"
     FindConst(ckt_library, name, design_setup)
-    # array_cl = process_arrays(ckt, dict(), design_setup)
-    # array1 = array_cl.find_array('VCCX', ['VSSX'])
-    # assert array1 == [['MP0', 'MN0'], ['MP1', 'MN1'], ['MP2', 'MN2'], ['MP3', 'MN3'], ['MP4', 'MN4']]
-    # array_cl.add_align_block_const()
-    # array_cl.add_new_array_hier()
-    # assert ckt.get_element("X_ARRAY_HIER_VCCX")
     all_arrays = [module.name for module in ckt_library if isinstance(module, SubCircuit) and 'ARRAY' in module.name]
     ARRAY_HIER = ckt_library.find("ARRAY_HIER_VOUT_VGA1")
     assert ARRAY_HIER, f"\ ARRAY_HIER_VOUT_VGA1 not found in {all_arrays}"
