@@ -1224,6 +1224,8 @@ bool SeqPair::CheckSymm(design& caseNL) {
 
           if (posA < posC && negA < negC && posB < posD && negB < negD) return false;
           if (posA > posC && negA > negC && posB > posD && negB > negD) return false;
+          if (posA < posD && negA < negD && posB < posC && negB < negC) return false;
+          if (posA > posD && negA > negD && posB > posC && negB > negC) return false;
         }
       } else {
         if ((posA < posB && negA < negB) || (posA > posB && negA > negB)) {
@@ -1254,6 +1256,8 @@ bool SeqPair::CheckSymm(design& caseNL) {
 
           if (posA > posC && negA < negC && posB < posD && negB > negD) return false;
           if (posA < posC && negA > negC && posB > posD && negB < negD) return false;
+          if (posA > posD && negA < negD && posB < posC && negB > negC) return false;
+          if (posA < posD && negA > negD && posB > posC && negB < negC) return false;
         }
 			}
 		}
