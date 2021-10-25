@@ -256,11 +256,16 @@ workflows:
                 - "cp38-cp38"
                 - "cp310-cp310"
             exclude:
+              # Skipping these as they have been built by
+              # other jobs
               - platform: "quay.io/pypa/manylinux2010_x86_64"
                 python-tags: "cp37-cp37m"
               - platform: "quay.io/pypa/manylinux_2_24_x86_64"
                 python-tags: "cp38-cp38"
               - platform: "quay.io/pypa/manylinux_2_24_x86_64"
+                python-tags: "cp310-cp310"
+              # Skipping this because of broken pillow dependency
+              - platform: "quay.io/pypa/manylinux2010_x86_64"
                 python-tags: "cp310-cp310"
       - build-test-coverage:
           requires:
