@@ -264,9 +264,6 @@ workflows:
                 python-tags: "cp38-cp38"
               - platform: "quay.io/pypa/manylinux_2_24_x86_64"
                 python-tags: "cp310-cp310"
-              # Skipping this because of broken pillow dependency
-              - platform: "quay.io/pypa/manylinux2010_x86_64"
-                python-tags: "cp310-cp310"
       - build-test-coverage:
           requires:
             - build-wheel-cp38-manylinux_2_24
