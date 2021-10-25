@@ -34,17 +34,13 @@
 ( s1 A s2 B s3 ), ( s4 A s5 B s6 )
 ( s1 B s2 A s3 ), ( s4 B s5 A s6 )
 ```
-Note: For `( s1 A s2 B s3 ), ( s4 A s5 B s6 )`, there can never be a C that is below A and above B (or viceversa).
-
-Proof:
-
-Blocks below A: `(s2 ∪ s3) ∩ s4`  
-Blocks above A: `(s5 ∪ s6) ∩ s1`  
-Blocks below B: `(s4 ∪ s5) ∩ s3`  
-Blocks above B: `(s1 ∪ s2) ∩ s6`  
-Blocks below A and above B: `((s2 ∪ s3) ∩ s4) ∩ ((s1 ∪ s2) ∩ s6) = ∅ as s4 and s6 are disjoint`  
-Blocks below B and above A: `((s4 ∪ s5) ∩ s3) ∩ ((s5 ∪ s6) ∩ s1) = ∅ as s1 and s3 are disjoint`  
-No blocks is (below A and above B) OR (below B and above A) 
+Notes:  
+The condition above is necessary but not sufficient for achieving a feasible solution. Example (A, C, B), (A, C, B):  
+```
+A X X  
+X C X  
+X X B 
+```
 
 &nbsp;
 ### align .. A, .. , B, .. left (llx_a = llx_b)
