@@ -15,7 +15,7 @@ def db():
         model_nmos = Model(name="NMOS", pins=["D", "G", "S", "B"])
         library.append(model_nmos)
         subckt = SubCircuit(
-            name="SUBCKT", pins=["VDD", "G", "GND", "B"], parameters=None
+            name="SUBCKT", pins=["VDD", "G", "GND", "B"], power=["VDD"], gnd=["GND"], parameters=None
         )
         library.append(subckt)
     with set_context(subckt.elements):
@@ -64,9 +64,9 @@ def db():
 
 def test_swap(db):
     assert db.get_element("M1").name == "M1"
-    define_SD(db, ["VDD"], ["GND"], digital=["SUBCKT"])
+    define_SD(db, update=False)
     assert db.get_element("M1").pins == {"D": "VDD", "G": "G", "S": "GND", "B": "B"}
-    define_SD(db, ["VDD"], ["GND"])
+    define_SD(db, update=True)
     assert db.get_element("M1").pins == {"D": "GND", "G": "G", "S": "VDD", "B": "B"}
     assert db.get_element("M2").pins == {"D": "NET1", "G": "G", "S": "VDD", "B": "B"}
     assert db.get_element("M3").pins == {"D": "GND", "G": "G", "S": "NET1", "B": "B"}

@@ -59,11 +59,11 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
 
     """
     logger.debug(f"comparing {node1}, {node2}, traversed {traversed}")
-    nbrs1 = sorted(set(G.neighbors(node1)) - set(traversed))
+    nbrs1 = sorted(set(G.neighbors(node1)) - traversed)
     # remove dummies get_leaf_connection(subckt, port)
 
     nbrs1 = sorted(set([nbr for nbr in nbrs1 if reduced_neighbors(G, node1, nbr)]))
-    nbrs2 = sorted(set(G.neighbors(node2)) - set(traversed))
+    nbrs2 = sorted(set(G.neighbors(node2)) - traversed)
     # remove dummies
     nbrs2 = sorted(set([nbr for nbr in nbrs2 if reduced_neighbors(G, node2, nbr)]))
     logger.debug(f"node1:{node1},property: {G.nodes[node1]},neigbors1: {nbrs1}")
@@ -79,7 +79,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
         else:
             match_pair["start_point"] = [node1, node2]
         logger.debug(f"skipping high fanout nets{node1, nbrs1}")
-        traversed.append(node1)
+        traversed.add(node1)
         return
 
     if node1 == node2:
@@ -96,7 +96,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
         elif len(SD_nbrs) == 1:
             logger.debug(f"traversing single S/D path {SD_nbrs}")
             match_pair[node1] = node1
-            traversed.append(node1)
+            traversed.add(node1)
             compare_nodes(
                 G,
                 match_pairs,
@@ -110,8 +110,8 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
             logger.debug(f"multiple nodes diverging {SD_nbrs}")
             logger.debug(f"nbr weights: {SD_nbrs} {[G.get_edge_data(node1, nbr)['pin'] for nbr in SD_nbrs]}")
             match_pair[node1] = node1
-            traversed.append(node1)
-            new_sp = sorted(set(SD_nbrs) - set(traversed))
+            traversed.add(node1)
+            new_sp = sorted(set(SD_nbrs) - traversed)
             all_match_pairs_local = {}
             for nbr1, nbr2 in combinations(new_sp, 2):
                 logger.debug(f"recursive pair call from single branch {nbr1} {nbr2}")
@@ -165,7 +165,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
     elif node1 == node2 and nbrs1 == nbrs2:
         logger.debug(f"traversing converging branch")
         match_pair[node1] = node2
-        traversed += [node1, node2]
+        traversed.update([node1, node2])
         nbrs1 = sorted(set(nbrs1) - set([node1, node2]))
         logger.debug(f"all non traversed neighbours: {nbrs1}")
         if len(nbrs1) == 1:
@@ -187,7 +187,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
         nbrs1 = sorted(set([nbr for nbr in nbrs1 if reduced_neighbors(G,node1, nbr)]))
         nbrs2 = sorted(set([nbr for nbr in nbrs2 if reduced_neighbors(G,node2, nbr)]))
         match_pair[node1] = node2
-        traversed += [node1, node2]
+        traversed.update([node1, node2])
         logger.debug(f"Traversing parallel branches from {node1},{node2} {nbrs1}, {nbrs2}")
         nbrs1_wt = [pin for nbr in nbrs1 for pin in G.get_edge_data(node1, nbr)["pin"]]
         nbrs2_wt = [pin for nbr in nbrs2 for pin in G.get_edge_data(node2, nbr)["pin"]]
@@ -201,7 +201,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
         elif unique_match:
             logger.debug(f"traversing unique matches {unique_match}")
             match_pair[node1] = node2
-            traversed += [node1, node2]
+            traversed.update([node1, node2])
             for nbr1, nbr2 in unique_match.items():
                 logger.debug(f"recursive call from pair {node1}:{node2} to {nbr1}:{nbr2}")
                 compare_nodes(G, match_pairs, match_pair, traversed.copy(), nbr1, nbr2, ports_weight)
@@ -236,7 +236,7 @@ def recursive_start_points(G, match_pairs, traversed, node1, node2, ports_weight
     logger.debug(f"updating match pairs (start): {pprint.pformat(match_pairs, indent=4)}")
     return
 
-def FindSymmetry(subckt, stop_points: list):
+def FindSymmetry(subckt, stop_points: set):
     """
     Find matching constraint starting from all port pairs.
     check: recursive_start_points
@@ -253,8 +253,8 @@ def FindSymmetry(subckt, stop_points: list):
     ports = subckt.pins
     match_pairs = dict()
     if not stop_points:
-        stop_points = list()
-    non_power_ports = sorted(set(sorted(ports)) - set(stop_points))
+        stop_points = set()
+    non_power_ports = sorted(set(sorted(ports)) - stop_points)
     logger.debug(f"subckt: {subckt.name} sorted signal ports: {non_power_ports}")
 
     ports_weight = get_ports_weight(graph)
@@ -262,7 +262,7 @@ def FindSymmetry(subckt, stop_points: list):
     for port1, port2 in combinations_with_replacement(non_power_ports, 2):
         traversed = stop_points.copy()
         if ports_weight[port1] == ports_weight[port2] and ports_weight[port2]:
-            traversed += [port1, port2]
+            traversed.update([port1, port2])
             recursive_start_points(graph, match_pairs, traversed, port1, port2, ports_weight)
             match_pairs = {k: v for k, v in match_pairs.items() if len(v) > 0}
             logger.debug(f"Matches starting from {port1, port2} pair: {pprint.pformat(match_pairs, indent=4)}")
@@ -274,7 +274,7 @@ def FindConst(subckt, design_setup):
     if "ARRAY_HIER" in subckt.name.upper():
         #TODO Generate consraints for array hierarchies
         return
-    stop_points = set(subckt.power).update(subckt.gnd,subckt.clock)
+    stop_points = set(subckt.power).union(subckt.gnd,subckt.clock)
     logger.debug(f"Stop_points : {stop_points}")
 
     # Search symmetry constraints
