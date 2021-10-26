@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <map>
 #include <vector>
+#include <string>
 using std::map;
 using std::pair;
 using std::vector;
