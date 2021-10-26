@@ -76,7 +76,7 @@ def get_base_model(subckt, node):
     return base_model
 
 def get_leaf_connection(subckt, net):
-    assert net in subckt.nets, f"Net {net} not found in subckt {subckt}"
+    assert net in subckt.nets, f"Net {net} not found in subckt {subckt.name} {subckt.nets}"
     graph = Graph(subckt)
     conn = []
     for nbr in graph.neighbors(net):
@@ -124,6 +124,16 @@ def reduced_SD_neighbors(G, node, nbr):
     else:
         return False
 
+def get_ports_weight(G):
+    ports_weight = dict()
+    subckt = G.subckt
+    for port in subckt.pins:
+        leaf_conn = get_leaf_connection(subckt, port)
+        logger.debug(f"leaf connections of net ({port}): {leaf_conn}")
+        assert len(leaf_conn) > 0, f"floating port:{port} in subckt {subckt.name}"
+        ports_weight[port] = set(sorted(leaf_conn))
+    return ports_weight
+
 def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
     """
     compare two node properties. It uses 1st level of neighbourhood for comparison of nets
@@ -146,7 +156,8 @@ def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
     nbrs1 = [nbr for nbr in G.neighbors(node1) if reduced_SD_neighbors(G, node1, nbr)]
     nbrs2 = [nbr for nbr in G.neighbors(node2) if reduced_SD_neighbors(G, node2, nbr)]
     logger.debug(f"comparing_nodes: {node1}, {node2}, {nbrs1}, {nbrs2}")
-
+    if not ports_weight:
+        ports_weight = get_ports_weight(G)
     if G.nodes[node1].get("instance"):
         logger.debug(f"checking match between {node1} {node2}")
         in1 = G.nodes[node1].get("instance")
