@@ -1178,6 +1178,9 @@ bool SeqPair::CheckSymm(design& caseNL) {
     negPosition[negPair[i]] = i;
   }
 	for (const auto& sb : caseNL.SBlocks) {
+
+    // self symm blocks should be (above/below for vertical axis) or (left/right for horizontal axis)
+    // self symm blocks to the (left/right for vertical axis) or (above/below) for horizontal) is a violation
 		for (int i = 0; i < sb.selfsym.size() - 1; ++i) {
       auto posA = posPosition[sb.selfsym[i].first];
       auto negA = negPosition[sb.selfsym[i].first];
@@ -1202,15 +1205,21 @@ bool SeqPair::CheckSymm(design& caseNL) {
 			auto posB = posPosition[sympairi.second];
 			auto negB = negPosition[sympairi.second];
 			if (sb.axis_dir == placerDB::V) {
+        // symm pairs should be left/right for vertical axis
 				if ((posA < posB && negA > negB) || (posA > posB && negA < negB)) {
 					return false;
 				}
 				for (const auto& itselfsym : sb.selfsym) {
 					auto posC = posPosition[itselfsym.first];
 					auto negC = negPosition[itselfsym.first];
-					if ((posA < posB && posC > posB && negC > negB) || (posA > posB && posC > posA && negC > negA)) {
-						return false;
-					}
+          // symm pairs lying on same side (both left or both right) of self symm block is a violation
+					if (posA < posB) {
+            if ((posB < posC && negB < negC) || (posC < posA && negC < negA))
+              return false;
+					} else {
+            if ((posA < posC && negA < negC) || (posC < posB && negC < negB))
+              return false;
+          }
 				}
         for (int j = i+1; j < sb.sympair.size(); ++j) {
           const auto& sympairj = sb.sympair[j];
@@ -1218,19 +1227,32 @@ bool SeqPair::CheckSymm(design& caseNL) {
           auto negC = negPosition[sympairj.first];
           auto posD = posPosition[sympairj.second];
           auto negD = negPosition[sympairj.second];
+          //(A,B) and (C,D) are symm pairs sharing axis of symmetry
+          // if A is above C, then A cannot be below D
           if (posA < posC && negA > negC && posA > posD && negA < negD) return false;
+          // if A is below C, then A cannot be above D
           if (posA > posC && negA < negC && posA < posD && negA > negD) return false;
+          // if B is above C, then B cannot be below D
           if (posB < posC && negB > negC && posB > posD && negB < negD) return false;
+          // if B is below C, then B cannot be above D
           if (posB > posC && negB < negC && posB < posD && negB > negD) return false;
 
+          // if A is above C, then B cannot be below D
           if (posA < posC && negA > negC && posB > posD && negB < negD) return false;
+          // if A is below C, then B cannot be above D
           if (posA > posC && negA < negC && posB < posD && negB > negD) return false;
+          // if A is above D, then B cannot be below C
           if (posA < posD && negA > negD && posB > posC && negB < negC) return false;
+          // if A is below D, then B cannot be above C
           if (posA > posD && negA < negD && posB < posC && negB > negC) return false;
 
+          // if A is to the left of C, then B cannot be to the left of D
           if (posA < posC && negA < negC && posB < posD && negB < negD) return false;
+          // if A is to the right of C, then B cannot be to the right of D
           if (posA > posC && negA > negC && posB > posD && negB > negD) return false;
+          // if A is to the left of D, then B cannot be to the left of C
           if (posA < posD && negA < negD && posB < posC && negB < negC) return false;
+          // if A is to the right of D, then B cannot be to the right of C
           if (posA > posD && negA > negD && posB > posC && negB > negC) return false;
         }
       } else {
@@ -1268,9 +1290,11 @@ bool SeqPair::CheckSymm(design& caseNL) {
 			}
 		}
 	}
+
+  // collect all horizontal align blocks that align to the bottom
   std::map<int, const std::vector<int> &> alignBlocks;
   for (const auto& au : caseNL.Align_blocks) {
-    if (au.horizon == 1) {
+    if (au.horizon == 1 && au.line == 0) {
       for (const auto& it : au.blocks) {
         if (alignBlocks.find(it) == alignBlocks.end()) {
           alignBlocks.emplace(it, au.blocks);
@@ -1279,6 +1303,7 @@ bool SeqPair::CheckSymm(design& caseNL) {
     }
   }
 	std::map<int, std::set<int> > aboveSet, belowSet;
+  //collect set of above blocks/ below blocks for all blocks
 	for (auto& it : posPair) {
     if (it >= caseNL.Blocks.size()) continue;
 		auto posA = posPosition[it];
@@ -1290,9 +1315,12 @@ bool SeqPair::CheckSymm(design& caseNL) {
 				if (negB > negA) {
 					aboveSet[it].insert(posPair[i]);
 					const auto& cpt = caseNL.Blocks[bi][0].counterpart;
+          // if any block is above, then its symmetry counterpart needs to be above
 					if (cpt != -1) {
 						aboveSet[it].insert(cpt);
 					}
+          // if any block above is part of a horizontal align constraint,
+          // then the whole collection in the align constraint needs to be above
           auto itAlign= alignBlocks.find(bi);
           if (itAlign != alignBlocks.end()) {
             aboveSet[it].insert(itAlign->second.begin(), itAlign->second.end());
@@ -1306,9 +1334,12 @@ bool SeqPair::CheckSymm(design& caseNL) {
 				if (negPosition[bi] < negA) {
 					belowSet[it].insert(posPair[i]);
 					const auto& cpt = caseNL.Blocks[bi][0].counterpart;
+          // if any block is below, then its symmetry counterpart needs to be below
 					if (cpt != -1) {
 						belowSet[it].insert(cpt);
 					}
+          // if any block below is part of a horizontal align constraint,
+          // then the whole collection in the align constraint needs to be below
           auto itAlign= alignBlocks.find(bi);
           if (itAlign != alignBlocks.end()) {
             belowSet[it].insert(itAlign->second.begin(), itAlign->second.end());
@@ -1318,6 +1349,7 @@ bool SeqPair::CheckSymm(design& caseNL) {
 		}
 	}
 
+  // expand set to include transitive relation above of above and below of below
 	std::vector<int> intersec(posPair.size());
   for (auto& itpos : posPair) {
     if (itpos >= caseNL.Blocks.size()) continue;
@@ -1338,6 +1370,7 @@ bool SeqPair::CheckSymm(design& caseNL) {
 		}
   }
 
+  // check if above set and below set overlap for all align blocks
   for (const auto& au : caseNL.Align_blocks) {
     if (au.horizon == 1) {
       for (int i = 0; i < au.blocks.size() - 1; ++i) {
@@ -1362,6 +1395,7 @@ bool SeqPair::CheckSymm(design& caseNL) {
       }
     }
   }
+  // check if above set and below set overlap for all symmetry pairs
   for (const auto& sb : caseNL.SBlocks) {
     for (const auto& it : sb.sympair) {
       if (sb.axis_dir == placerDB::V) {

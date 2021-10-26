@@ -1512,7 +1512,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     set_timeout(lp, 1);
     int ret = solve(lp);
     if (ret != 0 && ret != 1) {
-      static int fail_cnt{0};
+      /*static int fail_cnt{0};
       if (fail_cnt < 10) {
         write_lp(lp, const_cast<char*>((mydesign.name + "_fail_ilp_" + std::to_string(fail_cnt) + ".lp").c_str()));
         curr_sp.PrintSeqPair();
@@ -1523,7 +1523,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
         logger->info("ILP fail {0}", fail_cnt);
         curr_sp.PrintSeqPair(mydesign);
         ++fail_cnt;
-      }
+      }*/
       delete_lp(lp);
       ++mydesign._infeasILPFail;
       return -1;
