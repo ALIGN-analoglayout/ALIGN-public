@@ -79,7 +79,8 @@ setup(name='align',
           'plotly',
           'pandas',
           'dash',
-          'typing_extensions; python_version<"3.8"'
+          'typing_extensions; python_version<"3.8"',
+          'memory_profiler'
           ],
       extras_require={
           'test': [

@@ -297,7 +297,8 @@ PYBIND11_MODULE(PnR, m) {
   py::class_<AlignBlock>( m, "AlignBlock")
     .def( py::init<>())
     .def_readwrite("blocks", &AlignBlock::blocks)
-    .def_readwrite("horizon", &AlignBlock::horizon);
+    .def_readwrite("horizon", &AlignBlock::horizon)
+    .def_readwrite("line", &AlignBlock::line);
   py::class_<PortPos>( m, "PortPos")
     .def( py::init<>())
     .def_readwrite("tid", &PortPos::tid)
@@ -483,12 +484,14 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("T_INT", &PlacerHyperparameters::T_INT)
     .def_readwrite("T_MIN", &PlacerHyperparameters::T_MIN)
     .def_readwrite("ALPHA", &PlacerHyperparameters::ALPHA)
+    .def_readwrite("SEED", &PlacerHyperparameters::SEED)
     .def_readwrite("COUNT_LIMIT", &PlacerHyperparameters::COUNT_LIMIT)
     .def_readwrite("LAMBDA", &PlacerHyperparameters::LAMBDA)
+    .def_readwrite("use_analytical_placer", &PlacerHyperparameters::use_analytical_placer)
     ;
 
   py::class_<PlacerIfc>( m, "PlacerIfc")
-    .def( py::init<hierNode&, int, string, int, Drc_info&, const PlacerHyperparameters&>())
+    .def( py::init<hierNode&, int, string, int, Drc_info&, const PlacerHyperparameters&, bool>())
     .def( "getNodeVecSize", &PlacerIfc::getNodeVecSize)
     .def( "getNode", &PlacerIfc::getNode);
 

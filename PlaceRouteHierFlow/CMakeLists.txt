@@ -1,5 +1,6 @@
 add_subdirectory(PnRDB)
 add_subdirectory(placer)
+add_subdirectory(EA_placer)
 add_subdirectory(router)
 add_subdirectory(cap_placer)
 add_subdirectory(guard_ring)
@@ -14,6 +15,7 @@ target_link_libraries(
      # Internal Dependencies
      PnRDB
      placer
+     EA_placer
      router
      cap_placer
      guard_ring

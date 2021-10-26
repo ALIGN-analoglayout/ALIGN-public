@@ -12,34 +12,34 @@
             "pairs": [
                 {
                     "type": "selfsym",
-                    "block": "mn0"
+                    "block": "MN0"
                 },
                 {
                     "type": "selfsym",
-                    "block": "mn1_mn2"
+                    "block": "X_DP_MN1_MN2"
                 },
                 {
                     "type": "selfsym",
-                    "block": "mn3_mn4"
+                    "block": "X_CCN_MN3_MN4"
                 },
                 {
                     "type": "selfsym",
-                    "block": "mp5_mp6"
+                    "block": "X_CCP_MP5_MP6"
                 },
                 {
                     "type": "sympair",
-                    "block1": "mp7",
-                    "block2": "mp8"
+                    "block1": "MP7",
+                    "block2": "MP8"
                 },
                 {
                     "type": "sympair",
-                    "block1": "mp9",
-                    "block2": "mp10"
+                    "block1": "MP9",
+                    "block2": "MP10"
                 },
                 {
                     "type": "sympair",
-                    "block1": "mp11_mn13",
-                    "block2": "mp12_mn14"
+                    "block1": "X_INV_N_MP11_MN13",
+                    "block2": "X_INV_P_MP12_MN14"
                 }
             ],
             "const_name": "SymmBlock",
@@ -47,127 +47,146 @@
         },
         {
             "direction": "V",
-            "const_name": "Ordering",
             "abut": false,
+            "const_name": "Ordering",
             "blocks": [
-                "mn0",
-                "mn1_mn2",
-                "mn3_mn4",
-                "mp5_mp6"
+                "MN0",
+                "X_DP_MN1_MN2",
+                "X_CCN_MN3_MN4",
+                "X_CCP_MP5_MP6"
             ]
         },
         {
+            "line": "h_bottom",
             "const_name": "AlignBlock",
             "blocks": [
-                "mp9",
-                "mp7",
-                "mn1_mn2",
-                "mp8",
-                "mp10"
-            ],
-            "direction": "H"
+                "MP9",
+                "MP7",
+                "X_DP_MN1_MN2",
+                "MP8",
+                "MP10"
+            ]
         },
         {
+            "line": "h_bottom",
             "const_name": "AlignBlock",
             "blocks": [
-                "mp11_mn13",
-                "mp5_mp6",
-                "mp12_mn14"
-            ],
-            "direction": "H"
-        },
-        {
-            "net1": {
-                "name": "vin_d",
-                "blocks": [
-                    {
-                        "type": "pin",
-                        "name": "mp7",
-                        "pin": "D"
-                    },
-                    {
-                        "type": "pin",
-                        "name": "mn1_mn2",
-                        "pin": "vin_d"
-                    },
-                    {
-                        "type": "pin",
-                        "name": "mn3_mn4",
-                        "pin": "vin_d"
-                    }
-                ]
-            },
-            "net2": {
-                "name": "vip_d",
-                "blocks": [
-                    {
-                        "type": "pin",
-                        "name": "mp8",
-                        "pin": "D"
-                    },
-                    {
-                        "type": "pin",
-                        "name": "mn1_mn2",
-                        "pin": "vip_d"
-                    },
-                    {
-                        "type": "pin",
-                        "name": "mn3_mn4",
-                        "pin": "vip_d"
-                    }
-                ]
-            },
-            "const_name": "SymmNet",
-            "axis_dir": "V"
-        },
-        {
-            "net1": {
-                "name": "vin",
-                "blocks": [
-                    {
-                        "type": "pin",
-                        "name": "mn1_mn2",
-                        "pin": "vin"
-                    },
-                    {
-                        "type": "terminal",
-                        "name": "vin",
-                        "pin": null
-                    }
-                ]
-            },
-            "net2": {
-                "name": "vip",
-                "blocks": [
-                    {
-                        "type": "pin",
-                        "name": "mn1_mn2",
-                        "pin": "vip"
-                    },
-                    {
-                        "type": "terminal",
-                        "name": "vip",
-                        "pin": null
-                    }
-                ]
-            },
-            "const_name": "SymmNet",
-            "axis_dir": "V"
+                "X_INV_N_MP11_MN13",
+                "X_CCP_MP5_MP6",
+                "X_INV_P_MP12_MN14"
+            ]
         },
         {
             "const_name": "DoNotIdentify",
             "blocks": [
-                "mn3_mn4",
-                "mp5_mp6",
-                "mn1_mn2",
-                "mp11_mn13",
-                "mp12_mn14",
-                "mn0",
-                "mp10",
-                "mp7",
-                "mp8",
-                "mp9"
+                "X_CCN_MN3_MN4",
+                "X_CCP_MP5_MP6",
+                "X_DP_MN1_MN2",
+                "X_INV_N_MP11_MN13",
+                "X_INV_P_MP12_MN14",
+                "MN0",
+                "MP10",
+                "MP7",
+                "MP8",
+                "MP9"
             ]
+        },
+        {
+            "net1": {
+                "name": "VIN_D",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "MP7",
+                        "pin": "D"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_DP_MN1_MN2",
+                        "pin": "VIN_D"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_CCN_MN3_MN4",
+                        "pin": "VIN_D"
+                    }
+                ]
+            },
+            "net2": {
+                "name": "VIP_D",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "MP8",
+                        "pin": "D"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_DP_MN1_MN2",
+                        "pin": "VIP_D"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_CCN_MN3_MN4",
+                        "pin": "VIP_D"
+                    }
+                ]
+            },
+            "const_name": "SymmNet",
+            "axis_dir": "V"
+        },
+        {
+            "net1": {
+                "name": "VIN",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "X_DP_MN1_MN2",
+                        "pin": "VIN"
+                    },
+                    {
+                        "type": "terminal",
+                        "name": "VIN",
+                        "pin": null
+                    }
+                ]
+            },
+            "net2": {
+                "name": "VIP",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "X_DP_MN1_MN2",
+                        "pin": "VIP"
+                    },
+                    {
+                        "type": "terminal",
+                        "name": "VIP",
+                        "pin": null
+                    }
+                ]
+            },
+            "const_name": "SymmNet",
+            "axis_dir": "V"
+        },
+        {
+            "pairs": [
+                {
+                    "type": "sympair",
+                    "block1": "MP7",
+                    "block2": "MP8"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "X_DP_MN1_MN2"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "X_CCN_MN3_MN4"
+                }
+            ],
+            "const_name": "SymmBlock",
+            "axis_dir": "V"
         }
     ]
 }

@@ -1,0 +1,51 @@
+{
+    "constraints": [
+        {
+            "const_name": "SymmBlock",
+            "axis_dir": "V",
+            "pairs": [
+                {
+                    "type": "selfsym",
+                    "block": "c1"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "m3",
+                    "block2": "m8"
+                }
+            ]
+        },
+        {
+            "const_name": "SymmBlock",
+            "axis_dir": "V",
+            "pairs": [
+                {
+                    "type": "selfsym",
+                    "block": "c0"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "m7_m4"
+                }
+            ]
+        },
+        {
+            "const_name": "CC",
+            "cap_name": "c1",
+            "size": 84,
+            "unit_capacitor": "Cap_12f",
+            "nodummy": true,
+            "cap_r": -1,
+            "cap_s": -1
+        },
+        {
+            "const_name": "CC",
+            "cap_name": "c0",
+            "size": 84,
+            "unit_capacitor": "Cap_12f",
+            "nodummy": true,
+            "cap_r": -1,
+            "cap_s": -1
+        }
+    ]
+}

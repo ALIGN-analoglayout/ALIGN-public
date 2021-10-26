@@ -21,7 +21,7 @@ _skbuild/
 **/*.tar.gz
 pycharm/
 .idea/
-.vscode/
+.vscode
 **/*~
 **/*.swp
 **/.coverage
@@ -66,7 +66,9 @@ coverage-reports/
 !**/*-freeze.json
 !**/Process.json
 !**/layers.json
+!**/generators.json
 !dev/**/*.json
+!align/config/model.txt
 !dev/**/*.lef
 !PlaceRouteHierFlow/gold/*.json
 !PlaceRouteHierFlow/testcase_*/*.gds
@@ -89,3 +91,4 @@ tests/cell_fabric/Foo*.cir
 !tests/gdsconv/only_paths.*
 !Viewer/INPUT/mydesign_dr_globalrouting.json
 !Viewer/larger_example/mydesign_dr_globalrouting.json
+_skbuild/

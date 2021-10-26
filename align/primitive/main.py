@@ -4,6 +4,9 @@ import pathlib
 import logging
 import json
 import importlib.util
+from copy import deepcopy
+from math import sqrt, ceil,floor
+from ..schema.subcircuit import SubCircuit
 
 from ..cell_fabric import gen_lef
 from ..cell_fabric import positive_coord
@@ -52,7 +55,7 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
             uc.addPMOSArray( x_cells, y_cells, pattern, vt_type, routing, **parameters)
         return routing.keys()
 
-    if primitive in ["Switch_NMOS_B", "Switch_PMOS_B"]:
+    if primitive in ["NMOS", "PMOS"]:
         cell_pin = gen( 0, {'S': [('M1', 'S')],
                             'D': [('M1', 'D')],
                             'G': [('M1', 'G')],
@@ -274,6 +277,263 @@ def generate_generic(pdkdir, parameters, netlistdir=None):
     )
     return uc, parameters["ports"]
 
+def merge_subckt_param(ckt):
+    max_value = {}
+    logger.debug(f"creating generator parameters for subcircuit: {ckt.name}")
+    vt_types=[]
+    for ele in ckt.elements:
+        max_value = merged_value(max_value, ele.parameters)
+        vt_types.append(ele.model)
+    return max_value, ','.join(vt_types)
+
+def merged_value(values1, values2):
+    """
+    combines values of different devices:
+    (right now since primitive generator takes only one value we use max value)
+    try:
+    #val1={'res': '13.6962k', 'l': '8u', 'w': '500n', 'm': '1'}
+    #val2 = {'res': '13.6962k', 'l': '8u', 'w': '500n', 'm': '1'}
+    #merged_value(val1,val2)
+
+    Parameters
+    ----------
+    values1 : TYPE. dict
+        DESCRIPTION. dict of parametric values
+    values2 : TYPE. dict
+        DESCRIPTION.dict of parametric values
+
+    Returns
+    -------
+    merged_vals : TYPE dict
+        DESCRIPTION. max of each parameter value
+
+    """
+    if not values1:
+        return values2
+    merged_vals={}
+    if values1:
+        for param,value in values1.items():
+            merged_vals[param] = value
+    for param,value in values2.items():
+        if param in merged_vals.keys():
+            merged_vals[param] = max(value, merged_vals[param])
+        else:
+            merged_vals[param] = value
+    return merged_vals
+
+def add_primitive(primitives, block_name, block_args):
+    if block_name in primitives:
+        if not primitives[block_name] == block_args:
+            logger.warning(f"Primitve {block_name} of size {primitives[block_name]}\
+            with args got approximated to size {block_args}")
+    else:
+        logger.debug(f"Found primitive {block_name} with {block_args}")
+        primitives[block_name]= block_args
+
+def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict, uniform_height=False):
+    """ Return commands to generate parameterized lef"""
+    #TODO model parameter can be improved
+    name = model
+    values = element.parameters
+    available_block_lef = all_lef
+    logger.debug(f"checking lef for: {name}, {element}")
+
+    if name == 'generic':
+        # TODO: how about hashing for unique names?
+        value_str = ''
+        for key in sorted(values):
+            val = values[key].replace('-','')
+            value_str += f'_{key}_{val}'
+        attr ={'ports': list(element.pins.keys()),
+            'values': values,
+            'real_inst_type':element.model.lower()
+            }
+        block_name = element.model + value_str
+        element.add_abs_name(block_name)
+        block_args = {"parameters": deepcopy(attr), "primitive": 'generic'}
+        logger.debug(f"creating generic primitive {block_name} {block_args}")
+        add_primitive(primitives, block_name, block_args)
+        return True
+
+    elif name=='CAP':
+        assert float(values["VALUE"]), f"unidentified size {values} for {element.name}"
+        size = round(float(values["VALUE"]) * 1E15,4)
+        #TODO: use float in name
+        block_name = name + '_' + str(int(size)) + 'f'
+        logger.debug(f"Found cap with size: {size}")
+        element.add_abs_name(block_name)
+        block_args = {
+            'primitive': 'cap',
+            'value': int(size)
+        }
+        add_primitive(primitives, block_name, block_args)
+        return True
+
+    elif name=='RES':
+        assert float(values["VALUE"]), f"unidentified size {values['VALUE']} for {element.name}"
+        size = round(float(values["VALUE"]),2)
+        #TODO: use float in name
+        if size.is_integer():
+            size=int(size)
+        block_name = name + '_' + str(size).replace('.','p')
+        height = ceil(sqrt(float(size) / design_config["unit_height_res"]))
+        if block_name in available_block_lef:
+            return block_name, available_block_lef[block_name]
+        logger.debug(f'Generating lef for: {name} {size}')
+        element.add_abs_name(block_name)
+        block_args = {
+            'primitive': 'Res',
+            'value': (height, float(size))
+        }
+        add_primitive(primitives, block_name, block_args)
+        return True
+
+    else:
+
+        if 'NMOS' in name:
+            unit_size_mos = design_config["unit_size_nmos"]
+        else:
+            unit_size_mos = design_config["unit_size_pmos"]
+
+        subckt = element.parent.parent.parent.find(element.model)
+        vt = None
+        if isinstance(subckt,SubCircuit):
+            ## Hack to get generator parameters based on max sized cell in subcircuit
+            values,vt_types = merge_subckt_param(subckt)
+            if "vt_type" in design_config:
+                vt= [vt.upper() for vt in design_config["vt_type"] if vt.upper() in  vt_types]
+        else:
+            values = element.parameters
+            if "vt_type" in design_config:
+                vt = [vt.upper() for vt in design_config["vt_type"] if vt.upper() in  element.model]
+
+        if unit_size_mos is None:
+            """
+            Transistor parameters:
+                m:  number of instances
+                nf: number of fingers
+                w:  effective width of an instance (width of instance x number of fingers)
+            """
+            assert 'M' in values,  f'm: Number of instances not specified {values}'
+            assert 'NF' in values, f'nf: Number of fingers not specified {values}'
+            assert 'W' in values,  f'w: Width is not specified {values}'
+
+            def x_by_y(m):
+                y_sqrt = floor(sqrt(m))
+                for y in range(y_sqrt, 0, -1):
+                    if y == 1:
+                        return m, y
+                    elif m % y == 0:
+                        return m//y, y
+
+            m  = int(values['M'])
+            nf = int(values['NF'])
+            w = int(float(values['W'])*1e9)
+            if isinstance(subckt,SubCircuit):
+                for e in subckt.elements:
+                    vt = e.model
+                    break
+            else:
+                vt = element.model
+
+            x, y = x_by_y(m)
+
+            block_name = f'{name}_{vt}_w{w}_m{m}'
+
+            values['real_inst_type'] = vt
+
+            block_args= {
+                'primitive': name,
+                'x_cells': x,
+                'y_cells': y,
+                'value': 1, # hack. This is used as nfin later.
+                'parameters':values
+            }
+
+            if 'STACK' in values and int(values['STACK']) >1:
+                assert nf == 1, f'Stacked transistor cannot have multiple fingers {nf}'
+                block_args['stack']=int(values['STACK'])
+                block_name += f'_st'+str(int(values['STACK']))
+            else:
+                block_name += f'_nf{nf}'
+
+            block_name += f'_X{x}_Y{y}'
+
+            if block_name in available_block_lef:
+                if block_args != available_block_lef[block_name]:
+                    assert False, f'Two different transistors mapped to the same name {block_name}: {available_block_lef[block_name]} {block_args}'
+            element.add_abs_name(block_name)
+            add_primitive(primitives, block_name, block_args)
+            return True
+
+        if "NFIN" in values.keys():
+            #FinFET design
+            assert int(values["NFIN"]), f"unrecognized size {values['NFIN']}"
+            size = int(values["NFIN"])
+            name_arg ='NFIN'+str(size)
+        elif "W" in values.keys():
+            #Bulk design
+            if isinstance(values["W"],str):
+                size = unit_size_mos
+            else:
+                size = int(values["w"]*1E+9/design_config["Gate_pitch"])
+            values["NFIN"]=size
+            name_arg ='NFIN'+str(size)
+        else:
+            size = '_'.join(param+str(values[param]) for param in values)
+        if 'NF' in values.keys():
+            if values['NF'] == 'unit_size':
+                values['NF'] =size
+            size=size*int(values["NF"])
+            name_arg =name_arg+'_NF'+str(int(values["NF"]))
+
+        if 'M' in values.keys():
+            if values['M'] == 'unit_size':
+                values['M'] = 1
+            if "PARALLEL" in values.keys() and int(values['PARALLEL'])>1:
+                values["PARALLEL"]=int(values['PARALLEL'])
+                values['M'] = int(values['M'])*int(values['PARALLEL'])
+            size=size*int(values["M"])
+            name_arg =name_arg+'_M'+str(int(values["M"]))
+
+        no_units = ceil(size / unit_size_mos)
+
+        logger.debug(f"Generating lef for {name} , with size {size}")
+        if isinstance(size, int):
+            no_units = ceil(size / unit_size_mos)
+            if any(x in name for x in ['DP','_S']) and floor(sqrt(no_units/3))>=1:
+                square_y = floor(sqrt(no_units/3))
+            else:
+                square_y = floor(sqrt(no_units))
+            while no_units % square_y != 0:
+                square_y -= 1
+            yval = square_y
+            xval = int(no_units / square_y)
+            block_name = f"{name}_{name_arg}_N{unit_size_mos}_X{xval}_Y{yval}"
+
+            if block_name in available_block_lef:
+                return block_name, available_block_lef[block_name]
+
+            logger.debug(f"Generating parametric lef of:  {block_name} {name}")
+            block_args= {
+                'primitive': name,
+                'value': unit_size_mos,
+                'x_cells': xval,
+                'y_cells': yval,
+                'parameters':values
+            }
+            if 'STACK' in values.keys() and int(values["STACK"])>1:
+                block_args['stack']=int(values["STACK"])
+                block_name = block_name+'_ST'+str(int(values["STACK"]))
+            if vt:
+                block_args['vt_type']=vt[0]
+                block_name = block_name+'_'+vt[0]
+
+            element.add_abs_name(block_name)
+            add_primitive(primitives, block_name, block_args)
+            return True
+    raise NotImplementedError(f"Could not generate LEF for {name} parameters: {values}")
+
 
 # WARNING: Bad code. Changing these default values breaks functionality.
 def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None, pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd(), netlistdir=pathlib.Path.cwd(), abstract_template_name=None, concrete_template_name=None):
@@ -284,7 +544,7 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
         uc, cell_pin = generate_generic(pdkdir, parameters, netlistdir=netlistdir)
     elif 'MOS' in primitive:
         uc, cell_pin = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
-    elif 'cap' in primitive.lower():
+    elif 'cap' in primitive:
         uc, cell_pin = generate_Cap(pdkdir, block_name, value)
         uc.setBboxFromBoundary()
     elif 'Res' in primitive:

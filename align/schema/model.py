@@ -55,7 +55,7 @@ class Model(types.BaseModel):
     def pin_check(cls, pins, values):
         if 'base' not in values or not values['base']:
             assert pins, 'Pins must be specified for base models. Did something go wrong in base?'
-            assert len(pins) > 1, 'Instance must have at least two terminals'
+            assert len(pins) >= 1, 'Instance must have at least one terminals (e.g., dummies have one terminal)'
             pins = [p.upper() for p in pins]
         elif pins:
             logger.error(f"Inheriting from {values['base'].name}. Cannot add pins")

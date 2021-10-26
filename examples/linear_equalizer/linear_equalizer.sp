@@ -1,4 +1,3 @@
-
 .subckt nfet2x d g s b
 .param p1=30
     MN0 d g n1 b    nfet l=0.014u nfin=p1
@@ -20,5 +19,5 @@
 	R4 net5 net016 resistor r=Rsw
 	R3 net015 net8 resistor r=Rsw
 	MN9 net021 s3_ctle net022 vgnd nfet l=0.014u nfin=nfpf_sw
-	MN6 net015 s0_ctle net016 vgnd nfet l=0.014u nfin=nfpf_sw 
+	MN6 net015 s0_ctle net016 vgnd nfet l=0.014u nfin=nfpf_sw
 .ends linear_equalizer

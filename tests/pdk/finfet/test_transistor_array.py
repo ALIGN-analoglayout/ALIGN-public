@@ -47,11 +47,11 @@ ports_duo = [
 def test_uno_drc(n_row, n_col, nf, device_type, ports):
     logger.info(f'running {get_test_id()}')
     c = MOSGenerator()
-    parameters = {'m': n_row*n_col, 'nfin': 4, 'real_inst_type': 'n'}
+    parameters = {'M': n_row*n_col, 'NFIN': 4, 'real_inst_type': 'n'}
     if device_type == 'parallel':
-        parameters['nf'] = nf
+        parameters['NF'] = nf
     else:
-        parameters['stack'] = nf
+        parameters['STACK'] = nf
     c.addNMOSArray(n_col, n_row, 0, None, ports, **parameters)
     c.gen_data(run_drc=True)
     if c.drc.num_errors > 0 or len(c.rd.opens) > 0 or len(c.rd.shorts) > 0:
@@ -69,11 +69,11 @@ def test_duo_drc(n_row, n_col, nf, device_type, ports):
     logger.info(f'running {get_test_id()}')
     if n_row * n_col % 2 == 0 and n_col >= 2:
         c = MOSGenerator()
-        parameters = {'m': n_row*n_col, 'nfin': 4, 'real_inst_type': 'n'}
-        if device_type == 'parallel':
-            parameters['nf'] = nf
+        parameters = {'M': n_row*n_col, 'NFIN': 4, 'real_inst_type': 'n'}
+        if device_type == 'PARALLEL':
+            parameters['NF'] = nf
         else:
-            parameters['stack'] = nf
+            parameters['STACK'] = nf
         c.addNMOSArray(n_col, n_row, 1, None, ports, **parameters)
         c.gen_data(run_drc=True)
         if c.drc.num_errors > 0 or len(c.rd.opens) > 0 or len(c.rd.shorts) > 0:
@@ -83,8 +83,8 @@ def test_duo_drc(n_row, n_col, nf, device_type, ports):
 
 def test_uno_one():
     c = MOSGenerator()
-    parameters = {'m': 1, 'nfin': 4, 'real_inst_type': 'p'}
-    parameters['nf'] = 2
+    parameters = {'M': 1, 'NFIN': 4, 'real_inst_type': 'p'}
+    parameters['NF'] = 2
     c.addNMOSArray(1, 1, 0, None, ports_uno[1], **parameters)
     c.gen_data(run_drc=True)
     export_to_viewer(get_test_id(), c)
@@ -94,8 +94,8 @@ def test_uno_one():
 
 def test_duo_one():
     c = MOSGenerator()
-    parameters = {'m': 1, 'nfin': 4, 'real_inst_type': 'p'}
-    parameters['nf'] = 2
+    parameters = {'M': 1, 'NFIN': 4, 'real_inst_type': 'p'}
+    parameters['NF'] = 2
     c.addNMOSArray(2, 1, 1, None, ports_duo[0], **parameters)
     c.gen_data(run_drc=True)
     export_to_viewer(get_test_id(), c)

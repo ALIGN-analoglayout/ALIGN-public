@@ -11,28 +11,28 @@
           "constraint": "symmetric_blocks",
           "pairs": [
             [
-              "mn0"
+              "MN0"
             ],
             [
-              "mn1_mn2"
+              "X_DP_MN1_MN2"
             ],
             [
-              "mn3_mn4"
+              "X_CCN_MN3_MN4"
             ],
             [
-              "mp5_mp6"
+              "X_CCP_MP5_MP6"
             ],
             [
-              "mp7",
-              "mp8"
+              "MP7",
+              "MP8"
             ],
             [
-              "mp9",
-              "mp10"
+              "MP9",
+              "MP10"
             ],
             [
-              "mp11_mn13",
-              "mp12_mn14"
+              "X_INV_N_MP11_MN13",
+              "X_INV_P_MP12_MN14"
             ]
           ],
           "direction": "V"
@@ -40,10 +40,10 @@
         {
           "constraint": "order",
           "instances": [
-            "mn0",
-            "mn1_mn2",
-            "mn3_mn4",
-            "mp5_mp6"
+            "MN0",
+            "X_DP_MN1_MN2",
+            "X_CCN_MN3_MN4",
+            "X_CCP_MP5_MP6"
           ],
           "direction": "top_to_bottom",
           "abut": false
@@ -51,66 +51,83 @@
         {
           "constraint": "align",
           "instances": [
-            "mp9",
-            "mp7",
-            "mn1_mn2",
-            "mp8",
-            "mp10"
+            "MP9",
+            "MP7",
+            "X_DP_MN1_MN2",
+            "MP8",
+            "MP10"
           ],
           "line": "h_bottom"
         },
         {
           "constraint": "align",
           "instances": [
-            "mp11_mn13",
-            "mp5_mp6",
-            "mp12_mn14"
+            "X_INV_N_MP11_MN13",
+            "X_CCP_MP5_MP6",
+            "X_INV_P_MP12_MN14"
           ],
           "line": "h_bottom"
         },
         {
-          "constraint": "symmetric_nets",
-          "net1": "vin_d",
-          "net2": "vip_d",
-          "pins1": [
-            "mp7/D",
-            "mn1_mn2/vin_d",
-            "mn3_mn4/vin_d"
-          ],
-          "pins2": [
-            "mp8/D",
-            "mn1_mn2/vip_d",
-            "mn3_mn4/vip_d"
-          ],
-          "direction": "V"
-        },
-        {
-          "constraint": "symmetric_nets",
-          "net1": "vin",
-          "net2": "vip",
-          "pins1": [
-            "mn1_mn2/vin",
-            "vin"
-          ],
-          "pins2": [
-            "mn1_mn2/vip",
-            "vip"
-          ],
-          "direction": "V"
-        },
-        {
           "constraint": "do_not_identify",
           "instances": [
-            "mn3_mn4",
-            "mp5_mp6",
-            "mn1_mn2",
-            "mp11_mn13",
-            "mp12_mn14",
-            "mn0",
-            "mp10",
-            "mp7",
-            "mp8",
-            "mp9"
+            "X_CCN_MN3_MN4",
+            "X_CCP_MP5_MP6",
+            "X_DP_MN1_MN2",
+            "X_INV_N_MP11_MN13",
+            "X_INV_P_MP12_MN14",
+            "MN0",
+            "MP10",
+            "MP7",
+            "MP8",
+            "MP9"
           ]
+        },
+        {
+          "constraint": "symmetric_nets",
+          "net1": "VIN_D",
+          "net2": "VIP_D",
+          "pins1": [
+            "MP7/D",
+            "X_DP_MN1_MN2/VIN_D",
+            "X_CCN_MN3_MN4/VIN_D"
+          ],
+          "pins2": [
+            "MP8/D",
+            "X_DP_MN1_MN2/VIP_D",
+            "X_CCN_MN3_MN4/VIP_D"
+          ],
+          "direction": "V"
+        },
+        {
+          "constraint": "symmetric_nets",
+          "net1": "VIN",
+          "net2": "VIP",
+          "pins1": [
+            "X_DP_MN1_MN2/VIN",
+            "VIN"
+          ],
+          "pins2": [
+            "X_DP_MN1_MN2/VIP",
+            "VIP"
+          ],
+          "direction": "V"
+        },
+        {
+          "constraint": "symmetric_blocks",
+          "pairs": [
+            [
+              "MP7",
+              "MP8"
+            ],
+            [
+              "X_DP_MN1_MN2"
+            ],
+            [
+              "X_CCN_MN3_MN4"
+            ]
+          ],
+          "direction": "V"
         }
-]
+
+      ]

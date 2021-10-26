@@ -35,7 +35,6 @@ def test_one():
   }
 """)
     placement_constraints = parse_obj_as(ConstraintsPlacement, const)
-    print(placement_constraints.json())
 
 
 def test_two():
@@ -58,4 +57,3 @@ def test_two():
 """)
     with pytest.raises(Exception):
         placement_constraints = parse_obj_as(ConstraintsPlacement, const)
-        print(placement_constraints.json())

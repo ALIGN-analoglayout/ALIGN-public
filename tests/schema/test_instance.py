@@ -32,26 +32,30 @@ def test_instance_model(circuit):
         with pytest.raises(Exception):
             M1 = Instance(
                 name='M1',
-                pins={'D': 'NET01', 'G': 'NET02', 'S':'NET03', 'B':'NET04'}
+                pins={'D': 'NET01', 'G': 'NET02', 'S':'NET03', 'B':'NET04'},
+                generator='MOS'
             )
         with pytest.raises(Exception):
             M1 = Instance(
                 name='M1',
                 pins={'D': 'NET01', 'G': 'NET02', 'S': 'NET03', 'B': 'NET04'},
-                parameters={'PARAM1':'12', 'PARAM2': '13'}
+                parameters={'PARAM1':'12', 'PARAM2': '13'},
+                generator='MOS'
             )
         with pytest.raises(Exception):
             M1 = Instance(
                 name='M1',
                 model='undefinedmos',
                 pins={'D': 'NET01', 'G': 'NET02', 'S': 'NET03', 'B': 'NET04'},
-                parameters={'PARAM1':'12', 'PARAM2': '13'}
+                parameters={'PARAM1':'12', 'PARAM2': '13'},
+                generator='MOS'
             )
         M1 = Instance(
             name='M1',
             model='testmos',
             pins={'D': 'NET01', 'G': 'NET02', 'S': 'NET03', 'B': 'NET04'},
-            parameters={'PARAM1':'12', 'PARAM2': '13'}
+            parameters={'PARAM1':'12', 'PARAM2': '13'},
+            generator='MOS'
         )
 
 def test_instance_name(circuit):
@@ -69,25 +73,29 @@ def test_instance_pins(circuit):
             M1 = Instance(
                 name='M1',
                 model='testmos',
-                pins={'D': 'NET01'})
+                pins={'D': 'NET01'},
+                generator='MOS')
         with pytest.raises(Exception):
             M1 = Instance(
                 name='M1',
                 model='testmos',
                 pins={'D': 'NET01', 'G': 'NET02', 'S': 'NET03', 'B':'NET04'},
-                parameters={'garbage': 'NET05'}
+                parameters={'garbage': 'NET05'},
+                generator='MOS'
             )
         with pytest.raises(Exception):
             M1 = Instance(
                 name='M1',
                 model='testmos',
                 pins={'D': 'NET01', 'G': 'NET02', 'S': 'NET03', 'B': 'NET04'},
-                parameters={'garbage':'dfddfd'}
+                parameters={'garbage':'dfddfd'},
+                generator='MOS'
             )
         M1 = Instance(
             name='M1',
             model='testmos',
-            pins={'D': 'NET01', 'G': 'NET02', 'S':'NET03', 'B':'NET04'}
+            pins={'D': 'NET01', 'G': 'NET02', 'S':'NET03', 'B':'NET04'},
+            generator='MOS'
         )
     assert M1.name == 'M1'
     assert M1.model == 'TESTMOS'
@@ -100,7 +108,8 @@ def test_instance_init_parameters(circuit):
             name='M1',
             model='testmos',
             pins={'D': 'NET01', 'G': 'NET02', 'S': 'NET03', 'B': 'NET04'},
-            parameters={'PARAM1':'NF*4'}
+            parameters={'PARAM1':'NF*4'},
+            generator='MOS'
         )
     assert M1.parameters == {'PARAM1': 'NF*4', 'PARAM2': "2"}
     with set_context(circuit.elements):
@@ -108,7 +117,8 @@ def test_instance_init_parameters(circuit):
             name='M1',
             model='testmos',
             pins={'D': 'NET01', 'G': 'NET02', 'S': 'NET03', 'B': 'NET04'},
-            parameters={'PARAM1':'12', 'PARAM2': '13'}
+            parameters={'PARAM1':'12', 'PARAM2': '13'},
+            generator='MOS'
         )
     assert M1.parameters == {'PARAM1': "12", 'PARAM2': "13"}
 
@@ -118,13 +128,15 @@ def test_model_instantiation(circuit):
                 name='m1',
                 model='testmos',
                 pins={'d': 'net01', 'G': 'Net02', 's': 'NET03', 'B': 'NeT04'},
-                parameters={'PARAM1':'nf*4', 'param2':'2.0'}
+                parameters={'PARAM1':'nf*4', 'param2':'2.0'},
+                generator='MOS'
             )
         M2 =Instance(
                 name='m2',
                 model='testmos',
                 pins={'d': 'net03', 'G': 'Net02', 's': 'NET01', 'B': 'NeT04'},
-                parameters={'PARAM1':'2.0', 'param2':'nf*4'}
+                parameters={'PARAM1':'2.0', 'param2':'nf*4'},
+                generator='MOS'
             )
     assert M1  != M2
     assert M1.name != M2.name
@@ -142,11 +154,13 @@ def test_instance_case_insensitivity(circuit):
             name='m1',
             model='testmos',
             pins={'d': 'net01', 'G': 'Net02', 's': 'NET03', 'B': 'NeT04'},
-            parameters={'PARAM1':'nf*4', 'param2':'2.0'}
+            parameters={'PARAM1':'nf*4', 'param2':'2.0'},
+            generator='MOS'
         )
     assert M1.name == 'M1'
     assert M1.pins == {'D': 'NET01', 'G': 'NET02', 'S': 'NET03', 'B': 'NET04'}
     assert M1.parameters == {'PARAM1': 'NF*4', 'PARAM2': "2.0"}
+    assert M1.generator == 'MOS'
 
 def test_instance_json(circuit):
     with set_context(circuit.elements):
@@ -154,5 +168,6 @@ def test_instance_json(circuit):
         name='M1',
         model='testmos',
         pins={'D': 'NET01', 'G': 'NET02', 'S': 'NET03', 'B': 'NET04'},
-        parameters={'PARAM1':'NF*4'})
-    assert M1.json() == '{"model": "TESTMOS", "name": "M1", "pins": {"D": "NET01", "G": "NET02", "S": "NET03", "B": "NET04"}, "parameters": {"PARAM1": "NF*4", "PARAM2": "2"}}'
+        parameters={'PARAM1':'NF*4'},
+        generator='MOS')
+    assert M1.json() == '{"model": "TESTMOS", "name": "M1", "pins": {"D": "NET01", "G": "NET02", "S": "NET03", "B": "NET04"}, "parameters": {"PARAM1": "NF*4", "PARAM2": "2"}, "generator": "MOS", "abstract_name": null}'

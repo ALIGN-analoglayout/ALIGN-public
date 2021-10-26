@@ -807,9 +807,11 @@ void GcellDetailRouter::create_detailrouter(){
         AddViaEnclosure(Pset_via, grid, Set_x_contact, Set_net_contact, gridll, gridur);
         AddViaSpacing(Pset_via, grid, gridll, gridur);
         A_star a_star(grid, Nets[i].shielding);
+        //std::cout<<"performing detailed router on "<<Nets[i].netName<<" "<<j<<" pin"<<std::endl;
         logger->debug("Net name {0}",Nets[i].netName);
         //bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, 0, 0);
         bool pathMark = a_star.FindFeasiblePath_sym(grid, this->path_number, 0, 0, symmetry_path);
+        //std::cout<<"performing detailed router on debug 1"<<std::endl;
         /*
         if(pathMark==0){
           grid.CreateGridData();
@@ -817,26 +819,33 @@ void GcellDetailRouter::create_detailrouter(){
          }
         */
         std::vector<std::vector<RouterDB::Metal>> physical_path;
+        std::vector<std::vector<int> > extend_labels;
         Update_rouer_report_info(temp_routing_net, i, j, pathMark);
         logger->debug("pathMark {0}",pathMark);
+        //std::cout<<"performing detailed router on debug 2"<<std::endl;
         //assert(pathMark);
         if (pathMark)
         {
+          //std::cout<<"performing detailed router on debug 2.5"<<std::endl;
           physical_path = a_star.ConvertPathintoPhysical(grid);
+          //std::cout<<"performing detailed router on debug 2.6"<<std::endl;
+          extend_labels = a_star.GetExtendLabel();
           //lastmile_source_new(physical_path, temp_source);
           //lastmile_dest_new(physical_path, temp_dest);
-          returnPath(physical_path, Nets[i]);
-
+          //std::cout<<"performing detailed router on debug 2.7"<<std::endl;
+          returnPath(physical_path, Nets[i], extend_labels);
+          //std::cout<<"performing detailed router on debug 3"<<std::endl;
           //insert via center into Pset
           InsertRoutingVia(a_star, grid, Pset_current_net_via);
           InsertRoutingVia(a_star, grid, Pset_via);
           //add path metal to set_current_net_contact
           //add via conatct to set_current_net_contact
           InsertRoutingContact(a_star, grid, Pset_current_net_via, Set_current_net_contact, i);
+          //std::cout<<"performing detailed router on debug 4"<<std::endl;
         }
         else
         {
-           logger->warn( "Router-Warning: feasible path might not be found");
+          logger->warn("Router-Warning: feasible path might not be found");
         }
 
         logger->debug( "Detail Router check point 8" );
@@ -917,6 +926,7 @@ void GcellDetailRouter::create_detailrouter_old(){
       A_star a_star(grid, Nets[i].shielding);
       bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, multi_number, multi_number);
       std::vector<std::vector<RouterDB::Metal>> physical_path;
+      std::vector<std::vector<int> > extend_labels;
       Update_rouer_report_info(temp_routing_net, i, j, pathMark);
 
       //assert(pathMark);
@@ -924,9 +934,10 @@ void GcellDetailRouter::create_detailrouter_old(){
       {
         InsertRoutingVia(a_star, grid, Pset_via);
         physical_path = a_star.ConvertPathintoPhysical(grid);
+        extend_labels = a_star.GetExtendLabel();
         //lastmile_source_new(physical_path, temp_source);
         //lastmile_dest_new(physical_path, temp_dest);
-        returnPath(physical_path, Nets[i]);
+        returnPath(physical_path, Nets[i], extend_labels);
       }
       else
       {
@@ -2436,17 +2447,22 @@ void GcellDetailRouter::updateSource(std::vector<std::vector<RouterDB::Metal> > 
 
 };
 
-void GcellDetailRouter::returnPath(std::vector<std::vector<RouterDB::Metal> > &temp_path, RouterDB::Net& temp_net){
+void GcellDetailRouter::returnPath(std::vector<std::vector<RouterDB::Metal> > &temp_path, RouterDB::Net& temp_net, std::vector<std::vector<int> > extend_labels){
 
   for(unsigned int i=0;i<temp_path.size();i++){
+
+     //std::cout<<"temp_path length "<<temp_path[i].size()<<" extend_label length "<<extend_labels[i].size()<<std::endl;
        
      for(unsigned int j=0;j<temp_path[i].size();j++){
+         /*
          if(j==0 || j==temp_path[i].size()-1){
            temp_net.extend_label.push_back(0);
          }else{
            temp_net.extend_label.push_back(1);
          }
+         */ 
          temp_net.path_metal.push_back(temp_path[i][j]);
+         temp_net.extend_label.push_back(extend_labels[i][j]);
      
         }
      }
@@ -2542,8 +2558,100 @@ void GcellDetailRouter::ExtendY(RouterDB::Metal &temp_metal, int extend_dis){
   
 };
 
+
+void GcellDetailRouter::ExtendX_PN(RouterDB::Metal &temp_metal, int extend_dis, bool P){
+
+  //extend p==1 extend for the grid with lager x
+
+  //std::cout<<"extendX_PN before"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[1].x<<std::endl;
+
+  if(P){  
+
+    if(temp_metal.LinePoint[0].x<temp_metal.LinePoint[1].x){
+
+       temp_metal.LinePoint[0].x = temp_metal.LinePoint[0].x;
+       temp_metal.LinePoint[1].x = temp_metal.LinePoint[1].x + extend_dis;
+       //rewrite contact
+
+      }else{
+
+       temp_metal.LinePoint[0].x = temp_metal.LinePoint[0].x + extend_dis;
+       temp_metal.LinePoint[1].x = temp_metal.LinePoint[1].x;
+
+      }
+
+    }else{
+
+    if(temp_metal.LinePoint[0].x<temp_metal.LinePoint[1].x){
+
+       temp_metal.LinePoint[0].x = temp_metal.LinePoint[0].x - extend_dis;
+       temp_metal.LinePoint[1].x = temp_metal.LinePoint[1].x ;
+       //rewrite contact
+
+      }else{
+
+       temp_metal.LinePoint[0].x = temp_metal.LinePoint[0].x;
+       temp_metal.LinePoint[1].x = temp_metal.LinePoint[1].x - extend_dis;
+
+      }
+
+    }
+
+    //std::cout<<"extendX_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[1].x<<std::endl;
+    //std::cout<<"extendX_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].y<<std::endl;
+
+    UpdateMetalContact(temp_metal);
+
+};
+
+void GcellDetailRouter::ExtendY_PN(RouterDB::Metal &temp_metal, int extend_dis, bool P){
+
+  //extend p==1 extend for the grid with lager y
+
+  //std::cout<<"extendY_PN before "<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].y<<std::endl; 
+
+  if(P){  
+
+    if(temp_metal.LinePoint[0].y<temp_metal.LinePoint[1].y){
+
+       temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y;
+       temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y + extend_dis;
+       //rewrite contact
+
+      }else{
+
+       temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y + extend_dis;
+       temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y;
+
+      }
+
+    }else{
+
+    if(temp_metal.LinePoint[0].y<temp_metal.LinePoint[1].y){
+
+       temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y;
+       temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y - extend_dis;
+       //rewrite contact
+
+      }else{
+
+       temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y - extend_dis;
+       temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y ;
+
+      }
+
+    }
+
+    //std::cout<<"extendY_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].y<<std::endl;
+    //std::cout<<"extendY_PN after"<<P<<" "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[1].x<<std::endl;
+
+    UpdateMetalContact(temp_metal);
+
+};
+
 void GcellDetailRouter::ExtendMetals(int i){
 
+  
   if(Nets[i].path_metal.size()!=Nets[i].extend_label.size()){assert(0);}
 
   for(unsigned int j=0;j<Nets[i].path_metal.size();j++){
@@ -2558,7 +2666,7 @@ void GcellDetailRouter::ExtendMetals(int i){
          
       int current_length = abs( Nets[i].path_metal[j].LinePoint[0].x - Nets[i].path_metal[j].LinePoint[1].x) + abs( Nets[i].path_metal[j].LinePoint[0].y - Nets[i].path_metal[j].LinePoint[1].y);
 
-      if(current_length<minL){
+      if(current_length<minL and Nets[i].extend_label[j]==1){
 
          int extend_dis = ceil(minL - current_length)/2;
    
@@ -2571,17 +2679,51 @@ void GcellDetailRouter::ExtendMetals(int i){
             ExtendY(Nets[i].path_metal[j], extend_dis);
               
          }
+      }else if(current_length<minL and Nets[i].extend_label[j]==2){ //head
 
+         int extend_dis = ceil(minL - current_length);
+
+         bool p = 1;
+   
+         if(direction==1){//h
+             
+            ExtendX_PN(Nets[i].path_metal[j], extend_dis, p);
+               
+         }else{//v
+              
+            ExtendY_PN(Nets[i].path_metal[j], extend_dis, p);
+              
+         }
+      }else if(current_length<minL and Nets[i].extend_label[j]==3){ // tail
+
+         int extend_dis = ceil(minL - current_length);
+         
+         int p = 0;
+   
+         if(direction==1){//h
+             
+            ExtendX_PN(Nets[i].path_metal[j], extend_dis, p);
+               
+         }else{//v
+              
+            ExtendY_PN(Nets[i].path_metal[j], extend_dis, p);
+              
+         }
+      }else if(current_length<minL and Nets[i].extend_label[j]==4){ // bug
+
+         auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.ExtendMetal");
+
+         logger->debug("Extend Error for Nets[i].netName {0}",Nets[i].netName);
 
       }
-
    }
+   
 
 };
 
 void GcellDetailRouter::ExtendMetal(){
 
-
+  
   for(unsigned int i=0;i<Nets.size();i++){
 
   if(Nets[i].path_metal.size()!=Nets[i].extend_label.size()){assert(0);}
@@ -2598,7 +2740,7 @@ void GcellDetailRouter::ExtendMetal(){
          
       int current_length = abs( Nets[i].path_metal[j].LinePoint[0].x - Nets[i].path_metal[j].LinePoint[1].x) + abs( Nets[i].path_metal[j].LinePoint[0].y - Nets[i].path_metal[j].LinePoint[1].y);
 
-      if(current_length<minL){
+      if(current_length<minL and Nets[i].extend_label[j]==1){
 
          int extend_dis = ceil(minL - current_length)/2;
    
@@ -2611,12 +2753,47 @@ void GcellDetailRouter::ExtendMetal(){
             ExtendY(Nets[i].path_metal[j], extend_dis);
               
          }
+      }else if(current_length<minL and Nets[i].extend_label[j]==2){ //head
 
+         int extend_dis = ceil(minL - current_length);
+
+         bool p = 1;
+   
+         if(direction==1){//h
+             
+            ExtendX_PN(Nets[i].path_metal[j], extend_dis, p);
+               
+         }else{//v
+              
+            ExtendY_PN(Nets[i].path_metal[j], extend_dis, p);
+              
+         }
+      }else if(current_length<minL and Nets[i].extend_label[j]==3){ // tail
+
+         int extend_dis = ceil(minL - current_length);
+         
+         int p = 0;
+   
+         if(direction==1){//h
+             
+            ExtendX_PN(Nets[i].path_metal[j], extend_dis, p);
+               
+         }else{//v
+              
+            ExtendY_PN(Nets[i].path_metal[j], extend_dis, p);
+              
+         }
+      }else if(current_length<minL and Nets[i].extend_label[j]==4){ // bug
+
+         auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.ExtendMetal");
+
+         logger->debug("Extend Error for Nets[i].netName {0}",Nets[i].netName);
 
       }
 
    }
-  }
+
+   }
 
 
 };

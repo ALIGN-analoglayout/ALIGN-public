@@ -25,7 +25,7 @@ class UnionFind:
 
     def connect( self, other):
         other.root().dad = self.root()
-    
+
 class ScanlineRect(UnionFind):
     def __init__(self):
         super().__init__()
@@ -70,7 +70,7 @@ class Scanline:
         return slr
 
     def merge_slr(self, base_slr, new_slr):
-        base_slr.rect[self.dIndex+2] = max(base_slr.rect[self.dIndex+2], new_slr.rect[self.dIndex+2])        
+        base_slr.rect[self.dIndex+2] = max(base_slr.rect[self.dIndex+2], new_slr.rect[self.dIndex+2])
         base_slr.isPorted = base_slr.isPorted or new_slr.isPorted
 
     def __repr__( self):
@@ -95,7 +95,6 @@ class RemoveDuplicates():
         tbl = defaultdict(lst)
 
         for (layer,v) in self.store_scan_lines.items():
-            #print(v)
             for vv in v.values():
                 for slr in vv.rects:
                     tbl[id(slr.root())].append( (slr,root.netName,layer))
@@ -186,9 +185,9 @@ class RemoveDuplicates():
             rect = d['rect']
             netName = d['netName']
             netType = d['netType']
-            isPorted = 'pin' in d
+            isPorted = 'pin' in d['netType']
             if isPorted:
-                assert netName == d['pin'], f"{netName} does not match {d['pin']}"
+                assert netName != None, f'netName for pin rectange {rect} on layer {layer} is None'
             if layer in self.skip_layers: continue
             if layer in self.layers:
                 twice_center = sum(rect[index]
@@ -316,7 +315,7 @@ class RemoveDuplicates():
                     root = slr.root()
                     terminals.append( {'layer': layer, 'netName': root.netName, 'rect': slr.rect, 'netType':slr.netType})
                     if slr.isPorted:
-                        terminals[-1]['pin'] = root.netName
+                        terminals[-1]['netType'] = 'pin'
                     if slr.terminal is not None:
                         terminals[-1]['terminal'] = slr.terminal
 

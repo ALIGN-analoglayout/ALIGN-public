@@ -1,0 +1,105 @@
+{
+    "constraints": [
+        {
+            "const_name": "SymmNet",
+            "axis_dir": "V",
+            "net1": {
+                "name": "net015",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "m21",
+                        "pin": "D"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "m27_m26",
+                        "pin": "SB"
+                    }
+                ]
+            },
+            "net2": {
+                "name": "net021",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "m19",
+                        "pin": "D"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "m27_m26",
+                        "pin": "SA"
+                    }
+                ]
+            }
+        },
+        {
+            "const_name": "SymmNet",
+            "axis_dir": "V",
+            "net1": {
+                "name": "net16",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "m20",
+                        "pin": "G"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "m17_m15",
+                        "pin": "DA"
+                    }
+                ]
+            },
+            "net2": {
+                "name": "net27",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "m18",
+                        "pin": "G"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "m17_m15",
+                        "pin": "DB"
+                    }
+                ]
+            }
+        },
+        {
+            "const_name": "SymmBlock",
+            "axis_dir": "V",
+            "pairs": [
+                {
+                    "type": "selfsym",
+                    "block": "m17_m15"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "m21",
+                    "block2": "m19"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "m27_m26"
+                }
+            ]
+        },
+        {
+            "const_name": "SymmBlock",
+            "axis_dir": "V",
+            "pairs": [
+                {
+                    "type": "selfsym",
+                    "block": "m11_m10"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "m1nup_m24"
+                }
+            ]
+        }
+    ]
+}

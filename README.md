@@ -97,7 +97,13 @@ $ pip install setuptools wheel pybind11 scikit-build cmake ninja
 $ pip install -v -e .[test] --no-build-isolation
 $ pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=Release'
 ```
-Use this mode if you are mostly developing in Python and don't need the C++ debugging symbols.
+or
+```console
+$ pip install setuptools wheel pybind11 scikit-build cmake ninja
+$ pip install -v -e .[test] --no-build-isolation
+$ pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=RelWithDebInfo'
+```
+Use the `Release` mode if you are mostly developing in Python and don't need the C++ debugging symbols. Use the `RelWithDebInfo` if you need both debug symbols and optimized code.
 
 To debug runtime issues, run:
 ```console

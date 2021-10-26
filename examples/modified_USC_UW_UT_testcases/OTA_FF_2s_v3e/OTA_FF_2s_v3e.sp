@@ -34,15 +34,15 @@ m13 on1 cmfb avss avss lvtnfet w=w12 l=l0
 m59 avss net044 avss avss lvtnfet w=w10 l=l0
 m30 net044 net044 avss avss lvtnfet w=w12 l=l0
 m56 avss cmfb avss avss lvtnfet w=w10 l=l0
-c4 on vcmo cap cap=10f
-c5 op vcmo cap cap=10f
-r12_1__dmy0 vcmo xr12_1__dmy0 res res=100
-r12_2__dmy0 xr12_1__dmy0 xr12_2__dmy0 res res=100
-r12_3__dmy0 xr12_2__dmy0 xr12_3__dmy0 res res=100
-r12_4__dmy0 xr12_3__dmy0 op res res=100
-r13_1__dmy0 on xr13_1__dmy0 res res=100
-r13_2__dmy0 xr13_1__dmy0 xr13_2__dmy0 res res=100
-r13_3__dmy0 xr13_2__dmy0 xr13_3__dmy0 res res=100
-r13_4__dmy0 xr13_3__dmy0 vcmo res res=100
+c4 on vcmo 10f
+c5 op vcmo 10f
+r12_1__dmy0 vcmo xr12_1__dmy0 100
+r12_2__dmy0 xr12_1__dmy0 xr12_2__dmy0 100
+r12_3__dmy0 xr12_2__dmy0 xr12_3__dmy0 100
+r12_4__dmy0 xr12_3__dmy0 op 100
+r13_1__dmy0 on xr13_1__dmy0 100
+r13_2__dmy0 xr13_1__dmy0 xr13_2__dmy0 100
+r13_3__dmy0 xr13_2__dmy0 xr13_3__dmy0 100
+r13_4__dmy0 xr13_3__dmy0 vcmo 100
 .ends OTA_FF_2s_v3e
 

@@ -251,6 +251,8 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
       pair<int, PnRDB::Smark> temp_selfsym;
       for (auto pair : constraint["pairs"]) {
         if (pair["type"] == "sympair") {  // sympair
+          temp_pair.first = -1;
+          temp_pair.second = -1;
           for (int k = 0; k < (int)node.Blocks.size(); k++) {
             if (node.Blocks.at(k).instance.back().name.compare(pair["block1"]) == 0) {
               temp_pair.first = k;
@@ -259,6 +261,8 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
               temp_pair.second = k;
             }
           }
+          if (temp_pair.first == -1) logger->error("Block {0} not found", pair["block1"]);
+          if (temp_pair.second == -1) logger->error("Block {0} not found", pair["block2"]);
           int temp_int;
           if (temp_pair.first > temp_pair.second) {
             temp_int = temp_pair.second;
@@ -317,18 +321,38 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
       node.CC_Caps.push_back(temp_cccap);
     } else if (constraint["const_name"] == "AlignBlock") {
       PnRDB::AlignBlock alignment_unit;
-      if (constraint["direction"] == "H") {
+      size_t found;
+      if(constraint["line"] == "h_bottom") {
         alignment_unit.horizon = 1;
-      } else {
+        alignment_unit.line = 0;
+      } else if (constraint["line"] == "h_center") {
+        alignment_unit.horizon = 1;
+        alignment_unit.line = 1;
+      } else if (constraint["line"] == "h_top") {
+        alignment_unit.horizon = 1;
+        alignment_unit.line = 2;
+      } else if (constraint["line"] == "v_left") {
         alignment_unit.horizon = 0;
+        alignment_unit.line = 0;
+      } else if (constraint["line"] == "v_center") {
+        alignment_unit.horizon = 0;
+        alignment_unit.line = 1;
+      } else if (constraint["line"] == "v_right") {
+        alignment_unit.horizon = 0;
+        alignment_unit.line = 2;
+      } else {
+        logger->error("PnRDB-Error: wrong AlignBlock constraint: line {0}", constraint["line"]);
       }
       for (auto block : constraint["blocks"]) {
+        bool found = false;
         for (int i = 0; i < (int)node.Blocks.size(); i++) {
           if (node.Blocks.at(i).instance.back().name.compare(block) == 0) {
             alignment_unit.blocks.push_back(i);
+            found = true;
             break;
           }
         }
+        if (!found) logger->error("Block {0} in AlignBlock not found in netlist", block);
       }
       node.Align_blocks.push_back(alignment_unit);
     } else if (constraint["const_name"] == "PortLocation") {

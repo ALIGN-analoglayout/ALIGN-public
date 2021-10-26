@@ -74,4 +74,40 @@ def test_order_abut():
         {"constraint": "Order", "abut": True, "direction": "left_to_right", "instances": ["invn", "invp"]}
     ]
     example = build_example(name, netlist, setup, constraints)
+
+    run_example(example)
+
+
+def test_align_top_right():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+        .subckt {name} vin vop vcc vss nbs pbs
+        mp1 vop pbs vcc vcc p w=720e-9 nf=4 m=8
+        mn1 vop nbs vmd vss n w=720e-9 nf=4 m=6
+        mn0 vmd vin vss vss n w=720e-9 nf=4 m=4
+        .ends {name}
+        """)
+    setup = ""
+    constraints = [
+        {"constraint": "AlignInOrder", "direction": "vertical", "line": "right", "instances": ["mn0", "mn1"]},
+        {"constraint": "AlignInOrder", "direction": "horizontal", "line": "top", "instances": ["mn1", "mp1"]}
+    ]
+    example = build_example(name, netlist, setup, constraints)
+    run_example(example)
+
+
+def test_align_center():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+        .subckt {name} vin vop vcc vss nbs pbs
+        mp1 vop pbs vcc vcc p w=720e-9 nf=4 m=8
+        mn1 vop nbs vmd vss n w=720e-9 nf=4 m=6
+        mn0 vmd vin vss vss n w=720e-9 nf=4 m=16
+        .ends {name}
+        """)
+    setup = ""
+    constraints = [
+        {"constraint": "AlignInOrder", "direction": "vertical", "line": "center", "instances": ["mn0", "mn1", "mp1"]}
+        ]
+    example = build_example(name, netlist, setup, constraints)
     run_example(example)

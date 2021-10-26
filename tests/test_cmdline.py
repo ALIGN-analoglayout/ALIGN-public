@@ -4,19 +4,21 @@ import os
 import pathlib
 import shutil
 
-examples = [('inverter_v1',1,False),
-            ('buffer',1,False),
+examples = [('inverter_v1',1,False,False),
+            ('buffer',1,False,False),
             #Block with capacitors and resistors
-            ('adder',1,False),
-            ('five_transistor_ota',1,False),
-            ('five_transistor_ota',2,False),
+            # ('adder',1,False,False),
+            #Test select_in_ILP with something small
+            #No longer small enough
+            # ('five_transistor_ota',1,False,True),
             #Hierarchical block fail with num_placements > 1
-            ('cascode_current_mirror_ota',2,False),
+            ('cascode_current_mirror_ota',2,False,False),
             #Test PDN_mode
-            ('telescopic_ota',1,True),
+            ('telescopic_ota',1,True,False),
             # Test user constraints
-            ('common_source', 1, False),
-            ('high_speed_comparator', 1, False)]
+            ('common_source', 1, False,False),
+            # ('high_speed_comparator', 1, False,False)
+            ]
 
 ALIGN_HOME = pathlib.Path(__file__).resolve().parent.parent
 
@@ -26,12 +28,12 @@ else:
     os.environ['ALIGN_HOME'] = str(ALIGN_HOME)
 
 if 'ALIGN_WORK_DIR' in os.environ:
-    ALIGN_WORK_DIR = pathlib.Path( os.environ['ALIGN_WORK_DIR']).resolve() 
+    ALIGN_WORK_DIR = pathlib.Path( os.environ['ALIGN_WORK_DIR']).resolve()
 else:
     ALIGN_WORK_DIR = ALIGN_HOME / 'tests' / 'tmp'
 
-@pytest.mark.parametrize( "design,num_placements,PDN_mode", examples)
-def test_cmdline(design,num_placements,PDN_mode):
+@pytest.mark.parametrize( "design,num_placements,PDN_mode,select_in_ILP", examples)
+def test_cmdline(design,num_placements,PDN_mode,select_in_ILP):
     run_dir = ALIGN_WORK_DIR / f'{design}_{num_placements}_{1 if PDN_mode else 0}'
 
     if run_dir.exists():
@@ -46,11 +48,13 @@ def test_cmdline(design,num_placements,PDN_mode):
     args = [str(design_dir), '-f', str(design_dir / f"{design}.sp"), '-s', design, '-p', str(pdk_dir), '-flat',  str(0), '-v', 'INFO', '-l', 'INFO', '-n', str(num_placements)]
     if PDN_mode:
         args.append( '--PDN_mode')
+    if select_in_ILP:
+        args.append( '--select_in_ILP')
 
     results = align.CmdlineParser().parse_args(args)
 
     assert results is not None, "ALIGN exception encountered"
-    
+
     for result in results:
         _, variants = result
         for (k,v) in variants.items():

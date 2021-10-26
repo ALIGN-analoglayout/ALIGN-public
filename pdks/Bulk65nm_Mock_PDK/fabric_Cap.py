@@ -13,7 +13,7 @@ def gen_parser():
     return parser
 
 def main( args):
-    return generate_primitive(args.block_name, 'Cap', value=args.unit_cap, pdkdir=args.pdkdir, outputdir=args.outputdir)
+    return generate_primitive(args.block_name, 'cap', value=args.unit_cap, pdkdir=args.pdkdir, outputdir=args.outputdir)
 
 if __name__ == "__main__":
     main( gen_parser().parse_args())

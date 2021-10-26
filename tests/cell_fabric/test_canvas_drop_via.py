@@ -5,7 +5,7 @@ from align.cell_fabric import Canvas, Wire, Via, UncoloredCenterLineGrid, Enclos
 
 mydir = pathlib.Path(__file__).resolve().parent
 
-
+# removing test
 def test_one():
 
     c = Canvas()
@@ -41,11 +41,11 @@ def test_one():
                         WidthY=c.pdk['V2']['WidthY']))
 
     for x in [1, 2, 3]:
-        c.addWire(c.M1, 'a', None, x, (0, 1), (3, 3))
+        c.addWire(c.M1, 'a', x, (0, 1), (3, 3))
     for y in [1, 2, 3]:
-        c.addWire(c.M2, 'a', None, y, (1, 1), (5, 3))
+        c.addWire(c.M2, 'a', y, (1, 1), (5, 3))
     for x in [4, 5, 6]:
-        c.addWire(c.M3, 'a', None, x, (0, 1), (3, 3))
+        c.addWire(c.M3, 'a', x, (0, 1), (3, 3))
 
     c.drop_via(c.V1)
     c.drop_via(c.V2)
@@ -93,24 +93,24 @@ def test_two():
                         WidthY=c.pdk['V1']['WidthY']))
 
     # via existing
-    c.addWire(c.M1, 'a', None, 1, (0, 1), (1, 3))
-    c.addWire(c.M2, 'a', None, 1, (0, 1), (1, 3))
-    c.addVia(c.V1, 'a', None, 1, 1)
+    c.addWire(c.M1, 'a', 1, (0, 1), (1, 3))
+    c.addWire(c.M2, 'a', 1, (0, 1), (1, 3))
+    c.addVia(c.V1, 'a', 1, 1)
 
     # SpaceY violation
-    c.addWire(c.M1, 'a', None, 3, (0, 1), (2, 3))
-    c.addWire(c.M2, 'a', None, 1, (2, 1), (3, 3))
-    c.addWire(c.M2, 'a', None, 2, (2, 1), (3, 3))
+    c.addWire(c.M1, 'a', 3, (0, 1), (2, 3))
+    c.addWire(c.M2, 'a', 1, (2, 1), (3, 3))
+    c.addWire(c.M2, 'a', 2, (2, 1), (3, 3))
 
     # SpaceX violation
-    c.addWire(c.M1, 'a', None, 5, (0, 1), (2, 3))
-    c.addWire(c.M1, 'a', None, 6, (0, 1), (2, 3))
-    c.addWire(c.M2, 'a', None, 1, (4, 1), (6, 3))
+    c.addWire(c.M1, 'a', 5, (0, 1), (2, 3))
+    c.addWire(c.M1, 'a', 6, (0, 1), (2, 3))
+    c.addWire(c.M2, 'a', 1, (4, 1), (6, 3))
 
     # enclosure violation
     c.terminals.append({"layer": "M1", "netName": "a", "rect": [6200, 750, 6600, 2250], "netType": "drawing"})
     c.terminals.append({"layer": "M2", "netName": "a", "rect": [6200, 1600, 7000, 2000], "netType": "drawing"})
-    c.addWire(c.M2, 'a', None, 1, (7, 1), (8, 3))
+    c.addWire(c.M2, 'a', 1, (7, 1), (8, 3))
 
     c.drop_via(c.V1)
     c.computeBbox()

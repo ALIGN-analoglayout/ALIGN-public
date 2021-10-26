@@ -1,13 +1,15 @@
-[
-    {"constraint":"HorizontalDistance", "abs_distance":0},
-    {"constraint":"VerticalDistance",   "abs_distance":0},
-    {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"],   "name": "dp"},
-    {"constraint":"GroupBlocks",  "instances": ["mn3", "mn4"],   "name": "ccn"},
-    {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"],   "name": "ccp"},
-    {"constraint": "GroupBlocks", "instances": ["mp11", "mn13"], "name": "inv_n"},
-    {"constraint": "GroupBlocks", "instances": ["mp12", "mn14"], "name": "inv_p"},
-    {"constraint": "SymmetricBlocks",
-        "direction" : "V",
-        "pairs": [["mn0"], ["dp"], ["ccn"], ["ccp"], ["mp7", "mp8"], ["mp9", "mp10"], ["inv_n", "inv_p"]]
-    }
-]
+{
+    "constraints":[
+        {"const_name":"HorizontalDistance", "abs_distance":0},
+        {"const_name":"VerticalDistance",   "abs_distance":0},
+        {"const_name": "GroupBlocks", "blocks": ["mn1", "mn2"],   "name": "dp"},
+        {"const_name":"GroupBlocks",  "blocks": ["mn3", "mn4"],   "name": "ccn"},
+        {"const_name": "GroupBlocks", "blocks": ["mp5", "mp6"],   "name": "ccp"},
+        {"const_name": "GroupBlocks", "blocks": ["mp11", "mn13"], "name": "inv_n"},
+        {"const_name": "GroupBlocks", "blocks": ["mp12", "mn14"], "name": "inv_p"},
+        {"const_name": "SymmetricBlocks",
+            "direction" : "V",
+            "pairs": [["mn0"], ["dp"], ["ccn"], ["ccp"], ["mp7", "mp8"], ["mp9", "mp10"], ["inv_n", "inv_p"]]
+        }
+    ]
+}
