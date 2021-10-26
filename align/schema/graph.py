@@ -173,7 +173,7 @@ class Graph(networkx.Graph):
             inst_name = self.instance_counter(subckt_instance)
             # Create correct instance
             new_subckt.append(inst_name)
-            logger.debug(f"Creating new subckt of type: {subckt.name} from {removal_candidates}")
+            logger.debug(f"creating new subckt of type: {subckt.name} from {removal_candidates}")
             subckt_instance = self.create_subckt_instance(subckt, match, inst_name)
             merged_inst_name = 'X_'+inst_name
             for node in sorted(removal_candidates):
@@ -188,7 +188,7 @@ class Graph(networkx.Graph):
             assert all(x in pin2net_map for x in subckt.pins), (match, subckt)
             # Model may need to be copied to current library
             if subckt_instance not in self.subckt.parent:
-                # self.subckt.parent.append(subckt_instance)
+                logger.debug(f"adding subckt {subckt_instance} in library {self.subckt.parent.find('ARRAY_TEMPLATE')}")
                 with set_context(self.subckt.parent):
                     self.subckt.parent.append(SubCircuit(**subckt_instance.dict(exclude_unset=True)))
             # attach instance to current graph
