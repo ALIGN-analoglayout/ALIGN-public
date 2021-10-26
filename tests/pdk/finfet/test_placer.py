@@ -160,8 +160,9 @@ def test_place_cmp_2():
         shutil.rmtree(ckt_dir)
 
 
-@pytest.mark.skip
-@pytest.mark.parametrize("seed", [0, 7, 1453, 1981, 2021])
+# @pytest.mark.skip
+# @pytest.mark.parametrize("seed", [0, 7, 1453, 1981, 2021])
+@pytest.mark.parametrize("seed", [0])
 def test_place_cmp_seed(seed):
     """ original comparator. Run this test with -v and -s"""
     name = f'ckt_{get_test_id()}'
@@ -190,7 +191,7 @@ def test_place_cmp_seed(seed):
     example = build_example(name, netlist, setup, constraints)
 
     ckt_dir, run_dir = run_example(example, cleanup=cleanup, log_level='DEBUG',
-                                   additional_args=['-e', '1', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op', '--seed', str(seed)])
+                                   additional_args=['-e', '1', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op', '--use_analytical_placer', '--seed', str(seed)])
 
     cn = f'{name.upper()}_0'
 
