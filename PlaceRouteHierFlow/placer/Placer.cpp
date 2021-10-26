@@ -805,7 +805,7 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   #endif
   int mode=0;
   // Read design netlist and constraints
-  design designData(nodeVec.back());
+  design designData(nodeVec.back(), hyper.SEED);
   designData.PrintDesign();
   // Initialize simulate annealing with initial solution
   SeqPair curr_sp(designData, size_t(1. * log(hyper.T_MIN/hyper.T_INT)/log(hyper.ALPHA) * 

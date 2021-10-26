@@ -11,6 +11,8 @@
 #include <climits>
 #include <fstream>
 #include <utility> // pair, make_pair
+#include <random>
+
 #include "Pdatatype.h"
 #include "../PnRDB/readfile.h"
 #include "../PnRDB/datatype.h"
@@ -96,6 +98,7 @@ class design
     //  vector< pair<int,Smark> > selfsym;
     //  int dnode;
     //};
+    std::mt19937_64 _rng;
     bool hasAsymBlock;
     bool hasSymGroup;
     int noBlock4Move;
@@ -190,14 +193,17 @@ class design
     std::map<std::vector<int>, size_t> _seqPairHash, _selHash;
     bool _useCache{false};
     std::set<std::tuple<size_t, size_t, size_t>> _seqPairCache;
-  std::vector<size_t> _factorial;
-  size_t getSeqIndex(const vector<int>& seq);
-  size_t getSelIndex(const vector<int>& sel);
+    std::vector<size_t> _factorial;
+    size_t getSeqIndex(const vector<int>& seq);
+    size_t getSelIndex(const vector<int>& sel);
+    std::uniform_int_distribution<int> *_rnd{nullptr};
+    
   public:
     design();
-    design(PnRDB::hierNode& node);
+    design(PnRDB::hierNode& node, const int seed = 0);
     design(string blockfile, string netfile);
     design(string blockfile, string netfile, string cfile);
+    int rand();
     
     // added by yg, the first one is to read in additional const, the other one is to generate random constrains.
     design(string blockfile, string netfile, string cfile, string random_const_file);

@@ -1021,17 +1021,17 @@ placerDB::Smark SeqPair::GetSymmBlockAxis(int SBidx) {
 
 bool SeqPair::ChangeSelectedBlock(design& caseNL) {
   auto logger = spdlog::default_logger()->clone("placer.SeqPair.ChangeSelectedBlock");
-  int anode=rand() % caseNL.GetSizeofBlocks();
+  int anode=caseNL.rand() % caseNL.GetSizeofBlocks();
   if(caseNL.mixFlag) {
     while(caseNL.GetMappedBlockIdx(anode)!=-1) {
-      anode=rand() % caseNL.GetSizeofBlocks();
+      anode=caseNL.rand() % caseNL.GetSizeofBlocks();
     } // randomly choose a block
   }
   if(caseNL.Blocks.at(anode).size()<=1) {
     if (caseNL.Blocks.at(anode).size()<1) logger->debug("anode size < 1");
     return false;
   }
-  int newsel=rand() % caseNL.Blocks.at(anode).size();
+  int newsel=caseNL.rand() % caseNL.Blocks.at(anode).size();
   selected.at(anode)=newsel;
   //if(caseNL.GetBlockCounterpart(anode)!=-1) { 
     //selected.at( caseNL.GetBlockCounterpart(anode) )=newsel;
@@ -1512,7 +1512,7 @@ bool SeqPair::PerturbationNew(design& caseNL) {
       int fail = 0;
       while(!mark && fail<max_trial_cnt) {
         //std::cout<<int(pool.size())<<std::endl;
-        int choice=rand() % int(pool.size());
+        int choice=caseNL.rand() % int(pool.size());
         std::set<int>::iterator cit=pool.begin(); std::advance(cit, choice);
         switch(*cit) {
           case 0: mark=ChangeSelectedBlock(caseNL); break;
@@ -1545,7 +1545,7 @@ void SeqPair::Perturbation(design& caseNL) {
   //cout<<"Perturbation?"<<endl;
   while(!mark) {
     if(!caseNL.designHasAsymBlock() && caseNL.GetSymGroupSize()==1 ) {
-      choice=rand() % 3;
+      choice=caseNL.rand() % 3;
       //cout<<"Perturbation choice "<<choice<<endl;
       switch(choice) {
         case 0: mark=SwapTwoBlocksofSameGroup(caseNL); break;
@@ -1555,7 +1555,7 @@ void SeqPair::Perturbation(design& caseNL) {
         default: mark=SwapTwoBlocksofSameGroup(caseNL);
       }
     } else if(!caseNL.designHasAsymBlock()) {
-      choice=rand() % 3;
+      choice=caseNL.rand() % 3;
       //cout<<"Perturbation choice "<<choice<<endl;
       switch(choice) {
         case 0: mark=SwapTwoBlocksofSameGroup(caseNL); break;
@@ -1565,7 +1565,7 @@ void SeqPair::Perturbation(design& caseNL) {
         default: mark=SwapTwoBlocksofSameGroup(caseNL);
       }
     } else if (!caseNL.designHasSymGroup()) {
-      choice=rand() % 4;
+      choice=caseNL.rand() % 4;
       //cout<<"Perturbation choice "<<choice<<endl;
       switch(choice) {
         case 0: mark=MoveAsymmetricBlockposPair(caseNL); break;
@@ -1575,7 +1575,7 @@ void SeqPair::Perturbation(design& caseNL) {
         default: mark=MoveAsymmetricBlockdoublePair(caseNL);
       }
     } else {
-      choice=rand() % 7;
+      choice=caseNL.rand() % 7;
       //cout<<"Perturbation choice "<<choice<<endl;
       switch(choice) {
         case 0: mark=MoveAsymmetricBlockposPair(caseNL); break;
@@ -1620,9 +1620,9 @@ bool SeqPair::SwapTwoSymmetryGroup(design& caseNL) {
   if(caseNL.GetSizeofSBlocks()<=1) { 
     return false;
   } else {
-    sgA=rand() % caseNL.GetSizeofSBlocks();
-    sgB=rand() % caseNL.GetSizeofSBlocks();
-    while(sgB==sgA) { sgB=rand() % caseNL.GetSizeofSBlocks(); }
+    sgA=caseNL.rand() % caseNL.GetSizeofSBlocks();
+    sgB=caseNL.rand() % caseNL.GetSizeofSBlocks();
+    while(sgB==sgA) { sgB=caseNL.rand() % caseNL.GetSizeofSBlocks(); }
   }
   if(caseNL.mixFlag) {
     if(caseNL.GetMappedSymmBlockIdx(sgA)!=-1 || caseNL.GetMappedSymmBlockIdx(sgB)!=-1) {return false;}
@@ -1731,7 +1731,7 @@ bool SeqPair::SwapTwoBlocksofSameGroup(design& caseNL) {
   //srand(time(NULL));
   int sgid;
   if(caseNL.GetSizeofSBlocks()>1) {
-    sgid=rand() % caseNL.GetSizeofSBlocks();
+    sgid=caseNL.rand() % caseNL.GetSizeofSBlocks();
   } else if (caseNL.GetSizeofSBlocks()==1) {
     sgid=0;
   } else { return false; }
@@ -1740,14 +1740,14 @@ bool SeqPair::SwapTwoBlocksofSameGroup(design& caseNL) {
   //cout<<"blist size: "<<blist.size()<<endl;
   if(blist.empty() || (int)blist.size()==1) {return false;}//std::cout<<"empty or 1"<<std::endl;}
   if((int)blist.size()==2 && blist.at(0)==caseNL.GetBlockCounterpart(blist.at(1))) {return false;}
-  int A=blist.at( rand() % (int)blist.size() );
+  int A=blist.at( caseNL.rand() % (int)blist.size() );
   //while(A>=(int)caseNL.GetSizeofBlocks()) {
   //   A=blist.at( rand() % (int)blist.size() );
   //}
   int symA=caseNL.GetBlockCounterpart(A);
-  int B=blist.at( rand() % (int)blist.size() );
+  int B=blist.at( caseNL.rand() % (int)blist.size() );
   while(B==A || B==symA)  {
-    B=blist.at( rand() % (int)blist.size() );
+    B=blist.at( caseNL.rand() % (int)blist.size() );
   }
   //while(B==A || B==symA || B>=(int)caseNL.GetSizeofBlocks() )  {
   //  B=blist.at( rand() % (int)blist.size() );
@@ -1772,7 +1772,7 @@ bool SeqPair::SwapMultiBlocksofSameGroup(design& caseNL) {
   int count=3;
   int sgid;
   if(caseNL.GetSizeofSBlocks()>1) {
-    sgid=rand() % caseNL.GetSizeofSBlocks();
+    sgid=caseNL.rand() % caseNL.GetSizeofSBlocks();
   } else if (caseNL.GetSizeofSBlocks()==1) {
     sgid=0;
   } else { return false; }
@@ -1782,14 +1782,14 @@ bool SeqPair::SwapMultiBlocksofSameGroup(design& caseNL) {
   if(blist.empty() || (int)blist.size()==1) {return false;}//std::cout<<"empty or 2"<<std::endl;}
   if((int)blist.size()==2 && blist.at(0)==caseNL.GetBlockCounterpart(blist.at(1))) {return false;}
   for(int i=0;i<count;++i) {
-    int A=blist.at( rand() % (int)blist.size() );
+    int A=blist.at( caseNL.rand() % (int)blist.size() );
     //while(A>=(int)caseNL.GetSizeofBlocks()) {
     //   A=blist.at( rand() % (int)blist.size() );
     //}
     int symA=caseNL.GetBlockCounterpart(A);
-    int B=blist.at( rand() % (int)blist.size() );
+    int B=blist.at( caseNL.rand() % (int)blist.size() );
     while(B==A || B==symA)  {
-      B=blist.at( rand() % (int)blist.size() );
+      B=blist.at( caseNL.rand() % (int)blist.size() );
     }
     //while(B==A || B==symA || B>=(int)caseNL.GetSizeofBlocks() )  {
     //  B=blist.at( rand() % (int)blist.size() );
@@ -1813,9 +1813,9 @@ bool SeqPair::MoveAsymmetricBlockposPair(design& caseNL) {
   /* initialize random seed: */
   //srand(time(NULL));
   if(!caseNL.checkAsymmetricBlockExist()) {return false;}
-  int anode=rand() % caseNL.GetSizeofBlocks();
+  int anode=caseNL.rand() % caseNL.GetSizeofBlocks();
   while(caseNL.GetBlockSymmGroup(anode)>=0) {
-    anode=rand() % caseNL.GetSizeofBlocks();
+    anode=caseNL.rand() % caseNL.GetSizeofBlocks();
   } // randomly choose an asymmetric block
   if(caseNL.mixFlag && caseNL.GetMappedBlockIdx(anode)!=-1) {return false;}
   //cout<<endl<<"Move asymmetric block in pos SP"<<endl;
@@ -1826,9 +1826,9 @@ bool SeqPair::MoveAsymmetricBlocknegPair(design& caseNL) {
   /* initialize random seed: */
   //srand(time(NULL));
   if(!caseNL.checkAsymmetricBlockExist()) {return false;}
-  int anode=rand() % caseNL.GetSizeofBlocks();
+  int anode=caseNL.rand() % caseNL.GetSizeofBlocks();
   while(caseNL.GetBlockSymmGroup(anode)>=0) {
-    anode=rand() % caseNL.GetSizeofBlocks();
+    anode=caseNL.rand() % caseNL.GetSizeofBlocks();
   } // randomly choose an asymmetric block
   if(caseNL.mixFlag && caseNL.GetMappedBlockIdx(anode)!=-1) {return false;}
   //cout<<endl<<"Move asymmetric block in neg SP"<<endl;
@@ -1839,9 +1839,9 @@ bool SeqPair::MoveAsymmetricBlockdoublePair(design& caseNL) {
   /* initialize random seed: */
   //srand(time(NULL));
   if(!caseNL.checkAsymmetricBlockExist()) {return false;}
-  int anode=rand() % caseNL.GetSizeofBlocks();
+  int anode=caseNL.rand() % caseNL.GetSizeofBlocks();
   while(caseNL.GetBlockSymmGroup(anode)>=0) {
-    anode=rand() % caseNL.GetSizeofBlocks();
+    anode=caseNL.rand() % caseNL.GetSizeofBlocks();
   } // randomly choose an asymmetric block
   if(caseNL.mixFlag && caseNL.GetMappedBlockIdx(anode)!=-1) {return false;}
   bool mark=true;
@@ -1858,9 +1858,9 @@ bool SeqPair::MoveAsymmetricBlockUnit(design& caseNL, vector<int>& seq, int anod
   vector<int> newseq;
   newseq.resize(seq.size());
   int oldpos=GetVertexIndexinSeq(seq, anode); // position of anode in original seqence
-  int newpos=rand() % (int)seq.size();
+  int newpos=caseNL.rand() % (int)seq.size();
   while(oldpos==newpos) {
-    newpos=rand() % (int)seq.size();
+    newpos=caseNL.rand() % (int)seq.size();
   } // randomly choose a new position
   //cout<<"Aymnode-"<<anode<<" oldpos-"<<oldpos<<" newpos-"<<newpos<<endl;
 
@@ -1889,9 +1889,9 @@ bool SeqPair::ChangeAsymmetricBlockOrient(design& caseNL) {
   /* initialize random seed: */
   //srand(time(NULL));
   if(!caseNL.checkAsymmetricBlockExist()) {return false;}
-  int anode=rand() % caseNL.GetSizeofBlocks();
+  int anode=caseNL.rand() % caseNL.GetSizeofBlocks();
   while(caseNL.GetBlockSymmGroup(anode)>=0) {
-    anode=rand() % caseNL.GetSizeofBlocks();
+    anode=caseNL.rand() % caseNL.GetSizeofBlocks();
   } // randomly choose an asymmetric block
   if(caseNL.mixFlag && caseNL.GetMappedBlockIdx(anode)!=-1) {return false;}
   bool mark=false;
@@ -1901,7 +1901,7 @@ bool SeqPair::ChangeAsymmetricBlockOrient(design& caseNL) {
   // Currently we try to keep the orientation for fin alignment
   // and prevent to change the orientation arbitrarily
   while(!mark) {
-    ort=placerDB::Omark( rand() % 8 );
+    ort=placerDB::Omark( caseNL.rand() % 8 );
     switch(curr_ort) {
       case placerDB::N: if(ort==placerDB::S || ort==placerDB::FN || ort==placerDB::FS)  {orient.at(anode)=ort;mark=true; }
               break;
@@ -1932,7 +1932,7 @@ bool SeqPair::ChangeSymmetryBlockOrient(design& caseNL) {
   //srand(time(NULL));
   int sgid;
   if(caseNL.GetSizeofSBlocks()>1) {
-    sgid=rand() % caseNL.GetSizeofSBlocks();
+    sgid=caseNL.rand() % caseNL.GetSizeofSBlocks();
   } else if (caseNL.GetSizeofSBlocks()==1) {
     sgid=0;
   } else { return false; }
@@ -1945,7 +1945,7 @@ bool SeqPair::ChangeSymmetryBlockOrient(design& caseNL) {
   if((int)Blist.size()==1) {
     tar=Blist.at(0);
   } else {
-    tar=Blist.at(rand() % (int)Blist.size());
+    tar=Blist.at(caseNL.rand() % (int)Blist.size());
   }
   // Change orientation of cells in symmetry group
   if(caseNL.SBlocks.at(sgid).selfsym.empty()) {
@@ -1953,7 +1953,7 @@ bool SeqPair::ChangeSymmetryBlockOrient(design& caseNL) {
     // 	new axis V	N/S/E/W/FN/FS/FE/FW-FN/FS/FE/FW/N/S/E/W
     // 	new axis H	N/S/E/W/FN/FS/FE/FW-FS/FN/FW/FE/S/N/W/E
     if(new_axis==placerDB::V) {
-      int sa=rand()%4;
+      int sa=caseNL.rand()%4;
       switch(sa) {
         case 0: orient.at(tar)= placerDB::N;  orient.at(caseNL.GetBlockCounterpart(tar))=placerDB::FN; break;
         case 1: orient.at(tar)= placerDB::S;  orient.at(caseNL.GetBlockCounterpart(tar))=placerDB::FS; break;
@@ -1966,7 +1966,7 @@ bool SeqPair::ChangeSymmetryBlockOrient(design& caseNL) {
         default: orient.at(tar)=placerDB::N;  orient.at(caseNL.GetBlockCounterpart(tar))=placerDB::FN;
       }
     } else if(new_axis==placerDB::H) {
-       int sa=rand()%4;
+       int sa=caseNL.rand()%4;
        switch(sa) {
          case 0: orient.at(tar)=placerDB::N;  orient.at(caseNL.GetBlockCounterpart(tar))=placerDB::FS; break;
          case 1: orient.at(tar)=placerDB::S;  orient.at(caseNL.GetBlockCounterpart(tar))=placerDB::FN; break;
@@ -1989,7 +1989,7 @@ bool SeqPair::ChangeSymmetryBlockOrient(design& caseNL) {
     if(self_axis==placerDB::V && new_axis==placerDB::V) {
     // 			new axis V	E/W/FE/FW-FE/FW/E/W	E/W/FE/FW	
       if(caseNL.GetBlockCounterpart(tar)==-1) {
-          int sa=rand() % 4;
+          int sa=caseNL.rand() % 4;
           switch(sa) {
             case 0: orient.at(tar)=placerDB::E; break;
             case 1: orient.at(tar)=placerDB::W; break;
@@ -1998,7 +1998,7 @@ bool SeqPair::ChangeSymmetryBlockOrient(design& caseNL) {
             default:orient.at(tar)=placerDB::E;
           }
       } else {
-          int sa=rand()%4;
+          int sa=caseNL.rand()%4;
           switch(sa) {
             case 0: orient.at(tar)=placerDB::E;  orient.at(caseNL.GetBlockCounterpart(tar))=placerDB::FE; break;
             case 1: orient.at(tar)=placerDB::W;  orient.at(caseNL.GetBlockCounterpart(tar))=placerDB::FW; break;
@@ -2010,7 +2010,7 @@ bool SeqPair::ChangeSymmetryBlockOrient(design& caseNL) {
     } else if (self_axis==placerDB::V && new_axis==placerDB::H) {
     // selfsym axis V	new axis H	N/S/FN/FS-FS/FN/S/N	N/S/FN/FS
       if(caseNL.GetBlockCounterpart(tar)==-1) {
-          int sa=rand() % 4;
+          int sa=caseNL.rand() % 4;
           switch(sa) {
             case 0: orient.at(tar)=placerDB::N; break;
             case 1: orient.at(tar)=placerDB::S; break;
@@ -2019,7 +2019,7 @@ bool SeqPair::ChangeSymmetryBlockOrient(design& caseNL) {
             default:orient.at(tar)=placerDB::N;
           }
       } else {
-          int sa=rand()%4;
+          int sa=caseNL.rand()%4;
           switch(sa) {
             case 0: orient.at(tar)=placerDB::N;  orient.at(caseNL.GetBlockCounterpart(tar))=placerDB::FS; break;
             case 1: orient.at(tar)=placerDB::S;  orient.at(caseNL.GetBlockCounterpart(tar))=placerDB::FN; break;
@@ -2031,7 +2031,7 @@ bool SeqPair::ChangeSymmetryBlockOrient(design& caseNL) {
     } else if (self_axis==placerDB::H && new_axis==placerDB::H) {
     // 			new axis H	E/W/FE/FW-FW/FE/W/E	E/W/FE/FW
       if(caseNL.GetBlockCounterpart(tar)==-1) {
-          int sa=rand() % 4;
+          int sa=caseNL.rand() % 4;
           switch(sa) {
             case 0: orient.at(tar)=placerDB::E; break;
             case 1: orient.at(tar)=placerDB::W; break;
@@ -2040,7 +2040,7 @@ bool SeqPair::ChangeSymmetryBlockOrient(design& caseNL) {
             default:orient.at(tar)=placerDB::E;
           }
       } else {
-          int sa=rand()%4;
+          int sa=caseNL.rand()%4;
           switch(sa) {
             case 0: orient.at(tar)=placerDB::E;  orient.at(caseNL.GetBlockCounterpart(tar))=placerDB::FW; break;
             case 1: orient.at(tar)=placerDB::W;  orient.at(caseNL.GetBlockCounterpart(tar))=placerDB::FE; break;
@@ -2052,7 +2052,7 @@ bool SeqPair::ChangeSymmetryBlockOrient(design& caseNL) {
     } else if (self_axis==placerDB::H && new_axis==placerDB::V) {
     // selfsym axis H	new axis V	N/S/FN/FS-FN/FS/N/S	N/S/FN/FS
       if(caseNL.GetBlockCounterpart(tar)==-1) {
-          int sa=rand() % 4;
+          int sa=caseNL.rand() % 4;
           switch(sa) {
             case 0: orient.at(tar)=placerDB::N; break;
             case 1: orient.at(tar)=placerDB::S; break;
@@ -2061,7 +2061,7 @@ bool SeqPair::ChangeSymmetryBlockOrient(design& caseNL) {
             default:orient.at(tar)=placerDB::N;
           }
       } else {
-          int sa=rand()%4;
+          int sa=caseNL.rand()%4;
           switch(sa) {
             case 0: orient.at(tar)=placerDB::N;  orient.at(caseNL.GetBlockCounterpart(tar))=placerDB::FN; break;
             case 1: orient.at(tar)=placerDB::S;  orient.at(caseNL.GetBlockCounterpart(tar))=placerDB::FS; break;
@@ -2080,7 +2080,7 @@ bool SeqPair::ChangeSymmetryGroupOrient(design& caseNL) {
   //srand(time(NULL));
   int sgid;
   if(caseNL.GetSizeofSBlocks()>1) {
-    sgid=rand() % caseNL.GetSizeofSBlocks();
+    sgid=caseNL.rand() % caseNL.GetSizeofSBlocks();
   } else if (caseNL.GetSizeofSBlocks()==1) {
     sgid=0;
   } else { return false; }
@@ -2096,7 +2096,7 @@ bool SeqPair::ChangeSymmetryGroupOrient(design& caseNL) {
     if(new_axis==placerDB::V) {
       for(vector< pair<int,int> >::iterator pit=caseNL.SBlocks.at(sgid).sympair.begin(); pit!=caseNL.SBlocks.at(sgid).sympair.end(); ++pit) {
         if(pit->first<(int)caseNL.GetSizeofBlocks() && pit->second<(int)caseNL.GetSizeofBlocks()) {
-          int sa=rand()%8;
+          int sa=caseNL.rand()%8;
           switch(sa) {
             case 0: orient.at(pit->first)=placerDB::N;  orient.at(pit->second)=placerDB::FN; break;
             case 1: orient.at(pit->first)=placerDB::S;  orient.at(pit->second)=placerDB::FS; break;
@@ -2113,7 +2113,7 @@ bool SeqPair::ChangeSymmetryGroupOrient(design& caseNL) {
     } else if(new_axis==placerDB::H) {
       for(vector< pair<int,int> >::iterator pit=caseNL.SBlocks.at(sgid).sympair.begin(); pit!=caseNL.SBlocks.at(sgid).sympair.end(); ++pit) {
         if(pit->first<(int)caseNL.GetSizeofBlocks() && pit->second<(int)caseNL.GetSizeofBlocks()) {
-          int sa=rand()%8;
+          int sa=caseNL.rand()%8;
           switch(sa) {
             case 0: orient.at(pit->first)=placerDB::N;  orient.at(pit->second)=placerDB::FS; break;
             case 1: orient.at(pit->first)=placerDB::S;  orient.at(pit->second)=placerDB::FN; break;
@@ -2139,7 +2139,7 @@ bool SeqPair::ChangeSymmetryGroupOrient(design& caseNL) {
     // 			new axis V	E/W/FE/FW-FE/FW/E/W	E/W/FE/FW	
       for(vector< pair<int,placerDB::Smark> >::iterator sit=caseNL.SBlocks.at(sgid).selfsym.begin(); sit!=caseNL.SBlocks.at(sgid).selfsym.end(); ++sit) {
         if(sit->first<(int)caseNL.GetSizeofBlocks()) {
-          int sa=rand() % 4;
+          int sa=caseNL.rand() % 4;
           switch(sa) {
             case 0: orient.at(sit->first)=placerDB::E; break;
             case 1: orient.at(sit->first)=placerDB::W; break;
@@ -2151,7 +2151,7 @@ bool SeqPair::ChangeSymmetryGroupOrient(design& caseNL) {
       }
       for(vector< pair<int,int> >::iterator pit=caseNL.SBlocks.at(sgid).sympair.begin(); pit!=caseNL.SBlocks.at(sgid).sympair.end(); ++pit) {
         if(pit->first<(int)caseNL.GetSizeofBlocks() && pit->second<(int)caseNL.GetSizeofBlocks()) {
-          int sa=rand()%4;
+          int sa=caseNL.rand()%4;
           switch(sa) {
             case 0: orient.at(pit->first)=placerDB::E; orient.at(pit->second)=placerDB::FE; break;
             case 1: orient.at(pit->first)=placerDB::W; orient.at(pit->second)=placerDB::FW; break;
@@ -2165,7 +2165,7 @@ bool SeqPair::ChangeSymmetryGroupOrient(design& caseNL) {
     // selfsym axis V	new axis H	N/S/FN/FS-FS/FN/S/N	N/S/FN/FS
       for(vector< pair<int,placerDB::Smark> >::iterator sit=caseNL.SBlocks.at(sgid).selfsym.begin(); sit!=caseNL.SBlocks.at(sgid).selfsym.end(); ++sit) {
         if(sit->first<(int)caseNL.GetSizeofBlocks()) {
-          int sa=rand() % 4;
+          int sa=caseNL.rand() % 4;
           switch(sa) {
             case 0: orient.at(sit->first)=placerDB::N; break;
             case 1: orient.at(sit->first)=placerDB::S; break;
@@ -2177,7 +2177,7 @@ bool SeqPair::ChangeSymmetryGroupOrient(design& caseNL) {
       }
       for(vector< pair<int,int> >::iterator pit=caseNL.SBlocks.at(sgid).sympair.begin(); pit!=caseNL.SBlocks.at(sgid).sympair.end(); ++pit) {
         if(pit->first<(int)caseNL.GetSizeofBlocks() && pit->second<(int)caseNL.GetSizeofBlocks()) {
-          int sa=rand()%4;
+          int sa=caseNL.rand()%4;
           switch(sa) {
             case 0: orient.at(pit->first)=placerDB::N;  orient.at(pit->second)=placerDB::FS; break;
             case 1: orient.at(pit->first)=placerDB::S;  orient.at(pit->second)=placerDB::FN; break;
@@ -2191,7 +2191,7 @@ bool SeqPair::ChangeSymmetryGroupOrient(design& caseNL) {
     // 			new axis H	E/W/FE/FW-FW/FE/W/E	E/W/FE/FW
       for(vector< pair<int,placerDB::Smark> >::iterator sit=caseNL.SBlocks.at(sgid).selfsym.begin(); sit!=caseNL.SBlocks.at(sgid).selfsym.end(); ++sit) {
         if(sit->first<(int)caseNL.GetSizeofBlocks()) {
-          int sa=rand() % 4;
+          int sa=caseNL.rand() % 4;
           switch(sa) {
             case 0: orient.at(sit->first)=placerDB::E; break;
             case 1: orient.at(sit->first)=placerDB::W; break;
@@ -2203,7 +2203,7 @@ bool SeqPair::ChangeSymmetryGroupOrient(design& caseNL) {
       }
       for(vector< pair<int,int> >::iterator pit=caseNL.SBlocks.at(sgid).sympair.begin(); pit!=caseNL.SBlocks.at(sgid).sympair.end(); ++pit) {
         if(pit->first<(int)caseNL.GetSizeofBlocks() && pit->second<(int)caseNL.GetSizeofBlocks()) {
-          int sa=rand()%4;
+          int sa=caseNL.rand()%4;
           switch(sa) {
             case 0: orient.at(pit->first)=placerDB::E;  orient.at(pit->second)=placerDB::FW; break;
             case 1: orient.at(pit->first)=placerDB::W;  orient.at(pit->second)=placerDB::FE; break;
@@ -2217,7 +2217,7 @@ bool SeqPair::ChangeSymmetryGroupOrient(design& caseNL) {
     // selfsym axis H	new axis V	N/S/FN/FS-FN/FS/N/S	N/S/FN/FS
       for(vector< pair<int,placerDB::Smark> >::iterator sit=caseNL.SBlocks.at(sgid).selfsym.begin(); sit!=caseNL.SBlocks.at(sgid).selfsym.end(); ++sit) {
         if(sit->first<(int)caseNL.GetSizeofBlocks()) {
-          int sa=rand() % 4;
+          int sa=caseNL.rand() % 4;
           switch(sa) {
             case 0: orient.at(sit->first)=placerDB::N; break;
             case 1: orient.at(sit->first)=placerDB::S; break;
@@ -2229,7 +2229,7 @@ bool SeqPair::ChangeSymmetryGroupOrient(design& caseNL) {
       }
       for(vector< pair<int,int> >::iterator pit=caseNL.SBlocks.at(sgid).sympair.begin(); pit!=caseNL.SBlocks.at(sgid).sympair.end(); ++pit) {
         if(pit->first<(int)caseNL.GetSizeofBlocks() && pit->second<(int)caseNL.GetSizeofBlocks()) {
-          int sa=rand()%4;
+          int sa=caseNL.rand()%4;
           switch(sa) {
             case 0: orient.at(pit->first)=placerDB::N;  orient.at(pit->second)=placerDB::FN; break;
             case 1: orient.at(pit->first)=placerDB::S;  orient.at(pit->second)=placerDB::FS; break;
@@ -2249,7 +2249,7 @@ bool SeqPair::RotateSymmetryGroup(design& caseNL) {
   //srand(time(NULL));
   int sgid;
   if(caseNL.GetSizeofSBlocks()>1) {
-    sgid=rand() % caseNL.GetSizeofSBlocks();
+    sgid=caseNL.rand() % caseNL.GetSizeofSBlocks();
   } else if (caseNL.GetSizeofSBlocks()==1) {
     sgid=0;
   } else { return false; }
@@ -2271,7 +2271,7 @@ bool SeqPair::RotateSymmetryGroup(design& caseNL) {
     if(new_axis==placerDB::V) {
       for(vector< pair<int,int> >::iterator pit=caseNL.SBlocks.at(sgid).sympair.begin(); pit!=caseNL.SBlocks.at(sgid).sympair.end(); ++pit) {
         if(pit->first<(int)caseNL.GetSizeofBlocks() && pit->second<(int)caseNL.GetSizeofBlocks()) {
-          int sa=rand()%8;
+          int sa=caseNL.rand()%8;
           switch(sa) {
             case 0: orient.at(pit->first)=placerDB::N;  orient.at(pit->second)=placerDB::FN; break;
             case 1: orient.at(pit->first)=placerDB::S;  orient.at(pit->second)=placerDB::FS; break;
@@ -2288,7 +2288,7 @@ bool SeqPair::RotateSymmetryGroup(design& caseNL) {
     } else if(new_axis==placerDB::H) {
       for(vector< pair<int,int> >::iterator pit=caseNL.SBlocks.at(sgid).sympair.begin(); pit!=caseNL.SBlocks.at(sgid).sympair.end(); ++pit) {
         if(pit->first<(int)caseNL.GetSizeofBlocks() && pit->second<(int)caseNL.GetSizeofBlocks()) {
-          int sa=rand()%8;
+          int sa=caseNL.rand()%8;
           switch(sa) {
             case 0: orient.at(pit->first)=placerDB::N;  orient.at(pit->second)=placerDB::FS; break;
             case 1: orient.at(pit->first)=placerDB::S;  orient.at(pit->second)=placerDB::FN; break;
@@ -2314,7 +2314,7 @@ bool SeqPair::RotateSymmetryGroup(design& caseNL) {
     // 			new axis V	E/W/FE/FW-FE/FW/E/W	E/W/FE/FW	
       for(vector< pair<int,placerDB::Smark> >::iterator sit=caseNL.SBlocks.at(sgid).selfsym.begin(); sit!=caseNL.SBlocks.at(sgid).selfsym.end(); ++sit) {
         if(sit->first<(int)caseNL.GetSizeofBlocks()) {
-          int sa=rand() % 4;
+          int sa=caseNL.rand() % 4;
           switch(sa) {
             case 0: orient.at(sit->first)=placerDB::E; break;
             case 1: orient.at(sit->first)=placerDB::W; break;
@@ -2326,7 +2326,7 @@ bool SeqPair::RotateSymmetryGroup(design& caseNL) {
       }
       for(vector< pair<int,int> >::iterator pit=caseNL.SBlocks.at(sgid).sympair.begin(); pit!=caseNL.SBlocks.at(sgid).sympair.end(); ++pit) {
         if(pit->first<(int)caseNL.GetSizeofBlocks() && pit->second<(int)caseNL.GetSizeofBlocks()) {
-          int sa=rand()%4;
+          int sa=caseNL.rand()%4;
           switch(sa) {
             case 0: orient.at(pit->first)=placerDB::E; orient.at(pit->second)=placerDB::FE; break;
             case 1: orient.at(pit->first)=placerDB::W; orient.at(pit->second)=placerDB::FW; break;
@@ -2340,7 +2340,7 @@ bool SeqPair::RotateSymmetryGroup(design& caseNL) {
     // selfsym axis V	new axis H	N/S/FN/FS-FS/FN/S/N	N/S/FN/FS
       for(vector< pair<int,placerDB::Smark> >::iterator sit=caseNL.SBlocks.at(sgid).selfsym.begin(); sit!=caseNL.SBlocks.at(sgid).selfsym.end(); ++sit) {
         if(sit->first<(int)caseNL.GetSizeofBlocks()) {
-          int sa=rand() % 4;
+          int sa=caseNL.rand() % 4;
           switch(sa) {
             case 0: orient.at(sit->first)=placerDB::N; break;
             case 1: orient.at(sit->first)=placerDB::S; break;
@@ -2352,7 +2352,7 @@ bool SeqPair::RotateSymmetryGroup(design& caseNL) {
       }
       for(vector< pair<int,int> >::iterator pit=caseNL.SBlocks.at(sgid).sympair.begin(); pit!=caseNL.SBlocks.at(sgid).sympair.end(); ++pit) {
         if(pit->first<(int)caseNL.GetSizeofBlocks() && pit->second<(int)caseNL.GetSizeofBlocks()) {
-          int sa=rand()%4;
+          int sa=caseNL.rand()%4;
           switch(sa) {
             case 0: orient.at(pit->first)=placerDB::N; orient.at(pit->second)=placerDB::FS; break;
             case 1: orient.at(pit->first)=placerDB::S; orient.at(pit->second)=placerDB::FN; break;
@@ -2366,7 +2366,7 @@ bool SeqPair::RotateSymmetryGroup(design& caseNL) {
     // 			new axis H	E/W/FE/FW-FW/FE/W/E	E/W/FE/FW
       for(vector< pair<int,placerDB::Smark> >::iterator sit=caseNL.SBlocks.at(sgid).selfsym.begin(); sit!=caseNL.SBlocks.at(sgid).selfsym.end(); ++sit) {
         if(sit->first<(int)caseNL.GetSizeofBlocks()) {
-          int sa=rand() % 4;
+          int sa=caseNL.rand() % 4;
           switch(sa) {
             case 0: orient.at(sit->first)=placerDB::E; break;
             case 1: orient.at(sit->first)=placerDB::W; break;
@@ -2378,7 +2378,7 @@ bool SeqPair::RotateSymmetryGroup(design& caseNL) {
       }
       for(vector< pair<int,int> >::iterator pit=caseNL.SBlocks.at(sgid).sympair.begin(); pit!=caseNL.SBlocks.at(sgid).sympair.end(); ++pit) {
         if(pit->first<(int)caseNL.GetSizeofBlocks() && pit->second<(int)caseNL.GetSizeofBlocks()) {
-          int sa=rand()%4;
+          int sa=caseNL.rand()%4;
           switch(sa) {
             case 0: orient.at(pit->first)=placerDB::E; orient.at(pit->second)=placerDB::FW; break;
             case 1: orient.at(pit->first)=placerDB::W; orient.at(pit->second)=placerDB::FE; break;
@@ -2392,7 +2392,7 @@ bool SeqPair::RotateSymmetryGroup(design& caseNL) {
     // selfsym axis H	new axis V	N/S/FN/FS-FN/FS/N/S	N/S/FN/FS
       for(vector< pair<int,placerDB::Smark> >::iterator sit=caseNL.SBlocks.at(sgid).selfsym.begin(); sit!=caseNL.SBlocks.at(sgid).selfsym.end(); ++sit) {
         if(sit->first<(int)caseNL.GetSizeofBlocks()) {
-          int sa=rand() % 4;
+          int sa=caseNL.rand() % 4;
           switch(sa) {
             case 0: orient.at(sit->first)=placerDB::N; break;
             case 1: orient.at(sit->first)=placerDB::S; break;
@@ -2404,7 +2404,7 @@ bool SeqPair::RotateSymmetryGroup(design& caseNL) {
       }
       for(vector< pair<int,int> >::iterator pit=caseNL.SBlocks.at(sgid).sympair.begin(); pit!=caseNL.SBlocks.at(sgid).sympair.end(); ++pit) {
         if(pit->first<(int)caseNL.GetSizeofBlocks() && pit->second<(int)caseNL.GetSizeofBlocks()) {
-          int sa=rand()%4;
+          int sa=caseNL.rand()%4;
           switch(sa) {
             case 0: orient.at(pit->first)=placerDB::N; orient.at(pit->second)=placerDB::FN; break;
             case 1: orient.at(pit->first)=placerDB::S; orient.at(pit->second)=placerDB::FS; break;
