@@ -75,7 +75,8 @@ class process_arrays:
                 logger.debug(f"{sp} not found in graph {self.graph.nodes()}")
                 continue
             array = self.find_array(sp, traversed)
-            logger.info(f"found array instances {array}")
+            if array:
+                logger.debug(f"found array instances {array}")
         logger.debug(f"updated match pairs: {pprint.pformat(self.match_pairs, indent=4)}")
 
     def find_array(self, start_node: str, traversed: list):
