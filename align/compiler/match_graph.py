@@ -5,696 +5,401 @@ Created on Fri Nov  2 21:33:22 2018
 @author: kunal
 """
 #%%
-import os
-import networkx as nx
-from networkx.algorithms import isomorphism
-
-from .merge_nodes import merge_nodes, merged_value,convert_unit
-from .util import max_connectivity
-
+from re import sub
+from align.schema import model
+from align.schema import Model, SubCircuit
+from ..schema.types import set_context
+import pprint
 import logging
+from ..schema import constraint
+from ..schema.instance import Instance
+from ..schema.types import set_context
+from align.schema.graph import Graph
+
 logger = logging.getLogger(__name__)
 
-#%%
-def traverse_hier_in_graph(G, hier_graph_dict):
+
+class Annotate:
     """
-    Recusively reads all hierachies in the graph and convert them to dictionary
-    """
-    for node, attr in G.nodes(data=True):
-        if "sub_graph" in attr and attr["sub_graph"]:
-            logger.debug(f'Traversing sub graph: {node} {attr["inst_type"]} {attr["ports"]}')
-            sub_ports = []
-            mos_body =[]
-            ports_weight = {}
-            for sub_node, sub_attr in attr["sub_graph"].nodes(data=True):
-                if 'net_type' in sub_attr:
-                    if sub_attr['net_type'] == "external":
-                        sub_ports.append(sub_node)
-                        ports_weight[sub_node] = []
-                        for nbr in list(attr["sub_graph"].neighbors(sub_node)):
-                            ports_weight[sub_node].append(attr["sub_graph"].get_edge_data(sub_node, nbr)['weight'])
-                elif 'body_pin' in sub_attr:
-                    mos_body.append(sub_attr['body_pin'])
-                    ports_weight[sub_attr['body_pin']]=[0]
-
-
-            logger.debug(f'external ports: {sub_ports}, {attr["connection"]}, {ports_weight}')
-            hier_graph_dict[attr["inst_type"]] = {
-                "graph": attr["sub_graph"],
-                "ports": sub_ports,
-                "ports_weight": ports_weight,
-                "mos_body": mos_body,
-                "connection": attr["connection"]
-            }
-
-            traverse_hier_in_graph(attr["sub_graph"], hier_graph_dict)
-
-
-#%%
-def read_inputs(name,hier_graph):
-    """
-    read circuit graphs
-    """
-    hier_graph_dict = {}
-    top_ports = []
-    ports_weight = {}
-    mos_body =[]
-    for node, attr in hier_graph.nodes(data=True):
-        if 'source' in attr['inst_type']:
-            for source_nets in hier_graph.neighbors(node):
-                top_ports.append(source_nets)
-        elif 'net_type' in attr:
-            if attr['net_type'] == "external":
-                top_ports.append(node)
-                ports_weight[node]=[]
-                for nbr in list(hier_graph.neighbors(node)):
-                    ports_weight[node].append(hier_graph.get_edge_data(node, nbr)['weight'])
-        elif 'body_pin' in attr:
-            mos_body.append(attr['body_pin'])
-            ports_weight[attr['body_pin']]=[0]
-
-
-    logger.debug("READING top circuit graph: ")
-    hier_graph_dict[name] = {
-        "graph": hier_graph,
-        "ports": top_ports,
-        "ports_weight": ports_weight,
-        "mos_body": mos_body,
-        "connection": None
-    }
-    traverse_hier_in_graph(hier_graph, hier_graph_dict)
-    logger.debug(f"read graph {hier_graph_dict}")
-    return hier_graph_dict
-
-
-#%%
-def read_lib(lib_dir_path):
-    """
-    read all library graphs
-    """
-    library_dir_path = lib_dir_path
-    lib_files = os.listdir(library_dir_path)
-    if os.path.isfile("dont_use_cells.txt"):
-        logger.debug("Reading Dont Use cells: dont_use_cells.txt")
-        with open('dont_use_cells.txt') as dont_use_file:
-            dont_use_library = dont_use_file.read().splitlines()
-    else:
-        dont_use_library = []
-        logger.debug("no dont use list defined")
-
-    library = []
-    for sub_block_name in lib_files:
-        graph = nx.read_yaml(library_dir_path + sub_block_name)
-        if sub_block_name[:-5] not in dont_use_library:
-            subgraph_ports = []
-            for node, attr in graph.nodes(data=True):
-                if 'net' in attr['inst_type']:
-                    if 'external' in attr['net_type']:
-                        subgraph_ports.append(node)
-            library.append({
-                "name": sub_block_name[:-5],
-                "graph": graph,
-                "ports": subgraph_ports,
-                "conn": max_connectivity(graph)
-            })
-            logger.debug(f"Read lib: {sub_block_name}, {subgraph_ports}")
-
-    return sorted(library, key=lambda k: k['conn'], reverse=True)
-
-def fix_order_for_multimatch(G1,map_list,Gsub):
-    for previous_match in map_list[:-1]:
-        if set(Gsub.keys())==set(previous_match.keys()):
-            logger.debug(f'fixing repeated node matches {Gsub.keys()} {previous_match.keys()}')
-            #delta is an assumed number to define order
-            gsub_identifier= '_'.join([Gsub[key] for key in sorted(Gsub.keys())])
-            prev_identifier= '_'.join([previous_match[key] for key in sorted(Gsub.keys())])
-            if gsub_identifier>prev_identifier:
-                logger.debug(f'replacing match, {prev_identifier} with {gsub_identifier}')
-                map_list.remove(previous_match)
-                return
-            else:
-                logger.debug(f'removing new match')
-                map_list.remove(Gsub)
-
-                
-  
-#%%
-def _mapped_graph_list(G1, liblist,POWER=None,CLOCK=None, DIGITAL=False):
-    """
-    find all matches of library element in the graph
+    Creates hierarchies in the graph based on a library or user defined groupblock constraint
+    Boundries (clk,digital, etc) are defined from setup file
     """
 
-    logger.debug("Matching circuit Graph from library elements")
-    mapped_graph_list = {}
+    def __init__(self, ckt_data, design_setup, library, existing_generator):
+        """
+        Args:
+            ckt_data (dict): all subckt graph, names and port
+            design_setup (dict): information from setup file
+            library (list): list of library elements in dict format
+            existing_generator (list): list of names of existing generators
+        """
+        self.ckt_data = ckt_data
+        self.digital = design_setup["DIGITAL"]
+        self.pg = design_setup["POWER"] + design_setup["GND"]
+        self.lib = library
+        self.clk = design_setup["CLOCK"]
+        self.all_lef = existing_generator
+        self.stop_points = self.pg + self.clk
+        self.identify_array = design_setup["IDENTIFY_ARRAY"]
+        self.lib_names = [lib_ele.name for lib_ele in library]
 
-    for lib_ele in liblist:
-        G2 = lib_ele['graph']
-        # DIgital blocks only transistors:
-        nd = [node for node in G2.nodes()
-                if 'net' not in G2.nodes[node]["inst_type"]]
-        if DIGITAL and len(nd)>1:
-            continue
+    def _is_skip(self, ckt):
+        di_const = [
+            const.instances
+            for const in ckt.constraints
+            if isinstance(const, constraint.DoNotIdentify)
+        ]
+        # Changing 2D list to 1D list
+        if len(di_const) > 0:
+            di_const = [x for y in di_const for x in y]
+        return di_const
 
-        sub_block_name = lib_ele['name']
-        logger.debug(f"Matching: {sub_block_name} : {' '.join(G2.nodes())}")
-        GM = isomorphism.GraphMatcher(
-            G1, G2,
-            node_match=isomorphism.categorical_node_match(['inst_type'],
-                                                          ['nmos']),
-            edge_match=isomorphism.categorical_edge_match(['weight'], [1]))
-
-        if GM.subgraph_is_isomorphic():
-            logger.debug(f"ISOMORPHIC : {sub_block_name}")
-            map_list = []
-            for Gsub in GM.subgraph_isomorphisms_iter():
-                    
-                all_nd = [key for key in Gsub.keys() if 'net' not in G1.nodes[key]["inst_type"]]
-                logger.debug(f"matched inst: {all_nd}")
-                
-                if len(all_nd)>1 and dont_touch_clk(Gsub,CLOCK):
-                    logger.debug("Discarding match due to clock")
-                    continue
-                if sub_block_name.startswith('DP')  or sub_block_name.startswith('CMC'):
-                    if G1.nodes[all_nd[0]]['values'] == G1.nodes[all_nd[1]]['values'] and \
-                        compare_balanced_tree(G1,get_key(Gsub,'DA'),get_key(Gsub,'DB'),[all_nd[0]],[all_nd[1]]) :
-                        if 'SA' in Gsub.values() and \
-                        compare_balanced_tree(G1,get_key(Gsub,'SA'),get_key(Gsub,'SB'),[all_nd[0]],[all_nd[1]]):
-                            map_list.append(Gsub)
-                            logger.debug(f"Matched Lib: {' '.join(Gsub.values())}")
-                            logger.debug(f"Matched Circuit: {' '.join(Gsub)}")
-                        # remove pseudo diff pair
-                        elif sub_block_name.startswith('DP') and POWER is not None and get_key(Gsub,'S') in POWER:
-                            logger.debug(f"skipping pseudo DP {POWER}: {' '.join(Gsub)}")
-                        else:
-                            map_list.append(Gsub)
-                            logger.debug(f"Matched Lib: {' '.join(Gsub.values())}")
-                            logger.debug(f"Matched Circuit: {' '.join(Gsub)} power:{POWER}")
-                    else:
-                        logger.debug(f"Discarding match {sub_block_name}, {G1.nodes[all_nd[0]]['values']}, {G1.nodes[all_nd[1]]['values']}")
-                # elif sub_block_name=='INV_LVT' and POWER is not None:
-                #     if get_key(Gsub,'SN') in POWER and get_key(Gsub,'SP') in POWER:                     
-                #         map_list.append(Gsub)
-                        
-                #     else:
-                #         logger.debug('skipped inverters')                   
-                else:
-                    map_list.append(Gsub)
-                    logger.debug(f"Matched Lib: {' '.join(Gsub.values())}")
-                    logger.debug(f"Matched Circuit: {' '.join(Gsub)}")
-                if len(map_list)>1:    
-                    fix_order_for_multimatch(G1,map_list,map_list[-1])
-                    
-
-            mapped_graph_list[sub_block_name] = map_list
-
-    return mapped_graph_list
-#%%
-def dont_touch_clk(Gsub,CLOCK):
-    if CLOCK and CLOCK is not None:
-        for clk in CLOCK:
-            if clk in Gsub:
-                return True
-    return False
-def read_setup(setup_path):
-    design_setup = {
-            "POWER":['vdd'],
-            "GND":[],
-            "CLOCK":[],
-            "DIGITAL":[],
-            "DONT_USE_CELLS":[]
-            }
-    if os.path.isfile(setup_path):
-        logger.debug(f'Reading setup file: {setup_path}')
-        fp = open(setup_path, "r")
-        line = fp.readline()
-        while line:
-            if line.strip().startswith("POWER"):
-                power = line.strip().split('=')[1].split()
-                design_setup['POWER']=power
-            elif line.strip().startswith("GND"):
-                GND = line.strip().split('=')[1].split()
-                design_setup['GND']=GND
-            elif line.strip().startswith("CLOCK"):
-                CLOCK = line.strip().split('=')[1].split()
-                design_setup['CLOCK']=CLOCK
-            elif line.strip().startswith("DIGITAL"):
-                DIGITAL = line.strip().split('=')[1].split()
-                design_setup['DIGITAL']=DIGITAL
-            elif line.strip().startswith("DONT_USE_CELLS"):
-                DONT_USE_CELLS = line.strip().split('=')[1].split()
-                design_setup['DONT_USE_CELLS']=DONT_USE_CELLS
-            else:
-                logger.warning(f"Non identified values found {line}")
-            line=fp.readline()
-        logger.debug(f"SETUP: {design_setup}")
-    else:
-        logger.warning(f"no setup file found: {setup_path}")
-    return design_setup
-
-def get_key(Gsub, value):
-    return list(Gsub.keys())[list(Gsub.values()).index(value)]
-
-def get_next_level(G, tree_l1):
-    tree_next=[]
-    for node in list(tree_l1):
-        if node not in G.nodes:
-            continue
-        #logger.debug(f"neighbors of {node}: {list(G.neighbors(node))}")
-        if 'mos' in G.nodes[node]["inst_type"]:
-            for nbr in list(G.neighbors(node)):
-                if G.get_edge_data(node, nbr)['weight']!=2:
-                    tree_next.append(nbr)
-        elif 'net' in G.nodes[node]["inst_type"]:
-            for nbr in list(G.neighbors(node)):
-                if 'mos' in G.nodes[nbr]["inst_type"] and \
-                G.get_edge_data(node, nbr)['weight']!=2:
-                    tree_next.append(nbr)
-                elif 'mos' not in G.nodes[nbr]["inst_type"]:
-                    tree_next.append(nbr)               
-        else:
-            tree_next.extend(list(G.neighbors(node)))
-    return tree_next
-
-
-def compare_balanced_tree(G, node1:str, node2:str, traversed1:list, traversed2:list):
-    """
-    used to remove some false matches for DP and CMC
-    """
-    logger.debug(f"checking symmtrical connections for nodes: {node1}, {node2}")
-    tree1 = set(get_next_level(G,[node1]))
-    tree2 = set(get_next_level(G,[node2]))
-    #logger.debug("tree1 %s tree2 %s",set(tree1),set(tree2))
-    traversed1.append(node1)
-    traversed2.append(node2)
-    if tree1==tree2:
-        logger.debug("common net or device")
-        return True
-    while(len(list(tree1))== len(list(tree2)) > 0):
-        logger.debug(f"tree1 {tree1} tree2 {tree2} traversed1 {traversed1} traversed2 {traversed2}")
-        tree1 = set(tree1) - set(traversed1)
-        tree2 = set(tree2) - set(traversed2)
-        logger.debug(f"removed traversed elements tree1 {tree1} tree2 {tree2}")
-        #type1 = [G.nodes[node]["inst_type"] for node in list(tree1)]
-        #type2 = [G.nodes[node]["inst_type"] for node in list(tree2)]
-        if tree1.intersection(tree2) or len(list(tree1))== len(list(tree2))==0:
-            logger.debug("matched subgraph")
+    def _is_digital(self, ckt):
+        if ckt.name in self.digital:
             return True
         else:
-            traversed1+=list(tree1)
-            traversed2+=list(tree2)
-            tree1=set(get_next_level(G,tree1))
-            tree2=set(get_next_level(G,tree2))
-            logger.debug(f"checking next level:tree1 {tree1} tree2: {tree2}")
+            return False
 
-    logger.debug(f"Non symmetrical branches for nets: {node1}, {node2}")
-    return False
+    def annotate(self):
+        """
+        main function to creates hierarchies in the block
+        iterativily goes through all subckts in the netlist
+        Reduce graph to a list of nodes
+        Returns:
+            list: all updated circuit list
+        """
+        logger.debug(
+            f"ALl  subckt:{[ckt.name for ckt in self.ckt_data if isinstance(ckt, SubCircuit)]}"
+        )
 
-def reduce_graph(circuit_graph, mapped_graph_list, liblist, check_duplicates=None, DIGITAL=None,POWER=None,CLOCK=None):
-    """
-    merge matched graphs
-    """
-    logger.debug("START reducing graph: ")
-    G1 =circuit_graph.copy()
-    updated_circuit = []
-    if check_duplicates == None:
-        check_duplicates={}
-    for lib_ele in liblist:
-        G2 = lib_ele['graph']
-        sub_block_name = lib_ele['name']
+        # names = list(self.ckt_data)
+        for ckt in self.ckt_data:
+            if isinstance(ckt, SubCircuit):
+                circuit_name = ckt.name
+                self._group_block_const(circuit_name)
+                self._group_cap_const(circuit_name)
 
-        if sub_block_name in mapped_graph_list:
-            logger.debug(f"Reducing ISOMORPHIC sub_block: {sub_block_name}{mapped_graph_list[sub_block_name]}")
+        logger.debug(
+            f"All subckt after grouping:{[ckt.name for ckt in self.ckt_data if isinstance(ckt, SubCircuit)]}"
+        )
 
-            for Gsub in sorted(mapped_graph_list[sub_block_name], key= lambda i: '_'.join(sorted(i.keys()))):
-                already_merged = 0
-                for g1_node in Gsub:
-                    if g1_node not in G1:
-                        already_merged = 1
-                        logger.debug(f"Skip merging. Node absent: {g1_node}")
-                        break
-
-                if already_merged:
-                    continue
-                remove_these_nodes = [
-                    key for key in Gsub
-                    if 'net' not in G1.nodes[key]["inst_type"]]
-                logger.debug(f"Reduce nodes: {', '.join(remove_these_nodes)}")
-
-                # Define ports for subblock
-                matched_ports = {}
-                ports_weight = {}
-                for g1_n, g2_n in Gsub.items():
-                    if 'net' not in G1.nodes[g1_n]["inst_type"]:
-                        G2.nodes[g2_n]['values'] = G1.nodes[g1_n]['values']
-
-                        if 'MOS' in sub_block_name and 'mos' in G1.nodes[g1_n]['inst_type']:
-                            matched_ports['B'] = G1.nodes[g1_n]['body_pin']
-                            ports_weight['B'] = [0]
-                            logger.debug(f'Adding body pin: {g1_n}')
-                    elif 'external' in G2.nodes[g2_n]["net_type"]:
-                        matched_ports[g2_n] = g1_n
-                        ports_weight[g2_n] = []
-                        for nbr in list(G2.neighbors(g2_n)):
-                            ports_weight[g2_n].append(G2.get_edge_data(g2_n, nbr)['weight'])
-                        
-                logger.debug(f"match: {' '.join(Gsub)}")
-                logger.debug(f"Matched ports: {' '.join(matched_ports)}")
-                logger.debug(f"Matched nets : {' '.join(matched_ports.values())}")
-
-                if len(remove_these_nodes) == 1:
-                    logger.debug(f"One node element: {sub_block_name}")
-                    G1.nodes[
-                        remove_these_nodes[0]]["inst_type"] = sub_block_name
-                    G1.nodes[
-                        remove_these_nodes[0]]["ports_match"] = matched_ports
-                    updated_values = merged_value({}, G1.nodes[remove_these_nodes[0]]["values"])
-                    check_values(updated_values)
-                    G1.nodes[remove_these_nodes[0]]["values"] = updated_values
-                    for local_value in updated_values.values():
-                        if not isinstance(local_value, float):
-                            logger.error(f"unidentified sizing: {G1.nodes[remove_these_nodes[0]]}")
-                else:
-                    logger.debug(f"Multi node element: {sub_block_name}")
-                    _, subgraph,new_node = merge_nodes(
-                        G1, sub_block_name, remove_these_nodes, matched_ports)
-                    logger.debug(f'Calling recursive for bock: {sub_block_name}')
-                    mapped_subgraph_list = _mapped_graph_list(
-                        G2, [
-                            i for i in liblist
-                            if not (i['name'] == sub_block_name)
-                        ])
-                    logger.debug("Recursive calling to find sub_sub_ckt")
-                    updated_subgraph_circuit, Grest = reduce_graph(
-                        G2, mapped_subgraph_list,liblist,check_duplicates)
-                    check_nodes(updated_subgraph_circuit)
-
-                    updated_circuit.extend(updated_subgraph_circuit)
-                    logger.debug(f"adding new sub_ckt: {sub_block_name}")
-                    check_nodes(updated_circuit)
-                    logger.debug(f"adding remaining ckt: {sub_block_name}")
-                    if sub_block_name not in check_duplicates.keys() or \
-                        G1.nodes[new_node]["values"] == check_duplicates[sub_block_name][0]:
-                        update_name = sub_block_name
-                   
-                        check_duplicates[sub_block_name]=[G1.nodes[new_node]["values"]]
-                    elif G1.nodes[new_node]["values"] in check_duplicates[sub_block_name]:
-                        update_name= sub_block_name+'_type'+ str(check_duplicates[sub_block_name].index(G1.nodes[new_node]["values"]))
-                        G1.nodes[new_node]["inst_type"]=update_name
-                        
+        traversed = []  # libray gets appended, so only traverse subckt once
+        temp_match_dict = {}  # To avoid iterative calls (search subckt in subckt)
+        for ckt in self.ckt_data:
+            if self._is_digital(ckt):
+                continue
+            if (
+                isinstance(ckt, SubCircuit)
+                and ckt.name not in self.all_lef
+                and ckt.name not in traversed
+            ):
+                netlist_graph = Graph(ckt)
+                skip_nodes = self._is_skip(ckt)
+                logger.debug(
+                    f"START MATCHING in circuit: {ckt.name} count: {len(ckt.elements)} \
+                    ele: {[e.name for e in ckt.elements]} traversed: {traversed} skip: {skip_nodes}"
+                )
+                traversed.append(ckt.name)
+                for subckt in self.lib:
+                    if subckt.name == ckt.name or (
+                        subckt.name in temp_match_dict
+                        and ckt.name in temp_match_dict[subckt.name]
+                    ):
+                        continue
+                    new_subckts = netlist_graph.replace_matching_subgraph(
+                        Graph(subckt), skip_nodes
+                    )
+                    if subckt.name in temp_match_dict:
+                        temp_match_dict[subckt.name].extend(new_subckts)
                     else:
-                        update_name = sub_block_name+'_type'+ str(len(check_duplicates[sub_block_name]))
-                        G1.nodes[new_node]["inst_type"]=update_name
+                        temp_match_dict[subckt.name] = new_subckts
+                # TODO array identification
+                logger.debug(
+                    f"Circuit after MATCHING: {ckt.name} {[e.name for e in ckt.elements]}"
+                )
+        logger.debug(
+            f"Subcircuits after creating primitive hiearchy {[ckt.name for ckt in self.ckt_data if isinstance(ckt, SubCircuit)]}"
+        )
+        return self.lib_names
 
-                        check_duplicates[sub_block_name]+=[G1.nodes[new_node]["values"]]
-                    updated_circuit.append({
-                            "name": update_name,
-                            "graph": Grest,
-                            "ports": list(matched_ports.keys()),
-                            "ports_match": matched_ports,
-                            "ports_weight": ports_weight,
-                            "size": len(subgraph.nodes())
-                        })
+    def _check_const_length(self, const_list, const):
+        is_append = False
+        try:
+            with set_context(const_list):
+                if hasattr(const, "instances") and len(const.instances) > 0:
+                    is_append = True
+                # TODO: remove dict type
+                elif (
+                    isinstance(const, dict)
+                    and "instances" in const
+                    and len(const["instances"]) == 0
+                ):
+                    pass
+                    # skipping const of zero length
+                elif not hasattr(const, "instances"):
+                    is_append = True
+                else:
+                    logger.debug(f"invalid constraint {const}")
+                if is_append == True and const not in const_list:
+                    logger.debug(f"constraint appended: {const}")
+                    const_list.append(const)
+        except:
+            logger.debug(f"skipping invalid constraint {const}")
 
-                        
-                    check_nodes(updated_circuit)
-    logger.debug(f"Finished one branch: {sub_block_name}")
+    def _remove_group_const(self, subckt, rm_const):
+        with set_context(subckt.constraints):
+            start_count = len(subckt.constraints)
+            for const in rm_const:
+                subckt.constraints.remove(const)
+            assert len(subckt.constraints) == start_count - len(rm_const)
 
-    return updated_circuit, G1
-def change_SD(G,node):
-    nbr = list(G.neighbors(node))
-    #No gate change
-    nbr = [nr for nr in nbr if G.get_edge_data(node, nr)['weight']!=2]
-    #Swapping D and S
-    w1 = G.get_edge_data(node, nbr[0])['weight']
-    w2 = G.get_edge_data(node, nbr[1])['weight']
-    G.get_edge_data(node, nbr[0])['weight'] = w2
-    G.get_edge_data(node, nbr[1])['weight'] = w1
+    def _group_block_const(self, name):
+        subckt = self.ckt_data.find(name)
+        const_list = subckt.constraints
 
-def define_SD(G,power,gnd,clk):
-    logger.debug("START checking source and drain in graph: ")
-    try:
-        gotpower=power[0]
-        gotgnd=gnd[0]
-        logger.debug(f"using power: {gotpower} and ground: {gotgnd}")
+        if not const_list:
+            return
+        gb_const = [
+            const
+            for const in subckt.constraints
+            if isinstance(const, constraint.GroupBlocks)
+        ]
+        self._remove_group_const(subckt, gb_const)
 
-    except (IndexError, ValueError):
-        logger.error("no power and gnd defination, correct setup file")
-        return False
+        for const in gb_const:
+            assert (
+                self.ckt_data.find(const.name.upper()) == None
+            ), f"Already existing subckt with this name, please provide different name to const"
+            const_inst = [i.upper() for i in const.instances]
+            ckt_ele = set([ele.name for ele in subckt.elements])
+            assert set(const_inst).issubset(
+                ckt_ele
+            ), f"Constraint instances: {const_inst} not in subcircuit {subckt.name}"
+            # ac_nets : all nets connected to group block instances
+            ac_nets = [
+                ele.pins.values() for ele in subckt.elements if ele.name in const_inst
+            ]
+            ac_nets = set([x for y in ac_nets for x in y])
+            # Filter internal nets but skip internal net connected to port
+            ac_nets = [
+                net
+                for net in ac_nets
+                if any(
+                    net in ele.pins.values()
+                    for ele in subckt.elements
+                    if not ele.name in const_inst
+                )
+            ] + list(ac_nets & set(subckt.pins))
+            ac_nets = list(set(ac_nets))
 
-    probable_changes_p=[]
-    if power[0] in G.nodes():
-        high=power.copy()
-        traversed = power.copy()
-        while high:
-            try:
-                nxt = high.pop(0)
-                for node in get_next_level(G,[nxt]):
-                    if G.get_edge_data(node,nxt)==2 or node in traversed:
-                        continue
-                    if set(G.neighbors(node)) & set(clk):
-                        continue
-                    #logger.debug("VDD:checking node: %s %s %s ", node, high,traversed)
-                    if 'pmos' == G.nodes[node]["inst_type"] and \
-                        node not in traversed:
-                        weight =G.get_edge_data(node, nxt)['weight']
-                        if weight == 1 or weight==3 :
-                            logger.debug("VDD:changing source drain:%s",node)
-                            probable_changes_p.append(node)
-                    elif 'nmos' == G.nodes[node]["inst_type"] and \
-                    node not in traversed:
-                        weight =G.get_edge_data(node, nxt)['weight']
-                        if weight == 4 or weight==6 :
-                            #logger.debug("VDD:changing source drain:%s",node)
-                            probable_changes_p.append(node)
-                    if node not in traversed and node not in  gnd:
-                        high.append(node)
-                    traversed.append(node)
-            except (TypeError, ValueError):
-                logger.debug(f"All source drain checked: {high}")
-                break
-    probable_changes_n=[]
-    if gnd[0] in G.nodes():
-        low=gnd.copy()
-        traversed=gnd.copy()
-        while low:
-            try:
-                nxt = low.pop(0)
-                for node in get_next_level(G,[nxt]):
-                    if G.get_edge_data(node,nxt)==2 or node in traversed:
-                        continue
-                    if set(G.neighbors(node)) & set(clk):
-                        continue
-                    #logger.debug("GND:checking node: %s %s %s ", node, low,traversed)
-                    if 'pmos' == G.nodes[node]["inst_type"] and \
-                        node not in traversed:
-                        weight =G.get_edge_data(node, nxt)['weight']
-                        if weight == 4 or weight==6 :
-                            #logger.debug("GND:changing source drain:%s",node)
-                            #change_SD(G,node)
-                            probable_changes_n.append(node)
-                    elif 'nmos' == G.nodes[node]["inst_type"] and \
-                    node not in traversed:
-                        weight =G.get_edge_data(node, nxt)['weight']
-                        if weight == 1 or weight==3 :
-                            logger.debug("GND:changing source drain:%s",node)
-                            #change_SD(G,node)
-                            probable_changes_n.append(node)
-                    if node not in traversed and node not in  power:
-                        low.append(node)
-                    traversed.append(node)
-            except (TypeError, ValueError):
-                logger.debug(f"All source drain checked: {low}")
-                break
-    for node in list (set(probable_changes_n) & set(probable_changes_p)):
-        logger.warning(f"changing source drain: {node}")
-        change_SD(G,node)
+            logger.debug(
+                f"Grouping instances {const_inst} in subckt {const.name.upper()} pins: {ac_nets}"
+            )
+            # Create a subckt and add to library
+            with set_context(self.ckt_data):
+                new_subckt = SubCircuit(name=const.name.upper(), pins=ac_nets)
+                self.ckt_data.append(new_subckt)
+            # Add all instances of groupblock to new subckt
+            with set_context(new_subckt.elements):
+                for e in const_inst:
+                    new_subckt.elements.append(subckt.get_element(e))
+            # Remove elements from subckt then Add new_subckt instance
+            inst_name = "X_" + const.name.upper() + "_" + "_".join(const_inst)
+            with set_context(subckt.elements):
+                for e in const_inst:
+                    subckt.elements.remove(subckt.get_element(e))
+                X1 = Instance(
+                    name=inst_name,
+                    model=const.name.upper(),
+                    pins={x: x for x in ac_nets},
+                    generator=const.name.upper(),
+                )
+                subckt.elements.append(X1)
+            # Translate any constraints defined on the groupblock elements to subckt
+            self._top_to_bottom_translation(
+                name, {inst: inst for inst in const_inst}, const.name
+            )
+            # Modify instance names in constraints after modifying groupblock
+            self._update_const(name, [const.name.upper(), *const_inst], inst_name)
+        # Removing const with single instances.
+        for c in list(const_list):
+            self._check_const_length(self.ckt_data.find(name).constraints, c)
 
+    def _group_cap_const(self, name):
+        # TODO: merge group cap and group block
+        """
+        Reads common centroid const in input constraints
+        Merges cc caps as single cap in const-file and netlist
+        Parameters
+        ----------
+        graph : networkx graph
+            Input graph to be modified
+        const_path: pathlib.path
+            Input const file path
+        ports : list
+            Used to check nets which should not be deleted/renamed.
+        Returns
+        -------
+        None.
 
-def add_parallel_caps(G):
-    logger.debug(f"merging all caps, initial graph size: {len(G)}")
-    remove_nodes = []
-    for node, attr in G.nodes(data=True):
-        if 'cap' in attr["inst_type"] and node not in remove_nodes:
-            for net in G.neighbors(node):
-                for next_node in G.neighbors(net):
-                    if not next_node == node  and next_node not in remove_nodes and G.nodes[next_node][
-                        "inst_type"] == G.nodes[node]["inst_type"] and\
-                        len(set(G.neighbors(node)) & set(G.neighbors(next_node)))==2:
-                        for param, value in G.nodes[node]["values"].items():
-                            if param == 'cap':
-                                c_val = float(convert_unit(value))+ \
-                                float(convert_unit(G.nodes[next_node]["values"]['cap']))
-                                remove_nodes.append(next_node)
-                                G.nodes[node]["values"]['cap']=c_val
-                            elif param == 'c':
-                                c_val = float(convert_unit(value))+ \
-                                float(convert_unit(G.nodes[next_node]["values"]['c']))
-                                remove_nodes.append(next_node)
-                                G.nodes[node]["values"]['c']=c_val
-    if len(remove_nodes)>0:
-        logger.debug(f"removed parallel caps: {remove_nodes}")
-        for node in remove_nodes:
-            G.remove_node(node)
-            
-def add_series_res(G):
-    logger.debug(f"merging all series res, initial graph size: {len(G)}")
-    remove_nodes = []
-    for net, attr in G.nodes(data=True):
-        if 'net' in attr["inst_type"] and len(set(G.neighbors(net)))==2 \
-            and net not in remove_nodes and attr["net_type"]!="external":
-            nbr_type =[G.nodes[nbr]["inst_type"] for nbr in list(G.neighbors(net))]
-            combined_r,remove_r=list(G.neighbors(net))
-            if nbr_type[0]==nbr_type[1]=='res':
-                remove_nodes+=[net,remove_r]
-                new_net=list(set(G.neighbors(remove_r))-set(net)-set(remove_nodes))[0]
-                for param, value in G.nodes[combined_r]["values"].items():
-                    if param == 'res':
-                        r_val = float(convert_unit(value))+ \
-                        float(convert_unit(G.nodes[remove_r]["values"]['res']))
-                        G.nodes[combined_r]["values"]['res']=r_val
-                        G.add_edge(combined_r, new_net, weight=G[combined_r][net]["weight"])
-                    elif param == 'r':
-                        r_val = float(convert_unit(value))+ \
-                        float(convert_unit(G.nodes[remove_r]["values"]['r']))
-                        G.nodes[combined_r]["values"]['r']=r_val
-                        G.add_edge(combined_r, new_net, weight=G[combined_r][net]["weight"])
-    if len(remove_nodes)>0:
-        logger.debug(f"removed series r: {remove_nodes}")
-        for node in remove_nodes:
-            G.remove_node(node)
-        #to remove 3 in series
-        add_series_res(G)
-def add_parallel_transistor(G):
-    logger.debug(f"merging all parallel transistors, initial graph size: {len(G)}")
-    remove_nodes = []
-    for node, attr in G.nodes(data=True):
-        if 'mos' in attr["inst_type"] and node not in remove_nodes:
-            for net in G.neighbors(node):
-                for next_node in G.neighbors(net):
-                    
-                    if not next_node == node  and next_node not in remove_nodes and G.nodes[next_node][
-                        "inst_type"] == G.nodes[node]["inst_type"] and G.nodes[next_node][
-                        "values"] == G.nodes[node]["values"] and \
-                        set(G.neighbors(node)) == set(G.neighbors(next_node)):
-                        nbr_wt_node=[G.get_edge_data(node, nbr)['weight'] for nbr in G.neighbors(node)]
-                        nbr_wt_next_node=[G.get_edge_data(next_node, nbr)['weight'] for nbr in G.neighbors(node)]
-                        if nbr_wt_node != nbr_wt_next_node:
-                            #cross connections
-                            continue
-                        if 'm' in G.nodes[node]["values"]:
-                            remove_nodes.append(next_node)
-                            G.nodes[node]["values"]['m']=2*float(convert_unit(G.nodes[node]["values"]['m']))
-                        else:
-                            remove_nodes.append(next_node)
-                            G.nodes[node]["values"]['m']=2
-    if len(remove_nodes)>0:
-        logger.debug(f"removed parallel transistors: {remove_nodes}")
-        for node in remove_nodes:
-            G.remove_node(node)
-def add_stacked_transistor(G):
-    logger.debug("START reducing  stacks in graph: ")
-    logger.debug(f"initial size of graph: {len(G)}")
-    remove_nodes = []
-    modified_edges = {}
-    modified_nodes = {}
-    # for net, attr in G.nodes(data=True):
-    #     if 'net' in attr["inst_type"] and len(set(G.neighbors(net)))==2 \
-    #         and net not in remove_nodes and attr["net_type"]!="external":
-    #         nbr1,nbr2 = list(G.neighbors(net))
-    #         nbr1_type = G.nodes[nbr1]["inst_type"]
-    #         nbr2_type = G.nodes[nbr2]["inst_type"]
-    #         nbr1_wt = G.get_edge_data(nbr1, net)['weight']
-    #         nbr2_wt = G.get_edge_data(nbr2, net)['weight']
-    #         common_nets = set(G.neighbors(nbr1)) & set(G.neighbors(nbr2))
+        """
+        subckt = self.ckt_data.find(name)
+        const_list = subckt.constraints
+        gc_const = [
+            const
+            for const in subckt.constraints
+            if isinstance(const, constraint.GroupCaps) and len(const.instances) > 1
+        ]
+        if len(gc_const) > 0:
+            logger.info(f"Existing GroupCaps constraint {gc_const} for subckt {name}")
+        else:
+            return
 
-    #         if nbr1_type==nbr2_type and 'mos' in nbr1_type and len (common_nets)==2:
-    #             if nbr1_wt==1 and nbr2_wt==4:
-    #                 logger.debug(f"stacking two transistors: {net}, {nbr1}, {nbr2}")
-    #             elif nbr1_wt==4 and nbr2_wt==1:
-    #                 temp=nbr1
-    #                 nbr1=nbr2
-    #                 nbr2=temp
-    #                 logger.debug(f"stacking two transistors: {net}, {nbr1}, {nbr2}")
-    #             else:
-    #                 continue
+        for const in gc_const:
+            for i in range(len(const.instances)):
+                const.instances[i] = const.instances[i].upper()
+            const_inst = [i for i in const.instances]
 
-    #             source_net = [next_net for next_net in G.neighbors(nbr1) if G.get_edge_data(nbr1, next_net)['weight']==4][0]
-    #             gate_net = [next_net for next_net in G.neighbors(nbr1) if G.get_edge_data(nbr1, next_net)['weight']==2][0]
-    #             drain_net = [next_net for next_net in G.neighbors(nbr2) if G.get_edge_data(nbr2, next_net)['weight'] & 1 ==1][0]
-    for node, attr in G.nodes(data=True):
-        if 'mos' in attr["inst_type"] and node not in remove_nodes:
-            for net in G.neighbors(node):
-                edge_wt = G.get_edge_data(node, net)['weight']
-                if edge_wt == 4 and len(list(G.neighbors(net))) == 2 :
-                    for next_node in G.neighbors(net):
-                        logger.debug(f" checking nodes: {node}:{list(G.neighbors(node))}, {next_node}:{list(G.neighbors(next_node))} {net}")
-                        if not next_node == node and G.nodes[next_node][
-                                "inst_type"] == G.nodes[node][
-                                    "inst_type"] and G.get_edge_data(
-                                        next_node, net)['weight'] == 1:
-                            common_nets = set(G.neighbors(node)) & set(
-                                G.neighbors(next_node))
-                            source_net = [snet for snet in G.neighbors(next_node) if  G.get_edge_data( next_node, snet)['weight'] == 4]
-                            gate_net =  [gnet for gnet in G.neighbors(next_node) if  G.get_edge_data( next_node, gnet)['weight'] == 2]
-                            if len(gate_net)==len(source_net)==1 and len(common_nets)>1:
-                                source_net=source_net[0]
-                                gate_net=gate_net[0]
-                            else:
-                                continue
-                            logger.debug(f"stacking two transistors: {node}, {next_node}, {gate_net}, {source_net},{common_nets}")
-                            if G.nodes[net]["net_type"]!="external" and next_node not in modified_nodes:
-                                #source_net = source_net[0]
-                                if G.get_edge_data( node, gate_net)['weight'] >= 2 :
+            assert set(const_inst).issubset(
+                set([e.name for e in subckt.elements])
+            ), f"const instances{const_inst} are not in subckt {name}"
+            # all nets connected to common centroid cap constraints
+            new_pins = {}
+            for i, e in enumerate(const_inst):
+                sc_pins = subckt.get_element(e).pins  # single cap pins
+                new_pins.update({k + str(i): v for k, v in sc_pins.items()})
+            cc_name = "CAP_CC_" + "_".join([str(x) for x in const.num_units])
+            if not self.ckt_data.find(const.name.upper()):
+                # Create a subckt and add to library
+                # Ideally create a subckt initially but did not work at PnR capacitor hack are not compatible
+                with set_context(self.ckt_data):
+                    new_subckt = Model(
+                        name=const.name.upper(), pins=list(new_pins.keys())
+                    )
+                    self.ckt_data.append(new_subckt)
+                # Add all instances of groupblock to new subckt
+                # with set_context(new_subckt.elements):
+                #     for i,e in enumerate(const_inst):
+                #         te = subckt.get_element(e)
+                #         X0 = Instance(name=te.name, model=te.model, \
+                #             pins={k:k+str(i) for k,v in te.pins.items()}, \
+                #             parameters = te.parameters,
+                #             generator=te.generator)
+                #         new_subckt.elements.append(X0)
 
-                                    lequivalent = 0
-                                    for param, value in G.nodes[next_node][
-                                            "values"].items():
-                                        if param == 'l':
-                                            lequivalent = float(
-                                                convert_unit(value))
-                                    for param, value in G.nodes[node][
-                                            "values"].items():
-                                        if param == 'l':
-                                            lequivalent += float(
-                                                convert_unit(value))
-                                            modified_nodes[node] = str(
-                                                lequivalent)
-                                            logger.debug(f"updated node size {node}: {lequivalent} merged {next_node} ")
-                                    remove_nodes.append(net)
-                                    if G.has_edge(node,source_net):
-                                        wt= G[next_node][source_net]["weight"]+G[node][source_net]["weight"]
-                                    else:
-                                         wt= G[next_node][source_net]["weight"]
-                                    modified_edges[node] = [ source_net, wt ]
-                                    logger.debug("success")
-                                    remove_nodes.append(next_node)
-    for node, attr in modified_edges.items():
-        G.add_edge(node, attr[0], weight=attr[1])
+            # Remove elements from subckt then Add new_subckt instance
+            # inst_name = 'X'+'_'.join(const_inst)
+            with set_context(subckt.elements):
+                for e in const_inst:
+                    subckt.elements.remove(subckt.get_element(e))
+                logger.debug(f"pins {new_pins} {new_subckt.pins}")
+                X1 = Instance(
+                    name=const.name.upper(),
+                    model=const.name.upper(),
+                    pins=new_pins,
+                    generator=cc_name,
+                )
+                subckt.elements.append(X1)
+            # Translate any constraints defined on the groupblock elements to subckt
+            # self._top_to_bottom_translation(name, {inst:inst for inst in const_inst}, cc_name)
+            # Modify instance names in constraints after modifying groupblock
+            self._update_const(
+                name, [const.name.upper(), *const_inst], const.name.upper()
+            )
+            # Removing const with single instances.
+        for c in list(const_list):
+            self._check_const_length(self.ckt_data.find(name).constraints, c)
 
-    for node, attr in modified_nodes.items():
-        G.nodes[node]["values"]['l'] = attr
+    def _top_to_bottom_translation(self, top, match_dict, bottom):
+        """
+        Update instance names in the constraint in case they are reduced
 
-    for node in remove_nodes:
-        G.remove_node(node)
-    for node, attr in modified_nodes.items():
-        wt=[G.get_edge_data(node, net)['weight'] for net in G.neighbors(node)]
-        logger.debug(f"new neighbors of {node} {list(G.neighbors(node))} {wt}")
+        Args:
+            top (str): name of subckt
+            match_dict (dict): node mapping
+        """
 
-    logger.debug(f"reduced_size after resolving stacked transistor: {len(G)} {G.nodes()}")
-    logger.debug(
-        "\n######################START CREATING HIERARCHY##########################\n"
-    )
+        logger.debug(
+            f"transfering constraints from top subckt: {top} to bottom subckt: {bottom} "
+        )
+        assert self.ckt_data.find(bottom), f"Hierarchy not found, {bottom}"
+        const_list = self.ckt_data.find(top).constraints
+        sub_const = self.ckt_data.find(bottom).constraints
+        if not sub_const:
+            with set_context(sub_const):
+                for const in list(const_list):
+                    if any(
+                        isinstance(const, x)
+                        for x in [
+                            constraint.HorizontalDistance,
+                            constraint.VerticalDistance,
+                            constraint.BlockDistance,
+                        ]
+                    ):
+                        sub_const.append(const)
+                    elif hasattr(const, "instances"):
+                        # checking if sub hierarchy instances are in const defined
+                        sconst = {
+                            x: [
+                                match_dict[block]
+                                for block in const.instances
+                                if block in match_dict.keys()
+                            ]
+                            if x == "instances"
+                            else getattr(const, x)
+                            for x in const.__fields_set__
+                        }
+                        assert "constraint" in sconst
+                        # logger.debug(f"transferred constraint instances {match_dict} from {const} to {sconst}")
+                        self._check_const_length(
+                            self.ckt_data.find(bottom).constraints, sconst
+                        )
+                logger.debug(f"Transferred constraints to {bottom} {sub_const}")
 
-def check_values(values):
-    for param,value in values.items():
-        logger.debug(f"param, value: {param}, {value}")
-        if param == 'model': continue
-        assert(isinstance(value, int) or isinstance(value, float)), f"ERROR: Parameter value {value} not defined. Check match log"
+    def _update_const(self, name, remove_nodes, new_inst):
+        """
+        Update instance names in the constraint in case they are reduced by groupblock
 
-def check_nodes(graph_list):
-    logger.debug("Checking all values")
-    for local_subckt in graph_list:
-        for node, attr in local_subckt["graph"].nodes(data=True):
-            logger.debug(f":{node}, {attr}")
-            if  not attr["inst_type"] == "net":
-                check_values(attr["values"])
+        Args:
+            name (str): name of subckt
+            G1 (graph): subckt graph
+            remove_nodes (list): nodes which are being removed
+        """
+
+        def _list_replace(lst, old_value, new_value):
+            for i, value in enumerate(lst):
+                if value == old_value:
+                    lst[i] = new_value
+
+        logger.debug(
+            f"update constraints at top hiearchy {name} :{remove_nodes} with {new_inst}"
+        )
+        const_list = self.ckt_data.find(name).constraints
+        for const in const_list:
+            if hasattr(const, "instances"):
+                # checking instances in the constraint and update names
+                if set(const.instances) & set(remove_nodes):
+                    replace = True
+                    for old_inst in remove_nodes:
+                        if replace:
+                            _list_replace(const.instances, old_inst, new_inst)
+                            replace = False
+                        elif old_inst in const.instances:
+                            const.instances.remove(old_inst)
+                    # logger.debug(f"updated instances in the constraint:{const}")
+            elif hasattr(const, "pairs"):
+                for pair in const.pairs:
+                    if len(pair) == 2:
+                        if pair[0] in remove_nodes and pair[1] in remove_nodes:
+                            pair[0] = new_inst
+                            pair.pop()
+                            # logger.debug(f"updated symmetric pair constraint to self symmetry:{const}")
+                        elif pair[0] in remove_nodes and pair[1] not in remove_nodes:
+                            pair[0] = new_inst
+                        elif pair[1] in remove_nodes and pair[0] not in remove_nodes:
+                            pair[1] = new_inst
+                    elif len(pair) == 1:
+                        if pair[0] in remove_nodes:
+                            pair[0] = new_inst
+                            # logger.debug(f"updated self symmetric constraint block:{const}")
+        logger.debug(f"updated constraints of {name} {const_list}")

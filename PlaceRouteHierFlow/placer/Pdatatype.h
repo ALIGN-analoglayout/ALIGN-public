@@ -19,12 +19,17 @@ enum Bmark {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT};
 struct point {
   int x=0;
   int y=0;
+  point (int ix, int iy) : x(ix), y(iy) {}
+  point () : x(0), y(0) {}
+  point& operator += (const point& other) { x += other.x; y += other.y; return *this; }
+  point& operator = (const point& other) { x = other.x; y = other.y; return *this; }
 };
 
 struct Node {
   NType type; // 1: blockPin; 2. Terminal
   int iter; // 1: #blockPin; 2. #Terminal
   int iter2; // 1: #block
+  double alpha;
 };
 
 struct net {
@@ -33,6 +38,8 @@ struct net {
   string priority;
   int weight; // weight for reduced design, used in HPWL
   int margin=0; // margin for reduced design, used in constraint graph
+  double upperBound;
+  double lowerBound;
 };
 
 struct bbox {
@@ -45,7 +52,7 @@ struct SymmBlock {
   int dnode;
   int mapIdx=-1;
   int axis_coor;
-  Smark axis_dir;
+  Smark axis_dir=placerDB::V;
 };
 
 struct nodeStructComp {

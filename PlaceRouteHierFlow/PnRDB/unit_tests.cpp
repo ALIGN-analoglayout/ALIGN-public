@@ -45,6 +45,55 @@ TEST(PnRDBTest, get_number) {
   EXPECT_EQ( foo.get_number( "10000000000000"), 10000000000000ULL);
 }
 
+
+// TEST( EndsWithTest, Test1)
+// {
+//     EXPECT_TRUE( EndsWith( "", ""));
+//     EXPECT_TRUE( EndsWith( "a", ""));
+//     EXPECT_FALSE( EndsWith( "", "a"));
+//     EXPECT_TRUE( EndsWith( "Steve Burns", "Burns"));
+//     EXPECT_FALSE( EndsWith( "Steve Burns", "Treefrog Steve Burns"));
+// }
+
+// TEST( hierNodeTest, TestA)
+// {
+
+//   auto logger = spdlog::default_logger()->clone("PnRDB.TEST");
+
+//   PnRDB::hierNode hN;
+//   hN.name = "hierNodeName";
+
+//   json json_hN(hN);
+
+//   EXPECT_EQ( json_hN["name"], "hierNodeName");
+
+//   {
+//     std::ofstream jsonStream( "__json");
+//     if(jsonStream.fail()) {
+//       logger->error("Cannot open file __json for writing");
+//       return;
+//     }
+//     jsonStream << std::setw(4) << json_hN;
+//     jsonStream.close();
+//   }
+
+// }
+
+// TEST( hierNodeTest, TestInOut)
+// {
+//   std::ifstream ifs( "telescopic_ota-freeze.json");
+//   json j = json::parse( ifs);
+
+//   PnRDB::hierNode hN;
+
+//   j.get_to( hN);
+
+//   json json_hN(hN);
+
+//   EXPECT_EQ( j, json_hN);
+
+// }
+
 TEST(PnRDBTest, Lexer) {
   string str =
 "//Verilog block level netlist file for telescopic_ota\n"
@@ -66,7 +115,7 @@ TEST(PnRDBTest, Lexer) {
   Lexer l(is);
 
   while ( !l.have( TokenType::EndOfFile)) {
-    std::cout << l.current_token << std::endl;
+    //logger->debug("{0}",l.current_token );
     l.get_token();
   }
 }
@@ -92,7 +141,7 @@ TEST(PnRDBTest, Lexer_leading_number) {
   Lexer l(is);
 
   while ( !l.have( TokenType::EndOfFile)) {
-    std::cout << l.current_token << std::endl;
+    //logger->debug("{0}",l.current_token);
     l.get_token();
   }
 }
@@ -118,7 +167,7 @@ TEST(PnRDBTest, Lexer2) {
   Lexer l(is,1);
 
   while ( !l.have( TokenType::EndOfFile)) {
-    std::cout << l.current_token << std::endl;
+    //logger->debug("{0}",l.current_token);
     EXPECT_NE( l.current_token.tt, TokenType::EndOfLine);
     l.get_token();
   }
@@ -355,11 +404,11 @@ endmodule
   EXPECT_EQ( ht.Nets.size(), 16);
   EXPECT_EQ( ht.Terminals.size(), 11);
 
-  cout << "Nets:";
-  for( auto p = ht.Nets.begin(); p != ht.Nets.end(); ++p) {
-    cout << " " << p->name;
-  }
-  cout << endl;
+  //logger->debug("Nets:");
+  //for( auto p = ht.Nets.begin(); p != ht.Nets.end(); ++p) {
+    //logger->debug(" {0}",p->name);
+  //}
+  //cout << endl;
 
   EXPECT_FALSE( ht.isCompleted);
   EXPECT_FALSE( ht.isTop);
@@ -612,11 +661,11 @@ endspecify
   EXPECT_EQ( ht.Nets.size(), 16);
   EXPECT_EQ( ht.Terminals.size(), 11);
 
-  cout << "Nets:";
-  for( auto p = ht.Nets.begin(); p != ht.Nets.end(); ++p) {
-    cout << " " << p->name;
-  }
-  cout << endl;
+  //logger->debug("Nets:");
+  //for( auto p = ht.Nets.begin(); p != ht.Nets.end(); ++p) {
+    //logger->debug(" {0}", p->name);
+  //}
+  //cout << endl;
 
   EXPECT_FALSE( ht.isCompleted);
   EXPECT_FALSE( ht.isTop);

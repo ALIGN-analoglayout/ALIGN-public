@@ -1,5 +1,0 @@
-.eggs/
-junit.xml
-*.pyc
-*~
-.pytest_cache/

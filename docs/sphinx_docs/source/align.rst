@@ -5,6 +5,7 @@ Subpackages
 -----------
 
 .. toctree::
+   :maxdepth: 4
 
    align.cell_fabric
    align.circuit
@@ -32,7 +33,6 @@ align.main module
    :members:
    :undoc-members:
    :show-inheritance:
-
 
 Module contents
 ---------------

@@ -1,0 +1,240 @@
+{
+  "modules": [
+    {
+      "name": "single",
+      "parameters": [
+        "IN",
+        "CLK_M",
+        "CLK_P",
+        "VCMBIAS",
+        "VDDA",
+        "M",
+        "P"
+      ],
+      "constraints": [
+	  {
+	      "constraint": "SymmetricBlocks", "direction": "H", "pairs": [["C"],["M", "P"],["R"]]
+	  }
+      ],
+      "instances": [
+        {
+          "abstract_template_name": "SW_NMOS_wr2u_lr60n_nr16",
+          "instance_name": "M",
+          "fa_map": [
+            { "formal": "D", "actual": "M"},
+            { "formal": "G", "actual": "CLK_M"},
+            { "formal": "S", "actual": "X"},
+            { "formal": "DNWP", "actual": "VDDA"}
+          ]
+        },
+        {
+          "abstract_template_name": "SW_NMOS_wr2u_lr60n_nr16",
+          "instance_name": "P",
+          "fa_map": [
+            { "formal": "D", "actual": "P"},
+            { "formal": "G", "actual": "CLK_P"},
+            { "formal": "S", "actual": "X"},
+            { "formal": "DNWP", "actual": "VDDA"}
+          ]
+        },
+        {
+          "abstract_template_name": "CAP_MIM_wt32_lt32",
+          "instance_name": "C",
+          "fa_map": [
+            { "formal": "MINUS", "actual": "X"},
+            { "formal": "PLUS",  "actual": "VCMBIAS"}
+          ]
+        },
+        {
+          "abstract_template_name": "RES_w1u_l14u",
+          "instance_name": "R",
+          "fa_map": [
+            { "formal": "MINUS", "actual": "X"},
+            { "formal": "PLUS", "actual": "IN"}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "pair",
+      "parameters": [
+        "IN_M",
+        "IN_P",
+        "CLK_M",
+        "CLK_P",
+        "VCMBIAS",
+        "VDDA",
+        "M",
+        "P"
+      ],
+      "constraints": [
+	  { "constraint": "SymmetricBlocks", "direction": "V", "pairs": [["M", "P"]]},
+	  { "constraint": "SameTemplate", "instances": ["P","M"]}
+      ],
+      "instances": [
+        {
+          "abstract_template_name": "single",
+          "instance_name": "M",
+          "fa_map": [
+            { "formal": "IN", "actual": "IN_M"},
+            { "formal": "CLK_M", "actual": "CLK_M"},
+            { "formal": "CLK_P", "actual": "CLK_P"},
+            { "formal": "VCMBIAS", "actual": "VCMBIAS"},
+            { "formal": "VDDA", "actual": "VDDA"},
+            { "formal": "M", "actual": "M"},
+            { "formal": "P", "actual": "P"}
+          ]
+        },
+        {
+          "abstract_template_name": "single",
+          "instance_name": "P",
+          "fa_map": [
+            { "formal": "IN", "actual": "IN_P"},
+            { "formal": "CLK_M", "actual": "CLK_M"},
+            { "formal": "CLK_P", "actual": "CLK_P"},
+            { "formal": "VCMBIAS", "actual": "VCMBIAS"},
+            { "formal": "VDDA", "actual": "VDDA"},
+            { "formal": "M", "actual": "M"},
+            { "formal": "P", "actual": "P"}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "bottom_plate_4path_beamforming_hierarchical",
+      "parameters": [
+        "CLK_X1_M",
+        "CLK_X1_P",
+        "CLK_X2_M",
+        "CLK_X2_P",
+        "CLK_X3_M",
+        "CLK_X3_P",
+        "CLK_X4_M",
+        "CLK_X4_P",
+        "OUT_M",
+        "OUT_P",
+        "VCMBIAS",
+        "VDDA",
+        "VSSA",
+        "X1_M",
+        "X1_P",
+        "X2_M",
+        "X2_P",
+        "X3_M",
+        "X3_P",
+        "X4_M",
+        "X4_P"
+      ],
+	"constraints": [
+	  {"constraint": "Order", "direction": "top_to_bottom", "instances": ["X1","X2","X3","X4","XI0"]},
+	  {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["X1"],["X2"],["X3"],["X4"],["CPtoM","CMtoP"],["RPtoM","RMtoP"],["XI0"]]},
+          { "constraint": "SameTemplate", "instances": ["X1","X2","X3","X4"]}
+	],
+      "instances": [
+        {
+          "abstract_template_name": "pair",
+          "instance_name": "X1",
+          "fa_map": [
+            { "formal": "IN_M", "actual": "X1_M"},
+            { "formal": "IN_P", "actual": "X1_P"},
+            { "formal": "CLK_M", "actual": "CLK_X1_M"},
+            { "formal": "CLK_P", "actual": "CLK_X1_P"},
+            { "formal": "VCMBIAS", "actual": "VCMBIAS"},
+            { "formal": "VDDA", "actual": "VDDA"},
+            { "formal": "M", "actual": "M"},
+            { "formal": "P", "actual": "P"}
+          ]
+        },
+        {
+          "abstract_template_name": "pair",
+          "instance_name": "X2",
+          "fa_map": [
+            { "formal": "IN_M", "actual": "X2_M"},
+            { "formal": "IN_P", "actual": "X2_P"},
+            { "formal": "CLK_M", "actual": "CLK_X2_M"},
+            { "formal": "CLK_P", "actual": "CLK_X2_P"},
+            { "formal": "VCMBIAS", "actual": "VCMBIAS"},
+            { "formal": "VDDA", "actual": "VDDA"},
+            { "formal": "M", "actual": "M"},
+            { "formal": "P", "actual": "P"}
+          ]
+        },
+        {
+          "abstract_template_name": "pair",
+          "instance_name": "X3",
+          "fa_map": [
+            { "formal": "IN_M", "actual": "X3_M"},
+            { "formal": "IN_P", "actual": "X3_P"},
+            { "formal": "CLK_M", "actual": "CLK_X3_M"},
+            { "formal": "CLK_P", "actual": "CLK_X3_P"},
+            { "formal": "VCMBIAS", "actual": "VCMBIAS"},
+            { "formal": "VDDA", "actual": "VDDA"},
+            { "formal": "M", "actual": "M"},
+            { "formal": "P", "actual": "P"}
+          ]
+        },
+        {
+          "abstract_template_name": "pair",
+          "instance_name": "X4",
+          "fa_map": [
+            { "formal": "IN_M", "actual": "X4_M"},
+            { "formal": "IN_P", "actual": "X4_P"},
+            { "formal": "CLK_M", "actual": "CLK_X4_M"},
+            { "formal": "CLK_P", "actual": "CLK_X4_P"},
+            { "formal": "VCMBIAS", "actual": "VCMBIAS"},
+            { "formal": "VDDA", "actual": "VDDA"},
+            { "formal": "M", "actual": "M"},
+            { "formal": "P", "actual": "P"}
+          ]
+        },
+        {
+          "abstract_template_name": "TIA_1",
+          "instance_name": "XI0",
+          "fa_map": [
+            { "formal": "IN_M", "actual": "M"},
+            { "formal": "IN_P", "actual": "P"},
+            { "formal": "OUT_M", "actual": "OUT_M"},
+            { "formal": "OUT_P", "actual": "OUT_P"},
+            { "formal": "VDDA", "actual": "VDDA"},
+            { "formal": "VSSA", "actual": "VSSA"}
+          ]
+        },
+        {
+          "abstract_template_name": "CAP_MIM_wt32_lt32",
+          "instance_name": "CMtoP",
+          "fa_map": [
+            {
+              "formal": "MINUS", "actual": "OUT_M"},
+            { "formal": "PLUS", "actual": "P"}
+          ]
+        },
+        {
+          "abstract_template_name": "CAP_MIM_wt32_lt32",
+          "instance_name": "CPtoM",
+          "fa_map": [
+            { "formal": "MINUS", "actual": "OUT_P"},
+            { "formal": "PLUS", "actual": "M"}
+          ]
+        },
+        {
+          "abstract_template_name": "RES_w1u_l14u",
+          "instance_name": "RMtoP",
+          "fa_map": [
+            { "formal": "MINUS", "actual": "OUT_M"},
+            { "formal": "PLUS", "actual": "P"}
+          ]
+        },
+        {
+          "abstract_template_name": "RES_w1u_l14u",
+          "instance_name": "RPtoM",
+          "fa_map": [
+            { "formal": "MINUS", "actual": "OUT_P"},
+            { "formal": "PLUS", "actual": "M"}
+          ]
+        }
+      ]  
+   } 
+    
+  ],
+  "global_signals": []
+}

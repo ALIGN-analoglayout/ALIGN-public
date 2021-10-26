@@ -13,7 +13,11 @@
 #include <cstdlib> // system
 #include <iterator>
 #include <cctype>
+#ifdef WINDOWS
+#include <Windows.h> // getcwd
+#else
 #include <unistd.h> // getcwd
+#endif
 #include <map>
 #include <set>
 #include <utility>//std::pair, make_pair
@@ -22,22 +26,7 @@
 #include "RawRouter.h"
 #include "Rdatatype.h"
 #include "../PnRDB/datatype.h"
-
-//extern "C"
-//{
-//#include <stdio.h>
-//#include "lp_lib.h"
-//#define LPSOLVEAPIFROMLIBDEF
-//#include "lp_explicit.h"
-//}
-
-// wbxu: 20190708 the following codes are to enable ILP to choose candidates
-//extern "C"
-//{
-//#include <stdio.h>
-//#include "lp_lib.h"
-//}
-
+#include "spdlog/spdlog.h"
 
 class GlobalRouter : public RawRouter {
  

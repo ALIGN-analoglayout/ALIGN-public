@@ -1,0 +1,63 @@
+{
+    "constraints": [
+        {
+            "const_name": "SymmNet",
+            "axis_dir": "V",
+            "net1": {
+                "name": "n1",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "Xi26",
+                        "pin": "D"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "Xi33",
+                        "pin": "G"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "Xi29_Xi28",
+                        "pin": "DA"
+                    }
+                ]
+            },
+            "net2": {
+                "name": "n2",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "Xi27",
+                        "pin": "D"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "Xi41",
+                        "pin": "G"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "Xi29_Xi28",
+                        "pin": "DB"
+                    }
+                ]
+            }
+        },
+        {
+            "const_name": "SymmBlock",
+            "axis_dir": "V",
+            "pairs": [
+                {
+                    "type": "sympair",
+                    "block1": "Xi26",
+                    "block2": "Xi27"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "Xi29_Xi28"
+                }
+            ]
+        }
+    ]
+}

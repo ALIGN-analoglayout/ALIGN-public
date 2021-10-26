@@ -3,558 +3,278 @@ version: 2.1
 executors:
   docker-executor:
     docker:
-      - image: docker:18.06.3-ce-git
-    working_directory: /work/workspace
-
-  git-executor:
-    docker:
-      - image: alpine/git
-    working_directory: /work/workspace
+      - image: cimg/base:2021.01
 
 jobs:
-  start:
-    executor: git-executor
+  build-wheel:
+    parameters:
+      python-tags:
+        description: "Python version tag(See https://www.python.org/dev/peps/pep-0425/)"
+        type: string
+        default: "cp37-cp37m cp38-cp38 cp310-cp310" # Python 3.7 *AND* 3.8 *AND* 3.10
+      platform:
+        # https://github.com/pypa/manylinux
+        description: "PEP600 compatible platform name"
+        type: string
+        default: "quay.io/pypa/manylinux_2_24_x86_64"
+
+    docker:
+      - image: <<parameters.platform>>
+    working_directory: /root/ALIGN-public
+    environment:
+      ALIGN_HOME: /root/ALIGN-public
+      ALIGN_WORK_DIR: /root/ALIGN-public/work
+      MAX_JOBS: 2 # number of vCPUs (2)
+
+    steps:
+      - run:
+          name: Checkout code
+          command: |
+              git clone https://github.com/ALIGN-analoglayout/ALIGN-public.git . --branch ${CIRCLE_BRANCH} --single-branch --depth=1
+
+      - run:
+          name: Build Wheel
+          command: |
+              bin/build_wheel.sh <<parameters.python-tags>>
+      - run:
+          name: Test wheel
+          command: |
+              bin/test_wheel.sh <<parameters.python-tags>>
+      - persist_to_workspace:
+          root: .
+          paths:
+            - wheelhouse
+
+  publish-wheel:
+    executor: docker-executor
+
     steps:
       - attach_workspace:
-          at: /work/workspace
+          at: .
+      - run:
+          name: "Zip distribution directory"
+          command: |
+            mkdir export
+            tar --gzip -cf export/align-wheelhouse-$(echo "$CIRCLE_SHA1" | cut -c -7).tar.gz ./wheelhouse
+      - store_artifacts:
+          path: export
+
+  build-test-cktgen:
+    executor: docker-executor
+    steps:
       - checkout
-      - persist_to_workspace:
-          root: /work/workspace
-          paths: .
-
-  build-make-docker:
-    executor: docker-executor
-    steps:
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          apk update
-          apk add py-pip bash make
-
-      - run: |
-          apk add python-dev libffi-dev openssl-dev gcc libc-dev make
-          pip install docker-compose
-
       - setup_remote_docker
-
       - run:
-          shell: /bin/bash
+          name: "Build & run Cktgen tests"
           command: |
-            echo 'export ALIGN_HOME=/work/workspace' >> $BASH_ENV
-            echo 'export ALIGN_WORK_DIR=compose_dataVolume' >> $BASH_ENV
-
-      - run:
-          shell: /bin/bash
-          command: |
-            docker volume create --name=$ALIGN_WORK_DIR
-
-      - run:
-          shell: /bin/bash
-          command: |
-            cd build/
-            make docker DESIGN=telescopic_ota && \
-            docker cp align_cont:/dataVolume/telescopic_ota ..
-
-      - store_artifacts:
-          path: telescopic_ota/telescopic_ota_0.png
-
-      - run:
-          shell: /bin/bash
-          command: |
-            cd build/
-            make docker DESIGN=switched_capacitor_filter && \
-            docker cp align_cont:/dataVolume/switched_capacitor_filter ..
-
-      - store_artifacts:
-          path: switched_capacitor_filter/switched_capacitor_filter_0.png
-
-      - run:
-          shell: /bin/bash
-          command: |
-            cd build/
-            make docker DESIGN=current_mirror_ota && \
-            docker cp align_cont:/dataVolume/current_mirror_ota ..
-
-      - store_artifacts:
-          path: current_mirror_ota/current_mirror_ota_0.png
-
-      - run:
-          shell: /bin/bash
-          command: |
-            cd build/
-            make docker DESIGN=cascode_current_mirror_ota && \
-            docker cp align_cont:/dataVolume/cascode_current_mirror_ota ..
-
-      - store_artifacts:
-          path: cascode_current_mirror_ota/cascode_current_mirror_ota_0.png
-
-      - run:
-          shell: /bin/bash
-          command: |
-            cd build/
-            make docker DESIGN=five_transistor_ota && \
-            docker cp align_cont:/dataVolume/five_transistor_ota ..
-
-      - store_artifacts:
-          path: five_transistor_ota/five_transistor_ota_0.png
-
-
-      - run:
-          shell: /bin/bash
-          command: |
-            cd build/
-            make docker DESIGN=adder FLAT=1 && \
-            docker cp align_cont:/dataVolume/adder ..
-
-      - store_artifacts:
-          path: adder/adder_0.png
-
-  build-cktgen:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          cd Cktgen
-          docker build -t cktgen_image .
-
-          docker run --name cktgen_container cktgen_image bash -c "source general/bin/activate && cd cktgen && coverage run --source=cktgen,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/cktgen && cp /cktgen/junit.xml /test-reports/cktgen && mkdir -p /coverage-reports/cktgen && cp -r /cktgen/coverage.xml /cktgen/htmlcov /coverage-reports/cktgen"
-          cd -
-
-          docker cp cktgen_container:coverage-reports .
-          docker cp cktgen_container:test-reports .
-          docker rm cktgen_container
-
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/cktgen
-            - coverage-reports/cktgen
-
-  build-align:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          docker build -t align_image -f ./build/Dockerfile.base .
-
-          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd ALIGN-public && coverage run --source=align,tests setup.py pytest && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/align && cp junit.xml /test-reports/align && mkdir -p /coverage-reports/align && cp -r coverage.xml htmlcov /coverage-reports/align"
-
-          docker cp align_container:coverage-reports .
-          docker cp align_container:test-reports .
-          docker rm align_container
-
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/align
-            - coverage-reports/align
-
-  build-PlaceRouteHierFlow:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          cd PlaceRouteHierFlow
-          docker build -t placeroute_coverage_image -f Dockerfile-coverage .
-          docker volume create placerInputVol
-          docker volume create placerOutputVol
-
-      - run: |
-          apk add bash
-          (cd PlaceRouteHierFlow && ./run_small_in_docker.sh)
-          mkdir -p coverage-reports
-          docker cp PnR:/PlaceRouteHierFlow/coverage.out coverage-reports/PlaceRouteHierFlow
-          mkdir -p test-reports/PlaceRouteHierFlow/{PnRDB,placer,router,cap_placer}
-          docker cp PnR:/PlaceRouteHierFlow/PnRDB/junit.xml test-reports/PlaceRouteHierFlow/PnRDB
-          docker cp PnR:/PlaceRouteHierFlow/placer/junit.xml test-reports/PlaceRouteHierFlow/placer
-          docker cp PnR:/PlaceRouteHierFlow/router/junit.xml test-reports/PlaceRouteHierFlow/router
-          docker cp PnR:/PlaceRouteHierFlow/cap_placer/junit.xml test-reports/PlaceRouteHierFlow/cap_placer
-
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/PlaceRouteHierFlow
-            - coverage-reports/PlaceRouteHierFlow
-
-      - store_artifacts:
+            cd Cktgen
+            docker build -t cktgen_image .
+            docker run --name cktgen_container cktgen_image bash -c '\
+              source general/bin/activate && \
+              cd cktgen && \
+              coverage run --source=cktgen,tests -m pytest && \
+              coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && \
+              mkdir -p /test-reports/cktgen && cp junit.xml /test-reports/cktgen && \
+              mkdir -p /coverage-reports/cktgen && cp -r coverage.xml htmlcov /coverage-reports/cktgen\
+            '
+            cd -
+            docker cp cktgen_container:coverage-reports .
+            docker cp cktgen_container:test-reports .
+            docker rm cktgen_container
+      - store_test_results:
           path: test-reports
-
       - store_artifacts:
           path: coverage-reports
 
+  build-test-coverage:
 
-  build-nightly:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          docker build -t align_image -f ./build/Dockerfile.base .
-
-      - run: |
-          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=300 -k 'BUFFER' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1.xml"
-          docker cp align_container:test-reports .
-          docker rm align_container
-      - run:
-          command: |
-            docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=1700 -k 'single_SAR' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_14.xml"
-              docker cp align_container:test-reports .
-              docker rm align_container
-          no_output_timeout: 30m
-      
-          ## removed TI_SAR and SAR_ADC_6b_2GSPS as runtime is more than 5 hours      
-      - run:
-          command: |
-            docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=3400 -k 'DLL or Sanitized_Coarse_SAR_Logic' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_10.xml"
-              docker cp align_container:test-reports .
-              docker rm align_container
-          no_output_timeout: 60m
-      
-
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/align-nightly
-
-  build-nightly2:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          docker build -t align_image -f ./build/Dockerfile.base .
-
-          #      - run: |
-          #          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_CK_Divider8' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_4.xml"
-          #          docker cp align_container:test-reports .
-          #          docker rm align_container
-      
-      - run: |
-          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_Coarse_Comp_CK' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_5.xml"
-          docker cp align_container:test-reports .
-          docker rm align_container
-      
-      - run: |
-          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_DLPF_RCFilter' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_7.xml"
-          docker cp align_container:test-reports .
-          docker rm align_container
-      
-      - run: |
-          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_EdgeComparator' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_8.xml"
-          docker cp align_container:test-reports .
-          docker rm align_container
-      
-      - run: |
-          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_LevelCrossingDetector' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_9.xml"
-          docker cp align_container:test-reports .
-          docker rm align_container
-      
-      - run: |
-          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_ResTune_Configure' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_11.xml"
-          docker cp align_container:test-reports .
-          docker rm align_container
-      
-      - run:
-          command: |
-            docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=1700 -k 'Sanitized_TempSensor' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_12.xml"
-              docker cp align_container:test-reports .
-              docker rm align_container
-          no_output_timeout: 30m
-      
-      - run:
-          command: |
-            docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=1600 -k 'Santized_12b_ADC_TOP' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_15.xml"
-              docker cp align_container:test-reports .
-              docker rm align_container
-          no_output_timeout: 30m
-      
-      
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/align-nightly
-
-  build-nightly3:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          docker build -t align_image -f ./build/Dockerfile.base .
-
-      - run:
-          command: |
-            docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=1700 -k 'not SAR and not San and not BUFFER and not DLL and not sc_dc_dc' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit3.xml"
-          no_output_timeout: 30m
-
-      - run: |
-          docker cp align_container:test-reports .
-          docker rm align_container
-
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/align-nightly  
-  # wont run as circle ci kills it
-  build-nightly4:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          docker build -t align_image -f ./build/Dockerfile.base .
-
-      - run:
-          command: |
-            docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=6800 -k 'sc_dc_dc_converter' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit4.xml"
-              docker cp align_container:test-reports .
-              docker rm align_container
-          no_output_timeout: 120m
-           
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/align-nightly
-
-  build-nightly5:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          docker build -t align_image -f ./build/Dockerfile.base .
-
-      - run:
-          command: |
-            docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=6800 -k 'Sanitized_civiR_DLDO_TOP' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit5.xml"
-              docker cp align_container:test-reports .
-              docker rm align_container
-          no_output_timeout: 120m
-           
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/align-nightly
-
-  build-nightly6:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          docker build -t align_image -f ./build/Dockerfile.base .
-
-      - run:
-          command: |
-              docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=6800 -k 'Sanitized_5b_ADC' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit6.xml"
-              docker cp align_container:test-reports .
-              docker rm align_container
-          no_output_timeout: 120m
-      
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/align-nightly
-
-  build-nightly7:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          docker build -t align_image -f ./build/Dockerfile.base .
-
-      - run:
-          command: |
-            docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=6800 -k 'Sanitized_CDAC_SW_Coarse' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit7.xml"
-              docker cp align_container:test-reports .
-              docker rm align_container
-          no_output_timeout: 120m
-      
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/align-nightly
-
-  build-nightly8:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          docker build -t align_image -f ./build/Dockerfile.base .
-
-      - run:
-          command: |
-            docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=14000 -k 'Sanitized_TX_8l12b' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit8.xml"
-              docker cp align_container:test-reports .
-              docker rm align_container
-          no_output_timeout: 260m
-      
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/align-nightly
-  finish:
-    executor: git-executor
+    docker:
+      - image: python:3.8
+    working_directory: /root/ALIGN-public
+    environment:
+      ALIGN_HOME: /root/ALIGN-public
+      ALIGN_WORK_DIR: /root/ALIGN-public/work
+      MAX_JOBS: 2
 
     steps:
-      - attach_workspace:
-          at: /work/workspace
-
+      - run:
+          name: Checkout code
+          command: |
+              git clone https://github.com/ALIGN-analoglayout/ALIGN-public.git . --branch ${CIRCLE_BRANCH} --single-branch --depth=1
+      - run:
+          name: "Install coverage dependencies (lcov)"
+          command: |
+            apt-get update
+            apt-get -y install lcov
+      - run:
+          name: "Build align in developer mode"
+          command: |
+            pip install setuptools wheel pybind11 scikit-build cmake ninja
+            pip install -v --no-build-isolation -e .[test]
+            pip install -v --no-build-isolation -e . --no-deps --install-option="-DCODE_COVERAGE=ON"
+      - run:
+          name: "Test align using coverage.py"
+          command: |
+            ./runcoverage.py tests/
+            cp junit.xml coverage-reports
       - store_test_results:
-          path: test-reports
-
-      - store_artifacts:
-          path: test-reports
-
+          path: coverage-reports
       - store_artifacts:
           path: coverage-reports
 
-  finish-nightly:
-    executor: git-executor
+  test-integration:
+
+    parameters:
+      platform:
+        description: "Choose docker image to run integration test on (eg. Ubuntu:18.04)"
+        type: string
+      pdk:
+        description: "Choose PDK (Can be substring as it gets fed to pytest -k argument)"
+        type: string
+      design:
+        description: "Choose Design (Can be substring as it gets fed to pytest -k argument)"
+        type: string
+      timeout:
+        description: "Integer representing pytest --timeout argument"
+        type: string
+        default: "1800"
+
+    docker:
+      - image: <<parameters.platform>>
+    working_directory: /root/ALIGN-public
+    environment:
+      ALIGN_HOME: /root/ALIGN-public
+      ALIGN_WORK_DIR: /root/ALIGN-public/work
+      MAX_JOBS: 2
 
     steps:
+      - run:
+          name: Checkout code
+          command: |
+              git clone https://github.com/ALIGN-analoglayout/ALIGN-public.git . --branch ${CIRCLE_BRANCH} --single-branch --depth=1
       - attach_workspace:
-          at: /work/workspace
-
+          at: .
+      - run:
+          name: "test-integration-<<parameters.platform>>-<<parameters.pdk>>(<<parameters.design>>)"
+          no_output_timeout: "<<parameters.timeout>>s"
+          command: |
+            rm -fr align setup.py
+            pip install align[test] -f ./wheelhouse
+            filter="<<parameters.design>>"
+            filter="<<parameters.pdk>>${filter:+ and $filter}"
+            pytest -vv --runnightly --maxerrors=20 --timeout=<<parameters.timeout>> --durations=0 -k "$filter" -- tests/integration tests/pdks
+            mkdir -p test-reports/${CIRCLE_BUILD_NUM} && cp -r junit.xml LOG test-reports/${CIRCLE_BUILD_NUM}
       - store_test_results:
           path: test-reports
-
       - store_artifacts:
           path: test-reports
 
 workflows:
   version: 2.1
-
-  make:
+  commit:
     jobs:
-      - start
-      - build-make-docker:
+      - build-test-cktgen
+      - build-wheel:
+          name: "build-wheel-cp38-manylinux_2_24"
+          matrix:
+            parameters:
+              platform:
+                - "quay.io/pypa/manylinux_2_24_x86_64" # PEP 600
+              python-tags:
+                - "cp38-cp38" # Python 3.8
+      - build-wheel:
+          name: "build-wheel-cp310-manylinux_2_24"
           requires:
-            - start
-
-  nightly:
-    triggers:
-      - schedule:
-          cron: "0 8 * * *"
+            - build-wheel-cp38-manylinux_2_24
+          matrix:
+            parameters:
+              platform:
+                - "quay.io/pypa/manylinux_2_24_x86_64" # PEP 600
+              python-tags:
+                - "cp310-cp310" # Python 3.10
+      - build-wheel:
+          name: "build-wheel-cp37-manylinux2010"
+          requires:
+            - build-wheel-cp38-manylinux_2_24
+          matrix:
+            parameters:
+              platform:
+                - "quay.io/pypa/manylinux2010_x86_64" # PEP 571
+              python-tags:
+                - "cp37-cp37m" # Python 3.7
+      - test-integration:
+          name: "test-integration-cp38-minimal"
+          requires:
+            - build-wheel-cp38-manylinux_2_24
+          filters:
+            branches:
+              ignore:
+                - master
+          matrix:
+            parameters:
+              platform:
+                - "python:3.8"
+              pdk:
+                - "Finfet"
+              design:
+                - "adder or switched_capacitor_filter or high_speed_comparator"
+      - test-integration:
+          name: "test-integration-cp38-<<matrix.pdk>>"
+          requires:
+            - build-wheel-cp38-manylinux_2_24
           filters:
             branches:
               only:
                 - master
-
-    jobs:
-      - start
-      - build-nightly:
+                - compiler/code_coverage
+          matrix:
+            alias: test-integration-cp38-manylinux_2_24
+            parameters:
+              platform:
+                - "python:3.8"
+              pdk:
+                - "Finfet"
+              design:
+                - "not SAR and not Sanitized_EdgeComparator and not DLL and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD and not BUFFER_VREFP and not BUFFER_VREFP2 and not CTDSM_CORE_NEW and not BUFFER_VCM and not vco_dtype_12_hierarchical and not Sanitized_Coarse_Comp_CK and not COMP_GM_STAGE_0415 and not linear_equalizer and not test_vga and not Gm1_v5_Practice and not powertrain_binary and not SW_Cres_v3_5 and not ldo_error_amp and not telescopic_ota_guard_ring"
+      - build-wheel:
+          name: "build-wheel-<<matrix.python-tags>>-<<matrix.platform>>"
           requires:
-            - start
-      - build-nightly2:
-          requires:
-            - start
-      - build-nightly3:
-          requires:
-            - start
-      - build-nightly5:
-          requires:
-            - start
-      - build-nightly6:
-          requires:
-            - start
-      - build-nightly7:
-          requires:
-            - start
-      - build-nightly8:
-          requires:
-            - start
-      - finish-nightly:
-          requires:
-            - build-nightly
-            - build-nightly2
-            - build-nightly3
-            - build-nightly5
-            - build-nightly6
-            - build-nightly7
-            - build-nightly8
-
-  full_after_nightly:
-    triggers:
-      - schedule:
-          cron: "0 11 * * *"
+            - test-integration-cp38-manylinux_2_24
           filters:
             branches:
               only:
                 - master
-    jobs:
-      - start
-      - build-PlaceRouteHierFlow:
+          matrix:
+            alias: build-wheel-all
+            parameters:
+              platform:
+                - "quay.io/pypa/manylinux2010_x86_64"  # PEP 571
+                - "quay.io/pypa/manylinux2014_x86_64"  # PEP 599
+                - "quay.io/pypa/manylinux_2_24_x86_64" # PEP 600
+              python-tags:
+                - "cp37-cp37m"
+                - "cp38-cp38"
+                - "cp310-cp310"
+            exclude:
+              # Skipping these as they have been built by
+              # other jobs
+              - platform: "quay.io/pypa/manylinux2010_x86_64"
+                python-tags: "cp37-cp37m"
+              - platform: "quay.io/pypa/manylinux_2_24_x86_64"
+                python-tags: "cp38-cp38"
+              - platform: "quay.io/pypa/manylinux_2_24_x86_64"
+                python-tags: "cp310-cp310"
+      - build-test-coverage:
           requires:
-            - start
-      - build-cktgen:
+            - build-wheel-cp38-manylinux_2_24
+          filters:
+            branches:
+              only:
+                - master
+      - publish-wheel:
           requires:
-            - start
-      - build-align:
-          requires:
-            - start
-      - finish:
-          requires:
-            - build-align
-            - build-cktgen
-            - build-PlaceRouteHierFlow
-
-
-  full:
-    jobs:
-      - start
-      - build-PlaceRouteHierFlow:
-          requires:
-            - start
-      - build-cktgen:
-          requires:
-            - start
-      - build-align:
-          requires:
-            - start
-      - finish:
-          requires:
-            - build-align
-            - build-cktgen
-            - build-PlaceRouteHierFlow
-
+            - build-wheel-all
+          filters:
+            branches:
+              only:
+                - master

@@ -24,24 +24,24 @@ GlobalRouter::GlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int 
 //  //update Nets, Blocks according to node. LL, UR;
   placeTerminals();
   listSegments(binaryDIR);
-  for(unsigned int i=0;i<node.Nets.size();i++) {
-    std::cout<<"Net "<<i<<" has segment "<<this->Nets.at(i).seg.size()<<std::endl;
-  }
+  //for(unsigned int i=0;i<node.Nets.size();i++) {
+    //std::cout<<"Net "<<i<<" has segment "<<this->Nets.at(i).seg.size()<<std::endl;
+  //}
 //
 //  //CreateGrid for within the region LL, UR
-  std::cout<<"Router-Info: start to create global grid "<<std::endl;
+  //std::cout<<"Router-Info: start to create global grid "<<std::endl;
   Grid grid(this->drc_info, this->LL, this->UR, Lmetal, Hmetal, this->grid_scale);
-  std::cout<<"Router-Info: handling internal metals "<<std::endl;
+  //std::cout<<"Router-Info: handling internal metals "<<std::endl;
   //grid.InactiveGlobalInternalMetal(this->Blocks); //move this to two part plist create by glocal router, inactive by grid with plist
-  std::cout<<"Router-Info: end of creating grid "<<std::endl;
+  //std::cout<<"Router-Info: end of creating grid "<<std::endl;
 //  
 //
 for(unsigned int i=0;i<this->Nets.size();i++) {
   std::map<RouterDB::point, std::vector<int>, RouterDB::pointXYComp > Smap;
   for(unsigned int j=0;j<this->Nets.at(i).seg.size();j++) {
     std::vector<RouterDB::contact> Terminal_contact=grid.setSrcDest( this->Nets.at(i).seg.at(j).sourceList, this->Nets.at(i).seg.at(j).destList, this->width, this->height, Smap);
-    std::cout<<"Info: set source dest"<<std::endl;
-    if(this->isTop and Nets[i].isTerminal and Terminal_contact.size()>0){
+    //std::cout<<"Info: set source dest"<<std::endl;
+    if(this->isTop && Nets[i].isTerminal && Terminal_contact.size()>0){
        Terminals[Nets[i].terminal_idx].termContacts.clear();
        //std::cout<<"Info:: update terminal "<<Nets[i].terminal_idx<<" contact\n";
        for(unsigned int k=0;k<Terminal_contact.size();k++){
@@ -52,13 +52,13 @@ for(unsigned int i=0;i<this->Nets.size();i++) {
     grid.ActivateSourceDest();
     //std::vector<RouterDB::point> newArea=GetMaxMinSrcDest( this->Nets.at(i).seg.at(j).sourceList, this->Nets.at(i).seg.at(j).destList );
     std::vector<RouterDB::point> newArea=grid.GetMaxMinSrcDest();
-    std::cout<<"area-> "<< newArea.at(0).x<<" "<<newArea.at(0).y<<" "<<newArea.at(1).x<<" " <<newArea.at(1).y<<std::endl;
+    //std::cout<<"area-> "<< newArea.at(0).x<<" "<<newArea.at(0).y<<" "<<newArea.at(1).x<<" " <<newArea.at(1).y<<std::endl;
     grid.PrepareGraphVertices(newArea.at(0).x,newArea.at(0).y, newArea.at(1).x, newArea.at(1).y);
-    std::cout<<"Start graph (global router), ";
+    //std::cout<<"Start graph (global router), ";
     //Graph graph(grid, this->path_number);
     Graph graph(grid);
     bool pathMark=graph.FindFeasiblePath(grid, this->path_number);
-    std::cout<<"End graph (global router)"<<std::endl;
+    //std::cout<<"End graph (global router)"<<std::endl;
     if(pathMark) {
     std::vector<std::vector<RouterDB::Metal> > physical_path=graph.ConvertPathintoPhysical(grid);
     UpdateCandidate(physical_path, i, j);
@@ -69,7 +69,7 @@ for(unsigned int i=0;i<this->Nets.size();i++) {
 }
 //  for(net i seg j){
 //    //create 
-//    (source, dest)=UpdateLLURSD(i,j); //for each seg of net, create LL_graph, UR_graph and Sour Dest.
+//    (source, dest)=UpdateLLURSD(i,j); //for each seg of net, create LL_graph, UR_graph && Sour Dest.
 //    std::vector<RouterDB::contact> Terminal_contact=grid.setSrcDest();
 //    if(Nets[i].terminal_idx ==1){
 //       Terminals.pinContacts.clear();
@@ -80,7 +80,7 @@ for(unsigned int i=0;i<this->Nets.size();i++) {
 //    grid.activeSourceDest(source, dest);
 //    grid.PrepareGraphVertices(LLx, LLy, URx, URy);
 //    //grid.UpdateLLURSD_global(*this); //Update LL_graph, UR_graph Source & Dest
-//    //find shortest path and get shortest path
+//    //find shortest path && get shortest path
 //    //need LLURSD
 //    Graph graph(grid);
 //    path=graph.GetShorestPath();
@@ -96,7 +96,7 @@ for(unsigned int i=0;i<this->Nets.size();i++) {
     for(unsigned int j=0;j<this->Nets.at(i).seg.size();++j) {
       this->Nets.at(i).seg.at(j).candis.at(0).chosen=true;
       this->Nets.at(i).seg.at(j).chosenCand=0;
-      std::cout<<"choose: "<<i<<" net "<<j<<" seg "<<0<<" cand "<<std::endl;
+      //std::cout<<"choose: "<<i<<" net "<<j<<" seg "<<0<<" cand "<<std::endl;
     }
   }
   // wbxu-end
@@ -193,7 +193,7 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
   assert( !getcwd_result);
   std::string string_cwd(cwd);
   std::string string_steiner=binary_directory + "/FastSteinerUM/steiner -rectilinear -seed 0 <"+ string_cwd + "/output.txt -print_tree >" + string_cwd + "/vals";
-  std::cout<<string_steiner<<std::endl;
+  //std::cout<<string_steiner<<std::endl;
 
   RouterDB::point newnode;
   //std::string  temp;
@@ -207,12 +207,12 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
     std::vector<std::pair<int, int> > stiner_coord;
     std::pair<int, int> coord;
     //added by yg
-    if(this->Nets.at(i).degree==0 or this->Nets.at(i).degree==1) {
-      std::cout<<"Router-Info: no need to route net"<<this->Nets.at(i).netName<<std::endl;
+    if(this->Nets.at(i).degree==0 || this->Nets.at(i).degree==1) {
+      //std::cout<<"Router-Info: no need to route net"<<this->Nets.at(i).netName<<std::endl;
       this->Nets.at(i).numSeg=0;
       this->Nets.at(i).seg.clear();
     } else if (this->Nets.at(i).degree>2) {
-      std::cout<<"Router-Info: decompose net "<<this->Nets.at(i).netName<<std::endl;
+      //std::cout<<"Router-Info: decompose net "<<this->Nets.at(i).netName<<std::endl;
       myfile.open("output.txt");
       myfile<<this->Nets.at(i).degree;
       myfile<<"\n";
@@ -267,7 +267,7 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
             int csize=this->Blocks[iter2].pins[iter].pinContacts.size();
             xx=this->Blocks[iter2].pins[iter].pinContacts[cur].placedCenter.x;
             yy=this->Blocks[iter2].pins[iter].pinContacts[cur].placedCenter.y;
-            if(tmpsource.x==xx and tmpsource.y==yy) { // source matched
+            if(tmpsource.x==xx && tmpsource.y==yy) { // source matched
               for(int w=0;w<csize;w++) {
                 tempSeg.sourceList.resize(tempSeg.sourceList.size()+1);
                 tempSeg.sourceList.back().metalIdx=this->Blocks[iter2].pins[iter].pinContacts[w].metal;
@@ -281,7 +281,7 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
               tempSeg.sourceType.type=RouterDB::BLOCK;
               tempSeg.sourceType.iter=iter;
               tempSeg.sourceType.iter2=iter2;
-            } else if (tmpdest.x==xx and tmpdest.y==yy) { // dest matched
+            } else if (tmpdest.x==xx && tmpdest.y==yy) { // dest matched
               for(int w=0;w<csize;w++) {
                 tempSeg.destList.resize(tempSeg.destList.size()+1);
                 tempSeg.destList.back().metalIdx=this->Blocks[iter2].pins[iter].pinContacts[w].metal;
@@ -297,11 +297,11 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
               tempSeg.destType.iter=iter;
               tempSeg.destType.iter2=iter2;
             }
-          } else if (this->Nets.at(i).connected.at(p).type==RouterDB::TERMINAL and this->isTop) {
+          } else if (this->Nets.at(i).connected.at(p).type==RouterDB::TERMINAL && this->isTop) {
             // only top level has terminals
             xx=this->Terminals[iter].termContacts[0].placedCenter.x;
             yy=this->Terminals[iter].termContacts[0].placedCenter.y;
-            if(tmpsource.x==xx and tmpsource.y==yy) { // source matched
+            if(tmpsource.x==xx && tmpsource.y==yy) { // source matched
               tempSeg.sourceList.resize(tempSeg.sourceList.size()+1);
               tempSeg.sourceList.back().metalIdx=0;
               newnode.x=xx; newnode.y=yy;
@@ -309,7 +309,7 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
               tempSeg.sourceType.type=RouterDB::TERMINAL;
               tempSeg.sourceType.iter=iter;
               tempSeg.sourceType.iter2=-1;
-            } else if ( tmpdest.x==xx and tmpdest.y==yy ) {
+            } else if ( tmpdest.x==xx && tmpdest.y==yy ) {
               tempSeg.destList.resize(tempSeg.destList.size()+1);
               tempSeg.destList.back().metalIdx=0;
               newnode.x=xx; newnode.y=yy;
@@ -349,7 +349,7 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
       //segnaming=nets.at(i).netName+temp;
       input.close();
     } else { // degree==2
-      std::cout<<"Router-Info: 2-pin net "<<this->Nets.at(i).netName<<std::endl;
+      //std::cout<<"Router-Info: 2-pin net "<<this->Nets.at(i).netName<<std::endl;
       RouterDB::Segment tempSeg;
       this->Nets.at(i).numSeg=1;
       // source
@@ -374,7 +374,7 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
         tempSeg.sourceType.type=RouterDB::BLOCK;
         tempSeg.sourceType.iter=iter;
         tempSeg.sourceType.iter2=iter2;
-      } else if (this->Nets.at(i).connected.at(0).type==RouterDB::TERMINAL and isTop ) {
+      } else if (this->Nets.at(i).connected.at(0).type==RouterDB::TERMINAL && isTop ) {
         tempSeg.sourceList.resize(tempSeg.sourceList.size()+1);
         tempSeg.sourceList.back().metalIdx=0;
         newnode.x=this->Terminals[Nets[i].connected[0].iter].termContacts[0].placedCenter.x;
@@ -409,7 +409,7 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
         tempSeg.destType.type=RouterDB::BLOCK;
         tempSeg.destType.iter=iter;
         tempSeg.destType.iter2=iter2;
-      } else if (this->Nets.at(i).connected.at(1).type==RouterDB::TERMINAL and isTop ) {
+      } else if (this->Nets.at(i).connected.at(1).type==RouterDB::TERMINAL && isTop ) {
         tempSeg.destList.resize(tempSeg.destList.size()+1);
         tempSeg.destList.back().metalIdx=0;
         newnode.x=this->Terminals[Nets[i].connected[1].iter].termContacts[0].placedCenter.x;
@@ -451,204 +451,6 @@ long int GlobalRouter::get_number(string str)
     return val;
 
 };
-
-/*
-int GlobalRouter::ILPSolveRouting() {
-  std::cout<< "Status Log: ILP Solving Starts"<<std::endl;
-  # if defined ERROR
-  #  undef ERROR
-  # endif
-  //# define ERROR() { fprintf(stderr, "Error\n"); return(1); }
-  # define ERROR() { fprintf(stderr, "Error\n"); }
-
-  // start of lp_solve
-  int majorversion, minorversion, release, build;
-  char buf[1024];
-  hlpsolve lpsolve;
-  # if defined WIN32
-  #   define lpsolvelib "lpsolve55.dll"
-  # else
-  #   define lpsolvelib "liblpsolve55.so"
-  # endif
-  lpsolve = open_lpsolve_lib(lpsolvelib);
-  if (lpsolve == NULL) {
-    fprintf(stderr, "Unable to load lpsolve shared library (%s).\nIt is probably not in the correct path.\n", lpsolvelib);
-    //ERROR();
-  }
-
-  if (!init_lpsolve(lpsolve)) {
-    fprintf(stderr, "Unable to initialize lpsolve shared library (%s)\n      ", lpsolvelib);
-    //ERROR();
-  }
-
-  //std::ofstream output_Final_Selected_Candidates;
-  //output_Final_Selected_Candidates.open("./Debug/Final_Selected_Candidates.txt",std::ofstream::app);
-  //std::ofstream lp_solve_matrix;
-  //lp_solve_matrix.open("./Debug/lp_solve_matrix.txt", std::ofstream::app);
-  //lp_solve_matrix.close();
-
-  // 1. collect number of candidates, create list of varaibles in lp
-  int TotNumberOfCandis = 0;
-  //int NumOfCaEachSeg = this->path_number;
-  int TotNumberOfSegs = 0;
-  //int NumOfSegEachNet=0;
-  //std::vector<int> NumOfSegAry;
-  //std::vector<int> NumOfCaAry;
-  //std::vector<valInfo> ValArray;
-  valInfo vi;
-  for(int h=0;h<(int)this->Nets.size();h++) { //  for each net
-    vi.netIter=h;
-    //TotNumberOfSegs+=this->Nets[h].seg.size();
-    for(int i=0;i<(int)this->Nets[h].seg.size();i++) {// for each segment
-      //TotNumberOfSegs++;
-      vi.segIter=i;
-      bool mark=false;
-      for(int j=0;j<(int)this->Nets[h].seg[i].candis.size();j++) {
-        vi.candIter=j;
-        vi.valIter=TotNumberOfCandis;
-        this->Nets[h].seg[i].candis.at(j).valIdx=TotNumberOfCandis;
-        TotNumberOfCandis++;
-        ValArray.push_back(vi);
-        mark=true;
-      }
-      if(mark) {TotNumberOfSegs++;}
-    }
-    //NumOfSegAry.push_back(NumOfSegEachNet);
-    //NumOfSegAry.push_back(this->Nets[h].seg.size());
-    //output_Final_Selected_Candidates << "NumOfSegAry["<<h<<"] = " << NumOfSegAry[h] <<std::endl;
-  }
-  std::cout<<"TotNumberOfSegs "<<TotNumberOfSegs<<" TotNumberOfCandis "<<TotNumberOfCandis<<std::endl;
-  //output_Final_Selected_Candidates << "TotNumberOfCandis: " << TotNumberOfCandis <<std::endl;
-  //output_Final_Selected_Candidates << "TotNumberOfSegs: " << TotNumberOfSegs <<std::endl;
-  //output_Final_Selected_Candidates << "NumOfCaEachSeg:  " << NumOfCaEachSeg <<std::endl;
-
-  //std::vector<int> NetIndxValueAry;
-  //int NetIndxVal=0;
-  //for(int q=0; q<NumOfSegAry.size();q++) {
-  //  NetIndxVal = NetIndxVal + NumOfSegAry[q] * NumOfCaEachSeg;
-  //  NetIndxValueAry.push_back(NetIndxVal);
-  //}
-  this->NumOfVar=TotNumberOfCandis;//#Variable initialization
-  //output_Final_Selected_Candidates << "NumOfVar: "<<NumOfVar<<std::endl;
-
-  if ((lp = make_lp(0,NumOfVar)) == NULL) {fprintf(stderr, "Error\n");} //ERROR();}
-  lp_solve_version(&majorversion, &minorversion, &release, &build);
-  sprintf(buf, "lp_solve %d.%d.%d.%d demo\n\n", majorversion, minorversion, release, build);//lp_solve 5.5.2.0 
-  print_str(lp, buf);
-  put_logfunc(lp, NULL, 0);
-  set_outputfile(lp, "./Debug/lp_solve_result.txt");
-  //set_scaling(lp, 128);
-  // 2. Initialize matrix without constraints
-  for(int i=0;i<TotNumberOfSegs;i++) {
-    // loop for each segment
-    int CurSeg=0; // recode of current working segment
-    std::vector<double> temp_row;
-    temp_row.push_back(0);//0th column "0"
-    for(int j=0;j<(int)this->Nets.size();j++) { // for each net
-      for(int k=0;k<(int)this->Nets.at(j).seg.size();k++) { // for each segment
-        bool mark=false;
-        for(int m=0;m<(int)this->Nets.at(j).seg.at(k).candis.size();m++) { // for each candidate
-          mark=true;
-          if(i==CurSeg) {
-            temp_row.push_back(1);
-          } else {
-            temp_row.push_back(0);
-          }
-        }
-        if(mark) {CurSeg++;}
-      }
-    }
-  //  lp_solve_matrix.open("./Debug/lp_solve_matrix.txt", std::ofstream::app);
-  //  for(int q=1;q<temp_row.size();q++){
-  //    lp_solve_matrix << temp_row[q];
-  //  }
-  //  lp_solve_matrix <<"=1"<<std::endl;
-  //  lp_solve_matrix.close();
-    double* row = &temp_row[0];
-    if (!add_constraint(lp, row, EQ, 1)) {fprintf(stderr, "Error\n");} //ERROR();}
-  }
-
-  print_lp(lp);
-  // 3. Design rule annotation
-  this->MetalPieces.clear(); 
-  this->ViaPieces.clear();
-  this->MetalPieces.resize(this->drc_info.Metal_info.size());
-  this->ViaPieces.resize(this->drc_info.Via_info.size());
-  CreateMetalViaPieces();
-
-  std::set<std::pair<int,int>, IntPairComp > checkedSet;
-  checkedSet.clear();
-  this->SlackCounter = 0; //initialization
-  this->SlackArray.clear();
-  //MetalSpacingCheck(checkedSet);
-  //ViaSpacingCheck(checkedSet);
-  std::cout<<"Pass?\n";
-  // 4. Set binary variables (candidates + slacks)
-  for(int i=1;i<=this->NumOfVar;i++){
-    set_binary(lp, i, TRUE);//"TRUE": set variable to be a binary. upper bound=1, lower bound=0
-  }
-  printf("Set the objective function\n");
-  printf("set_obj_fn(lp, {nets[h].seg[i].candis[j].TotMetalWeightByLength})\n");
-
-  // 5. Set objective function
-  vector<double> temp_row;
-  temp_row.push_back(0);
-  for( int h=0 ; h<(int)this->Nets.size(); h++ ) {
-    for( int i=0 ; i<(int)this->Nets[h].seg.size(); i++ ) {
-      for( int j=0 ; j<(int)this->Nets[h].seg[i].candis.size(); j++ ) {
-        temp_row.push_back(this->Nets[h].seg[i].candis[j].CandiBend +this->Nets[h].seg[i].candis[j].TotMetalWeightByLength);
-      }
-    }
-  }
-  for(int k=0;k<SlackCounter;k++){
-    temp_row.push_back(999999);
-  }
-  double *row = &temp_row[0];
-  if (!set_obj_fn(lp, row)){std::cout <<"Router-Error: Objective insertion Error"<<std::endl;}
-
-  // 6. Solve with lp
-  set_minim(lp);
-  set_solutionlimit(lp, 10); // return the 3rd solution 
-  set_presolve(lp, PRESOLVE_PROBEFIX | PRESOLVE_ROWDOMINATE, get_presolveloops(lp));
-  print_lp(lp);
-
-  int ret = solve(lp);
-  if(ret== 0){
-          std::cout << "Status Log: Optimal Solution Found Success"<<std::endl;
-  }
-  else if(ret==2){
-          std::cout <<"Status Log: Model is Infeasible"<<std::endl;
-  }
-  else if(ret==1){
-          std::cout <<"Status Log: Suboptimal Solution Found"<<std::endl;
-  }
-  else if(ret==-2){
-          std::cout <<"Status Log: Out of memory"<<std::endl;
-  }
-  else if(ret==7){
-          std::cout <<"Status Log: Timeout(set via set_timeout)"<<std::endl;
-  }
-  else{
-          std::cout <<"Status Log: Refer Function solve in lp_solve(http://lpsolve.sourceforge.net/5.5/)"<<std::endl;
-  }
-
-  printf("#Constraints: lp row:  %d \n", lp->rows);
-  printf("#Variables: lp col:  %d \n", lp->columns);
-
-  // 7. Get results and store back to data structure
-  double Vars[NumOfVar];
-  get_variables(lp, Vars);
-  for(int i=0;i<TotNumberOfCandis;i++) {
-    if(Vars[i]==1) {
-      this->Nets.at(ValArray[i].netIter).seg.at(ValArray[i].segIter).candis.at(ValArray[i].candIter).chosen=true;
-      this->Nets.at(ValArray[i].netIter).seg.at(ValArray[i].segIter).chosenCand=ValArray[i].candIter;
-      std::cout<<"choose: "<<Vars[i]<<" net "<<ValArray[i].netIter<<" seg "<<ValArray[i].segIter<<" cand "<<ValArray[i].candIter<<std::endl;
-    }
-  }
-  delete_lp(lp);
-  return ret;
-} 
-*/
 
 void GlobalRouter::CreateMetalViaPieces() {
   //MetalPieces.clear(); ViaPieces.clear();
@@ -971,7 +773,7 @@ void GlobalRouter::MetalSpacingCheckFunc(std::set< std::pair<int,int>, IntPairCo
     // if candidates has been checked, skip to reduce size of ILP instance
     tpair=(val<overlap.valIdx) ? std::make_pair(val, overlap.valIdx) : std::make_pair(overlap.valIdx, val);
     if(checked.find(tpair)!=checked.end()) {continue;} 
-    if(overlap.type==RouterDB::CMM or overlap.type==RouterDB::CVM ) {
+    if(overlap.type==RouterDB::CMM || overlap.type==RouterDB::CVM ) {
       if(overlap.aiter!=h) {
         int ColNum1=this->Nets.at(overlap.aiter).seg.at(overlap.biter).candis.at(overlap.citer).valIdx+1;
         int ColNum2=this->Nets.at(h).seg.at(i).candis.at(j).valIdx+1;
@@ -995,7 +797,7 @@ void GlobalRouter::MetalSpacingCheckFunc(std::set< std::pair<int,int>, IntPairCo
         checked.insert(tpair);
         std::cout<<"Router-Info: candidate metal overlapped with "<<tpair.first<<" vs "<<tpair.second<<std::endl;
       }
-    } else if (overlap.type==RouterDB::PMM or overlap.type==RouterDB::PVM) {
+    } else if (overlap.type==RouterDB::PMM || overlap.type==RouterDB::PVM) {
       if (this->Blocks.at(overlap.aiter).pins.at(overlap.biter).netIter!=h) {
         int ColNum1=this->Nets.at(h).seg.at(i).candis.at(j).valIdx+1;
         this->NumOfVar++;
@@ -1018,7 +820,7 @@ void GlobalRouter::MetalSpacingCheckFunc(std::set< std::pair<int,int>, IntPairCo
         checked.insert(tpair);
         std::cout<<"Router-Info: candidate metal overlapped with "<<tpair.first<<" vs "<<tpair.second<<std::endl;
       }
-    } else if (overlap.type==RouterDB::IMM or overlap.type==RouterDB::IVM) {
+    } else if (overlap.type==RouterDB::IMM || overlap.type==RouterDB::IVM) {
         int ColNum1=this->Nets.at(h).seg.at(i).candis.at(j).valIdx+1;
         this->NumOfVar++;
         this->SlackCounter++;
@@ -1066,7 +868,9 @@ void GlobalRouter::UpdateCandidate(std::vector<std::vector<RouterDB::Metal> >& p
 
 void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
 
-  std::cout<<"Router-Info: begin to import data"<<std::endl;
+  auto logger = spdlog::default_logger()->clone("router.GlobalRouter.getData");
+
+  //std::cout<<"Router-Info: begin to import data"<<std::endl;
   this->isTop = node.isTop;
   this->topName=node.name;
   this->width=node.width;
@@ -1207,7 +1011,7 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
              if(drc_info.Metalmap.find(node.Blocks[i].instance[sel].blockPins[j].pinContacts[k].metal)!=drc_info.Metalmap.end()){
                  temp_contact.metal=drc_info.Metalmap[node.Blocks[i].instance[sel].blockPins[j].pinContacts[k].metal];
                }else{
-                 std::cout<<"Router-Error: the metal pin contact of block is not found"<<std::endl;
+                 logger->error("Router-Error: the metal pin contact of block is not found");
                }
              temp_contact.placedLL.x=node.Blocks[i].instance[sel].blockPins[j].pinContacts[k].placedBox.LL.x;
              temp_contact.placedLL.y=node.Blocks[i].instance[sel].blockPins[j].pinContacts[k].placedBox.LL.y;
@@ -1229,7 +1033,7 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
                if(drc_info.Viamap.find(node.Blocks[i].instance[sel].blockPins[j].pinVias[k].ViaRect.metal)!=drc_info.Viamap.end()){
                    temp_via.ViaRect.metal = drc_info.Viamap[node.Blocks[i].instance[sel].blockPins[j].pinVias[k].ViaRect.metal];
                  }else{
-                   std::cout<<"Router-Error: - Viamap Error"<<std::endl;
+                   logger->error("Router-Error: - Viamap Error");
                  }
                temp_via.ViaRect.placedLL.x = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].ViaRect.placedBox.LL.x;
                temp_via.ViaRect.placedLL.y = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].ViaRect.placedBox.LL.y;
@@ -1241,7 +1045,7 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
                if(drc_info.Metalmap.find(node.Blocks[i].instance[sel].blockPins[j].pinVias[k].LowerMetalRect.metal)!=drc_info.Metalmap.end()){
                   temp_via.LowerMetalRect.metal = drc_info.Metalmap[node.Blocks[i].instance[sel].blockPins[j].pinVias[k].LowerMetalRect.metal];
                }else{
-                  std::cout<<"Router-Error: Metal map error"<<std::endl;
+                  logger->error("Router-Error: Metal map error");
                }
                temp_via.LowerMetalRect.placedLL.x = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].LowerMetalRect.placedBox.LL.x;
                temp_via.LowerMetalRect.placedLL.y = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].LowerMetalRect.placedBox.LL.y;
@@ -1253,7 +1057,7 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
                if(drc_info.Metalmap.find(node.Blocks[i].instance[sel].blockPins[j].pinVias[k].UpperMetalRect.metal)!=drc_info.Metalmap.end()){
                   temp_via.UpperMetalRect.metal = drc_info.Metalmap[node.Blocks[i].instance[sel].blockPins[j].pinVias[k].UpperMetalRect.metal];
                }else{
-                  std::cout<<"Router-Error: Metal map error"<<std::endl;
+                  logger->error("Router-Error: Metal map error");
                }
                temp_via.UpperMetalRect.placedLL.x = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].UpperMetalRect.placedBox.LL.x;
                temp_via.UpperMetalRect.placedLL.y = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].UpperMetalRect.placedBox.LL.y;
@@ -1274,7 +1078,7 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
            temp_metal.metal=drc_info.Metalmap[node.Blocks[i].instance[sel].interMetals[j].metal];
            //temp_metal.width=drc_info.Metal_info[temp_metal.MetalIdx].width;
          }else{
-           std::cout<<"Router-Error: interMetal info missing metal"<<std::endl;
+           logger->error("Router-Error: interMetal info missing metal");
          }
        RouterDB::point temp_point;
        temp_metal.placedLL.x = node.Blocks[i].instance[sel].interMetals[j].placedBox.LL.x;     
@@ -1296,7 +1100,7 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
        if(drc_info.Viamap.find(node.Blocks[i].instance[sel].interVias[j].ViaRect.metal)!=drc_info.Metalmap.end()){
                    temp_via.ViaRect.metal = drc_info.Viamap[node.Blocks[i].instance[sel].interVias[j].ViaRect.metal];
                  }else{
-                   std::cout<<"Router-Error: - Viamap Error"<<std::endl;
+                   logger->error("Router-Error: - Viamap Error");
                  }
                temp_via.ViaRect.placedLL.x = node.Blocks[i].instance[sel].interVias[j].ViaRect.placedBox.LL.x;
                temp_via.ViaRect.placedLL.y = node.Blocks[i].instance[sel].interVias[j].ViaRect.placedBox.LL.y;
@@ -1308,7 +1112,7 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
                if(drc_info.Metalmap.find(node.Blocks[i].instance[sel].interVias[j].LowerMetalRect.metal)!=drc_info.Metalmap.end()){
                   temp_via.LowerMetalRect.metal = drc_info.Metalmap[node.Blocks[i].instance[sel].interVias[j].LowerMetalRect.metal];
                }else{
-                  std::cout<<"Router-Error: Metal map error"<<std::endl;
+                  logger->error("Router-Error: Metal map error");
                }
                temp_via.LowerMetalRect.placedLL.x = node.Blocks[i].instance[sel].interVias[j].LowerMetalRect.placedBox.LL.x;
                temp_via.LowerMetalRect.placedLL.y = node.Blocks[i].instance[sel].interVias[j].LowerMetalRect.placedBox.LL.y;
@@ -1320,7 +1124,7 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
                if(drc_info.Metalmap.find(node.Blocks[i].instance[sel].interVias[j].UpperMetalRect.metal)!=drc_info.Metalmap.end()){
                   temp_via.UpperMetalRect.metal = drc_info.Metalmap[node.Blocks[i].instance[sel].interVias[j].UpperMetalRect.metal];
                }else{
-                  std::cout<<"Router-Error: Metal map error"<<std::endl;
+                  logger->error("Router-Error: Metal map error");
                }
                temp_via.UpperMetalRect.placedLL.x = node.Blocks[i].instance[sel].interVias[j].UpperMetalRect.placedBox.LL.x;
                temp_via.UpperMetalRect.placedLL.y = node.Blocks[i].instance[sel].interVias[j].UpperMetalRect.placedBox.LL.y;
@@ -1337,7 +1141,7 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
   //getPowerGridData(node);
   //getPowerNetData(node);
 
-  std::cout<<"Router-Info: complete importing data"<<std::endl;
+  //std::cout<<"Router-Info: complete importing data"<<std::endl;
 };
 
 /*
@@ -1633,7 +1437,7 @@ void GlobalRouter::GetPhsical_Metal_Via(int i, int j){
            vector<int> via_model;
            for(unsigned int p=0;p<Nets[i].seg[j].candis[k].metals[h].LinePoint.size();p++){
                for(unsigned int q=0;q<Nets[i].seg[j].candis[k].metals[h+1].LinePoint.size();q++){
-                    if(Nets[i].seg[j].candis[k].metals[h].LinePoint[p].x == Nets[i].seg[j].candis[k].metals[h+1].LinePoint[q].x and Nets[i].seg[j].candis[k].metals[h].LinePoint[p].y == Nets[i].seg[j].candis[k].metals[h+1].LinePoint[q].y){
+                    if(Nets[i].seg[j].candis[k].metals[h].LinePoint[p].x == Nets[i].seg[j].candis[k].metals[h+1].LinePoint[q].x && Nets[i].seg[j].candis[k].metals[h].LinePoint[p].y == Nets[i].seg[j].candis[k].metals[h+1].LinePoint[q].y){
                         found_index = p;
                       }
                   } 
@@ -1961,13 +1765,16 @@ void GlobalRouter::ConvertToViaPnRDB_Placed_Placed(PnRDB::Via& temp_via, RouterD
 
 
 void GlobalRouter::NetToNodeBlockPins(PnRDB::hierNode& HierNode, RouterDB::Net& net){
-  std::cout<<"Start NetToNodeBlockPins"<<std::endl;
+
+  auto logger = spdlog::default_logger()->clone("router.GlobalRouter.NetToNodeBlockPins");
+
+  //std::cout<<"Start NetToNodeBlockPins"<<std::endl;
   // wbxu: when update hierNode data, all the coordinates should be stored into
   // origin fields, NOT placed fields. Because the hierNode data will be checkin back to higher nodes [fixed]
   PnRDB::pin temp_pin;
   //PnRDB::point temp_point;
   // wbxu: the name should be the name of terminal, not the net name! [fixed]
-  if(net.terminal_idx==-1) {std::cout<<"Router-Warning: cannot found terminal conntecting to net"<<std::endl; return;}
+  if(net.terminal_idx==-1) {logger->warn("Router-Warning: cannot found terminal conntecting to net"); return;}
   temp_pin.name = Terminals.at(net.terminal_idx).name;
 
   //blockspin to intermetal
@@ -2011,7 +1818,7 @@ ConvertToViaPnRDB_Placed_Origin(temp_via, net.seg[i].candis[net.seg[i].chosenCan
   }
 
   HierNode.blockPins.push_back(temp_pin);    
-  std::cout<<"END NetToNodeBlockPins"<<std::endl;
+  //std::cout<<"END NetToNodeBlockPins"<<std::endl;
 };
 
 
@@ -2088,12 +1895,12 @@ ConvertToContactPnRDB_Placed_Origin(temp_contact,Blocks[i].pins[j].pinContacts[k
 };
 
 void GlobalRouter::AddConnectedContactToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& net, int net_index) {
-  std::cout<<"AddConnectedContactToNodeNet net "<<net_index<<std::endl;
+  //std::cout<<"AddConnectedContactToNodeNet net "<<net_index<<std::endl;
   HierNode.Nets.at(net_index).connectedContact.clear();
   HierNode.Nets.at(net_index).connectedContact.resize( HierNode.Nets.at(net_index).connected.size() );
   int currM=0;
   for(unsigned int i=0;i<net.seg.size();i++){ // for each net segment
-    std::cout<<"seg "<<i<<std::endl;
+    //std::cout<<"seg "<<i<<std::endl;
     int sel=net.seg.at(i).chosenCand;
     if(sel==-1) {continue;}
     // 1. segment source 
@@ -2103,7 +1910,7 @@ void GlobalRouter::AddConnectedContactToNodeNet(PnRDB::hierNode& HierNode, Route
     int smetal=net.seg.at(i).candis.at(sel).metals.at(0).MetalIdx;
     int sx=net.seg.at(i).candis.at(sel).metals.at(0).LinePoint.at(0).x;
     int sy=net.seg.at(i).candis.at(sel).metals.at(0).LinePoint.at(0).y;
-    std::cout<<"\tsource type: "<<stype<<" iter: "<<siter<<" iter2: "<<siter2<<" metal: "<<smetal<<" x: "<<sx<<" y: "<<sy<<" current metal: "<<currM<<std::endl;
+    //std::cout<<"\tsource type: "<<stype<<" iter: "<<siter<<" iter2: "<<siter2<<" metal: "<<smetal<<" x: "<<sx<<" y: "<<sy<<" current metal: "<<currM<<std::endl;
     AddConnectedContactFunc(HierNode,net,net_index,stype,siter,siter2,smetal, sx, sy, currM);
     // 2. segment dest
     stype=net.seg.at(i).destType.type;
@@ -2113,19 +1920,22 @@ void GlobalRouter::AddConnectedContactToNodeNet(PnRDB::hierNode& HierNode, Route
     sx=net.seg.at(i).candis.at(sel).metals.back().LinePoint.back().x;
     sy=net.seg.at(i).candis.at(sel).metals.back().LinePoint.back().y;
     currM+=(net.seg.at(i).candis.at(sel).metals.size()-1);
-    std::cout<<"\tdest type: "<<stype<<" iter: "<<siter<<" iter2: "<<siter2<<" metal: "<<smetal<<" x: "<<sx<<" y: "<<sy<<" current metal: "<<currM<<std::endl;
+    //std::cout<<"\tdest type: "<<stype<<" iter: "<<siter<<" iter2: "<<siter2<<" metal: "<<smetal<<" x: "<<sx<<" y: "<<sy<<" current metal: "<<currM<<std::endl;
     AddConnectedContactFunc(HierNode,net,net_index,stype,siter,siter2,smetal, sx, sy, currM);
     ++currM;
   }
 }
 
 void GlobalRouter::AddConnectedContactFunc(PnRDB::hierNode& HierNode, RouterDB::Net& net, int net_index, RouterDB::NType stype, int siter, int siter2, int smetal, int sx, int sy, int mIdx) {
+
+  auto logger = spdlog::default_logger()->clone("router.GlobalRouter.AddConnectedContactFunc");
+
     PnRDB::globalContact tmpC;
     tmpC.metalIdx=mIdx;
     if(stype==RouterDB::BLOCK) { // block pin
       int pos=-1;
       for(unsigned int k=0;k<HierNode.Nets.at(net_index).connected.size();++k) {
-        if(HierNode.Nets.at(net_index).connected.at(k).type==PnRDB::Block and HierNode.Nets.at(net_index).connected.at(k).iter==siter and HierNode.Nets.at(net_index).connected.at(k).iter2==siter2) {
+        if(HierNode.Nets.at(net_index).connected.at(k).type==PnRDB::Block && HierNode.Nets.at(net_index).connected.at(k).iter==siter && HierNode.Nets.at(net_index).connected.at(k).iter2==siter2) {
           pos=k; break;
         }
       }
@@ -2134,7 +1944,7 @@ void GlobalRouter::AddConnectedContactFunc(PnRDB::hierNode& HierNode, RouterDB::
         std::vector<PnRDB::contact>::iterator target=HierNode.Blocks.at(siter2).instance.at(HierNode.Blocks.at(siter2).selectedInstance).blockPins.at(siter).pinContacts.end();
         for(std::vector<PnRDB::contact>::iterator cit=HierNode.Blocks.at(siter2).instance.at(HierNode.Blocks.at(siter2).selectedInstance).blockPins.at(siter).pinContacts.begin();cit!=HierNode.Blocks.at(siter2).instance.at(HierNode.Blocks.at(siter2).selectedInstance).blockPins.at(siter).pinContacts.end(); ++cit) {
           if(drc_info.Metalmap[cit->metal]!=smetal) { continue; }
-          if(  sx>=cit->placedBox.LL.x and sx<=cit->placedBox.UR.x and sy>=cit->placedBox.LL.y and sy<=cit->placedBox.UR.y) {
+          if(  sx>=cit->placedBox.LL.x && sx<=cit->placedBox.UR.x && sy>=cit->placedBox.LL.y && sy<=cit->placedBox.UR.y) {
             tmpC.conTact=(*cit);
             HierNode.Nets.at(net_index).connectedContact.at(pos)=tmpC; 
             mark=true; break;
@@ -2165,15 +1975,15 @@ void GlobalRouter::AddConnectedContactFunc(PnRDB::hierNode& HierNode, RouterDB::
 	    }
           }
         }
-        if(!mark and target!=HierNode.Blocks.at(siter2).instance.at(HierNode.Blocks.at(siter2).selectedInstance).blockPins.at(siter).pinContacts.end()) {
+        if(!mark && target!=HierNode.Blocks.at(siter2).instance.at(HierNode.Blocks.at(siter2).selectedInstance).blockPins.at(siter).pinContacts.end()) {
           tmpC.conTact=(*target);
           HierNode.Nets.at(net_index).connectedContact.at(pos)=tmpC;
         }
       }
-    } else if (stype==RouterDB::TERMINAL and this->isTop ) {
+    } else if (stype==RouterDB::TERMINAL && this->isTop ) {
       int pos=-1;
       for(unsigned int k=0;k<HierNode.Nets.at(net_index).connected.size();++k) {
-        if(HierNode.Nets.at(net_index).connected.at(k).type==PnRDB::Terminal and HierNode.Nets.at(net_index).connected.at(k).iter==siter and HierNode.Nets.at(net_index).connected.at(k).iter2==siter2) {
+        if(HierNode.Nets.at(net_index).connected.at(k).type==PnRDB::Terminal && HierNode.Nets.at(net_index).connected.at(k).iter==siter && HierNode.Nets.at(net_index).connected.at(k).iter2==siter2) {
           pos=k; break;
         }
       }
@@ -2182,7 +1992,7 @@ void GlobalRouter::AddConnectedContactFunc(PnRDB::hierNode& HierNode, RouterDB::
         std::vector<PnRDB::contact>::iterator target=HierNode.Terminals.at(siter).termContacts.end();
         for(std::vector<PnRDB::contact>::iterator cit=HierNode.Terminals.at(siter).termContacts.begin(); cit!=HierNode.Terminals.at(siter).termContacts.end(); ++cit) {
           if(drc_info.Metalmap[cit->metal]!=smetal) { continue; }
-          if(  sx>=cit->placedBox.LL.x and sx<=cit->placedBox.UR.x and sy>=cit->placedBox.LL.y and sy<=cit->placedBox.UR.y) {
+          if(  sx>=cit->placedBox.LL.x && sx<=cit->placedBox.UR.x && sy>=cit->placedBox.LL.y && sy<=cit->placedBox.UR.y) {
             tmpC.conTact=(*cit);
             HierNode.Nets.at(net_index).connectedContact.at(pos)=tmpC; 
             mark=true; break;
@@ -2213,13 +2023,13 @@ void GlobalRouter::AddConnectedContactFunc(PnRDB::hierNode& HierNode, RouterDB::
 	    }
           }
         }
-        if(!mark and target!=HierNode.Terminals.at(siter).termContacts.end()) {
+        if(!mark && target!=HierNode.Terminals.at(siter).termContacts.end()) {
           tmpC.conTact=(*target);
           HierNode.Nets.at(net_index).connectedContact.at(pos)=tmpC;
         }
       }
     } else {
-      std::cout<<"Router-Error: incorrect source type\n";
+      logger->error("Router-Error: incorrect source type");
     }
 }
 
@@ -2236,39 +2046,39 @@ void GlobalRouter::ReturnHierNode(PnRDB::hierNode& HierNode)
 
   if(isTop==1){
     //return terminal to node terminal
-    std::cout<<"starting: terminal to node terminal"<<std::endl;
+    //std::cout<<"starting: terminal to node terminal"<<std::endl;
     TerminalToNodeTerminal(HierNode);
-    std::cout<<"starting: terminal to node terminal"<<std::endl;
+    //std::cout<<"starting: terminal to node terminal"<<std::endl;
     }
   //distinguish those two net
   //std::cout<<"Start ReturnHierNode"<<std::endl;
   for(unsigned int i=0;i<Nets.size();i++){
-      std::cout<<i<<" ter? "<<Nets[i].isTerminal<<std::endl;
+      //std::cout<<i<<" ter? "<<Nets[i].isTerminal<<std::endl;
       if(Nets[i].isTerminal){
   // wbxu: not only nets should be put into NodeBlockPins, but also those pins connected to nets
   // should be put into NodeBlockPins
          //return blockpins
-         std::cout<<"starting: Net to node Block pins"<<std::endl;
+         //std::cout<<"starting: Net to node Block pins"<<std::endl;
          NetToNodeBlockPins(HierNode, Nets[i]);
-         std::cout<<"end: Net to node Block pins"<<std::endl;
+         //std::cout<<"end: Net to node Block pins"<<std::endl;
         
         }else{
   // wbxu: not only nets should be put into NodeInterMetal, but also those pins connected to nets
   // should be put into NodeInterMetal
          //HierNode.interMetals
-         std::cout<<"starting: Net to node internal metal"<<std::endl;
+         //std::cout<<"starting: Net to node internal metal"<<std::endl;
          NetToNodeInterMetal(HierNode, Nets[i]);
-         std::cout<<"end: Net to node internal metal"<<std::endl;
+         //std::cout<<"end: Net to node internal metal"<<std::endl;
         }
        
        for(unsigned int j=0;j<HierNode.Nets.size();j++){
           if(HierNode.Nets[j].name == Nets[i].netName){
               HierNode.Nets.at(j).path_metal.clear();
               HierNode.Nets.at(j).path_via.clear();
-              std::cout<<"starting: Net to node net"<<std::endl;
+              //std::cout<<"starting: Net to node net"<<std::endl;
               NetToNodeNet(HierNode, Nets[i], j);
               AddConnectedContactToNodeNet(HierNode, Nets.at(i), j);
-              std::cout<<"end: Net to node net"<<std::endl;
+              //std::cout<<"end: Net to node net"<<std::endl;
               break;
             }
           }
@@ -2291,9 +2101,9 @@ void GlobalRouter::ReturnHierNode(PnRDB::hierNode& HierNode)
   PowerGridToNodeInterMetal(HierNode, Gnd_grid);
 */
   
-  std::cout<<"starting: block intermetal to block intermetal"<<std::endl;
+  //std::cout<<"starting: block intermetal to block intermetal"<<std::endl;
   BlockInterMetalToNodeInterMetal(HierNode);
-  std::cout<<"end: block intermetal to block intermetal"<<std::endl;
+  //std::cout<<"end: block intermetal to block intermetal"<<std::endl;
   //std::cout<<"End ReturnHierNode"<<std::endl;
 };
 

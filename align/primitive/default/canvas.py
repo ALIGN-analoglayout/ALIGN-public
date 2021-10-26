@@ -17,6 +17,7 @@ class DefaultCanvas(Canvas):
         super().__init__(pdk)
         self._create_metal_canvas( check=check)
         self.boundary = self.addGen( Region( 'boundary', 'Boundary', h_grid=self.m2.clg, v_grid=self.m1.clg))
+
     #
     # Automatically Create Metal Generators from layers.json
     #
@@ -45,8 +46,8 @@ class DefaultCanvas(Canvas):
 
     def _create_metal( self, layer, info, *, check=True):
         if 'Color' in info and len(info['Color']) > 0:
-            logger.info( f"Registering ColorClosure for layer {layer}")
-            self.postprocessor.register(layer, ColorClosure( info=info))
+            logger.debug( f"Registering ColorClosure for layer {layer}")
+            self.postprocessor.register(layer, ColorClosure( info=info, errors=self.postprocessor.errors))
 
         if isinstance(info['Width'], list):
             # TODO: Figure out what multiple metal widths even means. Just doing first width for now
@@ -58,24 +59,24 @@ class DefaultCanvas(Canvas):
             base_layer = layer.split('_')[0]
             (pm, pv, nv, nm) = self._find_adjoining_layers(base_layer)
             if nm is None:
-                logger.info(f'spg for {base_layer} aligned to {pm}')
+                logger.debug(f'spg for {base_layer} aligned to {pm}')
                 spg_pitch, spg_stop, spg_offset = (self._get_metal_pitch(pm),
                                                    self._get_via_ext(base_layer, pv),
                                                    self._get_metal_offset(pm))
             elif pm is None:
-                logger.info(f'spg for {base_layer} aligned to {nm}')
+                logger.debug(f'spg for {base_layer} aligned to {nm}')
                 spg_pitch, spg_stop, spg_offset = (self._get_metal_pitch(nm),
                                                    self._get_via_ext(base_layer, nv),
                                                    self._get_metal_offset(nm))
             else:
                 pm_pitch, nm_pitch = self._get_metal_pitch(pm), self._get_metal_pitch(nm)
                 if pm_pitch <= nm_pitch:
-                    logger.info(f'spg for {base_layer} aligned to {pm}')
+                    logger.debug(f'spg for {base_layer} aligned to {pm}')
                     spg_pitch, spg_stop, spg_offset = (pm_pitch,
                                                        self._get_via_ext(base_layer, pv),
                                                        self._get_metal_offset(pm))
                 else:
-                    logger.info(f'spg for {base_layer} aligned to {nm}')
+                    logger.debug(f'spg for {base_layer} aligned to {nm}')
                     spg_pitch, spg_stop, spg_offset = (nm_pitch,
                                                        self._get_via_ext(base_layer, nv),
                                                        self._get_metal_offset(nm))
@@ -103,7 +104,7 @@ class DefaultCanvas(Canvas):
 
     def _create_via( self, layer, info):
         if any(x is None for x in info['Stack']):
-            logger.info(f"Cannot create {layer} via automatically. One or more metal layers are None.")
+            logger.debug(f"Cannot create {layer} via automatically. One or more metal layers are None.")
             return
 
         if self.pdk[info['Stack'][0]]['Direction'] == 'h':

@@ -1,6 +1,0 @@
-// ALIGN generated automatic constraints
-AlignBlock ( H , xm61 , xm28 )
-AlignBlock ( H , xm29 , xm62 )
-SymmBlock ( {xm13_xm14} , {xm40_xm36} , {xm41_xm37} , {xm38,xm39} , {xm45_xm47,xm44_xm46} , {xm17_xm18} , {xm10_xm12} )
-SymmBlock ( {xm28,xm29} , {xm61,xm62} )
-SymmBlock ( {xm42_xm43} , {xm49_xm48} , {xm6_xm9,xm16_xm2} )

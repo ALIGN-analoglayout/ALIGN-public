@@ -1,6 +1,6 @@
 
 import json
-from .cktgen import parse_lgf
+from .cktgen import parse_lgf, convert_align_to_adr
 from .transformation import Rect, Transformation
 
 def consume_results(args,tech):
@@ -31,6 +31,7 @@ def consume_results(args,tech):
         fa_map = inst['formal_actual_map']
 
         for term in leaf['terminals']:
+            term = convert_align_to_adr(term)
             r = trans.hitRect( Rect( *term['rect'])).canonical()
 
             f = term['net_name']

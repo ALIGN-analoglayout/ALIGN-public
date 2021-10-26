@@ -5,6 +5,7 @@ import math
 from collections import OrderedDict
 
 import json
+import re
 
 from . import techfile
 
@@ -21,16 +22,14 @@ class ADT:
 
   @property
   def nrows( self):
-    """Computes number of ADT row heights.
-"""
+    """Computes number of ADT row heights."""
     dy = self.bbox.ury-self.bbox.lly
     assert dy % (self.tech.dgPerRow*self.tech.pitchDG) == 0
     return dy // (self.tech.dgPerRow*self.tech.pitchDG)
 
   @property
   def npps( self):
-    """Computes number of poly pitches.
-"""
+    """Computes number of poly pitches."""
     dx = self.bbox.urx-self.bbox.llx
     assert dx % self.tech.pitchDG == 0
     return dx // self.tech.pitchDG
@@ -45,8 +44,7 @@ class ADT:
     return w
 
   def addM1Terminal( self, netName, m1TracksOffset=None, rect=None, leaf_bbox=None):
-    """Add a m1 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell) or corresponds to rect
-"""
+    """Add a m1 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell) or corresponds to rect"""
     assert m1TracksOffset is None or rect is None
     assert m1TracksOffset is not None or rect is not None
 
@@ -74,8 +72,7 @@ class ADT:
     return self.newWire( netName, Rect( x0, y0, x1, y1), "metal1")
 
   def addM2Terminal( self, netName, rect):
-    """Add a m2 terminal (horizontal) that corresponds to rect
-"""
+    """Add a m2 terminal (horizontal) that corresponds to rect"""
 
     assert rect[1] == rect[3]
 
@@ -92,8 +89,7 @@ class ADT:
     return self.newWire( netName, Rect( x0, y0, x1, y1), "metal2")
 
   def addM3Terminal( self, netName, m3TracksOffset=None, rect=None):
-    """Add a m3 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell) or corresponds to rect
-"""
+    """Add a m3 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell) or corresponds to rect"""
     assert m3TracksOffset is None or rect is None
     assert m3TracksOffset is not None or rect is not None
 
@@ -119,8 +115,7 @@ class ADT:
     return self.newWire( netName, Rect( x0, y0, x1, y1), "metal3")
 
   def addM4Terminal( self, netName, rect):
-    """Add a m4 terminal (horizontal) that corresponds to rect
-"""
+    """Add a m4 terminal (horizontal) that corresponds to rect"""
 
     assert rect[1] == rect[3]
 
@@ -137,8 +132,7 @@ class ADT:
     return self.newWire( netName, Rect( x0, y0, x1, y1), "metal4")
 
   def addM5Terminal( self, netName, m5TracksOffset=None, rect=None):
-    """Add a m5 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell) or corresponds to rect
-"""
+    """Add a m5 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell) or corresponds to rect"""
     assert m5TracksOffset is None or rect is None
     assert m5TracksOffset is not None or rect is not None
 
@@ -264,9 +258,9 @@ class ADITransform:
     return ( self.xScale * x + self.xOffset, self.yScale * y + self.yOffset)
 
   def preMult( self, A):
-# sx 0  tx
-# 0  sy ty
-# 0  0  1
+    # sx 0  tx
+    # 0  sy ty
+    # 0  0  1
     C = ADITransform()
     C.xOffset = A.xScale * self.xOffset + A.xOffset
     C.yOffset = A.yScale * self.yOffset + A.yOffset
@@ -346,10 +340,10 @@ class ADNetlist:
             netl.newWire( aN, r, l)
 
     for (r,l) in self.kors:
-      assert l in ["metal1","metal2","metal3","metal4","metal5","metal6","via1","via2","via3","via4","via5"], l
+      assert l.startswith('metal') or l.startswith('via'), l
       netl.newWire( '!kor', r, l)
       
-# ports no longer used
+    # ports no longer used
     assert self.ports == []
 
     for p in self.preroutes:
@@ -386,6 +380,7 @@ class Wire:
     self.rect = None
     self.layer = None
     self.gid = None
+    self.color = None
 
   def __str__( self):
     return "Wire  net=%s%s layer=%s rect=%s" % ( self.netName, ("" if self.gid is None else ( " gid=%d" % self.gid)), self.layer, self.rect)
@@ -406,7 +401,7 @@ class GR:
 
 def encode_GR( tech, obj):
   if isinstance(obj, GR):
-# Convert global route coords to physical coords
+    # Convert global route coords to physical coords
     if obj.rect.llx == obj.rect.urx and obj.rect.lly == obj.rect.ury:
       raise RuntimeError( f"{obj} is a point.")
     if obj.rect.llx == obj.rect.urx: # vertical wire
@@ -426,9 +421,60 @@ def encode_GR( tech, obj):
 
     return { "netName" : obj.netName, "layer" : obj.layer, "width" : obj.width, "rect" : [llx, lly, urx, ury]}
   elif isinstance(obj, Wire):
-    return { "netName" : obj.netName, "layer" : obj.layer, "gid" : obj.gid, "rect" : [obj.rect.llx, obj.rect.lly, obj.rect.urx, obj.rect.ury]}
+    return { "netName" : obj.netName, "layer" : obj.layer, "gid" : obj.gid, "rect" : [obj.rect.llx, obj.rect.lly, obj.rect.urx, obj.rect.ury], "color": obj.color}
   else:
     raise TypeError(repr(obj) + " is not JSON serializable.")
+
+# SY: Added for coloring
+def extract_layer_color(layer):
+  """ Returns layer and color from colored layer. Example: viaa1 => via1, a"""
+  mg = re.match(r'(metal|via)(\D+)(\d+)', layer)
+  if mg:
+    lyr = mg.group(1) + mg.group(3)
+    clr = mg.group(2)
+  else:
+    lyr = layer
+    clr = None
+  return lyr, clr
+
+# # SY: Added for coloring
+# def extract_colored_layer(term):
+#   """ Returns colored layer from a terminal. Example: {'layer': 'V1', 'color:'a'} => viaa1"""
+#   if 'color' in term and term['color'] is not None:
+#     mg = re.match(r'(metal|via)(\d+)', term['layer'])
+#     assert mg, "Layer pattern not recognized"
+#     layer = mg.group(1) + term['color'] + mg.group(2)
+#   else:
+#     layer = term['layer']
+#   return layer
+
+# SY: Added for coloring
+def translate_layer(layer):
+  """ Translates metal/via to M/V"""
+  metal_layer_map = { f'metal{i}' : f'M{i}' for i in range(0,7) }
+  via_layer_map = { f'via{i}' : f'V{i}' for i in range(0,6) }
+  layer_map = dict(list(metal_layer_map.items()) + list(via_layer_map.items()))
+  return layer_map.get(layer, layer)
+
+# SY: Syntax converter
+def convert_align_to_adr(term):
+    """ Convert align terminal to adr terminal (M -> colored metal, V -> colored via, netName -> net_name"""
+    assert 'netName' in term, term
+    new_term = dict()
+    new_term['net_name'] = term['netName']
+    new_term['rect'] = term['rect'].copy()
+    prefix = 'metal' if term['layer'][0] == 'M' else 'via'
+    if 'color' in term and term['color'] is not None:
+        color = term['color']
+    else:
+        color = ''
+    new_term['layer'] = prefix + color + term['layer'][1:]
+    if 'width' in term:
+        new_term['width'] = term['width']
+    if 'connected_pins' in term:
+        new_term['connected_pins'] = term['connected_pins'].copy()
+    return new_term
+
 
 class Net:
   def __init__( self, nm):
@@ -448,7 +494,7 @@ class Netlist:
 
   def dumpGR( self, tech, fn, cell_instances=None, no_grid=False):
     with open( fn, "w") as fp:
-# mimic what flatmap would do
+      # mimic what flatmap would do
       grs = []
       terminals = []
 
@@ -486,7 +532,17 @@ class Netlist:
             grGrid.append( [x,y,x+dx,y+dy])
       else:
         grGrid.append( self.bbox.toList())
-            
+
+      for term in terminals:
+        # print('term::', type(term), term)
+        if type(term) is dict:
+          lyr, clr = extract_layer_color(term['layer'])
+          term['layer'] = translate_layer(lyr)
+          term['color'] = clr
+        else:
+          lyr, clr = extract_layer_color(term.layer)
+          term.layer = translate_layer(lyr)
+          term.color = clr
 
       data = { "bbox" : [self.bbox.llx, self.bbox.lly, self.bbox.urx, self.bbox.ury], "globalRoutes" : grs, "globalRouteGrid" : grGrid, "terminals" : terminals}
 
@@ -494,8 +550,7 @@ class Netlist:
       fp.write( json.dumps( data, indent=2, default=lambda x: encode_GR(tech,x)) + "\n")
 
   def newWire( self, netName, r, l, *, ceName=None):
-    """The wire cache is used to make sure we don't generate gid's for two different occs of the same wire
-"""
+    """The wire cache is used to make sure we don't generate gid's for two different occs of the same wire """
     cand = (netName, (r.llx, r.lly, r.urx, r.ury), l)
     if cand not in self.wire_cache:
       w = Wire()
@@ -552,8 +607,8 @@ class Netlist:
       fp.write( f"""# circuit-independent technology collateral
 Option name=layer_file          value=DR_COLLATERAL/layers.txt
 Option name=arch_file           value=DR_COLLATERAL/arch.txt
-Option name=generator_file      value=DR_COLLATERAL/car_generators.txt
-Option name=pattern_file        value=DR_COLLATERAL/v2_patterns.txt
+Option name=generator_file      value=DR_COLLATERAL/via_generators.txt
+Option name=pattern_file        value=DR_COLLATERAL/patterns.txt
 Option name=option_file         value=DR_COLLATERAL/design_rules.txt
 
 # technology collateral may vary for different circuits
@@ -586,6 +641,36 @@ Option name=create_fake_line_end_grids           value=1
 Option name=auto_fix_global_routing              value=0
 Option name=pin_checker_mode                     value=0
 Option name=upper_layer                          value={topmetal}
+
+#Option name=disable_optimization value=1
+# #OPT4 
+# Option name=opt_maximize_ties_between_trunks value=0
+# #OPT5
+# Option name=opt_maximize_ties_between_trunks_and_terminals value=0
+# Option name=opt_minimize_trunk_tracks value=0
+# Option name=opt_optimize_trunk_positions value=0
+# #OPT 6
+# Option name=opt_minimize_preroute_extensions value=0
+# #OPT 7
+# Option name=opt_minimize_wire_tracks_soft value=0
+# #OPT 8
+# Option name=opt_minimize_ties_between_terminals value=0
+# #OPT 9
+# Option name=opt_maximize_routes_between_trunks_and_terminals value=0
+# #OPT 10
+# Option name=opt_minimize_wire_tracks_heavy value=0
+# #OPT 11
+# Option name=opt_maximize_routes_between_terminals value=0
+# #OPT 12
+# Option name=opt_maximize_routes_between_trunks value=0
+# #OPT 13
+# Option name=opt_optimize_width_of_trunks value=0
+# #OPT 14
+# Option name=opt_optimize_width_of_shunt_wires value=0
+# #OPT 15
+# Option name=opt_optimize_connections_to_terminals value=0
+# #OPT 16
+# Option name=opt_optimize_length_of_shunt_wires value=0
 """)
 
 
@@ -619,7 +704,7 @@ Option name=upper_layer                          value={topmetal}
 
             for cp in gr.connected_pins:
               assert cp['layer'] == 'M2'
-# convert to Angstroms (probably should do this elsewhere)
+              # convert to Angstroms (probably should do this elsewhere)
               rect = [ v*5 for v in cp['rect']]
 
               cand = ( gr.netName, tuple(rect), "metal2")
@@ -668,7 +753,7 @@ Option name=upper_layer                          value={topmetal}
             fp.write( "ConnectedEntity terms=%s\n" % (','.join( [ str(gid) for gid in nlst])))
         else:
           # connect everything (no via preroutes)
-          skip_via_set = set(["via1","via2","via3","via4"])
+          skip_via_set = set(["via0","via1","via2","via3","via4"])
           for w in v.wires:
             ly = w.layer
             if ly in skip_via_set: continue
@@ -719,18 +804,18 @@ Option name=upper_layer                          value={topmetal}
             print( "Metal GR:", gr, gr_r)
 
             tuples = [
-              ("metal1", ["metal1"]),
-              ("metal2", ["metal2","metal1"]),
-              ("metal3", ["metal3","metal2","metal1"]),
-              ("metal4", ["metal4","metal3","metal2"]),
-              ("metal5", ["metal5","metal4","metal3"]),
-              ("metal6", ["metal6","metal5"])
+              ("metal1", ["metal1","metal0"]),
+              ("metal2", ["metal3","metal2","metal1"]),
+              ("metal3", ["metal4","metal3","metal2"]),
+              ("metal4", ["metal5","metal4","metal3"]),
+              ("metal5", ["metal6","metal5","metal4"]),
+              ("metal6", ["metal7","metal6","metal5"])
               ]
 
             for gr_layer, w_layers in tuples:
               if gr.layer == gr_layer:
                 for w in v.wires:
-                  if w.layer in w_layers:
+                  if extract_layer_color(w.layer)[0] in w_layers:
                     if touching( gr_r, w.rect):
                       fp.write( "Tie term0=%d gr0=%d\n" % (w.gid, gr.gid))
                       print( "Tie", gr, gr_r, w)
@@ -757,9 +842,6 @@ Option name=upper_layer                          value={topmetal}
     self.write_global_routing_file( tech, dirname + "/" + self.nm + "_dr_globalrouting.txt")
     self.dumpGR( tech, dirname + "/" + self.nm + "_dr_globalrouting.json", no_grid=True)
 
-
-
-import re
 
 def parse_lgf( fp):
 
@@ -797,7 +879,7 @@ def parse_lgf( fp):
         net = m.groups()[0]
         gid = m.groups()[2]
         if gid is not None: gid = int(gid)
-        layer = m.groups()[3]        
+        layer = m.groups()[3]
         rect = Rect( int(m.groups()[4]), int(m.groups()[5]), int(m.groups()[6]), int(m.groups()[7]))
 
         # hack to get rid of large global routing visualization grid
@@ -810,7 +892,7 @@ def parse_lgf( fp):
       m = p_wire2.match( line)
       if m:
         net = m.groups()[0]
-        layer = m.groups()[1]        
+        layer = m.groups()[1]
         rect = Rect( int(m.groups()[2]), int(m.groups()[3]), int(m.groups()[4]), int(m.groups()[5]))
         gid = m.groups()[7]
         if gid is not None: gid = int(gid)
@@ -835,10 +917,10 @@ def parse_lgf( fp):
       m = p_wire_in_obj.match( line)
       if m:
         net = m.groups()[0]
-        layer = m.groups()[1]        
+        layer = m.groups()[1]
         rect = Rect( int(m.groups()[2]), int(m.groups()[3]), int(m.groups()[4]), int(m.groups()[5]))
 
-        if True or layer in ["via1","via2","via3","via4"]:
+        if True or layer in ["via0","via1","via2","via3","via4"]:
           w = netl.newWire( net, rect, layer)
           w.gid = None
 
@@ -975,7 +1057,7 @@ def removeDuplicates( data):
                     sl.clear()
 
 
-#        print( layer, twice_center, len(v), len(sl.rects))
+            # print( layer, twice_center, len(v), len(sl.rects))
 
             for (rect, netName) in sl.rects:
                 terminals.append(
@@ -1010,7 +1092,7 @@ def parse_args( command_line_args=None):
 
   if args.consume_results:
     consume_results(args,tech)
-#    exit()
+    # exit()
 
   return args,tech
 
@@ -1028,7 +1110,7 @@ if __name__ == "__main__":
   pdev.addM1Terminal( "g", 3)
   pdev.addM1Terminal( "d", 5)
 
-# python cktgen.py --block_name mydesign
+  # python cktgen.py --block_name mydesign
 
   def xg( x): 
     return tech.pitchPoly*tech.halfXGRGrid*2*x

@@ -7,6 +7,7 @@
 #include <stack>
 #include <climits>
 #include <string>
+#include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -16,7 +17,11 @@
 #include "design.h"
 #include "SeqPair.h"
 #include "Aplace.h"
+#include "ILP_solver.h"
 #include "../PnRDB/datatype.h"
+#ifdef PERFORMANCE_DRIVEN
+#include <Python.h>
+#endif
 
 using std::vector;
 using std::string;
@@ -36,6 +41,7 @@ using std::min;
 class ConstGraph
 {
   private:
+    friend class ILP_solver;
     struct Event {
       int node;
       int corr;
@@ -134,7 +140,7 @@ class ConstGraph
     void OtherGeometricConstraintCore(design& caseNL);
     void ReverseEdge(int current, int next, vector<Vertex>& graph);
     void UpdateBlockinHierNode(design& caseNL, placerDB::Omark ort, PnRDB::hierNode& node, int i, int sel, PnRDB::Drc_info& drcInfo);
-    void UpdateTerminalinHierNode(design& caseNL, PnRDB::hierNode& node);
+    void UpdateTerminalinHierNode(design& caseNL, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo);
     void RemoveOverlapEdge(design& caseNL, Aplace& caseAP);
     bool RemoveEdgeforVertex(int current, int next, vector<Vertex> &graph, bool isBackward);
   public:
@@ -143,6 +149,8 @@ class ConstGraph
     static double BETA;
     static double SIGMA;
     static double PHI;
+    static double PI;
+    static double PII;
     ConstGraph();
     ConstGraph(design& caseNL, SeqPair& caseSP);
     ConstGraph(design& caseNL, SeqPair& caseSP, int mode);
@@ -160,13 +168,16 @@ class ConstGraph
     bool ConstraintGraph(design& caseNL, SeqPair& caseSP);
     bool ConstraintGraphAP(design& caseNL, Aplace& caseAP);
     double CalculateCost(design& caseNL, SeqPair& caseSP);
+    #ifdef PERFORMANCE_DRIVEN
+    double performance_fom(double curr_cost, design& caseNL, SeqPair& caseSP, PyObject *pFun_cal_fom, PyObject *sess, PyObject *X, PyObject *pred_op);
+    #endif
     double CalculateMatchCost(design& caseNL, SeqPair& caseSP);
     void updateTerminalCenterRetire(design& caseNL, SeqPair& caseSP);
     void updateTerminalCenter(design& caseNL, SeqPair& caseSP);
     void updateTerminalCenterAPRetire(design& caseNL, Aplace& caseAP);
     void updateTerminalCenterAP(design& caseNL, Aplace& caseAP);
     void WritePlacement(design& caseNL, SeqPair& caseSP, string outfile);
-    void PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile);
+    void PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile, bool plot_pin, bool plot_terminal, bool plot_net);
     void WritePlacementAP(design& caseNL, Aplace& caseAP, string outfile);
     void PlotPlacementAP(design& caseNL, Aplace& caseAP, string outfile);
     void UpdateHierNode(design& caseNL, SeqPair& caseSP, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo);
@@ -175,6 +186,10 @@ class ConstGraph
     void AddLargePenalty();
     void UpdateDesignHierNode4AP(design& caseNL, design& reducedNL, SeqPair& reducedSP, PnRDB::hierNode& node);
     void UpdateSymmetryNetInfo(design& caseNL, PnRDB::hierNode& node, int i, int SBidx, placerDB::Smark axis_dir);
+    double LinearConst(design& caseNL, SeqPair& caseSP);
+    double ML_LinearConst(design& caseNL, SeqPair& caseSP);
+    void ExtractLength(design& caseNL, SeqPair& caseSP, std::vector<std::vector<double> > &feature_value, std::vector<std::vector<std::string> > &feature_name);
+    std::vector<double> Calculate_Center_Point_feature(std::vector<std::vector<placerDB::point> > &temp_contact);
 };
 
 #endif

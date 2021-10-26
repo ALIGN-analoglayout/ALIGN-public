@@ -19,6 +19,7 @@ def main( args):
         args.stack,
         args.params,
         args.pinSwitch,
+        args.bodySwitch,
         args.pdkdir,
         args.outputdir
     )
@@ -32,6 +33,7 @@ def gen_parser():
     parser.add_argument( "-Y", "--Ycells", type=int, required=True)
     parser.add_argument( "-s", "--pattern", type=int, required=False, default=1)
     parser.add_argument( "-q", "--pinSwitch", type=int, required=False, default=0)
+    parser.add_argument( "-bs", "--bodySwitch", type=int, required=False, default=1)
     parser.add_argument( "-v", "--vt_type", type=str, required=False, default='RVT')
     parser.add_argument( "-st", "--stack", type=int, required=False, default=1)
     parser.add_argument( "-n", "--value", type=str, required=False, default=None)

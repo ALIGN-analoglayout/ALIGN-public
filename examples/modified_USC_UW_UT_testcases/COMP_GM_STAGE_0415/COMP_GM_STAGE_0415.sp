@@ -63,8 +63,8 @@ xi6<1> clk clkb vcc_comp gnd INVD1BWP
 xi6<0> clk clkb vcc_comp gnd INVD1BWP
 m38 ictrm net089 gnd gnd lvtnfet w=w2 l=l1
 m33 ictrp net059 gnd gnd lvtnfet w=w2 l=l1
-d2 gnd vcc_gm diode
-d0 gnd vcc_gm diode
+* d2 gnd vcc_gm diode
+* d0 gnd vcc_gm diode
 m9 net089 valid_vco_d vbn gnd nfet w=w5 l=l0
 m8 net059 valid_vco_d vbn gnd nfet w=w5 l=l0
 m5 net059 valid_vco_b gnd gnd nfet w=w5 l=l0

@@ -8,6 +8,7 @@ from copy import deepcopy
 class PostProcessor():
     def __init__(self):
         self.postprocessors = {}
+        self.errors = []
 
     def register(self, layer, func):
         assert layer not in self.postprocessors, "Please specify only one postprocessor per layer"
@@ -31,12 +32,16 @@ class PostProcessor():
                 else:
                     # Generator output is a single terminal
                     postprocessor_output = [postprocessor_output]
-                logger.info(f"postprocessor_output: {postprocessor_output}")
+                logger.debug(f"postprocessor_output: {postprocessor_output}")
                 
                 for new_term in postprocessor_output:
                     self._check_valid_rect(new_term['rect'])
                     terminals.append(new_term)
             else:
                 terminals.append(term)
-        logger.info(f"Terminals before {len(old_terminals)} after {len(terminals)}")
+        logger.debug(f"Terminals before {len(old_terminals)} after {len(terminals)}")
+
+        if self.errors:
+            logger.error( f'Found errors: POSTPROCESSING: {len(self.errors)}')
+
         return terminals

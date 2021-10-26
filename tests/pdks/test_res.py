@@ -18,10 +18,19 @@ def check_shorts( cmdlist):
 
 def build_test(pdk, b, *, X, Y, n, r):
     sys.path.insert(0, str(pdk))
-    print(str(pdk))
+    #print(str(pdk))
     check_shorts( ['-b', b, '-X', f'{X}', '-Y', f'{Y}', '-n', f'{n}', '-r', f'{r}'])
     sys.path.pop(0)
 
+@pytest.mark.parametrize("pdk", pdks, ids=lambda x: x.name)
+def test_res_smoke(pdk):
+    x = 2
+    y = 2
+    n = 2
+    r = 400
+    build_test(pdk, f'res_X{x}_Y{y}_h{n}_r{r}', X=x, Y=y, n=n, r=r)
+
+@pytest.mark.nightly
 @pytest.mark.parametrize( "r", range(400, 1000, 200), ids=lambda x: f'r{x}')
 @pytest.mark.parametrize( "n", range(1,4), ids=lambda x: f'n{x}')
 @pytest.mark.parametrize( "y", range(1,4), ids=lambda x: f'Y{x}')

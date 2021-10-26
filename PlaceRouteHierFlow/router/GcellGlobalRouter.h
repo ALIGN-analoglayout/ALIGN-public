@@ -14,7 +14,11 @@
 #include <iterator>
 #include <assert.h>
 #include <cctype>
+#ifdef WINDOWS
+#include <Windows.h> // getcwd
+#else
 #include <unistd.h> // getcwd
+#endif
 #include <map>
 #include <set>
 #include <utility>//std::pair, make_pair
@@ -24,22 +28,8 @@
 #include "RawRouter.h"
 #include "Rdatatype.h"
 #include "../PnRDB/datatype.h"
-
-/*
-#ifdef _cplusplus
-extern "C" {
-#endif
-
-#include <stdio.h>
-#include "lp_lib.h"
-#define LPSOLVEAPIFROMLIBDEF
-#include "lp_explicit.h"
-
-#ifdef _cplusplus
-}
-#endif
-*/
-
+#include <nlohmann/json.hpp>
+#include <iomanip>
 
 extern "C"
 {
@@ -47,7 +37,7 @@ extern "C"
 #include "lp_lib.h"
 }
 
-
+using namespace nlohmann;
 class GcellGlobalRouter : public RawRouter {
  
   friend class GlobalGrid;
@@ -95,10 +85,12 @@ class GcellGlobalRouter : public RawRouter {
     //vector<PnRDB::Drc_info> drc_info;
     //int lowest_metal, highest_metal; //index of lowest metal & highest metal
     //int grid_scale; //dynamic grid_scal
+    typedef void (lphandlestr_func)(lprec *lp, void *userhandle, char *buf);
+    static void lpsolve_logger(lprec *lp, void *userhandle, char *buf);
 
   public:
     GcellGlobalRouter();
-    GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int Lmetal, int Hmetal, const std::string &bianryDIR); //initial Nets & Blocks with node data, also LL, UR
+    GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int Lmetal, int Hmetal); //initial Nets & Blocks with node data, also LL, UR
 //    void UpdateLLURSD(int i, int j);// Update Source and Dest based on j-th segment of i-th net; Also LL_graph UR_graph
 //    void listSegments(); //mutlipin to two pin based on stiner tree
 //    void GetShorestPath(Graph& graph);//return the shortest path to Nets
@@ -106,7 +98,6 @@ class GcellGlobalRouter : public RawRouter {
 //    // added by wbxu
     long int get_number(string str);
     void placeTerminals(); // reuse original function: placeTerminals
-    //void listSegments(const std::string &binaryDIR); // reuse original function
     //std::vector<RouterDB::point> GetMaxMinSrcDest(std::vector<RouterDB::SinkData>& source, std::vector<RouterDB::SinkData>& dest);
     void getData(PnRDB::hierNode& node, int Lmetal, int Hmetal);
     void getDRCdata(PnRDB::Drc_info& drcData);
@@ -142,6 +133,13 @@ class GcellGlobalRouter : public RawRouter {
     //void ConvertToViaPnRDB_Placed_Origin(PnRDB::Via& temp_via, RouterDB::Via& router_via);
     //void ConvertToViaPnRDB_Placed_Placed(PnRDB::Via& temp_via, RouterDB::Via& router_via);
     //void TerminalToNodeTerminal(PnRDB::hierNode& HierNode);
+
+    void PlotGlobalRouter();
+    void PlotGlobalRouter_Json(PnRDB::hierNode& node);
+    void AddContact(PnRDB::contact &temp_contact, json& temp_json_Contact, int unit);
+    void AddContacts(std::vector<PnRDB::contact> &temp_contact, json& temp_json_Contact, int unit);
+    std::vector<int> Found_Center_Point(std::vector<int> pin_tile);
+    void Seleced_Center_Point(std::vector<int> &terminals, std::vector<std::vector<int> >& connected_tile);
     
 };
 

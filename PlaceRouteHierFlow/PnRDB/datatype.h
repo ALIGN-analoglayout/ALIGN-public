@@ -3,13 +3,23 @@
 
 #include <vector>
 #include <string>
+#include <set>
+#include "limits.h"
 #include <map>
 #include <utility>
 //#include "../router/Rdatatype.h"
-using std::vector;
-using std::string;
 using std::map;
 using std::pair;
+using std::set;
+using std::string;
+using std::vector;
+
+//#define PERFORMANCE_DRIVEN
+//#define analytical_placer
+//#define min_displacement
+//#define quadratic_placement
+#define ilp
+//#define hard_symmetry
 
 namespace PnRDB {
 
@@ -33,6 +43,8 @@ struct lefMacro;
 struct blockComplex;
 struct CCCap;
 struct R_const;
+struct LinearConst;
+struct Multi_LinearConst;
 struct C_const;
 struct SymmPairBlock;
 struct Metal;
@@ -44,7 +56,12 @@ struct PortPos;
 struct Router_report;
 struct routing_net;
 struct Boundary;
-
+struct LinearConst;
+struct Multi_LinearConst;
+struct Multi_connection;
+struct GuardRing;
+struct Guardring_Const;
+struct guardring_info;
 
 /// Part 1: declaration of enum types
 enum NType {Block, Terminal};
@@ -197,6 +214,7 @@ struct connectNode {
   NType type; // 1: blockPin; 2. Terminal
   int iter; // 1: #blockPin; 2. #Terminal
   int iter2; // 1: #block
+  double alpha = 1;
 }; // structure of connected component of nets
 
 struct globalContact {
@@ -222,6 +240,10 @@ struct net {
   Smark axis_dir=V; // H: horizontal symmetry axis; V: veritcal symmetry axis
   int axis_coor=-1; //y coordinate: horizontal symmetry axis; x coordinate: vertical symmetry axis
   vector<std::vector<int>> connectedTile;
+  double upperBound = INT_MAX;
+  double lowerBound = INT_MIN;
+  int multi_connection = 1;
+  float weight=1.0;
 }; // structure of nets
 
 struct Metal{
@@ -276,6 +298,7 @@ struct block {
   int width=0;
   int height=0;
   bool isLeaf=true;
+  bool isRead=true;
   bbox originBox;
   point originCenter;
   string gdsFile="";
@@ -292,7 +315,9 @@ struct block {
   vector<contact> interMetals;
   vector<Via> interVias;
   vector<pin> dummy_power_pin; //power pins below to this block, but needs updated hierachy
-}; // structure of block
+  vector<GuardRing> GuardRings;
+  int HPWL_extend_wo_terminal = 0;
+};  // structure of block
 
 struct terminal {
   string name="";
@@ -312,26 +337,46 @@ struct PowerGrid{
   std::string name; 
   vector<Metal> metals;
   vector<Via> vias;
+  bool power=1; // 1 is vdd, 0 is gnd
 };
 
 struct layoutAS {
   int width=0;
   int height=0;
-  string gdsFile="";
+  int HPWL = -1, HPWL_extend = -1;
+  double HPWL_norm=-1;
+  double area_norm = -1;
+  double constraint_penalty = -1;
+  double cost = -1;
+  string gdsFile = "";
   vector<blockComplex> Blocks;
   vector<net> Nets;
   vector<terminal> Terminals;
   point LL;
   point UR;
-  //vector<pin> blockPins;
-  //vector<contact> interMetals;
-  //vector<Via> interVias;
+  vector<PowerNet> PowerNets;
+  vector<GuardRing> GuardRings;
+  // vector<pin> blockPins;
+  // vector<contact> interMetals;
+  // vector<Via> interVias;
+};
+
+struct GuardRing {
+  std::string mastername = "";
+  string gdsFile="guard_ring.gds";
+  point LL;
+  point UR;
+  point center;
+  vector<pin> blockPins;
+  vector<contact> interMetals;
+  vector<Via> interVias;
 };
 
 struct hierNode {
   bool isCompleted=false;
   bool isTop=false;
   bool isIntelGcellGlobalRouter=false;
+  bool isFirstILP=false;//donghao add
   int width=0;
   int height=0;
   point LL;                 // hiernode absolute LL in topnode coordinate
@@ -343,6 +388,7 @@ struct hierNode {
   string gdsFile="";
   vector<int> parent;
   vector<blockComplex> Blocks;
+  map<string, int> Block_name_map;//map from block name to block index
   vector<tile> tiles_total;
   vector<net> Nets;
   vector<terminal> Terminals;
@@ -352,6 +398,7 @@ struct hierNode {
   PowerGrid Gnd;
   vector<PowerNet> PowerNets;
 //added by yg
+  vector<GuardRing> GuardRings;
 
   //Updated
   vector<pin> blockPins;//need
@@ -366,18 +413,32 @@ struct hierNode {
   //vector<SymmBlock> SBlocks;
   vector<Preplace> Preplace_blocks;
   vector<Alignment> Alignment_blocks;
-  vector<AlignBlock> Align_blocks;
+  vector<AlignBlock> Align_blocks;//align constrainst
   vector<Abument> Abument_blocks;
   vector<MatchBlock> Match_blocks;
   vector<CCCap> CC_Caps;
   vector<R_const> R_Constraints;
   vector<C_const> C_Constraints;
   vector<PortPos> Port_Location;
-  int bias_Hgraph=92;
-  int bias_Vgraph=92;
+  vector<Guardring_Const> Guardring_Consts;
+  vector<LinearConst> L_Constraints;
+  vector<Multi_LinearConst> ML_Constraints;
+  vector<pair<vector<int>, Smark>> Ordering_Constraints;
+  vector<pair<vector<int>, Smark>> Abut_Constraints;
+  vector<set<int>> Same_Template_Constraints;
+  int bias_Hgraph = 0;
+  int bias_Vgraph=0;
+  double Aspect_Ratio_weight = 1000;
+  double Aspect_Ratio[2] = {0, 100};
+  double placement_box[2] = {-1, -1};
   vector<Router_report> router_report;
-
-
+  vector<Multi_connection> Multi_connections;
+  int placement_id = 0;
+  int HPWL = -1, HPWL_extend = -1, HPWL_extend_wo_terminal = -1;
+  double area_norm = -1;
+  double HPWL_norm = -1;
+  double constraint_penalty = -1;
+  double cost = -1;
 }; // structure of vertex in heirarchical tree
 
 
@@ -386,6 +447,7 @@ struct hierNode {
 struct SymmNet {
   net net1, net2;
   int iter1, iter2; // iterator to the list of real nets
+  Smark axis_dir=PnRDB::V;
 };
 
 //struct SymmBlock {
@@ -397,6 +459,7 @@ struct SymmNet {
 struct SymmPairBlock {
   vector< pair<int,int> > sympair;
   vector< pair<int,Smark> > selfsym;
+  Smark axis_dir=PnRDB::V;
 };
 
 struct Preplace {
@@ -429,8 +492,9 @@ struct MatchBlock {
 };
 
 struct AlignBlock {
-  std::vector<int> blocks;
+  std::vector<int> blocks;//LL.x/LL.y equal
   int horizon; // 1 is h, 0 is v.
+  int line; // 0 is left or bottom, 1 is center, 2 is right or top
 };
 
 struct PortPos {
@@ -448,6 +512,12 @@ struct CCCap {
   bool dummy_flag = 1;
 };
 
+struct Guardring_Const {
+  string block_name;
+  string guard_ring_primitives;
+  string global_pin;
+};
+
 struct R_const {
 
   string net_name;
@@ -459,6 +529,27 @@ struct R_const {
 
 };
 
+struct LinearConst {
+
+  string net_name;
+  //vector<string> start_pin;
+  //vector<string> end_pin;
+  std::vector<std::pair<int,int> > pins; //pair.first blocks id pair.second pin id 
+  std::vector<double> alpha;
+  double upperBound;
+  double lowerBound;
+
+};
+
+struct Multi_LinearConst {
+
+  std::vector<LinearConst> Multi_linearConst;
+  double upperBound;
+  double lowerBound;
+
+};
+
+
 struct C_const {
 
   string net_name;
@@ -467,6 +558,13 @@ struct C_const {
   std::vector<std::pair<int,int> > start_pin; //pair.first blocks id pair.second pin id 
   std::vector<std::pair<int,int> > end_pin; // if pair.frist blocks id = -1 then it's terminal
   vector<double> C;
+
+};
+
+struct Multi_connection{
+
+  string net_name;
+  int multi_number = 1;
 
 };
 
@@ -541,8 +639,28 @@ struct via_info {
 
 struct Boundary{
   string name = "Boundary";
-  int layerNo;
+  int layerNo = 0;
   GdsDatatype gds_datatype;
+};
+
+struct guardring_info {
+  string name;
+  int xspace; // x dimension minimal space
+  int yspace; // y dimension minimal space
+  GdsDatatype gds_datatype;
+  string path;
+};
+
+struct design_info {
+  int Hspace = 0, Vspace = 0;  // global Hspace and Vspace in placement
+  int signal_routing_metal_l;
+  int signal_routing_metal_u;
+  int power_grid_metal_l;
+  int power_grid_metal_u;
+  int power_routing_metal_l;
+  int power_routing_metal_u;  
+  int h_skip_factor;
+  int v_skip_factor;
 };
 
 struct Drc_info {
@@ -555,9 +673,9 @@ struct Drc_info {
   vector<string> MaskID_Metal; //str type LayerNo of each Layer
   vector<string> MaskID_Via;
   Boundary top_boundary;
+  guardring_info Guardring_info; //guardring info read from layers.json
+  design_info Design_info;       // design ingo from layer.json
 };
-
-
 
 struct routing_net{
    

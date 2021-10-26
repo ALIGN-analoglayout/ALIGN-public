@@ -1,0 +1,65 @@
+{
+    "constraints": [
+        {
+            "const_name": "SymmNet",
+            "axis_dir": "V",
+            "net1": {
+                "name": "vbn1",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "R0",
+                        "pin": "MINUS"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "C0",
+                        "pin": "PLUS"
+                    }
+                ]
+            },
+            "net2": {
+                "name": "vbp1",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "R1",
+                        "pin": "MINUS"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "C1",
+                        "pin": "PLUS"
+                    }
+                ]
+            }
+        },
+        {
+            "const_name": "SymmBlock",
+            "axis_dir": "V",
+            "pairs": [
+                {
+                    "type": "selfsym",
+                    "block": "C0_C1"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "R0",
+                    "block2": "R1"
+                }
+            ]
+        },
+        {
+            "const_name": "CC",
+            "cap_name": "C0_C1",
+            "size": [
+                5,
+                5
+            ],
+            "unit_capacitor": "Cap_12f",
+            "nodummy": true,
+            "cap_r": -1,
+            "cap_s": -1
+        }
+    ]
+}

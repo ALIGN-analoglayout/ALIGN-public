@@ -1,0 +1,4 @@
+[
+    {"constraint": "AlignInOrder", "direction" : "horizontal", "line": "bottom", "instances": ["xi0", "xi1", "xi2", "xi3", "xi4"]},
+    {"constraint": "MultiConnection", "nets" : ["vctl"], "multiplier": 3}
+]

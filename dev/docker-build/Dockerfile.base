@@ -1,0 +1,117 @@
+#
+# Base container starts here
+#
+FROM ubuntu:18.04 as align_base
+
+#
+# Set required environment variables
+#
+ENV http_proxy=$http_proxy
+ENV https_proxy=$https_proxy
+
+# Update packages
+RUN apt-get -qq update && DEBIAN_FRONTEND=noninterative apt-get -qq install \
+    # Python dependencies
+    python3 \
+    python3-pip \
+    python3-venv \
+    python3-dev \
+    # C++ Dependencies
+    g++\
+    cmake \
+    libboost-container-dev \
+    # Other Dependencies
+    git \
+    vim \
+    graphviz \
+    gnuplot \
+    curl \
+    gfortran \
+    xvfb < /dev/null > /dev/null \
+    # libgraphviz-dev \
+    # protobuf-compiler \
+    # lcov \
+&&    apt-get -qq clean
+
+
+# Create Virtual Env
+ENV venv=/opt/venv
+ENV python=$venv/bin/python
+ENV pip=$venv/bin/pip
+
+RUN python3 -m venv $venv
+
+# Upgrade pip & install testing dependencies
+# Note: Package dependencies are in setup.py
+RUN \
+    /bin/bash -c "source $venv/bin/activate && \
+    $pip install --upgrade pip -q && \
+    $pip install -q \
+    pytest \
+    pytest-cov \
+    pytest-timeout \
+    coverage-badge \
+    pybind11"
+
+# Lpsolve
+RUN \
+    git clone https://www.github.com/ALIGN-analoglayout/lpsolve.git  /usr/local/lib/lpsolve
+ENV LD_LIBRARY_PATH=/usr/local/lib/lpsolve/lp_solve_5.5.2.5_dev_ux64/
+
+# SuperLU
+RUN \
+    mkdir -p /opt && \
+    cd /opt && \
+    git clone https://www.github.com/ALIGN-analoglayout/superlu.git && \
+    cd superlu && \
+    tar xvfz superlu_5.2.1.tar.gz && \
+    cd SuperLU_5.2.1 && \
+    mkdir build && \
+    cd build && \
+    cmake .. && \
+    make
+ENV SuperLu_DIR=/opt/superlu
+
+# Googletest
+RUN cd /opt && \
+    git clone https://github.com/google/googletest && \
+    cd googletest/ && \
+    cmake CMakeLists.txt && \
+    make && \
+    cmake -DBUILD_SHARED_LIBS=ON CMakeLists.txt && \
+    make && \
+    mkdir googletest/mybuild && \
+    cp -r lib googletest/mybuild/.
+
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/googletest/googletest/mybuild/lib
+
+# logger
+RUN cd /opt && \
+    git clone https://github.com/gabime/spdlog.git && \
+    cd spdlog && \
+    mkdir build && \
+    cd build && \
+    cmake CMAKE_INSTALL_MESSAGE=NEVER .. && \
+    make -s
+
+# JSON
+RUN cd /opt && \
+    git clone https://github.com/nlohmann/json.git
+
+# KLayout
+RUN curl -k -o /klayout_0.26.6-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-18/klayout_0.26.6-1_amd64.deb
+
+RUN DEBIAN_FRONTEND=noninterative apt-get install -qq /klayout_0.26.6-1_amd64.deb < /dev/null > /dev/null
+
+from align_base as align_image
+
+ENV ALIGN_HOME=/ALIGN-public
+
+COPY . $ALIGN_HOME
+
+RUN /bin/bash -c "cd $ALIGN_HOME && \
+    source $venv/bin/activate && \
+    $pip install -q . && \
+    cd PlaceRouteHierFlow && \
+    make -j4 -s"
+

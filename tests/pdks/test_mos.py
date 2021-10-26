@@ -24,10 +24,19 @@ def check_shorts( cmdlist):
 def build_test(pdk, prim, *, n, X, Y):
     sys.path.insert(0, str(pdk))
     b = f"{prim}_n{n}_X{X}_Y{Y}"
-    print(f'Testing {b} ...')
+    #print(f'Testing {b} ...')
     check_shorts( ['-p', prim, '-b', b, '-n', f"{n}", '-X', f"{X}", '-Y', f"{Y}"])
     sys.path.pop(0)
 
+@pytest.mark.parametrize( "pdk", pdks, ids=lambda x: x.name)
+def test_mos_smoke(pdk):
+    x = 2
+    y = 2
+    nfins = 12
+    prim = 'DP_NMOS'
+    build_test(pdk, prim, n=nfins, X=x, Y=y)
+
+@pytest.mark.nightly
 @pytest.mark.parametrize( "y", range(1,4), ids=lambda x: f'Y{x}')
 @pytest.mark.parametrize( "x", range(1,5), ids=lambda x: f'X{x}')
 @pytest.mark.parametrize( "nfins", [12], ids=lambda x: f'n{x}')
@@ -39,12 +48,9 @@ def build_test(pdk, prim, *, n, X, Y):
                                 "CMFB_{}",
                                 "SCM_{}",
                                 "CMC_{}",
-                                "CMC_{}_S",
                                 "DP_{}"],
                                 ids = lambda x: x.replace('_{}', ''))
 @pytest.mark.parametrize( "pdk", pdks, ids=lambda x: x.name)
-def test_mos(pdk, pstr, typ, nfins, x, y):
+def test_mos_full(pdk, pstr, typ, nfins, x, y):
     prim = pstr.format(typ)
     build_test(pdk, prim, n=nfins, X=x, Y=y)
-
-

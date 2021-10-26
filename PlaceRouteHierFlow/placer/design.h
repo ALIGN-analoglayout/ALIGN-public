@@ -9,6 +9,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <climits>
+#include <fstream>
 #include <utility> // pair, make_pair
 #include "Pdatatype.h"
 #include "../PnRDB/readfile.h"
@@ -28,20 +29,23 @@ class design
   private:
     friend class ConstGraph;
     friend class SeqPair;
+    friend class SeqPairEnumerator;
     friend class Aplace;
-//    enum NType {Block, Terminal};
-//    struct Node {
-//      NType type; // 1: blockPin; 2. Terminal
-//      int iter; // 1: #blockPin; 2. #Terminal
-//      int iter2; // 1: #block
-//    };
-//    struct point {
-//      int x;
-//      int y;
-//    };
-//    struct bbox {
-//      vector<point> polygon;
-//    };
+    friend class Placer;
+    friend class ILP_solver;
+    //    enum NType {Block, Terminal};
+    //    struct Node {
+    //      NType type; // 1: blockPin; 2. Terminal
+    //      int iter; // 1: #blockPin; 2. #Terminal
+    //      int iter2; // 1: #block
+    //    };
+    //    struct point {
+    //      int x;
+    //      int y;
+    //    };
+    //    struct bbox {
+    //      vector<point> polygon;
+    //    };
     struct block {
       string name="";
       placerDB::bbox boundary;
@@ -76,10 +80,12 @@ class design
     struct SymmNet {
       placerDB::net net1, net2;
       int SBidx=-1;
+      placerDB::Smark axis_dir=placerDB::V;
     };
     struct SymmPairBlock {
       vector< pair<int,int> > sympair;
       vector< pair<int,placerDB::Smark> > selfsym;
+      placerDB::Smark axis_dir=placerDB::V;
     };
     struct PortPos {
       int tid;
@@ -103,6 +109,18 @@ class design
     std::vector<placerDB::SymmBlock> SBlocks;
     std::vector<SymmPairBlock> SPBlocks;
     std::vector<PortPos> Port_Location;
+    std::vector<PnRDB::Multi_LinearConst> ML_Constraints;
+    std::vector<pair<pair<int,int>, placerDB::Smark>> Ordering_Constraints;
+    std::vector<pair<pair<int,int>, placerDB::Smark>> Abut_Constraints;
+    vector<set<int>> Same_Template_Constraints;
+    double Aspect_Ratio_weight = 1000;
+    int placement_id = -1;
+    bool is_first_ILP = true;
+    double Aspect_Ratio[2] = {0, 100};
+    double placement_box[2] = {-1.0, -1.0};
+    double maxBlockAreaSum = 0;
+    double maxBlockHPWLSum = 0;
+    string name = "";
 
     //added by ya
     
@@ -128,6 +146,7 @@ class design
     struct AlignBlock {
       std::vector<int> blocks;
       int horizon; // 1 is h, 0 is v.
+      int line; // 0 is left or bottom, 1 is center, 2 is right or top
     };
     vector<AlignBlock> Align_blocks;
 
@@ -163,11 +182,17 @@ class design
     //pair<int,int> checkSympairInSymmBlock(vector< pair<int,int> >& Tsympair);
     //pair<int,int> checkSelfsymInSymmBlock(vector< pair<int,placerDB::Smark> >& Tselfsym);
     placerDB::point GetMultPolyCenterPoint(vector<placerDB::point>& pL);
-    int MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  vector< pair<int,placerDB::Smark> >& tmpselfsym, vector<placerDB::SymmBlock>& SBs, vector<SymmNet>& SNs );
+    int MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  vector< pair<int,placerDB::Smark> >& tmpselfsym, vector<placerDB::SymmBlock>& SBs, vector<SymmNet>& SNs, placerDB::Smark axis_dir);
     int GetSizeAsymBlock4Move(int mode);
     int GetSizeSymGroup4PartMove(int mode);
     int GetSizeSymGroup4FullMove(int mode);
     int GetSizeBlock4Move(int mode);
+    std::map<std::vector<int>, size_t> _seqPairHash, _selHash;
+    bool _useCache{false};
+    std::set<std::tuple<size_t, size_t, size_t>> _seqPairCache;
+  std::vector<size_t> _factorial;
+  size_t getSeqIndex(const vector<int>& seq);
+  size_t getSelIndex(const vector<int>& sel);
   public:
     design();
     design(PnRDB::hierNode& node);
@@ -236,6 +261,18 @@ class design
     PnRDB::bbox GetPlacedBlockInterMetalAbsBox(int blockid, placerDB::Omark ort, PnRDB::bbox& originBox, placerDB::point LL, int sel); 
     PnRDB::point GetPlacedBlockInterMetalAbsPoint(int blockid, placerDB::Omark ort, PnRDB::point& originP, placerDB::point LL, int sel);
     PnRDB::point GetPlacedBlockInterMetalRelPoint(int blockid, placerDB::Omark ort, PnRDB::point& originP, int sel);
+    void checkselfsym(vector< pair<int,int> > &tmpsympair, vector< pair<int,placerDB::Smark> > &tmpselfsym, placerDB::Smark tsmark);
+
+    double GetMaxBlockAreaSum();
+    double GetMaxBlockHPWLSum();
+	~design();
+
+  size_t getSeqIndex(const vector<int>& seq) const;
+  size_t getSelIndex(const vector<int>& sel) const;
+  void cacheSeq(const vector<int>& p, const vector<int>& n, const vector<int>& sel);
+  bool isSeqInCache(const vector<int>& p, const vector<int>& n, const vector<int>& sel) const;
+  size_t _infeasAspRatio{0}, _infeasILPFail{0}, _infeasPlBound{0}, _totalNumCostCalc{0};
+  //std::ofstream _debugofs;
 };
 
 #endif

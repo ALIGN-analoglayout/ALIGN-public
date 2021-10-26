@@ -1,4 +1,0 @@
-// ALIGN generated automatic constraints
-SymmBlock ( {xm12_xm10_xm11_xm9} , {xm4,xm0} , {xm28,xm24} )
-SymmBlock ( {xm7,xm26} )
-CC ( {xc0} , {1} , {Cap_12f} )

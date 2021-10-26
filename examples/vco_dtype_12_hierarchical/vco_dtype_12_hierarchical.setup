@@ -1,4 +1,4 @@
 POWER = VDD
 GND = VSS
 CLOCK = 
-DIGITAL = 
+DIGITAL = VCO_type2_65 vco_dtype_12_hierarchical

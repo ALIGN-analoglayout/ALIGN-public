@@ -1,10 +1,13 @@
 #include "GlobalGraph.h"
+#include "spdlog/spdlog.h"
 
 GlobalGraph::GlobalGraph(GlobalGrid& grid):path_number(1) {
 
-  std::cout<<"Start Creating adjacent list (graph), ";
+  auto logger = spdlog::default_logger()->clone("router.GlobalGraph.GlobalGraph");
+
+  logger->debug("Start Creating adjacent list (graph)");
   CreateAdjacentList(grid); //create adjacentList base gird.LL_graph and gird.UR_graph
-  std::cout<<"End creating adjacent list (graph)"<<std::endl;
+  logger->debug("End creating adjacent list (graph)");
 
 };
 
@@ -16,6 +19,7 @@ void GlobalGraph::clearPath(){
 
 void GlobalGraph::FindSTs(GlobalGrid& grid, int pathNo, std::vector<int> &stiner_node) {
 
+  auto logger = spdlog::default_logger()->clone("router.GlobalGraph.FindSTs");
 
   this->path_number=pathNo;
 
@@ -31,13 +35,11 @@ void GlobalGraph::FindSTs(GlobalGrid& grid, int pathNo, std::vector<int> &stiner
      //std::cout<<"End iterate steiner"<<std::endl;
      int weight;    
 
-     std::cout<<"Start MST1"<<std::endl;
-     std::cout<<"Pin number "<<Pin_terminals.size()<<std::endl;
+
      MST(weight, temp_path, grid);
-     std::cout<<"End MTS1"<<std::endl;
-     std::cout<<temp_path.size()<<std::endl;
+     logger->debug("End MTS1");
      UpdateEdgeWeight(temp_path);
-     std::cout<<"End Update weight"<<std::endl;
+     logger->debug("End Update weight");
      //return the shortest path
      Path.push_back(temp_path);
 
@@ -88,7 +90,7 @@ void GlobalGraph::Iterated_Steiner(GlobalGrid &grid, std::vector<int> &Pontentia
 
   int Flag = 1;
 
-  while(iterate_number>0 and Flag){
+  while(iterate_number>0 && Flag){
 
         int index = -1;        
  
@@ -221,7 +223,8 @@ void GlobalGraph::InitialSrcDest(std::vector<int> & temp_src, std::vector<int> &
 
 void GlobalGraph::ChangeSrcDest(std::vector<int> &temp_src, std::vector<int> &temp_dest, std::vector<int> temp_single_path, std::vector<int> &pin_access){
 
-  std::cout<<"Test1"<<std::endl;
+  auto logger = spdlog::default_logger()->clone("router.GlobalGraph.ChangeSrcDest");
+
   for(unsigned int i=0;i<temp_single_path.size();i++){
         for(unsigned int j=0;j<Pin_terminals.size();j++){
              for(unsigned int k=0;k<Pin_terminals[j].size();k++){
@@ -231,16 +234,13 @@ void GlobalGraph::ChangeSrcDest(std::vector<int> &temp_src, std::vector<int> &te
                 }
            }
      }
-
-  std::cout<<"Test2"<<std::endl;
+  logger->debug("ChangeSrcDest test1");
   temp_src.clear();
   temp_dest.clear();
 
   std::set<int> src_set;
   std::set<int> dest_set; 
 
-  std::cout<<"pin_access size "<<pin_access.size()<<std::endl;
-  std::cout<<"Pin_terminals size "<<Pin_terminals.size()<<std::endl;
 
   for(unsigned int i=0;i<pin_access.size();i++){
       if(pin_access[i]==1){
@@ -253,7 +253,7 @@ void GlobalGraph::ChangeSrcDest(std::vector<int> &temp_src, std::vector<int> &te
             }
         }
      }
-  std::cout<<"Test3"<<std::endl;
+  logger->debug("ChangeSrcDest test2");
   for(unsigned int i=0;i<temp_single_path.size();i++){
      src_set.insert(temp_single_path[i]);
      }
@@ -276,20 +276,21 @@ void GlobalGraph::ChangeSrcDest(std::vector<int> &temp_src, std::vector<int> &te
       
       temp_dest.push_back(*xit);
   }
-  std::cout<<"Test4"<<std::endl;
+  logger->debug("ChangeSrcDest test3");
   
 };
 
 void GlobalGraph::MST(int & WireLength, std::vector<pair<int,int> > &temp_path, GlobalGrid &grid){
 
+    auto logger = spdlog::default_logger()->clone("router.GlobalGraph.MST");
+
     std::vector<std::vector<int> > MST_path;
     std::vector<int> temp_src;
     std::vector<int> temp_dest;
     std::vector<int> pin_access;
-    std::cout<<"Starting initialSrcDest"<<std::endl;
+    logger->debug("Starting initialSrcDest");
     InitialSrcDest(temp_src, temp_dest, pin_access);
-    std::cout<<"pin_access size "<<pin_access.size()<<std::endl;
-    std::cout<<"End initialSrcDest"<<std::endl;
+    logger->debug("End initialSrcDest");
     //std::cout<<"temp_dest size "<<temp_dest.size()<<std::endl;
 
 
@@ -306,26 +307,12 @@ void GlobalGraph::MST(int & WireLength, std::vector<pair<int,int> > &temp_path, 
      while(temp_dest.size()>0){
          //std::cout<<"temp_dest size "<<temp_dest.size()<<std::endl;
          std::vector<int> src_set = temp_src;
-         std::cout<<"temp_src size "<<temp_src.size()<<std::endl;
-         for(unsigned int p=0;p<temp_src.size();p++){std::cout<<temp_src[p];}
-         std::cout<<std::endl;
          std::vector<int> dest_set = temp_dest;
-         std::cout<<"temp_dest size "<<temp_dest.size()<<std::endl;
-         for(unsigned int p=0;p<temp_dest.size();p++){std::cout<<temp_dest[p];}
-         std::cout<<std::endl;
-         std::cout<<"start setting src and dest"<<std::endl;
          SetSrcDest(src_set, dest_set);
-         std::cout<<"End setting src and dest"<<std::endl;
          std::vector<int> temp_single_path = dijkstra(grid);
-         std::cout<<"temp_single_path size "<<temp_single_path.size()<<std::endl;
-         for(unsigned int p=0;p<temp_single_path.size();p++){std::cout<<temp_single_path[p];}
-         std::cout<<std::endl;
-         std::cout<<"End dijkstra"<<std::endl;
          MST_path.push_back(temp_single_path);
          RMSrcDest(src_set, dest_set);
-         std::cout<<"RMSrcDest"<<std::endl;
          ChangeSrcDest(temp_src, temp_dest, temp_single_path, pin_access);
-         std::cout<<"ChangeSrcDest"<<std::endl;
        }
      WireLength = Calculate_Weigt(MST_path);
      temp_path = Get_MST_Edges(MST_path);
@@ -396,9 +383,8 @@ void GlobalGraph::CreateAdjacentList(GlobalGrid& grid){
 
         for(unsigned int q=0;q<temp_vector.size();q++){
 
-           std::cout<<"Grid capacity north"<<temp_vector[q].capacity<<std::endl;
 
-            if(temp_vector[q].capacity>0 and temp_vector[q].next != -1){
+            if(temp_vector[q].capacity>0 && temp_vector[q].next != -1){
 
                tempEdge.dest=temp_vector[q].next;
                tempEdge.weight = (double) abs(grid.tiles_total[p].y-grid.tiles_total[temp_vector[q].next].y)+abs(grid.tiles_total[p].x-grid.tiles_total[temp_vector[q].next].x);
@@ -444,7 +430,6 @@ void GlobalGraph::CreateAdjacentList(GlobalGrid& grid){
 
 void GlobalGraph::SetSrcDest(std::vector<int> temp_src, std::vector<int> temp_dest){
 
-    std::cout<<"Start Set Src"<<std::endl;
     for(unsigned int i=0;i<temp_src.size();++i)
      {
         //if(temp_src[i]<graph.size()-1){
@@ -457,27 +442,20 @@ void GlobalGraph::SetSrcDest(std::vector<int> temp_src, std::vector<int> temp_de
         //}
         //std::cout<<"graph S "<<grid.vertices_graph[graph_index].x<<" "<<grid.vertices_graph[graph_index].y<<std::endl;
      }
-    std::cout<<"End Set Src"<<std::endl;
 
-    std::cout<<"Start Set Dest"<<std::endl;
+
     for(unsigned int i=0;i<temp_dest.size();++i)
      {
         //if(temp_dest[i]<graph.size()-1){
         Edge tempEdge;
         tempEdge.dest = temp_dest[i];
-        std::cout<<"temp_dest "<<temp_dest[i]<<std::endl;
         tempEdge.weight = 0;
-        std::cout<<"dest 1"<<dest<<std::endl;
         graph[dest].list.push_back(tempEdge);
-        std::cout<<"dest 2"<<dest<<std::endl;
         tempEdge.dest = dest;
-        std::cout<<"dest 3"<<dest<<std::endl;
         graph[temp_dest[i]].list.push_back(tempEdge);
-        std::cout<<"dest 4"<<dest<<std::endl;
         //}
         //std::cout<<"graph S "<<grid.vertices_graph[graph_index].x<<" "<<grid.vertices_graph[graph_index].y<<std::endl;
      }  
-    std::cout<<"End Set Dest"<<std::endl;
 
 };
 
@@ -506,6 +484,9 @@ void GlobalGraph::RMSrcDest(std::vector<int> temp_src, std::vector<int> temp_des
 
 
 void GlobalGraph::RemovefromMultMap(std::multimap<double, int>& mmap, double dist, int idx) {
+
+  auto logger = spdlog::default_logger()->clone("router.GlobalGraph.RemovefromMultMap");
+
   std::multimap<double, int>::iterator low=mmap.lower_bound(dist);
   std::multimap<double, int>::iterator high=mmap.upper_bound(dist);
   std::multimap<double, int>::iterator tar;
@@ -514,7 +495,9 @@ void GlobalGraph::RemovefromMultMap(std::multimap<double, int>& mmap, double dis
     if(tar->second==idx) {mark=true; break;}
   }
   if(mark) {mmap.erase(tar);}
-  else {std::cout<<"Graph-Info: cannot found element in map\n";}
+  else {
+  logger->warn("Graph-Info: cannot found element in map");
+  }
 }
 
 void GlobalGraph::UpdateMultMap(std::multimap<double, int>& mmap, double olddist, int idx, double newdist) {
@@ -540,25 +523,18 @@ std::vector<int>  GlobalGraph::dijkstra(GlobalGrid& grid){
 
   std::vector<int> temp_path;
 
-  std::cout<<"checkpoint 0"<<std::endl;
- 
-  std::cout<<"graph.size() "<<graph.size()<<std::endl;
-
   std::vector<double> dist;
   dist.resize(graph.size());
   //double dist[graph.size()];
 
-  std::cout<<"check point 0.1"<<std::endl;
   std::vector<int> parent;
   parent.resize(graph.size());
   //int parent[graph.size()];
 
-  std::cout<<"check point 0.2"<<std::endl;
   std::vector<int> status;
   status.resize(graph.size());
   //int status[graph.size()];
 
-  std::cout<<"check point 0.3"<<std::endl;
 
   std::multimap<double, int> distMap;
     
@@ -569,15 +545,12 @@ std::vector<int>  GlobalGraph::dijkstra(GlobalGrid& grid){
         status[i] = 0;
      }
 
-  std::cout<<"checkpoint 1"<<std::endl;
   dist[source] = 0;
   status[source] = 1;
   distMap.insert ( std::pair<double,int>(dist[source], source) );
-  std::cout<<"checkpoint 2"<<std::endl;
   int count=0;
   int v;
-  //std::cout<<"graph source "<<source<<" vs graph dest "<<dest<<std::endl;
-  while(status[dest]!=2 and count<(int)graph.size()-1)
+  while(status[dest]!=2 && count<(int)graph.size()-1)
        {
           std::vector<int> ulist = minDistancefromMultiMap (distMap);
           //std::cout<<"size of Q: "<<ulist.size()<<std::endl;
@@ -599,7 +572,7 @@ std::vector<int>  GlobalGraph::dijkstra(GlobalGrid& grid){
                            status[v]=1;
                            distMap.insert( std::pair<double,int>(dist[v], v) );
                          }
-                      else if (status[v]==1 and dist[v]>dist[u]+graph[u].list[j].weight)
+                      else if (status[v]==1 && dist[v]>dist[u]+graph[u].list[j].weight)
                          {
                             parent[v] = u;
                             double olddist=dist[v];
@@ -611,9 +584,7 @@ std::vector<int>  GlobalGraph::dijkstra(GlobalGrid& grid){
           count++;
        }
 
-  std::cout<<"checkpoint 3"<<std::endl;
   printPath(parent, dest, graph.size(), temp_path);
-  std::cout<<"checkpoint 4"<<std::endl;
   //std::cout<<"temp path"<<std::endl;
   //for(int i=0;i<temp_path.size();i++) {std::cout<<temp_path[i]<<" "<<std::endl;}
   return temp_path;
@@ -627,7 +598,7 @@ void GlobalGraph::printPath(std::vector<int>& parent, int j, int Vsize, std::vec
       return;
     }
   printPath(parent, parent[j], Vsize, temp_path);
-  if( !(j==source or j==dest))
+  if( !(j==source || j==dest))
     { 
        temp_path.push_back(j);
        //std::cout<<"path push "<<j<<std::endl;

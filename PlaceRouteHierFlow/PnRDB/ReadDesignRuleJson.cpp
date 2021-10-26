@@ -11,12 +11,17 @@ using namespace nlohmann;
 
 
 void PnRdatabase::ReadPDKJSON(std::string drfile) {
+
+    auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.ReadPDKJSON");
+
     int times=2;
     json jsonStrAry;
     ifstream jsonFile (drfile);
     if (jsonFile.is_open()) {
-	json jedb = json::parse (jsonFile);
+	      json jedb = json::parse (jsonFile);
         json layerAry = jedb["Abstraction"];
+        int ScaleFactor = jedb["ScaleFactor"];
+        //times *= ScaleFactor;
         std::map<int, PnRDB::metal_info> metalSet;
         std::map<int, PnRDB::via_info> viaSet;
         std::unordered_map<string, int> name2ViaLayerMap;
@@ -30,8 +35,8 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             // metal layer
             metal_index = metal_index + 1;
             #ifdef FinFET_MOCK_PDK
-            std::cout<<"Reading Json PDK on "<<lname<<std::endl;
-            std::cout<<"Reading Json PDK on "<<"GdsLayerNo"<<std::endl;
+            logger->debug("Reading Json PDK on {0}",lname);
+            logger->debug("Reading Json PDK on GdsLayerNo");
             int lnum=layer["GdsLayerNo"];
             int Drawnum=layer["GdsDatatype"]["Draw"];
             int Pinnum=layer["GdsDatatype"]["Pin"];
@@ -42,7 +47,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             #endif
             std::string ldir=layer["Direction"];
             int lpitch=-1;
-            std::cout<<"Reading Json PDK on "<<"Pitch"<<std::endl;
+            logger->debug("Reading Json PDK on Pitch");
             json pdata=layer["Pitch"];
             if(pdata.is_array()) {
               json::iterator pit=pdata.begin();
@@ -51,7 +56,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
               lpitch=pdata;
             }
             int lwidth=-1;
-            std::cout<<"Reading Json PDK on "<<"Width"<<std::endl;
+            logger->debug("Reading Json PDK on Width");
             json wdata=layer["Width"];
             if(wdata.is_array()) {
               json::iterator wit=wdata.begin();
@@ -59,16 +64,16 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             } else if (wdata.is_number()) {
               lwidth=wdata;
             }
-            std::cout<<"Reading Json PDK on "<<"MinL"<<std::endl;
+            logger->debug("Reading Json PDK on MinL");
             int lminL=layer["MinL"];
             //int lmaxL=layer["MaxL"];
-            std::cout<<"Reading Json PDK on "<<"EndToEnd"<<std::endl;
+            logger->debug("Reading Json PDK on EndToEnd");
             int le2e=layer["EndToEnd"];
 
             double unit_C = 0;
             double unit_CC = 0;
             double unit_R = 0;
-            std::cout<<"Reading Json PDK on "<<"Units, C, CC, R"<<std::endl;
+            logger->debug("Reading Json PDK on Units, C, CC, R");
             #ifdef FinFET_MOCK_PDK
             if(layer["UnitC"]["Mean"].is_number()){unit_C=layer["UnitC"]["Mean"];}
             if(layer["UnitCC"]["Mean"].is_number()){unit_CC=layer["UnitCC"]["Mean"];}
@@ -87,13 +92,13 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             tmp_metal.gds_datatype.Label=Labelnum;
             tmp_metal.gds_datatype.Blockage=Blockagenum;
             #endif
-            if(ldir.compare("V")==0) { tmp_metal.direct=0; tmp_metal.grid_unit_x=times*lpitch; tmp_metal.grid_unit_y=-1;
-            } else if (ldir.compare("H")==0) { tmp_metal.direct=1; tmp_metal.grid_unit_y=times*lpitch; tmp_metal.grid_unit_x=-1;
-            } else {std::cout<<"PnR-Error: incorrect metal direction\n";}
-            tmp_metal.width=times*lwidth;
-            tmp_metal.dist_ss=times*(lpitch-lwidth);
-            tmp_metal.minL=times*lminL;
-            tmp_metal.dist_ee=times*le2e;
+            if(ldir.compare("V")==0) { tmp_metal.direct=0; tmp_metal.grid_unit_x=times*lpitch/ScaleFactor; tmp_metal.grid_unit_y=-1;
+            } else if (ldir.compare("H")==0) { tmp_metal.direct=1; tmp_metal.grid_unit_y=times*lpitch/ScaleFactor; tmp_metal.grid_unit_x=-1;
+            } else {logger->error("PnR-Error: incorrect metal direction");}
+            tmp_metal.width=times*lwidth/ScaleFactor;
+            tmp_metal.dist_ss=times*(lpitch-lwidth)/ScaleFactor;
+            tmp_metal.minL=times*lminL/ScaleFactor;
+            tmp_metal.dist_ee=times*le2e/ScaleFactor;
             double rc_scale = 0.0005;
             tmp_metal.unit_R = unit_R*rc_scale;
             tmp_metal.unit_C = unit_C*rc_scale;
@@ -103,7 +108,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
         }
         for(std::map<int, PnRDB::metal_info>::iterator it=metalSet.begin(); it!=metalSet.end(); ++it) {
           DRC_info.Metal_info.push_back(it->second);
-	  cout << "Assign the metalmap[" << it->second.name << "] = " << DRC_info.Metal_info.size()-1 << endl;
+	  //cout << "Assign the metalmap[" << it->second.name << "] = " << DRC_info.Metal_info.size()-1 << endl;
           DRC_info.Metalmap[it->second.name] = DRC_info.Metal_info.size()-1;
         }
         DRC_info.MaxLayer = DRC_info.Metal_info.size()-1;
@@ -123,7 +128,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
           }
         }
 
-        std::cout<<"Boundary test "<<DRC_info.top_boundary.name<<" "<<DRC_info.top_boundary.layerNo<<" "<<DRC_info.top_boundary.gds_datatype.Draw<<std::endl;
+        //std::cout<<"Boundary test "<<DRC_info.top_boundary.name<<" "<<DRC_info.top_boundary.layerNo<<" "<<DRC_info.top_boundary.gds_datatype.Draw<<std::endl;
 
         // 2. Extract via info
         int via_index = 0;
@@ -134,31 +139,31 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             via_index = via_index + 1;
             // via layer
             via_index = via_index + 1;
-            std::cout<<"Reading Json PDK on "<<lname<<std::endl;
+            logger->debug("Reading Json PDK on {0}",lname);
             #ifdef FinFET_MOCK_PDK
-            std::cout<<"Reading Json PDK on "<<"GdsLayerNo"<<std::endl;
+            logger->debug("Reading Json PDK on GdsLayerNo");
             int lnum=layer["GdsLayerNo"];
             int Drawnum=layer["GdsDatatype"]["Draw"];
             #else
             int lnum=layer["LayerNo"];
             #endif
-            std::cout<<"Reading Json PDK on "<<"Stack"<<std::endl;
+            //std::cout<<"Reading Json PDK on "<<"Stack"<<std::endl;
             json stackAry = layer["Stack"];
-            std::cout<<"Reading Json PDK on "<<"WidthX"<<std::endl;
+            //std::cout<<"Reading Json PDK on "<<"WidthX"<<std::endl;
             int lwidthx= layer["WidthX"];
-            std::cout<<"Reading Json PDK on "<<"WidthY"<<std::endl;
+            //std::cout<<"Reading Json PDK on "<<"WidthY"<<std::endl;
             int lwidthy= layer["WidthY"];
-            std::cout<<"Reading Json PDK on "<<"SpaceX"<<std::endl;
+            //std::cout<<"Reading Json PDK on "<<"SpaceX"<<std::endl;
             int lspacex= layer["SpaceX"];
-            std::cout<<"Reading Json PDK on "<<"SpaceY"<<std::endl;
+            //std::cout<<"Reading Json PDK on "<<"SpaceY"<<std::endl;
             int lspacey= layer["SpaceY"];
-            std::cout<<"Reading Json PDK on "<<"VencA_L"<<std::endl;
+            //std::cout<<"Reading Json PDK on "<<"VencA_L"<<std::endl;
             int lvencal= layer["VencA_L"];
-            std::cout<<"Reading Json PDK on "<<"VencA_H"<<std::endl;
+            //std::cout<<"Reading Json PDK on "<<"VencA_H"<<std::endl;
             int lvencah= layer["VencA_H"];
-            std::cout<<"Reading Json PDK on "<<"VencP_L"<<std::endl;
+            //std::cout<<"Reading Json PDK on "<<"VencP_L"<<std::endl;
             int lvencpl= layer["VencP_L"];
-            std::cout<<"Reading Json PDK on "<<"VencP_H"<<std::endl;
+            //std::cout<<"Reading Json PDK on "<<"VencP_H"<<std::endl;
             int lvencph= layer["VencP_H"];
 
             double R = 0;
@@ -174,14 +179,14 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             #ifdef FinFET_MOCK_PDK
             tmp_via.gds_datatype.Draw=Drawnum;
             #endif
-            tmp_via.width=times*lwidthx;
-            tmp_via.width_y=times*lwidthy;
-            tmp_via.cover_l=times*lvencal;
-            tmp_via.cover_l_P=times*lvencpl;
-            tmp_via.cover_u=times*lvencah;
-            tmp_via.cover_u_P=times*lvencph;
-            tmp_via.dist_ss=times*lspacex;
-            tmp_via.dist_ss_y=times*lspacey;
+            tmp_via.width=times*lwidthx/ScaleFactor;
+            tmp_via.width_y=times*lwidthy/ScaleFactor;
+            tmp_via.cover_l=times*lvencal/ScaleFactor;
+            tmp_via.cover_l_P=times*lvencpl/ScaleFactor;
+            tmp_via.cover_u=times*lvencah/ScaleFactor;
+            tmp_via.cover_u_P=times*lvencph/ScaleFactor;
+            tmp_via.dist_ss=times*lspacex/ScaleFactor;
+            tmp_via.dist_ss_y=times*lspacey/ScaleFactor;
             tmp_via.R = R;
 	    {
 	      assert( stackAry.size() == 2);
@@ -193,7 +198,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
 		if(s.is_string()) {
 		  metal_stack_indices[i] = DRC_info.Metalmap[s]; //get via's upper and lower metal name by via's Stack
 		} else {
-		  cout << "Null metal for via " << tmp_via.name << " pos " << i << endl;
+		  //cout << "Null metal for via " << tmp_via.name << " pos " << i << endl;
 		}
 	      }
 
@@ -209,10 +214,35 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
 	    }
           }
         }
+       
+
         for(std::map<int, PnRDB::via_info>::iterator it=viaSet.begin(); it!=viaSet.end(); ++it) {
           DRC_info.Via_info.push_back(it->second);
           DRC_info.Viamap[it->second.name] = DRC_info.Via_info.size()-1;
         }
+
+       // extract information for guard ring
+        for(json::iterator lit = layerAry.begin(); lit != layerAry.end(); ++lit) {
+          json layer = *lit;
+          std::string lname=layer["Layer"];
+          if(lname.compare("GuardRing")==0){//
+             PnRDB::guardring_info temp_guardring_info;
+             //temp_boundary.layerNo = layer["GdsLayerNo"];
+             //temp_guardring_info.gds_datatype.Draw=layer["GdsDatatype"]["Draw"];
+             //temp_boundary.gds_datatype.Pin=layer["GdsDatatype"]["Pin"];
+             //temp_boundary.gds_datatype.Label=layer["GdsDatatype"]["Label"];
+             //temp_boundary.gds_datatype.Blockage=layer["GdsDatatype"]["Blockage"];
+             temp_guardring_info.xspace = layer["XSpace"];
+             temp_guardring_info.yspace = layer["YSpace"];
+             temp_guardring_info.xspace *= times;
+             temp_guardring_info.xspace/= ScaleFactor;
+             temp_guardring_info.yspace *= times;
+             temp_guardring_info.yspace/= ScaleFactor;
+             DRC_info.Guardring_info = temp_guardring_info;
+          }          
+
+        }
+
 
         // 3. Add metal weight
         //add
@@ -230,10 +260,10 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
              temp_viamodel.LowerIdx = vs.lower_metal_index;
              temp_viamodel.UpperIdx = vs.upper_metal_index;
 
-	     const string& lm_name = DRC_info.Metal_info.at(temp_viamodel.LowerIdx).name;
-	     const string& um_name = DRC_info.Metal_info.at(temp_viamodel.UpperIdx).name;
+	     //const string& lm_name = DRC_info.Metal_info.at(temp_viamodel.LowerIdx).name;
+	     //const string& um_name = DRC_info.Metal_info.at(temp_viamodel.UpperIdx).name;
 
-	     cout << "Via " << temp_viamodel.name << " ViaIndex " << temp_viamodel.ViaIdx << " LowerIdx " << temp_viamodel.LowerIdx << " (" << lm_name << ") UpperIdx " << temp_viamodel.UpperIdx << " (" << um_name << ")" << endl;
+	     //cout << "Via " << temp_viamodel.name << " ViaIndex " << temp_viamodel.ViaIdx << " LowerIdx " << temp_viamodel.LowerIdx << " (" << lm_name << ") UpperIdx " << temp_viamodel.UpperIdx << " (" << um_name << ")" << endl;
 
              PnRDB::point temp_point;
 	     auto& vi = DRC_info.Via_info[temp_viamodel.ViaIdx];
@@ -347,6 +377,54 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
         }
         for(unsigned int i=0;i<DRC_info.Via_info.size();++i) {
           DRC_info.MaskID_Via.push_back(std::to_string( DRC_info.Via_info.at(i).layerNo ));
+        }
+
+        // 7. read design info
+        // first init hspace and vspace
+        if (DRC_info.Metal_info[0].direct == 1) {  // horizontal
+          DRC_info.Design_info.Vspace = DRC_info.Metal_info[0].grid_unit_y;
+        } else {
+          DRC_info.Design_info.Hspace = DRC_info.Metal_info[0].grid_unit_x;
+        }
+        if (DRC_info.Metal_info[1].direct == 1) {  // horizontal
+          DRC_info.Design_info.Vspace = DRC_info.Metal_info[1].grid_unit_y;
+        } else {
+          DRC_info.Design_info.Hspace = DRC_info.Metal_info[1].grid_unit_x;
+        }
+        // then read them
+        if (jedb.contains("design_info")) {
+          json design_info = jedb["design_info"];
+          DRC_info.Design_info.Hspace = design_info["Hspace"];
+          DRC_info.Design_info.Vspace = design_info["Vspace"];
+          DRC_info.Design_info.Hspace *= times;
+          DRC_info.Design_info.Hspace /= ScaleFactor;
+          DRC_info.Design_info.Vspace *= times;
+          DRC_info.Design_info.Vspace /= ScaleFactor;
+          DRC_info.Design_info.signal_routing_metal_l = DRC_info.Metalmap[design_info["bottom_signal_routing_layer"]];
+          DRC_info.Design_info.signal_routing_metal_u = DRC_info.Metalmap[design_info["top_signal_routing_layer"]];
+          DRC_info.Design_info.power_routing_metal_l = DRC_info.Metalmap[design_info["bottom_power_routing_layer"]];
+          DRC_info.Design_info.power_routing_metal_u = DRC_info.Metalmap[design_info["top_power_routing_layer"]];
+
+	  DRC_info.Design_info.h_skip_factor = 7;
+	  DRC_info.Design_info.v_skip_factor = 8;
+	  if (design_info.contains("h_skip_factor")) {
+	    DRC_info.Design_info.h_skip_factor = design_info["h_skip_factor"];
+	  }
+	  if (design_info.contains("v_skip_factor")) {
+	    DRC_info.Design_info.v_skip_factor = design_info["v_skip_factor"];
+	  }
+
+          DRC_info.Design_info.power_grid_metal_l = DRC_info.Metalmap[design_info["top_power_routing_layer"]]-1;
+          DRC_info.Design_info.power_grid_metal_u = DRC_info.Metalmap[design_info["top_power_routing_layer"]];
+	  if (design_info.contains("bottom_power_grid_layer")) {
+	    DRC_info.Design_info.power_grid_metal_l = DRC_info.Metalmap[design_info["bottom_power_grid_layer"]];
+	  }
+	  if (design_info.contains("top_power_grid_layer")) {
+	    DRC_info.Design_info.power_grid_metal_u = DRC_info.Metalmap[design_info["top_power_grid_layer"]];
+	  }
+
+          //std::cout<<"design info "<<DRC_info.Design_info.signal_routing_metal_l<<" "<<DRC_info.Design_info.signal_routing_metal_u<<" "<<DRC_info.Design_info.power_grid_metal_l<<" "<<DRC_info.Design_info.power_grid_metal_u<<" "<<DRC_info.Design_info.power_routing_metal_l<<" "<<DRC_info.Design_info.power_routing_metal_u<<std::endl;
+
         }
     }
 }

@@ -1,18 +1,94 @@
-*~
-.coverage
-htmlcov/
-.eggs/
-*.egg-info/
-junit.xml
-testcase_latest/
-__pycache__/
-*.gds.json
-*.json
-*.lef
-*.gds
-*_cand
-*.pyc
-tmp/
-LOG/
+#
+# ALIGN specific .gitignore file
+#
+# WARNING: Please copy over modifications to
+#   .dockerignore as well
+#
+# To see files not excluded by .gitignore
+#   `git status`
+#
+# To see tracked files that meet exclusion rules
+#   `git ls-files -ci --exclude-standard`
+#
+
+# Exclude files built by Dockerfile or install.sh
+general/
+.venv/
+wheelhouse/
+_skbuild/
+# Exclude common user / machine generated files
+**/*.tar
+**/*.tar.gz
 pycharm/
 .idea/
+.vscode
+**/*~
+**/*.swp
+**/.coverage
+**/coverage.info
+**/htmlcov/
+**/junit.xml
+**/coverage.xml
+.eggs/
+*.egg-info/
+.pytest_cache/
+**/__pycache__/
+**/*.pyc
+**/*.o
+**/*.a
+**/*.so
+**/*.so.*
+**/*.gcno
+**/*.gcda
+# Exclude align outputs that we don't usually want
+**/*.log
+**/*.gds
+**/*.dot
+**/*.json
+**/*.lef
+# Exclude files based on ALIGN naming conventions
+**/*_cand
+**/*.pl
+**/*.plt
+**/tmp/
+**/work/
+**/Results/
+**/LOG/
+**/test_PnR
+**/_cmake.py
+coverage-reports/
+# Include files based on ALIGN naming conventions
+!**/*.const.json
+!tests/files/**/*.json
+!examples/**/*.json
+!examples/**/**/*.json
+!examples/**/**/*.lef
+!**/*-freeze.json
+!**/Process.json
+!**/layers.json
+!**/generators.json
+!dev/**/*.json
+!align/config/model.txt
+!dev/**/*.lef
+!PlaceRouteHierFlow/gold/*.json
+!PlaceRouteHierFlow/testcase_*/*.gds
+!PlaceRouteHierFlow/testcase_*/*.json
+!PlaceRouteHierFlow/testcase_*/*.lef
+# Exceptions to our general rules
+# TODO: Review periodically to eliminate
+PlaceRouteHierFlow/PnRDB/__json
+tests/gdsconv/from*
+tests/cell_fabric/Foo*.cir
+!build/native_build.log
+!Cktgen/cktgen/tests/vga*
+!Cktgen/cktgen/tests/merged.lef
+!docs/Tutorials/Build/src/json/
+!tests/cell_fabric/__json_cmc_nmos_big_no_duplicates_cand
+!tests/cell_fabric/__json_diff_pair_cand
+!tests/pnr/current_mirror_ota_inputs/*.json
+!tests/pnr/current_mirror_ota_inputs/*.lef
+!tests/gdsconv/file.*
+!tests/gdsconv/only_paths.*
+!Viewer/INPUT/mydesign_dr_globalrouting.json
+!Viewer/larger_example/mydesign_dr_globalrouting.json
+_skbuild/

@@ -8,10 +8,10 @@ m11 vom ibias vdd vdd lvtpfet w=w3 l=l0
 m14 vop ibias vdd vdd lvtpfet w=w3 l=l0
 m26 vop vim net074 net074 lvtnfet w=w4 l=l0
 m27 vom vip net074 net074 lvtnfet w=w4 l=l0
-c21 ntail1 vom cap cap=10f
-c22 vop ntail1 cap cap=10f
-r12 ntail1 vop res res=100
-r11 vom ntail1 res res=100
+c21 ntail1 vom 10f
+c22 vop ntail1 10f
+r12 ntail1 vop 100
+r11 vom ntail1 100
 m3 vss ntail1 vss vss lvtnfet w=w5 l=l2
 m0 vss ntail1 vss vss lvtnfet w=w5 l=l2
 **d0 net074 vdd diode
@@ -56,22 +56,22 @@ mi7 net120 net81 vdd vdd pfet w=w13 l=l3
 .ends DFCNQD2BWP
 
 .subckt C_DAC clkb in r3 r4 rstb vdd vss
-r27 r3 net10 res res=100
-r64 r4 in res res=100
+r27 r3 net10 100
+r64 r4 in 100
 xi94 in clkb rstb net10 vdd vss DFCNQD2BWP
 .ends C_DAC
 
 .subckt FIR_DAC clk in r1 r2 rstb vdd vss
-r19 r1 net3 res res=100
-r48 r2 in res res=100
+r19 r1 net3 100
+r48 r2 in 100
 xi86 in clk rstb net3 vdd vss DFCNQD2BWP
 .ends FIR_DAC
 
 .subckt C1 a b
-c0<3> a b cap cap=10f
-c0<2> a b cap cap=10f
-c0<1> a b cap cap=10f
-c0<0> a b cap cap=10f
+c0<3> a b 10f
+c0<2> a b 10f
+c0<1> a b 10f
+c0<0> a b 10f
 .ends C1
 
 .subckt NR2D8BWP a1 a2 zn vdd vss
@@ -95,10 +95,10 @@ m0 ibias ibias vdd vdd pfet w=w20 l=l5
 m24 ibias ibias vdd vdd pfet w=w20 l=l5
 m23 vop ibias vdd vdd pfet w=w21 l=l5
 m14 vom ibias vdd vdd pfet w=w21 l=l5
-c22 vop ntail2 cap cap=10f
-c21 ntail2 vom cap cap=10f
-r11 vom ntail2 res res=100
-r12 ntail2 vop res res=100
+c22 vop ntail2 10f
+c21 ntail2 vom 10f
+r11 vom ntail2 100
+r12 ntail2 vop 100
 m22 net100 ntail2 vss vss nfet w=w22 l=l5
 *d1 vss vdd diode
 m12 vss ntail2 vss vss lvtnfet w=w23 l=l2
@@ -127,14 +127,14 @@ m13 crossp crossn vdd vdd lvtpfet w=w29 l=l3
 .ends myComparator_v3
 
 .subckt FIR_DAC_schematic clk in r1 r2 rstb vdd vss
-r19 r1 net3 res res=100
-r48 r2 in res res=100
+r19 r1 net3 100
+r48 r2 in 100
 xi86 in clk rstb net3 vdd vss DFCNQD2BWP
 .ends FIR_DAC_schematic
 
 .subckt C_DAC_schematic clkb in r3 r4 rstb vdd vss
-r27 r3 net10 res res=100
-r64 r4 in res res=100
+r27 r3 net10 100
+r64 r4 in 100
 xi94 in clkb rstb net10 vdd vss DFCNQD2BWP
 .ends C_DAC_schematic
 
@@ -144,14 +144,14 @@ xi154 clkb1 net062 vo3m vo3p rstb vdd vss FIR_DAC
 xi152 clk net052 vo1p vo1p rstb vdd vss FIR_DAC
 m1 vss clkb2 vss vss nfet w=w30 l=l7
 m0 vss clkb1 vss vss nfet w=w30 l=l7
-xi164 vo1p vo1m vss C1
+xi164 vo1p vo1m C1
 xi128 outm outp net072 net071 vdd vss SR_Latch
-c6 vo3p vo3m cap cap=10f
-c3 net074 net073 cap cap=10f
-r16 vip vo1p res res=100
-r51 net073 vo2m res res=100
-r25 vo2p net074 res res=100
-r47 vim vo1m res res=100
+c6 vo3p vo3m 10f
+c3 net074 net073 10f
+r16 vip vo1p 100
+r51 net073 vo2m 100
+r25 vo2p net074 100
+r47 vim vo1m 100
 xi161 ibias2 vdd vo2m vo2p vo3p vo3m vss Gm1_v5_Practice
 xi88 net062 clk rstb net052 vdd vss DFCNQD2BWP
 xi97 outp clkb1 rstb net062 vdd vss DFCNQD2BWP
