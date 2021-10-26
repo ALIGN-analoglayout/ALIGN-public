@@ -14,6 +14,13 @@ using std::set;
 using std::string;
 using std::vector;
 
+//#define PERFORMANCE_DRIVEN
+//#define analytical_placer
+//#define min_displacement
+//#define quadratic_placement
+#define ilp
+//#define hard_symmetry
+
 namespace PnRDB {
 
 struct point;
@@ -236,6 +243,7 @@ struct net {
   double upperBound = INT_MAX;
   double lowerBound = INT_MIN;
   int multi_connection = 1;
+  float weight=1.0;
 }; // structure of nets
 
 struct Metal{
@@ -290,6 +298,7 @@ struct block {
   int width=0;
   int height=0;
   bool isLeaf=true;
+  bool isRead=true;
   bbox originBox;
   point originCenter;
   string gdsFile="";
@@ -367,6 +376,7 @@ struct hierNode {
   bool isCompleted=false;
   bool isTop=false;
   bool isIntelGcellGlobalRouter=false;
+  bool isFirstILP=false;//donghao add
   int width=0;
   int height=0;
   point LL;                 // hiernode absolute LL in topnode coordinate
@@ -403,7 +413,7 @@ struct hierNode {
   //vector<SymmBlock> SBlocks;
   vector<Preplace> Preplace_blocks;
   vector<Alignment> Alignment_blocks;
-  vector<AlignBlock> Align_blocks;
+  vector<AlignBlock> Align_blocks;//align constrainst
   vector<Abument> Abument_blocks;
   vector<MatchBlock> Match_blocks;
   vector<CCCap> CC_Caps;
@@ -423,6 +433,7 @@ struct hierNode {
   double placement_box[2] = {-1, -1};
   vector<Router_report> router_report;
   vector<Multi_connection> Multi_connections;
+  int placement_id = 0;
   int HPWL = -1, HPWL_extend = -1, HPWL_extend_wo_terminal = -1;
   double area_norm = -1;
   double HPWL_norm = -1;
@@ -481,8 +492,9 @@ struct MatchBlock {
 };
 
 struct AlignBlock {
-  std::vector<int> blocks;
+  std::vector<int> blocks;//LL.x/LL.y equal
   int horizon; // 1 is h, 0 is v.
+  int line; // 0 is left or bottom, 1 is center, 2 is right or top
 };
 
 struct PortPos {

@@ -1664,7 +1664,7 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 		term["layer"] = n.name; //drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).name;
 		term["layer"] = mi.name;
 		term["rect"] = ToJsonAry(box.LL, box.UR);
-
+		term["netType"] = "drawing";
 		terminals.push_back( term);
 	    }   
 	}
@@ -1683,7 +1683,7 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 
 		auto viaBox = (PnRDB::bbox (viaRect[0], viaRect[1]) + (n.via_pos[j] + offset)) / unitScale;
 		term["rect"] = ToJsonAry (viaBox.LL, viaBox.UR);
-
+		term["netType"] = "drawing";
 		terminals.push_back( term);
 	    }
 	}
@@ -1789,6 +1789,7 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 
 	    json z = ToJsonAry (pt + p0, pt + p1);
 	    term1["rect"] = z;
+		term1["netType"] = "drawing";
 	    terminals.push_back( term1);
 	}
     }

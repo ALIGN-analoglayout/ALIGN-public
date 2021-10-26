@@ -1,0 +1,48 @@
+{
+    "constraints": [
+        {
+            "const_name": "SymmNet",
+            "axis_dir": "V",
+            "net1": {
+                "name": "vx",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "mmp3",
+                        "pin": "D"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "mmn4_mmn3",
+                        "pin": "SA"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "mmn1_mmn0",
+                        "pin": "DB"
+                    }
+                ]
+            },
+            "net2": {
+                "name": "vy",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "mmp5",
+                        "pin": "D"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "mmn4_mmn3",
+                        "pin": "SB"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "mmn1_mmn0",
+                        "pin": "DA"
+                    }
+                ]
+            }
+        }
+    ]
+}

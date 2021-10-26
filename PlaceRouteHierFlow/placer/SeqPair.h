@@ -26,30 +26,50 @@ using std::string;
 using std::swap;
 using std::vector;
 
+class OrderedEnumerator {
+  private:
+    vector<vector<int>> _sequences;
+    unsigned _cnt;
+    bool TopoSortUtil(vector<int>& res, map<int, bool>& visited);
+    vector<int> _seq;
+    map<int, vector<int>> _adj;
+    map<int, int> _indegree;
+    bool _valid;
+    const int _maxSeq;
+    
+  public:
+    OrderedEnumerator(const vector<int>& seq, const vector<pair<pair<int, int>, placerDB::Smark>>& constraints, const int _maxSeq, const bool pos = true);
+    bool NextPermutation(vector<int>& seq);
+    void print();
+    bool valid() const { return _valid; }
+    size_t NumSequences() const { return _sequences.size(); }
+};
 
 class SeqPairEnumerator
 {
   private:
     vector<int> _posPair, _negPair, _selected;
-    std::pair<size_t, size_t> _enumIndex; //first : pos, second : neg
     vector<int> _maxSelected;
-    size_t _maxEnum;
+    std::pair<size_t, size_t> _enumIndex; //first : pos, second : neg
     int _maxSize;
     unsigned _exhausted : 1;
-    size_t _hflip, _vflip;
-    size_t _maxFlip;
+    unsigned _valid : 1;
+    size_t _maxEnum;
+    //size_t _hflip, _vflip;
+    //size_t _maxFlip;
+    OrderedEnumerator _posEnumerator, _negEnumerator;
   public:
-    SeqPairEnumerator(const vector<int>& pair, design& casenl);
+    SeqPairEnumerator(const vector<int>& pair, design& casenl, const size_t maxIter);
     void Permute();
     const vector<int>& PosPair() const { return _posPair; }
     const vector<int>& NegPair() const { return _negPair; }
     const vector<int>& Selected() const { return _selected; }
     const bool EnumExhausted() const { return _exhausted; }
     const bool IncrementSelected();
-    bool EnumFlip();
-    vector<int> GetFlip(const bool hor) const;
+    //bool EnumFlip();
+    //vector<int> GetFlip(const bool hor) const;
+    bool valid() const { return _valid ? true : false; }
 };
-
 
 class SeqPair 
 {
@@ -113,7 +133,11 @@ class SeqPair
     void KeepOrdering(design& caseNL);
     void CompactSeq();
 
-    vector<int> GetFlip(const bool hor) const;
+    std::string getLexIndex(design& des) const;
+    void cacheSeq(design& des) const { des.cacheSeq(posPair, negPair, selected); }
+    bool isSeqInCache(const design& des) const { return des.isSeqInCache(posPair, negPair, selected); }
+
+    //vector<int> GetFlip(const bool hor) const;
 };
 
 #endif

@@ -1,69 +1,49 @@
 {
     "constraints": [
         {
-            "const_name": "SymmNet",
-            "axis_dir": "V",
             "net1": {
-                "name": "out1",
+                "name": "OUT1",
                 "blocks": [
                     {
                         "type": "pin",
-                        "name": "c2_c1",
-                        "pin": "PLUS0"
+                        "name": "C2",
+                        "pin": "MINUS"
                     },
                     {
                         "type": "terminal",
-                        "name": "out1",
+                        "name": "OUT1",
                         "pin": null
                     }
                 ]
             },
             "net2": {
-                "name": "out2",
+                "name": "OUT2",
                 "blocks": [
                     {
                         "type": "pin",
-                        "name": "c2_c1",
-                        "pin": "PLUS1"
+                        "name": "C1",
+                        "pin": "MINUS"
                     },
                     {
                         "type": "terminal",
-                        "name": "out2",
+                        "name": "OUT2",
                         "pin": null
                     }
                 ]
-            }
+            },
+            "const_name": "SymmNet",
+            "axis_dir": "V"
         },
         {
-            "const_name": "SymmBlock",
-            "axis_dir": "V",
             "pairs": [
                 {
-                    "type": "selfsym",
-                    "block": "c2_c1"
+                    "type": "sympair",
+                    "block1": "C2",
+                    "block2": "C1"
                 }
-            ]
-        },
-        {
-            "const_name": "CC",
-            "cap_name": "c0",
-            "size": [5],
-            "unit_capacitor": "Cap_12f",
-            "nodummy": true,
-            "cap_r": -1,
-            "cap_s": -1
-        },
-        {
-            "const_name": "CC",
-            "cap_name": "c2_c1",
-            "size": [
-                3,
-                3
             ],
-            "unit_capacitor": "Cap_12f",
-            "nodummy": true,
-            "cap_r": -1,
-            "cap_s": -1
+            "const_name": "SymmBlock",
+            "axis_dir": "V"
         }
     ]
 }

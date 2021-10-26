@@ -2,8 +2,9 @@
 # visit http://127.0.0.1:8050/ in your web browser.
 
 import dash
-import dash_core_components as dcc
 import dash_html_components as html
+import dash_core_components as dcc
+
 from dash.dependencies import Input, Output
 
 import math
@@ -48,7 +49,7 @@ def make_tradeoff_fig_wh(df, log=False, scale='Blugrn'):
     sweep_height = area/sweep_width
 
     fig.add_trace(
-        go.Scatter( 
+        go.Scatter(
             x=sweep_width,
             y=sweep_height,
             mode='lines',
@@ -109,7 +110,7 @@ def make_tradeoff_fig_aa(df, log=False, scale='Blugrn'):
     sweep_y = area+0*sweep_x
 
     fig.add_trace(
-        go.Scatter( 
+        go.Scatter(
             x=sweep_x,
             y=sweep_y,
             mode='lines',
@@ -206,7 +207,7 @@ def make_tradeoff_fig_ha(df, log=False, scale='Blugrn', lambda_coeff=1.0):
         sweep_y = np.exp(log_sweep_y)
 
         fig.add_trace(
-            go.Scatter( 
+            go.Scatter(
                 x=sweep_x,
                 y=sweep_y,
                 mode='lines',
@@ -243,7 +244,7 @@ def make_tradeoff_fig_nn(df, log=False, scale='Blugrn'):
     sweep_y = best_y*(2 - sweep_x/best_x)
 
     fig.add_trace(
-        go.Scatter( 
+        go.Scatter(
             x=sweep_x,
             y=sweep_y,
             mode='lines',
@@ -279,7 +280,7 @@ def make_tradeoff_fig_ac(df, log=False, scale='Blugrn'):
     sweep_y = y+0*sweep_x
 
     fig.add_trace(
-        go.Scatter( 
+        go.Scatter(
             x=sweep_x,
             y=sweep_y,
             mode='lines',
@@ -318,7 +319,7 @@ def make_tradeoff_fig_hc(df, log=False, scale='Blugrn'):
     sweep_y = y+0*sweep_x
 
     fig.add_trace(
-        go.Scatter( 
+        go.Scatter(
             x=sweep_x,
             y=sweep_y,
             mode='lines',
@@ -347,7 +348,7 @@ def make_tradeoff_fig( axes, df, log=False, scale='Blugrn', lambda_coeff=1.0):
     else:
         assert False, axes
 
-colorscales = ['Blugrn'] + px.colors.named_colorscales() 
+colorscales = ['Blugrn'] + px.colors.named_colorscales()
 
 class AppWithCallbacksAndState:
     def gen_dataframe( self):
@@ -404,20 +405,20 @@ class AppWithCallbacksAndState:
                             value='loglog'
                         ),
                         dcc.Dropdown(
-                            id='tradeoff-type', 
-                            options=[{"value": x, "label": x} 
+                            id='tradeoff-type',
+                            options=[{"value": x, "label": x}
                                      for x in ['width-height', 'aspect_ratio-area', 'hpwl-area', 'area-cost', 'hpwl-cost', 'hpwl_norm-area_norm']],
                             value='hpwl-area'
                         ),
                         dcc.Dropdown(
-                            id='colorscale', 
-                            options=[{"value": x, "label": x} 
+                            id='colorscale',
+                            options=[{"value": x, "label": x}
                                      for x in colorscales],
                             value='Blugrn'
                         ),
                         dcc.Dropdown(
-                            id='module-name', 
-                            options=[{"value": x, "label": x} 
+                            id='module-name',
+                            options=[{"value": x, "label": x}
                                      for x in self.tagged_bboxes.keys()],
                             value=self.module_name
                         ),
@@ -429,7 +430,7 @@ class AppWithCallbacksAndState:
                 ),
                 html.Div(
                     id='placement-col',
-                    children=[    
+                    children=[
                         html.H2(children='Placement'),
                         dcc.RadioItems(
                             id='display-type',
@@ -442,7 +443,7 @@ class AppWithCallbacksAndState:
                             value='Pins'
                         ),
                         dcc.Dropdown(
-                            id='netname', 
+                            id='netname',
                             options=[],
                             multi=True,
                             value=[]
@@ -455,7 +456,7 @@ class AppWithCallbacksAndState:
                 ),
                 html.Div(
                     id='tree-col',
-                    children=[    
+                    children=[
                         html.Img(src=self.app.get_asset_url('align.png'))
                     ]
                 )
@@ -586,8 +587,8 @@ class AppWithCallbacksAndState:
             self.make_placement_graph(display_type=display_type,display_pins_type=display_pins_type,netname=netname)
 
 
+        options = []
         if self.nets_d is not None:
-            options = []
             for k, v in self.nets_d.items():
                 net = '/'.join(k)
                 options.append( {"value": net, "label": net})
@@ -598,6 +599,6 @@ class AppWithCallbacksAndState:
 def run_gui( *, tagged_bboxes, module_name, lambda_coeff):
     awcas = AppWithCallbacksAndState( tagged_bboxes=tagged_bboxes, module_name=module_name, lambda_coeff=lambda_coeff)
     awcas.app.run_server(debug=True,use_reloader=False)
-    
+
     logger.info( f'final selection: {awcas.sel} We have access to any state from the GUI object here.')
     return awcas.sel

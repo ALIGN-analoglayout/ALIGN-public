@@ -1,0 +1,63 @@
+{
+    "constraints": [
+        {
+            "const_name": "SymmNet",
+            "axis_dir": "V",
+            "net1": {
+                "name": "net16",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "m21",
+                        "pin": "D"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "m20s",
+                        "pin": "G"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "m17_m15",
+                        "pin": "DA"
+                    }
+                ]
+            },
+            "net2": {
+                "name": "net27",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "m19",
+                        "pin": "D"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "m18s",
+                        "pin": "G"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "m17_m15",
+                        "pin": "DB"
+                    }
+                ]
+            }
+        },
+        {
+            "const_name": "SymmBlock",
+            "axis_dir": "V",
+            "pairs": [
+                {
+                    "type": "selfsym",
+                    "block": "m17_m15"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "m21",
+                    "block2": "m19"
+                }
+            ]
+        }
+    ]
+}
