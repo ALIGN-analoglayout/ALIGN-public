@@ -269,11 +269,11 @@ class process_arrays:
             arre_hier_const.append(constraint.Align(line="h_center", instances=instances))
             arre_hier_const.append(constraint.SameTemplate(instances=instances))
         # template placement constraint
-        for template in modules:
-            template_module = self.dl.find(template)
-            all_inst = [inst.name for inst in template_module.elements]
-            with set_context(template_module.constraints):
-                template_module.constraints.append(constraint.Align(line="v_center", instances=all_inst))
+        # for template in modules:
+        #     template_module = self.dl.find(template)
+        #     all_inst = [inst.name for inst in template_module.elements]
+        #     with set_context(template_module.constraints):
+        #         template_module.constraints.append(constraint.Align(line="v_center", instances=all_inst))
 
 
     def get_new_subckt_name(self, name):
