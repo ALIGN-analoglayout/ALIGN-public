@@ -1292,17 +1292,66 @@ bool SeqPair::CheckSymm(design& caseNL) {
 	}
 
   // collect all horizontal align blocks that align to the bottom
-  std::map<int, const std::vector<int> &> alignBlocks;
-  for (const auto& au : caseNL.Align_blocks) {
-    if (au.horizon == 1 && au.line == 0) {
-      for (const auto& it : au.blocks) {
-        if (alignBlocks.find(it) == alignBlocks.end()) {
-          alignBlocks.emplace(it, au.blocks);
+  std::map<int, std::vector<int>> alignBlocksHor, alignBlocksVer;
+  for (const auto& sb : caseNL.SBlocks) {
+    if (sb.axis_dir == placerDB::V) {
+      for (const auto& it : sb.sympair) {
+        std::vector<int> tmpvec{it.first, it.second};
+        auto itAlign = alignBlocksHor.find(it.first);
+        if (itAlign == alignBlocksHor.end()) {
+          alignBlocksHor.emplace(it.first, tmpvec);
+        } else {
+          itAlign->second.insert(itAlign->second.end(), tmpvec.begin(), tmpvec.end());
+        }
+        itAlign = alignBlocksHor.find(it.second);
+        if (itAlign == alignBlocksHor.end()) {
+          alignBlocksHor.emplace(it.second, tmpvec);
+        } else {
+          itAlign->second.insert(itAlign->second.end(), tmpvec.begin(), tmpvec.end());
+        }
+      }
+    } else {
+      for (const auto& it : sb.sympair) {
+        std::vector<int> tmpvec{it.first, it.second};
+        auto itAlign = alignBlocksVer.find(it.first);
+        if (itAlign == alignBlocksVer.end()) {
+          alignBlocksVer.emplace(it.first, tmpvec);
+        } else {
+          itAlign->second.insert(itAlign->second.end(), tmpvec.begin(), tmpvec.end());
+        }
+        itAlign = alignBlocksVer.find(it.second);
+        if (itAlign == alignBlocksVer.end()) {
+          alignBlocksVer.emplace(it.second, tmpvec);
+        } else {
+          itAlign->second.insert(itAlign->second.end(), tmpvec.begin(), tmpvec.end());
         }
       }
     }
   }
-	std::map<int, std::set<int> > aboveSet, belowSet;
+  for (const auto& au : caseNL.Align_blocks) {
+    if (au.line == 0) {
+      if (au.horizon == 1) {
+        for (const auto& it : au.blocks) {
+          auto itAlign = alignBlocksHor.find(it);
+          if (itAlign == alignBlocksHor.end()) {
+            alignBlocksHor.emplace(it, au.blocks);
+          } else {
+            itAlign->second.insert(itAlign->second.end(), au.blocks.begin(), au.blocks.end());
+          }
+        }
+      } else {
+        for (const auto& it : au.blocks) {
+          auto itAlign = alignBlocksVer.find(it);
+          if (itAlign == alignBlocksVer.end()) {
+            alignBlocksVer.emplace(it, au.blocks);
+          } else {
+            itAlign->second.insert(itAlign->second.end(), au.blocks.begin(), au.blocks.end());
+          }
+        }
+      }
+    }
+  }
+	std::map<int, std::set<int> > aboveSet, belowSet, rightSet, leftSet;
   //collect set of above blocks/ below blocks for all blocks
 	for (auto& it : posPair) {
     if (it >= caseNL.Blocks.size()) continue;
@@ -1314,104 +1363,116 @@ bool SeqPair::CheckSymm(design& caseNL) {
         auto negB = negPosition[bi];
 				if (negB > negA) {
 					aboveSet[it].insert(posPair[i]);
-					const auto& cpt = caseNL.Blocks[bi][0].counterpart;
-          // if any block is above, then its symmetry counterpart needs to be above
-					if (cpt != -1) {
-						aboveSet[it].insert(cpt);
-					}
           // if any block above is part of a horizontal align constraint,
           // then the whole collection in the align constraint needs to be above
-          auto itAlign= alignBlocks.find(bi);
-          if (itAlign != alignBlocks.end()) {
+          auto itAlign= alignBlocksHor.find(bi);
+          if (itAlign != alignBlocksHor.end()) {
             aboveSet[it].insert(itAlign->second.begin(), itAlign->second.end());
           }
+        } else {
+          rightSet[it].insert(posPair[i]);
+          auto itAlign= alignBlocksVer.find(bi);
+          if (itAlign != alignBlocksVer.end()) {
+            rightSet[it].insert(itAlign->second.begin(), itAlign->second.end());
+          }
         }
-			}
-		}
-		for (int i = posA + 1; i < posPair.size(); ++i) {
+      }
+    }
+    for (int i = posA + 1; i < posPair.size(); ++i) {
       const auto& bi = posPair[i];
 			if (bi < caseNL.Blocks.size()) {
 				if (negPosition[bi] < negA) {
 					belowSet[it].insert(posPair[i]);
 					const auto& cpt = caseNL.Blocks[bi][0].counterpart;
-          // if any block is below, then its symmetry counterpart needs to be below
-					if (cpt != -1) {
-						belowSet[it].insert(cpt);
-					}
           // if any block below is part of a horizontal align constraint,
           // then the whole collection in the align constraint needs to be below
-          auto itAlign= alignBlocks.find(bi);
-          if (itAlign != alignBlocks.end()) {
+          auto itAlign= alignBlocksHor.find(bi);
+          if (itAlign != alignBlocksHor.end()) {
             belowSet[it].insert(itAlign->second.begin(), itAlign->second.end());
           }
-				}
-			}
-		}
-	}
-
-  // expand set to include transitive relation above of above and below of below
-	std::vector<int> intersec(posPair.size());
-  for (auto& itpos : posPair) {
-    if (itpos >= caseNL.Blocks.size()) continue;
-    std::set<int> tmpset;
-    for (auto& itabove : aboveSet[itpos]) {
-      tmpset.insert(aboveSet[itabove].begin(), aboveSet[itabove].end());
-    }
-    aboveSet[itpos].insert(tmpset.begin(), tmpset.end());
-    tmpset.clear();
-    for (auto& itbelow : belowSet[itpos]) {
-      tmpset.insert(belowSet[itbelow].begin(), belowSet[itbelow].end());
-    }
-    belowSet[itpos].insert(tmpset.begin(), tmpset.end());
-		auto itinter = std::set_intersection(aboveSet[itpos].begin(), aboveSet[itpos].end(),
-				belowSet[itpos].begin(), belowSet[itpos].end(), intersec.begin());
-		if ((itinter - intersec.begin()) > 0) {
-			return false;
-		}
-  }
-
-  // check if above set and below set overlap for all align blocks
-  for (const auto& au : caseNL.Align_blocks) {
-    if (au.horizon == 1) {
-      for (int i = 0; i < au.blocks.size() - 1; ++i) {
-        const int& ai = au.blocks[i];
-        const auto& aboveai = aboveSet[ai];
-        const auto& belowai = belowSet[ai];
-        for (int j = i + 1; j < au.blocks.size(); ++j) {
-          const int& bj = au.blocks[j];
-          const auto& abovebj = aboveSet[bj];
-          const auto& belowbj = belowSet[bj];
-          auto itinter = std::set_intersection(aboveai.begin(), aboveai.end(),
-              belowbj.begin(), belowbj.end(), intersec.begin());
-          if ((itinter - intersec.begin()) > 0) {
-            return false;
-          }
-          itinter = std::set_intersection(belowai.begin(), belowai.end(),
-              abovebj.begin(), abovebj.end(), intersec.begin());
-          if ((itinter - intersec.begin()) > 0) {
-            return false;
+        } else {
+          leftSet[it].insert(posPair[i]);
+          auto itAlign= alignBlocksVer.find(bi);
+          if (itAlign != alignBlocksVer.end()) {
+            leftSet[it].insert(itAlign->second.begin(), itAlign->second.end());
           }
         }
       }
     }
   }
-  // check if above set and below set overlap for all symmetry pairs
-  for (const auto& sb : caseNL.SBlocks) {
-    for (const auto& it : sb.sympair) {
-      if (sb.axis_dir == placerDB::V) {
-        const auto& aboveai = aboveSet[it.first];
-        const auto& belowbj = belowSet[it.second];
-        auto itinter = std::set_intersection(aboveai.begin(), aboveai.end(),
-            belowbj.begin(), belowbj.end(), intersec.begin());
+
+  for (auto& horiz : {true, false}) {
+    const auto& alignBlocks = horiz ? alignBlocksHor : alignBlocksVer;
+    auto& arSet = horiz ? aboveSet : rightSet;
+    auto& blSet = horiz ? belowSet : leftSet;
+    if (!alignBlocks.empty()) {
+      // expand set to include transitive relation above of above/below of below/right of right/left of left
+      std::vector<int> intersec(posPair.size());
+      for (auto& itpos : posPair) {
+        if (itpos >= caseNL.Blocks.size()) continue;
+        std::set<int> tmpset;
+        for (auto& itar : arSet[itpos]) {
+          tmpset.insert(arSet[itar].begin(), arSet[itar].end());
+        }
+        arSet[itpos].insert(tmpset.begin(), tmpset.end());
+        tmpset.clear();
+        for (auto& itbl : blSet[itpos]) {
+          tmpset.insert(blSet[itbl].begin(), blSet[itbl].end());
+        }
+        blSet[itpos].insert(tmpset.begin(), tmpset.end());
+        auto itinter = std::set_intersection(arSet[itpos].begin(), arSet[itpos].end(),
+            blSet[itpos].begin(), blSet[itpos].end(), intersec.begin());
         if ((itinter - intersec.begin()) > 0) {
           return false;
         }
-        const auto& belowai = belowSet[it.first];
-        const auto& abovebj = aboveSet[it.second];
-        itinter = std::set_intersection(belowai.begin(), belowai.end(),
-            abovebj.begin(), abovebj.end(), intersec.begin());
-        if ((itinter - intersec.begin()) > 0) {
-          return false;
+      }
+
+      // check if above/below or left/right set overlap for all align blocks
+      for (const auto& au : caseNL.Align_blocks) {
+        if (au.line == 0) {
+          if ((horiz && au.horizon == 1) || (!horiz && au.horizon == 0)) {
+            for (int i = 0; i < au.blocks.size() - 1; ++i) {
+              const int& ai = au.blocks[i];
+              const auto& arai = arSet[ai];
+              const auto& blai = blSet[ai];
+              for (int j = i + 1; j < au.blocks.size(); ++j) {
+                const int& bj = au.blocks[j];
+                const auto& arbj = arSet[bj];
+                const auto& blbj = blSet[bj];
+                auto itinter = std::set_intersection(arai.begin(), arai.end(),
+                    blbj.begin(), blbj.end(), intersec.begin());
+                if ((itinter - intersec.begin()) > 0) {
+                  return false;
+                }
+                itinter = std::set_intersection(blai.begin(), blai.end(),
+                    arbj.begin(), arbj.end(), intersec.begin());
+                if ((itinter - intersec.begin()) > 0) {
+                  return false;
+                }
+              }
+            }
+          }
+        }
+        // check if above/below or left/right overlap for all symmetry pairs
+        for (const auto& sb : caseNL.SBlocks) {
+          for (const auto& it : sb.sympair) {
+            if ((horiz && sb.axis_dir == placerDB::V) || (!horiz && sb.axis_dir == placerDB::H)) {
+              const auto& arai = arSet[it.first];
+              const auto& blbj = blSet[it.second];
+              auto itinter = std::set_intersection(arai.begin(), arai.end(),
+                  blbj.begin(), blbj.end(), intersec.begin());
+              if ((itinter - intersec.begin()) > 0) {
+                return false;
+              }
+              const auto& blai = blSet[it.first];
+              const auto& arbj = arSet[it.second];
+              itinter = std::set_intersection(blai.begin(), blai.end(),
+                  arbj.begin(), arbj.end(), intersec.begin());
+              if ((itinter - intersec.begin()) > 0) {
+                return false;
+              }
+            }
+          }
         }
       }
     }
@@ -1532,17 +1593,14 @@ bool SeqPair::PerturbationNew(design& caseNL) {
       // 1:MoveAsymmetricBlockposPair
       // 2:MoveAsymmetricBlocknegPair
       // 3:MoveAsymmetricBlockdoublePair
-      // 4:ChangeAsymmetricBlockOrient
-      // 5:SwapTwoBlocksofSameGroup
-      // 6:SwapTwoSymmetryGroup
-      // 7:ChangeSymmetryBlockOrient
-      // 8:SwapMultiBlocksofSameGroup
-      // 9:RotateSymmetryGroup
+      // 4:SwapTwoBlocksofSameGroup
+      // 5:SwapTwoSymmetryGroup
+      // 6:SwapMultiBlocksofSameGroup
       if(caseNL.GetSizeofBlocks()<=1) {return true;}
       if(caseNL.noBlock4Move>0) {pool.insert(0);}
       if(caseNL.noAsymBlock4Move>0) { pool.insert(1); pool.insert(2); pool.insert(3);}
-      if(caseNL.noSymGroup4PartMove>0) {pool.insert(5); pool.insert(8); } 
-      if(caseNL.noSymGroup4FullMove>1) {pool.insert(6);}
+      if(caseNL.noSymGroup4PartMove>0) {pool.insert(4); pool.insert(6); } 
+      if(caseNL.noSymGroup4FullMove>1) {pool.insert(5);}
       int fail = 0;
       while(!mark && fail<max_trial_cnt) {
         //std::cout<<int(pool.size())<<std::endl;
@@ -1553,12 +1611,9 @@ bool SeqPair::PerturbationNew(design& caseNL) {
           case 1: mark=MoveAsymmetricBlockposPair(caseNL); break;
           case 2: mark=MoveAsymmetricBlocknegPair(caseNL); break;
           case 3: mark=MoveAsymmetricBlockdoublePair(caseNL); break;
-                  //case 4: mark=ChangeAsymmetricBlockOrient(caseNL); break;
-          case 5: mark=SwapTwoBlocksofSameGroup(caseNL); break;
-          case 6: mark=SwapTwoSymmetryGroup(caseNL); break;
-                  //case 7: mark=ChangeSymmetryBlockOrient(caseNL); break;
-          case 8: mark=SwapMultiBlocksofSameGroup(caseNL); break;
-                  //case 9: mark=RotateSymmetryGroup(caseNL); break;
+          case 4: mark=SwapTwoBlocksofSameGroup(caseNL); break;
+          case 5: mark=SwapTwoSymmetryGroup(caseNL); break;
+          case 6: mark=SwapMultiBlocksofSameGroup(caseNL); break;
           default: mark=false;
         }
         fail++;
