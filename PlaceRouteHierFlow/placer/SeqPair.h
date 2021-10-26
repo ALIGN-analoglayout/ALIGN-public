@@ -133,6 +133,10 @@ class SeqPair
     void KeepOrdering(design& caseNL);
     void CompactSeq();
 
+    std::string getLexIndex(design& des) const;
+    void cacheSeq(design& des) const { des.cacheSeq(posPair, negPair, selected); }
+    bool isSeqInCache(const design& des) const { return des.isSeqInCache(posPair, negPair, selected); }
+
     //vector<int> GetFlip(const bool hor) const;
 };
 

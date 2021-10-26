@@ -21,7 +21,7 @@ _skbuild/
 **/*.tar.gz
 pycharm/
 .idea/
-.vscode/
+.vscode
 **/*~
 **/*.swp
 **/.coverage
@@ -91,3 +91,4 @@ tests/cell_fabric/Foo*.cir
 !tests/gdsconv/only_paths.*
 !Viewer/INPUT/mydesign_dr_globalrouting.json
 !Viewer/larger_example/mydesign_dr_globalrouting.json
+_skbuild/

@@ -9,6 +9,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <climits>
+#include <fstream>
 #include <utility> // pair, make_pair
 #include "Pdatatype.h"
 #include "../PnRDB/readfile.h"
@@ -113,6 +114,8 @@ class design
     std::vector<pair<pair<int,int>, placerDB::Smark>> Abut_Constraints;
     vector<set<int>> Same_Template_Constraints;
     double Aspect_Ratio_weight = 1000;
+    int placement_id = -1;
+    bool is_first_ILP = true;
     double Aspect_Ratio[2] = {0, 100};
     double placement_box[2] = {-1.0, -1.0};
     double maxBlockAreaSum = 0;
@@ -184,6 +187,12 @@ class design
     int GetSizeSymGroup4PartMove(int mode);
     int GetSizeSymGroup4FullMove(int mode);
     int GetSizeBlock4Move(int mode);
+    std::map<std::vector<int>, size_t> _seqPairHash, _selHash;
+    bool _useCache{false};
+    std::set<std::tuple<size_t, size_t, size_t>> _seqPairCache;
+  std::vector<size_t> _factorial;
+  size_t getSeqIndex(const vector<int>& seq);
+  size_t getSelIndex(const vector<int>& sel);
   public:
     design();
     design(PnRDB::hierNode& node);
@@ -256,6 +265,14 @@ class design
 
     double GetMaxBlockAreaSum();
     double GetMaxBlockHPWLSum();
+	~design();
+
+  size_t getSeqIndex(const vector<int>& seq) const;
+  size_t getSelIndex(const vector<int>& sel) const;
+  void cacheSeq(const vector<int>& p, const vector<int>& n, const vector<int>& sel);
+  bool isSeqInCache(const vector<int>& p, const vector<int>& n, const vector<int>& sel) const;
+  size_t _infeasAspRatio{0}, _infeasILPFail{0}, _infeasPlBound{0}, _totalNumCostCalc{0};
+  //std::ofstream _debugofs;
 };
 
 #endif

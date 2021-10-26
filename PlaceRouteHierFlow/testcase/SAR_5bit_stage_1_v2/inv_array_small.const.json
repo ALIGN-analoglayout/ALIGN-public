@@ -1,0 +1,26 @@
+{
+    "constraints": [
+        {
+            "const_name": "SymmBlock",
+            "axis_dir": "V",
+            "pairs": [
+                {
+                    "type": "sympair",
+                    "block1": "xi13<1>",
+                    "block2": "xi12<1>"
+                }
+            ]
+        },
+        {
+            "const_name": "SymmBlock",
+            "axis_dir": "V",
+            "pairs": [
+                {
+                    "type": "sympair",
+                    "block1": "xi31<1>",
+                    "block2": "xi10<1>"
+                }
+            ]
+        }
+    ]
+}
