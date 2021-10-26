@@ -146,7 +146,7 @@ def compiler_input(
 
     const_parse = ConstraintParser(pdk_dir, input_dir)
     # TODO FLAT implementation
-    create_data = CreateDatabase(ckt_parser, const_parse)
+    create_data = CreateDatabase(ckt_parser, const_parse, design_setup)
     ckt_data = create_data.read_inputs(design_name)
     logger.debug(f"START preprocessing from top {design_name.upper()}")
     preprocess_stack_parallel(ckt_data, design_setup, design_name.upper())
@@ -273,17 +273,17 @@ def compiler_output(
             f"generated data for {ele.name} : {pprint.pformat(primitives, indent=4)}"
         )
     logger.debug(f"All available cell generator with updates: {generators}")
-    for ckt in ckt_data:
-        if not isinstance(ckt, SubCircuit):
+    for subckt in ckt_data:
+        if not isinstance(subckt, SubCircuit):
             continue
-        if ckt.name not in generators:
+        if subckt.name not in generators:
             ## Removing constraints to fix cascoded cmc
-            if ckt.name not in design_setup["DIGITAL"] and ckt.name not in design_setup["DONT_CONST"]:
-                FindConst(ckt_data, ckt.name, design_setup)
+            if subckt.name not in design_setup["DIGITAL"] and subckt.name not in design_setup["DONT_CONST"]:
+                FindConst(subckt, design_setup)
 
             ## Write out modified netlist & constraints as JSON
-            logger.debug(f"call verilog writer for block: {ckt.name}")
-            wv = WriteVerilog(ckt, ckt_data, POWER_PINS)
+            logger.debug(f"call verilog writer for block: {subckt.name}")
+            wv = WriteVerilog(subckt, ckt_data, POWER_PINS)
             verilog_tbl["modules"].append(wv.gen_dict())
     if len(POWER_PINS) > 0:
         for i, nm in enumerate(POWER_PINS):

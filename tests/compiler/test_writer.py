@@ -61,7 +61,7 @@ def test_verilog_writer():
                             "DIGITAL": list(),
                             "IDENTIFY_ARRAY": False
             }
-            FindConst(ckt_data, name, design_setup)
+            FindConst(subckt, design_setup)
 
         wv = WriteVerilog(subckt, ckt_data, ["vdd!", "vss"])
         verilog_tbl["modules"].append(wv.gen_dict())

@@ -4,20 +4,16 @@ Created on Fri Nov  2 21:33:22 2018
 
 @author: kunal
 """
-#%%
-from align import primitive
-from re import sub
+
+from networkx.algorithms.operators.product import power
 from align.schema import Model, SubCircuit, Instance
 from ..schema.types import set_context
-import pprint
 import logging
 from ..schema import constraint
 from ..schema.types import set_context
 from align.schema.graph import Graph
 
 logger = logging.getLogger(__name__)
-
-
 
 class Annotate:
     """
@@ -35,12 +31,9 @@ class Annotate:
         """
         self.ckt_data = ckt_data
         self.digital = design_setup["DIGITAL"]
-        self.pg = design_setup["POWER"] + design_setup["GND"]
         self.lib = primitive_library
         self.clk = design_setup["CLOCK"]
         self.all_lef = existing_generator
-        self.stop_points = self.pg + self.clk
-        self.identify_array = design_setup["IDENTIFY_ARRAY"]
         self.lib_names = [lib_ele.name for lib_ele in primitive_library]
 
     def _is_skip(self, ckt):
@@ -187,13 +180,16 @@ class Annotate:
                 )
             ] + list(ac_nets & set(subckt.pins))
             ac_nets = list(set(ac_nets))
+            power = list(set(subckt.power) & set(ac_nets))
+            gnd = list(set(subckt.gnd) & set(ac_nets))
+            clk = list(set(subckt.clock) & set(ac_nets))
 
             logger.debug(
                 f"Grouping instances {const_inst} in subckt {const.name.upper()} pins: {ac_nets}"
             )
             # Create a subckt and add to library
             with set_context(self.ckt_data):
-                new_subckt = SubCircuit(name=const.name.upper(), pins=ac_nets)
+                new_subckt = SubCircuit(name=const.name.upper(), pins=ac_nets, power=power, gnd=gnd, clock=clk)
                 self.ckt_data.append(new_subckt)
             # Add all instances of groupblock to new subckt
             with set_context(new_subckt.elements):

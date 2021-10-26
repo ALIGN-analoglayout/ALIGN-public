@@ -123,7 +123,7 @@ def test_array_vga_equal():
     ckt_library = compiler_input(example, name, pdk_path, config_path)
     ckt = ckt_library.find(name)
     assert ckt, f"No ckt {name} found in library"
-    FindConst(ckt_library, name, design_setup)
+    FindConst(ckt, design_setup)
     all_arrays = [module.name for module in ckt_library if isinstance(module, SubCircuit) and 'ARRAY' in module.name]
     ARRAY_HIER = ckt_library.find("ARRAY_HIER_VOUT_VGA1")
     assert ARRAY_HIER, f"\ ARRAY_HIER_VOUT_VGA1 not found in {all_arrays}"

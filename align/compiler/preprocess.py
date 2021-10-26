@@ -7,6 +7,8 @@ Created on Thu Sep 17 15:49:33 2020
 """
 
 from os import replace
+
+from networkx.algorithms.operators.product import power
 from align.schema.types import set_context
 from align.schema import model
 from align.schema.subcircuit import Circuit, SubCircuit
@@ -32,14 +34,6 @@ def preprocess_stack_parallel(ckt_data, design_setup, design_name):
     Required by PnR as it does not make power connections as ports
     """
     top = ckt_data.find(design_name)
-    if top.name not in design_setup["DIGITAL"] and (
-        ("FIX_SD" in design_setup and design_setup["FIX_SD"] == True)
-        or "FIX_SD" not in design_setup
-    ):
-        define_SD(
-            top, design_setup["POWER"], design_setup["GND"], design_setup["DIGITAL"]
-        )
-
     for subckt in ckt_data:
         if isinstance(subckt, SubCircuit):
             logger.debug(f"Preprocessing stack/parallel circuit name: {subckt.name}")
@@ -47,6 +41,9 @@ def preprocess_stack_parallel(ckt_data, design_setup, design_name):
                 logger.debug(
                     f"Starting no of elements in subckt {subckt.name}: {len(subckt.elements)}"
                 )
+                if "FIX_SD" in design_setup:
+                    # Insures Drain terminal of Nmos has higher potential than source and vice versa
+                    define_SD(subckt, design_setup["FIX_SD"])
                 if "MERGE_PARALLEL" in design_setup:
                     # Find parallel devices and add a parameter parallel to them, all other parameters should be equal
                     add_parallel_devices(subckt, design_setup["MERGE_PARALLEL"])
@@ -167,7 +164,7 @@ def swap_SD(circuit, G, node):
     circuit.get_element(node).pins.update({"D": nbrs, "S": nbrd})
 
 
-def define_SD(circuit, power, gnd, digital=None):
+def define_SD(circuit, update=True):
     """define_SD
     Checks for scenarios where transistors D/S are flipped.
     It is valid configuration in spice as transistors D and S are invertible
@@ -186,8 +183,10 @@ def define_SD(circuit, power, gnd, digital=None):
         clk ([type]): [description]
     """
 
-    if digital and circuit.name in digital:
+    if not update:
         return
+    power = circuit.power
+    gnd = circuit.gnd
     if not power or not gnd:
         logger.warning(
             f"No power or gnd in this circuit {circuit.name}, please check setup file"
@@ -265,15 +264,6 @@ def define_SD(circuit, power, gnd, digital=None):
         for node in list(set(probable_changes_n) & set(probable_changes_p)):
             logger.warning(f"changing source drain: {node}")
             swap_SD(circuit, G, node)
-
-    # Recursive call
-    for inst in circuit.elements:
-        inst_ckt = circuit.parent.find(inst.model)
-        if isinstance(inst_ckt, SubCircuit):
-            pp = [p for p, c in inst.pins.items() if c in power]
-            gp = [p for p, c in inst.pins.items() if c in gnd]
-            define_SD(inst_ckt, pp, gp, digital)
-
 
 def add_parallel_devices(ckt, update=True):
     """add_parallel_devics
