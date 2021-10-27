@@ -2,6 +2,8 @@
 #include "spdlog/spdlog.h"
 #include <cassert>
 
+std::mt19937_64 design::_rng{0};
+
 design::design() {
   bias_Hgraph=92;
   bias_Vgraph=92;
@@ -332,9 +334,10 @@ design::design(design& other, int mode) {
   }
 }
 
-design::design(PnRDB::hierNode& node, const int seed) : _rng{seed} {
+design::design(PnRDB::hierNode& node, const int seed) {
 
   auto logger = spdlog::default_logger()->clone("placer.design.design");
+  _rng.seed(seed);
   is_first_ILP = node.isFirstILP;
   name = node.name;
   placement_id = node.placement_id;

@@ -98,7 +98,7 @@ class design
     //  vector< pair<int,Smark> > selfsym;
     //  int dnode;
     //};
-    std::mt19937_64 _rng;
+    static std::mt19937_64 _rng;
     bool hasAsymBlock;
     bool hasSymGroup;
     int noBlock4Move;
