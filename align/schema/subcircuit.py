@@ -12,6 +12,9 @@ from .constraint import ConstraintDB
 class SubCircuit(Model):
     name : str                 # Model Name
     pins : Optional[List[str]] # List of pin names (derived from base if base exists)
+    power : Optional[List[str]]
+    gnd : Optional[List[str]]
+    clock : Optional[List[str]]
     parameters : Optional[Dict[str, str]]   # Parameter Name: Value mapping (inherits & adds to base if needed)
     elements: List[Instance]
     constraints: ConstraintDB
@@ -42,6 +45,12 @@ class SubCircuit(Model):
         # TODO: Replace with default factory
         if 'elements' not in kwargs:
             kwargs['elements'] = []
+        if 'power' not in kwargs:
+            kwargs['power'] = list()
+        if 'gnd' not in kwargs:
+            kwargs['gnd'] = list()
+        if 'clock' not in kwargs:
+            kwargs['clock'] = list()
         # defer constraint processing for now
         constraints = []
         if 'constraints' in kwargs:

@@ -17,20 +17,33 @@ from ..schema import constraint
 from ..primitive import generate_primitive_lef
 import logging
 
-from align import primitive
 
 logger = logging.getLogger(__name__)
 
 
 def generate_hierarchy(
-    netlist_path, subckt, output_dir, flatten_heirarchy, pdk_dir, uniform_height
+    netlist_path: pathlib.Path,
+    subckt: str,
+    output_dir: pathlib.Path,
+    flatten_heirarchy: bool,
+    pdk_dir: pathlib.Path,
+    uniform_height: bool
 ):
     config_path = pathlib.Path(__file__).resolve().parent.parent / "config"
     ckt_data = compiler_input(
-        netlist_path, subckt, pdk_dir, config_path, flatten_heirarchy
+        netlist_path,
+        subckt,
+        pdk_dir,
+        config_path,
+        flatten_heirarchy
     )
     return compiler_output(
-        netlist_path, ckt_data, subckt, output_dir, pdk_dir, uniform_height
+        netlist_path,
+        ckt_data,
+        subckt,
+        output_dir,
+        pdk_dir,
+        uniform_height
     )
 
 
@@ -133,14 +146,12 @@ def compiler_input(
 
     const_parse = ConstraintParser(pdk_dir, input_dir)
     # TODO FLAT implementation
-    create_data = CreateDatabase(ckt_parser, const_parse)
+    create_data = CreateDatabase(ckt_parser, const_parse, design_setup)
     ckt_data = create_data.read_inputs(design_name)
     logger.debug(f"START preprocessing from top {design_name.upper()}")
     preprocess_stack_parallel(ckt_data, design_setup, design_name.upper())
 
-    logger.debug(
-        "\n################### FINAL CIRCUIT AFTER preprocessing #################### \n"
-    )
+    logger.debug("\n###### FINAL CIRCUIT AFTER preprocessing ###### \n")
     logger.debug(ckt_parser)
     annotate = Annotate(ckt_data, design_setup, primitives, generators)
     annotate.annotate()
@@ -262,22 +273,17 @@ def compiler_output(
             f"generated data for {ele.name} : {pprint.pformat(primitives, indent=4)}"
         )
     logger.debug(f"All available cell generator with updates: {generators}")
-    for ckt in ckt_data:
-        if not isinstance(ckt, SubCircuit):
+    for subckt in ckt_data:
+        if not isinstance(subckt, SubCircuit):
             continue
-        if ckt.name not in generators:
+        if subckt.name not in generators:
             ## Removing constraints to fix cascoded cmc
-            if ckt.name not in design_setup["DIGITAL"]:
-                logger.debug(f"call constraint generator writer for block: {ckt.name}")
-                stop_points = (
-                    design_setup["POWER"] + design_setup["GND"] + design_setup["CLOCK"]
-                )
-                if ckt.name not in design_setup["DONT_CONST"]:
-                    FindConst(ckt_data, ckt.name, stop_points)
+            if subckt.name not in design_setup["DIGITAL"] and subckt.name not in design_setup["DONT_CONST"]:
+                FindConst(subckt, design_setup)
 
             ## Write out modified netlist & constraints as JSON
-            logger.debug(f"call verilog writer for block: {ckt.name}")
-            wv = WriteVerilog(ckt, ckt_data, POWER_PINS)
+            logger.debug(f"call verilog writer for block: {subckt.name}")
+            wv = WriteVerilog(subckt, ckt_data, POWER_PINS)
             verilog_tbl["modules"].append(wv.gen_dict())
     if len(POWER_PINS) > 0:
         for i, nm in enumerate(POWER_PINS):

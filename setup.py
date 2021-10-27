@@ -69,7 +69,6 @@ setup(name='align',
       install_requires=[
           'networkx>=2.4',
           'python-gdsii',
-          'matplotlib',
           'pyyaml',
           'pybind11',
           'pydantic>=1.8',
@@ -79,7 +78,8 @@ setup(name='align',
           'plotly',
           'pandas',
           'dash',
-          'typing_extensions; python_version<"3.8"'
+          'typing_extensions; python_version<"3.8"',
+          'memory_profiler'
           ],
       extras_require={
           'test': [

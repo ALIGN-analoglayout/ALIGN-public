@@ -49,6 +49,16 @@ def common_source(name):
     return netlist
 
 
+def common_source_mini(name):
+    netlist = textwrap.dedent(f"""\
+        .subckt {name} vin vop vccx vssx
+        mp0 vop vop vccx vccx p w=360e-9 nf=2 m=1
+        mn0 vop vin vssx vssx n w=360e-9 nf=2 m=1
+        .ends {name}
+    """)
+    return netlist
+
+
 def tia(name):
     netlist = textwrap.dedent(f"""\
         .subckt pcell_mos d g s b

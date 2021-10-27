@@ -615,6 +615,7 @@ void PowerRouter::CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_in
   GetData(node, drc_info, Lmetal, Hmetal);
   CreatePowerGridDrc_info( h_skip_factor, v_skip_factor);
   this->drc_info=this->PowerGrid_Drc_info;
+  UpdatePowerGridLLUR(Lmetal, Hmetal);
   logger->debug("Create Power Grid Flag 2");
   std::vector<std::vector<RouterDB::point> > plist;
   plist.resize( this->layerNo );
@@ -672,6 +673,37 @@ void PowerRouter::CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_in
  
 
 };
+
+void PowerRouter::UpdatePowerGridLLUR(int Lmetal, int Hmetal){
+
+  auto lower_metal = PowerGrid_Drc_info.Metal_info[Lmetal];
+  auto higher_metal = PowerGrid_Drc_info.Metal_info[Hmetal];
+  int x_grid=-1;
+  int y_grid=-1;
+  if(higher_metal.direct == 1){//horizontal
+     y_grid = higher_metal.grid_unit_y ;
+  }else{// vertical
+     x_grid = higher_metal.grid_unit_x ;
+  }
+
+  if(lower_metal.direct == 1){//horizontal
+     y_grid = lower_metal.grid_unit_y ;
+  }else{// vertical
+     x_grid = lower_metal.grid_unit_x ;
+  }
+
+  if(y_grid == -1){//horizontal
+     y_grid = PowerGrid_Drc_info.Metal_info[Hmetal-1].grid_unit_y ;
+  }
+
+  if(x_grid == -1){//horizontal
+     x_grid = PowerGrid_Drc_info.Metal_info[Hmetal-1].grid_unit_x ;
+  }
+
+  if(this->UR.x < x_grid) this->UR.x = x_grid;
+  if(this->UR.y < y_grid) this->UR.y = y_grid;
+
+}
 
 void PowerRouter::CreatePowerGrid_DC(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, string inputfile){
 

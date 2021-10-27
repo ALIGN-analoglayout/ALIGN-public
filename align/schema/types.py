@@ -143,6 +143,9 @@ class List(pydantic.generics.GenericModel, typing.Generic[DataT]):
     def pop(self, index=-1):
         return self.__root__.pop(index)
 
+    def clear(self):
+        self.__root__.clear()
+
     def __len__(self):
         return len(self.__root__)
 

@@ -2748,6 +2748,33 @@ double ConstGraph::CalculateCost(design& caseNL, SeqPair& caseSP) {
   return cost;
 }
 
+#ifdef PERFORMANCE_DRIVEN
+double ConstGraph::performance_fom(double curr_cost, design& caseNL, SeqPair& caseSP, PyObject *pFun_cal_fom, PyObject *sess, PyObject *X, PyObject *pred_op) {
+  vector<float> uc_x_ori(caseNL.Blocks.size(),0), uc_y_ori(caseNL.Blocks.size(),0);
+  float width = 0, height = 0;
+  for(int i = 0; i< caseNL.Blocks.size(); ++i){
+    if(this->HGraph.at(i).position > width) width = this->HGraph.at(i).position;
+    if(this->VGraph.at(i).position > height) height = this->VGraph.at(i).position;
+  }
+  PyObject *pArgs_cal_fom = PyTuple_New(6);
+  PyObject *pyParams_x = PyList_New(0), *pyParams_y = PyList_New(0);
+  for(int i = 0; i< caseNL.Blocks.size(); ++i){
+    PyList_Append(pyParams_x, Py_BuildValue("f", this->HGraph.at(i).position / width));
+    PyList_Append(pyParams_y, Py_BuildValue("f", this->VGraph.at(i).position / height));
+  }             
+  PyTuple_SetItem(pArgs_cal_fom, 0, sess);
+  PyTuple_SetItem(pArgs_cal_fom, 1, PyUnicode_FromString(caseNL.name.c_str()));
+  PyTuple_SetItem(pArgs_cal_fom, 2, X);
+  PyTuple_SetItem(pArgs_cal_fom, 3, pred_op);
+  PyTuple_SetItem(pArgs_cal_fom, 4, pyParams_x);
+  PyTuple_SetItem(pArgs_cal_fom, 5, pyParams_y);
+  PyObject *pyValue_cal_fom=PyEval_CallObject(pFun_cal_fom, pArgs_cal_fom);
+  double performance_cost = 0;
+  PyArg_Parse(PyList_GetItem(pyValue_cal_fom, 0), "f", performance_cost);
+  return curr_cost + performance_cost;
+}
+#endif
+
 void ConstGraph::Update_parameters(design& caseNL, SeqPair& caseSP) {
   //cout<<"Placer-Info: Update parameters"<<endl;
   //cout<<"OLD GAMAR:"<<GAMAR<<" BETA:"<<BETA<<" LAMBDA:"<<LAMBDA<<" SIGMA:"<<SIGMA<<endl;
@@ -5719,7 +5746,27 @@ void ConstGraph::WritePlacement(design& caseNL, SeqPair& caseSP, string outfile)
     fout.close();
 }
 
-void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) {
+void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile, bool plot_pin, bool plot_terminal, bool plot_net) {
+
+  ofstream jsonStream;
+  int index = outfile.find("_0.plt");
+  /*
+  jsonStream.open(outfile.substr(0,index)+".json");
+  json jsonLibAry = json::array();
+  for(int i=0;i<(int)caseNL.GetSizeofBlocks();++i) {
+    json block;
+    block["Name"] = caseNL.GetBlockName(i);
+    block["x"] = HGraph.at(i).position;
+    block["y"] = VGraph.at(i).position;
+    jsonLibAry.push_back(block);
+  }
+  json temp;
+  temp["Area"] = CalculateArea();
+  temp["HPWL"] = CalculateWireLength(caseNL, caseSP);
+  jsonLibAry.push_back(temp);
+  jsonStream << std::setw(4) << jsonLibAry;
+  jsonStream.close();
+  */
 
   auto logger = spdlog::default_logger()->clone("placer.ConstGraph.PlotPlacement");
 
@@ -5729,7 +5776,7 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
   vector<placerDB::point> p_pin;
   fout.open(outfile.c_str());
   fout<<"#Use this file as a script for gnuplot\n#(See http://www.gnuplot.info/ for details)"<<endl;
-  fout<<"\nset title\" #Blocks= "<<caseNL.GetSizeofBlocks()<<", #Terminals= "<<caseNL.GetSizeofTerminals()<<", #Nets= "<<caseNL.GetSizeofNets()<<", Area="<<CalculateArea()<<", HPWL= "<<CalculateWireLength(caseNL, caseSP)<<" \""<<endl;
+  fout<<"\nset title\" "<< caseNL.name << " #Blocks= "<<caseNL.GetSizeofBlocks()<<", #Terminals= "<<caseNL.GetSizeofTerminals()<<", #Nets= "<<caseNL.GetSizeofNets()<<", Area="<<CalculateArea()<<", HPWL= "<<CalculateWireLength(caseNL, caseSP)<<" \""<<endl;
   fout<<"\nset nokey"<<endl;
   fout<<"#   Uncomment these two lines starting with \"set\""<<endl;
   fout<<"#   to save an EPS file for inclusion into a latex document"<<endl;
@@ -5740,10 +5787,9 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
   fout<<"# set terminal postscript portrait color solid 20"<<endl;
   fout<<"# set output \"result.ps\""<<endl<<endl;
 
-  int max=(HGraph.at(sinkNode).position>VGraph.at(sinkNode).position)?HGraph.at(sinkNode).position:VGraph.at(sinkNode).position;
-  int bias=50;
-  fout<<"\nset xrange ["<<0-max-bias<<":"<<max+bias<<"]"<<endl;
-  fout<<"\nset yrange ["<<0-bias<<":"<<max+bias<<"]"<<endl;
+  int bias = 100;
+  fout << "\nset xrange [" << HGraph.at(sourceNode).position - bias << ":" << HGraph.at(sinkNode).position + bias << "]" << endl;
+  fout << "\nset yrange [" << VGraph.at(sourceNode).position - bias << ":" << VGraph.at(sinkNode).position + bias << "]" << endl;
   // set labels for blocks
   //cout<<"set labels for blocks..."<<endl;
   for(int i=0;i<(int)caseNL.GetSizeofBlocks();++i) {
@@ -5754,39 +5800,53 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
     placerDB::point ntp=caseNL.GetBlockAbsCenter(i, caseSP.GetBlockOrient(i), tp, caseSP.GetBlockSelected(i));
      //std::cout<<"test flag2"<<std::endl;
     fout<<"\nset label \""<<caseNL.GetBlockName(i)<<"\" at "<<ntp.x<<" , "<<ntp.y<<" center "<<endl;
-    for(int j=0;j<caseNL.GetBlockPinNum(i,caseSP.GetBlockSelected(i));j++) {
+    
+  }
+  if(plot_pin){
+    for(int i=0;i<(int)caseNL.GetSizeofBlocks();++i) {
+      placerDB::point tp;
+      tp.x=HGraph.at(i).position;
+      tp.y=VGraph.at(i).position;
+      for(int j=0;j<caseNL.GetBlockPinNum(i,caseSP.GetBlockSelected(i));j++) {
       //std::cout<<"test flag3"<<std::endl;
       p_pin =caseNL.GetPlacedBlockPinAbsPosition(i,j,caseSP.GetBlockOrient(i), tp, caseSP.GetBlockSelected(i) );
       //std::cout<<"test flag4"<<std::endl;
-	  for(unsigned int k = 0; k<p_pin.size();k++){
-      placerDB::point newp = p_pin[k];
-      //std::cout<<"test flag5"<<std::endl;
-      fout<<"\nset label \""<<caseNL.GetBlockPinName(i,j,caseSP.GetBlockSelected(i))<<"\" at "<<newp.x<<" , "<<newp.y<<endl;
-      //std::cout<<"test flag6"<<std::endl;
-      fout<<endl;
-	  }
+        for(unsigned int k = 0; k<p_pin.size();k++){
+          placerDB::point newp = p_pin[k];
+          //std::cout<<"test flag5"<<std::endl;
+          fout<<"\nset label \""<<caseNL.GetBlockPinName(i,j,caseSP.GetBlockSelected(i))<<"\" at "<<newp.x<<" , "<<newp.y<<endl;
+          //std::cout<<"test flag6"<<std::endl;
+          fout<<endl;
+        }
+      }
     }
   }
   // set labels for terminals
   //cout<<"set labels for terminals..."<<endl;
-  for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
-    bool hasTerminal=false;
-    int tno; placerDB::point tp;
-    p_pin.clear();
-    // for each pin
-    for(vector<placerDB::Node>::iterator ci=(ni->connected).begin(); ci!=(ni->connected).end(); ++ci) {
-     if (ci->type==placerDB::Terminal) {
-          hasTerminal=true; tno=ci->iter;
+  if(plot_terminal){
+    for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
+      bool hasTerminal=false;
+      int tno; placerDB::point tp;
+      p_pin.clear();
+      // for each pin
+      for(vector<placerDB::Node>::iterator ci=(ni->connected).begin(); ci!=(ni->connected).end(); ++ci) {
+      if (ci->type==placerDB::Terminal) {
+            hasTerminal=true; tno=ci->iter;
+          }
+        }
+        if(hasTerminal) {
+          fout<<"\nset label \""<<caseNL.Terminals.at(tno).name<<"\" at "<<caseNL.Terminals.at(tno).center.x<<" , "<<caseNL.Terminals.at(tno).center.y<<" center "<<endl;
         }
       }
-      if(hasTerminal) {
-        fout<<"\nset label \""<<caseNL.Terminals.at(tno).name<<"\" at "<<caseNL.Terminals.at(tno).center.x<<" , "<<caseNL.Terminals.at(tno).center.y<<" center "<<endl;
-      }
-    }
+  }
 
   // plot blocks
   //cout<<"plot blocks..."<<endl;
-  fout<<"\nplot[:][:] \'-\' with lines linestyle 3, \'-\' with lines linestyle 7, \'-\' with lines linestyle 1, \'-\' with lines linestyle 0"<<endl<<endl;;
+  fout << "\nplot[:][:] \'-\' with lines linestyle 3";
+  if(plot_pin)fout << ", \'-\' with lines linestyle 7";
+  if(plot_terminal)fout << ", \'-\' with lines linestyle 1";
+  if(plot_net)fout << ", \'-\' with lines linestyle 0";
+  fout << endl << endl;
   for(int i=0;i<(int)caseNL.GetSizeofBlocks();++i) {
     string ort;
     placerDB::point tp;
@@ -5809,90 +5869,93 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
   vector<vector<placerDB::point> > newp_pin;
   // plot block pins
   //cout<<"plot block pins..."<<endl;
-
-  for(int i=0;i<caseNL.GetSizeofBlocks();++i) {
-    string ort;
-    placerDB::point tp;
-    tp.x=HGraph.at(i).position;
-    tp.y=VGraph.at(i).position;
-    for(int j=0;j<caseNL.GetBlockPinNum(i,caseSP.GetBlockSelected(i));j++) {
-      newp_pin=caseNL.GetPlacedBlockPinAbsBoundary(i,j, caseSP.GetBlockOrient(i), tp, caseSP.GetBlockSelected(i));
-      for(unsigned int k=0;k<newp_pin.size();k++){
-	  vector<placerDB::point> newp_p = newp_pin[k];
-      for(unsigned int it=0; it<newp_p.size(); it++ ) {
-        fout<<"\t"<<newp_p[it].x<<"\t"<<newp_p[it].y<<endl;
+  if(plot_pin){
+    for(int i=0;i<caseNL.GetSizeofBlocks();++i) {
+      string ort;
+      placerDB::point tp;
+      tp.x=HGraph.at(i).position;
+      tp.y=VGraph.at(i).position;
+      for(int j=0;j<caseNL.GetBlockPinNum(i,caseSP.GetBlockSelected(i));j++) {
+        newp_pin=caseNL.GetPlacedBlockPinAbsBoundary(i,j, caseSP.GetBlockOrient(i), tp, caseSP.GetBlockSelected(i));
+        for(unsigned int k=0;k<newp_pin.size();k++){
+      vector<placerDB::point> newp_p = newp_pin[k];
+        for(unsigned int it=0; it<newp_p.size(); it++ ) {
+          fout<<"\t"<<newp_p[it].x<<"\t"<<newp_p[it].y<<endl;
+        }
+        fout<<"\t"<<newp_p[0].x<<"\t"<<newp_p[0].y<<endl;
+        fout<<endl;
       }
-      fout<<"\t"<<newp_p[0].x<<"\t"<<newp_p[0].y<<endl;
-      fout<<endl;
+      }
     }
-    }
+    fout<<"\nEOF"<<endl;
   }
-  fout<<"\nEOF"<<endl;
 
   // plot terminals
   //cout<<"plot terminals..."<<endl;
-  for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
-    bool hasTerminal=false;
-    int tno=-1;
-    // for each pin
-    for(vector<placerDB::Node>::iterator ci=(ni->connected).begin(); ci!=(ni->connected).end(); ++ci) {
-      if (ci->type==placerDB::Terminal) {
-        hasTerminal=true; tno=ci->iter;
+  if(plot_terminal){
+    for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
+      bool hasTerminal=false;
+      int tno=-1;
+      // for each pin
+      for(vector<placerDB::Node>::iterator ci=(ni->connected).begin(); ci!=(ni->connected).end(); ++ci) {
+        if (ci->type==placerDB::Terminal) {
+          hasTerminal=true; tno=ci->iter;
+        }
+      }
+      if(hasTerminal) {
+        int bias=20;
+        fout<<endl;
+        fout<<"\t"<<caseNL.Terminals.at(tno).center.x-bias<<"\t"<<caseNL.Terminals.at(tno).center.y-bias<<endl;
+        fout<<"\t"<<caseNL.Terminals.at(tno).center.x-bias<<"\t"<<caseNL.Terminals.at(tno).center.y+bias<<endl;
+        fout<<"\t"<<caseNL.Terminals.at(tno).center.x+bias<<"\t"<<caseNL.Terminals.at(tno).center.y+bias<<endl;
+        fout<<"\t"<<caseNL.Terminals.at(tno).center.x+bias<<"\t"<<caseNL.Terminals.at(tno).center.y-bias<<endl;
+        fout<<"\t"<<caseNL.Terminals.at(tno).center.x-bias<<"\t"<<caseNL.Terminals.at(tno).center.y-bias<<endl;
       }
     }
-    if(hasTerminal) {
-      int bias=20;
-      fout<<endl;
-      fout<<"\t"<<caseNL.Terminals.at(tno).center.x-bias<<"\t"<<caseNL.Terminals.at(tno).center.y-bias<<endl;
-      fout<<"\t"<<caseNL.Terminals.at(tno).center.x-bias<<"\t"<<caseNL.Terminals.at(tno).center.y+bias<<endl;
-      fout<<"\t"<<caseNL.Terminals.at(tno).center.x+bias<<"\t"<<caseNL.Terminals.at(tno).center.y+bias<<endl;
-      fout<<"\t"<<caseNL.Terminals.at(tno).center.x+bias<<"\t"<<caseNL.Terminals.at(tno).center.y-bias<<endl;
-      fout<<"\t"<<caseNL.Terminals.at(tno).center.x-bias<<"\t"<<caseNL.Terminals.at(tno).center.y-bias<<endl;
-    }
+    fout<<"\nEOF"<<endl;
   }
-  //if(caseNL.Terminals.size()>0) {
-  fout<<"\nEOF"<<endl;
-  //}
   // plot nets
   //cout<<"plot nets..."<<endl;
-
-  for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
-    bool hasTerminal=false;
-    int tno; placerDB::point tp;
-    vector<placerDB::point> pins;
-    pins.clear();
-    //std::cout<<"test flag7"<<std::endl;
-    // for each pin
-    for(vector<placerDB::Node>::iterator ci=(ni->connected).begin(); ci!=(ni->connected).end(); ++ci) {
-      if(ci->type==placerDB::Block) {
-        bp.x=this->HGraph.at(ci->iter2).position;
-        bp.y=this->VGraph.at(ci->iter2).position;
-        //std::cout<<"test flag7.1"<<std::endl;
-        p_pin=caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
-        //std::cout<<"test flag7.2"<<std::endl;
-        if(!p_pin.empty()) {
-        for(int i=0;i<1;i++){
-		p=p_pin[i];
-		pins.push_back(p);
-		}
+  if(plot_net){
+    for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
+      bool hasTerminal=false;
+      int tno; placerDB::point tp;
+      vector<placerDB::point> pins;
+      pins.clear();
+      //std::cout<<"test flag7"<<std::endl;
+      // for each pin
+      for(vector<placerDB::Node>::iterator ci=(ni->connected).begin(); ci!=(ni->connected).end(); ++ci) {
+        if(ci->type==placerDB::Block) {
+          bp.x=this->HGraph.at(ci->iter2).position;
+          bp.y=this->VGraph.at(ci->iter2).position;
+          //std::cout<<"test flag7.1"<<std::endl;
+          p_pin=caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
+          //std::cout<<"test flag7.2"<<std::endl;
+          if(!p_pin.empty()) {
+          for(int i=0;i<1;i++){
+      p=p_pin[i];
+      pins.push_back(p);
+      }
+          }
+        } else if (ci->type==placerDB::Terminal) {
+          hasTerminal=true; tno=ci->iter;
         }
-      } else if (ci->type==placerDB::Terminal) {
-        hasTerminal=true; tno=ci->iter;
+      }
+      //std::cout<<"test flag8"<<std::endl;
+      if(hasTerminal) {pins.push_back(caseNL.Terminals.at(tno).center);}
+      fout<<"\n#Net: "<<ni->name<<endl;
+      if(pins.size()>=2) {
+      for(int i=1;i<(int)pins.size();i++) {
+        fout<<"\t"<<pins.at(0).x<<"\t"<<pins.at(0).y<<endl;
+        fout<<"\t"<<pins.at(i).x<<"\t"<<pins.at(i).y<<endl;
+        fout<<"\t"<<pins.at(0).x<<"\t"<<pins.at(0).y<<endl<<endl;
+      }
       }
     }
-    //std::cout<<"test flag8"<<std::endl;
-    if(hasTerminal) {pins.push_back(caseNL.Terminals.at(tno).center);}
-    fout<<"\n#Net: "<<ni->name<<endl;
-    if(pins.size()>=2) {
-    for(int i=1;i<(int)pins.size();i++) {
-      fout<<"\t"<<pins.at(0).x<<"\t"<<pins.at(0).y<<endl;
-      fout<<"\t"<<pins.at(i).x<<"\t"<<pins.at(i).y<<endl;
-      fout<<"\t"<<pins.at(0).x<<"\t"<<pins.at(0).y<<endl<<endl;
-    }
-    }
+
+    fout<<"\nEOF"<<endl;
   }
 
-  fout<<"\nEOF"<<endl;
   fout<<endl<<"pause -1 \'Press any key\'";
   fout.close();
 }

@@ -3,10 +3,10 @@ import textwrap
 import json
 import shutil
 try:
-    from .utils import get_test_id, build_example, run_example
+    from .utils import get_test_id, build_example, run_example, plot_sa_cost, plot_sa_seq
     from . import circuits
 except BaseException:
-    from utils import get_test_id, build_example, run_example
+    from utils import get_test_id, build_example, run_example, plot_sa_cost, plot_sa_seq
     import circuits
 
 cleanup = False
@@ -33,6 +33,9 @@ def test_cmp():
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
 
+    if cleanup:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(ckt_dir)
 
 @pytest.mark.nightly
 def test_cmp_pg():
@@ -196,10 +199,18 @@ def test_cmp_order():
 def test_ota_six():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ota_six(name)
-    setup = ""
-    constraints = [{"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 1.5}]
+    setup = textwrap.dedent(f"""\
+        DONT_CONST = {name}
+        """)
+    constraints = [
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "g1"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "g2"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "g3"},
+        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.01, "ratio_high": 100}]
     example = build_example(name, netlist, setup, constraints)
-    run_example(example, cleanup=cleanup)
+    run_example(example, cleanup=cleanup, log_level='DEBUG')
+    # plot_sa_cost(name.upper())
+    # plot_sa_seq(name.upper())
 
 
 def test_tia():
