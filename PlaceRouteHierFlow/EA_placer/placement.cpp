@@ -163,7 +163,6 @@ Placement::Placement(PnRDB::hierNode &current_node)
   E_Placer(current_node);
   bool isCompact = true;
   restore_CC_in_square(isCompact);
-
   //only for plot
 
   restore_MS();
@@ -258,7 +257,6 @@ void Placement::place_ut(PnRDB::hierNode &current_node)
   UT_Placer();
   bool isCompact = true;
   restore_CC_in_square(isCompact);
-
   //only for plot
 
   //restore_MS();
@@ -360,7 +358,6 @@ void Placement::place(PnRDB::hierNode &current_node)
   E_Placer(current_node);
   bool isCompact = true;
   restore_CC_in_square(isCompact);
-
   //only for plot
 
   //restore_MS();
@@ -1949,7 +1946,7 @@ void Placement::E_Placer(PnRDB::hierNode &current_node)
   float max_density = 1.0;
   float current_max_density = 10.0;
   int count_number = 0;
-  int upper_count_number = 2000;
+  int upper_count_number = 500;
   float current_overlap = 1.0;
   float symmetricMin = 0.3; //need to tune
   // initialize dummy net weight
