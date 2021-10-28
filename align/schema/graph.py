@@ -116,13 +116,9 @@ class Graph(networkx.Graph):
             for const in subckt_const:
                 if const.constraint == 'symmetric_blocks':
                     t = [[self._get_key(ele,match) for ele in pair] for pair in const.pairs]
-                    d = const.direction
-                    x = constraint.SymmetricBlocks(direction=d, pairs=t)
-                    self.subckt.constraints.append(x)
-                    assert x in self.subckt.constraints, f"constraint: {x} not found in {self.subckt.constraints}"
-                    self.subckt.constraints.remove(x)
-                    for pair in const.pairs:
+                    for pair in t:
                         if len(pair)==2:
+                            assert self.element(pair[0]).parameters == self.element(pair[1]).parameters
                             self.match_pin_distance(pair,self.subckt.pins[0])
 
     def match_pin_distance(self,pair,pin):

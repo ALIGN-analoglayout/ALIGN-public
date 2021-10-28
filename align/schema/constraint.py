@@ -24,19 +24,6 @@ def get_instances_from_hacked_dataclasses(constraint):
     names = {x.name for x in constraint.parent if hasattr(x, 'name')}
     return set.union(instances, names)
 
-def get_instance_param_from_hacked_dataclasses(constraint, inst):
-    assert constraint.parent.parent is not None, 'Cannot access parent scope'
-    if hasattr(constraint.parent.parent, 'graph'):
-        val = constraint.parent.parent.graph.nodes[inst]
-    elif hasattr(constraint.parent.parent, 'elements'):
-        val = constraint.parent.parent.get_element(inst).parameters
-    elif hasattr(constraint.parent.parent, 'instances'):
-        val = {x.abstract_template_name for x in constraint.parent.parent.instances if x.instance_name==inst}
-    else:
-        raise NotImplementedError(f"Cannot handle {type(constraint.parent.parent)}")
-    # names = {x.name for x in constraint.parent if hasattr(x, 'name')}
-    return val
-
 def validate_instances(cls, value):
     # instances = cls._validator_ctx().parent.parent.instances
     instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
@@ -547,8 +534,8 @@ class SymmetricBlocks(SoftConstraint):
 
         '''
         # TODO:function to check before adding, right now it adds and then check
-        assert all(len(pair) for pair in self.pairs) >= 1, 'Must contain at least one instance'
-        assert all(len(pair) for pair in self.pairs) <= 2, 'Must contain at most two instances'
+        assert all(len(pair)>=1 for pair in self.pairs), 'Must contain at least one instance'
+        assert all(len(pair)<=2 for pair in self.pairs), 'Must contain at most two instances'
         instances = get_instances_from_hacked_dataclasses(self)
         assert isinstance(instances, set), 'Could not retrieve instances from subcircuit definition'
         group_block_instances = [const.name for const in self.parent if isinstance(const, GroupBlocks)]
@@ -559,10 +546,7 @@ class SymmetricBlocks(SoftConstraint):
                 logger.debug(f"Skipping constraint checking {self.parent} ")
                 continue
             elif len(pair) == 2:
-                assert all(x in instances or x.upper() in instances for x in pair), f'One or more constraint instances {pair} not found in {instances}'
-                param1 = get_instance_param_from_hacked_dataclasses(self, pair[0])
-                param2 = get_instance_param_from_hacked_dataclasses(self, pair[1])
-                assert param1 == param2, f"Incorrent symmetry pair {pair} in subckt {self.parent.parent.name}"
+                # assert all(x in instances or x.upper() in instances for x in pair), f'One or more constraint instances {pair} not found in {instances}'
                 bvars = checker.iter_bbox_vars(pair)
                 for b1, b2 in itertools.pairwise(bvars):
                     if self.direction == 'V':
