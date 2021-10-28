@@ -1,17 +1,10 @@
 import pathlib
-from re import template
-from tests.compiler.utils import ring_oscillator_flat
-import pytest
-import pathlib
-import shutil
-import json
-from align.schema import Model, Instance, SubCircuit, Library, instance
-from align.schema.graph import Graph
+from align.schema import  SubCircuit
 from align.schema import constraint
 from align.compiler.find_constraint import FindConst
-from align.schema.types import set_context, List, Dict
+from align.schema.types import set_context
 from align.compiler.create_array_hierarchy import process_arrays
-from align.compiler.compiler import compiler_input, compiler_output
+from align.compiler.compiler import compiler_input
 from utils import clean_data, build_example, ring_oscillator, ring_oscillator_flat, variable_gain_amplifier_equal
 import textwrap
 

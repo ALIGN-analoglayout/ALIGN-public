@@ -5,7 +5,7 @@ from align.schema.graph import Graph
 from align.schema import constraint
 from align.schema.types import set_context
 from align.compiler.compiler import compiler_input
-from align.compiler.find_constraint import add_or_revert_const, symmnet_device_pairs
+from align.compiler.find_constraint import add_symmetry_const, symmnet_device_pairs
 from utils import clean_data, build_example, ota_six
 import textwrap
 
@@ -64,21 +64,23 @@ def test_add_symmetry_const():
     example = build_example(name, netlist, setup, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
     ckt = ckt_library.find(name)
+    insts = {inst.name for inst in ckt.elements}
+    assert insts == {"MN1", "MN2", "MN3", "MN4", "MP5", "MP6"}
     with set_context(ckt.constraints):
         x = constraint.SymmetricBlocks(direction="V", pairs=[["MN4", "MN3"]])
-    const_pairs = {"MN4": "MN3"}  # skip dictionary element
-    with pytest.raises(KeyError):
-        add_or_revert_const(const_pairs, ckt.constraints, list())
+    match_pairs = {"dummy":[["MN4", "MN3"]]} # dict data type needed
+    with pytest.raises(AttributeError):
+        add_symmetry_const(ckt, match_pairs, list(), list(), list())
     assert len(ckt.constraints) == 0
-    const_pairs = [["MN4", "MN3"]]
-    add_or_revert_const(const_pairs, ckt.constraints, list())
+    match_pairs = {"dummy": {"MN4": "MN3"}}
+    add_symmetry_const(ckt, match_pairs, list(), list(), list())
     assert len(ckt.constraints) == 1
     assert ckt.constraints[0] == x
-    const_pairs = [["MN4", "MN5"]]  # Skip unequal size
-    add_or_revert_const(const_pairs, ckt.constraints, list())
+    match_pairs = {"dummy": {"MN4":"MP5"}}  # Skip unequal size
+    add_symmetry_const(ckt, match_pairs, list(), list(), list())
     assert len(ckt.constraints) == 1
-    const_pairs = [["VIN", "VIP"]]  # Skip net
-    add_or_revert_const(const_pairs, ckt.constraints, list())
+    match_pairs = {"dummy":{"VIN": "VIP"}}  # Skip net
+    add_symmetry_const(ckt, match_pairs, list(), list(), list())
     assert len(ckt.constraints)==1
     clean_data(name)
 

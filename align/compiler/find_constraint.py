@@ -292,8 +292,7 @@ def FindConst(subckt, design_setup):
         if "start_point" in pair.keys():
             del pair["start_point"]
     ## Add symmetry constraints
-    add_symm = add_symmetry_const(subckt, match_pairs, stop_points, written_symmblocks, skip_const)
-    add_symm.loop_through_pairs()
+    add_symmetry_const(subckt, match_pairs, stop_points, written_symmblocks, skip_const)
 
 class process_input_const:
     def __init__(self, subckt):
@@ -371,6 +370,7 @@ class add_symmetry_const:
         key = lambda k: len([k1 for k1, v1 in k.items() if k1 != v1]),
         reverse = True,
         )
+        logger.info(self.all_pairs)
         self.written_symmblocks = written_symmblocks
         self.subckt = subckt
         self.name = subckt.name
@@ -384,13 +384,14 @@ class add_symmetry_const:
         logger.debug(f"stop points for hier {subckt.name} are {stop_points}")
         logger.debug(f"excluded input symmetry pairs {self.written_symmblocks}")
         logger.debug(f"all symmetry matching pairs {pprint.pformat(self.all_pairs, indent=4)}")
+        self.loop_through_pairs()
 
     def loop_through_pairs(self):
         for pairs in self.all_pairs:
             pairs = sorted(pairs.items(), key=lambda k: k[0])
             logger.debug(f"symmblock pairs: {pairs}, existing: {self.written_symmblocks}")
             pairsj = self.filter_symblock_const(pairs)
-            add_or_revert_const(pairsj, self.iconst, self.written_symmblocks)
+            self.add_or_revert_const(pairsj)
         for pairs in self.all_pairs:
             pairs = sorted(pairs.items(), key=lambda k: k[0])
             logger.debug(f"symmnet pairs: {pairs}, existing: {self.written_symmblocks}")
@@ -473,22 +474,27 @@ class add_symmetry_const:
                 else:
                     logger.debug(f"skipping self symmetric nets {key} {value}")
 
-def add_or_revert_const(pairsj: list, iconst, written_symmblocks: list):
-    logger.debug(f"filterd symmetry pairs: {pairsj}")
-    if len(pairsj) > 1 or (pairsj and len(pairsj[0])==2):
-        _temp = len(iconst)
-        try:
-            with set_context(iconst):
+    def add_or_revert_const(self, pairsj: list):
+        logger.debug(f"filterd symmetry pairs: {pairsj}")
+        if len(pairsj) > 1 or (pairsj and len(pairsj[0])==2):
+            for pair in pairsj:
+                if len(pair)==2:
+                    inst1 = self.subckt.get_element(pairsj[0][0])
+                    inst2 = self.subckt.get_element(pairsj[0][1])
+                    param1 = inst1.parameters
+                    param2 = inst2.parameters
+                    if not param1 == param2 or \
+                        not inst1.model== inst2.model or \
+                        not inst1.abstract_name == inst2.abstract_name:
+                        logger.debug(f"skipping match {pairsj} due to unsatisfied constraints")
+                        return
+            with set_context(self.iconst):
                 symmBlock = constraint.SymmetricBlocks(direction="V", pairs=pairsj)
-                iconst.append(symmBlock)
-                written_symmblocks.extend([set(pair) for pair in pairsj])
+                self.iconst.append(symmBlock)
+                self.written_symmblocks.extend([set(pair) for pair in pairsj])
                 # written_symmblocks.extend([str(ele) for pair in pairsj for ele in pair])
                 logger.debug(f"one axis of written symmetries: {symmBlock}")
-        except:
-            while len(iconst) > _temp:
-                iconst.pop()
-            logger.debug(f"skipping match {pairsj} due to unsatisfied constraints")
-            pass
+
 
 
 def symmnet_device_pairs(G, net_A, net_B, smb=list(), skip_blocks=None, user=False):
