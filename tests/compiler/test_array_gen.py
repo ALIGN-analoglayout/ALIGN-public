@@ -1,6 +1,5 @@
 import pathlib
 from re import template
-from tests.compiler.utils import ring_oscillator_flat
 import pytest
 import pathlib
 import shutil
