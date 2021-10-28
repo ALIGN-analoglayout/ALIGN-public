@@ -253,9 +253,7 @@ def compiler_output(
 
         for ele in ckt.elements:
             primitive_generator = ele.generator
-            assert "generic" in generators
             if primitive_generator in generators:
-                generators[str(ele.model)] = primitive_generator
                 assert generate_primitive_lef(
                     ele,
                     primitive_generator,
@@ -263,6 +261,7 @@ def compiler_output(
                     primitives,
                     design_config,
                     uniform_height,
+                    pdk_dir = pdk_dir
                 )
             else:
                 ele.add_abs_name(ele.generator)
