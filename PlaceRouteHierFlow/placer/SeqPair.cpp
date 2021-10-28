@@ -1167,7 +1167,7 @@ inline size_t SeqPair::Factorial(const size_t& t)
 std::string SeqPair::getLexIndex(design& des) const {
   return "pos_pair=" + std::to_string(des.getSeqIndex(posPair)) +
     " neg_pair=" + std::to_string(des.getSeqIndex(negPair)) + 
-	" selected=" + std::to_string(des.getSelIndex(selected));
+    " selected=" + std::to_string(des.getSelIndex(selected));
 }
 
 bool SeqPair::CheckSymm(design& caseNL) {
@@ -1177,11 +1177,11 @@ bool SeqPair::CheckSymm(design& caseNL) {
     posPosition[posPair[i]] = i;
     negPosition[negPair[i]] = i;
   }
-	for (const auto& sb : caseNL.SBlocks) {
+  for (const auto& sb : caseNL.SBlocks) {
 
     // self symm blocks should be (above/below for vertical axis) or (left/right for horizontal axis)
     // self symm blocks to the (left/right for vertical axis) or (above/below) for horizontal) is a violation
-		for (int i = 0; i < sb.selfsym.size() - 1; ++i) {
+    for (int i = 0; i < sb.selfsym.size() - 1; ++i) {
       auto posA = posPosition[sb.selfsym[i].first];
       auto negA = negPosition[sb.selfsym[i].first];
       for (int j = i + 1; j < sb.selfsym.size(); ++j) {
@@ -1198,29 +1198,29 @@ bool SeqPair::CheckSymm(design& caseNL) {
         }
       }
     }
-		for (int i = 0; i < sb.sympair.size(); ++i) {
+    for (int i = 0; i < sb.sympair.size(); ++i) {
       const auto& sympairi = sb.sympair[i];
-			auto posA = posPosition[sympairi.first];
-			auto negA = negPosition[sympairi.first];
-			auto posB = posPosition[sympairi.second];
-			auto negB = negPosition[sympairi.second];
-			if (sb.axis_dir == placerDB::V) {
+      auto posA = posPosition[sympairi.first];
+      auto negA = negPosition[sympairi.first];
+      auto posB = posPosition[sympairi.second];
+      auto negB = negPosition[sympairi.second];
+      if (sb.axis_dir == placerDB::V) {
         // symm pairs should be left/right for vertical axis
-				if ((posA < posB && negA > negB) || (posA > posB && negA < negB)) {
-					return false;
-				}
-				for (const auto& itselfsym : sb.selfsym) {
-					auto posC = posPosition[itselfsym.first];
-					auto negC = negPosition[itselfsym.first];
+        if ((posA < posB && negA > negB) || (posA > posB && negA < negB)) {
+          return false;
+        }
+        for (const auto& itselfsym : sb.selfsym) {
+          auto posC = posPosition[itselfsym.first];
+          auto negC = negPosition[itselfsym.first];
           // symm pairs lying on same side (both left or both right) of self symm block is a violation
-					if (posA < posB) {
+          if (posA < posB) {
             if ((posB < posC && negB < negC) || (posC < posA && negC < negA))
               return false;
-					} else {
+          } else {
             if ((posA < posC && negA < negC) || (posC < posB && negC < negB))
               return false;
           }
-				}
+        }
         for (int j = i+1; j < sb.sympair.size(); ++j) {
           const auto& sympairj = sb.sympair[j];
           auto posC = posPosition[sympairj.first];
@@ -1259,13 +1259,13 @@ bool SeqPair::CheckSymm(design& caseNL) {
         if ((posA < posB && negA < negB) || (posA > posB && negA > negB)) {
           return false;
         }
-				for (const auto& itselfsym : sb.selfsym) {
-					auto posC = posPosition[itselfsym.first];
-					auto negC = negPosition[itselfsym.first];
-					if ((posA < posB && posC > posB && negC < negB) || (posA > posB && posC > posA && negC < negA)) {
-						return false;
-					}
-				}
+        for (const auto& itselfsym : sb.selfsym) {
+          auto posC = posPosition[itselfsym.first];
+          auto negC = negPosition[itselfsym.first];
+          if ((posA < posB && posC > posB && negC < negB) || (posA > posB && posC > posA && negC < negA)) {
+            return false;
+          }
+        }
         for (int j = i+1; j < sb.sympair.size(); ++j) {
           const auto& sympairj = sb.sympair[j];
           auto posC = posPosition[sympairj.first];
@@ -1287,9 +1287,9 @@ bool SeqPair::CheckSymm(design& caseNL) {
           if (posA > posD && negA < negD && posB < posC && negB > negC) return false;
           if (posA < posD && negA > negD && posB > posC && negB < negC) return false;
         }
-			}
-		}
-	}
+      }
+    }
+  }
 
   // collect all horizontal align blocks that align to the bottom
   std::map<int, std::vector<int>> alignBlocksHor, alignBlocksVer;
@@ -1351,18 +1351,18 @@ bool SeqPair::CheckSymm(design& caseNL) {
       }
     }
   }
-	std::map<int, std::set<int> > aboveSet, belowSet, rightSet, leftSet;
+  std::map<int, std::set<int> > aboveSet, belowSet, rightSet, leftSet;
   //collect set of above blocks/ below blocks for all blocks
-	for (auto& it : posPair) {
+  for (auto& it : posPair) {
     if (it >= caseNL.Blocks.size()) continue;
-		auto posA = posPosition[it];
-		auto negA = negPosition[it];
-		for (int i = 0; i < posA; ++i) {
+    auto posA = posPosition[it];
+    auto negA = negPosition[it];
+    for (int i = 0; i < posA; ++i) {
       const auto& bi = posPair[i];
-			if (bi < caseNL.Blocks.size()) {
+      if (bi < caseNL.Blocks.size()) {
         auto negB = negPosition[bi];
-				if (negB > negA) {
-					aboveSet[it].insert(posPair[i]);
+        if (negB > negA) {
+          aboveSet[it].insert(posPair[i]);
           // if any block above is part of a horizontal align constraint,
           // then the whole collection in the align constraint needs to be above
           auto itAlign= alignBlocksHor.find(bi);
@@ -1380,10 +1380,10 @@ bool SeqPair::CheckSymm(design& caseNL) {
     }
     for (int i = posA + 1; i < posPair.size(); ++i) {
       const auto& bi = posPair[i];
-			if (bi < caseNL.Blocks.size()) {
-				if (negPosition[bi] < negA) {
-					belowSet[it].insert(posPair[i]);
-					const auto& cpt = caseNL.Blocks[bi][0].counterpart;
+      if (bi < caseNL.Blocks.size()) {
+        if (negPosition[bi] < negA) {
+          belowSet[it].insert(posPair[i]);
+          const auto& cpt = caseNL.Blocks[bi][0].counterpart;
           // if any block below is part of a horizontal align constraint,
           // then the whole collection in the align constraint needs to be below
           auto itAlign= alignBlocksHor.find(bi);
