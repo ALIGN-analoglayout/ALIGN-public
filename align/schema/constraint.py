@@ -509,30 +509,6 @@ class MatchBlocks(SoftConstraint):
     '''
     instances: List[str]
 
-class PowerPorts(SoftConstraint):
-    '''
-    power port for each hieararchy
-    '''
-    ports: List[str]
-
-class GroundPorts(SoftConstraint):
-    '''
-    Ground port for each hieararchy
-    '''
-    ports: List[str]
-
-class ClockPorts(SoftConstraint):
-    '''
-    Clock port for each hieararchy
-    '''
-    ports: List[str]
-
-class DoNotUseLib(SoftConstraint):
-    '''
-    Clock port for each hieararchy
-    '''
-    ports: List[str]
-
 class DoNotIdentify(SoftConstraint):
     '''
     TODO: Can be replicated by Enclose??
