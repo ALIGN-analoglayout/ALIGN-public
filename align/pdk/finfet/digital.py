@@ -34,4 +34,7 @@ class dig22inv(CanvasPDK):
             self.addWire(self.m1, None, i, (6, -1), (7, 1), netType = 'blockage')
             self.addWire(self.m1, None, i, (0, -1), (1, 1), netType = 'blockage')
 
+        # Additional metadata for layout post-processing
+        self.metadata['instances'].append({'library': 'dig22', 'cell': 'dig22inv', 'view': 'layout'})
+
         return {"bbox": bbox, "instance": {}, "terminals": self.terminals}
