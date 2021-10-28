@@ -130,8 +130,11 @@ def get_ports_weight(G):
     for port in subckt.pins:
         leaf_conn = get_leaf_connection(subckt, port)
         logger.debug(f"leaf connections of net ({port}): {leaf_conn}")
-        assert len(leaf_conn) > 0, f"floating port:{port} in subckt {subckt.name}"
-        ports_weight[port] = set(sorted(leaf_conn))
+        if len(leaf_conn)==0:
+            logger.warning(f"floating port:{port} in subckt {subckt.name}")
+            ports_weight[port] = None
+        else:
+            ports_weight[port] = set(sorted(leaf_conn))
     return ports_weight
 
 def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):

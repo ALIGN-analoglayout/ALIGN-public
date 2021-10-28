@@ -509,7 +509,6 @@ class MatchBlocks(SoftConstraint):
     '''
     instances: List[str]
 
-
 class DoNotIdentify(SoftConstraint):
     '''
     TODO: Can be replicated by Enclose??
