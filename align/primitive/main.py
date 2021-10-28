@@ -338,14 +338,15 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
     available_block_lef = all_lef
     logger.debug(f"checking lef for: {name}, {element}")
 
-    if name == 'generic':
+    if name == 'generic' or name in available_block_lef:
         # TODO: how about hashing for unique names?
         value_str = ''
-        for key in sorted(values):
-            val = values[key].replace('-','')
-            value_str += f'_{key}_{val}'
+        if values:
+            for key in sorted(values):
+                val = values[key].replace('-','')
+                value_str += f'_{key}_{val}'
         attr ={'ports': list(element.pins.keys()),
-            'values': values,
+            'values': values if values else None,
             'real_inst_type':element.model.lower()
             }
         block_name = element.model + value_str
@@ -389,6 +390,8 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
         return True
 
     else:
+
+        assert 'NMOS' in name or 'PMOS' in name, f'{name} is not recognized'
 
         if 'NMOS' in name:
             unit_size_mos = design_config["unit_size_nmos"]

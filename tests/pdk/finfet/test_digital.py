@@ -1,21 +1,26 @@
-
 import pytest
 import textwrap
 import json
 import shutil
 try:
-    from .utils import get_test_id, build_example, run_example, plot_sa_cost, plot_sa_seq
-    from . import circuits
+    from .utils import pdk_dir, get_test_id, build_example, run_example, export_to_viewer
 except BaseException:
-    from utils import get_test_id, build_example, run_example, plot_sa_cost, plot_sa_seq
-    import circuits
+    from utils import pdk_dir, get_test_id, build_example, run_example, export_to_viewer
+from align.primitive import main
 
 cleanup = False
 
 
+def test_dig22inv():
+    name = "dig22inv"
+    primitive_generator = main.get_generator(name, pdk_dir)
+    data = primitive_generator().generate(ports=['A', 'O', 'VCCX', 'VSSX'])
+    export_to_viewer("dig22inv", data)
+
+
 def test_dig_1():
     name = f'ckt_{get_test_id()}'
-    setup = textwrap.dedent("""\
+    setup = textwrap.dedent(f"""\
         DONT_CONST = {name}
         """)
     netlist = textwrap.dedent(f"""\
@@ -30,10 +35,6 @@ def test_dig_1():
     .ends {name}
     .END
     """)
-    constraints = []
+    constraints = [{"constraint": "AlignInOrder", "line": "bottom", "instances": ["xi0", "xi1", "xi2"]}]
     example = build_example(name, netlist, setup, constraints)
-    ckt_dir, run_dir = run_example(example, cleanup=cleanup)
-
-    # with (run_dir / '3_pnr' / 'inputs' / 'RO_STAGE.pnr.const.json').open('rt') as fp:
-    #     d = json.load(fp)
-    #     assert len(d['constraints']) > 0, 'Where is the order constraint???'
+    run_example(example, cleanup=cleanup)
