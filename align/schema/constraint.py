@@ -509,11 +509,13 @@ class MatchBlocks(SoftConstraint):
     '''
     instances: List[str]
 
+
 class PowerPorts(SoftConstraint):
     '''
     power port for each hieararchy
     '''
     ports: List[str]
+
 
 class GroundPorts(SoftConstraint):
     '''
@@ -521,17 +523,20 @@ class GroundPorts(SoftConstraint):
     '''
     ports: List[str]
 
+
 class ClockPorts(SoftConstraint):
     '''
     Clock port for each hieararchy
     '''
     ports: List[str]
 
+
 class DoNotUseLib(SoftConstraint):
     '''
     Primitive libraries which should not be used
     '''
     libraries: List[str]
+
 
 class IsDigital(SoftConstraint):
     '''
@@ -540,11 +545,13 @@ class IsDigital(SoftConstraint):
     '''
     isTrue: bool
 
+
 class AutoConstraint(SoftConstraint):
     '''
     Forbids/Allow any auto-constraint generation
     '''
     isTrue: bool
+
 
 class IdentifyArray(SoftConstraint):
     '''
@@ -552,9 +559,10 @@ class IdentifyArray(SoftConstraint):
     '''
     isTrue: bool
 
+
 class GroupCaps(SoftConstraint):
     '''
-    Forbids/Allow creation of cap arrays
+    Forbids/Allow creation of arrays for symmetric caps
     '''
     isTrue: bool
 

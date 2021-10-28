@@ -7,6 +7,7 @@ Created on Fri Jan 15 10:38:14 2021
 """
 from align.schema.types import set_context
 from ..schema.subcircuit import SubCircuit
+from ..schema import constraint
 
 import logging
 
@@ -15,15 +16,13 @@ logger = logging.getLogger(__name__)
 
 
 class CreateDatabase:
-    def __init__(self, ckt_parser, const_parse, design_setup: dict):
+    def __init__(self, ckt_parser, const_parse):
         self.const_parse = const_parse
         self.ckt_parser = ckt_parser
         self.lib = ckt_parser.library
         self.circuit = ckt_parser.circuit
         self.multi_param_instantiation = list()
-        self.design_setup = design_setup
         self.remove_redundant_models()
-        self.check_floating_pins()
         self.add_user_const()
 
     def read_inputs(self, name: str):
@@ -38,22 +37,15 @@ class CreateDatabase:
         else:
             self.resolve_parameters(name, subckt.parameters)
         self._update_leaf_instances()
-        self._define_power_ports(subckt, self.design_setup["POWER"],
-                                self.design_setup["GND"],
-                                self.design_setup["CLOCK"])
+        pwr = [const.ports for const in subckt.constraints if isinstance(const, constraint.PowerPorts)]
+        gnd = [const.ports for const in subckt.constraints if isinstance(const, constraint.GroundPorts)]
+        clk = [const.ports for const in subckt.constraints if isinstance(const, constraint.ClockPorts)]
+        self._define_power_ports(subckt, pwr, gnd, clk)
         return self.lib
     def add_user_const(self):
         for subckt in self.lib:
             if isinstance(subckt, SubCircuit):
                 self.const_parse.annotate_user_constraints(subckt)
-
-    def check_floating_pins(self):
-        for subckt in self.lib:
-            if isinstance(subckt, SubCircuit):
-                for pin in subckt.pins:
-                    assert (
-                        pin in subckt.nets
-                    ), f"Floating pin: {pin} found for subckt {subckt.name} nets: {subckt.nets}"
 
     def remove_redundant_models(self):
         _model_list = list()
@@ -196,25 +188,69 @@ class CreateDatabase:
                 name, new_param = self._find_new_inst_name(subckt, param, counter + 1)
         return name, new_param
 
-    def _define_power_ports(self, subckt, power, gnd, clk):
-        with set_context(subckt):
-            if subckt.power:
-                power = list(set(power) & set(subckt.power))
-                subckt.power.clear()
-            subckt.power.extend(power)
-            if subckt.gnd:
-                gnd = list(set(gnd) & set(subckt.gnd))
-                subckt.gnd.clear()
-            subckt.gnd.extend(gnd)
-            if subckt.clock:
-                clk = list(set(clk) & set(subckt.clock))
-                subckt.clock.clear()
-            subckt.clock.extend(clk)
-        logger.debug(f"identified power {power} gnd {gnd} clock {clk} for subckt {subckt.name}")
+    def _define_power_ports(self, subckt, pwr, gnd, clk):
+        pwr_child = [const.ports for const in subckt.constraints if isinstance(const, constraint.PowerPorts)]
+        gnd_child = [const.ports for const in subckt.constraints if isinstance(const, constraint.GroundPorts)]
+        clk_child = [const.ports for const in subckt.constraints if isinstance(const, constraint.ClockPorts)]
+        found_power = False
+        if not pwr_child and pwr:
+            found_power =True
+            pwr_child = pwr[0]
+        elif pwr_child and not pwr:
+            pwr_child = pwr_child[0]
+        elif pwr_child and pwr:
+            pwr_child = [pwr for pwrs in pwr_child for pwr in pwrs]
+            if not set(pwr[0]) & set(pwr_child) == set(pwr_child):
+                found_power = True
+                pwr_child = pwr[0]
+
+                #subcircuit with different power instantiations
+        if found_power:
+            power_const = constraint.PowerPorts(ports=pwr[0])
+            pwr_child = pwr.copy()
+            with set_context(subckt.constraints):
+                subckt.constraints.append(power_const)
+        found_gnd = False
+        if not gnd_child and gnd:
+            found_gnd = True
+            gnd_child = gnd[0]
+        elif gnd_child and not gnd:
+            gnd_child = gnd_child[0]
+        elif gnd_child and gnd:
+            gnd_child = [gnd for gnds in gnd_child for gnd in gnds]
+            if not set(gnd[0]) & set(gnd_child) == set(gnd_child):
+                found_power = True
+                gnd_child = gnd[0]
+
+                #subcircuit with different power instantiations
+        if found_gnd:
+            gnd_const = constraint.GroundPorts( ports=list(gnd_child))
+            gnd_child = list(list(gnd_child))
+            with set_context(subckt.constraints):
+                subckt.constraints.append(gnd_const)
+        found_clk = False
+        if not clk_child and clk:
+            found_clk = True
+            clk_child = clk[0]
+        elif clk_child and not clk:
+            clk_child = clk_child[0]
+        elif clk_child and clk:
+            clk_child = [clk for clks in clk_child for clk in clks]
+            if not set(clk[0]) & set(clk_child) == set(clk_child):
+                found_power = True
+                clk_child = clk[0]
+
+                #subcircuit with different power instantiations
+        if found_clk:
+            clk_const = constraint.GroundPorts( ports=list(clk_child))
+            clk_child = list(list(clk_child))
+            with set_context(subckt.constraints):
+                subckt.constraints.append(clk_const)
+
         for inst in subckt.elements:
             inst_subckt = self.lib.find(inst.model)
             if isinstance(inst_subckt, SubCircuit):
-                pp = [p for p, c in inst.pins.items() if c in power]
-                gp = [p for p, c in inst.pins.items() if c in gnd]
-                gc = [p for p, c in inst.pins.items() if c in clk]
-                self._define_power_ports(inst_subckt, pp, gp, gc)
+                pp = [p for p, c in inst.pins.items() if c in pwr_child]
+                gp = [p for p, c in inst.pins.items() if c in gnd_child]
+                gc = [p for p, c in inst.pins.items() if c in clk_child]
+                self._define_power_ports(inst_subckt, list(pp), list(gp), list(gc))

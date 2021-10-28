@@ -135,7 +135,6 @@ class SpiceParser:
 
     def _process_instance(self, name, args, kwargs):
         defaults = {'C': 'CAP', 'R': 'RES', 'L': 'IND'}
-        logger.debug(f"reading line {name} {args} {kwargs}")
         if any(name.startswith(x) for x in ('C', 'R', 'L')):
             model = defaults[name[0]]
             if not kwargs:

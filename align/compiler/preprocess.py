@@ -10,22 +10,17 @@ from os import replace
 
 from networkx.algorithms.operators.product import power
 from align.schema.types import set_context
-from align.schema import model
-from align.schema.subcircuit import Circuit, SubCircuit
-
-# from .merge_nodes import convert_unit
+from align.schema.subcircuit import SubCircuit
+from ..schema import constraint
 from .util import get_next_level, get_base_model
 from ..schema.graph import Graph
-from ..schema.visitor import Transformer
 import logging
-import networkx as nx
-import copy
 from align.schema.instance import Instance
 
 logger = logging.getLogger(__name__)
 
 
-def preprocess_stack_parallel(ckt_data, design_setup, design_name):
+def preprocess_stack_parallel(ckt_data, design_name):
     """
     Preprocess the input graph by reducing parallel device, series devices, remove dummy hierarchies.
     removes power pins to be sent as signal by recursively finding all connections to power pins
@@ -37,7 +32,9 @@ def preprocess_stack_parallel(ckt_data, design_setup, design_name):
     for subckt in ckt_data:
         if isinstance(subckt, SubCircuit):
             logger.debug(f"Preprocessing stack/parallel circuit name: {subckt.name}")
-            if subckt.name not in design_setup["DIGITAL"]:
+            IsDigital = any([const.isTrue for const in subckt.constraints if isinstance(const, constraint.IsDigital)])
+
+            if not IsDigital:
                 logger.debug(
                     f"Starting no of elements in subckt {subckt.name}: {len(subckt.elements)}"
                 )

@@ -42,12 +42,6 @@ class SubCircuit(Model):
         # TODO: Replace with default factory
         if 'elements' not in kwargs:
             kwargs['elements'] = []
-        if 'power' not in kwargs:
-            kwargs['power'] = list()
-        if 'gnd' not in kwargs:
-            kwargs['gnd'] = list()
-        if 'clock' not in kwargs:
-            kwargs['clock'] = list()
         # defer constraint processing for now
         constraints = []
         if 'constraints' in kwargs:
