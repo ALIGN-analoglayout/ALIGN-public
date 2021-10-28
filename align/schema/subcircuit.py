@@ -12,9 +12,6 @@ from .constraint import ConstraintDB
 class SubCircuit(Model):
     name : str                 # Model Name
     pins : Optional[List[str]] # List of pin names (derived from base if base exists)
-    power : Optional[List[str]]
-    gnd : Optional[List[str]]
-    clock : Optional[List[str]]
     parameters : Optional[Dict[str, str]]   # Parameter Name: Value mapping (inherits & adds to base if needed)
     elements: List[Instance]
     constraints: ConstraintDB

@@ -509,6 +509,86 @@ class MatchBlocks(SoftConstraint):
     '''
     instances: List[str]
 
+class PowerPorts(SoftConstraint):
+    '''
+    power port for each hieararchy
+    '''
+    ports: List[str]
+
+class GroundPorts(SoftConstraint):
+    '''
+    Ground port for each hieararchy
+    '''
+    ports: List[str]
+
+class ClockPorts(SoftConstraint):
+    '''
+    Clock port for each hieararchy
+    '''
+    ports: List[str]
+
+class DoNotUseLib(SoftConstraint):
+    '''
+    Primitive libraries which should not be used
+    '''
+    libraries: List[str]
+
+class IsDigital(SoftConstraint):
+    '''
+    Place this block digitally
+    Forbids any preprocessing, auto-annotation, array-identification or auto-constraint generation
+    '''
+    isTrue: bool
+
+class AutoConstraint(SoftConstraint):
+    '''
+    Forbids/Allow any auto-constraint generation
+    '''
+    isTrue: bool
+
+class IdentifyArray(SoftConstraint):
+    '''
+    Forbids/Alow any array identification
+    '''
+    isTrue: bool
+
+class GroupCaps(SoftConstraint):
+    '''
+    Forbids/Allow creation of cap arrays
+    '''
+    isTrue: bool
+
+
+class FixSourceDrain(SoftConstraint):
+    '''
+    Checks the netlist for any source/drain interchange.
+    Traverses and fix them based on power to gnd traversal
+    '''
+    isTrue: bool
+
+
+class KeepDummyHierarchies(SoftConstraint):
+    '''
+    Removes any single instance hierarchies
+    '''
+    isTrue: bool
+
+
+class MergeSeriesDevices(SoftConstraint):
+    '''
+    Allow stacking of series devices
+    Only works on NMOS/PMOS/CAP/RES
+    '''
+    isTrue: bool
+
+
+class MergeParallelDevices(SoftConstraint):
+    '''
+    Allow merging of parallel devices
+    Only works on NMOS/PMOS/CAP/RES
+    '''
+    isTrue: bool
+
 
 class DoNotIdentify(SoftConstraint):
     '''
