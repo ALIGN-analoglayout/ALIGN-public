@@ -315,7 +315,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         #    verilog_d = json.load(fp)
         check_modules(verilog_d)
         pg_connections = {p["actual"]:p["actual"] for p in verilog_d['global_signals']}
-        check_floating_pins(verilog_d,subckt)
+        check_floating_pins(verilog_d)
         remove_pg_pins(verilog_d, subckt, pg_connections)
         clean_if_extra(verilog_d, subckt)
         check_modules(verilog_d)
