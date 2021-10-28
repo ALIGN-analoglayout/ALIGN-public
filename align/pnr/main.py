@@ -188,7 +188,7 @@ def check_floating_pins(verilog_d):
     """exit in case of floating pins in design
     """
     for module in verilog_d["modules"]:
-        all_nets = set(fa_map["actual"] for fa_map in inst['fa_map'] for inst in module["instances"])
+        all_nets = set(fa_map["actual"]  for inst in module["instances"] for fa_map in inst['fa_map'])
         assert set(module["parameters"]).issubset(all_nets), f"floating port found in module {module['name']}"
 
 def gen_leaf_cell_info( verilog_d, pnr_const_ds):
