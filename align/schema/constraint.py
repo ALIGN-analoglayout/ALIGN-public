@@ -431,13 +431,8 @@ class Boundary(HardConstraint):
 # You may chain constraints together for more complex constraints by
 #     1) Assigning default values to certain attributes
 #     2) Using custom validators to modify attribute values
-# Note: Compositional check() is automatically constructed if
-#     every check() in mro starts with `constraints = super().check()`.
-#     (mro is Order, Align, HardConstraint in this example)
-# Note: If you need to specialize check(), you do have the option
-#     to create a custom `check()` in this class. It shouldn't be
-#     needed unless you are adding new semantics
-
+# Note: Do not implement check() here. It will be ignored.
+#       Only ALIGN internal constraints may be translated
 
 class AlignInOrder(UserConstraint):
     '''
