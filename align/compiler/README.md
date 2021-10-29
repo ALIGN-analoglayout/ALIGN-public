@@ -24,7 +24,6 @@ Circuit annotation automatically identifies hierarchies in the design using a co
     * Requirements:
         - Python3.8
         - networkx
-        - matplotlib
         - pyyaml
     * Installation and usage is integrated with top level ALIGN flow
 

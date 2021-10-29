@@ -7,11 +7,17 @@ Created on Tue Dec 11 11:34:45 2018
 import os
 from re import sub
 import networkx as nx
-import matplotlib.pyplot as plt
 from networkx.algorithms import bipartite
 from ..schema.graph import Graph
 from ..schema import SubCircuit
 import logging
+
+# Plotting gets used pretty much for debug
+# Do not make this a core dependency
+try:
+    import matplotlib.pyplot as plt
+except:
+    plt = None
 
 logger = logging.getLogger(__name__)
 
@@ -124,8 +130,11 @@ def get_ports_weight(G):
     for port in subckt.pins:
         leaf_conn = get_leaf_connection(subckt, port)
         logger.debug(f"leaf connections of net ({port}): {leaf_conn}")
-        assert len(leaf_conn) > 0, f"floating port:{port} in subckt {subckt.name}"
-        ports_weight[port] = set(sorted(leaf_conn))
+        if len(leaf_conn)==0:
+            logger.warning(f"floating port:{port} in subckt {subckt.name}")
+            ports_weight[port] = None
+        else:
+            ports_weight[port] = set(sorted(leaf_conn))
     return ports_weight
 
 def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
@@ -193,6 +202,7 @@ def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
 
 
 def plt_graph(subgraph, sub_block_name):
+    assert plt is not None, "Need to install matplotlib to use this feature"
     copy_graph = subgraph
     for node, attr in list(copy_graph.nodes(data=True)):
         if "source" in attr["inst_type"]:
@@ -211,6 +221,7 @@ def plt_graph(subgraph, sub_block_name):
 
 
 def _show_bipartite_circuit_graph(filename, graph, dir_path):
+    assert plt is not None, "Need to install matplotlib to use this feature"
     no_of_subgraph = 0
     for subgraph in nx.connected_component_subgraphs(graph):
         no_of_subgraph += 1

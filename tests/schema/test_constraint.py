@@ -45,13 +45,10 @@ def test_Order_constraintname(db):
 
 def test_Order_nblock_checking(db):
     with set_context(db):
-        x = constraint.Order(direction='left_to_right', instances=[])
-    with pytest.raises(AssertionError):
-        x.check(None)
-    with set_context(db):
-        x = constraint.Order(direction='left_to_right', instances=['M1'])
-    with pytest.raises(AssertionError):
-        x.check(None)
+        with pytest.raises(Exception):
+            x = constraint.Order(direction='left_to_right', instances=[])
+        with pytest.raises(Exception):
+            x = constraint.Order(direction='left_to_right', instances=['M1'])
 
 @pytest.mark.skip(reason='Cannot activate this yet because of ALIGN1.0 annotation issues')
 def test_Order_validate_instances(db):
@@ -61,7 +58,7 @@ def test_Order_validate_instances(db):
         x = constraint.Order(direction='left_to_right', instances=['M1', 'M2'])
 
 def test_ConstraintDB_inputapi(db):
-    class Garbage(constraint.PlacementConstraint):
+    class Garbage(constraint.HardConstraint):
         test: str = 'hello'
         def check(self):
             pass
@@ -71,13 +68,10 @@ def test_ConstraintDB_inputapi(db):
 @pytest.mark.skipif(not Z3Checker.enabled, reason="Couldn't import Z3")
 def test_Order_smt_checking(db, checker):
     with set_context(db):
-        x = constraint.Order(direction='left_to_right', instances=['M1', 'M2', 'M3'])
-        x.check(checker)
-        x = constraint.Order(direction='left_to_right', instances=['M4', 'M5'])
-        x.check(checker)
-        x = constraint.Order(direction='left_to_right', instances=['M3', 'M2'])
+        db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M2', 'M3']))
+        db.append(constraint.Order(direction='left_to_right', instances=['M4', 'M5']))
         with pytest.raises(CheckerError):
-            x.check(checker)
+                db.append(constraint.Order(direction='left_to_right', instances=['M3', 'M2']))
 
 @pytest.mark.skipif(not Z3Checker.enabled, reason="Couldn't import Z3")
 def test_Order_db_append(db):
@@ -107,11 +101,8 @@ def test_AlignInOrder_smt_checking(db):
 def test_AspectRatio_input_sanitation(checker, db):
     with set_context(db):
         x = constraint.AspectRatio(subcircuit="amplifier", ratio_low=0.1, ratio_high=0.5)
-        x.check(checker)
-        x = constraint.AspectRatio(subcircuit="amplifier", ratio_low=0.6, ratio_high=0.5)
-        with pytest.raises(AssertionError):
-            x.check(checker)
-
+        with pytest.raises(Exception):
+            x = constraint.AspectRatio(subcircuit="amplifier", ratio_low=0.6, ratio_high=0.5)
 
 @pytest.mark.skipif(not Z3Checker.enabled, reason="Couldn't import Z3")
 def test_AspectRatio_smt_checking(db):

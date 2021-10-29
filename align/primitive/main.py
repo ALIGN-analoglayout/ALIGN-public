@@ -242,6 +242,9 @@ def generate_Ring(pdkdir, block_name, x_cells, y_cells):
     return uc, ['Body']
 
 def get_generator(name, pdkdir):
+    if pdkdir is None:
+        return False
+    
     pdk_dir_path = pdkdir
     if isinstance(pdkdir, str):
         pdk_dir_path = pathlib.Path(pdkdir)
@@ -257,12 +260,12 @@ def get_generator(name, pdkdir):
             module = importlib.util.module_from_spec(spec)
             sys.modules[pdk_dir_stem] = module
             spec.loader.exec_module(module)
-            return getattr(module, name)
+            return getattr(module, name, False)
         else:  # is pdk old school (backward compatibility)
             spec = importlib.util.spec_from_file_location("primitive", pdkdir / 'primitive.py')
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-            return getattr(module, name)
+            return getattr(module, name, False)
 
 
 def generate_generic(pdkdir, parameters, netlistdir=None):
@@ -330,7 +333,7 @@ def add_primitive(primitives, block_name, block_args):
         logger.debug(f"Found primitive {block_name} with {block_args}")
         primitives[block_name]= block_args
 
-def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict, uniform_height=False):
+def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict, uniform_height=False, pdk_dir=None):
     """ Return commands to generate parameterized lef"""
     #TODO model parameter can be improved
     name = model
@@ -338,14 +341,15 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
     available_block_lef = all_lef
     logger.debug(f"checking lef for: {name}, {element}")
 
-    if name == 'generic':
+    if name == 'generic' or get_generator(name.lower(), pdk_dir):
         # TODO: how about hashing for unique names?
         value_str = ''
-        for key in sorted(values):
-            val = values[key].replace('-','')
-            value_str += f'_{key}_{val}'
+        if values:
+            for key in sorted(values):
+                val = values[key].replace('-','')
+                value_str += f'_{key}_{val}'
         attr ={'ports': list(element.pins.keys()),
-            'values': values,
+            'values': values if values else None,
             'real_inst_type':element.model.lower()
             }
         block_name = element.model + value_str
@@ -389,6 +393,8 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
         return True
 
     else:
+
+        assert 'NMOS' in name or 'PMOS' in name, f'{name} is not recognized'
 
         if 'NMOS' in name:
             unit_size_mos = design_config["unit_size_nmos"]
