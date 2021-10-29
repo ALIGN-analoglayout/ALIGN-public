@@ -705,9 +705,9 @@ class ConstraintDB(types.List[ConstraintType]):
                 )
             except checker.CheckerError as e:
                 logger.debug(f'Checker raised error:\n {e}')
-                core = [x for x in self.__root__ if self._checker.label(x) in e.labels]
-                logger.error(f'Failed to add constraint {constraint}')
-                logger.error(f'     due to conflict between {core}')
+                core = [x.json() for x in self.__root__ if self._checker.label(x) in e.labels and x != constraint]
+                logger.error(f'Failed to add constraint {constraint.json()}')
+                logger.error(f'   due to conflict with {core}')
                 raise e
 
     @types.validate_arguments
