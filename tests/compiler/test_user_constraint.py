@@ -4,7 +4,7 @@ import json
 import shutil
 
 from align.compiler.compiler import compiler_input, compiler_output
-from align.schema.checker import Z3Checker, CheckerError
+from align.schema.checker import CheckerError
 
 pdk_dir = (
     pathlib.Path(__file__).resolve().parent.parent.parent
@@ -72,7 +72,6 @@ def test_group_block_hsc(dir_name):
     assert gold_const == gen_const
 
 
-@pytest.mark.skipif(not Z3Checker.enabled, reason="Couldn't import Z3")
 @pytest.mark.parametrize("dir_name", ["high_speed_comparator_broken"])
 def test_constraint_checking(dir_name):
     circuit_name = "high_speed_comparator"

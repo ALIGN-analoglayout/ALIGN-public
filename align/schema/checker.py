@@ -4,12 +4,7 @@ import collections
 import logging
 logger = logging.getLogger(__name__)
 
-try:
-    import z3
-except:
-    logger.warning("Could not import z3. Z3Checker disabled.")
-    z3 = None
-
+import z3
 
 class CheckerError(Exception):
     def __init__(self, message, labels=None):
@@ -141,8 +136,6 @@ class AbstractChecker(abc.ABC):
 
 
 class Z3Checker(AbstractChecker):
-
-    enabled = z3 is not None
 
     def __init__(self):
         self._label_cache = {}

@@ -740,7 +740,7 @@ class ConstraintDB(types.List[ConstraintType]):
 
     def __init__(self, *args, check=True, **kwargs):
         super().__init__()
-        if check and checker.Z3Checker.enabled:
+        if check:
             self._checker = checker.Z3Checker()
         # Constraints may need to access parent scope for subcircuit information
         # To ensure parent is set appropriately, force users to use append
