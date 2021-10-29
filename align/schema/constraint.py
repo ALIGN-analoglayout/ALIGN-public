@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 pattern = re.compile(r'(?<!^)(?=[A-Z])')
 
+
 def get_instances_from_hacked_dataclasses(constraint):
     assert constraint.parent.parent is not None, 'Cannot access parent scope'
     if hasattr(constraint.parent.parent, 'graph'):
@@ -24,12 +25,14 @@ def get_instances_from_hacked_dataclasses(constraint):
     names = {x.name for x in constraint.parent if hasattr(x, 'name')}
     return set.union(instances, names)
 
+
 def validate_instances(cls, value):
     # instances = cls._validator_ctx().parent.parent.instances
     instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
     assert isinstance(instances, set), 'Could not retrieve instances from subcircuit definition'
     assert all(x in instances or x.upper() in instances for x in value), f'One or more constraint instances {value} not found in {instances}'
     return value
+
 
 class SoftConstraint(types.BaseModel):
 
@@ -90,6 +93,7 @@ class SameTemplate(PlacementConstraint):
 
     def check(self, checker):
         pass
+
 
 class Order(PlacementConstraint):
     '''
@@ -509,6 +513,7 @@ class MatchBlocks(SoftConstraint):
     '''
     instances: List[str]
 
+
 class DoNotIdentify(SoftConstraint):
     '''
     TODO: Can be replicated by Enclose??
@@ -519,6 +524,7 @@ class DoNotIdentify(SoftConstraint):
 class SymmetricBlocks(SoftConstraint):
     pairs: List[List[str]]
     direction: Literal['H', 'V']
+
     def check(self, checker):
         '''
         X = Align(2, 3, 'h_center')
@@ -526,31 +532,30 @@ class SymmetricBlocks(SoftConstraint):
         Align(1, X, Y, 6, 'center')
 
         '''
-        #TODO:function to check before adding, right now it adds and then check
+        # TODO:function to check before adding, right now it adds and then check
         assert all(len(pair) for pair in self.pairs) >= 1, 'Must contain at least one instance'
         assert all(len(pair) for pair in self.pairs) <= 2, 'Must contain at most two instances'
         if not hasattr(self.parent.parent, 'elements'):
             # PnR stage VerilogJsonModule
             return
-        if len(self.parent.parent.elements)==0:
-            #skips the check while reading user constraints
+        if len(self.parent.parent.elements) == 0:
+            # skips the check while reading user constraints
             return
         # logger.info(f"parent constraints {self.parent} ")
         group_block_instances = [const.name for const in self.parent if isinstance(const, GroupBlocks)]
 
         for pair in self.pairs:
             # logger.debug(f"pairs {self.pairs} {self.parent.parent.get_element(pair[0])}")
-            if len([ele for ele in pair if ele in group_block_instances])>0:
-                #Skip check for group block elements as they are added later in the flow
+            if len([ele for ele in pair if ele in group_block_instances]) > 0:
+                # Skip check for group block elements as they are added later in the flow
                 continue
-            elif len(pair)==2:
+            elif len(pair) == 2:
                 assert self.parent.parent.get_element(pair[0]), f"element {pair[0]} not found in design"
                 assert self.parent.parent.get_element(pair[1]), f"element {pair[1]} not found in design"
                 assert self.parent.parent.get_element(pair[0]).parameters == \
                     self.parent.parent.get_element(pair[1]).parameters, \
-                        f"Incorrent symmetry pair {pair} in subckt {self.parent.parent.name}"
-    #TODO: Trace current path
-
+                    f"Incorrent symmetry pair {pair} in subckt {self.parent.parent.name}"
+    # TODO: Trace current path
 
 
 class BlockDistance(SoftConstraint):
@@ -572,6 +577,7 @@ class HorizontalDistance(SoftConstraint):
     TODO: Replace with Spread
     '''
     abs_distance: int
+
 
 class GuardRing(SoftConstraint):
     '''
@@ -647,11 +653,11 @@ class Boundary(HardConstraint):
 
         if self.max_width is not None:
             assert self.max_width >= 0, f'Boundary:max_width should be greater than zero {self.max_width}'
-            checker.append(checker.cast(bvar.urx-bvar.llx, float) <= 1000*self.max_width) # in nanometer
+            checker.append(checker.cast(bvar.urx-bvar.llx, float) <= 1000*self.max_width)  # in nanometer
 
         if self.max_height is not None:
             assert self.max_height >= 0, f'Boundary:max_height should be greater than zero {self.max_height}'
-            checker.append(checker.cast(bvar.ury-bvar.lly, float) <= 1000*self.max_height) # in nanometer
+            checker.append(checker.cast(bvar.ury-bvar.lly, float) <= 1000*self.max_height)  # in nanometer
 
 
 class MultiConnection(SoftConstraint):
@@ -709,7 +715,6 @@ class ConstraintDB(types.List[ConstraintType]):
                         logger.error(c)
                 raise e
 
-
     def _check_recursive(self, constraints):
         for constraint in expand_user_constraints(constraints):
             self._check(constraint)
@@ -718,6 +723,7 @@ class ConstraintDB(types.List[ConstraintType]):
     def append(self, constraint: ConstraintType):
         super().append(constraint)
         self._check_recursive([self.__root__[-1]])
+
     @types.validate_arguments
     def remove(self, constraint: ConstraintType):
         super().remove(constraint)
@@ -746,6 +752,7 @@ class ConstraintDB(types.List[ConstraintType]):
                 if x['constraint'] != 'GroupBlocks':
                     logger.info(f'reading rest data {x}')
                     self.append(x)
+
     def checkpoint(self):
         if self._checker:
             self._checker.checkpoint()
