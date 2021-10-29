@@ -481,15 +481,16 @@ class AlignInOrder(UserConstraint):
         return v
 
     def yield_constraints(self):
-        yield Align(
-            instances=self.instances,
-            line=f'{self.direction[0]}_{self.line}'
-        )
-        yield Order(
-            instances=self.instances,
-            direction='left_to_right' if self.direction == 'horizontal' else 'top_to_bottom',
-            abut=self.abut
-        )
+        with set_context(self._parent):
+            yield Align(
+                instances=self.instances,
+                line=f'{self.direction[0]}_{self.line}'
+            )
+            yield Order(
+                instances=self.instances,
+                direction='left_to_right' if self.direction == 'horizontal' else 'top_to_bottom',
+                abut=self.abut
+            )
 
 
 #
