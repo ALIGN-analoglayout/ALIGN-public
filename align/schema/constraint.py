@@ -576,10 +576,29 @@ class SymmetricBlocks(SoftConstraint):
         Align(1, X, Y, 6, 'center')
 
         '''
+        instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
         for pair in value:
             assert len(pair) >= 1, 'Must contain at least one instance'
             assert len(pair) <= 2, 'Must contain at most two instances'
             validate_instances(cls, pair)
+        if not hasattr(cls._validator_ctx().parent.parent, 'elements'):
+            # PnR stage VerilogJsonModule
+            return value
+        if len(cls._validator_ctx().parent.parent.elements)==0:
+            #skips the check while reading user constraints
+            return value
+        group_block_instances = [const.name for const in cls._validator_ctx().parent if isinstance(const, GroupBlocks)]
+        for pair in value:
+            # logger.debug(f"pairs {self.pairs} {self.parent.parent.get_element(pair[0])}")
+            if len([ele for ele in pair if ele in group_block_instances])>0:
+                #Skip check for group block elements as they are added later in the flow
+                continue
+            elif len(pair)==2:
+                assert cls._validator_ctx().parent.parent.get_element(pair[0]), f"element {pair[0]} not found in design"
+                assert cls._validator_ctx().parent.parent.get_element(pair[1]), f"element {pair[1]} not found in design"
+                assert cls._validator_ctx().parent.parent.get_element(pair[0]).parameters == \
+                    cls._validator_ctx().parent.parent.get_element(pair[1]).parameters, \
+                        f"Incorrent symmetry pair {pair} in subckt {cls._validator_ctx().parent.parent.name}"
         return value
 
 
