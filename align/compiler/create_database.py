@@ -39,18 +39,9 @@ class CreateDatabase:
         else:
             self.resolve_parameters(name, subckt.parameters)
         self._update_leaf_instances()
-        pwr = list()
-        gnd = list()
-        clk = list()
-        for const in subckt.constraints:
-            if isinstance(const, constraint.PowerPorts):
-                pwr.extend(const.ports)
-            elif isinstance(const, constraint.GroundPorts):
-                gnd.extend(const.ports)
-            elif isinstance(const, constraint.ClockPorts):
-                clk.extend(const.ports)
-        self._define_power_ports(subckt, pwr, gnd, clk)
-        self.translate_const_top_to_bottom(name, {name})
+        pwr, gnd, clk = self._get_pgc(subckt)
+        self._propagate_power_ports(subckt, pwr, gnd, clk)
+        self.propagate_const_top_to_bottom(name, {name})
         return self.lib
 
     def add_user_const(self):
@@ -58,7 +49,7 @@ class CreateDatabase:
             if isinstance(subckt, SubCircuit):
                 self.const_parse.annotate_user_constraints(subckt)
 
-    def translate_const_top_to_bottom(self, top_name, traversed):
+    def propagate_const_top_to_bottom(self, top_name, traversed):
         top = self.lib.find(top_name)
         all_subckt = {inst.model for inst in top.elements if isinstance(self.lib.find(inst.model), SubCircuit)}
         all_subckt = all_subckt - traversed
@@ -73,7 +64,7 @@ class CreateDatabase:
             if any(isinstance (const,x) for x in global_const):
                 for child in all_subckt:
                     child_const = self.lib.find(child).constraints
-                    if const not in child_const:
+                    if const not in child_const and const.propagate:
                         with set_context(child_const):
                             child_const.append(const)
         traversed.update(all_subckt)
@@ -220,18 +211,21 @@ class CreateDatabase:
                 )
                 name, new_param = self._find_new_inst_name(subckt, param, counter + 1)
         return name, new_param
-
-    def _define_power_ports(self, subckt, pwr, gnd, clk):
-        pwr_child = list()
-        gnd_child = list()
-        clk_child = list()
+    def _get_pgc(self,subckt):
+        pwr = list()
+        gnd = list()
+        clk = list()
         for const in subckt.constraints:
             if isinstance(const, constraint.PowerPorts):
-                pwr_child = const.ports
+                pwr.extend(const.ports)
             elif isinstance(const, constraint.GroundPorts):
-                gnd_child = const.ports
+                gnd.extend(const.ports)
             elif isinstance(const, constraint.ClockPorts):
-                clk_child = const.ports
+                clk.extend(const.ports)
+        return pwr, gnd, clk
+
+    def _propagate_power_ports(self, subckt, pwr, gnd, clk):
+        pwr_child, gnd_child, clk_child = self._get_pgc(subckt)
         found_power = False
         if not pwr_child and pwr:
             found_power =True

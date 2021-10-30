@@ -586,6 +586,7 @@ class IsDigital(SoftConstraint):
     Forbids any preprocessing, auto-annotation, array-identification or auto-constraint generation
     '''
     isTrue: bool
+    propagate : Optional[bool]
 
 
 class AutoConstraint(SoftConstraint):
@@ -593,6 +594,7 @@ class AutoConstraint(SoftConstraint):
     Forbids/Allow any auto-constraint generation
     '''
     isTrue: bool
+    propagate : Optional[bool]
 
 
 class IdentifyArray(SoftConstraint):
@@ -600,6 +602,7 @@ class IdentifyArray(SoftConstraint):
     Forbids/Alow any array identification
     '''
     isTrue: bool
+    propagate : Optional[bool]
 
 
 class AutoGroupCaps(SoftConstraint):
@@ -607,6 +610,7 @@ class AutoGroupCaps(SoftConstraint):
     Forbids/Allow creation of arrays for symmetric caps
     '''
     isTrue: bool
+    propagate : Optional[bool]
 
 
 class FixSourceDrain(SoftConstraint):
@@ -615,6 +619,7 @@ class FixSourceDrain(SoftConstraint):
     Traverses and fix them based on power to gnd traversal
     '''
     isTrue: bool
+    propagate : Optional[bool]
 
 
 class KeepDummyHierarchies(SoftConstraint):
@@ -622,6 +627,7 @@ class KeepDummyHierarchies(SoftConstraint):
     Removes any single instance hierarchies
     '''
     isTrue: bool
+    propagate : Optional[bool]
 
 
 class MergeSeriesDevices(SoftConstraint):
@@ -630,6 +636,7 @@ class MergeSeriesDevices(SoftConstraint):
     Only works on NMOS/PMOS/CAP/RES
     '''
     isTrue: bool
+    propagate : Optional[bool]
 
 
 class MergeParallelDevices(SoftConstraint):
@@ -638,6 +645,7 @@ class MergeParallelDevices(SoftConstraint):
     Only works on NMOS/PMOS/CAP/RES
     '''
     isTrue: bool
+    propagate : Optional[bool]
 
 
 class DoNotIdentify(SoftConstraint):
