@@ -1,7 +1,7 @@
 import pathlib
 import json
 
-from align.compiler.compiler import compiler_input, compiler_output
+from align.compiler.compiler import compiler_input, call_primitive_generator, constraint_generator, compiler_output
 
 
 def test_cap():
@@ -16,12 +16,13 @@ def test_cap():
 
     updated_ckt = compiler_input(test_path, "test_cap", pdk_path, config_path)
     assert updated_ckt.find("TEST_CAP")
-    primitives = compiler_output(
-        test_path,
+    primitives, generators = call_primitive_generator(updated_ckt, pdk_path, True)
+    verilog_tbl = constraint_generator(updated_ckt, generators)
+    compiler_output(
         updated_ckt,
         "TEST_CAP",
+        verilog_tbl,
         pathlib.Path(__file__).parent / "Results",
-        pdk_path,
     )
     assert "CAP_30f" in primitives.keys()
     with open(gen_const_path, "r") as const_fp:

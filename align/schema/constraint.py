@@ -560,7 +560,7 @@ class IdentifyArray(SoftConstraint):
     isTrue: bool
 
 
-class GroupCaps(SoftConstraint):
+class AutoGroupCaps(SoftConstraint):
     '''
     Forbids/Allow creation of arrays for symmetric caps
     '''
@@ -773,7 +773,20 @@ ConstraintType = Union[
     SymmetricNets,
     AspectRatio,
     Boundary,
-    MultiConnection
+    MultiConnection,
+    # Setup constraints
+    PowerPorts,
+    GroundPorts,
+    ClockPorts,
+    DoNotUseLib,
+    IsDigital,
+    AutoConstraint,
+    AutoGroupCaps,
+    FixSourceDrain,
+    KeepDummyHierarchies,
+    MergeSeriesDevices,
+    MergeParallelDevices,
+    IdentifyArray
 ]
 
 

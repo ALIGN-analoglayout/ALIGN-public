@@ -1,3 +1,4 @@
+from align.schema.types import set_context
 import pathlib
 from align import primitive
 
@@ -5,6 +6,7 @@ from align.compiler.write_verilog_lef import WriteVerilog
 from align.primitive import generate_primitive_lef
 from align.compiler.find_constraint import FindConst
 from align.schema.constraint import ConstraintDB
+from align.schema import constraint
 from align.schema.subcircuit import SubCircuit
 from test_compiler import test_compiler
 
@@ -54,14 +56,10 @@ def test_verilog_writer():
         ):
             const = ConstraintDB()
         else:
+            with set_context(subckt.constraints):
+                subckt.constraints.append(constraint.PowerPorts(ports=['VDD!']))
+                subckt.constraints.append(constraint.IdentifyArray(isTrue=False))
+            FindConst(subckt)
 
-            design_setup= {"POWER": ["vdd!"],
-                            "GND": list(),
-                            "CLOCK": list(),
-                            "DIGITAL": list(),
-                            "IDENTIFY_ARRAY": False
-            }
-            FindConst(subckt, design_setup)
-
-        wv = WriteVerilog(subckt, ckt_data, ["vdd!", "vss"])
+        wv = WriteVerilog(subckt, ckt_data)
         verilog_tbl["modules"].append(wv.gen_dict())

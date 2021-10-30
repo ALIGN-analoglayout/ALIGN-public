@@ -50,8 +50,8 @@ def generate_hierarchy(
     compiler_output(
         ckt_data,
         design_name,
+        verilog_tbl,
         output_dir,
-        verilog_tbl
     )
     return primitives
 
@@ -255,9 +255,21 @@ def compiler_output(
         result_dir : directoy path for writing results
     """
     top_ckt = ckt_data.find(design_name)
-    power_ports = [const.ports for const in top_ckt.constraints if isinstance(const, constraint.PowerPorts)][0]
-    ground_ports = [const.ports for const in top_ckt.constraints if isinstance(const, constraint.GroundPorts)][0]
-    pg_grid = [power_ports[0],ground_ports[0]]
+    assert top_ckt, f"design {top_ckt} not found in database"
+    power_ports = list()
+    ground_ports = list()
+    for const in top_ckt.constraints:
+        if isinstance(const, constraint.PowerPorts):
+            power_ports.extend(const.ports)
+        elif isinstance(const, constraint.GroundPorts):
+            ground_ports.extend(const.ports)
+    try:
+        pg_grid = [ground_ports[0], power_ports[0]]
+    except (IndexError, ValueError):
+        pg_grid = list()
+        logger.info(
+            "Power and ground nets not found. Power grid will not be constructed."
+        )
     if len(pg_grid) > 0:
         for i, nm in enumerate(pg_grid):
             verilog_tbl["global_signals"].append(

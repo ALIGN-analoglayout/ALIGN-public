@@ -1,6 +1,6 @@
 import pathlib
 
-from align.compiler.compiler import compiler_input, compiler_output
+from align.compiler.compiler import compiler_input, constraint_generator, compiler_output
 
 
 def test_compiler():
@@ -22,11 +22,13 @@ def test_compiler():
 def test_compiler_output():
     updated_ckt = test_compiler()
     # Every example should contain a setup file
-    test_path = pathlib.Path(__file__).resolve().parent / "ota.sp"
+    verilog_tbl = constraint_generator(
+    updated_ckt,
+    ["CMC_PMOS", "SCM_NMOS", "CMC_S_NMOS_B", "DP_NMOS_B"]
+    )
     compiler_output(
-        test_path,
         updated_ckt,
         "ota",
+        verilog_tbl,
         pathlib.Path(__file__).parent / "Results",
-        pathlib.Path(__file__).parent.parent.parent / "pdks" / "FinFET14nm_Mock_PDK",
     )

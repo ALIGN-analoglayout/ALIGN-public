@@ -5,6 +5,7 @@ Created on Fri Jan 15 10:38:14 2021
 
 @author: kunal001
 """
+from re import sub
 from align.schema.types import set_context
 from ..schema.subcircuit import SubCircuit
 from ..schema import constraint
@@ -37,9 +38,16 @@ class CreateDatabase:
         else:
             self.resolve_parameters(name, subckt.parameters)
         self._update_leaf_instances()
-        pwr = [const.ports for const in subckt.constraints if isinstance(const, constraint.PowerPorts)]
-        gnd = [const.ports for const in subckt.constraints if isinstance(const, constraint.GroundPorts)]
-        clk = [const.ports for const in subckt.constraints if isinstance(const, constraint.ClockPorts)]
+        pwr = list()
+        gnd = list()
+        clk = list()
+        for const in subckt.constraints:
+            if isinstance(const, constraint.PowerPorts):
+                pwr.extend(const.ports)
+            elif isinstance(const, constraint.GroundPorts):
+                gnd.extend(const.ports)
+            elif isinstance(const, constraint.ClockPorts):
+                clk.extend(const.ports)
         self._define_power_ports(subckt, pwr, gnd, clk)
         return self.lib
     def add_user_const(self):
@@ -189,63 +197,64 @@ class CreateDatabase:
         return name, new_param
 
     def _define_power_ports(self, subckt, pwr, gnd, clk):
-        pwr_child = [const.ports for const in subckt.constraints if isinstance(const, constraint.PowerPorts)]
-        gnd_child = [const.ports for const in subckt.constraints if isinstance(const, constraint.GroundPorts)]
-        clk_child = [const.ports for const in subckt.constraints if isinstance(const, constraint.ClockPorts)]
+        pwr_child = list()
+        gnd_child = list()
+        clk_child = list()
+        for const in subckt.constraints:
+            if isinstance(const, constraint.PowerPorts):
+                pwr_child = const.ports
+            elif isinstance(const, constraint.GroundPorts):
+                gnd_child = const.ports
+            elif isinstance(const, constraint.ClockPorts):
+                clk_child = const.ports
         found_power = False
         if not pwr_child and pwr:
             found_power =True
-            pwr_child = pwr[0]
+            pwr_child = pwr
         elif pwr_child and not pwr:
-            pwr_child = pwr_child[0]
+            pwr_child = pwr_child
         elif pwr_child and pwr:
-            pwr_child = [pwr for pwrs in pwr_child for pwr in pwrs]
-            if not set(pwr[0]) & set(pwr_child) == set(pwr_child):
+            if not set(pwr) & set(pwr_child) == set(pwr_child):
                 found_power = True
-                pwr_child = pwr[0]
+                pwr_child = pwr
 
                 #subcircuit with different power instantiations
         if found_power:
-            power_const = constraint.PowerPorts(ports=pwr[0])
             pwr_child = pwr.copy()
             with set_context(subckt.constraints):
-                subckt.constraints.append(power_const)
+                subckt.constraints.append(constraint.PowerPorts(ports=pwr_child))
         found_gnd = False
         if not gnd_child and gnd:
             found_gnd = True
-            gnd_child = gnd[0]
+            gnd_child = gnd
         elif gnd_child and not gnd:
-            gnd_child = gnd_child[0]
+            gnd_child = gnd_child
         elif gnd_child and gnd:
-            gnd_child = [gnd for gnds in gnd_child for gnd in gnds]
-            if not set(gnd[0]) & set(gnd_child) == set(gnd_child):
+            if not set(gnd) & set(gnd_child) == set(gnd_child):
                 found_power = True
-                gnd_child = gnd[0]
+                gnd_child = gnd
 
                 #subcircuit with different power instantiations
         if found_gnd:
-            gnd_const = constraint.GroundPorts( ports=list(gnd_child))
             gnd_child = list(list(gnd_child))
             with set_context(subckt.constraints):
-                subckt.constraints.append(gnd_const)
+                subckt.constraints.append(constraint.GroundPorts( ports=gnd_child))
         found_clk = False
         if not clk_child and clk:
             found_clk = True
-            clk_child = clk[0]
+            clk_child = clk
         elif clk_child and not clk:
-            clk_child = clk_child[0]
+            clk_child = clk_child
         elif clk_child and clk:
-            clk_child = [clk for clks in clk_child for clk in clks]
             if not set(clk[0]) & set(clk_child) == set(clk_child):
                 found_power = True
                 clk_child = clk[0]
 
                 #subcircuit with different power instantiations
         if found_clk:
-            clk_const = constraint.GroundPorts( ports=list(clk_child))
-            clk_child = list(list(clk_child))
+            clk_child = list(clk_child)
             with set_context(subckt.constraints):
-                subckt.constraints.append(clk_const)
+                subckt.constraints.append(constraint.GroundPorts( ports=clk_child))
 
         for inst in subckt.elements:
             inst_subckt = self.lib.find(inst.model)

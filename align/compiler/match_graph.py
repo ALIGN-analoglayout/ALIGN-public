@@ -21,7 +21,7 @@ class Annotate:
     Boundries (clk,digital, etc) are defined from setup file
     """
 
-    def __init__(self, ckt_data, design_setup, primitive_library, existing_generator):
+    def __init__(self, ckt_data, primitive_library, existing_generator):
         """
         Args:
             ckt_data (dict): all subckt graph, names and port
@@ -30,9 +30,7 @@ class Annotate:
             existing_generator (list): list of names of existing generators
         """
         self.ckt_data = ckt_data
-        self.digital = design_setup["DIGITAL"]
         self.lib = primitive_library
-        self.clk = design_setup["CLOCK"]
         self.all_lef = existing_generator
         self.lib_names = [lib_ele.name for lib_ele in primitive_library]
 
@@ -48,11 +46,11 @@ class Annotate:
         return di_const
 
     def _is_digital(self, ckt):
-        if ckt.name in self.digital:
-            return True
-        else:
-            return False
-
+        IsDigital = False
+        for const in ckt.constraints:
+            if isinstance(const, constraint.IsDigital):
+                IsDigital = const.isTrue
+        return IsDigital
     def annotate(self):
         """
         main function to creates hierarchies in the block
@@ -79,23 +77,28 @@ class Annotate:
         traversed = []  # libray gets appended, so only traverse subckt once
         temp_match_dict = {}  # To avoid iterative calls (search subckt in subckt)
         for ckt in self.ckt_data:
-            if self._is_digital(ckt):
-                continue
             if (
                 isinstance(ckt, SubCircuit) and \
+                not self._is_digital(ckt) and \
                 ckt.name not in self.all_lef and \
                 ckt.name not in traversed
             ):
                 netlist_graph = Graph(ckt)
                 skip_nodes = self._is_skip(ckt)
+
                 logger.debug(
                     f"START MATCHING in circuit: {ckt.name} count: {len(ckt.elements)} \
                     ele: {[e.name for e in ckt.elements]} traversed: {traversed} skip: {skip_nodes}"
                 )
+                do_not_use_lib = set()
+                for const in ckt.constraints:
+                    if isinstance(const, constraint.DoNotUseLib):
+                        do_not_use_lib.update(const.libraries)
                 traversed.append(ckt.name)
                 for subckt in self.lib:
-                    if subckt.name == ckt.name or (
-                        subckt.name in temp_match_dict and
+                    if subckt.name == ckt.name or \
+                        subckt.name in do_not_use_lib or \
+                        (subckt.name in temp_match_dict and
                         ckt.name in temp_match_dict[subckt.name]
                     ):
                         continue
@@ -145,7 +148,16 @@ class Annotate:
     def _group_block_const(self, name):
         subckt = self.ckt_data.find(name)
         const_list = subckt.constraints
-
+        pwr = list()
+        gnd = list()
+        clk = list()
+        for const in subckt.constraints:
+            if isinstance(const, constraint.PowerPorts):
+                pwr.extend(const.ports)
+            elif isinstance(const, constraint.GroundPorts):
+                gnd.extend(const.ports)
+            elif isinstance(const, constraint.ClockPorts):
+                clk.extend(const.ports)
         if not const_list:
             return
         gb_const = [
@@ -180,16 +192,16 @@ class Annotate:
                 )
             ] + list(ac_nets & set(subckt.pins))
             ac_nets = list(set(ac_nets))
-            power = list(set(subckt.power) & set(ac_nets))
-            gnd = list(set(subckt.gnd) & set(ac_nets))
-            clk = list(set(subckt.clock) & set(ac_nets))
+            pwr = list(set(pwr) & set(ac_nets))
+            gnd = list(set(gnd) & set(ac_nets))
+            clk = list(set(clk) & set(ac_nets))
 
             logger.debug(
                 f"Grouping instances {const_inst} in subckt {const.name.upper()} pins: {ac_nets}"
             )
             # Create a subckt and add to library
             with set_context(self.ckt_data):
-                new_subckt = SubCircuit(name=const.name.upper(), pins=ac_nets, power=power, gnd=gnd, clock=clk)
+                new_subckt = SubCircuit(name=const.name.upper(), pins=ac_nets)
                 self.ckt_data.append(new_subckt)
             # Add all instances of groupblock to new subckt
             with set_context(new_subckt.elements):
