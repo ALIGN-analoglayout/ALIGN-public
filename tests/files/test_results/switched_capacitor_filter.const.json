@@ -36,14 +36,14 @@
           "direction": "V"
         },
         {
-        "constraint": "symmetric_blocks",
-        "pairs": [
-        [
-            "C8",
-            "C9"
-        ]
-        ],
-    "direction": "V"
+          "constraint": "symmetric_blocks",
+          "pairs": [
+            [
+              "C8",
+              "C9"
+            ]
+          ],
+          "direction": "V"
         },
         {
           "constraint": "symmetric_nets",
