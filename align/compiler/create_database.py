@@ -69,7 +69,7 @@ class CreateDatabase:
                             child_const.append(const)
         traversed.update(all_subckt)
         for child in all_subckt:
-            self.translate_const_top_to_bottom(child, traversed)
+            self.propagate_const_top_to_bottom(child, traversed)
 
     def remove_redundant_models(self):
         _model_list = list()
@@ -281,4 +281,4 @@ class CreateDatabase:
                 pp = [p for p, c in inst.pins.items() if c in pwr_child]
                 gp = [p for p, c in inst.pins.items() if c in gnd_child]
                 gc = [p for p, c in inst.pins.items() if c in clk_child]
-                self._define_power_ports(inst_subckt, list(pp), list(gp), list(gc))
+                self._propagate_power_ports(inst_subckt, list(pp), list(gp), list(gc))
