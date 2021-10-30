@@ -578,6 +578,7 @@ class DoNotUseLib(SoftConstraint):
     Primitive libraries which should not be used
     '''
     libraries: List[str]
+    propagate : Optional[bool]
 
 
 class IsDigital(SoftConstraint):

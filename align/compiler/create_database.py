@@ -59,7 +59,8 @@ class CreateDatabase:
             global_const = [constraint.IsDigital, constraint.AutoConstraint,
                 constraint.AutoGroupCaps, constraint.FixSourceDrain,
                 constraint.KeepDummyHierarchies, constraint.MergeSeriesDevices,
-                constraint.MergeParallelDevices, constraint.IdentifyArray]
+                constraint.MergeParallelDevices, constraint.IdentifyArray,
+                constraint.DoNotUseLib]
 
             if any(isinstance (const,x) for x in global_const):
                 for child in all_subckt:

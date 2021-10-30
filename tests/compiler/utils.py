@@ -1,13 +1,8 @@
 from os import name
-import pathlib
 import pytest
 import pathlib
 import shutil
 import json
-from align.schema import Model, Instance, SubCircuit, Library
-from align.schema.types import set_context, List, Dict
-from align.compiler.compiler import compiler_input, generate_hierarchy
-
 import textwrap
 
 my_dir = pathlib.Path(__file__).resolve().parent

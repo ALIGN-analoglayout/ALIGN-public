@@ -4,7 +4,6 @@ Created on Wed Nov 21 13:12:15 2018
 
 @author: kunal
 """
-from align.schema.subcircuit import SubCircuit
 
 import logging
 
