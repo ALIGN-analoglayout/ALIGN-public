@@ -1,4 +1,4 @@
 POWER = vddd vdda_bb
 GND = vssd vssa_bb
 CLOCK = clk0 clk90 clk180 clk270 clk90
-DIGITAL = CLK_IO INVx1_8Phase INVx1_8Phase_schematic INVx4_8Phase AND2 FF_DTG Divider TO65_20200429_4Phase_schematic CLK_DIST_NW1 CLK_BUFFER_4X CLK_DIST_NW2 CLK_IO_DIST_NW1 CLK4Phase_BUFFER_4X 
+DIGITAL = CLK_IO_DIST_NW1 
