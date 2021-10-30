@@ -1,4 +1,0 @@
-POWER = vddd vdda_bb
-GND = vssd vssa_bb
-CLOCK = clk0 clk90 clk180 clk270 clk90
-DIGITAL = CLK_IO_DIST_NW1 
