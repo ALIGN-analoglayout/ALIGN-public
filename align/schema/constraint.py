@@ -705,6 +705,7 @@ class ConstraintDB(types.List[ConstraintType]):
                 )
             except checker.CheckerError as e:
                 logger.debug(f'Checker raised error:\n {e}')
+                assert self._checker.label(constraint) in e.labels, "Something went terribly wrong. Current constraint not in unsat core"
                 core = [x.json() for x in self.__root__ if self._checker.label(x) in e.labels and x != constraint]
                 logger.error(f'Failed to add constraint {constraint.json()}')
                 logger.error(f'   due to conflict with {core}')
