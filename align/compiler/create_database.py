@@ -23,7 +23,6 @@ class CreateDatabase:
         self.multi_param_instantiation = list()
         self.design_setup = design_setup
         self.remove_redundant_models()
-        self.check_floating_pins()
         self.add_user_const()
 
     def read_inputs(self, name: str):
@@ -46,14 +45,6 @@ class CreateDatabase:
         for subckt in self.lib:
             if isinstance(subckt, SubCircuit):
                 self.const_parse.annotate_user_constraints(subckt)
-
-    def check_floating_pins(self):
-        for subckt in self.lib:
-            if isinstance(subckt, SubCircuit):
-                for pin in subckt.pins:
-                    assert (
-                        pin in subckt.nets
-                    ), f"Floating pin: {pin} found for subckt {subckt.name} nets: {subckt.nets}"
 
     def remove_redundant_models(self):
         _model_list = list()
