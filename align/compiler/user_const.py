@@ -6,7 +6,6 @@ Created on Wed Jan 13 14:50:24 2021
 @author: kunal001
 """
 import pathlib
-import json
 import logging
 from ..schema import constraint, types
 

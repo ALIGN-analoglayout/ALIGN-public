@@ -226,7 +226,6 @@ workflows:
             branches:
               only:
                 - master
-                - feature/array
           matrix:
             alias: test-integration-cp38-manylinux_2_24
             parameters:

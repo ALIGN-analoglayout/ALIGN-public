@@ -58,7 +58,7 @@ class HardConstraint(SoftConstraint, abc.ABC):
           Every class that inherits from HardConstraint
           MUST implement this function.
 
-        Function must yield a list of mathematical 
+        Function must yield a list of mathematical
           expressions supported by the 'checker'
           backend. This can be done using multiple
           'yield' statements or returning an iterable
@@ -552,6 +552,103 @@ class MatchBlocks(SoftConstraint):
     instances: List[str]
 
 
+class PowerPorts(SoftConstraint):
+    '''
+    power port for each hieararchy
+    '''
+    ports: List[str]
+
+
+class GroundPorts(SoftConstraint):
+    '''
+    Ground port for each hieararchy
+    '''
+    ports: List[str]
+
+
+class ClockPorts(SoftConstraint):
+    '''
+    Clock port for each hieararchy
+    '''
+    ports: List[str]
+
+
+class DoNotUseLib(SoftConstraint):
+    '''
+    Primitive libraries which should not be used
+    '''
+    libraries: List[str]
+    propagate : Optional[bool]
+
+
+class IsDigital(SoftConstraint):
+    '''
+    Place this block digitally
+    Forbids any preprocessing, auto-annotation, array-identification or auto-constraint generation
+    '''
+    isTrue: bool
+    propagate : Optional[bool]
+
+
+class AutoConstraint(SoftConstraint):
+    '''
+    Forbids/Allow any auto-constraint generation
+    '''
+    isTrue: bool
+    propagate : Optional[bool]
+
+
+class IdentifyArray(SoftConstraint):
+    '''
+    Forbids/Alow any array identification
+    '''
+    isTrue: bool
+    propagate : Optional[bool]
+
+
+class AutoGroupCaps(SoftConstraint):
+    '''
+    Forbids/Allow creation of arrays for symmetric caps
+    '''
+    isTrue: bool
+    propagate : Optional[bool]
+
+
+class FixSourceDrain(SoftConstraint):
+    '''
+    Checks the netlist for any source/drain interchange.
+    Traverses and fix them based on power to gnd traversal
+    '''
+    isTrue: bool
+    propagate : Optional[bool]
+
+
+class KeepDummyHierarchies(SoftConstraint):
+    '''
+    Removes any single instance hierarchies
+    '''
+    isTrue: bool
+    propagate : Optional[bool]
+
+
+class MergeSeriesDevices(SoftConstraint):
+    '''
+    Allow stacking of series devices
+    Only works on NMOS/PMOS/CAP/RES
+    '''
+    isTrue: bool
+    propagate : Optional[bool]
+
+
+class MergeParallelDevices(SoftConstraint):
+    '''
+    Allow merging of parallel devices
+    Only works on NMOS/PMOS/CAP/RES
+    '''
+    isTrue: bool
+    propagate : Optional[bool]
+
+
 class DoNotIdentify(SoftConstraint):
     '''
     TODO: Can be replicated by Enclose??
@@ -689,7 +786,20 @@ ConstraintType = Union[
     NetConst,
     PortLocation,
     SymmetricNets,
-    MultiConnection
+    MultiConnection,
+    # Setup constraints
+    PowerPorts,
+    GroundPorts,
+    ClockPorts,
+    DoNotUseLib,
+    IsDigital,
+    AutoConstraint,
+    AutoGroupCaps,
+    FixSourceDrain,
+    KeepDummyHierarchies,
+    MergeSeriesDevices,
+    MergeParallelDevices,
+    IdentifyArray
 ]
 
 

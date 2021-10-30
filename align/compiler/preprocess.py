@@ -10,22 +10,17 @@ from os import replace
 
 from networkx.algorithms.operators.product import power
 from align.schema.types import set_context
-from align.schema import model
-from align.schema.subcircuit import Circuit, SubCircuit
-
-# from .merge_nodes import convert_unit
+from align.schema.subcircuit import SubCircuit
+from ..schema import constraint
 from .util import get_next_level, get_base_model
 from ..schema.graph import Graph
-from ..schema.visitor import Transformer
 import logging
-import networkx as nx
-import copy
 from align.schema.instance import Instance
 
 logger = logging.getLogger(__name__)
 
 
-def preprocess_stack_parallel(ckt_data, design_setup, design_name):
+def preprocess_stack_parallel(ckt_data, design_name):
     """
     Preprocess the input graph by reducing parallel device, series devices, remove dummy hierarchies.
     removes power pins to be sent as signal by recursively finding all connections to power pins
@@ -35,30 +30,50 @@ def preprocess_stack_parallel(ckt_data, design_setup, design_name):
     """
     top = ckt_data.find(design_name)
     for subckt in ckt_data:
+        IsDigital = False
+        FixSourceDrain = True
+        MergeSeriesDevices = True
+        MergeParallelDevices = True
         if isinstance(subckt, SubCircuit):
             logger.debug(f"Preprocessing stack/parallel circuit name: {subckt.name}")
-            if subckt.name not in design_setup["DIGITAL"]:
+            for const in subckt.constraints:
+                if isinstance(const, constraint.IsDigital):
+                    IsDigital = const.isTrue
+                elif isinstance(const, constraint.FixSourceDrain):
+                    FixSourceDrain = const.isTrue
+                elif isinstance(const, constraint.MergeSeriesDevices):
+                    MergeSeriesDevices = const.isTrue
+                elif isinstance(const, constraint.MergeParallelDevices):
+                    MergeParallelDevices = const.isTrue
+            if not IsDigital:
                 logger.debug(
                     f"Starting no of elements in subckt {subckt.name}: {len(subckt.elements)}"
                 )
-                if "FIX_SD" in design_setup:
+                if FixSourceDrain:
                     # Insures Drain terminal of Nmos has higher potential than source and vice versa
-                    define_SD(subckt, design_setup["FIX_SD"])
-                if "MERGE_PARALLEL" in design_setup:
+                    define_SD(subckt, FixSourceDrain)
+                if MergeParallelDevices:
                     # Find parallel devices and add a parameter parallel to them, all other parameters should be equal
-                    add_parallel_devices(subckt, design_setup["MERGE_PARALLEL"])
-                if "MERGE_SERIES" in design_setup:
+                    add_parallel_devices(subckt, MergeParallelDevices)
+                if MergeSeriesDevices:
                     # Find parallel devices and add a parameter parallel to them, all other parameters should be equal
-                    add_series_devices(subckt, design_setup["MERGE_PARALLEL"])
+                    add_series_devices(subckt, MergeSeriesDevices)
                 logger.debug(
                     f"After reducing series/parallel, elements count in subckt {subckt.name}: {len(subckt.elements)}"
                 )
 
     if isinstance(top, SubCircuit):
-        if top.name not in design_setup["DIGITAL"]:
-            if design_setup["KEEP_DUMMY"] == False:
+        IsDigital = False
+        KeepDummyHierarchies = False
+        for const in top.constraints:
+            if isinstance(const, constraint.IsDigital):
+                IsDigital = const.isTrue
+            elif isinstance(const, constraint.KeepDummyHierarchies):
+                KeepDummyHierarchies = const.isTrue
+        if not IsDigital:
+            if not KeepDummyHierarchies:
                 # remove single instance subcircuits
-                dummy_hiers = []
+                dummy_hiers = list()
                 find_dummy_hier(ckt_data, top, dummy_hiers)
                 if len(dummy_hiers) > 0:
                     logger.info(f"Removing dummy hierarchies {dummy_hiers}")
@@ -151,20 +166,16 @@ def swap_SD(circuit, G, node):
         G ([type]): [description]
         node ([type]): [description]
     """
-    nbrd = [
-        nbr for nbr in G.neighbors(node) if "D" in G.get_edge_data(node, nbr)["pin"]
-    ][0]
+    nbrd = [nbr for nbr in G.neighbors(node) if "D" in G.get_edge_data(node, nbr)["pin"]][0]
     assert nbrd, f"incorrect node connections {circuit.get_element(node)}"
-    nbrs = [
-        nbr for nbr in G.neighbors(node) if "S" in G.get_edge_data(node, nbr)["pin"]
-    ][0]
+    nbrs = [nbr for nbr in G.neighbors(node) if "S" in G.get_edge_data(node, nbr)["pin"]][0]
     assert nbrs, f"incorrect node connections {circuit.get_element(node)}"
     # Swapping D and S
     logger.warning(f"Swapping D and S {node} {nbrd} {nbrs} {circuit.get_element(node)}")
     circuit.get_element(node).pins.update({"D": nbrs, "S": nbrd})
 
 
-def define_SD(circuit, update=True):
+def define_SD(subckt, update=True):
     """define_SD
     Checks for scenarios where transistors D/S are flipped.
     It is valid configuration in spice as transistors D and S are invertible
@@ -185,41 +196,44 @@ def define_SD(circuit, update=True):
 
     if not update:
         return
-    power = circuit.power
-    gnd = circuit.gnd
+    power = list()
+    gnd = list()
+    for const in subckt.constraints:
+        if isinstance(const, constraint.PowerPorts):
+            power = const.ports
+        elif isinstance(const, constraint.GroundPorts):
+            gnd = const.ports
     if not power or not gnd:
-        logger.warning(
-            f"No power or gnd in this circuit {circuit.name}, please check setup file"
-        )
+        logger.warning(f"No power or gnd in this circuit {subckt.name}, please check setup file")
         return
 
-    G = Graph(circuit)
-    ports = circuit.pins
+    G = Graph(subckt)
+    ports = subckt.pins
     high = []
     low = []
     if power and gnd:
         high = list(set(power).intersection(set(ports)))
         low = list(set(gnd).intersection(set(ports)))
         logger.debug(f"Using power: {high} and ground: {low}")
-    assert high, f"VDD port {power} not defined in subckt port {circuit.pins}"
-    assert low, f"GND port {gnd} not defined in subckt port {circuit.pins}"
+    assert high, f"VDD port {power} not defined in subckt port {subckt.pins}"
+    assert low, f"GND port {gnd} not defined in subckt port {subckt.pins}"
 
-    logger.debug(f"Start checking source and drain in {circuit.name} ")
+    logger.debug(f"Start checking source and drain in {subckt.name} ")
 
     probable_changes_p = []
-    assert high[0] in circuit.nets
+    assert high[0] in subckt.nets
     traversed = high.copy()
     traversed.extend(gnd)
     while high:
         nxt = high.pop(0)
-        for node in get_next_level(circuit, G, [nxt]):
+        for node in get_next_level(subckt, G, [nxt]):
             edge_type = G.get_edge_data(node, nxt)["pin"]
             if not {"S", "D"} & set(edge_type) or node in traversed:
                 continue
-            if circuit.get_element(node):
-                base_model = get_base_model(circuit, node)
+            if subckt.get_element(node):
+                base_model = get_base_model(subckt, node)
             else:
-                assert node in circuit.nets
+                assert node in subckt.nets
                 base_model = "net"
             if "PMOS" == base_model:
                 if "D" in edge_type:
@@ -240,14 +254,14 @@ def define_SD(circuit, update=True):
         if len(probable_changes_p) == 0:
             break
         nxt = low.pop(0)
-        for node in get_next_level(circuit, G, [nxt]):
+        for node in get_next_level(subckt, G, [nxt]):
             edge_type = G.get_edge_data(node, nxt)["pin"]
             if not {"S", "D"} & set(edge_type) or node in traversed:
                 continue
-            if circuit.get_element(node):
-                base_model = get_base_model(circuit, node)
+            if subckt.get_element(node):
+                base_model = get_base_model(subckt, node)
             else:
-                assert node in circuit.nets
+                assert node in subckt.nets
                 base_model = "net"
             if "PMOS" == base_model:
                 if "S" in edge_type:
@@ -263,7 +277,7 @@ def define_SD(circuit, update=True):
         )
         for node in list(set(probable_changes_n) & set(probable_changes_p)):
             logger.warning(f"changing source drain: {node}")
-            swap_SD(circuit, G, node)
+            swap_SD(subckt, G, node)
 
 def add_parallel_devices(ckt, update=True):
     """add_parallel_devics

@@ -4,6 +4,7 @@ import pathlib
 from align.schema import Model, Instance, SubCircuit, Library
 from align.schema.types import set_context
 from align.compiler.preprocess import define_SD
+from align.schema import constraint
 
 
 @pytest.fixture
@@ -15,9 +16,13 @@ def db():
         model_nmos = Model(name="NMOS", pins=["D", "G", "S", "B"])
         library.append(model_nmos)
         subckt = SubCircuit(
-            name="SUBCKT", pins=["VDD", "G", "GND", "B"], power=["VDD"], gnd=["GND"], parameters=None
+            name="SUBCKT", pins=["VDD", "G", "GND", "B"], parameters=None
         )
         library.append(subckt)
+    with set_context(subckt.constraints):
+        subckt.constraints.append(constraint.GroundPorts( ports=["GND"]))
+        subckt.constraints.append(constraint.PowerPorts(ports=["VDD"]))
+
     with set_context(subckt.elements):
         subckt.elements.append(
             Instance(
