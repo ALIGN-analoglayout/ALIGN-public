@@ -5,6 +5,7 @@ Created on Fri Jan 15 10:38:14 2021
 
 @author: kunal001
 """
+from align.schema import instance
 from re import sub
 from align.schema.types import set_context
 from ..schema.subcircuit import SubCircuit
@@ -49,11 +50,35 @@ class CreateDatabase:
             elif isinstance(const, constraint.ClockPorts):
                 clk.extend(const.ports)
         self._define_power_ports(subckt, pwr, gnd, clk)
+        self.translate_const_top_to_bottom(name, {name})
         return self.lib
+
     def add_user_const(self):
         for subckt in self.lib:
             if isinstance(subckt, SubCircuit):
                 self.const_parse.annotate_user_constraints(subckt)
+
+    def translate_const_top_to_bottom(self, top_name, traversed):
+        top = self.lib.find(top_name)
+        all_subckt = {inst.model for inst in top.elements if isinstance(self.lib.find(inst.model), SubCircuit)}
+        all_subckt = all_subckt - traversed
+        if not all_subckt:
+            return
+        for const in top.constraints:
+            global_const = [constraint.IsDigital, constraint.AutoConstraint,
+                constraint.AutoGroupCaps, constraint.FixSourceDrain,
+                constraint.KeepDummyHierarchies, constraint.MergeSeriesDevices,
+                constraint.MergeParallelDevices, constraint.IdentifyArray]
+
+            if any(isinstance (const,x) for x in global_const):
+                for child in all_subckt:
+                    child_const = self.lib.find(child).constraints
+                    if const not in child_const:
+                        with set_context(child_const):
+                            child_const.append(const)
+        traversed.update(all_subckt)
+        for child in all_subckt:
+            self.translate_const_top_to_bottom(child, traversed)
 
     def remove_redundant_models(self):
         _model_list = list()
@@ -246,9 +271,9 @@ class CreateDatabase:
         elif clk_child and not clk:
             clk_child = clk_child
         elif clk_child and clk:
-            if not set(clk[0]) & set(clk_child) == set(clk_child):
-                found_power = True
-                clk_child = clk[0]
+            if not set(clk) & set(clk_child) == set(clk_child):
+                found_clk = True
+                clk_child = clk
 
                 #subcircuit with different power instantiations
         if found_clk:
