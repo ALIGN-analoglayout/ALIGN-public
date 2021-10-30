@@ -709,7 +709,7 @@ class ConstraintDB(types.List[ConstraintType]):
                 core = [x.json() for x in self.__root__ if self._checker.label(x) in e.labels and x != constraint]
                 logger.error(f'Failed to add constraint {constraint.json()}')
                 logger.error(f'   due to conflict with {core}')
-                raise e
+                raise checker.CheckerError(f'Failed to add constraint {constraint.json()} due to conflict with {core}')
 
     @types.validate_arguments
     def append(self, constraint: ConstraintType):
