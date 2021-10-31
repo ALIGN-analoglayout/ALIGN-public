@@ -5,8 +5,6 @@ Created on Fri Jan 15 10:38:14 2021
 
 @author: kunal001
 """
-from align.schema import instance
-from re import sub
 from align.schema.types import set_context
 from ..schema.subcircuit import SubCircuit
 from ..schema import constraint

@@ -5,7 +5,6 @@ Created on Fri Nov  2 21:33:22 2018
 @author: kunal
 """
 
-from networkx.algorithms.operators.product import power
 from align.schema import Model, SubCircuit, Instance
 from ..schema.types import set_context
 import logging
