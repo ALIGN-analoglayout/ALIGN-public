@@ -6,9 +6,7 @@ Created on Thu Sep 17 15:49:33 2020
 @author: kunal001
 """
 
-from os import replace
 
-from networkx.algorithms.operators.product import power
 from align.schema.types import set_context
 from align.schema.subcircuit import SubCircuit
 from ..schema import constraint

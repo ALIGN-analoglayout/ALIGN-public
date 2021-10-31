@@ -1,6 +1,4 @@
-import pathlib
 import pytest
-import pathlib
 from align.schema import Model, Instance, SubCircuit, Library
 from align.schema.types import set_context
 from align.compiler.preprocess import define_SD

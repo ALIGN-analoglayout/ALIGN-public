@@ -5,7 +5,6 @@ Created on Wed Feb 21 13:12:15 2020
 @author: kunal
 """
 
-from typing import List
 from align.schema.types import set_context
 import pprint
 from itertools import combinations, combinations_with_replacement
