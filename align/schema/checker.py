@@ -158,7 +158,11 @@ class Z3Checker(AbstractChecker):
                 labels=self._solver.unsat_core())
 
     def label(self, object):
-        return z3.Bool(str(id(object)))
+        # Z3 throws 'index out of bounds' error
+        # if more than 9 digits are used
+        return z3.Bool(
+            hash(repr(object)) % 10**9
+        )
 
     def checkpoint(self):
         self._solver.push()
