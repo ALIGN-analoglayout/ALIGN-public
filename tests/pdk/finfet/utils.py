@@ -100,7 +100,8 @@ def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO', area
 
     if additional_args:
         for elem in additional_args:
-            args.append(elem)
+            if elem:
+                args.append(elem)
 
     results = align.CmdlineParser().parse_args(args)
 
