@@ -5,14 +5,14 @@ Created on Fri Jan 15 10:38:14 2021
 
 @author: kunal001
 """
-from align.schema.instance import Instance
+from align.schema import instance
+from re import sub
 from align.schema.types import set_context
-from networkx.algorithms.shortest_paths.weighted import multi_source_dijkstra
 from ..schema.subcircuit import SubCircuit
+from ..schema import constraint
 
 import logging
 
-from align.schema import subcircuit
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +23,9 @@ class CreateDatabase:
         self.ckt_parser = ckt_parser
         self.lib = ckt_parser.library
         self.circuit = ckt_parser.circuit
-        self.multi_param_instantiation = []
+        self.multi_param_instantiation = list()
         self.remove_redundant_models()
+        self.add_user_const()
 
     def read_inputs(self, name: str):
         """
@@ -32,34 +33,60 @@ class CreateDatabase:
         """
         subckt = self.lib.find(name.upper())
         assert subckt, f"{name.upper()} not found in library {[e.name for e in self.lib]}"
-        self.const_parse.annotate_user_constraints(subckt)
         logger.debug(f"creating database for {subckt}")
-        for pin in subckt.pins:
-            assert (
-                pin in subckt.nets
-            ), f"Floating pin: {pin} found for subckt {subckt.name} nets: {subckt.nets}"
         if self.circuit.parameters:
             self.resolve_parameters(name, self.circuit.parameters)
         else:
             self.resolve_parameters(name, subckt.parameters)
         self._update_leaf_instances()
+        pwr, gnd, clk = self._get_pgc(subckt)
+        self._propagate_power_ports(subckt, pwr, gnd, clk)
+        self.propagate_const_top_to_bottom(name, {name})
         return self.lib
+
+    def add_user_const(self):
+        for subckt in self.lib:
+            if isinstance(subckt, SubCircuit):
+                self.const_parse.annotate_user_constraints(subckt)
+
+    def propagate_const_top_to_bottom(self, top_name, traversed):
+        top = self.lib.find(top_name)
+        all_subckt = {inst.model for inst in top.elements if isinstance(self.lib.find(inst.model), SubCircuit)}
+        all_subckt = all_subckt - traversed
+        if not all_subckt:
+            return
+        for const in top.constraints:
+            global_const = [constraint.IsDigital, constraint.AutoConstraint,
+                constraint.AutoGroupCaps, constraint.FixSourceDrain,
+                constraint.KeepDummyHierarchies, constraint.MergeSeriesDevices,
+                constraint.MergeParallelDevices, constraint.IdentifyArray,
+                constraint.DoNotUseLib]
+
+            if any(isinstance (const,x) for x in global_const):
+                for child in all_subckt:
+                    child_const = self.lib.find(child).constraints
+                    if const not in child_const and const.propagate:
+                        with set_context(child_const):
+                            child_const.append(const)
+        traversed.update(all_subckt)
+        for child in all_subckt:
+            self.propagate_const_top_to_bottom(child, traversed)
 
     def remove_redundant_models(self):
         _model_list = list()
-        for module in self.lib:
-            if isinstance(module, SubCircuit):
-                for ele in module.elements:
+        for subckt in self.lib:
+            if isinstance(subckt, SubCircuit):
+                for ele in subckt.elements:
                     _model_list.append(ele.model)
         _redundant_list = list()
-        for module in self.lib:
-            if not isinstance(module, SubCircuit):
-                if not (module.name in _model_list or module.base == None):
-                    _redundant_list.append(module)
+        for model in self.lib:
+            if not isinstance(model, SubCircuit):
+                if not (model.name in _model_list or model.base == None):
+                    _redundant_list.append(model)
         # Keep base models
         # Delete unused models
-        for module in _redundant_list:
-            self.lib.remove(module)
+        for model in _redundant_list:
+            self.lib.remove(model)
 
     def resolve_parameters(self, name, param):
         subckt = self.lib.find(name.upper())
@@ -185,3 +212,74 @@ class CreateDatabase:
                 )
                 name, new_param = self._find_new_inst_name(subckt, param, counter + 1)
         return name, new_param
+    def _get_pgc(self,subckt):
+        pwr = list()
+        gnd = list()
+        clk = list()
+        for const in subckt.constraints:
+            if isinstance(const, constraint.PowerPorts):
+                pwr.extend(const.ports)
+            elif isinstance(const, constraint.GroundPorts):
+                gnd.extend(const.ports)
+            elif isinstance(const, constraint.ClockPorts):
+                clk.extend(const.ports)
+        return pwr, gnd, clk
+
+    def _propagate_power_ports(self, subckt, pwr, gnd, clk):
+        pwr_child, gnd_child, clk_child = self._get_pgc(subckt)
+        found_power = False
+        if not pwr_child and pwr:
+            found_power =True
+            pwr_child = pwr
+        elif pwr_child and not pwr:
+            pwr_child = pwr_child
+        elif pwr_child and pwr:
+            if not set(pwr) & set(pwr_child) == set(pwr_child):
+                found_power = True
+                pwr_child = pwr
+
+                #subcircuit with different power instantiations
+        if found_power:
+            pwr_child = pwr.copy()
+            with set_context(subckt.constraints):
+                subckt.constraints.append(constraint.PowerPorts(ports=pwr_child))
+        found_gnd = False
+        if not gnd_child and gnd:
+            found_gnd = True
+            gnd_child = gnd
+        elif gnd_child and not gnd:
+            gnd_child = gnd_child
+        elif gnd_child and gnd:
+            if not set(gnd) & set(gnd_child) == set(gnd_child):
+                found_power = True
+                gnd_child = gnd
+
+                #subcircuit with different power instantiations
+        if found_gnd:
+            gnd_child = list(list(gnd_child))
+            with set_context(subckt.constraints):
+                subckt.constraints.append(constraint.GroundPorts( ports=gnd_child))
+        found_clk = False
+        if not clk_child and clk:
+            found_clk = True
+            clk_child = clk
+        elif clk_child and not clk:
+            clk_child = clk_child
+        elif clk_child and clk:
+            if not set(clk) & set(clk_child) == set(clk_child):
+                found_clk = True
+                clk_child = clk
+
+                #subcircuit with different power instantiations
+        if found_clk:
+            clk_child = list(clk_child)
+            with set_context(subckt.constraints):
+                subckt.constraints.append(constraint.GroundPorts( ports=clk_child))
+
+        for inst in subckt.elements:
+            inst_subckt = self.lib.find(inst.model)
+            if isinstance(inst_subckt, SubCircuit):
+                pp = [p for p, c in inst.pins.items() if c in pwr_child]
+                gp = [p for p, c in inst.pins.items() if c in gnd_child]
+                gc = [p for p, c in inst.pins.items() if c in clk_child]
+                self._propagate_power_ports(inst_subckt, list(pp), list(gp), list(gc))

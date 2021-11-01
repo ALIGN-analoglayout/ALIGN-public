@@ -7,11 +7,17 @@ Created on Tue Dec 11 11:34:45 2018
 import os
 from re import sub
 import networkx as nx
-import matplotlib.pyplot as plt
 from networkx.algorithms import bipartite
 from ..schema.graph import Graph
 from ..schema import SubCircuit
 import logging
+
+# Plotting gets used pretty much for debug
+# Do not make this a core dependency
+try:
+    import matplotlib.pyplot as plt
+except:
+    plt = None
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +76,7 @@ def get_base_model(subckt, node):
     return base_model
 
 def get_leaf_connection(subckt, net):
-    assert net in subckt.nets, f"Net {net} not found in subckt {subckt}"
+    assert net in subckt.nets, f"Net {net} not found in subckt {subckt.name} {subckt.nets}"
     graph = Graph(subckt)
     conn = []
     for nbr in graph.neighbors(net):
@@ -118,6 +124,19 @@ def reduced_SD_neighbors(G, node, nbr):
     else:
         return False
 
+def get_ports_weight(G):
+    ports_weight = dict()
+    subckt = G.subckt
+    for port in subckt.pins:
+        leaf_conn = get_leaf_connection(subckt, port)
+        logger.debug(f"leaf connections of net ({port}): {leaf_conn}")
+        if len(leaf_conn)==0:
+            logger.warning(f"floating port:{port} in subckt {subckt.name}")
+            ports_weight[port] = None
+        else:
+            ports_weight[port] = set(sorted(leaf_conn))
+    return ports_weight
+
 def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
     """
     compare two node properties. It uses 1st level of neighbourhood for comparison of nets
@@ -140,7 +159,8 @@ def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
     nbrs1 = [nbr for nbr in G.neighbors(node1) if reduced_SD_neighbors(G, node1, nbr)]
     nbrs2 = [nbr for nbr in G.neighbors(node2) if reduced_SD_neighbors(G, node2, nbr)]
     logger.debug(f"comparing_nodes: {node1}, {node2}, {nbrs1}, {nbrs2}")
-
+    if not ports_weight:
+        ports_weight = get_ports_weight(G)
     if G.nodes[node1].get("instance"):
         logger.debug(f"checking match between {node1} {node2}")
         in1 = G.nodes[node1].get("instance")
@@ -182,6 +202,7 @@ def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
 
 
 def plt_graph(subgraph, sub_block_name):
+    assert plt is not None, "Need to install matplotlib to use this feature"
     copy_graph = subgraph
     for node, attr in list(copy_graph.nodes(data=True)):
         if "source" in attr["inst_type"]:
@@ -200,6 +221,7 @@ def plt_graph(subgraph, sub_block_name):
 
 
 def _show_bipartite_circuit_graph(filename, graph, dir_path):
+    assert plt is not None, "Need to install matplotlib to use this feature"
     no_of_subgraph = 0
     for subgraph in nx.connected_component_subgraphs(graph):
         no_of_subgraph += 1

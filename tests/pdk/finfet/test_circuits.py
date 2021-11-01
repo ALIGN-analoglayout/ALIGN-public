@@ -33,6 +33,9 @@ def test_cmp():
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
 
+    if cleanup:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(ckt_dir)
 
 @pytest.mark.nightly
 def test_cmp_pg():

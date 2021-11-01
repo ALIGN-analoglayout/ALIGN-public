@@ -1,0 +1,5 @@
+[
+    {"constraint": "PowerPorts", "ports": ["VCCA"]},
+    {"constraint": "GroundPorts", "ports": ["VSSA"]},
+    {"constraint": "DoNotUseLib", "libraries": ["CMC_PMOS", "CMB_PMOS_4", "CMB_PMOS_3", "CMB_PMOS_2", "CMC_PMOS_S", "CMC_NMOS", "CMC_NMOS_S"]}
+]

@@ -226,7 +226,6 @@ workflows:
             branches:
               only:
                 - master
-                - compiler/code_coverage
           matrix:
             alias: test-integration-cp38-manylinux_2_24
             parameters:
@@ -256,6 +255,8 @@ workflows:
                 - "cp38-cp38"
                 - "cp310-cp310"
             exclude:
+              # Skipping these as they have been built by
+              # other jobs
               - platform: "quay.io/pypa/manylinux2010_x86_64"
                 python-tags: "cp37-cp37m"
               - platform: "quay.io/pypa/manylinux_2_24_x86_64"

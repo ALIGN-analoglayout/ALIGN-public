@@ -67,15 +67,13 @@ def get_test_id():
     return t
 
 
-def build_example(name, netlist, netlist_setup, constraints):
+def build_example(name, netlist, constraints):
     example = my_dir / name
     if example.exists() and example.is_dir():
         shutil.rmtree(example)
     example.mkdir(parents=True)
     with open(example / f'{name}.sp', 'w') as fp:
         fp.write(netlist)
-    with open(example / f'{name}.setup', 'w') as fp:
-        fp.write(netlist_setup)
     with open(example / f'{name}.const.json', 'w') as fp:
         fp.write(json.dumps(constraints, indent=2))
     return example
