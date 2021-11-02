@@ -693,14 +693,10 @@ class SymmetricBlocks(SoftConstraint):
                         f"Incorrent symmetry pair {pair} in subckt {cls._validator_ctx().parent.parent.name}"
         return value
 
-  def check(self, checker):
+    def check(self, checker):
         for pair in self.pairs:
-            if len([ele for ele in pair if ele in group_block_instances]) > 0:
-                # TODO: Why is this skip still needed?
-                # Skip check for group block elements as they are added later in the flow
-                logger.debug(f"Skipping constraint checking {self.parent} ")
-                continue
-            elif len(pair) == 2:
+            # TODO: This constraint is not fully hardened yet. Below only checks mirroring
+            if len(pair) == 2:
                 bvars = checker.iter_bbox_vars(pair)
                 for b1, b2 in itertools.pairwise(bvars):
                     if self.direction == 'V':
@@ -711,10 +707,9 @@ class SymmetricBlocks(SoftConstraint):
                         od = 'sy'
                     yield getattr(b1, pd) == getattr(b2, pd)
                     if self.mirror:
-                        yield getattr(b1, od != getattr(b2, od)
+                        yield getattr(b1, od) != getattr(b2, od)
                     else:
                         yield getattr(b1, od) == getattr(b2, od)
-                # TODO: If possible, get rid of all the previous returns and get to here
 
                 
 class BlockDistance(SoftConstraint):
