@@ -184,6 +184,12 @@ def modify_pg_conn_subckt(verilog_d, subckt, pp):
     verilog_d['modules'].append(nm)
     return updated_ckt_name
 
+def check_floating_pins(verilog_d):
+    """exit in case of floating pins in design
+    """
+    for module in verilog_d["modules"]:
+        all_nets = set(fa_map["actual"]  for inst in module["instances"] for fa_map in inst['fa_map'])
+        assert set(module["parameters"]).issubset(all_nets), f"floating port found in module {module['name']}"
 
 def gen_leaf_cell_info( verilog_d, pnr_const_ds):
     non_leaves = { module['name'] for module in verilog_d['modules'] }
@@ -309,6 +315,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         #    verilog_d = json.load(fp)
         check_modules(verilog_d)
         pg_connections = {p["actual"]:p["actual"] for p in verilog_d['global_signals']}
+        check_floating_pins(verilog_d)
         remove_pg_pins(verilog_d, subckt, pg_connections)
         clean_if_extra(verilog_d, subckt)
         check_modules(verilog_d)
@@ -384,7 +391,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                                         lambda_coeff=lambda_coeff, scale_factor=scale_factor,
                                         reference_placement_verilog_json=reference_placement_verilog_json, nroutings=nroutings,
                                         select_in_ILP=select_in_ILP, seed=seed, use_analytical_placer=use_analytical_placer)
-        
+
         os.chdir(current_working_dir)
 
         # Copy generated cap jsons from results_dir to working_dir

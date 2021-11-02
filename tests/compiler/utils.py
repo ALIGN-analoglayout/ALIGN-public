@@ -1,13 +1,8 @@
 from os import name
-import pathlib
 import pytest
 import pathlib
 import shutil
 import json
-from align.schema import Model, Instance, SubCircuit, Library
-from align.schema.types import set_context, List, Dict
-from align.compiler.compiler import compiler_input, generate_hierarchy
-
 import textwrap
 
 my_dir = pathlib.Path(__file__).resolve().parent
@@ -152,15 +147,13 @@ def clean_data(name):
     if example.exists() and example.is_dir():
         shutil.rmtree(example)
 
-def build_example(name, netlist, netlist_setup, constraints):
+def build_example(name, netlist, constraints):
     example = my_dir / name
     if example.exists() and example.is_dir():
         shutil.rmtree(example)
     example.mkdir(parents=True)
     with open(example / f"{name}.sp", "w") as fp:
         fp.write(netlist)
-    with open(example / f"{name}.setup", "w") as fp:
-        fp.write(netlist_setup)
     with open(example / f"{name}.const.json", "w") as fp:
         fp.write(json.dumps(constraints, indent=2))
     return example / (name + ".sp")

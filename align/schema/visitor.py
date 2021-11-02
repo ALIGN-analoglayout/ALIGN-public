@@ -73,7 +73,6 @@ class Visitor(object):
         self.cache = {}
 
     def visit(self, node):
-        logger.warning(type(node))
         if isinstance(node, (types.BaseModel, types.List, types.Dict, list, dict, str, int, type(None))):
             method = 'visit_' + node.__class__.__name__
             return getattr(self, method, self.generic_visit)(node)
@@ -92,7 +91,6 @@ class Visitor(object):
     def flatten(l):
         ret = []
         for item in l:
-            logger.warning("for loop")
             if isinstance(item, list):
                 ret.extend(item)
             elif item is not None:
@@ -101,7 +99,6 @@ class Visitor(object):
 
     @cache(types=(types.BaseModel, types.List, types.Dict))
     def generic_visit(self, node):
-        logger.warning("generic")
 
         if isinstance(node, types.BaseModel):
             return self.flatten(self.visit(v) for _, v in self.iter_fields(node))

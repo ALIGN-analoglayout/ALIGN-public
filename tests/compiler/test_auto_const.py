@@ -7,7 +7,6 @@ from align.schema.types import set_context
 from align.compiler.compiler import compiler_input
 from align.compiler.find_constraint import add_symmetry_const, symmnet_device_pairs
 from utils import clean_data, build_example, ota_six
-import textwrap
 
 align_home = pathlib.Path(__file__).resolve().parent.parent.parent
 pdk_path = align_home / "pdks" / "FinFET14nm_Mock_PDK"
@@ -23,8 +22,10 @@ def test_symm_net():
         GND = vssx
         DIGITAL = {name}
         """)
-    constraints = list()
-    example = build_example(name, netlist, setup, constraints)
+    constraints = [
+        {"constraint": "IsDigital", "isTrue": True}
+    ]
+    example = build_example(name, netlist, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
     ckt = ckt_library.find(name)
     assert len(ckt.elements) == 6
@@ -60,27 +61,27 @@ def test_add_symmetry_const():
         GND = vssx
         DIGITAL = {name}
         """)
-    constraints = list()
-    example = build_example(name, netlist, setup, constraints)
+    constraints = [
+        {"constraint": "IsDigital", "isTrue": True}
+    ]
+    example = build_example(name, netlist, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
     ckt = ckt_library.find(name)
     insts = {inst.name for inst in ckt.elements}
     assert insts == {"MN1", "MN2", "MN3", "MN4", "MP5", "MP6"}
     with set_context(ckt.constraints):
         x = constraint.SymmetricBlocks(direction="V", pairs=[["MN4", "MN3"]])
-    match_pairs = {"dummy":[["MN4", "MN3"]]} # dict data type needed
-    with pytest.raises(AttributeError):
-        add_symmetry_const(ckt, match_pairs, list(), list(), list())
-    assert len(ckt.constraints) == 0
-    match_pairs = {"dummy": {"MN4": "MN3"}}
-    add_symmetry_const(ckt, match_pairs, list(), list(), list())
+    const_pairs = {"MN4": "MN3"}  # skip dictionary element
+    with pytest.raises(KeyError):
+        add_or_revert_const(const_pairs, ckt.constraints, list())
     assert len(ckt.constraints) == 1
-    assert ckt.constraints[0] == x
-    match_pairs = {"dummy": {"MN4":"MP5"}}  # Skip unequal size
-    add_symmetry_const(ckt, match_pairs, list(), list(), list())
-    assert len(ckt.constraints) == 1
-    match_pairs = {"dummy":{"VIN": "VIP"}}  # Skip net
-    add_symmetry_const(ckt, match_pairs, list(), list(), list())
-    assert len(ckt.constraints)==1
-    clean_data(name)
-
+    const_pairs = [["MN4", "MN3"]]
+    add_or_revert_const(const_pairs, ckt.constraints, list())
+    assert len(ckt.constraints) == 2
+    assert ckt.constraints[1] == x
+    const_pairs = [["MN4", "MN5"]]  # Skip unequal size
+    add_or_revert_const(const_pairs, ckt.constraints, list())
+    assert len(ckt.constraints) == 2
+    const_pairs = [["VIN", "VIP"]]  # Skip net
+    add_or_revert_const(const_pairs, ckt.constraints, list())
+    assert len(ckt.constraints) == 2

@@ -4,20 +4,18 @@ import collections
 import logging
 logger = logging.getLogger(__name__)
 
-try:
-    import z3
-except:
-    logger.warning("Could not import z3. Z3Checker disabled.")
-    z3 = None
+import z3
 
 class CheckerError(Exception):
-    def __init__(self, message):
+    def __init__(self, message, labels=None):
         self.message = message
+        self.labels = labels
         super().__init__(self.message)
+
 
 class AbstractChecker(abc.ABC):
     @abc.abstractmethod
-    def append(self, formula):
+    def append(self, formula, label=None):
         '''
         Append formula to checker.
 
@@ -26,6 +24,14 @@ class AbstractChecker(abc.ABC):
               yourself
         '''
         pass
+
+    @abc.abstractmethod
+    def label(self, object):
+        '''
+        Generate label that can be used for 
+        back-annotation
+        '''
+        return None
 
     @abc.abstractmethod
     def checkpoint(self):
@@ -128,29 +134,35 @@ class AbstractChecker(abc.ABC):
         '''
         pass
 
+
 class Z3Checker(AbstractChecker):
 
-    enabled = z3 is not None
-
     def __init__(self):
+        self._label_cache = {}
         self._bbox_cache = {}
         self._bbox_subcircuit = {}
         self._solver = z3.Solver()
-        self.previously_unsat = False
+        self._solver.set(unsat_core=True)
 
-    def append(self, formula, identifier=None):
-        self._solver.add(formula)
-        # logger.debug(f'formulas: {self._solver}')
+    def append(self, formula, label=None):
+        if label is not None:
+            self._solver.assert_and_track(formula, label)
+        else:
+            self._solver.add(formula)
         r = self._solver.check()
         if r == z3.unsat:
             z3.set_option(max_depth=10000, max_args=100, max_lines=10000)
-            raise_on_unsat = True
-            if raise_on_unsat:
-                raise CheckerError(f'No solution exists for {formula} in conjunction with {self._solver}')
-            else:
-                if not self.previously_unsat:
-                    logger.error(f'No solution exists for {formula}')
-            self.previously_unsat = True
+            logger.debug(f"Unsat encountered: {self._solver}")
+            raise CheckerError(
+                message=f'Trying to add {formula} resulted in unsat',
+                labels=self._solver.unsat_core())
+
+    def label(self, object):
+        # Z3 throws 'index out of bounds' error
+        # if more than 9 digits are used
+        return z3.Bool(
+            hash(repr(object)) % 10**9
+        )
 
     def checkpoint(self):
         self._solver.push()
