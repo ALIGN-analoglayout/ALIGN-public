@@ -283,19 +283,9 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                  gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False, steps_to_run,lambda_coeff,
                  reference_placement_verilog_json, nroutings=1, select_in_ILP=False, seed=0, use_analytical_placer=False):
 
+    subckt = subckt.upper()
+
     logger.info(f"Running Place & Route for {subckt} {router_mode} {steps_to_run}")
-    # Generate file name inputs
-    for cf in topology_dir.rglob('*.verilog.json'):
-        if cf.stem == subckt+'.verilog':
-            #File name and module name are small or both are capital letters
-            assert subckt in [m.name for m in VerilogJsonTop.parse_file(cf).modules], f"file name {cf} does nto match module {subckt}"
-        elif cf.stem.upper()==subckt+'.verilog':
-            #File name is small and module name is caps
-            assert subckt in [m.name for m in VerilogJsonTop.parse_file(cf).modules], f"file name {cf} does nto match module {subckt}"
-        elif cf.stem == subckt.upper()+'.verilog':
-            #File name is caps and module name is small
-            subckt = subckt.upper()
-            assert subckt in [m.name for m in VerilogJsonTop.parse_file(cf).modules], f"file name {cf} does nto match module {subckt}"
 
     map_file = f'{subckt}.map'
     lef_file = f'{subckt}.lef'

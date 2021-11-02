@@ -372,21 +372,27 @@ def subset_verilog_d( verilog_d, nm):
 
     return new_verilog_d
 
+def gen_leaf_bbox_and_hovertext( ctn, p):
+    #return (p, list(gen_boxes_and_hovertext( placement_verilog_d, ctn)))
+    d = { 'width': p[0], 'height': p[1]}
+    return d, [ ((0, 0)+p, f'{ctn}<br>{0} {0} {p[0]} {p[1]}', True, 0, False)], None
 
-def scale_and_check_placement(*, placement_verilog_d, concrete_name, scale_factor, opath):
+def scale_and_check_placement(*, placement_verilog_d, concrete_name, scale_factor, opath, placement_verilog_alternatives):
     scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, scale_factor)
     (pathlib.Path(opath) / f'{concrete_name}.placement_verilog.json').write_text(scaled_placement_verilog_d.json(indent=2,sort_keys=True))
     standalone_overlap_checker( scaled_placement_verilog_d, concrete_name)
     check_placement( scaled_placement_verilog_d, scale_factor)
+    placement_verilog_alternatives[concrete_name] = scaled_placement_verilog_d
 
-def per_placement( placement_verilog_d, *, hN, scale_factor, gui, opath, tagged_bboxes, leaf_map):
+def per_placement( placement_verilog_d, *, hN, scale_factor, gui, opath, tagged_bboxes, leaf_map, placement_verilog_alternatives):
     concrete_name = placement_verilog_d['modules'][0]['concrete_name']
     abstract_name = placement_verilog_d['modules'][0]['abstract_name']
 
     if not gui:
         logger.info( f'Working on {concrete_name}')
 
-    scale_and_check_placement( placement_verilog_d=placement_verilog_d, concrete_name=concrete_name, scale_factor=scale_factor, opath=opath)
+    scale_and_check_placement( placement_verilog_d=placement_verilog_d, concrete_name=concrete_name, scale_factor=scale_factor, opath=opath, placement_verilog_alternatives=placement_verilog_alternatives)
+    
 
     nets_d = gen_netlist( placement_verilog_d, concrete_name)
     hpwl_alt = calculate_HPWL_from_placement_verilog_d( placement_verilog_d, concrete_name, nets_d, skip_globals=True)
@@ -458,11 +464,6 @@ def per_placement( placement_verilog_d, *, hN, scale_factor, gui, opath, tagged_
 def gen_leaf_map(*, DB, gui):
     leaf_map = defaultdict(dict)
     if gui:
-        def gen_leaf_bbox_and_hovertext( ctn, p):
-            #return (p, list(gen_boxes_and_hovertext( placement_verilog_d, ctn)))
-            d = { 'width': p[0], 'height': p[1]}
-            return d, [ ((0, 0)+p, f'{ctn}<br>{0} {0} {p[0]} {p[1]}', True, 0, False)], None
-
         # Get all the leaf cells sizes; still doesn't get the CC capacitors
         for atn, gds_lst in DB.gdsData2.items():
             ctns = [str(pathlib.Path(fn).stem) for fn in gds_lst]
@@ -486,6 +487,8 @@ def process_placements(*, DB, verilog_d, gui, lambda_coeff, scale_factor, refere
     leaf_map = gen_leaf_map(DB=DB, gui=gui)
     tagged_bboxes = defaultdict(dict)
 
+    placement_verilog_alternatives = {}
+
     TraverseOrder = DB.TraverseHierTree()
 
     for idx in TraverseOrder:
@@ -496,7 +499,7 @@ def process_placements(*, DB, verilog_d, gui, lambda_coeff, scale_factor, refere
             # create new verilog for each placement
             hN = DB.CheckoutHierNode( idx, sel)
             placement_verilog_d = gen_placement_verilog( hN, idx, sel, DB, s_verilog_d)
-            per_placement( placement_verilog_d, hN=hN, scale_factor=scale_factor, gui=gui, opath=opath, tagged_bboxes=tagged_bboxes, leaf_map=leaf_map)
+            per_placement( placement_verilog_d, hN=hN, scale_factor=scale_factor, gui=gui, opath=opath, tagged_bboxes=tagged_bboxes, leaf_map=leaf_map, placement_verilog_alternatives=placement_verilog_alternatives)
 
     # hack for a reference placement_verilog_d
 
@@ -510,7 +513,7 @@ def process_placements(*, DB, verilog_d, gui, lambda_coeff, scale_factor, refere
                 #scale to hN units
                 placement_verilog_d = scale_placement_verilog( scaled_placement_verilog_d, scale_factor, invert=True)
 
-            per_placement( placement_verilog_d, hN=None, scale_factor=scale_factor, gui=gui, opath=opath, tagged_bboxes=tagged_bboxes, leaf_map=leaf_map)
+            per_placement( placement_verilog_d, hN=None, scale_factor=scale_factor, gui=gui, opath=opath, tagged_bboxes=tagged_bboxes, leaf_map=leaf_map, placement_verilog_alternatives=placement_verilog_alternatives)
 
     placements_to_run = None
     if gui:
@@ -528,29 +531,68 @@ def process_placements(*, DB, verilog_d, gui, lambda_coeff, scale_factor, refere
         m = p.match(selected_concrete_name)
         if m:
             if m.groups()[0] == top_level:
-                placements_to_run = [int(m.groups()[1])]
+                sel = int(m.groups()[1])
+                placements_to_run = [(sel,placement_verilog_alternatives[selected_concrete_name])]
+        else:
+            if selected_concrete_name in placement_verilog_alternatives:
+                placements_to_run = [(None,placement_verilog_alternatives[selected_concrete_name])]                
 
     return placements_to_run
 
 
-
-def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, verilog_d, router_mode, gui, skipGDS, lambda_coeff, scale_factor,
+def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, verilog_d,
+                    router_mode, gui, skipGDS, lambda_coeff, scale_factor,
                     reference_placement_verilog_json, nroutings, select_in_ILP, seed, use_analytical_placer):
+
     for idx in DB.TraverseHierTree():
-        place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx, lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP,
+        place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
+              lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP,
               seed=seed, use_analytical_placer=use_analytical_placer)
 
     placements_to_run = None
     if verilog_d is not None:
-        placements_to_run = process_placements(DB=DB, verilog_d=verilog_d, gui=gui, lambda_coeff=lambda_coeff, scale_factor=scale_factor, reference_placement_verilog_json=reference_placement_verilog_json, opath=opath)
+        placements_to_run = process_placements(DB=DB, verilog_d=verilog_d, gui=gui,
+                                               lambda_coeff=lambda_coeff, scale_factor=scale_factor,
+                                               reference_placement_verilog_json=reference_placement_verilog_json,
+                                               opath=opath)
 
-    return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
+    # We could generate a fresh DB and populate it with a placement verilog d
+    if placements_to_run is not None:
+        if placements_to_run:
+            assert len(placements_to_run) == 1
+            _, placement_verilog_d = placements_to_run[0]
+
+            with open("__placement_verilog_d", "wt") as fp:
+                fp.write(placement_verilog_d.json(indent=2))
+
+            # Observation from looking at this file
+            # In the set_bounding_box constraint, top-level cells are named instances (should be concrete_template)
+            # There might be an issue with name space collisions if an instance and template are named the same
+            # there is a flag to distinguish between instances and template; we should probably just rename instance
+            # to something more generic like 'nm'.
+
+            #
+            # Build DB objects from placement_verilog_d
+            #
+            # create new blocks that are clones of existing blocks
+            # 
+            # Add in placement information
+
+    if placements_to_run is not None:
+        placements_to_run = [p[0] for p in placements_to_run]
+        if placements_to_run == [None]: # Fix corner case until the new scheme works
+            placements_to_run = None
+
+    return route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode,
+                  router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
 
 
-
-
-
-def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0, scale_factor=2, reference_placement_verilog_json=None, nroutings=1, select_in_ILP=False, seed=0, use_analytical_placer=False):
+def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_mode='top_down',
+             gui=False, skipGDS=False,
+             lambda_coeff=1.0, scale_factor=2,
+             reference_placement_verilog_json=None,
+             nroutings=1, select_in_ILP=False,
+             seed=0, use_analytical_placer=False):
 
     assert len(args) == 9
 
@@ -570,9 +612,12 @@ def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_m
 
     pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
 
-    results_name_map = place_and_route(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode,
-                                       verilog_d=verilog_d, router_mode=router_mode, gui=gui, skipGDS=skipGDS, lambda_coeff=lambda_coeff,
-                                       scale_factor=scale_factor, reference_placement_verilog_json=reference_placement_verilog_json,
-                                       nroutings=nroutings, select_in_ILP=select_in_ILP, seed=seed, use_analytical_placer=use_analytical_placer)
+    results_name_map = place_and_route(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort,
+                                       adr_mode=adr_mode, PDN_mode=PDN_mode,
+                                       verilog_d=verilog_d, router_mode=router_mode, gui=gui, skipGDS=skipGDS,
+                                       lambda_coeff=lambda_coeff, scale_factor=scale_factor,
+                                       reference_placement_verilog_json=reference_placement_verilog_json,
+                                       nroutings=nroutings, select_in_ILP=select_in_ILP,
+                                       seed=seed, use_analytical_placer=use_analytical_placer)
 
     return DB, results_name_map
