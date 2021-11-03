@@ -4,14 +4,16 @@ from .types import Union, Dict, Optional, List, set_context
 import logging
 logger = logging.getLogger(__name__)
 
+
 class Instance(types.BaseModel):
 
     model: str
     name: str
-    pins : Dict[str, str]
-    parameters : Optional[Dict[str, str]]
-    generator: str #Handles different sized instantiation of same subcircuit to same generator
-    abstract_name: Optional[str] # Added during primitive generator, in case no primitive generator found = generator
+    pins: Dict[str, str]
+    parameters: Optional[Dict[str, str]]
+    generator: str  # Handles different sized instantiation of same subcircuit to same generator
+    abstract_name: Optional[str]  # Added during primitive generator, in case no primitive generator found = generator
+
     class Config:
         allow_mutation = True
 
@@ -29,12 +31,14 @@ class Instance(types.BaseModel):
     def _get_model(library, name):
         return next((x for x in library if x.name == name), None)
 
-    def add_generator(self,gen):
+    def add_generator(self, gen):
         with set_context(self.parent):
             self.generator = gen
-    def add_abs_name(self,abn):
+
+    def add_abs_name(self, abn):
         with set_context(self.parent):
             self.abstract_name = abn
+
     def add_actual_name(self, acn):
         with set_context(self.parent):
             self.actual_name = acn
@@ -44,6 +48,16 @@ class Instance(types.BaseModel):
         model = self._get_model(self.parent.parent.parent, self.model)
         assert model is not None, self.parent.parent.parent
         return model
+
+    @types.validator('name', allow_reuse=True)
+    def unique_name(cls, name):
+        name = name.upper()
+        # Need help in fixing this code
+        # assert isinstance(cls._validator_ctx().parent, List[Instance]), 'Instance can only be instanitated within List[Instance]'
+        # if cls._validator_ctx().parent.__root__:
+        #     all_names = {inst.name for inst in cls._validator_ctx().parent}
+        #     assert name not in all_names
+        return name
 
     @types.validator('model', allow_reuse=True)
     def model_exists_in_library(cls, model):
@@ -70,8 +84,8 @@ class Instance(types.BaseModel):
             parameters = {k.upper(): v.upper() for k, v in parameters.items()}
             assert model.parameters and set(parameters.keys()).issubset(model.parameters.keys()), \
                 f"{cls.__name__} parameters must be a subset of {model.__class__.__name__} parameters"
-            parameters = {k: parameters[k] if k in parameters else v \
-                for k, v in model.parameters.items()}
+            parameters = {k: parameters[k] if k in parameters else v
+                          for k, v in model.parameters.items()}
         elif model.parameters:
             parameters = model.parameters.copy()
         return parameters
