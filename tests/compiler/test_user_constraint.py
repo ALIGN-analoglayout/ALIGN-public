@@ -3,7 +3,7 @@ import pytest
 import json
 import shutil
 
-from align.compiler.compiler import compiler_input, constraint_generator, compiler_output
+from align.compiler.compiler import compiler_input, constraint_generator
 from align.schema.checker import CheckerError
 
 pdk_dir = (

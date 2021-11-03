@@ -1,4 +1,3 @@
-from align.schema import library
 import pathlib
 
 from align.compiler.compiler import compiler_input

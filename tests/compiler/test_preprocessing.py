@@ -1,8 +1,6 @@
-import pathlib
 import pytest
-import pathlib
 from align.schema import Model, Instance, SubCircuit, Library
-from align.schema.types import set_context, List, Dict
+from align.schema.types import set_context
 from align.compiler.preprocess import (
     add_parallel_devices,
     add_series_devices,
