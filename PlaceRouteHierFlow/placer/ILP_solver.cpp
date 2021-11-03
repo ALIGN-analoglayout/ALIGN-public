@@ -423,7 +423,6 @@ void ILP_solver::lpsolve_logger(lprec* lp, void* userhandle, char* buf) {
 double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
 
-  ++mydesign._totalNumCostCalc;
   auto roundup = [](int& v, int pitch) { v = pitch * ((v + pitch - 1) / pitch); };
   int v_metal_index = -1;
   int h_metal_index = -1;
@@ -443,8 +442,8 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
   int y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
 
   // each block has 4 vars, x, y, H_flip, V_flip;
-  int N_var = mydesign.Blocks.size() * 4 + mydesign.Nets.size() * 2;
-  // i*4+1: x
+  unsigned int N_var = mydesign.Blocks.size() * 4 + mydesign.Nets.size() * 2;
+  // i*4+1:x
   // i*4+2:y
   // i*4+3:H_flip
   // i*4+4:V_flip
@@ -454,7 +453,7 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
   // set_outputfile(lp, const_cast<char*>("/dev/null"));
 
   // set integer constraint, H_flip and V_flip can only be 0 or 1
-  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+  for (int i = 0; i < mydesign.Blocks.size(); i++) {
     #ifdef ilp
     set_int(lp, i * 4 + 1, TRUE);
     set_int(lp, i * 4 + 2, TRUE);
@@ -862,7 +861,6 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
     int ret = solve(lp);
     if (ret != 0 && ret != 1) {
       delete_lp(lp);
-	  ++mydesign._infeasILPFail;
       return -1;
     }
   }
@@ -908,11 +906,9 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
   **/
   ratio = double(UR.x - LL.x) / double(UR.y - LL.y);
   if (ratio < Aspect_Ratio[0] || ratio > Aspect_Ratio[1]) {
-	  ++mydesign._infeasAspRatio;
 	  return -1;
   }
   if (placement_box[0] > 0 && (UR.x - LL.x > placement_box[0]) || placement_box[1] > 0 && (UR.y - LL.y > placement_box[1])) {
-	  ++mydesign._infeasPlBound;
 	  return -1;
   }
   // calculate HPWL
@@ -1027,6 +1023,7 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
 double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
 
+  ++mydesign._totalNumCostCalc;
   auto roundup = [](int& v, int pitch) { v = pitch * ((v + pitch - 1) / pitch); };
   int v_metal_index = -1;
   int h_metal_index = -1;
@@ -1058,12 +1055,18 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
 
   // set integer constraint, H_flip and V_flip can only be 0 or 1
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
-    set_int(lp, i * 4 + 1, TRUE);
-    set_int(lp, i * 4 + 2, TRUE);
+    set_int(lp, i * 4 + 1, TRUE); set_col_name(lp, i * 4 + 1, const_cast<char*>((mydesign.Blocks[i][0].name + "_x").c_str()));
+    set_int(lp, i * 4 + 2, TRUE); set_col_name(lp, i * 4 + 2, const_cast<char*>((mydesign.Blocks[i][0].name + "_y").c_str()));
     set_int(lp, i * 4 + 3, TRUE);
     set_int(lp, i * 4 + 4, TRUE);
-    set_binary(lp, i * 4 + 3, TRUE);
-    set_binary(lp, i * 4 + 4, TRUE);
+    set_binary(lp, i * 4 + 3, TRUE); set_col_name(lp, i * 4 + 3, const_cast<char*>((mydesign.Blocks[i][0].name + "_flx").c_str()));
+    set_binary(lp, i * 4 + 4, TRUE); set_col_name(lp, i * 4 + 4, const_cast<char*>((mydesign.Blocks[i][0].name + "_fly").c_str()));
+  }
+
+  for (int i = 0; i < mydesign.Nets.size(); ++i) {
+	  int ind = i * 2 + mydesign.Blocks.size() * 4 + 1;
+	  set_col_name(lp, ind, const_cast<char*>((mydesign.Nets[i].name + "_x").c_str()));
+	  set_col_name(lp, ind + 1, const_cast<char*>((mydesign.Nets[i].name + "_y").c_str()));
   }
 
   int bias_Hgraph = mydesign.bias_Hgraph, bias_Vgraph = mydesign.bias_Vgraph;
@@ -1507,7 +1510,20 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     set_timeout(lp, 1);
     int ret = solve(lp);
     if (ret != 0 && ret != 1) {
+      /*static int fail_cnt{0};
+      if (fail_cnt < 10) {
+        write_lp(lp, const_cast<char*>((mydesign.name + "_fail_ilp_" + std::to_string(fail_cnt) + ".lp").c_str()));
+        curr_sp.PrintSeqPair();
+        std::string tmpstrpos, tmpstrneg;
+        for (auto& it : curr_sp.posPair) if (it < mydesign.Blocks.size()) tmpstrpos += (mydesign.Blocks[it][0].name + " ");
+        for (auto& it : curr_sp.negPair) if (it < mydesign.Blocks.size()) tmpstrneg += (mydesign.Blocks[it][0].name + " ");
+        logger->info("DEBUG fail ILP seq pair : pos=[{0}] neg=[{1}]", tmpstrpos, tmpstrneg);
+        logger->info("ILP fail {0}", fail_cnt);
+        curr_sp.PrintSeqPair(mydesign);
+        ++fail_cnt;
+      }*/
       delete_lp(lp);
+      ++mydesign._infeasILPFail;
       return -1;
     }
   }
@@ -1553,9 +1569,11 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   // ratio = std::max(double(UR.x - LL.x) / double(UR.y - LL.y), double(UR.y - LL.y) / double(UR.x - LL.x));
   ratio = double(UR.x - LL.x) / double(UR.y - LL.y);
   if (ratio < Aspect_Ratio[0] || ratio > Aspect_Ratio[1]) {
+	  ++mydesign._infeasAspRatio;
 	  return -1;
   }
   if (placement_box[0] > 0 && (UR.x - LL.x > placement_box[0]) || placement_box[1] > 0 && (UR.y - LL.y > placement_box[1])) {
+	  ++mydesign._infeasPlBound;
 	  return -1;
   }
   // calculate HPWL

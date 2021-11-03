@@ -107,6 +107,7 @@ class SeqPair
     vector<int> GetBelowBlock(int blockNo);
     placerDB::Omark GetBlockOrient(int blockNo);
     void PrintSeqPair();
+    void PrintSeqPair(const design& caseNL) const;
     void SameSelected(design& caseNL);
     void ChangeOrient(int blockNo, placerDB::Omark ort );
     void FlipOrient(int blockNo);
@@ -126,7 +127,9 @@ class SeqPair
     bool ChangeSymmetryGroupOrient(design& caseNL);
     bool ChangeSymmetryBlockOrient(design& caseNL);
     void Perturbation(design& caseNL);
-    void PerturbationNew(design& caseNL);
+    bool PerturbationNew(design& caseNL);
+    bool CheckAlign(design& caseNL);
+    bool CheckSymm(design& caseNL);
     void TestSwap();
     int GetBlockSelected(int blockNo);
     bool ChangeSelectedBlock(design& caseNL);
@@ -138,6 +141,10 @@ class SeqPair
     bool isSeqInCache(const design& des) const { return des.isSeqInCache(posPair, negPair, selected); }
 
     //vector<int> GetFlip(const bool hor) const;
+    bool operator == (const SeqPair& s1) const
+    {
+      return (posPair == s1.posPair) && (negPair == s1.negPair) && (selected == s1.selected);
+    }
 };
 
 #endif

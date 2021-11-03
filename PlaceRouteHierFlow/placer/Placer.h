@@ -53,6 +53,8 @@ class Placer {
     void PlacementRegularAspectRatio_ILP_Analytical(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, bool select_in_ILP);
 
     PlacerHyperparameters hyper;
+    std::uniform_real_distribution<double> _rnd{0., 1.};
+    static std::mt19937_64 _rng;
 
   public:
     Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in);

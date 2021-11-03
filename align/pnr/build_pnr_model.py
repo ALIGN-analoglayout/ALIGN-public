@@ -23,6 +23,7 @@ def ReadVerilogJson( DB, j, add_placement_info=False):
         temp_node.name = module['name'] if 'name' in module else module['abstract_name']
         temp_node.isCompleted = 0
 
+
         Terminals = []
         for parameter in module['parameters']:
             temp_terminal = PnR.terminal()
