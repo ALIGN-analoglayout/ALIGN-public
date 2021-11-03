@@ -8,7 +8,8 @@ set(headers
      ConstGraph.h
      Pdatatype.h
      PlacerIfc.h
-     SeqPair.h)
+     SeqPair.h
+	 IntPlot.h)
 
 set(sources
      Aplace.cpp
@@ -18,6 +19,7 @@ set(sources
      ConstGraph.cpp
      Placer.cpp
      Preadfile.cpp
+     IntPlot.cpp
      design.cpp)
 
 add_library(placer STATIC ${sources} ${headers})
@@ -27,5 +29,6 @@ target_link_libraries(
      spdlog::spdlog
      lpsolve::lpsolve55
      Boost::boost
+     pybind11::module
 )
 target_code_coverage(placer)

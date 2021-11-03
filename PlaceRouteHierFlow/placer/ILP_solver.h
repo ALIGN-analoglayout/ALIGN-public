@@ -35,13 +35,14 @@ using std::vector;
 
 class ILP_solver {
   private:
+  friend class MatPlotGen;
   struct Block {
     int x = 0, y = 0;         // LL of each block
     int H_flip = 0, V_flip = 0;  // flip along V axis and H axis
   };
   vector<Block> Blocks;
   placerDB::point LL, UR;
-  double area = 0, HPWL = 0, HPWL_extend = 0, HPWL_extend_terminal = 0, ratio = 0, linear_const = 0, multi_linear_const = 0;
+  double area = 0, HPWL = 0, HPWL_extend = 0, dead_area=0, HPWL_extend_terminal = 0, ratio = 0, linear_const = 0, multi_linear_const = 0;
   double area_norm = 0, HPWL_norm = 0;
   double Aspect_Ratio_weight = 1000;
   double Aspect_Ratio[2] = {0, 100};
@@ -58,6 +59,7 @@ class ILP_solver {
   ILP_solver& operator=(const ILP_solver& solver);
   double GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
   double GenerateValidSolution_select(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
+  double CalculateCostFromSim(design& mydesign, SeqPair& curr_sp);
   double CalculateCost(design& mydesign, SeqPair& curr_sp);
   void WritePlacement(design& caseNL, SeqPair& curr_sp, string outfile);
   void PlotPlacement(design& caseNL, SeqPair& curr_sp, string outfile);

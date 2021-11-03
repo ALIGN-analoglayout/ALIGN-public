@@ -6,14 +6,26 @@
 #include <time.h>       /* time */
 #include <cmath>
 #include "PlacerHyperparameters.h"
+#include <chrono>
 #include "design.h"
 #include "Aplace.h"
 #include "SeqPair.h"
 #include "ConstGraph.h"
 #include "ILP_solver.h"
 #include "../PnRDB/datatype.h"
+
+#include "IntPlot.h"
+
 using std::cout;
 using std::endl;
+
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/embed.h>
+#include <pybind11/stl_bind.h>
+#include <pybind11/iostream.h>
+
+namespace py = pybind11;
 
 //#define MAX_TIMEOUT 4300000 //4.3 seconds = 4300000 us
 
@@ -32,8 +44,9 @@ class Placer {
     };
     //design designData;
     //PnRDB::hierNode node;
+    MatPlotGen *_mpgen;
     bool GenerateValidSolution(design& mydesign, SeqPair& curr_sp, ConstGraph& curr_sol, int mode);
-    void PlacementRegular(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo); // do placement with simulated annealing 
+    void PlacementRegular(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo); // do placement with simulated annealing
     void PlacementMixSA(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo); // do placement with mix-sized simulated annealing
     void PlacementMixAP(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo); // do placement with mix-sized analytical placement
     void ThreadFunc(Thread_data* MT);
@@ -54,6 +67,8 @@ class Placer {
     Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in, bool select_in_ILP);
     //Placer(PnRDB::hierNode& input_node); // Constructor
     //PnRDB::hierNode CheckoutHierNode(); // Output hier Node after placement
+	ofstream _debugCostCompStream, _debugCFCompStream;
+	~Placer();
 };
 
 #endif

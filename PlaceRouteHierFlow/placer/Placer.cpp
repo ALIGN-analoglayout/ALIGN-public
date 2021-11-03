@@ -14,11 +14,30 @@ Placer::Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info&
   PlacementRegular(node, opath, effort, drcInfo);
 }
 
-Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in, bool select_in_ILP = false) : hyper(hyper_in) {
+Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in, bool select_in_ILP = false) : hyper(hyper_in), _mpgen(nullptr) {
+  char* _debugPlot = getenv("DEBUG_PLOT");
+  if (_debugPlot != nullptr && atoi(_debugPlot) && !nodeVec.empty()) {
+	  _debugCostCompStream = ofstream("./Results/debug_cost_comp_" + nodeVec.back().name + ".pl");
+	  _debugCFCompStream = ofstream("./Results/debug_cf_cost_comp_" + nodeVec.back().name + ".pl");
+	  if (_debugCostCompStream.is_open()) _debugCostCompStream << "$x << EOD\n";
+	  if (_debugCFCompStream.is_open()) _debugCFCompStream << "$x << EOD\n";
+
+  }
+  char* _detailPlotGen = getenv("DETAIL_PLOT_GEN");
+  if (_detailPlotGen != nullptr && atoi(_detailPlotGen) && !nodeVec.empty()) {
+    _mpgen = new MatPlotGen(nodeVec.back().name);
+  }
   PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo, select_in_ILP);
   //PlacementRegularAspectRatio(nodeVec, opath, effort, drcInfo);
   //PlacementMixSAAspectRatio(nodeVec, opath, effort);
   //PlacementMixAPAspectRatio(nodeVec, opath, effort);
+}
+
+Placer::~Placer()
+{
+	if (_debugCostCompStream.is_open()) _debugCostCompStream.close();
+	if (_debugCFCompStream.is_open()) _debugCFCompStream.close();
+	delete _mpgen;
 }
 
 //PnRDB::hierNode Placer::CheckoutHierNode() {
@@ -518,10 +537,13 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
 std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRatio_ILP(design& designData, SeqPair& curr_sp, ILP_solver& curr_sol, int mode,
                                                                                       int nodeSize, int effort, PnRDB::Drc_info& drcInfo, bool select_in_ILP = false) {
 
+  // py::initialize_interpreter();
+
   auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementCoreAspectRatio_ILP");
 
   // Mode 0: graph bias; Mode 1: graph bias + net margin; Others: no bias/margin
   // cout<<"PlacementCore\n";
+  auto start = std::chrono::steady_clock::now();
   std::map<double, std::pair<SeqPair, ILP_solver>> oData;
   curr_sp.PrintSeqPair();
   double curr_cost = 0;
@@ -562,6 +584,9 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   //int updateThrd = 100;
   float total_update_number = log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA);
   bool exhausted(false);
+  unsigned cnt(0);
+  int total_counts = 0;
+  int count_accepted = 0;
   while (T > hyper.T_MIN) {
     int i = 1;
     int MAX_Iter = 1;
@@ -627,6 +652,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
             // std::cout<<"Insert\n";
             oData[curr_cost] = curr_sp;
             ReshapeSeqPairMap(oData, nodeSize);
+            count_accepted++;
           }
         }
       }
@@ -659,14 +685,30 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
             }
           }
         }
+        if (_mpgen) {
+          auto indexPair = trial_sp.GetLexIndex();
+          logger->info("seq pair data : {0} {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}", designData.name, trial_sp.GetString(0),
+              trial_sp.GetString(1), trial_sp.GetString(2), trial_sp.GetString(3), trial_sp.GetString(3),
+              Smark, indexPair.first, indexPair.second, trial_cost, curr_cost, T);
+        }
+        total_counts++;
         if (Smark) {
           //std::cout << "cost: " << trial_cost << std::endl;
+          //logger->info("trial_cost : {0} {1} {2}", cnt, trial_cost, T);
+          if (_debugCostCompStream.is_open() && !designData._costComponents.empty()) _debugCostCompStream << T << ' ' << designData._costComponents << '\n';
+          if (_debugCFCompStream.is_open() && !designData._cfCostComponents.empty()) _debugCFCompStream << T << ' ' << designData._cfCostComponents << '\n';
           curr_cost = trial_cost;
           curr_sp = trial_sp;
           curr_sol = trial_sol;
+          if (_mpgen) {
+            _mpgen->addCostComp(designData._costHeaderIP);
+            // _mpgen->addRow(designData, curr_sp, curr_sol, designData._costComponentsIP, cnt > -1);
+            _mpgen->addRow(designData, curr_sp, curr_sol, designData._costComponentsIP, cnt > -1);
+          }
           // if(update_index>updateThrd) {
           //std::cout << "Insert\n";
           curr_sol.cost = curr_cost;
+          count_accepted++;
           //}
         }
       }
@@ -702,11 +744,24 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     T *= hyper.ALPHA;
     // cout<<T<<endl;
   }
+  auto end = std::chrono::steady_clock::now();
+  std::chrono::duration<double> elapsed_seconds = end-start;
+  logger->info("Total iterations: {0}, total accepted placements: {1}  SBlocks : {2}" , total_counts, count_accepted, designData.GetSizeofSBlocks());
+  logger->info("elapsed time: {0}s", elapsed_seconds.count());
+  logger->info("Get Size of the Block: {0}", designData.GetSizeofBlocks());
+  logger->info("Variants: {0}", designData.Blocks.at(0).size());
+  if (_debugCostCompStream.is_open()) _debugCostCompStream << "EOD\n" << designData._costHeader << endl;
+  if (_debugCFCompStream.is_open()) _debugCFCompStream << "EOD\n" << designData._cfCostHeader << endl;
   // Write out placement results
   //cout << endl << "Placer-Info: optimal cost = " << curr_cost << endl;
   // curr_sol.PrintConstGraph();
   curr_sp.PrintSeqPair();
   // curr_sol.updateTerminalCenter(designData, curr_sp);
+  // auto math = py::module::import("math");
+  // double root_two = math.attr("sqrt")(2.0).cast<double>();
+
+  // std::cout << "The square root of 2 is: " << root_two << "\n";  
+  // py::finalize_interpreter();
   return oData;
 }
 
@@ -745,6 +800,7 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   design designData(nodeVec.back());
   designData.PrintDesign();
   // Initialize simulate annealing with initial solution
+  if (_mpgen) _mpgen->addCells(designData);
   SeqPair curr_sp(designData, size_t(1. * log(hyper.T_MIN/hyper.T_INT)/log(hyper.ALPHA) *
         ((effort == 0) ? 1. : ((effort == 1) ? 4. : 8.)) ));
   curr_sp.PrintSeqPair();

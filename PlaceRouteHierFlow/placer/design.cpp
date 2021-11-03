@@ -2,6 +2,117 @@
 #include "spdlog/spdlog.h"
 #include <cassert>
 
+void design::readCFConstraints()
+{
+  if (_cfdata._pinPairWeights.empty()) {
+    char* sideload = getenv("COST_FROM_SIM");
+    string slf;
+    if (sideload) {
+      auto logger = spdlog::default_logger()->clone("placer.design.readCFConstraints");
+      slf = sideload;
+      ifstream ifs(slf);
+      if (ifs) {
+        string tmps1, tmps2;
+        double wt(0.);
+    		vector<string> strings;
+    		string line;
+    		while (!ifs.eof()) {
+    			getline(ifs, line);
+    			strings = split_by_spaces(line);
+    			if (strings.size() >= 4) {
+    				_cfdata._nets.insert(strings[0]);
+    				_cfdata._pinPairWeights[make_pair(strings[1], strings[2])] = make_pair(stof(strings[3]), strings.size() > 4 ? stof(strings[4]) : 0.);
+    			}
+        }
+      }
+      ifs.close();
+
+      for (auto& it : _cfdata._pinPairWeights) {
+        logger->info("CF constraint {0} {1} {2} {3}", it.first.first, it.first.second, it.second.first, it.second.second);
+      }
+    }
+  }
+}
+
+
+// double ConstGraph::CallMLModelPython(std::string spec_name, std::vector<double> parasitic_value){
+//   std::cout << "Spec: " << spec_name << std::endl;
+//   std::cout << "Feature length: " << parasitic_value.size() << std::endl;
+//   char module_name[] = "Pytest";
+//   char func_name[] = "MLPredict";
+//   // std::array<double, 18> test_input = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 30, 30, 30}};
+//   if(import_python_package){
+//      Py_Initialize(); // TD: Initialize the Python interpreter
+//      import_python_package=0;
+//   }
+//   PyObject *pModule = NULL;
+//   PyObject *pFunc = NULL;
+//   PyObject *pValue;
+// //  std::cout << "In CallMLModelPython() 1" << std::endl;
+//   //PyObject* pName = PyUnicode_FromString("Pytest");
+
+//   PyRun_SimpleString("import numpy as np");
+// //  std::cout << "In CallMLModelPython() 2" << std::endl;
+// //  PyRun_SimpleString("from array import array");
+//   PyRun_SimpleString("import pickle");
+// //  std::cout << "In CallMLModelPython() 3" << std::endl;
+//   PyRun_SimpleString("import sys");
+// //  std::cout << "In CallMLModelPython() 4" << std::endl;
+//   PyRun_SimpleString("sys.path.append('./')");
+// //  std::cout << "In CallMLModelPython() 5" << std::endl;
+//   // PyRun_SimpleString("sys.path.append('/home/grads/dharx027/All_of_ALIGN/ALIGN_111120/PlaceRouteHierFlow/placer/MLPredict_cascoded_OTA')");
+//   PyRun_SimpleString("sys.path.append('/home/grads/dharx027/All_of_ALIGN/ALIGN_111120/PlaceRouteHierFlow/placer/MLPredict_two_stage_OTA')");
+//   // PyRun_SimpleString("sys.path.append('/home/grads/dharx027/All_of_ALIGN/ALIGN_111120/PlaceRouteHierFlow/placer/MLPredict_vco')");
+//     // PyRun_SimpleString("sys.path.append('/home/grads/dharx027/All_of_ALIGN/ALIGN_111120/PlaceRouteHierFlow/placer/MLPredict')");
+// //  PyRun_SimpleString("from sklearn.externals import joblib");
+
+// //  std::cout << "In CallMLModelPython() 2" << std::endl;
+
+//   pModule = PyImport_ImportModule("test_trained_model"); // TD: Import a module. This is best described by referring to the built-in Python function __import__().
+//   std::cout << "Imported module: " << pModule << std::endl;
+//   pFunc = PyObject_GetAttrString(pModule, func_name);
+//   std::cout << "Is function callable? " << PyCallable_Check(pFunc) << std::endl;
+//   // int L_size = 18; // For OTA_5T
+//  // int L_size = 33; // For cascoded_OTA
+//  int L_size = 28; // For two_stage_OTA
+//  // int L_size = 8; // For vco
+// //  std::cout << "In CallMLModelPython() 3" << std::endl;
+
+//   PyObject *PyList = PyList_New(L_size);
+//   PyObject *PyArgs = PyTuple_New(2);
+
+// //  std::cout << "In CallMLModelPython() 4" << std::endl;
+
+//   for(int i=0;i<L_size;i++){
+//     std::cout << "i: " << i << ", "<< parasitic_value[i] << std::endl;
+//     pValue = PyFloat_FromDouble(parasitic_value[i]);
+//     PyList_SetItem(PyList, i, pValue);
+//   }
+
+// //  std::cout << "In CallMLModelPython() 5" << std::endl;
+//   PyTuple_SetItem(PyArgs, 0, PyList);
+//   PyTuple_SetItem(PyArgs, 1, Py_BuildValue("s", spec_name.c_str()));// model_path should be string or const char*
+
+//   PyObject* pReturn =PyObject_CallObject(pFunc, PyArgs);
+//   double nResult;
+//   PyArg_Parse(pReturn, "d", &nResult);
+//   double Result = nResult;
+// //  std::cout<<"MLPredict result:  "<<Result<<std::endl;
+// //std::cout<<"pModule "<<pModule<<std::endl;
+// //pFunc = PyObject_GetAttrString(pModule, func_name);
+//   Py_DECREF(pModule);
+//   Py_DECREF(pFunc);
+//   Py_DECREF(pValue);
+//   Py_DECREF(PyArgs);
+//   Py_DECREF(pReturn);
+//   //Py_DECREF(PyList);
+//   if(import_python_package){
+//     Py_Finalize();
+//   }
+//   std::cout<<"MLPredict result:  "<<Result<<std::endl;
+//   return Result;
+// };
+
 design::design() {
   bias_Hgraph=92;
   bias_Vgraph=92;
@@ -12,6 +123,7 @@ design::design() {
   noAsymBlock4Move=0;
   noSymGroup4PartMove=0;
   noSymGroup4FullMove=0;
+  readCFConstraints();
 }
 
 design::design(design& other, int mode) {
@@ -22,6 +134,9 @@ design::design(design& other, int mode) {
   // small blocks will be filtered out
   // Limitation: currently we ignore terminals when placer works on big macros only
   //cout<<"Test: design mode "<<mode<<endl;
+  name = other.name;
+  _cfdata = other._cfdata;
+
   if(mode==1) {
     this->mixFlag=false;
     other.mixFlag=true;
@@ -34,7 +149,7 @@ design::design(design& other, int mode) {
       if(oit->back().bigMacro) { this->Blocks.resize(this->Blocks.size()+1); logger->debug("Bigmarco");}
       for(std::vector<block>::iterator it=oit->begin(); it!=oit->end(); ++it){
         it->mapIdx=-1; // reset mapping index
-        if(it->bigMacro) { 
+        if(it->bigMacro) {
           this->Blocks.back().push_back( *it );
           this->Blocks.back().back().SBidx=-1;
           this->Blocks.back().back().counterpart=-1;
@@ -85,7 +200,7 @@ design::design(design& other, int mode) {
           snode.type=placerDB::Block;
           snode.iter=i;
           snode.iter2=tnode.iter2;
-          if(seen.find(snode)==seen.end()) { 
+          if(seen.find(snode)==seen.end()) {
             seen.insert(snode);
             // if new node found, push into small set and queue
             // check other nodes connected to the same net
@@ -103,7 +218,7 @@ design::design(design& other, int mode) {
                   }
                 }
               }
-            } 
+            }
           }
         }
       }
@@ -126,7 +241,7 @@ design::design(design& other, int mode) {
           placerDB::Node nnode;
           nnode.type=it4->type;
           if(nnode.type==placerDB::Terminal) {
-            //nnode.iter=it4->iter; 
+            //nnode.iter=it4->iter;
             //nnode.iter2=it4->iter2;
             //this->Terminals.at(nnode.iter).netIter=this->Nets.size(); // link terminal to net
           } else if (nnode.type==placerDB::Block) {
@@ -300,6 +415,7 @@ design::design(design& other, int mode) {
     logger->debug("Test: add paramenter 9");
     other.noSymGroup4PartMove=other.GetSizeSymGroup4PartMove(0);
     logger->debug("Test: add paramenter 10");
+	readCFConstraints();
 /*
     for(vector<placerDB::net>::iterator it=other.Nets.begin(); it!=other.Nets.end(); ++it) {
       int sink=0;
@@ -336,6 +452,7 @@ design::design(PnRDB::hierNode& node) {
 
   auto logger = spdlog::default_logger()->clone("placer.design.design");
 
+  name = node.name;
   bias_Vgraph=node.bias_Vgraph; // from node
   bias_Hgraph=node.bias_Hgraph; // from node
   Aspect_Ratio_weight = node.Aspect_Ratio_weight;
@@ -559,6 +676,7 @@ design::design(PnRDB::hierNode& node) {
   noAsymBlock4Move=GetSizeAsymBlock4Move(1);
   noSymGroup4FullMove=GetSizeSymGroup4FullMove(1);
   noSymGroup4PartMove=noSymGroup4FullMove;
+  readCFConstraints();
   //std::cout<<"Leaving design\n";
 }
 
@@ -708,32 +826,32 @@ design::design(string blockfile, string netfile, string cfile) {
 
 //add be yaguang
 void design::Generate_random_const(string random_constrain_file) {
-	
+
 	int const_type_number = 4;
-	
+
 	//Const_type = [pre-placer,alignment-v,abument-h,matchblocks]
 	/*
 	1. pre-placer: 200 distance to rr, v
 	1. alignment: 0 distance, v.
 	2. abument: 0 dsitance, v. w distance h.
 	*/
-	
+
 	srand (time(NULL));
-	
+
     int Const_size = (rand()%Blocks.size()) /3;
-	
+
 	vector<int> Const_type_list;
 	pair<int,int> const_pair;
 	vector<pair<int,int>> const_pair_vector;
 	//int Const_type;
-	
+
 	for(int i=0;i<= Const_size;++i){
 	 //Const_type = rand()%const_type_number;
 	 Const_type_list.push_back( rand()%const_type_number );
 	}
-	
+
 	for(int i=0;i<= Const_size;++i){
-		
+
 		//generate const pairs
 		const_pair.first = rand()%Blocks.size();
 		const_pair.second = rand()%Blocks.size();
@@ -743,7 +861,7 @@ void design::Generate_random_const(string random_constrain_file) {
 		//redundant?
 		const_pair_vector.push_back(const_pair);
 	}
-	
+
 	ofstream fout;
 	fout.open(random_constrain_file.c_str());
 	fout<<"#This is a random constrains file."<<endl;
@@ -781,19 +899,19 @@ void design::Generate_random_const(string random_constrain_file) {
 			fout<<"MatchBlock ("<<" "<<Blocks[const_pair_vector[i].first].back().name<<" "<<Blocks[const_pair_vector[i].second].back().name<<" "<<")"<<endl;
                          distance = 0;
 		}
-		
+
 	}
 
 	int bias_Vgraph = 0;
 	int bias_Hgraph = 0;
-	while(bias_Vgraph<200 && bias_Hgraph<200){	
+	while(bias_Vgraph<200 && bias_Hgraph<200){
     bias_Vgraph = (rand()%10) *50;
     bias_Hgraph = (rand()%10) *50;
-    }	
-	
-	fout<<"bias_Vgraph ("<<" "<<bias_Vgraph<<" "<<")"<<endl;	
-	fout<<"bias_Hgraph ("<<" "<<bias_Hgraph<<" "<<")"<<endl;	
-	
+    }
+
+	fout<<"bias_Vgraph ("<<" "<<bias_Vgraph<<" "<<")"<<endl;
+	fout<<"bias_Hgraph ("<<" "<<bias_Hgraph<<" "<<")"<<endl;
+
 	fout.close();
 }
 
@@ -801,20 +919,20 @@ void design::readRandConstFile(string random_constrain_file) {
 	ifstream fin;
 	string def;
 	fin.open(random_constrain_file.c_str());
-	
+
 	vector<string> temp, tempsec;
-	
+
 	while(!fin.eof()) {
 		getline(fin, def);
 		temp=split_by_spaces(def);
-		
-		
+
+
 		if(temp[0].compare("Preplace")==0){
 			string block_first=temp[2];
 			string block_second=temp[3];
 			int distance= atoi(temp[4].c_str());
 			int horizon = atoi(temp[5].c_str());
-                
+
 			Preplace preplace_const;
 			for(unsigned int i=0;i<Blocks.size();++i) {
 			     if(Blocks.at(i).back().name.compare(block_first)==0) {
@@ -827,7 +945,7 @@ void design::readRandConstFile(string random_constrain_file) {
 					preplace_const.blockid2 = i;
 					break;
 				}else
-				{ 
+				{
 				  preplace_const.conner = block_second;
 				}
 			}
@@ -835,7 +953,7 @@ void design::readRandConstFile(string random_constrain_file) {
 			preplace_const.horizon = horizon;
 			Preplace_blocks.push_back(preplace_const);
 		}
-		
+
 		if(temp[0].compare("Alignment")==0){
 			string block_first=temp[2];
 			string block_second=temp[3];
@@ -857,17 +975,17 @@ void design::readRandConstFile(string random_constrain_file) {
 			}
 			alignment_const.distance = distance;
 			alignment_const.horizon = horizon;
-			Alignment_blocks.push_back(alignment_const);	
+			Alignment_blocks.push_back(alignment_const);
 		}
-		
+
 		if(temp[0].compare("Abument")==0){
 			string block_first=temp[2];
 			string block_second=temp[3];
 			int distance= atoi(temp[4].c_str());
 			int horizon = atoi(temp[5].c_str());
-			
+
 			Abument abument_const;
-			
+
 			for(unsigned int i=0;i<Blocks.size();++i) {
 				if(Blocks.at(i).back().name.compare(block_first)==0) {
 					abument_const.blockid1 = i;
@@ -889,9 +1007,9 @@ void design::readRandConstFile(string random_constrain_file) {
 			string block_second=temp[3];
 			//int distance= atoi(temp[4].c_str());
 			//int horizon = atoi(temp[5].c_str());
-			
+
 			MatchBlock match_const;
-			
+
 			for(unsigned int i=0;i<Blocks.size();++i) {
 				if(Blocks.at(i).back().name.compare(block_first)==0) {
 					match_const.blockid1 = i;
@@ -914,25 +1032,25 @@ void design::readRandConstFile(string random_constrain_file) {
                 	bias_Hgraph = distance;
                 	bias_Vgraph = distance;
 			//Preplace_blocks.push_back(preplace_const);
-		}		
+		}
 		if(temp[0].compare("bias_Vgraph")==0){
 
 			int distance= atoi(temp[2].c_str());
                 	bias_Vgraph = distance;
 			//Preplace_blocks.push_back(preplace_const);
-		}		
+		}
 		if(temp[0].compare("bias_Hgraph")==0){
 
 			int distance= atoi(temp[2].c_str());
                 	bias_Hgraph = distance;
 			//Preplace_blocks.push_back(preplace_const);
-		}		
+		}
 
-	
+
 	}
-    
-	
-	
+
+
+
 }
 
 //
@@ -942,10 +1060,10 @@ void design::readRandConstFile(string random_constrain_file) {
 //  ifstream fin;
 //  string def;
 //  fin.open(netfile.c_str());
-//  
+//
 //  vector<string> temp;
 //  size_t found;
-//  
+//
 //  int *p=0;
 //  int p_temp=0;
 //  p=&p_temp;
@@ -959,7 +1077,7 @@ void design::readRandConstFile(string random_constrain_file) {
 //      break;
 //    }
 //  }
-// 
+//
 //  while(!fin.eof()) {
 //    getline(fin, def);
 //    if((found=def.find("NumPins"))!=string::npos) {
@@ -1024,14 +1142,14 @@ void design::readRandConstFile(string random_constrain_file) {
 //  ifstream fin;
 //  string def;
 //  fin.open(blockfile.c_str());
-//  
+//
 //  vector<string> temp, tempsec;
 //  size_t found;
-//  
+//
 //  int *p=0;
 //  int p_temp=0;
 //  p=&p_temp;
-//  
+//
 //  placerDB::point p1,p2,p3,p4;
 //  int blockNo=0, terminalNo=0;
 //  while(!fin.eof()) {
@@ -1042,7 +1160,7 @@ void design::readRandConstFile(string random_constrain_file) {
 //      break;
 //    }
 //  }
-// 
+//
 //  while(!fin.eof()) {
 //    getline(fin, def);
 //    if((found=def.find("NumTerminals"))!=string::npos) {
@@ -1052,7 +1170,7 @@ void design::readRandConstFile(string random_constrain_file) {
 //    }
 //  }
 //  cout<<"Placer-Info: reading "<<blockNo<<" blocks and "<<terminalNo<<" terminals ..."<<endl;
-//  getline(fin, def); 
+//  getline(fin, def);
 //  for(int i=0;i<blockNo;++i) {
 //    getline(fin, def);
 //    //cout<<i<<"-"<<def;
@@ -1128,21 +1246,21 @@ void design::readRandConstFile(string random_constrain_file) {
 //    //  break;
 //    }
 //  }
-//  
+//
 //}
 
 //void design::readConstFile(string cfile) {
 //  ifstream fin;
 //  string def;
 //  fin.open(cfile.c_str());
-//  
+//
 //  vector<string> temp, tempsec;
 //  size_t found;
-//  
+//
 //  int *p=0;
 //  int p_temp=0;
 //  p=&p_temp;
-//  
+//
 //  while(!fin.eof()) {
 //    getline(fin, def);
 //    temp=split_by_spaces(def);
@@ -1238,6 +1356,8 @@ void design::readRandConstFile(string random_constrain_file) {
 //}
 
 design::design(const design& other):Port_Location(other.Port_Location) {
+  this->name=other.name;
+  this->_cfdata=other._cfdata;
   this->Blocks=other.Blocks;
   this->Terminals=other.Terminals;
   this->Nets=other.Nets;
@@ -1261,6 +1381,8 @@ design::design(const design& other):Port_Location(other.Port_Location) {
 }
 
 design& design::operator= (const design& other) {
+  this->name=other.name;
+  this->_cfdata=other._cfdata;
   this->Blocks=other.Blocks;
   this->Terminals=other.Terminals;
   this->Nets=other.Nets;
@@ -1300,7 +1422,7 @@ void design::PrintDesign() {
     logger->debug("Symmetry net {0} SBidx {1}",i,SNets.at(i).SBidx);
   }
   for(unsigned int i=0;i<Port_Location.size();++i) {
-    logger->debug("Port location {0} @ {1}",Port_Location.at(i).tid,Port_Location.at(i).pos); 
+    logger->debug("Port location {0} @ {1}",Port_Location.at(i).tid,Port_Location.at(i).pos);
   }
 }
 
@@ -1358,7 +1480,7 @@ void design::PrintConstraints() {
   logger->debug("=== SymmNet Constraits ===");
   for(vector<SymmNet>::iterator it=SNets.begin(); it!=SNets.end(); ++it) {
     logger->debug("{0}",it->net1.name);
-    for(vector<placerDB::Node>::iterator ni=it->net1.connected.begin(); ni!=it->net1.connected.end(); ++ni) { 
+    for(vector<placerDB::Node>::iterator ni=it->net1.connected.begin(); ni!=it->net1.connected.end(); ++ni) {
       logger->debug("{0} {1} {2}",ni->type, ni->iter, ni->iter2);
       if(ni->type==placerDB::Block) {logger->debug("@ {0} / {1}",Blocks.at(ni->iter2).back().name,Blocks.at(ni->iter2).back().blockPins.at(ni->iter).name);}
       if(ni->type==placerDB::Terminal) {logger->debug("@ {0}",Terminals.at(ni->iter).name);}
@@ -1429,8 +1551,8 @@ void design::PrintNets() {
       logger->debug("type: {0} iter {1} iter2 {2}",it2->type,it2->iter,it2->iter2);
       if(it2->type==placerDB::Block) {
 	auto blk=Blocks.at(it2->iter2);
-	if ( blk.size() == 0) { 
-          logger->debug(" <empty>"); 
+	if ( blk.size() == 0) {
+          logger->debug(" <empty>");
 	} else {
 	  auto tmp=blk.back();
 	  auto tmp2=tmp.blockPins.at(it2->iter);
@@ -1485,7 +1607,7 @@ placerDB::point design::GetPlacedPosition(placerDB::point oldp, int width, int h
             break;
     case placerDB::E: p.x=Y;	p.y=WW-X;
             break;
-    case placerDB::FN:p.x=WW-X;	p.y=Y; 
+    case placerDB::FN:p.x=WW-X;	p.y=Y;
             break;
     case placerDB::FS:p.x=X;	p.y=HH-Y;
             break;
@@ -1511,7 +1633,7 @@ PnRDB::point design::GetPlacedPnRPosition(PnRDB::point oldp, int width, int heig
             break;
     case placerDB::E: p.x=Y;	p.y=WW-X;
             break;
-    case placerDB::FN:p.x=WW-X;	p.y=Y; 
+    case placerDB::FN:p.x=WW-X;	p.y=Y;
             break;
     case placerDB::FS:p.x=X;	p.y=HH-Y;
             break;
@@ -1539,7 +1661,7 @@ vector<placerDB::point> design::GetPlacedBlockPinRelPosition(int blockid, int pi
 vector<placerDB::point> design::GetPlacedBlockPinAbsPosition(int blockid, int pinid, placerDB::Omark ort, placerDB::point LL, int sel) {
   vector<placerDB::point> p;
 
-  //std::cout<<"design test1"<<std::endl;  
+  //std::cout<<"design test1"<<std::endl;
   p=GetPlacedBlockPinRelPosition(blockid, pinid, ort, sel);
   //std::cout<<"design test2"<<std::endl;
   for(vector<placerDB::point>::iterator it=p.begin();it!=p.end();++it) {
@@ -1617,7 +1739,7 @@ PnRDB::bbox design::GetPlacedBlockInterMetalRelBox(int blockid, placerDB::Omark 
   vector<PnRDB::point> points;
   points.push_back( GetPlacedPnRPosition( originBox.LL, blk.width, blk.height, ort));
   points.push_back( GetPlacedPnRPosition( originBox.UR, blk.width, blk.height, ort));
-  
+
   int x=INT_MAX; int X=INT_MIN;
   int y=INT_MAX; int Y=INT_MIN;
 
@@ -1681,7 +1803,7 @@ vector<pair<int,int> > design::checkSelfsymInSymmBlock(vector<placerDB::SymmBloc
   for(unsigned int j=0; j<SBs.size(); ++j ) {
     for(vector< pair<int,placerDB::Smark> >::iterator pi=SBs.at(j).selfsym.begin(); pi!=SBs.at(j).selfsym.end(); ++pi) {
       for( unsigned int i=0; i<Tselfsym.size(); ++i ) {
-        if( pi->first==Tselfsym.at(i).first && pi->second==Tselfsym.at(i).second ) { 
+        if( pi->first==Tselfsym.at(i).first && pi->second==Tselfsym.at(i).second ) {
           pp.push_back(make_pair(j,i));
         }
       }
@@ -1770,12 +1892,12 @@ void design::constructSymmGroup() {
 
   auto logger = spdlog::default_logger()->clone("placer.design.constructSymmGroup");
 
-  // Known issues: 
+  // Known issues:
   // 1. The merging of individual symmetry nets into symmetry group depends on the order of nets.
   // If the common objects of two symmetry-net groups exist in another symmetry-net group,
   // the merging will not be completed.
   // Known limitation:
-  // 1. The symmetric pair in the symmetry group should have the same object type. 
+  // 1. The symmetric pair in the symmetry group should have the same object type.
   // E.g. mixing of terminal and block will be ignored.
   // 2. The self-symmetry object should be block rather than terminal.
   // 3. The self-symmetry object is assumed to be vertically symmetric.
@@ -1861,11 +1983,11 @@ void design::constructSymmGroup() {
     //      for(vector<pair<int,int> >::iterator mit=matchedSelf.begin();mit!=matchedSelf.end();++mit) {
     //        if(i==mit->second) {found=true;break;}
     //      }
-    //      if(!found) SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) ); 
+    //      if(!found) SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) );
     //    }
     //  }
     //} else {
-    //  if(matchedSelf.empty()) { // only matched paired-symmetric  
+    //  if(matchedSelf.empty()) { // only matched paired-symmetric
     //    int gidx=matchedPair[0].first;
     //    for(vector<pair<int,int> >::iterator itt=matchedPair.begin();itt!=matchedPair.end();++itt) {
     //      if(itt->first!=gidx) {
@@ -1877,12 +1999,12 @@ void design::constructSymmGroup() {
     //      }
     //    }
     //    cout<<"Append symmetric group #"<<gidx<<endl;
-    //    for(int i=0;i<(int)tmpsympair.size();i++) { 
+    //    for(int i=0;i<(int)tmpsympair.size();i++) {
     //      bool found=false;
     //      for(vector<pair<int,int> >::iterator mit=matchedPair.begin();mit!=matchedPair.end();++mit) {
     //        if(i==mit->second) {found=true;break;}
     //      }
-    //      if(!found) SBs.at(gidx).sympair.push_back( tmpsympair.at(i) ); 
+    //      if(!found) SBs.at(gidx).sympair.push_back( tmpsympair.at(i) );
     //    }
     //    for(int i=0;i<(int)tmpselfsym.size();i++) { SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) ); }
     //  } else { // both matched
@@ -1910,17 +2032,17 @@ void design::constructSymmGroup() {
     //      for(vector<pair<int,int> >::iterator mit=matchedSelf.begin();mit!=matchedSelf.end();++mit) {
     //        if(i==mit->second) {found=true;break;}
     //      }
-    //      if(!found) SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) ); 
+    //      if(!found) SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) );
     //    }
-    //    for(int i=0;i<(int)tmpsympair.size();i++) { 
+    //    for(int i=0;i<(int)tmpsympair.size();i++) {
     //      bool found=false;
     //      for(vector<pair<int,int> >::iterator mit=matchedPair.begin();mit!=matchedPair.end();++mit) {
     //        if(i==mit->second) {found=true;break;}
     //      }
-    //      if(!found) SBs.at(gidx).sympair.push_back( tmpsympair.at(i) ); 
+    //      if(!found) SBs.at(gidx).sympair.push_back( tmpsympair.at(i) );
     //    }
     //  }
-    //} 
+    //}
   }
   for(vector<SymmPairBlock>::iterator sni=SPBlocks.begin(); sni!=SPBlocks.end(); ++sni) {
     MergeNewBlockstoSymmetryGroup(sni->sympair, sni->selfsym, SBs, this->SNets, sni->axis_dir);
@@ -1938,14 +2060,14 @@ void design::constructSymmGroup() {
     for(vector< pair<int,int> >::iterator pit=SBlocks[i].sympair.begin(); pit!=SBlocks[i].sympair.end(); ++pit) {
       if(pit->first<(int)Blocks.size()) {
         for(unsigned int w=0;w<Blocks.at(pit->first).size();++w) {
-          Blocks.at(pit->first).at(w).SBidx=i; Blocks.at(pit->first).at(w).counterpart=pit->second;  
+          Blocks.at(pit->first).at(w).SBidx=i; Blocks.at(pit->first).at(w).counterpart=pit->second;
         }
       } else {
         Terminals.at(pit->first-Blocks.size()).SBidx=i; Terminals.at(pit->first-Blocks.size()).counterpart=pit->second-Blocks.size();
       }
       if(pit->second<(int)Blocks.size()) {
         for(unsigned int w=0;w<Blocks.at(pit->second).size();++w) {
-          Blocks.at(pit->second).at(w).SBidx=i; Blocks.at(pit->second).at(w).counterpart=pit->first;  
+          Blocks.at(pit->second).at(w).SBidx=i; Blocks.at(pit->second).at(w).counterpart=pit->first;
         }
       } else {
         Terminals.at(pit->second-Blocks.size()).SBidx=i; Terminals.at(pit->second-Blocks.size()).counterpart=pit->first-Blocks.size();
@@ -1954,7 +2076,7 @@ void design::constructSymmGroup() {
     for(vector< pair<int,placerDB::Smark> >::iterator sit=SBlocks[i].selfsym.begin(); sit!=SBlocks[i].selfsym.end(); ++sit) {
       if(sit->first<(int)Blocks.size()) {
         for(unsigned int w=0;w<Blocks.at(sit->first).size();++w) {
-          Blocks.at(sit->first).at(w).SBidx=i; Blocks.at(sit->first).at(w).counterpart=sit->first;  
+          Blocks.at(sit->first).at(w).SBidx=i; Blocks.at(sit->first).at(w).counterpart=sit->first;
         }
       } else {
         Terminals.at(sit->first-Blocks.size()).SBidx=i; Terminals.at(sit->first-Blocks.size()).counterpart=sit->first-Blocks.size();
@@ -2005,13 +2127,13 @@ int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  
         for(vector<pair<int,int> >::iterator mit=matchedSelf.begin();mit!=matchedSelf.end();++mit) {
           if((int)i==mit->second) {found=true;break;}
         }
-        if(!found) SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) ); 
+        if(!found) SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) );
       }
       SBs.at(gidx).axis_dir=axis_dir;
       sbidx=gidx;
     }
   } else {
-    if(matchedSelf.empty()) { // only matched paired-symmetric  
+    if(matchedSelf.empty()) { // only matched paired-symmetric
       int gidx=matchedPair[0].first;
       for(vector<pair<int,int> >::iterator itt=matchedPair.begin();itt!=matchedPair.end();++itt) {
         if(itt->first!=gidx) {
@@ -2026,12 +2148,12 @@ int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  
         }
       }
       logger->debug("Append symmetric group # {0}",gidx);
-      for(unsigned int i=0;i<tmpsympair.size();++i) { 
+      for(unsigned int i=0;i<tmpsympair.size();++i) {
         bool found=false;
         for(vector<pair<int,int> >::iterator mit=matchedPair.begin();mit!=matchedPair.end();++mit) {
           if((int)i==mit->second) {found=true;break;}
         }
-        if(!found) SBs.at(gidx).sympair.push_back( tmpsympair.at(i) ); 
+        if(!found) SBs.at(gidx).sympair.push_back( tmpsympair.at(i) );
       }
       for(unsigned int i=0;i<tmpselfsym.size();++i) { SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) ); }
       sbidx=gidx;
@@ -2068,19 +2190,19 @@ int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  
         for(vector<pair<int,int> >::iterator mit=matchedSelf.begin();mit!=matchedSelf.end();++mit) {
           if((int)i==mit->second) {found=true;break;}
         }
-        if(!found) SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) ); 
+        if(!found) SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) );
       }
-      for(unsigned int i=0;i<tmpsympair.size();++i) { 
+      for(unsigned int i=0;i<tmpsympair.size();++i) {
         bool found=false;
         for(vector<pair<int,int> >::iterator mit=matchedPair.begin();mit!=matchedPair.end();++mit) {
           if((int)i==mit->second) {found=true;break;}
         }
-        if(!found) SBs.at(gidx).sympair.push_back( tmpsympair.at(i) ); 
+        if(!found) SBs.at(gidx).sympair.push_back( tmpsympair.at(i) );
       }
       SBs.at(gidx).axis_dir=axis_dir;
       sbidx=gidx;
     }
-  } 
+  }
   return sbidx;
 }
 

@@ -75,6 +75,7 @@ class SeqPair
 {
   private:
     friend class ILP_solver;
+    friend class MatPlotGen;
     vector<int> posPair;
     vector<int> negPair;
     vector<placerDB::Omark> orient;
@@ -87,7 +88,10 @@ class SeqPair
     vector<int> GetVerticesIndexinSeq(vector<int>& seq, vector<int>& L);
     vector<int> SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, vector<int>& seq);
     void InsertCommonSBlock(design& originNL, design& reducedNL, int originIdx);
-    void InsertNewSBlock(design& originNL, int originIdx);
+    void InsertNewSBlock(design& originNL, int originIdx);    
+	static std::vector<size_t> _factorial;
+    static size_t factorial(const size_t& n) { return (n <= 1) ? 1 : n*factorial(n-1); }
+    size_t GetIndex(const vector<int>& seq) const;
 
   public:
     SeqPair();
@@ -132,6 +136,8 @@ class SeqPair
     bool ChangeSelectedBlock(design& caseNL);
     void KeepOrdering(design& caseNL);
     void CompactSeq();
+    std::string GetString(const unsigned type = 0) const; 
+	std::pair<size_t, size_t> GetLexIndex();
 
     //vector<int> GetFlip(const bool hor) const;
 };
