@@ -1,0 +1,706 @@
+{
+  "modules": [
+    {
+      "name": "HIGH_SPEED_COMPARATOR",
+      "parameters": [
+        "CLK",
+        "VCC",
+        "VIN",
+        "VIP",
+        "VON",
+        "VOP",
+        "VSS"
+      ],
+      "constraints": [
+        {
+          "constraint": "horizontal_distance",
+          "abs_distance": 0
+        },
+        {
+          "constraint": "vertical_distance",
+          "abs_distance": 0
+        },
+        {
+          "constraint": "symmetric_blocks",
+          "pairs": [
+            [
+              "MN0"
+            ],
+            [
+              "X_DP_MN1_MN2"
+            ],
+            [
+              "X_CCN_MN3_MN4"
+            ],
+            [
+              "X_CCP_MP5_MP6"
+            ],
+            [
+              "MP7",
+              "MP8"
+            ],
+            [
+              "MP9",
+              "MP10"
+            ],
+            [
+              "X_INV_N_MP11_MN13",
+              "X_INV_P_MP12_MN14"
+            ]
+          ],
+          "direction": "V"
+        },
+        {
+          "constraint": "order",
+          "instances": [
+            "MN0",
+            "X_DP_MN1_MN2",
+            "X_CCN_MN3_MN4",
+            "X_CCP_MP5_MP6"
+          ],
+          "direction": "top_to_bottom",
+          "abut": false
+        },
+        {
+          "constraint": "align",
+          "instances": [
+            "MP9",
+            "MP7",
+            "X_DP_MN1_MN2",
+            "MP8",
+            "MP10"
+          ],
+          "line": "h_bottom"
+        },
+        {
+          "constraint": "align",
+          "instances": [
+            "X_INV_N_MP11_MN13",
+            "X_CCP_MP5_MP6",
+            "X_INV_P_MP12_MN14"
+          ],
+          "line": "h_bottom"
+        },
+        {
+          "constraint": "do_not_identify",
+          "instances": [
+            "X_CCN_MN3_MN4",
+            "X_CCP_MP5_MP6",
+            "X_DP_MN1_MN2",
+            "X_INV_N_MP11_MN13",
+            "X_INV_P_MP12_MN14",
+            "MN0",
+            "MP10",
+            "MP7",
+            "MP8",
+            "MP9"
+          ]
+        },
+        {
+          "constraint": "symmetric_nets",
+          "net1": "VIN",
+          "net2": "VIP",
+          "pins1": [
+            "X_DP_MN1_MN2/VIN",
+            "VIN"
+          ],
+          "pins2": [
+            "X_DP_MN1_MN2/VIP",
+            "VIP"
+          ],
+          "direction": "V"
+        },
+        {
+          "constraint": "symmetric_nets",
+          "net1": "VIN_D",
+          "net2": "VIP_D",
+          "pins1": [
+            "MP7/D",
+            "X_DP_MN1_MN2/VIN_D",
+            "X_CCN_MN3_MN4/VIN_D"
+          ],
+          "pins2": [
+            "MP8/D",
+            "X_DP_MN1_MN2/VIP_D",
+            "X_CCN_MN3_MN4/VIP_D"
+          ],
+          "direction": "V"
+        },
+        {
+          "constraint": "symmetric_nets",
+          "net1": "VIN_O",
+          "net2": "VIP_O",
+          "pins1": [
+            "MP9/D",
+            "X_CCN_MN3_MN4/VIN_O",
+            "X_CCP_MP5_MP6/VIN_O"
+          ],
+          "pins2": [
+            "MP10/D",
+            "X_CCN_MN3_MN4/VIP_O",
+            "X_CCP_MP5_MP6/VIP_O"
+          ],
+          "direction": "V"
+        },
+        {
+          "constraint": "symmetric_blocks",
+          "pairs": [
+            [
+              "X_DP_MN1_MN2"
+            ]
+          ],
+          "direction": "V"
+        },
+        {
+          "constraint": "symmetric_blocks",
+          "pairs": [
+            [
+              "MP7",
+              "MP8"
+            ],
+            [
+              "X_CCN_MN3_MN4"
+            ]
+          ],
+          "direction": "V"
+        },
+        {
+          "constraint": "symmetric_blocks",
+          "pairs": [
+            [
+              "MP9",
+              "MP10"
+            ],
+            [
+              "X_CCP_MP5_MP6"
+            ]
+          ],
+          "direction": "V"
+        }
+      ],
+      "instances": [
+        {
+          "instance_name": "MN0",
+          "fa_map": [
+            {
+              "formal": "B",
+              "actual": "VSS"
+            },
+            {
+              "formal": "D",
+              "actual": "VCOM"
+            },
+            {
+              "formal": "G",
+              "actual": "CLK"
+            },
+            {
+              "formal": "S",
+              "actual": "VSS"
+            }
+          ],
+          "abstract_template_name": "NMOS_NFIN6_NF2_M8_N12"
+        },
+        {
+          "instance_name": "MP7",
+          "fa_map": [
+            {
+              "formal": "B",
+              "actual": "VCC"
+            },
+            {
+              "formal": "D",
+              "actual": "VIN_D"
+            },
+            {
+              "formal": "G",
+              "actual": "CLK"
+            },
+            {
+              "formal": "S",
+              "actual": "VCC"
+            }
+          ],
+          "abstract_template_name": "PMOS_NFIN6_NF2_M1_N12"
+        },
+        {
+          "instance_name": "MP8",
+          "fa_map": [
+            {
+              "formal": "B",
+              "actual": "VCC"
+            },
+            {
+              "formal": "D",
+              "actual": "VIP_D"
+            },
+            {
+              "formal": "G",
+              "actual": "CLK"
+            },
+            {
+              "formal": "S",
+              "actual": "VCC"
+            }
+          ],
+          "abstract_template_name": "PMOS_NFIN6_NF2_M1_N12"
+        },
+        {
+          "instance_name": "MP9",
+          "fa_map": [
+            {
+              "formal": "B",
+              "actual": "VCC"
+            },
+            {
+              "formal": "D",
+              "actual": "VIN_O"
+            },
+            {
+              "formal": "G",
+              "actual": "CLK"
+            },
+            {
+              "formal": "S",
+              "actual": "VCC"
+            }
+          ],
+          "abstract_template_name": "PMOS_NFIN6_NF2_M1_N12"
+        },
+        {
+          "instance_name": "MP10",
+          "fa_map": [
+            {
+              "formal": "B",
+              "actual": "VCC"
+            },
+            {
+              "formal": "D",
+              "actual": "VIP_O"
+            },
+            {
+              "formal": "G",
+              "actual": "CLK"
+            },
+            {
+              "formal": "S",
+              "actual": "VCC"
+            }
+          ],
+          "abstract_template_name": "PMOS_NFIN6_NF2_M1_N12"
+        },
+        {
+          "instance_name": "X_DP_MN1_MN2",
+          "fa_map": [
+            {
+              "formal": "VCOM",
+              "actual": "VCOM"
+            },
+            {
+              "formal": "VIN",
+              "actual": "VIN"
+            },
+            {
+              "formal": "VIN_D",
+              "actual": "VIN_D"
+            },
+            {
+              "formal": "VIP",
+              "actual": "VIP"
+            },
+            {
+              "formal": "VIP_D",
+              "actual": "VIP_D"
+            },
+            {
+              "formal": "VSS",
+              "actual": "VSS"
+            }
+          ],
+          "abstract_template_name": "DP"
+        },
+        {
+          "instance_name": "X_CCN_MN3_MN4",
+          "fa_map": [
+            {
+              "formal": "VIN_D",
+              "actual": "VIN_D"
+            },
+            {
+              "formal": "VIN_O",
+              "actual": "VIN_O"
+            },
+            {
+              "formal": "VIP_D",
+              "actual": "VIP_D"
+            },
+            {
+              "formal": "VIP_O",
+              "actual": "VIP_O"
+            },
+            {
+              "formal": "VSS",
+              "actual": "VSS"
+            }
+          ],
+          "abstract_template_name": "CCN"
+        },
+        {
+          "instance_name": "X_CCP_MP5_MP6",
+          "fa_map": [
+            {
+              "formal": "VCC",
+              "actual": "VCC"
+            },
+            {
+              "formal": "VIN_O",
+              "actual": "VIN_O"
+            },
+            {
+              "formal": "VIP_O",
+              "actual": "VIP_O"
+            }
+          ],
+          "abstract_template_name": "CCP"
+        },
+        {
+          "instance_name": "X_INV_N_MP11_MN13",
+          "fa_map": [
+            {
+              "formal": "VCC",
+              "actual": "VCC"
+            },
+            {
+              "formal": "VIP_O",
+              "actual": "VIP_O"
+            },
+            {
+              "formal": "VOP",
+              "actual": "VOP"
+            },
+            {
+              "formal": "VSS",
+              "actual": "VSS"
+            }
+          ],
+          "abstract_template_name": "INV_N"
+        },
+        {
+          "instance_name": "X_INV_P_MP12_MN14",
+          "fa_map": [
+            {
+              "formal": "VCC",
+              "actual": "VCC"
+            },
+            {
+              "formal": "VIN_O",
+              "actual": "VIN_O"
+            },
+            {
+              "formal": "VON",
+              "actual": "VON"
+            },
+            {
+              "formal": "VSS",
+              "actual": "VSS"
+            }
+          ],
+          "abstract_template_name": "INV_P"
+        }
+      ]
+    },
+    {
+      "name": "DP",
+      "parameters": [
+        "VIP_D",
+        "VCOM",
+        "VIN_D",
+        "VIN",
+        "VSS",
+        "VIP"
+      ],
+      "constraints": [
+        {
+          "constraint": "horizontal_distance",
+          "abs_distance": 0
+        },
+        {
+          "constraint": "vertical_distance",
+          "abs_distance": 0
+        }
+      ],
+      "instances": [
+        {
+          "instance_name": "X_DP_NMOS_B_MN1_MN2",
+          "fa_map": [
+            {
+              "formal": "B",
+              "actual": "VSS"
+            },
+            {
+              "formal": "DA",
+              "actual": "VIN_D"
+            },
+            {
+              "formal": "DB",
+              "actual": "VIP_D"
+            },
+            {
+              "formal": "GA",
+              "actual": "VIN"
+            },
+            {
+              "formal": "GB",
+              "actual": "VIP"
+            },
+            {
+              "formal": "S",
+              "actual": "VCOM"
+            }
+          ],
+          "abstract_template_name": "DP_NMOS_B_NFIN6_NF2_M16_N12"
+        }
+      ]
+    },
+    {
+      "name": "CCN",
+      "parameters": [
+        "VIN_O",
+        "VIP_O",
+        "VSS",
+        "VIN_D",
+        "VIP_D"
+      ],
+      "constraints": [
+        {
+          "constraint": "horizontal_distance",
+          "abs_distance": 0
+        },
+        {
+          "constraint": "vertical_distance",
+          "abs_distance": 0
+        }
+      ],
+      "instances": [
+        {
+          "instance_name": "X_CCP_S_NMOS_B_MN3_MN4",
+          "fa_map": [
+            {
+              "formal": "B",
+              "actual": "VSS"
+            },
+            {
+              "formal": "DA",
+              "actual": "VIN_O"
+            },
+            {
+              "formal": "DB",
+              "actual": "VIP_O"
+            },
+            {
+              "formal": "SA",
+              "actual": "VIN_D"
+            },
+            {
+              "formal": "SB",
+              "actual": "VIP_D"
+            }
+          ],
+          "abstract_template_name": "CCP_S_NMOS_B_NFIN6_NF2_M8_N12"
+        }
+      ]
+    },
+    {
+      "name": "CCP",
+      "parameters": [
+        "VIN_O",
+        "VIP_O",
+        "VCC"
+      ],
+      "constraints": [
+        {
+          "constraint": "horizontal_distance",
+          "abs_distance": 0
+        },
+        {
+          "constraint": "vertical_distance",
+          "abs_distance": 0
+        }
+      ],
+      "instances": [
+        {
+          "instance_name": "X_CCP_PMOS_MP5_MP6",
+          "fa_map": [
+            {
+              "formal": "DA",
+              "actual": "VIN_O"
+            },
+            {
+              "formal": "DB",
+              "actual": "VIP_O"
+            },
+            {
+              "formal": "S",
+              "actual": "VCC"
+            }
+          ],
+          "abstract_template_name": "CCP_PMOS_NFIN6_NF2_M4_N12"
+        }
+      ]
+    },
+    {
+      "name": "INV_N",
+      "parameters": [
+        "VSS",
+        "VOP",
+        "VIP_O",
+        "VCC"
+      ],
+      "constraints": [
+        {
+          "constraint": "horizontal_distance",
+          "abs_distance": 0
+        },
+        {
+          "constraint": "vertical_distance",
+          "abs_distance": 0
+        }
+      ],
+      "instances": [
+        {
+          "instance_name": "X_INV_MN13_MP11",
+          "fa_map": [
+            {
+              "formal": "I",
+              "actual": "VIP_O"
+            },
+            {
+              "formal": "SN",
+              "actual": "VSS"
+            },
+            {
+              "formal": "SP",
+              "actual": "VCC"
+            },
+            {
+              "formal": "ZN",
+              "actual": "VOP"
+            }
+          ],
+          "abstract_template_name": "INV"
+        }
+      ]
+    },
+    {
+      "name": "INV_P",
+      "parameters": [
+        "VIN_O",
+        "VON",
+        "VSS",
+        "VCC"
+      ],
+      "constraints": [
+        {
+          "constraint": "horizontal_distance",
+          "abs_distance": 0
+        },
+        {
+          "constraint": "vertical_distance",
+          "abs_distance": 0
+        }
+      ],
+      "instances": [
+        {
+          "instance_name": "X_INV_MN14_MP12",
+          "fa_map": [
+            {
+              "formal": "I",
+              "actual": "VIN_O"
+            },
+            {
+              "formal": "SN",
+              "actual": "VSS"
+            },
+            {
+              "formal": "SP",
+              "actual": "VCC"
+            },
+            {
+              "formal": "ZN",
+              "actual": "VON"
+            }
+          ],
+          "abstract_template_name": "INV"
+        }
+      ]
+    },
+    {
+      "name": "INV",
+      "parameters": [
+        "I",
+        "ZN",
+        "SN",
+        "SP"
+      ],
+      "constraints": [],
+      "instances": [
+        {
+          "instance_name": "M0",
+          "fa_map": [
+            {
+              "formal": "B",
+              "actual": "SN"
+            },
+            {
+              "formal": "D",
+              "actual": "ZN"
+            },
+            {
+              "formal": "G",
+              "actual": "I"
+            },
+            {
+              "formal": "S",
+              "actual": "SN"
+            }
+          ],
+          "abstract_template_name": "NMOS_NFIN6_NF2_M1_N12"
+        },
+        {
+          "instance_name": "M1",
+          "fa_map": [
+            {
+              "formal": "B",
+              "actual": "SP"
+            },
+            {
+              "formal": "D",
+              "actual": "ZN"
+            },
+            {
+              "formal": "G",
+              "actual": "I"
+            },
+            {
+              "formal": "S",
+              "actual": "SP"
+            }
+          ],
+          "abstract_template_name": "PMOS_NFIN6_NF2_M1_N12"
+        }
+      ]
+    }
+  ],
+  "global_signals": [
+    {
+      "prefix": "global_power",
+      "formal": "supply0",
+      "actual": "VSS"
+    },
+    {
+      "prefix": "global_power",
+      "formal": "supply1",
+      "actual": "VCC"
+    }
+  ]
+}
