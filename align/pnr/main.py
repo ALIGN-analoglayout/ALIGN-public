@@ -290,7 +290,6 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
     map_file = f'{subckt}.map'
     lef_file = f'{subckt}.lef'
     verilog_file = f'{subckt}.verilog.json'
-    verilog_file_with_path = topology_dir / f'{subckt}.verilog.json'
     pdk_file = 'layers.json'
 
     working_dir = output_dir
@@ -301,7 +300,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         # Create working & input directories
         working_dir.mkdir(exist_ok=True)
         input_dir.mkdir(exist_ok=True)
-        verilog_d = VerilogJsonTop.parse_file(verilog_file_with_path)
+        verilog_d = VerilogJsonTop.parse_file(topology_dir / f'{subckt}.verilog.json')
         check_modules(verilog_d)
         pg_connections = {p["actual"]:p["actual"] for p in verilog_d['global_signals']}
         check_floating_pins(verilog_d)
@@ -375,21 +374,13 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         current_working_dir = os.getcwd()
         os.chdir(working_dir)
 
-        if reference_placement_verilog_json:
-            cmd = [str(x) for x in ('align.PnR', input_dir, lef_file,
-                                    reference_placement_verilog_json, map_file, pdk_file, subckt, nvariants, effort)]
+        cmd = [str(x) for x in ('align.PnR', input_dir, lef_file,
+                                verilog_file, map_file, pdk_file, subckt, nvariants, effort)]
 
-            DB, results_name_map = toplevel_route_only(cmd, PDN_mode=PDN_mode, results_dir=None, router_mode=router_mode, gui=gui, skipGDS=skipGDS,
-                                                       nroutings=nroutings)
-        else:
-            cmd = [str(x) for x in ('align.PnR', input_dir, lef_file,
-                                    verilog_file, map_file, pdk_file, subckt, nvariants, effort)]
-
-
-            DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, results_dir=None, router_mode=router_mode, gui=gui, skipGDS=skipGDS,
-                                            lambda_coeff=lambda_coeff, scale_factor=scale_factor,
-                                            reference_placement_verilog_json=reference_placement_verilog_json, nroutings=nroutings,
-                                            select_in_ILP=select_in_ILP, seed=seed, use_analytical_placer=use_analytical_placer)
+        DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, results_dir=None, router_mode=router_mode, gui=gui, skipGDS=skipGDS,
+                                        lambda_coeff=lambda_coeff, scale_factor=scale_factor,
+                                        reference_placement_verilog_json=reference_placement_verilog_json, nroutings=nroutings,
+                                        select_in_ILP=select_in_ILP, seed=seed, use_analytical_placer=use_analytical_placer)
 
         os.chdir(current_working_dir)
 

@@ -151,60 +151,6 @@ def semantic(DB, path, topcell, global_signals):
     DB.semantic1( global_signals)
     DB.semantic2()
 
-def paste_in_placement_info(DB, j):
-
-    modules_by_name = {m['abstract_name'] : m for m in j['modules']}
-
-    for idx in DB.TraverseHierTree():
-        hN = DB.hierTree[idx]
-        nm = hN.name
-        m = modules_by_name[nm]
-        an = m['abstract_name']
-        cn = m['concrete_name']
-        bbox = m['bbox']
-        print(f'block name: {nm} {an} {cn} {bbox}')
-
-        assert bbox[0] == 0 and bbox[1] == 0
-
-        hN.width, hN.height = bbox[2], bbox[3]
-        hN.LL.x, hN.LL.y, hN.UR.x, hN.UR.y = tuple(bbox)
-        hN.abs_orient = Omark.N
-
-        #hN.isCompleted = 1
-
-        instances_by_name = {blk.instance[0].name : idx for idx, blk in enumerate(hN.Blocks)}
-
-        for instance in m['instances']:
-            inst_nm = instance['instance_name']
-            atn = instance['abstract_template_name']
-            ctn = instance['concrete_template_name']
-            tr = instance['transformation']
-            blk = hN.Blocks[instances_by_name[inst_nm]]
-            if blk.child == -1:
-                for sel, inst in enumerate(blk.instance):
-                    if ctn == pathlib.Path(inst.gdsFile).stem:
-                        blk.selectedInstance = sel
-                assert blk.selectedInstance != -1
-
-                sel = blk.selectedInstance
-                inst = blk.instance[sel]
-
-                # inst.orient = 
-
-                print(f'\t{atn} {ctn} {inst_nm} {tr} {inst.name} {sel}')
-
-                # maybe .instNum as well (perhaps this is always 1)
-                # then we have hN.Blocks[i].instance[sel].{orient, placedBox, placedCenter}
-
-                # and all the metals (Hope we can do this by calling a C++ service routine
-
-
-            else:
-                print('Block is hierarchical')
-                raise NotImplementedError
-
-
-
 def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     DB = PnR.PnRdatabase()
 
@@ -215,17 +161,7 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     DB.gdsData2 = _ReadMap( path, mapname)
 
     j = None
-    if vname.endswith(".scaled_placement_verilog.json"):
-        # Do extra stuff to read in the placement information
-        j = VerilogJsonTop.parse_file(pathlib.Path(path) / vname)
-        global_signals = ReadVerilogJson( DB, j)
-        semantic(DB, path, topcell, global_signals)
-
-        paste_in_placement_info(DB, j)
-
-
-
-    elif vname.endswith(".verilog.json"):
+    if vname.endswith(".verilog.json"):
         j = VerilogJsonTop.parse_file(pathlib.Path(path) / vname)
         global_signals = ReadVerilogJson( DB, j)
         semantic(DB, path, topcell, global_signals)
