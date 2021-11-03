@@ -1,0 +1,5 @@
+[
+    {"constraint": "PowerPorts", "ports": ["VDDD", "VDDA_BB"]},
+    {"constraint": "GroundPorts", "ports": ["VSSD", "VSSA_BB"]},
+    {"constraint": "ClockPorts", "ports": ["CLK0", "CLK90", "CLK180", "CLK270", "CLK90"]}
+]

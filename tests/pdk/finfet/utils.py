@@ -6,9 +6,12 @@ import shutil
 import align.pdk.finfet
 import re
 import math
-import matplotlib.pyplot as plt
-import matplotlib
-matplotlib.use('Agg')
+try:
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+except:
+    plt = None
 
 align_home = os.getenv('ALIGN_HOME')
 
@@ -175,6 +178,7 @@ def _parse_pattern(pattern):
 
 
 def plot_sa_cost(name):
+    assert plt is not None, "Need to install matplotlib to use this feature"
     data = _parse_pattern(f'sa__cost name={name}')
 
     init = -1
@@ -207,6 +211,7 @@ def plot_sa_cost(name):
 
 
 def plot_sa_seq(name):
+    assert plt is not None, "Need to install matplotlib to use this feature"
     data = _parse_pattern(f'sa__seq__hash name={name}')
 
     init = -1
