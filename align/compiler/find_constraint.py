@@ -491,8 +491,8 @@ class add_symmetry_const:
         if len(pairsj) > 1 or (pairsj and len(pairsj[0])==2):
             for pair in pairsj:
                 if len(pair)==2:
-                    inst1 = self.subckt.get_element(pairsj[0][0])
-                    inst2 = self.subckt.get_element(pairsj[0][1])
+                    inst1 = self.subckt.get_element(pair[0])
+                    inst2 = self.subckt.get_element(pair[1])
                     param1 = inst1.parameters
                     param2 = inst2.parameters
                     if not param1 == param2 or \
