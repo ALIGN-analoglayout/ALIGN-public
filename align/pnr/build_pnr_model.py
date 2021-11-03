@@ -12,6 +12,7 @@ from ..schema.hacks import VerilogJsonTop
 logger = logging.getLogger(__name__)
 
 NType = PnR.NType
+Omark = PnR.Omark
 
 def ReadVerilogJson( DB, j, add_placement_info=False):
     hierTree = []
@@ -164,7 +165,11 @@ def paste_in_placement_info(DB, j):
         print(f'block name: {nm} {an} {cn} {bbox}')
 
         assert bbox[0] == 0 and bbox[1] == 0
-        
+
+        hN.width, hN.height = bbox[2], bbox[3]
+        hN.LL.x, hN.LL.y, hN.UR.x, hN.UR.y = tuple(bbox)
+        hN.abs_orient = Omark.N
+
         #hN.isCompleted = 1
 
         instances_by_name = {blk.instance[0].name : idx for idx, blk in enumerate(hN.Blocks)}
@@ -191,7 +196,7 @@ def paste_in_placement_info(DB, j):
                 # maybe .instNum as well (perhaps this is always 1)
                 # then we have hN.Blocks[i].instance[sel].{orient, placedBox, placedCenter}
 
-                # and all the metals
+                # and all the metals (Hope we can do this by calling a C++ service routine
 
 
             else:
