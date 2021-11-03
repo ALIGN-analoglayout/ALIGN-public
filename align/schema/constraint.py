@@ -667,16 +667,13 @@ class SymmetricBlocks(SoftConstraint):
 
     @types.validator('pairs', allow_reuse=True)
     def pairs_validator(cls, value):
-        instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        # instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
         for pair in value:
             assert len(pair) >= 1, 'Must contain at least one instance'
             assert len(pair) <= 2, 'Must contain at most two instances'
             validate_instances(cls, pair)
         if not hasattr(cls._validator_ctx().parent.parent, 'elements'):
             # PnR stage VerilogJsonModule
-            return value
-        if len(cls._validator_ctx().parent.parent.elements)==0:
-            #skips the check while reading user constraints
             return value
         group_block_instances = [const.name for const in cls._validator_ctx().parent if isinstance(const, GroupBlocks)]
         for pair in value:
@@ -710,8 +707,11 @@ class SymmetricBlocks(SoftConstraint):
                         yield getattr(b1, od) != getattr(b2, od)
                     else:
                         yield getattr(b1, od) == getattr(b2, od)
+            elif len(pair)==1:
+                 yield True
+            else:
+                raise checker.CheckerError(f'Invalid symmetry pair {pair}')
 
-                
 class BlockDistance(SoftConstraint):
     '''
     TODO: Replace with Spread
@@ -795,7 +795,6 @@ ConstraintType = Union[
     GroupBlocks,
     MatchBlocks,
     DoNotIdentify,
-    BlockDistance,
     HorizontalDistance,
     VerticalDistance,
     GuardRing,

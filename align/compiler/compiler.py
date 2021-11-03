@@ -36,13 +36,13 @@ def generate_hierarchy(
         flatten_heirarchy
     )
     primitives, generators = call_primitive_generator(
-    ckt_data,
-    pdk_dir,
-    uniform_height
+        ckt_data,
+        pdk_dir,
+        uniform_height
     )
     verilog_tbl = constraint_generator(
-    ckt_data,
-    generators
+        ckt_data,
+        generators
     )
     compiler_output(
         ckt_data,
@@ -149,11 +149,12 @@ def compiler_input(
                     assert len(ele.pins) == len(ckt_data.find(ele.model).pins), f"incorrect subckt instantiation"
     return ckt_data
 
+
 def call_primitive_generator(
     ckt_data,
     pdk_dir: pathlib.Path,
     uniform_height=False
-    ):
+):
     """call_primitive_generator [summary]
 
     [extended_summary]
@@ -200,7 +201,7 @@ def call_primitive_generator(
                     primitives,
                     design_config,
                     uniform_height,
-                    pdk_dir = pdk_dir
+                    pdk_dir=pdk_dir
                 )
             else:
                 ele.add_abs_name(ele.generator)
@@ -213,6 +214,7 @@ def call_primitive_generator(
 
     logger.debug(f"Available library cells: {', '.join(generators.keys())}")
     return primitives, generators
+
 
 def constraint_generator(ckt_data, generators: dict):
     """
@@ -232,18 +234,19 @@ def constraint_generator(ckt_data, generators: dict):
             continue
         if subckt.name not in generators:
             FindConst(subckt)
-            ## Create modified netlist & constraints as JSON
+            # Create modified netlist & constraints as JSON
             logger.debug(f"call verilog writer for block: {subckt.name}")
             wv = WriteVerilog(subckt, ckt_data)
             verilog_tbl["modules"].append(wv.gen_dict())
     return verilog_tbl
+
 
 def compiler_output(
     ckt_data,
     design_name: str,
     verilog_tbl: dict,
     result_dir: pathlib.Path,
-    ):
+):
     """compiler_output: write output in verilog format
     Args:
         ckt_data : annotated ckt library  and constraint

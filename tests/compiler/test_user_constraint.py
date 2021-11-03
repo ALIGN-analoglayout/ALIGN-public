@@ -80,7 +80,7 @@ def test_constraint_checking(dir_name):
         / (circuit_name + ".sp")
     )
     with pytest.raises(CheckerError):
-        updated_cktlib = compiler_input(test_path, circuit_name, pdk_dir, config_path)
+        compiler_input(test_path, circuit_name, pdk_dir, config_path)
 
 
 def test_scf():

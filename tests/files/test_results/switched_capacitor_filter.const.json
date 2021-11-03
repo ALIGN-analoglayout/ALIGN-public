@@ -44,7 +44,8 @@
               "C9"
             ]
           ],
-          "direction": "V"
+          "direction": "V",
+          "mirror": true
         },
         {
           "constraint": "symmetric_nets",
