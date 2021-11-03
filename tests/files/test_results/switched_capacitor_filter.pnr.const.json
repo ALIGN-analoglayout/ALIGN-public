@@ -41,6 +41,17 @@
             "axis_dir": "V"
         },
         {
+            "pairs": [
+                {
+                    "type": "sympair",
+                    "block1": "C8",
+                    "block2": "C9"
+                }
+            ],
+            "const_name": "SymmBlock",
+            "axis_dir": "V"
+        },
+        {
             "net1": {
                 "name": "VINN",
                 "blocks": [

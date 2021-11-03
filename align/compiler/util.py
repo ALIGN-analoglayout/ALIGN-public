@@ -4,11 +4,6 @@ Created on Tue Dec 11 11:34:45 2018
 
 @author: kunal
 """
-import os
-from re import sub
-import networkx as nx
-import matplotlib.pyplot as plt
-from networkx.algorithms import bipartite
 from ..schema.graph import Graph
 from ..schema import SubCircuit
 import logging
@@ -70,7 +65,7 @@ def get_base_model(subckt, node):
     return base_model
 
 def get_leaf_connection(subckt, net):
-    assert net in subckt.nets, f"Net {net} not found in subckt {subckt}"
+    assert net in subckt.nets, f"Net {net} not found in subckt {subckt.name} {subckt.nets}"
     graph = Graph(subckt)
     conn = []
     for nbr in graph.neighbors(net):
@@ -118,6 +113,19 @@ def reduced_SD_neighbors(G, node, nbr):
     else:
         return False
 
+def get_ports_weight(G):
+    ports_weight = dict()
+    subckt = G.subckt
+    for port in subckt.pins:
+        leaf_conn = get_leaf_connection(subckt, port)
+        logger.debug(f"leaf connections of net ({port}): {leaf_conn}")
+        if len(leaf_conn)==0:
+            logger.warning(f"floating port:{port} in subckt {subckt.name}")
+            ports_weight[port] = None
+        else:
+            ports_weight[port] = set(sorted(leaf_conn))
+    return ports_weight
+
 def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
     """
     compare two node properties. It uses 1st level of neighbourhood for comparison of nets
@@ -140,7 +148,8 @@ def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
     nbrs1 = [nbr for nbr in G.neighbors(node1) if reduced_SD_neighbors(G, node1, nbr)]
     nbrs2 = [nbr for nbr in G.neighbors(node2) if reduced_SD_neighbors(G, node2, nbr)]
     logger.debug(f"comparing_nodes: {node1}, {node2}, {nbrs1}, {nbrs2}")
-
+    if not ports_weight:
+        ports_weight = get_ports_weight(G)
     if G.nodes[node1].get("instance"):
         logger.debug(f"checking match between {node1} {node2}")
         in1 = G.nodes[node1].get("instance")
@@ -179,59 +188,4 @@ def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
             else:
                 logger.debug(f"Internal port weight mismatch {weight1},{weight2}")
                 return False
-
-
-def plt_graph(subgraph, sub_block_name):
-    copy_graph = subgraph
-    for node, attr in list(copy_graph.nodes(data=True)):
-        if "source" in attr["inst_type"]:
-            copy_graph.remove_node(node)
-
-    no_of_transistor = len(
-        [x for x, y in subgraph.nodes(data=True) if "net" not in y["inst_type"]]
-    )
-    Title = sub_block_name + ", no of devices:" + str(no_of_transistor)
-    if no_of_transistor > 10:
-        plt.figure(figsize=(8, 6))
-    else:
-        plt.figure(figsize=(4, 3))
-    nx.draw(copy_graph, with_labels=True, pos=nx.spring_layout(copy_graph))
-    plt.title(Title, fontsize=20)
-
-
-def _show_bipartite_circuit_graph(filename, graph, dir_path):
-    no_of_subgraph = 0
-    for subgraph in nx.connected_component_subgraphs(graph):
-        no_of_subgraph += 1
-
-        color_map = []
-        x_pos, y_pos = bipartite.sets(subgraph)
-        pos = dict()
-        pos.update((n, (1, i)) for i, n in enumerate(x_pos))  # put nodes from X at x=1
-        pos.update((n, (2, i)) for i, n in enumerate(y_pos))  # put nodes from Y at x=2
-        plt.figure(figsize=(6, 8))
-        for dummy, attr in subgraph.nodes(data=True):
-            if "inst_type" in attr:
-                if attr["inst_type"] == "pmos":
-                    color_map.append("red")
-                elif attr["inst_type"] == "nmos":
-                    color_map.append("cyan")
-                elif attr["inst_type"] == "cap":
-                    color_map.append("orange")
-                elif attr["inst_type"] == "net":
-                    color_map.append("pink")
-                else:
-                    color_map.append("green")
-        nx.draw(subgraph, node_color=color_map, with_labels=True, pos=pos)
-        plt.title(filename, fontsize=20)
-        if not os.path.exists(dir_path):
-            os.mkdir(dir_path)
-        plt.savefig(dir_path + "/" + filename + "_" + str(no_of_subgraph) + ".png")
-        plt.close()
-
-
-def _write_circuit_graph(filename, graph, dir_path):
-    if not os.path.exists(dir_path):
-        os.mkdir(dir_path)
-    nx.write_yaml(Graph(graph), dir_path + "/" + filename + ".yaml")
 

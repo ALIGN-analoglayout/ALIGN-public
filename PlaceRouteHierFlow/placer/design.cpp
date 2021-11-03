@@ -2,6 +2,8 @@
 #include "spdlog/spdlog.h"
 #include <cassert>
 
+std::mt19937_64 design::_rng{0};
+
 design::design() {
   bias_Hgraph=92;
   bias_Vgraph=92;
@@ -332,9 +334,10 @@ design::design(design& other, int mode) {
   }
 }
 
-design::design(PnRDB::hierNode& node) {
+design::design(PnRDB::hierNode& node, const int seed) {
 
   auto logger = spdlog::default_logger()->clone("placer.design.design");
+  _rng.seed(seed);
   is_first_ILP = node.isFirstILP;
   name = node.name;
   placement_id = node.placement_id;
@@ -574,7 +577,18 @@ design::design(PnRDB::hierNode& node) {
   //if (getenv("ALIGN_DEBUG_SEQ_PAIR") != nullptr && std::atoi(getenv("ALIGN_DEBUG_SEQ_PAIR"))) {
   //  _debugofs.open(name + ".seq_pair_dbg.data");
   //}
+  int szmax{(int)Blocks.size() + (int)SBlocks.size()};
+  for (auto& it : Blocks) {
+    szmax = std::max((int)it.size(), szmax);
+  }
 
+  _rnd = new std::uniform_int_distribution<int>(0, std::max(20, 2*szmax));
+}
+
+int design::rand()
+{
+  if (_rnd) return (*_rnd)(_rng);
+  return rand();
 }
 
 int design::GetSizeBlock4Move(int mode) {
@@ -2425,6 +2439,8 @@ bool design::isSeqInCache(const vector<int>& p, const vector<int>& n, const vect
 
 design::~design()
 {
+  delete _rnd;
+  _rnd = nullptr;
   auto logger = spdlog::default_logger()->clone("placer.design.design");
   logger->debug("sa__seq {0} unique_cnt={1} seq_pair_hash={2} sel_hash={3}", name, _seqPairCache.size(), _seqPairHash.size(), _selHash.size());
   logger->debug("sa__infeasible {0} aspect_ratio={1} ilp_fail={2} placement_boundary={3} total_calls={4}", name, _infeasAspRatio, _infeasILPFail, _infeasPlBound, _totalNumCostCalc);

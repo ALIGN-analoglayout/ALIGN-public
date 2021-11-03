@@ -3,6 +3,8 @@
 #include "spdlog/spdlog.h"
 #define NUM_THREADS 8
 
+std::mt19937_64 Placer::_rng{0};
+
 Placer::Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in) : hyper(hyper_in) {
   //cout<<"Constructor placer"<<endl;
   //this->node=input_node;
@@ -312,7 +314,7 @@ void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& cur
         bool Smark=false;
         if(delta_cost<0) {mark=true;
         } else {
-          double r = (double)rand() / RAND_MAX;
+          double r = _rnd(_rng);
           if( r < exp( (-1.0 * delta_cost)/T ) ) {Smark=true;}
         }
         if(Smark) {
@@ -339,7 +341,7 @@ void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& cur
         bool Smark=false;
         if(delta_cost<0) {Smark=true;
         } else {
-          double r = (double)rand() / RAND_MAX;
+          double r = _rnd(_rng);
           if( r < exp( (-1.0 * delta_cost)/T ) ) {Smark=true;}
         }
         if(Smark) {
@@ -554,6 +556,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   int trial_count = 0;
   const int max_trial_count = 10000;
   const int max_trial_cache_count = 100;
+  double mean_cache_miss{0};
+  int num_perturb{0};
 
   unsigned int seed = 0;
   if (hyper.SEED > 0) {
@@ -580,11 +584,13 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     } else {
       int trial_cached = 0;
       while (++trial_cached < max_trial_cache_count) {
-        curr_sp.PerturbationNew(designData);
+        if (!curr_sp.PerturbationNew(designData)) continue;
         if (!curr_sp.isSeqInCache(designData)) {
           break;
         }
       }
+	  mean_cache_miss += trial_cached;
+	  ++num_perturb;
     }
   }
 
@@ -687,11 +693,13 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       // SY: PerturbationNew honors order and symmetry. What could make the trial_sp infeasible? Aspect ratio, Align?
       int trial_cached = 0;
       while (++trial_cached < max_trial_cache_count) {
-        trial_sp.PerturbationNew(designData);
+        if (!trial_sp.PerturbationNew(designData)) continue;
         if (!trial_sp.isSeqInCache(designData)) {
-			    break;
-		    }
+          break;
+        }
       }
+      mean_cache_miss += trial_cached;
+      ++num_perturb;
       trial_sp.cacheSeq(designData);
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ILP_solver trial_sol(designData);
@@ -756,7 +764,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     logger->debug("sa__reducing_temp T={0}", T);
   }
 
-  logger->debug("sa__summary total_candidates={0} total_candidates_infeasible={1}", total_candidates, total_candidates_infeasible);
+  if (num_perturb) mean_cache_miss /= num_perturb;
+  logger->info("sa__summary total_candidates={0} total_candidates_infeasible={1} mean_cache_miss={2}", total_candidates, total_candidates_infeasible, mean_cache_miss);
 
   // Write out placement results
   //cout << endl << "Placer-Info: optimal cost = " << curr_cost << endl;
@@ -798,7 +807,8 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   #endif
   int mode=0;
   // Read design netlist and constraints
-  design designData(nodeVec.back());
+  design designData(nodeVec.back(), hyper.SEED);
+  _rng.seed(hyper.SEED);
   designData.PrintDesign();
   // Initialize simulate annealing with initial solution
   SeqPair curr_sp(designData, size_t(1. * log(hyper.T_MIN/hyper.T_INT)/log(hyper.ALPHA) * 
