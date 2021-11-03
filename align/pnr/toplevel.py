@@ -378,8 +378,9 @@ def gen_leaf_bbox_and_hovertext( ctn, p):
     return d, [ ((0, 0)+p, f'{ctn}<br>{0} {0} {p[0]} {p[1]}', True, 0, False)], None
 
 def scale_and_check_placement(*, placement_verilog_d, concrete_name, scale_factor, opath, placement_verilog_alternatives):
+    (pathlib.Path(opath) / f'{concrete_name}.placement_verilog.json').write_text(placement_verilog_d.json(indent=2,sort_keys=True))
     scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, scale_factor)
-    (pathlib.Path(opath) / f'{concrete_name}.placement_verilog.json').write_text(scaled_placement_verilog_d.json(indent=2,sort_keys=True))
+    (pathlib.Path(opath) / f'{concrete_name}.scaled_placement_verilog.json').write_text(scaled_placement_verilog_d.json(indent=2,sort_keys=True))
     standalone_overlap_checker( scaled_placement_verilog_d, concrete_name)
     check_placement( scaled_placement_verilog_d, scale_factor)
     placement_verilog_alternatives[concrete_name] = scaled_placement_verilog_d
@@ -619,5 +620,34 @@ def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_m
                                        reference_placement_verilog_json=reference_placement_verilog_json,
                                        nroutings=nroutings, select_in_ILP=select_in_ILP,
                                        seed=seed, use_analytical_placer=use_analytical_placer)
+
+    return DB, results_name_map
+
+def toplevel_route_only(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_mode='top_down',
+                        gui=False, skipGDS=False,
+                        nroutings=1, select_in_ILP=False,
+                        seed=0, use_analytical_placer=False):
+
+    assert len(args) == 9
+
+    fpath,lfile,vfile,mfile,dfile,topcell = args[1:7]
+    numLayout,effort = [ int(x) for x in args[7:9]]
+
+    if fpath[-1] == '/': fpath = fpath[:-1]
+
+    DB, verilog_d = PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile)
+
+    if results_dir is None:
+        opath = './Results/'
+    else:
+        opath = str(pathlib.Path(results_dir))
+        if opath[-1] != '/':
+            opath = opath + '/'
+
+    pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
+
+    idx = 0
+    results_name_map = route( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode,
+                              router_mode=router_mode, skipGDS=skipGDS, placements_to_run=None, nroutings=nroutings)
 
     return DB, results_name_map

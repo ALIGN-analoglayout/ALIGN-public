@@ -13,16 +13,14 @@ logger = logging.getLogger(__name__)
 
 NType = PnR.NType
 
-def ReadVerilogJson( DB, j):
+def ReadVerilogJson( DB, j, add_placement_info=False):
     hierTree = []
 
     for module in j['modules']:
 
         temp_node = PnR.hierNode()
-        temp_node.name = module['name']
+        temp_node.name = module['name'] if 'name' in module else module['abstract_name']
         temp_node.isCompleted = 0
-        print(temp_node)
-        print(temp_node.Block_name_map)
 
         Terminals = []
         for parameter in module['parameters']:
@@ -145,6 +143,62 @@ def _ReadLEF( DB, path, lefname):
             DB.ReadLEFFromString( s)
     else:
         logger.warn(f"LEF file {p} doesn't exist.")
+        
+def semantic(DB, path, topcell, global_signals):
+    _attach_constraint_files( DB, path)
+    DB.semantic0( topcell)
+    DB.semantic1( global_signals)
+    DB.semantic2()
+
+def paste_in_placement_info(DB, j):
+
+    modules_by_name = {m['abstract_name'] : m for m in j['modules']}
+
+    for idx in DB.TraverseHierTree():
+        hN = DB.hierTree[idx]
+        nm = hN.name
+        m = modules_by_name[nm]
+        an = m['abstract_name']
+        cn = m['concrete_name']
+        bbox = m['bbox']
+        print(f'block name: {nm} {an} {cn} {bbox}')
+
+        assert bbox[0] == 0 and bbox[1] == 0
+        
+        #hN.isCompleted = 1
+
+        instances_by_name = {blk.instance[0].name : idx for idx, blk in enumerate(hN.Blocks)}
+
+        for instance in m['instances']:
+            inst_nm = instance['instance_name']
+            atn = instance['abstract_template_name']
+            ctn = instance['concrete_template_name']
+            tr = instance['transformation']
+            blk = hN.Blocks[instances_by_name[inst_nm]]
+            if blk.child == -1:
+                for sel, inst in enumerate(blk.instance):
+                    if ctn == pathlib.Path(inst.gdsFile).stem:
+                        blk.selectedInstance = sel
+                assert blk.selectedInstance != -1
+
+                sel = blk.selectedInstance
+                inst = blk.instance[sel]
+
+                # inst.orient = 
+
+                print(f'\t{atn} {ctn} {inst_nm} {tr} {inst.name} {sel}')
+
+                # maybe .instNum as well (perhaps this is always 1)
+                # then we have hN.Blocks[i].instance[sel].{orient, placedBox, placedCenter}
+
+                # and all the metals
+
+
+            else:
+                print('Block is hierarchical')
+                raise NotImplementedError
+
+
 
 def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     DB = PnR.PnRdatabase()
@@ -156,15 +210,22 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     DB.gdsData2 = _ReadMap( path, mapname)
 
     j = None
-    if vname.endswith(".verilog.json"):
+    if vname.endswith(".scaled_placement_verilog.json"):
+        # Do extra stuff to read in the placement information
         j = VerilogJsonTop.parse_file(pathlib.Path(path) / vname)
         global_signals = ReadVerilogJson( DB, j)
+        semantic(DB, path, topcell, global_signals)
+
+        paste_in_placement_info(DB, j)
+
+
+
+    elif vname.endswith(".verilog.json"):
+        j = VerilogJsonTop.parse_file(pathlib.Path(path) / vname)
+        global_signals = ReadVerilogJson( DB, j)
+        semantic(DB, path, topcell, global_signals)
     else:
         global_signals = DB.ReadVerilog( path, vname, topcell)
-
-    _attach_constraint_files( DB, path)
-    DB.semantic0( topcell)
-    DB.semantic1( global_signals)
-    DB.semantic2()
+        semantic(DB, path, topcell, global_signals)
 
     return DB, j
