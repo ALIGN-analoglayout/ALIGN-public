@@ -455,6 +455,7 @@ PYBIND11_MODULE(PnR, m) {
     .def( "AddingPowerPins", &PnRdatabase::AddingPowerPins)
     .def( "Extract_RemovePowerPins", &PnRdatabase::Extract_RemovePowerPins)
     .def( "CheckinHierNode", &PnRdatabase::CheckinHierNode)
+    .def( "setPlacementInfoFromJson", &PnRdatabase::setPlacementInfoFromJson)
     .def( "TransformNode", &PnRdatabase::TransformNode)
     .def( "TransformBbox", &PnRdatabase::TransformBbox)
     .def( "TransformPoint", &PnRdatabase::TransformPoint)

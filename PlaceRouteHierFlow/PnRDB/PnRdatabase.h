@@ -122,6 +122,8 @@ class PnRdatabase
     void CheckinChildnodetoBlock(PnRDB::hierNode &parent, int blockID, const PnRDB::hierNode &updatedNode, PnRDB::Omark ort);
     void updatePowerPins(PnRDB::pin &temp_pin);
 
+    void setPlacementInfoFromJson(const string& json_string);
+
     //these functions are used to transform internal info of nodes
     void TransformNode(PnRDB::hierNode& updatedNode, PnRDB::point translate, PnRDB::Omark ort, PnRDB::TransformType tranform_type);
     void TransformTerminal(PnRDB::terminal &terminal, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType tranform_type);

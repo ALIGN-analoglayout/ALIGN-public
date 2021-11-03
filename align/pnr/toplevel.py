@@ -545,10 +545,14 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
                     router_mode, gui, skipGDS, lambda_coeff, scale_factor,
                     reference_placement_verilog_json, nroutings, select_in_ILP, seed, use_analytical_placer):
 
-    for idx in DB.TraverseHierTree():
-        place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
-              lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP,
-              seed=seed, use_analytical_placer=use_analytical_placer)
+    if reference_placement_verilog_json:
+        with open(reference_placement_verilog_json, "rt") as fp:
+            DB.setPlacementInfoFromJson( fp.read())
+    else:
+        for idx in DB.TraverseHierTree():
+            place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
+                  lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP,
+                  seed=seed, use_analytical_placer=use_analytical_placer)
 
     placements_to_run = None
     if verilog_d is not None:

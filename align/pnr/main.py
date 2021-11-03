@@ -19,7 +19,7 @@ from .checkers import gen_viewer_json, gen_transformation
 from ..cell_fabric import gen_gds_json, transformation
 from .write_constraint import PnRConstraintWriter
 from .. import PnR
-from .toplevel import toplevel, toplevel_route_only
+from .toplevel import toplevel
 from ..schema.hacks import VerilogJsonTop, VerilogJsonModule
 
 logger = logging.getLogger(__name__)
