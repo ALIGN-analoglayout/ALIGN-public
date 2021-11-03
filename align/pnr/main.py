@@ -19,7 +19,7 @@ from .checkers import gen_viewer_json, gen_transformation
 from ..cell_fabric import gen_gds_json, transformation
 from .write_constraint import PnRConstraintWriter
 from .. import PnR
-from .toplevel import toplevel
+from .toplevel import toplevel, toplevel_route_only
 from ..schema.hacks import VerilogJsonTop, VerilogJsonModule
 
 logger = logging.getLogger(__name__)
@@ -262,7 +262,7 @@ def gen_leaf_collateral( leaves, primitives, primitive_dir):
 def check_modules(verilog_d):
     all_module_pins = {}
     for mod in verilog_d["modules"]:
-        all_module_pins[mod["name"]]=mod["parameters"]
+        all_module_pins[mod['name']]=mod["parameters"]
     for mod in verilog_d["modules"]:
         for inst in mod["instances"]:
             assert 'abstract_template_name' in inst, f'no generated data for {inst}'
@@ -283,19 +283,9 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                  gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False, steps_to_run,lambda_coeff,
                  reference_placement_verilog_json, nroutings=1, select_in_ILP=False, seed=0, use_analytical_placer=False):
 
+    subckt = subckt.upper()
+
     logger.info(f"Running Place & Route for {subckt} {router_mode} {steps_to_run}")
-    # Generate file name inputs
-    for cf in topology_dir.rglob('*.verilog.json'):
-        if cf.stem == subckt+'.verilog':
-            #File name and module name are small or both are capital letters
-            assert subckt in [m.name for m in VerilogJsonTop.parse_file(cf).modules], f"file name {cf} does nto match module {subckt}"
-        elif cf.stem.upper()==subckt+'.verilog':
-            #File name is small and module name is caps
-            assert subckt in [m.name for m in VerilogJsonTop.parse_file(cf).modules], f"file name {cf} does nto match module {subckt}"
-        elif cf.stem == subckt.upper()+'.verilog':
-            #File name is caps and module name is small
-            subckt = subckt.upper()
-            assert subckt in [m.name for m in VerilogJsonTop.parse_file(cf).modules], f"file name {cf} does nto match module {subckt}"
 
     map_file = f'{subckt}.map'
     lef_file = f'{subckt}.lef'
@@ -310,9 +300,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         # Create working & input directories
         working_dir.mkdir(exist_ok=True)
         input_dir.mkdir(exist_ok=True)
-        verilog_d = VerilogJsonTop.parse_file((topology_dir / verilog_file))
-        #with (topology_dir / verilog_file).open( 'rt') as fp:
-        #    verilog_d = json.load(fp)
+        verilog_d = VerilogJsonTop.parse_file(topology_dir / f'{subckt}.verilog.json')
         check_modules(verilog_d)
         pg_connections = {p["actual"]:p["actual"] for p in verilog_d['global_signals']}
         check_floating_pins(verilog_d)
@@ -381,12 +369,14 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
             scale_factor = json.load(fp)["ScaleFactor"]
 
         # Run pnr_compiler
-        cmd = [str(x) for x in ('align.PnR', input_dir, lef_file,
-                                verilog_file, map_file, pdk_file, subckt, nvariants, effort)]
         # print(cmd)
 
         current_working_dir = os.getcwd()
         os.chdir(working_dir)
+
+        cmd = [str(x) for x in ('align.PnR', input_dir, lef_file,
+                                verilog_file, map_file, pdk_file, subckt, nvariants, effort)]
+
         DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, results_dir=None, router_mode=router_mode, gui=gui, skipGDS=skipGDS,
                                         lambda_coeff=lambda_coeff, scale_factor=scale_factor,
                                         reference_placement_verilog_json=reference_placement_verilog_json, nroutings=nroutings,

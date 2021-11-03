@@ -34,7 +34,7 @@ def test_array_gen_ro():
 
 
 def test_array_gen_rofH():
-    name = 'RING_OSCILLATOR_FLAT'
+    name = 'RING_OSCILLATOR_FLAT_H'
     netlist = ring_oscillator_flat(name)
     constraints =[
         {"constraint": "DoNotUseLib", "libraries": ["STAGE2_INV"]}
