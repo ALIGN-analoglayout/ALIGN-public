@@ -54,7 +54,7 @@ def check_placement(placement_verilog_d, scale_factor):
                         lly=bbox.lly/scale_factor,
                         urx=bbox.urx/scale_factor,
                         ury=bbox.ury/scale_factor,
-                        sx=1,  # TODO: change back to sX
-                        sy=1  # TODO: change back to sY
+                        sx=t['sX'],
+                        sy=t['sY']
                     )
                 )
