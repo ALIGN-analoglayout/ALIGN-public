@@ -9,7 +9,7 @@ except BaseException:
     from utils import get_test_id, build_example, run_example, plot_sa_cost, plot_sa_seq
     import circuits
 
-cleanup = False
+cleanup = True
 
 
 def test_cmp():
@@ -36,6 +36,7 @@ def test_cmp():
     if cleanup:
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
+
 
 @pytest.mark.nightly
 def test_cmp_pg():
@@ -68,9 +69,10 @@ def test_cmp_pg_clk():
 def test_cmp_1():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = textwrap.dedent("""\
+    setup = textwrap.dedent(f"""\
         POWER = vccx
         GND = vssx
+        DONT_CONST = {name}
         """)
     constraints = [
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},

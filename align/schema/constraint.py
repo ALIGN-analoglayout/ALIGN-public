@@ -355,18 +355,18 @@ class SetBoundingBox(HardConstraint):
     lly: int
     urx: int
     ury: int
-    sx: Optional[int] = 1  # -1 if instance flipped along x axis, else 1.
-    sy: Optional[int] = 1  # -1 if instance flipped along x axis, else 1.
+    sx: Optional[int] = 1  # -1 if instance mirrored along y axis, else 1.
+    sy: Optional[int] = 1  # -1 if instance mirrored along x axis, else 1.
     is_subcircuit: Optional[bool] = False
 
     @types.validator('urx', allow_reuse=True)
     def x_is_valid(cls, value, values):
-        assert value > values['llx'], f'Reflection is not supported yet'
+        assert value > values['llx'], f"Reflection along y is not supported yet urx={value} llx={values['llx']}"
         return value
 
     @types.validator('ury', allow_reuse=True)
     def y_is_valid(cls, value, values):
-        assert value > values['lly'], f'Reflection is not supported yet'
+        assert value > values['lly'], f"Reflection along x is not supported yet ury={value} lly={values['lly']}"
         return value
 
     def check(self, checker):
@@ -707,8 +707,8 @@ class SymmetricBlocks(SoftConstraint):
                         yield getattr(b1, od) != getattr(b2, od)
                     else:
                         yield getattr(b1, od) == getattr(b2, od)
-            elif len(pair)==1:
-                 yield True
+            elif len(pair) == 1:
+                yield True
             else:
                 raise checker.CheckerError(f'Invalid symmetry pair {pair}')
 
