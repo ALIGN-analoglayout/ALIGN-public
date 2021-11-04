@@ -15,6 +15,13 @@ Placer::Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info&
 }
 
 Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in, bool select_in_ILP = false) : hyper(hyper_in) {
+  auto logger = spdlog::default_logger()->clone("placer.Placer");
+
+  if (hyper.use_external_placement_info) {
+    logger->info("Requesting placement from JSON");
+    logger->info(hyper.placement_info_json);
+  }
+
 //#define analytical_placer
   if(hyper.use_analytical_placer)
     PlacementRegularAspectRatio_ILP_Analytical(nodeVec, opath, effort, drcInfo, select_in_ILP);

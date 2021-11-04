@@ -2,6 +2,7 @@ import logging
 import pathlib
 import json
 import copy
+import collections
 from itertools import chain
 
 from .. import PnR
@@ -292,7 +293,7 @@ def route_top_down( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS, placements_t
         new_topnode_indices.append(new_topnode_idx)
     return results_name_map
 
-def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, seed, use_analytical_placer):
+def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, seed, use_analytical_placer, modules_d=None):
 
     logger.info(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
 
@@ -313,6 +314,10 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
     # hyper.COUNT_LIMIT = 200
     hyper.LAMBDA = lambda_coeff
     hyper.use_analytical_placer = use_analytical_placer
+
+    if modules_d is not None:
+        hyper.use_external_placement_info = True
+        hyper.placement_info_json = json.dumps(modules_d, indent=2)
 
     curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, DB.getDrc_info(), hyper, select_in_ILP)
 
@@ -547,7 +552,19 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
 
     if reference_placement_verilog_json:
         with open(reference_placement_verilog_json, "rt") as fp:
-            DB.setPlacementInfoFromJson( fp.read())
+            j = json.load(fp)
+
+        modules = collections.defaultdict(list)
+        for m in j['modules']:
+            modules[m['abstract_name']].append(m)
+
+        for idx in DB.TraverseHierTree():
+            nm = DB.hierTree[idx].name
+            place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
+                  lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP,
+                  seed=seed, use_analytical_placer=use_analytical_placer,
+                  modules_d=modules[nm])
+
     else:
         for idx in DB.TraverseHierTree():
             place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
