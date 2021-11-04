@@ -5,8 +5,6 @@ Created on Wed July 08 13:12:15 2020
 @author: kunal
 """
 
-from networkx.generators import line
-from align.schema import graph, instance
 from align.schema.graph import Graph
 from collections import Counter
 from itertools import combinations
@@ -43,8 +41,8 @@ class process_arrays:
         self.is_digital = False
         for const in ckt.constraints:
             if isinstance(const, constraint.PowerPorts) or\
-                isinstance(const, constraint.GroundPorts) or \
-                isinstance(const, constraint.ClockPorts):
+                    isinstance(const, constraint.GroundPorts) or \
+                    isinstance(const, constraint.ClockPorts):
                 self.stop_points.extend(const.ports)
             elif isinstance(const, constraint.IdentifyArray):
                 self.condition = const.isTrue
@@ -130,9 +128,9 @@ class process_arrays:
             return
         array_2D = list()
         for inst_list in array.values():
-            array_2D.append([inst for inst in inst_list \
-                if self.ckt.get_element(inst)])
-        if len(array_2D[0])==1:
+            array_2D.append([inst for inst in inst_list
+                             if self.ckt.get_element(inst)])
+        if len(array_2D[0]) == 1:
             self.align_block_const[start_node] = [inst[0] for inst in array_2D]
             return self.align_block_const[start_node]
         else:
@@ -145,8 +143,8 @@ class process_arrays:
         # TODO: modify this best case complexity from n*(n-1) to n complexity
         for l1_node1, l1_node2 in combinations(lvl1, 2):
             if compare_two_nodes(self.graph, l1_node1, l1_node2) and \
-                self.graph.get_edge_data(node, l1_node1)['pin'] == \
-                self.graph.get_edge_data(node, l1_node2)['pin']:
+                    self.graph.get_edge_data(node, l1_node1)['pin'] == \
+                    self.graph.get_edge_data(node, l1_node2)['pin']:
                 found_flag = 0
                 logger.debug(f"similar groups {similar_groups}")
                 for index, sublist in enumerate(similar_groups):
@@ -231,8 +229,8 @@ class process_arrays:
         logger.debug(f"AlignBlock const: {self.align_block_const}")
         for key, inst_list in self.align_block_const.items():
             logger.debug(f"align instances: {inst_list}")
-            h_blocks = [inst for inst in inst_list \
-                if inst in self.graph]
+            h_blocks = [inst for inst in inst_list
+                        if inst in self.graph]
             if len(h_blocks) > 0:
                 with set_context(self.iconst):
                     self.iconst.append(constraint.Align(line="h_center", instances=h_blocks))
@@ -249,13 +247,13 @@ class process_arrays:
         for key, array_2D in self.new_hier_instances.items():
             logger.debug(f"new hier instances: {array_2D}")
             all_inst = [inst for template in array_2D for inst in template
-                if inst in self.graph and inst not in sub_hier_elements]
-            #Filter repeated elements across array of obejcts
-            repeated_elements = set([inst for inst, count in Counter(all_inst).items() if count>1])
+                        if inst in self.graph and inst not in sub_hier_elements]
+            # Filter repeated elements across array of obejcts
+            repeated_elements = set([inst for inst, count in Counter(all_inst).items() if count > 1])
             all_inst = set(all_inst) - repeated_elements
             array_2D = [list(set(array_1D) - repeated_elements) for array_1D in array_2D]
             sub_hier_elements.update(all_inst)
-            if len(all_inst) <=1:
+            if len(all_inst) <= 1:
                 logger.debug(f"not enough elements to create a hierarchy")
                 continue
             new_array_hier_name = "ARRAY_HIER_" + key
@@ -268,7 +266,7 @@ class process_arrays:
             self.add_array_placement_constraints(new_array_hier_name, all_template_names)
 
     def add_array_placement_constraints(self, hier, modules):
-        #TODO make it sizing aware
+        # TODO make it sizing aware
         # array placement constraint
         arre_hier_const = self.dl.find(hier).constraints
         with set_context(arre_hier_const):
@@ -282,14 +280,14 @@ class process_arrays:
         #     with set_context(template_module.constraints):
         #         template_module.constraints.append(constraint.Align(line="v_center", instances=all_inst))
 
-
     def get_new_subckt_name(self, name):
-        count =1
+        count = 1
         new_name = name
         while self.ckt.parent.find(new_name):
             new_name = name + str(count)
-            count +=1
+            count += 1
         return new_name
+
 
 def create_new_hiearchy(dl, parent_name, child_name, elements, pins_map=None):
     parent = dl.find(parent_name)
@@ -301,12 +299,12 @@ def create_new_hiearchy(dl, parent_name, child_name, elements, pins_map=None):
         logger.debug(f"{parent.elements}")
         for ele in elements:
             if parent.get_element(ele):
-                pins_map.update({net:net for net in G.neighbors(ele)})
+                pins_map.update({net: net for net in G.neighbors(ele)})
         logger.debug(f"pins {pins_map} {elements} {parent.pins}")
-        pins_map = { net:net for net in pins_map.keys()
-            if net in parent.pins or
-             (set(G.neighbors(net))-set(elements))
-            }
+        pins_map = {net: net for net in pins_map.keys()
+                    if net in parent.pins or
+                    (set(G.neighbors(net))-set(elements))
+                    }
     if not pins_map:
         logger.error(f"can't create module with no pins")
         return
@@ -334,6 +332,6 @@ def create_new_hiearchy(dl, parent_name, child_name, elements, pins_map=None):
             model=child_name,
             pins=pins_map,
             generator=child_name,
-            abstract_name = child_name
+            abstract_name=child_name
         )
         parent.elements.append(X1)

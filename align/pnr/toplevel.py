@@ -22,7 +22,7 @@ TransformType = PnR.TransformType
 
 def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, PDN_mode, return_name=None, noGDS=False, noExtra=False):
     DB.ExtractPinsToPowerPins(current_node)
-    
+
     h_skip_factor = DB.getDrc_info().Design_info.h_skip_factor
     v_skip_factor = DB.getDrc_info().Design_info.v_skip_factor
 
@@ -98,14 +98,14 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
             logger.info("End MNA")
             #return
 
-        
+
         RouteWork(2, current_node, metal_l=power_grid_metal_l, metal_u=power_grid_metal_u)
 
         if not noExtra:
             DB.WriteJSON(current_node, True, True, False, True, f'{current_node.name}_PG_{lidx}', drcInfo, opath)
 
         logger.debug("Checkpoint : Starting Power Routing");
-        
+
         RouteWork(3, current_node, metal_l=power_routing_metal_l, metal_u=power_routing_metal_u)
 
         if not noExtra:
@@ -188,7 +188,7 @@ def route_bottom_up( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS, placements_
                 if child_idx >= 0:
                     assert child_idx in new_currentnode_idx_d, f"Toporder incorrect {child_idx} {i} {TraverseOrder}"
                     assert inst_idx in new_currentnode_idx_d[child_idx], f"subblocks_d incorrect {child_idx} {inst_idx} {subblocks_d[child_idx]}"
-                    
+
                     DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_currentnode_idx_d[child_idx][inst_idx]], blk.instance[inst_idx].orient)
                     blk.child = new_currentnode_idx_d[child_idx][inst_idx]
 
@@ -356,7 +356,7 @@ def subset_verilog_d( verilog_d, nm):
     def aux( module_name):
         found_modules.add( module_name)
         if module_name in modules:
-            for instance in modules[module_name]['instances']:        
+            for instance in modules[module_name]['instances']:
                 atn = instance['abstract_template_name']
                 aux( atn)
 
@@ -368,7 +368,7 @@ def subset_verilog_d( verilog_d, nm):
     for module in new_verilog_d['modules']:
         if module['name'] in found_modules:
             new_modules.append( module)
-    
+
     new_verilog_d['modules'] = new_modules
 
     return new_verilog_d
@@ -476,7 +476,7 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
                 for module in gui_scaled_placement_verilog_d['modules']:
                     for instance in module['instances']:
                         if 'abstract_template_name' in instance:
-                            atn = instance['abstract_template_name'] 
+                            atn = instance['abstract_template_name']
                             if 'concrete_template_name' in instance:
                                 ctn = instance['concrete_template_name']
                                 if ctn in leaves:

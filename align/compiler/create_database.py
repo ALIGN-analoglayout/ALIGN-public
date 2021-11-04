@@ -57,12 +57,12 @@ class CreateDatabase:
             return
         for const in top.constraints:
             global_const = [constraint.IsDigital, constraint.AutoConstraint,
-                constraint.AutoGroupCaps, constraint.FixSourceDrain,
-                constraint.KeepDummyHierarchies, constraint.MergeSeriesDevices,
-                constraint.MergeParallelDevices, constraint.IdentifyArray,
-                constraint.DoNotUseLib]
+                            constraint.AutoGroupCaps, constraint.FixSourceDrain,
+                            constraint.KeepDummyHierarchies, constraint.MergeSeriesDevices,
+                            constraint.MergeParallelDevices, constraint.IdentifyArray,
+                            constraint.DoNotUseLib]
 
-            if any(isinstance (const,x) for x in global_const):
+            if any(isinstance(const, x) for x in global_const):
                 for child in all_subckt:
                     child_const = self.lib.find(child).constraints
                     if const not in child_const and const.propagate:
@@ -168,7 +168,7 @@ class CreateDatabase:
             if isinstance(subckt, SubCircuit):
                 for inst in subckt.elements:
                     logger.debug(
-                    f"Updating leaf instance parameters of module \
+                        f"Updating leaf instance parameters of module \
                     {subckt.name} as {subckt.parameters}, \
                     global {self.circuit.parameters}, inst param {inst.parameters}"
                     )
@@ -212,7 +212,8 @@ class CreateDatabase:
                 )
                 name, new_param = self._find_new_inst_name(subckt, param, counter + 1)
         return name, new_param
-    def _get_pgc(self,subckt):
+
+    def _get_pgc(self, subckt):
         pwr = list()
         gnd = list()
         clk = list()
@@ -229,7 +230,7 @@ class CreateDatabase:
         pwr_child, gnd_child, clk_child = self._get_pgc(subckt)
         found_power = False
         if not pwr_child and pwr:
-            found_power =True
+            found_power = True
             pwr_child = pwr
         elif pwr_child and not pwr:
             pwr_child = pwr_child
@@ -238,7 +239,7 @@ class CreateDatabase:
                 found_power = True
                 pwr_child = pwr
 
-                #subcircuit with different power instantiations
+                # subcircuit with different power instantiations
         if found_power:
             pwr_child = pwr.copy()
             with set_context(subckt.constraints):
@@ -254,11 +255,11 @@ class CreateDatabase:
                 found_power = True
                 gnd_child = gnd
 
-                #subcircuit with different power instantiations
+                # subcircuit with different power instantiations
         if found_gnd:
             gnd_child = list(list(gnd_child))
             with set_context(subckt.constraints):
-                subckt.constraints.append(constraint.GroundPorts( ports=gnd_child))
+                subckt.constraints.append(constraint.GroundPorts(ports=gnd_child))
         found_clk = False
         if not clk_child and clk:
             found_clk = True
@@ -270,11 +271,11 @@ class CreateDatabase:
                 found_clk = True
                 clk_child = clk
 
-                #subcircuit with different power instantiations
+                # subcircuit with different power instantiations
         if found_clk:
             clk_child = list(clk_child)
             with set_context(subckt.constraints):
-                subckt.constraints.append(constraint.GroundPorts( ports=clk_child))
+                subckt.constraints.append(constraint.GroundPorts(ports=clk_child))
 
         for inst in subckt.elements:
             inst_subckt = self.lib.find(inst.model)

@@ -582,7 +582,7 @@ class DoNotUseLib(SoftConstraint):
     Primitive libraries which should not be used
     '''
     libraries: List[str]
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class IsDigital(SoftConstraint):
@@ -591,7 +591,7 @@ class IsDigital(SoftConstraint):
     Forbids any preprocessing, auto-annotation, array-identification or auto-constraint generation
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class AutoConstraint(SoftConstraint):
@@ -599,7 +599,7 @@ class AutoConstraint(SoftConstraint):
     Forbids/Allow any auto-constraint generation
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class IdentifyArray(SoftConstraint):
@@ -607,7 +607,7 @@ class IdentifyArray(SoftConstraint):
     Forbids/Alow any array identification
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class AutoGroupCaps(SoftConstraint):
@@ -615,7 +615,7 @@ class AutoGroupCaps(SoftConstraint):
     Forbids/Allow creation of arrays for symmetric caps
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class FixSourceDrain(SoftConstraint):
@@ -624,7 +624,7 @@ class FixSourceDrain(SoftConstraint):
     Traverses and fix them based on power to gnd traversal
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class KeepDummyHierarchies(SoftConstraint):
@@ -632,7 +632,7 @@ class KeepDummyHierarchies(SoftConstraint):
     Removes any single instance hierarchies
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class MergeSeriesDevices(SoftConstraint):
@@ -641,7 +641,7 @@ class MergeSeriesDevices(SoftConstraint):
     Only works on NMOS/PMOS/CAP/RES
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class MergeParallelDevices(SoftConstraint):
@@ -650,7 +650,7 @@ class MergeParallelDevices(SoftConstraint):
     Only works on NMOS/PMOS/CAP/RES
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class DoNotIdentify(SoftConstraint):
@@ -667,7 +667,6 @@ class SymmetricBlocks(SoftConstraint):
 
     @types.validator('pairs', allow_reuse=True)
     def pairs_validator(cls, value):
-        # instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
         for pair in value:
             assert len(pair) >= 1, 'Must contain at least one instance'
             assert len(pair) <= 2, 'Must contain at most two instances'
@@ -675,19 +674,31 @@ class SymmetricBlocks(SoftConstraint):
         if not hasattr(cls._validator_ctx().parent.parent, 'elements'):
             # PnR stage VerilogJsonModule
             return value
-        group_block_instances = [const.name for const in cls._validator_ctx().parent if isinstance(const, GroupBlocks)]
+        group_block_instances = {const.name: const.instances for const in cls._validator_ctx().parent if isinstance(const, GroupBlocks)}
         for pair in value:
-            # logger.debug(f"pairs {self.pairs} {self.parent.parent.get_element(pair[0])}")
-            if len([ele for ele in pair if ele in group_block_instances])>0:
-                # TODO: Why is this skip still needed?
-                #Skip check for group block elements as they are added later in the flow
+            subckt = cls._validator_ctx().parent.parent
+            if len(pair) == 1:
                 continue
-            elif len(pair)==2:
-                assert cls._validator_ctx().parent.parent.get_element(pair[0]), f"element {pair[0]} not found in design"
-                assert cls._validator_ctx().parent.parent.get_element(pair[1]), f"element {pair[1]} not found in design"
-                assert cls._validator_ctx().parent.parent.get_element(pair[0]).parameters == \
-                    cls._validator_ctx().parent.parent.get_element(pair[1]).parameters, \
-                        f"Incorrent symmetry pair {pair} in subckt {cls._validator_ctx().parent.parent.name}"
+            if len(set(pair) & set(group_block_instances)) == 2:
+                param1 = []
+                for inst_name in group_block_instances[pair[0]]:
+                    inst = subckt.get_element(inst_name)
+                    assert inst, f"element {inst_name} not found in design"
+                    param1.append(inst.parameters)
+                param2 = []
+                for inst_name in group_block_instances[pair[1]]:
+                    inst = subckt.get_element(inst_name)
+                    assert inst, f"element {inst_name} not found in design"
+                    param2.append(inst.parameters)
+                assert [i for i in param1 if i not in param2] == [], f"Incorrent symmetry pair {pair} in subckt {subckt.name}"
+            elif len(pair) == 2:
+                assert subckt.get_element(pair[0]), f"element {pair[0]} not found in design"
+                assert subckt.get_element(pair[1]), f"element {pair[1]} not found in design"
+                assert subckt.get_element(pair[0]).parameters == \
+                    subckt.get_element(pair[1]).parameters, \
+                    f"Incorrent symmetry pair {pair} in subckt {subckt.name}"
+            else:
+                raise NotImplementedError(f"Cannot handle pairs of different type {pair}")
         return value
 
     def check(self, checker):
@@ -711,6 +722,7 @@ class SymmetricBlocks(SoftConstraint):
                 yield True
             else:
                 raise checker.CheckerError(f'Invalid symmetry pair {pair}')
+
 
 class BlockDistance(SoftConstraint):
     '''

@@ -52,11 +52,6 @@ class Instance(types.BaseModel):
     @types.validator('name', allow_reuse=True)
     def unique_name(cls, name):
         name = name.upper()
-        # Need help in fixing this code
-        # assert isinstance(cls._validator_ctx().parent, List[Instance]), 'Instance can only be instanitated within List[Instance]'
-        # if cls._validator_ctx().parent.__root__:
-        #     all_names = {inst.name for inst in cls._validator_ctx().parent}
-        #     assert name not in all_names
         return name
 
     @types.validator('model', allow_reuse=True)

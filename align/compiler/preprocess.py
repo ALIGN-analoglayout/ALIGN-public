@@ -277,6 +277,7 @@ def define_SD(subckt, update=True):
             logger.warning(f"changing source drain: {node}")
             swap_SD(subckt, G, node)
 
+
 def add_parallel_devices(ckt, update=True):
     """add_parallel_devics
         merge devices in parallel as single unit
