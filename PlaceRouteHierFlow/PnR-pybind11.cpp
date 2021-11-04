@@ -455,7 +455,6 @@ PYBIND11_MODULE(PnR, m) {
     .def( "AddingPowerPins", &PnRdatabase::AddingPowerPins)
     .def( "Extract_RemovePowerPins", &PnRdatabase::Extract_RemovePowerPins)
     .def( "CheckinHierNode", &PnRdatabase::CheckinHierNode)
-    .def( "setPlacementInfoFromJson", &PnRdatabase::setPlacementInfoFromJson)
     .def( "TransformNode", &PnRdatabase::TransformNode)
     .def( "TransformBbox", &PnRdatabase::TransformBbox)
     .def( "TransformPoint", &PnRdatabase::TransformPoint)
@@ -489,6 +488,8 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("COUNT_LIMIT", &PlacerHyperparameters::COUNT_LIMIT)
     .def_readwrite("LAMBDA", &PlacerHyperparameters::LAMBDA)
     .def_readwrite("use_analytical_placer", &PlacerHyperparameters::use_analytical_placer)
+    .def_readwrite("placement_info_json", &PlacerHyperparameters::placement_info_json)
+    .def_readwrite("use_external_placement_info", &PlacerHyperparameters::use_external_placement_info)
     ;
 
   py::class_<PlacerIfc>( m, "PlacerIfc")

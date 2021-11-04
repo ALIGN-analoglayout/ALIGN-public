@@ -170,12 +170,6 @@ void PnRdatabase::updatePowerPins(PnRDB::pin& temp_pin){
 
 }
 
-void PnRdatabase::setPlacementInfoFromJson(const string& json_string) {
-  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.setPlacementInfoFromJson");
-
-  logger->info("Calling setPlacementInfoFromJson");
-}
-
 void PnRdatabase::TransformNode(PnRDB::hierNode& updatedNode, PnRDB::point translate, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
   /*
   this function transform all points and inside the node according to translate and orient,
