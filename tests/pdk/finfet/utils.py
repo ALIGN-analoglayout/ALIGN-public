@@ -84,8 +84,13 @@ def build_example(name, netlist, netlist_setup, constraints):
         fp.write(netlist)
     with open(example / f'{name}.setup', 'w') as fp:
         fp.write(netlist_setup)
-    with open(example / f'{name}.const.json', 'w') as fp:
-        fp.write(json.dumps(constraints, indent=2))
+    if isinstance(constraints, dict):
+        for k, v in constraints.items():
+            with open(example / f'{k}.const.json', 'w') as fp:
+                fp.write(json.dumps(v, indent=2))
+    else:
+        with open(example / f'{name}.const.json', 'w') as fp:
+            fp.write(json.dumps(constraints, indent=2))
     return example
 
 
