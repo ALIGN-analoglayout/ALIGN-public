@@ -22,6 +22,12 @@ Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, 
     PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo, select_in_ILP);
 }
 
+void Placer::setPlacementInfoFromJson() {
+  auto logger = spdlog::default_logger()->clone("placer.Placer.setPlacementInfoFromJson");
+
+  logger->info("Calling setPlacementInfoFromJson");
+}
+
 //PnRDB::hierNode Placer::CheckoutHierNode() {
 //  return this->node;
 //}

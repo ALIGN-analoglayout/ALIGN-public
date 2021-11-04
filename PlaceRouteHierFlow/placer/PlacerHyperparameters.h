@@ -13,6 +13,8 @@ public:
   double LAMBDA = 1.0;
 
   bool use_analytical_placer = false;
+  string placement_info_json_path = "";
+  bool use_external_placement_info = false;
 };
 
 #endif
