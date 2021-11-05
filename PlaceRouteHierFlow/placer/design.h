@@ -16,6 +16,8 @@
 #include "Pdatatype.h"
 #include "../PnRDB/readfile.h"
 #include "../PnRDB/datatype.h"
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 using std::vector;
 using std::string;
 using std::iostream;
@@ -197,6 +199,8 @@ class design
     size_t getSeqIndex(const vector<int>& seq);
     size_t getSelIndex(const vector<int>& sel);
     std::uniform_int_distribution<int> *_rnd{nullptr};
+	pybind11::function *infer_fn{nullptr};
+	pybind11::object *loaded_model{nullptr};
     
   public:
     design();
@@ -278,6 +282,7 @@ class design
   void cacheSeq(const vector<int>& p, const vector<int>& n, const vector<int>& sel);
   bool isSeqInCache(const vector<int>& p, const vector<int>& n, const vector<int>& sel) const;
   size_t _infeasAspRatio{0}, _infeasILPFail{0}, _infeasPlBound{0}, _totalNumCostCalc{0};
+  double GetMLPredictValue(const vector<double>& pinDim);
   //std::ofstream _debugofs;
 };
 

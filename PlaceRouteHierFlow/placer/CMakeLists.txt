@@ -27,5 +27,6 @@ target_link_libraries(
      spdlog::spdlog
      lpsolve::lpsolve55
      Boost::boost
+     pybind11::module
 )
 target_code_coverage(placer)

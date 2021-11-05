@@ -1692,7 +1692,8 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
     multi_linear_const += temp_sum;
   }
 
-  double calculated_cost = CalculateCost(mydesign, curr_sp);
+  double ml_prob = mydesign.GetMLPredictValue(std::vector<double>(21,0));
+  double calculated_cost = CalculateCost(mydesign, curr_sp) + (1.0 - ml_prob) * 10.; // change 10. to scaling factor from hyperparam
   cost = calculated_cost;
   return calculated_cost;
 }

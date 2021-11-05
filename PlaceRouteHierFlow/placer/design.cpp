@@ -583,6 +583,18 @@ design::design(PnRDB::hierNode& node, const int seed) {
   }
 
   _rnd = new std::uniform_int_distribution<int>(0, std::max(20, 2*szmax));
+
+  if (node.isTop) {
+    auto load_fn = pybind11::function(
+        pybind11::reinterpret_borrow<pybind11::function>(
+          pybind11::module::import("align.pnr.ml_predict").attr("MLLoadModel")));
+    auto lm = load_fn("/home/grads/dharx027/All_of_ALIGN/ALIGN_10282021/ALIGN-public/MLPredict_new/OTA_telescopic/trained_model.sav");
+    infer_fn = new pybind11::function(
+        pybind11::reinterpret_borrow<pybind11::function>(
+          pybind11::module::import("align.pnr.ml_predict").attr("MLPredict")));
+    logger->info("loaded ml predict function");
+  }
+
 }
 
 int design::rand()
@@ -2441,8 +2453,22 @@ design::~design()
 {
   delete _rnd;
   _rnd = nullptr;
+  delete infer_fn;
+  infer_fn = nullptr;
   auto logger = spdlog::default_logger()->clone("placer.design.design");
   logger->debug("sa__seq {0} unique_cnt={1} seq_pair_hash={2} sel_hash={3}", name, _seqPairCache.size(), _seqPairHash.size(), _selHash.size());
   logger->debug("sa__infeasible {0} aspect_ratio={1} ilp_fail={2} placement_boundary={3} total_calls={4}", name, _infeasAspRatio, _infeasILPFail, _infeasPlBound, _totalNumCostCalc);
   //_debugofs.close();
+}
+
+double design::GetMLPredictValue(const vector<double>& pinDim)
+{
+  auto logger = spdlog::default_logger()->clone("placer.design.GetMLPredictValue");
+  double obj_value{1.};
+  if (infer_fn != nullptr) {
+    pybind11::object result = (*infer_fn)(pinDim);
+    obj_value = result.cast<double>();
+    logger->info("predicted value : {0}", obj_value);
+  }
+  return obj_value;
 }
