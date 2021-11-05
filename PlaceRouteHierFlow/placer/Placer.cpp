@@ -18,7 +18,7 @@ Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, 
   auto logger = spdlog::default_logger()->clone("placer.Placer");
   if (hyper.use_external_placement_info) {
     logger->info("Requesting placement from JSON");
-    logger->info(hyper.placement_info_json);
+    //logger->info(hyper.placement_info_json);
     setPlacementInfoFromJson(nodeVec, opath, drcInfo);
   }else{
     if (hyper.use_analytical_placer)
@@ -49,7 +49,8 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
       auto& sol = spVec[idx].second;
       auto& sp = spVec[idx].first;
       auto& Blocks = sol.Blocks;
-      for(auto instance:m["instances"]){
+      nodeVec[idx].concrete_name = m["concrete_name"];
+      for (auto instance : m["instances"]) {
         int block_id = nodeVec.back().Block_name_map[instance["instance_name"]];
         int sel = -1;
         for (int i = 0; i < int(nodeVec.back().Blocks[block_id].instance.size());i++){
