@@ -562,7 +562,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     logger->debug("Random number generator seed={0}", seed);
   }
 
-  while (++trial_count < max_trial_count) {
+  while (1) {
     // curr_cost negative means infeasible (do not satisfy placement constraints)
     // Only positive curr_cost value is accepted.
     if(select_in_ILP)
@@ -576,6 +576,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
 
     if (curr_cost > 0) {
       logger->info("Required {0} perturbations to generate a feasible solution.", trial_count);
+      break;
+    } else if (++trial_count >= max_trial_count){
       break;
     } else {
       int trial_cached = 0;

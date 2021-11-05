@@ -1169,7 +1169,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
         {
           double sparserow[2] = {1, 1};
           if (SPBlock.mirror == false) sparserow[1] = -1;
-          int colno[2] = {first_id * 6 + 4, second_id * 6 + 4};
+          int colno[2] = {first_id * 4 + 4, second_id * 4 + 4};
           if (SPBlock.mirror)
             add_constraintex(lp, 2, sparserow, colno, EQ, 1);  // opposite V flip
           else
@@ -1178,7 +1178,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
         // each pair has the same H flip
         {
           double sparserow[2] = {1, -1};
-          int colno[2] = {first_id * 6 + 3, second_id * 6 + 3};
+          int colno[2] = {first_id * 4 + 3, second_id * 4 + 3};
           add_constraintex(lp, 2, sparserow, colno, EQ, 0);
         }
         // each pair has the same H flip
@@ -1253,7 +1253,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
         {
           double sparserow[2] = {1, 1};
           if (SPBlock.mirror == false) sparserow[1] = -1;
-          int colno[2] = {first_id * 6 + 3, second_id * 6 + 3};
+          int colno[2] = {first_id * 4 + 3, second_id * 4 + 3};
           if(SPBlock.mirror)
             add_constraintex(lp, 2, sparserow, colno, EQ, 1);  // opposite H flip
           else
@@ -1262,7 +1262,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
         // each pair has the same V flip
         {
           double sparserow[2] = {1, -1};
-          int colno[2] = {first_id * 6 + 4, second_id * 6 + 4};
+          int colno[2] = {first_id * 4 + 4, second_id * 4 + 4};
           add_constraintex(lp, 2, sparserow, colno, EQ, 0);
         }
         // each pair has the same V flip
