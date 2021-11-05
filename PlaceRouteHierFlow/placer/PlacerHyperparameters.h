@@ -4,7 +4,7 @@
 #include <string>
 
 class PlacerHyperparameters {
-public:  
+  public:
   double T_INT = 1e6;
   double T_MIN = 1e-6;
   double ALPHA = 0.995;
