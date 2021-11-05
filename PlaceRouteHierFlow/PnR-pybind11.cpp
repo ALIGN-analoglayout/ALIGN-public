@@ -227,6 +227,7 @@ PYBIND11_MODULE(PnR, m) {
       .def_readwrite("n_copy", &hierNode::n_copy)
       .def_readwrite("numPlacement", &hierNode::numPlacement)
       .def_readwrite("name", &hierNode::name)
+      .def_readwrite("concrete_name", &hierNode::concrete_name)
       .def_readwrite("gdsFile", &hierNode::gdsFile)
       .def_readwrite("parent", &hierNode::parent)
       .def_readwrite("Blocks", &hierNode::Blocks)
