@@ -17,14 +17,146 @@ Placer::Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info&
   PlacementRegular(node, opath, effort, drcInfo);
 }
 
-Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in,
-               bool select_in_ILP = false)
-    : hyper(hyper_in) {
-  //#define analytical_placer
-  if (hyper.use_analytical_placer)
-    PlacementRegularAspectRatio_ILP_Analytical(nodeVec, opath, effort, drcInfo, select_in_ILP);
-  else
-    PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo, select_in_ILP);
+Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in, bool select_in_ILP = false) : hyper(hyper_in) {
+  auto logger = spdlog::default_logger()->clone("placer.Placer");
+  if (hyper.use_external_placement_info) {
+    logger->info("Requesting placement from JSON");
+    //logger->info(hyper.placement_info_json);
+    setPlacementInfoFromJson(nodeVec, opath, drcInfo);
+  }else{
+    if (hyper.use_analytical_placer)
+      //#define analytical_placer
+      PlacementRegularAspectRatio_ILP_Analytical(nodeVec, opath, effort, drcInfo, select_in_ILP);
+    else
+      PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo, select_in_ILP);
+  }
+}
+
+void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, string opath, PnRDB::Drc_info& drcInfo) {
+  auto logger = spdlog::default_logger()->clone("placer.Placer.setPlacementInfoFromJson");
+  logger->info("Calling setPlacementInfoFromJson");
+  json modules = json::parse(hyper.placement_info_json);
+  int nodeSize = nodeVec.size();
+  int mode=0;
+  // Read design netlist and constraints
+  design designData(nodeVec.back());
+  //designData.PrintDesign();
+  // Initialize simulate annealing with initial solution
+  SeqPair curr_sp(designData, size_t(1. * log(hyper.T_MIN/hyper.T_INT)/log(hyper.ALPHA)));
+  //curr_sp.PrintSeqPair();
+  ILP_solver curr_sol(designData);
+  std::vector<std::pair<SeqPair, ILP_solver>> spVec(nodeSize, make_pair(curr_sp, curr_sol));
+  int idx=0;
+  for(auto m:modules) {
+    if(m["abstract_name"]==designData.name){
+      auto& sol = spVec[idx].second;
+      auto& sp = spVec[idx].first;
+      auto& Blocks = sol.Blocks;
+      nodeVec[idx].concrete_name = m["concrete_name"];
+      for (auto instance : m["instances"]) {
+        int block_id = nodeVec.back().Block_name_map[instance["instance_name"]];
+        int sel = -1;
+        for (int i = 0; i < int(nodeVec.back().Blocks[block_id].instance.size());i++){
+          if(nodeVec.back().Blocks[block_id].instance[i].lefmaster==instance["concrete_template_name"]){
+            sel = i;
+            break;
+          }
+        }
+        if (sel < 0) logger->error("instance_name: {0} concrete_template_name: {1} not found.", instance["instance_name"], instance["concrete_template_name"]);
+        sp.selected[block_id] = sel;
+        Blocks[block_id].x = 2 * (int)instance["transformation"]["oX"];
+        Blocks[block_id].y = 2 * (int)instance["transformation"]["oY"];
+        if(instance["transformation"]["sX"] == -1){
+          Blocks[block_id].H_flip = 1;
+          Blocks[block_id].x -= nodeVec.back().Blocks[block_id].instance[sel].width;
+        }
+        if(instance["transformation"]["sY"] == -1){
+          Blocks[block_id].V_flip = 1;
+          Blocks[block_id].y -= nodeVec.back().Blocks[block_id].instance[sel].height;
+        }
+      }
+      sol.LL.x = INT_MAX, sol.LL.y = INT_MAX;
+      sol.UR.x = INT_MIN, sol.UR.y = INT_MIN;
+      for (int i = 0; i < designData.Blocks.size(); i++) {
+        sol.LL.x = std::min(sol.LL.x, Blocks[i].x);
+        sol.LL.y = std::min(sol.LL.y, Blocks[i].y);
+        sol.UR.x = std::max(sol.UR.x, Blocks[i].x + nodeVec.back().Blocks[i].instance[sp.selected[i]].width);
+        sol.UR.y = std::max(sol.UR.y, Blocks[i].y + nodeVec.back().Blocks[i].instance[sp.selected[i]].height);
+      }
+      sol.area = double(sol.UR.x - sol.LL.x) * double(sol.UR.y - sol.LL.y);
+      sol.area_norm = sol.area * 0.1 / designData.GetMaxBlockAreaSum();
+      sol.ratio = double(sol.UR.x - sol.LL.x) / double(sol.UR.y - sol.LL.y);
+      sol.HPWL = 0;
+      sol.HPWL_extend = 0;
+      sol.HPWL_extend_terminal = 0;
+      for (auto neti : designData.Nets) {
+        int HPWL_min_x = sol.UR.x, HPWL_min_y = sol.UR.y, HPWL_max_x = 0, HPWL_max_y = 0;
+        int HPWL_extend_min_x = sol.UR.x, HPWL_extend_min_y = sol.UR.y, HPWL_extend_max_x = 0, HPWL_extend_max_y = 0;
+        for (auto connectedj : neti.connected) {
+          if (connectedj.type == placerDB::Block) {
+            int iter2 = connectedj.iter2, iter = connectedj.iter;
+            for (auto centerk : designData.Blocks[iter2][sp.selected[iter2]].blockPins[iter].center) {
+              // calculate contact center
+              int pin_x = centerk.x;
+              int pin_y = centerk.y;
+              if (Blocks[iter2].H_flip) pin_x = designData.Blocks[iter2][sp.selected[iter2]].width - pin_x;
+              if (Blocks[iter2].V_flip) pin_y = designData.Blocks[iter2][sp.selected[iter2]].height - pin_y;
+              pin_x += Blocks[iter2].x;
+              pin_y += Blocks[iter2].y;
+              HPWL_min_x = std::min(HPWL_min_x, pin_x);
+              HPWL_max_x = std::max(HPWL_max_x, pin_x);
+              HPWL_min_y = std::min(HPWL_min_y, pin_y);
+              HPWL_max_y = std::max(HPWL_max_y, pin_y);
+            }
+            for (auto boundaryk : designData.Blocks[iter2][sp.selected[iter2]].blockPins[iter].boundary) {
+              int pin_llx = boundaryk.polygon[0].x, pin_urx = boundaryk.polygon[2].x;
+              int pin_lly = boundaryk.polygon[0].y, pin_ury = boundaryk.polygon[2].y;
+              if (Blocks[iter2].H_flip) {
+                pin_llx = designData.Blocks[iter2][sp.selected[iter2]].width - boundaryk.polygon[2].x;
+                pin_urx = designData.Blocks[iter2][sp.selected[iter2]].width - boundaryk.polygon[0].x;
+              }
+              if (Blocks[iter2].V_flip) {
+                pin_lly = designData.Blocks[iter2][sp.selected[iter2]].height - boundaryk.polygon[2].y;
+                pin_ury = designData.Blocks[iter2][sp.selected[iter2]].height - boundaryk.polygon[0].y;
+              }
+              pin_llx += Blocks[iter2].x;
+              pin_urx += Blocks[iter2].x;
+              pin_lly += Blocks[iter2].y;
+              pin_ury += Blocks[iter2].y;
+              HPWL_extend_min_x = std::min(HPWL_extend_min_x, pin_llx);
+              HPWL_extend_max_x = std::max(HPWL_extend_max_x, pin_urx);
+              HPWL_extend_min_y = std::min(HPWL_extend_min_y, pin_lly);
+              HPWL_extend_max_y = std::max(HPWL_extend_max_y, pin_ury);
+            }
+          }
+        }
+        sol.HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);
+        sol.HPWL_extend += (HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x);
+        bool is_terminal_net = false;
+        for (auto c : neti.connected) {
+          if (c.type == placerDB::Terminal) {
+            is_terminal_net = true;
+            break;
+          }
+        }
+        if (is_terminal_net) sol.HPWL_extend_terminal += (HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x);
+      }
+      if (!designData.Nets.empty()) sol.HPWL_norm = sol.HPWL_extend / designData.GetMaxBlockHPWLSum() / double(designData.Nets.size());
+      sol.cost = sol.CalculateCost(designData, sp);
+      idx++;
+    }
+  }
+  if ((int)spVec.size() < nodeSize) {
+    nodeSize=spVec.size();
+    nodeVec.resize(nodeSize);
+  }
+  idx=0;
+  for(std::vector<std::pair<SeqPair, ILP_solver>>::iterator it=spVec.begin(); it!=spVec.end() and idx<nodeSize; ++it, ++idx) {
+    it->second.updateTerminalCenter(designData, it->first);
+    it->second.WritePlacement(designData, it->first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".pl");
+    it->second.PlotPlacement(designData, it->first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".plt");
+    it->second.UpdateHierNode(designData, it->first, nodeVec[idx], drcInfo);
+  }
 }
 
 // PnRDB::hierNode Placer::CheckoutHierNode() {

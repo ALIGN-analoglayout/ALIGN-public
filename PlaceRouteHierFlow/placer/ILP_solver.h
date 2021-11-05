@@ -34,6 +34,8 @@ using std::string;
 using std::vector;
 
 class ILP_solver {
+  friend class Placer;
+
   private:
   struct Block {
     int x = 0, y = 0;            // LL of each block

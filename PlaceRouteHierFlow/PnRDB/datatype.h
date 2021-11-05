@@ -421,6 +421,7 @@ struct hierNode {
   int n_copy = 0;           // number of hiernodes of the same type used in the whole design
   int numPlacement = 0;
   string name = "";
+  string concrete_name = "";
   string gdsFile = "";
   vector<int> parent;
   vector<blockComplex> Blocks;

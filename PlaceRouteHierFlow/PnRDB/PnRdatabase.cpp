@@ -1254,9 +1254,9 @@ void PnRdatabase::WriteGcellGlobalRoute(const PnRDB::hierNode& node, const strin
     int MetalIdx = -1;                            // used to store metal_idx of the consecutive tiles with same tile_idx
     int first_tile_idx = -1, last_tile_idx = -1;  // first and last tile_idx of consecutive tiles in the same metal layers
     int width = 0;                                // width of consecutive tiles, not always the tile.width,
-                    //=tile.width in vertical metals(even layer),
-                    //=tile.height in horizontal metals(odd layer)
-    std::vector<int> tile_idxs;  // store tile idxs of consecutive tiles
+                                                  //=tile.width in vertical metals(even layer),
+                                                  //=tile.height in horizontal metals(odd layer)
+    std::vector<int> tile_idxs;                   // store tile idxs of consecutive tiles
     int net_id = it - node.Nets.begin();
     int MetalDirection = -1;  // vertical metal in even layers, horizontal metal in odd layers
     for (vector<std::pair<int, int>>::const_iterator it2 = it->GcellGlobalRouterPath.begin(); it2 != it->GcellGlobalRouterPath.end(); ++it2) {
