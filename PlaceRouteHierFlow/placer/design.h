@@ -200,7 +200,6 @@ class design
     size_t getSelIndex(const vector<int>& sel);
     std::uniform_int_distribution<int> *_rnd{nullptr};
 	pybind11::function *infer_fn{nullptr};
-	pybind11::object *loaded_model{nullptr};
     
   public:
     design();
