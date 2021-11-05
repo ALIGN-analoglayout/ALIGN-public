@@ -1,22 +1,26 @@
 #ifndef PLACER_H_
 #define PLACER_H_
 
-#include <thread>
-#include <stdlib.h>     /* srand, rand */
-#include <time.h>       /* time */
+#include <stdlib.h> /* srand, rand */
+#include <time.h>   /* time */
+
 #include <cmath>
-#include "PlacerHyperparameters.h"
-#include "design.h"
+#include <nlohmann/json.hpp>
+#include <thread>
+
+#include "../PnRDB/datatype.h"
 #include "Aplace.h"
-#include "SeqPair.h"
 #include "ConstGraph.h"
 #include "ILP_solver.h"
-#include "../PnRDB/datatype.h"
+#include "PlacerHyperparameters.h"
+#include "SeqPair.h"
+#include "design.h"
 #ifdef PERFORMANCE_DRIVEN
 #include <Python.h>
 #endif
 using std::cout;
 using std::endl;
+using namespace nlohmann;
 
 //#define MAX_TIMEOUT 4300000 //4.3 seconds = 4300000 us
 
@@ -51,7 +55,7 @@ class Placer {
     void PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo);
     void PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, bool select_in_ILP);
     void PlacementRegularAspectRatio_ILP_Analytical(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, bool select_in_ILP);
-    void setPlacementInfoFromJson();
+    void setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, string opath, PnRDB::Drc_info& drcInfo);
     PlacerHyperparameters hyper;
 
 public:
