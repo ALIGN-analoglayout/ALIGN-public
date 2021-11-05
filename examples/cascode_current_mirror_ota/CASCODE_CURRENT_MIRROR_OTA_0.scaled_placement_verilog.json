@@ -1,0 +1,1107 @@
+{
+  "global_signals": [
+    {
+      "actual": "VSS",
+      "formal": "supply0",
+      "prefix": "global_power"
+    },
+    {
+      "actual": "VDD",
+      "formal": "supply1",
+      "prefix": "global_power"
+    }
+  ],
+  "leaves": [
+    {
+      "abstract_name": "NMOS_NFIN3_NF1_M1_N12_X1_Y1_RVT",
+      "bbox": [
+        0,
+        0,
+        640,
+        2352
+      ],
+      "concrete_name": "NMOS_NFIN3_NF1_M1_N12_X1_Y1_RVT",
+      "terminals": [
+        {
+          "name": "B",
+          "rect": [
+            124,
+            1748,
+            356,
+            1780
+          ]
+        },
+        {
+          "name": "D",
+          "rect": [
+            124,
+            152,
+            356,
+            184
+          ]
+        },
+        {
+          "name": "G",
+          "rect": [
+            124,
+            908,
+            356,
+            940
+          ]
+        },
+        {
+          "name": "S",
+          "rect": [
+            204,
+            68,
+            436,
+            100
+          ]
+        }
+      ]
+    },
+    {
+      "abstract_name": "NMOS_NFIN5_NF1_M1_N12_X1_Y1_RVT",
+      "bbox": [
+        0,
+        0,
+        640,
+        2352
+      ],
+      "concrete_name": "NMOS_NFIN5_NF1_M1_N12_X1_Y1_RVT",
+      "terminals": [
+        {
+          "name": "B",
+          "rect": [
+            124,
+            1748,
+            356,
+            1780
+          ]
+        },
+        {
+          "name": "D",
+          "rect": [
+            124,
+            152,
+            356,
+            184
+          ]
+        },
+        {
+          "name": "G",
+          "rect": [
+            124,
+            908,
+            356,
+            940
+          ]
+        },
+        {
+          "name": "S",
+          "rect": [
+            204,
+            68,
+            436,
+            100
+          ]
+        }
+      ]
+    },
+    {
+      "abstract_name": "PMOS_NFIN5_NF1_M1_N12_X1_Y1_RVT",
+      "bbox": [
+        0,
+        0,
+        640,
+        2352
+      ],
+      "concrete_name": "PMOS_NFIN5_NF1_M1_N12_X1_Y1_RVT",
+      "terminals": [
+        {
+          "name": "B",
+          "rect": [
+            124,
+            1748,
+            356,
+            1780
+          ]
+        },
+        {
+          "name": "D",
+          "rect": [
+            124,
+            152,
+            356,
+            184
+          ]
+        },
+        {
+          "name": "G",
+          "rect": [
+            124,
+            908,
+            356,
+            940
+          ]
+        },
+        {
+          "name": "S",
+          "rect": [
+            204,
+            68,
+            436,
+            100
+          ]
+        }
+      ]
+    },
+    {
+      "abstract_name": "PMOS_NFIN120_NF1_M1_N12_X5_Y2_RVT",
+      "bbox": [
+        0,
+        0,
+        1280,
+        3528
+      ],
+      "concrete_name": "PMOS_NFIN120_NF1_M1_N12_X5_Y2_RVT",
+      "terminals": [
+        {
+          "name": "B",
+          "rect": [
+            284,
+            2924,
+            996,
+            2956
+          ]
+        },
+        {
+          "name": "D",
+          "rect": [
+            460,
+            132,
+            500,
+            1380
+          ]
+        },
+        {
+          "name": "G",
+          "rect": [
+            540,
+            888,
+            580,
+            2136
+          ]
+        },
+        {
+          "name": "S",
+          "rect": [
+            380,
+            48,
+            420,
+            1296
+          ]
+        }
+      ]
+    },
+    {
+      "abstract_name": "PMOS_NFIN60_NF1_M1_N12_X5_Y1_RVT",
+      "bbox": [
+        0,
+        0,
+        1280,
+        2352
+      ],
+      "concrete_name": "PMOS_NFIN60_NF1_M1_N12_X5_Y1_RVT",
+      "terminals": [
+        {
+          "name": "B",
+          "rect": [
+            284,
+            1748,
+            996,
+            1780
+          ]
+        },
+        {
+          "name": "D",
+          "rect": [
+            284,
+            152,
+            996,
+            184
+          ]
+        },
+        {
+          "name": "G",
+          "rect": [
+            284,
+            908,
+            996,
+            940
+          ]
+        },
+        {
+          "name": "S",
+          "rect": [
+            204,
+            68,
+            1076,
+            100
+          ]
+        }
+      ]
+    },
+    {
+      "abstract_name": "PMOS_NFIN10_NF1_M1_N12_X1_Y1_RVT",
+      "bbox": [
+        0,
+        0,
+        640,
+        2352
+      ],
+      "concrete_name": "PMOS_NFIN10_NF1_M1_N12_X1_Y1_RVT",
+      "terminals": [
+        {
+          "name": "B",
+          "rect": [
+            124,
+            1748,
+            356,
+            1780
+          ]
+        },
+        {
+          "name": "D",
+          "rect": [
+            124,
+            152,
+            356,
+            184
+          ]
+        },
+        {
+          "name": "G",
+          "rect": [
+            124,
+            908,
+            356,
+            940
+          ]
+        },
+        {
+          "name": "S",
+          "rect": [
+            204,
+            68,
+            436,
+            100
+          ]
+        }
+      ]
+    },
+    {
+      "abstract_name": "CMC_NMOS_NFIN30_NF1_M1_N12_X3_Y1_RVT",
+      "bbox": [
+        0,
+        0,
+        1440,
+        2352
+      ],
+      "concrete_name": "CMC_NMOS_NFIN30_NF1_M1_N12_X3_Y1_RVT",
+      "terminals": [
+        {
+          "name": "DA",
+          "rect": [
+            284,
+            152,
+            996,
+            184
+          ]
+        },
+        {
+          "name": "DB",
+          "rect": [
+            444,
+            236,
+            1156,
+            268
+          ]
+        },
+        {
+          "name": "G",
+          "rect": [
+            284,
+            908,
+            1156,
+            940
+          ]
+        },
+        {
+          "name": "S",
+          "rect": [
+            460,
+            48,
+            500,
+            1800
+          ]
+        }
+      ]
+    },
+    {
+      "abstract_name": "CMC_S_NMOS_B_NFIN24_NF1_M1_N12_X2_Y1_RVT",
+      "bbox": [
+        0,
+        0,
+        2560,
+        2352
+      ],
+      "concrete_name": "CMC_S_NMOS_B_NFIN24_NF1_M1_N12_X2_Y1_RVT",
+      "terminals": [
+        {
+          "name": "B",
+          "rect": [
+            284,
+            1748,
+            2276,
+            1780
+          ]
+        },
+        {
+          "name": "DA",
+          "rect": [
+            284,
+            152,
+            2276,
+            184
+          ]
+        },
+        {
+          "name": "DB",
+          "rect": [
+            924,
+            320,
+            1636,
+            352
+          ]
+        },
+        {
+          "name": "G",
+          "rect": [
+            284,
+            908,
+            2276,
+            940
+          ]
+        },
+        {
+          "name": "SA",
+          "rect": [
+            204,
+            68,
+            2356,
+            100
+          ]
+        },
+        {
+          "name": "SB",
+          "rect": [
+            844,
+            236,
+            1716,
+            268
+          ]
+        }
+      ]
+    },
+    {
+      "abstract_name": "SCM_NMOS_NFIN15_NF1_M1_N12_X2_Y1_RVT",
+      "bbox": [
+        0,
+        0,
+        1120,
+        2352
+      ],
+      "concrete_name": "SCM_NMOS_NFIN15_NF1_M1_N12_X2_Y1_RVT",
+      "terminals": [
+        {
+          "name": "DA",
+          "rect": [
+            380,
+            132,
+            420,
+            960
+          ]
+        },
+        {
+          "name": "DB",
+          "rect": [
+            444,
+            236,
+            676,
+            268
+          ]
+        },
+        {
+          "name": "S",
+          "rect": [
+            300,
+            48,
+            340,
+            1800
+          ]
+        }
+      ]
+    },
+    {
+      "abstract_name": "DP_NMOS_B_NFIN30_NF1_M1_N12_X3_Y1_RVT",
+      "bbox": [
+        0,
+        0,
+        1440,
+        2352
+      ],
+      "concrete_name": "DP_NMOS_B_NFIN30_NF1_M1_N12_X3_Y1_RVT",
+      "terminals": [
+        {
+          "name": "B",
+          "rect": [
+            284,
+            1748,
+            1156,
+            1780
+          ]
+        },
+        {
+          "name": "DA",
+          "rect": [
+            284,
+            152,
+            996,
+            184
+          ]
+        },
+        {
+          "name": "DB",
+          "rect": [
+            444,
+            236,
+            1156,
+            268
+          ]
+        },
+        {
+          "name": "GA",
+          "rect": [
+            284,
+            908,
+            996,
+            940
+          ]
+        },
+        {
+          "name": "GB",
+          "rect": [
+            444,
+            992,
+            1156,
+            1024
+          ]
+        },
+        {
+          "name": "S",
+          "rect": [
+            204,
+            68,
+            1236,
+            100
+          ]
+        }
+      ]
+    }
+  ],
+  "modules": [
+    {
+      "abstract_name": "CASCODE_CURRENT_MIRROR_OTA",
+      "bbox": [
+        0,
+        0,
+        5840,
+        9408
+      ],
+      "concrete_name": "CASCODE_CURRENT_MIRROR_OTA_0",
+      "constraints": [
+        {
+          "constraint": "power_ports",
+          "ports": [
+            "VDD"
+          ]
+        },
+        {
+          "constraint": "ground_ports",
+          "ports": [
+            "VSS"
+          ]
+        },
+        {
+          "constraint": "do_not_use_lib",
+          "libraries": [
+            "CASCODED_SCM_NMOS",
+            "CASCODED_SCM_PMOS"
+          ],
+          "propagate": null
+        },
+        {
+          "constraint": "symmetric_blocks",
+          "direction": "V",
+          "pairs": [
+            [
+              "X_CASCODED_CMC_PMOS_M20_M21_M22_M26",
+              "X_CASCODED_CMC_PMOS_M18_M19_M23_M27"
+            ],
+            [
+              "X_DP_NMOS_B_M15_M17"
+            ]
+          ]
+        },
+        {
+          "constraint": "symmetric_nets",
+          "direction": "V",
+          "net1": "NET16",
+          "net2": "NET27",
+          "pins1": [
+            "X_CASCODED_CMC_PMOS_M20_M21_M22_M26/DB",
+            "X_DP_NMOS_B_M15_M17/DA"
+          ],
+          "pins2": [
+            "X_CASCODED_CMC_PMOS_M18_M19_M23_M27/DB",
+            "X_DP_NMOS_B_M15_M17/DB"
+          ]
+        },
+        {
+          "constraint": "symmetric_nets",
+          "direction": "V",
+          "net1": "VINN",
+          "net2": "VINP",
+          "pins1": [
+            "X_DP_NMOS_B_M15_M17/GA",
+            "VINN"
+          ],
+          "pins2": [
+            "X_DP_NMOS_B_M15_M17/GB",
+            "VINP"
+          ]
+        }
+      ],
+      "instances": [
+        {
+          "abstract_template_name": "NMOS_NFIN3_NF1_M1_N12_X1_Y1_RVT",
+          "concrete_template_name": "NMOS_NFIN3_NF1_M1_N12_X1_Y1_RVT",
+          "fa_map": [
+            {
+              "actual": "VSS",
+              "formal": "B"
+            },
+            {
+              "actual": "VBIASN",
+              "formal": "D"
+            },
+            {
+              "actual": "VBIASN",
+              "formal": "G"
+            },
+            {
+              "actual": "NET9B",
+              "formal": "S"
+            }
+          ],
+          "instance_name": "M1NUP",
+          "transformation": {
+            "oX": 2560,
+            "oY": 7056,
+            "sX": 1,
+            "sY": 1
+          }
+        },
+        {
+          "abstract_template_name": "NMOS_NFIN5_NF1_M1_N12_X1_Y1_RVT",
+          "concrete_template_name": "NMOS_NFIN5_NF1_M1_N12_X1_Y1_RVT",
+          "fa_map": [
+            {
+              "actual": "VSS",
+              "formal": "B"
+            },
+            {
+              "actual": "NET9B",
+              "formal": "D"
+            },
+            {
+              "actual": "NET9B",
+              "formal": "G"
+            },
+            {
+              "actual": "VSS",
+              "formal": "S"
+            }
+          ],
+          "instance_name": "M1NDOWN",
+          "transformation": {
+            "oX": 3200,
+            "oY": 7056,
+            "sX": 1,
+            "sY": 1
+          }
+        },
+        {
+          "abstract_template_name": "PMOS_NFIN5_NF1_M1_N12_X1_Y1_RVT",
+          "concrete_template_name": "PMOS_NFIN5_NF1_M1_N12_X1_Y1_RVT",
+          "fa_map": [
+            {
+              "actual": "VDD",
+              "formal": "B"
+            },
+            {
+              "actual": "NET8B",
+              "formal": "D"
+            },
+            {
+              "actual": "NET8B",
+              "formal": "G"
+            },
+            {
+              "actual": "VDD",
+              "formal": "S"
+            }
+          ],
+          "instance_name": "M1PUP",
+          "transformation": {
+            "oX": 640,
+            "oY": 2352,
+            "sX": -1,
+            "sY": 1
+          }
+        },
+        {
+          "abstract_template_name": "PMOS_NFIN5_NF1_M1_N12_X1_Y1_RVT",
+          "concrete_template_name": "PMOS_NFIN5_NF1_M1_N12_X1_Y1_RVT",
+          "fa_map": [
+            {
+              "actual": "VDD",
+              "formal": "B"
+            },
+            {
+              "actual": "VBIASP",
+              "formal": "D"
+            },
+            {
+              "actual": "VBIASP",
+              "formal": "G"
+            },
+            {
+              "actual": "NET8B",
+              "formal": "S"
+            }
+          ],
+          "instance_name": "M1PDOWN",
+          "transformation": {
+            "oX": 640,
+            "oY": 2352,
+            "sX": -1,
+            "sY": -1
+          }
+        },
+        {
+          "abstract_template_name": "CASCODED_CMC_PMOS_PG0",
+          "concrete_template_name": "CASCODED_CMC_PMOS_PG0_0",
+          "fa_map": [
+            {
+              "actual": "VOUTP",
+              "formal": "DA"
+            },
+            {
+              "actual": "NET27",
+              "formal": "DB"
+            },
+            {
+              "actual": "VBIASP",
+              "formal": "GA"
+            }
+          ],
+          "instance_name": "X_CASCODED_CMC_PMOS_M18_M19_M23_M27",
+          "transformation": {
+            "oX": 3280,
+            "oY": 0,
+            "sX": -1,
+            "sY": 1
+          }
+        },
+        {
+          "abstract_template_name": "CASCODED_CMC_PMOS_PG0",
+          "concrete_template_name": "CASCODED_CMC_PMOS_PG0_0",
+          "fa_map": [
+            {
+              "actual": "VBIASND",
+              "formal": "DA"
+            },
+            {
+              "actual": "NET16",
+              "formal": "DB"
+            },
+            {
+              "actual": "VBIASP",
+              "formal": "GA"
+            }
+          ],
+          "instance_name": "X_CASCODED_CMC_PMOS_M20_M21_M22_M26",
+          "transformation": {
+            "oX": 3280,
+            "oY": 0,
+            "sX": 1,
+            "sY": 1
+          }
+        },
+        {
+          "abstract_template_name": "CASCODED_CMC_NMOS_PG0",
+          "concrete_template_name": "CASCODED_CMC_NMOS_PG0_0",
+          "fa_map": [
+            {
+              "actual": "VBIASND",
+              "formal": "DA"
+            },
+            {
+              "actual": "VOUTP",
+              "formal": "DB"
+            },
+            {
+              "actual": "VBIASN",
+              "formal": "GA"
+            }
+          ],
+          "instance_name": "X_CASCODED_CMC_NMOS_M10_M11_M24_M25",
+          "transformation": {
+            "oX": 0,
+            "oY": 4704,
+            "sX": 1,
+            "sY": 1
+          }
+        },
+        {
+          "abstract_template_name": "SCM_NMOS_NFIN15_NF1_M1_N12_X2_Y1_RVT",
+          "concrete_template_name": "SCM_NMOS_NFIN15_NF1_M1_N12_X2_Y1_RVT",
+          "fa_map": [
+            {
+              "actual": "ID",
+              "formal": "DA"
+            },
+            {
+              "actual": "NET24",
+              "formal": "DB"
+            },
+            {
+              "actual": "VSS",
+              "formal": "S"
+            }
+          ],
+          "instance_name": "X_SCM_NMOS_M14_M16",
+          "transformation": {
+            "oX": 4000,
+            "oY": 4704,
+            "sX": 1,
+            "sY": 1
+          }
+        },
+        {
+          "abstract_template_name": "DP_NMOS_B_NFIN30_NF1_M1_N12_X3_Y1_RVT",
+          "concrete_template_name": "DP_NMOS_B_NFIN30_NF1_M1_N12_X3_Y1_RVT",
+          "fa_map": [
+            {
+              "actual": "VSS",
+              "formal": "B"
+            },
+            {
+              "actual": "NET16",
+              "formal": "DA"
+            },
+            {
+              "actual": "NET27",
+              "formal": "DB"
+            },
+            {
+              "actual": "VINN",
+              "formal": "GA"
+            },
+            {
+              "actual": "VINP",
+              "formal": "GB"
+            },
+            {
+              "actual": "NET24",
+              "formal": "S"
+            }
+          ],
+          "instance_name": "X_DP_NMOS_B_M15_M17",
+          "transformation": {
+            "oX": 4000,
+            "oY": 4704,
+            "sX": -1,
+            "sY": 1
+          }
+        }
+      ],
+      "parameters": [
+        "ID",
+        "VBIASN",
+        "VBIASND",
+        "VBIASP",
+        "VINN",
+        "VINP",
+        "VOUTP"
+      ]
+    },
+    {
+      "abstract_name": "CASCODED_CMC_PMOS_PG0",
+      "bbox": [
+        0,
+        0,
+        2560,
+        4704
+      ],
+      "concrete_name": "CASCODED_CMC_PMOS_PG0_0",
+      "constraints": [],
+      "instances": [
+        {
+          "abstract_template_name": "PMOS_NFIN120_NF1_M1_N12_X5_Y2_RVT",
+          "concrete_template_name": "PMOS_NFIN120_NF1_M1_N12_X5_Y2_RVT",
+          "fa_map": [
+            {
+              "actual": "VDD",
+              "formal": "B"
+            },
+            {
+              "actual": "DA",
+              "formal": "D"
+            },
+            {
+              "actual": "GA",
+              "formal": "G"
+            },
+            {
+              "actual": "SA",
+              "formal": "S"
+            }
+          ],
+          "instance_name": "M0",
+          "transformation": {
+            "oX": 1280,
+            "oY": 3528,
+            "sX": 1,
+            "sY": -1
+          }
+        },
+        {
+          "abstract_template_name": "PMOS_NFIN60_NF1_M1_N12_X5_Y1_RVT",
+          "concrete_template_name": "PMOS_NFIN60_NF1_M1_N12_X5_Y1_RVT",
+          "fa_map": [
+            {
+              "actual": "VDD",
+              "formal": "B"
+            },
+            {
+              "actual": "DB",
+              "formal": "D"
+            },
+            {
+              "actual": "GA",
+              "formal": "G"
+            },
+            {
+              "actual": "SB",
+              "formal": "S"
+            }
+          ],
+          "instance_name": "M1",
+          "transformation": {
+            "oX": 0,
+            "oY": 2352,
+            "sX": 1,
+            "sY": -1
+          }
+        },
+        {
+          "abstract_template_name": "PMOS_NFIN10_NF1_M1_N12_X1_Y1_RVT",
+          "concrete_template_name": "PMOS_NFIN10_NF1_M1_N12_X1_Y1_RVT",
+          "fa_map": [
+            {
+              "actual": "VDD",
+              "formal": "B"
+            },
+            {
+              "actual": "SA",
+              "formal": "D"
+            },
+            {
+              "actual": "DB",
+              "formal": "G"
+            },
+            {
+              "actual": "VDD",
+              "formal": "S"
+            }
+          ],
+          "instance_name": "M2",
+          "transformation": {
+            "oX": 1280,
+            "oY": 2352,
+            "sX": -1,
+            "sY": 1
+          }
+        },
+        {
+          "abstract_template_name": "PMOS_NFIN5_NF1_M1_N12_X1_Y1_RVT",
+          "concrete_template_name": "PMOS_NFIN5_NF1_M1_N12_X1_Y1_RVT",
+          "fa_map": [
+            {
+              "actual": "VDD",
+              "formal": "B"
+            },
+            {
+              "actual": "SB",
+              "formal": "D"
+            },
+            {
+              "actual": "DB",
+              "formal": "G"
+            },
+            {
+              "actual": "VDD",
+              "formal": "S"
+            }
+          ],
+          "instance_name": "M3",
+          "transformation": {
+            "oX": 640,
+            "oY": 2352,
+            "sX": -1,
+            "sY": 1
+          }
+        }
+      ],
+      "parameters": [
+        "DA",
+        "GA",
+        "DB"
+      ]
+    },
+    {
+      "abstract_name": "CASCODED_CMC_NMOS_PG0",
+      "bbox": [
+        0,
+        0,
+        2560,
+        4704
+      ],
+      "concrete_name": "CASCODED_CMC_NMOS_PG0_0",
+      "constraints": [
+        {
+          "constraint": "symmetric_blocks",
+          "direction": "V",
+          "pairs": [
+            [
+              "X_CMC_NMOS_M2_M3"
+            ],
+            [
+              "X_CMC_S_NMOS_B_M0_M1"
+            ]
+          ]
+        },
+        {
+          "constraint": "symmetric_nets",
+          "direction": "V",
+          "net1": "SA",
+          "net2": "SB",
+          "pins1": [
+            "X_CMC_NMOS_M2_M3/DA",
+            "X_CMC_S_NMOS_B_M0_M1/SA"
+          ],
+          "pins2": [
+            "X_CMC_NMOS_M2_M3/DB",
+            "X_CMC_S_NMOS_B_M0_M1/SB"
+          ]
+        }
+      ],
+      "instances": [
+        {
+          "abstract_template_name": "CMC_NMOS_NFIN30_NF1_M1_N12_X3_Y1_RVT",
+          "concrete_template_name": "CMC_NMOS_NFIN30_NF1_M1_N12_X3_Y1_RVT",
+          "fa_map": [
+            {
+              "actual": "SA",
+              "formal": "DA"
+            },
+            {
+              "actual": "SB",
+              "formal": "DB"
+            },
+            {
+              "actual": "DA",
+              "formal": "G"
+            },
+            {
+              "actual": "VSS",
+              "formal": "S"
+            }
+          ],
+          "instance_name": "X_CMC_NMOS_M2_M3",
+          "transformation": {
+            "oX": 2000,
+            "oY": 2352,
+            "sX": -1,
+            "sY": -1
+          }
+        },
+        {
+          "abstract_template_name": "CMC_S_NMOS_B_NFIN24_NF1_M1_N12_X2_Y1_RVT",
+          "concrete_template_name": "CMC_S_NMOS_B_NFIN24_NF1_M1_N12_X2_Y1_RVT",
+          "fa_map": [
+            {
+              "actual": "VSS",
+              "formal": "B"
+            },
+            {
+              "actual": "DA",
+              "formal": "DA"
+            },
+            {
+              "actual": "DB",
+              "formal": "DB"
+            },
+            {
+              "actual": "GA",
+              "formal": "G"
+            },
+            {
+              "actual": "SA",
+              "formal": "SA"
+            },
+            {
+              "actual": "SB",
+              "formal": "SB"
+            }
+          ],
+          "instance_name": "X_CMC_S_NMOS_B_M0_M1",
+          "transformation": {
+            "oX": 0,
+            "oY": 2352,
+            "sX": 1,
+            "sY": 1
+          }
+        }
+      ],
+      "parameters": [
+        "DA",
+        "GA",
+        "DB"
+      ]
+    }
+  ]
+}

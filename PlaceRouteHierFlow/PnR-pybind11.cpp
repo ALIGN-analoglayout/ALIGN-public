@@ -227,6 +227,7 @@ PYBIND11_MODULE(PnR, m) {
       .def_readwrite("n_copy", &hierNode::n_copy)
       .def_readwrite("numPlacement", &hierNode::numPlacement)
       .def_readwrite("name", &hierNode::name)
+      .def_readwrite("concrete_name", &hierNode::concrete_name)
       .def_readwrite("gdsFile", &hierNode::gdsFile)
       .def_readwrite("parent", &hierNode::parent)
       .def_readwrite("Blocks", &hierNode::Blocks)
@@ -488,6 +489,8 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("COUNT_LIMIT", &PlacerHyperparameters::COUNT_LIMIT)
     .def_readwrite("LAMBDA", &PlacerHyperparameters::LAMBDA)
     .def_readwrite("use_analytical_placer", &PlacerHyperparameters::use_analytical_placer)
+    .def_readwrite("placement_info_json", &PlacerHyperparameters::placement_info_json)
+    .def_readwrite("use_external_placement_info", &PlacerHyperparameters::use_external_placement_info)
     ;
 
   py::class_<PlacerIfc>( m, "PlacerIfc")

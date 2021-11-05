@@ -1,6 +1,8 @@
 #ifndef PLACERHYPERPARAMETERS_H_
 #define PLACERHYPERPARAMETERS_H_
 
+#include <string>
+
 class PlacerHyperparameters {
 public:  
   double T_INT = 1e6;
@@ -13,6 +15,8 @@ public:
   double LAMBDA = 1.0;
 
   bool use_analytical_placer = false;
+  std::string placement_info_json; // Should be initialized to the empty string
+  bool use_external_placement_info = false;
 };
 
 #endif
