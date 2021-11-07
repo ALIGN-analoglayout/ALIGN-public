@@ -91,7 +91,6 @@ def build_example(name, netlist, constraints):
     else:
         with open(example / f'{name}.const.json', 'w') as fp:
             fp.write(json.dumps(constraints, indent=2))
->>>>>>> 98b532f5102eaeed45f4375d8b370d8c6b850e3e
     return example
 
 
