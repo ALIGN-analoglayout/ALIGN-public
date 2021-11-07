@@ -58,7 +58,7 @@ class HardConstraint(SoftConstraint, abc.ABC):
           Every class that inherits from HardConstraint
           MUST implement this function.
 
-        Function must yield a list of mathematical 
+        Function must yield a list of mathematical
           expressions supported by the 'checker'
           backend. This can be done using multiple
           'yield' statements or returning an iterable
@@ -431,13 +431,8 @@ class Boundary(HardConstraint):
 # You may chain constraints together for more complex constraints by
 #     1) Assigning default values to certain attributes
 #     2) Using custom validators to modify attribute values
-# Note: Compositional check() is automatically constructed if
-#     every check() in mro starts with `constraints = super().check()`.
-#     (mro is Order, Align, HardConstraint in this example)
-# Note: If you need to specialize check(), you do have the option
-#     to create a custom `check()` in this class. It shouldn't be
-#     needed unless you are adding new semantics
-
+# Note: Do not implement check() here. It will be ignored.
+#       Only ALIGN internal constraints may be translated
 
 class AlignInOrder(UserConstraint):
     '''
@@ -534,6 +529,12 @@ class PlaceSymmetric(SoftConstraint):
         return value
 
 
+class CompactPlacement(SoftConstraint):
+    style: Literal[
+        'left', 'right',
+        'center'
+    ] = 'left'
+
 class SameTemplate(SoftConstraint):
     instances: List[str]
 
@@ -557,6 +558,103 @@ class MatchBlocks(SoftConstraint):
     instances: List[str]
 
 
+class PowerPorts(SoftConstraint):
+    '''
+    power port for each hieararchy
+    '''
+    ports: List[str]
+
+
+class GroundPorts(SoftConstraint):
+    '''
+    Ground port for each hieararchy
+    '''
+    ports: List[str]
+
+
+class ClockPorts(SoftConstraint):
+    '''
+    Clock port for each hieararchy
+    '''
+    ports: List[str]
+
+
+class DoNotUseLib(SoftConstraint):
+    '''
+    Primitive libraries which should not be used
+    '''
+    libraries: List[str]
+    propagate : Optional[bool]
+
+
+class IsDigital(SoftConstraint):
+    '''
+    Place this block digitally
+    Forbids any preprocessing, auto-annotation, array-identification or auto-constraint generation
+    '''
+    isTrue: bool
+    propagate : Optional[bool]
+
+
+class AutoConstraint(SoftConstraint):
+    '''
+    Forbids/Allow any auto-constraint generation
+    '''
+    isTrue: bool
+    propagate : Optional[bool]
+
+
+class IdentifyArray(SoftConstraint):
+    '''
+    Forbids/Alow any array identification
+    '''
+    isTrue: bool
+    propagate : Optional[bool]
+
+
+class AutoGroupCaps(SoftConstraint):
+    '''
+    Forbids/Allow creation of arrays for symmetric caps
+    '''
+    isTrue: bool
+    propagate : Optional[bool]
+
+
+class FixSourceDrain(SoftConstraint):
+    '''
+    Checks the netlist for any source/drain interchange.
+    Traverses and fix them based on power to gnd traversal
+    '''
+    isTrue: bool
+    propagate : Optional[bool]
+
+
+class KeepDummyHierarchies(SoftConstraint):
+    '''
+    Removes any single instance hierarchies
+    '''
+    isTrue: bool
+    propagate : Optional[bool]
+
+
+class MergeSeriesDevices(SoftConstraint):
+    '''
+    Allow stacking of series devices
+    Only works on NMOS/PMOS/CAP/RES
+    '''
+    isTrue: bool
+    propagate : Optional[bool]
+
+
+class MergeParallelDevices(SoftConstraint):
+    '''
+    Allow merging of parallel devices
+    Only works on NMOS/PMOS/CAP/RES
+    '''
+    isTrue: bool
+    propagate : Optional[bool]
+
+
 class DoNotIdentify(SoftConstraint):
     '''
     TODO: Can be replicated by Enclose??
@@ -576,10 +674,29 @@ class SymmetricBlocks(SoftConstraint):
         Align(1, X, Y, 6, 'center')
 
         '''
+        instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
         for pair in value:
             assert len(pair) >= 1, 'Must contain at least one instance'
             assert len(pair) <= 2, 'Must contain at most two instances'
             validate_instances(cls, pair)
+        if not hasattr(cls._validator_ctx().parent.parent, 'elements'):
+            # PnR stage VerilogJsonModule
+            return value
+        if len(cls._validator_ctx().parent.parent.elements)==0:
+            #skips the check while reading user constraints
+            return value
+        group_block_instances = [const.name for const in cls._validator_ctx().parent if isinstance(const, GroupBlocks)]
+        for pair in value:
+            # logger.debug(f"pairs {self.pairs} {self.parent.parent.get_element(pair[0])}")
+            if len([ele for ele in pair if ele in group_block_instances])>0:
+                #Skip check for group block elements as they are added later in the flow
+                continue
+            elif len(pair)==2:
+                assert cls._validator_ctx().parent.parent.get_element(pair[0]), f"element {pair[0]} not found in design"
+                assert cls._validator_ctx().parent.parent.get_element(pair[1]), f"element {pair[1]} not found in design"
+                assert cls._validator_ctx().parent.parent.get_element(pair[0]).parameters == \
+                    cls._validator_ctx().parent.parent.get_element(pair[1]).parameters, \
+                        f"Incorrent symmetry pair {pair} in subckt {cls._validator_ctx().parent.parent.name}"
         return value
 
 
@@ -661,6 +778,7 @@ ConstraintType = Union[
     AlignInOrder,
     # Legacy Align constraints
     # (SoftConstraints)
+    CompactPlacement,
     SameTemplate,
     CreateAlias,
     GroupBlocks,
@@ -675,7 +793,20 @@ ConstraintType = Union[
     NetConst,
     PortLocation,
     SymmetricNets,
-    MultiConnection
+    MultiConnection,
+    # Setup constraints
+    PowerPorts,
+    GroundPorts,
+    ClockPorts,
+    DoNotUseLib,
+    IsDigital,
+    AutoConstraint,
+    AutoGroupCaps,
+    FixSourceDrain,
+    KeepDummyHierarchies,
+    MergeSeriesDevices,
+    MergeParallelDevices,
+    IdentifyArray
 ]
 
 
@@ -722,7 +853,7 @@ class ConstraintDB(types.List[ConstraintType]):
 
     def __init__(self, *args, check=True, **kwargs):
         super().__init__()
-        if check and checker.Z3Checker.enabled:
+        if check:
             self._checker = checker.Z3Checker()
         # Constraints may need to access parent scope for subcircuit information
         # To ensure parent is set appropriately, force users to use append

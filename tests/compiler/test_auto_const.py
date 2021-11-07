@@ -7,7 +7,6 @@ from align.schema.types import set_context
 from align.compiler.compiler import compiler_input
 from align.compiler.find_constraint import add_or_revert_const, symmnet_device_pairs
 from utils import clean_data, build_example, ota_six
-import textwrap
 
 align_home = pathlib.Path(__file__).resolve().parent.parent.parent
 pdk_path = align_home / "pdks" / "FinFET14nm_Mock_PDK"
@@ -18,15 +17,10 @@ out_path = pathlib.Path(__file__).resolve().parent / "Results"
 def test_symm_net():
     name = "CKT_OTA"
     netlist = ota_six(name)
-    setup = textwrap.dedent(
-        """\
-        POWER = vccx
-        GND = vssx
-        DIGITAL = CKT_OTA
-        """
-    )
-    constraints = []
-    example = build_example(name, netlist, setup, constraints)
+    constraints = [
+        {"constraint": "IsDigital", "isTrue": True}
+    ]
+    example = build_example(name, netlist, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
     ckt = ckt_library.find("CKT_OTA")
     G = Graph(ckt)
@@ -56,15 +50,11 @@ def test_symm_net():
 def test_add_symmetry_const():
     name = "CKT_OTA"
     netlist = ota_six(name)
-    setup = textwrap.dedent(
-        """\
-        POWER = vccx
-        GND = vssx
-        DIGITAL = CKT_OTA
-        """
-    )
-    constraints = []
-    example = build_example(name, netlist, setup, constraints)
+
+    constraints = [
+        {"constraint": "IsDigital", "isTrue": True}
+    ]
+    example = build_example(name, netlist, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
     ckt = ckt_library.find("CKT_OTA")
     with set_context(ckt.constraints):
@@ -72,14 +62,14 @@ def test_add_symmetry_const():
     const_pairs = {"MN4": "MN3"}  # skip dictionary element
     with pytest.raises(KeyError):
         add_or_revert_const(const_pairs, ckt.constraints, list())
-    assert len(ckt.constraints) == 0
+    assert len(ckt.constraints) == 1
     const_pairs = [["MN4", "MN3"]]
     add_or_revert_const(const_pairs, ckt.constraints, list())
-    assert len(ckt.constraints) == 1
-    assert ckt.constraints[0] == x
+    assert len(ckt.constraints) == 2
+    assert ckt.constraints[1] == x
     const_pairs = [["MN4", "MN5"]]  # Skip unequal size
     add_or_revert_const(const_pairs, ckt.constraints, list())
-    assert len(ckt.constraints) == 1
+    assert len(ckt.constraints) == 2
     const_pairs = [["VIN", "VIP"]]  # Skip net
     add_or_revert_const(const_pairs, ckt.constraints, list())
-    assert len(ckt.constraints) == 1
+    assert len(ckt.constraints) == 2

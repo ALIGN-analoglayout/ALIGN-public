@@ -5,7 +5,6 @@ Created on Wed Feb 21 13:12:15 2020
 @author: kunal
 """
 
-from typing import List
 from align.schema.types import set_context
 import pprint
 from itertools import combinations, combinations_with_replacement
@@ -268,23 +267,35 @@ def FindSymmetry(subckt, stop_points: set):
             logger.debug(f"Matches starting from {port1, port2} pair: {pprint.pformat(match_pairs, indent=4)}")
     return match_pairs
 
-def FindConst(subckt, design_setup):
+def FindConst(subckt):
     logger.debug(f"Searching constraints for block {subckt.name}")
     # Read contents of input constraint file
     if "ARRAY_HIER" in subckt.name.upper():
         #TODO Generate consraints for array hierarchies
         return
-    stop_points = set(subckt.power).union(subckt.gnd,subckt.clock)
+    stop_points = set()
+    auto_constraint = True
+    for const in subckt.constraints:
+            if isinstance(const, constraint.PowerPorts) or\
+                isinstance(const, constraint.GroundPorts) or \
+                isinstance(const, constraint.ClockPorts):
+                stop_points.update(const.ports)
+            elif isinstance(const, constraint.IsDigital) or \
+                isinstance(const, constraint.AutoConstraint):
+                auto_constraint = const.isTrue
     logger.debug(f"Stop_points : {stop_points}")
 
     # Search symmetry constraints
     # TODO move search after processing input const
-    match_pairs = FindSymmetry(subckt, stop_points)
     pp = process_input_const(subckt)
+    if not auto_constraint:
+        return
+
+    match_pairs = FindSymmetry(subckt, stop_points)
     written_symmblocks = pp.process_all()
     skip_const = written_symmblocks.copy()
     ## Generate hiearchies based on array identification
-    array_hier = process_arrays(subckt, match_pairs, design_setup)
+    array_hier = process_arrays(subckt, match_pairs)
     array_hier.add_align_block_const()
     array_hier.add_new_array_hier()
     match_pairs = {k: v for k, v in match_pairs.items() if len(v) > 1}

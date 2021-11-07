@@ -307,7 +307,7 @@ void Placement::place(PnRDB::hierNode &current_node) {
   scale_factor = 40.0;
   Unify_blocks(area, scale_factor);
   find_uni_cell();
-  // readCC();
+  readCC();
   // Initilize_Placement(current_node);
   // PlotPlacement(600);
   splitNode_MS(uni_cell_Dpoint.y, uni_cell_Dpoint.x);
@@ -328,11 +328,11 @@ void Placement::place(PnRDB::hierNode &current_node) {
   Initilize_Placement_Rand(current_node);
 #endif
   end = clock();
-  logger->debug("initialize runtime: {0} s", (double)(end - start) / CLOCKS_PER_SEC);
+  logger->info("initialize runtime: {0} s", (double)(end - start) / CLOCKS_PER_SEC);
 
   print_blocks_nets();
   // step 3: call E_placer
-  logger->debug("start ePlacement");
+  std::cout << "start ePlacement" << std::endl;
   PlotPlacement(602);
   // restore_MS();
   // PlotPlacement(601);
@@ -764,7 +764,7 @@ void Placement::Cal_Eforce_Block(int block_id) {
     }
   }
   // #ifdef DEBUG
-  logger->debug("blocks gradient {0} {1}", Blocks[block_id].Eforce.x, Blocks[block_id].Eforce.y);
+  std::cout << "blocks gradient " << Blocks[block_id].Eforce.x << " " << Blocks[block_id].Eforce.y << std::endl;
   // #endif
 }
 

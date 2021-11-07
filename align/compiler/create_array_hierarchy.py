@@ -27,7 +27,7 @@ class process_arrays:
     Creates a hierarchy for repeated elements
     """
 
-    def __init__(self, ckt, match_pairs, design_setup):
+    def __init__(self, ckt, match_pairs):
         """
         Args:
             ckt_data (dict): all subckt graph, names and port
@@ -38,11 +38,18 @@ class process_arrays:
         self.dl = ckt.parent
         self.ckt = ckt
         self.graph = Graph(ckt)
-        self.pg = design_setup["POWER"] + design_setup["GND"]
-        self.clk = design_setup["CLOCK"]
-        self.condition = design_setup["IDENTIFY_ARRAY"]
-        self.is_digital = ckt.name in design_setup['DIGITAL']
-        self.stop_points = self.pg + self.clk
+        self.stop_points = list()
+        self.condition = True
+        self.is_digital = False
+        for const in ckt.constraints:
+            if isinstance(const, constraint.PowerPorts) or\
+                isinstance(const, constraint.GroundPorts) or \
+                isinstance(const, constraint.ClockPorts):
+                self.stop_points.extend(const.ports)
+            elif isinstance(const, constraint.IdentifyArray):
+                self.condition = const.isTrue
+            elif isinstance(const, constraint.IsDigital):
+                self.is_digital = const.isTrue
         self.match_pairs = {k: v for k, v in match_pairs.items() if len(v) > 1}
         self.name = ckt.name
         self.iconst = ckt.constraints
@@ -317,6 +324,19 @@ def create_new_hiearchy(dl, parent_name, child_name, elements, pins_map=None):
             if pe:
                 pes.append(pe)
                 child.elements.append(pe)
+    # Transfer global constraints
+    with set_context(child.constraints):
+        for const in list(parent.constraints):
+            if any(
+                isinstance(const, x)
+                for x in [
+                    constraint.HorizontalDistance,
+                    constraint.VerticalDistance,
+                    constraint.BlockDistance,
+                    constraint.CompactPlacement,
+                ]
+            ):
+                child.constraints.append(const)
     # Remove elements from subckt then add new_subckt instance
     inst_name = "X_"+child_name
     with set_context(parent.elements):

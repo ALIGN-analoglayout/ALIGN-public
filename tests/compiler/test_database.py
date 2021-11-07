@@ -1,11 +1,8 @@
 import pathlib
 import pytest
 import pathlib
-import shutil
-import json
-from align.schema import Model, Instance, SubCircuit, Library
-from align.schema.types import set_context, List, Dict
-from align.compiler.compiler import compiler_input, generate_hierarchy
+from align.schema import SubCircuit
+from align.compiler.compiler import compiler_input
 from utils import clean_data, build_example
 import textwrap
 
@@ -89,14 +86,11 @@ def nested_swap_SD(name):
 def test_top_param():
     name = "CKT_MOS"
     netlist = mos_ckt(name)
-    setup = textwrap.dedent(
-        """\
-        POWER = D
-        GND = S
-        """
-    )
-    constraints = []
-    example = build_example(name, netlist, setup, constraints)
+    constraints =   [
+        {"constraint": "PowerPorts", "ports": ["D"]},
+        {"constraint": "GroundPorts", "ports": ["S"]}
+    ]
+    example = build_example(name, netlist, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
     all_modules = set(["CKT_MOS"])
     available_modules = set(
@@ -111,15 +105,12 @@ def test_top_param():
 def test_multi_param():
     name = "DB_CKT"
     netlist = multi_param_ckt(name)
-    setup = textwrap.dedent(
-        """\
-        POWER = D
-        GND = S
-        KEEP_DUMMY = True
-        """
-    )
-    constraints = []
-    example = build_example(name, netlist, setup, constraints)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["D"]},
+        {"constraint": "GroundPorts", "ports": ["S"]},
+        {"constraint": "KeepDummyHierarchies", "isTrue": True}
+    ]
+    example = build_example(name, netlist, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
     all_modules = set(["DB_CKT", "PARAM_MOS", "PARAM_MOS_1", "PARAM_MOS_2"])
     available_modules = set(
@@ -143,14 +134,11 @@ def test_multi_param():
 def test_multi_param_remove_dummy():
     name = "DB_CKT_REMOVE_DUMMY_HIER"
     netlist = multi_param_ckt(name)
-    setup = textwrap.dedent(
-        """\
-        POWER = D
-        GND = S
-        """
-    )
-    constraints = []
-    example = build_example(name, netlist, setup, constraints)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["D"]},
+        {"constraint": "GroundPorts", "ports": ["S"]}
+    ]
+    example = build_example(name, netlist, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
     all_modules = set(["DB_CKT_REMOVE_DUMMY_HIER"])
     available_modules = set(
@@ -173,15 +161,12 @@ def test_multi_param_remove_dummy():
 def test_multi_param_skip():
     name = "DB_CKT_1"
     netlist = multi_param_ckt_with_existing_name(name)
-    setup = textwrap.dedent(
-        """\
-        POWER = D
-        GND = S
-        KEEP_DUMMY = True
-        """
-    )
-    constraints = []
-    example = build_example(name, netlist, setup, constraints)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["D"]},
+        {"constraint": "GroundPorts", "ports": ["S"]},
+        {"constraint": "KeepDummyHierarchies", "isTrue": True}
+    ]
+    example = build_example(name, netlist, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
     all_modules = set(["DB_CKT_1", "PARAM_MOS", "PARAM_MOS_1", "PARAM_MOS_2"])
     available_modules = set(
@@ -200,15 +185,12 @@ def test_multi_param_skip():
 def test_preprocessing_SD():
     name = "NESTED_MOS"
     netlist = nested_swap_SD(name)
-    setup = textwrap.dedent(
-        """\
-        POWER = D
-        GND = S
-        KEEP_DUMMY = True
-        """
-    )
-    constraints = []
-    example = build_example(name, netlist, setup, constraints)
+    constraints =   constraints = [
+        {"constraint": "PowerPorts", "ports": ["D"]},
+        {"constraint": "GroundPorts", "ports": ["S"]},
+        {"constraint": "KeepDummyHierarchies", "isTrue": True}
+    ]
+    example = build_example(name, netlist, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
     all_modules = set(["NESTED_MOS", "PARAM_MOS", "P_MOS"])
     available_modules = set(
