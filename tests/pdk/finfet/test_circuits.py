@@ -15,9 +15,8 @@ cleanup = True
 def test_cmp():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = ""
     constraints = []
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, area=4.5e9)
 
     # TODO: Generalize this test to all primitives based on m value
@@ -42,12 +41,11 @@ def test_cmp():
 def test_cmp_pg():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = textwrap.dedent("""\
-        POWER = vccx
-        GND = vssx
-        """)
-    constraints = []
-    example = build_example(name, netlist, setup, constraints)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]}
+        ]
+    example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup)
 
 
@@ -55,13 +53,12 @@ def test_cmp_pg():
 def test_cmp_pg_clk():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = textwrap.dedent("""\
-        POWER = vccx
-        GND = vssx
-        CLOCK = clk
-        """)
-    constraints = []
-    example = build_example(name, netlist, setup, constraints)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]},
+        {"constraint": "ClockPorts", "ports": ["CLK"]}
+        ]
+    example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup)
 
 
@@ -69,12 +66,10 @@ def test_cmp_pg_clk():
 def test_cmp_1():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = textwrap.dedent(f"""\
-        POWER = vccx
-        GND = vssx
-        DONT_CONST = {name}
-        """)
     constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]},
+        {"constraint": "AutoConstraint", "isTrue": False},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
@@ -90,7 +85,7 @@ def test_cmp_1():
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
     ]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup, area=4e10)
 
 
@@ -98,11 +93,9 @@ def test_cmp_1():
 def test_cmp_2():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = textwrap.dedent("""\
-        POWER = vccx
-        GND = vssx
-        """)
     constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
@@ -118,7 +111,7 @@ def test_cmp_2():
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 1.5}
     ]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup, area=5e9)
 
 
@@ -126,12 +119,10 @@ def test_cmp_2():
 def test_cmp_3():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = textwrap.dedent("""\
-        POWER = vccx
-        GND = vssx
-        CLOCK = clk
-        """)
     constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]},
+        {"constraint": "ClockPorts", "ports": ["CLK"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
@@ -141,7 +132,7 @@ def test_cmp_3():
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["ccp", "ccn"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["dp", "ccn"]}
     ]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup, area=3.5e9)
 
 
@@ -149,13 +140,12 @@ def test_cmp_3():
 def test_cmp_noconst():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = textwrap.dedent(f"""\
-        POWER = vccx
-        GND = vssx
-        DONT_CONST = {name}
-        """)
-    constraints = []
-    example = build_example(name, netlist, setup, constraints)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]},
+        {"constraint": "AutoConstraint", "isTrue": False}
+        ]
+    example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False)
 
     with (run_dir / '1_topology' / f'{name.upper()}.verilog.json').open('rt') as fp:
@@ -177,10 +167,9 @@ def test_cmp_order():
     """ mp7 and mp8 should not be identified as a primitive """
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = ""
     constraints = [{"constraint": "Order", "direction": "left_to_right", "instances": ["mp7", "mp8"]}]
     name = f'ckt_{get_test_id()}'
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False)
 
     with (run_dir / '1_topology' / f'{name.upper()}.verilog.json').open('rt') as fp:
@@ -201,15 +190,13 @@ def test_cmp_order():
 def test_ota_six():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ota_six(name)
-    setup = textwrap.dedent(f"""\
-        DONT_CONST = {name}
-        """)
     constraints = [
+        {"constraint": "AutoConstraint", "isTrue": False},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "g1"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "g2"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "g3"},
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.01, "ratio_high": 100}]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup, log_level='DEBUG')
     # plot_sa_cost(name.upper())
     # plot_sa_seq(name.upper())
@@ -218,9 +205,8 @@ def test_ota_six():
 def test_tia():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.tia(name)
-    setup = ""
     constraints = []
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup)
 
 
@@ -228,11 +214,10 @@ def test_tia():
 def test_ldo_amp():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ldo_amp(name)
-    setup = textwrap.dedent("""\
-        POWER = vccx
-        GND = vssx
-        DONT_USE_CELLS = CASCODED_CMC_NMOS CMB_PMOS_2 LSB_PMOS_2 LSB_NMOS_2
-        """)
-    constraints = []
-    example = build_example(name, netlist, setup, constraints)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]},
+        {"constraint": "DoNotUseLib", "libraries": ["CASCODED_CMC_NMOS", "CMB_PMOS_2", "LSB_PMOS_2", "LSB_NMOS_2"]}
+        ]
+    example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup)

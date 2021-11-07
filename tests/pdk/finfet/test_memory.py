@@ -15,9 +15,8 @@ cleanup = False
 def test_cmp_0():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = ""
     constraints = []
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=cleanup)
 
 
@@ -25,12 +24,10 @@ def test_cmp_0():
 def test_cmp_1():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = textwrap.dedent("""\
-        POWER = vccx
-        GND = vssx
-        DONT_CONST = {name}
-        """)
     constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]},
+        {"constraint": "AutoConstraint", "isTrue": False},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
@@ -46,7 +43,7 @@ def test_cmp_1():
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
     ]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
 
     run_example(example, cleanup=cleanup)
 

@@ -12,10 +12,9 @@ cleanup = False
 def test_cs_grid():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.common_source_mini(name)
-    setup = textwrap.dedent("""\
-        POWER = vccx
-        GND = vssx
-        """)
-    constraints = [{"constraint": "AlignInOrder", "line": "left", "instances": ["mp0", "mn0"]}]
-    example = build_example(name, netlist, setup, constraints)
+    constraints = [
+            {"constraint": "PowerPorts", "ports": ["VCCX"]},
+            {"constraint": "GroundPorts", "ports": ["VSSX"]},
+            {"constraint": "AlignInOrder", "line": "left", "instances": ["mp0", "mn0"]}]
+    example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup)

@@ -18,12 +18,11 @@ def test_1():
         mp33 vbias2 vbias2 vbias1 vccx p w=1.44e-6 m=1 nf=8
         .ends {name}
         """)
-    setup = textwrap.dedent("""\
-        POWER = vccx
-        GND =
-        """)
-    constraints = []
-    example = build_example(name, netlist, setup, constraints)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        ]
+
+    example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False)
 
     with (run_dir / '1_topology' / '__primitives__.json').open('rt') as fp:

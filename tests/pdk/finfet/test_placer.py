@@ -21,12 +21,10 @@ def test_place_cmp_1():
     """ original comparator. Run this test with -v and -s"""
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = textwrap.dedent(f"""\
-        POWER = vccx
-        GND = vssx
-        DONT_CONST = {name}
-        """)
     constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]},
+        {"constraint": "AutoConstraint", "isTrue": False},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
@@ -42,7 +40,7 @@ def test_place_cmp_1():
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
     ]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=cleanup, log_level='DEBUG',
                                    additional_args=['-e', '4', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op'])
 
@@ -105,12 +103,10 @@ def test_place_cmp_2():
         mp14 vop vip_o vccx vccx p w=360e-9 m=1 nf=2
         .ends {name}
     """)
-    setup = textwrap.dedent(f"""\
-        POWER = vccx
-        GND = vssx
-        DONT_CONST = {name}
-        """)
     constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]},
+        {"constraint": "AutoConstraint", "isTrue": False},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
         {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
@@ -122,15 +118,9 @@ def test_place_cmp_2():
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["x0", "ccn"]},
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
     ]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
 
     # TODO: Separate below to a separate PR to debug: Constraints for the subhierarchy not respected..
-    # setup = textwrap.dedent("""\
-    #     GND = vssx
-    #     DONT_CONST = dptail
-    #     """)
-    # with open(example / 'dptail.setup', 'w') as fp:
-    #     fp.write(setup)
 
     # constraints = [
     #     {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
@@ -166,12 +156,10 @@ def test_place_cmp_seed(seed):
     """ original comparator. Run this test with -v and -s"""
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = textwrap.dedent(f"""\
-        POWER = vccx
-        GND = vssx
-        DONT_CONST = {name}
-        """)
-    constraints = [
+    constraints = [ 
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]},
+        {"constraint": "AutoConstraint", "isTrue": False},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
@@ -187,7 +175,7 @@ def test_place_cmp_seed(seed):
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.01, "ratio_high": 100}
     ]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
 
     ckt_dir, run_dir = run_example(example, cleanup=cleanup, log_level='DEBUG',
                                    additional_args=['-e', '1', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op', '--seed', str(seed)])

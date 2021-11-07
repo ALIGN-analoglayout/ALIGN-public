@@ -21,15 +21,13 @@ def test_mirror():
         x3 d4 g4 vssx vssx n_stack_2
         .ends {name}
         """)
-    setup = textwrap.dedent(f"""\
-        DONT_CONST = {name}
-        """)
     constraints = [
         # {"constraint": "DoNotIdentify", "instances": ["x0", "x1", "x2", "x3"]},  # This should be auto-generated
+        {"constraint": "AutoConstraint", "isTrue": False},
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["x0", "x1"]], "mirror": True},
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["x2", "x3"]], "mirror": False}
     ]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, log_level='DEBUG')
 
     with (run_dir / '1_topology' / '__primitives__.json').open('rt') as fp:
