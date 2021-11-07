@@ -323,7 +323,7 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
     } else if (constraint["const_name"] == "AlignBlock") {
       PnRDB::AlignBlock alignment_unit;
       size_t found;
-      if(constraint["line"] == "h_bottom") {
+      if (constraint["line"] == "h_bottom") {
         alignment_unit.horizon = 1;
         alignment_unit.line = 0;
       } else if (constraint["line"] == "h_center") {

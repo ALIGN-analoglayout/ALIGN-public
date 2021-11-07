@@ -27,5 +27,6 @@ target_link_libraries(
      spdlog::spdlog
      lpsolve::lpsolve55
      Boost::boost
+     nlohmann_json::nlohmann_json
 )
 target_code_coverage(placer)
