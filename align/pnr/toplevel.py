@@ -319,7 +319,7 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
         hyper.use_external_placement_info = True
         hyper.placement_info_json = json.dumps(modules_d, indent=2)
 
-    curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, DB.getDrc_info(), hyper, select_in_ILP)
+    curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, DB.getDrc_info(), hyper, select_in_ILP, placer_mode == 'bottom_up')
 
     actualNumLayout = curr_plc.getNodeVecSize()
 

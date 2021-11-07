@@ -17,7 +17,7 @@ Placer::Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info&
   PlacementRegular(node, opath, effort, drcInfo);
 }
 
-Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in, bool select_in_ILP = false) : hyper(hyper_in) {
+Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in, bool select_in_ILP = false, const bool bottom_up = true) : hyper(hyper_in) {
   auto logger = spdlog::default_logger()->clone("placer.Placer");
   if (hyper.use_external_placement_info) {
     logger->info("Requesting placement from JSON");
@@ -28,7 +28,7 @@ Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, 
       //#define analytical_placer
       PlacementRegularAspectRatio_ILP_Analytical(nodeVec, opath, effort, drcInfo, select_in_ILP);
     else
-      PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo, select_in_ILP);
+      PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo, select_in_ILP, bottom_up);
   }
 }
 
@@ -966,7 +966,7 @@ void Placer::ReshapeSeqPairMap(std::map<double, std::pair<SeqPair, ILP_solver>>&
 }
 
 void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo,
-                                             bool select_in_ILP = false) {
+                                             bool select_in_ILP = false, const bool bottom_up = true) {
   auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementRegularAspectRatio_ILP");
   int nodeSize = nodeVec.size();
 // cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
