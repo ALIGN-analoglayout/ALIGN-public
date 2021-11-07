@@ -147,6 +147,12 @@ class CmdlineParser():
                             default=0,
                             help='Random number generator seed for the placement algorithm')
 
+        parser.add_argument('--placer_mode',
+                            type=str,
+                            default='top_down',
+                            choices=['top_down','bottom_up'],
+                            help='Placer mode')
+
         self.parser = parser
 
     def parse_args(self, *args, **kwargs):

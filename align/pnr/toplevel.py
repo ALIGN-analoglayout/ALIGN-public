@@ -293,9 +293,9 @@ def route_top_down( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS, placements_t
         new_topnode_indices.append(new_topnode_idx)
     return results_name_map
 
-def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, seed, use_analytical_placer, modules_d=None):
+def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, seed, use_analytical_placer, modules_d=None, placer_mode='bottom_up'):
 
-    logger.info(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
+    logger.info(f'Starting {placer_mode} placement on {DB.hierTree[idx].name} {idx}')
 
     current_node = DB.CheckoutHierNode(idx,-1)
 
@@ -548,7 +548,7 @@ def process_placements(*, DB, verilog_d, gui, lambda_coeff, scale_factor, refere
 
 def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, verilog_d,
                     router_mode, gui, skipGDS, lambda_coeff, scale_factor,
-                    reference_placement_verilog_json, nroutings, select_in_ILP, seed, use_analytical_placer):
+                    reference_placement_verilog_json, nroutings, select_in_ILP, seed, use_analytical_placer, placer_mode):
 
     if reference_placement_verilog_json:
         with open(reference_placement_verilog_json, "rt") as fp:
@@ -566,10 +566,18 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
                   modules_d=modules[nm])
 
     else:
-        for idx in DB.TraverseHierTree():
-            place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
-                  lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP,
-                  seed=seed, use_analytical_placer=use_analytical_placer)
+        if placer_mode == 'bottom_up':
+            for idx in DB.TraverseHierTree():
+                place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
+                      lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP,
+                      seed=seed, use_analytical_placer=use_analytical_placer, placer_mode=placer_mode)
+        else:
+            traverseTree = DB.TraverseHierTree()
+            traverseTree.reverse()
+            for idx in traverseTree:
+                place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
+                      lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP,
+                      seed=seed, use_analytical_placer=use_analytical_placer, placer_mode=placer_mode)
 
     placements_to_run = None
     if verilog_d is not None:
@@ -614,7 +622,7 @@ def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_m
              lambda_coeff=1.0, scale_factor=2,
              reference_placement_verilog_json=None,
              nroutings=1, select_in_ILP=False,
-             seed=0, use_analytical_placer=False):
+             seed=0, use_analytical_placer=False, placer_mode='bottom_up'):
 
     assert len(args) == 9
 
@@ -640,7 +648,7 @@ def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_m
                                        lambda_coeff=lambda_coeff, scale_factor=scale_factor,
                                        reference_placement_verilog_json=reference_placement_verilog_json,
                                        nroutings=nroutings, select_in_ILP=select_in_ILP,
-                                       seed=seed, use_analytical_placer=use_analytical_placer)
+                                       seed=seed, use_analytical_placer=use_analytical_placer, placer_mode=placer_mode)
 
     return DB, results_name_map
 

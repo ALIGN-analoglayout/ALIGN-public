@@ -281,11 +281,11 @@ def write_verilog_json(verilog_d):
 
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False,
                  gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False, steps_to_run,lambda_coeff,
-                 reference_placement_verilog_json, nroutings=1, select_in_ILP=False, seed=0, use_analytical_placer=False):
+                 reference_placement_verilog_json, nroutings=1, select_in_ILP=False, seed=0, use_analytical_placer=False, placer_mode='bottom_up'):
 
     subckt = subckt.upper()
 
-    logger.info(f"Running Place & Route for {subckt} {router_mode} {steps_to_run}")
+    logger.info(f"Running Place & Route for {subckt} {router_mode} {steps_to_run} placer_mode: {placer_mode}")
 
     map_file = f'{subckt}.map'
     lef_file = f'{subckt}.lef'
@@ -380,7 +380,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, results_dir=None, router_mode=router_mode, gui=gui, skipGDS=skipGDS,
                                         lambda_coeff=lambda_coeff, scale_factor=scale_factor,
                                         reference_placement_verilog_json=reference_placement_verilog_json, nroutings=nroutings,
-                                        select_in_ILP=select_in_ILP, seed=seed, use_analytical_placer=use_analytical_placer)
+                                        select_in_ILP=select_in_ILP, seed=seed, use_analytical_placer=use_analytical_placer, placer_mode=placer_mode)
 
         os.chdir(current_working_dir)
 
