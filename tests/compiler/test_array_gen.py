@@ -87,9 +87,9 @@ def test_array_vga_equal():
     FindConst(ckt)
     all_arrays = [module.name for module in ckt_library if isinstance(module, SubCircuit) and 'ARRAY' in module.name]
     ARRAY_HIER = ckt_library.find("ARRAY_HIER_VOUT_VGA1")
-    assert ARRAY_HIER, f"\ ARRAY_HIER_VOUT_VGA1 not found in {all_arrays}"
+    assert ARRAY_HIER, f"ARRAY_HIER_VOUT_VGA1 not found in {all_arrays}"
     TEMPLATE = ckt_library.find("ARRAY_TEMPLATE")
-    assert TEMPLATE, f"\TEMPLATE not found in {all_arrays}"
+    assert TEMPLATE, f"TEMPLATE not found in {all_arrays}"
     insts = [inst.name for inst in TEMPLATE.elements]
     assert set(insts) == {'X_DP_NMOS_B_M00_M01', 'MSW0'}
     clean_data(name)
