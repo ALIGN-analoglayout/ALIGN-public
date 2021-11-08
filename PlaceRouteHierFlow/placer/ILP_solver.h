@@ -51,6 +51,7 @@ class ILP_solver {
   typedef void(lphandlestr_func)(lprec* lp, void* userhandle, char* buf);
   static void lpsolve_logger(lprec* lp, void* userhandle, char* buf);
   vector<vector<int>> block_order;
+  int x_pitch, y_pitch;
 
   public:
   double cost = 0;
@@ -60,6 +61,7 @@ class ILP_solver {
   ILP_solver(design& mydesign);
   ILP_solver(const ILP_solver& solver);
   ILP_solver& operator=(const ILP_solver& solver);
+  bool FrameSolveILP(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo, bool flushlb = true);
   double GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node);
   double GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
   double GenerateValidSolution_select(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
