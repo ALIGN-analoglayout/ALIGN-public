@@ -245,6 +245,7 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
           int first = symmetry.selfsym[i].first, second = symmetry.selfsym[j].first;
           if (first > second) std::swap(first, second);
           block_order[first][second] |= 0x0004;
+          if (block_order[first][second] & 0x1100) continue;
           if (node.Blocks[first].instance[0].placedCenter.y < node.Blocks[second].instance[0].placedCenter.y)
             block_order[first][second] |= 0x0100;
           else
@@ -268,6 +269,7 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
         for (unsigned int j = i + 1; j < symmetry.selfsym.size(); j++) {
           int first = symmetry.selfsym[i].first, second = symmetry.selfsym[j].first;
           if (first > second) std::swap(first, second);
+          if (block_order[first][second] & 0x0011) continue;
           block_order[first][second] |= 0x0400;
           if (node.Blocks[first].instance[0].placedCenter.x < node.Blocks[second].instance[0].placedCenter.x)
             block_order[first][second] |= 0x0001;
