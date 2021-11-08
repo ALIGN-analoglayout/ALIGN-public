@@ -1,0 +1,48 @@
+[
+    {"constraint": "GroupBlocks", "instances": ["MDP00", "MDP10"],   "name": "dp1"},
+    {"constraint": "GroupBlocks", "instances": ["MDP20", "MDP30"],   "name": "dp2"},
+    {"constraint": "GroupBlocks", "instances": ["MDP40", "MDP50"],   "name": "dp3"},
+    {"constraint": "GroupBlocks", "instances": ["MCM00", "MCM10", "MCM20", "MCM30"],   "name": "cmb"},
+    {"constraint": "PowerPorts", "ports": ["VPS"]},
+    {"constraint": "GroundPorts", "ports": ["VGND"]},
+    {"constraint": "SymmetricBlocks",
+        "direction" : "V",
+        "pairs": [["R5", "R6"], ["dp2"], ["cmb"]]
+    },
+    {"constraint": "SymmetricBlocks",
+        "direction" : "V",
+        "pairs": [["dp1"], ["MSW0"]]
+    },
+    {"constraint": "SymmetricBlocks",
+        "direction" : "V",
+        "pairs": [["dp2"], ["MSW1"]]
+    },
+    {"constraint": "SymmetricBlocks",
+        "direction" : "V",
+        "pairs": [["dp3"], ["MSW2"]]
+    },
+    {"constraint": "align",
+        "line" : "h_bottom",
+        "instances": ["dp1", "dp2", "dp3"]
+    },
+    {"constraint": "align",
+        "line" : "h_bottom",
+        "instances": ["MSW0", "MSW1", "MSW2"]
+    },
+    {"constraint": "Order",
+        "direction" : "left_to_right",
+        "instances": ["dp1", "dp2", "dp3"]
+    },
+    {"constraint": "Order",
+        "direction" : "top_to_bottom",
+        "instances": ["dp1", "MSW0"]
+    },
+    {"constraint": "Order",
+        "direction" : "top_to_bottom",
+        "instances": ["dp2", "MSW1"]
+    },
+    {"constraint": "Order",
+        "direction" : "top_to_bottom",
+        "instances": ["dp3", "MSW2"]
+    }
+]
