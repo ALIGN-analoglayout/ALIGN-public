@@ -86,7 +86,7 @@ Placement::Placement(PnRDB::hierNode &current_node) {
 
   Bin_D.x = unit_x_bin;
   Bin_D.y = unit_y_bin;
-  logger->debug("start reading node file");
+  std::cout << "start reading node file" << std::endl;
   area = readInputNode(current_node);
 
   // for blocks
@@ -117,7 +117,7 @@ Placement::Placement(PnRDB::hierNode &current_node) {
   // need to estimate a area to do placement
   // scale into 1x1
   // initial position for each block
-  logger->debug("Unify the block coordinate");
+  std::cout << "Unify the block coordinate" << std::endl;
   scale_factor = 40.0;
   Unify_blocks(area, scale_factor);
   find_uni_cell();
@@ -142,7 +142,7 @@ Placement::Placement(PnRDB::hierNode &current_node) {
 
   print_blocks_nets();
   // step 3: call E_placer
-  logger->debug("start ePlacement");
+  std::cout << "start ePlacement" << std::endl;
   PlotPlacement(602);
   // restore_MS();
   // PlotPlacement(601);
@@ -175,7 +175,7 @@ void Placement::place_ut(PnRDB::hierNode &current_node) {
 
   Bin_D.x = unit_x_bin;
   Bin_D.y = unit_y_bin;
-  logger->debug("start reading node file");
+  std::cout << "start reading node file" << std::endl;
   area = readInputNode(current_node);
 
   // for blocks
@@ -210,7 +210,7 @@ void Placement::place_ut(PnRDB::hierNode &current_node) {
     Blocks[i].original_Dpoint.x = current_node.Blocks[i].instance[0].width;
     Blocks[i].original_Dpoint.y = current_node.Blocks[i].instance[0].height;
   }
-  logger->debug("Unify the block coordinate");
+  std::cout << "Unify the block coordinate" << std::endl;
   scale_factor = 40.0;
   Unify_blocks(area, scale_factor);
   find_uni_cell();
@@ -235,7 +235,7 @@ void Placement::place_ut(PnRDB::hierNode &current_node) {
 
   print_blocks_nets();
   // step 3: call E_placer
-  logger->debug("start ePlacement");
+  std::cout << "start ePlacement" << std::endl;
   PlotPlacement(602);
   // restore_MS();
   // PlotPlacement(601);
@@ -268,7 +268,7 @@ void Placement::place(PnRDB::hierNode &current_node) {
 
   Bin_D.x = unit_x_bin;
   Bin_D.y = unit_y_bin;
-  logger->debug("start reading node file");
+  std::cout << "start reading node file" << std::endl;
   area = readInputNode(current_node);
 
   // for blocks
@@ -303,11 +303,11 @@ void Placement::place(PnRDB::hierNode &current_node) {
     Blocks[i].original_Dpoint.x = current_node.Blocks[i].instance[0].width;
     Blocks[i].original_Dpoint.y = current_node.Blocks[i].instance[0].height;
   }
-  logger->debug("Unify the block coordinate");
+  std::cout << "Unify the block coordinate" << std::endl;
   scale_factor = 40.0;
   Unify_blocks(area, scale_factor);
   find_uni_cell();
-  // readCC();
+  readCC();
   // Initilize_Placement(current_node);
   // PlotPlacement(600);
   splitNode_MS(uni_cell_Dpoint.y, uni_cell_Dpoint.x);
@@ -328,11 +328,11 @@ void Placement::place(PnRDB::hierNode &current_node) {
   Initilize_Placement_Rand(current_node);
 #endif
   end = clock();
-  logger->debug("initialize runtime: {0} s", (double)(end - start) / CLOCKS_PER_SEC);
+  logger->info("initialize runtime: {0} s", (double)(end - start) / CLOCKS_PER_SEC);
 
   print_blocks_nets();
   // step 3: call E_placer
-  logger->debug("start ePlacement");
+  std::cout << "start ePlacement" << std::endl;
   PlotPlacement(602);
   // restore_MS();
   // PlotPlacement(601);
@@ -1884,11 +1884,8 @@ void Placement::E_Placer(PnRDB::hierNode &current_node) {
   Py_Finalize();
 #endif
   // exit(0);
-  while (!check_order()) {
-    force_order(vc_x, vl_x, vc_y, vl_y);
-    force_alignment(vc_x, vl_x, vc_y, vl_y);
-  }
-
+  force_order(vc_x, vl_x, vc_y, vl_y);
+  force_alignment(vc_x, vl_x, vc_y, vl_y);
   // restore_MS();
   // refine_CC();
   PlotPlacement(count_number);
@@ -3574,20 +3571,13 @@ void Placement::force_alignment(vector<float> &vc_x, vector<float> &vl_x, vector
     int headIdx = AlignBlocks[i].blocks[0];
     Ppoint_F head_pos = Blocks[headIdx].Cpoint;
     Ppoint_F head_dem = Blocks[headIdx].Dpoint;
-    float center = 0;
     if (AlignBlocks[i].horizon) {
-      for (int j = 0; j < AlignBlocks[i].blocks.size(); ++j) {
+      for (int j = 1; j < AlignBlocks[i].blocks.size(); ++j) {
         int cur_idx = AlignBlocks[i].blocks[j];
         Ppoint_F cur_dem = Blocks[cur_idx].Dpoint;
-        float distance = 1 / 2 * (cur_dem.y);
-        center += Blocks[cur_idx].Cpoint.y - distance;
-      }
-      center /= AlignBlocks[i].blocks.size();
-      for (int j = 0; j < AlignBlocks[i].blocks.size(); ++j) {
-        int cur_idx = AlignBlocks[i].blocks[j];
-        Ppoint_F cur_dem = Blocks[cur_idx].Dpoint;
-        float distance = 1 / 2 * (cur_dem.y);
-        Blocks[cur_idx].Cpoint.y = center + distance;
+
+        float distance = 1 / 2 * (cur_dem.y - head_dem.y);
+        Blocks[cur_idx].Cpoint.y = head_pos.y + distance;
         // update vl and vc
         if (vl_y.size() > cur_idx) {
           // vl_y[cur_idx] = Blocks[cur_idx].Cpoint.y;
@@ -3595,84 +3585,16 @@ void Placement::force_alignment(vector<float> &vc_x, vector<float> &vl_x, vector
         }
       }
     } else {
-      for (int j = 0; j < AlignBlocks[i].blocks.size(); ++j) {
+      for (int j = 1; j < AlignBlocks[i].blocks.size(); ++j) {
         int cur_idx = AlignBlocks[i].blocks[j];
         Ppoint_F cur_dem = Blocks[cur_idx].Dpoint;
-        float distance = 1 / 2 * (cur_dem.x);
-        center += Blocks[cur_idx].Cpoint.x - distance;
-      }
-      center /= AlignBlocks[i].blocks.size();
-      for (int j = 0; j < AlignBlocks[i].blocks.size(); ++j) {
-        int cur_idx = AlignBlocks[i].blocks[j];
-        Ppoint_F cur_dem = Blocks[cur_idx].Dpoint;
-        float distance = 1 / 2 * (cur_dem.x);
-        Blocks[cur_idx].Cpoint.x = center + distance;
+
+        float distance = 1 / 2 * (cur_dem.x - head_dem.x);
+        Blocks[cur_idx].Cpoint.x = head_pos.x + distance;
         // update vl and vc
         if (vl_x.size() > cur_idx) {
           // vl_x[cur_idx] = Blocks[cur_idx].Cpoint.x;
           vc_x[cur_idx] = Blocks[cur_idx].Cpoint.x;
-        }
-      }
-    }
-  }
-  for (int i = 0; i < SPBlocks.size(); ++i) {
-    int headIdx = SPBlocks[i].selfsym[0];
-    Ppoint_F head_pos = Blocks[headIdx].Cpoint;
-    Ppoint_F head_dem = Blocks[headIdx].Dpoint;
-    float center = 0;
-    if (SPBlocks[i].horizon) {
-      for (auto i_selfsym : SPBlocks[i].selfsym) {
-        center += Blocks[i_selfsym].Cpoint.y;
-      }
-      for (auto i_sympair : SPBlocks[i].sympair) {
-        center += Blocks[i_sympair.first].Cpoint.y;
-        center += Blocks[i_sympair.second].Cpoint.y;
-      }
-      center /= (SPBlocks[i].selfsym.size() + SPBlocks[i].sympair.size() * 2);
-      for (auto i_selfsym : SPBlocks[i].selfsym) {
-        Blocks[i_selfsym].Cpoint.y = center;
-        // update vl and vc
-        if (vl_y.size() > i_selfsym) {
-          vc_y[i_selfsym] = Blocks[i_selfsym].Cpoint.y;
-        }
-      }
-      for (auto i_sympair : SPBlocks[i].sympair) {
-        int diff = center - (Blocks[i_sympair.first].Cpoint.y + Blocks[i_sympair.second].Cpoint.y) / 2;
-        Blocks[i_sympair.first].Cpoint.y += diff;
-        Blocks[i_sympair.second].Cpoint.y += diff;
-        if (vl_y.size() > i_sympair.first) {
-          vc_y[i_sympair.first] = Blocks[i_sympair.first].Cpoint.y;
-        }
-        if (vl_y.size() > i_sympair.second) {
-          vc_y[i_sympair.second] = Blocks[i_sympair.second].Cpoint.y;
-        }
-      }
-    } else {
-      for (auto i_selfsym : SPBlocks[i].selfsym) {
-        center += Blocks[i_selfsym].Cpoint.x;
-      }
-      for (auto i_sympair : SPBlocks[i].sympair) {
-        center += Blocks[i_sympair.first].Cpoint.x;
-        center += Blocks[i_sympair.second].Cpoint.x;
-      }
-      center /= (SPBlocks[i].selfsym.size() + SPBlocks[i].sympair.size() * 2);
-      for (auto i_selfsym : SPBlocks[i].selfsym) {
-        Blocks[i_selfsym].Cpoint.x = center;
-        // update vl and vc
-        if (vl_x.size() > i_selfsym) {
-          // vl_x[cur_idx] = Blocks[cur_idx].Cpoint.x;
-          vc_x[i_selfsym] = Blocks[i_selfsym].Cpoint.x;
-        }
-      }
-      for (auto i_sympair : SPBlocks[i].sympair) {
-        int diff = center - (Blocks[i_sympair.first].Cpoint.x + Blocks[i_sympair.second].Cpoint.x) / 2;
-        Blocks[i_sympair.first].Cpoint.x += diff;
-        Blocks[i_sympair.second].Cpoint.x += diff;
-        if (vl_x.size() > i_sympair.first) {
-          vc_x[i_sympair.first] = Blocks[i_sympair.first].Cpoint.x;
-        }
-        if (vl_x.size() > i_sympair.second) {
-          vc_x[i_sympair.second] = Blocks[i_sympair.second].Cpoint.x;
         }
       }
     }
@@ -3812,23 +3734,6 @@ void Placement::force_order(vector<float> &vc_x, vector<float> &vl_x, vector<flo
       logger->debug("pos: {0}, {1}", Centers[j].x, Centers[j].y);
     }
   }
-}
-
-bool Placement::check_order() {
-  auto logger = spdlog::default_logger()->clone("placer.Placement.check_order");
-  // step 1: put the Cpoint into verctor
-  for (int i = 0; i < Ordering_Constraints.size(); ++i) {
-    if (Ordering_Constraints[i].second == PnRDB::H) {
-      for (int j = 0; j < Ordering_Constraints[i].first.size() - 1; ++j) {
-        if (Blocks[Ordering_Constraints[i].first[j]].Cpoint.x > Blocks[Ordering_Constraints[i].first[j + 1]].Cpoint.x) return false;
-      }
-    } else {
-      for (int j = 0; j < Ordering_Constraints[i].first.size() - 1; ++j) {
-        if (Blocks[Ordering_Constraints[i].first[j]].Cpoint.y < Blocks[Ordering_Constraints[i].first[j + 1]].Cpoint.y) return false;
-      }
-    }
-  }
-  return true;
 }
 
 bool Placement::comp_x(Ppoint_F c1, Ppoint_F c2) { return c1.x < c2.x; }
