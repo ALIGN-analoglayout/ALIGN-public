@@ -643,6 +643,7 @@ design::design(PnRDB::hierNode& node, const int seed) {
   }
 
   _rnd = new std::uniform_int_distribution<int>(0, std::max(20, 2 * szmax));
+  center_align = node.center_align;
 }
 
 int design::rand() {

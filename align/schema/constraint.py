@@ -529,6 +529,9 @@ class PlaceSymmetric(SoftConstraint):
         return value
 
 
+class CenterAlign(SoftConstraint):
+    value: bool
+
 class SameTemplate(SoftConstraint):
     instances: List[str]
 
@@ -772,6 +775,7 @@ ConstraintType = Union[
     AlignInOrder,
     # Legacy Align constraints
     # (SoftConstraints)
+    CenterAlign,
     SameTemplate,
     CreateAlias,
     GroupBlocks,

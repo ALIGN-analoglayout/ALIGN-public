@@ -431,6 +431,9 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
       if (design_info.contains("v_skip_factor")) {
         DRC_info.Design_info.v_skip_factor = design_info["v_skip_factor"];
       }
+      if (design_info.contains("center_align")) {
+        DRC_info.Design_info.center_align = design_info["center_align"];
+      }
 
       DRC_info.Design_info.power_grid_metal_l = DRC_info.Metalmap[design_info["top_power_routing_layer"]] - 1;
       DRC_info.Design_info.power_grid_metal_u = DRC_info.Metalmap[design_info["top_power_routing_layer"]];

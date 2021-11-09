@@ -1654,14 +1654,18 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   ++mydesign._totalNumCostCalc;
   // frame and solve ILP to flush bottom/left
   if (!FrameSolveILP(mydesign, curr_sp, drcInfo, true)) return -1;
-  std::vector<Block> blockslocal{Blocks};
-  // frame and solve ILP to flush top/right
-  if (!FrameSolveILP(mydesign, curr_sp, drcInfo, false) 
-      || !MoveBlocksUsingSlack(blockslocal, mydesign, curr_sp, drcInfo)) {
-  // if unable to solve flush top/right or if the solution changed significantly,
-  // use the bottom/left flush solution
-    Blocks = blockslocal;
+  if (mydesign.center_align) {
+    std::vector<Block> blockslocal{Blocks};
+    // frame and solve ILP to flush top/right
+    if (!FrameSolveILP(mydesign, curr_sp, drcInfo, false) 
+        || !MoveBlocksUsingSlack(blockslocal, mydesign, curr_sp, drcInfo)) {
+      // if unable to solve flush top/right or if the solution changed significantly,
+      // use the bottom/left flush solution
+      Blocks = blockslocal;
+    }
   }
+
+  // snap up coordinates to grid
   for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
     roundup(Blocks[i].x, x_pitch);
     roundup(Blocks[i].y, y_pitch);

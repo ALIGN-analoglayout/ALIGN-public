@@ -198,6 +198,7 @@ class design {
   size_t getSeqIndex(const vector<int>& seq);
   size_t getSelIndex(const vector<int>& sel);
   std::uniform_int_distribution<int>* _rnd{nullptr};
+  bool center_align = false;
 
   public:
   design();
