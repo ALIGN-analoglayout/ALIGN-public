@@ -198,7 +198,8 @@ class design {
   size_t getSeqIndex(const vector<int>& seq);
   size_t getSelIndex(const vector<int>& sel);
   std::uniform_int_distribution<int>* _rnd{nullptr};
-  bool center_align = false;
+  enum class AlignStyle { L, R, C };
+  AlignStyle align_style = AlignStyle::L;
 
   public:
   design();
@@ -206,6 +207,8 @@ class design {
   design(string blockfile, string netfile);
   design(string blockfile, string netfile, string cfile);
   int rand();
+  bool leftAlign() const { return align_style == AlignStyle::L; }
+  bool rightAlign() const { return align_style == AlignStyle::R; }
 
   // added by yg, the first one is to read in additional const, the other one is to generate random constrains.
   design(string blockfile, string netfile, string cfile, string random_const_file);

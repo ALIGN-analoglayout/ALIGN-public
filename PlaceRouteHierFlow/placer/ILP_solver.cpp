@@ -1652,9 +1652,13 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
 
   ++mydesign._totalNumCostCalc;
+  if (mydesign.leftAlign()) {
   // frame and solve ILP to flush bottom/left
-  if (!FrameSolveILP(mydesign, curr_sp, drcInfo, true)) return -1;
-  if (mydesign.center_align) {
+    if (!FrameSolveILP(mydesign, curr_sp, drcInfo, true))  return -1;
+  } else if (mydesign.rightAlign()) {
+    if (!FrameSolveILP(mydesign, curr_sp, drcInfo, false)) return -1;
+  } else {
+    if (!FrameSolveILP(mydesign, curr_sp, drcInfo, true))  return -1;
     std::vector<Block> blockslocal{Blocks};
     // frame and solve ILP to flush top/right
     if (!FrameSolveILP(mydesign, curr_sp, drcInfo, false) 
