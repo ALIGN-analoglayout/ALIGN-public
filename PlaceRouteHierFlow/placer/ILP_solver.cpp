@@ -1021,7 +1021,7 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
   return cost;
 }
 
-bool ILP_solver::FrameSolveILP(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo, bool flushbl) {
+bool ILP_solver::FrameSolveILP(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILP");
 
   int v_metal_index = -1;
@@ -1131,10 +1131,15 @@ bool ILP_solver::FrameSolveILP(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_in
   if (flushbl) {
     for (auto id : curr_sp.negPair) {
       if (id < int(mydesign.Blocks.size())) {
-        // x>=0
-        set_bounds(lp, (id * 4 + 1), 0, get_infinite(lp));
-        // y>=0
-        set_bounds(lp, (id * 4 + 2), 0, get_infinite(lp));
+        if (prev) {
+          set_bounds(lp, (id * 4 + 1), (*prev)[id].x, get_infinite(lp));
+          set_bounds(lp, (id * 4 + 2), (*prev)[id].y, get_infinite(lp));
+        } else {
+          // x>=0
+          set_bounds(lp, (id * 4 + 1), 0, get_infinite(lp));
+          // y>=0
+          set_bounds(lp, (id * 4 + 2), 0, get_infinite(lp));
+        }
       }
     }
   } else {
@@ -1567,7 +1572,7 @@ bool ILP_solver::FrameSolveILP(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_in
   return true;
 }
 
-bool ILP_solver::MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, const design& mydesign) {
+bool ILP_solver::MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
   std::vector<placerDB::point> slackxy(Blocks.size());
   for (unsigned i = 0; i < Blocks.size(); ++i) {
     slackxy[i].x = Blocks[i].x - blockslocal[i].x;
@@ -1634,10 +1639,12 @@ bool ILP_solver::MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, con
       }
     }
   }
+  std::vector<placerDB::point> blockpts(Blocks.size());
   for (unsigned i = 0; i < Blocks.size(); ++i) {
-    Blocks[i].x -= (slackxy[i].x/2);
-    Blocks[i].y -= (slackxy[i].y/2);
+    blockpts[i].x = (Blocks[i].x - slackxy[i].x/2);
+    blockpts[i].y = (Blocks[i].y - slackxy[i].y/2);
   }
+  if (!FrameSolveILP(mydesign, curr_sp, drcInfo, true, &blockpts)) return false;
   return true;
 }
 
@@ -1650,7 +1657,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   std::vector<Block> blockslocal{Blocks};
   // frame and solve ILP to flush top/right
   if (!FrameSolveILP(mydesign, curr_sp, drcInfo, false) 
-      || !MoveBlocksUsingSlack(blockslocal, mydesign)) {
+      || !MoveBlocksUsingSlack(blockslocal, mydesign, curr_sp, drcInfo)) {
   // if unable to solve flush top/right or if the solution changed significantly,
   // use the bottom/left flush solution
     Blocks = blockslocal;
