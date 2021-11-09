@@ -53,6 +53,9 @@ class ILP_solver {
   vector<vector<int>> block_order;
   int x_pitch, y_pitch;
 
+  inline void roundup(int& v, const int pitch) { v = pitch * ((v + pitch - 1) / pitch); }
+  bool MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, const design& mydesign);
+  bool FrameSolveILP(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo, bool flushlb = true);
   public:
   double cost = 0;
   double constraint_penalty = 0;
@@ -61,7 +64,6 @@ class ILP_solver {
   ILP_solver(design& mydesign);
   ILP_solver(const ILP_solver& solver);
   ILP_solver& operator=(const ILP_solver& solver);
-  bool FrameSolveILP(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo, bool flushlb = true);
   double GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node);
   double GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
   double GenerateValidSolution_select(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
