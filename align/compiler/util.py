@@ -4,20 +4,9 @@ Created on Tue Dec 11 11:34:45 2018
 
 @author: kunal
 """
-import os
-from re import sub
-import networkx as nx
-from networkx.algorithms import bipartite
 from ..schema.graph import Graph
 from ..schema import SubCircuit
 import logging
-
-# Plotting gets used pretty much for debug
-# Do not make this a core dependency
-try:
-    import matplotlib.pyplot as plt
-except:
-    plt = None
 
 logger = logging.getLogger(__name__)
 
@@ -199,61 +188,4 @@ def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
             else:
                 logger.debug(f"Internal port weight mismatch {weight1},{weight2}")
                 return False
-
-
-def plt_graph(subgraph, sub_block_name):
-    assert plt is not None, "Need to install matplotlib to use this feature"
-    copy_graph = subgraph
-    for node, attr in list(copy_graph.nodes(data=True)):
-        if "source" in attr["inst_type"]:
-            copy_graph.remove_node(node)
-
-    no_of_transistor = len(
-        [x for x, y in subgraph.nodes(data=True) if "net" not in y["inst_type"]]
-    )
-    Title = sub_block_name + ", no of devices:" + str(no_of_transistor)
-    if no_of_transistor > 10:
-        plt.figure(figsize=(8, 6))
-    else:
-        plt.figure(figsize=(4, 3))
-    nx.draw(copy_graph, with_labels=True, pos=nx.spring_layout(copy_graph))
-    plt.title(Title, fontsize=20)
-
-
-def _show_bipartite_circuit_graph(filename, graph, dir_path):
-    assert plt is not None, "Need to install matplotlib to use this feature"
-    no_of_subgraph = 0
-    for subgraph in nx.connected_component_subgraphs(graph):
-        no_of_subgraph += 1
-
-        color_map = []
-        x_pos, y_pos = bipartite.sets(subgraph)
-        pos = dict()
-        pos.update((n, (1, i)) for i, n in enumerate(x_pos))  # put nodes from X at x=1
-        pos.update((n, (2, i)) for i, n in enumerate(y_pos))  # put nodes from Y at x=2
-        plt.figure(figsize=(6, 8))
-        for dummy, attr in subgraph.nodes(data=True):
-            if "inst_type" in attr:
-                if attr["inst_type"] == "pmos":
-                    color_map.append("red")
-                elif attr["inst_type"] == "nmos":
-                    color_map.append("cyan")
-                elif attr["inst_type"] == "cap":
-                    color_map.append("orange")
-                elif attr["inst_type"] == "net":
-                    color_map.append("pink")
-                else:
-                    color_map.append("green")
-        nx.draw(subgraph, node_color=color_map, with_labels=True, pos=pos)
-        plt.title(filename, fontsize=20)
-        if not os.path.exists(dir_path):
-            os.mkdir(dir_path)
-        plt.savefig(dir_path + "/" + filename + "_" + str(no_of_subgraph) + ".png")
-        plt.close()
-
-
-def _write_circuit_graph(filename, graph, dir_path):
-    if not os.path.exists(dir_path):
-        os.mkdir(dir_path)
-    nx.write_yaml(Graph(graph), dir_path + "/" + filename + ".yaml")
 

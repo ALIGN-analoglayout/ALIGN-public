@@ -1,6 +1,6 @@
 import pathlib
 import pytest
-from align.compiler.compiler import compiler_input, compiler_output
+from align.compiler.compiler import compiler_input
 from align.schema import SubCircuit
 
 

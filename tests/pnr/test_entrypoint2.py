@@ -29,25 +29,25 @@ p = pdk.Pdk().load(pdkdir / 'layers.json')
 def gen_row_module(nm, n=3):
     instances = []
     for i in range(n):
-        inp = 'inp' if i == 0 else f'x{i}'
-        out = 'out' if i == n - 1 else f'x{i+1}'
+        inp = 'INP' if i == 0 else f'X{i}'
+        out = 'OUT' if i == n - 1 else f'X{i+1}'
         instance = {
-            'instance_name': f'u{i}',
-            'abstract_template_name': 'slice',
-            'fa_map': [{'formal': 'inp', 'actual': inp},
-                       {'formal': 'out', 'actual': out}]
+            'instance_name': f'U{i}',
+            'abstract_template_name': 'SLICE',
+            'fa_map': [{'formal': 'INP', 'actual': inp},
+                       {'formal': 'OUT', 'actual': out}]
         }
         instances.append(instance)
 
     topmodule = {
         'name': nm,
-        'parameters': ["inp", "out"],
+        'parameters': ["INP", "OUT"],
         'instances': instances,
         'constraints': [
             {
                 'constraint': 'Order',
                 'direction': 'left_to_right',
-                'instances': [f'u{i}' for i in range(n)],
+                'instances': [f'U{i}' for i in range(n)],
                 'abut': False
             }
         ]
@@ -56,35 +56,35 @@ def gen_row_module(nm, n=3):
     topmodule['constraints'].append(
         {
             'constraint': 'SameTemplate',
-            'instances': [f'u{i}' for i in range(n)]
+            'instances': [f'U{i}' for i in range(n)]
         }
     )
 
     return topmodule
 
 
-def gen_matrix_module(nm, n=3):
+def gen_matrix_module(nm, row_nm, n=3):
     instances = []
     for i in range(n):
-        inp = 'inp' if i == 0 else f'x{i}'
-        out = 'out' if i == n - 1 else f'x{i+1}'
+        inp = 'INP' if i == 0 else f'X{i}'
+        out = 'OUT' if i == n - 1 else f'X{i+1}'
         instance = {
-            'instance_name': f'u{i}',
-            'abstract_template_name': 'row',
-            'fa_map': [{'formal': 'inp', 'actual': inp},
-                       {'formal': 'out', 'actual': out}]
+            'instance_name': f'U{i}',
+            'abstract_template_name': row_nm,
+            'fa_map': [{'formal': 'INP', 'actual': inp},
+                       {'formal': 'OUT', 'actual': out}]
         }
         instances.append(instance)
 
     topmodule = {
         'name': nm,
-        'parameters': ["inp", "out"],
+        'parameters': ["INP", "OUT"],
         'instances': instances,
         'constraints': [
             {
                 'constraint': 'Order',
                 'direction': 'top_to_bottom',
-                'instances': [f'u{i}' for i in range(n)],
+                'instances': [f'U{i}' for i in range(n)],
                 'abut': False
             }
         ]
@@ -93,7 +93,7 @@ def gen_matrix_module(nm, n=3):
     topmodule['constraints'].append(
         {
             'constraint': 'SameTemplate',
-            'instances': [f'u{i}' for i in range(n)]
+            'instances': [f'U{i}' for i in range(n)]
         }
     )
 
@@ -103,19 +103,19 @@ def gen_matrix_module(nm, n=3):
 def gen_primitives(run_dir):
     primitives_d = {}
 
-    sizes = [('_an', (10, 10, 1)),
-             ('_bn', (5, 20, 1)),
-             ('_cn', (20, 5, 1)),
-             ('_af', (10, 10, -1)),
-             ('_bf', (5, 20, -1)),
-             ('_cf', (20, 5, -1))]
+    sizes = [('_AN', (10, 10, 1)),
+             ('_BN', (5, 20, 1)),
+             ('_CN', (20, 5, 1)),
+             ('_AF', (10, 10, -1)),
+             ('_BF', (5, 20, -1)),
+             ('_CF', (20, 5, -1))]
 
-    sizes = [('_a', (10, 10, 1)),
-             ('_b', (5, 20, 1)),
-             ('_c', (20, 5, 1))]
+    sizes = [('_A', (10, 10, 1)),
+             ('_B', (5, 20, 1)),
+             ('_C', (20, 5, 1))]
 
     for suffix, _ in sizes:
-        atn = 'slice'
+        atn = 'SLICE'
         ctn = f'{atn}{suffix}'
         primitives_d[ctn] = {'abstract_template_name': atn,
                              'concrete_template_name': ctn}
@@ -141,14 +141,14 @@ def gen_primitives(run_dir):
         terminals = [
             {
                 "layer": "M2",
-                "netName": "inp",
+                "netName": "INP",
                 "rect": [sx * xpitch - xstopdelta, inp_y * ypitch - yhalfwidth,
                          ex * xpitch + xstopdelta, inp_y * ypitch + yhalfwidth],
                 "netType": "pin"
             },
             {
                 "layer": "M2",
-                "netName": "out",
+                "netName": "OUT",
                 "rect": [sx * xpitch - xstopdelta, out_y * ypitch - yhalfwidth,
                          ex * xpitch + xstopdelta, out_y * ypitch + yhalfwidth],
                 "netType": "pin"
@@ -161,7 +161,8 @@ def gen_primitives(run_dir):
                     'terminals': terminals
                     }
 
-        ctn = f'slice{suffix}'
+        atn = 'SLICE'
+        ctn = f'{atn}{suffix}'
 
         with (run_dir / '2_primitives' / f'{ctn}.json').open('wt') as fp:
             json.dump(layout_d, fp=fp, indent=2)
@@ -171,7 +172,7 @@ def gen_primitives(run_dir):
             gen_gds_json.translate(ctn, '', 0, fp0, fp1, datetime.datetime(2019, 1, 1, 0, 0, 0), p)
 
         gen_lef.json_lef(run_dir / '2_primitives' / f'{ctn}.json', ctn,
-                         cell_pin=['inp', 'out'], bodyswitch=1, blockM=0, p=p)
+                         cell_pin=['INP', 'OUT'], bodyswitch=1, blockM=0, p=p)
 
 
 def test_row():
@@ -188,11 +189,11 @@ def test_row():
     (run_dir / '1_topology').mkdir(parents=False, exist_ok=False)
     (run_dir / '2_primitives').mkdir(parents=False, exist_ok=False)
 
-    topmodule = gen_row_module(nm)
+    topmodule = gen_row_module(nm.upper())
 
     verilog_d = {'modules': [topmodule], 'global_signals': []}
 
-    with (run_dir / '1_topology' / f'{nm}.verilog.json').open('wt') as fp:
+    with (run_dir / '1_topology' / f'{nm.upper()}.verilog.json').open('wt') as fp:
         json.dump(verilog_d, fp=fp, indent=2)
 
     gen_primitives(run_dir)
@@ -208,6 +209,7 @@ def test_row():
 
 
 def test_matrix():
+    row_nm = 'row'
     nm = 'matrix'
 
     run_dir = ALIGN_WORK_DIR / f'{nm}_entrypoint2'
@@ -221,12 +223,12 @@ def test_matrix():
     (run_dir / '1_topology').mkdir(parents=False, exist_ok=False)
     (run_dir / '2_primitives').mkdir(parents=False, exist_ok=False)
 
-    rowmodule = gen_row_module('row', n=3)
-    topmodule = gen_matrix_module(nm, n=4)
+    rowmodule = gen_row_module(row_nm.upper(), n=3)
+    topmodule = gen_matrix_module(nm.upper(), row_nm.upper(), n=4)
 
     verilog_d = {'modules': [topmodule, rowmodule], 'global_signals': []}
 
-    with (run_dir / '1_topology' / f'{nm}.verilog.json').open('wt') as fp:
+    with (run_dir / '1_topology' / f'{nm.upper()}.verilog.json').open('wt') as fp:
         json.dump(verilog_d, fp=fp, indent=2)
 
     gen_primitives(run_dir)
