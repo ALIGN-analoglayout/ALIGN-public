@@ -1,0 +1,8 @@
+[
+    {"constraint": "PowerPorts", "ports": ["VPS"]},
+    {"constraint": "GroundPorts", "ports": ["VGND"]},
+    {"constraint": "SymmetricBlocks",
+        "direction" : "V",
+        "pairs": [["X00","X01"]]
+    }
+]
