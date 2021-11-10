@@ -198,6 +198,8 @@ class design {
   size_t getSeqIndex(const vector<int>& seq);
   size_t getSelIndex(const vector<int>& sel);
   std::uniform_int_distribution<int>* _rnd{nullptr};
+  enum class CompactStyle { L, R, C };
+  CompactStyle compact_style = CompactStyle::L;
 
   public:
   design();
@@ -205,6 +207,8 @@ class design {
   design(string blockfile, string netfile);
   design(string blockfile, string netfile, string cfile);
   int rand();
+  bool leftAlign() const { return compact_style == CompactStyle::L; }
+  bool rightAlign() const { return compact_style == CompactStyle::R; }
 
   // added by yg, the first one is to read in additional const, the other one is to generate random constrains.
   design(string blockfile, string netfile, string cfile, string random_const_file);
