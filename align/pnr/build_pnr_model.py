@@ -127,7 +127,7 @@ def _attach_constraint_files( DB, fpath):
     for curr_node in DB.hierTree:
         curr_node.bias_Vgraph  = DB.getDrc_info().Design_info.Vspace
         curr_node.bias_Hgraph  = DB.getDrc_info().Design_info.Hspace
-        curr_node.align_style = DB.getDrc_info().Design_info.align_style
+        curr_node.compact_style = DB.getDrc_info().Design_info.compact_style
 
         fp = d / f"{curr_node.name}.pnr.const.json"
         if fp.exists():

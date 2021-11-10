@@ -643,12 +643,12 @@ design::design(PnRDB::hierNode& node, const int seed) {
   }
 
   _rnd = new std::uniform_int_distribution<int>(0, std::max(20, 2 * szmax));
-  if (node.align_style == "left") {
-    align_style = AlignStyle::L;
-  } else if (node.align_style == "right") {
-    align_style = AlignStyle::R;
+  if (node.compact_style == "left") {
+    compact_style = CompactStyle::L;
+  } else if (node.compact_style == "right") {
+    compact_style = CompactStyle::R;
   } else {
-    align_style = AlignStyle::C;
+    compact_style = CompactStyle::C;
   }
 }
 

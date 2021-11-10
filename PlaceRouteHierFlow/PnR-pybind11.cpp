@@ -253,7 +253,7 @@ PYBIND11_MODULE(PnR, m) {
       .def_readwrite("Guardring_Consts", &hierNode::Guardring_Consts)
       .def_readwrite("bias_Hgraph", &hierNode::bias_Hgraph)
       .def_readwrite("bias_Vgraph", &hierNode::bias_Vgraph)
-      .def_readwrite("align_style", &hierNode::align_style)
+      .def_readwrite("compact_style", &hierNode::compact_style)
       .def_readwrite("router_report", &hierNode::router_report)
       .def_readwrite("Block_name_map", &hierNode::Block_name_map)
       .def_readonly("HPWL", &hierNode::HPWL)
@@ -370,7 +370,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("power_routing_metal_u", &design_info::power_routing_metal_u)
     .def_readwrite("h_skip_factor", &design_info::h_skip_factor)
     .def_readwrite("v_skip_factor", &design_info::v_skip_factor)
-    .def_readwrite("align_style", &design_info::align_style)
+    .def_readwrite("compact_style", &design_info::compact_style)
     ;
 
   py::class_<guardring_info>( m, "guardring_info")

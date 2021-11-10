@@ -529,7 +529,7 @@ class PlaceSymmetric(SoftConstraint):
         return value
 
 
-class AlignGroup(SoftConstraint):
+class CompactPlacement(SoftConstraint):
     style: Literal[
         'left', 'right',
         'center'
@@ -778,7 +778,7 @@ ConstraintType = Union[
     AlignInOrder,
     # Legacy Align constraints
     # (SoftConstraints)
-    AlignGroup,
+    CompactPlacement,
     SameTemplate,
     CreateAlias,
     GroupBlocks,
