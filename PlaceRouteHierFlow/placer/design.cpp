@@ -413,6 +413,7 @@ design::design(PnRDB::hierNode& node, const int seed) {
         tmppin.type = pit->type;
         tmppin.netIter = pit->netIter;
         // cout<<tmppin.name<<endl;
+        tmppin.bbox = PnRDB::bbox(INT_MAX, INT_MAX, INT_MIN, INT_MIN);
         for (vector<PnRDB::contact>::iterator cit = pit->pinContacts.begin(); cit != pit->pinContacts.end(); ++cit) {
           tpoint = {cit->originCenter.x, cit->originCenter.y};
           tmppin.center.push_back(tpoint);
@@ -428,6 +429,10 @@ design::design(PnRDB::hierNode& node, const int seed) {
           tmppin.boundary.back().polygon.push_back({qit.LL.x, qit.UR.y});
           tmppin.boundary.back().polygon.push_back({qit.UR.x, qit.UR.y});
           tmppin.boundary.back().polygon.push_back({qit.UR.x, qit.LL.y});
+          tmppin.bbox.LL.x = std::min(tmppin.bbox.LL.x, qit.LL.x);
+          tmppin.bbox.LL.y = std::min(tmppin.bbox.LL.y, qit.LL.y);
+          tmppin.bbox.UR.x = std::max(tmppin.bbox.UR.x, qit.UR.x);
+          tmppin.bbox.UR.y = std::max(tmppin.bbox.UR.y, qit.UR.y);
         }
         tmpblock.blockPins.push_back(tmppin);
       }

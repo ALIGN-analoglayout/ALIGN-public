@@ -61,6 +61,7 @@ class design {
       string type;
       vector<placerDB::point> center;
       vector<placerDB::bbox> boundary;
+      PnRDB::bbox bbox;
       int netIter = -1;
     };
     bool bigMacro = true;
