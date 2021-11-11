@@ -248,7 +248,7 @@ def test_ro_1():
         ]
     }
     example = build_example(name, netlist, constraints)
-    ckt_dir, run_dir = run_example(example, cleanup=cleanup)
+    _, run_dir = run_example(example, cleanup=False)
 
     with (run_dir / '3_pnr' / 'inputs' / 'RO_STAGE.pnr.const.json').open('rt') as fp:
         d = json.load(fp)
