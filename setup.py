@@ -63,12 +63,12 @@ setup(name='align',
           'bin/schematic2layout.py',
           'bin/pnr_compiler.py',
           'bin/gds2png.sh',
-          'bin/analyze_regression.py'
+          'bin/analyze_regression.py',
+          'bin/convert_lef_to_layout_json.py'
       ],
       install_requires=[
           'networkx>=2.4',
           'python-gdsii',
-          'matplotlib',
           'pyyaml',
           'pybind11',
           'pydantic>=1.8',
@@ -77,7 +77,9 @@ setup(name='align',
           'colorlog',
           'plotly',
           'pandas',
-          'typing_extensions; python_version<"3.8"'
+          'dash',
+          'typing_extensions; python_version<"3.8"',
+          'memory_profiler'
           ],
       extras_require={
           'test': [

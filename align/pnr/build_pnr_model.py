@@ -4,71 +4,25 @@ import pathlib
 import json
 import re
 from itertools import chain
+from collections import defaultdict
 
 from .. import PnR
+from ..schema.hacks import VerilogJsonTop
 
 logger = logging.getLogger(__name__)
 
 NType = PnR.NType
+Omark = PnR.Omark
 
-def analyze_hN( tag, hN, beforeAddingBlockPins=False):
-    logger.info( f'{tag} name {hN.name}')
-
-    logger.info( f'Nets and PowerNets')
-    for net in chain( hN.Nets, hN.PowerNets):
-        logger.info( f'  {net.name}')
-        for conn in net.connected:
-            if conn.type == NType.Block:
-                if 0 <= conn.iter2 < len(hN.Blocks):
-                    blk = hN.Blocks[conn.iter2]
-                    inst = blk.instance[0]
-
-                    if 0 <= conn.iter < len(inst.blockPins):
-
-                        logger.info( f'    {conn.type} {conn.iter} ({inst.blockPins[conn.iter].name}) {conn.iter2} ({inst.name} {inst.master})')
-                    else:
-                        logger.info( f'    {conn.type} {conn.iter} (<out of range>) {conn.iter2} ({inst.name} {inst.master})')                        
-
-                else:
-                    logger.info( f'    {conn.type} {conn.iter} (<unknown>) {conn.iter2} (<out of range>)')
-            elif conn.type == NType.Terminal:
-                assert conn.iter2 == -1
-                if 0 <= conn.iter < len(hN.Terminals):
-                    logger.info( f'    {conn.type} {conn.iter} ({hN.Terminals[conn.iter].name})')
-                else:
-                    logger.info( f'    {conn.type} {conn.iter} (<out of range>)')
-
-    logger.info( f'PowerNets (second pass)')
-    for net in hN.PowerNets:
-        logger.info( f'  {net.name}')
-        for conn in net.dummy_connected:
-            if 0 <= conn.iter2 < len(hN.Blocks):
-                blk = hN.Blocks[conn.iter2]
-                logger.info( f'    blk.selectedInstance={blk.selectedInstance}')
-                for inst_idx,inst in enumerate(blk.instance):
-                    if beforeAddingBlockPins:
-                        if 0 <= conn.iter < len(inst.dummy_power_pin):
-                            logger.info( f'    {conn.iter} ({inst.dummy_power_pin[conn.iter].name}) {conn.iter2} ({inst.name} {inst.master}) inst_idx={inst_idx}')
-                        else:
-                            logger.info( f'    {conn.iter} (<out of range>) {conn.iter2} ({inst.name} {inst.master}) inst_idx={inst_idx}')                        
-            else:
-                logger.info( f'    {conn.iter} (<unknown>) {conn.iter2} (<out of range>)')
-
-    logger.info( f'Blocks')
-    for blk in hN.Blocks:
-        logger.info( f'  blk.child={blk.child} len(blk.instance)={len(blk.instance)} blk.selectedInstance={blk.selectedInstance} blk.instNum={blk.instNum}')
-        for inst in blk.instance:
-            logger.info( f'    inst.name={inst.name} inst.master={inst.master} len(inst.dummy_power_pin)={len(inst.dummy_power_pin)}')
-
-
-def ReadVerilogJson( DB, j):
+def ReadVerilogJson( DB, j, add_placement_info=False):
     hierTree = []
 
     for module in j['modules']:
 
         temp_node = PnR.hierNode()
-        temp_node.name = module['name']
+        temp_node.name = module['name'] if 'name' in module else module['abstract_name']
         temp_node.isCompleted = 0
+
 
         Terminals = []
         for parameter in module['parameters']:
@@ -83,6 +37,7 @@ def ReadVerilogJson( DB, j):
 
         Blocks = []
         Nets = []
+        Block_name_map = {}
 
         Connecteds = []
 
@@ -90,8 +45,15 @@ def ReadVerilogJson( DB, j):
             temp_blockComplex = PnR.blockComplex()
             current_instance = PnR.block()
 
-            current_instance.master = instance['template_name']
+            if 'template_name' in instance:
+                current_instance.master = instance['template_name']
+            elif 'abstract_template_name' in instance:
+                current_instance.master = instance['abstract_template_name']
+            else:
+                assert False, f'Missing template_name (abstract or otherwise) in instance {instance}'
+
             current_instance.name = instance['instance_name']
+            Block_name_map[current_instance.name] = len(Blocks)
 
             blockPins = []
 
@@ -104,7 +66,7 @@ def ReadVerilogJson( DB, j):
                     Nets.append( PnR.net())
                     Connecteds.append( [])
                     Nets[-1].name = net_name
-                    
+
                     net_map[net_name] = net_index
 
                 # Use a python list of list to workaround not being able to append to a C++ vector
@@ -122,7 +84,7 @@ def ReadVerilogJson( DB, j):
                 net_name = fa['actual']
                 temp_pin.netIter = process_connection( i, net_name)
                 blockPins.append( temp_pin)
-                
+
             current_instance.blockPins = blockPins
             temp_blockComplex.instance = [ current_instance ]
             Blocks.append( temp_blockComplex)
@@ -133,6 +95,7 @@ def ReadVerilogJson( DB, j):
 
         temp_node.Blocks = Blocks
         temp_node.Nets = Nets
+        temp_node.Block_name_map = Block_name_map
 
         hierTree.append( temp_node)
 
@@ -147,32 +110,34 @@ def ReadVerilogJson( DB, j):
 def _ReadMap( path, mapname):
     d = pathlib.Path(path)
     p = re.compile( r'^(\S+)\s+(\S+)\s*$')
-    tbl = {}
+    tbl2 = defaultdict(list)
     with (d / mapname).open( "rt") as fp:
         for line in fp:
             line = line.rstrip('\n')
             m = p.match(line)
             assert m
             k, v = m.groups()
-            tbl[k] = str(d / v)
-    return tbl
+            tbl2[k].append( str(d / v))
+    logger.debug( f'expanded table: {tbl2}')
+    return tbl2
 
 def _attach_constraint_files( DB, fpath):
     d = pathlib.Path(fpath)
 
     for curr_node in DB.hierTree:
-        curr_node.bias_Vgraph = DB.getDrc_info().Design_info.Vspace
-        curr_node.bias_Hgraph = DB.getDrc_info().Design_info.Hspace
+        curr_node.bias_Vgraph  = DB.getDrc_info().Design_info.Vspace
+        curr_node.bias_Hgraph  = DB.getDrc_info().Design_info.Hspace
+        curr_node.compact_style = DB.getDrc_info().Design_info.compact_style
 
         fp = d / f"{curr_node.name}.pnr.const.json"
         if fp.exists():
             with fp.open( "rt") as fp:
                 jsonStr = fp.read()
             DB.ReadConstraint_Json( curr_node, jsonStr)
-            logger.info(f"Finished reading contraint json file {curr_node.name}.pnr.const.json")
+            logger.debug(f"Finished reading contraint json file {curr_node.name}.pnr.const.json")
         else:
             logger.warning(f"No constraint file for module {curr_node.name}")
-                
+
 def _ReadLEF( DB, path, lefname):
     p = pathlib.Path(path) / lefname
     if p.exists():
@@ -181,6 +146,12 @@ def _ReadLEF( DB, path, lefname):
             DB.ReadLEFFromString( s)
     else:
         logger.warn(f"LEF file {p} doesn't exist.")
+        
+def semantic(DB, path, topcell, global_signals):
+    _attach_constraint_files( DB, path)
+    DB.semantic0( topcell)
+    DB.semantic1( global_signals)
+    DB.semantic2()
 
 def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     DB = PnR.PnRdatabase()
@@ -189,19 +160,15 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     DB.ReadPDKJSON( path + '/' + drname)
 
     _ReadLEF( DB, path, lefname)
-    DB.gdsData = _ReadMap( path, mapname)
+    DB.gdsData2 = _ReadMap( path, mapname)
 
     j = None
     if vname.endswith(".verilog.json"):
-        with (pathlib.Path(path) / vname).open( "rt") as fp:
-            j = json.load( fp)
+        j = VerilogJsonTop.parse_file(pathlib.Path(path) / vname)
         global_signals = ReadVerilogJson( DB, j)
+        semantic(DB, path, topcell, global_signals)
     else:
         global_signals = DB.ReadVerilog( path, vname, topcell)
-
-    _attach_constraint_files( DB, path)
-    DB.semantic0( topcell)
-    DB.semantic1( global_signals)
-    DB.semantic2()
+        semantic(DB, path, topcell, global_signals)
 
     return DB, j

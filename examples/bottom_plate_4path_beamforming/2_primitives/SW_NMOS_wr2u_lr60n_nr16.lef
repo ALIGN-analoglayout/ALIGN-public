@@ -1,0 +1,55 @@
+VERSION 5.7 ;
+BUSBITCHARS "[]" ;
+DIVIDERCHAR "/" ;
+
+MACRO SW_NMOS_wr2u_lr60n_nr16
+  UNITS 
+    DATABASE MICRONS UNITS 1 ;
+  END UNITS 
+
+  ORIGIN 0 0 ;
+  FOREIGN SW_NMOS_wr2u_lr60n_nr16 0 0 ;
+  SIZE 9.88 BY 7.4 ;
+  PIN S
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M4 ;
+        RECT 2.435 2.24 7.565 4.41 ;
+    END
+  END S
+  PIN G
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M3 ;
+        RECT 7.97 2.695 8.15 4.78 ;
+    END
+  END G
+  PIN D
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 2.65 5.15 7.35 6.45 ;
+    END
+  END D
+  PIN DNWP
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 8.735 1.03 8.945 6.29 ;
+    END
+  END DNWP
+  OBS
+    LAYER M1 ;
+      RECT 1 1 8.61 6.51 ;
+    LAYER M2 ;
+      RECT 1.785 1.53 8.2 5.04 ;
+    LAYER M3 ;
+      RECT 1.785 2.5 7.93 5.04 ;
+  END
+END SW_NMOS_wr2u_lr60n_nr16
+
+END LIBRARY

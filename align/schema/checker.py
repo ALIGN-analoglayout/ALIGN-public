@@ -4,20 +4,18 @@ import collections
 import logging
 logger = logging.getLogger(__name__)
 
-try:
-    import z3
-except:
-    logger.warning("Could not import z3. Z3Checker disabled.")
-    z3 = None
+import z3
 
 class CheckerError(Exception):
-    def __init__(self, message):
+    def __init__(self, message, labels=None):
         self.message = message
+        self.labels = labels
         super().__init__(self.message)
+
 
 class AbstractChecker(abc.ABC):
     @abc.abstractmethod
-    def append(self, formula):
+    def append(self, formula, label=None):
         '''
         Append formula to checker.
 
@@ -26,6 +24,14 @@ class AbstractChecker(abc.ABC):
               yourself
         '''
         pass
+
+    @abc.abstractmethod
+    def label(self, object):
+        '''
+        Generate label that can be used for 
+        back-annotation
+        '''
+        return None
 
     @abc.abstractmethod
     def checkpoint(self):
@@ -128,19 +134,35 @@ class AbstractChecker(abc.ABC):
         '''
         pass
 
+
 class Z3Checker(AbstractChecker):
 
-    enabled = z3 is not None
-
     def __init__(self):
+        self._label_cache = {}
         self._bbox_cache = {}
+        self._bbox_subcircuit = {}
         self._solver = z3.Solver()
+        self._solver.set(unsat_core=True)
 
-    def append(self, formula, identifier=None):
-        self._solver.add(formula)
+    def append(self, formula, label=None):
+        if label is not None:
+            self._solver.assert_and_track(formula, label)
+        else:
+            self._solver.add(formula)
         r = self._solver.check()
         if r == z3.unsat:
-            raise CheckerError(f'No solution exists for {formula} in conjunction with {self._solver}')
+            z3.set_option(max_depth=10000, max_args=100, max_lines=10000)
+            logger.debug(f"Unsat encountered: {self._solver}")
+            raise CheckerError(
+                message=f'Trying to add {formula} resulted in unsat',
+                labels=self._solver.unsat_core())
+
+    def label(self, object):
+        # Z3 throws 'index out of bounds' error
+        # if more than 9 digits are used
+        return z3.Bool(
+            hash(repr(object)) % 10**9
+        )
 
     def checkpoint(self):
         self._solver.push()
@@ -148,30 +170,34 @@ class Z3Checker(AbstractChecker):
     def revert(self):
         self._solver.pop()
 
-    def bbox_vars(self, name):
+    def bbox_vars(self, name, is_subcircuit=False):
         # bbox was previously generated
         if name in self._bbox_cache:
             return self._bbox_cache[name]
         # generate new bbox
         b = self._generate_var(
             'Bbox',
-            llx = f'{name}_llx',
-            lly = f'{name}_lly',
-            urx = f'{name}_urx',
-            ury = f'{name}_ury')
+            llx=f'{name}_llx',
+            lly=f'{name}_lly',
+            urx=f'{name}_urx',
+            ury=f'{name}_ury')
         # width / height cannot be 0
         self.append(b.llx < b.urx)
         self.append(b.lly < b.ury)
-        # Do not overlap with other bboxes
-        for b2 in self._bbox_cache.values():
-            self.append(
-                self.Or(
-                    b.urx <= b2.llx,
-                    b2.urx <= b.llx,
-                    b.ury <= b2.lly,
-                    b2.ury <= b.lly,
-                )
-            )
+        if is_subcircuit:
+            self._bbox_subcircuit[name] = True
+        else:
+            # Do not overlap with other instance bboxes
+            for k2, b2 in self._bbox_cache.items():
+                if k2 not in self._bbox_subcircuit:
+                    self.append(
+                        self.Or(
+                            b.urx <= b2.llx,
+                            b2.urx <= b.llx,
+                            b.ury <= b2.lly,
+                            b2.ury <= b.lly,
+                        )
+                    )
         self._bbox_cache[name] = b
         return b
 

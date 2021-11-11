@@ -1,21 +1,24 @@
 .SUBCKT stack3_p_cell  d g s b
+.param m=1
 Mi[0] d  g  n0 b p w=180e-9 m=1 nf=1
 Mi[1] n0 g  n1 b p w=180e-9 m=1 nf=1
 Mi[2] n1 g  s  b p w=180e-9 m=1 nf=1
 .ENDS
 
 .SUBCKT stack2_psvt_cell  d g s b
+.param m=1
 Mi[0] d  g  n0 b psvt w=180e-9 m=1 nf=1
 Mi[1] n0 g  s  b psvt w=180e-9 m=1 nf=1
 .ENDS
 
 .SUBCKT stack3_psvt_cell  d g s b
+.param m=1
 Mi[0] d  g  n0 b psvt w=180e-9 m=1 nf=1
 Mi[1] n0 g  n1 b psvt w=180e-9 m=1 nf=1
 Mi[2] n1 g  s  b psvt w=180e-9 m=1 nf=1
 .ENDS
 
-.SUBCKT intel_circuit2
+.SUBCKT intel_circuit2 vcc
 
 Xi0 d0 g0 s0 vcc stack3_p_cell m=4
 Xi1 d1 g1 s1 vcc stack3_psvt_cell m=4

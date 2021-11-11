@@ -1,0 +1,34 @@
+{
+  "bbox": [
+    0,
+    0,
+    14540,
+    1300
+  ],
+  "globalRoutes": [],
+  "globalRouteGrid": [],
+  "terminals": [
+    {
+      "netName": "PLUS",
+      "pin": "PLUS",
+      "layer": "M1",
+      "rect": [
+        0,
+        150,
+        320,
+        1150
+      ]
+    },
+    {
+      "netName": "MINUS",
+      "pin": "MINUS",
+      "layer": "M1",
+      "rect": [
+        14220,
+        150,
+        14540,
+        1150
+      ]
+    }
+  ]
+}

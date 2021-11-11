@@ -17,6 +17,7 @@ class DefaultCanvas(Canvas):
         super().__init__(pdk)
         self._create_metal_canvas( check=check)
         self.boundary = self.addGen( Region( 'boundary', 'Boundary', h_grid=self.m2.clg, v_grid=self.m1.clg))
+
     #
     # Automatically Create Metal Generators from layers.json
     #
@@ -46,7 +47,7 @@ class DefaultCanvas(Canvas):
     def _create_metal( self, layer, info, *, check=True):
         if 'Color' in info and len(info['Color']) > 0:
             logger.debug( f"Registering ColorClosure for layer {layer}")
-            self.postprocessor.register(layer, ColorClosure( info=info))
+            self.postprocessor.register(layer, ColorClosure( info=info, errors=self.postprocessor.errors))
 
         if isinstance(info['Width'], list):
             # TODO: Figure out what multiple metal widths even means. Just doing first width for now

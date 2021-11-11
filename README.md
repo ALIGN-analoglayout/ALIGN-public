@@ -97,8 +97,25 @@ $ pip install setuptools wheel pybind11 scikit-build cmake ninja
 $ pip install -v -e .[test] --no-build-isolation
 $ pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=Release'
 ```
-Use this mode if you are mostly developing in Python and don't need the C++ debugging symbols.
+or
+```console
+$ pip install setuptools wheel pybind11 scikit-build cmake ninja
+$ pip install -v -e .[test] --no-build-isolation
+$ pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=RelWithDebInfo'
+```
+Use the `Release` mode if you are mostly developing in Python and don't need the C++ debugging symbols. Use the `RelWithDebInfo` if you need both debug symbols and optimized code.
 
+To debug runtime issues, run:
+```console
+python -m cProfile -o stats $ALIGN_HOME/bin/schematic2layout.py $ALIGN_HOME/examples/sc_dc_dc_converter
+```
+Then in a python shell:
+```python
+import pstats
+from pstats import SortKey
+p = pstats.Stats('stats')
+p.sort_stats(SortKey.TIME).print_stats(20)
+```
 
 ### Step 4: Run ALIGN
 You may run the align tool using a simple command line tool named `schematic2layout.py`

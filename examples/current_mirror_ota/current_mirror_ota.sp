@@ -1,4 +1,4 @@
-.subckt current_mirror_ota id vinn vinp vss vdd voutp vbiasnd 
+.subckt current_mirror_ota id vinn vinp vss vdd voutp vbiasnd
 m17 net16 vinn net24 vss nmos_rvt w=27e-9 l=20e-9 nfin=28
 m16 net24 id vss vss nmos_rvt w=27e-9 l=20e-9 nfin=10
 m15 net27 vinp net24 vss nmos_rvt w=27e-9 l=20e-9 nfin=28

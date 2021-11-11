@@ -74,6 +74,8 @@ PYBIND11_MODULE(PnR, m) {
     .def( py::init<int, int, int, int>())
     .def( py::init<const bbox&>())
     .def( py::init<const point&, const point&>())
+    .def( py::init<const point&, const point&>())
+    .def( "center", &bbox::center)
     .def_readwrite("LL", &bbox::LL)
     .def_readwrite("UR", &bbox::UR);
   py::class_<contact>( m, "contact")
@@ -203,6 +205,8 @@ PYBIND11_MODULE(PnR, m) {
     .def( py::init<>())
     .def_readwrite("width", &layoutAS::width)
     .def_readwrite("height", &layoutAS::height)
+    .def_readwrite("HPWL", &layoutAS::HPWL)
+    .def_readwrite("HPWL_extend", &layoutAS::HPWL_extend)
     .def_readwrite("gdsFile", &layoutAS::gdsFile)
     .def_readwrite("Blocks", &layoutAS::Blocks)
     .def_readwrite("Nets", &layoutAS::Nets)
@@ -223,6 +227,7 @@ PYBIND11_MODULE(PnR, m) {
       .def_readwrite("n_copy", &hierNode::n_copy)
       .def_readwrite("numPlacement", &hierNode::numPlacement)
       .def_readwrite("name", &hierNode::name)
+      .def_readwrite("concrete_name", &hierNode::concrete_name)
       .def_readwrite("gdsFile", &hierNode::gdsFile)
       .def_readwrite("parent", &hierNode::parent)
       .def_readwrite("Blocks", &hierNode::Blocks)
@@ -248,7 +253,15 @@ PYBIND11_MODULE(PnR, m) {
       .def_readwrite("Guardring_Consts", &hierNode::Guardring_Consts)
       .def_readwrite("bias_Hgraph", &hierNode::bias_Hgraph)
       .def_readwrite("bias_Vgraph", &hierNode::bias_Vgraph)
+      .def_readwrite("compact_style", &hierNode::compact_style)
       .def_readwrite("router_report", &hierNode::router_report)
+      .def_readwrite("Block_name_map", &hierNode::Block_name_map)
+      .def_readonly("HPWL", &hierNode::HPWL)
+      .def_readonly("HPWL_extend", &hierNode::HPWL_extend)
+      .def_readonly("HPWL_norm", &hierNode::HPWL_norm)
+      .def_readonly("area_norm", &hierNode::area_norm)
+      .def_readonly("cost", &hierNode::cost)
+      .def_readonly("constraint_penalty", &hierNode::constraint_penalty)
       .def_readwrite("GuardRings", &hierNode::GuardRings);
   py::class_<Guardring_Const>( m, "Guardring_Const")
     .def( py::init<>())
@@ -286,7 +299,8 @@ PYBIND11_MODULE(PnR, m) {
   py::class_<AlignBlock>( m, "AlignBlock")
     .def( py::init<>())
     .def_readwrite("blocks", &AlignBlock::blocks)
-    .def_readwrite("horizon", &AlignBlock::horizon);
+    .def_readwrite("horizon", &AlignBlock::horizon)
+    .def_readwrite("line", &AlignBlock::line);
   py::class_<PortPos>( m, "PortPos")
     .def( py::init<>())
     .def_readwrite("tid", &PortPos::tid)
@@ -356,6 +370,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("power_routing_metal_u", &design_info::power_routing_metal_u)
     .def_readwrite("h_skip_factor", &design_info::h_skip_factor)
     .def_readwrite("v_skip_factor", &design_info::v_skip_factor)
+    .def_readwrite("compact_style", &design_info::compact_style)
     ;
 
   py::class_<guardring_info>( m, "guardring_info")
@@ -444,6 +459,8 @@ PYBIND11_MODULE(PnR, m) {
     .def( "Extract_RemovePowerPins", &PnRdatabase::Extract_RemovePowerPins)
     .def( "CheckinHierNode", &PnRdatabase::CheckinHierNode)
     .def( "TransformNode", &PnRdatabase::TransformNode)
+    .def( "TransformBbox", &PnRdatabase::TransformBbox)
+    .def( "TransformPoint", &PnRdatabase::TransformPoint)
     .def( "RelOrt2AbsOrt", &PnRdatabase::RelOrt2AbsOrt)
     .def( "ExtractPinsToPowerPins", &PnRdatabase::ExtractPinsToPowerPins)
     .def( "CheckinChildnodetoBlock", &PnRdatabase::CheckinChildnodetoBlock)
@@ -457,7 +474,8 @@ PYBIND11_MODULE(PnR, m) {
     .def( "ReadConstraint_Json", &PnRdatabase::ReadConstraint_Json)
     .def_readwrite("hierTree", &PnRdatabase::hierTree)
     .def_readwrite("topidx", &PnRdatabase::topidx)
-    .def_readwrite("gdsData", &PnRdatabase::gdsData)
+    .def_readwrite("gdsData2", &PnRdatabase::gdsData2)
+    .def_readwrite("lefData", &PnRdatabase::lefData)
     .def_readwrite("DRC_info", &PnRdatabase::DRC_info)
   ;
 
@@ -469,11 +487,16 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("T_INT", &PlacerHyperparameters::T_INT)
     .def_readwrite("T_MIN", &PlacerHyperparameters::T_MIN)
     .def_readwrite("ALPHA", &PlacerHyperparameters::ALPHA)
+    .def_readwrite("SEED", &PlacerHyperparameters::SEED)
     .def_readwrite("COUNT_LIMIT", &PlacerHyperparameters::COUNT_LIMIT)
+    .def_readwrite("LAMBDA", &PlacerHyperparameters::LAMBDA)
+    .def_readwrite("use_analytical_placer", &PlacerHyperparameters::use_analytical_placer)
+    .def_readwrite("placement_info_json", &PlacerHyperparameters::placement_info_json)
+    .def_readwrite("use_external_placement_info", &PlacerHyperparameters::use_external_placement_info)
     ;
 
   py::class_<PlacerIfc>( m, "PlacerIfc")
-    .def( py::init<hierNode&, int, string, int, Drc_info&, const PlacerHyperparameters&>())
+    .def( py::init<hierNode&, int, string, int, Drc_info&, const PlacerHyperparameters&, bool>())
     .def( "getNodeVecSize", &PlacerIfc::getNodeVecSize)
     .def( "getNode", &PlacerIfc::getNode);
 

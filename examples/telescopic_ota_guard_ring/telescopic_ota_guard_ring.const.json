@@ -1,0 +1,5 @@
+[
+    {"constraint": "PowerPorts", "ports": ["VDD"]},
+    {"constraint": "GroundPorts", "ports": ["VSS"]},
+    {"constraint":"GuardRing", "block_name": "telescopic_ota", "guard_ring_primitives": "guard_ring",   "global_pin": "VDD"}
+]

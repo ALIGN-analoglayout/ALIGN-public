@@ -1,0 +1,8 @@
+[
+    {"constraint": "GroupBlocks", "instances": ["M00", "M01"],   "name": "dp"},
+    {"constraint": "GroundPorts", "ports": ["VGND"]},
+    {"constraint": "Order",
+        "direction" : "top_to_bottom",
+        "instances": ["dp", "Msw0", "M02"]
+    }
+]

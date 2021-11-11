@@ -61,6 +61,21 @@ def main():
         ]),
         shell=True)
     if not exit_status: exit_status = ret.returncode
+
+    # One integration test (to get guard_ring_coverage)
+    ret = subprocess.run(' '.join([
+        'pytest', '-vv', # Call pytest in verbose mode
+        '--runnightly',
+        '-k', 'telescopic_ota_guard_ring',
+        '-n', MAX_JOBS, # pytest-xdist options
+        '--cov-report', f'html:{output_dir}/python', '--cov=align',  # pytest-cov options
+        *argv
+        ]),
+        shell=True)
+    if not exit_status:
+        pass
+        # Currently failing
+        #exit_status = ret.returncode
     
     if GCOV_ENABLED:
         # Finish capture

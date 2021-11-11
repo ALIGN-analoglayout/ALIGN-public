@@ -3,6 +3,7 @@ import pathlib
 
 from align.schema.subcircuit import SubCircuit
 from align.schema.parser import SpiceParser
+from align.schema.types import set_context
 
 # WARNING: Parser capitalizes everything internally as SPICE is case-insensitive
 #          Please formulate tests accordingly
@@ -14,7 +15,7 @@ def setup_basic():
 @pytest.fixture
 def setup_multiline():
     return '''
-    X1 a b  testdev x =1f y= 0.1 
+    X1 a b  testdev x =1f y= 0.1
     X2 a  b testdev x = {capval*2}
     '''
 
@@ -85,6 +86,17 @@ def test_lexer_multiline(setup_multiline):
              'NAME', 'NAME', 'NAME', 'NAME', 'NAME', 'EQUALS', 'EXPR', 'NEWL']
     assert [tok.type for tok in SpiceParser._generate_tokens(str_)] == types
 
+def test_lexer_continuation(setup_basic):
+    str_ = "param fin_p_diff2sing=6 \\  \nwidth_n_diff2sing=10\n"
+    types = ['NAME', 'NAME', 'EQUALS', 'NUMBER', 'NAME', 'EQUALS', 'NUMBER', 'NEWL']
+    tokens = list(SpiceParser._generate_tokens(str_))
+    assert [tok.type for tok in tokens] == types
+
+    str_ = "param fin_p_diff2sing=6 \\\nwidth_n_diff2sing=10\n"
+    types = ['NAME', 'NAME', 'EQUALS', 'NUMBER', 'NAME', 'EQUALS', 'NUMBER', 'NEWL']
+    tokens = list(SpiceParser._generate_tokens(str_))
+    assert [tok.type for tok in tokens] == types
+
 def test_lexer_annotation(setup_annotation):
     str_ = setup_annotation
     types = ['NEWL', 'DECL', 'NAME', 'NAME', 'NAME', 'NAME', 'NAME', 'NAME', 'NUMBER', 'NAME',
@@ -108,21 +120,23 @@ def test_lexer_realistic(setup_realistic):
     assert [tok.type for tok in SpiceParser._generate_tokens(str_)] == types
 
 def test_parser_basic(setup_basic, parser):
-    parser.library['TESTDEV'] = SubCircuit(name='TESTDEV', pins=['+', '-'], parameters={'X':'1F', 'Y':'0.1'})
+    with set_context(parser.library):
+        parser.library.append(SubCircuit(name='TESTDEV', pins=['+', '-'], parameters={'X':'1F', 'Y':'0.1'}))
     parser.parse(setup_basic)
     assert len(parser.circuit.elements) == 1
     assert parser.circuit.elements[0].name == 'X1'
-    assert parser.circuit.elements[0].model.name == 'TESTDEV'
+    assert parser.circuit.elements[0].model == 'TESTDEV'
     assert parser.circuit.nets == ['A', 'B']
 
 def test_parser_multiline(setup_multiline, parser):
-    parser.library['TESTDEV'] = SubCircuit(name='TESTDEV', pins=['+', '-'], parameters={'X':'1F', 'Y':'0.1'})
+    with set_context(parser.library):
+        parser.library.append(SubCircuit(name='TESTDEV', pins=['+', '-'], parameters={'X':'1F', 'Y':'0.1'}))
     parser.parse(setup_multiline)
     assert len(parser.circuit.elements) == 2
     assert parser.circuit.elements[0].name == 'X1'
     assert parser.circuit.elements[1].name == 'X2'
-    assert parser.circuit.elements[0].model.name == 'TESTDEV'
-    assert parser.circuit.elements[1].model.name == 'TESTDEV'
+    assert parser.circuit.elements[0].model == 'TESTDEV'
+    assert parser.circuit.elements[1].model == 'TESTDEV'
     assert parser.circuit.nets == ['A', 'B']
 
 def test_parser_realistic(setup_realistic, parser):
@@ -134,12 +148,13 @@ def test_parser_realistic(setup_realistic, parser):
 
 def test_parser_annotation(setup_annotation, parser):
     parser.parse(setup_annotation)
-    assert 'DIFFAMP' in parser.library
-    assert len(parser.library['DIFFAMP'].elements) == 4
-    assert [x.name for x in parser.library['DIFFAMP'].elements] == ['R1', 'R2', 'M1', 'M2'], parser.library['DIFFAMP'].elements
-    assert len(parser.library['DIFFAMP'].nets) == 7, parser.library['DIFFAMP'].nets
-    assert parser.library['DIFFAMP'].nets == ['VCC', 'OUTPLUS', 'OUTMINUS', 'INPLUS', 'SRC', '0', 'INMINUS'], parser.circuit.nets
-    assert len(parser.library['DIFFAMP'].constraints) == 3
+    diffamp = parser.library.find('DIFFAMP')
+    assert diffamp is not None
+    assert len(diffamp.elements) == 4
+    assert [x.name for x in diffamp.elements] == ['R1', 'R2', 'M1', 'M2'], diffamp.elements
+    assert len(diffamp.nets) == 7, diffamp.nets
+    assert diffamp.nets == ['VCC', 'OUTPLUS', 'OUTMINUS', 'INPLUS', 'SRC', '0', 'INMINUS'], parser.circuit.nets
+    assert len(diffamp.constraints) == 3
 
 def test_subckt_decl(setup_realistic, parser):
     parser.parse(f'''
@@ -149,30 +164,34 @@ def test_subckt_decl(setup_realistic, parser):
 .ends
 X1 vcc outplus outminus inplus src 0 inminus diffamp res=200
 ''')
-    assert 'DIFFAMP' in parser.library
-    assert len(parser.library['DIFFAMP'].elements) == 6
+    diffamp = parser.library.find('DIFFAMP')
+    assert diffamp is not None
+    assert len(diffamp.elements) == 6
     assert len(parser.circuit.elements) == 1
-    assert parser.circuit.elements[0].model.name == 'DIFFAMP'
+    assert parser.circuit.elements[0].model == 'DIFFAMP'
 
 def test_model(parser):
     parser.parse('.MODEL nmos_rvt nmos KP=0.5M VT0=2')
-    assert 'NMOS_RVT' in parser.library
-    assert list(parser.library['NMOS_RVT'].parameters.keys()) == ['W', 'L', 'NFIN', 'KP', 'VT0']
+    nmos_rvt = parser.library.find('NMOS_RVT')
+    assert nmos_rvt is not None
+    assert list(nmos_rvt.parameters.keys()) == ['W', 'L', 'NFIN', 'KP', 'VT0']
 
 def test_ota_cir_parsing(parser):
     with open((pathlib.Path(__file__).parent.parent / 'files' / 'ota.cir').resolve()) as fp:
         parser.parse(fp.read())
-    assert 'OTA' in parser.library
-    assert len(parser.library['OTA'].elements) == 10
+    ota = parser.library.find('OTA')
+    assert ota is not None
+    assert len(ota.elements) == 10
 
 def test_ota_sp_parsing(parser):
     with open((pathlib.Path(__file__).parent.parent / 'files' / 'ota.sp').resolve()) as fp:
         parser.parse(fp.read())
-    assert 'OTA' in parser.library
-    assert len(parser.library['OTA'].elements) == 10
+    ota = parser.library.find('OTA')
+    assert ota is not None
+    assert len(ota.elements) == 10
 
 def test_basic_template_parsing(parser):
     libsize = len(parser.library)
     with open((pathlib.Path(__file__).parent.parent / 'files' / 'basic_template.sp').resolve()) as fp:
         parser.parse(fp.read())
-    assert len(parser.library) - libsize == 31
+    assert len(parser.library) - libsize == 23

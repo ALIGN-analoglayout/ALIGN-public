@@ -1,0 +1,65 @@
+[
+        {
+          "constraint": "group_caps",
+          "name": "c1_c3",
+          "instances": [],
+          "unit_cap": "Cap_12f",
+          "num_units": [
+            3,
+            5
+          ],
+          "dummy": false
+        },
+        {
+          "constraint": "group_caps",
+          "name": "c7_c6",
+          "instances": [],
+          "unit_cap": "Cap_12f",
+          "num_units": [
+            3,
+            5
+          ],
+          "dummy": false
+        },
+        {
+          "constraint": "symmetric_blocks",
+          "pairs": [
+            [
+              "C5",
+              "C2"
+            ],
+            [
+              "X_CMC_S_NMOS_B_I1_M6_M7",
+              "X_CMC_S_NMOS_B_I1_M12_M14"
+            ]
+          ],
+          "direction": "V"
+        },
+        {
+          "constraint": "symmetric_blocks",
+          "pairs": [
+            [
+              "C8",
+              "C9"
+            ]
+          ],
+          "direction": "V"
+        },
+        {
+          "constraint": "symmetric_nets",
+          "net1": "VINN",
+          "net2": "VINP",
+          "pins1": [
+            "C5/PLUS",
+            "X_CMC_S_NMOS_B_I1_M6_M7/SB",
+            "VINN"
+          ],
+          "pins2": [
+            "C2/PLUS",
+            "X_CMC_S_NMOS_B_I1_M12_M14/SA",
+            "VINP"
+          ],
+          "direction": "V"
+        }
+]
+

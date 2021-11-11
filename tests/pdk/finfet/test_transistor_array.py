@@ -1,15 +1,17 @@
 import pytest
-from align.pdk.finfet import MOSGenerator, CanvasPDK
+from align.pdk.finfet import MOSGenerator
 try:
-    from .helper import *
-except:
-    from helper import *
+    from .utils import get_test_id, export_to_viewer
+except BaseException:
+    from utils import get_test_id, export_to_viewer
+import logging
+logger = logging.getLogger(__name__)
 
 
 ports_uno = [
     # 3 terminal source body shorted
     {'S': [('M1', 'S'), ('M1', 'B')], 'D': [('M1', 'D')], 'G': [('M1', 'G')]},
-    # 3 terminal 
+    # 3 terminal
     {'S': [('M1', 'S')], 'D': [('M1', 'D')], 'G': [('M1', 'G')]},
     # diode connected
     {'S': [('M1', 'S')], 'D': [('M1', 'D'), ('M1', 'G')]},
@@ -36,18 +38,20 @@ ports_duo = [
     ]
 
 
-@pytest.mark.parametrize('n_row', range(1,4))
-@pytest.mark.parametrize('n_col', range(1,6))
+@pytest.mark.nightly
+@pytest.mark.parametrize('n_row', range(1, 4))
+@pytest.mark.parametrize('n_col', range(1, 6))
 @pytest.mark.parametrize('nf', [2, 4, 6, 8])
 @pytest.mark.parametrize('device_type', ['parallel', 'stack'])
 @pytest.mark.parametrize('ports', ports_uno)
 def test_uno_drc(n_row, n_col, nf, device_type, ports):
+    logger.info(f'running {get_test_id()}')
     c = MOSGenerator()
-    parameters = {'m': n_row*n_col, 'nfin': 4, 'real_inst_type': 'n'}
+    parameters = {'M': n_row*n_col, 'NFIN': 4, 'real_inst_type': 'n'}
     if device_type == 'parallel':
-        parameters['nf'] = nf
+        parameters['NF'] = nf
     else:
-        parameters['stack'] = nf 
+        parameters['STACK'] = nf
     c.addNMOSArray(n_col, n_row, 0, None, ports, **parameters)
     c.gen_data(run_drc=True)
     if c.drc.num_errors > 0 or len(c.rd.opens) > 0 or len(c.rd.shorts) > 0:
@@ -55,19 +59,21 @@ def test_uno_drc(n_row, n_col, nf, device_type, ports):
         assert False, f'{get_test_id()} DRC ports:{ports} type:{device_type} nf:{nf}, n_col:{n_col} n_row:{n_row}'
 
 
-@pytest.mark.parametrize('n_row', range(1,4))
-@pytest.mark.parametrize('n_col', range(1,6))
+@pytest.mark.nightly
+@pytest.mark.parametrize('n_row', range(1, 4))
+@pytest.mark.parametrize('n_col', range(1, 6))
 @pytest.mark.parametrize('nf', [2, 4, 6, 8])
 @pytest.mark.parametrize('device_type', ['parallel', 'stack'])
 @pytest.mark.parametrize('ports', ports_duo)
 def test_duo_drc(n_row, n_col, nf, device_type, ports):
+    logger.info(f'running {get_test_id()}')
     if n_row * n_col % 2 == 0 and n_col >= 2:
         c = MOSGenerator()
-        parameters = {'m': n_row*n_col, 'nfin': 4, 'real_inst_type': 'n'}
-        if device_type == 'parallel':
-            parameters['nf'] = nf
+        parameters = {'M': n_row*n_col, 'NFIN': 4, 'real_inst_type': 'n'}
+        if device_type == 'PARALLEL':
+            parameters['NF'] = nf
         else:
-            parameters['stack'] = nf 
+            parameters['STACK'] = nf
         c.addNMOSArray(n_col, n_row, 1, None, ports, **parameters)
         c.gen_data(run_drc=True)
         if c.drc.num_errors > 0 or len(c.rd.opens) > 0 or len(c.rd.shorts) > 0:
@@ -77,27 +83,27 @@ def test_duo_drc(n_row, n_col, nf, device_type, ports):
 
 def test_uno_one():
     c = MOSGenerator()
-    parameters = {'m': 1, 'nfin': 4, 'real_inst_type': 'p'}
-    parameters['nf'] = 2
+    parameters = {'M': 1, 'NFIN': 4, 'real_inst_type': 'p'}
+    parameters['NF'] = 2
     c.addNMOSArray(1, 1, 0, None, ports_uno[1], **parameters)
     c.gen_data(run_drc=True)
     export_to_viewer(get_test_id(), c)
     if c.drc.num_errors > 0 or len(c.rd.opens) > 0 or len(c.rd.shorts) > 0:
-        assert False, f'{get_test_id()} DRC ports:{ports} type:{device_type} nf:{nf}, n_col:{n_col} n_row:{n_row}'
+        assert False, f'{get_test_id()}'
 
 
 def test_duo_one():
     c = MOSGenerator()
-    parameters = {'m': 1, 'nfin': 4, 'real_inst_type': 'p'}
-    parameters['nf'] = 2
+    parameters = {'M': 1, 'NFIN': 4, 'real_inst_type': 'p'}
+    parameters['NF'] = 2
     c.addNMOSArray(2, 1, 1, None, ports_duo[0], **parameters)
     c.gen_data(run_drc=True)
     export_to_viewer(get_test_id(), c)
     if c.drc.num_errors > 0 or len(c.rd.opens) > 0 or len(c.rd.shorts) > 0:
-        assert False, f'{get_test_id()} DRC ports:{ports} type:{device_type} nf:{nf}, n_col:{n_col} n_row:{n_row}'
+        assert False, f'{get_test_id()}'
 
 
-### Unit tests ###
+# Unit tests ###
 
 def test_unit_interleave_pattern():
     mg = MOSGenerator()
