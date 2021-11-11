@@ -643,6 +643,13 @@ design::design(PnRDB::hierNode& node, const int seed) {
   }
 
   _rnd = new std::uniform_int_distribution<int>(0, std::max(20, 2 * szmax));
+  if (node.compact_style == "left") {
+    compact_style = CompactStyle::L;
+  } else if (node.compact_style == "right") {
+    compact_style = CompactStyle::R;
+  } else {
+    compact_style = CompactStyle::C;
+  }
 }
 
 int design::rand() {
