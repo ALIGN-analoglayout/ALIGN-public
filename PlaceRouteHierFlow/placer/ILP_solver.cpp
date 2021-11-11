@@ -1158,6 +1158,14 @@ bool ILP_solver::FrameSolveILP(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_in
         set_bounds(lp, (id * 4 + 2), -10*miny, -mydesign.Blocks[id][curr_sp.selected[id]].height);
       }
     }
+
+    // extreme coordinates of all nets will be negative for top/right flush
+    for (unsigned i = 0; i < mydesign.Nets.size(); ++i) {
+      auto ind = (mydesign.Blocks.size() + i) * 4 + 1;
+      for (int j = 0; j < 4; ++j) {
+        set_bounds(lp, ind+j, -get_infinite(lp), 0);
+      }
+    }
   }
 
   // symmetry block constraint
