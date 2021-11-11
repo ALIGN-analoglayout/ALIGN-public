@@ -5,7 +5,6 @@ Created on Fri Nov  2 21:33:22 2018
 @author: kunal
 """
 
-from networkx.algorithms.operators.product import power
 from align.schema import Model, SubCircuit, Instance
 from ..schema.types import set_context
 import logging
@@ -309,6 +308,7 @@ class Annotate:
                             constraint.HorizontalDistance,
                             constraint.VerticalDistance,
                             constraint.BlockDistance,
+                            constraint.CompactPlacement,
                         ]
                     ):
                         sub_const.append(const)

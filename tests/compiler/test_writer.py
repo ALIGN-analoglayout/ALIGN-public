@@ -1,6 +1,5 @@
 from align.schema.types import set_context
 import pathlib
-from align import primitive
 
 from align.compiler.write_verilog_lef import WriteVerilog
 from align.primitive import generate_primitive_lef

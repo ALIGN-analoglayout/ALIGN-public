@@ -1,4 +1,3 @@
-from align.schema import model
 import pytest
 from align.schema.parser import SpiceParser
 import pathlib

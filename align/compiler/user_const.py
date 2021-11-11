@@ -82,12 +82,6 @@ class ConstraintParser:
                     node.constraints.append(
                         {"instances": do_not_identify, "constraint": "DoNotIdentify"}
                     )
-
-        elif (self.input_dir / (design_name + ".const")).is_file():
-            # TODO: Reimplement using pydantic-cli if you really want this
-            raise NotImplementedError(
-                "Command-line interface has not been upgraded. Please use json constraints"
-            )
         else:
             logger.info(
                 f"No user constraints found for block {design_name} in path {self.input_dir}"

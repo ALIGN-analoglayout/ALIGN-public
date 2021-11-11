@@ -3,7 +3,7 @@ import pytest
 import json
 import shutil
 
-from align.compiler.compiler import compiler_input, constraint_generator, compiler_output
+from align.compiler.compiler import compiler_input, constraint_generator
 from align.schema.checker import CheckerError
 
 pdk_dir = (
@@ -24,6 +24,7 @@ out_path = pathlib.Path(__file__).resolve().parent / "Results"
         "high_speed_comparator_multiconnection",
         "high_speed_comparator_align",
         "high_speed_comparator_symmnet",
+        "high_speed_comparator_compactplacement",
     ],
 )
 def test_group_block_hsc(dir_name):
