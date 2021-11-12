@@ -1,12 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Sep 17 15:49:33 2020
-
-@author: kunal001
-"""
-
-
 from align.schema.types import set_context
 from align.schema.subcircuit import SubCircuit
 from ..schema import constraint
@@ -276,6 +267,7 @@ def define_SD(subckt, update=True):
         for node in list(set(probable_changes_n) & set(probable_changes_p)):
             logger.warning(f"changing source drain: {node}")
             swap_SD(subckt, G, node)
+
 
 def add_parallel_devices(ckt, update=True):
     """add_parallel_devics

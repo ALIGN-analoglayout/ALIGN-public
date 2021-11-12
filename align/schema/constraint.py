@@ -1,14 +1,15 @@
 import abc
 import more_itertools as itertools
 import re
+import logging
+
 
 from . import types
 from .types import Union, Optional, Literal, List, set_context
 from . import checker
 
-import logging
-logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
 pattern = re.compile(r'(?<!^)(?=[A-Z])')
 
 
@@ -535,6 +536,7 @@ class CompactPlacement(SoftConstraint):
         'center'
     ] = 'left'
 
+
 class SameTemplate(SoftConstraint):
     instances: List[str]
 
@@ -584,7 +586,7 @@ class DoNotUseLib(SoftConstraint):
     Primitive libraries which should not be used
     '''
     libraries: List[str]
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class IsDigital(SoftConstraint):
@@ -593,7 +595,7 @@ class IsDigital(SoftConstraint):
     Forbids any preprocessing, auto-annotation, array-identification or auto-constraint generation
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class AutoConstraint(SoftConstraint):
@@ -601,7 +603,7 @@ class AutoConstraint(SoftConstraint):
     Forbids/Allow any auto-constraint generation
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class IdentifyArray(SoftConstraint):
@@ -609,7 +611,7 @@ class IdentifyArray(SoftConstraint):
     Forbids/Alow any array identification
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class AutoGroupCaps(SoftConstraint):
@@ -617,7 +619,7 @@ class AutoGroupCaps(SoftConstraint):
     Forbids/Allow creation of arrays for symmetric caps
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class FixSourceDrain(SoftConstraint):
@@ -626,7 +628,7 @@ class FixSourceDrain(SoftConstraint):
     Traverses and fix them based on power to gnd traversal
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class KeepDummyHierarchies(SoftConstraint):
@@ -634,7 +636,7 @@ class KeepDummyHierarchies(SoftConstraint):
     Removes any single instance hierarchies
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class MergeSeriesDevices(SoftConstraint):
@@ -643,7 +645,7 @@ class MergeSeriesDevices(SoftConstraint):
     Only works on NMOS/PMOS/CAP/RES
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class MergeParallelDevices(SoftConstraint):
@@ -652,7 +654,7 @@ class MergeParallelDevices(SoftConstraint):
     Only works on NMOS/PMOS/CAP/RES
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class DoNotIdentify(SoftConstraint):
@@ -682,21 +684,21 @@ class SymmetricBlocks(SoftConstraint):
         if not hasattr(cls._validator_ctx().parent.parent, 'elements'):
             # PnR stage VerilogJsonModule
             return value
-        if len(cls._validator_ctx().parent.parent.elements)==0:
-            #skips the check while reading user constraints
+        if len(cls._validator_ctx().parent.parent.elements) == 0:
+            # skips the check while reading user constraints
             return value
         group_block_instances = [const.name for const in cls._validator_ctx().parent if isinstance(const, GroupBlocks)]
         for pair in value:
             # logger.debug(f"pairs {self.pairs} {self.parent.parent.get_element(pair[0])}")
-            if len([ele for ele in pair if ele in group_block_instances])>0:
-                #Skip check for group block elements as they are added later in the flow
+            if len([ele for ele in pair if ele in group_block_instances]) > 0:
+                # Skip check for group block elements as they are added later in the flow
                 continue
-            elif len(pair)==2:
+            elif len(pair) == 2:
                 assert cls._validator_ctx().parent.parent.get_element(pair[0]), f"element {pair[0]} not found in design"
                 assert cls._validator_ctx().parent.parent.get_element(pair[1]), f"element {pair[1]} not found in design"
                 assert cls._validator_ctx().parent.parent.get_element(pair[0]).parameters == \
                     cls._validator_ctx().parent.parent.get_element(pair[1]).parameters, \
-                        f"Incorrent symmetry pair {pair} in subckt {cls._validator_ctx().parent.parent.name}"
+                    f"Incorrent symmetry pair {pair} in subckt {cls._validator_ctx().parent.parent.name}"
         return value
 
 
