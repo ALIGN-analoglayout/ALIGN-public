@@ -47,13 +47,13 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
   ILP_solver curr_sol(designData);
   std::vector<std::pair<SeqPair, ILP_solver>> spVec(nodeSize, make_pair(curr_sp, curr_sol));
   int idx=0;
-  for(auto m:modules) {
+  for(const auto& m:modules) {
     if(m["abstract_name"]==designData.name){
       auto& sol = spVec[idx].second;
       auto& sp = spVec[idx].first;
       auto& Blocks = sol.Blocks;
       nodeVec[idx].concrete_name = m["concrete_name"];
-      for (auto instance : m["instances"]) {
+      for (const auto& instance : m["instances"]) {
         int block_id = nodeVec.back().Block_name_map[instance["instance_name"]];
         int sel = -1;
         for (int i = 0; i < int(nodeVec.back().Blocks[block_id].instance.size());i++){
@@ -89,13 +89,13 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
       sol.HPWL = 0;
       sol.HPWL_extend = 0;
       sol.HPWL_extend_terminal = 0;
-      for (auto neti : designData.Nets) {
+      for (const auto& neti : designData.Nets) {
         int HPWL_min_x = sol.UR.x, HPWL_min_y = sol.UR.y, HPWL_max_x = 0, HPWL_max_y = 0;
         int HPWL_extend_min_x = sol.UR.x, HPWL_extend_min_y = sol.UR.y, HPWL_extend_max_x = 0, HPWL_extend_max_y = 0;
-        for (auto connectedj : neti.connected) {
+        for (const auto& connectedj : neti.connected) {
           if (connectedj.type == placerDB::Block) {
             int iter2 = connectedj.iter2, iter = connectedj.iter;
-            for (auto centerk : designData.Blocks[iter2][sp.selected[iter2]].blockPins[iter].center) {
+            for (const auto& centerk : designData.Blocks[iter2][sp.selected[iter2]].blockPins[iter].center) {
               // calculate contact center
               int pin_x = centerk.x;
               int pin_y = centerk.y;
@@ -108,7 +108,7 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
               HPWL_min_y = std::min(HPWL_min_y, pin_y);
               HPWL_max_y = std::max(HPWL_max_y, pin_y);
             }
-            for (auto boundaryk : designData.Blocks[iter2][sp.selected[iter2]].blockPins[iter].boundary) {
+            for (const auto& boundaryk : designData.Blocks[iter2][sp.selected[iter2]].blockPins[iter].boundary) {
               int pin_llx = boundaryk.polygon[0].x, pin_urx = boundaryk.polygon[2].x;
               int pin_lly = boundaryk.polygon[0].y, pin_ury = boundaryk.polygon[2].y;
               if (Blocks[iter2].H_flip) {
@@ -133,7 +133,7 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
         sol.HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);
         sol.HPWL_extend += (HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x);
         bool is_terminal_net = false;
-        for (auto c : neti.connected) {
+        for (const auto& c : neti.connected) {
           if (c.type == placerDB::Terminal) {
             is_terminal_net = true;
             break;

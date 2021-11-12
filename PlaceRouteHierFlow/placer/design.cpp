@@ -614,7 +614,7 @@ design::design(PnRDB::hierNode& node, const int seed) {
   }
   constructSymmGroup();
   this->ML_Constraints = node.ML_Constraints;
-  for (auto order : node.Ordering_Constraints) {
+  for (const auto& order : node.Ordering_Constraints) {
     for (unsigned int i = 0; i < order.first.size() - 1; i++) {
       Ordering_Constraints.push_back(make_pair(make_pair(order.first[i], order.first[i + 1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
       if (Blocks[order.first[i]][0].counterpart != -1 && Blocks[order.first[i + 1]][0].counterpart != -1 &&
@@ -623,7 +623,7 @@ design::design(PnRDB::hierNode& node, const int seed) {
                                                  order.second == PnRDB::H ? placerDB::H : placerDB::V));
     }
   }
-  for (auto abut : node.Abut_Constraints) {
+  for (const auto& abut : node.Abut_Constraints) {
     for (unsigned int i = 0; i < abut.first.size() - 1; i++) {
       Abut_Constraints.push_back(make_pair(make_pair(abut.first[i], abut.first[i + 1]), abut.second == PnRDB::H ? placerDB::H : placerDB::V));
     }
@@ -1539,12 +1539,12 @@ void design::PrintNets() {
     for (vector<placerDB::Node>::iterator it2 = it->connected.begin(); it2 != it->connected.end(); ++it2) {
       logger->debug("type: {0} iter {1} iter2 {2}", it2->type, it2->iter, it2->iter2);
       if (it2->type == placerDB::Block) {
-        auto blk = Blocks.at(it2->iter2);
+        const auto& blk = Blocks.at(it2->iter2);
         if (blk.size() == 0) {
           logger->debug(" <empty>");
         } else if (blk.back().blockPins.size() > it2->iter) {
-          auto tmp = blk.back();
-          auto tmp2 = tmp.blockPins.at(it2->iter);
+          const auto& tmp = blk.back();
+          const auto& tmp2 = tmp.blockPins.at(it2->iter);
           logger->debug("{0} / {1}", tmp.name, tmp2.name);
         }
       }
@@ -2595,11 +2595,11 @@ size_t design::getSeqIndex(const vector<int>& seq) {
       if (count > 0) ind += _factorial[seq.size() - i - 1] * count;
     }
   } else {
-    auto it = _seqPairHash.find(seq);
+    const auto& it = _seqPairHash.find(seq);
     if (it != _seqPairHash.end())
       ind = it->second;
     else {
-      auto sz = _seqPairHash.size();
+      const auto& sz = _seqPairHash.size();
       _seqPairHash.insert(std::make_pair(seq, sz));
       ind = sz;
     }
