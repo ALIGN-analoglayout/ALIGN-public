@@ -39,7 +39,8 @@
               "X_INV_P_MP12_MN14"
             ]
           ],
-          "direction": "V"
+          "direction": "V",
+          "mirror": true
         },
         {
           "constraint": "do_not_identify",
