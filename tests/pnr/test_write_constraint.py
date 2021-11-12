@@ -72,5 +72,4 @@ def test_group_block_hsc(results_file, mock_circuit):
     with open(results_file, "r") as const_fp:
         gold_const = json.load(const_fp)["constraints"]
         gold_const.sort(key=lambda item: item.get("const_name"))
-    assert gold_const == gen_const
-
+    assert gold_const == gen_const, f'golden: {results_file} current: {tmp_file}'
