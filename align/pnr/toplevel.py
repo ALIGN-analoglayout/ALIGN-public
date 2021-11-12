@@ -391,8 +391,11 @@ def scale_and_check_placement(*, placement_verilog_d, concrete_name, scale_facto
     placement_verilog_alternatives[concrete_name] = scaled_placement_verilog_d
 
 def per_placement( placement_verilog_d, *, hN, scale_factor, gui, opath, tagged_bboxes, leaf_map, placement_verilog_alternatives):
-    concrete_name = placement_verilog_d['modules'][0]['concrete_name']
-    abstract_name = placement_verilog_d['modules'][0]['abstract_name']
+    concrete_names = { m['concrete_name'] for m in placement_verilog_d['modules'] if m['abstract_name'] == hN.name}
+    assert len(concrete_names) == 1
+
+    abstract_name = hN.name
+    concrete_name = list(concrete_names)[0]
 
     if not gui:
         logger.info( f'Working on {concrete_name}')
