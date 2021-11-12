@@ -160,6 +160,7 @@ def test_place_cmp_2():
         shutil.rmtree(ckt_dir)
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize("seed", [0, 7, 1453, 1981, 2021])
 @pytest.mark.parametrize("analytical_placer", [True, False])
 def test_place_cmp_seed(seed, analytical_placer):
@@ -190,7 +191,7 @@ def test_place_cmp_seed(seed, analytical_placer):
     ]
     example = build_example(name, netlist, setup, constraints)
 
-    additional_args=['-e', '1', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op', '--seed', str(seed)]
+    additional_args = ['-e', '1', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op', '--seed', str(seed)]
     if analytical_placer:
         additional_args.append('--use_analytical_placer')
         placer = 'analytical'
@@ -226,3 +227,36 @@ def test_place_cmp_seed(seed, analytical_placer):
 
     # plot_sa_cost(name.upper())
     # plot_sa_seq(name.upper())
+
+
+def test_cmp_analytical():
+    """ smoke test for analytical placer """
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.comparator(name)
+    setup = textwrap.dedent(f"""\
+        POWER = vccx
+        GND = vssx
+        DONT_CONST = {name}
+        """)
+    constraints = [
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
+        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
+        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
+        {"constraint": "SameTemplate", "instances": ["mp7", "mp8"]},
+        {"constraint": "SameTemplate", "instances": ["mp9", "mp10"]},
+        {"constraint": "SameTemplate", "instances": ["invn", "invp"]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["dp"]]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["ccp"], ["ccn"], ["invn", "invp"], ["mp9", "mp10"], ["mp7", "mp8"]]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "dp"]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["ccp", "ccn"]},
+        {"constraint": "AlignInOrder", "line": "bottom", "instances": ["dp", "ccn"]},
+        {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
+        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.01, "ratio_high": 100}
+    ]
+    example = build_example(name, netlist, setup, constraints)
+
+    additional_args = ['-e', '1', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op', '--seed', str(0), '--use_analytical_placer']
+
+    run_example(example, cleanup=cleanup, log_level='DEBUG', additional_args=additional_args)
