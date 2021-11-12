@@ -614,6 +614,8 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
         temp_const.insert(node.Block_name_map[b]);
       }
       node.Same_Template_Constraints.push_back(temp_const);
+    } else if (constraint["const_name"] == "CompactPlacement") {
+      node.compact_style = constraint["style"];
     }
   }
 }
