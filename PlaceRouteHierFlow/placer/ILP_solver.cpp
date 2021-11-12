@@ -1021,7 +1021,7 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
   return cost;
 }
 
-bool ILP_solver::FrameSolveILP(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
+bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILP");
 
   int v_metal_index = -1;
@@ -1470,7 +1470,7 @@ bool ILP_solver::FrameSolveILP(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_in
         ++fail_cnt;
       }*/
       delete_lp(lp);
-      ++mydesign._infeasILPFail;
+      ++const_cast<design&>(mydesign)._infeasILPFail;
       return false;
     }
     /*static int write_cnt{0};
@@ -1514,7 +1514,7 @@ bool ILP_solver::FrameSolveILP(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_in
   return true;
 }
 
-bool ILP_solver::MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
+bool ILP_solver::MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo) {
   std::vector<placerDB::point> slackxy(Blocks.size());
   for (unsigned i = 0; i < Blocks.size(); ++i) {
     slackxy[i].x = Blocks[i].x - blockslocal[i].x;
@@ -1590,10 +1590,10 @@ bool ILP_solver::MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, des
   return true;
 }
 
-double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
+double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
 
-  ++mydesign._totalNumCostCalc;
+  ++const_cast<design&>(mydesign)._totalNumCostCalc;
   if (mydesign.leftAlign()) {
   // frame and solve ILP to flush bottom/left
     if (!FrameSolveILP(mydesign, curr_sp, drcInfo, true))  return -1;
@@ -1634,11 +1634,11 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnR
   // ratio = std::max(double(UR.x - LL.x) / double(UR.y - LL.y), double(UR.y - LL.y) / double(UR.x - LL.x));
   ratio = double(UR.x - LL.x) / double(UR.y - LL.y);
   if (ratio < Aspect_Ratio[0] || ratio > Aspect_Ratio[1]) {
-    ++mydesign._infeasAspRatio;
+    ++const_cast<design&>(mydesign)._infeasAspRatio;
     return -1;
   }
   if (placement_box[0] > 0 && (UR.x - LL.x > placement_box[0]) || placement_box[1] > 0 && (UR.y - LL.y > placement_box[1])) {
-    ++mydesign._infeasPlBound;
+    ++const_cast<design&>(mydesign)._infeasPlBound;
     return -1;
   }
   // calculate HPWL
@@ -2627,7 +2627,7 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
   return calculated_cost;
 }
 
-double ILP_solver::CalculateCost(design& mydesign) {
+double ILP_solver::CalculateCost(const design& mydesign) const {
   ConstGraph const_graph;
   double cost = 0;
   cost += area;
@@ -2646,7 +2646,7 @@ double ILP_solver::CalculateCost(design& mydesign) {
   return cost;
 }
 
-double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
+double ILP_solver::CalculateCost(const design& mydesign, const SeqPair& curr_sp) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.CalculateCost");
 
   ConstGraph const_graph;
