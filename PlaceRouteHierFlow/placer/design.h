@@ -122,8 +122,8 @@ class design {
   bool is_first_ILP = true;
   double Aspect_Ratio[2] = {0, 100};
   double placement_box[2] = {-1.0, -1.0};
-  double maxBlockAreaSum = 0;
-  double maxBlockHPWLSum = 0;
+  double maxBlockAreaSum = 0.;
+  double maxBlockHPWLSum = 0.;
   string name = "";
 
   // added by ya
@@ -281,8 +281,9 @@ class design {
   PnRDB::point GetPlacedBlockInterMetalRelPoint(int blockid, placerDB::Omark ort, PnRDB::point& originP, int sel);
   void checkselfsym(vector<pair<int, int>>& tmpsympair, vector<pair<int, placerDB::Smark>>& tmpselfsym, placerDB::Smark tsmark);
 
-  double GetMaxBlockAreaSum();
-  double GetMaxBlockHPWLSum();
+  double GetMaxBlockAreaSum() const { return maxBlockAreaSum; }
+  double GetMaxBlockHPWLSum() const { return maxBlockHPWLSum; }
+
   ~design();
 
   size_t getSeqIndex(const vector<int>& seq) const;
