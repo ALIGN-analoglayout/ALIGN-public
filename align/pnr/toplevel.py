@@ -310,6 +310,8 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
     hyper.ALPHA = math.exp(math.log(hyper.T_MIN/hyper.T_INT)/1e4)
     # hyper.T_MIN = hyper.T_INT*(hyper.ALPHA**1e4)    # 10k iterations
     # hyper.ALPHA = 0.99925
+    # hyper.max_init_trial_count = 10000
+    # hyper.max_cache_hit_count = 10
     hyper.SEED = seed  # if seed==0, C++ code will use its default value. Else, C++ code will use the provided value.
     # hyper.COUNT_LIMIT = 200
     hyper.LAMBDA = lambda_coeff
