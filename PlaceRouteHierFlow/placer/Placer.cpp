@@ -717,8 +717,6 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   curr_sp.PrintSeqPair();
   double curr_cost = 0;
   int trial_count = 0;
-  const int max_trial_count = 10000;
-  const int max_trial_cache_count = 100;
   double mean_cache_miss{0};
   int num_perturb{0};
 
@@ -729,7 +727,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     logger->debug("Random number generator seed={0}", seed);
   }
 
-  while (++trial_count < max_trial_count) {
+  while (++trial_count < hyper.max_init_trial_count) {
     // curr_cost negative means infeasible (do not satisfy placement constraints)
     // Only positive curr_cost value is accepted.
     if (select_in_ILP)
@@ -746,7 +744,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       break;
     } else {
       int trial_cached = 0;
-      while (++trial_cached < max_trial_cache_count) {
+      while (++trial_cached < hyper.max_cache_hit_count) {
         if (!curr_sp.PerturbationNew(designData)) continue;
         if (!curr_sp.isSeqInCache(designData)) {
           break;
@@ -758,7 +756,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   }
 
   if (curr_cost < 0) {
-    logger->error("Couldn't generate a feasible solution even after {0} perturbations.", max_trial_count);
+    logger->error("Couldn't generate a feasible solution even after {0} perturbations.", hyper.max_init_trial_count);
     curr_cost = __DBL_MAX__;
   }
 
@@ -855,7 +853,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       // cout<<"before per"<<endl; trial_sp.PrintSeqPair();
       // SY: PerturbationNew honors order and symmetry. What could make the trial_sp infeasible? Aspect ratio, Align?
       int trial_cached = 0;
-      while (++trial_cached < max_trial_cache_count) {
+      while (++trial_cached < hyper.max_cache_hit_count) {
         if (!trial_sp.PerturbationNew(designData)) continue;
         if (!trial_sp.isSeqInCache(designData)) {
           break;
