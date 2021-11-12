@@ -476,6 +476,7 @@ struct hierNode {
   double HPWL_norm = -1;
   double constraint_penalty = -1;
   double cost = -1;
+  std::string compact_style = "left";
 };  // structure of vertex in heirarchical tree
 
 /// Part 3: declaration of structures for constraint data
@@ -686,6 +687,7 @@ struct design_info {
   int power_routing_metal_u;
   int h_skip_factor;
   int v_skip_factor;
+  std::string compact_style = "left";
 };
 
 struct Drc_info {

@@ -64,6 +64,7 @@ class design {
       string type;
       vector<placerDB::point> center;
       vector<placerDB::bbox> boundary;
+      PnRDB::bbox bbox;
       int netIter = -1;
     };
     vector<pin> blockPins;
@@ -123,8 +124,8 @@ class design {
   bool is_first_ILP = true;
   double Aspect_Ratio[2] = {0, 100};
   double placement_box[2] = {-1.0, -1.0};
-  double maxBlockAreaSum = 0;
-  double maxBlockHPWLSum = 0;
+  double maxBlockAreaSum = 0.;
+  double maxBlockHPWLSum = 0.;
   string name = "";
 
   // added by ya
@@ -200,6 +201,8 @@ class design {
   size_t getSeqIndex(const vector<int>& seq);
   size_t getSelIndex(const vector<int>& sel);
   std::uniform_int_distribution<int>* _rnd{nullptr};
+  enum class CompactStyle { L, R, C };
+  CompactStyle compact_style = CompactStyle::L;
 
   public:
   design();
@@ -207,6 +210,8 @@ class design {
   design(string blockfile, string netfile);
   design(string blockfile, string netfile, string cfile);
   int rand();
+  bool leftAlign() const { return compact_style == CompactStyle::L; }
+  bool rightAlign() const { return compact_style == CompactStyle::R; }
 
   // added by yg, the first one is to read in additional const, the other one is to generate random constrains.
   design(string blockfile, string netfile, string cfile, string random_const_file);
@@ -278,8 +283,9 @@ class design {
   PnRDB::point GetPlacedBlockInterMetalRelPoint(int blockid, placerDB::Omark ort, PnRDB::point& originP, int sel);
   void checkselfsym(vector<pair<int, int>>& tmpsympair, vector<pair<int, placerDB::Smark>>& tmpselfsym, placerDB::Smark tsmark);
 
-  double GetMaxBlockAreaSum();
-  double GetMaxBlockHPWLSum();
+  double GetMaxBlockAreaSum() const { return maxBlockAreaSum; }
+  double GetMaxBlockHPWLSum() const { return maxBlockHPWLSum; }
+
   ~design();
 
   size_t getSeqIndex(const vector<int>& seq) const;
