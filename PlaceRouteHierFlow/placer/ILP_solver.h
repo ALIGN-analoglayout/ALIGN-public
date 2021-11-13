@@ -14,6 +14,8 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <map>
+#include <set>
 
 #include "../PnRDB/datatype.h"
 #include "Aplace.h"
@@ -32,6 +34,21 @@ using std::pair;
 using std::stack;
 using std::string;
 using std::vector;
+
+
+class ExtremeBlocksOfNet {
+  private:
+    std::map<int, int> _posPosition, _negPosition;
+    std::set<int> _ltExtreme, _rtExtreme, _botExtreme, _topExtreme;
+  public:
+    ExtremeBlocksOfNet(const SeqPair& sp);
+    void FindExtremes(const placerDB::net& n);
+    bool InLeftExtreme(const int i) const { return _ltExtreme.find(i) != _ltExtreme.end(); }
+    bool InRightExtreme(const int i) const { return _rtExtreme.find(i) != _rtExtreme.end(); }
+    bool InTopExtreme(const int i) const { return _topExtreme.find(i) != _topExtreme.end(); }
+    bool InBottomExtreme(const int i) const { return _botExtreme.find(i) != _botExtreme.end(); }
+
+};
 
 class ILP_solver {
   friend class Placer;

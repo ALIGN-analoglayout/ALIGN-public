@@ -4,6 +4,59 @@
 
 #include "spdlog/spdlog.h"
 
+
+ExtremeBlocksOfNet::ExtremeBlocksOfNet(const SeqPair& sp)
+{
+  for (unsigned i = 0; i < sp.posPair.size(); ++i) {
+    _posPosition[sp.posPair[i]] = i;
+    _negPosition[sp.negPair[i]] = i;
+  }
+}
+
+void ExtremeBlocksOfNet::FindExtremes(const placerDB::net& n)
+{
+  _ltExtreme.clear(); _rtExtreme.clear();
+  _botExtreme.clear(); _topExtreme.clear();
+  std::set<int> blocks;
+  for (const auto& con : n.connected) {
+    if (con.type == placerDB::Block) {
+      blocks.insert(con.iter2);
+    }
+  }
+  std::vector<int> blks(blocks.begin(), blocks.end());
+  std::vector<int> abOf(blks.size(), 1), beOf(blks.size(), 1);
+  std::vector<int> ltOf(blks.size(), 1), rtOf(blks.size(), 1);
+  for (unsigned i = 0; i < blks.size(); ++i) {
+    const auto& blki = blks[i];
+    for (unsigned j = i+1; j < blks.size(); ++j) {
+      const auto& blkj = blks[j];
+      if (_posPosition[blki] < _posPosition[blkj]) {
+        if (_negPosition[blki] < _negPosition[blkj]) {
+          rtOf[i] = 0;
+          ltOf[j] = 0;
+        } else {
+          beOf[i] = 0;
+          abOf[j] = 0;
+        }
+      } else {
+        if (_negPosition[blki] > _negPosition[blkj]) {
+          rtOf[j] = 0;
+          ltOf[i] = 0;
+        } else {
+          abOf[i] = 0;
+          beOf[j] = 0;
+        }
+      }
+    }
+  }
+  for (unsigned i = 0; i < blks.size(); ++i) {
+    if (abOf[i]) _topExtreme.insert(blks[i]);
+    if (beOf[i]) _botExtreme.insert(blks[i]);
+    if (rtOf[i]) _rtExtreme.insert(blks[i]);
+    if (ltOf[i]) _ltExtreme.insert(blks[i]);
+  }
+}
+
 ILP_solver::ILP_solver() {}
 
 ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
@@ -1368,14 +1421,32 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
 
   // set_add_rowmode(lp, FALSE);
   {
+    ExtremeBlocksOfNet ebn{curr_sp};
     std::vector<double> row(N_var + 1, 0);
     ConstGraph const_graph;
     // add HPWL in cost
     for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
+
       if (mydesign.Nets[i].connected.size() < 2) continue;
+
+      ebn.FindExtremes(mydesign.Nets[i]);
+
+      int ind = int(mydesign.Blocks.size() * 4 + i * 4 + 1);
+      row.at(ind) = -const_graph.LAMBDA;
+      row.at(ind + 1) = -const_graph.LAMBDA;
+      row.at(ind + 2) = const_graph.LAMBDA;
+      row.at(ind + 3) = const_graph.LAMBDA;
+
       for (unsigned int j = 0; j < mydesign.Nets[i].connected.size(); j++) {
         if (mydesign.Nets[i].connected[j].type == placerDB::Block) {
-          int block_id = mydesign.Nets[i].connected[j].iter2, pin_id = mydesign.Nets[i].connected[j].iter;
+          const int block_id = mydesign.Nets[i].connected[j].iter2;
+          bool inleft = ebn.InLeftExtreme(block_id);
+          bool inright = ebn.InRightExtreme(block_id);
+          bool intop = ebn.InTopExtreme(block_id);
+          bool inbottom = ebn.InBottomExtreme(block_id);
+          if (!inleft && !inright && !intop && !inbottom) continue;
+
+          const int pin_id = mydesign.Nets[i].connected[j].iter;
           const auto& blk = mydesign.Blocks[block_id][curr_sp.selected[block_id]];
           int pin_llx = blk.width / 2,  pin_urx = blk.width / 2;
           int pin_lly = blk.height / 2, pin_ury = blk.height / 2;
@@ -1385,30 +1456,27 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
             pin_urx = blk.blockPins[pin_id].bbox.UR.x;
             pin_ury = blk.blockPins[pin_id].bbox.UR.y;
           }
-          int ind = int(mydesign.Blocks.size() * 4 + i * 4 + 1);
-          {
-            double sparserow[3] = {1,                1.*(blk.width - pin_llx - pin_urx), -1};
-            int    colno[3]     = {block_id * 4 + 1, block_id * 4 + 3,                   ind};
+          double deltax = 1.*(blk.width  - pin_llx - pin_urx);
+          double deltay = 1.*(blk.height - pin_lly - pin_ury);
+          if (inleft) {
+            double sparserow[3] = {1,                deltax,           -1};
+            int    colno[3]     = {block_id * 4 + 1, block_id * 4 + 3, ind};
             add_constraintex(lp, 3, sparserow, colno, GE, -pin_llx);
-            row.at(ind++) = -const_graph.LAMBDA;
           }
-          {
-            double sparserow[3] = {1,                1.*(blk.height - pin_lly - pin_ury), -1};
-            int    colno[3]     = {block_id * 4 + 2, block_id * 4 + 4,                   ind};
+          if (inbottom) {
+            double sparserow[3] = {1,                deltay,           -1};
+            int    colno[3]     = {block_id * 4 + 2, block_id * 4 + 4, ind + 1};
             add_constraintex(lp, 3, sparserow, colno, GE, -pin_lly);
-            row.at(ind++) = -const_graph.LAMBDA;
           }
-          {
-            double sparserow[3] = {1,                1.*(blk.width - pin_llx - pin_urx), -1};
-            int    colno[3]     = {block_id * 4 + 1, block_id * 4 + 3,                   ind};
+          if (inright) {
+            double sparserow[3] = {1,                deltax,           -1};
+            int    colno[3]     = {block_id * 4 + 1, block_id * 4 + 3, ind + 2};
             add_constraintex(lp, 3, sparserow, colno, LE, -pin_urx);
-            row.at(ind++) = const_graph.LAMBDA;
           }
-          {
-            double sparserow[3] = {1,                1.*(blk.height - pin_lly - pin_ury), -1};
-            int    colno[3]     = {block_id * 4 + 2, block_id * 4 + 4,                   ind};
+          if (intop) {
+            double sparserow[3] = {1,                deltay,           -1};
+            int    colno[3]     = {block_id * 4 + 2, block_id * 4 + 4, ind + 3};
             add_constraintex(lp, 3, sparserow, colno, LE, -pin_ury);
-            row.at(ind++) = const_graph.LAMBDA;
           }
         }
       }
