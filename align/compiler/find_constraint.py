@@ -290,9 +290,9 @@ def FindConst(subckt):
     logger.debug(f"Stop_points : {stop_points}")
 
     # Search symmetry constraints
-    # TODO move search after processing input const
     pp = process_input_const(subckt)
     if not auto_constraint:
+        logger.info(f"auto constraint off for {subckt.name}")
         return
 
     match_pairs = FindSymmetry(subckt, stop_points)
