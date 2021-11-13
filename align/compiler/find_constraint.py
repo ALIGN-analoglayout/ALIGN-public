@@ -369,7 +369,7 @@ class process_input_const:
                         elif key not in self.user_constrained_list:
                             self.user_constrained_list.append(key)
                             pairsj.append([key])
-                    if len(pairsj) > 1 or len(pairsj[0]) > 1:
+                    if len(pairsj) > 1 or (len(pairsj) == 1 and len(pairsj[0]) > 1):
                         symmBlock = constraint.SymmetricBlocks(direction="V", pairs=pairsj)
                         new_symmblock_const.append(symmBlock)
         with set_context(self.iconst):

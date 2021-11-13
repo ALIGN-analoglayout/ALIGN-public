@@ -539,6 +539,7 @@ class CompactPlacement(SoftConstraint):
         'center'
     ] = 'left'
 
+
 class SameTemplate(SoftConstraint):
     instances: List[str]
 
