@@ -18,9 +18,9 @@ The goal of ALIGN is to automatically translate an unannotated (or partially ann
    :maxdepth: 1
    :caption: Notes:
 
+   notes/flow
    notes/installation
    notes/introduction
-   notes/flow
    notes/viewer
    notes/debug
    notes/const
@@ -38,6 +38,8 @@ The goal of ALIGN is to automatically translate an unannotated (or partially ann
    :glob:
    :maxdepth: 1
    :caption: Package Reference
+   :titlesonly:
+   :hidden:
 
    modules/modules
    modules/align
@@ -54,7 +56,7 @@ The goal of ALIGN is to automatically translate an unannotated (or partially ann
    modules/align.gui
 
 .. contents:: Table of Contents
-   :depth: 1
+   :depth: 2
    :local:
    :backlinks: none
 

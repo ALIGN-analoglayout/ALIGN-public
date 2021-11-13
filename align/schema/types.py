@@ -5,6 +5,7 @@ __all__ = [
     'NamedTuple', 'Literal',
     'ClassVar', 'PrivateAttr'
 ]
+
 # Pass through directly from typing
 from typing import \
     Optional, \

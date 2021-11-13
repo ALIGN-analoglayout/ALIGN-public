@@ -90,6 +90,8 @@ class Order(HardConstraint):
     '''
     All `instances` will be ordered along `direction`
 
+    .. image:: ../images/OrderBlocks.PNG
+
     WARNING: `Order` does not imply aligment / overlap
     of any sort (See `Align`)
 
@@ -159,6 +161,8 @@ class Align(HardConstraint):
     '''
     `instances` will be aligned along `line`. Could be
     strict or relaxed depending on value of `line`
+
+    .. image:: ../images/AlignBlocks.PNG
 
     WARNING: `Align` does not imply ordering of any sort
     (See `Order`)
@@ -507,7 +511,7 @@ class PlaceSymmetric(SoftConstraint):
     effect can be realized using `Align` & `Group`
 
     For example:
-    `instances` = [['1'], ['4', '5'], ['2', '3'], ['6']],
+    `instances` = [['1'], ['4', '5'], ['2', '3'], ['6']]
     `direction` = 'vertical'
        1   |  5 4  |   6   |  4 5  |   1   |  5 4
       4 5  |   1   |  5 4  |   6   |   6   |   1
@@ -525,6 +529,7 @@ class PlaceSymmetric(SoftConstraint):
         Align(1, X, Y, 6, 'center')
 
         '''
+
         assert len(value) >= 1, 'Must contain at least one instance'
         assert all(isinstance(x, List) for x in value), f'All arguments must be of type list in {self.instances}'
         return value
@@ -665,6 +670,19 @@ class DoNotIdentify(SoftConstraint):
 
 
 class SymmetricBlocks(SoftConstraint):
+    """SymmetricBlocks [summary]
+
+    .. image:: ../images/SymmetricBlocks.PNG
+
+
+    [extended_summary]
+
+    Args:
+        SoftConstraint ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
     pairs: List[List[str]]
     direction: Literal['H', 'V']
 
@@ -705,6 +723,9 @@ class SymmetricBlocks(SoftConstraint):
 class BlockDistance(SoftConstraint):
     '''
     TODO: Replace with Spread
+
+    .. image:: ../images/HorizontalDistance.PNG
+
     '''
     abs_distance: int
 
@@ -712,6 +733,9 @@ class BlockDistance(SoftConstraint):
 class VerticalDistance(SoftConstraint):
     '''
     TODO: Replace with Spread
+
+    .. image:: ../images/VerticalDistance.PNG
+
     '''
     abs_distance: int
 
@@ -719,6 +743,9 @@ class VerticalDistance(SoftConstraint):
 class HorizontalDistance(SoftConstraint):
     '''
     TODO: Replace with Spread
+
+    .. image:: ../images/HorizontalDistance.PNG
+
     '''
     abs_distance: int
 
