@@ -41,7 +41,6 @@ The goal of ALIGN is to automatically translate an unannotated (or partially ann
    :titlesonly:
    :hidden:
 
-   modules/modules
    modules/align
    modules/align.schema
    modules/align.compiler

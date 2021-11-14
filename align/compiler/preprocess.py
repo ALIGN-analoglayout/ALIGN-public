@@ -274,10 +274,12 @@ def add_parallel_devices(ckt, update=True):
         merge devices in parallel as single unit
         Keeps 1st device out of sorted list
         #TODO Optimize later
-    Args:
+
+    Parameters:
         ckt ([type]): [description]
         update (bool, optional): [description]. Defaults to True.
     """
+
     if update == False:
         return
     logger.debug(
@@ -311,10 +313,13 @@ def add_series_devices(ckt, update=True):
         merge devices in parallel as single unit
         Keeps 1st device out of sorted list
         #TODO Optimize later
-    Args:
+
+    Parameters:
+
         ckt ([type]): [description]
         update (bool, optional): [description]. Defaults to True.
     """
+
     if update == False:
         return
     logger.debug(
