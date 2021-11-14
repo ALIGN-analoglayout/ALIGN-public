@@ -43,7 +43,6 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.mathjax',
     'sphinx.ext.githubpages',
-    'myst_parser'
 ]
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
