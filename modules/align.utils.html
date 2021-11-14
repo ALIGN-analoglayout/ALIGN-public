@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>align.utils package &mdash; ALIGN</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="align.schema package" href="align.schema.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html"><img src="../_static/LOGO.PNG" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Notes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../notes/flow.html">ALIGN: flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/flow.html#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/flow.html#outputs">Outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-0-check-prerequisites">Step 0: Check prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-1-clone-the-align-source-code-to-your-local-environment">Step 1: Clone the ALIGN source code to your local environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-2-create-a-python-virtualenv">Step 2: Create a Python virtualenv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-3a-install-align-as-a-user">Step 3a: Install ALIGN as a USER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-3b-install-align-as-a-developer">Step 3b: Install ALIGN as a DEVELOPER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-4-run-align">Step 4: Run ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-5-view-layout">Step 5: View layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/introduction.html">Introduction by Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/viewer.html">Layout viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/viewer.html#klayout-viewer">KLayout viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/viewer.html#align-viewer">ALIGN viewer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/debug.html">Debug</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#reinstalling-align">Reinstalling ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/const.html">Constraints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/const.html#constraint-options">Constraint options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/const.html#example-constraints">Example constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/upcoming.html">Upcoming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/upcoming.html#how-to-add-your-own-pdk">How to add your own pdk</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Datasets:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../notes/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/database.html">Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/database.html#sized-netlists">Sized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/database.html#unsized-netlists">Unsized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/database.html#generalized-testbenches">Generalized testbenches</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="align.html">align package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.gui.html">align.gui package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.pdk.html">align.pdk package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.primitive.html">align.primitive package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.schema.html">align.schema package</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">align.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="align.schema.html">align.schema package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.primitive.html">align.primitive package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="align.primitive.default.html">align.primitive.default package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.pdk.html">align.pdk package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="align.pdk.finfet.html">align.pdk.finfet package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.primitive.default.html">align.primitive.default package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.pdk.finfet.html">align.pdk.finfet package</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">align.utils package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.gui.html">align.gui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ALIGN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="align.html">align package</a> &raquo;</li>
+      <li>align.utils package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/modules/align.utils.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="align-utils-package">
+<h1>align.utils package<a class="headerlink" href="#align-utils-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-align.utils.gds2png">
+<span id="align-utils-gds2png-module"></span><h2>align.utils.gds2png module<a class="headerlink" href="#module-align.utils.gds2png" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="align.utils.gds2png.generate_png">
+<code class="sig-prename descclassname">align.utils.gds2png.</code><code class="sig-name descname">generate_png</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">working_dir</span></em>, <em class="sig-param"><span class="n">variant</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/utils/gds2png.html#generate_png"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.utils.gds2png.generate_png" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-align.utils.logging_local">
+<span id="align-utils-logging-local-module"></span><h2>align.utils.logging_local module<a class="headerlink" href="#module-align.utils.logging_local" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="align.utils.logging_local.StreamLogger">
+<em class="property">class </em><code class="sig-prename descclassname">align.utils.logging_local.</code><code class="sig-name descname">StreamLogger</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">level</span><span class="o">=</span><span class="default_value">'INFO'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/utils/logging_local.html#StreamLogger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.utils.logging_local.StreamLogger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Stream object that redirects writes to logger</p>
+<dl class="py method">
+<dt id="align.utils.logging_local.StreamLogger.flush">
+<code class="sig-name descname">flush</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/utils/logging_local.html#StreamLogger.flush"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.utils.logging_local.StreamLogger.flush" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.utils.logging_local.StreamLogger.write">
+<code class="sig-name descname">write</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">buf</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/utils/logging_local.html#StreamLogger.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.utils.logging_local.StreamLogger.write" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="align.utils.logging_local.configure_logging">
+<code class="sig-prename descclassname">align.utils.logging_local.</code><code class="sig-name descname">configure_logging</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/utils/logging_local.html#configure_logging"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.utils.logging_local.configure_logging" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.utils.logging_local.get_loglevels">
+<code class="sig-prename descclassname">align.utils.logging_local.</code><code class="sig-name descname">get_loglevels</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/utils/logging_local.html#get_loglevels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.utils.logging_local.get_loglevels" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.utils.logging_local.reconfigure_loglevels">
+<code class="sig-prename descclassname">align.utils.logging_local.</code><code class="sig-name descname">reconfigure_loglevels</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_level</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">console_level</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/utils/logging_local.html#reconfigure_loglevels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.utils.logging_local.reconfigure_loglevels" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-align.utils.logmanager">
+<span id="align-utils-logmanager-module"></span><h2>align.utils.logmanager module<a class="headerlink" href="#module-align.utils.logmanager" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="align.utils.logmanager.StreamLogger">
+<em class="property">class </em><code class="sig-prename descclassname">align.utils.logmanager.</code><code class="sig-name descname">StreamLogger</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">level</span><span class="o">=</span><span class="default_value">'INFO'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/utils/logmanager.html#StreamLogger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.utils.logmanager.StreamLogger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Stream object that redirects writes to logger</p>
+<dl class="py method">
+<dt id="align.utils.logmanager.StreamLogger.flush">
+<code class="sig-name descname">flush</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/utils/logmanager.html#StreamLogger.flush"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.utils.logmanager.StreamLogger.flush" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.utils.logmanager.StreamLogger.write">
+<code class="sig-name descname">write</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">buf</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/utils/logmanager.html#StreamLogger.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.utils.logmanager.StreamLogger.write" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="align.utils.logmanager.configure_logging">
+<code class="sig-prename descclassname">align.utils.logmanager.</code><code class="sig-name descname">configure_logging</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/utils/logmanager.html#configure_logging"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.utils.logmanager.configure_logging" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.utils.logmanager.get_loglevels">
+<code class="sig-prename descclassname">align.utils.logmanager.</code><code class="sig-name descname">get_loglevels</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/utils/logmanager.html#get_loglevels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.utils.logmanager.get_loglevels" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.utils.logmanager.reconfigure_loglevels">
+<code class="sig-prename descclassname">align.utils.logmanager.</code><code class="sig-name descname">reconfigure_loglevels</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_level</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">console_level</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/utils/logmanager.html#reconfigure_loglevels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.utils.logmanager.reconfigure_loglevels" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-align.utils">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-align.utils" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="align.schema.html" class="btn btn-neutral float-left" title="align.schema package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, ALIGN team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

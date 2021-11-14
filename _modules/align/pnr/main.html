@@ -1,44 +1,150 @@
-
 <!DOCTYPE html>
-
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>align.pnr.main &#8212; ALIGN</title>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>align.pnr.main &mdash; ALIGN</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
-    
-    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/doctools.js"></script>
-    
+      <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
-  </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">align.pnr.main</a></li> 
-      </ul>
-    </div>  
+</head>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html"><img src="../../../_static/LOGO.PNG" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Notes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/flow.html">ALIGN: flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/flow.html#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/flow.html#outputs">Outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-0-check-prerequisites">Step 0: Check prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-1-clone-the-align-source-code-to-your-local-environment">Step 1: Clone the ALIGN source code to your local environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-2-create-a-python-virtualenv">Step 2: Create a Python virtualenv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-3a-install-align-as-a-user">Step 3a: Install ALIGN as a USER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-3b-install-align-as-a-developer">Step 3b: Install ALIGN as a DEVELOPER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-4-run-align">Step 4: Run ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-5-view-layout">Step 5: View layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/introduction.html">Introduction by Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/viewer.html">Layout viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/viewer.html#klayout-viewer">KLayout viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/viewer.html#align-viewer">ALIGN viewer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/debug.html">Debug</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#reinstalling-align">Reinstalling ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/const.html">Constraints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/const.html#constraint-options">Constraint options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/const.html#example-constraints">Example constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/upcoming.html">Upcoming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/upcoming.html#how-to-add-your-own-pdk">How to add your own pdk</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Datasets:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/database.html">Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#sized-netlists">Sized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#unsized-netlists">Unsized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#generalized-testbenches">Generalized testbenches</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.html">align package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.gui.html">align.gui package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pdk.html">align.pdk package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.primitive.html">align.primitive package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.utils.html">align.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.primitive.html">align.primitive package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.primitive.default.html">align.primitive.default package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pdk.html">align.pdk package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.primitive.default.html">align.primitive.default package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.utils.html">align.utils package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.gui.html">align.gui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ALIGN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>align.pnr.main</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
   <h1>Source code for align.pnr.main</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">subprocess</span>
+<span></span><span class="kn">from</span> <span class="nn">align.schema</span> <span class="kn">import</span> <span class="n">constraint</span>
 <span class="kn">import</span> <span class="nn">pathlib</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">io</span>
@@ -47,57 +153,63 @@
 <span class="kn">import</span> <span class="nn">collections</span>
 <span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="c1">#from IPython import embed</span>
+<span class="kn">import</span> <span class="nn">copy</span>
 
-<span class="kn">from</span> <span class="nn">.db</span> <span class="kn">import</span> <span class="n">hierNode</span>
-<span class="kn">from</span> <span class="nn">.checkers</span> <span class="kn">import</span> <span class="n">gen_viewer_json</span>
-<span class="kn">from</span> <span class="nn">..cell_fabric</span> <span class="kn">import</span> <span class="n">gen_gds_json</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span><span class="p">,</span> <span class="n">defaultdict</span>
+
+<span class="kn">from</span> <span class="nn">..cell_fabric.pdk</span> <span class="kn">import</span> <span class="n">Pdk</span>
+
+<span class="kn">from</span> <span class="nn">.checkers</span> <span class="kn">import</span> <span class="n">gen_viewer_json</span><span class="p">,</span> <span class="n">gen_transformation</span>
+<span class="kn">from</span> <span class="nn">..cell_fabric</span> <span class="kn">import</span> <span class="n">gen_gds_json</span><span class="p">,</span> <span class="n">transformation</span>
+<span class="kn">from</span> <span class="nn">.write_constraint</span> <span class="kn">import</span> <span class="n">PnRConstraintWriter</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">PnR</span>
+<span class="kn">from</span> <span class="nn">.toplevel</span> <span class="kn">import</span> <span class="n">toplevel</span>
+<span class="kn">from</span> <span class="nn">..schema.hacks</span> <span class="kn">import</span> <span class="n">VerilogJsonTop</span><span class="p">,</span> <span class="n">VerilogJsonModule</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">_generate_json</span><span class="p">(</span> <span class="o">*</span><span class="p">,</span> <span class="n">dbfile</span><span class="p">,</span> <span class="n">variant</span><span class="p">,</span> <span class="n">primitive_dir</span><span class="p">,</span> <span class="n">pdk_dir</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">extract</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">input_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">toplevel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">gds_json</span><span class="o">=</span><span class="kc">True</span> <span class="p">):</span>
+<span class="kn">from</span> <span class="nn">memory_profiler</span> <span class="kn">import</span> <span class="n">profile</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;_generate_json: </span><span class="si">{</span><span class="n">dbfile</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">variant</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">primitive_dir</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pdk_dir</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">output_dir</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">check</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">extract</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">input_dir</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">toplevel</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">gds_json</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_generate_json</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">hN</span><span class="p">,</span> <span class="n">variant</span><span class="p">,</span> <span class="n">primitive_dir</span><span class="p">,</span> <span class="n">pdk_dir</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="n">extract</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">input_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">toplevel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">gds_json</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 
-    <span class="n">ret</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dbfile</span><span class="p">,</span><span class="s2">&quot;rt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
-        <span class="n">hN</span> <span class="o">=</span> <span class="n">hierNode</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;_generate_json: </span><span class="si">{</span><span class="n">hN</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">variant</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">primitive_dir</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pdk_dir</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">output_dir</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">extract</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">input_dir</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">toplevel</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">gds_json</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">toplevel</span><span class="p">:</span>
-        <span class="c1"># Check name matches n_copy number (top down flow)</span>
-        <span class="n">p2</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span> <span class="sa">r</span><span class="s2">&quot;^(\S+)_(\d+)_(\d+)$&quot;</span><span class="p">)</span>
-        <span class="n">m</span> <span class="o">=</span> <span class="n">p2</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">variant</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="n">m</span>
-        <span class="n">ncpy</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
-        <span class="k">assert</span> <span class="n">ncpy</span> <span class="o">==</span> <span class="n">hN</span><span class="o">.</span><span class="n">n_copy</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;n_copy </span><span class="si">{</span><span class="n">hN</span><span class="o">.</span><span class="n">n_copy</span><span class="si">}</span><span class="s2"> should be same as in the variant name </span><span class="si">{</span><span class="n">variant</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">ncpy</span><span class="si">}</span><span class="s2">&quot;</span>
-
-    <span class="n">res</span> <span class="o">=</span> <span class="n">gen_viewer_json</span><span class="p">(</span> <span class="n">hN</span><span class="p">,</span> <span class="n">pdkdir</span><span class="o">=</span><span class="n">pdk_dir</span><span class="p">,</span> <span class="n">draw_grid</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">json_dir</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">primitive_dir</span><span class="p">),</span> <span class="n">checkOnly</span><span class="o">=</span><span class="p">(</span><span class="n">check</span> <span class="ow">or</span> <span class="n">extract</span> <span class="ow">or</span> <span class="n">gds_json</span><span class="p">),</span> <span class="n">extract</span><span class="o">=</span><span class="n">extract</span><span class="p">,</span> <span class="n">input_dir</span><span class="o">=</span><span class="n">input_dir</span><span class="p">,</span> <span class="n">toplevel</span><span class="o">=</span><span class="n">toplevel</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">check</span> <span class="ow">or</span> <span class="n">extract</span> <span class="ow">or</span> <span class="n">gds_json</span><span class="p">:</span>
-        <span class="n">cnv</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">res</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">d</span> <span class="o">=</span> <span class="n">res</span>
+    <span class="n">cnv</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">gen_viewer_json</span><span class="p">(</span><span class="n">hN</span><span class="p">,</span> <span class="n">pdkdir</span><span class="o">=</span><span class="n">pdk_dir</span><span class="p">,</span> <span class="n">draw_grid</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">json_dir</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">primitive_dir</span><span class="p">),</span>
+                             <span class="n">extract</span><span class="o">=</span><span class="n">extract</span><span class="p">,</span> <span class="n">input_dir</span><span class="o">=</span><span class="n">input_dir</span><span class="p">,</span> <span class="n">toplevel</span><span class="o">=</span><span class="n">toplevel</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">gds_json</span> <span class="ow">and</span> <span class="n">toplevel</span><span class="p">:</span>
         <span class="c1"># Hack in Outline layer</span>
         <span class="c1"># Should be part of post processor</span>
-        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;terminals&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">{</span> <span class="s2">&quot;layer&quot;</span><span class="p">:</span> <span class="s2">&quot;Outline&quot;</span><span class="p">,</span> <span class="s2">&quot;netName&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;rect&quot;</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">]})</span>
+        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;terminals&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;layer&quot;</span><span class="p">:</span> <span class="s2">&quot;Outline&quot;</span><span class="p">,</span> <span class="s2">&quot;netName&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;netType&quot;</span><span class="p">:</span> <span class="s2">&quot;drawing&quot;</span><span class="p">,</span> <span class="s2">&quot;rect&quot;</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">]})</span>
+
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;json&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">variant</span><span class="si">}</span><span class="s1">.json&#39;</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span> <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;json&#39;</span><span class="p">],</span> <span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
-        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span> <span class="n">d</span><span class="p">,</span> <span class="n">fp</span><span class="o">=</span><span class="n">fp</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ret</span><span class="p">[</span><span class="s1">&#39;json&#39;</span><span class="p">],</span> <span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">fp</span><span class="o">=</span><span class="n">fp</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;OUTPUT json at </span><span class="si">{</span><span class="n">ret</span><span class="p">[</span><span class="s1">&#39;json&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">check</span><span class="p">:</span>
-        <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;errfile&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">variant</span><span class="si">}</span><span class="s1">.errors&#39;</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ret</span><span class="p">[</span><span class="s1">&#39;errfile&#39;</span><span class="p">],</span> <span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cnv</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">shorts</span><span class="p">:</span> <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;SHORT </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cnv</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">opens</span><span class="p">:</span> <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;OPEN </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-            <span class="c1">#for x in cnv.rd.different_widths: fp.write( f&#39;DIFFERENT WIDTH {x}\n&#39;)</span>
-            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cnv</span><span class="o">.</span><span class="n">drc</span><span class="o">.</span><span class="n">errors</span><span class="p">:</span> <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;DRC ERROR </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;errors&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cnv</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">shorts</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">cnv</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">opens</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">cnv</span><span class="o">.</span><span class="n">drc</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;errors&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ret</span><span class="p">[</span><span class="s1">&#39;errors&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> LVS / DRC errors found !!!&quot;</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;OUTPUT error file at </span><span class="si">{</span><span class="n">ret</span><span class="p">[</span><span class="s1">&#39;errors&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;errfile&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">variant</span><span class="si">}</span><span class="s1">.errors&#39;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ret</span><span class="p">[</span><span class="s1">&#39;errfile&#39;</span><span class="p">],</span> <span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cnv</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">shorts</span><span class="p">:</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;SHORT </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cnv</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">opens</span><span class="p">:</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;OPEN </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cnv</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">different_widths</span><span class="p">:</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;DIFFERENT WIDTH </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cnv</span><span class="o">.</span><span class="n">drc</span><span class="o">.</span><span class="n">errors</span><span class="p">:</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;DRC ERROR </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cnv</span><span class="o">.</span><span class="n">postprocessor</span><span class="o">.</span><span class="n">errors</span><span class="p">:</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;POSTPROCESSOR ERROR </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;errors&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cnv</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">shorts</span><span class="p">)</span> <span class="o">+</span> \
+        <span class="nb">len</span><span class="p">(</span><span class="n">cnv</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">opens</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">cnv</span><span class="o">.</span><span class="n">drc</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;errors&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ret</span><span class="p">[</span><span class="s1">&#39;errors&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> LVS / DRC errors found !!!&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;OUTPUT error file at </span><span class="si">{</span><span class="n">ret</span><span class="p">[</span><span class="s1">&#39;errfile&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">extract</span><span class="p">:</span>
         <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;cir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">variant</span><span class="si">}</span><span class="s1">.cir&#39;</span>
@@ -105,207 +217,384 @@
             <span class="n">cnv</span><span class="o">.</span><span class="n">pex</span><span class="o">.</span><span class="n">writePex</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;OUTPUT extracted netlist at </span><span class="si">{</span><span class="n">ret</span><span class="p">[</span><span class="s1">&#39;cir&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-
     <span class="k">if</span> <span class="n">gds_json</span><span class="p">:</span>
         <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;python_gds_json&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">variant</span><span class="si">}</span><span class="s1">.python.gds.json&#39;</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span> <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;json&#39;</span><span class="p">],</span> <span class="s1">&#39;rt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ifp</span><span class="p">:</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span> <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;python_gds_json&#39;</span><span class="p">],</span> <span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ofp</span><span class="p">:</span>
-                <span class="n">gen_gds_json</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span> <span class="n">hN</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ifp</span><span class="p">,</span> <span class="n">ofp</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">cnv</span><span class="o">.</span><span class="n">pdk</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ret</span><span class="p">[</span><span class="s1">&#39;json&#39;</span><span class="p">],</span> <span class="s1">&#39;rt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ifp</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ret</span><span class="p">[</span><span class="s1">&#39;python_gds_json&#39;</span><span class="p">],</span> <span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ofp</span><span class="p">:</span>
+                <span class="n">gen_gds_json</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span>
+                    <span class="n">hN</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ifp</span><span class="p">,</span> <span class="n">ofp</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">cnv</span><span class="o">.</span><span class="n">pdk</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;OUTPUT gds.json </span><span class="si">{</span><span class="n">ret</span><span class="p">[</span><span class="s1">&#39;python_gds_json&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">ret</span>
 
-<div class="viewcode-block" id="generate_pnr"><a class="viewcode-back" href="../../../align.pnr.html#align.pnr.main.generate_pnr">[docs]</a><span class="k">def</span> <span class="nf">generate_pnr</span><span class="p">(</span><span class="n">topology_dir</span><span class="p">,</span> <span class="n">primitive_dir</span><span class="p">,</span> <span class="n">pdk_dir</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="n">subckt</span><span class="p">,</span> <span class="n">nvariants</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">effort</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">extract</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">gds_json</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="gen_constraint_files"><a class="viewcode-back" href="../../../modules/align.pnr.html#align.pnr.main.gen_constraint_files">[docs]</a><span class="k">def</span> <span class="nf">gen_constraint_files</span><span class="p">(</span> <span class="n">verilog_d</span><span class="p">,</span> <span class="n">input_dir</span><span class="p">):</span>
+    <span class="n">pnr_const_ds</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">verilog_d</span><span class="p">[</span><span class="s1">&#39;modules&#39;</span><span class="p">]:</span>
+        <span class="n">nm</span> <span class="o">=</span> <span class="n">module</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="n">pnr_const_ds</span><span class="p">[</span><span class="n">nm</span><span class="p">]</span> <span class="o">=</span> <span class="n">PnRConstraintWriter</span><span class="p">()</span><span class="o">.</span><span class="n">map_valid_const</span><span class="p">(</span><span class="n">module</span><span class="p">[</span><span class="s1">&#39;constraints&#39;</span><span class="p">])</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Running Place &amp; Route for </span><span class="si">{</span><span class="n">subckt</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">constraint_files</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">nm</span><span class="p">,</span> <span class="n">constraints</span> <span class="ow">in</span> <span class="n">pnr_const_ds</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="n">input_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">nm</span><span class="si">}</span><span class="s1">.pnr.const.json&#39;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outfile</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">constraints</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 
-    <span class="c1"># Check to make sure pnr_compiler is available to begin with</span>
-    <span class="k">assert</span> <span class="s1">&#39;ALIGN_HOME&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">,</span> <span class="s2">&quot;ALIGN_HOME not in environment&quot;</span>
-    <span class="n">compiler_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;ALIGN_HOME&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span> <span class="o">/</span> <span class="s1">&#39;PlaceRouteHierFlow&#39;</span> <span class="o">/</span> <span class="s1">&#39;pnr_compiler&#39;</span>
-    <span class="k">assert</span> <span class="n">compiler_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">compiler_path</span><span class="si">}</span><span class="s2"> not found. Has it been built?&quot;</span>
+    <span class="k">return</span> <span class="n">constraint_files</span><span class="p">,</span> <span class="n">pnr_const_ds</span></div>
 
-    <span class="n">sys</span><span class="o">.</span><span class="n">setdlopenflags</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">RTLD_GLOBAL</span><span class="o">|</span><span class="n">os</span><span class="o">.</span><span class="n">RTLD_LAZY</span><span class="p">)</span>
+<div class="viewcode-block" id="extract_capacitor_constraints"><a class="viewcode-back" href="../../../modules/align.pnr.html#align.pnr.main.extract_capacitor_constraints">[docs]</a><span class="k">def</span> <span class="nf">extract_capacitor_constraints</span><span class="p">(</span> <span class="n">pnr_const_ds</span><span class="p">):</span>
+    <span class="n">cap_constraints</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">nm</span><span class="p">,</span> <span class="n">pnr_const_d</span> <span class="ow">in</span> <span class="n">pnr_const_ds</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">cap_constraints</span><span class="p">[</span><span class="n">nm</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="n">const</span><span class="p">[</span><span class="s1">&#39;cap_name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="p">:</span> <span class="n">const</span> <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="n">pnr_const_d</span><span class="p">[</span><span class="s1">&#39;constraints&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">const</span><span class="p">[</span><span class="s1">&#39;const_name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;CC&quot;</span><span class="p">}</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;cap_constraints: </span><span class="si">{</span><span class="n">cap_constraints</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
-    <span class="kn">import</span> <span class="nn">PnR</span>
+    <span class="k">return</span> <span class="n">cap_constraints</span></div>
 
-    <span class="c1"># Create working &amp; input directories</span>
-    <span class="n">working_dir</span> <span class="o">=</span> <span class="n">output_dir</span>
-    <span class="n">working_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">input_dir</span> <span class="o">=</span> <span class="n">working_dir</span> <span class="o">/</span> <span class="s1">&#39;inputs&#39;</span>
-    <span class="n">input_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">results_dir</span> <span class="o">=</span> <span class="n">working_dir</span> <span class="o">/</span> <span class="s1">&#39;Results&#39;</span>
 
-    <span class="c1"># Generate file name inputs</span>
+<div class="viewcode-block" id="remove_pg_pins"><a class="viewcode-back" href="../../../modules/align.pnr.html#align.pnr.main.remove_pg_pins">[docs]</a><span class="k">def</span> <span class="nf">remove_pg_pins</span><span class="p">(</span><span class="n">verilog_d</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">subckt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pg_connections</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;remove_pg_pins</span>
+
+<span class="sd">    Removes any ports related to power pins. PnR engine cannot connect to subcircuit power pins.</span>
+<span class="sd">    It can connect to a primitive power pin</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        verilog_d (dict): spice dict from compiler</span>
+<span class="sd">        subckt (str): name of sub-circuit</span>
+<span class="sd">        pg_pins (list): list of power pins in subckt to be removed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;removing power pins </span><span class="si">{</span><span class="n">pg_connections</span><span class="si">}</span><span class="s2"> from subckt </span><span class="si">{</span><span class="n">subckt</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">modules_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">module</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]:</span> <span class="n">module</span><span class="p">[</span><span class="s1">&#39;parameters&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">verilog_d</span><span class="p">[</span><span class="s1">&#39;modules&#39;</span><span class="p">]}</span>
+
+    <span class="k">if</span> <span class="n">subckt</span> <span class="ow">in</span> <span class="n">modules_dict</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">elif</span> <span class="n">subckt</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="ow">in</span> <span class="n">modules_dict</span><span class="p">:</span>
+        <span class="n">subckt</span> <span class="o">=</span> <span class="n">subckt</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">subckt</span><span class="si">}</span><span class="s2"> not found in design </span><span class="si">{</span><span class="n">modules_dict</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">modules</span> <span class="o">=</span> <span class="p">[</span><span class="n">module</span> <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">verilog_d</span><span class="p">[</span><span class="s1">&#39;modules&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">module</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">subckt</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">modules</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;duplicate modules are found </span><span class="si">{</span><span class="n">modules</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">module</span> <span class="o">=</span> <span class="n">modules</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># Remove port from subckt level</span>
+    <span class="n">module</span><span class="p">[</span><span class="s1">&#39;parameters&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">module</span><span class="p">[</span><span class="s1">&#39;parameters&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">p</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pg_connections</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+    <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="n">module</span><span class="p">[</span><span class="s1">&#39;instances&#39;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">inst</span><span class="p">[</span><span class="s1">&#39;abstract_template_name&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">modules_dict</span><span class="p">:</span>
+            <span class="c1"># Inst pins connected to pg_pins</span>
+            <span class="n">hier_pg_connections</span> <span class="o">=</span> <span class="p">{</span><span class="n">conn</span><span class="p">[</span><span class="s2">&quot;formal&quot;</span><span class="p">]:</span> <span class="n">pg_connections</span><span class="p">[</span><span class="n">conn</span><span class="p">[</span><span class="s2">&quot;actual&quot;</span><span class="p">]]</span> <span class="k">for</span> <span class="n">conn</span> <span class="ow">in</span> <span class="n">inst</span><span class="p">[</span><span class="s1">&#39;fa_map&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">conn</span><span class="p">[</span><span class="s2">&quot;actual&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">pg_connections</span><span class="p">}</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hier_pg_connections</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Removing instance </span><span class="si">{</span><span class="n">inst</span><span class="p">[</span><span class="s1">&#39;instance_name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> pins connected to </span><span class="si">{</span><span class="n">hier_pg_connections</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">inst</span><span class="p">[</span><span class="s1">&#39;fa_map&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">conn</span> <span class="k">for</span> <span class="n">conn</span> <span class="ow">in</span> <span class="n">inst</span><span class="p">[</span><span class="s1">&#39;fa_map&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">conn</span><span class="p">[</span><span class="s2">&quot;formal&quot;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">hier_pg_connections</span><span class="p">]</span>
+                <span class="c1"># Creates a copy of module with reduced pins</span>
+                <span class="n">new_name</span> <span class="o">=</span> <span class="n">modify_pg_conn_subckt</span><span class="p">(</span><span class="n">verilog_d</span><span class="p">,</span> <span class="n">inst</span><span class="p">[</span><span class="s1">&#39;abstract_template_name&#39;</span><span class="p">],</span> <span class="n">hier_pg_connections</span><span class="p">)</span>
+                <span class="n">inst</span><span class="p">[</span><span class="s1">&#39;abstract_template_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_name</span>
+                <span class="n">remove_pg_pins</span><span class="p">(</span><span class="n">verilog_d</span><span class="p">,</span> <span class="n">new_name</span><span class="p">,</span> <span class="n">hier_pg_connections</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">inst</span><span class="p">[</span><span class="s1">&#39;fa_map&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;formal&#39;</span><span class="p">:</span> <span class="n">conn</span><span class="p">[</span><span class="s1">&#39;formal&#39;</span><span class="p">],</span>
+                               <span class="s1">&#39;actual&#39;</span><span class="p">:</span> <span class="n">pg_connections</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">conn</span><span class="p">[</span><span class="s2">&quot;actual&quot;</span><span class="p">],</span> <span class="n">conn</span><span class="p">[</span><span class="s2">&quot;actual&quot;</span><span class="p">])}</span> <span class="k">for</span> <span class="n">conn</span> <span class="ow">in</span> <span class="n">inst</span><span class="p">[</span><span class="s1">&#39;fa_map&#39;</span><span class="p">]]</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;leaf level node </span><span class="si">{</span><span class="n">inst</span><span class="p">[</span><span class="s1">&#39;instance_name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">inst</span><span class="p">[</span><span class="s1">&#39;abstract_template_name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="clean_if_extra"><a class="viewcode-back" href="../../../modules/align.pnr.html#align.pnr.main.clean_if_extra">[docs]</a><span class="k">def</span> <span class="nf">clean_if_extra</span><span class="p">(</span><span class="n">verilog_d</span><span class="p">,</span> <span class="n">subckt</span><span class="p">):</span>
+    <span class="c1">#Remove modules which are not instantiated</span>
+    <span class="n">all_inst</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">inst</span><span class="p">[</span><span class="s1">&#39;abstract_template_name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">verilog_d</span><span class="p">[</span><span class="s1">&#39;modules&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="n">module</span><span class="p">[</span><span class="s2">&quot;instances&quot;</span><span class="p">]]</span><span class="o">+</span><span class="p">[</span><span class="n">subckt</span><span class="p">])</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;All used modules: </span><span class="si">{</span><span class="n">all_inst</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">verilog_d</span><span class="p">[</span><span class="s1">&#39;modules&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">verilog_d</span><span class="p">[</span><span class="s1">&#39;modules&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">all_inst</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="modify_pg_conn_subckt"><a class="viewcode-back" href="../../../modules/align.pnr.html#align.pnr.main.modify_pg_conn_subckt">[docs]</a><span class="k">def</span> <span class="nf">modify_pg_conn_subckt</span><span class="p">(</span><span class="n">verilog_d</span><span class="p">,</span> <span class="n">subckt</span><span class="p">,</span> <span class="n">pp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    creates a new subcircuit by removing power pins from a subcircuit definition</span>
+<span class="sd">    and change internal connections within the subcircuit</span>
+<span class="sd">    nm: new module</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># TODO: remove redundant const</span>
+
+    <span class="n">nm</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">([</span><span class="n">module</span> <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">verilog_d</span><span class="p">[</span><span class="s1">&#39;modules&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">module</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">subckt</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="n">nm</span><span class="p">[</span><span class="s1">&#39;parameters&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">nm</span><span class="p">[</span><span class="s1">&#39;parameters&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">p</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pp</span><span class="p">]</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;modifying subckt </span><span class="si">{</span><span class="n">nm</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pp</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">modules_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">module</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]:</span> <span class="n">module</span><span class="p">[</span><span class="s1">&#39;parameters&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">verilog_d</span><span class="p">[</span><span class="s1">&#39;modules&#39;</span><span class="p">]}</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">updated_ckt_name</span> <span class="o">=</span> <span class="n">subckt</span><span class="o">+</span><span class="s1">&#39;_PG&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="k">while</span> <span class="n">updated_ckt_name</span> <span class="ow">in</span> <span class="n">modules_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">modules_dict</span><span class="p">[</span><span class="n">updated_ckt_name</span><span class="p">]</span> <span class="o">==</span> <span class="n">nm</span><span class="p">[</span><span class="s1">&#39;parameters&#39;</span><span class="p">]:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;using existing module </span><span class="si">{</span><span class="n">updated_ckt_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">updated_ckt_name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span>
+            <span class="n">updated_ckt_name</span> <span class="o">=</span> <span class="n">subckt</span><span class="o">+</span><span class="s1">&#39;_PG&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">nm</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">updated_ckt_name</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;new module is added: </span><span class="si">{</span><span class="n">nm</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">verilog_d</span><span class="p">[</span><span class="s1">&#39;modules&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nm</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">updated_ckt_name</span></div>
+
+<div class="viewcode-block" id="check_floating_pins"><a class="viewcode-back" href="../../../modules/align.pnr.html#align.pnr.main.check_floating_pins">[docs]</a><span class="k">def</span> <span class="nf">check_floating_pins</span><span class="p">(</span><span class="n">verilog_d</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;exit in case of floating pins in design</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">verilog_d</span><span class="p">[</span><span class="s2">&quot;modules&quot;</span><span class="p">]:</span>
+        <span class="n">all_nets</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">fa_map</span><span class="p">[</span><span class="s2">&quot;actual&quot;</span><span class="p">]</span>  <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="n">module</span><span class="p">[</span><span class="s2">&quot;instances&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">fa_map</span> <span class="ow">in</span> <span class="n">inst</span><span class="p">[</span><span class="s1">&#39;fa_map&#39;</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">module</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">all_nets</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;floating port found in module </span><span class="si">{</span><span class="n">module</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+<div class="viewcode-block" id="gen_leaf_cell_info"><a class="viewcode-back" href="../../../modules/align.pnr.html#align.pnr.main.gen_leaf_cell_info">[docs]</a><span class="k">def</span> <span class="nf">gen_leaf_cell_info</span><span class="p">(</span> <span class="n">verilog_d</span><span class="p">,</span> <span class="n">pnr_const_ds</span><span class="p">):</span>
+    <span class="n">non_leaves</span> <span class="o">=</span> <span class="p">{</span> <span class="n">module</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">verilog_d</span><span class="p">[</span><span class="s1">&#39;modules&#39;</span><span class="p">]</span> <span class="p">}</span>
+    <span class="n">leaves_called_in_an_instance</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">verilog_d</span><span class="p">[</span><span class="s1">&#39;modules&#39;</span><span class="p">]:</span>
+        <span class="n">nm</span> <span class="o">=</span> <span class="n">module</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="n">module</span><span class="p">[</span><span class="s1">&#39;instances&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="s1">&#39;abstract_template_name&#39;</span> <span class="ow">in</span> <span class="n">instance</span><span class="p">:</span>
+                <span class="n">atn</span> <span class="o">=</span> <span class="n">instance</span><span class="p">[</span><span class="s1">&#39;abstract_template_name&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">atn</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">non_leaves</span><span class="p">:</span>
+                    <span class="n">leaves_called_in_an_instance</span><span class="p">[</span><span class="n">atn</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="n">nm</span><span class="p">,</span><span class="n">instance</span><span class="p">[</span><span class="s1">&#39;instance_name&#39;</span><span class="p">]))</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;non_leaves: </span><span class="si">{</span><span class="n">non_leaves</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;abstract_templates: </span><span class="si">{</span><span class="n">leaves_called_in_an_instance</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="c1">#</span>
+    <span class="c1"># Capacitor hack --- Should be able to remove eventally</span>
+    <span class="c1">#</span>
+    <span class="n">cap_constraints</span> <span class="o">=</span> <span class="n">extract_capacitor_constraints</span><span class="p">(</span> <span class="n">pnr_const_ds</span><span class="p">)</span>
+    <span class="n">capacitors</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">leaf</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">leaves_called_in_an_instance</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">parent</span><span class="p">,</span> <span class="n">instance_name</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">parent</span> <span class="ow">in</span> <span class="n">cap_constraints</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">instance_name</span> <span class="ow">in</span> <span class="n">cap_constraints</span><span class="p">[</span><span class="n">parent</span><span class="p">]:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;parent: </span><span class="si">{</span><span class="n">parent</span><span class="si">}</span><span class="s1"> instance_name: </span><span class="si">{</span><span class="n">instance_name</span><span class="si">}</span><span class="s1"> leaf: </span><span class="si">{</span><span class="n">leaf</span><span class="si">}</span><span class="s1"> cap_constraints: </span><span class="si">{</span><span class="n">cap_constraints</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="n">capacitors</span><span class="p">[</span><span class="n">leaf</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="n">parent</span><span class="p">,</span><span class="n">instance_name</span><span class="p">))</span>
+
+    <span class="c1"># Remove generated capacitors</span>
+    <span class="n">leaves</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">leaves_called_in_an_instance</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span> <span class="nb">set</span><span class="p">(</span><span class="n">capacitors</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+
+    <span class="c1"># Add unit caps to leaves</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">cap_constraints</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">const</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">unit_cap</span> <span class="o">=</span> <span class="n">const</span><span class="p">[</span><span class="s1">&#39;unit_capacitor&#39;</span><span class="p">]</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;Adding unit_cap </span><span class="si">{</span><span class="n">unit_cap</span><span class="si">}</span><span class="s1"> to leaves&#39;</span><span class="p">)</span>
+            <span class="n">leaves</span><span class="o">.</span><span class="n">add</span><span class="p">(</span> <span class="n">unit_cap</span><span class="p">)</span>
+
+    <span class="c1">#</span>
+    <span class="c1"># Guardring hack --- Should be able to remove eventally</span>
+    <span class="c1">#</span>
+    <span class="k">for</span> <span class="n">nm</span><span class="p">,</span> <span class="n">pnr_const_d</span> <span class="ow">in</span> <span class="n">pnr_const_ds</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="n">pnr_const_d</span><span class="p">[</span><span class="s1">&#39;constraints&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">const</span><span class="p">[</span><span class="s1">&#39;const_name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;GuardRing&quot;</span><span class="p">:</span>
+                <span class="n">leaves</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;guard_ring_primitives&#39;</span><span class="p">])</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;leaves: </span><span class="si">{</span><span class="n">leaves</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">leaves</span><span class="p">,</span> <span class="n">capacitors</span></div>
+
+<div class="viewcode-block" id="gen_leaf_collateral"><a class="viewcode-back" href="../../../modules/align.pnr.html#align.pnr.main.gen_leaf_collateral">[docs]</a><span class="k">def</span> <span class="nf">gen_leaf_collateral</span><span class="p">(</span> <span class="n">leaves</span><span class="p">,</span> <span class="n">primitives</span><span class="p">,</span> <span class="n">primitive_dir</span><span class="p">):</span>
+
+    <span class="c1"># Check if collateral files exist</span>
+    <span class="n">leaf_collateral</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">primitives</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">atn</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;abstract_template_name&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">atn</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">leaves</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;abstract_template_name </span><span class="si">{</span><span class="n">atn</span><span class="si">}</span><span class="s1"> of </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s1"> not in </span><span class="si">{</span><span class="n">leaves</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="n">leaf</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;concrete_template_name&#39;</span><span class="p">]</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">suffix</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;.lef&#39;</span><span class="p">,</span> <span class="s1">&#39;.json&#39;</span><span class="p">,</span> <span class="s1">&#39;.gds.json&#39;</span><span class="p">]:</span>
+            <span class="n">fn</span> <span class="o">=</span> <span class="n">primitive_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">leaf</span><span class="si">}{</span><span class="n">suffix</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="k">if</span> <span class="n">fn</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+                <span class="n">files</span><span class="p">[</span><span class="n">suffix</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;Collateral </span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s1"> for leaf </span><span class="si">{</span><span class="n">leaf</span><span class="si">}</span><span class="s1"> not found in </span><span class="si">{</span><span class="n">primitive_dir</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">leaf_collateral</span><span class="p">[</span><span class="n">leaf</span><span class="p">]</span> <span class="o">=</span> <span class="n">files</span>
+
+    <span class="k">return</span> <span class="n">leaf_collateral</span></div>
+
+<div class="viewcode-block" id="check_modules"><a class="viewcode-back" href="../../../modules/align.pnr.html#align.pnr.main.check_modules">[docs]</a><span class="k">def</span> <span class="nf">check_modules</span><span class="p">(</span><span class="n">verilog_d</span><span class="p">):</span>
+    <span class="n">all_module_pins</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">mod</span> <span class="ow">in</span> <span class="n">verilog_d</span><span class="p">[</span><span class="s2">&quot;modules&quot;</span><span class="p">]:</span>
+        <span class="n">all_module_pins</span><span class="p">[</span><span class="n">mod</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span><span class="o">=</span><span class="n">mod</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">mod</span> <span class="ow">in</span> <span class="n">verilog_d</span><span class="p">[</span><span class="s2">&quot;modules&quot;</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="n">mod</span><span class="p">[</span><span class="s2">&quot;instances&quot;</span><span class="p">]:</span>
+            <span class="k">assert</span> <span class="s1">&#39;abstract_template_name&#39;</span> <span class="ow">in</span> <span class="n">inst</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;no generated data for </span><span class="si">{</span><span class="n">inst</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="k">if</span> <span class="n">inst</span><span class="p">[</span><span class="s2">&quot;abstract_template_name&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">all_module_pins</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">fm</span><span class="p">[</span><span class="s2">&quot;formal&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">all_module_pins</span><span class="p">[</span><span class="n">inst</span><span class="p">[</span><span class="s2">&quot;abstract_template_name&quot;</span><span class="p">]]</span> <span class="k">for</span> <span class="n">fm</span> <span class="ow">in</span> <span class="n">inst</span><span class="p">[</span><span class="s2">&quot;fa_map&quot;</span><span class="p">]),</span> \
+                    <span class="sa">f</span><span class="s2">&quot;incorrect instantiation </span><span class="si">{</span><span class="n">inst</span><span class="p">[</span><span class="s1">&#39;instance_name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> of module </span><span class="si">{</span><span class="n">inst</span><span class="p">[</span><span class="s1">&#39;abstract_template_name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="se">\</span>
+<span class="s2">                     instance_pins: </span><span class="si">{</span><span class="n">inst</span><span class="p">[</span><span class="s1">&#39;fa_map&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, module pins: </span><span class="si">{</span><span class="n">all_module_pins</span><span class="p">[</span><span class="n">inst</span><span class="p">[</span><span class="s1">&#39;abstract_template_name&#39;</span><span class="p">]]</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+<div class="viewcode-block" id="write_verilog_json"><a class="viewcode-back" href="../../../modules/align.pnr.html#align.pnr.main.write_verilog_json">[docs]</a><span class="k">def</span> <span class="nf">write_verilog_json</span><span class="p">(</span><span class="n">verilog_d</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;modules&quot;</span><span class="p">:[{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="n">m</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                        <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">parameters</span><span class="p">),</span>
+                        <span class="s2">&quot;constraints&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">mc</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">mc</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">constraints</span><span class="p">],</span>
+                        <span class="s2">&quot;instances&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">mi</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">mi</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">instances</span><span class="p">],</span>
+                        <span class="p">}</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">verilog_d</span><span class="o">.</span><span class="n">modules</span><span class="p">],</span>
+        <span class="s2">&quot;global_signals&quot;</span><span class="p">:</span><span class="n">verilog_d</span><span class="o">.</span><span class="n">global_signals</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="generate_pnr"><a class="viewcode-back" href="../../../modules/align.pnr.html#align.pnr.main.generate_pnr">[docs]</a><span class="k">def</span> <span class="nf">generate_pnr</span><span class="p">(</span><span class="n">topology_dir</span><span class="p">,</span> <span class="n">primitive_dir</span><span class="p">,</span> <span class="n">pdk_dir</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="n">subckt</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">primitives</span><span class="p">,</span> <span class="n">nvariants</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">effort</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">extract</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">gds_json</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">PDN_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">router_mode</span><span class="o">=</span><span class="s1">&#39;top_down&#39;</span><span class="p">,</span> <span class="n">gui</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">skipGDS</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">steps_to_run</span><span class="p">,</span><span class="n">lambda_coeff</span><span class="p">,</span>
+                 <span class="n">reference_placement_verilog_json</span><span class="p">,</span> <span class="n">nroutings</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">select_in_ILP</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">use_analytical_placer</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+    <span class="n">subckt</span> <span class="o">=</span> <span class="n">subckt</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Running Place &amp; Route for </span><span class="si">{</span><span class="n">subckt</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">router_mode</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">steps_to_run</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
     <span class="n">map_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">subckt</span><span class="si">}</span><span class="s1">.map&#39;</span>
     <span class="n">lef_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">subckt</span><span class="si">}</span><span class="s1">.lef&#39;</span>
-    <span class="n">verilog_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">subckt</span><span class="si">}</span><span class="s1">.v&#39;</span>
+    <span class="n">verilog_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">subckt</span><span class="si">}</span><span class="s1">.verilog.json&#39;</span>
     <span class="n">pdk_file</span> <span class="o">=</span> <span class="s1">&#39;layers.json&#39;</span>
 
-    <span class="c1"># Generate .map &amp; .lef inputs for PnR</span>
-    <span class="k">with</span> <span class="p">(</span><span class="n">input_dir</span> <span class="o">/</span> <span class="n">map_file</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">mp</span><span class="p">,</span> \
-         <span class="p">(</span><span class="n">input_dir</span> <span class="o">/</span> <span class="n">lef_file</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">lp</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">file_</span> <span class="ow">in</span> <span class="n">primitive_dir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;found files </span><span class="si">{</span><span class="n">file_</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">file_</span><span class="o">.</span><span class="n">suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;.gds&#39;</span><span class="p">,</span> <span class="s1">&#39;.json&#39;</span><span class="p">]:</span>
-                <span class="n">true_stem</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">stem</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">mp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">true_stem</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">true_stem</span><span class="si">}</span><span class="s1">.gds</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">file_</span><span class="o">.</span><span class="n">suffix</span> <span class="o">==</span> <span class="s1">&#39;.lef&#39;</span> <span class="ow">and</span> <span class="n">file_</span><span class="o">.</span><span class="n">stem</span> <span class="o">!=</span> <span class="n">subckt</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;found lef files </span><span class="si">{</span><span class="n">file_</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="n">lp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">file_</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+    <span class="n">working_dir</span> <span class="o">=</span> <span class="n">output_dir</span>
+    <span class="n">input_dir</span> <span class="o">=</span> <span class="n">working_dir</span> <span class="o">/</span> <span class="s1">&#39;inputs&#39;</span>
+    <span class="n">results_dir</span> <span class="o">=</span> <span class="n">working_dir</span> <span class="o">/</span> <span class="s1">&#39;Results&#39;</span>
 
-    <span class="c1">#</span>
-    <span class="c1"># TODO: Copying is bad ! Consider rewriting C++ code to accept fully qualified paths</span>
-    <span class="c1">#</span>
+    <span class="k">if</span> <span class="s1">&#39;3_pnr:prep&#39;</span> <span class="ow">in</span> <span class="n">steps_to_run</span><span class="p">:</span>
+        <span class="c1"># Create working &amp; input directories</span>
+        <span class="n">working_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">input_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">verilog_d</span> <span class="o">=</span> <span class="n">VerilogJsonTop</span><span class="o">.</span><span class="n">parse_file</span><span class="p">(</span><span class="n">topology_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">subckt</span><span class="si">}</span><span class="s1">.verilog.json&#39;</span><span class="p">)</span>
+        <span class="n">check_modules</span><span class="p">(</span><span class="n">verilog_d</span><span class="p">)</span>
+        <span class="n">pg_connections</span> <span class="o">=</span> <span class="p">{</span><span class="n">p</span><span class="p">[</span><span class="s2">&quot;actual&quot;</span><span class="p">]:</span><span class="n">p</span><span class="p">[</span><span class="s2">&quot;actual&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">verilog_d</span><span class="p">[</span><span class="s1">&#39;global_signals&#39;</span><span class="p">]}</span>
+        <span class="n">check_floating_pins</span><span class="p">(</span><span class="n">verilog_d</span><span class="p">)</span>
+        <span class="n">remove_pg_pins</span><span class="p">(</span><span class="n">verilog_d</span><span class="p">,</span> <span class="n">subckt</span><span class="p">,</span> <span class="n">pg_connections</span><span class="p">)</span>
+        <span class="n">clean_if_extra</span><span class="p">(</span><span class="n">verilog_d</span><span class="p">,</span> <span class="n">subckt</span><span class="p">)</span>
+        <span class="n">check_modules</span><span class="p">(</span><span class="n">verilog_d</span><span class="p">)</span>
 
-    <span class="c1"># Copy verilog &amp; const files</span>
-    <span class="p">(</span><span class="n">input_dir</span> <span class="o">/</span> <span class="n">verilog_file</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">((</span><span class="n">topology_dir</span> <span class="o">/</span> <span class="n">verilog_file</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
-    <span class="k">for</span> <span class="n">file_</span> <span class="ow">in</span> <span class="n">topology_dir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">file_</span><span class="o">.</span><span class="n">suffix</span> <span class="o">==</span> <span class="s1">&#39;.json&#39;</span><span class="p">:</span>
-            <span class="p">(</span><span class="n">input_dir</span> <span class="o">/</span> <span class="n">file_</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">file_</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;updated verilog: </span><span class="si">{</span><span class="n">verilog_d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="p">(</span><span class="n">input_dir</span><span class="o">/</span><span class="n">verilog_file</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;wt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">write_verilog_json</span><span class="p">(</span><span class="n">verilog_d</span><span class="p">),</span> <span class="n">fp</span><span class="o">=</span><span class="n">fp</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+        <span class="c1"># SMB: I want this to be in main (perhaps), or in the topology stage</span>
+        <span class="n">constraint_files</span><span class="p">,</span> <span class="n">pnr_const_ds</span> <span class="o">=</span> <span class="n">gen_constraint_files</span><span class="p">(</span> <span class="n">verilog_d</span><span class="p">,</span> <span class="n">input_dir</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;constraint_files: </span><span class="si">{</span><span class="n">constraint_files</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
-    <span class="c1"># Copy pdk file</span>
-    <span class="p">(</span><span class="n">input_dir</span> <span class="o">/</span> <span class="n">pdk_file</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">((</span><span class="n">pdk_dir</span> <span class="o">/</span> <span class="n">pdk_file</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+        <span class="n">leaves</span><span class="p">,</span> <span class="n">capacitors</span> <span class="o">=</span> <span class="n">gen_leaf_cell_info</span><span class="p">(</span> <span class="n">verilog_d</span><span class="p">,</span> <span class="n">pnr_const_ds</span><span class="p">)</span>
 
-    <span class="c1"># Copy primitive json files</span>
-    <span class="k">for</span> <span class="n">file_</span> <span class="ow">in</span> <span class="n">primitive_dir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">file_</span><span class="o">.</span><span class="n">suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;.gds&#39;</span><span class="p">,</span> <span class="s1">&#39;.json&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">file_</span><span class="o">.</span><span class="n">suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;.json&#39;</span><span class="p">]:</span>
-            <span class="p">(</span><span class="n">input_dir</span> <span class="o">/</span> <span class="n">file_</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">file_</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+        <span class="k">with</span> <span class="p">(</span><span class="n">working_dir</span> <span class="o">/</span> <span class="s2">&quot;__capacitors__.json&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;wt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span> <span class="n">capacitors</span><span class="p">,</span> <span class="n">fp</span><span class="o">=</span><span class="n">fp</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
-    <span class="c1"># Dump out intermediate states</span>
-    <span class="k">if</span> <span class="n">check</span> <span class="ow">or</span> <span class="n">extract</span> <span class="ow">or</span> <span class="n">gds_json</span><span class="p">:</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;PNRDB_SAVE_STATE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">leaf_collateral</span> <span class="o">=</span> <span class="n">gen_leaf_collateral</span><span class="p">(</span> <span class="n">leaves</span><span class="p">,</span> <span class="n">primitives</span><span class="p">,</span> <span class="n">primitive_dir</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;primitives: </span><span class="si">{</span><span class="n">primitives</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;leaf_collateral: </span><span class="si">{</span><span class="n">leaf_collateral</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;capacitors: </span><span class="si">{</span><span class="nb">dict</span><span class="p">(</span><span class="n">capacitors</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
-    <span class="c1"># Run pnr_compiler</span>
-    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="n">compiler_path</span><span class="p">,</span> <span class="n">input_dir</span><span class="p">,</span> <span class="n">lef_file</span><span class="p">,</span> <span class="n">verilog_file</span><span class="p">,</span> <span class="n">map_file</span><span class="p">,</span> <span class="n">pdk_file</span><span class="p">,</span> <span class="n">subckt</span><span class="p">,</span> <span class="n">nvariants</span><span class="p">,</span> <span class="n">effort</span><span class="p">)]</span>
+        <span class="c1"># Generate .map file for PnR</span>
+        <span class="k">with</span> <span class="p">(</span><span class="n">input_dir</span> <span class="o">/</span> <span class="n">map_file</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">mp</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">_</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">primitives</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">a</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;abstract_template_name&#39;</span><span class="p">]</span>
+                <span class="n">c</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;concrete_template_name&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">leaf_collateral</span><span class="p">:</span>
+                    <span class="k">assert</span> <span class="s1">&#39;.lef&#39;</span> <span class="ow">in</span> <span class="n">leaf_collateral</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;Unused primitive: </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s1"> excluded from map file&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s1">.gds&#39;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">mp</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="c1"># Generate .lef inputs for PnR</span>
+        <span class="k">with</span> <span class="p">(</span><span class="n">input_dir</span> <span class="o">/</span> <span class="n">lef_file</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">lp</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;lef files: </span><span class="si">{</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s1">&#39;.lef&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">leaf_collateral</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">leaf_collateral</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">lp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s1">&#39;.lef&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+
+        <span class="c1">#</span>
+        <span class="c1"># TODO: Copying is bad ! Consider rewriting C++ code to accept fully qualified paths</span>
+        <span class="c1">#</span>
+
+        <span class="c1"># Copy verilog</span>
+
+        <span class="c1"># (input_dir / verilog_file).write_text((topology_dir / verilog_file).read_text())</span>
+
+        <span class="c1"># Copy pdk file</span>
+        <span class="p">(</span><span class="n">input_dir</span> <span class="o">/</span> <span class="n">pdk_file</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">((</span><span class="n">pdk_dir</span> <span class="o">/</span> <span class="n">pdk_file</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+
+        <span class="c1"># Copy primitive json files</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">leaf_collateral</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">suffix</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;.gds.json&#39;</span><span class="p">,</span> <span class="s1">&#39;.json&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">suffix</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+                    <span class="p">(</span><span class="n">input_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">k</span><span class="si">}{</span><span class="n">suffix</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="n">suffix</span><span class="p">])</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">with</span> <span class="p">(</span><span class="n">working_dir</span> <span class="o">/</span> <span class="s2">&quot;__capacitors__.json&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;rt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">capacitors</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s1">&#39;3_pnr:place&#39;</span> <span class="ow">in</span> <span class="n">steps_to_run</span> <span class="ow">or</span> <span class="s1">&#39;3_pnr:route&#39;</span> <span class="ow">in</span> <span class="n">steps_to_run</span><span class="p">:</span>
+
+        <span class="k">with</span> <span class="p">(</span><span class="n">pdk_dir</span> <span class="o">/</span> <span class="n">pdk_file</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span> <span class="s1">&#39;rt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">)[</span><span class="s2">&quot;ScaleFactor&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Run pnr_compiler</span>
+        <span class="c1"># print(cmd)</span>
+
         <span class="n">current_working_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
         <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">working_dir</span><span class="p">)</span>
-        <span class="n">PnR</span><span class="o">.</span><span class="n">toplevel</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;align.PnR&#39;</span><span class="p">,</span> <span class="n">input_dir</span><span class="p">,</span> <span class="n">lef_file</span><span class="p">,</span>
+                                <span class="n">verilog_file</span><span class="p">,</span> <span class="n">map_file</span><span class="p">,</span> <span class="n">pdk_file</span><span class="p">,</span> <span class="n">subckt</span><span class="p">,</span> <span class="n">nvariants</span><span class="p">,</span> <span class="n">effort</span><span class="p">)]</span>
+
+        <span class="n">DB</span><span class="p">,</span> <span class="n">results_name_map</span> <span class="o">=</span> <span class="n">toplevel</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">PDN_mode</span><span class="o">=</span><span class="n">PDN_mode</span><span class="p">,</span> <span class="n">results_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">router_mode</span><span class="o">=</span><span class="n">router_mode</span><span class="p">,</span> <span class="n">gui</span><span class="o">=</span><span class="n">gui</span><span class="p">,</span> <span class="n">skipGDS</span><span class="o">=</span><span class="n">skipGDS</span><span class="p">,</span>
+                                        <span class="n">lambda_coeff</span><span class="o">=</span><span class="n">lambda_coeff</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span>
+                                        <span class="n">reference_placement_verilog_json</span><span class="o">=</span><span class="n">reference_placement_verilog_json</span><span class="p">,</span> <span class="n">nroutings</span><span class="o">=</span><span class="n">nroutings</span><span class="p">,</span>
+                                        <span class="n">select_in_ILP</span><span class="o">=</span><span class="n">select_in_ILP</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">use_analytical_placer</span><span class="o">=</span><span class="n">use_analytical_placer</span><span class="p">)</span>
+
         <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">current_working_dir</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">ret</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">working_dir</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Dumping output from pnr_compiler</span><span class="se">\n</span><span class="si">{</span><span class="n">ret</span><span class="o">.</span><span class="n">stdout</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Call to &#39;</span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39; failed. Dumping output from pnr_compiler below:</span><span class="se">\n</span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">stdout</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="p">{}</span>
 
+        <span class="c1"># Copy generated cap jsons from results_dir to working_dir</span>
+        <span class="c1"># TODO: Cap arrays should eventually be generated by align.primitive</span>
+        <span class="c1">#       at which point this hack will no longer be needed</span>
 
-    <span class="k">def</span> <span class="nf">find_variant_names</span><span class="p">(</span> <span class="n">nm</span><span class="p">):</span>
-        <span class="n">variant_names</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">p</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span> <span class="sa">r</span><span class="s1">&#39;^(.*)_(\d+)\.db\.json$&#39;</span><span class="p">)</span>
-        <span class="n">p2</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span> <span class="sa">r</span><span class="s1">&#39;^(.*)_(\d+)_(\d+)\.db\.json$&#39;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">file_</span> <span class="ow">in</span> <span class="n">results_dir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
-            <span class="n">m</span> <span class="o">=</span> <span class="n">p2</span><span class="o">.</span><span class="n">match</span><span class="p">(</span> <span class="n">file_</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">nm</span><span class="p">:</span>
-                    <span class="n">variant_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">nm</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">m</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">m</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="k">continue</span>
-            <span class="n">m</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">match</span><span class="p">(</span> <span class="n">file_</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">nm</span><span class="p">:</span>
-                    <span class="n">variant_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">nm</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">m</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="k">continue</span>
-        <span class="k">return</span> <span class="n">variant_names</span>
-
-    <span class="c1"># Copy generated (Cap) jsons from results_dir to working_dir</span>
-    <span class="c1"># TODO: Cap arrays should eventually be generated by align.primitive</span>
-    <span class="c1">#       at which point this hack will no longer be needed</span>
-    <span class="k">for</span> <span class="n">file_</span> <span class="ow">in</span> <span class="n">results_dir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">file_</span><span class="o">.</span><span class="n">suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;.json&#39;</span><span class="p">]:</span>
-            <span class="p">(</span><span class="n">working_dir</span> <span class="o">/</span> <span class="n">file_</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">file_</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
-
-    <span class="k">if</span> <span class="n">check</span> <span class="ow">or</span> <span class="n">extract</span> <span class="ow">or</span> <span class="n">gds_json</span><span class="p">:</span>
-        <span class="k">with</span> <span class="p">(</span><span class="n">results_dir</span> <span class="o">/</span> <span class="s2">&quot;__hierTree.json&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;rt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
-            <span class="n">order</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Topological order: </span><span class="si">{</span><span class="n">order</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="k">assert</span> <span class="n">order</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">subckt</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Last in topological order should be the subckt </span><span class="si">{</span><span class="n">subckt</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">order</span><span class="si">}</span><span class="s2">&quot;</span>
-
-        <span class="c1"># Process subblocks as well</span>
-        <span class="k">for</span> <span class="n">nm</span> <span class="ow">in</span> <span class="n">order</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
-            <span class="k">for</span> <span class="n">variant_name</span> <span class="ow">in</span> <span class="n">find_variant_names</span><span class="p">(</span><span class="n">nm</span><span class="p">):</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;variant_name: </span><span class="si">{</span><span class="n">variant_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="n">file_</span> <span class="o">=</span> <span class="n">results_dir</span> <span class="o">/</span> <span class="p">(</span> <span class="n">variant_name</span> <span class="o">+</span> <span class="s2">&quot;.db.json&quot;</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;subblock: </span><span class="si">{</span><span class="n">file_</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="n">_generate_json</span><span class="p">(</span> <span class="n">dbfile</span> <span class="o">=</span> <span class="n">file_</span><span class="p">,</span>
-                                <span class="n">variant</span> <span class="o">=</span> <span class="n">variant_name</span><span class="p">,</span>
-                                <span class="n">pdk_dir</span> <span class="o">=</span> <span class="n">pdk_dir</span><span class="p">,</span>
-                                <span class="n">primitive_dir</span> <span class="o">=</span> <span class="n">input_dir</span><span class="p">,</span>
-                                <span class="n">input_dir</span><span class="o">=</span><span class="n">working_dir</span><span class="p">,</span>
-                                <span class="n">output_dir</span><span class="o">=</span><span class="n">working_dir</span><span class="p">,</span>
-                                <span class="n">check</span><span class="o">=</span><span class="n">check</span><span class="p">,</span>
-                                <span class="n">extract</span><span class="o">=</span><span class="n">extract</span><span class="p">,</span>
-                                <span class="n">gds_json</span><span class="o">=</span><span class="n">gds_json</span><span class="p">,</span>
-                                <span class="n">toplevel</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">cap_template_name</span> <span class="ow">in</span> <span class="n">capacitors</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">results_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">cap_template_name</span><span class="si">}</span><span class="s1">_AspectRatio_*.json&#39;</span><span class="p">):</span>
+                <span class="p">(</span><span class="n">working_dir</span> <span class="o">/</span> <span class="n">fn</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">fn</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
 
     <span class="n">variants</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">file_</span> <span class="ow">in</span> <span class="n">results_dir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
-        <span class="n">variant</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">variant</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">subckt</span><span class="si">}</span><span class="s1">_&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
-            <span class="k">continue</span>
-        <span class="k">if</span> <span class="n">file_</span><span class="o">.</span><span class="n">suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;.gds&#39;</span><span class="p">,</span> <span class="s1">&#39;.json&#39;</span><span class="p">]:</span>
-            <span class="n">variants</span><span class="p">[</span><span class="n">variant</span><span class="p">][</span><span class="s1">&#39;gdsjson&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_</span>
-        <span class="k">elif</span> <span class="n">file_</span><span class="o">.</span><span class="n">suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;.lef&#39;</span><span class="p">]:</span>
-            <span class="n">variants</span><span class="p">[</span><span class="n">variant</span><span class="p">][</span><span class="s1">&#39;lef&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_</span>
-        <span class="k">elif</span> <span class="n">file_</span><span class="o">.</span><span class="n">suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;.db&#39;</span><span class="p">,</span> <span class="s1">&#39;.json&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="p">(</span><span class="n">check</span> <span class="ow">or</span> <span class="n">extract</span> <span class="ow">or</span> <span class="n">gds_json</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;.db.json: </span><span class="si">{</span><span class="n">file_</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">variants</span><span class="p">[</span><span class="n">variant</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                <span class="n">_generate_json</span><span class="p">(</span> <span class="n">dbfile</span> <span class="o">=</span> <span class="n">file_</span><span class="p">,</span>
-                                <span class="n">variant</span> <span class="o">=</span> <span class="n">variant</span><span class="p">,</span>
-                                <span class="n">pdk_dir</span> <span class="o">=</span> <span class="n">pdk_dir</span><span class="p">,</span>
-                                <span class="n">primitive_dir</span> <span class="o">=</span> <span class="n">input_dir</span><span class="p">,</span>
-                                <span class="n">input_dir</span><span class="o">=</span><span class="n">working_dir</span><span class="p">,</span>
-                                <span class="n">output_dir</span><span class="o">=</span><span class="n">working_dir</span><span class="p">,</span>
-                                <span class="n">check</span><span class="o">=</span><span class="n">check</span><span class="p">,</span>
-                                <span class="n">extract</span><span class="o">=</span><span class="n">extract</span><span class="p">,</span>
-                                <span class="n">gds_json</span><span class="o">=</span><span class="n">gds_json</span><span class="p">,</span>
-                                <span class="n">toplevel</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="s1">&#39;3_pnr:check&#39;</span> <span class="ow">in</span> <span class="n">steps_to_run</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">variant</span><span class="p">,</span> <span class="p">(</span> <span class="n">path_name</span><span class="p">,</span> <span class="n">layout_idx</span><span class="p">)</span> <span class="ow">in</span> <span class="n">results_name_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+
+            <span class="n">hN</span> <span class="o">=</span> <span class="n">DB</span><span class="o">.</span><span class="n">hierTree</span><span class="p">[</span><span class="n">layout_idx</span><span class="p">]</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">_generate_json</span><span class="p">(</span><span class="n">hN</span><span class="o">=</span><span class="n">hN</span><span class="p">,</span>
+                                    <span class="n">variant</span><span class="o">=</span><span class="n">variant</span><span class="p">,</span>
+                                    <span class="n">pdk_dir</span><span class="o">=</span><span class="n">pdk_dir</span><span class="p">,</span>
+                                    <span class="n">primitive_dir</span><span class="o">=</span><span class="n">input_dir</span><span class="p">,</span>
+                                    <span class="n">input_dir</span><span class="o">=</span><span class="n">working_dir</span><span class="p">,</span>
+                                    <span class="n">output_dir</span><span class="o">=</span><span class="n">working_dir</span><span class="p">,</span>
+                                    <span class="n">extract</span><span class="o">=</span><span class="n">extract</span><span class="p">,</span>
+                                    <span class="n">gds_json</span><span class="o">=</span><span class="n">gds_json</span><span class="p">,</span>
+                                    <span class="n">toplevel</span><span class="o">=</span><span class="n">hN</span><span class="o">.</span><span class="n">isTop</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">hN</span><span class="o">.</span><span class="n">isTop</span><span class="p">:</span>
+                <span class="n">variants</span><span class="p">[</span><span class="n">variant</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">skipGDS</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">tag</span><span class="p">,</span> <span class="n">suffix</span> <span class="ow">in</span> <span class="p">[(</span><span class="s1">&#39;lef&#39;</span><span class="p">,</span> <span class="s1">&#39;.lef&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;gdsjson&#39;</span><span class="p">,</span> <span class="s1">&#39;.gds.json&#39;</span><span class="p">)]:</span>
+                        <span class="n">path</span> <span class="o">=</span> <span class="n">results_dir</span> <span class="o">/</span> <span class="p">(</span><span class="n">variant</span> <span class="o">+</span> <span class="n">suffix</span><span class="p">)</span>
+                        <span class="k">assert</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+                        <span class="n">variants</span><span class="p">[</span><span class="n">variant</span><span class="p">][</span><span class="n">tag</span><span class="p">]</span> <span class="o">=</span> <span class="n">path</span>
+
+    <span class="k">if</span> <span class="s1">&#39;3_pnr:place&#39;</span> <span class="ow">in</span> <span class="n">steps_to_run</span> <span class="ow">or</span> <span class="s1">&#39;3_pnr:route&#39;</span> <span class="ow">in</span> <span class="n">steps_to_run</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Explicitly deleting DB...&#39;</span><span class="p">)</span>
+        <span class="k">del</span> <span class="n">DB</span>
 
     <span class="k">return</span> <span class="n">variants</span></div>
 </pre></div>
 
-            <div class="clearer"></div>
+           </div>
           </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, ALIGN team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-            <p class="logo"><a href="../../../index.html">
-              <img class="logo" src="../../../_static/LOGO.PNG" alt="Logo"/>
-            </a></p>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">align.pnr.main</a></li> 
-      </ul>
-    </div>
-    <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, ALIGN team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
-    </div>
-  </body>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
 </html>

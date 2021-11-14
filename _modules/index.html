@@ -1,43 +1,150 @@
-
 <!DOCTYPE html>
-
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Overview: module code &#8212; ALIGN</title>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Overview: module code &mdash; ALIGN</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
-    
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/doctools.js"></script>
-    
+      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
-  </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">ALIGN</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Overview: module code</a></li> 
-      </ul>
-    </div>  
+</head>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html"><img src="../_static/LOGO.PNG" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Notes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../notes/flow.html">ALIGN: flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/flow.html#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/flow.html#outputs">Outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-0-check-prerequisites">Step 0: Check prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-1-clone-the-align-source-code-to-your-local-environment">Step 1: Clone the ALIGN source code to your local environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-2-create-a-python-virtualenv">Step 2: Create a Python virtualenv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-3a-install-align-as-a-user">Step 3a: Install ALIGN as a USER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-3b-install-align-as-a-developer">Step 3b: Install ALIGN as a DEVELOPER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-4-run-align">Step 4: Run ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-5-view-layout">Step 5: View layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/introduction.html">Introduction by Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/viewer.html">Layout viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/viewer.html#klayout-viewer">KLayout viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/viewer.html#align-viewer">ALIGN viewer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/debug.html">Debug</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#reinstalling-align">Reinstalling ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/const.html">Constraints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/const.html#constraint-options">Constraint options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/const.html#example-constraints">Example constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/upcoming.html">Upcoming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/upcoming.html#how-to-add-your-own-pdk">How to add your own pdk</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Datasets:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../notes/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/database.html">Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/database.html#sized-netlists">Sized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/database.html#unsized-netlists">Unsized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/database.html#generalized-testbenches">Generalized testbenches</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.html">align package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.gui.html">align.gui package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.pdk.html">align.pdk package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.primitive.html">align.primitive package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.utils.html">align.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.primitive.html">align.primitive package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.primitive.default.html">align.primitive.default package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.pdk.html">align.pdk package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.primitive.default.html">align.primitive.default package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.utils.html">align.utils package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.gui.html">align.gui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ALIGN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Overview: module code</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
   <h1>All modules for which code is available</h1>
-<ul><li><a href="align/cell_fabric/canvas.html">align.cell_fabric.canvas</a></li>
+<ul><li><a href="align/PnR.html">align.PnR</a></li>
+<li><a href="align/cell_fabric/canvas.html">align.cell_fabric.canvas</a></li>
 <li><a href="align/cell_fabric/drc.html">align.cell_fabric.drc</a></li>
 <li><a href="align/cell_fabric/gen_gds_json.html">align.cell_fabric.gen_gds_json</a></li>
 <li><a href="align/cell_fabric/gen_lef.html">align.cell_fabric.gen_lef</a></li>
@@ -52,25 +159,15 @@
 <li><a href="align/cell_fabric/remove_duplicates.html">align.cell_fabric.remove_duplicates</a></li>
 <li><a href="align/cell_fabric/routing_collateral.html">align.cell_fabric.routing_collateral</a></li>
 <li><a href="align/cell_fabric/transformation.html">align.cell_fabric.transformation</a></li>
-<li><a href="align/circuit/core.html">align.circuit.core</a></li>
-<li><a href="align/circuit/elements.html">align.circuit.elements</a></li>
-<li><a href="align/circuit/gen_dot.html">align.circuit.gen_dot</a></li>
-<li><a href="align/circuit/parser.html">align.circuit.parser</a></li>
 <li><a href="align/cmdline.html">align.cmdline</a></li>
-<li><a href="align/compiler/basic_element.html">align.compiler.basic_element</a></li>
-<li><a href="align/compiler/common_centroid_cap_constraint.html">align.compiler.common_centroid_cap_constraint</a></li>
 <li><a href="align/compiler/compiler.html">align.compiler.compiler</a></li>
 <li><a href="align/compiler/create_array_hierarchy.html">align.compiler.create_array_hierarchy</a></li>
 <li><a href="align/compiler/create_database.html">align.compiler.create_database</a></li>
+<li><a href="align/compiler/find_constraint.html">align.compiler.find_constraint</a></li>
 <li><a href="align/compiler/match_graph.html">align.compiler.match_graph</a></li>
-<li><a href="align/compiler/merge_nodes.html">align.compiler.merge_nodes</a></li>
 <li><a href="align/compiler/preprocess.html">align.compiler.preprocess</a></li>
-<li><a href="align/compiler/read_lef.html">align.compiler.read_lef</a></li>
-<li><a href="align/compiler/read_netlist.html">align.compiler.read_netlist</a></li>
-<li><a href="align/compiler/read_setup.html">align.compiler.read_setup</a></li>
 <li><a href="align/compiler/user_const.html">align.compiler.user_const</a></li>
 <li><a href="align/compiler/util.html">align.compiler.util</a></li>
-<li><a href="align/compiler/write_constraint.html">align.compiler.write_constraint</a></li>
 <li><a href="align/compiler/write_verilog_lef.html">align.compiler.write_verilog_lef</a></li>
 <li><a href="align/gdsconv/gds2json.html">align.gdsconv.gds2json</a></li>
 <li><a href="align/gdsconv/gds2prettyjson.html">align.gdsconv.gds2prettyjson</a></li>
@@ -78,59 +175,78 @@
 <li><a href="align/gdsconv/json2txt.html">align.gdsconv.json2txt</a></li>
 <li><a href="align/gdsconv/txt2json.html">align.gdsconv.txt2json</a></li>
 <li><a href="align/gdsconv/txt2prettyjson.html">align.gdsconv.txt2prettyjson</a></li>
+<li><a href="align/gui/mockup.html">align.gui.mockup</a></li>
 <li><a href="align/main.html">align.main</a></li>
+<li><a href="align/pdk/finfet/canvas.html">align.pdk.finfet.canvas</a></li>
+<li><a href="align/pdk/finfet/digital.html">align.pdk.finfet.digital</a></li>
+<li><a href="align/pdk/finfet/generic_transistor.html">align.pdk.finfet.generic_transistor</a></li>
+<li><a href="align/pdk/finfet/resistor.html">align.pdk.finfet.resistor</a></li>
+<li><a href="align/pdk/finfet/transistor.html">align.pdk.finfet.transistor</a></li>
+<li><a href="align/pdk/finfet/transistor_array.html">align.pdk.finfet.transistor_array</a></li>
+<li><a href="align/pnr/build_pnr_model.html">align.pnr.build_pnr_model</a></li>
+<li><a href="align/pnr/checker.html">align.pnr.checker</a></li>
 <li><a href="align/pnr/checkers.html">align.pnr.checkers</a></li>
-<li><a href="align/pnr/db.html">align.pnr.db</a></li>
+<li><a href="align/pnr/cmdline.html">align.pnr.cmdline</a></li>
+<li><a href="align/pnr/hpwl.html">align.pnr.hpwl</a></li>
 <li><a href="align/pnr/main.html">align.pnr.main</a></li>
+<li><a href="align/pnr/render_placement.html">align.pnr.render_placement</a></li>
+<li><a href="align/pnr/toplevel.html">align.pnr.toplevel</a></li>
+<li><a href="align/pnr/write_constraint.html">align.pnr.write_constraint</a></li>
 <li><a href="align/primitive/default/canvas.html">align.primitive.default.canvas</a></li>
 <li><a href="align/primitive/default/cap.html">align.primitive.default.cap</a></li>
+<li><a href="align/primitive/default/guard_ring.html">align.primitive.default.guard_ring</a></li>
 <li><a href="align/primitive/default/mos.html">align.primitive.default.mos</a></li>
 <li><a href="align/primitive/default/res.html">align.primitive.default.res</a></li>
 <li><a href="align/primitive/default/via.html">align.primitive.default.via</a></li>
 <li><a href="align/primitive/main.html">align.primitive.main</a></li>
+<li><a href="align/schema/checker.html">align.schema.checker</a></li>
+<li><a href="align/schema/constraint.html">align.schema.constraint</a></li>
+<li><a href="align/schema/gen_dot.html">align.schema.gen_dot</a></li>
+<li><a href="align/schema/graph.html">align.schema.graph</a></li>
+<li><a href="align/schema/hacks.html">align.schema.hacks</a></li>
+<li><a href="align/schema/instance.html">align.schema.instance</a></li>
+<li><a href="align/schema/library.html">align.schema.library</a></li>
+<li><a href="align/schema/model.html">align.schema.model</a></li>
+<li><a href="align/schema/parser.html">align.schema.parser</a></li>
+<li><a href="align/schema/pdk.html">align.schema.pdk</a></li>
+<li><a href="align/schema/subcircuit.html">align.schema.subcircuit</a></li>
+<li><a href="align/schema/transistor.html">align.schema.transistor</a></li>
+<li><a href="align/schema/types.html">align.schema.types</a></li>
+<li><a href="align/schema/visitor.html">align.schema.visitor</a></li>
 <li><a href="align/utils/gds2png.html">align.utils.gds2png</a></li>
-<li><a href="align/utils/logging.html">align.utils.logging</a></li>
+<li><a href="align/utils/logging_local.html">align.utils.logging_local</a></li>
+<li><a href="align/utils/logmanager.html">align.utils.logmanager</a></li>
+<li><a href="pydantic/class_validators.html">pydantic.class_validators</a></li>
+<li><a href="pydantic/decorator.html">pydantic.decorator</a></li>
+<li><a href="pydantic/fields.html">pydantic.fields</a></li>
+<li><a href="typing.html">typing</a></li>
 </ul>
 
-            <div class="clearer"></div>
+           </div>
           </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, ALIGN team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-            <p class="logo"><a href="../index.html">
-              <img class="logo" src="../_static/LOGO.PNG" alt="Logo"/>
-            </a></p>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">ALIGN</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Overview: module code</a></li> 
-      </ul>
-    </div>
-    <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, ALIGN team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
-    </div>
-  </body>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
 </html>

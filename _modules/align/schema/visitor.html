@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>align.schema.visitor &mdash; ALIGN</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html"><img src="../../../_static/LOGO.PNG" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Notes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/flow.html">ALIGN: flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/flow.html#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/flow.html#outputs">Outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-0-check-prerequisites">Step 0: Check prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-1-clone-the-align-source-code-to-your-local-environment">Step 1: Clone the ALIGN source code to your local environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-2-create-a-python-virtualenv">Step 2: Create a Python virtualenv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-3a-install-align-as-a-user">Step 3a: Install ALIGN as a USER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-3b-install-align-as-a-developer">Step 3b: Install ALIGN as a DEVELOPER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-4-run-align">Step 4: Run ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-5-view-layout">Step 5: View layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/introduction.html">Introduction by Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/viewer.html">Layout viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/viewer.html#klayout-viewer">KLayout viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/viewer.html#align-viewer">ALIGN viewer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/debug.html">Debug</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#reinstalling-align">Reinstalling ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/const.html">Constraints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/const.html#constraint-options">Constraint options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/const.html#example-constraints">Example constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/upcoming.html">Upcoming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/upcoming.html#how-to-add-your-own-pdk">How to add your own pdk</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Datasets:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/database.html">Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#sized-netlists">Sized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#unsized-netlists">Unsized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#generalized-testbenches">Generalized testbenches</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.html">align package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.gui.html">align.gui package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pdk.html">align.pdk package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.primitive.html">align.primitive package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.utils.html">align.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.primitive.html">align.primitive package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.primitive.default.html">align.primitive.default package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pdk.html">align.pdk package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.primitive.default.html">align.primitive.default package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.utils.html">align.utils package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.gui.html">align.gui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ALIGN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>align.schema.visitor</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for align.schema.visitor</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">types</span>
+<span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="cache"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.visitor.cache">[docs]</a><span class="k">def</span> <span class="nf">cache</span><span class="p">(</span><span class="n">function</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This decorator will store the results of a visitor method</span>
+<span class="sd">    in self.cache and retrieve it if the id of a new object</span>
+<span class="sd">    matches one in the cache.</span>
+
+<span class="sd">    This simultaeneously helps avoid redundant computation and</span>
+<span class="sd">    ensures that shared pointers in the original tree results</span>
+<span class="sd">    in shared pointers in the new tree. If this is not desired</span>
+<span class="sd">    (if the result of a subtree is dependent upon the nodes</span>
+<span class="sd">    above it for example), please implement a custom visit_*</span>
+<span class="sd">    method WITHOUT the @cache decorator.</span>
+
+<span class="sd">    It is to be noted that the decorator can be used in two ways:</span>
+<span class="sd">    1) @cache</span>
+<span class="sd">       Cache all results (Used 99.999% of the time)</span>
+<span class="sd">    2) @cache(types=[...])</span>
+<span class="sd">       Cache all incoming nodes that are instances of types</span>
+<span class="sd">       (Mostly used by generic_visit)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+        <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">cached_method</span><span class="p">(</span><span class="n">visitor</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">types</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">types</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="n">visitor</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">visitor</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="nb">id</span><span class="p">(</span><span class="n">node</span><span class="p">)]</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="n">newnode</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">visitor</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
+            <span class="n">visitor</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="nb">id</span><span class="p">(</span><span class="n">node</span><span class="p">)]</span> <span class="o">=</span> <span class="n">newnode</span>
+            <span class="k">return</span> <span class="n">newnode</span>
+        <span class="k">return</span> <span class="n">cached_method</span>
+    <span class="k">if</span> <span class="n">function</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">decorator</span><span class="p">(</span><span class="n">function</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">decorator</span></div>
+
+
+<div class="viewcode-block" id="Visitor"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.visitor.Visitor">[docs]</a><span class="k">class</span> <span class="nc">Visitor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The Visitor base class walks the ALIGN specification tree and calls a</span>
+<span class="sd">    visitor function for every node found.  This is very similar to the</span>
+<span class="sd">    `NodeVisitor` class implemented by the python internal `ast` module (except</span>
+<span class="sd">    that it operates on types.BaseModel derivates).</span>
+
+<span class="sd">    This class is meant to be subclassed, with the subclass adding visitor</span>
+<span class="sd">    methods. The visitor functions for the nodes are ``&#39;visit_&#39;`` + the</span>
+<span class="sd">    class name of the node.  So a `SubCircuit` node visit function would</span>
+<span class="sd">    be `visit_SubCircuit`. If no visitor function exists for a node the</span>
+<span class="sd">    `generic_visit` visitor is used instead.</span>
+
+<span class="sd">    Don&#39;t use the `Visitor` if you want to apply changes to nodes during</span>
+<span class="sd">    traversing.  For this a special visitor exists (`NodeTransformer`) that</span>
+<span class="sd">    allows modifications.</span>
+
+<span class="sd">    Usually you use the Visitor like this::</span>
+<span class="sd">    result = YourVisitor().visit(node)</span>
+
+<span class="sd">    Where the type of result is determined by the return type of the</span>
+<span class="sd">    root node visitor. Note that the generic_visitor attempts to return</span>
+<span class="sd">    either a list or None for most visitors.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="Visitor.visit"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.visitor.Visitor.visit">[docs]</a>    <span class="k">def</span> <span class="nf">visit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="p">(</span><span class="n">types</span><span class="o">.</span><span class="n">BaseModel</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">List</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">Dict</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">))):</span>
+            <span class="n">method</span> <span class="o">=</span> <span class="s1">&#39;visit_&#39;</span> <span class="o">+</span> <span class="n">node</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">generic_visit</span><span class="p">)(</span><span class="n">node</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">.visit() does not support node of type </span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">:</span><span class="se">\n</span><span class="si">{</span><span class="n">node</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Visitor.iter_fields"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.visitor.Visitor.iter_fields">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">iter_fields</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">__fields__</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">field</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Visitor.flatten"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.visitor.Visitor.flatten">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">flatten</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">l</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">ret</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">item</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret</span></div>
+
+<div class="viewcode-block" id="Visitor.generic_visit"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.visitor.Visitor.generic_visit">[docs]</a>    <span class="nd">@cache</span><span class="p">(</span><span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">types</span><span class="o">.</span><span class="n">BaseModel</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">List</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">Dict</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">generic_visit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">BaseModel</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter_fields</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">List</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">node</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">Dict</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">))):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">.generic_visit() does not support node of type </span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">:</span><span class="se">\n</span><span class="si">{</span><span class="n">node</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Transformer"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.visitor.Transformer">[docs]</a><span class="k">class</span> <span class="nc">Transformer</span><span class="p">(</span><span class="n">Visitor</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An ALIGN `Visitor` subclass that walks the ALIGN specification tree and</span>
+<span class="sd">    allows modification of nodes.</span>
+
+<span class="sd">    By default, the Transformer will walk the AST and use the return value of</span>
+<span class="sd">    visitor methods to replace the old node. Note that the return value may be</span>
+<span class="sd">    the original node in which case no replacement takes place.</span>
+
+<span class="sd">    Keep in mind that if the node you&#39;re operating on has child nodes you must</span>
+<span class="sd">    either transform the child nodes yourself or call the `generic_visit`</span>
+<span class="sd">    method for the node first.</span>
+
+<span class="sd">    Usually you use the transformer like this::</span>
+<span class="sd">    node = YourTransformer().visit(node)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Transformer.generic_visit"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.visitor.Transformer.generic_visit">[docs]</a>    <span class="nd">@cache</span><span class="p">(</span><span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">types</span><span class="o">.</span><span class="n">BaseModel</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">List</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">Dict</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">generic_visit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">BaseModel</span><span class="p">):</span>
+            <span class="n">field_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iter_fields</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+            <span class="n">new_field_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">field_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+            <span class="k">return</span> <span class="n">node</span> <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">x</span> <span class="ow">is</span> <span class="n">y</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">field_dict</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">new_field_dict</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span> <span class="k">else</span> <span class="n">node</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">new_field_dict</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">List</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">new_node</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">node</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">node</span> <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">x</span> <span class="ow">is</span> <span class="n">y</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">new_node</span><span class="p">))</span> <span class="k">else</span> <span class="n">new_node</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">Dict</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">new_node</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+            <span class="k">return</span> <span class="n">node</span> <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">x</span> <span class="ow">is</span> <span class="n">y</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">new_node</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span> <span class="k">else</span> <span class="n">new_node</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">))):</span>
+            <span class="k">return</span> <span class="n">node</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">.generic_visit() does not support node of type </span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">:</span><span class="se">\n</span><span class="si">{</span><span class="n">node</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, ALIGN team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ALIGN: flow &mdash; ALIGN</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Installation" href="installation.html" />
+    <link rel="prev" title="ALIGN: Analog Layout, Intelligently Generated from Netlists" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html"><img src="../_static/LOGO.PNG" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Notes:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ALIGN: flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#outputs">Outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#step-0-check-prerequisites">Step 0: Check prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#step-1-clone-the-align-source-code-to-your-local-environment">Step 1: Clone the ALIGN source code to your local environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#step-2-create-a-python-virtualenv">Step 2: Create a Python virtualenv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#step-3a-install-align-as-a-user">Step 3a: Install ALIGN as a USER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#step-3b-install-align-as-a-developer">Step 3b: Install ALIGN as a DEVELOPER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#step-4-run-align">Step 4: Run ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#step-5-view-layout">Step 5: View layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction by Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="viewer.html">Layout viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#klayout-viewer">KLayout viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#align-viewer">ALIGN viewer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="debug.html">Debug</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#reinstalling-align">Reinstalling ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="const.html">Constraints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="const.html#constraint-options">Constraint options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="const.html#example-constraints">Example constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="upcoming.html">Upcoming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="upcoming.html#how-to-add-your-own-pdk">How to add your own pdk</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Datasets:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="database.html">Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="database.html#sized-netlists">Sized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="database.html#unsized-netlists">Unsized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="database.html#generalized-testbenches">Generalized testbenches</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.html">align package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.gui.html">align.gui package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.pdk.html">align.pdk package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.primitive.html">align.primitive package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.utils.html">align.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.primitive.html">align.primitive package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.primitive.default.html">align.primitive.default package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.pdk.html">align.pdk package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.primitive.default.html">align.primitive.default package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.utils.html">align.utils package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.gui.html">align.gui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ALIGN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>ALIGN: flow</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/notes/flow.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="align-flow">
+<h1>ALIGN: flow<a class="headerlink" href="#align-flow" title="Permalink to this headline">¶</a></h1>
+<p>The ALIGN flow includes the following steps:</p>
+<ul class="simple">
+<li><p><em>Circuit annotation</em> creates a multilevel hierarchical representation of the input netlist. This representation is used to implement the circuit layout in using a hierarchical manner.</p></li>
+<li><p><em>Design rule abstraction</em> creates a compact JSON-format represetation of the design rules in a PDK. This repository provides a mock PDK based on a FinFET technology (where the parameters are based on published data). These design rules are used to guide the layout and ensure DRC-correctness.</p></li>
+<li><p><em>Primitive cell generation</em> works with primitives, i.e., blocks the lowest level of design hierarchy, and generates their layouts. Primitives typically contain a small number of transistor structures (each of which may be implemented using multiple fins and/or fingers). A parameterized instance of a primitive is automatically translated to a GDSII layout in this step.</p></li>
+<li><p><em>Placement and routing</em> performs block assembly of the hierarchical blocks in the netlist and routes connections between these blocks, while obeying a set of analog layout constraints. At the end of this step, the translation of the input SPICE netlist to a GDSII layout is complete.</p></li>
+</ul>
+<div class="section" id="inputs">
+<h2>Inputs<a class="headerlink" href="#inputs" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><dl class="simple">
+<dt>Design netlist (SPICE format): Input from designers</dt><dd><ul class="simple">
+<li><p><a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/examples/telescopic_ota/telescopic_ota.sp">Example</a> of the analog circuit.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Library (SPICE format): Commonly used basic building blocks for analog design</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Basic built-in <a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/align/config/basic_template.sp">template library</a> is provided to identify hierachies in the design.</p></li>
+<li><p>More library elements can be added in the <a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/align/config/user_template.sp">user_template_library</a>.</p></li>
+<li><p>Each of the library elements can be associated with a set of constraints.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>PDK rules (JSON format): Abstracted <a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/FinFET14nm_Mock_PDK">design rules</a></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Mock FinFET 14nm PDK <a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/FinFET14nm_Mock_PDK/layers.json">rules file</a> is provided, which is used by the primitive cell generator and the place and route engine.</p></li>
+<li><p>New PDK can be represented using a JSON-format design rule abstraction, similar to mock-PDK design rules file provided.</p></li>
+<li><p>Primitive cells (NMOS/PMOS/Resistor/Capacitor) must be redefined for any new PDK.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Generators (JSON format): PDK specific primitive generators</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>List of parameterized generators supported by PDK cell generator (<a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/pdks/FinFET14nm_Mock_PDK/generators.json">generators</a>).</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>User constraints (JSON format): Design constraints provided for each netlist hierachy by the designer.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>ALIGN auto-generates constraints and also provide the designers to control the generated layout using a set of constraints e.g., <a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/examples/high_speed_comparator/high_speed_comparator.const.json">file.const.json</a> of user defined constraints.</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div>
+<div class="section" id="outputs">
+<h2>Outputs<a class="headerlink" href="#outputs" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Layout GDS: Final layout of the design. The output GDS can be imported into any GDSII viewer.</p></li>
+<li><p>Design JSON: Final layout which can be viewed using the ALIGN Viewer.</p></li>
+<li><p>Layout image: .jpg format of the layout saved using the <a class="reference external" href="https://github.com/KLayout/klayout">KLayout tool</a>.</p></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="ALIGN: Analog Layout, Intelligently Generated from Netlists" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, ALIGN team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

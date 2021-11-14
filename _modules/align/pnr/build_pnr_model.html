@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>align.pnr.build_pnr_model &mdash; ALIGN</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html"><img src="../../../_static/LOGO.PNG" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Notes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/flow.html">ALIGN: flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/flow.html#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/flow.html#outputs">Outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-0-check-prerequisites">Step 0: Check prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-1-clone-the-align-source-code-to-your-local-environment">Step 1: Clone the ALIGN source code to your local environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-2-create-a-python-virtualenv">Step 2: Create a Python virtualenv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-3a-install-align-as-a-user">Step 3a: Install ALIGN as a USER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-3b-install-align-as-a-developer">Step 3b: Install ALIGN as a DEVELOPER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-4-run-align">Step 4: Run ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-5-view-layout">Step 5: View layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/introduction.html">Introduction by Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/viewer.html">Layout viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/viewer.html#klayout-viewer">KLayout viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/viewer.html#align-viewer">ALIGN viewer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/debug.html">Debug</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#reinstalling-align">Reinstalling ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/const.html">Constraints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/const.html#constraint-options">Constraint options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/const.html#example-constraints">Example constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/upcoming.html">Upcoming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/upcoming.html#how-to-add-your-own-pdk">How to add your own pdk</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Datasets:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/database.html">Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#sized-netlists">Sized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#unsized-netlists">Unsized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#generalized-testbenches">Generalized testbenches</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.html">align package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.gui.html">align.gui package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pdk.html">align.pdk package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.primitive.html">align.primitive package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.utils.html">align.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.primitive.html">align.primitive package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.primitive.default.html">align.primitive.default package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pdk.html">align.pdk package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.primitive.default.html">align.primitive.default package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.utils.html">align.utils package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.gui.html">align.gui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ALIGN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>align.pnr.build_pnr_model</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for align.pnr.build_pnr_model</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">PnR</span>
+<span class="kn">from</span> <span class="nn">..schema.hacks</span> <span class="kn">import</span> <span class="n">VerilogJsonTop</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">NType</span> <span class="o">=</span> <span class="n">PnR</span><span class="o">.</span><span class="n">NType</span>
+<span class="n">Omark</span> <span class="o">=</span> <span class="n">PnR</span><span class="o">.</span><span class="n">Omark</span>
+
+<div class="viewcode-block" id="ReadVerilogJson"><a class="viewcode-back" href="../../../modules/align.pnr.html#align.pnr.build_pnr_model.ReadVerilogJson">[docs]</a><span class="k">def</span> <span class="nf">ReadVerilogJson</span><span class="p">(</span> <span class="n">DB</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">add_placement_info</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="n">hierTree</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">j</span><span class="p">[</span><span class="s1">&#39;modules&#39;</span><span class="p">]:</span>
+
+        <span class="n">temp_node</span> <span class="o">=</span> <span class="n">PnR</span><span class="o">.</span><span class="n">hierNode</span><span class="p">()</span>
+        <span class="n">temp_node</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">module</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;name&#39;</span> <span class="ow">in</span> <span class="n">module</span> <span class="k">else</span> <span class="n">module</span><span class="p">[</span><span class="s1">&#39;abstract_name&#39;</span><span class="p">]</span>
+        <span class="n">temp_node</span><span class="o">.</span><span class="n">isCompleted</span> <span class="o">=</span> <span class="mi">0</span>
+
+
+        <span class="n">Terminals</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">module</span><span class="p">[</span><span class="s1">&#39;parameters&#39;</span><span class="p">]:</span>
+            <span class="n">temp_terminal</span> <span class="o">=</span> <span class="n">PnR</span><span class="o">.</span><span class="n">terminal</span><span class="p">()</span>
+            <span class="n">temp_terminal</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">parameter</span>
+            <span class="n">temp_terminal</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="s1">&#39;input&#39;</span> <span class="c1"># All nets are inputs, we don&#39;t use this for anything do we?</span>
+            <span class="n">Terminals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">temp_terminal</span><span class="p">)</span>
+        <span class="n">temp_node</span><span class="o">.</span><span class="n">Terminals</span> <span class="o">=</span> <span class="n">Terminals</span>
+
+        <span class="n">terminal_map</span> <span class="o">=</span> <span class="p">{</span> <span class="n">term</span><span class="o">.</span><span class="n">name</span> <span class="p">:</span> <span class="n">term</span> <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="n">temp_node</span><span class="o">.</span><span class="n">Terminals</span><span class="p">}</span>
+        <span class="n">net_map</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">Blocks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">Nets</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">Block_name_map</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">Connecteds</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="n">module</span><span class="p">[</span><span class="s1">&#39;instances&#39;</span><span class="p">]:</span>
+            <span class="n">temp_blockComplex</span> <span class="o">=</span> <span class="n">PnR</span><span class="o">.</span><span class="n">blockComplex</span><span class="p">()</span>
+            <span class="n">current_instance</span> <span class="o">=</span> <span class="n">PnR</span><span class="o">.</span><span class="n">block</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="s1">&#39;template_name&#39;</span> <span class="ow">in</span> <span class="n">instance</span><span class="p">:</span>
+                <span class="n">current_instance</span><span class="o">.</span><span class="n">master</span> <span class="o">=</span> <span class="n">instance</span><span class="p">[</span><span class="s1">&#39;template_name&#39;</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="s1">&#39;abstract_template_name&#39;</span> <span class="ow">in</span> <span class="n">instance</span><span class="p">:</span>
+                <span class="n">current_instance</span><span class="o">.</span><span class="n">master</span> <span class="o">=</span> <span class="n">instance</span><span class="p">[</span><span class="s1">&#39;abstract_template_name&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Missing template_name (abstract or otherwise) in instance </span><span class="si">{</span><span class="n">instance</span><span class="si">}</span><span class="s1">&#39;</span>
+
+            <span class="n">current_instance</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">instance</span><span class="p">[</span><span class="s1">&#39;instance_name&#39;</span><span class="p">]</span>
+            <span class="n">Block_name_map</span><span class="p">[</span><span class="n">current_instance</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Blocks</span><span class="p">)</span>
+
+            <span class="n">blockPins</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">def</span> <span class="nf">process_connection</span><span class="p">(</span> <span class="nb">iter</span><span class="p">,</span> <span class="n">net_name</span><span class="p">):</span>
+                <span class="n">net_index</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">if</span> <span class="n">net_name</span> <span class="ow">in</span> <span class="n">net_map</span><span class="p">:</span>
+                    <span class="n">net_index</span> <span class="o">=</span> <span class="n">net_map</span><span class="p">[</span><span class="n">net_name</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">net_index</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Nets</span><span class="p">)</span>
+                    <span class="n">Nets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">PnR</span><span class="o">.</span><span class="n">net</span><span class="p">())</span>
+                    <span class="n">Connecteds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">[])</span>
+                    <span class="n">Nets</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">net_name</span>
+
+                    <span class="n">net_map</span><span class="p">[</span><span class="n">net_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">net_index</span>
+
+                <span class="c1"># Use a python list of list to workaround not being able to append to a C++ vector</span>
+                <span class="n">Connecteds</span><span class="p">[</span><span class="n">net_index</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">PnR</span><span class="o">.</span><span class="n">connectNode</span><span class="p">())</span>
+                <span class="n">Connecteds</span><span class="p">[</span><span class="n">net_index</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">PnR</span><span class="o">.</span><span class="n">Block</span>
+                <span class="n">Connecteds</span><span class="p">[</span><span class="n">net_index</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">iter</span> <span class="o">=</span> <span class="nb">iter</span>
+                <span class="n">Connecteds</span><span class="p">[</span><span class="n">net_index</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">iter2</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Blocks</span><span class="p">)</span>
+
+                <span class="k">return</span> <span class="n">net_index</span>
+
+
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">fa</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">instance</span><span class="p">[</span><span class="s1">&#39;fa_map&#39;</span><span class="p">]):</span>
+                <span class="n">temp_pin</span> <span class="o">=</span> <span class="n">PnR</span><span class="o">.</span><span class="n">pin</span><span class="p">()</span>
+                <span class="n">temp_pin</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">fa</span><span class="p">[</span><span class="s1">&#39;formal&#39;</span><span class="p">]</span>
+                <span class="n">net_name</span> <span class="o">=</span> <span class="n">fa</span><span class="p">[</span><span class="s1">&#39;actual&#39;</span><span class="p">]</span>
+                <span class="n">temp_pin</span><span class="o">.</span><span class="n">netIter</span> <span class="o">=</span> <span class="n">process_connection</span><span class="p">(</span> <span class="n">i</span><span class="p">,</span> <span class="n">net_name</span><span class="p">)</span>
+                <span class="n">blockPins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">temp_pin</span><span class="p">)</span>
+
+            <span class="n">current_instance</span><span class="o">.</span><span class="n">blockPins</span> <span class="o">=</span> <span class="n">blockPins</span>
+            <span class="n">temp_blockComplex</span><span class="o">.</span><span class="n">instance</span> <span class="o">=</span> <span class="p">[</span> <span class="n">current_instance</span> <span class="p">]</span>
+            <span class="n">Blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">temp_blockComplex</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">net</span><span class="p">,</span><span class="n">connected</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">Nets</span><span class="p">,</span><span class="n">Connecteds</span><span class="p">):</span>
+            <span class="n">net</span><span class="o">.</span><span class="n">connected</span> <span class="o">=</span> <span class="n">connected</span>
+            <span class="n">net</span><span class="o">.</span><span class="n">degree</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">connected</span><span class="p">)</span>
+
+        <span class="n">temp_node</span><span class="o">.</span><span class="n">Blocks</span> <span class="o">=</span> <span class="n">Blocks</span>
+        <span class="n">temp_node</span><span class="o">.</span><span class="n">Nets</span> <span class="o">=</span> <span class="n">Nets</span>
+        <span class="n">temp_node</span><span class="o">.</span><span class="n">Block_name_map</span> <span class="o">=</span> <span class="n">Block_name_map</span>
+
+        <span class="n">hierTree</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">temp_node</span><span class="p">)</span>
+
+    <span class="n">DB</span><span class="o">.</span><span class="n">hierTree</span> <span class="o">=</span> <span class="n">hierTree</span>
+
+    <span class="n">global_signals</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">global_signal</span> <span class="ow">in</span> <span class="n">j</span><span class="p">[</span><span class="s1">&#39;global_signals&#39;</span><span class="p">]:</span>
+        <span class="n">global_signals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="n">global_signal</span><span class="p">[</span><span class="s1">&#39;prefix&#39;</span><span class="p">],</span> <span class="n">global_signal</span><span class="p">[</span><span class="s1">&#39;formal&#39;</span><span class="p">],</span> <span class="n">global_signal</span><span class="p">[</span><span class="s1">&#39;actual&#39;</span><span class="p">]))</span>
+
+    <span class="k">return</span> <span class="n">global_signals</span></div>
+
+<span class="k">def</span> <span class="nf">_ReadMap</span><span class="p">(</span> <span class="n">path</span><span class="p">,</span> <span class="n">mapname</span><span class="p">):</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span> <span class="sa">r</span><span class="s1">&#39;^(\S+)\s+(\S+)\s*$&#39;</span><span class="p">)</span>
+    <span class="n">tbl2</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="k">with</span> <span class="p">(</span><span class="n">d</span> <span class="o">/</span> <span class="n">mapname</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span> <span class="s2">&quot;rt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">m</span>
+            <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>
+            <span class="n">tbl2</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="nb">str</span><span class="p">(</span><span class="n">d</span> <span class="o">/</span> <span class="n">v</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;expanded table: </span><span class="si">{</span><span class="n">tbl2</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">tbl2</span>
+
+<span class="k">def</span> <span class="nf">_attach_constraint_files</span><span class="p">(</span> <span class="n">DB</span><span class="p">,</span> <span class="n">fpath</span><span class="p">):</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">curr_node</span> <span class="ow">in</span> <span class="n">DB</span><span class="o">.</span><span class="n">hierTree</span><span class="p">:</span>
+        <span class="n">curr_node</span><span class="o">.</span><span class="n">bias_Vgraph</span>  <span class="o">=</span> <span class="n">DB</span><span class="o">.</span><span class="n">getDrc_info</span><span class="p">()</span><span class="o">.</span><span class="n">Design_info</span><span class="o">.</span><span class="n">Vspace</span>
+        <span class="n">curr_node</span><span class="o">.</span><span class="n">bias_Hgraph</span>  <span class="o">=</span> <span class="n">DB</span><span class="o">.</span><span class="n">getDrc_info</span><span class="p">()</span><span class="o">.</span><span class="n">Design_info</span><span class="o">.</span><span class="n">Hspace</span>
+        <span class="n">curr_node</span><span class="o">.</span><span class="n">compact_style</span> <span class="o">=</span> <span class="n">DB</span><span class="o">.</span><span class="n">getDrc_info</span><span class="p">()</span><span class="o">.</span><span class="n">Design_info</span><span class="o">.</span><span class="n">compact_style</span>
+
+        <span class="n">fp</span> <span class="o">=</span> <span class="n">d</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">curr_node</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">.pnr.const.json&quot;</span>
+        <span class="k">if</span> <span class="n">fp</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">with</span> <span class="n">fp</span><span class="o">.</span><span class="n">open</span><span class="p">(</span> <span class="s2">&quot;rt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+                <span class="n">jsonStr</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="n">DB</span><span class="o">.</span><span class="n">ReadConstraint_Json</span><span class="p">(</span> <span class="n">curr_node</span><span class="p">,</span> <span class="n">jsonStr</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Finished reading contraint json file </span><span class="si">{</span><span class="n">curr_node</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">.pnr.const.json&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No constraint file for module </span><span class="si">{</span><span class="n">curr_node</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_ReadLEF</span><span class="p">(</span> <span class="n">DB</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">lefname</span><span class="p">):</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">/</span> <span class="n">lefname</span>
+    <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">with</span> <span class="n">p</span><span class="o">.</span><span class="n">open</span><span class="p">(</span> <span class="s2">&quot;rt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="n">DB</span><span class="o">.</span><span class="n">ReadLEFFromString</span><span class="p">(</span> <span class="n">s</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;LEF file </span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2"> doesn&#39;t exist.&quot;</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="semantic"><a class="viewcode-back" href="../../../modules/align.pnr.html#align.pnr.build_pnr_model.semantic">[docs]</a><span class="k">def</span> <span class="nf">semantic</span><span class="p">(</span><span class="n">DB</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">topcell</span><span class="p">,</span> <span class="n">global_signals</span><span class="p">):</span>
+    <span class="n">_attach_constraint_files</span><span class="p">(</span> <span class="n">DB</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+    <span class="n">DB</span><span class="o">.</span><span class="n">semantic0</span><span class="p">(</span> <span class="n">topcell</span><span class="p">)</span>
+    <span class="n">DB</span><span class="o">.</span><span class="n">semantic1</span><span class="p">(</span> <span class="n">global_signals</span><span class="p">)</span>
+    <span class="n">DB</span><span class="o">.</span><span class="n">semantic2</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="PnRdatabase"><a class="viewcode-back" href="../../../modules/align.pnr.html#align.pnr.build_pnr_model.PnRdatabase">[docs]</a><span class="k">def</span> <span class="nf">PnRdatabase</span><span class="p">(</span> <span class="n">path</span><span class="p">,</span> <span class="n">topcell</span><span class="p">,</span> <span class="n">vname</span><span class="p">,</span> <span class="n">lefname</span><span class="p">,</span> <span class="n">mapname</span><span class="p">,</span> <span class="n">drname</span><span class="p">):</span>
+    <span class="n">DB</span> <span class="o">=</span> <span class="n">PnR</span><span class="o">.</span><span class="n">PnRdatabase</span><span class="p">()</span>
+
+    <span class="k">assert</span> <span class="n">drname</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.json&#39;</span><span class="p">),</span> <span class="n">drname</span>
+    <span class="n">DB</span><span class="o">.</span><span class="n">ReadPDKJSON</span><span class="p">(</span> <span class="n">path</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">drname</span><span class="p">)</span>
+
+    <span class="n">_ReadLEF</span><span class="p">(</span> <span class="n">DB</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">lefname</span><span class="p">)</span>
+    <span class="n">DB</span><span class="o">.</span><span class="n">gdsData2</span> <span class="o">=</span> <span class="n">_ReadMap</span><span class="p">(</span> <span class="n">path</span><span class="p">,</span> <span class="n">mapname</span><span class="p">)</span>
+
+    <span class="n">j</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">vname</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.verilog.json&quot;</span><span class="p">):</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="n">VerilogJsonTop</span><span class="o">.</span><span class="n">parse_file</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">/</span> <span class="n">vname</span><span class="p">)</span>
+        <span class="n">global_signals</span> <span class="o">=</span> <span class="n">ReadVerilogJson</span><span class="p">(</span> <span class="n">DB</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
+        <span class="n">semantic</span><span class="p">(</span><span class="n">DB</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">topcell</span><span class="p">,</span> <span class="n">global_signals</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">global_signals</span> <span class="o">=</span> <span class="n">DB</span><span class="o">.</span><span class="n">ReadVerilog</span><span class="p">(</span> <span class="n">path</span><span class="p">,</span> <span class="n">vname</span><span class="p">,</span> <span class="n">topcell</span><span class="p">)</span>
+        <span class="n">semantic</span><span class="p">(</span><span class="n">DB</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">topcell</span><span class="p">,</span> <span class="n">global_signals</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">DB</span><span class="p">,</span> <span class="n">j</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, ALIGN team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,2292 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>align package &mdash; ALIGN</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="align.cell_fabric package" href="align.cell_fabric.html" />
+    <link rel="prev" title="Database" href="../notes/database.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html"><img src="../_static/LOGO.PNG" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Notes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../notes/flow.html">ALIGN: flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/flow.html#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/flow.html#outputs">Outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-0-check-prerequisites">Step 0: Check prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-1-clone-the-align-source-code-to-your-local-environment">Step 1: Clone the ALIGN source code to your local environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-2-create-a-python-virtualenv">Step 2: Create a Python virtualenv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-3a-install-align-as-a-user">Step 3a: Install ALIGN as a USER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-3b-install-align-as-a-developer">Step 3b: Install ALIGN as a DEVELOPER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-4-run-align">Step 4: Run ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-5-view-layout">Step 5: View layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/introduction.html">Introduction by Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/viewer.html">Layout viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/viewer.html#klayout-viewer">KLayout viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/viewer.html#align-viewer">ALIGN viewer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/debug.html">Debug</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#reinstalling-align">Reinstalling ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/const.html">Constraints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/const.html#constraint-options">Constraint options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/const.html#example-constraints">Example constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/upcoming.html">Upcoming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/upcoming.html#how-to-add-your-own-pdk">How to add your own pdk</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Datasets:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../notes/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/database.html">Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/database.html#sized-netlists">Sized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/database.html#unsized-netlists">Unsized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/database.html#generalized-testbenches">Generalized testbenches</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">align package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.gui.html">align.gui package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.pdk.html">align.pdk package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.primitive.html">align.primitive package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.schema.html">align.schema package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.utils.html">align.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="align.schema.html">align.schema package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.primitive.html">align.primitive package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="align.primitive.default.html">align.primitive.default package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.pdk.html">align.pdk package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="align.pdk.finfet.html">align.pdk.finfet package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.primitive.default.html">align.primitive.default package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.pdk.finfet.html">align.pdk.finfet package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.utils.html">align.utils package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.gui.html">align.gui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ALIGN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>align package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/modules/align.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="align-package">
+<h1>align package<a class="headerlink" href="#align-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="align.cell_fabric.html">align.cell_fabric package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="align.cell_fabric.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.cell_fabric.html#module-align.cell_fabric.canvas">align.cell_fabric.canvas module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.cell_fabric.html#module-align.cell_fabric.drc">align.cell_fabric.drc module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.cell_fabric.html#module-align.cell_fabric.gen_gds_json">align.cell_fabric.gen_gds_json module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.cell_fabric.html#module-align.cell_fabric.gen_lef">align.cell_fabric.gen_lef module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.cell_fabric.html#module-align.cell_fabric.generators">align.cell_fabric.generators module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.cell_fabric.html#module-align.cell_fabric.grid">align.cell_fabric.grid module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.cell_fabric.html#module-align.cell_fabric.lef_parser">align.cell_fabric.lef_parser module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.cell_fabric.html#module-align.cell_fabric.lef_to_json">align.cell_fabric.lef_to_json module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.cell_fabric.html#module-align.cell_fabric.pdk">align.cell_fabric.pdk module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.cell_fabric.html#module-align.cell_fabric.pex">align.cell_fabric.pex module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.cell_fabric.html#module-align.cell_fabric.positive_coord">align.cell_fabric.positive_coord module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.cell_fabric.html#module-align.cell_fabric.postprocess">align.cell_fabric.postprocess module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.cell_fabric.html#module-align.cell_fabric.remove_duplicates">align.cell_fabric.remove_duplicates module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.cell_fabric.html#module-align.cell_fabric.routing_collateral">align.cell_fabric.routing_collateral module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.cell_fabric.html#module-align.cell_fabric.transformation">align.cell_fabric.transformation module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.cell_fabric.html#module-align.cell_fabric">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="align.compiler.html">align.compiler package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="align.compiler.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.compiler.html#module-align.compiler.compiler">align.compiler.compiler module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.compiler.html#module-align.compiler.create_array_hierarchy">align.compiler.create_array_hierarchy module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.compiler.html#module-align.compiler.create_database">align.compiler.create_database module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.compiler.html#module-align.compiler.find_constraint">align.compiler.find_constraint module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.compiler.html#module-align.compiler.match_graph">align.compiler.match_graph module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.compiler.html#module-align.compiler.preprocess">align.compiler.preprocess module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.compiler.html#module-align.compiler.user_const">align.compiler.user_const module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.compiler.html#module-align.compiler.util">align.compiler.util module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.compiler.html#module-align.compiler.write_verilog_lef">align.compiler.write_verilog_lef module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.compiler.html#module-align.compiler">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="align.gdsconv.html">align.gdsconv package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="align.gdsconv.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.gdsconv.html#module-align.gdsconv.gds2json">align.gdsconv.gds2json module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.gdsconv.html#module-align.gdsconv.gds2prettyjson">align.gdsconv.gds2prettyjson module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.gdsconv.html#module-align.gdsconv.json2gds">align.gdsconv.json2gds module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.gdsconv.html#module-align.gdsconv.json2txt">align.gdsconv.json2txt module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.gdsconv.html#module-align.gdsconv.txt2json">align.gdsconv.txt2json module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.gdsconv.html#module-align.gdsconv.txt2prettyjson">align.gdsconv.txt2prettyjson module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.gdsconv.html#module-align.gdsconv">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="align.gui.html">align.gui package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="align.gui.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.gui.html#module-align.gui.mockup">align.gui.mockup module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.gui.html#module-align.gui">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="align.pdk.html">align.pdk package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="align.pdk.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="align.pdk.finfet.html">align.pdk.finfet package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="align.pdk.finfet.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="align.pdk.finfet.html#module-align.pdk.finfet.canvas">align.pdk.finfet.canvas module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="align.pdk.finfet.html#module-align.pdk.finfet.digital">align.pdk.finfet.digital module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="align.pdk.finfet.html#module-align.pdk.finfet.generic_transistor">align.pdk.finfet.generic_transistor module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="align.pdk.finfet.html#module-align.pdk.finfet.resistor">align.pdk.finfet.resistor module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="align.pdk.finfet.html#module-align.pdk.finfet.transistor">align.pdk.finfet.transistor module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="align.pdk.finfet.html#module-align.pdk.finfet.transistor_array">align.pdk.finfet.transistor_array module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="align.pdk.finfet.html#module-align.pdk.finfet">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="align.pdk.html#module-align.pdk">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="align.pnr.html">align.pnr package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="align.pnr.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.pnr.html#module-align.pnr.build_pnr_model">align.pnr.build_pnr_model module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.pnr.html#module-align.pnr.checker">align.pnr.checker module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.pnr.html#module-align.pnr.checkers">align.pnr.checkers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.pnr.html#module-align.pnr.cmdline">align.pnr.cmdline module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.pnr.html#module-align.pnr.hpwl">align.pnr.hpwl module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.pnr.html#module-align.pnr.main">align.pnr.main module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.pnr.html#module-align.pnr.render_placement">align.pnr.render_placement module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.pnr.html#module-align.pnr.toplevel">align.pnr.toplevel module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.pnr.html#module-align.pnr.write_constraint">align.pnr.write_constraint module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.pnr.html#module-align.pnr">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="align.primitive.html">align.primitive package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="align.primitive.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="align.primitive.default.html">align.primitive.default package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="align.primitive.default.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="align.primitive.default.html#module-align.primitive.default.canvas">align.primitive.default.canvas module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="align.primitive.default.html#module-align.primitive.default.cap">align.primitive.default.cap module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="align.primitive.default.html#module-align.primitive.default.guard_ring">align.primitive.default.guard_ring module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="align.primitive.default.html#module-align.primitive.default.mos">align.primitive.default.mos module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="align.primitive.default.html#module-align.primitive.default.res">align.primitive.default.res module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="align.primitive.default.html#module-align.primitive.default.via">align.primitive.default.via module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="align.primitive.default.html#module-align.primitive.default">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="align.primitive.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.primitive.html#module-align.primitive.main">align.primitive.main module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.primitive.html#module-align.primitive">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="align.schema.html">align.schema package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="align.schema.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.schema.html#module-align.schema.checker">align.schema.checker module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.schema.html#module-align.schema.constraint">align.schema.constraint module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.schema.html#module-align.schema.gen_dot">align.schema.gen_dot module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.schema.html#module-align.schema.graph">align.schema.graph module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.schema.html#module-align.schema.hacks">align.schema.hacks module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.schema.html#module-align.schema.instance">align.schema.instance module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.schema.html#module-align.schema.library">align.schema.library module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.schema.html#module-align.schema.model">align.schema.model module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.schema.html#module-align.schema.parser">align.schema.parser module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.schema.html#module-align.schema.pdk">align.schema.pdk module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.schema.html#module-align.schema.subcircuit">align.schema.subcircuit module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.schema.html#module-align.schema.transistor">align.schema.transistor module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.schema.html#module-align.schema.types">align.schema.types module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.schema.html#module-align.schema.visitor">align.schema.visitor module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.schema.html#module-align.schema">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="align.utils.html">align.utils package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="align.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.utils.html#module-align.utils.gds2png">align.utils.gds2png module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.utils.html#module-align.utils.logging_local">align.utils.logging_local module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.utils.html#module-align.utils.logmanager">align.utils.logmanager module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.utils.html#module-align.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-align.PnR">
+<span id="align-pnr-module"></span><h2>align.PnR module<a class="headerlink" href="#module-align.PnR" title="Permalink to this headline">¶</a></h2>
+<p>pybind11 plugin for PnR</p>
+<dl class="py class">
+<dt id="align.PnR.AlignBlock">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">AlignBlock</code><a class="headerlink" href="#align.PnR.AlignBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.AlignBlock.blocks">
+<em class="property">property </em><code class="sig-name descname">blocks</code><a class="headerlink" href="#align.PnR.AlignBlock.blocks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.AlignBlock.horizon">
+<em class="property">property </em><code class="sig-name descname">horizon</code><a class="headerlink" href="#align.PnR.AlignBlock.horizon" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.Alignment">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">Alignment</code><a class="headerlink" href="#align.PnR.Alignment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.Alignment.blockid1">
+<em class="property">property </em><code class="sig-name descname">blockid1</code><a class="headerlink" href="#align.PnR.Alignment.blockid1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Alignment.blockid2">
+<em class="property">property </em><code class="sig-name descname">blockid2</code><a class="headerlink" href="#align.PnR.Alignment.blockid2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Alignment.distance">
+<em class="property">property </em><code class="sig-name descname">distance</code><a class="headerlink" href="#align.PnR.Alignment.distance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Alignment.horizon">
+<em class="property">property </em><code class="sig-name descname">horizon</code><a class="headerlink" href="#align.PnR.Alignment.horizon" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.Bmark">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">Bmark</code><a class="headerlink" href="#align.PnR.Bmark" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<p>Members:</p>
+<p>TL</p>
+<p>TC</p>
+<p>TR</p>
+<p>RT</p>
+<p>RC</p>
+<p>RB</p>
+<p>BR</p>
+<p>BC</p>
+<p>BL</p>
+<p>LB</p>
+<p>LC</p>
+<p>LT</p>
+<dl class="py attribute">
+<dt id="align.PnR.Bmark.BC">
+<code class="sig-name descname">BC</code><em class="property"> = &lt;Bmark.BC: 7&gt;</em><a class="headerlink" href="#align.PnR.Bmark.BC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="align.PnR.Bmark.BL">
+<code class="sig-name descname">BL</code><em class="property"> = &lt;Bmark.BL: 8&gt;</em><a class="headerlink" href="#align.PnR.Bmark.BL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="align.PnR.Bmark.BR">
+<code class="sig-name descname">BR</code><em class="property"> = &lt;Bmark.BR: 6&gt;</em><a class="headerlink" href="#align.PnR.Bmark.BR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="align.PnR.Bmark.LB">
+<code class="sig-name descname">LB</code><em class="property"> = &lt;Bmark.LB: 9&gt;</em><a class="headerlink" href="#align.PnR.Bmark.LB" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="align.PnR.Bmark.LC">
+<code class="sig-name descname">LC</code><em class="property"> = &lt;Bmark.LC: 10&gt;</em><a class="headerlink" href="#align.PnR.Bmark.LC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="align.PnR.Bmark.LT">
+<code class="sig-name descname">LT</code><em class="property"> = &lt;Bmark.LT: 11&gt;</em><a class="headerlink" href="#align.PnR.Bmark.LT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="align.PnR.Bmark.RB">
+<code class="sig-name descname">RB</code><em class="property"> = &lt;Bmark.RB: 5&gt;</em><a class="headerlink" href="#align.PnR.Bmark.RB" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="align.PnR.Bmark.RC">
+<code class="sig-name descname">RC</code><em class="property"> = &lt;Bmark.RC: 4&gt;</em><a class="headerlink" href="#align.PnR.Bmark.RC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="align.PnR.Bmark.RT">
+<code class="sig-name descname">RT</code><em class="property"> = &lt;Bmark.RT: 3&gt;</em><a class="headerlink" href="#align.PnR.Bmark.RT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="align.PnR.Bmark.TC">
+<code class="sig-name descname">TC</code><em class="property"> = &lt;Bmark.TC: 1&gt;</em><a class="headerlink" href="#align.PnR.Bmark.TC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="align.PnR.Bmark.TL">
+<code class="sig-name descname">TL</code><em class="property"> = &lt;Bmark.TL: 0&gt;</em><a class="headerlink" href="#align.PnR.Bmark.TL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="align.PnR.Bmark.TR">
+<code class="sig-name descname">TR</code><em class="property"> = &lt;Bmark.TR: 2&gt;</em><a class="headerlink" href="#align.PnR.Bmark.TR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Bmark.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#align.PnR.Bmark.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Bmark.value">
+<em class="property">property </em><code class="sig-name descname">value</code><a class="headerlink" href="#align.PnR.Bmark.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.CCCap">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">CCCap</code><a class="headerlink" href="#align.PnR.CCCap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.CCCap.CCCap_name">
+<em class="property">property </em><code class="sig-name descname">CCCap_name</code><a class="headerlink" href="#align.PnR.CCCap.CCCap_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.CCCap.Unit_capacitor">
+<em class="property">property </em><code class="sig-name descname">Unit_capacitor</code><a class="headerlink" href="#align.PnR.CCCap.Unit_capacitor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.CCCap.cap_r">
+<em class="property">property </em><code class="sig-name descname">cap_r</code><a class="headerlink" href="#align.PnR.CCCap.cap_r" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.CCCap.cap_ratio">
+<em class="property">property </em><code class="sig-name descname">cap_ratio</code><a class="headerlink" href="#align.PnR.CCCap.cap_ratio" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.CCCap.cap_s">
+<em class="property">property </em><code class="sig-name descname">cap_s</code><a class="headerlink" href="#align.PnR.CCCap.cap_s" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.CCCap.dummy_flag">
+<em class="property">property </em><code class="sig-name descname">dummy_flag</code><a class="headerlink" href="#align.PnR.CCCap.dummy_flag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.CCCap.size">
+<em class="property">property </em><code class="sig-name descname">size</code><a class="headerlink" href="#align.PnR.CCCap.size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.C_const">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">C_const</code><a class="headerlink" href="#align.PnR.C_const" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.C_const.C">
+<em class="property">property </em><code class="sig-name descname">C</code><a class="headerlink" href="#align.PnR.C_const.C" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.C_const.end_pin">
+<em class="property">property </em><code class="sig-name descname">end_pin</code><a class="headerlink" href="#align.PnR.C_const.end_pin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.C_const.net_name">
+<em class="property">property </em><code class="sig-name descname">net_name</code><a class="headerlink" href="#align.PnR.C_const.net_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.C_const.start_pin">
+<em class="property">property </em><code class="sig-name descname">start_pin</code><a class="headerlink" href="#align.PnR.C_const.start_pin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.Drc_info">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">Drc_info</code><a class="headerlink" href="#align.PnR.Drc_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.Drc_info.Design_info">
+<em class="property">property </em><code class="sig-name descname">Design_info</code><a class="headerlink" href="#align.PnR.Drc_info.Design_info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Drc_info.Guardring_info">
+<em class="property">property </em><code class="sig-name descname">Guardring_info</code><a class="headerlink" href="#align.PnR.Drc_info.Guardring_info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Drc_info.MaskID_Metal">
+<em class="property">property </em><code class="sig-name descname">MaskID_Metal</code><a class="headerlink" href="#align.PnR.Drc_info.MaskID_Metal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Drc_info.MaskID_Via">
+<em class="property">property </em><code class="sig-name descname">MaskID_Via</code><a class="headerlink" href="#align.PnR.Drc_info.MaskID_Via" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Drc_info.MaxLayer">
+<em class="property">property </em><code class="sig-name descname">MaxLayer</code><a class="headerlink" href="#align.PnR.Drc_info.MaxLayer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Drc_info.Metal_info">
+<em class="property">property </em><code class="sig-name descname">Metal_info</code><a class="headerlink" href="#align.PnR.Drc_info.Metal_info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Drc_info.Metalmap">
+<em class="property">property </em><code class="sig-name descname">Metalmap</code><a class="headerlink" href="#align.PnR.Drc_info.Metalmap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Drc_info.Via_info">
+<em class="property">property </em><code class="sig-name descname">Via_info</code><a class="headerlink" href="#align.PnR.Drc_info.Via_info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Drc_info.Via_model">
+<em class="property">property </em><code class="sig-name descname">Via_model</code><a class="headerlink" href="#align.PnR.Drc_info.Via_model" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Drc_info.Viamap">
+<em class="property">property </em><code class="sig-name descname">Viamap</code><a class="headerlink" href="#align.PnR.Drc_info.Viamap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Drc_info.metal_weight">
+<em class="property">property </em><code class="sig-name descname">metal_weight</code><a class="headerlink" href="#align.PnR.Drc_info.metal_weight" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Drc_info.top_boundary">
+<em class="property">property </em><code class="sig-name descname">top_boundary</code><a class="headerlink" href="#align.PnR.Drc_info.top_boundary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.GuardRingIfc">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">GuardRingIfc</code><a class="headerlink" href="#align.PnR.GuardRingIfc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.Guardring_Const">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">Guardring_Const</code><a class="headerlink" href="#align.PnR.Guardring_Const" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.Guardring_Const.block_name">
+<em class="property">property </em><code class="sig-name descname">block_name</code><a class="headerlink" href="#align.PnR.Guardring_Const.block_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Guardring_Const.global_pin">
+<em class="property">property </em><code class="sig-name descname">global_pin</code><a class="headerlink" href="#align.PnR.Guardring_Const.global_pin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Guardring_Const.guard_ring_primitives">
+<em class="property">property </em><code class="sig-name descname">guard_ring_primitives</code><a class="headerlink" href="#align.PnR.Guardring_Const.guard_ring_primitives" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.MNASimulationIfc">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">MNASimulationIfc</code><a class="headerlink" href="#align.PnR.MNASimulationIfc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.MNASimulationIfc.Clear_Power_Grid">
+<code class="sig-name descname">Clear_Power_Grid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.MNASimulationIfc" title="align.PnR.MNASimulationIfc">align.PnR.MNASimulationIfc</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PowerGrid" title="align.PnR.PowerGrid">align.PnR.PowerGrid</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a><a class="headerlink" href="#align.PnR.MNASimulationIfc.Clear_Power_Grid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.MNASimulationIfc.Return_Worst_Voltage">
+<code class="sig-name descname">Return_Worst_Voltage</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.MNASimulationIfc" title="align.PnR.MNASimulationIfc">align.PnR.MNASimulationIfc</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a><a class="headerlink" href="#align.PnR.MNASimulationIfc.Return_Worst_Voltage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.MatchBlock">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">MatchBlock</code><a class="headerlink" href="#align.PnR.MatchBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.MatchBlock.blockid1">
+<em class="property">property </em><code class="sig-name descname">blockid1</code><a class="headerlink" href="#align.PnR.MatchBlock.blockid1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.MatchBlock.blockid2">
+<em class="property">property </em><code class="sig-name descname">blockid2</code><a class="headerlink" href="#align.PnR.MatchBlock.blockid2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.Metal">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">Metal</code><a class="headerlink" href="#align.PnR.Metal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.Metal.LinePoint">
+<em class="property">property </em><code class="sig-name descname">LinePoint</code><a class="headerlink" href="#align.PnR.Metal.LinePoint" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Metal.MetalIdx">
+<em class="property">property </em><code class="sig-name descname">MetalIdx</code><a class="headerlink" href="#align.PnR.Metal.MetalIdx" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Metal.MetalRect">
+<em class="property">property </em><code class="sig-name descname">MetalRect</code><a class="headerlink" href="#align.PnR.Metal.MetalRect" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Metal.width">
+<em class="property">property </em><code class="sig-name descname">width</code><a class="headerlink" href="#align.PnR.Metal.width" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.NType">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">NType</code><a class="headerlink" href="#align.PnR.NType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<p>Members:</p>
+<p>Block</p>
+<p>Terminal</p>
+<dl class="py attribute">
+<dt id="align.PnR.NType.Block">
+<code class="sig-name descname">Block</code><em class="property"> = &lt;NType.Block: 0&gt;</em><a class="headerlink" href="#align.PnR.NType.Block" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="align.PnR.NType.Terminal">
+<code class="sig-name descname">Terminal</code><em class="property"> = &lt;NType.Terminal: 1&gt;</em><a class="headerlink" href="#align.PnR.NType.Terminal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.NType.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#align.PnR.NType.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.NType.value">
+<em class="property">property </em><code class="sig-name descname">value</code><a class="headerlink" href="#align.PnR.NType.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.Omark">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">Omark</code><a class="headerlink" href="#align.PnR.Omark" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<p>Members:</p>
+<p>N</p>
+<p>S</p>
+<p>W</p>
+<p>E</p>
+<p>FN</p>
+<p>FS</p>
+<p>FW</p>
+<p>FE</p>
+<dl class="py attribute">
+<dt id="align.PnR.Omark.E">
+<code class="sig-name descname">E</code><em class="property"> = &lt;Omark.E: 3&gt;</em><a class="headerlink" href="#align.PnR.Omark.E" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="align.PnR.Omark.FE">
+<code class="sig-name descname">FE</code><em class="property"> = &lt;Omark.FE: 7&gt;</em><a class="headerlink" href="#align.PnR.Omark.FE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="align.PnR.Omark.FN">
+<code class="sig-name descname">FN</code><em class="property"> = &lt;Omark.FN: 4&gt;</em><a class="headerlink" href="#align.PnR.Omark.FN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="align.PnR.Omark.FS">
+<code class="sig-name descname">FS</code><em class="property"> = &lt;Omark.FS: 5&gt;</em><a class="headerlink" href="#align.PnR.Omark.FS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="align.PnR.Omark.FW">
+<code class="sig-name descname">FW</code><em class="property"> = &lt;Omark.FW: 6&gt;</em><a class="headerlink" href="#align.PnR.Omark.FW" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="align.PnR.Omark.N">
+<code class="sig-name descname">N</code><em class="property"> = &lt;Omark.N: 0&gt;</em><a class="headerlink" href="#align.PnR.Omark.N" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="align.PnR.Omark.S">
+<code class="sig-name descname">S</code><em class="property"> = &lt;Omark.S: 1&gt;</em><a class="headerlink" href="#align.PnR.Omark.S" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="align.PnR.Omark.W">
+<code class="sig-name descname">W</code><em class="property"> = &lt;Omark.W: 2&gt;</em><a class="headerlink" href="#align.PnR.Omark.W" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Omark.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#align.PnR.Omark.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Omark.value">
+<em class="property">property </em><code class="sig-name descname">value</code><a class="headerlink" href="#align.PnR.Omark.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.PlacerHyperparameters">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">PlacerHyperparameters</code><a class="headerlink" href="#align.PnR.PlacerHyperparameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.PlacerHyperparameters.ALPHA">
+<em class="property">property </em><code class="sig-name descname">ALPHA</code><a class="headerlink" href="#align.PnR.PlacerHyperparameters.ALPHA" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PlacerHyperparameters.COUNT_LIMIT">
+<em class="property">property </em><code class="sig-name descname">COUNT_LIMIT</code><a class="headerlink" href="#align.PnR.PlacerHyperparameters.COUNT_LIMIT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PlacerHyperparameters.LAMBDA">
+<em class="property">property </em><code class="sig-name descname">LAMBDA</code><a class="headerlink" href="#align.PnR.PlacerHyperparameters.LAMBDA" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PlacerHyperparameters.T_INT">
+<em class="property">property </em><code class="sig-name descname">T_INT</code><a class="headerlink" href="#align.PnR.PlacerHyperparameters.T_INT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PlacerHyperparameters.T_MIN">
+<em class="property">property </em><code class="sig-name descname">T_MIN</code><a class="headerlink" href="#align.PnR.PlacerHyperparameters.T_MIN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.PlacerIfc">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">PlacerIfc</code><a class="headerlink" href="#align.PnR.PlacerIfc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.PlacerIfc.getNode">
+<code class="sig-name descname">getNode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PlacerIfc" title="align.PnR.PlacerIfc">align.PnR.PlacerIfc</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#align.PnR.hierNode" title="align.PnR.hierNode">align.PnR.hierNode</a><a class="headerlink" href="#align.PnR.PlacerIfc.getNode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PlacerIfc.getNodeVecSize">
+<code class="sig-name descname">getNodeVecSize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PlacerIfc" title="align.PnR.PlacerIfc">align.PnR.PlacerIfc</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a><a class="headerlink" href="#align.PnR.PlacerIfc.getNodeVecSize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.Placer_Router_Cap_Ifc">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">Placer_Router_Cap_Ifc</code><a class="headerlink" href="#align.PnR.Placer_Router_Cap_Ifc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.PnRdatabase">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">PnRdatabase</code><a class="headerlink" href="#align.PnR.PnRdatabase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.AddingPowerPins">
+<code class="sig-name descname">AddingPowerPins</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.hierNode" title="align.PnR.hierNode">align.PnR.hierNode</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a><a class="headerlink" href="#align.PnR.PnRdatabase.AddingPowerPins" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.AppendToHierTree">
+<code class="sig-name descname">AppendToHierTree</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.hierNode" title="align.PnR.hierNode">align.PnR.hierNode</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a><a class="headerlink" href="#align.PnR.PnRdatabase.AppendToHierTree" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.CheckinChildnodetoBlock">
+<code class="sig-name descname">CheckinChildnodetoBlock</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.hierNode" title="align.PnR.hierNode">align.PnR.hierNode</a></span></em>, <em class="sig-param"><span class="n">arg1</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em>, <em class="sig-param"><span class="n">arg2</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.hierNode" title="align.PnR.hierNode">align.PnR.hierNode</a></span></em>, <em class="sig-param"><span class="n">arg3</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.Omark" title="align.PnR.Omark">align.PnR.Omark</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a><a class="headerlink" href="#align.PnR.PnRdatabase.CheckinChildnodetoBlock" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.CheckinHierNode">
+<code class="sig-name descname">CheckinHierNode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em>, <em class="sig-param"><span class="n">arg1</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.hierNode" title="align.PnR.hierNode">align.PnR.hierNode</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a><a class="headerlink" href="#align.PnR.PnRdatabase.CheckinHierNode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.CheckoutHierNode">
+<code class="sig-name descname">CheckoutHierNode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em>, <em class="sig-param"><span class="n">arg1</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#align.PnR.hierNode" title="align.PnR.hierNode">align.PnR.hierNode</a><a class="headerlink" href="#align.PnR.PnRdatabase.CheckoutHierNode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.CheckoutHierNodeVec">
+<code class="sig-name descname">CheckoutHierNodeVec</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em><span class="sig-paren">)</span> &#x2192; List<span class="p">[</span><a class="reference internal" href="#align.PnR.hierNode" title="align.PnR.hierNode">align.PnR.hierNode</a><span class="p">]</span><a class="headerlink" href="#align.PnR.PnRdatabase.CheckoutHierNodeVec" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.DRC_info">
+<em class="property">property </em><code class="sig-name descname">DRC_info</code><a class="headerlink" href="#align.PnR.PnRdatabase.DRC_info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.ExtractPinsToPowerPins">
+<code class="sig-name descname">ExtractPinsToPowerPins</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.hierNode" title="align.PnR.hierNode">align.PnR.hierNode</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a><a class="headerlink" href="#align.PnR.PnRdatabase.ExtractPinsToPowerPins" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.Extract_RemovePowerPins">
+<code class="sig-name descname">Extract_RemovePowerPins</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.hierNode" title="align.PnR.hierNode">align.PnR.hierNode</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a><a class="headerlink" href="#align.PnR.PnRdatabase.Extract_RemovePowerPins" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.PrintHierNode">
+<code class="sig-name descname">PrintHierNode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.hierNode" title="align.PnR.hierNode">align.PnR.hierNode</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a><a class="headerlink" href="#align.PnR.PnRdatabase.PrintHierNode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.PrintHierTree">
+<code class="sig-name descname">PrintHierTree</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a><a class="headerlink" href="#align.PnR.PnRdatabase.PrintHierTree" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.ReadConstraint_Json">
+<code class="sig-name descname">ReadConstraint_Json</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.hierNode" title="align.PnR.hierNode">align.PnR.hierNode</a></span></em>, <em class="sig-param"><span class="n">arg1</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a><a class="headerlink" href="#align.PnR.PnRdatabase.ReadConstraint_Json" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.ReadLEF">
+<code class="sig-name descname">ReadLEF</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a><a class="headerlink" href="#align.PnR.PnRdatabase.ReadLEF" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.ReadLEFFromString">
+<code class="sig-name descname">ReadLEFFromString</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a><a class="headerlink" href="#align.PnR.PnRdatabase.ReadLEFFromString" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.ReadPDKJSON">
+<code class="sig-name descname">ReadPDKJSON</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a><a class="headerlink" href="#align.PnR.PnRdatabase.ReadPDKJSON" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.ReadVerilog">
+<code class="sig-name descname">ReadVerilog</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">arg1</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">arg2</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em><span class="sig-paren">)</span> &#x2192; List<span class="p">[</span>Tuple<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">, </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">, </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span><span class="p">]</span><a class="headerlink" href="#align.PnR.PnRdatabase.ReadVerilog" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.RelOrt2AbsOrt">
+<code class="sig-name descname">RelOrt2AbsOrt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.Omark" title="align.PnR.Omark">align.PnR.Omark</a></span></em>, <em class="sig-param"><span class="n">arg1</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.Omark" title="align.PnR.Omark">align.PnR.Omark</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#align.PnR.Omark" title="align.PnR.Omark">align.PnR.Omark</a><a class="headerlink" href="#align.PnR.PnRdatabase.RelOrt2AbsOrt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.TransformBbox">
+<code class="sig-name descname">TransformBbox</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.bbox" title="align.PnR.bbox">align.PnR.bbox</a></span></em>, <em class="sig-param"><span class="n">arg1</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.point" title="align.PnR.point">align.PnR.point</a></span></em>, <em class="sig-param"><span class="n">arg2</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em>, <em class="sig-param"><span class="n">arg3</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em>, <em class="sig-param"><span class="n">arg4</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.Omark" title="align.PnR.Omark">align.PnR.Omark</a></span></em>, <em class="sig-param"><span class="n">arg5</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.TransformType" title="align.PnR.TransformType">align.PnR.TransformType</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a><a class="headerlink" href="#align.PnR.PnRdatabase.TransformBbox" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.TransformNode">
+<code class="sig-name descname">TransformNode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.hierNode" title="align.PnR.hierNode">align.PnR.hierNode</a></span></em>, <em class="sig-param"><span class="n">arg1</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.point" title="align.PnR.point">align.PnR.point</a></span></em>, <em class="sig-param"><span class="n">arg2</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.Omark" title="align.PnR.Omark">align.PnR.Omark</a></span></em>, <em class="sig-param"><span class="n">arg3</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.TransformType" title="align.PnR.TransformType">align.PnR.TransformType</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a><a class="headerlink" href="#align.PnR.PnRdatabase.TransformNode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.TransformPoint">
+<code class="sig-name descname">TransformPoint</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.point" title="align.PnR.point">align.PnR.point</a></span></em>, <em class="sig-param"><span class="n">arg1</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.point" title="align.PnR.point">align.PnR.point</a></span></em>, <em class="sig-param"><span class="n">arg2</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em>, <em class="sig-param"><span class="n">arg3</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em>, <em class="sig-param"><span class="n">arg4</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.Omark" title="align.PnR.Omark">align.PnR.Omark</a></span></em>, <em class="sig-param"><span class="n">arg5</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.TransformType" title="align.PnR.TransformType">align.PnR.TransformType</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a><a class="headerlink" href="#align.PnR.PnRdatabase.TransformPoint" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.TraverseHierTree">
+<code class="sig-name descname">TraverseHierTree</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em><span class="sig-paren">)</span> &#x2192; List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a><span class="p">]</span><a class="headerlink" href="#align.PnR.PnRdatabase.TraverseHierTree" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.WriteGcellGlobalRoute">
+<code class="sig-name descname">WriteGcellGlobalRoute</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.hierNode" title="align.PnR.hierNode">align.PnR.hierNode</a></span></em>, <em class="sig-param"><span class="n">arg1</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">arg2</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a><a class="headerlink" href="#align.PnR.PnRdatabase.WriteGcellGlobalRoute" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.WriteJSON">
+<code class="sig-name descname">WriteJSON</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.hierNode" title="align.PnR.hierNode">align.PnR.hierNode</a></span></em>, <em class="sig-param"><span class="n">arg1</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">arg2</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">arg3</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">arg4</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">arg5</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">arg6</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.Drc_info" title="align.PnR.Drc_info">align.PnR.Drc_info</a></span></em>, <em class="sig-param"><span class="n">arg7</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><a class="headerlink" href="#align.PnR.PnRdatabase.WriteJSON" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.WriteLef">
+<code class="sig-name descname">WriteLef</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.hierNode" title="align.PnR.hierNode">align.PnR.hierNode</a></span></em>, <em class="sig-param"><span class="n">arg1</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">arg2</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a><a class="headerlink" href="#align.PnR.PnRdatabase.WriteLef" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.Write_Current_Workload">
+<code class="sig-name descname">Write_Current_Workload</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.hierNode" title="align.PnR.hierNode">align.PnR.hierNode</a></span></em>, <em class="sig-param"><span class="n">arg1</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></span></em>, <em class="sig-param"><span class="n">arg2</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em>, <em class="sig-param"><span class="n">arg3</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a><a class="headerlink" href="#align.PnR.PnRdatabase.Write_Current_Workload" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.Write_Power_Mesh_Conf">
+<code class="sig-name descname">Write_Power_Mesh_Conf</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a><a class="headerlink" href="#align.PnR.PnRdatabase.Write_Power_Mesh_Conf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.Write_Router_Report">
+<code class="sig-name descname">Write_Router_Report</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.hierNode" title="align.PnR.hierNode">align.PnR.hierNode</a></span></em>, <em class="sig-param"><span class="n">arg1</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a><a class="headerlink" href="#align.PnR.PnRdatabase.Write_Router_Report" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.checkoutSingleLEF">
+<code class="sig-name descname">checkoutSingleLEF</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em><span class="sig-paren">)</span> &#x2192; Dict<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">, </span><a class="reference internal" href="#align.PnR.lefMacro" title="align.PnR.lefMacro">align.PnR.lefMacro</a><span class="p">]</span><a class="headerlink" href="#align.PnR.PnRdatabase.checkoutSingleLEF" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.gdsData2">
+<em class="property">property </em><code class="sig-name descname">gdsData2</code><a class="headerlink" href="#align.PnR.PnRdatabase.gdsData2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.getDrc_info">
+<code class="sig-name descname">getDrc_info</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#align.PnR.Drc_info" title="align.PnR.Drc_info">align.PnR.Drc_info</a><a class="headerlink" href="#align.PnR.PnRdatabase.getDrc_info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.hierTree">
+<em class="property">property </em><code class="sig-name descname">hierTree</code><a class="headerlink" href="#align.PnR.PnRdatabase.hierTree" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.lefData">
+<em class="property">property </em><code class="sig-name descname">lefData</code><a class="headerlink" href="#align.PnR.PnRdatabase.lefData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.semantic0">
+<code class="sig-name descname">semantic0</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a><a class="headerlink" href="#align.PnR.PnRdatabase.semantic0" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.semantic1">
+<code class="sig-name descname">semantic1</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n">List<span class="p">[</span>Tuple<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">, </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">, </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span><span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a><a class="headerlink" href="#align.PnR.PnRdatabase.semantic1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.semantic2">
+<code class="sig-name descname">semantic2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.PnRdatabase" title="align.PnR.PnRdatabase">align.PnR.PnRdatabase</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a><a class="headerlink" href="#align.PnR.PnRdatabase.semantic2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PnRdatabase.topidx">
+<em class="property">property </em><code class="sig-name descname">topidx</code><a class="headerlink" href="#align.PnR.PnRdatabase.topidx" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.PortPos">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">PortPos</code><a class="headerlink" href="#align.PnR.PortPos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.PortPos.pos">
+<em class="property">property </em><code class="sig-name descname">pos</code><a class="headerlink" href="#align.PnR.PortPos.pos" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PortPos.tid">
+<em class="property">property </em><code class="sig-name descname">tid</code><a class="headerlink" href="#align.PnR.PortPos.tid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.PowerGrid">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">PowerGrid</code><a class="headerlink" href="#align.PnR.PowerGrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.PowerGrid.metals">
+<em class="property">property </em><code class="sig-name descname">metals</code><a class="headerlink" href="#align.PnR.PowerGrid.metals" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PowerGrid.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#align.PnR.PowerGrid.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PowerGrid.vias">
+<em class="property">property </em><code class="sig-name descname">vias</code><a class="headerlink" href="#align.PnR.PowerGrid.vias" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.PowerNet">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">PowerNet</code><a class="headerlink" href="#align.PnR.PowerNet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.PowerNet.Pins">
+<em class="property">property </em><code class="sig-name descname">Pins</code><a class="headerlink" href="#align.PnR.PowerNet.Pins" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PowerNet.connected">
+<em class="property">property </em><code class="sig-name descname">connected</code><a class="headerlink" href="#align.PnR.PowerNet.connected" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PowerNet.dummy_connected">
+<em class="property">property </em><code class="sig-name descname">dummy_connected</code><a class="headerlink" href="#align.PnR.PowerNet.dummy_connected" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PowerNet.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#align.PnR.PowerNet.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PowerNet.path_metal">
+<em class="property">property </em><code class="sig-name descname">path_metal</code><a class="headerlink" href="#align.PnR.PowerNet.path_metal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PowerNet.path_via">
+<em class="property">property </em><code class="sig-name descname">path_via</code><a class="headerlink" href="#align.PnR.PowerNet.path_via" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.PowerNet.power">
+<em class="property">property </em><code class="sig-name descname">power</code><a class="headerlink" href="#align.PnR.PowerNet.power" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.Preplace">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">Preplace</code><a class="headerlink" href="#align.PnR.Preplace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.Preplace.blockid1">
+<em class="property">property </em><code class="sig-name descname">blockid1</code><a class="headerlink" href="#align.PnR.Preplace.blockid1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Preplace.blockid2">
+<em class="property">property </em><code class="sig-name descname">blockid2</code><a class="headerlink" href="#align.PnR.Preplace.blockid2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Preplace.conner">
+<em class="property">property </em><code class="sig-name descname">conner</code><a class="headerlink" href="#align.PnR.Preplace.conner" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Preplace.distance">
+<em class="property">property </em><code class="sig-name descname">distance</code><a class="headerlink" href="#align.PnR.Preplace.distance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Preplace.horizon">
+<em class="property">property </em><code class="sig-name descname">horizon</code><a class="headerlink" href="#align.PnR.Preplace.horizon" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.R_const">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">R_const</code><a class="headerlink" href="#align.PnR.R_const" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.R_const.R">
+<em class="property">property </em><code class="sig-name descname">R</code><a class="headerlink" href="#align.PnR.R_const.R" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.R_const.end_pin">
+<em class="property">property </em><code class="sig-name descname">end_pin</code><a class="headerlink" href="#align.PnR.R_const.end_pin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.R_const.net_name">
+<em class="property">property </em><code class="sig-name descname">net_name</code><a class="headerlink" href="#align.PnR.R_const.net_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.R_const.start_pin">
+<em class="property">property </em><code class="sig-name descname">start_pin</code><a class="headerlink" href="#align.PnR.R_const.start_pin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.ReadVerilogHelper">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">ReadVerilogHelper</code><a class="headerlink" href="#align.PnR.ReadVerilogHelper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.ReadVerilogHelper.parse_top">
+<code class="sig-name descname">parse_top</code><span class="sig-paren">(</span><em class="sig-param">self: align.PnR.ReadVerilogHelper</em>, <em class="sig-param">arg0: std::istream</em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a><a class="headerlink" href="#align.PnR.ReadVerilogHelper.parse_top" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.Router">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">Router</code><a class="headerlink" href="#align.PnR.Router" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.Router.RouteWork">
+<code class="sig-name descname">RouteWork</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.Router" title="align.PnR.Router">align.PnR.Router</a></span></em>, <em class="sig-param"><span class="n">arg0</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em>, <em class="sig-param"><span class="n">arg1</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.hierNode" title="align.PnR.hierNode">align.PnR.hierNode</a></span></em>, <em class="sig-param"><span class="n">arg2</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.Drc_info" title="align.PnR.Drc_info">align.PnR.Drc_info</a></span></em>, <em class="sig-param"><span class="n">arg3</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em>, <em class="sig-param"><span class="n">arg4</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em>, <em class="sig-param"><span class="n">arg5</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em>, <em class="sig-param"><span class="n">arg6</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em>, <em class="sig-param"><span class="n">arg7</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a><a class="headerlink" href="#align.PnR.Router.RouteWork" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.Smark">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">Smark</code><a class="headerlink" href="#align.PnR.Smark" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<p>Members:</p>
+<p>H</p>
+<p>V</p>
+<dl class="py attribute">
+<dt id="align.PnR.Smark.H">
+<code class="sig-name descname">H</code><em class="property"> = &lt;Smark.H: 0&gt;</em><a class="headerlink" href="#align.PnR.Smark.H" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="align.PnR.Smark.V">
+<code class="sig-name descname">V</code><em class="property"> = &lt;Smark.V: 1&gt;</em><a class="headerlink" href="#align.PnR.Smark.V" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Smark.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#align.PnR.Smark.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Smark.value">
+<em class="property">property </em><code class="sig-name descname">value</code><a class="headerlink" href="#align.PnR.Smark.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.SymmNet">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">SymmNet</code><a class="headerlink" href="#align.PnR.SymmNet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.SymmNet.iter1">
+<em class="property">property </em><code class="sig-name descname">iter1</code><a class="headerlink" href="#align.PnR.SymmNet.iter1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.SymmNet.iter2">
+<em class="property">property </em><code class="sig-name descname">iter2</code><a class="headerlink" href="#align.PnR.SymmNet.iter2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.SymmNet.net1">
+<em class="property">property </em><code class="sig-name descname">net1</code><a class="headerlink" href="#align.PnR.SymmNet.net1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.SymmNet.net2">
+<em class="property">property </em><code class="sig-name descname">net2</code><a class="headerlink" href="#align.PnR.SymmNet.net2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.SymmPairBlock">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">SymmPairBlock</code><a class="headerlink" href="#align.PnR.SymmPairBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.SymmPairBlock.selfsym">
+<em class="property">property </em><code class="sig-name descname">selfsym</code><a class="headerlink" href="#align.PnR.SymmPairBlock.selfsym" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.SymmPairBlock.sympair">
+<em class="property">property </em><code class="sig-name descname">sympair</code><a class="headerlink" href="#align.PnR.SymmPairBlock.sympair" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.TransformType">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">TransformType</code><a class="headerlink" href="#align.PnR.TransformType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<p>Members:</p>
+<p>Forward</p>
+<p>Backward</p>
+<dl class="py attribute">
+<dt id="align.PnR.TransformType.Backward">
+<code class="sig-name descname">Backward</code><em class="property"> = &lt;TransformType.Backward: 1&gt;</em><a class="headerlink" href="#align.PnR.TransformType.Backward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="align.PnR.TransformType.Forward">
+<code class="sig-name descname">Forward</code><em class="property"> = &lt;TransformType.Forward: 0&gt;</em><a class="headerlink" href="#align.PnR.TransformType.Forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.TransformType.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#align.PnR.TransformType.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.TransformType.value">
+<em class="property">property </em><code class="sig-name descname">value</code><a class="headerlink" href="#align.PnR.TransformType.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.Via">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">Via</code><a class="headerlink" href="#align.PnR.Via" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.Via.LowerMetalRect">
+<em class="property">property </em><code class="sig-name descname">LowerMetalRect</code><a class="headerlink" href="#align.PnR.Via.LowerMetalRect" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Via.UpperMetalRect">
+<em class="property">property </em><code class="sig-name descname">UpperMetalRect</code><a class="headerlink" href="#align.PnR.Via.UpperMetalRect" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Via.ViaRect">
+<em class="property">property </em><code class="sig-name descname">ViaRect</code><a class="headerlink" href="#align.PnR.Via.ViaRect" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Via.model_index">
+<em class="property">property </em><code class="sig-name descname">model_index</code><a class="headerlink" href="#align.PnR.Via.model_index" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Via.originpos">
+<em class="property">property </em><code class="sig-name descname">originpos</code><a class="headerlink" href="#align.PnR.Via.originpos" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.Via.placedpos">
+<em class="property">property </em><code class="sig-name descname">placedpos</code><a class="headerlink" href="#align.PnR.Via.placedpos" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.ViaModel">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">ViaModel</code><a class="headerlink" href="#align.PnR.ViaModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.ViaModel.LowerIdx">
+<em class="property">property </em><code class="sig-name descname">LowerIdx</code><a class="headerlink" href="#align.PnR.ViaModel.LowerIdx" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.ViaModel.LowerRect">
+<em class="property">property </em><code class="sig-name descname">LowerRect</code><a class="headerlink" href="#align.PnR.ViaModel.LowerRect" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.ViaModel.R">
+<em class="property">property </em><code class="sig-name descname">R</code><a class="headerlink" href="#align.PnR.ViaModel.R" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.ViaModel.UpperIdx">
+<em class="property">property </em><code class="sig-name descname">UpperIdx</code><a class="headerlink" href="#align.PnR.ViaModel.UpperIdx" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.ViaModel.UpperRect">
+<em class="property">property </em><code class="sig-name descname">UpperRect</code><a class="headerlink" href="#align.PnR.ViaModel.UpperRect" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.ViaModel.ViaIdx">
+<em class="property">property </em><code class="sig-name descname">ViaIdx</code><a class="headerlink" href="#align.PnR.ViaModel.ViaIdx" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.ViaModel.ViaRect">
+<em class="property">property </em><code class="sig-name descname">ViaRect</code><a class="headerlink" href="#align.PnR.ViaModel.ViaRect" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.ViaModel.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#align.PnR.ViaModel.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.bbox">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">bbox</code><a class="headerlink" href="#align.PnR.bbox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.bbox.LL">
+<em class="property">property </em><code class="sig-name descname">LL</code><a class="headerlink" href="#align.PnR.bbox.LL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.bbox.UR">
+<em class="property">property </em><code class="sig-name descname">UR</code><a class="headerlink" href="#align.PnR.bbox.UR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.bbox.center">
+<code class="sig-name descname">center</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#align.PnR.bbox" title="align.PnR.bbox">align.PnR.bbox</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#align.PnR.point" title="align.PnR.point">align.PnR.point</a><a class="headerlink" href="#align.PnR.bbox.center" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.block">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">block</code><a class="headerlink" href="#align.PnR.block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.block.PowerNets">
+<em class="property">property </em><code class="sig-name descname">PowerNets</code><a class="headerlink" href="#align.PnR.block.PowerNets" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.block.blockPins">
+<em class="property">property </em><code class="sig-name descname">blockPins</code><a class="headerlink" href="#align.PnR.block.blockPins" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.block.dummy_power_pin">
+<em class="property">property </em><code class="sig-name descname">dummy_power_pin</code><a class="headerlink" href="#align.PnR.block.dummy_power_pin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.block.gdsFile">
+<em class="property">property </em><code class="sig-name descname">gdsFile</code><a class="headerlink" href="#align.PnR.block.gdsFile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.block.height">
+<em class="property">property </em><code class="sig-name descname">height</code><a class="headerlink" href="#align.PnR.block.height" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.block.interMetals">
+<em class="property">property </em><code class="sig-name descname">interMetals</code><a class="headerlink" href="#align.PnR.block.interMetals" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.block.isLeaf">
+<em class="property">property </em><code class="sig-name descname">isLeaf</code><a class="headerlink" href="#align.PnR.block.isLeaf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.block.lefmaster">
+<em class="property">property </em><code class="sig-name descname">lefmaster</code><a class="headerlink" href="#align.PnR.block.lefmaster" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.block.master">
+<em class="property">property </em><code class="sig-name descname">master</code><a class="headerlink" href="#align.PnR.block.master" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.block.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#align.PnR.block.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.block.orient">
+<em class="property">property </em><code class="sig-name descname">orient</code><a class="headerlink" href="#align.PnR.block.orient" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.block.originBox">
+<em class="property">property </em><code class="sig-name descname">originBox</code><a class="headerlink" href="#align.PnR.block.originBox" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.block.originCenter">
+<em class="property">property </em><code class="sig-name descname">originCenter</code><a class="headerlink" href="#align.PnR.block.originCenter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.block.placedBox">
+<em class="property">property </em><code class="sig-name descname">placedBox</code><a class="headerlink" href="#align.PnR.block.placedBox" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.block.placedCenter">
+<em class="property">property </em><code class="sig-name descname">placedCenter</code><a class="headerlink" href="#align.PnR.block.placedCenter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.block.type">
+<em class="property">property </em><code class="sig-name descname">type</code><a class="headerlink" href="#align.PnR.block.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.block.width">
+<em class="property">property </em><code class="sig-name descname">width</code><a class="headerlink" href="#align.PnR.block.width" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.blockComplex">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">blockComplex</code><a class="headerlink" href="#align.PnR.blockComplex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.blockComplex.child">
+<em class="property">property </em><code class="sig-name descname">child</code><a class="headerlink" href="#align.PnR.blockComplex.child" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.blockComplex.instNum">
+<em class="property">property </em><code class="sig-name descname">instNum</code><a class="headerlink" href="#align.PnR.blockComplex.instNum" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.blockComplex.instance">
+<em class="property">property </em><code class="sig-name descname">instance</code><a class="headerlink" href="#align.PnR.blockComplex.instance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.blockComplex.selectedInstance">
+<em class="property">property </em><code class="sig-name descname">selectedInstance</code><a class="headerlink" href="#align.PnR.blockComplex.selectedInstance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.connectNode">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">connectNode</code><a class="headerlink" href="#align.PnR.connectNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.connectNode.iter">
+<em class="property">property </em><code class="sig-name descname">iter</code><a class="headerlink" href="#align.PnR.connectNode.iter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.connectNode.iter2">
+<em class="property">property </em><code class="sig-name descname">iter2</code><a class="headerlink" href="#align.PnR.connectNode.iter2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.connectNode.type">
+<em class="property">property </em><code class="sig-name descname">type</code><a class="headerlink" href="#align.PnR.connectNode.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.contact">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">contact</code><a class="headerlink" href="#align.PnR.contact" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.contact.metal">
+<em class="property">property </em><code class="sig-name descname">metal</code><a class="headerlink" href="#align.PnR.contact.metal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.contact.originBox">
+<em class="property">property </em><code class="sig-name descname">originBox</code><a class="headerlink" href="#align.PnR.contact.originBox" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.contact.originCenter">
+<em class="property">property </em><code class="sig-name descname">originCenter</code><a class="headerlink" href="#align.PnR.contact.originCenter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.contact.placedBox">
+<em class="property">property </em><code class="sig-name descname">placedBox</code><a class="headerlink" href="#align.PnR.contact.placedBox" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.contact.placedCenter">
+<em class="property">property </em><code class="sig-name descname">placedCenter</code><a class="headerlink" href="#align.PnR.contact.placedCenter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.designRule">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">designRule</code><a class="headerlink" href="#align.PnR.designRule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.designRule.EnMax">
+<em class="property">property </em><code class="sig-name descname">EnMax</code><a class="headerlink" href="#align.PnR.designRule.EnMax" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.designRule.MaxSpace">
+<em class="property">property </em><code class="sig-name descname">MaxSpace</code><a class="headerlink" href="#align.PnR.designRule.MaxSpace" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.designRule.MinWidth">
+<em class="property">property </em><code class="sig-name descname">MinWidth</code><a class="headerlink" href="#align.PnR.designRule.MinWidth" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.designRule.TrkSpacing">
+<em class="property">property </em><code class="sig-name descname">TrkSpacing</code><a class="headerlink" href="#align.PnR.designRule.TrkSpacing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.designRule.grid_unit_x">
+<em class="property">property </em><code class="sig-name descname">grid_unit_x</code><a class="headerlink" href="#align.PnR.designRule.grid_unit_x" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.designRule.grid_unit_y">
+<em class="property">property </em><code class="sig-name descname">grid_unit_y</code><a class="headerlink" href="#align.PnR.designRule.grid_unit_y" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.design_info">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">design_info</code><a class="headerlink" href="#align.PnR.design_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.design_info.Hspace">
+<em class="property">property </em><code class="sig-name descname">Hspace</code><a class="headerlink" href="#align.PnR.design_info.Hspace" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.design_info.Vspace">
+<em class="property">property </em><code class="sig-name descname">Vspace</code><a class="headerlink" href="#align.PnR.design_info.Vspace" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.design_info.h_skip_factor">
+<em class="property">property </em><code class="sig-name descname">h_skip_factor</code><a class="headerlink" href="#align.PnR.design_info.h_skip_factor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.design_info.power_grid_metal_l">
+<em class="property">property </em><code class="sig-name descname">power_grid_metal_l</code><a class="headerlink" href="#align.PnR.design_info.power_grid_metal_l" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.design_info.power_grid_metal_u">
+<em class="property">property </em><code class="sig-name descname">power_grid_metal_u</code><a class="headerlink" href="#align.PnR.design_info.power_grid_metal_u" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.design_info.power_routing_metal_l">
+<em class="property">property </em><code class="sig-name descname">power_routing_metal_l</code><a class="headerlink" href="#align.PnR.design_info.power_routing_metal_l" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.design_info.power_routing_metal_u">
+<em class="property">property </em><code class="sig-name descname">power_routing_metal_u</code><a class="headerlink" href="#align.PnR.design_info.power_routing_metal_u" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.design_info.signal_routing_metal_l">
+<em class="property">property </em><code class="sig-name descname">signal_routing_metal_l</code><a class="headerlink" href="#align.PnR.design_info.signal_routing_metal_l" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.design_info.signal_routing_metal_u">
+<em class="property">property </em><code class="sig-name descname">signal_routing_metal_u</code><a class="headerlink" href="#align.PnR.design_info.signal_routing_metal_u" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.design_info.v_skip_factor">
+<em class="property">property </em><code class="sig-name descname">v_skip_factor</code><a class="headerlink" href="#align.PnR.design_info.v_skip_factor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.globalContact">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">globalContact</code><a class="headerlink" href="#align.PnR.globalContact" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.globalContact.conTact">
+<em class="property">property </em><code class="sig-name descname">conTact</code><a class="headerlink" href="#align.PnR.globalContact.conTact" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.globalContact.metalIdx">
+<em class="property">property </em><code class="sig-name descname">metalIdx</code><a class="headerlink" href="#align.PnR.globalContact.metalIdx" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.guardring_info">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">guardring_info</code><a class="headerlink" href="#align.PnR.guardring_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.guardring_info.path">
+<em class="property">property </em><code class="sig-name descname">path</code><a class="headerlink" href="#align.PnR.guardring_info.path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.hierNode">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">hierNode</code><a class="headerlink" href="#align.PnR.hierNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.hierNode.Alignment_blocks">
+<em class="property">property </em><code class="sig-name descname">Alignment_blocks</code><a class="headerlink" href="#align.PnR.hierNode.Alignment_blocks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.Block_name_map">
+<em class="property">property </em><code class="sig-name descname">Block_name_map</code><a class="headerlink" href="#align.PnR.hierNode.Block_name_map" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.Blocks">
+<em class="property">property </em><code class="sig-name descname">Blocks</code><a class="headerlink" href="#align.PnR.hierNode.Blocks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.CC_Caps">
+<em class="property">property </em><code class="sig-name descname">CC_Caps</code><a class="headerlink" href="#align.PnR.hierNode.CC_Caps" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.C_Constraints">
+<em class="property">property </em><code class="sig-name descname">C_Constraints</code><a class="headerlink" href="#align.PnR.hierNode.C_Constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.Gnd">
+<em class="property">property </em><code class="sig-name descname">Gnd</code><a class="headerlink" href="#align.PnR.hierNode.Gnd" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.GuardRings">
+<em class="property">property </em><code class="sig-name descname">GuardRings</code><a class="headerlink" href="#align.PnR.hierNode.GuardRings" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.Guardring_Consts">
+<em class="property">property </em><code class="sig-name descname">Guardring_Consts</code><a class="headerlink" href="#align.PnR.hierNode.Guardring_Consts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.HPWL">
+<em class="property">property </em><code class="sig-name descname">HPWL</code><a class="headerlink" href="#align.PnR.hierNode.HPWL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.HPWL_extend">
+<em class="property">property </em><code class="sig-name descname">HPWL_extend</code><a class="headerlink" href="#align.PnR.hierNode.HPWL_extend" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.HPWL_norm">
+<em class="property">property </em><code class="sig-name descname">HPWL_norm</code><a class="headerlink" href="#align.PnR.hierNode.HPWL_norm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.LL">
+<em class="property">property </em><code class="sig-name descname">LL</code><a class="headerlink" href="#align.PnR.hierNode.LL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.Match_blocks">
+<em class="property">property </em><code class="sig-name descname">Match_blocks</code><a class="headerlink" href="#align.PnR.hierNode.Match_blocks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.Nets">
+<em class="property">property </em><code class="sig-name descname">Nets</code><a class="headerlink" href="#align.PnR.hierNode.Nets" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.PnRAS">
+<em class="property">property </em><code class="sig-name descname">PnRAS</code><a class="headerlink" href="#align.PnR.hierNode.PnRAS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.Port_Location">
+<em class="property">property </em><code class="sig-name descname">Port_Location</code><a class="headerlink" href="#align.PnR.hierNode.Port_Location" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.PowerNets">
+<em class="property">property </em><code class="sig-name descname">PowerNets</code><a class="headerlink" href="#align.PnR.hierNode.PowerNets" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.Preplace_blocks">
+<em class="property">property </em><code class="sig-name descname">Preplace_blocks</code><a class="headerlink" href="#align.PnR.hierNode.Preplace_blocks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.R_Constraints">
+<em class="property">property </em><code class="sig-name descname">R_Constraints</code><a class="headerlink" href="#align.PnR.hierNode.R_Constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.SNets">
+<em class="property">property </em><code class="sig-name descname">SNets</code><a class="headerlink" href="#align.PnR.hierNode.SNets" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.SPBlocks">
+<em class="property">property </em><code class="sig-name descname">SPBlocks</code><a class="headerlink" href="#align.PnR.hierNode.SPBlocks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.Terminals">
+<em class="property">property </em><code class="sig-name descname">Terminals</code><a class="headerlink" href="#align.PnR.hierNode.Terminals" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.UR">
+<em class="property">property </em><code class="sig-name descname">UR</code><a class="headerlink" href="#align.PnR.hierNode.UR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.Vdd">
+<em class="property">property </em><code class="sig-name descname">Vdd</code><a class="headerlink" href="#align.PnR.hierNode.Vdd" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.abs_orient">
+<em class="property">property </em><code class="sig-name descname">abs_orient</code><a class="headerlink" href="#align.PnR.hierNode.abs_orient" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.area_norm">
+<em class="property">property </em><code class="sig-name descname">area_norm</code><a class="headerlink" href="#align.PnR.hierNode.area_norm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.bias_Hgraph">
+<em class="property">property </em><code class="sig-name descname">bias_Hgraph</code><a class="headerlink" href="#align.PnR.hierNode.bias_Hgraph" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.bias_Vgraph">
+<em class="property">property </em><code class="sig-name descname">bias_Vgraph</code><a class="headerlink" href="#align.PnR.hierNode.bias_Vgraph" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.blockPins">
+<em class="property">property </em><code class="sig-name descname">blockPins</code><a class="headerlink" href="#align.PnR.hierNode.blockPins" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.constraint_penalty">
+<em class="property">property </em><code class="sig-name descname">constraint_penalty</code><a class="headerlink" href="#align.PnR.hierNode.constraint_penalty" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.cost">
+<em class="property">property </em><code class="sig-name descname">cost</code><a class="headerlink" href="#align.PnR.hierNode.cost" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.gdsFile">
+<em class="property">property </em><code class="sig-name descname">gdsFile</code><a class="headerlink" href="#align.PnR.hierNode.gdsFile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.height">
+<em class="property">property </em><code class="sig-name descname">height</code><a class="headerlink" href="#align.PnR.hierNode.height" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.interMetals">
+<em class="property">property </em><code class="sig-name descname">interMetals</code><a class="headerlink" href="#align.PnR.hierNode.interMetals" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.interVias">
+<em class="property">property </em><code class="sig-name descname">interVias</code><a class="headerlink" href="#align.PnR.hierNode.interVias" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.isCompleted">
+<em class="property">property </em><code class="sig-name descname">isCompleted</code><a class="headerlink" href="#align.PnR.hierNode.isCompleted" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.isIntelGcellGlobalRouter">
+<em class="property">property </em><code class="sig-name descname">isIntelGcellGlobalRouter</code><a class="headerlink" href="#align.PnR.hierNode.isIntelGcellGlobalRouter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.isTop">
+<em class="property">property </em><code class="sig-name descname">isTop</code><a class="headerlink" href="#align.PnR.hierNode.isTop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.n_copy">
+<em class="property">property </em><code class="sig-name descname">n_copy</code><a class="headerlink" href="#align.PnR.hierNode.n_copy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#align.PnR.hierNode.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.numPlacement">
+<em class="property">property </em><code class="sig-name descname">numPlacement</code><a class="headerlink" href="#align.PnR.hierNode.numPlacement" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.parent">
+<em class="property">property </em><code class="sig-name descname">parent</code><a class="headerlink" href="#align.PnR.hierNode.parent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.router_report">
+<em class="property">property </em><code class="sig-name descname">router_report</code><a class="headerlink" href="#align.PnR.hierNode.router_report" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.tiles_total">
+<em class="property">property </em><code class="sig-name descname">tiles_total</code><a class="headerlink" href="#align.PnR.hierNode.tiles_total" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.hierNode.width">
+<em class="property">property </em><code class="sig-name descname">width</code><a class="headerlink" href="#align.PnR.hierNode.width" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.layoutAS">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">layoutAS</code><a class="headerlink" href="#align.PnR.layoutAS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.layoutAS.Blocks">
+<em class="property">property </em><code class="sig-name descname">Blocks</code><a class="headerlink" href="#align.PnR.layoutAS.Blocks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.layoutAS.HPWL">
+<em class="property">property </em><code class="sig-name descname">HPWL</code><a class="headerlink" href="#align.PnR.layoutAS.HPWL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.layoutAS.HPWL_extend">
+<em class="property">property </em><code class="sig-name descname">HPWL_extend</code><a class="headerlink" href="#align.PnR.layoutAS.HPWL_extend" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.layoutAS.LL">
+<em class="property">property </em><code class="sig-name descname">LL</code><a class="headerlink" href="#align.PnR.layoutAS.LL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.layoutAS.Nets">
+<em class="property">property </em><code class="sig-name descname">Nets</code><a class="headerlink" href="#align.PnR.layoutAS.Nets" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.layoutAS.Terminals">
+<em class="property">property </em><code class="sig-name descname">Terminals</code><a class="headerlink" href="#align.PnR.layoutAS.Terminals" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.layoutAS.UR">
+<em class="property">property </em><code class="sig-name descname">UR</code><a class="headerlink" href="#align.PnR.layoutAS.UR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.layoutAS.gdsFile">
+<em class="property">property </em><code class="sig-name descname">gdsFile</code><a class="headerlink" href="#align.PnR.layoutAS.gdsFile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.layoutAS.height">
+<em class="property">property </em><code class="sig-name descname">height</code><a class="headerlink" href="#align.PnR.layoutAS.height" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.layoutAS.width">
+<em class="property">property </em><code class="sig-name descname">width</code><a class="headerlink" href="#align.PnR.layoutAS.width" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.lefMacro">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">lefMacro</code><a class="headerlink" href="#align.PnR.lefMacro" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.lefMacro.height">
+<em class="property">property </em><code class="sig-name descname">height</code><a class="headerlink" href="#align.PnR.lefMacro.height" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.lefMacro.interMetals">
+<em class="property">property </em><code class="sig-name descname">interMetals</code><a class="headerlink" href="#align.PnR.lefMacro.interMetals" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.lefMacro.interVias">
+<em class="property">property </em><code class="sig-name descname">interVias</code><a class="headerlink" href="#align.PnR.lefMacro.interVias" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.lefMacro.macroPins">
+<em class="property">property </em><code class="sig-name descname">macroPins</code><a class="headerlink" href="#align.PnR.lefMacro.macroPins" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.lefMacro.master">
+<em class="property">property </em><code class="sig-name descname">master</code><a class="headerlink" href="#align.PnR.lefMacro.master" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.lefMacro.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#align.PnR.lefMacro.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.lefMacro.width">
+<em class="property">property </em><code class="sig-name descname">width</code><a class="headerlink" href="#align.PnR.lefMacro.width" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.net">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">net</code><a class="headerlink" href="#align.PnR.net" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.net.GcellGlobalRouterPath">
+<em class="property">property </em><code class="sig-name descname">GcellGlobalRouterPath</code><a class="headerlink" href="#align.PnR.net.GcellGlobalRouterPath" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.net.axis_coor">
+<em class="property">property </em><code class="sig-name descname">axis_coor</code><a class="headerlink" href="#align.PnR.net.axis_coor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.net.axis_dir">
+<em class="property">property </em><code class="sig-name descname">axis_dir</code><a class="headerlink" href="#align.PnR.net.axis_dir" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.net.connected">
+<em class="property">property </em><code class="sig-name descname">connected</code><a class="headerlink" href="#align.PnR.net.connected" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.net.connectedTile">
+<em class="property">property </em><code class="sig-name descname">connectedTile</code><a class="headerlink" href="#align.PnR.net.connectedTile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.net.degree">
+<em class="property">property </em><code class="sig-name descname">degree</code><a class="headerlink" href="#align.PnR.net.degree" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.net.interVias">
+<em class="property">property </em><code class="sig-name descname">interVias</code><a class="headerlink" href="#align.PnR.net.interVias" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.net.iter2SNetLsit">
+<em class="property">property </em><code class="sig-name descname">iter2SNetLsit</code><a class="headerlink" href="#align.PnR.net.iter2SNetLsit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.net.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#align.PnR.net.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.net.path_metal">
+<em class="property">property </em><code class="sig-name descname">path_metal</code><a class="headerlink" href="#align.PnR.net.path_metal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.net.path_via">
+<em class="property">property </em><code class="sig-name descname">path_via</code><a class="headerlink" href="#align.PnR.net.path_via" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.net.priority">
+<em class="property">property </em><code class="sig-name descname">priority</code><a class="headerlink" href="#align.PnR.net.priority" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.net.segments">
+<em class="property">property </em><code class="sig-name descname">segments</code><a class="headerlink" href="#align.PnR.net.segments" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.net.shielding">
+<em class="property">property </em><code class="sig-name descname">shielding</code><a class="headerlink" href="#align.PnR.net.shielding" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.net.sink2Terminal">
+<em class="property">property </em><code class="sig-name descname">sink2Terminal</code><a class="headerlink" href="#align.PnR.net.sink2Terminal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.net.symCounterpart">
+<em class="property">property </em><code class="sig-name descname">symCounterpart</code><a class="headerlink" href="#align.PnR.net.symCounterpart" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.pin">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">pin</code><a class="headerlink" href="#align.PnR.pin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.pin.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#align.PnR.pin.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.pin.netIter">
+<em class="property">property </em><code class="sig-name descname">netIter</code><a class="headerlink" href="#align.PnR.pin.netIter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.pin.pinContacts">
+<em class="property">property </em><code class="sig-name descname">pinContacts</code><a class="headerlink" href="#align.PnR.pin.pinContacts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.pin.pinVias">
+<em class="property">property </em><code class="sig-name descname">pinVias</code><a class="headerlink" href="#align.PnR.pin.pinVias" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.pin.type">
+<em class="property">property </em><code class="sig-name descname">type</code><a class="headerlink" href="#align.PnR.pin.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.pin.use">
+<em class="property">property </em><code class="sig-name descname">use</code><a class="headerlink" href="#align.PnR.pin.use" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.point">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">point</code><a class="headerlink" href="#align.PnR.point" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.point.x">
+<em class="property">property </em><code class="sig-name descname">x</code><a class="headerlink" href="#align.PnR.point.x" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.point.y">
+<em class="property">property </em><code class="sig-name descname">y</code><a class="headerlink" href="#align.PnR.point.y" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.terminal">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">terminal</code><a class="headerlink" href="#align.PnR.terminal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.terminal.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#align.PnR.terminal.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.terminal.netIter">
+<em class="property">property </em><code class="sig-name descname">netIter</code><a class="headerlink" href="#align.PnR.terminal.netIter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.terminal.termContacts">
+<em class="property">property </em><code class="sig-name descname">termContacts</code><a class="headerlink" href="#align.PnR.terminal.termContacts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.terminal.type">
+<em class="property">property </em><code class="sig-name descname">type</code><a class="headerlink" href="#align.PnR.terminal.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.tile">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">tile</code><a class="headerlink" href="#align.PnR.tile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.tile.Xidx">
+<em class="property">property </em><code class="sig-name descname">Xidx</code><a class="headerlink" href="#align.PnR.tile.Xidx" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.tile.Yidx">
+<em class="property">property </em><code class="sig-name descname">Yidx</code><a class="headerlink" href="#align.PnR.tile.Yidx" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.tile.down">
+<em class="property">property </em><code class="sig-name descname">down</code><a class="headerlink" href="#align.PnR.tile.down" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.tile.east">
+<em class="property">property </em><code class="sig-name descname">east</code><a class="headerlink" href="#align.PnR.tile.east" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.tile.height">
+<em class="property">property </em><code class="sig-name descname">height</code><a class="headerlink" href="#align.PnR.tile.height" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.tile.index">
+<em class="property">property </em><code class="sig-name descname">index</code><a class="headerlink" href="#align.PnR.tile.index" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.tile.metal">
+<em class="property">property </em><code class="sig-name descname">metal</code><a class="headerlink" href="#align.PnR.tile.metal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.tile.north">
+<em class="property">property </em><code class="sig-name descname">north</code><a class="headerlink" href="#align.PnR.tile.north" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.tile.south">
+<em class="property">property </em><code class="sig-name descname">south</code><a class="headerlink" href="#align.PnR.tile.south" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.tile.tileLayer">
+<em class="property">property </em><code class="sig-name descname">tileLayer</code><a class="headerlink" href="#align.PnR.tile.tileLayer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.tile.up">
+<em class="property">property </em><code class="sig-name descname">up</code><a class="headerlink" href="#align.PnR.tile.up" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.tile.west">
+<em class="property">property </em><code class="sig-name descname">west</code><a class="headerlink" href="#align.PnR.tile.west" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.tile.width">
+<em class="property">property </em><code class="sig-name descname">width</code><a class="headerlink" href="#align.PnR.tile.width" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.tile.x">
+<em class="property">property </em><code class="sig-name descname">x</code><a class="headerlink" href="#align.PnR.tile.x" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.tile.y">
+<em class="property">property </em><code class="sig-name descname">y</code><a class="headerlink" href="#align.PnR.tile.y" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="align.PnR.tileEdge">
+<em class="property">class </em><code class="sig-prename descclassname">align.PnR.</code><code class="sig-name descname">tileEdge</code><a class="headerlink" href="#align.PnR.tileEdge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_builtins.pybind11_object</span></code></p>
+<dl class="py method">
+<dt id="align.PnR.tileEdge.capacity">
+<em class="property">property </em><code class="sig-name descname">capacity</code><a class="headerlink" href="#align.PnR.tileEdge.capacity" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.PnR.tileEdge.next">
+<em class="property">property </em><code class="sig-name descname">next</code><a class="headerlink" href="#align.PnR.tileEdge.next" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-align.cmdline">
+<span id="align-cmdline-module"></span><h2>align.cmdline module<a class="headerlink" href="#module-align.cmdline" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="align.cmdline.CmdlineParser">
+<em class="property">class </em><code class="sig-prename descclassname">align.cmdline.</code><code class="sig-name descname">CmdlineParser</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/cmdline.html#CmdlineParser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cmdline.CmdlineParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py method">
+<dt id="align.cmdline.CmdlineParser.parse_args">
+<code class="sig-name descname">parse_args</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/cmdline.html#CmdlineParser.parse_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cmdline.CmdlineParser.parse_args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-align.main">
+<span id="align-main-module"></span><h2>align.main module<a class="headerlink" href="#module-align.main" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="align.main.build_steps">
+<code class="sig-prename descclassname">align.main.</code><code class="sig-name descname">build_steps</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flow_start</span></em>, <em class="sig-param"><span class="n">flow_stop</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/main.html#build_steps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.main.build_steps" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.main.extract_netlist_files">
+<code class="sig-prename descclassname">align.main.</code><code class="sig-name descname">extract_netlist_files</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">netlist_dir</span></em>, <em class="sig-param"><span class="n">netlist_file</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/main.html#extract_netlist_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.main.extract_netlist_files" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.main.gen_more_primitives">
+<code class="sig-prename descclassname">align.main.</code><code class="sig-name descname">gen_more_primitives</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">primitives</span></em>, <em class="sig-param"><span class="n">topology_dir</span></em>, <em class="sig-param"><span class="n">subckt</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/main.html#gen_more_primitives"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.main.gen_more_primitives" title="Permalink to this definition">¶</a></dt>
+<dd><p>primitives dictionary updated in place</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="align.main.schematic2layout">
+<code class="sig-prename descclassname">align.main.</code><code class="sig-name descname">schematic2layout</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">netlist_dir</span></em>, <em class="sig-param"><span class="n">pdk_dir</span></em>, <em class="sig-param"><span class="n">netlist_file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">subckt</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">working_dir</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">flatten</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">nvariants</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">effort</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">extract</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">log_level</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">generate</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">regression</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">uniform_height</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">PDN_mode</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">flow_start</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">flow_stop</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">router_mode</span><span class="o">=</span><span class="default_value">'top_down'</span></em>, <em class="sig-param"><span class="n">gui</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">skipGDS</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">lambda_coeff</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">reference_placement_verilog_json</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nroutings</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">viewer</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">select_in_ILP</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">seed</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">use_analytical_placer</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/main.html#schematic2layout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.main.schematic2layout" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.main.start_viewer">
+<code class="sig-prename descclassname">align.main.</code><code class="sig-name descname">start_viewer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">working_dir</span></em>, <em class="sig-param"><span class="n">pnr_dir</span></em>, <em class="sig-param"><span class="n">variant</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/main.html#start_viewer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.main.start_viewer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-align">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-align" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../notes/database.html" class="btn btn-neutral float-left" title="Database" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="align.cell_fabric.html" class="btn btn-neutral float-right" title="align.cell_fabric package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, ALIGN team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

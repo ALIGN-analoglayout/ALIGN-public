@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>align.gui package &mdash; ALIGN</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="align.pdk package" href="align.pdk.html" />
+    <link rel="prev" title="align.gdsconv package" href="align.gdsconv.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html"><img src="../_static/LOGO.PNG" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Notes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../notes/flow.html">ALIGN: flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/flow.html#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/flow.html#outputs">Outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-0-check-prerequisites">Step 0: Check prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-1-clone-the-align-source-code-to-your-local-environment">Step 1: Clone the ALIGN source code to your local environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-2-create-a-python-virtualenv">Step 2: Create a Python virtualenv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-3a-install-align-as-a-user">Step 3a: Install ALIGN as a USER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-3b-install-align-as-a-developer">Step 3b: Install ALIGN as a DEVELOPER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-4-run-align">Step 4: Run ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-5-view-layout">Step 5: View layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/introduction.html">Introduction by Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/viewer.html">Layout viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/viewer.html#klayout-viewer">KLayout viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/viewer.html#align-viewer">ALIGN viewer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/debug.html">Debug</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#reinstalling-align">Reinstalling ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/const.html">Constraints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/const.html#constraint-options">Constraint options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/const.html#example-constraints">Example constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/upcoming.html">Upcoming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/upcoming.html#how-to-add-your-own-pdk">How to add your own pdk</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Datasets:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../notes/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/database.html">Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/database.html#sized-netlists">Sized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/database.html#unsized-netlists">Unsized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/database.html#generalized-testbenches">Generalized testbenches</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="align.html">align package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">align.gui package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.pdk.html">align.pdk package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.primitive.html">align.primitive package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.schema.html">align.schema package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.utils.html">align.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="align.schema.html">align.schema package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.primitive.html">align.primitive package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="align.primitive.default.html">align.primitive.default package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.pdk.html">align.pdk package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="align.pdk.finfet.html">align.pdk.finfet package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.primitive.default.html">align.primitive.default package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.pdk.finfet.html">align.pdk.finfet package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.utils.html">align.utils package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">align.gui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ALIGN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="align.html">align package</a> &raquo;</li>
+      <li>align.gui package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/modules/align.gui.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="align-gui-package">
+<h1>align.gui package<a class="headerlink" href="#align-gui-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-align.gui.mockup">
+<span id="align-gui-mockup-module"></span><h2>align.gui.mockup module<a class="headerlink" href="#module-align.gui.mockup" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="align.gui.mockup.AppWithCallbacksAndState">
+<em class="property">class </em><code class="sig-prename descclassname">align.gui.mockup.</code><code class="sig-name descname">AppWithCallbacksAndState</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">tagged_bboxes</span></em>, <em class="sig-param"><span class="n">module_name</span></em>, <em class="sig-param"><span class="n">lambda_coeff</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gui/mockup.html#AppWithCallbacksAndState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gui.mockup.AppWithCallbacksAndState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py method">
+<dt id="align.gui.mockup.AppWithCallbacksAndState.change_colorscale">
+<code class="sig-name descname">change_colorscale</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">scale</span></em>, <em class="sig-param"><span class="n">tradeoff_type</span></em>, <em class="sig-param"><span class="n">axes_type</span></em>, <em class="sig-param"><span class="n">module_name</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gui/mockup.html#AppWithCallbacksAndState.change_colorscale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gui.mockup.AppWithCallbacksAndState.change_colorscale" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.gui.mockup.AppWithCallbacksAndState.display_hover_data">
+<code class="sig-name descname">display_hover_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">clickData</span></em>, <em class="sig-param"><span class="n">hoverData</span></em>, <em class="sig-param"><span class="n">display_type</span></em>, <em class="sig-param"><span class="n">display_pins_type</span></em>, <em class="sig-param"><span class="n">netname</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gui/mockup.html#AppWithCallbacksAndState.display_hover_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gui.mockup.AppWithCallbacksAndState.display_hover_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.gui.mockup.AppWithCallbacksAndState.gen_dataframe">
+<code class="sig-name descname">gen_dataframe</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gui/mockup.html#AppWithCallbacksAndState.gen_dataframe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gui.mockup.AppWithCallbacksAndState.gen_dataframe" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="align.gui.mockup.AppWithCallbacksAndState.make_placement_graph">
+<code class="sig-name descname">make_placement_graph</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">display_type</span><span class="o">=</span><span class="default_value">'Direct'</span></em>, <em class="sig-param"><span class="n">display_pins_type</span><span class="o">=</span><span class="default_value">'Pins'</span></em>, <em class="sig-param"><span class="n">netname</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gui/mockup.html#AppWithCallbacksAndState.make_placement_graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gui.mockup.AppWithCallbacksAndState.make_placement_graph" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="align.gui.mockup.define_axes">
+<code class="sig-prename descclassname">align.gui.mockup.</code><code class="sig-name descname">define_axes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fig</span></em>, <em class="sig-param"><span class="n">log</span></em>, <em class="sig-param"><span class="n">max_x</span></em>, <em class="sig-param"><span class="n">max_y</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">log_one_to_one</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gui/mockup.html#define_axes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gui.mockup.define_axes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.gui.mockup.define_colorscale">
+<code class="sig-prename descclassname">align.gui.mockup.</code><code class="sig-name descname">define_colorscale</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fig</span></em>, <em class="sig-param"><span class="n">col</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gui/mockup.html#define_colorscale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gui.mockup.define_colorscale" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.gui.mockup.make_tradeoff_fig">
+<code class="sig-prename descclassname">align.gui.mockup.</code><code class="sig-name descname">make_tradeoff_fig</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">axes</span></em>, <em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">log</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">scale</span><span class="o">=</span><span class="default_value">'Blugrn'</span></em>, <em class="sig-param"><span class="n">lambda_coeff</span><span class="o">=</span><span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gui/mockup.html#make_tradeoff_fig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gui.mockup.make_tradeoff_fig" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.gui.mockup.make_tradeoff_fig_aa">
+<code class="sig-prename descclassname">align.gui.mockup.</code><code class="sig-name descname">make_tradeoff_fig_aa</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">log</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">scale</span><span class="o">=</span><span class="default_value">'Blugrn'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gui/mockup.html#make_tradeoff_fig_aa"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gui.mockup.make_tradeoff_fig_aa" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.gui.mockup.make_tradeoff_fig_ac">
+<code class="sig-prename descclassname">align.gui.mockup.</code><code class="sig-name descname">make_tradeoff_fig_ac</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">log</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">scale</span><span class="o">=</span><span class="default_value">'Blugrn'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gui/mockup.html#make_tradeoff_fig_ac"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gui.mockup.make_tradeoff_fig_ac" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.gui.mockup.make_tradeoff_fig_ha">
+<code class="sig-prename descclassname">align.gui.mockup.</code><code class="sig-name descname">make_tradeoff_fig_ha</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">log</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">scale</span><span class="o">=</span><span class="default_value">'Blugrn'</span></em>, <em class="sig-param"><span class="n">lambda_coeff</span><span class="o">=</span><span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gui/mockup.html#make_tradeoff_fig_ha"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gui.mockup.make_tradeoff_fig_ha" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.gui.mockup.make_tradeoff_fig_hc">
+<code class="sig-prename descclassname">align.gui.mockup.</code><code class="sig-name descname">make_tradeoff_fig_hc</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">log</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">scale</span><span class="o">=</span><span class="default_value">'Blugrn'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gui/mockup.html#make_tradeoff_fig_hc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gui.mockup.make_tradeoff_fig_hc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.gui.mockup.make_tradeoff_fig_nn">
+<code class="sig-prename descclassname">align.gui.mockup.</code><code class="sig-name descname">make_tradeoff_fig_nn</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">log</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">scale</span><span class="o">=</span><span class="default_value">'Blugrn'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gui/mockup.html#make_tradeoff_fig_nn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gui.mockup.make_tradeoff_fig_nn" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.gui.mockup.make_tradeoff_fig_wh">
+<code class="sig-prename descclassname">align.gui.mockup.</code><code class="sig-name descname">make_tradeoff_fig_wh</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">log</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">scale</span><span class="o">=</span><span class="default_value">'Blugrn'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gui/mockup.html#make_tradeoff_fig_wh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gui.mockup.make_tradeoff_fig_wh" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.gui.mockup.run_gui">
+<code class="sig-prename descclassname">align.gui.mockup.</code><code class="sig-name descname">run_gui</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">tagged_bboxes</span></em>, <em class="sig-param"><span class="n">module_name</span></em>, <em class="sig-param"><span class="n">lambda_coeff</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gui/mockup.html#run_gui"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gui.mockup.run_gui" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-align.gui">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-align.gui" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="align.gdsconv.html" class="btn btn-neutral float-left" title="align.gdsconv package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="align.pdk.html" class="btn btn-neutral float-right" title="align.pdk package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, ALIGN team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

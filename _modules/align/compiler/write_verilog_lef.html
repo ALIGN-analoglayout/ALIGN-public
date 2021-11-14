@@ -1,42 +1,148 @@
-
 <!DOCTYPE html>
-
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>align.compiler.write_verilog_lef &#8212; ALIGN</title>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>align.compiler.write_verilog_lef &mdash; ALIGN</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
-    
-    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/doctools.js"></script>
-    
+      <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
-  </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">align.compiler.write_verilog_lef</a></li> 
-      </ul>
-    </div>  
+</head>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html"><img src="../../../_static/LOGO.PNG" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Notes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/flow.html">ALIGN: flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/flow.html#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/flow.html#outputs">Outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-0-check-prerequisites">Step 0: Check prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-1-clone-the-align-source-code-to-your-local-environment">Step 1: Clone the ALIGN source code to your local environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-2-create-a-python-virtualenv">Step 2: Create a Python virtualenv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-3a-install-align-as-a-user">Step 3a: Install ALIGN as a USER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-3b-install-align-as-a-developer">Step 3b: Install ALIGN as a DEVELOPER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-4-run-align">Step 4: Run ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-5-view-layout">Step 5: View layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/introduction.html">Introduction by Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/viewer.html">Layout viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/viewer.html#klayout-viewer">KLayout viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/viewer.html#align-viewer">ALIGN viewer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/debug.html">Debug</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#reinstalling-align">Reinstalling ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/const.html">Constraints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/const.html#constraint-options">Constraint options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/const.html#example-constraints">Example constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/upcoming.html">Upcoming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/upcoming.html#how-to-add-your-own-pdk">How to add your own pdk</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Datasets:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/database.html">Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#sized-netlists">Sized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#unsized-netlists">Unsized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#generalized-testbenches">Generalized testbenches</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.html">align package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.gui.html">align.gui package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pdk.html">align.pdk package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.primitive.html">align.primitive package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.utils.html">align.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.primitive.html">align.primitive package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.primitive.default.html">align.primitive.default package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pdk.html">align.pdk package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.primitive.default.html">align.primitive.default package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.utils.html">align.utils package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.gui.html">align.gui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ALIGN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>align.compiler.write_verilog_lef</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
   <h1>Source code for align.compiler.write_verilog_lef</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -44,388 +150,70 @@
 
 <span class="sd">@author: kunal</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">ceil</span><span class="p">,</span><span class="n">floor</span>
-
-<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">convert_to_unit</span>
 
 <span class="kn">import</span> <span class="nn">logging</span>
+
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
+<div class="viewcode-block" id="WriteVerilog"><a class="viewcode-back" href="../../../modules/align.compiler.html#align.compiler.write_verilog_lef.WriteVerilog">[docs]</a><span class="k">class</span> <span class="nc">WriteVerilog</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;write hierarchical verilog file&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="WriteVerilog"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.write_verilog_lef.WriteVerilog">[docs]</a><span class="k">class</span> <span class="nc">WriteVerilog</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot; write hierarchical verilog file &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ckt</span><span class="p">,</span> <span class="n">ckt_data</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ckt_data</span> <span class="o">=</span> <span class="n">ckt_data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">circuit_name</span> <span class="o">=</span> <span class="n">ckt</span><span class="o">.</span><span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pins</span> <span class="o">=</span> <span class="n">ckt</span><span class="o">.</span><span class="n">pins</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subckt_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ckt_data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">ckt</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ckt_data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">ckt</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">constraints</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">circuit_graph</span><span class="p">,</span> <span class="n">circuit_name</span><span class="p">,</span> <span class="n">inout_pin_names</span><span class="p">,</span><span class="n">subckt_dict</span><span class="p">,</span> <span class="n">power_pins</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">circuit_graph</span> <span class="o">=</span> <span class="n">circuit_graph</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">circuit_name</span> <span class="o">=</span> <span class="n">circuit_name</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">inout_pins</span> <span class="o">=</span> <span class="n">inout_pin_names</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pins</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">inout_pin_names</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">port</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">power_pins</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">pins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">power_pins</span><span class="o">=</span><span class="n">power_pins</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">subckt_dict</span> <span class="o">=</span> <span class="n">subckt_dict</span>
+<div class="viewcode-block" id="WriteVerilog.gen_dict"><a class="viewcode-back" href="../../../modules/align.compiler.html#align.compiler.write_verilog_lef.WriteVerilog.gen_dict">[docs]</a>    <span class="k">def</span> <span class="nf">gen_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">d</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">circuit_name</span>
+        <span class="n">d</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pins</span>
+        <span class="n">d</span><span class="p">[</span><span class="s2">&quot;constraints&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="o">.</span><span class="n">dict</span><span class="p">()[</span><span class="s2">&quot;__root__&quot;</span><span class="p">]</span>
+        <span class="n">d</span><span class="p">[</span><span class="s2">&quot;instances&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
-<div class="viewcode-block" id="WriteVerilog.print_module"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.write_verilog_lef.WriteVerilog.print_module">[docs]</a>    <span class="k">def</span> <span class="nf">print_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fp</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Writing module : </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">circuit_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">module &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">circuit_name</span> <span class="o">+</span> <span class="s2">&quot; ( &quot;</span><span class="p">)</span>
-        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pins</span><span class="p">))</span>
-        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot; ); &quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ele</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subckt_data</span><span class="o">.</span><span class="n">elements</span><span class="p">:</span>
+            <span class="n">instance</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">instance</span><span class="p">[</span><span class="s2">&quot;template_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ele</span><span class="o">.</span><span class="n">abstract_name</span>
+            <span class="n">instance</span><span class="p">[</span><span class="s2">&quot;instance_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ele</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">instance</span><span class="p">[</span><span class="s2">&quot;fa_map&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gen_dict_fa</span><span class="p">(</span><span class="n">ele</span><span class="o">.</span><span class="n">pins</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">ele</span><span class="o">.</span><span class="n">pins</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+            <span class="n">d</span><span class="p">[</span><span class="s2">&quot;instances&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">d</span></div>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">inout_pins</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Writing ports : </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inout_pins</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">input &quot;</span><span class="p">)</span>
-            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pins</span><span class="p">))</span>
-            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">circuit_graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-            <span class="k">if</span> <span class="s1">&#39;source&#39;</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping source nodes : </span><span class="si">{</span><span class="n">node</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="k">continue</span>
-            <span class="k">if</span> <span class="s1">&#39;net&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Writing node: </span><span class="si">{</span><span class="n">node</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">node</span> <span class="o">+</span> <span class="s1">&#39; ( &#39;</span><span class="p">)</span>
-                <span class="n">ports</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="n">nets</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="k">if</span> <span class="s2">&quot;ports_match&quot;</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Nets connected to ports: </span><span class="si">{</span><span class="n">attr</span><span class="p">[</span><span class="s2">&quot;ports_match&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-                    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">[</span><span class="s2">&quot;ports_match&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                        <span class="n">ports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-                        <span class="n">nets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="s1">&#39;Switch_NMOS_G&#39;</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]:</span>
-                        <span class="n">ports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
-                        <span class="n">nets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nets</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-                    <span class="k">elif</span> <span class="s1">&#39;Switch_PMOS_G&#39;</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]:</span>
-                        <span class="n">ports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
-                        <span class="n">nets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nets</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-                <span class="k">elif</span> <span class="s2">&quot;connection&quot;</span> <span class="ow">in</span> <span class="n">attr</span> <span class="ow">and</span> <span class="n">attr</span><span class="p">[</span><span class="s2">&quot;connection&quot;</span><span class="p">]:</span>
-                    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">[</span><span class="s2">&quot;connection&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                        <span class="k">if</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subckt_dict</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subckt_dict</span><span class="p">[</span><span class="n">attr</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]][</span><span class="s1">&#39;ports&#39;</span><span class="p">]:</span>
-                            <span class="n">ports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-                            <span class="n">nets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No connectivity info found : </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">attr</span><span class="p">[</span><span class="s1">&#39;ports&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="n">ports</span> <span class="o">=</span> <span class="n">attr</span><span class="p">[</span><span class="s2">&quot;ports&quot;</span><span class="p">]</span>
-                    <span class="n">nets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">circuit_graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
-
-                <span class="n">mapped_pins</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_pins</span><span class="p">(</span><span class="n">ports</span><span class="p">,</span> <span class="n">nets</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">mapped_pins</span><span class="p">:</span>
-                    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mapped_pins</span><span class="p">))</span>
-                    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39; ); &#39;</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39; ); &#39;</span><span class="p">)</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unconnected module, only power/gnd conenction found </span><span class="si">{</span><span class="n">node</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">endmodule</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="WriteVerilog.map_pins"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.write_verilog_lef.WriteVerilog.map_pins">[docs]</a>    <span class="k">def</span> <span class="nf">map_pins</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
-            <span class="n">mapped_pins</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">ai</span><span class="p">,</span> <span class="n">bi</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">),</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-                <span class="k">if</span> <span class="n">ai</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">power_pins</span><span class="p">:</span>
-                    <span class="n">mapped_pins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">ai</span> <span class="o">+</span> <span class="s2">&quot;(&quot;</span> <span class="o">+</span> <span class="n">bi</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">)</span>
-
-            <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">mapped_pins</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">a</span><span class="p">))</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">b</span><span class="p">)):</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
-                <span class="n">mapped_pins</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="n">check_short</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="n">no_of_short</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)):</span>
-                    <span class="k">if</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">in</span> <span class="n">check_short</span><span class="p">:</span>
-                        <span class="n">mapped_pins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mapped_pins</span><span class="p">[</span><span class="n">check_short</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">])])</span>
-                        <span class="n">no_of_short</span> <span class="o">+=</span> <span class="mi">1</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">mapped_pins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;(&quot;</span> <span class="o">+</span>
-                                           <span class="n">b</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="n">no_of_short</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">)</span>
-                        <span class="n">check_short</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-                    <span class="k">if</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">power_pins</span><span class="p">:</span>
-                        <span class="n">mapped_pins</span><span class="o">=</span> <span class="n">mapped_pins</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-
-                <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">mapped_pins</span><span class="p">)</span>
-
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;unmatched ports found&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="mi">0</span></div></div>
-
-<div class="viewcode-block" id="WriteSpice"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.write_verilog_lef.WriteSpice">[docs]</a><span class="k">class</span> <span class="nc">WriteSpice</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot; write hierarchical verilog file &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">circuit_graph</span><span class="p">,</span> <span class="n">circuit_name</span><span class="p">,</span> <span class="n">inout_pin_names</span><span class="p">,</span><span class="n">subckt_dict</span><span class="p">,</span> <span class="n">lib_names</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">circuit_graph</span> <span class="o">=</span> <span class="n">circuit_graph</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">circuit_name</span> <span class="o">=</span> <span class="n">circuit_name</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">inout_pins</span> <span class="o">=</span> <span class="n">inout_pin_names</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pins</span> <span class="o">=</span> <span class="n">inout_pin_names</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">subckt_dict</span> <span class="o">=</span> <span class="n">subckt_dict</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lib_names</span> <span class="o">=</span> <span class="n">lib_names</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">all_mos</span> <span class="o">=</span> <span class="p">[]</span>
-<div class="viewcode-block" id="WriteSpice.print_mos_subckt"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.write_verilog_lef.WriteSpice.print_mos_subckt">[docs]</a>    <span class="k">def</span> <span class="nf">print_mos_subckt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">fp</span><span class="p">,</span><span class="n">printed_mos</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">mos</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_mos</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">mos</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">printed_mos</span><span class="p">:</span>
-                <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">.subckt &quot;</span> <span class="o">+</span> <span class="n">mos</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot; D G S B&quot;</span><span class="p">)</span>
-                <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">m0 D G S1 B &quot;</span> <span class="o">+</span> <span class="n">mos</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span><span class="o">+</span> <span class="n">concat_values</span><span class="p">(</span><span class="n">mos</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">]))</span>
-                <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">m1 S1 G S B &quot;</span> <span class="o">+</span> <span class="n">mos</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span><span class="o">+</span> <span class="n">concat_values</span><span class="p">(</span><span class="n">mos</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">]))</span>
-                <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">.ends &quot;</span><span class="o">+</span><span class="n">mos</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-                <span class="n">printed_mos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mos</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">printed_mos</span></div>
-
-<div class="viewcode-block" id="WriteSpice.print_subckt"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.write_verilog_lef.WriteSpice.print_subckt">[docs]</a>    <span class="k">def</span> <span class="nf">print_subckt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fp</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Writing spice module : </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">circuit_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">.subckt &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">circuit_name</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="p">)</span>
-        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pins</span><span class="p">))</span>
-
-        <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">circuit_graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-            <span class="k">if</span> <span class="s1">&#39;source&#39;</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]:</span>
-                <span class="k">continue</span>
-            <span class="k">if</span> <span class="s1">&#39;net&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]:</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">attr</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">))</span><span class="o">&gt;</span><span class="mi">2</span> <span class="ow">and</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">attr</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span>  <span class="bp">self</span><span class="o">.</span><span class="n">lib_names</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">all_mos</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="n">attr</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">],</span> <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s1">&#39;nmos_rvt&#39;</span><span class="p">,</span><span class="s2">&quot;values&quot;</span><span class="p">:</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;values&#39;</span><span class="p">]})</span>
-                    <span class="n">line</span><span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">x&quot;</span> <span class="o">+</span> <span class="n">node</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span>
-                <span class="k">elif</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;real_inst_type&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;cap&#39;</span><span class="p">,</span> <span class="s1">&#39;res&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">]:</span>
-                    <span class="n">line</span><span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">node</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">line</span><span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">node</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span>
-                <span class="n">ports</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="n">nets</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="k">if</span> <span class="s2">&quot;ports_match&quot;</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Nets connected to ports: </span><span class="si">{</span><span class="n">attr</span><span class="p">[</span><span class="s2">&quot;ports_match&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-                    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">[</span><span class="s2">&quot;ports_match&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                        <span class="n">ports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-                        <span class="n">nets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="s1">&#39;DCL_NMOS&#39;</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]:</span>
-                        <span class="n">nets</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="n">nets</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
-                    <span class="k">elif</span> <span class="s1">&#39;DCL_PMOS&#39;</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]:</span>
-                        <span class="n">nets</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="n">nets</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
-
-                <span class="k">elif</span> <span class="s2">&quot;connection&quot;</span> <span class="ow">in</span> <span class="n">attr</span> <span class="ow">and</span> <span class="n">attr</span><span class="p">[</span><span class="s2">&quot;connection&quot;</span><span class="p">]:</span>
-                    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">[</span><span class="s2">&quot;connection&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                        <span class="k">if</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subckt_dict</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subckt_dict</span><span class="p">[</span><span class="n">attr</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]][</span><span class="s1">&#39;ports&#39;</span><span class="p">]:</span>
-                            <span class="n">ports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-                            <span class="n">nets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No connectivity info found : </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">attr</span><span class="p">[</span><span class="s1">&#39;ports&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="n">ports</span> <span class="o">=</span> <span class="n">attr</span><span class="p">[</span><span class="s2">&quot;ports&quot;</span><span class="p">]</span>
-                    <span class="n">nets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">circuit_graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
-
-                <span class="n">line</span> <span class="o">+=</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">nets</span><span class="p">)</span> <span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">+</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]</span>
-                <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-
-        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">.ends &quot;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">circuit_name</span><span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div></div>
-
-<div class="viewcode-block" id="concat_values"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.write_verilog_lef.concat_values">[docs]</a><span class="k">def</span> <span class="nf">concat_values</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
-    <span class="n">merged_values</span> <span class="o">=</span><span class="s2">&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">merged_values</span> <span class="o">=</span> <span class="n">merged_values</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">+</span><span class="n">key</span><span class="o">+</span><span class="s1">&#39;=&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.0&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">merged_values</span></div>
-
-
-<div class="viewcode-block" id="print_globals"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.write_verilog_lef.print_globals">[docs]</a><span class="k">def</span> <span class="nf">print_globals</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="n">power</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Write global variables&quot;&quot;&quot;</span>
-    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">`celldefine&quot;</span><span class="p">)</span>
-    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">module global_power;&quot;</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">power</span><span class="p">)):</span>
-        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">supply&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">power</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;;&quot;</span><span class="p">)</span>
-
-    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">endmodule&quot;</span><span class="p">)</span>
-    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">`endcelldefine</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
-
-<div class="viewcode-block" id="print_header"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.write_verilog_lef.print_header">[docs]</a><span class="k">def</span> <span class="nf">print_header</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Write Verilog header&quot;&quot;&quot;</span>
-    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;//Verilog block level netlist file for &quot;</span> <span class="o">+</span> <span class="n">filename</span><span class="p">)</span>
-    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">//Generated by UMN for ALIGN project </span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="generate_lef"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.write_verilog_lef.generate_lef">[docs]</a><span class="k">def</span> <span class="nf">generate_lef</span><span class="p">(</span><span class="n">name</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">attr</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span> <span class="n">available_block_lef</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span> <span class="n">design_config</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span> <span class="n">uniform_height</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Return commands to generate parameterized lef&quot;&quot;&quot;</span>
-    <span class="n">values</span><span class="o">=</span><span class="n">attr</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">]</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;checking lef for: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">values</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="c1">#for param, value in size.items():</span>
-
-    <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;cap&#39;</span><span class="p">):</span>
-        <span class="c1">#print(&quot;all val&quot;,values)</span>
-        <span class="k">if</span> <span class="s1">&#39;cap&#39;</span> <span class="ow">in</span> <span class="n">values</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;cap&quot;</span><span class="p">]</span><span class="o">==</span><span class="s2">&quot;unit_size&quot;</span><span class="p">:</span>
-                <span class="n">size</span> <span class="o">=</span> <span class="n">design_config</span><span class="p">[</span><span class="s2">&quot;unit_size_cap&quot;</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">size</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%g</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s2">&quot;cap&quot;</span><span class="p">]</span><span class="o">*</span><span class="mf">1E15</span><span class="p">,</span><span class="mi">4</span><span class="p">)))</span>
-            <span class="n">num_of_unit</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">size</span><span class="p">)</span><span class="o">/</span><span class="n">design_config</span><span class="p">[</span><span class="s2">&quot;unit_size_cap&quot;</span><span class="p">]</span>
-            <span class="n">block_name</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;f&#39;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">convert_to_unit</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
-            <span class="n">size</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">param</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">param</span><span class="p">])</span> <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">values</span><span class="p">)</span>
-            <span class="n">size</span> <span class="o">=</span> <span class="n">size</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span><span class="s1">&#39;p&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="s1">&#39;_neg_&#39;</span><span class="p">)</span>
-            <span class="n">num_of_unit</span><span class="o">=</span><span class="mi">1</span>
-            <span class="n">block_name</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
-
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found cap with size: </span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">design_config</span><span class="p">[</span><span class="s1">&#39;unit_size_cap&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">unit_block_name</span> <span class="o">=</span> <span class="s1">&#39;Cap_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">design_config</span><span class="p">[</span><span class="s2">&quot;unit_size_cap&quot;</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;f&#39;</span>
-        <span class="k">if</span> <span class="n">block_name</span> <span class="ow">in</span> <span class="n">available_block_lef</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">block_name</span><span class="p">,</span> <span class="n">available_block_lef</span><span class="p">[</span><span class="n">block_name</span><span class="p">]</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Generating lef for: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="k">if</span>  <span class="n">num_of_unit</span> <span class="o">&gt;</span> <span class="mi">128</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">block_name</span><span class="p">,</span> <span class="p">{</span>
-                <span class="s1">&#39;primitive&#39;</span><span class="p">:</span> <span class="n">block_name</span><span class="p">,</span>
-                <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
-            <span class="p">}</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">unit_block_name</span><span class="p">,</span> <span class="p">{</span>
-                <span class="s1">&#39;primitive&#39;</span><span class="p">:</span> <span class="n">block_name</span><span class="p">,</span>
-                <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">design_config</span><span class="p">[</span><span class="s2">&quot;unit_size_cap&quot;</span><span class="p">]</span>
-            <span class="p">}</span>
-    <span class="k">elif</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;res&#39;</span><span class="p">):</span>
-        <span class="k">if</span> <span class="s1">&#39;res&#39;</span> <span class="ow">in</span> <span class="n">values</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;res&quot;</span><span class="p">]</span><span class="o">==</span><span class="s2">&quot;unit_size&quot;</span><span class="p">:</span>
-                <span class="n">size</span> <span class="o">=</span> <span class="n">design_config</span><span class="p">[</span><span class="s2">&quot;unit_height_res&quot;</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">size</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%g</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s2">&quot;res&quot;</span><span class="p">],</span><span class="mi">2</span><span class="p">))</span>
-        <span class="k">else</span> <span class="p">:</span>
-            <span class="n">convert_to_unit</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
-            <span class="n">size</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">param</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">param</span><span class="p">])</span> <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">values</span><span class="p">)</span>
-        <span class="n">block_name</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">size</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span><span class="s1">&#39;p&#39;</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">height</span> <span class="o">=</span> <span class="n">ceil</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="o">/</span> <span class="n">design_config</span><span class="p">[</span><span class="s2">&quot;unit_height_res&quot;</span><span class="p">]))</span>
-            <span class="k">if</span> <span class="n">block_name</span> <span class="ow">in</span> <span class="n">available_block_lef</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">block_name</span><span class="p">,</span> <span class="n">available_block_lef</span><span class="p">[</span><span class="n">block_name</span><span class="p">]</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Generating lef for: </span><span class="si">{</span><span class="n">block_name</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">block_name</span><span class="p">,</span> <span class="p">{</span>
-                <span class="s1">&#39;primitive&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
-                <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">size</span><span class="p">))</span>
-            <span class="p">}</span>
-        <span class="k">except</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">block_name</span><span class="p">,</span> <span class="p">{</span>
-                <span class="s1">&#39;primitive&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
-                <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">design_config</span><span class="p">[</span><span class="s2">&quot;unit_height_res&quot;</span><span class="p">])</span>
-            <span class="p">}</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="s1">&#39;nmos&#39;</span> <span class="ow">in</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
-            <span class="n">unit_size_mos</span> <span class="o">=</span> <span class="n">design_config</span><span class="p">[</span><span class="s2">&quot;unit_size_nmos&quot;</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">unit_size_mos</span> <span class="o">=</span> <span class="n">design_config</span><span class="p">[</span><span class="s2">&quot;unit_size_pmos&quot;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="s2">&quot;nfin&quot;</span> <span class="ow">in</span> <span class="n">values</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="c1">#FinFET design</span>
-            <span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;nfin&quot;</span><span class="p">]</span><span class="o">==</span><span class="s2">&quot;unit_size&quot;</span><span class="p">:</span>
-                <span class="n">size</span> <span class="o">=</span> <span class="n">unit_size_mos</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s2">&quot;nfin&quot;</span><span class="p">])</span>
-            <span class="n">name_arg</span> <span class="o">=</span><span class="s1">&#39;nfin&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="s2">&quot;w&quot;</span> <span class="ow">in</span> <span class="n">values</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="c1">#Bulk design</span>
-            <span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;w&quot;</span><span class="p">]</span><span class="o">==</span><span class="s2">&quot;unit_size&quot;</span><span class="p">:</span>
-                <span class="n">size</span> <span class="o">=</span> <span class="n">unit_size_mos</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s2">&quot;w&quot;</span><span class="p">]</span><span class="o">*</span><span class="mf">1E+9</span><span class="o">/</span><span class="n">design_config</span><span class="p">[</span><span class="s2">&quot;Gate_pitch&quot;</span><span class="p">])</span>                
-            <span class="n">values</span><span class="p">[</span><span class="s2">&quot;nfin&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">size</span>
-            <span class="n">name_arg</span> <span class="o">=</span><span class="s1">&#39;nfin&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">convert_to_unit</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
-            <span class="n">size</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">param</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">param</span><span class="p">])</span> <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">values</span><span class="p">)</span>
-        <span class="k">if</span> <span class="s1">&#39;nf&#39;</span> <span class="ow">in</span> <span class="n">values</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="s1">&#39;nf&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;unit_size&#39;</span><span class="p">:</span>
-                <span class="n">values</span><span class="p">[</span><span class="s1">&#39;nf&#39;</span><span class="p">]</span> <span class="o">=</span><span class="n">size</span>
-            <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="o">*</span><span class="nb">int</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s2">&quot;nf&quot;</span><span class="p">])</span>
-            <span class="n">name_arg</span> <span class="o">=</span><span class="n">name_arg</span><span class="o">+</span><span class="s1">&#39;_nf&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s2">&quot;nf&quot;</span><span class="p">]))</span>
-
-        <span class="k">if</span> <span class="s1">&#39;m&#39;</span> <span class="ow">in</span> <span class="n">values</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="s1">&#39;m&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;unit_size&#39;</span><span class="p">:</span>
-                <span class="n">values</span><span class="p">[</span><span class="s1">&#39;m&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="o">*</span><span class="nb">int</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s2">&quot;m&quot;</span><span class="p">])</span>
-            <span class="n">name_arg</span> <span class="o">=</span><span class="n">name_arg</span><span class="o">+</span><span class="s1">&#39;_m&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s2">&quot;m&quot;</span><span class="p">]))</span>
-
-        <span class="n">no_units</span> <span class="o">=</span> <span class="n">ceil</span><span class="p">(</span><span class="n">size</span> <span class="o">/</span> <span class="n">unit_size_mos</span><span class="p">)</span>
-
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Generating lef for: </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">size</span><span class="p">))</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-            <span class="n">no_units</span> <span class="o">=</span> <span class="n">ceil</span><span class="p">(</span><span class="n">size</span> <span class="o">/</span> <span class="n">unit_size_mos</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">x</span> <span class="ow">in</span> <span class="n">name</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;DP&#39;</span><span class="p">,</span><span class="s1">&#39;_S&#39;</span><span class="p">])</span> <span class="ow">and</span> <span class="n">floor</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">no_units</span><span class="o">/</span><span class="mi">3</span><span class="p">))</span><span class="o">&gt;=</span><span class="mi">1</span><span class="p">:</span>
-                <span class="n">square_y</span> <span class="o">=</span> <span class="n">floor</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">no_units</span><span class="o">/</span><span class="mi">3</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">square_y</span> <span class="o">=</span> <span class="n">floor</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">no_units</span><span class="p">))</span>
-            <span class="k">while</span> <span class="n">no_units</span> <span class="o">%</span> <span class="n">square_y</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">square_y</span> <span class="o">-=</span> <span class="mi">1</span>
-            <span class="n">yval</span> <span class="o">=</span> <span class="n">square_y</span>
-            <span class="n">xval</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">no_units</span> <span class="o">/</span> <span class="n">square_y</span><span class="p">)</span>
-            <span class="n">block_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">name_arg</span><span class="si">}</span><span class="s2">_n</span><span class="si">{</span><span class="n">unit_size_mos</span><span class="si">}</span><span class="s2">_X</span><span class="si">{</span><span class="n">xval</span><span class="si">}</span><span class="s2">_Y</span><span class="si">{</span><span class="n">yval</span><span class="si">}</span><span class="s2">&quot;</span>
-
-            <span class="k">if</span> <span class="n">block_name</span> <span class="ow">in</span> <span class="n">available_block_lef</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">block_name</span><span class="p">,</span> <span class="n">available_block_lef</span><span class="p">[</span><span class="n">block_name</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;Switch_NMOS_G&#39;</span><span class="p">:</span>
-                <span class="c1">#TBD in celll generator</span>
-                <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Switch_NMOS_B&#39;</span>
-            <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;Switch_PMOS_G&#39;</span><span class="p">:</span>
-                <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Switch_PMOS_B&#39;</span>
-
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Generating parametric lef of:  </span><span class="si">{</span><span class="n">block_name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">values</span><span class="p">[</span><span class="s2">&quot;real_inst_type&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">attr</span><span class="p">[</span><span class="s2">&quot;real_inst_type&quot;</span><span class="p">]</span>
-            <span class="n">cell_gen_parameters</span><span class="o">=</span> <span class="p">{</span>
-                <span class="s1">&#39;primitive&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
-                <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">unit_size_mos</span><span class="p">,</span>
-                <span class="s1">&#39;x_cells&#39;</span><span class="p">:</span> <span class="n">xval</span><span class="p">,</span>
-                <span class="s1">&#39;y_cells&#39;</span><span class="p">:</span> <span class="n">yval</span><span class="p">,</span>
-                <span class="s1">&#39;parameters&#39;</span><span class="p">:</span><span class="n">values</span>
-            <span class="p">}</span>
-            <span class="k">if</span> <span class="s1">&#39;stack&#39;</span> <span class="ow">in</span> <span class="n">values</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                <span class="n">cell_gen_parameters</span><span class="p">[</span><span class="s1">&#39;stack&#39;</span><span class="p">]</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s2">&quot;stack&quot;</span><span class="p">])</span>
-                <span class="n">block_name</span> <span class="o">=</span> <span class="n">block_name</span><span class="o">+</span><span class="s1">&#39;_ST&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s2">&quot;stack&quot;</span><span class="p">]))</span>
-            <span class="c1">#cell generator takes only one VT so doing a string search</span>
-            <span class="c1">#To be fixed:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="p">[</span><span class="s2">&quot;real_inst_type&quot;</span><span class="p">],</span><span class="nb">list</span><span class="p">):</span>
-                <span class="n">merged_vt</span><span class="o">=</span><span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">attr</span><span class="p">[</span><span class="s2">&quot;real_inst_type&quot;</span><span class="p">])</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">merged_vt</span><span class="o">=</span><span class="n">attr</span><span class="p">[</span><span class="s2">&quot;real_inst_type&quot;</span><span class="p">]</span>
-
-            <span class="n">vt</span><span class="o">=</span> <span class="p">[</span><span class="n">vt</span> <span class="k">for</span> <span class="n">vt</span> <span class="ow">in</span> <span class="n">design_config</span><span class="p">[</span><span class="s2">&quot;vt_type&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">vt</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span>  <span class="n">merged_vt</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">vt</span><span class="p">:</span>
-                <span class="n">block_name</span> <span class="o">=</span> <span class="n">block_name</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">vt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">cell_gen_parameters</span><span class="p">[</span><span class="s1">&#39;vt_type&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">vt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="k">return</span> <span class="n">block_name</span><span class="p">,</span> <span class="n">cell_gen_parameters</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No proper parameters found for cell generation&quot;</span><span class="p">)</span>
-            <span class="n">block_name</span> <span class="o">=</span> <span class="n">name</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="n">size</span>
-
-    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not generate LEF for </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+<div class="viewcode-block" id="WriteVerilog.gen_dict_fa"><a class="viewcode-back" href="../../../modules/align.compiler.html#align.compiler.write_verilog_lef.WriteVerilog.gen_dict_fa">[docs]</a>    <span class="k">def</span> <span class="nf">gen_dict_fa</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;unmatched ports found: </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">b</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">mapped_pins</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">ai</span><span class="p">,</span> <span class="n">bi</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+            <span class="n">mapped_pins</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;formal&quot;</span><span class="p">:</span> <span class="n">ai</span><span class="p">,</span> <span class="s2">&quot;actual&quot;</span><span class="p">:</span> <span class="n">bi</span><span class="p">})</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">mapped_pins</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s2">&quot;formal&quot;</span><span class="p">]))</span></div></div>
 </pre></div>
 
-            <div class="clearer"></div>
+           </div>
           </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, ALIGN team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-            <p class="logo"><a href="../../../index.html">
-              <img class="logo" src="../../../_static/LOGO.PNG" alt="Logo"/>
-            </a></p>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">align.compiler.write_verilog_lef</a></li> 
-      </ul>
-    </div>
-    <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, ALIGN team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
-    </div>
-  </body>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
 </html>

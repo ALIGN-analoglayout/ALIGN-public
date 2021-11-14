@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Constraints &mdash; ALIGN</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Upcoming" href="upcoming.html" />
+    <link rel="prev" title="Debug" href="debug.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html"><img src="../_static/LOGO.PNG" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Notes:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="flow.html">ALIGN: flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#outputs">Outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#step-0-check-prerequisites">Step 0: Check prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#step-1-clone-the-align-source-code-to-your-local-environment">Step 1: Clone the ALIGN source code to your local environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#step-2-create-a-python-virtualenv">Step 2: Create a Python virtualenv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#step-3a-install-align-as-a-user">Step 3a: Install ALIGN as a USER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#step-3b-install-align-as-a-developer">Step 3b: Install ALIGN as a DEVELOPER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#step-4-run-align">Step 4: Run ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#step-5-view-layout">Step 5: View layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction by Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="viewer.html">Layout viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#klayout-viewer">KLayout viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#align-viewer">ALIGN viewer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="debug.html">Debug</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#reinstalling-align">Reinstalling ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Constraints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#constraint-options">Constraint options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example-constraints">Example constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="upcoming.html">Upcoming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="upcoming.html#how-to-add-your-own-pdk">How to add your own pdk</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Datasets:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="database.html">Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="database.html#sized-netlists">Sized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="database.html#unsized-netlists">Unsized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="database.html#generalized-testbenches">Generalized testbenches</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.html">align package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.gui.html">align.gui package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.pdk.html">align.pdk package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.primitive.html">align.primitive package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.utils.html">align.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.primitive.html">align.primitive package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.primitive.default.html">align.primitive.default package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.pdk.html">align.pdk package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.primitive.default.html">align.primitive.default package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.utils.html">align.utils package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.gui.html">align.gui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ALIGN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Constraints</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/notes/const.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="constraints">
+<h1>Constraints<a class="headerlink" href="#constraints" title="Permalink to this headline">¶</a></h1>
+<p>The ALIGN flow generates symmetry constraints automatically but designers can add their own constraint for better control.
+Here, are the list of constraints used in align. These constraints are applied on the instances (instances of NMOS/PMOS/Resistor/Capacitor/Subcircuit) or on nets.
+These constraints need to be defined seperately for each of the hierachies with name <code class="docutils literal notranslate"><span class="pre">&lt;hier</span> <span class="pre">name&gt;.const.json</span></code>, defined in the schematic.</p>
+<div class="section" id="constraint-options">
+<h2>Constraint options<a class="headerlink" href="#constraint-options" title="Permalink to this headline">¶</a></h2>
+<p>List of options available for users.</p>
+<div class="section" id="order">
+<h3>Order<a class="headerlink" href="#order" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">Order</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">direction</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>horizontal<span class="p">, </span>vertical<span class="p">, </span>left_to_right<span class="p">, </span>right_to_left<span class="p">, </span>bottom_to_top<span class="p">, </span>top_to_bottom<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">abut</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#Order"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>All <cite>instances</cite> will be ordered along <cite>direction</cite></p>
+<img alt="../_images/OrderBlocks1.PNG" src="../_images/OrderBlocks1.PNG" />
+<p>WARNING: <cite>Order</cite> does not imply aligment / overlap
+of any sort (See <cite>Align</cite>)</p>
+<p>The following <cite>direction</cite> values are supported:
+&gt; <cite>None</cite> : default (<cite>‘horizontal’</cite> or <cite>‘vertical’</cite>)</p>
+<p>&gt; <cite>‘horizontal’</cite>: left to right or vice-versa</p>
+<p>&gt; <cite>‘vertical’</cite>: bottom to top or vice-versa</p>
+<p>&gt; <cite>‘left_to_right’</cite>
+&gt; <cite>‘right_to_left’</cite>
+&gt; <cite>‘bottom_to_top’</cite>
+&gt; <cite>‘top_to_bottom’</cite></p>
+<p>If <cite>abut</cite> is <cite>True</cite>:
+&gt; adjoining instances will touch</p>
+</dd></dl>
+
+</div>
+<div class="section" id="align">
+<h3>Align<a class="headerlink" href="#align" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">Align</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">line</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>h_any<span class="p">, </span>h_top<span class="p">, </span>h_bottom<span class="p">, </span>h_center<span class="p">, </span>v_any<span class="p">, </span>v_left<span class="p">, </span>v_right<span class="p">, </span>v_center<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#Align"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p><cite>instances</cite> will be aligned along <cite>line</cite>. Could be
+strict or relaxed depending on value of <cite>line</cite></p>
+<img alt="../_images/AlignBlocks1.PNG" src="../_images/AlignBlocks1.PNG" />
+<p>WARNING: <cite>Align</cite> does not imply ordering of any sort
+(See <cite>Order</cite>)</p>
+<p>The following <cite>line</cite> values are currently supported:
+&gt; <cite>None</cite> : default (<cite>‘h_any’</cite> or <cite>‘v_any’</cite>)</p>
+<p>&gt; <cite>‘h_any’</cite>: top, bottom or anything in between</p>
+<p>&gt; <cite>‘v_any’</cite>: left, right or anything in between</p>
+<p>&gt; <cite>‘h_top’</cite>
+&gt; <cite>‘h_bottom’</cite>
+&gt; <cite>‘h_center’</cite></p>
+<p>&gt; <cite>‘v_left’</cite>
+&gt; <cite>‘v_right’</cite>
+&gt; <cite>‘v_center’</cite></p>
+</dd></dl>
+
+</div>
+<div class="section" id="enclose">
+<h3>Enclose<a class="headerlink" href="#enclose" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">Enclose</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">min_height</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_height</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">min_width</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_width</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">min_aspect_ratio</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_aspect_ratio</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#Enclose"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Enclose <cite>instances</cite> within a flexible bounding box
+with <cite>min_</cite> &amp; <cite>max_</cite> bounds</p>
+<p>Note: Specifying any one of the following variables
+makes it a valid constraint but you may wish to
+specify more than one for practical purposes</p>
+<p>&gt; <cite>min_height</cite>
+&gt; <cite>max_height</cite></p>
+<p>&gt; <cite>min_width</cite>
+&gt; <cite>max_width</cite></p>
+<p>&gt; <cite>min_aspect_ratio</cite>
+&gt; <cite>max_aspect_ratio</cite></p>
+</dd></dl>
+
+</div>
+<div class="section" id="spread">
+<h3>Spread<a class="headerlink" href="#spread" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">Spread</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">direction</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>horizontal<span class="p">, </span>vertical<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">distance</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#Spread"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Spread <cite>instances</cite> by forcing minimum spacing along
+<cite>direction</cite> if two instances overlap in other direction</p>
+<p>WARNING: This constraint checks for overlap but
+doesn’t enforce it (See <cite>Align</cite>)</p>
+<p>The following <cite>direction</cite> values are supported:
+&gt; <cite>None</cite> : default (<cite>‘horizontal’</cite> or <cite>‘vertical’</cite>)</p>
+<p>&gt; <cite>‘horizontal’</cite>
+&gt; <cite>‘vertical’</cite></p>
+</dd></dl>
+
+</div>
+<div class="section" id="aspectratio">
+<h3>AspectRatio<a class="headerlink" href="#aspectratio" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">AspectRatio</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">subcircuit</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">ratio_low</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">ratio_high</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></span> <span class="o">=</span> <span class="default_value">10</span></em>, <em class="sig-param"><span class="n">weight</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span> <span class="o">=</span> <span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#AspectRatio"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Define lower and upper bounds on aspect ratio (=width/height) of a subcircuit</p>
+<p><cite>ratio_low</cite> &lt;= width/height &lt;= <cite>ratio_high</cite></p>
+</dd></dl>
+
+</div>
+<div class="section" id="boundary">
+<h3>Boundary<a class="headerlink" href="#boundary" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">Boundary</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">subcircuit</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">max_width</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></span> <span class="o">=</span> <span class="default_value">10000</span></em>, <em class="sig-param"><span class="n">max_height</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></span> <span class="o">=</span> <span class="default_value">10000</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#Boundary"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Define <cite>max_height</cite> and/or <cite>max_width</cite> on a subcircuit in micrometers.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="aligninorder">
+<h3>AlignInOrder<a class="headerlink" href="#aligninorder" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">AlignInOrder</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">line</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>top<span class="p">, </span>bottom<span class="p">, </span>left<span class="p">, </span>right<span class="p">, </span>center<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">'bottom'</span></em>, <em class="sig-param"><span class="n">direction</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>horizontal<span class="p">, </span>vertical<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">abut</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#AlignInOrder"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Align <cite>instances</cite> on <cite>line</cite> ordered along <cite>direction</cite></p>
+<p>Note: This is a user-convenience constraint. Same
+effect can be realized using <cite>Order</cite> &amp; <cite>Align</cite></p>
+<p>&gt; <cite>direction == ‘horizontal’</cite> =&gt; left_to_right</p>
+<p>&gt; <cite>direction == ‘vertical’</cite>   =&gt; bottom_to_top</p>
+</dd></dl>
+
+</div>
+<div class="section" id="compactplacement">
+<h3>CompactPlacement<a class="headerlink" href="#compactplacement" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">CompactPlacement</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">style</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>left<span class="p">, </span>right<span class="p">, </span>center<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">'left'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#CompactPlacement"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="sametemplate">
+<h3>SameTemplate<a class="headerlink" href="#sametemplate" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">SameTemplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#SameTemplate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="createalias">
+<h3>CreateAlias<a class="headerlink" href="#createalias" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">CreateAlias</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#CreateAlias"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="groupblocks">
+<h3>GroupBlocks<a class="headerlink" href="#groupblocks" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">GroupBlocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">style</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>tbd_interdigitated<span class="p">, </span>tbd_common_centroid<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#GroupBlocks"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Force heirarchy creation</p>
+</dd></dl>
+
+</div>
+<div class="section" id="matchblocks">
+<h3>MatchBlocks<a class="headerlink" href="#matchblocks" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">MatchBlocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#MatchBlocks"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>TODO: Can be replicated by Enclose??</p>
+</dd></dl>
+
+</div>
+<div class="section" id="donotidentify">
+<h3>DoNotIdentify<a class="headerlink" href="#donotidentify" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">DoNotIdentify</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#DoNotIdentify"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>TODO: Can be replicated by Enclose??</p>
+</dd></dl>
+
+</div>
+<div class="section" id="blockdistance">
+<h3>BlockDistance<a class="headerlink" href="#blockdistance" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">BlockDistance</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">abs_distance</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#BlockDistance"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>TODO: Replace with Spread</p>
+<img alt="../_images/HorizontalDistance1.PNG" src="../_images/HorizontalDistance1.PNG" />
+</dd></dl>
+
+</div>
+<div class="section" id="horizontaldistance">
+<h3>HorizontalDistance<a class="headerlink" href="#horizontaldistance" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">HorizontalDistance</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">abs_distance</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#HorizontalDistance"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>TODO: Replace with Spread</p>
+<img alt="../_images/HorizontalDistance1.PNG" src="../_images/HorizontalDistance1.PNG" />
+</dd></dl>
+
+</div>
+<div class="section" id="verticaldistance">
+<h3>VerticalDistance<a class="headerlink" href="#verticaldistance" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">VerticalDistance</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">abs_distance</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#VerticalDistance"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>TODO: Replace with Spread</p>
+<img alt="../_images/VerticalDistance1.PNG" src="../_images/VerticalDistance1.PNG" />
+</dd></dl>
+
+</div>
+<div class="section" id="guardring">
+<h3>GuardRing<a class="headerlink" href="#guardring" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">GuardRing</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">guard_ring_primitives</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">global_pin</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">block_name</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#GuardRing"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Adds guard ring for particular hierarchy</p>
+</dd></dl>
+
+</div>
+<div class="section" id="symmetricblocks">
+<h3>SymmetricBlocks<a class="headerlink" href="#symmetricblocks" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">SymmetricBlocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">pairs</span><span class="p">:</span> <span class="n">align.schema.constraint.List<span class="p">[</span>List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">direction</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>H<span class="p">, </span>V<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#SymmetricBlocks"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>SymmetricBlocks [summary]</p>
+<img alt="../_images/SymmetricBlocks1.PNG" src="../_images/SymmetricBlocks1.PNG" />
+<p>[extended_summary]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>SoftConstraint</strong> (<em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.10)"><em>type</em></a><em>]</em>) – [description]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>[description]</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.10)">type</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="groupcaps">
+<h3>GroupCaps<a class="headerlink" href="#groupcaps" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">GroupCaps</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">unit_cap</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">num_units</span><span class="p">:</span> <span class="n"><a class="reference internal" href="../modules/align.schema.html#align.schema.types.List" title="align.schema.types.List">align.schema.types.List</a></span></em>, <em class="sig-param"><span class="n">dummy</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#GroupCaps"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Common Centroid Cap</p>
+</dd></dl>
+
+</div>
+<div class="section" id="netconst">
+<h3>NetConst<a class="headerlink" href="#netconst" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">NetConst</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">nets</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">shield</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">criticality</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#NetConst"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="portlocation">
+<h3>PortLocation<a class="headerlink" href="#portlocation" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">PortLocation</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">ports</span><span class="p">:</span> <span class="n"><a class="reference internal" href="../modules/align.schema.html#align.schema.types.List" title="align.schema.types.List">align.schema.types.List</a></span></em>, <em class="sig-param"><span class="n">location</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>TL<span class="p">, </span>TC<span class="p">, </span>TR<span class="p">, </span>RT<span class="p">, </span>RC<span class="p">, </span>RB<span class="p">, </span>BL<span class="p">, </span>BC<span class="p">, </span>BR<span class="p">, </span>LB<span class="p">, </span>LC<span class="p">, </span>LT<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#PortLocation"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>T (top), L (left), C (center), R (right), B (bottom)</p>
+</dd></dl>
+
+</div>
+<div class="section" id="symmetricnets">
+<h3>SymmetricNets<a class="headerlink" href="#symmetricnets" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">SymmetricNets</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">net1</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">net2</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">pins1</span><span class="p">:</span> <span class="n"><a class="reference internal" href="../modules/align.schema.html#align.schema.types.List" title="align.schema.types.List">align.schema.types.List</a></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pins2</span><span class="p">:</span> <span class="n"><a class="reference internal" href="../modules/align.schema.html#align.schema.types.List" title="align.schema.types.List">align.schema.types.List</a></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">direction</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>H<span class="p">, </span>V<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#SymmetricNets"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="multiconnection">
+<h3>MultiConnection<a class="headerlink" href="#multiconnection" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">MultiConnection</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">nets</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">multiplier</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#MultiConnection"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="powerports">
+<h3>PowerPorts<a class="headerlink" href="#powerports" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">PowerPorts</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">ports</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#PowerPorts"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>power port for each hieararchy</p>
+</dd></dl>
+
+</div>
+<div class="section" id="groundports">
+<h3>GroundPorts<a class="headerlink" href="#groundports" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">GroundPorts</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">ports</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#GroundPorts"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Ground port for each hieararchy</p>
+</dd></dl>
+
+</div>
+<div class="section" id="clockports">
+<h3>ClockPorts<a class="headerlink" href="#clockports" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">ClockPorts</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">ports</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#ClockPorts"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Clock port for each hieararchy</p>
+</dd></dl>
+
+</div>
+<div class="section" id="donotuselib">
+<h3>DoNotUseLib<a class="headerlink" href="#donotuselib" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">DoNotUseLib</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">libraries</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#DoNotUseLib"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Primitive libraries which should not be used</p>
+</dd></dl>
+
+</div>
+<div class="section" id="isdigital">
+<h3>IsDigital<a class="headerlink" href="#isdigital" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">IsDigital</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">isTrue</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#IsDigital"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Place this block digitally
+Forbids any preprocessing, auto-annotation, array-identification or auto-constraint generation</p>
+</dd></dl>
+
+</div>
+<div class="section" id="autoconstraint">
+<h3>AutoConstraint<a class="headerlink" href="#autoconstraint" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">AutoConstraint</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">isTrue</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#AutoConstraint"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Forbids/Allow any auto-constraint generation</p>
+</dd></dl>
+
+</div>
+<div class="section" id="autogroupcaps">
+<h3>AutoGroupCaps<a class="headerlink" href="#autogroupcaps" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">AutoGroupCaps</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">isTrue</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#AutoGroupCaps"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Forbids/Allow creation of arrays for symmetric caps</p>
+</dd></dl>
+
+</div>
+<div class="section" id="fixsourcedrain">
+<h3>FixSourceDrain<a class="headerlink" href="#fixsourcedrain" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">FixSourceDrain</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">isTrue</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#FixSourceDrain"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Checks the netlist for any source/drain interchange.
+Traverses and fix them based on power to gnd traversal</p>
+</dd></dl>
+
+</div>
+<div class="section" id="keepdummyhierarchies">
+<h3>KeepDummyHierarchies<a class="headerlink" href="#keepdummyhierarchies" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">KeepDummyHierarchies</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">isTrue</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#KeepDummyHierarchies"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Removes any single instance hierarchies</p>
+</dd></dl>
+
+</div>
+<div class="section" id="mergeseriesdevices">
+<h3>MergeSeriesDevices<a class="headerlink" href="#mergeseriesdevices" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">MergeSeriesDevices</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">isTrue</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#MergeSeriesDevices"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Allow stacking of series devices
+Only works on NMOS/PMOS/CAP/RES</p>
+</dd></dl>
+
+</div>
+<div class="section" id="mergeparalleldevices">
+<h3>MergeParallelDevices<a class="headerlink" href="#mergeparalleldevices" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">MergeParallelDevices</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">isTrue</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#MergeParallelDevices"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Allow merging of parallel devices
+Only works on NMOS/PMOS/CAP/RES</p>
+</dd></dl>
+
+</div>
+<div class="section" id="identifyarray">
+<h3>IdentifyArray<a class="headerlink" href="#identifyarray" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">IdentifyArray</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">isTrue</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#IdentifyArray"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Forbids/Alow any array identification</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="example-constraints">
+<h2>Example constraints<a class="headerlink" href="#example-constraints" title="Permalink to this headline">¶</a></h2>
+<p>Users can add constraints for each hierarchy levele with a file name <code class="docutils literal notranslate"><span class="pre">Subcircuit_name.const.json</span></code>. An example file for high_speed_comparator design is shown here.</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#filename: high_speed_comparator.const.json</span>
+<span class="p">[</span>
+        <span class="p">{</span>   <span class="s2">&quot;constraint&quot;</span><span class="p">:</span><span class="s2">&quot;HorizontalDistance&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;abs_distance&quot;</span><span class="p">:</span><span class="mi">0</span>
+        <span class="p">},</span>
+        <span class="p">{</span>   <span class="s2">&quot;constraint&quot;</span><span class="p">:</span><span class="s2">&quot;VerticalDistance&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;abs_distance&quot;</span><span class="p">:</span><span class="mi">0</span>
+        <span class="p">},</span>
+        <span class="p">{</span>   <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;GroupBlocks&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;instances&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;mmn0&quot;</span><span class="p">,</span> <span class="s2">&quot;mmn1&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;diffpair&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>   <span class="s2">&quot;constraint&quot;</span><span class="p">:</span><span class="s2">&quot;GroupBlocks&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;instances&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;mmn4&quot;</span><span class="p">,</span> <span class="s2">&quot;mmn3&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;ccn&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>   <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;GroupBlocks&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;instances&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;mmp1&quot;</span><span class="p">,</span> <span class="s2">&quot;mmp0&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;ccp&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>   <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;SymmetricBlocks&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;direction&quot;</span> <span class="p">:</span> <span class="s2">&quot;V&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;pairs&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="s2">&quot;mmn2&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;diffpair&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;ccn&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;ccp&quot;</span><span class="p">]]</span>
+        <span class="p">},</span>
+        <span class="p">{</span>   <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;order&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;instances&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;mmn2&quot;</span><span class="p">,</span> <span class="s2">&quot;diffpair&quot;</span><span class="p">,</span> <span class="s2">&quot;ccn&quot;</span><span class="p">,</span> <span class="s2">&quot;ccp&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;top_to_bottom&quot;</span>
+        <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="debug.html" class="btn btn-neutral float-left" title="Debug" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="upcoming.html" class="btn btn-neutral float-right" title="Upcoming" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, ALIGN team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

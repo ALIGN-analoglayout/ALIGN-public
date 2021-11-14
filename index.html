@@ -1,121 +1,174 @@
-
 <!DOCTYPE html>
-
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ALIGN: Analog Layout, Intelligently Generated from Netlists &#8212; ALIGN</title>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ALIGN: Analog Layout, Intelligently Generated from Netlists &mdash; ALIGN</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
-    
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
-    
+      <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Design database" href="database.html" /> 
-  </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="database.html" title="Design database"
-             accesskey="N">next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">ALIGN</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">ALIGN: Analog Layout, Intelligently Generated from Netlists</a></li> 
-      </ul>
-    </div>  
+    <link rel="next" title="ALIGN: flow" href="notes/flow.html" /> 
+</head>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="#"><img src="_static/LOGO.PNG" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Notes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="notes/flow.html">ALIGN: flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notes/flow.html#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/flow.html#outputs">Outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="notes/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notes/installation.html#step-0-check-prerequisites">Step 0: Check prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/installation.html#step-1-clone-the-align-source-code-to-your-local-environment">Step 1: Clone the ALIGN source code to your local environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/installation.html#step-2-create-a-python-virtualenv">Step 2: Create a Python virtualenv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/installation.html#step-3a-install-align-as-a-user">Step 3a: Install ALIGN as a USER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/installation.html#step-3b-install-align-as-a-developer">Step 3b: Install ALIGN as a DEVELOPER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/installation.html#step-4-run-align">Step 4: Run ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/installation.html#step-5-view-layout">Step 5: View layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="notes/introduction.html">Introduction by Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes/viewer.html">Layout viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notes/viewer.html#klayout-viewer">KLayout viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/viewer.html#align-viewer">ALIGN viewer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="notes/debug.html">Debug</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notes/debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/debug.html#reinstalling-align">Reinstalling ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/debug.html#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="notes/const.html">Constraints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notes/const.html#constraint-options">Constraint options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/const.html#example-constraints">Example constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="notes/upcoming.html">Upcoming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notes/upcoming.html#how-to-add-your-own-pdk">How to add your own pdk</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Datasets:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="notes/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes/database.html">Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notes/database.html#sized-netlists">Sized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/database.html#unsized-netlists">Unsized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/database.html#generalized-testbenches">Generalized testbenches</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules/align.html">align package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/align.gui.html">align.gui package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/align.pdk.html">align.pdk package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/align.primitive.html">align.primitive package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/align.utils.html">align.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/align.primitive.html">align.primitive package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="modules/align.primitive.default.html">align.primitive.default package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/align.pdk.html">align.pdk package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/align.primitive.default.html">align.primitive.default package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/align.utils.html">align.utils package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/align.gui.html">align.gui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">ALIGN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
+      <li>ALIGN: Analog Layout, Intelligently Generated from Netlists</li>
+      <li class="wy-breadcrumbs-aside">
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/ALIGN-analoglayout/ALIGN-public" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
   <div class="section" id="align-analog-layout-intelligently-generated-from-netlists">
 <h1>ALIGN: Analog Layout, Intelligently Generated from Netlists<a class="headerlink" href="#align-analog-layout-intelligently-generated-from-netlists" title="Permalink to this headline">¶</a></h1>
 <p>ALIGN is an open source automatic layout generator for analog circuits jointly developed under the DARPA IDEA program by the University of Minnesota, Texas A&amp;M University, and Intel Corporation.</p>
 <p>The goal of ALIGN is to automatically translate an unannotated (or partially annotated) SPICE netlist of an analog circuit to a GDSII layout. The repository also releases a set of analog circuit designs.</p>
 <div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Contents:</span></p>
+<p class="caption"><span class="caption-text">Notes:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="database.html">Design database</a></li>
-<li class="toctree-l1"><a class="reference internal" href="flow.html">ALIGN: flow</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="flow.html#inputs">Inputs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="flow.html#outputs">Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes/flow.html">ALIGN: flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes/introduction.html">Introduction by Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes/viewer.html">Layout viewer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes/debug.html">Debug</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes/const.html">Constraints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes/upcoming.html">Upcoming</a></li>
 </ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting started</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="getting_started.html#clone-github-repository">Clone GitHub Repository</a></li>
-<li class="toctree-l2"><a class="reference internal" href="getting_started.html#native-linux-environment-flow">Native Linux Environment Flow</a></li>
-<li class="toctree-l2"><a class="reference internal" href="getting_started.html#docker-flow">Docker flow</a></li>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Datasets:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="notes/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes/database.html">Database</a></li>
 </ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="usage.html">How to use ALIGN</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#native-linux-environment-flow">Native Linux environment flow</a></li>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#docker-based-run">Docker based run</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="viewer.html">Viewer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="debug.html">How to debug installation failures</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
-<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-ld-library-path-prerequisite-missing">Error due to LD_LIBRARY_PATH prerequisite missing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
-<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-lpsolve-library-prerequisite-missing">Error due to lpsolve library prerequisite missing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-googletest-prerequisite-missing">Error due to googletest prerequisite missing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-json-prerequisite-missing">Error due to JSON prerequisite missing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-missing-align-installation">Error due to missing align installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
-<li class="toctree-l2"><a class="reference internal" href="debug.html#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="const.html">How to add your own constraints</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="const.html#constraint-options">Constraint options</a></li>
-<li class="toctree-l2"><a class="reference internal" href="const.html#example-constraints-command-line-interface">Example constraints (command-line interface)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="const.html#example-constraints-json-format">Example constraints (JSON format)</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="setup.html">Writing your setup file</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="setup.html#setup-options">Setup options</a></li>
-<li class="toctree-l2"><a class="reference internal" href="setup.html#example-setup-file">Example setup file</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="upcoming.html">Upcoming documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="upcoming.html#how-to-add-your-own-pdk">How to add your own pdk</a></li>
-<li class="toctree-l2"><a class="reference internal" href="upcoming.html#how-to-visualize-and-debug-drc-using-align-viewer">How to visualize and debug DRC using ALIGN viewer</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">align</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="align.html">align package</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="align.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="align.cell_fabric.html">align.cell_fabric package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="align.circuit.html">align.circuit package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="align.compiler.html">align.compiler package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="align.gdsconv.html">align.gdsconv package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="align.pnr.html">align.pnr package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="align.primitive.html">align.primitive package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="align.utils.html">align.utils package</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="align.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="align.html#module-align.cmdline">align.cmdline module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="align.html#module-align.main">align.main module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="align.html#module-align">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
+</div>
+<div class="toctree-wrapper compound">
 </div>
 </div>
 <div class="section" id="indices-and-tables">
@@ -123,69 +176,37 @@
 <ul class="simple">
 <li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
-<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
 </ul>
 </div>
 
 
-            <div class="clearer"></div>
+           </div>
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-            <p class="logo"><a href="#">
-              <img class="logo" src="_static/LOGO.PNG" alt="Logo"/>
-            </a></p>
-  <h3><a href="#">Table of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">ALIGN: Analog Layout, Intelligently Generated from Netlists</a></li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
-</ul>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="notes/flow.html" class="btn btn-neutral float-right" title="ALIGN: flow" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
-  <h4>Next topic</h4>
-  <p class="topless"><a href="database.html"
-                        title="next chapter">Design database</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/index.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, ALIGN team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
         </div>
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="database.html" title="Design database"
-             >next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">ALIGN</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">ALIGN: Analog Layout, Intelligently Generated from Netlists</a></li> 
-      </ul>
-    </div>
-    <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, ALIGN team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
-    </div>
-  </body>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
 </html>

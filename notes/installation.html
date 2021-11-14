@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installation &mdash; ALIGN</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Introduction by Example" href="introduction.html" />
+    <link rel="prev" title="ALIGN: flow" href="flow.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html"><img src="../_static/LOGO.PNG" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Notes:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="flow.html">ALIGN: flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#outputs">Outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#step-0-check-prerequisites">Step 0: Check prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-1-clone-the-align-source-code-to-your-local-environment">Step 1: Clone the ALIGN source code to your local environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-2-create-a-python-virtualenv">Step 2: Create a Python virtualenv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-3a-install-align-as-a-user">Step 3a: Install ALIGN as a USER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-3b-install-align-as-a-developer">Step 3b: Install ALIGN as a DEVELOPER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-4-run-align">Step 4: Run ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-5-view-layout">Step 5: View layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction by Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="viewer.html">Layout viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#klayout-viewer">KLayout viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#align-viewer">ALIGN viewer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="debug.html">Debug</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#reinstalling-align">Reinstalling ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="const.html">Constraints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="const.html#constraint-options">Constraint options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="const.html#example-constraints">Example constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="upcoming.html">Upcoming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="upcoming.html#how-to-add-your-own-pdk">How to add your own pdk</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Datasets:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="database.html">Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="database.html#sized-netlists">Sized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="database.html#unsized-netlists">Unsized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="database.html#generalized-testbenches">Generalized testbenches</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.html">align package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.gui.html">align.gui package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.pdk.html">align.pdk package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.primitive.html">align.primitive package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.utils.html">align.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.primitive.html">align.primitive package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.primitive.default.html">align.primitive.default package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.pdk.html">align.pdk package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.primitive.default.html">align.primitive.default package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.utils.html">align.utils package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.gui.html">align.gui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ALIGN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Installation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/notes/installation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>ALIGN is built on Python and C++ thus requires both compilers to be available on the system.</p>
+<div class="section" id="step-0-check-prerequisites">
+<h2>Step 0: Check prerequisites<a class="headerlink" href="#step-0-check-prerequisites" title="Permalink to this headline">¶</a></h2>
+<dl class="simple">
+<dt>The following dependencies must be met by your system:</dt><dd><ul class="simple">
+<li><p>gcc &gt;= 6.1.0 (For C++14 support)</p></li>
+<li><p>python &gt;= 3.7 (For <a class="reference external" href="https://www.python.org/dev/peps/pep-0560/">PEP 560</a> support)</p></li>
+</ul>
+</dd>
+</dl>
+<p>You may optionally install <a class="reference external" href="https://www.boost.org/">Boost</a> &amp; <a class="reference external" href="http://lpsolve.sourceforge.net/5.5/">lp_solve</a> using your distro package manager (apt, yum etc) to save some compilation time.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In case you have multiple gcc versions installed on your system, we recommend explicitly setting the compiler paths as follows:</p>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">CC</span><span class="o">=</span>/path/to/your/gcc
+<span class="nb">export</span> <span class="nv">CXX</span><span class="o">=</span>/path/to/your/g++
+</pre></div>
+</div>
+</div>
+<div class="section" id="step-1-clone-the-align-source-code-to-your-local-environment">
+<h2>Step 1: Clone the ALIGN source code to your local environment<a class="headerlink" href="#step-1-clone-the-align-source-code-to-your-local-environment" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/ALIGN-analoglayout/ALIGN-public
+<span class="nb">cd</span> ALIGN-public
+</pre></div>
+</div>
+</div>
+<div class="section" id="step-2-create-a-python-virtualenv">
+<h2>Step 2: Create a <a class="reference external" href="https://docs.python.org/3/tutorial/venv.html">Python virtualenv</a><a class="headerlink" href="#step-2-create-a-python-virtualenv" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You may choose to skip this step if you are doing a system-wide install for multiple users.
+Please DO NOT skip this step if you are installing for personal use and/or you are a developer.</p>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python -m venv general
+<span class="nb">source</span> general/bin/activate
+python -m pip install pip --upgrade
+</pre></div>
+</div>
+</div>
+<div class="section" id="step-3a-install-align-as-a-user">
+<h2>Step 3a: Install ALIGN as a USER<a class="headerlink" href="#step-3a-install-align-as-a-user" title="Permalink to this headline">¶</a></h2>
+<p>If you already have a working installation of Python 3.7 or Python 3.8, the easiest way to install ALIGN is:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install -v .
+</pre></div>
+</div>
+</div>
+<div class="section" id="step-3b-install-align-as-a-developer">
+<h2>Step 3b: Install ALIGN as a DEVELOPER<a class="headerlink" href="#step-3b-install-align-as-a-developer" title="Permalink to this headline">¶</a></h2>
+<p>If you are a developer, you may wish to install align with some additional flags.</p>
+<p>For python developers:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install -e .<span class="o">[</span>test<span class="o">]</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <cite>-e</cite> or <cite>–editable</cite> flag generates links to the align package within your current directory. This allows you to modify python files and test them out immediately. You will still need to re-run this command to build your C++ collateral (when you are changing branches for example). More on that below.</p>
+</div>
+<p>For ALIGN (C++) Extension developers:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install setuptools wheel pybind11 scikit-build cmake ninja
+pip install -v -e .<span class="o">[</span>test<span class="o">]</span> --no-build-isolation
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The second command doesn’t just install ALIGN inplace, it also caches generated object files etc. under an <cite>_skbuild</cite> subdirectory. Re-running <cite>pip install -v -e .[test] –no-build-isolation</cite> will reuse this cache to perform an incremental build. We add the <cite>-v</cite> or <cite>–verbose</cite> flag to be able to see build flags in the terminal.</p>
+</div>
+<p>If you want the build-type to be Release (-O3), you can issue the following three lines:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install setuptools wheel pybind11 scikit-build cmake ninja
+pip install -v -e .<span class="o">[</span>test<span class="o">]</span> --no-build-isolation
+pip install -v --no-build-isolation -e . --no-deps --install-option<span class="o">=</span><span class="s1">&#39;--build-type=Release&#39;</span>
+</pre></div>
+</div>
+<p>or</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install setuptools wheel pybind11 scikit-build cmake ninja
+pip install -v -e .<span class="o">[</span>test<span class="o">]</span> --no-build-isolation
+pip install -v --no-build-isolation -e . --no-deps --install-option<span class="o">=</span><span class="s1">&#39;--build-type=RelWithDebInfo&#39;</span>
+</pre></div>
+</div>
+<p>Use the <cite>Release</cite> mode if you are mostly developing in Python and don’t need the C++ debugging symbols. Use the <cite>RelWithDebInfo</cite> if you need both debug symbols and optimized code.</p>
+<p>To debug runtime issues, run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python -m cProfile -o stats <span class="nv">$ALIGN_HOME</span>/bin/schematic2layout.py <span class="nv">$ALIGN_HOME</span>/examples/sc_dc_dc_converter
+</pre></div>
+</div>
+<p>Then in a python shell:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pstats</span>
+<span class="kn">from</span> <span class="nn">pstats</span> <span class="kn">import</span> <span class="n">SortKey</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">pstats</span><span class="o">.</span><span class="n">Stats</span><span class="p">(</span><span class="s1">&#39;stats&#39;</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">sort_stats</span><span class="p">(</span><span class="n">SortKey</span><span class="o">.</span><span class="n">TIME</span><span class="p">)</span><span class="o">.</span><span class="n">print_stats</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="step-4-run-align">
+<h2>Step 4: Run ALIGN<a class="headerlink" href="#step-4-run-align" title="Permalink to this headline">¶</a></h2>
+<p>You may run the align tool using a simple command line tool named <cite>schematic2layout.py</cite>
+For most common cases, you will simply run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>schematic2layout.py &lt;NETLIST_DIR&gt; -p &lt;PDK_DIR&gt; -c
+</pre></div>
+</div>
+<p>For instance, to build the layout for telescopic_ota:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir work <span class="o">&amp;&amp;</span> <span class="nb">cd</span> work
+schematic2layout.py ../examples/telescopic_ota -p ../pdks/FinFET14nm_Mock_PDK/
+</pre></div>
+</div>
+<p>For a full list of options supported by the tool, please use the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>schematic2layout.py -h
+</pre></div>
+</div>
+</div>
+<div class="section" id="step-5-view-layout">
+<h2>Step 5: View layout<a class="headerlink" href="#step-5-view-layout" title="Permalink to this headline">¶</a></h2>
+<p>The final output GDS can be viewed using by importing in virtuoso or any GDS viewer</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/KLayout/klayout">KLayout</a>: GDS viewer (WSL users would need to install xming for display to work)</p></li>
+<li><p><a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/Viewer">Viewer</a>: Layout viewer to view output JSON file</p></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="flow.html" class="btn btn-neutral float-left" title="ALIGN: flow" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="introduction.html" class="btn btn-neutral float-right" title="Introduction by Example" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, ALIGN team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

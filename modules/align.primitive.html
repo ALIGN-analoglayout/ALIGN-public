@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>align.primitive package &mdash; ALIGN</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="align.primitive.default package" href="align.primitive.default.html" />
+    <link rel="prev" title="align.pnr package" href="align.pnr.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html"><img src="../_static/LOGO.PNG" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Notes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../notes/flow.html">ALIGN: flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/flow.html#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/flow.html#outputs">Outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-0-check-prerequisites">Step 0: Check prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-1-clone-the-align-source-code-to-your-local-environment">Step 1: Clone the ALIGN source code to your local environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-2-create-a-python-virtualenv">Step 2: Create a Python virtualenv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-3a-install-align-as-a-user">Step 3a: Install ALIGN as a USER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-3b-install-align-as-a-developer">Step 3b: Install ALIGN as a DEVELOPER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-4-run-align">Step 4: Run ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/installation.html#step-5-view-layout">Step 5: View layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/introduction.html">Introduction by Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/viewer.html">Layout viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/viewer.html#klayout-viewer">KLayout viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/viewer.html#align-viewer">ALIGN viewer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/debug.html">Debug</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#reinstalling-align">Reinstalling ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/debug.html#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/const.html">Constraints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/const.html#constraint-options">Constraint options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/const.html#example-constraints">Example constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/upcoming.html">Upcoming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/upcoming.html#how-to-add-your-own-pdk">How to add your own pdk</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Datasets:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../notes/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/database.html">Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notes/database.html#sized-netlists">Sized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/database.html#unsized-netlists">Unsized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notes/database.html#generalized-testbenches">Generalized testbenches</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="align.html">align package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.gui.html">align.gui package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.pdk.html">align.pdk package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">align.primitive package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.schema.html">align.schema package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.utils.html">align.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="align.schema.html">align.schema package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">align.primitive package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="align.primitive.default.html">align.primitive.default package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.pdk.html">align.pdk package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="align.pdk.finfet.html">align.pdk.finfet package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.primitive.default.html">align.primitive.default package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.pdk.finfet.html">align.pdk.finfet package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.utils.html">align.utils package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="align.gui.html">align.gui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ALIGN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="align.html">align package</a> &raquo;</li>
+      <li>align.primitive package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/modules/align.primitive.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="align-primitive-package">
+<h1>align.primitive package<a class="headerlink" href="#align-primitive-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="align.primitive.default.html">align.primitive.default package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="align.primitive.default.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.primitive.default.html#module-align.primitive.default.canvas">align.primitive.default.canvas module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.primitive.default.html#module-align.primitive.default.cap">align.primitive.default.cap module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.primitive.default.html#module-align.primitive.default.guard_ring">align.primitive.default.guard_ring module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.primitive.default.html#module-align.primitive.default.mos">align.primitive.default.mos module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.primitive.default.html#module-align.primitive.default.res">align.primitive.default.res module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.primitive.default.html#module-align.primitive.default.via">align.primitive.default.via module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="align.primitive.default.html#module-align.primitive.default">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-align.primitive.main">
+<span id="align-primitive-main-module"></span><h2>align.primitive.main module<a class="headerlink" href="#module-align.primitive.main" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="align.primitive.main.add_primitive">
+<code class="sig-prename descclassname">align.primitive.main.</code><code class="sig-name descname">add_primitive</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">primitives</span></em>, <em class="sig-param"><span class="n">block_name</span></em>, <em class="sig-param"><span class="n">block_args</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/primitive/main.html#add_primitive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.primitive.main.add_primitive" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.primitive.main.generate_Cap">
+<code class="sig-prename descclassname">align.primitive.main.</code><code class="sig-name descname">generate_Cap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdkdir</span></em>, <em class="sig-param"><span class="n">block_name</span></em>, <em class="sig-param"><span class="n">unit_cap</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/primitive/main.html#generate_Cap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.primitive.main.generate_Cap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.primitive.main.generate_MOS_primitive">
+<code class="sig-prename descclassname">align.primitive.main.</code><code class="sig-name descname">generate_MOS_primitive</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdkdir</span></em>, <em class="sig-param"><span class="n">block_name</span></em>, <em class="sig-param"><span class="n">primitive</span></em>, <em class="sig-param"><span class="n">height</span></em>, <em class="sig-param"><span class="n">nfin</span></em>, <em class="sig-param"><span class="n">x_cells</span></em>, <em class="sig-param"><span class="n">y_cells</span></em>, <em class="sig-param"><span class="n">pattern</span></em>, <em class="sig-param"><span class="n">vt_type</span></em>, <em class="sig-param"><span class="n">stack</span></em>, <em class="sig-param"><span class="n">parameters</span></em>, <em class="sig-param"><span class="n">pinswitch</span></em>, <em class="sig-param"><span class="n">bodyswitch</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/primitive/main.html#generate_MOS_primitive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.primitive.main.generate_MOS_primitive" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.primitive.main.generate_Res">
+<code class="sig-prename descclassname">align.primitive.main.</code><code class="sig-name descname">generate_Res</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdkdir</span></em>, <em class="sig-param"><span class="n">block_name</span></em>, <em class="sig-param"><span class="n">height</span></em>, <em class="sig-param"><span class="n">x_cells</span></em>, <em class="sig-param"><span class="n">y_cells</span></em>, <em class="sig-param"><span class="n">nfin</span></em>, <em class="sig-param"><span class="n">unit_res</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/primitive/main.html#generate_Res"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.primitive.main.generate_Res" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.primitive.main.generate_Ring">
+<code class="sig-prename descclassname">align.primitive.main.</code><code class="sig-name descname">generate_Ring</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdkdir</span></em>, <em class="sig-param"><span class="n">block_name</span></em>, <em class="sig-param"><span class="n">x_cells</span></em>, <em class="sig-param"><span class="n">y_cells</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/primitive/main.html#generate_Ring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.primitive.main.generate_Ring" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.primitive.main.generate_generic">
+<code class="sig-prename descclassname">align.primitive.main.</code><code class="sig-name descname">generate_generic</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdkdir</span></em>, <em class="sig-param"><span class="n">parameters</span></em>, <em class="sig-param"><span class="n">netlistdir</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/primitive/main.html#generate_generic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.primitive.main.generate_generic" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.primitive.main.generate_primitive">
+<code class="sig-prename descclassname">align.primitive.main.</code><code class="sig-name descname">generate_primitive</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">block_name</span></em>, <em class="sig-param"><span class="n">primitive</span></em>, <em class="sig-param"><span class="n">height</span><span class="o">=</span><span class="default_value">28</span></em>, <em class="sig-param"><span class="n">x_cells</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">y_cells</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">pattern</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">value</span><span class="o">=</span><span class="default_value">12</span></em>, <em class="sig-param"><span class="n">vt_type</span><span class="o">=</span><span class="default_value">'RVT'</span></em>, <em class="sig-param"><span class="n">stack</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">parameters</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pinswitch</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">bodyswitch</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">pdkdir</span><span class="o">=</span><span class="default_value">PosixPath('/mnt/d/research_work/ALIGN/mywork/check_master/ALIGN-public/docs/sphinx_docs')</span></em>, <em class="sig-param"><span class="n">outputdir</span><span class="o">=</span><span class="default_value">PosixPath('/mnt/d/research_work/ALIGN/mywork/check_master/ALIGN-public/docs/sphinx_docs')</span></em>, <em class="sig-param"><span class="n">netlistdir</span><span class="o">=</span><span class="default_value">PosixPath('/mnt/d/research_work/ALIGN/mywork/check_master/ALIGN-public/docs/sphinx_docs')</span></em>, <em class="sig-param"><span class="n">abstract_template_name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">concrete_template_name</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/primitive/main.html#generate_primitive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.primitive.main.generate_primitive" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.primitive.main.generate_primitive_lef">
+<code class="sig-prename descclassname">align.primitive.main.</code><code class="sig-name descname">generate_primitive_lef</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">element</span></em>, <em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">all_lef</span></em>, <em class="sig-param"><span class="n">primitives</span></em>, <em class="sig-param"><span class="n">design_config</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)">dict</a></span></em>, <em class="sig-param"><span class="n">uniform_height</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">pdk_dir</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/primitive/main.html#generate_primitive_lef"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.primitive.main.generate_primitive_lef" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return commands to generate parameterized lef</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="align.primitive.main.get_generator">
+<code class="sig-prename descclassname">align.primitive.main.</code><code class="sig-name descname">get_generator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">pdkdir</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/primitive/main.html#get_generator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.primitive.main.get_generator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.primitive.main.get_parameters">
+<code class="sig-prename descclassname">align.primitive.main.</code><code class="sig-name descname">get_parameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">primitive</span></em>, <em class="sig-param"><span class="n">parameters</span></em>, <em class="sig-param"><span class="n">nfin</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/primitive/main.html#get_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.primitive.main.get_parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.primitive.main.get_xcells_pattern">
+<code class="sig-prename descclassname">align.primitive.main.</code><code class="sig-name descname">get_xcells_pattern</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">primitive</span></em>, <em class="sig-param"><span class="n">pattern</span></em>, <em class="sig-param"><span class="n">x_cells</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/primitive/main.html#get_xcells_pattern"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.primitive.main.get_xcells_pattern" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.primitive.main.merge_subckt_param">
+<code class="sig-prename descclassname">align.primitive.main.</code><code class="sig-name descname">merge_subckt_param</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ckt</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/primitive/main.html#merge_subckt_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.primitive.main.merge_subckt_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="align.primitive.main.merged_value">
+<code class="sig-prename descclassname">align.primitive.main.</code><code class="sig-name descname">merged_value</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">values1</span></em>, <em class="sig-param"><span class="n">values2</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/primitive/main.html#merged_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.primitive.main.merged_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>combines values of different devices:
+(right now since primitive generator takes only one value we use max value)
+try:
+#val1={‘res’: ‘13.6962k’, ‘l’: ‘8u’, ‘w’: ‘500n’, ‘m’: ‘1’}
+#val2 = {‘res’: ‘13.6962k’, ‘l’: ‘8u’, ‘w’: ‘500n’, ‘m’: ‘1’}
+#merged_value(val1,val2)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>values1</strong> (<em>TYPE. dict</em>) – DESCRIPTION. dict of parametric values</p></li>
+<li><p><strong>values2</strong> (<em>TYPE. dict</em>) – DESCRIPTION.dict of parametric values</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>merged_vals</strong> – DESCRIPTION. max of each parameter value</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>TYPE dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-align.primitive">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-align.primitive" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="align.pnr.html" class="btn btn-neutral float-left" title="align.pnr package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="align.primitive.default.html" class="btn btn-neutral float-right" title="align.primitive.default package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, ALIGN team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

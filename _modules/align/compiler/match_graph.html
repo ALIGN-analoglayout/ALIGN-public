@@ -1,42 +1,148 @@
-
 <!DOCTYPE html>
-
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>align.compiler.match_graph &#8212; ALIGN</title>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>align.compiler.match_graph &mdash; ALIGN</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
-    
-    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/doctools.js"></script>
-    
+      <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
-  </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">align.compiler.match_graph</a></li> 
-      </ul>
-    </div>  
+</head>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html"><img src="../../../_static/LOGO.PNG" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Notes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/flow.html">ALIGN: flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/flow.html#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/flow.html#outputs">Outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-0-check-prerequisites">Step 0: Check prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-1-clone-the-align-source-code-to-your-local-environment">Step 1: Clone the ALIGN source code to your local environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-2-create-a-python-virtualenv">Step 2: Create a Python virtualenv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-3a-install-align-as-a-user">Step 3a: Install ALIGN as a USER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-3b-install-align-as-a-developer">Step 3b: Install ALIGN as a DEVELOPER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-4-run-align">Step 4: Run ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-5-view-layout">Step 5: View layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/introduction.html">Introduction by Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/viewer.html">Layout viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/viewer.html#klayout-viewer">KLayout viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/viewer.html#align-viewer">ALIGN viewer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/debug.html">Debug</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#reinstalling-align">Reinstalling ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/const.html">Constraints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/const.html#constraint-options">Constraint options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/const.html#example-constraints">Example constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/upcoming.html">Upcoming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/upcoming.html#how-to-add-your-own-pdk">How to add your own pdk</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Datasets:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/database.html">Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#sized-netlists">Sized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#unsized-netlists">Unsized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#generalized-testbenches">Generalized testbenches</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.html">align package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.gui.html">align.gui package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pdk.html">align.pdk package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.primitive.html">align.primitive package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.utils.html">align.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.primitive.html">align.primitive package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.primitive.default.html">align.primitive.default package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pdk.html">align.pdk package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.primitive.default.html">align.primitive.default package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.utils.html">align.utils package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.gui.html">align.gui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ALIGN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>align.compiler.match_graph</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
   <h1>Source code for align.compiler.match_graph</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -44,45 +150,53 @@
 
 <span class="sd">@author: kunal</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="c1">#%%</span>
-<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
-<span class="kn">from</span> <span class="nn">networkx.algorithms</span> <span class="kn">import</span> <span class="n">isomorphism</span>
 
-<span class="kn">from</span> <span class="nn">.merge_nodes</span> <span class="kn">import</span> <span class="n">merge_nodes</span><span class="p">,</span> <span class="n">merged_value</span>
-<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">get_next_level</span>
-<span class="kn">from</span> <span class="nn">.write_constraint</span> <span class="kn">import</span> <span class="n">FindSymmetry</span>
-<span class="kn">from</span> <span class="nn">.common_centroid_cap_constraint</span> <span class="kn">import</span> <span class="n">merge_caps</span>
-<span class="kn">import</span> <span class="nn">pprint</span>
+<span class="kn">from</span> <span class="nn">align.schema</span> <span class="kn">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">SubCircuit</span><span class="p">,</span> <span class="n">Instance</span>
+<span class="kn">from</span> <span class="nn">..schema.types</span> <span class="kn">import</span> <span class="n">set_context</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">..schema</span> <span class="kn">import</span> <span class="n">constraint</span>
+<span class="kn">from</span> <span class="nn">..schema.types</span> <span class="kn">import</span> <span class="n">set_context</span>
+<span class="kn">from</span> <span class="nn">align.schema.graph</span> <span class="kn">import</span> <span class="n">Graph</span>
+
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
-
-<span class="c1">#%%</span>
-
-<div class="viewcode-block" id="Annotate"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.match_graph.Annotate">[docs]</a><span class="k">class</span> <span class="nc">Annotate</span><span class="p">:</span>
+<div class="viewcode-block" id="Annotate"><a class="viewcode-back" href="../../../modules/align.compiler.html#align.compiler.match_graph.Annotate">[docs]</a><span class="k">class</span> <span class="nc">Annotate</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Creates hierarchies in the graph based on a library or user defined groupblock constraint</span>
 <span class="sd">    Boundries (clk,digital, etc) are defined from setup file</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">hier_graph_dict</span><span class="p">,</span><span class="n">design_setup</span><span class="p">,</span><span class="n">library</span><span class="p">,</span><span class="n">existing_generator</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
 
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ckt_data</span><span class="p">,</span> <span class="n">primitive_library</span><span class="p">,</span> <span class="n">existing_generator</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Args:</span>
-<span class="sd">            hier_graph_dict (dict): all subckt graph, names and port</span>
+<span class="sd">            ckt_data (dict): all subckt graph, names and port</span>
 <span class="sd">            design_setup (dict): information from setup file</span>
 <span class="sd">            library (list): list of library elements in dict format</span>
 <span class="sd">            existing_generator (list): list of names of existing generators</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span> <span class="o">=</span> <span class="n">hier_graph_dict</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">digital</span> <span class="o">=</span> <span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;DIGITAL&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pg</span> <span class="o">=</span> <span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;POWER&#39;</span><span class="p">]</span><span class="o">+</span><span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;GND&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lib</span> <span class="o">=</span> <span class="n">library</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">clk</span> <span class="o">=</span> <span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;CLOCK&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ckt_data</span> <span class="o">=</span> <span class="n">ckt_data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lib</span> <span class="o">=</span> <span class="n">primitive_library</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">all_lef</span> <span class="o">=</span> <span class="n">existing_generator</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">stop_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pg</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">clk</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">no_array</span> <span class="o">=</span> <span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;NO_ARRAY&#39;</span><span class="p">]</span><span class="o">+</span><span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;DIGITAL&#39;</span><span class="p">]</span>
-        
-<div class="viewcode-block" id="Annotate.annotate"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.match_graph.Annotate.annotate">[docs]</a>    <span class="k">def</span> <span class="nf">annotate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lib_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">lib_ele</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">lib_ele</span> <span class="ow">in</span> <span class="n">primitive_library</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_is_skip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ckt</span><span class="p">):</span>
+        <span class="n">di_const</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">const</span><span class="o">.</span><span class="n">instances</span>
+            <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="n">ckt</span><span class="o">.</span><span class="n">constraints</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="n">constraint</span><span class="o">.</span><span class="n">DoNotIdentify</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="c1"># Changing 2D list to 1D list</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">di_const</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">di_const</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">di_const</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">y</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">di_const</span>
+
+    <span class="k">def</span> <span class="nf">_is_digital</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ckt</span><span class="p">):</span>
+        <span class="n">IsDigital</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="n">ckt</span><span class="o">.</span><span class="n">constraints</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="n">constraint</span><span class="o">.</span><span class="n">IsDigital</span><span class="p">):</span>
+                <span class="n">IsDigital</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">isTrue</span>
+        <span class="k">return</span> <span class="n">IsDigital</span>
+<div class="viewcode-block" id="Annotate.annotate"><a class="viewcode-back" href="../../../modules/align.compiler.html#align.compiler.match_graph.Annotate.annotate">[docs]</a>    <span class="k">def</span> <span class="nf">annotate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        main function to creates hierarchies in the block</span>
 <span class="sd">        iterativily goes through all subckts in the netlist</span>
@@ -90,484 +204,353 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            list: all updated circuit list</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;found ckt:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;ALl  subckt:</span><span class="si">{</span><span class="p">[</span><span class="n">ckt</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">ckt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ckt_data</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ckt</span><span class="p">,</span> <span class="n">SubCircuit</span><span class="p">)]</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
 
-        <span class="n">names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">)</span>
+        <span class="c1"># names = list(self.ckt_data)</span>
+        <span class="k">for</span> <span class="n">ckt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ckt_data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ckt</span><span class="p">,</span> <span class="n">SubCircuit</span><span class="p">):</span>
+                <span class="n">circuit_name</span> <span class="o">=</span> <span class="n">ckt</span><span class="o">.</span><span class="n">name</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_group_block_const</span><span class="p">(</span><span class="n">circuit_name</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_group_cap_const</span><span class="p">(</span><span class="n">circuit_name</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
-            <span class="n">circuit_name</span><span class="o">=</span> <span class="n">name</span>
-            <span class="n">G1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;graph&quot;</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_group_block_const</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span><span class="n">circuit_name</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_group_cap_const</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span><span class="n">circuit_name</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;All subckt after grouping:</span><span class="si">{</span><span class="p">[</span><span class="n">ckt</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">ckt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ckt_data</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ckt</span><span class="p">,</span> <span class="n">SubCircuit</span><span class="p">)]</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">circuit_name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>           
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;START MATCHING in circuit: </span><span class="si">{</span><span class="n">circuit_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">circuit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">circuit_name</span><span class="p">]</span>
-            <span class="n">G1</span> <span class="o">=</span> <span class="n">circuit</span><span class="p">[</span><span class="s2">&quot;graph&quot;</span><span class="p">]</span>
-            <span class="c1">#print(self.hier_graph_dict[circuit_name][&quot;const&quot;])</span>
-            <span class="c1"># map and reduce graph to dictionary</span>
-            <span class="n">mapped_graph_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapped_graph_list</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span> <span class="n">circuit_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pg</span> <span class="p">)</span>
-            <span class="n">circuit</span><span class="p">[</span><span class="s2">&quot;graph&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduce_graph</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span> <span class="n">circuit_name</span><span class="p">,</span> <span class="n">mapped_graph_list</span><span class="p">)</span>
-            <span class="n">check_nodes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Grest ckt is </span><span class="si">{</span><span class="n">circuit</span><span class="p">[</span><span class="s1">&#39;graph&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  
-            <span class="k">if</span> <span class="n">circuit_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_array</span><span class="p">:</span>
-                <span class="n">symmetry_blocks</span> <span class="o">=</span> <span class="n">FindSymmetry</span><span class="p">(</span><span class="n">circuit</span><span class="p">[</span><span class="s2">&quot;graph&quot;</span><span class="p">],</span> <span class="n">circuit</span><span class="p">[</span><span class="s2">&quot;ports&quot;</span><span class="p">],</span> <span class="n">circuit</span><span class="p">[</span><span class="s2">&quot;ports_weight&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_points</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">symm_blocks</span> <span class="ow">in</span> <span class="n">symmetry_blocks</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;generated constraints: </span><span class="si">{</span><span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">symm_blocks</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">symm_blocks</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;graph&quot;</span> <span class="ow">in</span> <span class="n">symm_blocks</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;added new hierarchy: </span><span class="si">{</span><span class="n">symm_blocks</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">symm_blocks</span><span class="p">[</span><span class="s1">&#39;graph&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">symm_blocks</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">symm_blocks</span>
-                        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">symm_blocks</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
-    
-            <span class="bp">self</span><span class="o">.</span><span class="n">lib_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">lib_ele</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">lib_ele</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lib</span><span class="p">]</span>
-            <span class="k">for</span> <span class="n">ckt_name</span><span class="p">,</span> <span class="n">circuit</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">if</span> <span class="s1">&#39;id&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">ckt_name</span><span class="p">]</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">ckt_name</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="n">copies</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">ckt_name</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">lib_names</span> <span class="o">+=</span> <span class="p">[</span><span class="n">ckt_name</span> <span class="o">+</span> <span class="s1">&#39;_type&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">copies</span><span class="p">)]</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lib_names</span></div>
-    
-    <span class="k">def</span> <span class="nf">_update_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">circuit_graph</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">lib_name</span><span class="p">,</span><span class="n">lib_graph</span><span class="p">,</span> <span class="n">Gsub</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Creates a copy of the library element</span>
-<span class="sd">        Copies attributes from the netlist graph to copied library graph </span>
-<span class="sd">        Args:</span>
-<span class="sd">            circuit_graph (graph): graph of netlist subckt</span>
-<span class="sd">            name (str): name of subckt</span>
-<span class="sd">            lib_name (str): name of matched library</span>
-<span class="sd">            lib_graph (graph): graph of library</span>
-<span class="sd">            Gsub (dict): matching between elements</span>
+        <span class="n">traversed</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># libray gets appended, so only traverse subckt once</span>
+        <span class="n">temp_match_dict</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># To avoid iterative calls (search subckt in subckt)</span>
+        <span class="k">for</span> <span class="n">ckt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ckt_data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="nb">isinstance</span><span class="p">(</span><span class="n">ckt</span><span class="p">,</span> <span class="n">SubCircuit</span><span class="p">)</span> <span class="ow">and</span> \
+                <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_digital</span><span class="p">(</span><span class="n">ckt</span><span class="p">)</span> <span class="ow">and</span> \
+                <span class="n">ckt</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_lef</span> <span class="ow">and</span> \
+                <span class="n">ckt</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">traversed</span>
+            <span class="p">):</span>
+                <span class="n">netlist_graph</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">(</span><span class="n">ckt</span><span class="p">)</span>
+                <span class="n">skip_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_skip</span><span class="p">(</span><span class="n">ckt</span><span class="p">)</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            matched_ports (dict): matching of library ports to nets in subckt</span>
-<span class="sd">            ports_weight (dict): weigth of conneted nets</span>
-<span class="sd">            G2(graph): graph with updated values/attributes</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1">#PnR can route primitive power but not subckt power</span>
-        <span class="k">if</span> <span class="n">lib_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_lef</span><span class="p">:</span>
-            <span class="n">pg</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">pg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pg</span>
-        <span class="n">G1</span> <span class="o">=</span> <span class="n">circuit_graph</span>
-        <span class="n">num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">Gsub</span>
-                        <span class="k">if</span> <span class="s1">&#39;net&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]])</span>
-        <span class="c1"># Define ports for subblock</span>
-        <span class="n">matched_ports</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">ports_weight</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">G2</span> <span class="o">=</span> <span class="n">lib_graph</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">g1_n</span><span class="p">,</span> <span class="n">g2_n</span> <span class="ow">in</span> <span class="n">Gsub</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="s1">&#39;net&#39;</span> <span class="ow">in</span> <span class="n">G2</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">g2_n</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]:</span>
-                <span class="k">if</span> <span class="s1">&#39;external&#39;</span> <span class="ow">in</span> <span class="n">G2</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">g2_n</span><span class="p">][</span><span class="s2">&quot;net_type&quot;</span><span class="p">]:</span>
-                    <span class="k">if</span> <span class="n">num</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">g1_n</span> <span class="ow">in</span> <span class="n">pg</span><span class="p">:</span>
-                        <span class="c1"># remove power connections</span>
-                        <span class="n">G2</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">relabel_nodes</span><span class="p">(</span><span class="n">G2</span><span class="p">,{</span><span class="n">g2_n</span><span class="p">:</span><span class="n">g1_n</span><span class="p">},</span><span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;START MATCHING in circuit: </span><span class="si">{</span><span class="n">ckt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> count: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ckt</span><span class="o">.</span><span class="n">elements</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="se">\</span>
+<span class="s2">                    ele: </span><span class="si">{</span><span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">ckt</span><span class="o">.</span><span class="n">elements</span><span class="p">]</span><span class="si">}</span><span class="s2"> traversed: </span><span class="si">{</span><span class="n">traversed</span><span class="si">}</span><span class="s2"> skip: </span><span class="si">{</span><span class="n">skip_nodes</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+                <span class="n">do_not_use_lib</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="n">ckt</span><span class="o">.</span><span class="n">constraints</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="n">constraint</span><span class="o">.</span><span class="n">DoNotUseLib</span><span class="p">):</span>
+                        <span class="n">do_not_use_lib</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">libraries</span><span class="p">)</span>
+                <span class="n">traversed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ckt</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">subckt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lib</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">subckt</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">ckt</span><span class="o">.</span><span class="n">name</span> <span class="ow">or</span> \
+                        <span class="n">subckt</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">do_not_use_lib</span> <span class="ow">or</span> \
+                        <span class="p">(</span><span class="n">subckt</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">temp_match_dict</span> <span class="ow">and</span>
+                        <span class="n">ckt</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">temp_match_dict</span><span class="p">[</span><span class="n">subckt</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+                    <span class="p">):</span>
+                        <span class="k">continue</span>
+                    <span class="n">new_subckts</span> <span class="o">=</span> <span class="n">netlist_graph</span><span class="o">.</span><span class="n">replace_matching_subgraph</span><span class="p">(</span>
+                        <span class="n">Graph</span><span class="p">(</span><span class="n">subckt</span><span class="p">),</span> <span class="n">skip_nodes</span>
+                    <span class="p">)</span>
+                    <span class="k">if</span> <span class="n">subckt</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">temp_match_dict</span><span class="p">:</span>
+                        <span class="n">temp_match_dict</span><span class="p">[</span><span class="n">subckt</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">new_subckts</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">matched_ports</span><span class="p">[</span><span class="n">g2_n</span><span class="p">]</span> <span class="o">=</span> <span class="n">g1_n</span>
-                        <span class="n">ports_weight</span><span class="p">[</span><span class="n">g2_n</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-                        <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">G2</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">g2_n</span><span class="p">)):</span>
-                            <span class="n">ports_weight</span><span class="p">[</span><span class="n">g2_n</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">G2</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">g2_n</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)[</span><span class="s1">&#39;weight&#39;</span><span class="p">])</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">G2</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">g2_n</span><span class="p">][</span><span class="s1">&#39;values&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">g1_n</span><span class="p">][</span><span class="s1">&#39;values&#39;</span><span class="p">]</span>
-                <span class="n">G2</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">g2_n</span><span class="p">][</span><span class="s1">&#39;real_inst_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">g1_n</span><span class="p">][</span><span class="s1">&#39;real_inst_type&#39;</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">matched_ports</span><span class="p">,</span><span class="n">ports_weight</span><span class="p">,</span><span class="n">G2</span>
+                        <span class="n">temp_match_dict</span><span class="p">[</span><span class="n">subckt</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_subckts</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Circuit after annotation: </span><span class="si">{</span><span class="n">ckt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">ckt</span><span class="o">.</span><span class="n">elements</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">all_subckt</span> <span class="o">=</span> <span class="p">[</span><span class="n">ckt</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">ckt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ckt_data</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ckt</span><span class="p">,</span> <span class="n">SubCircuit</span><span class="p">)]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Subcircuits after creating primitive hiearchy </span><span class="si">{</span><span class="n">all_subckt</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lib_names</span></div>
 
-    <span class="k">def</span> <span class="nf">_group_block_const</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">G1</span><span class="p">,</span><span class="n">name</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_if_const</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-            <span class="n">const_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;const&quot;</span><span class="p">][</span><span class="s2">&quot;constraints&quot;</span><span class="p">]</span>
-            <span class="n">gb_const</span> <span class="o">=</span> <span class="p">[</span><span class="n">const</span> <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="n">const_list</span> <span class="k">if</span> <span class="n">const</span><span class="p">[</span><span class="s1">&#39;const_name&#39;</span><span class="p">]</span><span class="o">==</span><span class="s2">&quot;GroupBlocks&quot;</span><span class="p">]</span>
-            
-            <span class="n">const_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">const</span> <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="n">const_list</span> <span class="k">if</span> <span class="n">const</span><span class="p">[</span><span class="s1">&#39;const_name&#39;</span><span class="p">]</span> <span class="o">!=</span><span class="s2">&quot;GroupBlocks&quot;</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s1">&#39;const&#39;</span><span class="p">][</span><span class="s1">&#39;constraints&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">const_list</span>
-            <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="n">gb_const</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">)):</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Constraint blocks: </span><span class="si">{</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> not in subcircuit </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="n">exit</span><span class="p">()</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Grouping blocks </span><span class="si">{</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="n">inst_name</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">])</span>
-                <span class="n">matched_ports</span> <span class="o">=</span> <span class="p">{}</span>
-                <span class="n">ports_weight</span> <span class="o">=</span> <span class="p">{}</span>
-                <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">const</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">]:</span>
-                    <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">G1</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">block</span><span class="p">):</span>
-                        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">G1</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">nbr</span><span class="p">))</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">])):</span>
-                            <span class="k">continue</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="n">matched_ports</span><span class="p">[</span><span class="n">nbr</span><span class="p">]</span><span class="o">=</span><span class="n">nbr</span>
-                            <span class="k">if</span> <span class="ow">not</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">ports_weight</span><span class="p">:</span>
-                                <span class="n">ports_weight</span><span class="p">[</span><span class="n">nbr</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-                                <span class="n">ports_weight</span><span class="p">[</span><span class="n">nbr</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">G1</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)[</span><span class="s1">&#39;weight&#39;</span><span class="p">])</span>
-                <span class="n">subgraph</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">merge_nodes</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">],</span><span class="n">matched_ports</span><span class="p">,</span><span class="n">inst_name</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-                    <span class="s2">&quot;graph&quot;</span><span class="p">:</span> <span class="n">subgraph</span><span class="p">,</span>
-                    <span class="s2">&quot;ports&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">matched_ports</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
-                    <span class="s2">&quot;ports_weight&quot;</span><span class="p">:</span> <span class="n">ports_weight</span><span class="p">,</span>
-                    <span class="s2">&quot;const&quot;</span><span class="p">:</span> <span class="kc">None</span> <span class="c1"># In future we can add constraints provided</span>
-                    <span class="p">}</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_update_sym_const</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">G1</span><span class="p">,</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">],</span> <span class="n">matched_ports</span><span class="p">,</span><span class="n">inst_name</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_check_const_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">const_list</span><span class="p">,</span> <span class="n">const</span><span class="p">):</span>
+        <span class="n">is_append</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">set_context</span><span class="p">(</span><span class="n">const_list</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="s2">&quot;instances&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">instances</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">is_append</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="c1"># TODO: remove dict type</span>
+                <span class="k">elif</span> <span class="p">(</span>
+                    <span class="nb">isinstance</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
+                    <span class="ow">and</span> <span class="s2">&quot;instances&quot;</span> <span class="ow">in</span> <span class="n">const</span>
+                    <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">const</span><span class="p">[</span><span class="s2">&quot;instances&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span>
+                <span class="p">):</span>
+                    <span class="k">pass</span>
+                    <span class="c1"># skipping const of zero length</span>
+                <span class="k">elif</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="s2">&quot;instances&quot;</span><span class="p">):</span>
+                    <span class="n">is_append</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid constraint </span><span class="si">{</span><span class="n">const</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">is_append</span> <span class="o">==</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">const</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">const_list</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;constraint appended: </span><span class="si">{</span><span class="n">const</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">const_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">const</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;skipping invalid constraint </span><span class="si">{</span><span class="n">const</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_group_cap_const</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">G1</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Reads common centroid const in input constraints</span>
-<span class="sd">        Merges cc caps as single cap in const-file and netlist</span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        graph : networkx graph</span>
-<span class="sd">            Input graph to be modified</span>
-<span class="sd">        const_path: pathlib.path</span>
-<span class="sd">            Input const file path</span>
-<span class="sd">        ports : list</span>
-<span class="sd">            Used to check nets which should not be deleted/renamed.</span>
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        None.</span>
+    <span class="k">def</span> <span class="nf">_remove_group_const</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subckt</span><span class="p">,</span> <span class="n">rm_const</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">set_context</span><span class="p">(</span><span class="n">subckt</span><span class="o">.</span><span class="n">constraints</span><span class="p">):</span>
+            <span class="n">start_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">subckt</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="n">rm_const</span><span class="p">:</span>
+                <span class="n">subckt</span><span class="o">.</span><span class="n">constraints</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">const</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">subckt</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span> <span class="o">==</span> <span class="n">start_count</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">rm_const</span><span class="p">)</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_if_const</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-            <span class="n">const_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;const&quot;</span><span class="p">][</span><span class="s2">&quot;constraints&quot;</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s1">&#39;const&#39;</span><span class="p">][</span><span class="s1">&#39;constraints&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">const_list</span>
-            <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="n">const_list</span><span class="p">:</span>
-                <span class="c1">#Check1: atleast one block in defined constraint</span>
-                <span class="c1"># Check2:  Check block in design</span>
-                <span class="k">if</span> <span class="n">const</span><span class="p">[</span><span class="s1">&#39;const_name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;CC&quot;</span> \
-                    <span class="ow">and</span> <span class="s1">&#39;blocks&#39;</span> <span class="ow">in</span> <span class="n">const</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">const</span><span class="p">[</span><span class="s2">&quot;blocks&quot;</span><span class="p">],</span><span class="nb">list</span><span class="p">)</span> \
-                    <span class="ow">and</span> <span class="nb">set</span><span class="p">(</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">)):</span> 
-                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Grouping CC caps </span><span class="si">{</span><span class="n">const</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="n">ctype</span> <span class="o">=</span> <span class="s1">&#39;Cap_cc_&#39;</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">const</span><span class="p">[</span><span class="s2">&quot;size&quot;</span><span class="p">]])</span>
-                    <span class="k">if</span> <span class="nb">len</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">const</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">]))</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
-                        <span class="n">merge_caps</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span><span class="n">ctype</span><span class="p">,</span><span class="n">const</span><span class="p">[</span><span class="s2">&quot;blocks&quot;</span><span class="p">],</span><span class="n">const</span><span class="p">[</span><span class="s2">&quot;cap_name&quot;</span><span class="p">])</span>
-                    <span class="k">del</span> <span class="n">const</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">]</span>
-                    <span class="n">const</span><span class="p">[</span><span class="s1">&#39;cap_r&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-                    <span class="n">const</span><span class="p">[</span><span class="s1">&#39;cap_s&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-                
-    <span class="k">def</span> <span class="nf">_update_sym_const</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">G1</span><span class="p">,</span><span class="n">remove_nodes</span><span class="p">,</span> <span class="n">matched_ports</span><span class="p">,</span><span class="n">new_inst</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_group_block_const</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="n">subckt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ckt_data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">const_list</span> <span class="o">=</span> <span class="n">subckt</span><span class="o">.</span><span class="n">constraints</span>
+        <span class="n">pwr</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">gnd</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">clk</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="n">subckt</span><span class="o">.</span><span class="n">constraints</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="n">constraint</span><span class="o">.</span><span class="n">PowerPorts</span><span class="p">):</span>
+                <span class="n">pwr</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">ports</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="n">constraint</span><span class="o">.</span><span class="n">GroundPorts</span><span class="p">):</span>
+                <span class="n">gnd</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">ports</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="n">constraint</span><span class="o">.</span><span class="n">ClockPorts</span><span class="p">):</span>
+                <span class="n">clk</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">ports</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">const_list</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">gb_const</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">const</span>
+            <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="n">subckt</span><span class="o">.</span><span class="n">constraints</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="n">constraint</span><span class="o">.</span><span class="n">GroupBlocks</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_remove_group_const</span><span class="p">(</span><span class="n">subckt</span><span class="p">,</span> <span class="n">gb_const</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="n">gb_const</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ckt_data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span> <span class="o">==</span> <span class="kc">None</span>
+            <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Already existing subckt with this name, please provide different name to const&quot;</span>
+            <span class="n">const_inst</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">const</span><span class="o">.</span><span class="n">instances</span><span class="p">]</span>
+            <span class="n">ckt_ele</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">ele</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">ele</span> <span class="ow">in</span> <span class="n">subckt</span><span class="o">.</span><span class="n">elements</span><span class="p">])</span>
+            <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">const_inst</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span>
+                <span class="n">ckt_ele</span>
+            <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Constraint instances: </span><span class="si">{</span><span class="n">const_inst</span><span class="si">}</span><span class="s2"> not in subcircuit </span><span class="si">{</span><span class="n">subckt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="c1"># ac_nets : all nets connected to group block instances</span>
+            <span class="n">ac_nets</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">ele</span><span class="o">.</span><span class="n">pins</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">for</span> <span class="n">ele</span> <span class="ow">in</span> <span class="n">subckt</span><span class="o">.</span><span class="n">elements</span> <span class="k">if</span> <span class="n">ele</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">const_inst</span>
+            <span class="p">]</span>
+            <span class="n">ac_nets</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">ac_nets</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">y</span><span class="p">])</span>
+            <span class="c1"># Filter internal nets but skip internal net connected to port</span>
+            <span class="n">ac_nets</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">net</span>
+                <span class="k">for</span> <span class="n">net</span> <span class="ow">in</span> <span class="n">ac_nets</span>
+                <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
+                    <span class="n">net</span> <span class="ow">in</span> <span class="n">ele</span><span class="o">.</span><span class="n">pins</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+                    <span class="k">for</span> <span class="n">ele</span> <span class="ow">in</span> <span class="n">subckt</span><span class="o">.</span><span class="n">elements</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">ele</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">const_inst</span>
+                <span class="p">)</span>
+            <span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">ac_nets</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">subckt</span><span class="o">.</span><span class="n">pins</span><span class="p">))</span>
+            <span class="n">ac_nets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">ac_nets</span><span class="p">))</span>
+            <span class="n">pwr</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">pwr</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">ac_nets</span><span class="p">))</span>
+            <span class="n">gnd</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">gnd</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">ac_nets</span><span class="p">))</span>
+            <span class="n">clk</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">clk</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">ac_nets</span><span class="p">))</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Grouping instances </span><span class="si">{</span><span class="n">const_inst</span><span class="si">}</span><span class="s2"> in subckt </span><span class="si">{</span><span class="n">const</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2"> pins: </span><span class="si">{</span><span class="n">ac_nets</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="c1"># Create a subckt and add to library</span>
+            <span class="k">with</span> <span class="n">set_context</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ckt_data</span><span class="p">):</span>
+                <span class="n">new_subckt</span> <span class="o">=</span> <span class="n">SubCircuit</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="n">pins</span><span class="o">=</span><span class="n">ac_nets</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ckt_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_subckt</span><span class="p">)</span>
+            <span class="c1"># Add all instances of groupblock to new subckt</span>
+            <span class="k">with</span> <span class="n">set_context</span><span class="p">(</span><span class="n">new_subckt</span><span class="o">.</span><span class="n">elements</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">const_inst</span><span class="p">:</span>
+                    <span class="n">new_subckt</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subckt</span><span class="o">.</span><span class="n">get_element</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="c1"># Remove elements from subckt then Add new_subckt instance</span>
+            <span class="n">inst_name</span> <span class="o">=</span> <span class="s2">&quot;X_&quot;</span> <span class="o">+</span> <span class="n">const</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">const_inst</span><span class="p">)</span>
+            <span class="k">with</span> <span class="n">set_context</span><span class="p">(</span><span class="n">subckt</span><span class="o">.</span><span class="n">elements</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">const_inst</span><span class="p">:</span>
+                    <span class="n">subckt</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">subckt</span><span class="o">.</span><span class="n">get_element</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+                <span class="n">X1</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">inst_name</span><span class="p">,</span>
+                    <span class="n">model</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+                    <span class="n">pins</span><span class="o">=</span><span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">ac_nets</span><span class="p">},</span>
+                    <span class="n">generator</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+                <span class="p">)</span>
+                <span class="n">subckt</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">X1</span><span class="p">)</span>
+            <span class="c1"># Translate any constraints defined on the groupblock elements to subckt</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_top_to_bottom_translation</span><span class="p">(</span>
+                <span class="n">name</span><span class="p">,</span> <span class="p">{</span><span class="n">inst</span><span class="p">:</span> <span class="n">inst</span> <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="n">const_inst</span><span class="p">},</span> <span class="n">const</span><span class="o">.</span><span class="n">name</span>
+            <span class="p">)</span>
+            <span class="c1"># Modify instance names in constraints after modifying groupblock</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_const</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">[</span><span class="n">const</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="o">*</span><span class="n">const_inst</span><span class="p">],</span> <span class="n">inst_name</span><span class="p">)</span>
+        <span class="c1"># Removing const with single instances.</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">const_list</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_const_length</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ckt_data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">constraints</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_group_cap_const</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="c1"># TODO: merge group cap and group block</span>
+        <span class="n">subckt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ckt_data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">const_list</span> <span class="o">=</span> <span class="n">subckt</span><span class="o">.</span><span class="n">constraints</span>
+        <span class="n">gc_const</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">const</span>
+            <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="n">subckt</span><span class="o">.</span><span class="n">constraints</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="n">constraint</span><span class="o">.</span><span class="n">GroupCaps</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">instances</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gc_const</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Existing GroupCaps constraint </span><span class="si">{</span><span class="n">gc_const</span><span class="si">}</span><span class="s2"> for subckt </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="n">gc_const</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">instances</span><span class="p">)):</span>
+                <span class="n">const</span><span class="o">.</span><span class="n">instances</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">instances</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+            <span class="n">const_inst</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">const</span><span class="o">.</span><span class="n">instances</span><span class="p">]</span>
+
+            <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">const_inst</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span>
+                <span class="nb">set</span><span class="p">([</span><span class="n">e</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">subckt</span><span class="o">.</span><span class="n">elements</span><span class="p">])</span>
+            <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;const instances</span><span class="si">{</span><span class="n">const_inst</span><span class="si">}</span><span class="s2"> are not in subckt </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="c1"># all nets connected to common centroid cap constraints</span>
+            <span class="n">new_pins</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">const_inst</span><span class="p">):</span>
+                <span class="n">sc_pins</span> <span class="o">=</span> <span class="n">subckt</span><span class="o">.</span><span class="n">get_element</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="n">pins</span>  <span class="c1"># single cap pins</span>
+                <span class="n">new_pins</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">k</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">):</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">sc_pins</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
+            <span class="n">cc_name</span> <span class="o">=</span> <span class="s2">&quot;CAP_CC_&quot;</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">const</span><span class="o">.</span><span class="n">num_units</span><span class="p">])</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">ckt_data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">()):</span>
+                <span class="c1"># Create a group cap model and add to library</span>
+                <span class="c1"># Ideally create a subckt initially but did not work at PnR needs Cap names startwith C</span>
+                <span class="k">with</span> <span class="n">set_context</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ckt_data</span><span class="p">):</span>
+                    <span class="n">new_subckt</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span>
+                        <span class="n">name</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="n">pins</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">new_pins</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                    <span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ckt_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_subckt</span><span class="p">)</span>
+
+            <span class="k">with</span> <span class="n">set_context</span><span class="p">(</span><span class="n">subckt</span><span class="o">.</span><span class="n">elements</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">const_inst</span><span class="p">:</span>
+                    <span class="n">subckt</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">subckt</span><span class="o">.</span><span class="n">get_element</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pins </span><span class="si">{</span><span class="n">new_pins</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">new_subckt</span><span class="o">.</span><span class="n">pins</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">X1</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+                    <span class="n">model</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+                    <span class="n">pins</span><span class="o">=</span><span class="n">new_pins</span><span class="p">,</span>
+                    <span class="n">generator</span><span class="o">=</span><span class="n">cc_name</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">subckt</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">X1</span><span class="p">)</span>
+            <span class="c1"># Modify instance names in constraints after modifying groupblock</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_const</span><span class="p">(</span>
+                <span class="n">name</span><span class="p">,</span> <span class="p">[</span><span class="n">const</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="o">*</span><span class="n">const_inst</span><span class="p">],</span> <span class="n">const</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="c1"># Removing const with single instances.</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">const_list</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_const_length</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ckt_data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">constraints</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_top_to_bottom_translation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">top</span><span class="p">,</span> <span class="n">match_dict</span><span class="p">,</span> <span class="n">bottom</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update instance names in the constraint in case they are reduced</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            top (str): name of subckt</span>
+<span class="sd">            match_dict (dict): node mapping</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;transfering constraints from top subckt: </span><span class="si">{</span><span class="n">top</span><span class="si">}</span><span class="s2"> to bottom subckt: </span><span class="si">{</span><span class="n">bottom</span><span class="si">}</span><span class="s2"> &quot;</span>
+        <span class="p">)</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">ckt_data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">bottom</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Hierarchy not found, </span><span class="si">{</span><span class="n">bottom</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">const_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ckt_data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">top</span><span class="p">)</span><span class="o">.</span><span class="n">constraints</span>
+        <span class="n">sub_const</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ckt_data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">bottom</span><span class="p">)</span><span class="o">.</span><span class="n">constraints</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sub_const</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">set_context</span><span class="p">(</span><span class="n">sub_const</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">const_list</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
+                        <span class="nb">isinstance</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span>
+                            <span class="n">constraint</span><span class="o">.</span><span class="n">HorizontalDistance</span><span class="p">,</span>
+                            <span class="n">constraint</span><span class="o">.</span><span class="n">VerticalDistance</span><span class="p">,</span>
+                            <span class="n">constraint</span><span class="o">.</span><span class="n">BlockDistance</span><span class="p">,</span>
+                            <span class="n">constraint</span><span class="o">.</span><span class="n">CompactPlacement</span><span class="p">,</span>
+                        <span class="p">]</span>
+                    <span class="p">):</span>
+                        <span class="n">sub_const</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">const</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="s2">&quot;instances&quot;</span><span class="p">):</span>
+                        <span class="c1"># checking if sub hierarchy instances are in const defined</span>
+                        <span class="n">sconst</span> <span class="o">=</span> <span class="p">{</span>
+                            <span class="n">x</span><span class="p">:</span> <span class="p">[</span>
+                                <span class="n">match_dict</span><span class="p">[</span><span class="n">block</span><span class="p">]</span>
+                                <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">const</span><span class="o">.</span><span class="n">instances</span>
+                                <span class="k">if</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">match_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+                            <span class="p">]</span>
+                            <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="s2">&quot;instances&quot;</span>
+                            <span class="k">else</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+                            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">const</span><span class="o">.</span><span class="n">__fields_set__</span>
+                        <span class="p">}</span>
+                        <span class="k">assert</span> <span class="s2">&quot;constraint&quot;</span> <span class="ow">in</span> <span class="n">sconst</span>
+                        <span class="c1"># logger.debug(f&quot;transferred constraint instances {match_dict} from {const} to {sconst}&quot;)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_check_const_length</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">ckt_data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">bottom</span><span class="p">)</span><span class="o">.</span><span class="n">constraints</span><span class="p">,</span> <span class="n">sconst</span>
+                        <span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transferred constraints to </span><span class="si">{</span><span class="n">bottom</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">sub_const</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_update_const</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">remove_nodes</span><span class="p">,</span> <span class="n">new_inst</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update instance names in the constraint in case they are reduced by groupblock</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): name of subckt</span>
 <span class="sd">            G1 (graph): subckt graph</span>
 <span class="sd">            remove_nodes (list): nodes which are being removed</span>
-<span class="sd">            matched_ports (dict): matching ports</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_if_const</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-            <span class="n">const_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;const&quot;</span><span class="p">][</span><span class="s2">&quot;constraints&quot;</span><span class="p">]</span>
-            <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="n">const_list</span><span class="p">:</span>
-                <span class="k">if</span> <span class="s1">&#39;pairs&#39;</span> <span class="ow">in</span> <span class="n">const</span><span class="p">:</span>
-                    <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">const</span><span class="p">[</span><span class="s1">&#39;pairs&#39;</span><span class="p">]:</span>
-                        <span class="k">if</span> <span class="n">pair</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;sympair&#39;</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">pair</span><span class="p">[</span><span class="s1">&#39;block1&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">remove_nodes</span> <span class="ow">and</span> <span class="n">pair</span><span class="p">[</span><span class="s1">&#39;block2&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">remove_nodes</span><span class="p">:</span>
-                                <span class="n">pair</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="o">=</span><span class="s1">&#39;selfsym&#39;</span>
-                                <span class="n">pair</span><span class="p">[</span><span class="s1">&#39;block&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_inst</span>
-                                <span class="k">del</span> <span class="n">pair</span><span class="p">[</span><span class="s1">&#39;block1&#39;</span><span class="p">]</span>
-                                <span class="k">del</span> <span class="n">pair</span><span class="p">[</span><span class="s1">&#39;block2&#39;</span><span class="p">]</span>
-                                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;updated symmetric pair constraint to self symmetry:</span><span class="si">{</span><span class="n">const</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_if_const</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        check if constraint exists for a subckt</span>
+        <span class="k">def</span> <span class="nf">_list_replace</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="n">old_value</span><span class="p">,</span> <span class="n">new_value</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="n">old_value</span><span class="p">:</span>
+                    <span class="n">lst</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_value</span>
 
-<span class="sd">        Args:</span>
-<span class="sd">            name (str): name of subckt</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">:</span>
-            <span class="n">const</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;const&quot;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">const</span><span class="o">==</span><span class="kc">None</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">False</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">True</span>
-
-    <span class="k">def</span> <span class="nf">_reduce_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">circuit_graph</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">mapped_graph_list</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        merge matched graphs</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;START reducing graph: &quot;</span><span class="p">)</span>
-        <span class="n">G1</span> <span class="o">=</span> <span class="n">circuit_graph</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>           
-        <span class="k">for</span> <span class="n">lib_ele</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lib</span><span class="p">:</span>
-            <span class="n">lib_name</span> <span class="o">=</span> <span class="n">lib_ele</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">lib_name</span> <span class="ow">in</span> <span class="n">mapped_graph_list</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reducing ISOMORPHIC sub_block: </span><span class="si">{</span><span class="n">lib_name</span><span class="si">}{</span><span class="n">mapped_graph_list</span><span class="p">[</span><span class="n">lib_name</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    
-                <span class="k">for</span> <span class="n">Gsub</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">mapped_graph_list</span><span class="p">[</span><span class="n">lib_name</span><span class="p">],</span> <span class="n">key</span><span class="o">=</span> <span class="k">lambda</span> <span class="n">i</span><span class="p">:</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">keys</span><span class="p">()))):</span>
-                    <span class="k">if</span> <span class="n">already_merged</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span><span class="n">Gsub</span><span class="p">):</span>
-                        <span class="k">continue</span>
-                    <span class="n">remove_nodes</span> <span class="o">=</span> <span class="p">[</span>
-                        <span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">Gsub</span>
-                        <span class="k">if</span> <span class="s1">&#39;net&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]]</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reduce nodes: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">remove_nodes</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-                    <span class="n">matched_ports</span><span class="p">,</span><span class="n">ports_weight</span><span class="p">,</span><span class="n">G2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_attributes</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">lib_name</span><span class="p">,</span> <span class="n">lib_ele</span><span class="p">[</span><span class="s2">&quot;graph&quot;</span><span class="p">],</span><span class="n">Gsub</span><span class="p">)</span>
-
-                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">remove_nodes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;One node element: </span><span class="si">{</span><span class="n">lib_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                        <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">remove_nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lib_name</span>
-                        <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">remove_nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="s2">&quot;ports_match&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">matched_ports</span>
-                        <span class="n">updated_values</span> <span class="o">=</span> <span class="n">merged_value</span><span class="p">({},</span> <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">remove_nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="s2">&quot;values&quot;</span><span class="p">])</span>
-                        <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">remove_nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="s2">&quot;values&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">updated_values</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        
-                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Multi node element: </span><span class="si">{</span><span class="n">lib_name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">matched_ports</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                        <span class="n">subgraph</span><span class="p">,</span><span class="n">new_node</span> <span class="o">=</span> <span class="n">merge_nodes</span><span class="p">(</span>
-                            <span class="n">G1</span><span class="p">,</span> <span class="n">lib_name</span><span class="p">,</span> <span class="n">remove_nodes</span><span class="p">,</span> <span class="n">matched_ports</span><span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_update_sym_const</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">G1</span><span class="p">,</span><span class="n">remove_nodes</span><span class="p">,</span> <span class="n">matched_ports</span><span class="p">,</span><span class="n">new_node</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="n">lib_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_lef</span><span class="p">:</span>
-                            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Calling recursive for block: </span><span class="si">{</span><span class="n">lib_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-                            <span class="n">mapped_subgraph_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapped_graph_list</span><span class="p">(</span><span class="n">G2</span><span class="p">,</span> <span class="n">lib_name</span><span class="p">)</span>
-                            <span class="n">Grest</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduce_graph</span><span class="p">(</span>
-                                <span class="n">G2</span><span class="p">,</span> <span class="n">lib_name</span><span class="p">,</span><span class="n">mapped_subgraph_list</span><span class="p">)</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="n">Grest</span> <span class="o">=</span> <span class="n">subgraph</span>
-    
-                        <span class="n">check_nodes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="n">lib_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span> <span class="ow">and</span> <span class="s1">&#39;const&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">lib_name</span><span class="p">]:</span>
-                            <span class="n">const</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">lib_name</span><span class="p">][</span><span class="s1">&#39;const&#39;</span><span class="p">]</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="n">const</span> <span class="o">=</span> <span class="kc">None</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;adding new sub_ckt: </span><span class="si">{</span><span class="n">lib_name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">const</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-                        <span class="n">subckt</span> <span class="o">=</span> <span class="p">{</span>
-                                <span class="s2">&quot;graph&quot;</span><span class="p">:</span> <span class="n">Grest</span><span class="p">,</span>
-                                <span class="s2">&quot;ports&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">matched_ports</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
-                                <span class="s2">&quot;ports_match&quot;</span><span class="p">:</span> <span class="n">matched_ports</span><span class="p">,</span>
-                                <span class="s2">&quot;ports_weight&quot;</span><span class="p">:</span> <span class="n">ports_weight</span><span class="p">,</span>
-                                <span class="s2">&quot;const&quot;</span><span class="p">:</span> <span class="n">const</span><span class="p">,</span>
-                                <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">subgraph</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span>
-                                <span class="p">}</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">multiple_instances</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span><span class="n">new_node</span><span class="p">,</span><span class="n">lib_name</span><span class="p">,</span><span class="n">subckt</span><span class="p">)</span>
-
-                        <span class="n">check_nodes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Finished one branch: </span><span class="si">{</span><span class="n">lib_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">G1</span>
-    
-    <span class="k">def</span> <span class="nf">_is_small</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">g1</span><span class="p">,</span><span class="n">g2</span><span class="p">):</span>
-        <span class="n">nd2</span> <span class="o">=</span> <span class="p">[</span><span class="n">g2</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">g2</span><span class="o">.</span><span class="n">nodes</span><span class="p">()]</span>
-        <span class="n">nd2</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span><span class="n">nd2</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">nd2</span><span class="p">}</span>
-        <span class="n">nd1</span> <span class="o">=</span> <span class="p">[</span><span class="n">g1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">g1</span><span class="o">.</span><span class="n">nodes</span><span class="p">()]</span>
-        <span class="n">nd1</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span><span class="n">nd1</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">nd1</span><span class="p">}</span>
-        <span class="n">is_small</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">nd2</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">nd1</span> <span class="ow">and</span> <span class="n">v</span> <span class="o">&lt;=</span> <span class="n">nd1</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
-                <span class="k">continue</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">is_small</span><span class="o">=</span><span class="kc">False</span>
-        <span class="k">return</span> <span class="n">is_small</span>
-    
-    <span class="k">def</span> <span class="nf">_is_digital</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">g2</span><span class="p">,</span><span class="n">name</span><span class="p">):</span>
-        <span class="n">nd</span> <span class="o">=</span> <span class="p">[</span><span class="n">node</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">g2</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span> <span class="k">if</span> <span class="s1">&#39;net&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">g2</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]]</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">digital</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">nd</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">True</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">False</span>
-    <span class="k">def</span> <span class="nf">_is_clk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">Gsub</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">clk</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">clk</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">clk</span> <span class="ow">in</span> <span class="n">Gsub</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">True</span>
-        <span class="k">return</span> <span class="kc">False</span>
-       
-    <span class="k">def</span> <span class="nf">_mapped_graph_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">G1</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">POWER</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        find all matches of library element in the graph</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Matching circuit Graph nodes: </span><span class="si">{</span><span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="si">}</span><span class="s2"> edges:</span><span class="si">{</span><span class="n">G1</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">mapped_graph_list</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">for</span> <span class="n">lib_ele</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lib</span><span class="p">:</span>
-            <span class="n">block_name</span> <span class="o">=</span> <span class="n">lib_ele</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">block_name</span><span class="o">==</span><span class="n">name</span><span class="p">:</span>
-                <span class="k">continue</span>
-            <span class="n">G2</span> <span class="o">=</span> <span class="n">lib_ele</span><span class="p">[</span><span class="s1">&#39;graph&#39;</span><span class="p">]</span>
-
-            <span class="c1"># Digital blocks only transistors:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_digital</span><span class="p">(</span><span class="n">G2</span><span class="p">,</span><span class="n">name</span><span class="p">):</span>
-                <span class="k">continue</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_small</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span> <span class="n">G2</span><span class="p">):</span>
-                <span class="k">continue</span>
-
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">G2</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span><span class="o">&lt;=</span><span class="nb">len</span><span class="p">(</span><span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">):</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Matching: </span><span class="si">{</span><span class="n">block_name</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">G2</span><span class="o">.</span><span class="n">nodes</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">G2</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">GM</span> <span class="o">=</span> <span class="n">isomorphism</span><span class="o">.</span><span class="n">GraphMatcher</span><span class="p">(</span>
-                <span class="n">G1</span><span class="p">,</span> <span class="n">G2</span><span class="p">,</span>
-                <span class="n">node_match</span> <span class="o">=</span> <span class="n">isomorphism</span><span class="o">.</span><span class="n">categorical_node_match</span><span class="p">([</span><span class="s1">&#39;inst_type&#39;</span><span class="p">],</span>
-                                                              <span class="p">[</span><span class="s1">&#39;nmos&#39;</span><span class="p">]),</span>
-                <span class="n">edge_match</span> <span class="o">=</span> <span class="n">isomorphism</span><span class="o">.</span><span class="n">categorical_edge_match</span><span class="p">([</span><span class="s1">&#39;weight&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-            <span class="k">if</span> <span class="n">GM</span><span class="o">.</span><span class="n">subgraph_is_isomorphic</span><span class="p">():</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ISOMORPHIC : </span><span class="si">{</span><span class="n">block_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="n">map_list</span> <span class="o">=</span> <span class="p">[]</span>
-    
-                <span class="k">for</span> <span class="n">Gsub</span> <span class="ow">in</span> <span class="n">GM</span><span class="o">.</span><span class="n">subgraph_isomorphisms_iter</span><span class="p">():</span>
-    
-                    <span class="n">all_nd</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">Gsub</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="s1">&#39;net&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]]</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;matched inst: </span><span class="si">{</span><span class="n">all_nd</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_nd</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_clk</span><span class="p">(</span><span class="n">Gsub</span><span class="p">):</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Discarding match due to clock&quot;</span><span class="p">)</span>
-                        <span class="k">continue</span>
-                    <span class="k">if</span> <span class="n">block_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;DP&#39;</span><span class="p">)</span>  <span class="ow">or</span> <span class="n">block_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;CMC&#39;</span><span class="p">):</span>
-                        <span class="k">if</span> <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">all_nd</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="s1">&#39;values&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">all_nd</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="s1">&#39;values&#39;</span><span class="p">]</span> <span class="ow">and</span> \
-                            <span class="n">compare_balanced_tree</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span><span class="n">get_key</span><span class="p">(</span><span class="n">Gsub</span><span class="p">,</span><span class="s1">&#39;DA&#39;</span><span class="p">),</span><span class="n">get_key</span><span class="p">(</span><span class="n">Gsub</span><span class="p">,</span><span class="s1">&#39;DB&#39;</span><span class="p">),[</span><span class="n">all_nd</span><span class="p">[</span><span class="mi">0</span><span class="p">]],[</span><span class="n">all_nd</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span> <span class="p">:</span>
-                            <span class="k">if</span> <span class="s1">&#39;SA&#39;</span> <span class="ow">in</span> <span class="n">Gsub</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="ow">and</span> \
-                            <span class="n">compare_balanced_tree</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span><span class="n">get_key</span><span class="p">(</span><span class="n">Gsub</span><span class="p">,</span><span class="s1">&#39;SA&#39;</span><span class="p">),</span><span class="n">get_key</span><span class="p">(</span><span class="n">Gsub</span><span class="p">,</span><span class="s1">&#39;SB&#39;</span><span class="p">),[</span><span class="n">all_nd</span><span class="p">[</span><span class="mi">0</span><span class="p">]],[</span><span class="n">all_nd</span><span class="p">[</span><span class="mi">1</span><span class="p">]]):</span>
-                                <span class="n">map_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Gsub</span><span class="p">)</span>
-                                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Matched Lib: </span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">Gsub</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Matched Circuit: </span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">Gsub</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                            <span class="c1"># remove pseudo diff pair</span>
-                            <span class="k">elif</span> <span class="n">block_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;DP&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">POWER</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">get_key</span><span class="p">(</span><span class="n">Gsub</span><span class="p">,</span><span class="s1">&#39;S&#39;</span><span class="p">)</span> <span class="ow">in</span> <span class="n">POWER</span><span class="p">:</span>
-                                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;skipping pseudo DP </span><span class="si">{</span><span class="n">POWER</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">Gsub</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                            <span class="k">else</span><span class="p">:</span>
-                                <span class="n">map_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Gsub</span><span class="p">)</span>
-                                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Matched Lib: </span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">Gsub</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Matched Circuit: </span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">Gsub</span><span class="p">)</span><span class="si">}</span><span class="s2"> power:</span><span class="si">{</span><span class="n">POWER</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Discarding match </span><span class="si">{</span><span class="n">block_name</span><span class="si">}</span><span class="s2"> due to non matching branches&quot;</span><span class="p">)</span>
-                    <span class="k">elif</span> <span class="n">block_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;SCM&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">all_nd</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="s1">&#39;values&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">all_nd</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="s1">&#39;values&#39;</span><span class="p">]:</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Discarding match </span><span class="si">{</span><span class="n">block_name</span><span class="si">}</span><span class="s2"> due to value mismatch&quot;</span><span class="p">)</span>
-    
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">map_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Gsub</span><span class="p">)</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Matched Lib: </span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">Gsub</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Matched Circuit: </span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">Gsub</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">map_list</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
-                        <span class="n">fix_order_for_multimatch</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span><span class="n">map_list</span><span class="p">,</span><span class="n">map_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-                <span class="n">mapped_graph_list</span><span class="p">[</span><span class="n">block_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">map_list</span>
-
-        <span class="k">return</span> <span class="n">mapped_graph_list</span>
-
-<div class="viewcode-block" id="Annotate.multiple_instances"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.match_graph.Annotate.multiple_instances">[docs]</a>    <span class="k">def</span> <span class="nf">multiple_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">G1</span><span class="p">,</span><span class="n">new_node</span><span class="p">,</span><span class="n">block_name</span><span class="p">,</span><span class="n">subckt</span><span class="p">):</span>
-        <span class="n">val_n_type</span> <span class="o">=</span> <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">new_node</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">val_n_type</span><span class="p">[</span><span class="s2">&quot;real_inst_type&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">new_node</span><span class="p">][</span><span class="s2">&quot;real_inst_type&quot;</span><span class="p">]</span>
-        <span class="n">val_n_type</span><span class="p">[</span><span class="s2">&quot;ports&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">new_node</span><span class="p">][</span><span class="s2">&quot;ports&quot;</span><span class="p">]</span>
-        <span class="n">update_name</span> <span class="o">=</span> <span class="n">block_name</span>
-        <span class="k">if</span> <span class="n">block_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;adding sub_ckt: </span><span class="si">{</span><span class="n">update_name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">val_n_type</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">block_name</span><span class="p">]</span><span class="o">=</span><span class="n">subckt</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">block_name</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="n">val_n_type</span><span class="p">]</span>
-
-        <span class="k">elif</span> <span class="n">val_n_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">block_name</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]:</span>
-            <span class="n">inst_copy</span> <span class="o">=</span> <span class="s1">&#39;&lt;&#39;</span><span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">block_name</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">val_n_type</span><span class="p">))</span><span class="o">+</span><span class="s1">&#39;&gt;&#39;</span>
-            <span class="k">if</span> <span class="n">inst_copy</span> <span class="o">!=</span> <span class="s1">&#39;&lt;0&gt;&#39;</span><span class="p">:</span>
-                <span class="n">update_name</span> <span class="o">=</span> <span class="n">block_name</span> <span class="o">+</span> <span class="n">inst_copy</span>
-                <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">new_node</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">block_name</span>
-                <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">new_node</span><span class="p">][</span><span class="s2">&quot;inst_copy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">inst_copy</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;adding modified sub_ckt: </span><span class="si">{</span><span class="n">update_name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">update_name</span><span class="p">]</span><span class="o">=</span><span class="n">subckt</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">inst_copy</span> <span class="o">=</span> <span class="s1">&#39;&lt;&#39;</span><span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">block_name</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39;&gt;&#39;</span>
-            <span class="n">update_name</span> <span class="o">=</span> <span class="n">block_name</span> <span class="o">+</span> <span class="n">inst_copy</span>
-            <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">new_node</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">block_name</span>
-            <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">new_node</span><span class="p">][</span><span class="s2">&quot;inst_copy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">inst_copy</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;different size inst </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">block_name</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">val_n_type</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">inst_copy</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">update_name</span><span class="p">]</span><span class="o">=</span><span class="n">subckt</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">block_name</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span><span class="o">+=</span><span class="p">[</span><span class="n">val_n_type</span><span class="p">]</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;list all copies </span><span class="si">{</span><span class="n">block_name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">block_name</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div></div>
-    
-<span class="c1">#%%</span>
-<div class="viewcode-block" id="fix_order_for_multimatch"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.match_graph.fix_order_for_multimatch">[docs]</a><span class="k">def</span> <span class="nf">fix_order_for_multimatch</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span><span class="n">map_list</span><span class="p">,</span><span class="n">Gsub</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">previous_match</span> <span class="ow">in</span> <span class="n">map_list</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
-        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">Gsub</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="o">==</span><span class="nb">set</span><span class="p">(</span><span class="n">previous_match</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;fixing repeated node matches </span><span class="si">{</span><span class="n">Gsub</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">previous_match</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-            <span class="c1">#delta is an assumed number to define order</span>
-            <span class="n">gsub_identifier</span><span class="o">=</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">Gsub</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">Gsub</span><span class="o">.</span><span class="n">keys</span><span class="p">())])</span>
-            <span class="n">prev_identifier</span><span class="o">=</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">previous_match</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">Gsub</span><span class="o">.</span><span class="n">keys</span><span class="p">())])</span>
-            <span class="k">if</span> <span class="n">gsub_identifier</span><span class="o">&gt;</span><span class="n">prev_identifier</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;replacing match, </span><span class="si">{</span><span class="n">prev_identifier</span><span class="si">}</span><span class="s1"> with </span><span class="si">{</span><span class="n">gsub_identifier</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-                <span class="n">map_list</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">previous_match</span><span class="p">)</span>
-                <span class="k">return</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;removing new match&#39;</span><span class="p">)</span>
-                <span class="n">map_list</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">Gsub</span><span class="p">)</span></div>
-
-<span class="c1">#%%</span>
-
-
-<div class="viewcode-block" id="get_key"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.match_graph.get_key">[docs]</a><span class="k">def</span> <span class="nf">get_key</span><span class="p">(</span><span class="n">Gsub</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">Gsub</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="nb">list</span><span class="p">(</span><span class="n">Gsub</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">value</span><span class="p">)]</span></div>
-
-<div class="viewcode-block" id="compare_balanced_tree"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.match_graph.compare_balanced_tree">[docs]</a><span class="k">def</span> <span class="nf">compare_balanced_tree</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">node1</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">node2</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">traversed1</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span> <span class="n">traversed2</span><span class="p">:</span><span class="nb">list</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    used to remove some false matches for DP and CMC</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;checking symmtrical connections for nodes: </span><span class="si">{</span><span class="n">node1</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">node2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">tree1</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">get_next_level</span><span class="p">(</span><span class="n">G</span><span class="p">,[</span><span class="n">node1</span><span class="p">]))</span>
-    <span class="n">tree2</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">get_next_level</span><span class="p">(</span><span class="n">G</span><span class="p">,[</span><span class="n">node2</span><span class="p">]))</span>
-    <span class="n">traversed1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node1</span><span class="p">)</span>
-    <span class="n">traversed2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node2</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">tree1</span><span class="o">==</span><span class="n">tree2</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">True</span>
-    <span class="k">while</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">tree1</span><span class="p">))</span><span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">tree2</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tree1 </span><span class="si">{</span><span class="n">tree1</span><span class="si">}</span><span class="s2"> tree2 </span><span class="si">{</span><span class="n">tree2</span><span class="si">}</span><span class="s2"> traversed1 </span><span class="si">{</span><span class="n">traversed1</span><span class="si">}</span><span class="s2"> traversed2 </span><span class="si">{</span><span class="n">traversed2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">tree1</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">tree1</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">traversed1</span><span class="p">)</span>
-        <span class="n">tree2</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">tree2</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">traversed2</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">tree1</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">tree2</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">tree1</span><span class="p">))</span><span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">tree2</span><span class="p">))</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">True</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">traversed1</span><span class="o">+=</span><span class="nb">list</span><span class="p">(</span><span class="n">tree1</span><span class="p">)</span>
-            <span class="n">traversed2</span><span class="o">+=</span><span class="nb">list</span><span class="p">(</span><span class="n">tree2</span><span class="p">)</span>
-            <span class="n">tree1</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">get_next_level</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">tree1</span><span class="p">))</span>
-            <span class="n">tree2</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">get_next_level</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">tree2</span><span class="p">))</span>
-
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Non symmetrical branches for nets: </span><span class="si">{</span><span class="n">node1</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">node2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="kc">False</span></div>
-
-
-
-<div class="viewcode-block" id="already_merged"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.match_graph.already_merged">[docs]</a><span class="k">def</span> <span class="nf">already_merged</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span><span class="n">Gsub</span><span class="p">):</span>
-    <span class="n">am</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="k">for</span> <span class="n">g1_node</span> <span class="ow">in</span> <span class="n">Gsub</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">g1_node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">G1</span><span class="p">:</span>
-            <span class="n">am</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skip merging. Node absent: </span><span class="si">{</span><span class="n">g1_node</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">break</span>
-    <span class="k">return</span> <span class="n">am</span></div>
-
-
-<div class="viewcode-block" id="check_nodes"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.match_graph.check_nodes">[docs]</a><span class="k">def</span> <span class="nf">check_nodes</span><span class="p">(</span><span class="n">graph_dict</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">local_subckt</span> <span class="ow">in</span> <span class="n">graph_dict</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;ports_match&#39;</span> <span class="ow">in</span> <span class="n">local_subckt</span><span class="p">:</span>
-            <span class="k">continue</span>
-        <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">local_subckt</span><span class="p">[</span><span class="s2">&quot;graph&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-            <span class="k">if</span>  <span class="ow">not</span> <span class="n">attr</span><span class="p">[</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;net&quot;</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">param</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                    <span class="k">if</span> <span class="n">param</span> <span class="o">==</span> <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="k">continue</span>
-                    <span class="k">assert</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span> <span class="ow">or</span> <span class="n">value</span><span class="o">==</span><span class="s2">&quot;unit_size&quot;</span><span class="p">,</span> \
-                        <span class="s2">&quot;ERROR: Parameter value </span><span class="si">%r</span><span class="s2"> not defined&quot;</span> <span class="o">%</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39; of &#39;</span><span class="o">+</span> <span class="n">node</span><span class="p">)</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;update constraints at top hiearchy </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> :</span><span class="si">{</span><span class="n">remove_nodes</span><span class="si">}</span><span class="s2"> with </span><span class="si">{</span><span class="n">new_inst</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="n">const_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ckt_data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">constraints</span>
+        <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="n">const_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="s2">&quot;instances&quot;</span><span class="p">):</span>
+                <span class="c1"># checking instances in the constraint and update names</span>
+                <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">instances</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">remove_nodes</span><span class="p">):</span>
+                    <span class="n">replace</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">for</span> <span class="n">old_inst</span> <span class="ow">in</span> <span class="n">remove_nodes</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">replace</span><span class="p">:</span>
+                            <span class="n">_list_replace</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">instances</span><span class="p">,</span> <span class="n">old_inst</span><span class="p">,</span> <span class="n">new_inst</span><span class="p">)</span>
+                            <span class="n">replace</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="k">elif</span> <span class="n">old_inst</span> <span class="ow">in</span> <span class="n">const</span><span class="o">.</span><span class="n">instances</span><span class="p">:</span>
+                            <span class="n">const</span><span class="o">.</span><span class="n">instances</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">old_inst</span><span class="p">)</span>
+                    <span class="c1"># logger.debug(f&quot;updated instances in the constraint:{const}&quot;)</span>
+            <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="s2">&quot;pairs&quot;</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">const</span><span class="o">.</span><span class="n">pairs</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">remove_nodes</span> <span class="ow">and</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">remove_nodes</span><span class="p">:</span>
+                            <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_inst</span>
+                            <span class="n">pair</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+                            <span class="c1"># logger.debug(f&quot;updated symmetric pair constraint to self symmetry:{const}&quot;)</span>
+                        <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">remove_nodes</span> <span class="ow">and</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">remove_nodes</span><span class="p">:</span>
+                            <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_inst</span>
+                        <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">remove_nodes</span> <span class="ow">and</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">remove_nodes</span><span class="p">:</span>
+                            <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_inst</span>
+                    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">remove_nodes</span><span class="p">:</span>
+                            <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_inst</span>
+                            <span class="c1"># logger.debug(f&quot;updated self symmetric constraint block:{const}&quot;)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;updated constraints of </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">const_list</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 </pre></div>
 
-            <div class="clearer"></div>
+           </div>
           </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, ALIGN team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-            <p class="logo"><a href="../../../index.html">
-              <img class="logo" src="../../../_static/LOGO.PNG" alt="Logo"/>
-            </a></p>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">align.compiler.match_graph</a></li> 
-      </ul>
-    </div>
-    <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, ALIGN team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
-    </div>
-  </body>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
 </html>

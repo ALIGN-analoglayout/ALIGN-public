@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>align.schema.constraint &mdash; ALIGN</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html"><img src="../../../_static/LOGO.PNG" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Notes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/flow.html">ALIGN: flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/flow.html#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/flow.html#outputs">Outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-0-check-prerequisites">Step 0: Check prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-1-clone-the-align-source-code-to-your-local-environment">Step 1: Clone the ALIGN source code to your local environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-2-create-a-python-virtualenv">Step 2: Create a Python virtualenv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-3a-install-align-as-a-user">Step 3a: Install ALIGN as a USER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-3b-install-align-as-a-developer">Step 3b: Install ALIGN as a DEVELOPER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-4-run-align">Step 4: Run ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-5-view-layout">Step 5: View layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/introduction.html">Introduction by Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/viewer.html">Layout viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/viewer.html#klayout-viewer">KLayout viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/viewer.html#align-viewer">ALIGN viewer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/debug.html">Debug</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#reinstalling-align">Reinstalling ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/const.html">Constraints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/const.html#constraint-options">Constraint options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/const.html#example-constraints">Example constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/upcoming.html">Upcoming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/upcoming.html#how-to-add-your-own-pdk">How to add your own pdk</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Datasets:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/database.html">Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#sized-netlists">Sized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#unsized-netlists">Unsized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#generalized-testbenches">Generalized testbenches</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.html">align package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.gui.html">align.gui package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pdk.html">align.pdk package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.primitive.html">align.primitive package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.utils.html">align.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.primitive.html">align.primitive package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.primitive.default.html">align.primitive.default package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pdk.html">align.pdk package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.primitive.default.html">align.primitive.default package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.utils.html">align.utils package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.gui.html">align.gui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ALIGN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>align.schema.constraint</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for align.schema.constraint</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">more_itertools</span> <span class="k">as</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">types</span>
+<span class="kn">from</span> <span class="nn">.types</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">set_context</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">checker</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(?&lt;!^)(?=[A-Z])&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_instances_from_hacked_dataclasses"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.get_instances_from_hacked_dataclasses">[docs]</a><span class="k">def</span> <span class="nf">get_instances_from_hacked_dataclasses</span><span class="p">(</span><span class="n">constraint</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">constraint</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;Cannot access parent scope&#39;</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">constraint</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;graph&#39;</span><span class="p">):</span>
+        <span class="n">instances</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">constraint</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;net&#39;</span><span class="p">}</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">constraint</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;elements&#39;</span><span class="p">):</span>
+        <span class="n">instances</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">constraint</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">elements</span><span class="p">}</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">constraint</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;instances&#39;</span><span class="p">):</span>
+        <span class="n">instances</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="o">.</span><span class="n">instance_name</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">constraint</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">instances</span><span class="p">}</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot handle </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">constraint</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">constraint</span><span class="o">.</span><span class="n">parent</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">)}</span>
+    <span class="k">return</span> <span class="nb">set</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">instances</span><span class="p">,</span> <span class="n">names</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="validate_instances"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.validate_instances">[docs]</a><span class="k">def</span> <span class="nf">validate_instances</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="c1"># instances = cls._validator_ctx().parent.parent.instances</span>
+    <span class="n">instances</span> <span class="o">=</span> <span class="n">get_instances_from_hacked_dataclasses</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_validator_ctx</span><span class="p">())</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">instances</span><span class="p">,</span> <span class="nb">set</span><span class="p">),</span> <span class="s1">&#39;Could not retrieve instances from subcircuit definition&#39;</span>
+    <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">x</span> <span class="ow">in</span> <span class="n">instances</span> <span class="ow">or</span> <span class="n">x</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="ow">in</span> <span class="n">instances</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">value</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;One or more constraint instances </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1"> not found in </span><span class="si">{</span><span class="n">instances</span><span class="si">}</span><span class="s1">&#39;</span>
+    <span class="k">return</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="SoftConstraint"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.SoftConstraint">[docs]</a><span class="k">class</span> <span class="nc">SoftConstraint</span><span class="p">(</span><span class="n">types</span><span class="o">.</span><span class="n">BaseModel</span><span class="p">):</span>
+
+    <span class="n">constraint</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">constraint</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span>
+            <span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s1">&#39;constraint&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">or</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;constraint&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;constraint&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">constraint</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">constraint</span> <span class="o">==</span> <span class="n">kwargs</span><span class="p">[</span>
+                <span class="s1">&#39;constraint&#39;</span><span class="p">],</span> <span class="sa">f</span><span class="s1">&#39;Unexpected `constraint` </span><span class="si">{</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;constraint&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> (expected </span><span class="si">{</span><span class="n">constraint</span><span class="si">}</span><span class="s1">)&#39;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="HardConstraint"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.HardConstraint">[docs]</a><span class="k">class</span> <span class="nc">HardConstraint</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">,</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+
+<div class="viewcode-block" id="HardConstraint.check"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.HardConstraint.check">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checker</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Abstract Method for built in self-checks</span>
+<span class="sd">          Every class that inherits from HardConstraint</span>
+<span class="sd">          MUST implement this function.</span>
+
+<span class="sd">        Function must yield a list of mathematical</span>
+<span class="sd">          expressions supported by the &#39;checker&#39;</span>
+<span class="sd">          backend. This can be done using multiple</span>
+<span class="sd">          &#39;yield&#39; statements or returning an iterable</span>
+<span class="sd">          object such as list</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="UserConstraint"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.UserConstraint">[docs]</a><span class="k">class</span> <span class="nc">UserConstraint</span><span class="p">(</span><span class="n">HardConstraint</span><span class="p">,</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+
+<div class="viewcode-block" id="UserConstraint.yield_constraints"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.UserConstraint.yield_constraints">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">yield_constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Abstract Method to yield low level constraints</span>
+<span class="sd">          Every class that inherits from UserConstraint</span>
+<span class="sd">          MUST implement this function. This ensures</span>
+<span class="sd">          clean separation of user-facing constraints</span>
+<span class="sd">          from PnR constraints</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="UserConstraint.check"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.UserConstraint.check">[docs]</a>    <span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checker</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">constraint</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_constraints</span><span class="p">():</span>
+            <span class="k">yield from</span> <span class="n">constraint</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">checker</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Order"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.Order">[docs]</a><span class="k">class</span> <span class="nc">Order</span><span class="p">(</span><span class="n">HardConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    All `instances` will be ordered along `direction`</span>
+
+<span class="sd">    .. image:: ../images/OrderBlocks.PNG</span>
+
+<span class="sd">    WARNING: `Order` does not imply aligment / overlap</span>
+<span class="sd">    of any sort (See `Align`)</span>
+
+<span class="sd">    The following `direction` values are supported:</span>
+<span class="sd">    &gt; `None` : default (`&#39;horizontal&#39;` or `&#39;vertical&#39;`)</span>
+
+<span class="sd">    &gt; `&#39;horizontal&#39;`: left to right or vice-versa</span>
+
+<span class="sd">    &gt; `&#39;vertical&#39;`: bottom to top or vice-versa</span>
+
+<span class="sd">    &gt; `&#39;left_to_right&#39;`</span>
+<span class="sd">    &gt; `&#39;right_to_left&#39;`</span>
+<span class="sd">    &gt; `&#39;bottom_to_top&#39;`</span>
+<span class="sd">    &gt; `&#39;top_to_bottom&#39;`</span>
+
+<span class="sd">    If `abut` is `True`:</span>
+<span class="sd">    &gt; adjoining instances will touch</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">instances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">direction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span>
+        <span class="s1">&#39;horizontal&#39;</span><span class="p">,</span> <span class="s1">&#39;vertical&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;left_to_right&#39;</span><span class="p">,</span> <span class="s1">&#39;right_to_left&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;bottom_to_top&#39;</span><span class="p">,</span> <span class="s1">&#39;top_to_bottom&#39;</span>
+    <span class="p">]]</span>
+    <span class="n">abut</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="Order.order_instances_validator"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.Order.order_instances_validator">[docs]</a>    <span class="nd">@types</span><span class="o">.</span><span class="n">validator</span><span class="p">(</span><span class="s1">&#39;instances&#39;</span><span class="p">,</span> <span class="n">allow_reuse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">order_instances_validator</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Must contain at least two instances&#39;</span>
+        <span class="k">return</span> <span class="n">validate_instances</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Order.check"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.Order.check">[docs]</a>    <span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checker</span><span class="p">):</span>
+
+        <span class="k">def</span> <span class="nf">cc</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">):</span>  <span class="c1"># Create coordinate constraint</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">abut</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;ur</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">b2</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;ll</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;ur</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">b2</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;ll</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">bvars</span> <span class="o">=</span> <span class="n">checker</span><span class="o">.</span><span class="n">iter_bbox_vars</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">b1</span><span class="p">,</span> <span class="n">b2</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">pairwise</span><span class="p">(</span><span class="n">bvars</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;left_to_right&#39;</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">cc</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;right_to_left&#39;</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">cc</span><span class="p">(</span><span class="n">b2</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;bottom_to_top&#39;</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">cc</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;top_to_bottom&#39;</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">cc</span><span class="p">(</span><span class="n">b2</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;horizontal&#39;</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">checker</span><span class="o">.</span><span class="n">Or</span><span class="p">(</span>
+                    <span class="n">cc</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">),</span>
+                    <span class="n">cc</span><span class="p">(</span><span class="n">b2</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;vertical&#39;</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">checker</span><span class="o">.</span><span class="n">Or</span><span class="p">(</span>
+                    <span class="n">cc</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">),</span>
+                    <span class="n">cc</span><span class="p">(</span><span class="n">b2</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">checker</span><span class="o">.</span><span class="n">Or</span><span class="p">(</span>
+                    <span class="n">cc</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">),</span>
+                    <span class="n">cc</span><span class="p">(</span><span class="n">b2</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">),</span>
+                    <span class="n">cc</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">),</span>
+                    <span class="n">cc</span><span class="p">(</span><span class="n">b2</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="Align"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.Align">[docs]</a><span class="k">class</span> <span class="nc">Align</span><span class="p">(</span><span class="n">HardConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    `instances` will be aligned along `line`. Could be</span>
+<span class="sd">    strict or relaxed depending on value of `line`</span>
+
+<span class="sd">    .. image:: ../images/AlignBlocks.PNG</span>
+
+<span class="sd">    WARNING: `Align` does not imply ordering of any sort</span>
+<span class="sd">    (See `Order`)</span>
+
+<span class="sd">    The following `line` values are currently supported:</span>
+<span class="sd">    &gt; `None` : default (`&#39;h_any&#39;` or `&#39;v_any&#39;`)</span>
+
+<span class="sd">    &gt; `&#39;h_any&#39;`: top, bottom or anything in between</span>
+
+<span class="sd">    &gt; `&#39;v_any&#39;`: left, right or anything in between</span>
+
+<span class="sd">    &gt; `&#39;h_top&#39;`</span>
+<span class="sd">    &gt; `&#39;h_bottom&#39;`</span>
+<span class="sd">    &gt; `&#39;h_center&#39;`</span>
+
+<span class="sd">    &gt; `&#39;v_left&#39;`</span>
+<span class="sd">    &gt; `&#39;v_right&#39;`</span>
+<span class="sd">    &gt; `&#39;v_center&#39;`</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">instances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">line</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span>
+        <span class="s1">&#39;h_any&#39;</span><span class="p">,</span> <span class="s1">&#39;h_top&#39;</span><span class="p">,</span> <span class="s1">&#39;h_bottom&#39;</span><span class="p">,</span> <span class="s1">&#39;h_center&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;v_any&#39;</span><span class="p">,</span> <span class="s1">&#39;v_left&#39;</span><span class="p">,</span> <span class="s1">&#39;v_right&#39;</span><span class="p">,</span> <span class="s1">&#39;v_center&#39;</span>
+    <span class="p">]]</span>
+
+    <span class="n">_inst_validator</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">validator</span><span class="p">(</span><span class="s1">&#39;instances&#39;</span><span class="p">,</span> <span class="n">allow_reuse</span><span class="o">=</span><span class="kc">True</span><span class="p">)(</span><span class="n">validate_instances</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Align.align_instances_validator"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.Align.align_instances_validator">[docs]</a>    <span class="nd">@types</span><span class="o">.</span><span class="n">validator</span><span class="p">(</span><span class="s1">&#39;instances&#39;</span><span class="p">,</span> <span class="n">allow_reuse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">align_instances_validator</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Must contain at least two instances&#39;</span>
+        <span class="k">return</span> <span class="n">validate_instances</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Align.check"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.Align.check">[docs]</a>    <span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checker</span><span class="p">):</span>
+        <span class="n">bvars</span> <span class="o">=</span> <span class="n">checker</span><span class="o">.</span><span class="n">iter_bbox_vars</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">b1</span><span class="p">,</span> <span class="n">b2</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">pairwise</span><span class="p">(</span><span class="n">bvars</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span> <span class="o">==</span> <span class="s1">&#39;h_top&#39;</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">b1</span><span class="o">.</span><span class="n">ury</span> <span class="o">==</span> <span class="n">b2</span><span class="o">.</span><span class="n">ury</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span> <span class="o">==</span> <span class="s1">&#39;h_bottom&#39;</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">b1</span><span class="o">.</span><span class="n">lly</span> <span class="o">==</span> <span class="n">b2</span><span class="o">.</span><span class="n">lly</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span> <span class="o">==</span> <span class="s1">&#39;h_center&#39;</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="p">(</span><span class="n">b1</span><span class="o">.</span><span class="n">lly</span> <span class="o">+</span> <span class="n">b1</span><span class="o">.</span><span class="n">ury</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">==</span> <span class="p">(</span><span class="n">b2</span><span class="o">.</span><span class="n">lly</span> <span class="o">+</span> <span class="n">b2</span><span class="o">.</span><span class="n">ury</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span> <span class="o">==</span> <span class="s1">&#39;h_any&#39;</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">checker</span><span class="o">.</span><span class="n">Or</span><span class="p">(</span>  <span class="c1"># We don&#39;t know which bbox is higher yet</span>
+                    <span class="n">checker</span><span class="o">.</span><span class="n">And</span><span class="p">(</span><span class="n">b1</span><span class="o">.</span><span class="n">lly</span> <span class="o">&gt;=</span> <span class="n">b2</span><span class="o">.</span><span class="n">lly</span><span class="p">,</span> <span class="n">b1</span><span class="o">.</span><span class="n">ury</span> <span class="o">&lt;=</span> <span class="n">b2</span><span class="o">.</span><span class="n">ury</span><span class="p">),</span>
+                    <span class="n">checker</span><span class="o">.</span><span class="n">And</span><span class="p">(</span><span class="n">b2</span><span class="o">.</span><span class="n">lly</span> <span class="o">&gt;=</span> <span class="n">b1</span><span class="o">.</span><span class="n">lly</span><span class="p">,</span> <span class="n">b2</span><span class="o">.</span><span class="n">ury</span> <span class="o">&lt;=</span> <span class="n">b1</span><span class="o">.</span><span class="n">ury</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span> <span class="o">==</span> <span class="s1">&#39;v_left&#39;</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">b1</span><span class="o">.</span><span class="n">llx</span> <span class="o">==</span> <span class="n">b2</span><span class="o">.</span><span class="n">llx</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span> <span class="o">==</span> <span class="s1">&#39;v_right&#39;</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">b1</span><span class="o">.</span><span class="n">urx</span> <span class="o">==</span> <span class="n">b2</span><span class="o">.</span><span class="n">urx</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span> <span class="o">==</span> <span class="s1">&#39;v_center&#39;</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="p">(</span><span class="n">b1</span><span class="o">.</span><span class="n">llx</span> <span class="o">+</span> <span class="n">b1</span><span class="o">.</span><span class="n">urx</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">==</span> <span class="p">(</span><span class="n">b2</span><span class="o">.</span><span class="n">llx</span> <span class="o">+</span> <span class="n">b2</span><span class="o">.</span><span class="n">urx</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span> <span class="o">==</span> <span class="s1">&#39;v_any&#39;</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">checker</span><span class="o">.</span><span class="n">Or</span><span class="p">(</span>  <span class="c1"># We don&#39;t know which bbox is wider yet</span>
+                    <span class="n">checker</span><span class="o">.</span><span class="n">And</span><span class="p">(</span><span class="n">b1</span><span class="o">.</span><span class="n">urx</span> <span class="o">&lt;=</span> <span class="n">b2</span><span class="o">.</span><span class="n">urx</span><span class="p">,</span> <span class="n">b1</span><span class="o">.</span><span class="n">llx</span> <span class="o">&gt;=</span> <span class="n">b2</span><span class="o">.</span><span class="n">llx</span><span class="p">),</span>
+                    <span class="n">checker</span><span class="o">.</span><span class="n">And</span><span class="p">(</span><span class="n">b2</span><span class="o">.</span><span class="n">urx</span> <span class="o">&lt;=</span> <span class="n">b1</span><span class="o">.</span><span class="n">urx</span><span class="p">,</span> <span class="n">b2</span><span class="o">.</span><span class="n">llx</span> <span class="o">&gt;=</span> <span class="n">b1</span><span class="o">.</span><span class="n">llx</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">checker</span><span class="o">.</span><span class="n">Or</span><span class="p">(</span>  <span class="c1"># h_any OR v_any</span>
+                    <span class="n">checker</span><span class="o">.</span><span class="n">And</span><span class="p">(</span><span class="n">b1</span><span class="o">.</span><span class="n">urx</span> <span class="o">&lt;=</span> <span class="n">b2</span><span class="o">.</span><span class="n">urx</span><span class="p">,</span> <span class="n">b1</span><span class="o">.</span><span class="n">llx</span> <span class="o">&gt;=</span> <span class="n">b2</span><span class="o">.</span><span class="n">llx</span><span class="p">),</span>
+                    <span class="n">checker</span><span class="o">.</span><span class="n">And</span><span class="p">(</span><span class="n">b2</span><span class="o">.</span><span class="n">urx</span> <span class="o">&lt;=</span> <span class="n">b1</span><span class="o">.</span><span class="n">urx</span><span class="p">,</span> <span class="n">b2</span><span class="o">.</span><span class="n">llx</span> <span class="o">&gt;=</span> <span class="n">b1</span><span class="o">.</span><span class="n">llx</span><span class="p">),</span>
+                    <span class="n">checker</span><span class="o">.</span><span class="n">And</span><span class="p">(</span><span class="n">b1</span><span class="o">.</span><span class="n">lly</span> <span class="o">&gt;=</span> <span class="n">b2</span><span class="o">.</span><span class="n">lly</span><span class="p">,</span> <span class="n">b1</span><span class="o">.</span><span class="n">ury</span> <span class="o">&lt;=</span> <span class="n">b2</span><span class="o">.</span><span class="n">ury</span><span class="p">),</span>
+                    <span class="n">checker</span><span class="o">.</span><span class="n">And</span><span class="p">(</span><span class="n">b2</span><span class="o">.</span><span class="n">lly</span> <span class="o">&gt;=</span> <span class="n">b1</span><span class="o">.</span><span class="n">lly</span><span class="p">,</span> <span class="n">b2</span><span class="o">.</span><span class="n">ury</span> <span class="o">&lt;=</span> <span class="n">b1</span><span class="o">.</span><span class="n">ury</span><span class="p">)</span>
+                <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Enclose"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.Enclose">[docs]</a><span class="k">class</span> <span class="nc">Enclose</span><span class="p">(</span><span class="n">HardConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Enclose `instances` within a flexible bounding box</span>
+<span class="sd">    with `min_` &amp; `max_` bounds</span>
+
+<span class="sd">    Note: Specifying any one of the following variables</span>
+<span class="sd">    makes it a valid constraint but you may wish to</span>
+<span class="sd">    specify more than one for practical purposes</span>
+
+<span class="sd">    &gt; `min_height`</span>
+<span class="sd">    &gt; `max_height`</span>
+
+<span class="sd">    &gt; `min_width`</span>
+<span class="sd">    &gt; `max_width`</span>
+
+<span class="sd">    &gt; `min_aspect_ratio`</span>
+<span class="sd">    &gt; `max_aspect_ratio`</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">instances</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+    <span class="n">min_height</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+    <span class="n">max_height</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+    <span class="n">min_width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+    <span class="n">max_width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+    <span class="n">min_aspect_ratio</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">max_aspect_ratio</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+
+    <span class="n">_inst_validator</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">validator</span><span class="p">(</span><span class="s1">&#39;instances&#39;</span><span class="p">,</span> <span class="n">allow_reuse</span><span class="o">=</span><span class="kc">True</span><span class="p">)(</span><span class="n">validate_instances</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Enclose.bound_in_box_optional_fields"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.Enclose.bound_in_box_optional_fields">[docs]</a>    <span class="nd">@types</span><span class="o">.</span><span class="n">validator</span><span class="p">(</span><span class="s1">&#39;max_aspect_ratio&#39;</span><span class="p">,</span> <span class="n">allow_reuse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">bound_in_box_optional_fields</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">value</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span>
+                <span class="s1">&#39;min_height&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;max_height&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;min_width&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;max_width&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;min_aspect_ratio&#39;</span>
+            <span class="p">)</span>
+        <span class="p">),</span> <span class="s1">&#39;Too many optional fields&#39;</span>
+        <span class="k">return</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="Enclose.check"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.Enclose.check">[docs]</a>    <span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checker</span><span class="p">):</span>
+        <span class="n">bb</span> <span class="o">=</span> <span class="n">checker</span><span class="o">.</span><span class="n">bbox_vars</span><span class="p">(</span><span class="n">checker</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_width</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">bb</span><span class="o">.</span><span class="n">urx</span> <span class="o">-</span> <span class="n">bb</span><span class="o">.</span><span class="n">llx</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_width</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_height</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">bb</span><span class="o">.</span><span class="n">ury</span> <span class="o">-</span> <span class="n">bb</span><span class="o">.</span><span class="n">lly</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_height</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_width</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">bb</span><span class="o">.</span><span class="n">urx</span> <span class="o">-</span> <span class="n">bb</span><span class="o">.</span><span class="n">llx</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_width</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_height</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">bb</span><span class="o">.</span><span class="n">ury</span> <span class="o">-</span> <span class="n">bb</span><span class="o">.</span><span class="n">lly</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_height</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_aspect_ratio</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">checker</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">bb</span><span class="o">.</span><span class="n">ury</span> <span class="o">-</span> <span class="n">bb</span><span class="o">.</span><span class="n">lly</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">bb</span><span class="o">.</span><span class="n">urx</span> <span class="o">-</span> <span class="n">bb</span><span class="o">.</span><span class="n">llx</span><span class="p">),</span>
+                <span class="nb">float</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_aspect_ratio</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_aspect_ratio</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">checker</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">bb</span><span class="o">.</span><span class="n">ury</span> <span class="o">-</span> <span class="n">bb</span><span class="o">.</span><span class="n">lly</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">bb</span><span class="o">.</span><span class="n">urx</span> <span class="o">-</span> <span class="n">bb</span><span class="o">.</span><span class="n">llx</span><span class="p">),</span>
+                <span class="nb">float</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_aspect_ratio</span>
+        <span class="n">bvars</span> <span class="o">=</span> <span class="n">checker</span><span class="o">.</span><span class="n">iter_bbox_vars</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bvars</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">b</span><span class="o">.</span><span class="n">urx</span> <span class="o">&lt;=</span> <span class="n">bb</span><span class="o">.</span><span class="n">urx</span>
+            <span class="k">yield</span> <span class="n">b</span><span class="o">.</span><span class="n">llx</span> <span class="o">&gt;=</span> <span class="n">bb</span><span class="o">.</span><span class="n">llx</span>
+            <span class="k">yield</span> <span class="n">b</span><span class="o">.</span><span class="n">ury</span> <span class="o">&lt;=</span> <span class="n">bb</span><span class="o">.</span><span class="n">ury</span>
+            <span class="k">yield</span> <span class="n">b</span><span class="o">.</span><span class="n">lly</span> <span class="o">&gt;=</span> <span class="n">bb</span><span class="o">.</span><span class="n">lly</span></div></div>
+
+
+<div class="viewcode-block" id="Spread"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.Spread">[docs]</a><span class="k">class</span> <span class="nc">Spread</span><span class="p">(</span><span class="n">HardConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Spread `instances` by forcing minimum spacing along</span>
+<span class="sd">    `direction` if two instances overlap in other direction</span>
+
+<span class="sd">    WARNING: This constraint checks for overlap but</span>
+<span class="sd">    doesn&#39;t enforce it (See `Align`)</span>
+
+<span class="sd">    The following `direction` values are supported:</span>
+<span class="sd">    &gt; `None` : default (`&#39;horizontal&#39;` or `&#39;vertical&#39;`)</span>
+
+<span class="sd">    &gt; `&#39;horizontal&#39;`</span>
+<span class="sd">    &gt; `&#39;vertical&#39;`</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">instances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">direction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;horizontal&#39;</span><span class="p">,</span> <span class="s1">&#39;vertical&#39;</span><span class="p">]]</span>
+    <span class="n">distance</span><span class="p">:</span> <span class="nb">int</span>  <span class="c1"># in nm</span>
+
+<div class="viewcode-block" id="Spread.spread_instances_validator"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.Spread.spread_instances_validator">[docs]</a>    <span class="nd">@types</span><span class="o">.</span><span class="n">validator</span><span class="p">(</span><span class="s1">&#39;instances&#39;</span><span class="p">,</span> <span class="n">allow_reuse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">spread_instances_validator</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Must contain at least two instances&#39;</span>
+        <span class="k">return</span> <span class="n">validate_instances</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Spread.check"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.Spread.check">[docs]</a>    <span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checker</span><span class="p">):</span>
+
+        <span class="k">def</span> <span class="nf">cc</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">):</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="s1">&#39;y&#39;</span> <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;x&#39;</span> <span class="k">else</span> <span class="s1">&#39;x&#39;</span>
+            <span class="k">return</span> <span class="n">checker</span><span class="o">.</span><span class="n">Implies</span><span class="p">(</span>
+                <span class="n">checker</span><span class="o">.</span><span class="n">And</span><span class="p">(</span>  <span class="c1"># overlap orthogonal to c</span>
+                    <span class="nb">getattr</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;ur</span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">b2</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;ll</span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">),</span>
+                    <span class="nb">getattr</span><span class="p">(</span><span class="n">b2</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;ur</span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;ll</span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">),</span>
+                <span class="p">),</span>
+                <span class="n">checker</span><span class="o">.</span><span class="n">Abs</span><span class="p">(</span>  <span class="c1"># distance in c coords</span>
+                    <span class="p">(</span>
+                        <span class="nb">getattr</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;ll</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                        <span class="o">+</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;ur</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="p">)</span> <span class="o">-</span> <span class="p">(</span>
+                        <span class="nb">getattr</span><span class="p">(</span><span class="n">b2</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;ll</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                        <span class="o">+</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">b2</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;ur</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span> <span class="o">*</span> <span class="mi">2</span>
+            <span class="p">)</span>
+
+        <span class="n">bvars</span> <span class="o">=</span> <span class="n">checker</span><span class="o">.</span><span class="n">iter_bbox_vars</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">b1</span><span class="p">,</span> <span class="n">b2</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">pairwise</span><span class="p">(</span><span class="n">bvars</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;horizontal&#39;</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">cc</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;vertical&#39;</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">cc</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">checker</span><span class="o">.</span><span class="n">Or</span><span class="p">(</span>
+                    <span class="n">cc</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">),</span>
+                    <span class="n">cc</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">)</span>
+                <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SetBoundingBox"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.SetBoundingBox">[docs]</a><span class="k">class</span> <span class="nc">SetBoundingBox</span><span class="p">(</span><span class="n">HardConstraint</span><span class="p">):</span>
+    <span class="n">instance</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">llx</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">lly</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">urx</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">ury</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">is_subcircuit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="SetBoundingBox.x_is_valid"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.SetBoundingBox.x_is_valid">[docs]</a>    <span class="nd">@types</span><span class="o">.</span><span class="n">validator</span><span class="p">(</span><span class="s1">&#39;urx&#39;</span><span class="p">,</span> <span class="n">allow_reuse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">x_is_valid</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="n">values</span><span class="p">[</span><span class="s1">&#39;llx&#39;</span><span class="p">],</span> <span class="sa">f</span><span class="s1">&#39;Reflection is not supported yet&#39;</span>
+        <span class="k">return</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="SetBoundingBox.y_is_valid"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.SetBoundingBox.y_is_valid">[docs]</a>    <span class="nd">@types</span><span class="o">.</span><span class="n">validator</span><span class="p">(</span><span class="s1">&#39;ury&#39;</span><span class="p">,</span> <span class="n">allow_reuse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">y_is_valid</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="n">values</span><span class="p">[</span><span class="s1">&#39;lly&#39;</span><span class="p">],</span> <span class="sa">f</span><span class="s1">&#39;Reflection is not supported yet&#39;</span>
+        <span class="k">return</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="SetBoundingBox.check"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.SetBoundingBox.check">[docs]</a>    <span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checker</span><span class="p">):</span>
+        <span class="n">bvar</span> <span class="o">=</span> <span class="n">checker</span><span class="o">.</span><span class="n">bbox_vars</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="p">,</span> <span class="n">is_subcircuit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">is_subcircuit</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">bvar</span><span class="o">.</span><span class="n">llx</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">llx</span>
+        <span class="k">yield</span> <span class="n">bvar</span><span class="o">.</span><span class="n">lly</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">lly</span>
+        <span class="k">yield</span> <span class="n">bvar</span><span class="o">.</span><span class="n">urx</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">urx</span>
+        <span class="k">yield</span> <span class="n">bvar</span><span class="o">.</span><span class="n">ury</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">ury</span></div></div>
+
+
+<div class="viewcode-block" id="AspectRatio"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.AspectRatio">[docs]</a><span class="k">class</span> <span class="nc">AspectRatio</span><span class="p">(</span><span class="n">HardConstraint</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Define lower and upper bounds on aspect ratio (=width/height) of a subcircuit</span>
+
+<span class="sd">    `ratio_low` &lt;= width/height &lt;= `ratio_high`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">subcircuit</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">ratio_low</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span>
+    <span class="n">ratio_high</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">weight</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+
+<div class="viewcode-block" id="AspectRatio.ratio_low_validator"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.AspectRatio.ratio_low_validator">[docs]</a>    <span class="nd">@types</span><span class="o">.</span><span class="n">validator</span><span class="p">(</span><span class="s1">&#39;ratio_low&#39;</span><span class="p">,</span> <span class="n">allow_reuse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">ratio_low_validator</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">value</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;AspectRatio:ratio_low should be greater than zero </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">return</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="AspectRatio.ratio_high_validator"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.AspectRatio.ratio_high_validator">[docs]</a>    <span class="nd">@types</span><span class="o">.</span><span class="n">validator</span><span class="p">(</span><span class="s1">&#39;ratio_high&#39;</span><span class="p">,</span> <span class="n">allow_reuse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">ratio_high_validator</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="n">values</span><span class="p">[</span><span class="s1">&#39;ratio_low&#39;</span><span class="p">],</span> <span class="sa">f</span><span class="s1">&#39;AspectRatio:ratio_high </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1"> should be greater than ratio_low </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s2">&quot;ratio_low&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">return</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="AspectRatio.check"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.AspectRatio.check">[docs]</a>    <span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checker</span><span class="p">):</span>
+        <span class="n">bvar</span> <span class="o">=</span> <span class="n">checker</span><span class="o">.</span><span class="n">bbox_vars</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subcircuit</span><span class="p">,</span> <span class="n">is_subcircuit</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">checker</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">bvar</span><span class="o">.</span><span class="n">urx</span><span class="o">-</span><span class="n">bvar</span><span class="o">.</span><span class="n">llx</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ratio_low</span> <span class="o">*</span> <span class="n">checker</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">bvar</span><span class="o">.</span><span class="n">ury</span><span class="o">-</span><span class="n">bvar</span><span class="o">.</span><span class="n">lly</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">checker</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">bvar</span><span class="o">.</span><span class="n">urx</span><span class="o">-</span><span class="n">bvar</span><span class="o">.</span><span class="n">llx</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">ratio_high</span> <span class="o">*</span> <span class="n">checker</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">bvar</span><span class="o">.</span><span class="n">ury</span><span class="o">-</span><span class="n">bvar</span><span class="o">.</span><span class="n">lly</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Boundary"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.Boundary">[docs]</a><span class="k">class</span> <span class="nc">Boundary</span><span class="p">(</span><span class="n">HardConstraint</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Define `max_height` and/or `max_width` on a subcircuit in micrometers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">subcircuit</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">max_width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10000</span>
+    <span class="n">max_height</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10000</span>
+
+<div class="viewcode-block" id="Boundary.max_width_validator"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.Boundary.max_width_validator">[docs]</a>    <span class="nd">@types</span><span class="o">.</span><span class="n">validator</span><span class="p">(</span><span class="s1">&#39;max_width&#39;</span><span class="p">,</span> <span class="n">allow_reuse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">max_width_validator</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">value</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Boundary:max_width should be greater than zero </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">return</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="Boundary.max_height_validator"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.Boundary.max_height_validator">[docs]</a>    <span class="nd">@types</span><span class="o">.</span><span class="n">validator</span><span class="p">(</span><span class="s1">&#39;max_height&#39;</span><span class="p">,</span> <span class="n">allow_reuse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">max_height_validator</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">value</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Boundary:max_height should be greater than zero </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">return</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="Boundary.check"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.Boundary.check">[docs]</a>    <span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checker</span><span class="p">):</span>
+        <span class="n">bvar</span> <span class="o">=</span> <span class="n">checker</span><span class="o">.</span><span class="n">bbox_vars</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subcircuit</span><span class="p">,</span> <span class="n">is_subcircuit</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_width</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">checker</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">bvar</span><span class="o">.</span><span class="n">urx</span><span class="o">-</span><span class="n">bvar</span><span class="o">.</span><span class="n">llx</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1000</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">max_width</span>  <span class="c1"># in nanometer</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_height</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">checker</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">bvar</span><span class="o">.</span><span class="n">ury</span><span class="o">-</span><span class="n">bvar</span><span class="o">.</span><span class="n">lly</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1000</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">max_height</span>  <span class="c1"># in nanometer</span></div></div>
+
+
+<span class="c1"># You may chain constraints together for more complex constraints by</span>
+<span class="c1">#     1) Assigning default values to certain attributes</span>
+<span class="c1">#     2) Using custom validators to modify attribute values</span>
+<span class="c1"># Note: Do not implement check() here. It will be ignored.</span>
+<span class="c1">#       Only ALIGN internal constraints may be translated</span>
+
+<div class="viewcode-block" id="AlignInOrder"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.AlignInOrder">[docs]</a><span class="k">class</span> <span class="nc">AlignInOrder</span><span class="p">(</span><span class="n">UserConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Align `instances` on `line` ordered along `direction`</span>
+
+<span class="sd">    Note: This is a user-convenience constraint. Same</span>
+<span class="sd">    effect can be realized using `Order` &amp; `Align`</span>
+
+<span class="sd">    &gt; `direction == &#39;horizontal&#39;` =&gt; left_to_right</span>
+
+<span class="sd">    &gt; `direction == &#39;vertical&#39;`   =&gt; bottom_to_top</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">instances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">line</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span>
+        <span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="s1">&#39;bottom&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;center&#39;</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;bottom&#39;</span>
+    <span class="n">direction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;horizontal&#39;</span><span class="p">,</span> <span class="s1">&#39;vertical&#39;</span><span class="p">]]</span>
+    <span class="n">abut</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="nd">@types</span><span class="o">.</span><span class="n">validator</span><span class="p">(</span><span class="s1">&#39;direction&#39;</span><span class="p">,</span> <span class="n">allow_reuse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">always</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_direction_depends_on_line</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="c1"># Process unambiguous line values</span>
+        <span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="s1">&#39;line&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;bottom&#39;</span><span class="p">,</span> <span class="s1">&#39;top&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="s1">&#39;horizontal&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">v</span> <span class="o">==</span> <span class="s1">&#39;horizontal&#39;</span><span class="p">,</span> \
+                    <span class="sa">f</span><span class="s1">&#39;direction is horizontal if line is bottom or top&#39;</span>
+        <span class="k">elif</span> <span class="n">values</span><span class="p">[</span><span class="s1">&#39;line&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="s1">&#39;vertical&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">v</span> <span class="o">==</span> <span class="s1">&#39;vertical&#39;</span><span class="p">,</span> \
+                    <span class="sa">f</span><span class="s1">&#39;direction is vertical if line is left or right&#39;</span>
+        <span class="c1"># Center needs both line &amp; direction</span>
+        <span class="k">elif</span> <span class="n">values</span><span class="p">[</span><span class="s1">&#39;line&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;center&#39;</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">v</span><span class="p">,</span> \
+                <span class="s1">&#39;direction must be specified if line == center&#39;</span>
+        <span class="k">return</span> <span class="n">v</span>
+
+<div class="viewcode-block" id="AlignInOrder.yield_constraints"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.AlignInOrder.yield_constraints">[docs]</a>    <span class="k">def</span> <span class="nf">yield_constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">set_context</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">Align</span><span class="p">(</span>
+                <span class="n">instances</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">,</span>
+                <span class="n">line</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">direction</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">)</span>
+            <span class="k">yield</span> <span class="n">Order</span><span class="p">(</span>
+                <span class="n">instances</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">,</span>
+                <span class="n">direction</span><span class="o">=</span><span class="s1">&#39;left_to_right&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;horizontal&#39;</span> <span class="k">else</span> <span class="s1">&#39;top_to_bottom&#39;</span><span class="p">,</span>
+                <span class="n">abut</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">abut</span>
+            <span class="p">)</span></div></div>
+
+
+<span class="c1">#</span>
+<span class="c1"># list of &#39;SoftConstraint&#39;</span>
+<span class="c1">#</span>
+<span class="c1"># Below is a list of legacy constraints</span>
+<span class="c1"># that have not been hardened yet</span>
+<span class="c1">#</span>
+
+<div class="viewcode-block" id="PlaceSymmetric"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.PlaceSymmetric">[docs]</a><span class="k">class</span> <span class="nc">PlaceSymmetric</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="c1"># TODO: Finish implementing this. Not registered to</span>
+    <span class="c1">#       ConstraintDB yet</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Place instance / pair of `instances` symmetrically</span>
+<span class="sd">    around line of symmetry along `direction`</span>
+
+<span class="sd">    Note: This is a user-convenience constraint. Same</span>
+<span class="sd">    effect can be realized using `Align` &amp; `Group`</span>
+
+<span class="sd">    For example:</span>
+<span class="sd">    `instances` = [[&#39;1&#39;], [&#39;4&#39;, &#39;5&#39;], [&#39;2&#39;, &#39;3&#39;], [&#39;6&#39;]]</span>
+<span class="sd">    `direction` = &#39;vertical&#39;</span>
+<span class="sd">       1   |  5 4  |   6   |  4 5  |   1   |  5 4</span>
+<span class="sd">      4 5  |   1   |  5 4  |   6   |   6   |   1</span>
+<span class="sd">      2 3  |  2 3  |  3 2  |   1   |  5 4  |   6</span>
+<span class="sd">       6   |   6   |   1   |  2 3  |  2 3  |  3 2</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">instances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+    <span class="n">direction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;horizontal&#39;</span><span class="p">,</span> <span class="s1">&#39;vertical&#39;</span><span class="p">]]</span>
+
+<div class="viewcode-block" id="PlaceSymmetric.place_symmetric_instances_validator"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.PlaceSymmetric.place_symmetric_instances_validator">[docs]</a>    <span class="nd">@types</span><span class="o">.</span><span class="n">validator</span><span class="p">(</span><span class="s1">&#39;instances&#39;</span><span class="p">,</span> <span class="n">allow_reuse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">place_symmetric_instances_validator</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        X = Align(2, 3, &#39;h_center&#39;)</span>
+<span class="sd">        Y = Align(4, 5, &#39;h_center&#39;)</span>
+<span class="sd">        Align(1, X, Y, 6, &#39;center&#39;)</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;Must contain at least one instance&#39;</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">List</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">value</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;All arguments must be of type list in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">return</span> <span class="n">value</span></div></div>
+
+
+<div class="viewcode-block" id="CompactPlacement"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.CompactPlacement">[docs]</a><span class="k">class</span> <span class="nc">CompactPlacement</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="n">style</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span>
+        <span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;center&#39;</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;left&#39;</span></div>
+
+
+<div class="viewcode-block" id="SameTemplate"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.SameTemplate">[docs]</a><span class="k">class</span> <span class="nc">SameTemplate</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="n">instances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="CreateAlias"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.CreateAlias">[docs]</a><span class="k">class</span> <span class="nc">CreateAlias</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="n">instances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span></div>
+
+
+<div class="viewcode-block" id="GroupBlocks"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.GroupBlocks">[docs]</a><span class="k">class</span> <span class="nc">GroupBlocks</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; Force heirarchy creation &#39;&#39;&#39;</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">instances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">style</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;tbd_interdigitated&quot;</span><span class="p">,</span> <span class="s2">&quot;tbd_common_centroid&quot;</span><span class="p">]]</span></div>
+
+
+<div class="viewcode-block" id="MatchBlocks"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.MatchBlocks">[docs]</a><span class="k">class</span> <span class="nc">MatchBlocks</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    TODO: Can be replicated by Enclose??</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">instances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="PowerPorts"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.PowerPorts">[docs]</a><span class="k">class</span> <span class="nc">PowerPorts</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    power port for each hieararchy</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">ports</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="GroundPorts"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.GroundPorts">[docs]</a><span class="k">class</span> <span class="nc">GroundPorts</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Ground port for each hieararchy</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">ports</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="ClockPorts"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.ClockPorts">[docs]</a><span class="k">class</span> <span class="nc">ClockPorts</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Clock port for each hieararchy</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">ports</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="DoNotUseLib"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.DoNotUseLib">[docs]</a><span class="k">class</span> <span class="nc">DoNotUseLib</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Primitive libraries which should not be used</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">libraries</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">propagate</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="IsDigital"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.IsDigital">[docs]</a><span class="k">class</span> <span class="nc">IsDigital</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Place this block digitally</span>
+<span class="sd">    Forbids any preprocessing, auto-annotation, array-identification or auto-constraint generation</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">isTrue</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">propagate</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="AutoConstraint"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.AutoConstraint">[docs]</a><span class="k">class</span> <span class="nc">AutoConstraint</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Forbids/Allow any auto-constraint generation</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">isTrue</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">propagate</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="IdentifyArray"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.IdentifyArray">[docs]</a><span class="k">class</span> <span class="nc">IdentifyArray</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Forbids/Alow any array identification</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">isTrue</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">propagate</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="AutoGroupCaps"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.AutoGroupCaps">[docs]</a><span class="k">class</span> <span class="nc">AutoGroupCaps</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Forbids/Allow creation of arrays for symmetric caps</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">isTrue</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">propagate</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="FixSourceDrain"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.FixSourceDrain">[docs]</a><span class="k">class</span> <span class="nc">FixSourceDrain</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Checks the netlist for any source/drain interchange.</span>
+<span class="sd">    Traverses and fix them based on power to gnd traversal</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">isTrue</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">propagate</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="KeepDummyHierarchies"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.KeepDummyHierarchies">[docs]</a><span class="k">class</span> <span class="nc">KeepDummyHierarchies</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Removes any single instance hierarchies</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">isTrue</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">propagate</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="MergeSeriesDevices"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.MergeSeriesDevices">[docs]</a><span class="k">class</span> <span class="nc">MergeSeriesDevices</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Allow stacking of series devices</span>
+<span class="sd">    Only works on NMOS/PMOS/CAP/RES</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">isTrue</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">propagate</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="MergeParallelDevices"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.MergeParallelDevices">[docs]</a><span class="k">class</span> <span class="nc">MergeParallelDevices</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Allow merging of parallel devices</span>
+<span class="sd">    Only works on NMOS/PMOS/CAP/RES</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">isTrue</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">propagate</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="DoNotIdentify"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.DoNotIdentify">[docs]</a><span class="k">class</span> <span class="nc">DoNotIdentify</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    TODO: Can be replicated by Enclose??</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">instances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="SymmetricBlocks"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.SymmetricBlocks">[docs]</a><span class="k">class</span> <span class="nc">SymmetricBlocks</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;SymmetricBlocks [summary]</span>
+
+<span class="sd">    .. image:: ../images/SymmetricBlocks.PNG</span>
+
+
+<span class="sd">    [extended_summary]</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        SoftConstraint ([type]): [description]</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        [type]: [description]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pairs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+    <span class="n">direction</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="s1">&#39;V&#39;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="SymmetricBlocks.pairs_validator"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.SymmetricBlocks.pairs_validator">[docs]</a>    <span class="nd">@types</span><span class="o">.</span><span class="n">validator</span><span class="p">(</span><span class="s1">&#39;pairs&#39;</span><span class="p">,</span> <span class="n">allow_reuse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">pairs_validator</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        X = Align(2, 3, &#39;h_center&#39;)</span>
+<span class="sd">        Y = Align(4, 5, &#39;h_center&#39;)</span>
+<span class="sd">        Align(1, X, Y, 6, &#39;center&#39;)</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">instances</span> <span class="o">=</span> <span class="n">get_instances_from_hacked_dataclasses</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_validator_ctx</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;Must contain at least one instance&#39;</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Must contain at most two instances&#39;</span>
+            <span class="n">validate_instances</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">pair</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_validator_ctx</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;elements&#39;</span><span class="p">):</span>
+            <span class="c1"># PnR stage VerilogJsonModule</span>
+            <span class="k">return</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_validator_ctx</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">elements</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># skips the check while reading user constraints</span>
+            <span class="k">return</span> <span class="n">value</span>
+        <span class="n">group_block_instances</span> <span class="o">=</span> <span class="p">[</span><span class="n">const</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_validator_ctx</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="n">GroupBlocks</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
+            <span class="c1"># logger.debug(f&quot;pairs {self.pairs} {self.parent.parent.get_element(pair[0])}&quot;)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">([</span><span class="n">ele</span> <span class="k">for</span> <span class="n">ele</span> <span class="ow">in</span> <span class="n">pair</span> <span class="k">if</span> <span class="n">ele</span> <span class="ow">in</span> <span class="n">group_block_instances</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># Skip check for group block elements as they are added later in the flow</span>
+                <span class="k">continue</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_validator_ctx</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">get_element</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="sa">f</span><span class="s2">&quot;element </span><span class="si">{</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> not found in design&quot;</span>
+                <span class="k">assert</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_validator_ctx</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">get_element</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="sa">f</span><span class="s2">&quot;element </span><span class="si">{</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> not found in design&quot;</span>
+                <span class="k">assert</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_validator_ctx</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">get_element</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">parameters</span> <span class="o">==</span> \
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">_validator_ctx</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">get_element</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> \
+                    <span class="sa">f</span><span class="s2">&quot;Incorrent symmetry pair </span><span class="si">{</span><span class="n">pair</span><span class="si">}</span><span class="s2"> in subckt </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">_validator_ctx</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">value</span></div></div>
+
+
+<div class="viewcode-block" id="BlockDistance"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.BlockDistance">[docs]</a><span class="k">class</span> <span class="nc">BlockDistance</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    TODO: Replace with Spread</span>
+
+<span class="sd">    .. image:: ../images/HorizontalDistance.PNG</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">abs_distance</span><span class="p">:</span> <span class="nb">int</span></div>
+
+
+<div class="viewcode-block" id="VerticalDistance"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.VerticalDistance">[docs]</a><span class="k">class</span> <span class="nc">VerticalDistance</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    TODO: Replace with Spread</span>
+
+<span class="sd">    .. image:: ../images/VerticalDistance.PNG</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">abs_distance</span><span class="p">:</span> <span class="nb">int</span></div>
+
+
+<div class="viewcode-block" id="HorizontalDistance"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.HorizontalDistance">[docs]</a><span class="k">class</span> <span class="nc">HorizontalDistance</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    TODO: Replace with Spread</span>
+
+<span class="sd">    .. image:: ../images/HorizontalDistance.PNG</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">abs_distance</span><span class="p">:</span> <span class="nb">int</span></div>
+
+
+<div class="viewcode-block" id="GuardRing"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.GuardRing">[docs]</a><span class="k">class</span> <span class="nc">GuardRing</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Adds guard ring for particular hierarchy</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">guard_ring_primitives</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">global_pin</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">block_name</span><span class="p">:</span> <span class="nb">str</span></div>
+
+
+<div class="viewcode-block" id="GroupCaps"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.GroupCaps">[docs]</a><span class="k">class</span> <span class="nc">GroupCaps</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; Common Centroid Cap &#39;&#39;&#39;</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># subcircuit name</span>
+    <span class="n">instances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">unit_cap</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># cap value in fF</span>
+    <span class="n">num_units</span><span class="p">:</span> <span class="n">List</span>
+    <span class="n">dummy</span><span class="p">:</span> <span class="nb">bool</span>  <span class="c1"># whether to fill in dummies</span></div>
+
+
+<div class="viewcode-block" id="NetConst"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.NetConst">[docs]</a><span class="k">class</span> <span class="nc">NetConst</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="n">nets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">shield</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">criticality</span><span class="p">:</span> <span class="nb">int</span></div>
+
+
+<div class="viewcode-block" id="PortLocation"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.PortLocation">[docs]</a><span class="k">class</span> <span class="nc">PortLocation</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;T (top), L (left), C (center), R (right), B (bottom)&#39;&#39;&#39;</span>
+    <span class="n">ports</span><span class="p">:</span> <span class="n">List</span>
+    <span class="n">location</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;TL&#39;</span><span class="p">,</span> <span class="s1">&#39;TC&#39;</span><span class="p">,</span> <span class="s1">&#39;TR&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;RT&#39;</span><span class="p">,</span> <span class="s1">&#39;RC&#39;</span><span class="p">,</span> <span class="s1">&#39;RB&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;BL&#39;</span><span class="p">,</span> <span class="s1">&#39;BC&#39;</span><span class="p">,</span> <span class="s1">&#39;BR&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;LB&#39;</span><span class="p">,</span> <span class="s1">&#39;LC&#39;</span><span class="p">,</span> <span class="s1">&#39;LT&#39;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="SymmetricNets"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.SymmetricNets">[docs]</a><span class="k">class</span> <span class="nc">SymmetricNets</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="n">net1</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">net2</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">pins1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">]</span>
+    <span class="n">pins2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">]</span>
+    <span class="n">direction</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="s1">&#39;V&#39;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="MultiConnection"><a class="viewcode-back" href="../../../notes/const.html#align.schema.constraint.MultiConnection">[docs]</a><span class="k">class</span> <span class="nc">MultiConnection</span><span class="p">(</span><span class="n">SoftConstraint</span><span class="p">):</span>
+    <span class="n">nets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">multiplier</span><span class="p">:</span> <span class="nb">int</span></div>
+
+
+<span class="n">ConstraintType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span>
+    <span class="c1"># ALIGN Internal DSL</span>
+    <span class="n">Order</span><span class="p">,</span> <span class="n">Align</span><span class="p">,</span>
+    <span class="n">Enclose</span><span class="p">,</span> <span class="n">Spread</span><span class="p">,</span>
+    <span class="n">SetBoundingBox</span><span class="p">,</span>
+    <span class="n">AspectRatio</span><span class="p">,</span>
+    <span class="n">Boundary</span><span class="p">,</span>
+    <span class="c1"># Additional User constraints</span>
+    <span class="n">AlignInOrder</span><span class="p">,</span>
+    <span class="c1"># Legacy Align constraints</span>
+    <span class="c1"># (SoftConstraints)</span>
+    <span class="n">CompactPlacement</span><span class="p">,</span>
+    <span class="n">SameTemplate</span><span class="p">,</span>
+    <span class="n">CreateAlias</span><span class="p">,</span>
+    <span class="n">GroupBlocks</span><span class="p">,</span>
+    <span class="n">MatchBlocks</span><span class="p">,</span>
+    <span class="n">DoNotIdentify</span><span class="p">,</span>
+    <span class="n">BlockDistance</span><span class="p">,</span>
+    <span class="n">HorizontalDistance</span><span class="p">,</span>
+    <span class="n">VerticalDistance</span><span class="p">,</span>
+    <span class="n">GuardRing</span><span class="p">,</span>
+    <span class="n">SymmetricBlocks</span><span class="p">,</span>
+    <span class="n">GroupCaps</span><span class="p">,</span>
+    <span class="n">NetConst</span><span class="p">,</span>
+    <span class="n">PortLocation</span><span class="p">,</span>
+    <span class="n">SymmetricNets</span><span class="p">,</span>
+    <span class="n">MultiConnection</span><span class="p">,</span>
+    <span class="c1"># Setup constraints</span>
+    <span class="n">PowerPorts</span><span class="p">,</span>
+    <span class="n">GroundPorts</span><span class="p">,</span>
+    <span class="n">ClockPorts</span><span class="p">,</span>
+    <span class="n">DoNotUseLib</span><span class="p">,</span>
+    <span class="n">IsDigital</span><span class="p">,</span>
+    <span class="n">AutoConstraint</span><span class="p">,</span>
+    <span class="n">AutoGroupCaps</span><span class="p">,</span>
+    <span class="n">FixSourceDrain</span><span class="p">,</span>
+    <span class="n">KeepDummyHierarchies</span><span class="p">,</span>
+    <span class="n">MergeSeriesDevices</span><span class="p">,</span>
+    <span class="n">MergeParallelDevices</span><span class="p">,</span>
+    <span class="n">IdentifyArray</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="ConstraintDB"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.ConstraintDB">[docs]</a><span class="k">class</span> <span class="nc">ConstraintDB</span><span class="p">(</span><span class="n">types</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">ConstraintType</span><span class="p">]):</span>
+
+    <span class="c1">#</span>
+    <span class="c1"># Private attribute affecting class behavior</span>
+    <span class="c1">#</span>
+    <span class="n">_checker</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">PrivateAttr</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">constraint</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">constraint</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;parent is not set&#39;</span>
+        <span class="k">assert</span> <span class="n">constraint</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;parent.parent is not set&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checker</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">constraint</span><span class="p">,</span> <span class="s1">&#39;check&#39;</span><span class="p">):</span>
+            <span class="n">generator</span> <span class="o">=</span> <span class="n">constraint</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_checker</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">generator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">constraint</span><span class="si">}</span><span class="s1">.check() did not return a valid generator&#39;</span><span class="p">)</span>
+            <span class="n">formulae</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">generator</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">formulae</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">constraint</span><span class="si">}</span><span class="s1">.check() yielded an empty list of expressions&#39;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_checker</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_checker</span><span class="o">.</span><span class="n">And</span><span class="p">(</span>
+                        <span class="o">*</span><span class="n">formulae</span>
+                    <span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">formulae</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">formulae</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="n">label</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_checker</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="n">constraint</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="n">checker</span><span class="o">.</span><span class="n">CheckerError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Checker raised error:</span><span class="se">\n</span><span class="s1"> </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checker</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="n">constraint</span><span class="p">)</span> <span class="ow">in</span> <span class="n">e</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> <span class="s2">&quot;Something went terribly wrong. Current constraint not in unsat core&quot;</span>
+                <span class="n">core</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">json</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__root__</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checker</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">in</span> <span class="n">e</span><span class="o">.</span><span class="n">labels</span> <span class="ow">and</span> <span class="n">x</span> <span class="o">!=</span> <span class="n">constraint</span><span class="p">]</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Failed to add constraint </span><span class="si">{</span><span class="n">constraint</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;   due to conflict with </span><span class="si">{</span><span class="n">core</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">checker</span><span class="o">.</span><span class="n">CheckerError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Failed to add constraint </span><span class="si">{</span><span class="n">constraint</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="si">}</span><span class="s1"> due to conflict with </span><span class="si">{</span><span class="n">core</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ConstraintDB.append"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.ConstraintDB.append">[docs]</a>    <span class="nd">@types</span><span class="o">.</span><span class="n">validate_arguments</span>
+    <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">constraint</span><span class="p">:</span> <span class="n">ConstraintType</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">constraint</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__root__</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="ConstraintDB.remove"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.ConstraintDB.remove">[docs]</a>    <span class="nd">@types</span><span class="o">.</span><span class="n">validate_arguments</span>
+    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">constraint</span><span class="p">:</span> <span class="n">ConstraintType</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">constraint</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">check</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_checker</span> <span class="o">=</span> <span class="n">checker</span><span class="o">.</span><span class="n">Z3Checker</span><span class="p">()</span>
+        <span class="c1"># Constraints may need to access parent scope for subcircuit information</span>
+        <span class="c1"># To ensure parent is set appropriately, force users to use append</span>
+        <span class="k">if</span> <span class="s1">&#39;__root__&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;__root__&#39;</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;__root__&#39;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">with</span> <span class="n">set_context</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;constraint&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;GroupBlocks&#39;</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;first reading groupblock data </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;constraint&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;GroupBlocks&#39;</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;reading rest data </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ConstraintDB.checkpoint"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.ConstraintDB.checkpoint">[docs]</a>    <span class="k">def</span> <span class="nf">checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checker</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_checker</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_revert</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checker</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_checker</span><span class="o">.</span><span class="n">revert</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_revert</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="expand_user_constraints"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.constraint.expand_user_constraints">[docs]</a><span class="k">def</span> <span class="nf">expand_user_constraints</span><span class="p">(</span><span class="n">const_list</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="n">const_list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="s1">&#39;yield_constraints&#39;</span><span class="p">):</span>
+            <span class="k">with</span> <span class="n">types</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">parent</span><span class="p">):</span>
+                <span class="k">yield from</span> <span class="n">const</span><span class="o">.</span><span class="n">yield_constraints</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">const</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, ALIGN team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

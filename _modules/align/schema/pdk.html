@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>align.schema.pdk &mdash; ALIGN</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html"><img src="../../../_static/LOGO.PNG" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Notes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/flow.html">ALIGN: flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/flow.html#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/flow.html#outputs">Outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-0-check-prerequisites">Step 0: Check prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-1-clone-the-align-source-code-to-your-local-environment">Step 1: Clone the ALIGN source code to your local environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-2-create-a-python-virtualenv">Step 2: Create a Python virtualenv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-3a-install-align-as-a-user">Step 3a: Install ALIGN as a USER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-3b-install-align-as-a-developer">Step 3b: Install ALIGN as a DEVELOPER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-4-run-align">Step 4: Run ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-5-view-layout">Step 5: View layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/introduction.html">Introduction by Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/viewer.html">Layout viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/viewer.html#klayout-viewer">KLayout viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/viewer.html#align-viewer">ALIGN viewer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/debug.html">Debug</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#reinstalling-align">Reinstalling ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/const.html">Constraints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/const.html#constraint-options">Constraint options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/const.html#example-constraints">Example constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/upcoming.html">Upcoming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/upcoming.html#how-to-add-your-own-pdk">How to add your own pdk</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Datasets:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/database.html">Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#sized-netlists">Sized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#unsized-netlists">Unsized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#generalized-testbenches">Generalized testbenches</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.html">align package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.gui.html">align.gui package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pdk.html">align.pdk package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.primitive.html">align.primitive package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.utils.html">align.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.primitive.html">align.primitive package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.primitive.default.html">align.primitive.default package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pdk.html">align.pdk package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.primitive.default.html">align.primitive.default package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.utils.html">align.utils package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.gui.html">align.gui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ALIGN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>align.schema.pdk</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for align.schema.pdk</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">validator</span><span class="p">,</span> <span class="n">ValidationError</span><span class="p">,</span> <span class="n">Field</span>
+<span class="kn">from</span> <span class="nn">.types</span> <span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+
+
+<div class="viewcode-block" id="ParasiticValues"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.pdk.ParasiticValues">[docs]</a><span class="k">class</span> <span class="nc">ParasiticValues</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">mean</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="nb">min</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="nb">max</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="Layer"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.pdk.Layer">[docs]</a><span class="k">class</span> <span class="nc">Layer</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">gds_layer_number</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">gds_data_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;draw&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">})</span></div>
+
+
+<div class="viewcode-block" id="LayerMetal"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.pdk.LayerMetal">[docs]</a><span class="k">class</span> <span class="nc">LayerMetal</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+
+    <span class="n">direction</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">]</span>
+
+    <span class="n">min_length</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">max_length</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+    <span class="n">min_end_to_end</span><span class="p">:</span> <span class="nb">int</span>
+
+    <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">width</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span>
+    <span class="n">space</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span>
+    <span class="n">color</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+
+    <span class="n">stop_pitch</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">stop_point</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">stop_offset</span><span class="p">:</span> <span class="nb">int</span>
+
+    <span class="n">unit_c</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ParasiticValues</span><span class="p">]]</span>
+    <span class="n">unit_r</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ParasiticValues</span><span class="p">]]</span>
+    <span class="n">unit_cc</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ParasiticValues</span><span class="p">]]</span>
+
+    <span class="nd">@validator</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_validate_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">v</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;Metal layer name </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s1"> should start with M&#39;</span>
+        <span class="k">return</span> <span class="n">v</span>
+
+    <span class="nd">@validator</span><span class="p">(</span><span class="s1">&#39;min_length&#39;</span><span class="p">,</span> <span class="s1">&#39;min_end_to_end&#39;</span><span class="p">,</span> <span class="s1">&#39;width&#39;</span><span class="p">,</span> <span class="s1">&#39;space&#39;</span><span class="p">,</span> <span class="s1">&#39;stop_pitch&#39;</span><span class="p">,</span> <span class="s1">&#39;stop_point&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_validate_positive</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">List</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="nb">min</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Values </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s1"> should be positive&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">v</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Value </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s1"> should be positive&#39;</span>
+        <span class="k">return</span> <span class="n">v</span>
+
+    <span class="nd">@validator</span><span class="p">(</span><span class="s1">&#39;stop_offset&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_validate_non_negative</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">List</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="nb">min</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Values </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s1"> should be non-negative&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">v</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Value </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s1"> should be positive&#39;</span>
+        <span class="k">return</span> <span class="n">v</span>
+
+    <span class="nd">@validator</span><span class="p">(</span><span class="s1">&#39;space&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_validate_width</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">List</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;width&#39;</span><span class="p">]),</span> <span class="sa">f</span><span class="s1">&#39;width and space length should match&#39;</span>
+        <span class="k">return</span> <span class="n">v</span></div>
+
+
+<div class="viewcode-block" id="LayerVia"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.pdk.LayerVia">[docs]</a><span class="k">class</span> <span class="nc">LayerVia</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LayerVia.Config"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.pdk.LayerVia.Config">[docs]</a>    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+        <span class="n">allow_mutation</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+    <span class="n">stack</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+
+    <span class="n">width_x</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">width_y</span><span class="p">:</span> <span class="nb">int</span>
+
+    <span class="n">space_x</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">space_y</span><span class="p">:</span> <span class="nb">int</span>
+
+    <span class="n">layer_l_width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">layer_l_enc_x</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">layer_l_enc_y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">layer_h_width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">layer_h_enc_x</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">layer_h_enc_y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">unit_r</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ParasiticValues</span><span class="p">]]</span>
+
+    <span class="nd">@validator</span><span class="p">(</span><span class="s1">&#39;stack&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_validate_stack</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="n">v</span></div>
+
+
+<div class="viewcode-block" id="PDK"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.pdk.PDK">[docs]</a><span class="k">class</span> <span class="nc">PDK</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+
+<div class="viewcode-block" id="PDK.Config"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.pdk.PDK.Config">[docs]</a>    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+        <span class="n">allow_mutation</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">layers</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">LayerMetal</span><span class="p">,</span> <span class="n">LayerVia</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">{})</span>
+    <span class="n">scale_factor</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="nd">@validator</span><span class="p">(</span><span class="s1">&#39;layers&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_validate_via</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">layers</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">via</span> <span class="ow">in</span> <span class="n">layers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">via</span><span class="p">,</span> <span class="n">LayerVia</span><span class="p">):</span>
+                <span class="n">ml</span><span class="p">,</span> <span class="n">mh</span> <span class="o">=</span> <span class="n">via</span><span class="o">.</span><span class="n">stack</span>
+                <span class="k">assert</span> <span class="n">ml</span> <span class="ow">in</span> <span class="n">layers</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Lower layer </span><span class="si">{</span><span class="n">ml</span><span class="si">}</span><span class="s1"> not found for </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">layers</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="k">assert</span> <span class="n">mh</span> <span class="ow">in</span> <span class="n">layers</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Higher layer </span><span class="si">{</span><span class="n">mh</span><span class="si">}</span><span class="s1"> not found for </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="k">assert</span> <span class="n">layers</span><span class="p">[</span><span class="n">ml</span><span class="p">]</span><span class="o">.</span><span class="n">direction</span> <span class="o">!=</span> <span class="n">layers</span><span class="p">[</span><span class="n">mh</span><span class="p">]</span><span class="o">.</span><span class="n">direction</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Lower and higher layer directions are not orthogonal&#39;</span>
+
+                <span class="k">if</span> <span class="n">via</span><span class="o">.</span><span class="n">layer_l_width</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">via</span><span class="o">.</span><span class="n">layer_l_width</span> <span class="o">=</span> <span class="n">layers</span><span class="p">[</span><span class="n">ml</span><span class="p">]</span><span class="o">.</span><span class="n">width</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">via</span><span class="o">.</span><span class="n">layer_h_width</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">via</span><span class="o">.</span><span class="n">layer_h_width</span> <span class="o">=</span> <span class="n">layers</span><span class="p">[</span><span class="n">mh</span><span class="p">]</span><span class="o">.</span><span class="n">width</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">layers</span>
+
+<div class="viewcode-block" id="PDK.add_layer"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.pdk.PDK.add_layer">[docs]</a>    <span class="k">def</span> <span class="nf">add_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">layer</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">layer</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">layer</span></div>
+
+<div class="viewcode-block" id="PDK.generate_adr_collaterals"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.pdk.PDK.generate_adr_collaterals">[docs]</a>    <span class="k">def</span> <span class="nf">generate_adr_collaterals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">write_path</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span> <span class="n">x_pitch</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">x_grid</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y_pitch</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y_grid</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">region</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">write_path</span><span class="o">/</span><span class="s2">&quot;adr_forbidden_patterns.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;wt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="c1"># TODO: Write rules for horizontal and vertical via spacing</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">write_path</span><span class="o">/</span><span class="s2">&quot;adr_options.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;wt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Option name=gr_region_width_in_poly_pitches value=</span><span class="si">{</span><span class="n">x_grid</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Option name=gr_region_height_in_diff_pitches value=</span><span class="si">{</span><span class="n">y_grid</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">write_path</span><span class="o">/</span><span class="s2">&quot;adr_design_rules.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;wt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">LayerMetal</span><span class="p">):</span>
+                    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Rule name=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">_minete type=minete value=</span><span class="si">{</span><span class="n">layer</span><span class="o">.</span><span class="n">min_end_to_end</span><span class="si">}</span><span class="s1"> layer=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Rule name=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">_minlength type=minlength value=</span><span class="si">{</span><span class="n">layer</span><span class="o">.</span><span class="n">min_length</span><span class="si">}</span><span class="s1"> layer=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">write_path</span><span class="o">/</span><span class="s2">&quot;adr_metal_templates.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;wt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">LayerMetal</span><span class="p">):</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;MetalTemplate layer=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> name=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">_template_0&#39;</span>
+                    <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39; widths=</span><span class="si">{</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">layer</span><span class="o">.</span><span class="n">width</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+                    <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39; spaces=</span><span class="si">{</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">layer</span><span class="o">.</span><span class="n">space</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+                    <span class="k">if</span> <span class="n">layer</span><span class="o">.</span><span class="n">color</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">color</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39; colors=</span><span class="si">{</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">layer</span><span class="o">.</span><span class="n">color</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+                    <span class="n">line</span> <span class="o">+=</span> <span class="s2">&quot; stops=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="n">layer</span><span class="o">.</span><span class="n">stop_pitch</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">layer</span><span class="o">.</span><span class="n">stop_point</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">layer</span><span class="o">.</span><span class="n">stop_point</span><span class="p">]))</span>
+                    <span class="n">line</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+                    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+        <span class="c1"># Single metal template instance. Generalize to multiple as needed in the future.</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">write_path</span><span class="o">/</span><span class="s2">&quot;adr_metal_templates_instances.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;wt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">LayerMetal</span><span class="p">):</span>
+                    <span class="n">line</span>  <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;MetalTemplateInstance template=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">_template_0&#39;</span>
+                    <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39; pgdoffset_abs=</span><span class="si">{</span><span class="n">layer</span><span class="o">.</span><span class="n">offset</span><span class="si">}</span><span class="s1">&#39;</span>
+                    <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39; ogdoffset_abs=</span><span class="si">{</span><span class="n">layer</span><span class="o">.</span><span class="n">stop_point</span><span class="si">}</span><span class="s1">&#39;</span>
+                    <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39; region=</span><span class="si">{</span><span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">region</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+                    <span class="n">line</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+                    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">_via_string</span><span class="p">(</span><span class="n">via</span><span class="p">:</span> <span class="n">LayerVia</span><span class="p">):</span>
+
+            <span class="n">via_str</span> <span class="o">=</span>  <span class="sa">f</span><span class="s1">&#39;Generator name=</span><span class="si">{</span><span class="n">via</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">via</span><span class="o">.</span><span class="n">width_x</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">via</span><span class="o">.</span><span class="n">width_y</span><span class="si">}</span><span class="s1"> </span><span class="se">{{</span><span class="s1"> </span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="n">via_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  Layer1 value=</span><span class="si">{</span><span class="n">via</span><span class="o">.</span><span class="n">stack</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1"> </span><span class="se">{{\n</span><span class="s1">&#39;</span>
+            <span class="n">via_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;    x_coverage value=</span><span class="si">{</span><span class="n">via</span><span class="o">.</span><span class="n">layer_l_enc_x</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="n">via_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;    y_coverage value=</span><span class="si">{</span><span class="n">via</span><span class="o">.</span><span class="n">layer_l_enc_y</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="n">via_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;    widths value=</span><span class="si">{</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">via</span><span class="o">.</span><span class="n">layer_l_width</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="n">via_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  </span><span class="se">}}\n</span><span class="s1">&#39;</span>
+            <span class="n">via_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  Layer2 value=</span><span class="si">{</span><span class="n">via</span><span class="o">.</span><span class="n">stack</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1"> </span><span class="se">{{\n</span><span class="s1">&#39;</span>
+            <span class="n">via_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;    x_coverage value=</span><span class="si">{</span><span class="n">via</span><span class="o">.</span><span class="n">layer_h_enc_x</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="n">via_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;    y_coverage value=</span><span class="si">{</span><span class="n">via</span><span class="o">.</span><span class="n">layer_h_enc_y</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="n">via_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;    widths value=</span><span class="si">{</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">via</span><span class="o">.</span><span class="n">layer_h_width</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="n">via_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  </span><span class="se">}}\n</span><span class="s1">&#39;</span>
+            <span class="n">via_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  CutWidth value=</span><span class="si">{</span><span class="n">via</span><span class="o">.</span><span class="n">width_x</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="n">via_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  CutHeight value=</span><span class="si">{</span><span class="n">via</span><span class="o">.</span><span class="n">width_y</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="n">via_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  cutlayer value=</span><span class="si">{</span><span class="n">via</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="n">via_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="se">}}\n</span><span class="s1">&#39;</span>
+
+            <span class="k">return</span> <span class="n">via_str</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">write_path</span><span class="o">/</span><span class="s2">&quot;adr_via_generators.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;wt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">LayerVia</span><span class="p">):</span>
+                    <span class="n">via_str</span> <span class="o">=</span> <span class="n">_via_string</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
+                    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">via_str</span><span class="p">)</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">write_path</span><span class="o">/</span><span class="s2">&quot;adr_layers.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;wt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+
+            <span class="c1"># Dummy layer required for global grid</span>
+            <span class="n">line</span>  <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Layer name=diffusion pgd=hor level=0 </span><span class="se">{{\n</span><span class="s1">&#39;</span>
+            <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  Type value=diffusion</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  Technology pitch=</span><span class="si">{</span><span class="n">y_pitch</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="se">}}\n</span><span class="s1">&#39;</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+            <span class="c1"># Dummy layer required for global grid</span>
+            <span class="n">line</span>  <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Layer name=wirepoly pgd=ver level=1 </span><span class="se">{{\n</span><span class="s1">&#39;</span>
+            <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  Type value=wire</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  Type value=poly</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  Technology pitch=</span><span class="si">{</span><span class="n">x_pitch</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="se">}}\n</span><span class="s1">&#39;</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+            <span class="c1"># identify electrical connectivity</span>
+            <span class="n">connected_layers</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">LayerVia</span><span class="p">):</span>
+                    <span class="n">ml</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">stack</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">mh</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">stack</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">connected_layers</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">ml</span><span class="p">,</span> <span class="n">mh</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">ml</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">connected_layers</span><span class="p">:</span>
+                        <span class="n">connected_layers</span><span class="p">[</span><span class="n">ml</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">connected_layers</span><span class="p">[</span><span class="n">ml</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">mh</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">connected_layers</span><span class="p">:</span>
+                        <span class="n">connected_layers</span><span class="p">[</span><span class="n">mh</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">connected_layers</span><span class="p">[</span><span class="n">mh</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+            <span class="n">level</span> <span class="o">=</span> <span class="mi">2</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">99</span><span class="p">):</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;M</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
+                    <span class="n">layer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+                    <span class="n">pgd</span> <span class="o">=</span> <span class="s1">&#39;ver&#39;</span> <span class="k">if</span> <span class="n">layer</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;v&#39;</span> <span class="k">else</span> <span class="s1">&#39;hor&#39;</span>
+
+                    <span class="n">line</span>  <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Layer name=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> pgd=</span><span class="si">{</span><span class="n">pgd</span><span class="si">}</span><span class="s1"> level=</span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s1"> </span><span class="se">{{\n</span><span class="s1">&#39;</span>
+                    <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  Type value=wire</span><span class="se">\n</span><span class="s1">&#39;</span>
+                    <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  Type value=metal</span><span class="se">\n</span><span class="s1">&#39;</span>
+                    <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">connected_layers</span><span class="p">[</span><span class="n">name</span><span class="p">]:</span>
+                        <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  ElectricallyConnected layer=</span><span class="si">{</span><span class="n">l</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+                    <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="se">}}\n</span><span class="s1">&#39;</span>
+                    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="n">level</span> <span class="o">+=</span><span class="mi">1</span>
+
+                <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;V</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
+                    <span class="n">line</span>  <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Layer name=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> level=</span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s1"> </span><span class="se">{{\n</span><span class="s1">&#39;</span>
+                    <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  Type value=via</span><span class="se">\n</span><span class="s1">&#39;</span>
+                    <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">connected_layers</span><span class="p">[</span><span class="n">name</span><span class="p">]:</span>
+                        <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  ElectricallyConnected layer=</span><span class="si">{</span><span class="n">l</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+                    <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="se">}}\n</span><span class="s1">&#39;</span>
+                    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="n">level</span> <span class="o">+=</span><span class="mi">1</span>
+
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, ALIGN team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

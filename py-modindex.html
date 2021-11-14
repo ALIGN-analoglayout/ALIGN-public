@@ -1,44 +1,150 @@
-
 <!DOCTYPE html>
-
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Python Module Index &#8212; ALIGN</title>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Python Module Index &mdash; ALIGN</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
-    
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
-    
+      <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
  
 
 
-  </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="#" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">ALIGN</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Python Module Index</a></li> 
-      </ul>
-    </div>  
+</head>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html"><img src="_static/LOGO.PNG" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Notes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="notes/flow.html">ALIGN: flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notes/flow.html#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/flow.html#outputs">Outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="notes/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notes/installation.html#step-0-check-prerequisites">Step 0: Check prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/installation.html#step-1-clone-the-align-source-code-to-your-local-environment">Step 1: Clone the ALIGN source code to your local environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/installation.html#step-2-create-a-python-virtualenv">Step 2: Create a Python virtualenv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/installation.html#step-3a-install-align-as-a-user">Step 3a: Install ALIGN as a USER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/installation.html#step-3b-install-align-as-a-developer">Step 3b: Install ALIGN as a DEVELOPER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/installation.html#step-4-run-align">Step 4: Run ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/installation.html#step-5-view-layout">Step 5: View layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="notes/introduction.html">Introduction by Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes/viewer.html">Layout viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notes/viewer.html#klayout-viewer">KLayout viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/viewer.html#align-viewer">ALIGN viewer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="notes/debug.html">Debug</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notes/debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/debug.html#reinstalling-align">Reinstalling ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/debug.html#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="notes/const.html">Constraints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notes/const.html#constraint-options">Constraint options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/const.html#example-constraints">Example constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="notes/upcoming.html">Upcoming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notes/upcoming.html#how-to-add-your-own-pdk">How to add your own pdk</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Datasets:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="notes/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes/database.html">Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notes/database.html#sized-netlists">Sized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/database.html#unsized-netlists">Unsized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes/database.html#generalized-testbenches">Generalized testbenches</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules/align.html">align package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/align.gui.html">align.gui package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/align.pdk.html">align.pdk package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/align.primitive.html">align.primitive package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/align.utils.html">align.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/align.primitive.html">align.primitive package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="modules/align.primitive.default.html">align.primitive.default package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/align.pdk.html">align.pdk package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/align.primitive.default.html">align.primitive.default package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/align.utils.html">align.utils package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/align.gui.html">align.gui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ALIGN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Python Module Index</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
 
    <h1>Python Module Index</h1>
 
@@ -54,355 +160,456 @@
        <td><img src="_static/minus.png" class="toggler"
               id="toggle-1" style="display: none" alt="-" /></td>
        <td>
-       <a href="align.html#module-align"><code class="xref">align</code></a></td><td>
+       <a href="modules/align.html#module-align"><code class="xref">align</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.cell_fabric.html#module-align.cell_fabric"><code class="xref">align.cell_fabric</code></a></td><td>
+       <a href="modules/align.cell_fabric.html#module-align.cell_fabric"><code class="xref">align.cell_fabric</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.cell_fabric.html#module-align.cell_fabric.canvas"><code class="xref">align.cell_fabric.canvas</code></a></td><td>
+       <a href="modules/align.cell_fabric.html#module-align.cell_fabric.canvas"><code class="xref">align.cell_fabric.canvas</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.cell_fabric.html#module-align.cell_fabric.drc"><code class="xref">align.cell_fabric.drc</code></a></td><td>
+       <a href="modules/align.cell_fabric.html#module-align.cell_fabric.drc"><code class="xref">align.cell_fabric.drc</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.cell_fabric.html#module-align.cell_fabric.gen_gds_json"><code class="xref">align.cell_fabric.gen_gds_json</code></a></td><td>
+       <a href="modules/align.cell_fabric.html#module-align.cell_fabric.gen_gds_json"><code class="xref">align.cell_fabric.gen_gds_json</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.cell_fabric.html#module-align.cell_fabric.gen_lef"><code class="xref">align.cell_fabric.gen_lef</code></a></td><td>
+       <a href="modules/align.cell_fabric.html#module-align.cell_fabric.gen_lef"><code class="xref">align.cell_fabric.gen_lef</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.cell_fabric.html#module-align.cell_fabric.generators"><code class="xref">align.cell_fabric.generators</code></a></td><td>
+       <a href="modules/align.cell_fabric.html#module-align.cell_fabric.generators"><code class="xref">align.cell_fabric.generators</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.cell_fabric.html#module-align.cell_fabric.grid"><code class="xref">align.cell_fabric.grid</code></a></td><td>
+       <a href="modules/align.cell_fabric.html#module-align.cell_fabric.grid"><code class="xref">align.cell_fabric.grid</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.cell_fabric.html#module-align.cell_fabric.lef_parser"><code class="xref">align.cell_fabric.lef_parser</code></a></td><td>
+       <a href="modules/align.cell_fabric.html#module-align.cell_fabric.lef_parser"><code class="xref">align.cell_fabric.lef_parser</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.cell_fabric.html#module-align.cell_fabric.lef_to_json"><code class="xref">align.cell_fabric.lef_to_json</code></a></td><td>
+       <a href="modules/align.cell_fabric.html#module-align.cell_fabric.lef_to_json"><code class="xref">align.cell_fabric.lef_to_json</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.cell_fabric.html#module-align.cell_fabric.pdk"><code class="xref">align.cell_fabric.pdk</code></a></td><td>
+       <a href="modules/align.cell_fabric.html#module-align.cell_fabric.pdk"><code class="xref">align.cell_fabric.pdk</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.cell_fabric.html#module-align.cell_fabric.pex"><code class="xref">align.cell_fabric.pex</code></a></td><td>
+       <a href="modules/align.cell_fabric.html#module-align.cell_fabric.pex"><code class="xref">align.cell_fabric.pex</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.cell_fabric.html#module-align.cell_fabric.positive_coord"><code class="xref">align.cell_fabric.positive_coord</code></a></td><td>
+       <a href="modules/align.cell_fabric.html#module-align.cell_fabric.positive_coord"><code class="xref">align.cell_fabric.positive_coord</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.cell_fabric.html#module-align.cell_fabric.postprocess"><code class="xref">align.cell_fabric.postprocess</code></a></td><td>
+       <a href="modules/align.cell_fabric.html#module-align.cell_fabric.postprocess"><code class="xref">align.cell_fabric.postprocess</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.cell_fabric.html#module-align.cell_fabric.remove_duplicates"><code class="xref">align.cell_fabric.remove_duplicates</code></a></td><td>
+       <a href="modules/align.cell_fabric.html#module-align.cell_fabric.remove_duplicates"><code class="xref">align.cell_fabric.remove_duplicates</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.cell_fabric.html#module-align.cell_fabric.routing_collateral"><code class="xref">align.cell_fabric.routing_collateral</code></a></td><td>
+       <a href="modules/align.cell_fabric.html#module-align.cell_fabric.routing_collateral"><code class="xref">align.cell_fabric.routing_collateral</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.cell_fabric.html#module-align.cell_fabric.transformation"><code class="xref">align.cell_fabric.transformation</code></a></td><td>
+       <a href="modules/align.cell_fabric.html#module-align.cell_fabric.transformation"><code class="xref">align.cell_fabric.transformation</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.circuit.html#module-align.circuit"><code class="xref">align.circuit</code></a></td><td>
+       <a href="modules/align.html#module-align.cmdline"><code class="xref">align.cmdline</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.circuit.html#module-align.circuit.core"><code class="xref">align.circuit.core</code></a></td><td>
+       <a href="modules/align.compiler.html#module-align.compiler"><code class="xref">align.compiler</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.circuit.html#module-align.circuit.elements"><code class="xref">align.circuit.elements</code></a></td><td>
+       <a href="modules/align.compiler.html#module-align.compiler.compiler"><code class="xref">align.compiler.compiler</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.circuit.html#module-align.circuit.gen_dot"><code class="xref">align.circuit.gen_dot</code></a></td><td>
+       <a href="modules/align.compiler.html#module-align.compiler.create_array_hierarchy"><code class="xref">align.compiler.create_array_hierarchy</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.circuit.html#module-align.circuit.parser"><code class="xref">align.circuit.parser</code></a></td><td>
+       <a href="modules/align.compiler.html#module-align.compiler.create_database"><code class="xref">align.compiler.create_database</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.html#module-align.cmdline"><code class="xref">align.cmdline</code></a></td><td>
+       <a href="modules/align.compiler.html#module-align.compiler.find_constraint"><code class="xref">align.compiler.find_constraint</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.compiler.html#module-align.compiler"><code class="xref">align.compiler</code></a></td><td>
+       <a href="modules/align.compiler.html#module-align.compiler.match_graph"><code class="xref">align.compiler.match_graph</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.compiler.html#module-align.compiler.basic_element"><code class="xref">align.compiler.basic_element</code></a></td><td>
+       <a href="modules/align.compiler.html#module-align.compiler.preprocess"><code class="xref">align.compiler.preprocess</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.compiler.html#module-align.compiler.common_centroid_cap_constraint"><code class="xref">align.compiler.common_centroid_cap_constraint</code></a></td><td>
+       <a href="modules/align.compiler.html#module-align.compiler.user_const"><code class="xref">align.compiler.user_const</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.compiler.html#module-align.compiler.compiler"><code class="xref">align.compiler.compiler</code></a></td><td>
+       <a href="modules/align.compiler.html#module-align.compiler.util"><code class="xref">align.compiler.util</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.compiler.html#module-align.compiler.create_array_hierarchy"><code class="xref">align.compiler.create_array_hierarchy</code></a></td><td>
+       <a href="modules/align.compiler.html#module-align.compiler.write_verilog_lef"><code class="xref">align.compiler.write_verilog_lef</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.compiler.html#module-align.compiler.create_database"><code class="xref">align.compiler.create_database</code></a></td><td>
+       <a href="modules/align.gdsconv.html#module-align.gdsconv"><code class="xref">align.gdsconv</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.compiler.html#module-align.compiler.match_graph"><code class="xref">align.compiler.match_graph</code></a></td><td>
+       <a href="modules/align.gdsconv.html#module-align.gdsconv.gds2json"><code class="xref">align.gdsconv.gds2json</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.compiler.html#module-align.compiler.merge_nodes"><code class="xref">align.compiler.merge_nodes</code></a></td><td>
+       <a href="modules/align.gdsconv.html#module-align.gdsconv.gds2prettyjson"><code class="xref">align.gdsconv.gds2prettyjson</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.compiler.html#module-align.compiler.preprocess"><code class="xref">align.compiler.preprocess</code></a></td><td>
+       <a href="modules/align.gdsconv.html#module-align.gdsconv.json2gds"><code class="xref">align.gdsconv.json2gds</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.compiler.html#module-align.compiler.read_lef"><code class="xref">align.compiler.read_lef</code></a></td><td>
+       <a href="modules/align.gdsconv.html#module-align.gdsconv.json2txt"><code class="xref">align.gdsconv.json2txt</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.compiler.html#module-align.compiler.read_netlist"><code class="xref">align.compiler.read_netlist</code></a></td><td>
+       <a href="modules/align.gdsconv.html#module-align.gdsconv.txt2json"><code class="xref">align.gdsconv.txt2json</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.compiler.html#module-align.compiler.read_setup"><code class="xref">align.compiler.read_setup</code></a></td><td>
+       <a href="modules/align.gdsconv.html#module-align.gdsconv.txt2prettyjson"><code class="xref">align.gdsconv.txt2prettyjson</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.compiler.html#module-align.compiler.user_const"><code class="xref">align.compiler.user_const</code></a></td><td>
+       <a href="modules/align.gui.html#module-align.gui"><code class="xref">align.gui</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.compiler.html#module-align.compiler.util"><code class="xref">align.compiler.util</code></a></td><td>
+       <a href="modules/align.gui.html#module-align.gui.mockup"><code class="xref">align.gui.mockup</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.compiler.html#module-align.compiler.write_constraint"><code class="xref">align.compiler.write_constraint</code></a></td><td>
+       <a href="modules/align.html#module-align.main"><code class="xref">align.main</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.compiler.html#module-align.compiler.write_verilog_lef"><code class="xref">align.compiler.write_verilog_lef</code></a></td><td>
+       <a href="modules/align.pdk.html#module-align.pdk"><code class="xref">align.pdk</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.gdsconv.html#module-align.gdsconv"><code class="xref">align.gdsconv</code></a></td><td>
+       <a href="modules/align.pdk.finfet.html#module-align.pdk.finfet"><code class="xref">align.pdk.finfet</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.gdsconv.html#module-align.gdsconv.gds2json"><code class="xref">align.gdsconv.gds2json</code></a></td><td>
+       <a href="modules/align.pdk.finfet.html#module-align.pdk.finfet.canvas"><code class="xref">align.pdk.finfet.canvas</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.gdsconv.html#module-align.gdsconv.gds2prettyjson"><code class="xref">align.gdsconv.gds2prettyjson</code></a></td><td>
+       <a href="modules/align.pdk.finfet.html#module-align.pdk.finfet.digital"><code class="xref">align.pdk.finfet.digital</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.gdsconv.html#module-align.gdsconv.json2gds"><code class="xref">align.gdsconv.json2gds</code></a></td><td>
+       <a href="modules/align.pdk.finfet.html#module-align.pdk.finfet.generic_transistor"><code class="xref">align.pdk.finfet.generic_transistor</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.gdsconv.html#module-align.gdsconv.json2txt"><code class="xref">align.gdsconv.json2txt</code></a></td><td>
+       <a href="modules/align.pdk.finfet.html#module-align.pdk.finfet.resistor"><code class="xref">align.pdk.finfet.resistor</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.gdsconv.html#module-align.gdsconv.txt2json"><code class="xref">align.gdsconv.txt2json</code></a></td><td>
+       <a href="modules/align.pdk.finfet.html#module-align.pdk.finfet.transistor"><code class="xref">align.pdk.finfet.transistor</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.gdsconv.html#module-align.gdsconv.txt2prettyjson"><code class="xref">align.gdsconv.txt2prettyjson</code></a></td><td>
+       <a href="modules/align.pdk.finfet.html#module-align.pdk.finfet.transistor_array"><code class="xref">align.pdk.finfet.transistor_array</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.html#module-align.main"><code class="xref">align.main</code></a></td><td>
+       <a href="modules/align.html#module-align.PnR"><code class="xref">align.PnR</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.pnr.html#module-align.pnr"><code class="xref">align.pnr</code></a></td><td>
+       <a href="modules/align.pnr.html#module-align.pnr"><code class="xref">align.pnr</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.pnr.html#module-align.pnr.checkers"><code class="xref">align.pnr.checkers</code></a></td><td>
+       <a href="modules/align.pnr.html#module-align.pnr.build_pnr_model"><code class="xref">align.pnr.build_pnr_model</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.pnr.html#module-align.pnr.db"><code class="xref">align.pnr.db</code></a></td><td>
+       <a href="modules/align.pnr.html#module-align.pnr.checker"><code class="xref">align.pnr.checker</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.pnr.html#module-align.pnr.main"><code class="xref">align.pnr.main</code></a></td><td>
+       <a href="modules/align.pnr.html#module-align.pnr.checkers"><code class="xref">align.pnr.checkers</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.primitive.html#module-align.primitive"><code class="xref">align.primitive</code></a></td><td>
+       <a href="modules/align.pnr.html#module-align.pnr.cmdline"><code class="xref">align.pnr.cmdline</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.primitive.default.html#module-align.primitive.default"><code class="xref">align.primitive.default</code></a></td><td>
+       <a href="modules/align.pnr.html#module-align.pnr.hpwl"><code class="xref">align.pnr.hpwl</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.primitive.default.html#module-align.primitive.default.canvas"><code class="xref">align.primitive.default.canvas</code></a></td><td>
+       <a href="modules/align.pnr.html#module-align.pnr.main"><code class="xref">align.pnr.main</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.primitive.default.html#module-align.primitive.default.cap"><code class="xref">align.primitive.default.cap</code></a></td><td>
+       <a href="modules/align.pnr.html#module-align.pnr.render_placement"><code class="xref">align.pnr.render_placement</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.primitive.default.html#module-align.primitive.default.mos"><code class="xref">align.primitive.default.mos</code></a></td><td>
+       <a href="modules/align.pnr.html#module-align.pnr.toplevel"><code class="xref">align.pnr.toplevel</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.primitive.default.html#module-align.primitive.default.res"><code class="xref">align.primitive.default.res</code></a></td><td>
+       <a href="modules/align.pnr.html#module-align.pnr.write_constraint"><code class="xref">align.pnr.write_constraint</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.primitive.default.html#module-align.primitive.default.via"><code class="xref">align.primitive.default.via</code></a></td><td>
+       <a href="modules/align.primitive.html#module-align.primitive"><code class="xref">align.primitive</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.primitive.html#module-align.primitive.main"><code class="xref">align.primitive.main</code></a></td><td>
+       <a href="modules/align.primitive.default.html#module-align.primitive.default"><code class="xref">align.primitive.default</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.utils.html#module-align.utils"><code class="xref">align.utils</code></a></td><td>
+       <a href="modules/align.primitive.default.html#module-align.primitive.default.canvas"><code class="xref">align.primitive.default.canvas</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.utils.html#module-align.utils.gds2png"><code class="xref">align.utils.gds2png</code></a></td><td>
+       <a href="modules/align.primitive.default.html#module-align.primitive.default.cap"><code class="xref">align.primitive.default.cap</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="align.utils.html#module-align.utils.logging"><code class="xref">align.utils.logging</code></a></td><td>
+       <a href="modules/align.primitive.default.html#module-align.primitive.default.guard_ring"><code class="xref">align.primitive.default.guard_ring</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="modules/align.primitive.default.html#module-align.primitive.default.mos"><code class="xref">align.primitive.default.mos</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="modules/align.primitive.default.html#module-align.primitive.default.res"><code class="xref">align.primitive.default.res</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="modules/align.primitive.default.html#module-align.primitive.default.via"><code class="xref">align.primitive.default.via</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="modules/align.primitive.html#module-align.primitive.main"><code class="xref">align.primitive.main</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="modules/align.schema.html#module-align.schema"><code class="xref">align.schema</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="modules/align.schema.html#module-align.schema.checker"><code class="xref">align.schema.checker</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="modules/align.schema.html#module-align.schema.constraint"><code class="xref">align.schema.constraint</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="modules/align.schema.html#module-align.schema.gen_dot"><code class="xref">align.schema.gen_dot</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="modules/align.schema.html#module-align.schema.graph"><code class="xref">align.schema.graph</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="modules/align.schema.html#module-align.schema.hacks"><code class="xref">align.schema.hacks</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="modules/align.schema.html#module-align.schema.instance"><code class="xref">align.schema.instance</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="modules/align.schema.html#module-align.schema.library"><code class="xref">align.schema.library</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="modules/align.schema.html#module-align.schema.model"><code class="xref">align.schema.model</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="modules/align.schema.html#module-align.schema.parser"><code class="xref">align.schema.parser</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="modules/align.schema.html#module-align.schema.pdk"><code class="xref">align.schema.pdk</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="modules/align.schema.html#module-align.schema.subcircuit"><code class="xref">align.schema.subcircuit</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="modules/align.schema.html#module-align.schema.transistor"><code class="xref">align.schema.transistor</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="modules/align.schema.html#module-align.schema.types"><code class="xref">align.schema.types</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="modules/align.schema.html#module-align.schema.visitor"><code class="xref">align.schema.visitor</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="modules/align.utils.html#module-align.utils"><code class="xref">align.utils</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="modules/align.utils.html#module-align.utils.gds2png"><code class="xref">align.utils.gds2png</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="modules/align.utils.html#module-align.utils.logging_local"><code class="xref">align.utils.logging_local</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="modules/align.utils.html#module-align.utils.logmanager"><code class="xref">align.utils.logmanager</code></a></td><td>
        <em></em></td></tr>
    </table>
 
 
-            <div class="clearer"></div>
+           </div>
           </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, ALIGN team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-            <p class="logo"><a href="index.html">
-              <img class="logo" src="_static/LOGO.PNG" alt="Logo"/>
-            </a></p>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="#" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">ALIGN</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Python Module Index</a></li> 
-      </ul>
-    </div>
-    <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, ALIGN team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
-    </div>
-  </body>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
 </html>

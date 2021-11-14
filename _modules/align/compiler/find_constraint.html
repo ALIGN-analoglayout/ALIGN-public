@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>align.compiler.find_constraint &mdash; ALIGN</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html"><img src="../../../_static/LOGO.PNG" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Notes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/flow.html">ALIGN: flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/flow.html#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/flow.html#outputs">Outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-0-check-prerequisites">Step 0: Check prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-1-clone-the-align-source-code-to-your-local-environment">Step 1: Clone the ALIGN source code to your local environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-2-create-a-python-virtualenv">Step 2: Create a Python virtualenv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-3a-install-align-as-a-user">Step 3a: Install ALIGN as a USER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-3b-install-align-as-a-developer">Step 3b: Install ALIGN as a DEVELOPER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-4-run-align">Step 4: Run ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-5-view-layout">Step 5: View layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/introduction.html">Introduction by Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/viewer.html">Layout viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/viewer.html#klayout-viewer">KLayout viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/viewer.html#align-viewer">ALIGN viewer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/debug.html">Debug</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#reinstalling-align">Reinstalling ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/const.html">Constraints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/const.html#constraint-options">Constraint options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/const.html#example-constraints">Example constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/upcoming.html">Upcoming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/upcoming.html#how-to-add-your-own-pdk">How to add your own pdk</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Datasets:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/database.html">Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#sized-netlists">Sized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#unsized-netlists">Unsized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#generalized-testbenches">Generalized testbenches</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.html">align package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.gui.html">align.gui package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pdk.html">align.pdk package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.primitive.html">align.primitive package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.utils.html">align.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.primitive.html">align.primitive package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.primitive.default.html">align.primitive.default package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pdk.html">align.pdk package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.primitive.default.html">align.primitive.default package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.utils.html">align.utils package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.gui.html">align.gui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ALIGN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>align.compiler.find_constraint</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for align.compiler.find_constraint</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Wed Feb 21 13:12:15 2020</span>
+
+<span class="sd">@author: kunal</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">align.schema.types</span> <span class="kn">import</span> <span class="n">set_context</span>
+<span class="kn">import</span> <span class="nn">pprint</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">combinations</span><span class="p">,</span> <span class="n">combinations_with_replacement</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">.create_array_hierarchy</span> <span class="kn">import</span> <span class="n">process_arrays</span>
+<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">compare_two_nodes</span><span class="p">,</span> <span class="n">get_base_model</span><span class="p">,</span> <span class="n">get_ports_weight</span><span class="p">,</span> <span class="n">reduced_neighbors</span><span class="p">,</span> <span class="n">reduced_SD_neighbors</span><span class="p">,</span> <span class="n">get_leaf_connection</span><span class="p">,</span> <span class="n">get_ports_weight</span>
+<span class="kn">from</span> <span class="nn">..schema</span> <span class="kn">import</span> <span class="n">constraint</span>
+<span class="kn">from</span> <span class="nn">..schema.graph</span> <span class="kn">import</span> <span class="n">Graph</span>
+<span class="kn">from</span> <span class="nn">align.schema.subcircuit</span> <span class="kn">import</span> <span class="n">SubCircuit</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="find_unique_matching_branches"><a class="viewcode-back" href="../../../modules/align.compiler.html#align.compiler.find_constraint.find_unique_matching_branches">[docs]</a><span class="k">def</span> <span class="nf">find_unique_matching_branches</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">nbrs1</span><span class="p">,</span> <span class="n">nbrs2</span><span class="p">,</span> <span class="n">ports_weight</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;finding unique matches between </span><span class="si">{</span><span class="n">nbrs1</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">nbrs2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">match</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">node1</span> <span class="ow">in</span> <span class="n">nbrs1</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">node2</span> <span class="ow">in</span> <span class="n">nbrs2</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">compare_two_nodes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">,</span> <span class="n">ports_weight</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">node1</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">match</span><span class="p">[</span><span class="n">node1</span><span class="p">]</span> <span class="o">=</span> <span class="n">node2</span>
+        <span class="k">if</span> <span class="n">node1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="n">match</span></div>
+
+<div class="viewcode-block" id="compare_nodes"><a class="viewcode-back" href="../../../modules/align.compiler.html#align.compiler.find_constraint.compare_nodes">[docs]</a><span class="k">def</span> <span class="nf">compare_nodes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">match_pairs</span><span class="p">,</span> <span class="n">match_pair</span><span class="p">,</span> <span class="n">traversed</span><span class="p">,</span> <span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">,</span> <span class="n">ports_weight</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Traversing single branch for symmetry</span>
+<span class="sd">    condition 1, Single branch: both ports/ nets are same and connected to two or more ports</span>
+<span class="sd">    condition 2, Converging branch: two nets are diffrent but connected to single device node</span>
+<span class="sd">    condition 3: Two parallel branches</span>
+<span class="sd">    condition 3: Two branches with multiple fanout will create new start points</span>
+<span class="sd">    condition 4: Diverging branch with more than 2 fanout, check all pairs</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    G : networkx graph</span>
+<span class="sd">        reduced hierarchical circuit graph.</span>
+<span class="sd">    match_pair : dict type</span>
+<span class="sd">        stores list of matched pairs.</span>
+<span class="sd">    traversed : list of nodes already traversed, to avoid retracing</span>
+<span class="sd">    node1,node2 : start points to create trees for comparison</span>
+<span class="sd">    ports_weight :TYPE. dict</span>
+<span class="sd">        dictionary of port weights</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    match_pair : dict type</span>
+<span class="sd">        stores list of matched pairs.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;comparing </span><span class="si">{</span><span class="n">node1</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">node2</span><span class="si">}</span><span class="s2">, traversed </span><span class="si">{</span><span class="n">traversed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">nbrs1</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node1</span><span class="p">))</span> <span class="o">-</span> <span class="n">traversed</span><span class="p">)</span>
+    <span class="c1"># remove dummies get_leaf_connection(subckt, port)</span>
+
+    <span class="n">nbrs1</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">nbr</span> <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">nbrs1</span> <span class="k">if</span> <span class="n">reduced_neighbors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">node1</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)]))</span>
+    <span class="n">nbrs2</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node2</span><span class="p">))</span> <span class="o">-</span> <span class="n">traversed</span><span class="p">)</span>
+    <span class="c1"># remove dummies</span>
+    <span class="n">nbrs2</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">nbr</span> <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">nbrs2</span> <span class="k">if</span> <span class="n">reduced_neighbors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">node2</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)]))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;node1:</span><span class="si">{</span><span class="n">node1</span><span class="si">}</span><span class="s2">,property: </span><span class="si">{</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node1</span><span class="p">]</span><span class="si">}</span><span class="s2">,neigbors1: </span><span class="si">{</span><span class="n">nbrs1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;node2:</span><span class="si">{</span><span class="n">node2</span><span class="si">}</span><span class="s2">,property: </span><span class="si">{</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node2</span><span class="p">]</span><span class="si">}</span><span class="s2">,neigbors2: </span><span class="si">{</span><span class="n">nbrs2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">nbrs1</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">nbrs2</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">compare_two_nodes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">,</span> <span class="n">ports_weight</span><span class="p">):</span>
+            <span class="n">match_pair</span><span class="p">[</span><span class="n">node1</span><span class="p">]</span> <span class="o">=</span> <span class="n">node2</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no new neighbours, returning recursion </span><span class="si">{</span><span class="n">match_pair</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">nbrs1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;start_point&quot;</span> <span class="ow">in</span> <span class="n">match_pair</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">match_pair</span><span class="p">[</span><span class="s2">&quot;start_point&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">match_pair</span><span class="p">[</span><span class="s2">&quot;start_point&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;skipping high fanout nets</span><span class="si">{</span><span class="n">node1</span><span class="p">,</span> <span class="n">nbrs1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">traversed</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">node1</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="n">node1</span> <span class="o">==</span> <span class="n">node2</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">node1</span> <span class="ow">in</span> <span class="n">match_pair</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">or</span> <span class="n">node1</span> <span class="ow">in</span> <span class="n">match_pair</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;avoid existing pair wise symmetry&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;single node </span><span class="si">{</span><span class="n">node1</span><span class="si">}</span><span class="s2">, nbrs </span><span class="si">{</span><span class="n">nbrs1</span><span class="si">}</span><span class="s2">, nbr_weight </span><span class="si">{</span><span class="p">[</span><span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node1</span><span class="p">,</span><span class="n">nbr</span><span class="p">)</span> <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">nbrs1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">SD_nbrs</span> <span class="o">=</span> <span class="p">[</span><span class="n">nbr</span> <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">nbrs1</span> <span class="k">if</span> <span class="n">reduced_SD_neighbors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">node1</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)]</span>
+        <span class="c1">## TBD: filter based on primitive constraints</span>
+        <span class="c1">## Right now will try to figure out S/D paths</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">SD_nbrs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No SD paths found to traverse&quot;</span><span class="p">)</span>
+            <span class="n">match_pair</span><span class="p">[</span><span class="n">node1</span><span class="p">]</span> <span class="o">=</span> <span class="n">node1</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">SD_nbrs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;traversing single S/D path </span><span class="si">{</span><span class="n">SD_nbrs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">match_pair</span><span class="p">[</span><span class="n">node1</span><span class="p">]</span> <span class="o">=</span> <span class="n">node1</span>
+            <span class="n">traversed</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">node1</span><span class="p">)</span>
+            <span class="n">compare_nodes</span><span class="p">(</span>
+                <span class="n">G</span><span class="p">,</span>
+                <span class="n">match_pairs</span><span class="p">,</span>
+                <span class="n">match_pair</span><span class="p">,</span>
+                <span class="n">traversed</span><span class="p">,</span>
+                <span class="n">SD_nbrs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">SD_nbrs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">ports_weight</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;multiple nodes diverging </span><span class="si">{</span><span class="n">SD_nbrs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;nbr weights: </span><span class="si">{</span><span class="n">SD_nbrs</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="p">[</span><span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node1</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)[</span><span class="s1">&#39;pin&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">SD_nbrs</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">match_pair</span><span class="p">[</span><span class="n">node1</span><span class="p">]</span> <span class="o">=</span> <span class="n">node1</span>
+            <span class="n">traversed</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">node1</span><span class="p">)</span>
+            <span class="n">new_sp</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">SD_nbrs</span><span class="p">)</span> <span class="o">-</span> <span class="n">traversed</span><span class="p">)</span>
+            <span class="n">all_match_pairs_local</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">nbr1</span><span class="p">,</span> <span class="n">nbr2</span> <span class="ow">in</span> <span class="n">combinations</span><span class="p">(</span><span class="n">new_sp</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;recursive pair call from single branch </span><span class="si">{</span><span class="n">nbr1</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">nbr2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">new_pair</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">compare_nodes</span><span class="p">(</span>
+                    <span class="n">G</span><span class="p">,</span>
+                    <span class="n">match_pairs</span><span class="p">,</span>
+                    <span class="n">new_pair</span><span class="p">,</span>
+                    <span class="n">traversed</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+                    <span class="n">nbr1</span><span class="p">,</span>
+                    <span class="n">nbr2</span><span class="p">,</span>
+                    <span class="n">ports_weight</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">new_pair</span><span class="p">:</span>
+                    <span class="c1"># new_pair[nbr1]=nbr2</span>
+                    <span class="n">all_match_pairs_local</span><span class="p">[</span><span class="n">nbr1</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">nbr2</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_pair</span>
+            <span class="n">all_match_pairs_local</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">all_match_pairs_local</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="p">}</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_match_pairs_local</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">match_pair</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="n">all_match_pairs_local</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">all_match_pairs_local</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]]</span>
+                <span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;found inline pair: </span><span class="si">{</span><span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">match_pair</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">nbr1</span> <span class="ow">in</span> <span class="n">new_sp</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">nbr1</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">nbr1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">match_pairs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;recursive single branch call from single branch </span><span class="si">{</span><span class="n">nbr1</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">nbr1</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                        <span class="n">new_pair</span> <span class="o">=</span> <span class="p">{}</span>
+                        <span class="n">compare_nodes</span><span class="p">(</span>
+                            <span class="n">G</span><span class="p">,</span>
+                            <span class="n">match_pairs</span><span class="p">,</span>
+                            <span class="n">new_pair</span><span class="p">,</span>
+                            <span class="n">traversed</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+                            <span class="n">nbr1</span><span class="p">,</span>
+                            <span class="n">nbr1</span><span class="p">,</span>
+                            <span class="n">ports_weight</span><span class="p">,</span>
+                        <span class="p">)</span>
+                        <span class="c1"># filtering multiple axis of symmetries with same block</span>
+                        <span class="c1"># ideally they should be handled by array generation</span>
+                        <span class="k">if</span> <span class="n">new_pair</span><span class="p">:</span>
+                            <span class="n">match_pairs</span><span class="p">[</span><span class="n">nbr1</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">nbr1</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_pair</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                                <span class="sa">f</span><span class="s2">&quot;updating match pairs: </span><span class="si">{</span><span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">match_pairs</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                            <span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">node1</span> <span class="o">==</span> <span class="n">node2</span> <span class="ow">and</span> <span class="n">nbrs1</span> <span class="o">==</span> <span class="n">nbrs2</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;traversing converging branch&quot;</span><span class="p">)</span>
+        <span class="n">match_pair</span><span class="p">[</span><span class="n">node1</span><span class="p">]</span> <span class="o">=</span> <span class="n">node2</span>
+        <span class="n">traversed</span><span class="o">.</span><span class="n">update</span><span class="p">([</span><span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">])</span>
+        <span class="n">nbrs1</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">nbrs1</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">([</span><span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">]))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;all non traversed neighbours: </span><span class="si">{</span><span class="n">nbrs1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">nbrs1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">nbr1</span> <span class="o">=</span> <span class="n">nbr2</span> <span class="o">=</span> <span class="n">nbrs1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;keeping single converged branch inline </span><span class="si">{</span><span class="n">nbr1</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">nbr2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">compare_nodes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">match_pairs</span><span class="p">,</span> <span class="n">match_pair</span><span class="p">,</span> <span class="n">traversed</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">nbr1</span><span class="p">,</span> <span class="n">nbr2</span><span class="p">,</span> <span class="n">ports_weight</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">nbr1</span><span class="p">,</span> <span class="n">nbr2</span> <span class="ow">in</span> <span class="n">combinations_with_replacement</span><span class="p">(</span><span class="n">nbrs1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;recursive call from converged branch </span><span class="si">{</span><span class="n">nbr1</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">nbr2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">nbr1</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">nbr2</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">match_pairs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">new_pair</span> <span class="o">=</span> <span class="p">{}</span>
+                    <span class="n">compare_nodes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">match_pairs</span><span class="p">,</span> <span class="n">new_pair</span><span class="p">,</span> <span class="n">traversed</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">nbr1</span><span class="p">,</span> <span class="n">nbr2</span><span class="p">,</span> <span class="n">ports_weight</span><span class="p">)</span>
+                    <span class="c1"># filtering multiple axis of symmetries with same block, ideally they should be handled by array generation</span>
+                    <span class="k">if</span> <span class="n">new_pair</span><span class="p">:</span>
+                        <span class="n">match_pairs</span><span class="p">[</span><span class="n">nbr1</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">nbr2</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_pair</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;updating match pairs: </span><span class="si">{</span><span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">match_pairs</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">compare_two_nodes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">,</span> <span class="n">ports_weight</span><span class="p">):</span>
+        <span class="n">nbrs1</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">nbr</span> <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">nbrs1</span> <span class="k">if</span> <span class="n">reduced_neighbors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">node1</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)]))</span>
+        <span class="n">nbrs2</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">nbr</span> <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">nbrs2</span> <span class="k">if</span> <span class="n">reduced_neighbors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">node2</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)]))</span>
+        <span class="n">match_pair</span><span class="p">[</span><span class="n">node1</span><span class="p">]</span> <span class="o">=</span> <span class="n">node2</span>
+        <span class="n">traversed</span><span class="o">.</span><span class="n">update</span><span class="p">([</span><span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">])</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Traversing parallel branches from </span><span class="si">{</span><span class="n">node1</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">node2</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">nbrs1</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">nbrs2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">nbrs1_wt</span> <span class="o">=</span> <span class="p">[</span><span class="n">pin</span> <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">nbrs1</span> <span class="k">for</span> <span class="n">pin</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node1</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)[</span><span class="s2">&quot;pin&quot;</span><span class="p">]]</span>
+        <span class="n">nbrs2_wt</span> <span class="o">=</span> <span class="p">[</span><span class="n">pin</span> <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="n">nbrs2</span> <span class="k">for</span> <span class="n">pin</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node2</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)[</span><span class="s2">&quot;pin&quot;</span><span class="p">]]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;nbr1 conn: </span><span class="si">{</span><span class="n">nbrs1_wt</span><span class="si">}</span><span class="s2">, nbr2 </span><span class="si">{</span><span class="n">nbrs2_wt</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">unique_match</span> <span class="o">=</span> <span class="n">find_unique_matching_branches</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">nbrs1</span><span class="p">,</span> <span class="n">nbrs2</span><span class="p">,</span> <span class="n">ports_weight</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">nbrs1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">nbrs2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no new SD neihbours, returning recursion </span><span class="si">{</span><span class="n">match_pair</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">nbrs1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">nbrs2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;traversing binary branch&quot;</span><span class="p">)</span>
+            <span class="n">compare_nodes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">match_pairs</span><span class="p">,</span> <span class="n">match_pair</span><span class="p">,</span> <span class="n">traversed</span><span class="p">,</span> <span class="n">nbrs1</span><span class="o">.</span><span class="n">pop</span><span class="p">(),</span> <span class="n">nbrs2</span><span class="o">.</span><span class="n">pop</span><span class="p">(),</span> <span class="n">ports_weight</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">unique_match</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;traversing unique matches </span><span class="si">{</span><span class="n">unique_match</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">match_pair</span><span class="p">[</span><span class="n">node1</span><span class="p">]</span> <span class="o">=</span> <span class="n">node2</span>
+            <span class="n">traversed</span><span class="o">.</span><span class="n">update</span><span class="p">([</span><span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">nbr1</span><span class="p">,</span> <span class="n">nbr2</span> <span class="ow">in</span> <span class="n">unique_match</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;recursive call from pair </span><span class="si">{</span><span class="n">node1</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">node2</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">nbr1</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">nbr2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">compare_nodes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">match_pairs</span><span class="p">,</span> <span class="n">match_pair</span><span class="p">,</span> <span class="n">traversed</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">nbr1</span><span class="p">,</span> <span class="n">nbr2</span><span class="p">,</span> <span class="n">ports_weight</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">nbrs1_wt</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">nbrs1_wt</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span>
+            <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">nbrs2_wt</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">nbrs2_wt</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span>
+        <span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;setting new start points </span><span class="si">{</span><span class="n">node1</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">node2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">match_pair</span><span class="p">[</span><span class="n">node1</span><span class="p">]</span> <span class="o">=</span> <span class="n">node2</span>
+            <span class="k">if</span> <span class="s2">&quot;start_point&quot;</span> <span class="ow">in</span> <span class="n">match_pair</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">match_pair</span><span class="p">[</span><span class="s2">&quot;start_point&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">match_pair</span><span class="p">[</span><span class="s2">&quot;start_point&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">match_pair</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;end all traversal from binary branch </span><span class="si">{</span><span class="n">node1</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">node2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">match_pair</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;end of recursion branch, matches </span><span class="si">{</span><span class="n">match_pair</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="recursive_start_points"><a class="viewcode-back" href="../../../modules/align.compiler.html#align.compiler.find_constraint.recursive_start_points">[docs]</a><span class="k">def</span> <span class="nf">recursive_start_points</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">match_pairs</span><span class="p">,</span> <span class="n">traversed</span><span class="p">,</span> <span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">,</span> <span class="n">ports_weight</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Symmetry start point </span><span class="si">{</span><span class="n">node1</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">node2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">pair</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">node1</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span> <span class="ow">and</span> <span class="n">node2</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
+        <span class="n">compare_nodes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">match_pairs</span><span class="p">,</span> <span class="n">pair</span><span class="p">,</span> <span class="n">traversed</span><span class="p">,</span> <span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">,</span> <span class="n">ports_weight</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">pair</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No pair found from </span><span class="si">{</span><span class="n">node1</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">node2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="c1"># TODO: use tuple instead of string</span>
+    <span class="n">match_pairs</span><span class="p">[</span><span class="n">node1</span> <span class="o">+</span> <span class="n">node2</span><span class="p">]</span> <span class="o">=</span> <span class="n">pair</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;updating match pairs (start): </span><span class="si">{</span><span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">match_pairs</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span></div>
+
+<div class="viewcode-block" id="FindSymmetry"><a class="viewcode-back" href="../../../modules/align.compiler.html#align.compiler.find_constraint.FindSymmetry">[docs]</a><span class="k">def</span> <span class="nf">FindSymmetry</span><span class="p">(</span><span class="n">subckt</span><span class="p">,</span> <span class="n">stop_points</span><span class="p">:</span> <span class="nb">set</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find matching constraint starting from all port pairs.</span>
+<span class="sd">    check: recursive_start_points</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    stop_points : list</span>
+<span class="sd">        starts with power, ground and clock signals adds based on traversal.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">(</span><span class="n">subckt</span><span class="p">)</span>
+    <span class="n">ports</span> <span class="o">=</span> <span class="n">subckt</span><span class="o">.</span><span class="n">pins</span>
+    <span class="n">match_pairs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">stop_points</span><span class="p">:</span>
+        <span class="n">stop_points</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">non_power_ports</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">ports</span><span class="p">))</span> <span class="o">-</span> <span class="n">stop_points</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;subckt: </span><span class="si">{</span><span class="n">subckt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> sorted signal ports: </span><span class="si">{</span><span class="n">non_power_ports</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">ports_weight</span> <span class="o">=</span> <span class="n">get_ports_weight</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+    <span class="c1"># TODO start from primitives</span>
+    <span class="k">for</span> <span class="n">port1</span><span class="p">,</span> <span class="n">port2</span> <span class="ow">in</span> <span class="n">combinations_with_replacement</span><span class="p">(</span><span class="n">non_power_ports</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">traversed</span> <span class="o">=</span> <span class="n">stop_points</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">ports_weight</span><span class="p">[</span><span class="n">port1</span><span class="p">]</span> <span class="o">==</span> <span class="n">ports_weight</span><span class="p">[</span><span class="n">port2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">ports_weight</span><span class="p">[</span><span class="n">port2</span><span class="p">]:</span>
+            <span class="n">traversed</span><span class="o">.</span><span class="n">update</span><span class="p">([</span><span class="n">port1</span><span class="p">,</span> <span class="n">port2</span><span class="p">])</span>
+            <span class="n">recursive_start_points</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">match_pairs</span><span class="p">,</span> <span class="n">traversed</span><span class="p">,</span> <span class="n">port1</span><span class="p">,</span> <span class="n">port2</span><span class="p">,</span> <span class="n">ports_weight</span><span class="p">)</span>
+            <span class="n">match_pairs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">match_pairs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">}</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Matches starting from </span><span class="si">{</span><span class="n">port1</span><span class="p">,</span> <span class="n">port2</span><span class="si">}</span><span class="s2"> pair: </span><span class="si">{</span><span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">match_pairs</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">match_pairs</span></div>
+
+<div class="viewcode-block" id="FindConst"><a class="viewcode-back" href="../../../modules/align.compiler.html#align.compiler.find_constraint.FindConst">[docs]</a><span class="k">def</span> <span class="nf">FindConst</span><span class="p">(</span><span class="n">subckt</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Searching constraints for block </span><span class="si">{</span><span class="n">subckt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># Read contents of input constraint file</span>
+    <span class="k">if</span> <span class="s2">&quot;ARRAY_HIER&quot;</span> <span class="ow">in</span> <span class="n">subckt</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">():</span>
+        <span class="c1">#TODO Generate consraints for array hierarchies</span>
+        <span class="k">return</span>
+    <span class="n">stop_points</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">auto_constraint</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="n">subckt</span><span class="o">.</span><span class="n">constraints</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="n">constraint</span><span class="o">.</span><span class="n">PowerPorts</span><span class="p">)</span> <span class="ow">or</span>\
+                <span class="nb">isinstance</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="n">constraint</span><span class="o">.</span><span class="n">GroundPorts</span><span class="p">)</span> <span class="ow">or</span> \
+                <span class="nb">isinstance</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="n">constraint</span><span class="o">.</span><span class="n">ClockPorts</span><span class="p">):</span>
+                <span class="n">stop_points</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">ports</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="n">constraint</span><span class="o">.</span><span class="n">IsDigital</span><span class="p">)</span> <span class="ow">or</span> \
+                <span class="nb">isinstance</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="n">constraint</span><span class="o">.</span><span class="n">AutoConstraint</span><span class="p">):</span>
+                <span class="n">auto_constraint</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">isTrue</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Stop_points : </span><span class="si">{</span><span class="n">stop_points</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Search symmetry constraints</span>
+    <span class="c1"># TODO move search after processing input const</span>
+    <span class="n">pp</span> <span class="o">=</span> <span class="n">process_input_const</span><span class="p">(</span><span class="n">subckt</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">auto_constraint</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="n">match_pairs</span> <span class="o">=</span> <span class="n">FindSymmetry</span><span class="p">(</span><span class="n">subckt</span><span class="p">,</span> <span class="n">stop_points</span><span class="p">)</span>
+    <span class="n">written_symmblocks</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">process_all</span><span class="p">()</span>
+    <span class="n">skip_const</span> <span class="o">=</span> <span class="n">written_symmblocks</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="c1">## Generate hiearchies based on array identification</span>
+    <span class="n">array_hier</span> <span class="o">=</span> <span class="n">process_arrays</span><span class="p">(</span><span class="n">subckt</span><span class="p">,</span> <span class="n">match_pairs</span><span class="p">)</span>
+    <span class="n">array_hier</span><span class="o">.</span><span class="n">add_align_block_const</span><span class="p">()</span>
+    <span class="n">array_hier</span><span class="o">.</span><span class="n">add_new_array_hier</span><span class="p">()</span>
+    <span class="n">match_pairs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">match_pairs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">match_pairs</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="k">if</span> <span class="s2">&quot;start_point&quot;</span> <span class="ow">in</span> <span class="n">pair</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">del</span> <span class="n">pair</span><span class="p">[</span><span class="s2">&quot;start_point&quot;</span><span class="p">]</span>
+    <span class="c1">## Add symmetry constraints</span>
+    <span class="n">add_symm</span> <span class="o">=</span> <span class="n">add_symmetry_const</span><span class="p">(</span><span class="n">subckt</span><span class="p">,</span> <span class="n">match_pairs</span><span class="p">,</span> <span class="n">stop_points</span><span class="p">,</span> <span class="n">written_symmblocks</span><span class="p">,</span> <span class="n">skip_const</span><span class="p">)</span>
+    <span class="n">add_symm</span><span class="o">.</span><span class="n">loop_through_pairs</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="process_input_const"><a class="viewcode-back" href="../../../modules/align.compiler.html#align.compiler.find_constraint.process_input_const">[docs]</a><span class="k">class</span> <span class="nc">process_input_const</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subckt</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_constrained_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span> <span class="c1"># list of set for symmetric pairs and string</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subckt</span> <span class="o">=</span> <span class="n">subckt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">subckt</span><span class="o">.</span><span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">(</span><span class="n">subckt</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iconst</span> <span class="o">=</span> <span class="n">subckt</span><span class="o">.</span><span class="n">constraints</span>
+
+<div class="viewcode-block" id="process_input_const.process_all"><a class="viewcode-back" href="../../../modules/align.compiler.html#align.compiler.find_constraint.process_input_const.process_all">[docs]</a>    <span class="k">def</span> <span class="nf">process_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">process_symmnet</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">process_do_not_identify</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_constrained_list</span></div>
+<div class="viewcode-block" id="process_input_const.process_do_not_identify"><a class="viewcode-back" href="../../../modules/align.compiler.html#align.compiler.find_constraint.process_input_const.process_do_not_identify">[docs]</a>    <span class="k">def</span> <span class="nf">process_do_not_identify</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iconst</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="n">constraint</span><span class="o">.</span><span class="n">DoNotIdentify</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">user_constrained_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">instances</span><span class="p">)</span></div>
+<div class="viewcode-block" id="process_input_const.process_symmnet"><a class="viewcode-back" href="../../../modules/align.compiler.html#align.compiler.find_constraint.process_input_const.process_symmnet">[docs]</a>    <span class="k">def</span> <span class="nf">process_symmnet</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;input const </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">iconst</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">replace_const</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">new_symmblock_const</span> <span class="o">=</span><span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iconst</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">const</span><span class="p">,</span> <span class="n">constraint</span><span class="o">.</span><span class="n">SymmetricNets</span><span class="p">):</span>
+                <span class="c1"># if not getattr(const, &#39;pins1&#39;, None):</span>
+                <span class="c1"># TODO: constr with pin information should be handled separately</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;adding pins to user symmnet constraint </span><span class="si">{</span><span class="n">const</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">pairs</span><span class="p">,</span> <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span> <span class="o">=</span> <span class="n">symmnet_device_pairs</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">,</span>
+                    <span class="n">const</span><span class="o">.</span><span class="n">net1</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+                    <span class="n">const</span><span class="o">.</span><span class="n">net2</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">user_constrained_list</span><span class="p">,</span>
+                    <span class="kc">None</span><span class="p">,</span>
+                    <span class="kc">True</span><span class="p">)</span>
+                <span class="k">assert</span> <span class="n">s1</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;no connections found to net </span><span class="si">{</span><span class="n">const</span><span class="o">.</span><span class="n">net1</span><span class="si">}</span><span class="s2">, fix user const&quot;</span>
+                <span class="k">assert</span> <span class="n">s2</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;no connections found to net </span><span class="si">{</span><span class="n">const</span><span class="o">.</span><span class="n">net2</span><span class="si">}</span><span class="s2">, fix user const&quot;</span>
+                <span class="k">with</span> <span class="n">set_context</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iconst</span><span class="p">):</span>
+                    <span class="n">replace_const</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="p">(</span>
+                            <span class="n">const</span><span class="p">,</span>
+                            <span class="n">constraint</span><span class="o">.</span><span class="n">SymmetricNets</span><span class="p">(</span>
+                                <span class="n">direction</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">direction</span><span class="p">,</span>
+                                <span class="n">net1</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">net1</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+                                <span class="n">net2</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">net2</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+                                <span class="n">pins1</span><span class="o">=</span><span class="n">s1</span><span class="p">,</span>
+                                <span class="n">pins2</span><span class="o">=</span><span class="n">s2</span><span class="p">,</span>
+                            <span class="p">),</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="n">pairsj</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">pairs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">s1</span><span class="p">:</span>
+                            <span class="k">continue</span>
+                        <span class="k">if</span> <span class="n">key</span> <span class="o">!=</span><span class="n">value</span> <span class="ow">and</span> <span class="p">{</span><span class="n">key</span><span class="p">,</span><span class="n">value</span><span class="p">}</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_constrained_list</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">user_constrained_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="n">key</span><span class="p">,</span><span class="n">value</span><span class="p">})</span>
+                            <span class="n">pairsj</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">key</span><span class="p">,</span><span class="n">value</span><span class="p">])</span>
+                        <span class="k">elif</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_constrained_list</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">user_constrained_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                            <span class="n">pairsj</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">key</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pairsj</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+                        <span class="n">symmBlock</span> <span class="o">=</span> <span class="n">constraint</span><span class="o">.</span><span class="n">SymmetricBlocks</span><span class="p">(</span><span class="n">direction</span><span class="o">=</span><span class="s2">&quot;V&quot;</span><span class="p">,</span> <span class="n">pairs</span><span class="o">=</span><span class="n">pairsj</span><span class="p">)</span>
+                        <span class="n">new_symmblock_const</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">symmBlock</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">set_context</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iconst</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">replace_const</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">iconst</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">iconst</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">user_constrained_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">net1</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">user_constrained_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">net2</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">symb</span> <span class="ow">in</span> <span class="n">new_symmblock_const</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">iconst</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">symb</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="add_symmetry_const"><a class="viewcode-back" href="../../../modules/align.compiler.html#align.compiler.find_constraint.add_symmetry_const">[docs]</a><span class="k">class</span> <span class="nc">add_symmetry_const</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subckt</span><span class="p">,</span> <span class="n">match_pairs</span><span class="p">,</span> <span class="n">stop_points</span><span class="p">,</span> <span class="n">written_symmblocks</span><span class="p">,</span> <span class="n">skip_const</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_pairs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+        <span class="n">match_pairs</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="nb">len</span><span class="p">([</span><span class="n">k1</span> <span class="k">for</span> <span class="n">k1</span><span class="p">,</span> <span class="n">v1</span> <span class="ow">in</span> <span class="n">k</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k1</span> <span class="o">!=</span> <span class="n">v1</span><span class="p">]),</span>
+        <span class="n">reverse</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">written_symmblocks</span> <span class="o">=</span> <span class="n">written_symmblocks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subckt</span> <span class="o">=</span> <span class="n">subckt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">subckt</span><span class="o">.</span><span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">(</span><span class="n">subckt</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iconst</span> <span class="o">=</span> <span class="n">subckt</span><span class="o">.</span><span class="n">constraints</span>
+        <span class="k">if</span> <span class="n">stop_points</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">stop_points</span> <span class="c1"># TODO: Can be removed?</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">skip_const</span> <span class="o">=</span> <span class="n">skip_const</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;stop points for hier </span><span class="si">{</span><span class="n">subckt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> are </span><span class="si">{</span><span class="n">stop_points</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;excluded input symmetry pairs </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">written_symmblocks</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;all symmetry matching pairs </span><span class="si">{</span><span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_pairs</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="add_symmetry_const.loop_through_pairs"><a class="viewcode-back" href="../../../modules/align.compiler.html#align.compiler.find_constraint.add_symmetry_const.loop_through_pairs">[docs]</a>    <span class="k">def</span> <span class="nf">loop_through_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">pairs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_pairs</span><span class="p">:</span>
+            <span class="n">pairs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">pairs</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;symmblock pairs: </span><span class="si">{</span><span class="n">pairs</span><span class="si">}</span><span class="s2">, existing: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">written_symmblocks</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">pairsj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_symblock_const</span><span class="p">(</span><span class="n">pairs</span><span class="p">)</span>
+            <span class="n">add_or_revert_const</span><span class="p">(</span><span class="n">pairsj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iconst</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">written_symmblocks</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">pairs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_pairs</span><span class="p">:</span>
+            <span class="n">pairs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">pairs</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;symmnet pairs: </span><span class="si">{</span><span class="n">pairs</span><span class="si">}</span><span class="s2">, existing: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">written_symmblocks</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">filter_symnet_const</span><span class="p">(</span><span class="n">pairs</span><span class="p">)</span>
+            <span class="c1"># add_or_revert_const(pairsj, self.iconst, self.written_symmblocks)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;identified constraints of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> are </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">iconst</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="add_symmetry_const.pre_fiter"><a class="viewcode-back" href="../../../modules/align.compiler.html#align.compiler.find_constraint.add_symmetry_const.pre_fiter">[docs]</a>    <span class="k">def</span> <span class="nf">pre_fiter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">smb_1d</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;invlid instance </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;invlid instance </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">written_symmblocks</span><span class="p">:</span>
+            <span class="c1"># extend list elements to one_d list</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inst</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">smb_1d</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">inst</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">smb_1d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">inst</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;skipping symmetry b/w </span><span class="si">{</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="si">}</span><span class="s2"> as they are present in stop points&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="p">{</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">}</span> <span class="o">&amp;</span> <span class="n">smb_1d</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;skipping symmetry b/w </span><span class="si">{</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="si">}</span><span class="s2"> as already written </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">written_symmblocks</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;skipping symmetry b/w </span><span class="si">{</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="si">}</span><span class="s2"> as </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> is not in graph&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="add_symmetry_const.filter_symblock_const"><a class="viewcode-back" href="../../../modules/align.compiler.html#align.compiler.find_constraint.add_symmetry_const.filter_symblock_const">[docs]</a>    <span class="k">def</span> <span class="nf">filter_symblock_const</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pairs</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">pairsj</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">insts_in_single_symmetry</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_fiter</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="p">{</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">}</span> <span class="o">&amp;</span> <span class="n">insts_in_single_symmetry</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;instance&quot;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">elif</span> <span class="s2">&quot;Dcap&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;instance&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">model</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;skipping symmetry for dcaps </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bm</span> <span class="o">=</span> <span class="n">get_base_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subckt</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="n">value</span> <span class="ow">and</span> <span class="n">bm</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;NMOS&quot;</span><span class="p">,</span> <span class="s2">&quot;PMOS&quot;</span><span class="p">,</span> <span class="s2">&quot;RES&quot;</span><span class="p">,</span> <span class="s2">&quot;CAP&quot;</span><span class="p">]:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping self symmetry for single device </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">key</span> <span class="o">!=</span><span class="n">value</span><span class="p">:</span>
+                    <span class="n">pairsj</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">key</span><span class="p">,</span><span class="n">value</span><span class="p">])</span>
+                    <span class="n">insts_in_single_symmetry</span><span class="o">.</span><span class="n">update</span><span class="p">([</span><span class="n">key</span><span class="p">,</span><span class="n">value</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">pairsj</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">key</span><span class="p">])</span>
+                    <span class="n">insts_in_single_symmetry</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pairsj</span></div>
+
+<div class="viewcode-block" id="add_symmetry_const.filter_symnet_const"><a class="viewcode-back" href="../../../modules/align.compiler.html#align.compiler.find_constraint.add_symmetry_const.filter_symnet_const">[docs]</a>    <span class="k">def</span> <span class="nf">filter_symnet_const</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pairs</span><span class="p">:</span><span class="nb">list</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_fiter</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;instance&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="o">!=</span> <span class="n">value</span><span class="p">:</span>
+                    <span class="n">pairs</span><span class="p">,</span> <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span> <span class="o">=</span> <span class="n">symmnet_device_pairs</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">,</span>
+                        <span class="n">key</span><span class="p">,</span>
+                        <span class="n">value</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">written_symmblocks</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">skip_const</span>
+                        <span class="p">)</span>
+                    <span class="k">if</span> <span class="n">pairs</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">written_symmblocks</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="n">key</span><span class="p">,</span><span class="n">value</span><span class="p">})</span>
+                        <span class="k">with</span> <span class="n">set_context</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iconst</span><span class="p">):</span>
+                            <span class="n">symmnet</span> <span class="o">=</span> <span class="n">constraint</span><span class="o">.</span><span class="n">SymmetricNets</span><span class="p">(</span>
+                                <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;V&quot;</span><span class="p">,</span>
+                                <span class="n">net1</span><span class="o">=</span><span class="n">key</span><span class="p">,</span>
+                                <span class="n">net2</span><span class="o">=</span><span class="n">value</span><span class="p">,</span>
+                                <span class="n">pins1</span><span class="o">=</span><span class="n">s1</span><span class="p">,</span>
+                                <span class="n">pins2</span><span class="o">=</span><span class="n">s2</span>
+                            <span class="p">)</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">iconst</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">symmnet</span><span class="p">)</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;adding symmetric net const: </span><span class="si">{</span><span class="n">symmnet</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skip symmetry: large fanout nets </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pairs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="c1"># TODO Need update in placer to simplify this</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;skipping self symmetric nets </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="add_or_revert_const"><a class="viewcode-back" href="../../../modules/align.compiler.html#align.compiler.find_constraint.add_or_revert_const">[docs]</a><span class="k">def</span> <span class="nf">add_or_revert_const</span><span class="p">(</span><span class="n">pairsj</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">iconst</span><span class="p">,</span> <span class="n">written_symmblocks</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;filterd symmetry pairs: </span><span class="si">{</span><span class="n">pairsj</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pairsj</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="p">(</span><span class="n">pairsj</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">pairsj</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">==</span><span class="mi">2</span><span class="p">):</span>
+        <span class="n">_temp</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">iconst</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">set_context</span><span class="p">(</span><span class="n">iconst</span><span class="p">):</span>
+                <span class="n">symmBlock</span> <span class="o">=</span> <span class="n">constraint</span><span class="o">.</span><span class="n">SymmetricBlocks</span><span class="p">(</span><span class="n">direction</span><span class="o">=</span><span class="s2">&quot;V&quot;</span><span class="p">,</span> <span class="n">pairs</span><span class="o">=</span><span class="n">pairsj</span><span class="p">)</span>
+                <span class="n">iconst</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">symmBlock</span><span class="p">)</span>
+                <span class="n">written_symmblocks</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="nb">set</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span> <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">pairsj</span><span class="p">])</span>
+                <span class="c1"># written_symmblocks.extend([str(ele) for pair in pairsj for ele in pair])</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;one axis of written symmetries: </span><span class="si">{</span><span class="n">symmBlock</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">iconst</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">_temp</span><span class="p">:</span>
+                <span class="n">iconst</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;skipping match </span><span class="si">{</span><span class="n">pairsj</span><span class="si">}</span><span class="s2"> due to unsatisfied constraints&quot;</span><span class="p">)</span>
+            <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="symmnet_device_pairs"><a class="viewcode-back" href="../../../modules/align.compiler.html#align.compiler.find_constraint.symmnet_device_pairs">[docs]</a><span class="k">def</span> <span class="nf">symmnet_device_pairs</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">net_A</span><span class="p">,</span> <span class="n">net_B</span><span class="p">,</span> <span class="n">smb</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">skip_blocks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    G : networkx graph</span>
+<span class="sd">        subckt graphs.</span>
+<span class="sd">    net_A/B : two nets A/B</span>
+<span class="sd">        DESCRIPTION.</span>
+<span class="sd">    sm: existing symmetry blocks list</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pairs : dict</span>
+<span class="sd">        deviceA/pin: deviceB/pin.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">_connection</span><span class="p">(</span><span class="n">net</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns all pins and ports connected to the net</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;checking connections of net: </span><span class="si">{</span><span class="n">net</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">net</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">net</span><span class="p">)):</span>
+            <span class="n">pins</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)[</span><span class="s2">&quot;pin&quot;</span><span class="p">]</span>
+            <span class="n">child</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">subckt</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">nbr</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;instance&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">SubCircuit</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">pin</span> <span class="ow">in</span> <span class="n">pins</span><span class="p">:</span>
+                    <span class="n">leaf_conn</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">sorted</span><span class="p">([</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">get_leaf_connection</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">pin</span><span class="p">)</span> <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="s2">&quot;B&quot;</span><span class="p">]))</span>
+                    <span class="k">if</span> <span class="n">leaf_conn</span><span class="p">:</span>
+                        <span class="n">conn</span><span class="p">[(</span><span class="n">nbr</span><span class="p">,</span><span class="n">pin</span><span class="p">)]</span> <span class="o">=</span> <span class="n">leaf_conn</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">pin</span> <span class="ow">in</span> <span class="n">pins</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">pin</span> <span class="o">!=</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span>
+                        <span class="n">conn</span><span class="p">[(</span><span class="n">nbr</span><span class="p">,</span><span class="n">pin</span><span class="p">)]</span> <span class="o">=</span> <span class="p">[</span><span class="n">pin</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">net</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">subckt</span><span class="o">.</span><span class="n">pins</span><span class="p">:</span>
+            <span class="n">conn</span><span class="p">[</span><span class="n">net</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">sorted</span><span class="p">([</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">get_leaf_connection</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">subckt</span><span class="p">,</span> <span class="n">net</span><span class="p">)</span> <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="s2">&quot;B&quot;</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="n">conn</span>
+    <span class="n">conn_A</span> <span class="o">=</span> <span class="n">_connection</span><span class="p">(</span><span class="n">net_A</span><span class="p">)</span>
+    <span class="n">conn_B</span> <span class="o">=</span> <span class="n">_connection</span><span class="p">(</span><span class="n">net_B</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Identifying match pairs for symmnet, </span><span class="se">\</span>
+<span class="s2">        net1 </span><span class="si">{</span><span class="n">net_A</span><span class="si">}</span><span class="s2">, connections: </span><span class="si">{</span><span class="n">conn_A</span><span class="si">}</span><span class="s2">, </span><span class="se">\</span>
+<span class="s2">        net2 </span><span class="si">{</span><span class="n">net_B</span><span class="si">}</span><span class="s2">, connections </span><span class="si">{</span><span class="n">conn_B</span><span class="si">}</span><span class="s2">, </span><span class="se">\</span>
+<span class="s2">        existing: </span><span class="si">{</span><span class="n">smb</span><span class="si">}</span><span class="s2">, skip: </span><span class="si">{</span><span class="n">skip_blocks</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
+    <span class="k">assert</span> <span class="n">conn_A</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;No connection to net </span><span class="si">{</span><span class="n">net_A</span><span class="si">}</span><span class="s2"> found in </span><span class="si">{</span><span class="n">G</span><span class="o">.</span><span class="n">subckt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">assert</span> <span class="n">conn_B</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;No connection to net </span><span class="si">{</span><span class="n">net_A</span><span class="si">}</span><span class="s2"> found in </span><span class="si">{</span><span class="n">G</span><span class="o">.</span><span class="n">subckt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="n">pairs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">pinsA</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">pinsB</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">ele_A</span> <span class="ow">in</span> <span class="n">conn_A</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">ele_B</span> <span class="ow">in</span> <span class="n">conn_B</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="c1">#tuple of (block, pin)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ele_A</span><span class="p">,</span><span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ele_B</span><span class="p">,</span><span class="nb">tuple</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Check ele_a </span><span class="si">{</span><span class="n">ele_A</span><span class="si">}</span><span class="s2">, ele_B </span><span class="si">{</span><span class="n">ele_B</span><span class="si">}</span><span class="s2">, pairs </span><span class="si">{</span><span class="n">pairs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">instA_name</span> <span class="o">=</span> <span class="n">ele_A</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">instB_name</span> <span class="o">=</span> <span class="n">ele_B</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">skip_blocks</span> <span class="ow">and</span> <span class="p">(</span><span class="n">instA_name</span> <span class="ow">in</span> <span class="n">skip_blocks</span> <span class="ow">or</span> <span class="n">instB_name</span> <span class="ow">in</span> <span class="n">skip_blocks</span><span class="p">):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;skipping blocks: </span><span class="si">{</span><span class="n">instA_name</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">instB_name</span><span class="si">}</span><span class="s2"> do_not_identify </span><span class="si">{</span><span class="n">skip_blocks</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="n">instA</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">instA_name</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;instance&quot;</span><span class="p">)</span>
+                <span class="k">assert</span> <span class="n">instA</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Block,</span><span class="si">{</span><span class="n">instA_name</span><span class="si">}</span><span class="s2"> not found&quot;</span>
+                <span class="n">instB</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">instB_name</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;instance&quot;</span><span class="p">)</span>
+                <span class="k">assert</span> <span class="n">instB</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Block,</span><span class="si">{</span><span class="n">instB_name</span><span class="si">}</span><span class="s2"> not found&quot;</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;modelA:</span><span class="si">{</span><span class="n">instA</span><span class="o">.</span><span class="n">model</span><span class="si">}</span><span class="s2"> modelB:</span><span class="si">{</span><span class="n">instB</span><span class="o">.</span><span class="n">model</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">conn_A</span><span class="p">[</span><span class="n">ele_A</span><span class="p">]</span> <span class="o">==</span> <span class="n">conn_B</span><span class="p">[</span><span class="n">ele_B</span><span class="p">]</span>
+                    <span class="ow">and</span> <span class="n">instA</span><span class="o">.</span><span class="n">model</span> <span class="o">==</span> <span class="n">instB</span><span class="o">.</span><span class="n">model</span>
+                <span class="p">):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;checking symmetric instances </span><span class="si">{</span><span class="n">ele_A</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">ele_B</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">instB</span> <span class="ow">in</span> <span class="n">pairs</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Skip symmnet: Multiple matches of net </span><span class="si">{</span><span class="n">net_B</span><span class="si">}</span><span class="s2"> nbr </span><span class="si">{</span><span class="n">ele_B</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">pairs</span><span class="o">.</span><span class="n">values</span><span class="p">()</span><span class="si">}</span><span class="s2"> &quot;</span>
+                        <span class="p">)</span>
+                        <span class="k">return</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+                    <span class="k">elif</span> <span class="n">user</span> <span class="o">==</span> <span class="kc">False</span> <span class="ow">and</span> <span class="p">{</span><span class="n">instA_name</span><span class="p">,</span> <span class="n">instB_name</span><span class="p">}</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">smb</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unsymmetrical instances </span><span class="si">{</span><span class="n">instA_name</span><span class="p">,</span> <span class="n">instB_name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">smb</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="k">continue</span>
+                    <span class="k">elif</span> <span class="n">ele_A</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pinsA</span> <span class="ow">and</span> <span class="n">ele_B</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pinsB</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Add symmetric connections </span><span class="si">{</span><span class="n">ele_A</span><span class="p">,</span> <span class="n">ele_B</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="n">pairs</span><span class="p">[</span><span class="n">instA_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">instB_name</span>
+                        <span class="n">pinsA</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ele_A</span><span class="p">))</span>
+                        <span class="n">pinsB</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ele_B</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="p">(</span>
+                <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">ele_A</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ele_B</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span>
+                <span class="ow">and</span> <span class="n">conn_A</span><span class="p">[</span><span class="n">ele_A</span><span class="p">]</span> <span class="o">==</span> <span class="n">conn_B</span><span class="p">[</span><span class="n">ele_B</span><span class="p">]</span>
+                <span class="ow">and</span> <span class="n">ele_A</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pinsA</span>
+                <span class="ow">and</span> <span class="n">ele_B</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pinsB</span>
+            <span class="p">):</span>
+                <span class="c1"># Ports matching</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Add symmetric ports: </span><span class="si">{</span><span class="n">ele_A</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">ele_A</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">pairs</span><span class="p">[</span><span class="n">ele_A</span><span class="p">]</span> <span class="o">=</span> <span class="n">ele_B</span>
+                <span class="n">pinsA</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ele_A</span><span class="p">)</span>
+                <span class="n">pinsB</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ele_B</span><span class="p">)</span>
+
+    <span class="c1"># Atleast two pair of pins need to be matched</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pairs</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pairs</span><span class="p">,</span> <span class="n">pinsA</span><span class="p">,</span> <span class="n">pinsB</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Skip symmnet: Non identical instances </span><span class="si">{</span><span class="n">conn_A</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">conn_B</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">smb</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, ALIGN team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

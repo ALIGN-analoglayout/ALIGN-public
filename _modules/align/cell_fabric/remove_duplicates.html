@@ -1,42 +1,148 @@
-
 <!DOCTYPE html>
-
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>align.cell_fabric.remove_duplicates &#8212; ALIGN</title>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>align.cell_fabric.remove_duplicates &mdash; ALIGN</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
-    
-    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/doctools.js"></script>
-    
+      <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
-  </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">align.cell_fabric.remove_duplicates</a></li> 
-      </ul>
-    </div>  
+</head>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html"><img src="../../../_static/LOGO.PNG" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Notes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/flow.html">ALIGN: flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/flow.html#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/flow.html#outputs">Outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-0-check-prerequisites">Step 0: Check prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-1-clone-the-align-source-code-to-your-local-environment">Step 1: Clone the ALIGN source code to your local environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-2-create-a-python-virtualenv">Step 2: Create a Python virtualenv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-3a-install-align-as-a-user">Step 3a: Install ALIGN as a USER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-3b-install-align-as-a-developer">Step 3b: Install ALIGN as a DEVELOPER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-4-run-align">Step 4: Run ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/installation.html#step-5-view-layout">Step 5: View layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/introduction.html">Introduction by Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/viewer.html">Layout viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/viewer.html#klayout-viewer">KLayout viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/viewer.html#align-viewer">ALIGN viewer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/debug.html">Debug</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#reinstalling-align">Reinstalling ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/debug.html#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/const.html">Constraints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/const.html#constraint-options">Constraint options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/const.html#example-constraints">Example constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/upcoming.html">Upcoming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/upcoming.html#how-to-add-your-own-pdk">How to add your own pdk</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Datasets:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/database.html">Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#sized-netlists">Sized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#unsized-netlists">Unsized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#generalized-testbenches">Generalized testbenches</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.html">align package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.gui.html">align.gui package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pdk.html">align.pdk package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.primitive.html">align.primitive package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.utils.html">align.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.primitive.html">align.primitive package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.primitive.default.html">align.primitive.default package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pdk.html">align.pdk package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.primitive.default.html">align.primitive.default package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.utils.html">align.utils package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/align.gui.html">align.gui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ALIGN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>align.cell_fabric.remove_duplicates</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
   <h1>Source code for align.cell_fabric.remove_duplicates</h1><div class="highlight"><pre>
 <span></span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span><span class="p">,</span> <span class="n">OrderedDict</span>
@@ -47,11 +153,11 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
-<div class="viewcode-block" id="UnionFind"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.UnionFind">[docs]</a><span class="k">class</span> <span class="nc">UnionFind</span><span class="p">:</span>
+<div class="viewcode-block" id="UnionFind"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.UnionFind">[docs]</a><span class="k">class</span> <span class="nc">UnionFind</span><span class="p">:</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dad</span> <span class="o">=</span> <span class="bp">self</span>
 
-<div class="viewcode-block" id="UnionFind.root"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.UnionFind.root">[docs]</a>    <span class="k">def</span> <span class="nf">root</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="UnionFind.root"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.UnionFind.root">[docs]</a>    <span class="k">def</span> <span class="nf">root</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
         <span class="n">root</span> <span class="o">=</span> <span class="bp">self</span>
         <span class="k">while</span> <span class="n">root</span><span class="o">.</span><span class="n">dad</span> <span class="o">!=</span> <span class="n">root</span><span class="p">:</span>
             <span class="n">root</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">dad</span>
@@ -63,34 +169,36 @@
 
         <span class="k">return</span> <span class="n">root</span></div>
 
-<div class="viewcode-block" id="UnionFind.connect"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.UnionFind.connect">[docs]</a>    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+<div class="viewcode-block" id="UnionFind.connect"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.UnionFind.connect">[docs]</a>    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="n">other</span><span class="o">.</span><span class="n">root</span><span class="p">()</span><span class="o">.</span><span class="n">dad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">()</span></div></div>
-    
-<div class="viewcode-block" id="ScanlineRect"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.ScanlineRect">[docs]</a><span class="k">class</span> <span class="nc">ScanlineRect</span><span class="p">(</span><span class="n">UnionFind</span><span class="p">):</span>
+
+<div class="viewcode-block" id="ScanlineRect"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.ScanlineRect">[docs]</a><span class="k">class</span> <span class="nc">ScanlineRect</span><span class="p">(</span><span class="n">UnionFind</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rect</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">netName</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">netType</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">terminal</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">isPorted</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rect</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">netName</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rect</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">netName</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">netType</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Scanline"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.Scanline">[docs]</a><span class="k">class</span> <span class="nc">Scanline</span><span class="p">:</span>
+<div class="viewcode-block" id="Scanline"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.Scanline">[docs]</a><span class="k">class</span> <span class="nc">Scanline</span><span class="p">:</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">dIndex</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="n">indices</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dIndex</span> <span class="o">=</span> <span class="n">dIndex</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rects</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dad</span> <span class="o">=</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="Scanline.isEmpty"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.Scanline.isEmpty">[docs]</a>    <span class="k">def</span> <span class="nf">isEmpty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Scanline.isEmpty"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.Scanline.isEmpty">[docs]</a>    <span class="k">def</span> <span class="nf">isEmpty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rects</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span></div>
 
-<div class="viewcode-block" id="Scanline.new_slr_no_add"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.Scanline.new_slr_no_add">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">new_slr_no_add</span><span class="p">(</span> <span class="n">rect</span><span class="p">,</span> <span class="n">netName</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">isPorted</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Scanline.new_slr_no_add"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.Scanline.new_slr_no_add">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">new_slr_no_add</span><span class="p">(</span> <span class="n">rect</span><span class="p">,</span> <span class="n">netName</span><span class="p">,</span> <span class="n">netType</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">isPorted</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="n">slr</span> <span class="o">=</span> <span class="n">ScanlineRect</span><span class="p">()</span>
         <span class="n">slr</span><span class="o">.</span><span class="n">rect</span> <span class="o">=</span> <span class="n">rect</span><span class="p">[:]</span>
+        <span class="n">slr</span><span class="o">.</span><span class="n">netType</span> <span class="o">=</span> <span class="n">netType</span>
         <span class="k">if</span> <span class="n">netName</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s1">&#39;:&#39;</span> <span class="ow">in</span> <span class="n">netName</span><span class="p">:</span>
             <span class="n">slr</span><span class="o">.</span><span class="n">terminal</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">netName</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">))</span>
             <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">slr</span><span class="o">.</span><span class="n">terminal</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
@@ -99,25 +207,25 @@
         <span class="n">slr</span><span class="o">.</span><span class="n">isPorted</span> <span class="o">=</span> <span class="n">isPorted</span>
         <span class="k">return</span> <span class="n">slr</span></div>
 
-<div class="viewcode-block" id="Scanline.add_slr"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.Scanline.add_slr">[docs]</a>    <span class="k">def</span> <span class="nf">add_slr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">slr</span><span class="p">):</span>
+<div class="viewcode-block" id="Scanline.add_slr"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.Scanline.add_slr">[docs]</a>    <span class="k">def</span> <span class="nf">add_slr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">slr</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">slr</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">slr</span></div>
 
-<div class="viewcode-block" id="Scanline.new_slr"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.Scanline.new_slr">[docs]</a>    <span class="k">def</span> <span class="nf">new_slr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rect</span><span class="p">,</span> <span class="n">netName</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">isPorted</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add_slr</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_slr_no_add</span><span class="p">(</span> <span class="n">rect</span><span class="p">,</span> <span class="n">netName</span><span class="p">,</span> <span class="n">isPorted</span><span class="o">=</span><span class="n">isPorted</span><span class="p">))</span>
+<div class="viewcode-block" id="Scanline.new_slr"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.Scanline.new_slr">[docs]</a>    <span class="k">def</span> <span class="nf">new_slr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rect</span><span class="p">,</span> <span class="n">netName</span><span class="p">,</span> <span class="n">netType</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">isPorted</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_slr</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_slr_no_add</span><span class="p">(</span> <span class="n">rect</span><span class="p">,</span> <span class="n">netName</span><span class="p">,</span> <span class="n">netType</span><span class="p">,</span> <span class="n">isPorted</span><span class="o">=</span><span class="n">isPorted</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">slr</span></div>
 
-<div class="viewcode-block" id="Scanline.merge_slr"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.Scanline.merge_slr">[docs]</a>    <span class="k">def</span> <span class="nf">merge_slr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_slr</span><span class="p">,</span> <span class="n">new_slr</span><span class="p">):</span>
-        <span class="n">base_slr</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dIndex</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">base_slr</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dIndex</span><span class="o">+</span><span class="mi">2</span><span class="p">],</span> <span class="n">new_slr</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dIndex</span><span class="o">+</span><span class="mi">2</span><span class="p">])</span>        
+<div class="viewcode-block" id="Scanline.merge_slr"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.Scanline.merge_slr">[docs]</a>    <span class="k">def</span> <span class="nf">merge_slr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_slr</span><span class="p">,</span> <span class="n">new_slr</span><span class="p">):</span>
+        <span class="n">base_slr</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dIndex</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">base_slr</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dIndex</span><span class="o">+</span><span class="mi">2</span><span class="p">],</span> <span class="n">new_slr</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dIndex</span><span class="o">+</span><span class="mi">2</span><span class="p">])</span>
         <span class="n">base_slr</span><span class="o">.</span><span class="n">isPorted</span> <span class="o">=</span> <span class="n">base_slr</span><span class="o">.</span><span class="n">isPorted</span> <span class="ow">or</span> <span class="n">new_slr</span><span class="o">.</span><span class="n">isPorted</span></div>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s1">&#39;Scanline( rects=&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rects</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span>
 
-<div class="viewcode-block" id="Scanline.find_touching"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.Scanline.find_touching">[docs]</a>    <span class="k">def</span> <span class="nf">find_touching</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">via_rect</span><span class="p">):</span>
-<span class="c1">#</span>
-<span class="c1"># Linear search --- could improve performance by binary search since rects are sorted</span>
-<span class="c1">#</span>
+<div class="viewcode-block" id="Scanline.find_touching"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.Scanline.find_touching">[docs]</a>    <span class="k">def</span> <span class="nf">find_touching</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">via_rect</span><span class="p">):</span>
+        <span class="c1">#</span>
+        <span class="c1"># Linear search --- could improve performance by binary search since rects are sorted</span>
+        <span class="c1">#</span>
         <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">for</span> <span class="n">metal_rect</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rects</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">RemoveDuplicates</span><span class="o">.</span><span class="n">touching</span><span class="p">(</span> <span class="n">via_rect</span><span class="o">.</span><span class="n">rect</span><span class="p">,</span> <span class="n">metal_rect</span><span class="o">.</span><span class="n">rect</span><span class="p">):</span>
@@ -127,9 +235,9 @@
         <span class="k">assert</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="p">(</span><span class="n">via_rect</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rects</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">result</span></div></div>
 
-<div class="viewcode-block" id="RemoveDuplicates"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates">[docs]</a><span class="k">class</span> <span class="nc">RemoveDuplicates</span><span class="p">():</span>
+<div class="viewcode-block" id="RemoveDuplicates"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates">[docs]</a><span class="k">class</span> <span class="nc">RemoveDuplicates</span><span class="p">():</span>
 
-<div class="viewcode-block" id="RemoveDuplicates.dump"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.dump">[docs]</a>    <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="RemoveDuplicates.dump"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.dump">[docs]</a>    <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">tbl</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="p">(</span><span class="n">layer</span><span class="p">,</span><span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">store_scan_lines</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -140,7 +248,7 @@
         <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">s</span><span class="p">)</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">([</span><span class="s2">&quot;Equivalence classes:&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span><span class="p">]))</span></div>
 
-<div class="viewcode-block" id="RemoveDuplicates.check_opens"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.check_opens">[docs]</a>    <span class="k">def</span> <span class="nf">check_opens</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="RemoveDuplicates.check_opens"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.check_opens">[docs]</a>    <span class="k">def</span> <span class="nf">check_opens</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 
         <span class="n">tbl</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">))</span>
 
@@ -160,18 +268,18 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">set_open</span><span class="p">(</span> <span class="n">nm</span><span class="p">,</span> <span class="p">(</span><span class="n">nm</span><span class="p">,</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span></div>
 
 
-<div class="viewcode-block" id="RemoveDuplicates.containedIn"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.containedIn">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="RemoveDuplicates.containedIn"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.containedIn">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">containedIn</span><span class="p">(</span> <span class="n">rS</span><span class="p">,</span> <span class="n">rB</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;rS is contained in rB&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">rB</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">rS</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">rB</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">rS</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">and</span> <span class="n">rS</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">rB</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">rS</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">rB</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="RemoveDuplicates.touching"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.touching">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="RemoveDuplicates.touching"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.touching">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">touching</span><span class="p">(</span> <span class="n">rA</span><span class="p">,</span> <span class="n">rB</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;rA and rB touch&quot;&quot;&quot;</span>
         <span class="c1"># not touching if completely to left or right or above or below</span>
         <span class="k">return</span> <span class="ow">not</span> <span class="p">(</span><span class="n">rA</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">rB</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">rB</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">rA</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">rA</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">rB</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">or</span> <span class="n">rB</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">rA</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">canvas</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">nets_allowed_to_be_open</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">canvas</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">nets_allowed_to_be_open</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_opens</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span> <span class="o">=</span> <span class="n">canvas</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">store_scan_lines</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">different_widths</span> <span class="o">=</span> <span class="p">[]</span>
@@ -185,12 +293,13 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">nets_allowed_to_be_open</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">nets_allowed_to_be_open</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">nets_allowed_to_be_open</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allow_opens</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">allow_opens</span><span class="p">)</span>
 
-<div class="viewcode-block" id="RemoveDuplicates.set_open"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.set_open">[docs]</a>    <span class="k">def</span> <span class="nf">set_open</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">nm</span><span class="p">,</span> <span class="n">opn</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">nm</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nets_allowed_to_be_open</span><span class="p">:</span>
+<div class="viewcode-block" id="RemoveDuplicates.set_open"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.set_open">[docs]</a>    <span class="k">def</span> <span class="nf">set_open</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">nm</span><span class="p">,</span> <span class="n">opn</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">nm</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nets_allowed_to_be_open</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">allow_opens</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">opens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">opn</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="RemoveDuplicates.setup_layer_structures"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.setup_layer_structures">[docs]</a>    <span class="k">def</span> <span class="nf">setup_layer_structures</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="RemoveDuplicates.setup_layer_structures"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.setup_layer_structures">[docs]</a>    <span class="k">def</span> <span class="nf">setup_layer_structures</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">skip_layers</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">via_layers</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
@@ -215,29 +324,28 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">indicesTbl</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;h&#39;</span><span class="p">:</span> <span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="mi">0</span><span class="p">),</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span> <span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;*&#39;</span><span class="p">:</span> <span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="mi">1</span><span class="p">)}</span></div>
 
 
-<div class="viewcode-block" id="RemoveDuplicates.build_centerline_tbl"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.build_centerline_tbl">[docs]</a>    <span class="k">def</span> <span class="nf">build_centerline_tbl</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="RemoveDuplicates.build_centerline_tbl"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.build_centerline_tbl">[docs]</a>    <span class="k">def</span> <span class="nf">build_centerline_tbl</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
         <span class="n">tbl</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">))</span>
-
         <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">terminals</span><span class="p">:</span>
             <span class="n">layer</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">]</span>
             <span class="n">rect</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">]</span>
             <span class="n">netName</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;netName&#39;</span><span class="p">]</span>
-            <span class="n">isPorted</span> <span class="o">=</span> <span class="s1">&#39;pin&#39;</span> <span class="ow">in</span> <span class="n">d</span>
+            <span class="n">netType</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;netType&#39;</span><span class="p">]</span>
+            <span class="n">isPorted</span> <span class="o">=</span> <span class="s1">&#39;pin&#39;</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;netType&#39;</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">isPorted</span><span class="p">:</span>
-                <span class="k">assert</span> <span class="n">netName</span> <span class="o">==</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;pin&#39;</span><span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">netName</span><span class="si">}</span><span class="s2"> does not match </span><span class="si">{</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;pin&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">assert</span> <span class="n">netName</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;netName for pin rectange </span><span class="si">{</span><span class="n">rect</span><span class="si">}</span><span class="s1"> on layer </span><span class="si">{</span><span class="n">layer</span><span class="si">}</span><span class="s1"> is None&#39;</span>
             <span class="k">if</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">skip_layers</span><span class="p">:</span> <span class="k">continue</span>
-
             <span class="k">if</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
                 <span class="n">twice_center</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">rect</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
                                    <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">indicesTbl</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">layer</span><span class="p">]][</span><span class="mi">0</span><span class="p">])</span>
-                <span class="n">tbl</span><span class="p">[</span><span class="n">layer</span><span class="p">][</span><span class="n">twice_center</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">rect</span><span class="p">,</span> <span class="n">netName</span><span class="p">,</span> <span class="n">isPorted</span><span class="p">))</span>
+                <span class="n">tbl</span><span class="p">[</span><span class="n">layer</span><span class="p">][</span><span class="n">twice_center</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">rect</span><span class="p">,</span> <span class="n">netName</span><span class="p">,</span> <span class="n">netType</span><span class="p">,</span> <span class="n">isPorted</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Layer </span><span class="si">{</span><span class="n">layer</span><span class="si">}</span><span class="s2"> not in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">tbl</span></div>
 
 
-<div class="viewcode-block" id="RemoveDuplicates.build_scan_lines"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.build_scan_lines">[docs]</a>    <span class="k">def</span> <span class="nf">build_scan_lines</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">tbl</span><span class="p">):</span>
+<div class="viewcode-block" id="RemoveDuplicates.build_scan_lines"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.build_scan_lines">[docs]</a>    <span class="k">def</span> <span class="nf">build_scan_lines</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">tbl</span><span class="p">):</span>
         <span class="n">skip_layers_for_different_widths</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Active&#39;</span><span class="p">]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">store_scan_lines</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
@@ -251,28 +359,31 @@
 
                 <span class="n">different_widths_in_bin</span> <span class="o">=</span> <span class="kc">False</span>
 
-                <span class="p">(</span><span class="n">rect0</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="k">for</span> <span class="p">(</span><span class="n">rect</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                <span class="p">(</span><span class="n">rect0</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">for</span> <span class="p">(</span><span class="n">rect</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
                     <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">rect</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">rect0</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">):</span>
                         <span class="n">widths</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-                        <span class="k">for</span> <span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
                             <span class="n">widths</span><span class="o">.</span><span class="n">add</span><span class="p">(</span> <span class="n">r</span><span class="p">[</span><span class="n">indices</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">-</span><span class="n">r</span><span class="p">[</span><span class="n">indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
                         <span class="k">if</span> <span class="n">layer</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">skip_layers_for_different_widths</span><span class="p">:</span>
                             <span class="n">different_widths_in_bin</span> <span class="o">=</span> <span class="kc">True</span>
                             <span class="n">tup</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rectangles on layer </span><span class="si">{</span><span class="n">layer</span><span class="si">}</span><span class="s2"> with the same 2x centerline </span><span class="si">{</span><span class="n">twice_center</span><span class="si">}</span><span class="s2"> but different widths </span><span class="si">{</span><span class="n">widths</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">indices</span><span class="p">,</span><span class="n">v</span><span class="p">))</span>
-                            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tup</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                            <span class="c1">#logger.warning( f&quot;{tup}&quot;)</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">different_widths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">tup</span><span class="p">)</span>
 
                 <span class="n">sl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">store_scan_lines</span><span class="p">[</span><span class="n">layer</span><span class="p">][</span><span class="n">twice_center</span><span class="p">]</span> <span class="o">=</span> <span class="n">Scanline</span><span class="p">(</span> <span class="n">indices</span><span class="p">,</span> <span class="n">dIndex</span><span class="p">)</span>
 
                 <span class="n">current_slr</span> <span class="o">=</span> <span class="kc">None</span>
-                <span class="k">for</span> <span class="p">(</span><span class="n">rect</span><span class="p">,</span> <span class="n">netName</span><span class="p">,</span> <span class="n">isPorted</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">dIndex</span><span class="p">]):</span>
-                    <span class="n">potential_slr</span> <span class="o">=</span> <span class="n">sl</span><span class="o">.</span><span class="n">new_slr_no_add</span><span class="p">(</span><span class="n">rect</span><span class="p">,</span> <span class="n">netName</span><span class="p">,</span> <span class="n">isPorted</span><span class="o">=</span><span class="n">isPorted</span><span class="p">)</span>
+                <span class="k">for</span> <span class="p">(</span><span class="n">rect</span><span class="p">,</span> <span class="n">netName</span><span class="p">,</span> <span class="n">netType</span><span class="p">,</span> <span class="n">isPorted</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">dIndex</span><span class="p">]):</span>
+                    <span class="n">potential_slr</span> <span class="o">=</span> <span class="n">sl</span><span class="o">.</span><span class="n">new_slr_no_add</span><span class="p">(</span><span class="n">rect</span><span class="p">,</span> <span class="n">netName</span><span class="p">,</span> <span class="n">netType</span><span class="p">,</span> <span class="n">isPorted</span><span class="o">=</span><span class="n">isPorted</span><span class="p">)</span>
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">sl</span><span class="o">.</span><span class="n">isEmpty</span><span class="p">()</span> <span class="ow">and</span> \
-                       <span class="n">rect</span><span class="p">[</span><span class="n">dIndex</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">current_slr</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="n">dIndex</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> \
-                       <span class="nb">all</span><span class="p">(</span><span class="n">rect</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">current_slr</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">):</span>  <span class="c1"># continuation</span>
+                        <span class="n">rect</span><span class="p">[</span><span class="n">dIndex</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">current_slr</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="n">dIndex</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> \
+                        <span class="nb">all</span><span class="p">(</span><span class="n">rect</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">current_slr</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">):</span>  <span class="c1"># continuation</span>
                         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connectPair</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span><span class="n">current_slr</span><span class="p">,</span> <span class="n">potential_slr</span><span class="p">):</span>
-                            <span class="n">sl</span><span class="o">.</span><span class="n">merge_slr</span><span class="p">(</span><span class="n">current_slr</span><span class="p">,</span> <span class="n">potential_slr</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="p">(</span><span class="n">potential_slr</span><span class="o">.</span><span class="n">netType</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;blockage&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">current_slr</span><span class="o">.</span><span class="n">netType</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;blockage&#39;</span><span class="p">]):</span>
+                                <span class="n">sl</span><span class="o">.</span><span class="n">merge_slr</span><span class="p">(</span><span class="n">current_slr</span><span class="p">,</span> <span class="n">potential_slr</span><span class="p">)</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">current_slr</span> <span class="o">=</span> <span class="n">sl</span><span class="o">.</span><span class="n">add_slr</span><span class="p">(</span> <span class="n">potential_slr</span><span class="p">)</span>
                         <span class="k">else</span><span class="p">:</span>
                             <span class="n">current_slr</span> <span class="o">=</span> <span class="n">sl</span><span class="o">.</span><span class="n">add_slr</span><span class="p">(</span> <span class="n">potential_slr</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>  <span class="c1"># empty or gap or different width</span>
@@ -282,9 +393,10 @@
                     <span class="k">assert</span> <span class="n">current_slr</span> <span class="o">==</span> <span class="n">sl</span><span class="o">.</span><span class="n">rects</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
                 <span class="k">if</span> <span class="n">different_widths_in_bin</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Different widths: </span><span class="si">{</span><span class="n">layer</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">sl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+                    <span class="k">pass</span></div>
+                    <span class="c1">#logger.warning( f&quot;Different widths: {layer} {sl}&quot;)</span>
 
-<div class="viewcode-block" id="RemoveDuplicates.check_shorts_induced_by_vias"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.check_shorts_induced_by_vias">[docs]</a>    <span class="k">def</span> <span class="nf">check_shorts_induced_by_vias</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="RemoveDuplicates.check_shorts_induced_by_vias"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.check_shorts_induced_by_vias">[docs]</a>    <span class="k">def</span> <span class="nf">check_shorts_induced_by_vias</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
 
         <span class="k">for</span> <span class="p">(</span><span class="n">via</span><span class="p">,</span> <span class="p">(</span><span class="n">mv</span><span class="p">,</span><span class="n">mh</span><span class="p">))</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">layer_stack</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">via</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">store_scan_lines</span><span class="p">:</span>
@@ -305,14 +417,14 @@
                         <span class="k">else</span><span class="p">:</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">connectPair</span><span class="p">(</span> <span class="n">via</span><span class="p">,</span> <span class="n">metal_rect_v</span><span class="o">.</span><span class="n">root</span><span class="p">(),</span> <span class="n">via_rect</span><span class="o">.</span><span class="n">root</span><span class="p">())</span></div>
 
-<div class="viewcode-block" id="RemoveDuplicates.check_shorts_induced_by_terminals"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.check_shorts_induced_by_terminals">[docs]</a>    <span class="k">def</span> <span class="nf">check_shorts_induced_by_terminals</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="RemoveDuplicates.check_shorts_induced_by_terminals"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.check_shorts_induced_by_terminals">[docs]</a>    <span class="k">def</span> <span class="nf">check_shorts_induced_by_terminals</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">instance</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subinsts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">for</span> <span class="n">pin</span><span class="p">,</span> <span class="n">slrs</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">pins</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="n">names</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="o">.</span><span class="n">root</span><span class="p">()</span><span class="o">.</span><span class="n">netName</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">slrs</span><span class="p">}</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">shorts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;THROUGH TERMINAL </span><span class="si">{</span><span class="n">instance</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="n">pin</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">slrs</span><span class="p">)</span> <span class="p">)</span></div>
 
-<div class="viewcode-block" id="RemoveDuplicates.connectPair"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.connectPair">[docs]</a>    <span class="k">def</span> <span class="nf">connectPair</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<div class="viewcode-block" id="RemoveDuplicates.connectPair"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.connectPair">[docs]</a>    <span class="k">def</span> <span class="nf">connectPair</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
         <span class="n">numshorts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shorts</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">netName</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">a</span><span class="o">.</span><span class="n">netName</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">netName</span>
@@ -331,7 +443,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">subinsts</span><span class="p">[</span><span class="n">b</span><span class="o">.</span><span class="n">terminal</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">pins</span><span class="p">[</span><span class="n">b</span><span class="o">.</span><span class="n">terminal</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span> <span class="n">b</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span></div>
 
-<div class="viewcode-block" id="RemoveDuplicates.generate_rectangles"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.generate_rectangles">[docs]</a>    <span class="k">def</span> <span class="nf">generate_rectangles</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="RemoveDuplicates.generate_rectangles"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.generate_rectangles">[docs]</a>    <span class="k">def</span> <span class="nf">generate_rectangles</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
 
         <span class="n">terminals</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="c1">#</span>
@@ -347,15 +459,15 @@
             <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vv</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="k">for</span> <span class="n">slr</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">rects</span><span class="p">:</span>
                     <span class="n">root</span> <span class="o">=</span> <span class="n">slr</span><span class="o">.</span><span class="n">root</span><span class="p">()</span>
-                    <span class="n">terminals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">{</span><span class="s1">&#39;layer&#39;</span><span class="p">:</span> <span class="n">layer</span><span class="p">,</span> <span class="s1">&#39;netName&#39;</span><span class="p">:</span> <span class="n">root</span><span class="o">.</span><span class="n">netName</span><span class="p">,</span> <span class="s1">&#39;rect&#39;</span><span class="p">:</span> <span class="n">slr</span><span class="o">.</span><span class="n">rect</span><span class="p">})</span>
+                    <span class="n">terminals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">{</span><span class="s1">&#39;layer&#39;</span><span class="p">:</span> <span class="n">layer</span><span class="p">,</span> <span class="s1">&#39;netName&#39;</span><span class="p">:</span> <span class="n">root</span><span class="o">.</span><span class="n">netName</span><span class="p">,</span> <span class="s1">&#39;rect&#39;</span><span class="p">:</span> <span class="n">slr</span><span class="o">.</span><span class="n">rect</span><span class="p">,</span> <span class="s1">&#39;netType&#39;</span><span class="p">:</span><span class="n">slr</span><span class="o">.</span><span class="n">netType</span><span class="p">})</span>
                     <span class="k">if</span> <span class="n">slr</span><span class="o">.</span><span class="n">isPorted</span><span class="p">:</span>
-                        <span class="n">terminals</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;pin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">netName</span>
+                        <span class="n">terminals</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;netType&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;pin&#39;</span>
                     <span class="k">if</span> <span class="n">slr</span><span class="o">.</span><span class="n">terminal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                         <span class="n">terminals</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;terminal&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">slr</span><span class="o">.</span><span class="n">terminal</span>
 
         <span class="k">return</span> <span class="n">terminals</span></div>
 
-<div class="viewcode-block" id="RemoveDuplicates.remove_duplicates"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.remove_duplicates">[docs]</a>    <span class="k">def</span> <span class="nf">remove_duplicates</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="RemoveDuplicates.remove_duplicates"><a class="viewcode-back" href="../../../modules/align.cell_fabric.html#align.cell_fabric.remove_duplicates.RemoveDuplicates.remove_duplicates">[docs]</a>    <span class="k">def</span> <span class="nf">remove_duplicates</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">silence_errors</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">build_scan_lines</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_centerline_tbl</span><span class="p">())</span>
 
@@ -363,12 +475,21 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">check_shorts_induced_by_terminals</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">check_opens</span><span class="p">()</span>
 
-        <span class="k">for</span> <span class="n">short</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">shorts</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;SHORT&quot;</span> <span class="o">+</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">short</span><span class="p">))</span>
-        <span class="k">for</span> <span class="n">opn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">opens</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span> <span class="s2">&quot;OPEN&quot;</span> <span class="o">+</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">opn</span><span class="p">))</span>
-        <span class="k">for</span> <span class="n">dif</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">different_widths</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span> <span class="s2">&quot;DIFFERENT WIDTH&quot;</span> <span class="o">+</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">dif</span><span class="p">))</span>
+        <span class="c1"># Trying fewer error messages</span>
+        <span class="k">if</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shorts</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">opens</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">different_widths</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">silence_errors</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Found errors: SHORT: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shorts</span><span class="p">)</span><span class="si">}</span><span class="s1"> OPEN: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opens</span><span class="p">)</span><span class="si">}</span><span class="s1"> DIFFERENT WIDTH: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">different_widths</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Found errors: SHORT: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shorts</span><span class="p">)</span><span class="si">}</span><span class="s1"> OPEN: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opens</span><span class="p">)</span><span class="si">}</span><span class="s1"> DIFFERENT WIDTH: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">different_widths</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">short</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">shorts</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;SHORT&quot;</span> <span class="o">+</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">short</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">opn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">opens</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span> <span class="s2">&quot;OPEN&quot;</span> <span class="o">+</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">opn</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">dif</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">different_widths</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span> <span class="s2">&quot;DIFFERENT WIDTH&quot;</span> <span class="o">+</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">dif</span><span class="p">))</span>
+
         <span class="k">for</span> <span class="n">subinst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subinsts</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;SUBINST&quot;</span> <span class="o">+</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">subinst</span><span class="p">))</span>
 
@@ -376,46 +497,31 @@
 
 </pre></div>
 
-            <div class="clearer"></div>
+           </div>
           </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, ALIGN team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-            <p class="logo"><a href="../../../index.html">
-              <img class="logo" src="../../../_static/LOGO.PNG" alt="Logo"/>
-            </a></p>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">align.cell_fabric.remove_duplicates</a></li> 
-      </ul>
-    </div>
-    <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, ALIGN team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
-    </div>
-  </body>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
 </html>

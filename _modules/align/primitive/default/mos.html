@@ -1,42 +1,148 @@
-
 <!DOCTYPE html>
-
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>align.primitive.default.mos &#8212; ALIGN</title>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>align.primitive.default.mos &mdash; ALIGN</title><link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../../../_static/classic.css" type="text/css" />
-    
-    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
-    <script src="../../../../_static/jquery.js"></script>
-    <script src="../../../../_static/underscore.js"></script>
-    <script src="../../../../_static/doctools.js"></script>
-    
+      <link rel="stylesheet" href="../../../../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" /> 
-  </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../../../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../../index.html">ALIGN</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">align.primitive.default.mos</a></li> 
-      </ul>
-    </div>  
+</head>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html"><img src="../../../../_static/LOGO.PNG" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Notes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../notes/flow.html">ALIGN: flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notes/flow.html#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notes/flow.html#outputs">Outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../notes/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notes/installation.html#step-0-check-prerequisites">Step 0: Check prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notes/installation.html#step-1-clone-the-align-source-code-to-your-local-environment">Step 1: Clone the ALIGN source code to your local environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notes/installation.html#step-2-create-a-python-virtualenv">Step 2: Create a Python virtualenv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notes/installation.html#step-3a-install-align-as-a-user">Step 3a: Install ALIGN as a USER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notes/installation.html#step-3b-install-align-as-a-developer">Step 3b: Install ALIGN as a DEVELOPER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notes/installation.html#step-4-run-align">Step 4: Run ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notes/installation.html#step-5-view-layout">Step 5: View layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../notes/introduction.html">Introduction by Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../notes/viewer.html">Layout viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notes/viewer.html#klayout-viewer">KLayout viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notes/viewer.html#align-viewer">ALIGN viewer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../notes/debug.html">Debug</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notes/debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notes/debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notes/debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notes/debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notes/debug.html#reinstalling-align">Reinstalling ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notes/debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notes/debug.html#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../notes/const.html">Constraints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notes/const.html#constraint-options">Constraint options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notes/const.html#example-constraints">Example constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../notes/upcoming.html">Upcoming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notes/upcoming.html#how-to-add-your-own-pdk">How to add your own pdk</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Datasets:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../notes/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../notes/database.html">Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notes/database.html#sized-netlists">Sized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notes/database.html#unsized-netlists">Unsized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notes/database.html#generalized-testbenches">Generalized testbenches</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules/align.html">align package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../modules/align.gui.html">align.gui package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../modules/align.pdk.html">align.pdk package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../modules/align.primitive.html">align.primitive package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../modules/align.utils.html">align.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules/align.primitive.html">align.primitive package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../modules/align.primitive.default.html">align.primitive.default package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules/align.pdk.html">align.pdk package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules/align.primitive.default.html">align.primitive.default package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules/align.utils.html">align.utils package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules/align.gui.html">align.gui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">ALIGN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>align.primitive.default.mos</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
   <h1>Source code for align.primitive.default.mos</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">.canvas</span> <span class="kn">import</span> <span class="n">DefaultCanvas</span>
 <span class="kn">from</span> <span class="nn">...cell_fabric.generators</span> <span class="kn">import</span> <span class="o">*</span>
@@ -45,7 +151,7 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
-<div class="viewcode-block" id="MOSGenerator"><a class="viewcode-back" href="../../../../align.primitive.default.html#align.primitive.default.mos.MOSGenerator">[docs]</a><span class="k">class</span> <span class="nc">MOSGenerator</span><span class="p">(</span><span class="n">DefaultCanvas</span><span class="p">):</span>
+<div class="viewcode-block" id="MOSGenerator"><a class="viewcode-back" href="../../../../modules/align.primitive.default.html#align.primitive.default.mos.MOSGenerator">[docs]</a><span class="k">class</span> <span class="nc">MOSGenerator</span><span class="p">(</span><span class="n">DefaultCanvas</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pdk</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">fin</span><span class="p">,</span> <span class="n">gate</span><span class="p">,</span> <span class="n">gateDummy</span><span class="p">,</span> <span class="n">shared_diff</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">bodyswitch</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">pdk</span><span class="p">)</span>
@@ -62,13 +168,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">gate</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">gate</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">stack</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gatesPerUnitCell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gate</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">gateDummy</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">shared_diff</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">finDummy</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">finsPerUnitCell</span><span class="o">-</span><span class="n">fin</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lFin</span> <span class="o">=</span> <span class="mi">16</span> <span class="c1">## need to be added in the PDK JSON</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lFin</span> <span class="o">=</span> <span class="n">height</span> <span class="c1">### This defines numebr of fins for tap cells; Should we define it in the layers.json?</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">finDummy</span> <span class="o">&gt;=</span> <span class="mi">8</span><span class="p">,</span> <span class="s2">&quot;number of fins in the transistor must be less than height&quot;</span>
         <span class="k">assert</span> <span class="n">fin</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;number of fins in the transistor must be more than 2&quot;</span>
         <span class="k">assert</span> <span class="n">fin</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;number of fins in the transistor must be even&quot;</span> 
         <span class="k">assert</span> <span class="n">gateDummy</span> <span class="o">&gt;</span> <span class="mi">0</span>
         <span class="n">unitCellLength</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gatesPerUnitCell</span><span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;Poly&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span>
-        <span class="c1">#activeOffset = self.finsPerUnitCell//-self.pdk[&#39;Fin&#39;][&#39;Pitch&#39;]//2</span>
         <span class="n">activeOffset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unitCellHeight</span><span class="o">//</span><span class="mi">2</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;Fin&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span><span class="o">//</span><span class="mi">2</span>
         <span class="n">activeWidth</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;Fin&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">fin</span>
         <span class="n">activePitch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unitCellHeight</span>
@@ -185,7 +290,6 @@
                                     <span class="n">WidthY</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;V0&#39;</span><span class="p">][</span><span class="s1">&#39;WidthY&#39;</span><span class="p">]))</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">v0</span><span class="o">.</span><span class="n">h_clg</span><span class="o">.</span><span class="n">addCenterLine</span><span class="p">(</span> <span class="mi">0</span><span class="p">,</span>                 <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;V0&#39;</span><span class="p">][</span><span class="s1">&#39;WidthY&#39;</span><span class="p">],</span> <span class="kc">False</span><span class="p">)</span>
-        <span class="c1">#v0pitch = activeWidth//(2*self.pdk[&#39;M2&#39;][&#39;Pitch&#39;]) * self.pdk[&#39;Fin&#39;][&#39;Pitch&#39;]</span>
         <span class="n">v0pitch</span> <span class="o">=</span> <span class="mi">3</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;Fin&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span>
         <span class="n">v0Offset</span> <span class="o">=</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">finDummy</span><span class="o">+</span><span class="mi">3</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;M2&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span> 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">((</span><span class="n">activeWidth</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;M2&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">])</span> <span class="o">//</span> <span class="n">v0pitch</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
@@ -199,38 +303,35 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">subinsts</span><span class="p">[</span><span class="n">fullname</span><span class="p">]</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
 
         <span class="k">def</span> <span class="nf">_connect_diffusion</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">pin</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">grid_y0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">grid_y1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">grid_y0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">grid_y1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">v0</span><span class="o">.</span><span class="n">h_clg</span><span class="o">.</span><span class="n">n</span><span class="p">):</span> <span class="c1">## self.v0.h_clg.n??</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">addVia</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">v0</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">fullname</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="n">pin</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">j</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">addVia</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">v0</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">fullname</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="n">pin</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">j</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_xpins</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">pin</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
             
         <span class="c1"># Draw FEOL Layers</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_diff</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">x</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">x</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span> 
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_diff</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">x</span> <span class="o">==</span> <span class="n">x_cells</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_diff</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gate</span><span class="o">*</span><span class="n">x_cells</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_diff</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gate</span><span class="o">*</span><span class="n">x_cells</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gatesPerUnitCell</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">pl</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gatesPerUnitCell</span><span class="o">*</span><span class="n">x</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">gateDummy</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shared_diff</span><span class="o">+</span><span class="n">i</span><span class="p">,</span>   <span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">pl</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gatesPerUnitCell</span><span class="o">*</span><span class="n">x</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">gateDummy</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shared_diff</span><span class="o">+</span><span class="n">i</span><span class="p">,</span>   <span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_diff</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="p">(</span><span class="n">x</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">x</span> <span class="o">==</span> <span class="n">x_cells</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
             <span class="n">dummy_gates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gatesPerUnitCell</span><span class="o">*</span><span class="n">x_cells</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">gateDummy</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="n">x_cells</span><span class="o">-</span><span class="mi">1</span> <span class="k">else</span> <span class="mi">0</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gateDummy</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">pl</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">dummy_gates</span><span class="o">+</span><span class="n">i</span><span class="p">,</span>   <span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">pl</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">dummy_gates</span><span class="o">+</span><span class="n">i</span><span class="p">,</span>   <span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
         <span class="c1"># Source, Drain, Gate Connections</span>
 
-        <span class="c1">#grid_y0 = y*self.m2PerUnitCell + self.finDummy//2-1</span>
         <span class="n">grid_y0</span> <span class="o">=</span> <span class="n">y</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">m2PerUnitCell</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="n">grid_y1</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">m2PerUnitCell</span><span class="o">-</span><span class="mi">5</span>
-        <span class="c1">#grid_y1 = grid_y0+(self.finsPerUnitCell - 2*self.finDummy + 2)//2-1</span>
         <span class="n">gate_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gateDummy</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shared_diff</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">gatesPerUnitCell</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">gatesPerUnitCell</span> <span class="o">//</span> <span class="mi">2</span>
         <span class="c1"># Connect Gate (gate_x)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">gate_x</span> <span class="p">,</span> <span class="p">(</span><span class="n">grid_y1</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">grid_y1</span><span class="o">+</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">pc</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">grid_y1</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">x</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-        <span class="c1">#self.addVia( self.va, f&#39;{fullname}:G&#39;, None, gate_x, (y*self.m2PerUnitCell//2, 1))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">addVia</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">va</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">fullname</span><span class="si">}</span><span class="s1">:G&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">gate_x</span><span class="p">,</span> <span class="n">grid_y1</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">gate_x</span> <span class="p">,</span> <span class="p">(</span><span class="n">grid_y1</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">grid_y1</span><span class="o">+</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">pc</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">grid_y1</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">x</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addVia</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">va</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">fullname</span><span class="si">}</span><span class="s1">:G&#39;</span><span class="p">,</span> <span class="n">gate_x</span><span class="p">,</span> <span class="n">grid_y1</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_xpins</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s1">&#39;G&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gate_x</span><span class="p">)</span>
 
         <span class="c1"># Connect Source &amp; Drain</span>
@@ -272,7 +373,7 @@
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">current_track</span> <span class="o">=</span> <span class="n">y</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2PerUnitCell</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">connections</span><span class="p">)</span> <span class="o">*</span> <span class="n">j</span> <span class="o">+</span> <span class="n">diff_track</span>
                         <span class="n">diff_track</span> <span class="o">=</span> <span class="n">diff_track</span> <span class="o">+</span> <span class="mi">1</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">addWireAndViaSet</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v1</span><span class="p">,</span> <span class="n">current_track</span><span class="p">,</span> <span class="n">contacts</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">addWireAndViaSet</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v1</span><span class="p">,</span> <span class="n">current_track</span><span class="p">,</span> <span class="n">contacts</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_nets</span><span class="p">[</span><span class="n">net</span><span class="p">][</span><span class="n">current_track</span><span class="p">]</span> <span class="o">=</span> <span class="n">contacts</span>
                 <span class="c1"># Extend m1 if needed. TODO: Should we draw longer M1s to begin with?</span>
                 <span class="c1">#direction = 1 if current_track &gt; center_track else -1</span>
@@ -302,42 +403,37 @@
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">contacts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> <span class="c1"># Create m2 terminal</span>
                     <span class="n">i</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">contacts</span><span class="p">))</span>
                     <span class="n">minx</span><span class="p">,</span> <span class="n">maxx</span> <span class="o">=</span> <span class="n">_get_wire_terminators</span><span class="p">(</span><span class="n">conn</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m2</span><span class="p">,</span> <span class="n">net</span><span class="p">,</span> <span class="n">net</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">minx</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">maxx</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m2</span><span class="p">,</span> <span class="n">net</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">minx</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">maxx</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">netType</span> <span class="o">=</span> <span class="s1">&#39;pin&#39;</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span> <span class="c1"># create m3 terminal(s)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">addWireAndViaSet</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">net</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">m3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v2</span><span class="p">,</span> <span class="n">current_track</span><span class="p">,</span> <span class="n">contacts</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">addWireAndViaSet</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">m3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v2</span><span class="p">,</span> <span class="n">current_track</span><span class="p">,</span> <span class="n">contacts</span><span class="p">,</span> <span class="n">netType</span> <span class="o">=</span> <span class="s1">&#39;pin&#39;</span><span class="p">)</span>
                     <span class="k">if</span> <span class="nb">max</span><span class="p">(</span><span class="n">contacts</span><span class="p">)</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">contacts</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
                         <span class="n">minL_m3</span> <span class="o">=</span> <span class="mi">2</span> <span class="c1">## for M3 min length</span>
                         <span class="n">maxy</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">contacts</span><span class="p">)</span> <span class="o">+</span> <span class="n">minL_m3</span>
                         <span class="n">miny</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">contacts</span><span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m3</span><span class="p">,</span> <span class="n">net</span><span class="p">,</span> <span class="n">net</span><span class="p">,</span> <span class="n">current_track</span><span class="p">,</span> <span class="p">(</span><span class="n">miny</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">maxy</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m3</span><span class="p">,</span> <span class="n">net</span><span class="p">,</span> <span class="n">current_track</span><span class="p">,</span> <span class="p">(</span><span class="n">miny</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">maxy</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">netType</span> <span class="o">=</span> <span class="s1">&#39;pin&#39;</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="k">pass</span>
                     <span class="c1"># Extend m2 if needed. TODO: What to do if we go beyond cell boundary?</span>
                     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">locs</span> <span class="ow">in</span> <span class="n">conn</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                         <span class="n">minx</span><span class="p">,</span> <span class="n">maxx</span> <span class="o">=</span> <span class="n">_get_wire_terminators</span><span class="p">([</span><span class="o">*</span><span class="n">locs</span><span class="p">,</span> <span class="n">current_track</span><span class="p">])</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m2</span><span class="p">,</span> <span class="n">net</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">minx</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">maxx</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-
-        <span class="c1">#self.addWire( self.m2, &#39;B&#39;, &#39;B&#39;, (y_cells)* self.m2PerUnitCell + self.lFin//4, (0, 1), (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1))</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m2</span><span class="p">,</span> <span class="n">net</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">minx</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">maxx</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">_addBodyContact</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">x_cells</span><span class="p">,</span> <span class="n">yloc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;M1&#39;</span><span class="p">):</span>
-        <span class="c1">#if self.bodyswitch == 0:continue</span>
         <span class="n">fullname</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">_X</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s1">_Y</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s1">&#39;</span>
         <span class="k">if</span> <span class="n">yloc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">y</span> <span class="o">=</span> <span class="n">yloc</span>
         <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2PerUnitCell</span>
         <span class="n">gu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gatesPerUnitCell</span>
         <span class="n">gate_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gateDummy</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shared_diff</span> <span class="o">+</span> <span class="n">x</span><span class="o">*</span><span class="n">gu</span> <span class="o">+</span> <span class="n">gu</span> <span class="o">//</span> <span class="mi">2</span>
-        <span class="c1">#gate_x = x*gu + gu // 2</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_xpins</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s1">&#39;B&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gate_x</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_diff</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">activeb</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">x</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span> 
-            <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">pb</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">x</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">activeb</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">x</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">pb</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">x</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span> 
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">activeb_diff</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gate</span><span class="o">*</span><span class="n">x_cells</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">pb_diff</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">x</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">gate_x</span><span class="p">,</span> <span class="p">((</span><span class="n">y</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">h</span><span class="o">+</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">((</span><span class="n">y</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">h</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">lFin</span><span class="o">//</span><span class="mi">2</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">addVia</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">va</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">fullname</span><span class="si">}</span><span class="s1">:B&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">gate_x</span><span class="p">,</span> <span class="p">(</span><span class="n">y</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">h</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">lFin</span><span class="o">//</span><span class="mi">4</span><span class="p">)</span>
-        <span class="c1">#self.addVia( self.v1, &#39;B&#39;, None, gate_x, (y+1)*h + self.lFin//4)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">activeb_diff</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gate</span><span class="o">*</span><span class="n">x_cells</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">pb_diff</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">x</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">gate_x</span><span class="p">,</span> <span class="p">((</span><span class="n">y</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">h</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">lFin</span><span class="o">//</span><span class="mi">4</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">((</span><span class="n">y</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">h</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">lFin</span><span class="o">//</span><span class="mi">4</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addVia</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">va</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">fullname</span><span class="si">}</span><span class="s1">:B&#39;</span><span class="p">,</span> <span class="n">gate_x</span><span class="p">,</span> <span class="p">(</span><span class="n">y</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">h</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">lFin</span><span class="o">//</span><span class="mi">4</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_addMOSArray</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">x_cells</span><span class="p">,</span> <span class="n">y_cells</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">vt_type</span><span class="p">,</span> <span class="n">connections</span><span class="p">,</span> <span class="n">minvias</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">minvias</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">connections</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2PerUnitCell</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
@@ -381,61 +477,46 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_connectDevicePins</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y_cells</span><span class="p">,</span> <span class="n">connections</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_connectNets</span><span class="p">(</span><span class="n">x_cells</span><span class="p">,</span> <span class="n">y_cells</span><span class="p">)</span> 
 
-<div class="viewcode-block" id="MOSGenerator.addNMOSArray"><a class="viewcode-back" href="../../../../align.primitive.default.html#align.primitive.default.mos.MOSGenerator.addNMOSArray">[docs]</a>    <span class="k">def</span> <span class="nf">addNMOSArray</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">x_cells</span><span class="p">,</span> <span class="n">y_cells</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">vt_type</span><span class="p">,</span> <span class="n">connections</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">):</span>
+<div class="viewcode-block" id="MOSGenerator.addNMOSArray"><a class="viewcode-back" href="../../../../modules/align.primitive.default.html#align.primitive.default.mos.MOSGenerator.addNMOSArray">[docs]</a>    <span class="k">def</span> <span class="nf">addNMOSArray</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">x_cells</span><span class="p">,</span> <span class="n">y_cells</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">vt_type</span><span class="p">,</span> <span class="n">connections</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_addMOSArray</span><span class="p">(</span><span class="n">x_cells</span><span class="p">,</span> <span class="n">y_cells</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">vt_type</span><span class="p">,</span> <span class="n">connections</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
         <span class="c1">#####   Nselect Placement   #####</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">addRegion</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">nselect</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">x_cells</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">gatesPerUnitCell</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">gateDummy</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shared_diff</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">y_cells</span><span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">finsPerUnitCell</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">bodyswitch</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">lFin</span><span class="p">)</span> </div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addRegion</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">nselect</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">x_cells</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">gatesPerUnitCell</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">gateDummy</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shared_diff</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">y_cells</span><span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">finsPerUnitCell</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">bodyswitch</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">lFin</span><span class="p">)</span> </div>
 
-<div class="viewcode-block" id="MOSGenerator.addPMOSArray"><a class="viewcode-back" href="../../../../align.primitive.default.html#align.primitive.default.mos.MOSGenerator.addPMOSArray">[docs]</a>    <span class="k">def</span> <span class="nf">addPMOSArray</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">x_cells</span><span class="p">,</span> <span class="n">y_cells</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">vt_type</span><span class="p">,</span> <span class="n">connections</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">):</span>
+<div class="viewcode-block" id="MOSGenerator.addPMOSArray"><a class="viewcode-back" href="../../../../modules/align.primitive.default.html#align.primitive.default.mos.MOSGenerator.addPMOSArray">[docs]</a>    <span class="k">def</span> <span class="nf">addPMOSArray</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">x_cells</span><span class="p">,</span> <span class="n">y_cells</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">vt_type</span><span class="p">,</span> <span class="n">connections</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_addMOSArray</span><span class="p">(</span><span class="n">x_cells</span><span class="p">,</span> <span class="n">y_cells</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">vt_type</span><span class="p">,</span> <span class="n">connections</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
 
         <span class="c1">#####   Pselect and Nwell Placement   #####</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">addRegion</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">pselect</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">x_cells</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">gatesPerUnitCell</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">gateDummy</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shared_diff</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">y_cells</span><span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">finsPerUnitCell</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">bodyswitch</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">lFin</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">addRegion</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">nwell</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">x_cells</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">gatesPerUnitCell</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">gateDummy</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shared_diff</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">y_cells</span><span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">finsPerUnitCell</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">bodyswitch</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">lFin</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addRegion</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">pselect</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">x_cells</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">gatesPerUnitCell</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">gateDummy</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shared_diff</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">y_cells</span><span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">finsPerUnitCell</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">bodyswitch</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">lFin</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addRegion</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">nwell</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">x_cells</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">gatesPerUnitCell</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">gateDummy</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shared_diff</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">y_cells</span><span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">finsPerUnitCell</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">bodyswitch</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">lFin</span><span class="p">)</span></div></div>
 </pre></div>
 
-            <div class="clearer"></div>
+           </div>
           </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, ALIGN team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-            <p class="logo"><a href="../../../../index.html">
-              <img class="logo" src="../../../../_static/LOGO.PNG" alt="Logo"/>
-            </a></p>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../../../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../../../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../../index.html">ALIGN</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">align.primitive.default.mos</a></li> 
-      </ul>
-    </div>
-    <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, ALIGN team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
-    </div>
-  </body>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
 </html>
