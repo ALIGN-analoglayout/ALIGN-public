@@ -1,4 +1,5 @@
 [
     {"constraint": "PowerPorts", "ports": ["VPS"]},
-    {"constraint": "GroundPorts", "ports": ["VGND"]}
+    {"constraint": "GroundPorts", "ports": ["VGND"]},
+    {"constraint": "CompactPlacement", "style": "center"}
 ]

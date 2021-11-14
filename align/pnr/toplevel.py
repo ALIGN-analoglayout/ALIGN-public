@@ -310,6 +310,8 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
     hyper.ALPHA = math.exp(math.log(hyper.T_MIN/hyper.T_INT)/1e4)
     # hyper.T_MIN = hyper.T_INT*(hyper.ALPHA**1e4)    # 10k iterations
     # hyper.ALPHA = 0.99925
+    # hyper.max_init_trial_count = 10000
+    # hyper.max_cache_hit_count = 10
     hyper.SEED = seed  # if seed==0, C++ code will use its default value. Else, C++ code will use the provided value.
     # hyper.COUNT_LIMIT = 200
     hyper.LAMBDA = lambda_coeff
@@ -391,8 +393,11 @@ def scale_and_check_placement(*, placement_verilog_d, concrete_name, scale_facto
     placement_verilog_alternatives[concrete_name] = scaled_placement_verilog_d
 
 def per_placement( placement_verilog_d, *, hN, scale_factor, gui, opath, tagged_bboxes, leaf_map, placement_verilog_alternatives):
-    concrete_name = placement_verilog_d['modules'][0]['concrete_name']
-    abstract_name = placement_verilog_d['modules'][0]['abstract_name']
+    concrete_names = { m['concrete_name'] for m in placement_verilog_d['modules'] if m['abstract_name'] == hN.name}
+    assert len(concrete_names) == 1
+
+    abstract_name = hN.name
+    concrete_name = list(concrete_names)[0]
 
     if not gui:
         logger.info( f'Working on {concrete_name}')

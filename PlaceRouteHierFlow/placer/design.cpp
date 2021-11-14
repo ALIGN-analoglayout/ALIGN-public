@@ -413,6 +413,7 @@ design::design(PnRDB::hierNode& node, const int seed) {
         tmppin.type = pit->type;
         tmppin.netIter = pit->netIter;
         // cout<<tmppin.name<<endl;
+        tmppin.bbox = PnRDB::bbox(INT_MAX, INT_MAX, INT_MIN, INT_MIN);
         for (vector<PnRDB::contact>::iterator cit = pit->pinContacts.begin(); cit != pit->pinContacts.end(); ++cit) {
           tpoint = {cit->originCenter.x, cit->originCenter.y};
           tmppin.center.push_back(tpoint);
@@ -428,6 +429,10 @@ design::design(PnRDB::hierNode& node, const int seed) {
           tmppin.boundary.back().polygon.push_back({qit.LL.x, qit.UR.y});
           tmppin.boundary.back().polygon.push_back({qit.UR.x, qit.UR.y});
           tmppin.boundary.back().polygon.push_back({qit.UR.x, qit.LL.y});
+          tmppin.bbox.LL.x = std::min(tmppin.bbox.LL.x, qit.LL.x);
+          tmppin.bbox.LL.y = std::min(tmppin.bbox.LL.y, qit.LL.y);
+          tmppin.bbox.UR.x = std::max(tmppin.bbox.UR.x, qit.UR.x);
+          tmppin.bbox.UR.y = std::max(tmppin.bbox.UR.y, qit.UR.y);
         }
         tmpblock.blockPins.push_back(tmppin);
       }
@@ -609,7 +614,7 @@ design::design(PnRDB::hierNode& node, const int seed) {
   }
   constructSymmGroup();
   this->ML_Constraints = node.ML_Constraints;
-  for (auto order : node.Ordering_Constraints) {
+  for (const auto& order : node.Ordering_Constraints) {
     for (unsigned int i = 0; i < order.first.size() - 1; i++) {
       Ordering_Constraints.push_back(make_pair(make_pair(order.first[i], order.first[i + 1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
       if (Blocks[order.first[i]][0].counterpart != -1 && Blocks[order.first[i + 1]][0].counterpart != -1 &&
@@ -618,7 +623,7 @@ design::design(PnRDB::hierNode& node, const int seed) {
                                                  order.second == PnRDB::H ? placerDB::H : placerDB::V));
     }
   }
-  for (auto abut : node.Abut_Constraints) {
+  for (const auto& abut : node.Abut_Constraints) {
     for (unsigned int i = 0; i < abut.first.size() - 1; i++) {
       Abut_Constraints.push_back(make_pair(make_pair(abut.first[i], abut.first[i + 1]), abut.second == PnRDB::H ? placerDB::H : placerDB::V));
     }
@@ -643,6 +648,35 @@ design::design(PnRDB::hierNode& node, const int seed) {
   }
 
   _rnd = new std::uniform_int_distribution<int>(0, std::max(20, 2 * szmax));
+  if (node.compact_style == "left") {
+    compact_style = CompactStyle::L;
+  } else if (node.compact_style == "right") {
+    compact_style = CompactStyle::R;
+  } else {
+    compact_style = CompactStyle::C;
+  }
+  maxBlockAreaSum = 0.;
+  for (unsigned i = 0; i < Blocks.size(); i++) {
+    double area = 0;
+    for (unsigned j = 0; j < Blocks[i].size(); ++j) {
+      double jarea = double(Blocks[i][j].width) * double(Blocks[i][j].height);
+      if (area < jarea) area = jarea;
+    }
+    maxBlockAreaSum += area;
+  }
+  maxBlockHPWLSum = 0.;
+  for (unsigned i = 0; i < Blocks.size(); i++) {
+    double width = 0, height = 0;
+    for (unsigned j = 0; j < Blocks[i].size(); ++j) {
+      if (width < Blocks[i][j].width) {
+        width = Blocks[i][j].width;
+      }
+      if (height < Blocks[i][j].height) {
+        height = Blocks[i][j].height;
+      }
+    }
+    maxBlockHPWLSum += (width + height);
+  }
 }
 
 int design::rand() {
@@ -1527,12 +1561,12 @@ void design::PrintNets() {
     for (vector<placerDB::Node>::iterator it2 = it->connected.begin(); it2 != it->connected.end(); ++it2) {
       logger->debug("type: {0} iter {1} iter2 {2}", it2->type, it2->iter, it2->iter2);
       if (it2->type == placerDB::Block) {
-        auto blk = Blocks.at(it2->iter2);
+        const auto& blk = Blocks.at(it2->iter2);
         if (blk.size() == 0) {
           logger->debug(" <empty>");
         } else if (blk.back().blockPins.size() > it2->iter) {
-          auto tmp = blk.back();
-          auto tmp2 = tmp.blockPins.at(it2->iter);
+          const auto& tmp = blk.back();
+          const auto& tmp2 = tmp.blockPins.at(it2->iter);
           logger->debug("{0} / {1}", tmp.name, tmp2.name);
         }
       }
@@ -2533,38 +2567,6 @@ int design::GetBlockSymmGroupDnode(int i) {
   return SBlocks.at(i).dnode;
 }
 
-double design::GetMaxBlockAreaSum() {
-  if (maxBlockAreaSum < 1.) {
-    for (unsigned i = 0; i < Blocks.size(); i++) {
-      double area = 0;
-      for (unsigned j = 0; j < Blocks[i].size(); ++j) {
-        double jarea = double(Blocks[i][j].width) * double(Blocks[i][j].height);
-        if (area < jarea) area = jarea;
-      }
-      maxBlockAreaSum += area;
-    }
-  }
-  return maxBlockAreaSum;
-}
-
-double design::GetMaxBlockHPWLSum() {
-  if (maxBlockHPWLSum < 1.) {
-    for (unsigned i = 0; i < Blocks.size(); i++) {
-      double width = 0, height = 0;
-      for (unsigned j = 0; j < Blocks[i].size(); ++j) {
-        if (width < Blocks[i][j].width) {
-          width = Blocks[i][j].width;
-        }
-        if (height < Blocks[i][j].height) {
-          height = Blocks[i][j].height;
-        }
-      }
-      maxBlockHPWLSum += (width + height);
-    }
-  }
-  return maxBlockHPWLSum;
-}
-
 size_t design::getSeqIndex(const vector<int>& seq) {
   size_t ind = 0;
   if (seq.size() <= 12 && _factorial.size() < seq.size()) {
@@ -2583,11 +2585,11 @@ size_t design::getSeqIndex(const vector<int>& seq) {
       if (count > 0) ind += _factorial[seq.size() - i - 1] * count;
     }
   } else {
-    auto it = _seqPairHash.find(seq);
+    const auto& it = _seqPairHash.find(seq);
     if (it != _seqPairHash.end())
       ind = it->second;
     else {
-      auto sz = _seqPairHash.size();
+      const auto& sz = _seqPairHash.size();
       _seqPairHash.insert(std::make_pair(seq, sz));
       ind = sz;
     }

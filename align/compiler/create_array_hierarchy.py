@@ -324,6 +324,19 @@ def create_new_hiearchy(dl, parent_name, child_name, elements, pins_map=None):
             if pe:
                 pes.append(pe)
                 child.elements.append(pe)
+    # Transfer global constraints
+    with set_context(child.constraints):
+        for const in list(parent.constraints):
+            if any(
+                isinstance(const, x)
+                for x in [
+                    constraint.HorizontalDistance,
+                    constraint.VerticalDistance,
+                    constraint.BlockDistance,
+                    constraint.CompactPlacement,
+                ]
+            ):
+                child.constraints.append(const)
     # Remove elements from subckt then add new_subckt instance
     inst_name = "X_"+child_name
     with set_context(parent.elements):

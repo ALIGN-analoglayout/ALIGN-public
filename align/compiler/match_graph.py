@@ -308,6 +308,7 @@ class Annotate:
                             constraint.HorizontalDistance,
                             constraint.VerticalDistance,
                             constraint.BlockDistance,
+                            constraint.CompactPlacement,
                         ]
                     ):
                         sub_const.append(const)
