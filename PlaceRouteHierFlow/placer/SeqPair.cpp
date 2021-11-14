@@ -853,9 +853,9 @@ void SeqPair::PrintSeqPair() {
 }
 
 void SeqPair::SameSelected(design& caseNL) {
-  for (auto group : caseNL.Same_Template_Constraints) {
+  for (const auto& group : caseNL.Same_Template_Constraints) {
     int id = selected[*group.begin()];
-    for (auto i : group) selected[i] = id;
+    for (const auto& i : group) selected[i] = id;
   }
 }
 
@@ -1162,7 +1162,7 @@ void SeqPair::KeepOrdering(design& caseNL) {
   do {
     int first_it, second_it;
     pos_keep_order = true;
-    for (auto order : caseNL.Ordering_Constraints) {
+    for (const auto& order : caseNL.Ordering_Constraints) {
       first_it = find(posPair.begin(), posPair.end(), order.first.first) - posPair.begin();
       second_it = find(posPair.begin(), posPair.end(), order.first.second) - posPair.begin();
       if (first_it - second_it > 0) {
@@ -1194,7 +1194,7 @@ void SeqPair::KeepOrdering(design& caseNL) {
   do {
     int first_it, second_it;
     neg_keep_order = true;
-    for (auto order : caseNL.Ordering_Constraints) {
+    for (const auto& order : caseNL.Ordering_Constraints) {
       first_it = find(negPair.begin(), negPair.end(), order.first.first) - negPair.begin();
       second_it = find(negPair.begin(), negPair.end(), order.first.second) - negPair.begin();
       if (first_it - second_it < 0) {
@@ -1563,7 +1563,7 @@ bool SeqPair::CheckSymm(design& caseNL) {
 }
 
 bool SeqPair::CheckAlign(design& caseNL) {
-  for (auto align : caseNL.Align_blocks) {
+  for (const auto& align : caseNL.Align_blocks) {
     for (int i = 0; i < ((int)align.blocks.size()) - 1; ++i) {
       for (int j = i + 1; j < ((int)align.blocks.size()); ++j) {
         int first_it_pos, second_it_pos, first_it_neg, second_it_neg;
@@ -1593,17 +1593,17 @@ bool SeqPair::CheckAlign(design& caseNL) {
           std::vector<int> i_u23_4, i_u12_6;
           std::set_intersection(u_23.begin(), u_23.end(), s4.begin(), s4.end(), std::back_inserter(i_u23_4));
           std::set_intersection(u_12.begin(), u_12.end(), s6.begin(), s6.end(), std::back_inserter(i_u12_6));
-          for (auto a : i_u23_4) {
-            for (auto b : i_u12_6) {
-              for (auto SPBlock : caseNL.SPBlocks) {
+          for (const auto& a : i_u23_4) {
+            for (const auto& b : i_u12_6) {
+              for (const auto& SPBlock : caseNL.SPBlocks) {
                 if (SPBlock.axis_dir == placerDB::V) {
-                  for (auto sympair : SPBlock.sympair) {
+                  for (const auto& sympair : SPBlock.sympair) {
                     if (a == sympair.first && b == sympair.second || a == sympair.second && b == sympair.first) return false;
                     // check sympair
                   }
                 }
               }
-              for (auto otheralign : caseNL.Align_blocks) {
+              for (const auto& otheralign : caseNL.Align_blocks) {
                 for (int i = 0; i < ((int)otheralign.blocks.size()) - 1; ++i) {
                   for (int j = i + 1; j < ((int)otheralign.blocks.size()); ++j) {
                     if (otheralign.horizon) {
@@ -1622,17 +1622,17 @@ bool SeqPair::CheckAlign(design& caseNL) {
           vector<int> i_u23_6, i_u12_4;
           std::set_intersection(u_23.begin(), u_23.end(), s6.begin(), s6.end(), std::back_inserter(i_u23_6));
           std::set_intersection(u_12.begin(), u_12.end(), s4.begin(), s4.end(), std::back_inserter(i_u12_4));
-          for (auto a : i_u23_6) {
-            for (auto b : i_u12_4) {
-              for (auto SPBlock : caseNL.SPBlocks) {
+          for (const auto& a : i_u23_6) {
+            for (const auto& b : i_u12_4) {
+              for (const auto& SPBlock : caseNL.SPBlocks) {
                 if (SPBlock.axis_dir == placerDB::H) {
-                  for (auto sympair : SPBlock.sympair) {
+                  for (const auto& sympair : SPBlock.sympair) {
                     if (a == sympair.first && b == sympair.second || a == sympair.second && b == sympair.first) return false;
                     // check sympair
                   }
                 }
               }
-              for (auto otheralign : caseNL.Align_blocks) {
+              for (const auto& otheralign : caseNL.Align_blocks) {
                 for (int i = 0; i < ((int)otheralign.blocks.size()) - 1; ++i) {
                   for (int j = i + 1; j < ((int)otheralign.blocks.size()); ++j) {
                     if (!otheralign.horizon) {

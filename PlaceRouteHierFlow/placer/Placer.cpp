@@ -47,13 +47,13 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
   ILP_solver curr_sol(designData);
   std::vector<std::pair<SeqPair, ILP_solver>> spVec(nodeSize, make_pair(curr_sp, curr_sol));
   int idx=0;
-  for(auto m:modules) {
+  for(const auto& m:modules) {
     if(m["abstract_name"]==designData.name){
       auto& sol = spVec[idx].second;
       auto& sp = spVec[idx].first;
       auto& Blocks = sol.Blocks;
       nodeVec[idx].concrete_name = m["concrete_name"];
-      for (auto instance : m["instances"]) {
+      for (const auto& instance : m["instances"]) {
         int block_id = nodeVec.back().Block_name_map[instance["instance_name"]];
         int sel = -1;
         for (int i = 0; i < int(nodeVec.back().Blocks[block_id].instance.size());i++){
@@ -89,13 +89,13 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
       sol.HPWL = 0;
       sol.HPWL_extend = 0;
       sol.HPWL_extend_terminal = 0;
-      for (auto neti : designData.Nets) {
+      for (const auto& neti : designData.Nets) {
         int HPWL_min_x = sol.UR.x, HPWL_min_y = sol.UR.y, HPWL_max_x = 0, HPWL_max_y = 0;
         int HPWL_extend_min_x = sol.UR.x, HPWL_extend_min_y = sol.UR.y, HPWL_extend_max_x = 0, HPWL_extend_max_y = 0;
-        for (auto connectedj : neti.connected) {
+        for (const auto& connectedj : neti.connected) {
           if (connectedj.type == placerDB::Block) {
             int iter2 = connectedj.iter2, iter = connectedj.iter;
-            for (auto centerk : designData.Blocks[iter2][sp.selected[iter2]].blockPins[iter].center) {
+            for (const auto& centerk : designData.Blocks[iter2][sp.selected[iter2]].blockPins[iter].center) {
               // calculate contact center
               int pin_x = centerk.x;
               int pin_y = centerk.y;
@@ -108,7 +108,7 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
               HPWL_min_y = std::min(HPWL_min_y, pin_y);
               HPWL_max_y = std::max(HPWL_max_y, pin_y);
             }
-            for (auto boundaryk : designData.Blocks[iter2][sp.selected[iter2]].blockPins[iter].boundary) {
+            for (const auto& boundaryk : designData.Blocks[iter2][sp.selected[iter2]].blockPins[iter].boundary) {
               int pin_llx = boundaryk.polygon[0].x, pin_urx = boundaryk.polygon[2].x;
               int pin_lly = boundaryk.polygon[0].y, pin_ury = boundaryk.polygon[2].y;
               if (Blocks[iter2].H_flip) {
@@ -133,7 +133,7 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
         sol.HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);
         sol.HPWL_extend += (HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x);
         bool is_terminal_net = false;
-        for (auto c : neti.connected) {
+        for (const auto& c : neti.connected) {
           if (c.type == placerDB::Terminal) {
             is_terminal_net = true;
             break;
@@ -717,8 +717,6 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   curr_sp.PrintSeqPair();
   double curr_cost = 0;
   int trial_count = 0;
-  const int max_trial_count = 10000;
-  const int max_trial_cache_count = 100;
   double mean_cache_miss{0};
   int num_perturb{0};
 
@@ -729,7 +727,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     logger->debug("Random number generator seed={0}", seed);
   }
 
-  while (++trial_count < max_trial_count) {
+  while (++trial_count < hyper.max_init_trial_count) {
     // curr_cost negative means infeasible (do not satisfy placement constraints)
     // Only positive curr_cost value is accepted.
     if (select_in_ILP)
@@ -746,7 +744,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       break;
     } else {
       int trial_cached = 0;
-      while (++trial_cached < max_trial_cache_count) {
+      while (++trial_cached < hyper.max_cache_hit_count) {
         if (!curr_sp.PerturbationNew(designData)) continue;
         if (!curr_sp.isSeqInCache(designData)) {
           break;
@@ -758,7 +756,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   }
 
   if (curr_cost < 0) {
-    logger->error("Couldn't generate a feasible solution even after {0} perturbations.", max_trial_count);
+    logger->error("Couldn't generate a feasible solution even after {0} perturbations.", hyper.max_init_trial_count);
     curr_cost = __DBL_MAX__;
   }
 
@@ -855,7 +853,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       // cout<<"before per"<<endl; trial_sp.PrintSeqPair();
       // SY: PerturbationNew honors order and symmetry. What could make the trial_sp infeasible? Aspect ratio, Align?
       int trial_cached = 0;
-      while (++trial_cached < max_trial_cache_count) {
+      while (++trial_cached < hyper.max_cache_hit_count) {
         if (!trial_sp.PerturbationNew(designData)) continue;
         if (!trial_sp.isSeqInCache(designData)) {
           break;
