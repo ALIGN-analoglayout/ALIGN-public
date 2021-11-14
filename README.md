@@ -1,7 +1,7 @@
 [![CircleCI](https://circleci.com/gh/ALIGN-analoglayout/ALIGN-public.svg?style=svg)](https://circleci.com/gh/ALIGN-analoglayout/ALIGN-public)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2aeb84c0f14949909bcd342b19721d01)](https://app.codacy.com/app/ALIGN-analoglayout/ALIGN-public?utm_source=github.com&utm_medium=referral&utm_content=ALIGN-analoglayout/ALIGN-public&utm_campaign=Badge_Grade_Settings)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
-[![Documentation Status](https://align-tutorial.readthedocs.io/en/latest/?badge=latest)](https://align-tutorial.readthedocs.io/)
+[![Documentation Status](https://readthedocs.org/projects/align-tutorial/badge/?version=stable)](https://align-tutorial.readthedocs.io/en/latest/index.html)
 
 # ALIGN: Analog Layout, Intelligently Generated from Netlists
 
