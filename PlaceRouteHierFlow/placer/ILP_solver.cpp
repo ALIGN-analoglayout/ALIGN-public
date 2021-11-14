@@ -1546,7 +1546,7 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
     HPWL_ILP = 0.;
     for (int i = 0; i < mydesign.Nets.size(); ++i) {
       int ind = (int(mydesign.Blocks.size()) * 4 + i * 2);
-      HPWL_ILP += (var[ind + 1] - var[ind]);
+      HPWL_ILP += (var[ind + 1] + var[ind]);
     }
   }
   return true;
