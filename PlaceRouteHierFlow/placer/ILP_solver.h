@@ -54,8 +54,8 @@ class ILP_solver {
   int x_pitch, y_pitch;
 
   inline void roundup(int& v, const int pitch) { v = pitch * ((v + pitch - 1) / pitch); }
-  bool MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
-  bool FrameSolveILP(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo, bool flushlb = true, const vector<placerDB::point>* prev = nullptr);
+  bool MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo);
+  bool FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb = true, const vector<placerDB::point>* prev = nullptr);
   public:
   double cost = 0;
   double constraint_penalty = 0;
@@ -65,10 +65,10 @@ class ILP_solver {
   ILP_solver(const ILP_solver& solver);
   ILP_solver& operator=(const ILP_solver& solver);
   double GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node);
-  double GenerateValidSolution(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
+  double GenerateValidSolution(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo);
   double GenerateValidSolution_select(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
-  double CalculateCost(design& mydesign);
-  double CalculateCost(design& mydesign, SeqPair& curr_sp);
+  double CalculateCost(const design& mydesign) const;
+  double CalculateCost(const design& mydesign, const SeqPair& curr_sp) ;
   void WritePlacement(design& caseNL, SeqPair& curr_sp, string outfile);
   void PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfile);
   void PlotPlacementAnalytical(design& caseNL, string outfile, bool plot_pin, bool plot_terminal, bool plot_net);
