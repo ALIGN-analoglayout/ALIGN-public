@@ -1,19 +1,19 @@
+import z3
 import abc
 import collections
 
 import logging
 logger = logging.getLogger(__name__)
 
-import z3
 
-class CheckerError(Exception):
+class SolutionNotFoundError(Exception):
     def __init__(self, message, labels=None):
         self.message = message
         self.labels = labels
         super().__init__(self.message)
 
 
-class AbstractChecker(abc.ABC):
+class AbstractSolver(abc.ABC):
     @abc.abstractmethod
     def append(self, formula, label=None):
         '''
@@ -22,6 +22,15 @@ class AbstractChecker(abc.ABC):
         Note: Please use bbox variables to create formulae
               Otherwise you will need to manage types
               yourself
+        '''
+        pass
+
+    @abc.abstractmethod
+    def solve(self):
+        '''
+        Solve & return solutions
+
+        If no solution is found, raise SolutionNotFoundError
         '''
         pass
 
@@ -135,10 +144,9 @@ class AbstractChecker(abc.ABC):
         pass
 
 
-class Z3Checker(AbstractChecker):
+class Z3Checker(AbstractSolver):
 
     def __init__(self):
-        self._label_cache = {}
         self._bbox_cache = {}
         self._bbox_subcircuit = {}
         self._solver = z3.Solver()
@@ -149,20 +157,15 @@ class Z3Checker(AbstractChecker):
             self._solver.assert_and_track(formula, label)
         else:
             self._solver.add(formula)
+
+    def solve(self):
         r = self._solver.check()
         if r == z3.unsat:
             z3.set_option(max_depth=10000, max_args=100, max_lines=10000)
             logger.debug(f"Unsat encountered: {self._solver}")
-            raise CheckerError(
-                message=f'Trying to add {formula} resulted in unsat',
+            raise SolutionNotFoundError(
+                message=f'No satisfying solution could be found',
                 labels=self._solver.unsat_core())
-
-    def label(self, object):
-        # Z3 throws 'index out of bounds' error
-        # if more than 9 digits are used
-        return z3.Bool(
-            hash(repr(object)) % 10**9
-        )
 
     def checkpoint(self):
         self._solver.push()
@@ -200,6 +203,13 @@ class Z3Checker(AbstractChecker):
                     )
         self._bbox_cache[name] = b
         return b
+
+    def label(self, object):
+        # Z3 throws 'index out of bounds' error
+        # if more than 9 digits are used
+        return z3.Bool(
+            hash(repr(object)) % 10**9
+        )
 
     @staticmethod
     def Or(*expressions):
