@@ -1,0 +1,16 @@
+[
+        {"constraint": "PowerPorts", "ports": ["VPS"]},
+        {"constraint": "GroundPorts", "ports": ["VGND"]},
+		{"constraint": "SymmetricBlocks",
+		 "direction" : "V",
+		 "pairs": [["X00"], ["X01","X02"]]
+		},
+		{"constraint": "align",
+			"line" : "h_bottom",
+			"instances": ["X00", "X01", "X02"]
+		},
+		{"constraint": "Order",
+			"direction" : "left_to_right",
+			"instances": ["X01", "X00", "X02"]
+		}
+]

@@ -1,0 +1,21 @@
+[
+        {"constraint": "PowerPorts", "ports": ["VPS"]},
+        {"constraint": "GroundPorts", "ports": ["VGND"]},
+		{"constraint": "GroupBlocks", "instances": ["MCM00", "MCM10", "MCM20"],   "name": "cmb"},
+		{"constraint": "SymmetricBlocks",
+		 "direction" : "V",
+		 "pairs": [["R1", "R0"], ["MDP00", "MDP10"], ["cmb"], ["R4"], ["C00", "C01"]]
+		},
+		{"constraint": "align",
+			"line" : "h_bottom",
+			"instances": ["MDP00", "MDP10", "R4"]
+		},
+		{"constraint": "Order",
+			"direction" : "top_to_bottom",
+			"instances": ["R1", "MDP00"]
+		},
+		{"constraint": "Order",
+			"direction" : "top_to_bottom",
+			"instances": ["R0", "MDP10"]
+		}
+]
