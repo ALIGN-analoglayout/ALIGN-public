@@ -4,7 +4,8 @@ PDK abstraction
 ALIGN uses a gridded mock `PDK <https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/FinFET14nm_Mock_PDK>`_ which mimics a FinFET PDK to generate layouts.
 It follows a similar gridded structure for `bulk echnology nodes <https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/Bulk65nm_Mock_PDK>`_ .
 A DPK information can be divided into three critical groups: Front End of Line (FEOL), Back End of Line (BEOL), and packaging.
-ALIGN uses an abstract representation of FEOL and BEOL information to generate the layouts.
+ALIGN uses an abstract representation of FEOL and BEOL information to generate the layouts. These PDK abstarctions are stored in a
+`JSON\-format <https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/pdks/FinFET14nm_Mock_PDK/layers.json>`_ for each PDK.
 
 PDK options
 --------------------
@@ -41,7 +42,7 @@ Defintion of BEOL Design rules
 
 .. code-block:: python3
 
-   #Example technology abstarction for a metal layer
+   #Example technology abstarction for a metal layer from layers.json
    {
    "Layer": "M2",
    "GdsLayerNo": 15,
@@ -87,7 +88,7 @@ We are defining here a list of common FEOL layer rules and it is not an exhausti
 
 .. code-block:: python3
 
-   #Example technology abstarction for a metal layer
+   #Example technology abstarction for a FEOL layer from layers.json
    {
    "Layer": "Pc",
    "GdsLayerNo": 99,
