@@ -174,7 +174,8 @@
 <p>ALIGN uses a gridded mock <a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/FinFET14nm_Mock_PDK">PDK</a> which mimics a FinFET PDK to generate layouts.
 It follows a similar gridded structure for <a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/Bulk65nm_Mock_PDK">bulk echnology nodes</a> .
 A DPK information can be divided into three critical groups: Front End of Line (FEOL), Back End of Line (BEOL), and packaging.
-ALIGN uses an abstract representation of FEOL and BEOL information to generate the layouts.</p>
+ALIGN uses an abstract representation of FEOL and BEOL information to generate the layouts. These PDK abstarctions are stored in a
+<a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/pdks/FinFET14nm_Mock_PDK/layers.json">JSON-format</a> for each PDK.</p>
 <div class="section" id="pdk-options">
 <h2>PDK options<a class="headerlink" href="#pdk-options" title="Permalink to this headline">¶</a></h2>
 <p>List of PDKs options available for users.</p>
@@ -206,7 +207,7 @@ ALIGN uses an abstract representation of FEOL and BEOL information to generate t
 </ul>
 <img alt="../_images/design_rules.PNG" src="../_images/design_rules.PNG" />
 <img alt="../_images/via_rules.PNG" src="../_images/via_rules.PNG" />
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#Example technology abstarction for a metal layer</span>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#Example technology abstarction for a metal layer from layers.json</span>
 <span class="p">{</span>
 <span class="s2">&quot;Layer&quot;</span><span class="p">:</span> <span class="s2">&quot;M2&quot;</span><span class="p">,</span>
 <span class="s2">&quot;GdsLayerNo&quot;</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span>
@@ -250,7 +251,7 @@ We are defining here a list of common FEOL layer rules and it is not an exhausti
 <li><p><strong>PcWidth</strong>: Poly-contact width</p></li>
 <li><p><strong>PcExt</strong>: Poly-contact extension</p></li>
 </ul>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#Example technology abstarction for a metal layer</span>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#Example technology abstarction for a FEOL layer from layers.json</span>
 <span class="p">{</span>
 <span class="s2">&quot;Layer&quot;</span><span class="p">:</span> <span class="s2">&quot;Pc&quot;</span><span class="p">,</span>
 <span class="s2">&quot;GdsLayerNo&quot;</span><span class="p">:</span> <span class="mi">99</span><span class="p">,</span>
