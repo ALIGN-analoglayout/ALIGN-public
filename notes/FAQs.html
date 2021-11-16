@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Upcoming &mdash; ALIGN</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <title>Frequently Asked Questions &mdash; ALIGN</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -16,8 +16,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Examples" href="examples.html" />
-    <link rel="prev" title="Constraints" href="const.html" /> 
+    <link rel="prev" title="Installation debug" href="debug.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -35,8 +34,8 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Notes:</span></p>
-<ul class="current">
+              <p class="caption"><span class="caption-text">Get started:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="flow.html">ALIGN: flow</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="flow.html#inputs">Inputs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="flow.html#outputs">Outputs</a></li>
@@ -58,23 +57,21 @@
 <li class="toctree-l2"><a class="reference internal" href="viewer.html#align-viewer">ALIGN viewer</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="debug.html">Debug</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
-<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
-<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="debug.html#reinstalling-align">Reinstalling ALIGN</a></li>
-<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
-<li class="toctree-l2"><a class="reference internal" href="debug.html#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference internal" href="const.html">Constraints</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="const.html#constraint-options">Constraint options</a></li>
 <li class="toctree-l2"><a class="reference internal" href="const.html#example-constraints">Example constraints</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Upcoming</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#how-to-add-your-own-pdk">How to add your own pdk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="adding_pdk.html">PDK abstraction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="adding_pdk.html#pdk-options">PDK options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adding_pdk.html#defintion-of-beol-design-rules">Defintion of BEOL Design rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adding_pdk.html#defintion-of-feol-design-rules">Defintion of FEOL Design rules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="adding_pdk.html#cell-generator">Cell generator</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="adding_pdk.html#standalone-usage">Standalone usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adding_pdk.html#cell-fabric">Cell fabric</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adding_pdk.html#primitive">Primitive</a></li>
 </ul>
 </li>
 </ul>
@@ -87,6 +84,15 @@
 <li class="toctree-l2"><a class="reference internal" href="database.html#generalized-testbenches">Generalized testbenches</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption"><span class="caption-text">Notes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contribute.html">Contribute to ALIGN</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contribute.html#some-example-contributions">Some example contributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contribute.html#install-align-setup-as-a-developer">Install ALIGN setup as a developer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="success_stories.html">ALIGN gallery</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Package Reference</span></p>
 <ul>
@@ -120,6 +126,23 @@
 <li class="toctree-l1"><a class="reference internal" href="../modules/align.gdsconv.html">align.gdsconv package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/align.gui.html">align.gui package</a></li>
 </ul>
+<p class="caption"><span class="caption-text">MISC:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="debug.html">Installation debug</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#reinstalling-align">Reinstalling ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Frequently Asked Questions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-add-specific-pdks">How to add specific PDKs?</a></li>
+</ul>
+</li>
+</ul>
 
         </div>
       </div>
@@ -135,9 +158,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Upcoming</li>
+      <li>Frequently Asked Questions</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/notes/upcoming.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/notes/FAQs.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -145,10 +168,13 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="upcoming">
-<h1>Upcoming<a class="headerlink" href="#upcoming" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="how-to-add-your-own-pdk">
-<h2>How to add your own pdk<a class="headerlink" href="#how-to-add-your-own-pdk" title="Permalink to this headline">¶</a></h2>
+  <div class="section" id="frequently-asked-questions">
+<h1>Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="how-to-add-specific-pdks">
+<h2>How to add specific PDKs?<a class="headerlink" href="#how-to-add-specific-pdks" title="Permalink to this headline">¶</a></h2>
+<p>PDKs are considered intellectual property (IP) and are not publically available.
+To adapt to any new PDK, it is required by the user to extract the PDK information and do the necessray changes.
+For more details, please look into the PDK abstraction documentation.</p>
 </div>
 </div>
 
@@ -156,8 +182,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="const.html" class="btn btn-neutral float-left" title="Constraints" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="examples.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="debug.html" class="btn btn-neutral float-left" title="Installation debug" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

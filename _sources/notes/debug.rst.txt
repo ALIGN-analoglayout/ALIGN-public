@@ -1,8 +1,5 @@
-Debug
-===============================================
-
-Despite using install.sh if something fails, we have collected a basic set of errors and how to resolve them.
-
+Installation debug
+====================
 
 Error due to gcc version
 --------------------------

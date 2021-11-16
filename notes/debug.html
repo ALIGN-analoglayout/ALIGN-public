@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Debug &mdash; ALIGN</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <title>Installation debug &mdash; ALIGN</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -16,8 +16,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Constraints" href="const.html" />
-    <link rel="prev" title="Layout viewer" href="viewer.html" /> 
+    <link rel="next" title="Frequently Asked Questions" href="FAQs.html" />
+    <link rel="prev" title="align.utils package" href="../modules/align.utils.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -36,7 +36,7 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption"><span class="caption-text">Get started:</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="flow.html">ALIGN: flow</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="flow.html#inputs">Inputs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="flow.html#outputs">Outputs</a></li>
@@ -56,16 +56,6 @@
 <li class="toctree-l1"><a class="reference internal" href="viewer.html">Layout viewer</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="viewer.html#klayout-viewer">KLayout viewer</a></li>
 <li class="toctree-l2"><a class="reference internal" href="viewer.html#align-viewer">ALIGN viewer</a></li>
-</ul>
-</li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Debug</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#error-due-to-gcc-version">Error due to gcc version</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#reinstalling-align">Reinstalling ALIGN</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="const.html">Constraints</a><ul>
@@ -137,6 +127,23 @@
 <li class="toctree-l1"><a class="reference internal" href="../modules/align.gdsconv.html">align.gdsconv package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/align.gui.html">align.gui package</a></li>
 </ul>
+<p class="caption"><span class="caption-text">MISC:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation debug</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#error-due-to-gcc-version">Error due to gcc version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reinstalling-align">Reinstalling ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="FAQs.html">Frequently Asked Questions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="FAQs.html#how-to-add-specific-pdks">How to add specific PDKs?</a></li>
+</ul>
+</li>
+</ul>
 
         </div>
       </div>
@@ -152,7 +159,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Debug</li>
+      <li>Installation debug</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/notes/debug.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -162,9 +169,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="debug">
-<h1>Debug<a class="headerlink" href="#debug" title="Permalink to this headline">¶</a></h1>
-<p>Despite using install.sh if something fails, we have collected a basic set of errors and how to resolve them.</p>
+  <div class="section" id="installation-debug">
+<h1>Installation debug<a class="headerlink" href="#installation-debug" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="error-due-to-gcc-version">
 <h2>Error due to gcc version<a class="headerlink" href="#error-due-to-gcc-version" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>ERROR:
@@ -265,8 +271,8 @@ make: *** [subsystem] Error 2
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="viewer.html" class="btn btn-neutral float-left" title="Layout viewer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="const.html" class="btn btn-neutral float-right" title="Constraints" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../modules/align.utils.html" class="btn btn-neutral float-left" title="align.utils package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="FAQs.html" class="btn btn-neutral float-right" title="Frequently Asked Questions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

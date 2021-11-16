@@ -22,7 +22,6 @@ The goal of ALIGN is to automatically translate an unannotated (or partially ann
    notes/installation
    notes/introduction
    notes/viewer
-   notes/debug
    notes/const
    notes/adding_pdk
 
@@ -62,6 +61,16 @@ The goal of ALIGN is to automatically translate an unannotated (or partially ann
    modules/align.utils
    modules/align.gdsconv
    modules/align.gui
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :caption: MISC:
+
+   notes/debug
+   notes/FAQs
+
+
 
 .. contents:: Table of Contents
    :depth: 2
