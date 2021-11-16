@@ -154,20 +154,32 @@ def test_ConstraintDB_nonincremental_revert(db):
     checkpoint() by name, needing to unroll multiple
     checkpoints can indicate suboptimal compiler design
     '''
+    
     with set_context(db):
-        db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M2']))
+        constraint1 = constraint.Order(direction='left_to_right', instances=['M1', 'M2'])
+        db.append(constraint1)
     idx = db.checkpoint()
+    assert str(db.parent._checker.label(constraint1)) in str(db.parent._checker._solver)
     with set_context(db):
-        db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M3']))
+        constraint2 = constraint.Order(direction='left_to_right', instances=['M1', 'M3'])
+        db.append(constraint2)
     db.checkpoint()
+    assert str(db.parent._checker.label(constraint1)) in str(db.parent._checker._solver)
+    assert str(db.parent._checker.label(constraint2)) in str(db.parent._checker._solver)
     with set_context(db):
-        db.append(constraint.Order(direction='left_to_right', instances=['M2', 'M3']))
+        constraint3 = constraint.Order(direction='left_to_right', instances=['M2', 'M3'])
+        db.append(constraint3)
     db.checkpoint()
+    assert str(db.parent._checker.label(constraint1)) in str(db.parent._checker._solver)
+    assert str(db.parent._checker.label(constraint2)) in str(db.parent._checker._solver)
+    assert str(db.parent._checker.label(constraint3)) in str(db.parent._checker._solver)
     db.revert(idx)
     assert len(db) == 1
     assert len(db._commits) == 0
-    if db._checker:
-        assert 'M3' not in str(db._checker._solver)
+    assert str(db.parent._checker.label(constraint1)) in str(db.parent._checker._solver)
+    assert str(db.parent._checker.label(constraint2)) not in str(db.parent._checker._solver)
+    assert str(db.parent._checker.label(constraint3)) not in str(db.parent._checker._solver)
+
 
 
 def test_ConstraintDB_json(db):

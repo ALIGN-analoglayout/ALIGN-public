@@ -4,7 +4,6 @@ import re
 
 from . import types
 from .types import Union, Optional, Literal, List, set_context
-from . import checker
 
 import logging
 logger = logging.getLogger(__name__)
@@ -31,7 +30,7 @@ def validate_instances(cls, value):
     instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
     assert isinstance(instances, set), 'Could not retrieve instances from subcircuit definition'
     assert all(x in instances or x.upper() in instances for x in value), f'One or more constraint instances {value} not found in {instances}'
-    return value
+    return [x.upper() for x in value]
 
 
 class SoftConstraint(types.BaseModel):
@@ -355,7 +354,6 @@ class SetBoundingBox(HardConstraint):
     lly: int
     urx: int
     ury: int
-    is_subcircuit: Optional[bool] = False
 
     @types.validator('urx', allow_reuse=True)
     def x_is_valid(cls, value, values):
@@ -368,7 +366,7 @@ class SetBoundingBox(HardConstraint):
         return value
 
     def translate(self, solver):
-        bvar = solver.bbox_vars(self.instance, is_subcircuit=self.is_subcircuit)
+        bvar = solver.bbox_vars(self.instance)
         yield bvar.llx == self.llx
         yield bvar.lly == self.lly
         yield bvar.urx == self.urx
@@ -397,7 +395,7 @@ class AspectRatio(HardConstraint):
         return value
 
     def translate(self, solver):
-        bvar = solver.bbox_vars(self.subcircuit, is_subcircuit=True)
+        bvar = solver.bbox_vars('subcircuit')
         yield solver.cast(bvar.urx-bvar.llx, float) >= self.ratio_low * solver.cast(bvar.ury-bvar.lly, float)
         yield solver.cast(bvar.urx-bvar.llx, float) < self.ratio_high * solver.cast(bvar.ury-bvar.lly, float)
 
@@ -421,12 +419,42 @@ class Boundary(HardConstraint):
         return value
 
     def translate(self, solver):
-        bvar = solver.bbox_vars(self.subcircuit, is_subcircuit=True)
+        bvar = solver.bbox_vars('subcircuit')
         if self.max_width is not None:
             yield solver.cast(bvar.urx-bvar.llx, float) <= 1000*self.max_width  # in nanometer
         if self.max_height is not None:
             yield solver.cast(bvar.ury-bvar.lly, float) <= 1000*self.max_height  # in nanometer
 
+class GroupBlocks(HardConstraint):
+    ''' Force heirarchy creation '''
+    name: str
+    instances: List[str]
+    style: Optional[Literal["tbd_interdigitated", "tbd_common_centroid"]]
+
+    @types.validator('name', allow_reuse=True)
+    def group_block_name(cls, value):
+        assert value, 'Cannot be an empty string'
+        return value.upper()
+
+    def translate(self, solver):
+        # Non-zero width / height
+        bb = solver.bbox_vars(self.name)
+        yield bb.llx < bb.urx
+        yield bb.lly < bb.ury
+        # Grouping into common bbox
+        for b in solver.iter_bbox_vars(self.instances):
+            yield b.urx <= bb.urx
+            yield b.llx >= bb.llx
+            yield b.ury <= bb.ury
+            yield b.lly >= bb.lly
+        instances = get_instances_from_hacked_dataclasses(self)
+        for b in solver.iter_bbox_vars((x for x in instances if x not in self.instances )):
+            yield solver.Or(
+                b.urx <= bb.llx,
+                bb.urx <= b.llx,
+                b.ury <= bb.lly,
+                bb.ury <= b.lly,
+            )
 
 # You may chain constraints together for more complex constraints by
 #     1) Assigning default values to certain attributes
@@ -543,13 +571,6 @@ class SameTemplate(SoftConstraint):
 class CreateAlias(SoftConstraint):
     instances: List[str]
     name: str
-
-
-class GroupBlocks(SoftConstraint):
-    ''' Force heirarchy creation '''
-    name: str
-    instances: List[str]
-    style: Optional[Literal["tbd_interdigitated", "tbd_common_centroid"]]
 
 
 class MatchBlocks(SoftConstraint):
@@ -679,7 +700,7 @@ class SymmetricBlocks(SoftConstraint):
         for pair in value:
             assert len(pair) >= 1, 'Must contain at least one instance'
             assert len(pair) <= 2, 'Must contain at most two instances'
-            validate_instances(cls, pair)
+        value = [validate_instances(cls, pair) for pair in value]
         if not hasattr(cls._validator_ctx().parent.parent, 'elements'):
             # PnR stage VerilogJsonModule
             return value
@@ -813,50 +834,20 @@ ConstraintType = Union[
 
 class ConstraintDB(types.List[ConstraintType]):
 
-    #
-    # Private attribute affecting class behavior
-    #
-    _checker = types.PrivateAttr(None)
-
-    def _check(self, constraint):
-        assert constraint.parent is not None, 'parent is not set'
-        assert constraint.parent.parent is not None, 'parent.parent is not set'
-        if self._checker and hasattr(constraint, 'translate'):
-            generator = constraint.translate(self._checker)
-            if generator is None:
-                raise NotImplementedError(f'{constraint}.translate() did not return a valid generator')
-            formulae = list(generator)
-            if len(formulae) == 0:
-                raise NotImplementedError(f'{constraint}.translate() yielded an empty list of expressions')
-            self._checker.append(
-                self._checker.And(
-                    *formulae
-                ) if len(formulae) > 1 else formulae[0],
-                label=self._checker.label(constraint)
-            )
-            try:
-                self._checker.solve()
-            except checker.SolutionNotFoundError as e:
-                logger.debug(f'Checker raised error:\n {e}')
-                assert self._checker.label(constraint) in e.labels, "Something went terribly wrong. Current constraint not in unsat core"
-                core = [x.json() for x in self.__root__ if self._checker.label(x) in e.labels and x != constraint]
-                logger.error(f'Failed to add constraint {constraint.json()}')
-                logger.error(f'   due to conflict with {core}')
-                raise checker.SolutionNotFoundError(f'Failed to add constraint {constraint.json()} due to conflict with {core}')
-
     @types.validate_arguments
     def append(self, constraint: ConstraintType):
+        if hasattr(constraint, 'translate'):
+            if self.parent._checker is None:
+                self.parent.verify()
+            self.parent.verify(formulae=self._translate_and_annotate(constraint, self.parent._checker))
         super().append(constraint)
-        self._check(self.__root__[-1])
 
     @types.validate_arguments
     def remove(self, constraint: ConstraintType):
         super().remove(constraint)
 
-    def __init__(self, *args, check=True, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__()
-        if check:
-            self._checker = checker.Z3Checker()
         # Constraints may need to access parent scope for subcircuit information
         # To ensure parent is set appropriately, force users to use append
         if '__root__' in kwargs:
@@ -868,24 +859,19 @@ class ConstraintDB(types.List[ConstraintType]):
         else:
             assert len(args) == 0 and len(kwargs) == 0
             data = []
+        # TODO: Shouldn't need to invalidate this
+        #       Lots of thrash happening here
+        self.parent._checker = None
         with set_context(self):
             for x in data:
-                if x['constraint'] == 'GroupBlocks':
-                    logger.info(f'first reading groupblock data {x}')
-                    self.append(x)
-            for x in data:
-                if x['constraint'] != 'GroupBlocks':
-                    logger.info(f'reading rest data {x}')
-                    self.append(x)
+                super().append(x)
 
     def checkpoint(self):
-        if self._checker:
-            self._checker.checkpoint()
+        self.parent._checker.checkpoint()
         return super().checkpoint()
 
     def _revert(self):
-        if self._checker:
-            self._checker.revert()
+        self.parent._checker.revert()
         super()._revert()
 
 

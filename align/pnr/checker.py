@@ -28,12 +28,11 @@ def check_placement(placement_verilog_d, scale_factor):
         with types.set_context(constraints):
             constraints.append(
                 constraint.SetBoundingBox(
-                    instance=module['concrete_name'],
+                    instance='subcircuit',
                     llx=bbox.llx/scale_factor,
                     lly=bbox.lly/scale_factor,
                     urx=bbox.urx/scale_factor,
-                    ury=bbox.ury/scale_factor,
-                    is_subcircuit=True
+                    ury=bbox.ury/scale_factor
                 )
             )
         for inst in module['instances']:
