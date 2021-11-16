@@ -8,7 +8,6 @@ except BaseException:
     from utils import get_test_id, build_example, run_example
 
 
-@pytest.mark.nightly
 def test_mirror():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
